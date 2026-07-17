@@ -1,290 +1,155 @@
-# Tau Adaptive DAG Goal
-
-## Active Goal
-
-Implement Tau's adaptive DAG updates as bounded, receipt-backed runtime features
-without drifting into unbounded autonomy, dashboard theater, hidden model
-reasoning, or provider-dependent claims.
-
-The current implementation track is:
-
-1. `tau.dag_signal_receipt.v1` local signal receipts. Implemented.
-2. `tau.dag_expansion_proposal.v1` validation-only expansion proposals. Implemented.
-3. Independent dissent reviewer motif. Implemented as validation-only.
-4. Quality-gated route-memory reinforcement. Implemented as local candidates only.
-5. Bounded ready-node scheduler hardening for local, non-mutating branches. Implemented for local-only/provider-branch preflight.
-6. Expansion policy/apply, branch locks, rerun/resume receipts, and gated Memory sync. In progress for this slice.
-
-Only the next smallest receipt-backed slice should be implemented at a time.
-
-## Research Translation
-
-The research inspiration is architectural, not an instruction to copy external
-algorithms verbatim.
-
-- Graph reasoning becomes explicit DAG contracts, observed edges, receipts, and
-  artifacts, not hidden chain-of-thought.
-- Adaptive reasoning becomes bounded expansion proposals that must pass schema,
-  goal, route, and evidence validation before any future run can use them.
-- Distributed or swarm intelligence becomes local receipt-derived route signals,
-  not free-form agent chat or consensus-as-proof.
-- Compiler-style parallelism remains bounded ready-node scheduling with explicit
-  dependencies, local subprocess receipts, timeouts, and no mutating branch
-  concurrency until branch locks exist.
-- Reviewer discipline remains central: creator nodes produce artifacts;
-  reviewer, validator, and goal-guardian nodes evaluate evidence against the
-  immutable goal.
-
-Reference inspirations:
-
-- Graph of Thoughts: https://arxiv.org/abs/2308.09687
-- Adaptive Graph of Thoughts: https://arxiv.org/abs/2502.05078
-- LLMCompiler: https://arxiv.org/abs/2312.04511
-- MetaGPT: https://arxiv.org/abs/2308.00352
-- SwarmSys: https://arxiv.org/abs/2510.10047
-- AMRO-S: https://arxiv.org/abs/2603.12933
-- Bystander Effect in multi-agent reasoning: https://arxiv.org/abs/2605.10698
-
-## Implemented Baseline
-
-The current baseline includes:
-
-- `tau dag-run` for `tau.dag_contract.v1`.
-- Creator-reviewer DAG execution through the existing handoff command loop.
-- Local non-mutating bounded ready-node scheduling via
-  `--scheduler bounded-ready-queue`.
-- E2E real-world sanity checks for simple, medium, complex, concurrent, and
-  negative DAG paths.
-- `tau dag-signals <dag-receipt-or-run-dir>` producing
-  `tau.dag_signal_receipt.v1`.
-
-`tau.dag_signal_receipt.v1` is observational only. It may identify local
-reinforcement candidates or negative signals, but it must not mutate routes,
-write Memory, rewrite DAG contracts, call providers, or apply expansions.
-
-## Implemented Slice: Expansion Validation Only
-
-Implemented command:
-
-```text
-tau dag-expansion-validate \
-  --dag-contract <dag-contract.json|yaml> \
-  --proposal <dag-expansion-proposal.json|yaml> \
-  --receipt <dag-expansion-validation-receipt.json> \
-  --preview <expanded-dag.preview.json>
-```
-
-Required outputs:
-
-- `tau.dag_expansion_proposal.v1` schema.
-- `tau.dag_expansion_validation_receipt.v1` schema.
-- Validation receipt.
-- Preview expanded DAG only when validation passes.
-
-Do not automatically apply the expansion to a running DAG. Do not mutate the
-source DAG contract. Do not route or dispatch the expanded DAG inside this
-command.
-
-## Implemented Slice: Local Route-Memory Candidates
-
-Implemented command:
-
-```text
-tau dag-route-memory-candidates \
-  --signal-receipt <dag-signal-receipt.json> \
-  --receipt <dag-route-memory-candidate-receipt.json> \
-  [--min-confidence <0..1>]
-```
-
-This command gates route reinforcement candidates from a clean
-`tau.dag_signal_receipt.v1` and writes
-`tau.dag_route_memory_candidate_receipt.v1`. It does not write Memory, mutate
-routes, mutate DAG contracts, call providers, or dispatch commands.
-
-## Implemented Slice: Independent Dissent Motif Validation
-
-Implemented command:
-
-```text
-tau dag-motif-validate \
-  --dag-contract <dag-contract.json|yaml> \
-  --motif <dag-motif.json|yaml> \
-  --receipt <dag-motif-validation-receipt.json>
-```
-
-The first motif kind is `independent_dissent_reviewer_v1`. It checks that a DAG
-has at least two distinct reviewer nodes, no reviewer-to-reviewer dependency
-before the join, producer-to-reviewer edges, reviewer-to-join edges, and a
-distinct reviewer/validator/goal-guardian-style reconciliation node. It does
-not execute reviewers or claim consensus correctness.
-
-## Implemented Slice: Ready-Queue Local-Only Preflight
-
-`tau dag-run --scheduler bounded-ready-queue` now blocks provider executor
-branches and non-local command nodes before dispatch. It also keeps explicit
-preflight-only proof scope when the scheduler blocks before running any node.
-
-## Current Slice: Expansion Apply And Guardrails
-
-Implemented commands for this slice:
-
-```text
-tau dag-expansion-policy \
-  --validation-receipt <dag-expansion-validation-receipt.json> \
-  --receipt <dag-expansion-policy-receipt.json> \
-  [--signal-receipt <dag-signal-receipt.json>] \
-  [--require-clean-signal]
-
-tau dag-expansion-apply \
-  --validation-receipt <dag-expansion-validation-receipt.json> \
-  --out <expanded-dag.json> \
-  --receipt <dag-expansion-apply-receipt.json> \
-  [--policy-receipt <dag-expansion-policy-receipt.json>]
-
-tau dag-branch-locks-validate \
-  --dag-contract <dag-contract.json|yaml> \
-  --locks <branch-locks.json|yaml> \
-  --receipt <dag-branch-lock-validation-receipt.json>
-
-tau dag-route-memory-sync \
-  --candidate-receipt <dag-route-memory-candidate-receipt.json> \
-  --receipt <dag-route-memory-sync-receipt.json> \
-  [--collection tau_route_memory] \
-  [--memory-url http://127.0.0.1:8601] \
-  [--apply]
-```
-
-Boundary rules:
-
-- `dag-expansion-policy` is decision-only. It writes no DAG artifact.
-- `dag-expansion-apply` materializes a validated preview as a new DAG contract
-  artifact. It does not mutate the source DAG or a running route.
-- Rerun/resume semantics are explicit receipt fields and a `rerun_command`; the
-  orchestrator or human decides whether to execute the expanded DAG.
-- `dag-branch-locks-validate` checks lock metadata for provider or mutating
-  nodes. It does not make provider calls or permit concurrent side effects.
-- `dag-route-memory-sync` is dry-run by default. Memory `/upsert` is used only
-  with explicit `--apply`; local proof may exercise projection without writing
-  Memory.
-
-## Expansion Authority Rules
-
-Allowed proposal authors for the first expansion slice:
-
-- `reviewer`
-- `goal-guardian`
-- `validator`
-- `planner`, only before a run
-
-Disallowed proposal authors:
-
-- `creator`
-- `coder`
-- `worker`
-- provider nodes
-- artifact-producing branches that are trying to extend their own work
-
-Workers may report blockers or missing evidence. They may not expand their own
-branch.
-
-## Initial Hard Limits
-
-Use these limits exactly for the first expansion validation slice:
-
-```yaml
-max_new_nodes: 2
-max_depth_delta: 1
-max_new_edges: 4
-allow_new_executors: false
-allow_target_change: false
-allow_goal_change: false
-allow_terminal_node_change: false
-allow_command_spec_change: false
-```
-
-Goal changes remain human-only.
-
-## Allowed Expansion Types
-
-Allowed in the first validation slice:
-
-- reviewer node
-- validator node
-- goal-guardian node
-- research-auditor node, only if already routable and non-mutating
-
-Disallowed in the first validation slice:
-
-- new coder branch
-- new creator branch
-- new provider branch
-- new GitHub mutation branch
-- new artifact creator branch
-- new executor type
-- command-spec changes
-
-## Required Proof Bar
-
-Every adaptive DAG slice must provide:
-
-- Focused unit tests.
-- Deterministic local command proof.
-- A committed receipt artifact or explicit proof artifact.
-- Explicit `mocked`, `live`, and `provider_live` boundaries.
-- `proof_scope.proves` and `proof_scope.does_not_prove`.
-
-For the expansion validation slice, tests must cover:
-
-- Valid reviewer or goal-guardian proposal passes.
-- Creator or worker expansion proposal fails.
-- Goal hash change fails.
-- Target change fails.
-- Terminal-node change fails.
-- New executor fails.
-- Command-spec change fails.
-- Too many new nodes fails.
-- Too many new edges fails.
-- Excess depth delta fails.
-- Disallowed new worker/provider/coder branch fails.
-- Valid proposal writes preview and receipt.
-- Invalid proposal writes receipt and no preview.
-
-## Non-Claims
-
-Until separately implemented and proven, do not claim:
-
-- adaptive DAG expansion is applied automatically to a running route;
-- route mutation is live;
-- Memory route learning is active unless `dag-route-memory-sync --apply`
-  produces a passing receipt;
-- provider/model semantic quality is proven;
-- mutating parallel branches are safe;
-- branch locks make provider/mutating branches safe to execute concurrently;
-- GitHub mutation paths are covered;
-- hidden chain-of-thought is evaluated;
-- consensus or reviewer agreement is proof.
-
-## Stop Conditions
-
-Stop and ask for human direction before continuing if:
-
-- the next implementation step would expand beyond expansion validation-only;
-- a feature would mutate DAG routes, Memory, GitHub, provider state, or command
-  specs without a separate explicit approval;
-- proof is only mocked but the claim would imply runtime behavior;
-- a test failure requires changing the stated authority or hard-limit rules;
-- repository dirty state prevents committing only relevant files;
-- the task would require external architecture review or WebGPT code before a
-  safe local implementation can proceed.
-
-## Commit Rule
-
-After each focused implementation slice:
-
-1. Run the narrowest useful proof.
-2. Stage only relevant files.
-3. Inspect the staged set.
-4. Commit immediately after proof passes.
-5. Push the commit.
-6. Report the commit SHA, exact files, commands, artifacts, and remaining
-   non-claims.
+# Tau Immutable Goal
+
+**Status:** Active
+**Owner:** Human
+
+## Goal
+
+Tau lets a human launch and supervise a small ladder of real, goal-locked agent
+DAGs, from simple to durable and failure-recovering, while showing truthful
+progress, accepted evidence, blockers, and required human decisions in one
+easy-to-use interface.
+
+Humans decide what must happen. Agents propose and execute bounded work. Tau
+decides what counts as admissible progress.
+
+## Required Product Outcome
+
+A human can choose and run five canonical Tau DAGs without repository
+archaeology. Each DAG produces a recognizable useful result, preserves the
+human-owned goal across every node and attempt, and exposes its current state in
+the same progress viewer.
+
+The five-DAG ladder must increase in both node count and topology complexity:
+
+1. **Simple linear DAG** - a minimal sequential path produces and validates one
+   useful artifact.
+2. **Multi-step sequential DAG** - several dependent stages transform accepted
+   output into a final validated result.
+3. **Concurrent fan-out/fan-in DAG** - a sequential setup stage releases
+   independent workers concurrently, then a join validates their combined
+   result.
+4. **Mixed sequential/concurrent DAG** - sequential preparation feeds parallel
+   branches; typed conditions can send individual branches through
+   `PASS`, `REVISE`, retry, or terminal-failure routes; accepted branches join
+   before an exact human-gated side effect with rollback protection.
+5. **Durable mixed-topology DAG** - multiple sequential and concurrent phases
+   survive interruption, resume accepted work without duplicate effects, rerun
+   only affected nodes or branches, and stop at a final human release boundary.
+
+The DAGs are product workflows, not test fixtures. Receipts, commits, tickets,
+and screenshots may support their results, but none of those are the result by
+themselves.
+
+## Shared DAG Invariants
+
+Every canonical DAG must:
+
+- start from an explicit human-owned goal and completion criteria;
+- preserve the active goal version and hash through every handoff, retry,
+  restart, branch, and subagent;
+- reject agent attempts to change the goal, broaden scope, invent routes, or
+  claim completion without required evidence;
+- use bounded execution with explicit terminal states;
+- distinguish model claims from independently accepted evidence;
+- make retries, route decisions, joins, approvals, side effects, and recovery
+  inspectable;
+- fail closed with a precise blocker and next required human decision;
+- preserve accepted work across retries and restart;
+- state what each proof demonstrates and what remains unverified.
+
+## Dynamic React Flow Progress Outcome
+
+The human's primary question is:
+
+> What is Tau doing toward my goal right now, what has actually been accepted,
+> what is blocked, and do I need to decide anything?
+
+One shared React Flow viewer must answer that question for all five DAGs from
+authoritative runtime state. The graph must update dynamically while a DAG is
+running so the human can watch work move through sequential stages, concurrent
+branches, joins, retries, approval waits, recovery, and completion without
+manually reloading the page.
+
+The React Flow view must show:
+
+- the human goal and selected DAG;
+- run identity and current overall state;
+- graph structure and dependencies;
+- active, pending, accepted, failed, blocked, skipped, cancelled, and
+  superseded nodes;
+- node attempts, elapsed time, retries, and current work;
+- accepted outputs and their evidence;
+- route and join decisions;
+- exact blocker reasons and failed checks;
+- pending human approvals or decisions;
+- resume, recovery, and targeted-repair history;
+- final result and explicit proof boundaries.
+
+Node and edge changes must be driven by fresh authoritative run state. A static
+fixture, post-run snapshot, replay-only visualization, DOM assertion, or manual
+page refresh does not prove dynamic progress. Missing authoritative state is
+displayed as missing or unavailable, never inferred as healthy, running, or
+complete from model prose, Git history, or absent errors.
+
+## Ease Of Use
+
+A new evaluator must be able to:
+
+1. discover the five canonical DAGs;
+2. launch any DAG through one documented command or control;
+3. open its progress view without locating receipt directories manually;
+4. identify the active node, accepted work, blocker, and required decision;
+5. inspect the final useful output and supporting evidence.
+
+The normal path must not require editing JSON by hand, searching Git history,
+or understanding Tau's internal proof-directory layout.
+
+## Completion Criteria
+
+This goal is complete only when:
+
+- all five canonical DAGs execute against their intended real runtimes and
+  produce their intended useful outputs;
+- the ladder visibly progresses from a simple linear path to multi-step
+  sequential, concurrent fan-out/fan-in, and mixed sequential/concurrent
+  topologies;
+- each DAG has a deterministic acceptance contract and a demonstrated negative
+  or failure path;
+- the advanced DAG demonstrates crash-safe resume, no duplicate accepted
+  effects, and targeted repair that leaves unaffected accepted work untouched;
+- the human-gated DAG demonstrates an exact approval boundary and rollback;
+- the same viewer renders fresh authoritative progress for all five DAGs;
+- the React Flow graph visibly updates during execution without manual reload,
+  including sequential node transitions, simultaneous concurrent branches,
+  joins, retries, blocked states, human approval waits, resume, and completion;
+- viewer verification includes inspected desktop and mobile screenshots plus
+  a browser workflow trace showing the same run advance through running,
+  concurrent, blocked or approval-waiting, resumed, and completed states;
+- a clean checkout can launch the DAGs and viewer using documented commands;
+- final proof reports `mocked: no`, `live: yes`, what was exercised, and what
+  remains unverified;
+- the human accepts that the workflows and viewer make Tau's value and state
+  understandable without repository archaeology.
+
+## Non-Goals
+
+Tau's goal is not to:
+
+- maximize commits, branches, pull requests, issues, receipts, tests, or agents;
+- treat Git activity as project progress;
+- build a generic agent framework or an unbounded autonomous swarm;
+- trust model consensus, reviewer prose, or a producer's `PASS` field;
+- claim legal compliance, model truthfulness, or perfect sandbox isolation;
+- build separate viewers or bespoke orchestration paths for each example;
+- add adjacent features that do not directly unblock a completion criterion
+  above.
+
+## Critical-Path Rule
+
+Every implementation task must name the completion criterion it advances and
+the inspectable artifact or behavior it will produce. Work that advances none
+of the criteria is a side quest and must not be performed.
+
+Git commits preserve accepted work. They are retention evidence, not the goal,
+the progress model, or proof of product completion.
