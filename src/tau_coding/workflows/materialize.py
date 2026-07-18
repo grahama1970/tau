@@ -82,6 +82,13 @@ DURABLE_QUALIFICATION_COMPLETION_CRITERIA = [
     "Repair only a blocked qualification branch while preserving accepted work.",
     "Publish one idempotent qualification result after exact human approval.",
 ]
+GS001_CLOSURE_REQUEST_SCHEMA = "tau.gs001_closure_audit_request.v1"
+GS001_CLOSURE_COMPLETION_CRITERIA = [
+    "Validate every supplied PDF Lab artifact against its declared schema without mutation.",
+    "Recompute the GS001 closure verdict deterministically from artifacts, never from model prose.",
+    "Project one dry-run defect ticket per fingerprinted backlog entry with stable defect_key dedup.",
+    "Publish a hash-bound closure report; human review decides acceptance.",
+]
 
 
 @dataclass(frozen=True, slots=True)
@@ -179,6 +186,108 @@ def materialize_repository_readiness(
         "${PUBLISH_RECEIPT}": str(
             resolved_run_dir / "receipts" / "publish-readiness.json"
         ),
+        "${STEP_DELAY_SECONDS}": str(step_delay_seconds),
+    }
+    materialized = _replace_tokens(template, replacements)
+    source_dag_path = resolved_run_dir / "workflow" / "dag.json"
+    _write_json(source_dag_path, materialized)
+    return MaterializedWorkflow(
+        definition=definition,
+        request_path=request_path,
+        source_dag_path=source_dag_path,
+        run_dir=resolved_run_dir,
+        run_id=run_id,
+        goal=goal,
+    )
+
+
+def materialize_gs001_closure_audit(
+    *,
+    definition: WorkflowDefinition,
+    comparison_json: Path,
+    backlog_json: Path,
+    triage_queue_json: Path,
+    expected_contract_json: Path,
+    goal_md: Path,
+    run_dir: Path,
+    github_owner: str = "grahama1970",
+    github_repo: str = "pdf_oxide",
+    step_delay_seconds: float = 0.0,
+) -> MaterializedWorkflow:
+    if definition.workflow_id != "gs001-closure-audit":
+        raise RuntimeError("materializer supports only gs001-closure-audit")
+    if step_delay_seconds < 0:
+        raise RuntimeError("step_delay_seconds must be non-negative")
+    resolved_run_dir = run_dir.expanduser().resolve()
+    if (resolved_run_dir / "dag-run.sqlite3").exists():
+        raise RuntimeError(f"workflow run already exists: {resolved_run_dir}")
+
+    request_seed = {
+        "schema": GS001_CLOSURE_REQUEST_SCHEMA,
+        "comparison_json": str(comparison_json.expanduser().resolve()),
+        "backlog_json": str(backlog_json.expanduser().resolve()),
+        "triage_queue_json": str(triage_queue_json.expanduser().resolve()),
+        "expected_contract_json": str(expected_contract_json.expanduser().resolve()),
+        "goal_md": str(goal_md.expanduser().resolve()),
+        "github": {"owner": github_owner, "repo": github_repo},
+    }
+    request_sha = canonical_sha256(request_seed)
+    goal_without_hash: dict[str, object] = {
+        "goal_id": f"gs001-closure-audit:{request_sha.removeprefix('sha256:')[:12]}",
+        "goal_version": 1,
+        "summary": "Judge GS001 PDF Lab artifacts and publish a closure verdict with dry-run defect tickets.",
+        "completion_criteria": list(GS001_CLOSURE_COMPLETION_CRITERIA),
+    }
+    goal = {**goal_without_hash, "goal_hash": canonical_sha256(goal_without_hash)}
+    request = {**request_seed, "request_sha256": request_sha, "goal": goal}
+    run_id = f"gs001-closure-audit-{request_sha.removeprefix('sha256:')[:12]}"
+
+    for relative in ("workflow", "input", "receipts", "intermediate", "results"):
+        (resolved_run_dir / relative).mkdir(parents=True, exist_ok=True)
+    request_path = resolved_run_dir / "input" / "gs001-closure-audit-request.json"
+    _write_json(request_path, request)
+
+    template_resource = resources.files("tau_coding.workflows").joinpath(definition.template)
+    template = json.loads(template_resource.read_text(encoding="utf-8"))
+    if not isinstance(template, dict):
+        raise RuntimeError("gs001-closure-audit template must be an object")
+    workflow_metadata = {
+        "schema": WORKFLOW_METADATA_SCHEMA,
+        "workflow_id": definition.workflow_id,
+        "workflow_version": definition.workflow_version,
+        "title": definition.title,
+        "summary": "Validate, judge, project, and publish GS001 closure.",
+        "topology": definition.topology,
+        "result_node_id": definition.result_node_id,
+        "result_schema": definition.result_schema,
+    }
+    replacements: dict[str, object] = {
+        "${RUN_ID}": run_id,
+        "${RUN_DIR}": str(resolved_run_dir),
+        "${GOAL_OBJECT}": goal,
+        "${GOAL_HASH}": goal["goal_hash"],
+        "${WORKFLOW_METADATA}": workflow_metadata,
+        "${PYTHON}": sys.executable,
+        "${REQUEST_PATH}": str(request_path),
+        "${VALIDATION_PATH}": str(
+            resolved_run_dir / "intermediate" / "gs001-artifact-validation.json"
+        ),
+        "${VERDICT_PATH}": str(
+            resolved_run_dir / "intermediate" / "gs001-closure-verdict.json"
+        ),
+        "${PROJECTION_PATH}": str(
+            resolved_run_dir / "intermediate" / "gs001-ticket-projection.json"
+        ),
+        "${RESULT_JSON}": str(resolved_run_dir / "results" / "gs001-closure-report.json"),
+        "${RESULT_MARKDOWN}": str(resolved_run_dir / "results" / "gs001-closure-report.md"),
+        "${VALIDATION_RECEIPT}": str(
+            resolved_run_dir / "receipts" / "validate-artifacts.json"
+        ),
+        "${VERDICT_RECEIPT}": str(resolved_run_dir / "receipts" / "verdict-closure.json"),
+        "${PROJECTION_RECEIPT}": str(
+            resolved_run_dir / "receipts" / "project-tickets.json"
+        ),
+        "${PUBLISH_RECEIPT}": str(resolved_run_dir / "receipts" / "publish-closure.json"),
         "${STEP_DELAY_SECONDS}": str(step_delay_seconds),
     }
     materialized = _replace_tokens(template, replacements)

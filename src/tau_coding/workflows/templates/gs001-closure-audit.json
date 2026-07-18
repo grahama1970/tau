@@ -1,0 +1,105 @@
+{
+  "schema": "tau.generic_dag_spec.v1",
+  "run_id": "${RUN_ID}",
+  "run_dir": "${RUN_DIR}",
+  "goal": "${GOAL_OBJECT}",
+  "goal_hash": "${GOAL_HASH}",
+  "workflow": "${WORKFLOW_METADATA}",
+  "max_concurrency": 1,
+  "nodes": [
+    {
+      "node_id": "validate-artifacts",
+      "role": "Validate GS001 artifacts",
+      "command": [
+        "${PYTHON}",
+        "-m",
+        "tau_coding.workflows.nodes.gs001_closure_audit",
+        "validate",
+        "--request",
+        "${REQUEST_PATH}",
+        "--output",
+        "${VALIDATION_PATH}",
+        "--receipt",
+        "${VALIDATION_RECEIPT}",
+        "--step-delay-seconds",
+        "${STEP_DELAY_SECONDS}"
+      ],
+      "depends_on": [],
+      "accepted_context_from": [],
+      "receipt_path": "${VALIDATION_RECEIPT}",
+      "timeout_seconds": 30,
+      "max_attempts": 1
+    },
+    {
+      "node_id": "verdict-closure",
+      "role": "Recompute closure verdict",
+      "command": [
+        "${PYTHON}",
+        "-m",
+        "tau_coding.workflows.nodes.gs001_closure_audit",
+        "verdict",
+        "--request",
+        "${REQUEST_PATH}",
+        "--output",
+        "${VERDICT_PATH}",
+        "--receipt",
+        "${VERDICT_RECEIPT}",
+        "--step-delay-seconds",
+        "${STEP_DELAY_SECONDS}"
+      ],
+      "depends_on": ["validate-artifacts"],
+      "accepted_context_from": ["validate-artifacts"],
+      "receipt_path": "${VERDICT_RECEIPT}",
+      "timeout_seconds": 30,
+      "max_attempts": 1
+    },
+    {
+      "node_id": "project-tickets",
+      "role": "Project dry-run defect tickets",
+      "command": [
+        "${PYTHON}",
+        "-m",
+        "tau_coding.workflows.nodes.gs001_closure_audit",
+        "project",
+        "--request",
+        "${REQUEST_PATH}",
+        "--output",
+        "${PROJECTION_PATH}",
+        "--receipt",
+        "${PROJECTION_RECEIPT}",
+        "--step-delay-seconds",
+        "${STEP_DELAY_SECONDS}"
+      ],
+      "depends_on": ["verdict-closure"],
+      "accepted_context_from": ["verdict-closure"],
+      "receipt_path": "${PROJECTION_RECEIPT}",
+      "timeout_seconds": 30,
+      "max_attempts": 1
+    },
+    {
+      "node_id": "publish-closure",
+      "role": "Publish closure report",
+      "command": [
+        "${PYTHON}",
+        "-m",
+        "tau_coding.workflows.nodes.gs001_closure_audit",
+        "publish",
+        "--request",
+        "${REQUEST_PATH}",
+        "--json-output",
+        "${RESULT_JSON}",
+        "--markdown-output",
+        "${RESULT_MARKDOWN}",
+        "--receipt",
+        "${PUBLISH_RECEIPT}",
+        "--step-delay-seconds",
+        "${STEP_DELAY_SECONDS}"
+      ],
+      "depends_on": ["verdict-closure", "project-tickets"],
+      "accepted_context_from": ["verdict-closure", "project-tickets"],
+      "receipt_path": "${PUBLISH_RECEIPT}",
+      "timeout_seconds": 30,
+      "max_attempts": 1
+    }
+  ]
+}

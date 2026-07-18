@@ -271,6 +271,7 @@ from tau_coding.workflows.runner import (
     run_approved_release_bundle_workflow,
     run_durable_repository_qualification_workflow,
     run_repository_evidence_map_workflow,
+    run_gs001_closure_audit_workflow,
     run_repository_readiness_workflow,
     run_tau_operator_reference_workflow,
 )
@@ -329,9 +330,18 @@ def workflows_describe_command(
 @workflows_app.command("run")
 def workflows_run_command(
     workflow_id: str,
-    repo: Annotated[Path, typer.Option("--repo")],
     run_dir: Annotated[Path, typer.Option("--run-dir")],
+    repo: Annotated[Path | None, typer.Option("--repo")] = None,
     goal: Annotated[str | None, typer.Option("--goal")] = None,
+    comparison_json: Annotated[Path | None, typer.Option("--comparison-json")] = None,
+    backlog_json: Annotated[Path | None, typer.Option("--backlog-json")] = None,
+    triage_queue_json: Annotated[
+        Path | None, typer.Option("--triage-queue-json")
+    ] = None,
+    expected_contract_json: Annotated[
+        Path | None, typer.Option("--expected-contract-json")
+    ] = None,
+    goal_md: Annotated[Path | None, typer.Option("--goal-md")] = None,
     required_workflow: Annotated[
         str | None,
         typer.Option("--required-workflow"),
@@ -352,13 +362,42 @@ def workflows_run_command(
     if workflow_id not in {
         "approved-release-bundle",
         "durable-repository-qualification",
+        "gs001-closure-audit",
         "repository-readiness",
         "repository-evidence-map",
         "tau-operator-reference",
     }:
         raise typer.BadParameter(f"unknown workflow_id: {workflow_id}")
     try:
-        if workflow_id in {
+        if workflow_id == "gs001-closure-audit":
+            artifact_options = {
+                "--comparison-json": comparison_json,
+                "--backlog-json": backlog_json,
+                "--triage-queue-json": triage_queue_json,
+                "--expected-contract-json": expected_contract_json,
+                "--goal-md": goal_md,
+            }
+            missing_artifacts = [
+                name for name, value in artifact_options.items() if value is None
+            ]
+            if missing_artifacts:
+                raise RuntimeError(
+                    f"gs001-closure-audit requires {', '.join(missing_artifacts)}"
+                )
+            payload = run_gs001_closure_audit_workflow(
+                comparison_json=comparison_json,
+                backlog_json=backlog_json,
+                triage_queue_json=triage_queue_json,
+                expected_contract_json=expected_contract_json,
+                goal_md=goal_md,
+                run_dir=run_dir,
+                open_viewer=open_viewer,
+                browser_open=not no_browser_open,
+                viewer_hold_seconds=viewer_hold_seconds,
+            )
+        elif repo is None:
+            raise RuntimeError(f"{workflow_id} requires --repo")
+        elif workflow_id in {
             "approved-release-bundle",
             "durable-repository-qualification",
         }:

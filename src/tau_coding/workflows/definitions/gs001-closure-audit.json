@@ -1,0 +1,24 @@
+{
+  "schema": "tau.workflow_definition.v1",
+  "workflow_id": "gs001-closure-audit",
+  "workflow_version": 1,
+  "title": "GS001 Closure Audit",
+  "summary": "Deterministically judge PDF Lab GS001 artifacts: validate schemas, recompute the closure verdict, project dry-run defect tickets from the second-pass backlog, and publish a hash-bound closure report.",
+  "topology": "MULTI_STEP_SEQUENTIAL",
+  "availability": "AVAILABLE",
+  "input_schema": "tau.gs001_closure_audit_request.v1",
+  "result_schema": "tau.gs001_closure_report.v1",
+  "result_node_id": "publish-closure",
+  "template": "templates/gs001-closure-audit.json",
+  "runtime": {
+    "local": true,
+    "network_required": false,
+    "provider_required": false,
+    "mutation_allowed": false
+  },
+  "proof_boundary": {
+    "mocked": false,
+    "live": true,
+    "provider_live": false
+  }
+}

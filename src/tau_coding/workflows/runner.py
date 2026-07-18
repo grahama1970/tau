@@ -20,6 +20,7 @@ from tau_coding.workflows.materialize import (
     MaterializedWorkflow,
     materialize_approved_release_bundle,
     materialize_durable_repository_qualification,
+    materialize_gs001_closure_audit,
     materialize_repository_evidence_map,
     materialize_repository_readiness,
     materialize_tau_operator_reference,
@@ -320,6 +321,43 @@ def run_repository_readiness_workflow(
     return _run_materialized_workflow(
         materialized=materialized,
         result_filename="repository-readiness.json",
+        open_viewer=open_viewer,
+        browser_open=browser_open,
+        viewer_hold_seconds=viewer_hold_seconds,
+    )
+
+
+def run_gs001_closure_audit_workflow(
+    *,
+    comparison_json: Path,
+    backlog_json: Path,
+    triage_queue_json: Path,
+    expected_contract_json: Path,
+    goal_md: Path,
+    run_dir: Path,
+    open_viewer: bool,
+    browser_open: bool,
+    viewer_hold_seconds: float | None,
+    github_owner: str = "grahama1970",
+    github_repo: str = "pdf_oxide",
+    step_delay_seconds: float = 0.0,
+) -> dict[str, object]:
+    definition = get_workflow("gs001-closure-audit")
+    materialized = materialize_gs001_closure_audit(
+        definition=definition,
+        comparison_json=comparison_json,
+        backlog_json=backlog_json,
+        triage_queue_json=triage_queue_json,
+        expected_contract_json=expected_contract_json,
+        goal_md=goal_md,
+        run_dir=run_dir,
+        github_owner=github_owner,
+        github_repo=github_repo,
+        step_delay_seconds=step_delay_seconds,
+    )
+    return _run_materialized_workflow(
+        materialized=materialized,
+        result_filename="gs001-closure-report.json",
         open_viewer=open_viewer,
         browser_open=browser_open,
         viewer_hold_seconds=viewer_hold_seconds,
