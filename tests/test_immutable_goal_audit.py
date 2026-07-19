@@ -26,13 +26,18 @@ def test_supplied_proofs_are_hash_bound_and_fail_closed(tmp_path: Path) -> None:
     mobile = tmp_path / "mobile.png"
     desktop.write_bytes(b"desktop-image")
     mobile.write_bytes(b"mobile-image")
+    all_browser_checks = {
+        check: True
+        for checks in audit.BROWSER_REQUIRED_CHECKS.values()
+        for check in checks
+    }
     browser = {
         "schema": "tau.browser_proof.v1",
         "status": "PASS",
         "mocked": False,
         "live": True,
         "provider_live": False,
-        "checks": {"visible": True, "read_only": True},
+        "checks": all_browser_checks,
         "request_methods": ["GET"],
         "desktop_screenshot": str(desktop),
         "desktop_screenshot_sha256": ("sha256:" + hashlib.sha256(desktop.read_bytes()).hexdigest()),
@@ -45,7 +50,7 @@ def test_supplied_proofs_are_hash_bound_and_fail_closed(tmp_path: Path) -> None:
         "mocked": False,
         "live": True,
         "provider_live": False,
-        "details": {"accepted_producer_reran": False},
+        "checks": {"accepted_producer_not_rerun": True},
     }
     wheel = {
         "schema": "tau.durable_qualification_wheel_proof.v1",
@@ -58,12 +63,19 @@ def test_supplied_proofs_are_hash_bound_and_fail_closed(tmp_path: Path) -> None:
         "repeated_resume_status": "PASS",
     }
     paths = {
+        "readiness_positive_browser": tmp_path / "readiness-positive-browser.json",
+        "readiness_negative_browser": tmp_path / "readiness-negative-browser.json",
+        "operator_positive_browser": tmp_path / "operator-positive-browser.json",
+        "operator_negative_browser": tmp_path / "operator-negative-browser.json",
+        "evidence_positive_browser": tmp_path / "evidence-positive-browser.json",
+        "evidence_negative_browser": tmp_path / "evidence-negative-browser.json",
         "slice04_browser": tmp_path / "slice04-browser.json",
         "slice04_rerun": tmp_path / "slice04-rerun.json",
         "slice05_browser": tmp_path / "slice05-browser.json",
         "slice05_wheel": tmp_path / "slice05-wheel.json",
     }
-    _write_json(paths["slice04_browser"], browser)
+    for label in audit.BROWSER_REQUIRED_CHECKS:
+        _write_json(paths[label], browser)
     _write_json(paths["slice04_rerun"], rerun)
     _write_json(paths["slice05_browser"], browser)
     _write_json(paths["slice05_wheel"], wheel)
@@ -71,6 +83,12 @@ def test_supplied_proofs_are_hash_bound_and_fail_closed(tmp_path: Path) -> None:
     records = audit._validate_supplied_proofs(**paths)
 
     assert [item["label"] for item in records] == [
+        "readiness_positive_browser",
+        "readiness_negative_browser",
+        "operator_positive_browser",
+        "operator_negative_browser",
+        "evidence_positive_browser",
+        "evidence_negative_browser",
         "slice04_browser",
         "slice04_no_accepted_producer_rerun",
         "slice05_browser",
@@ -84,7 +102,7 @@ def test_supplied_proofs_are_hash_bound_and_fail_closed(tmp_path: Path) -> None:
         assert record["status"] == "PASS"
         assert record["mocked"] is False
         assert record["live"] is True
-        if record["label"].endswith("browser"):
+        if record["label"] in audit.BROWSER_REQUIRED_CHECKS:
             assert [item["kind"] for item in record["screenshots"]] == [
                 "desktop",
                 "mobile",
@@ -125,6 +143,12 @@ def test_result_and_criteria_projection_are_deterministic(tmp_path: Path) -> Non
         for workflow_id in audit.WORKFLOW_IDS
     ]
     proofs = [
+        {"label": "readiness_positive_browser"},
+        {"label": "readiness_negative_browser"},
+        {"label": "operator_positive_browser"},
+        {"label": "operator_negative_browser"},
+        {"label": "evidence_positive_browser"},
+        {"label": "evidence_negative_browser"},
         {"label": "slice04_browser"},
         {"label": "slice04_no_accepted_producer_rerun"},
         {"label": "slice05_browser"},

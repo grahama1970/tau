@@ -81,6 +81,10 @@ def _transaction_run(tmp_path: Path) -> tuple[object, tuple[dict[str, object], .
                         "transaction_id": "tx-creator",
                         "artifact_root": str(tmp_path / "artifacts"),
                         "producer_id": "creator",
+                        "validator": {
+                            "validator_id": "validator",
+                            "command": ["true"],
+                        },
                         "reviewer": {"reviewer_id": "reviewer", "command": ["true"]},
                     },
                 }
@@ -132,11 +136,35 @@ def _transaction_run(tmp_path: Path) -> tuple[object, tuple[dict[str, object], .
                 "node_id": node.node_id,
                 "status": "PASS",
                 "verdict": "PASS",
-                "attempts": [{"attempt": 1}, {"attempt": 2, "review_verdict": "PASS"}],
+                "attempts": [
+                    {
+                        "attempt": 1,
+                        "candidate_manifest_sha256": "sha256:first",
+                        "validation_receipt_path": "/run/validation-1.json",
+                    },
+                    {
+                        "attempt": 2,
+                        "candidate_manifest_sha256": "sha256:second",
+                        "validation_receipt_path": "/run/validation-2.json",
+                        "review_verdict": "PASS",
+                    },
+                ],
                 "accepted_manifest_sha256": "sha256:accepted",
             },
         )
     return load_dag_replay(run_dir=tmp_path, run_id="transaction-run")
+
+
+def test_resumed_transaction_projects_committed_producer_and_validator_evidence(
+    tmp_path: Path,
+) -> None:
+    replay, _events = _transaction_run(tmp_path)
+
+    snapshot = build_dag_live_snapshot(replay=replay, recent_events=())
+    attempts = snapshot["nodes"][0]["transaction"]["attempts"]
+
+    assert [attempt["producer_state"] for attempt in attempts] == ["PASS", "PASS"]
+    assert [attempt["validator_status"] for attempt in attempts] == ["PASS", "PASS"]
 
 
 def test_reader_is_query_only_and_projection_accepts_only_scheduler_success(tmp_path: Path) -> None:

@@ -50,6 +50,105 @@ TOPOLOGIES = {
 }
 RESULT_NAMES = {workflow_id: workflow_id for workflow_id in WORKFLOW_IDS}
 RESEARCH_SOURCES = ["https://sqlite.org/wal.html", "https://sqlite.org/walformat.html"]
+BROWSER_REQUIRED_CHECKS = {
+    "readiness_positive_browser": (
+        "workflow_title_visible",
+        "goal_summary_visible",
+        "inspect_running_observed",
+        "validate_running_observed",
+        "publish_running_observed",
+        "publish_accepted_observed",
+        "final_result_visible",
+        "result_artifact_refs_visible",
+        "no_manual_reload",
+        "read_only_requests",
+        "layout_non_overlapping",
+    ),
+    "readiness_negative_browser": (
+        "inspect_accepted_observed",
+        "validate_blocked_observed",
+        "dirty_repository_visible",
+        "publish_not_executed",
+        "final_result_absent",
+        "no_manual_reload",
+        "read_only_requests",
+        "layout_non_overlapping",
+    ),
+    "operator_positive_browser": (
+        "workflow_title_visible",
+        "goal_summary_visible",
+        "capture_running_observed",
+        "compose_running_observed",
+        "validate_accepted_observed",
+        "final_result_visible",
+        "desktop_layout_non_overlapping",
+        "mobile_layout_non_overlapping",
+        "no_manual_reload",
+        "read_only_requests",
+    ),
+    "operator_negative_browser": (
+        "first_three_accepted",
+        "validate_blocked_observed",
+        "required_workflow_missing_exact",
+        "final_result_absent",
+        "desktop_layout_non_overlapping",
+        "mobile_layout_non_overlapping",
+        "no_manual_reload",
+        "read_only_requests",
+    ),
+    "evidence_positive_browser": (
+        "workflow_title_visible",
+        "goal_visible",
+        "all_branches_running_together",
+        "all_branches_accepted",
+        "publish_accepted",
+        "final_result_visible",
+        "desktop_layout_non_overlapping",
+        "mobile_layout_non_overlapping",
+        "no_manual_reload",
+        "read_only_requests",
+    ),
+    "evidence_negative_browser": (
+        "inventory_accepted",
+        "test_surface_missing_exact",
+        "publish_not_dispatched",
+        "final_result_absent",
+        "desktop_layout_non_overlapping",
+        "mobile_layout_non_overlapping",
+        "no_manual_reload",
+        "read_only_requests",
+    ),
+    "slice04_browser": (
+        "workflow_title_visible",
+        "goal_visible",
+        "parallel_branches_running",
+        "revise_then_pass_visible",
+        "approval_required_visible",
+        "no_publication_before_approval",
+        "publish_running_after_resume",
+        "final_result_visible",
+        "final_transaction_evidence_visible",
+        "desktop_layout_non_overlapping",
+        "mobile_layout_non_overlapping",
+        "no_manual_reload",
+        "read_only_requests",
+    ),
+    "slice05_browser": (
+        "workflow_title_visible",
+        "goal_visible",
+        "parallel_branches_running",
+        "targeted_repair_blocker_visible",
+        "recovery_takeover_visible",
+        "repaired_branch_running",
+        "approval_required_visible",
+        "publication_effect_count_one",
+        "final_result_visible",
+        "desktop_layout_non_overlapping",
+        "mobile_layout_non_overlapping",
+        "no_manual_reload",
+        "read_only_requests",
+    ),
+}
 
 
 class AuditError(RuntimeError):
@@ -65,6 +164,12 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", type=Path, required=True)
     parser.add_argument("--ref", required=True)
+    parser.add_argument("--readiness-positive-browser-proof", type=Path, required=True)
+    parser.add_argument("--readiness-negative-browser-proof", type=Path, required=True)
+    parser.add_argument("--operator-positive-browser-proof", type=Path, required=True)
+    parser.add_argument("--operator-negative-browser-proof", type=Path, required=True)
+    parser.add_argument("--evidence-positive-browser-proof", type=Path, required=True)
+    parser.add_argument("--evidence-negative-browser-proof", type=Path, required=True)
     parser.add_argument("--slice04-browser-proof", type=Path, required=True)
     parser.add_argument("--slice04-rerun-proof", type=Path, required=True)
     parser.add_argument("--slice05-browser-proof", type=Path, required=True)
@@ -97,6 +202,12 @@ def _run_audit(args: argparse.Namespace, commands: list[dict[str, Any]]) -> dict
     caller_status = _git_status(repo, commands)
     source_ref = _verified_ref(repo, args.ref, commands)
     proofs = _validate_supplied_proofs(
+        readiness_positive_browser=args.readiness_positive_browser_proof,
+        readiness_negative_browser=args.readiness_negative_browser_proof,
+        operator_positive_browser=args.operator_positive_browser_proof,
+        operator_negative_browser=args.operator_negative_browser_proof,
+        evidence_positive_browser=args.evidence_positive_browser_proof,
+        evidence_negative_browser=args.evidence_negative_browser_proof,
         slice04_browser=args.slice04_browser_proof,
         slice04_rerun=args.slice04_rerun_proof,
         slice05_browser=args.slice05_browser_proof,
@@ -825,19 +936,31 @@ def _assert_publication(publish: Path, run_dir: Path, basename: str) -> None:
 
 def _validate_supplied_proofs(
     *,
+    readiness_positive_browser: Path,
+    readiness_negative_browser: Path,
+    operator_positive_browser: Path,
+    operator_negative_browser: Path,
+    evidence_positive_browser: Path,
+    evidence_negative_browser: Path,
     slice04_browser: Path,
     slice04_rerun: Path,
     slice05_browser: Path,
     slice05_wheel: Path,
 ) -> list[dict[str, Any]]:
     supplied = (
+        ("readiness_positive_browser", readiness_positive_browser),
+        ("readiness_negative_browser", readiness_negative_browser),
+        ("operator_positive_browser", operator_positive_browser),
+        ("operator_negative_browser", operator_negative_browser),
+        ("evidence_positive_browser", evidence_positive_browser),
+        ("evidence_negative_browser", evidence_negative_browser),
         ("slice04_browser", slice04_browser),
         ("slice04_no_accepted_producer_rerun", slice04_rerun),
         ("slice05_browser", slice05_browser),
         ("slice05_wheel", slice05_wheel),
     )
     records = []
-    browser_labels = {"slice04_browser", "slice05_browser"}
+    browser_labels = set(BROWSER_REQUIRED_CHECKS)
     for label, value in supplied:
         path = value.expanduser().resolve()
         payload = _read_object(path, label)
@@ -853,10 +976,9 @@ def _validate_supplied_proofs(
 
         checks = payload.get("checks")
         if label in browser_labels:
-            if (
-                not isinstance(checks, dict)
-                or not checks
-                or not all(value is True for value in checks.values())
+            required_checks = BROWSER_REQUIRED_CHECKS[label]
+            if not isinstance(checks, dict) or not all(
+                checks.get(check) is True for check in required_checks
             ):
                 raise AuditError(f"supplied_proof_checks_failed:{label}")
             methods = payload.get("request_methods")
@@ -877,6 +999,12 @@ def _validate_supplied_proofs(
                 raise AuditError("slice05_wheel_publication_count_invalid")
             if payload.get("repeated_resume_status") != "PASS":
                 raise AuditError("slice05_wheel_repeated_resume_missing")
+        if label == "slice04_no_accepted_producer_rerun" and (
+            not isinstance(checks, dict)
+            or not checks
+            or not all(value is True for value in checks.values())
+        ):
+            raise AuditError("slice04_rerun_checks_failed")
 
         records.append(
             {
@@ -948,7 +1076,7 @@ def _established_criteria(
         4: ["slice05_browser", "slice05_wheel", "Repeated resume retained effect_count=1."],
         5: ["slice04_browser", "slice04_no_accepted_producer_rerun"],
         6: ["Every workflow served an identified tau.dag_view_manifest.v1 over HTTP GET."],
-        7: ["slice04_browser", "slice05_browser"],
+        7: [*BROWSER_REQUIRED_CHECKS],
         8: ["Exact-ref wheel install, five public sequences, results, and viewers passed."],
         9: proof_labels,
     }
@@ -972,7 +1100,8 @@ def _claims() -> dict[str, list[str]]:
             "The installed public tau command discovered exactly the five locked workflows.",
             "All five public workflow sequences produced useful results and blocked paths.",
             "The installed shared viewer served an identified GET manifest for every run.",
-            "Slice 04 and Slice 05 proofs and screenshots were retained and hash-bound.",
+            "Positive and negative browser proofs for all five workflows were retained "
+            "and hash-bound.",
             "The durable ledger and repeated resume retained one publication effect.",
         ],
         "does_not_prove": [

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import subprocess
@@ -26,12 +27,14 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--desktop-screenshot", type=Path, required=True)
     parser.add_argument("--mobile-screenshot", type=Path, required=True)
+    parser.add_argument("--rerun-output", type=Path, required=True)
     args = parser.parse_args()
     repo_root = Path(__file__).resolve().parents[1]
     output = args.output.resolve()
     desktop = args.desktop_screenshot.resolve()
     mobile = args.mobile_screenshot.resolve()
-    for path in (output, desktop, mobile):
+    rerun_output = args.rerun_output.resolve()
+    for path in (output, desktop, mobile, rerun_output):
         path.parent.mkdir(parents=True, exist_ok=True)
     node_root = subprocess.run(
         ["npm", "root", "-g"], check=True, capture_output=True, text=True
@@ -103,6 +106,14 @@ def main() -> int:
             raise RuntimeError("approved_release_browser_proof_blocked")
         if not (publish_path / "approved-release-bundle.json").is_file():
             raise RuntimeError("approved_publication_missing")
+        rerun_proof = _prove_no_accepted_producer_rerun(
+            spec_path=materialized.source_dag_path,
+            run_dir=run_dir,
+        )
+        rerun_output.write_text(
+            json.dumps(rerun_proof, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
     print(json.dumps(receipt, indent=2, sort_keys=True))
     return 0
 
@@ -182,6 +193,121 @@ def _json(path: Path) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise RuntimeError(f"JSON object expected: {path}")
     return payload
+
+
+def _prove_no_accepted_producer_rerun(
+    *, spec_path: Path, run_dir: Path
+) -> dict[str, object]:
+    producer_ids = ("draft-release-notes", "publish-approved-release")
+    before_receipt = _json(run_dir / "run-receipt.json")
+    before_events = _events(run_dir / "events.jsonl")
+    before = _transaction_evidence(before_receipt, before_events, producer_ids)
+    repeated = run_generic_dag(spec_path=spec_path, resume=True)
+    after_receipt = _json(run_dir / "run-receipt.json")
+    after_events = _events(run_dir / "events.jsonl")
+    after = _transaction_evidence(after_receipt, after_events, producer_ids)
+    checks = {
+        "run_pass": repeated.get("ok") is True and repeated.get("status") == "PASS",
+        "resume_requested": any(
+            event.get("kind") == "dag_started" and event.get("resume") is True
+            for event in after_events[len(before_events) :]
+        ),
+        "accepted_producers_resumed": all(
+            after[node_id]["status"] == "PASS" for node_id in producer_ids
+        ),
+        "producer_event_counts_match_attempts": all(
+            after[node_id]["dispatch_count"] == after[node_id]["attempt_count"]
+            for node_id in producer_ids
+        ),
+        "draft_release_notes_attempt_count_unchanged": (
+            before["draft-release-notes"]["attempt_count"]
+            == after["draft-release-notes"]["attempt_count"]
+        ),
+        "publish_approved_release_attempt_count_unchanged": (
+            before["publish-approved-release"]["attempt_count"]
+            == after["publish-approved-release"]["attempt_count"]
+        ),
+        "no_producer_dispatch_after_resume_finalization": all(
+            before[node_id]["dispatch_count"] == after[node_id]["dispatch_count"]
+            for node_id in producer_ids
+        ),
+        "accepted_manifest_hashes_preserved": all(
+            before[node_id]["accepted_manifest_sha256"]
+            == after[node_id]["accepted_manifest_sha256"]
+            for node_id in producer_ids
+        ),
+    }
+    payload: dict[str, object] = {
+        "schema": "tau.slice04_no_accepted_producer_rerun_verification.v1",
+        "status": "PASS" if all(checks.values()) else "BLOCKED",
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "run_dir": str(run_dir),
+        "run_receipt_sha256": _sha256(run_dir / "run-receipt.json"),
+        "producer_dispatch_counts": {
+            node_id: after[node_id]["dispatch_count"] for node_id in producer_ids
+        },
+        "producer_attempt_counts": {
+            node_id: after[node_id]["attempt_count"] for node_id in producer_ids
+        },
+        "accepted_manifest_sha256s": {
+            node_id: after[node_id]["accepted_manifest_sha256"]
+            for node_id in producer_ids
+        },
+        "checks": checks,
+    }
+    if payload["status"] != "PASS":
+        raise RuntimeError("accepted_producer_reran_on_repeated_resume")
+    return payload
+
+
+def _events(path: Path) -> list[dict[str, Any]]:
+    events = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        payload = json.loads(line)
+        if isinstance(payload, dict):
+            events.append(payload)
+    return events
+
+
+def _transaction_evidence(
+    receipt: dict[str, Any],
+    events: list[dict[str, Any]],
+    node_ids: tuple[str, ...],
+) -> dict[str, dict[str, object]]:
+    nodes = receipt.get("nodes")
+    if not isinstance(nodes, list):
+        raise RuntimeError("approved_release_run_receipt_nodes_missing")
+    by_id = {
+        str(node.get("node_id")): node for node in nodes if isinstance(node, dict)
+    }
+    evidence: dict[str, dict[str, object]] = {}
+    for node_id in node_ids:
+        node = by_id.get(node_id)
+        if not isinstance(node, dict):
+            raise RuntimeError(f"approved_release_transaction_missing:{node_id}")
+        attempts = node.get("attempts")
+        accepted_output = node.get("accepted_output")
+        evidence[node_id] = {
+            "status": node.get("status"),
+            "attempt_count": len(attempts) if isinstance(attempts, list) else -1,
+            "dispatch_count": sum(
+                event.get("kind") == "transaction_producer_dispatch"
+                and event.get("node_id") == node_id
+                for event in events
+            ),
+            "accepted_manifest_sha256": (
+                accepted_output.get("accepted_manifest_sha256")
+                if isinstance(accepted_output, dict)
+                else None
+            ),
+        }
+    return evidence
+
+
+def _sha256(path: Path) -> str:
+    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 if __name__ == "__main__":

@@ -81,7 +81,8 @@ def _proof_scenario(
     run_dir: Path,
     scenario: str,
     output: Path,
-    screenshot: Path,
+    desktop_screenshot: Path,
+    mobile_screenshot: Path,
     node_root: str,
 ) -> dict[str, object]:
     materialized = materialize_repository_readiness(
@@ -106,7 +107,8 @@ def _proof_scenario(
             str(url_path),
             str(ready_path),
             scenario,
-            str(screenshot),
+            str(desktop_screenshot),
+            str(mobile_screenshot),
             str(output),
         ],
         cwd=repo_root,
@@ -179,16 +181,20 @@ def _proof_scenario(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--positive-out", type=Path, required=True)
-    parser.add_argument("--positive-screenshot", type=Path, required=True)
+    parser.add_argument("--positive-desktop-screenshot", type=Path, required=True)
+    parser.add_argument("--positive-mobile-screenshot", type=Path, required=True)
     parser.add_argument("--negative-out", type=Path, required=True)
-    parser.add_argument("--negative-screenshot", type=Path, required=True)
+    parser.add_argument("--negative-desktop-screenshot", type=Path, required=True)
+    parser.add_argument("--negative-mobile-screenshot", type=Path, required=True)
     args = parser.parse_args()
     repo_root = Path(__file__).resolve().parents[1]
     outputs = [
         args.positive_out.expanduser().resolve(),
-        args.positive_screenshot.expanduser().resolve(),
+        args.positive_desktop_screenshot.expanduser().resolve(),
+        args.positive_mobile_screenshot.expanduser().resolve(),
         args.negative_out.expanduser().resolve(),
-        args.negative_screenshot.expanduser().resolve(),
+        args.negative_desktop_screenshot.expanduser().resolve(),
+        args.negative_mobile_screenshot.expanduser().resolve(),
     ]
     for path in outputs:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -206,7 +212,8 @@ def main() -> int:
             run_dir=root / "positive-run",
             scenario="positive",
             output=outputs[0],
-            screenshot=outputs[1],
+            desktop_screenshot=outputs[1],
+            mobile_screenshot=outputs[2],
             node_root=node_root,
         )
         negative = _proof_scenario(
@@ -214,8 +221,9 @@ def main() -> int:
             fixture=negative_fixture,
             run_dir=root / "negative-run",
             scenario="negative",
-            output=outputs[2],
-            screenshot=outputs[3],
+            output=outputs[3],
+            desktop_screenshot=outputs[4],
+            mobile_screenshot=outputs[5],
             node_root=node_root,
         )
     summary = {
@@ -225,11 +233,15 @@ def main() -> int:
         "live": True,
         "provider_live": False,
         "positive_receipt": str(outputs[0]),
-        "positive_screenshot": str(outputs[1]),
-        "positive_screenshot_sha256": positive["screenshot_sha256"],
-        "negative_receipt": str(outputs[2]),
-        "negative_screenshot": str(outputs[3]),
-        "negative_screenshot_sha256": negative["screenshot_sha256"],
+        "positive_desktop_screenshot": str(outputs[1]),
+        "positive_desktop_screenshot_sha256": positive["desktop_screenshot_sha256"],
+        "positive_mobile_screenshot": str(outputs[2]),
+        "positive_mobile_screenshot_sha256": positive["mobile_screenshot_sha256"],
+        "negative_receipt": str(outputs[3]),
+        "negative_desktop_screenshot": str(outputs[4]),
+        "negative_desktop_screenshot_sha256": negative["desktop_screenshot_sha256"],
+        "negative_mobile_screenshot": str(outputs[5]),
+        "negative_mobile_screenshot_sha256": negative["mobile_screenshot_sha256"],
     }
     print(json.dumps(summary, indent=2, sort_keys=True))
     return 0

@@ -61,6 +61,7 @@ const checks = {
   no_publication_before_approval: false,
   publish_running_after_resume: false,
   final_result_visible: false,
+  final_transaction_evidence_visible: false,
   read_only_requests: false,
   no_manual_reload: false,
   desktop_layout_non_overlapping: false,
@@ -106,7 +107,18 @@ while (Date.now() < finalDeadline) {
     && value.result.includes("Approved release bundle published")
     && value.result.includes("approved-release-bundle.json")
     && value.result.includes("approved-release-bundle.md");
-  if (checks.final_result_visible && checks.publish_running_after_resume) break;
+  checks.final_transaction_evidence_visible ||=
+    (value.transaction.match(/Creator PASS/g) || []).length === 2
+    && (value.transaction.match(/Validator PASS/g) || []).length === 2
+    && value.transaction.includes("Reviewer REVISE")
+    && value.transaction.includes("Reviewer PASS")
+    && !value.transaction.includes("Creator pending")
+    && !value.transaction.includes("Validator pending");
+  if (
+    checks.final_result_visible
+    && checks.publish_running_after_resume
+    && checks.final_transaction_evidence_visible
+  ) break;
   await new Promise((resolve) => setTimeout(resolve, 40));
 }
 checks.read_only_requests = requests.length > 0 && requests.every((item) => item.method === "GET");

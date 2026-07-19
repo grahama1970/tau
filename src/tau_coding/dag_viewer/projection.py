@@ -547,6 +547,14 @@ def _transaction_projection(
                     continue
                 attempt_number = int(item["attempt"])
                 projected = attempts.setdefault(attempt_number, {"attempt": attempt_number})
+                if isinstance(item.get("candidate_manifest_sha256"), str):
+                    projected["producer_state"] = "PASS"
+                if (
+                    isinstance(transaction_config, dict)
+                    and isinstance(transaction_config.get("validator"), dict)
+                    and isinstance(item.get("validation_receipt_path"), str)
+                ):
+                    projected["validator_status"] = "PASS"
                 for source_key, target_key in (
                     ("candidate_manifest_sha256", "candidate_manifest_sha256"),
                     ("review_verdict", "reviewer_verdict"),

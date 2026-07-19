@@ -6,12 +6,13 @@ import process from "node:process";
 const require = createRequire(import.meta.url);
 const puppeteer = require(`${process.env.NODE_PATH}/puppeteer`);
 
-const [urlPath, readyPath, scenario, screenshotPath, outputPath] = process.argv.slice(2);
+const [urlPath, readyPath, scenario, desktopPath, mobilePath, outputPath] = process.argv.slice(2);
 if (
   !urlPath
   || !readyPath
   || !["positive", "negative"].includes(scenario)
-  || !screenshotPath
+  || !desktopPath
+  || !mobilePath
   || !outputPath
 ) {
   throw new Error("repository-readiness browser-proof arguments missing or invalid");
@@ -177,7 +178,17 @@ checks.layout_non_overlapping = await page.evaluate(() => {
       && nodes.slice(index + 1).every((other) => !overlaps(node, other)));
 });
 
-await page.screenshot({ path: screenshotPath, fullPage: false });
+await page.screenshot({ path: desktopPath, fullPage: false });
+await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 });
+await new Promise((resolve) => setTimeout(resolve, 250));
+const mobileLayoutNonOverlapping = await page.evaluate(() => {
+  const element = (qid) => document.querySelector(`[data-qid="${qid}"]`)?.getBoundingClientRect();
+  const overview = element("dag:overview");
+  const graph = element("dag:workspace:graph");
+  return Boolean(overview && graph && overview.bottom <= graph.top + 1);
+});
+checks.layout_non_overlapping &&= mobileLayoutNonOverlapping;
+await page.screenshot({ path: mobilePath, fullPage: true });
 await browser.close();
 
 const required = scenario === "positive"
@@ -210,7 +221,6 @@ const required = scenario === "positive"
       "layout_non_overlapping",
     ];
 const status = required.every((key) => checks[key]) ? "PASS" : "BLOCKED";
-const screenshotSha256 = `sha256:${createHash("sha256").update(fs.readFileSync(screenshotPath)).digest("hex")}`;
 const receipt = {
   schema: "tau.repository_readiness_browser_proof.v1",
   scenario,
@@ -219,8 +229,10 @@ const receipt = {
   live: true,
   provider_live: false,
   url,
-  screenshot: screenshotPath,
-  screenshot_sha256: screenshotSha256,
+  desktop_screenshot: desktopPath,
+  desktop_screenshot_sha256: `sha256:${createHash("sha256").update(fs.readFileSync(desktopPath)).digest("hex")}`,
+  mobile_screenshot: mobilePath,
+  mobile_screenshot_sha256: `sha256:${createHash("sha256").update(fs.readFileSync(mobilePath)).digest("hex")}`,
   request_methods: [...new Set(requests.map(({ method }) => method))].sort(),
   requests,
   main_frame_navigation_count: mainFrameNavigations,
