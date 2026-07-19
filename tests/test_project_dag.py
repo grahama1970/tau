@@ -44,6 +44,27 @@ def test_transition_receipt_classification_accepts_windows_paths() -> None:
     ]
 
 
+def test_provider_live_requires_accepted_live_provider_route_receipt() -> None:
+    response = {
+        "result": {
+            "evidence": [
+                {
+                    "kind": "provider_route_receipt",
+                    "provider_receipt": {
+                        "ok": True,
+                        "live": True,
+                        "provider_live": True,
+                    },
+                }
+            ]
+        }
+    }
+
+    assert project_dag._accepted_provider_live(response) is True
+    response["result"]["evidence"][0]["provider_receipt"]["ok"] = False
+    assert project_dag._accepted_provider_live(response) is False
+
+
 def test_project_dag_runs_creator_reviewer_loop(tmp_path: Path) -> None:
     contract_path = _write_contract(tmp_path)
     _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))

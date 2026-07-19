@@ -2503,6 +2503,22 @@ def _node_response_alerts(
     return alerts
 
 
+def _accepted_provider_live(response: dict[str, Any]) -> bool:
+    for evidence in _result_evidence(response):
+        if evidence.get("kind") != "provider_route_receipt":
+            continue
+        provider_receipt = evidence.get("provider_receipt")
+        if not isinstance(provider_receipt, dict):
+            continue
+        if (
+            provider_receipt.get("ok") is True
+            and provider_receipt.get("live") is True
+            and provider_receipt.get("provider_live") is True
+        ):
+            return True
+    return False
+
+
 def _provider_auth_failure_alert(
     node: ProjectDagNode,
     response: dict[str, Any],
@@ -3406,7 +3422,7 @@ def _run_shared_project_dag_plan(
             "verdict": "PASS",
             "mocked": False,
             "live": True,
-            "provider_live": False,
+            "provider_live": _accepted_provider_live(response),
             "attempt_count": attempt,
             "dispatch": dispatch,
             "accepted_output": response,
@@ -3608,6 +3624,7 @@ def _run_shared_project_dag_plan(
         activated_edges=activated_edges,
         activated_terminals=activated_terminals,
         dag_plan_sha256=plan.plan_sha256,
+        provider_live=any(item.get("provider_live") is True for item in result.node_results),
     )
     receipt["execution"] = "project_agent_dag_plan_ready_queue"
     receipt["durable"] = result.durable
@@ -3622,6 +3639,7 @@ def _run_shared_project_dag_plan(
         node_attempts=node_attempts,
         status=status,
         verdict=verdict,
+        provider_live=receipt["provider_live"] is True,
     )
     receipt["progress_path"] = str(receipt_dir / "dag-progress.json")
     _write_json_atomic(receipt_dir / "dag-receipt.json", receipt)
@@ -3861,6 +3879,7 @@ def _ready_queue_receipt(
     activated_edges: set[int] | None = None,
     activated_terminals: set[str] | None = None,
     dag_plan_sha256: str | None = None,
+    provider_live: bool = False,
 ) -> dict[str, Any]:
     proves = [
         "DAG contract parsed and validated.",
@@ -3891,7 +3910,7 @@ def _ready_queue_receipt(
         "verdict": verdict,
         "mocked": False,
         "live": True,
-        "provider_live": False,
+        "provider_live": provider_live,
         "scheduler": "bounded-ready-queue",
         "execution": "project_agent_dag_bounded_ready_queue",
         "dag_plan_sha256": dag_plan_sha256,
@@ -3990,6 +4009,7 @@ def _write_project_dag_progress(
     node_attempts: dict[str, int],
     status: str,
     verdict: str | None = None,
+    provider_live: bool = False,
 ) -> None:
     node_progress = _project_dag_node_progress(contract, events, node_attempts)
     active_subagents = [
@@ -4013,7 +4033,7 @@ def _write_project_dag_progress(
         "verdict": verdict,
         "mocked": False,
         "live": True,
-        "provider_live": False,
+        "provider_live": provider_live,
         "scheduler": scheduler,
         "dag_id": contract.dag_id,
         "run_dir": str(receipt_dir),
