@@ -84,6 +84,7 @@ def _proof_scenario(
     desktop_screenshot: Path,
     mobile_screenshot: Path,
     node_root: str,
+    source_ref: str,
 ) -> dict[str, object]:
     materialized = materialize_repository_readiness(
         definition=get_workflow("repository-readiness"),
@@ -169,6 +170,7 @@ def _proof_scenario(
             "fixture_repo": str(fixture),
             "run_dir": str(run_dir),
             "source_dag_path": str(materialized.source_dag_path),
+            "source_ref": source_ref,
             "workflow_status": result.get("status"),
             "workflow_verdict": result.get("verdict"),
             "result_artifacts": artifacts,
@@ -199,6 +201,7 @@ def main() -> int:
     for path in outputs:
         path.parent.mkdir(parents=True, exist_ok=True)
     node_root = _run(["npm", "root", "-g"], cwd=repo_root).stdout.strip()
+    source_ref = _run(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip()
 
     with tempfile.TemporaryDirectory(prefix="tau-repository-readiness-proof-") as temporary:
         root = Path(temporary)
@@ -215,6 +218,7 @@ def main() -> int:
             desktop_screenshot=outputs[1],
             mobile_screenshot=outputs[2],
             node_root=node_root,
+            source_ref=source_ref,
         )
         negative = _proof_scenario(
             repo_root=repo_root,
@@ -225,6 +229,7 @@ def main() -> int:
             desktop_screenshot=outputs[4],
             mobile_screenshot=outputs[5],
             node_root=node_root,
+            source_ref=source_ref,
         )
     summary = {
         "schema": "tau.repository_readiness_browser_proof_summary.v1",

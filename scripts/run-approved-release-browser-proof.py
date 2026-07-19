@@ -30,6 +30,7 @@ def main() -> int:
     parser.add_argument("--rerun-output", type=Path, required=True)
     args = parser.parse_args()
     repo_root = Path(__file__).resolve().parents[1]
+    source_ref = _git_source_ref(repo_root)
     output = args.output.resolve()
     desktop = args.desktop_screenshot.resolve()
     mobile = args.mobile_screenshot.resolve()
@@ -100,6 +101,8 @@ def main() -> int:
         if browser.returncode:
             raise RuntimeError(f"browser_failed:{stderr}\n{stdout}")
         receipt = _json(output)
+        receipt["source_ref"] = source_ref
+        output.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         if first.get("verdict") != "APPROVAL_REQUIRED":
             raise RuntimeError("initial_approval_boundary_not_proven")
         if resumed.get("ok") is not True or receipt.get("status") != "PASS":
@@ -109,6 +112,7 @@ def main() -> int:
         rerun_proof = _prove_no_accepted_producer_rerun(
             spec_path=materialized.source_dag_path,
             run_dir=run_dir,
+            source_ref=source_ref,
         )
         rerun_output.write_text(
             json.dumps(rerun_proof, indent=2, sort_keys=True) + "\n",
@@ -196,7 +200,7 @@ def _json(path: Path) -> dict[str, Any]:
 
 
 def _prove_no_accepted_producer_rerun(
-    *, spec_path: Path, run_dir: Path
+    *, spec_path: Path, run_dir: Path, source_ref: str
 ) -> dict[str, object]:
     producer_ids = ("draft-release-notes", "publish-approved-release")
     before_receipt = _json(run_dir / "run-receipt.json")
@@ -244,6 +248,7 @@ def _prove_no_accepted_producer_rerun(
         "live": True,
         "provider_live": False,
         "run_dir": str(run_dir),
+        "source_ref": source_ref,
         "run_receipt_sha256": _sha256(run_dir / "run-receipt.json"),
         "producer_dispatch_counts": {
             node_id: after[node_id]["dispatch_count"] for node_id in producer_ids
@@ -308,6 +313,16 @@ def _transaction_evidence(
 
 def _sha256(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _git_source_ref(repo_root: Path) -> str:
+    return subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
 
 
 if __name__ == "__main__":

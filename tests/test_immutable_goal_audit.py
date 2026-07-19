@@ -37,6 +37,7 @@ def test_supplied_proofs_are_hash_bound_and_fail_closed(tmp_path: Path) -> None:
         "mocked": False,
         "live": True,
         "provider_live": False,
+        "source_ref": "a" * 40,
         "checks": all_browser_checks,
         "request_methods": ["GET"],
         "desktop_screenshot": str(desktop),
@@ -50,6 +51,7 @@ def test_supplied_proofs_are_hash_bound_and_fail_closed(tmp_path: Path) -> None:
         "mocked": False,
         "live": True,
         "provider_live": False,
+        "source_ref": "a" * 40,
         "checks": {"accepted_producer_not_rerun": True},
     }
     wheel = {
@@ -80,7 +82,7 @@ def test_supplied_proofs_are_hash_bound_and_fail_closed(tmp_path: Path) -> None:
     _write_json(paths["slice05_browser"], browser)
     _write_json(paths["slice05_wheel"], wheel)
 
-    records = audit._validate_supplied_proofs(**paths)
+    records = audit._validate_supplied_proofs(expected_source_ref="a" * 40, **paths)
 
     assert [item["label"] for item in records] == [
         "readiness_positive_browser",
@@ -111,7 +113,13 @@ def test_supplied_proofs_are_hash_bound_and_fail_closed(tmp_path: Path) -> None:
     browser["request_methods"] = ["GET", "POST"]
     _write_json(paths["slice05_browser"], browser)
     with pytest.raises(audit.AuditError, match="supplied_proof_browser_not_get_only"):
-        audit._validate_supplied_proofs(**paths)
+        audit._validate_supplied_proofs(expected_source_ref="a" * 40, **paths)
+
+    browser["request_methods"] = ["GET"]
+    browser["source_ref"] = "b" * 40
+    _write_json(paths["readiness_positive_browser"], browser)
+    with pytest.raises(audit.AuditError, match="supplied_proof_source_ref_mismatch"):
+        audit._validate_supplied_proofs(expected_source_ref="a" * 40, **paths)
 
 
 def test_result_and_criteria_projection_are_deterministic(tmp_path: Path) -> None:

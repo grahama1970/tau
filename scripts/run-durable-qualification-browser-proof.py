@@ -33,6 +33,7 @@ def main() -> int:
     parser.add_argument("--mobile-screenshot", type=Path, required=True)
     args = parser.parse_args()
     repo_root = Path(__file__).resolve().parents[1]
+    source_ref = _git_source_ref(repo_root)
     output = args.output.resolve()
     desktop = args.desktop_screenshot.resolve()
     mobile = args.mobile_screenshot.resolve()
@@ -132,6 +133,7 @@ def main() -> int:
         if browser.returncode:
             raise RuntimeError(f"browser failed: {stderr}\n{stdout}")
         receipt = _json(output)
+        receipt["source_ref"] = source_ref
         ledger = _json(publish_path / "publication-ledger.json")
         receipt["checks"]["publication_effect_count_one"] = ledger["effect_count"] == 1
         receipt["checks"]["journal_recovery_order"] = _journal_recovery_order(run_dir)
@@ -244,6 +246,16 @@ def _json(path: Path) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise RuntimeError(f"JSON object expected: {path}")
     return payload
+
+
+def _git_source_ref(repo_root: Path) -> str:
+    return subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
 
 
 if __name__ == "__main__":

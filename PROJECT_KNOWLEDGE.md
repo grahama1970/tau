@@ -7117,3 +7117,49 @@
   `/tmp/tau-skill-doctor-slice05.json`,
   `/tmp/tau-skill-workflows-slice05.json`, and
   `/tmp/tau-skill-describe-slice05.json`.
+
+# 2026-07-19: Immutable Five-Workflow Live Evaluation
+
+- The viewer repair first landed at
+  `edf42f3981491633a1dd8b246f5b3263d40c930a`. The final authoritative source
+  ref is the aggregate receipt's `source_ref`; it is verified against
+  `grahama1970/tau@main` with `git ls-remote`. The repair preserves committed
+  creator and validator evidence in resumed transaction projections and makes
+  the immutable audit require every workflow's browser evidence instead of
+  accepting only slices 04 and 05.
+- Aggregate receipt
+  `/tmp/tau-five-workflow-eval-20260719.fH2Tu6/immutable-goal-audit.json`
+  reports `schema:tau.immutable_goal_audit.v1`, `status:PASS`, `mocked:false`,
+  `live:true`, `provider_live:false`, five workflow records, ten hash-bound
+  supplied proofs, criteria 1-9 `ESTABLISHED`, and criterion 10 `MISSING`
+  pending explicit human acceptance. The receipt itself records the final
+  source ref, wheel hash, proof hashes, and command outcomes.
+- Fresh browser receipt families are `final-readiness-positive.json`,
+  `final-readiness-negative.json`, `final-operator-positive.json`,
+  `final-operator-negative.json`, `final-evidence-positive.json`,
+  `final-evidence-negative.json`, `final-approved-release.json`, and
+  `final-durable.json` under the same evaluation directory. All report
+  `status:PASS`, `mocked:false`, `live:true`, `provider_live:false`, GET-only
+  traffic, no manual reload, and desktop/mobile screenshot bindings. The
+  screenshots were visually inspected for graph state, final results, exact
+  blockers, retry/approval evidence, and layout.
+- `final-approved-release-rerun.json` proves the final resume dispatched no
+  accepted producer again: draft attempts remained `2`, publication attempts
+  remained `1`, dispatch counts matched those attempts, and accepted manifest
+  hashes were unchanged. `final-durable-wheel.json` proves an installed wheel
+  discovered exactly five workflows, reused unaffected accepted branches, and
+  retained `publication_effect_count:1` after repeated resume.
+- Focused proof passed Ruff, mypy, `52` backend tests, frontend typecheck,
+  `24` frontend tests, and the production build. Full-suite observation was
+  `2464 passed, 29 skipped, 3 failed`; the retained failures require absent
+  external Loop2 sources/proofs or excluded goal-locked experiment command
+  specs and are outside this immutable workflow goal.
+- Fresh UI-hook marker `.codex/ui-verification/latest.json` points to
+  `/tmp/codex-ui-verification/tau-slice05-push/tau-five-workflow-final/20260719T140929Z.png`.
+  The inspected screenshot visibly shows the human goal, settled three-node
+  readiness graph, accepted nodes, final useful result, and proof boundaries.
+- Issue #112 remains closed and aligned at current canonical refs: Tau's
+  `test_battle_live_handoff.py` plus adaptive-lineage contract report `11
+  passed`; a detached clean `agent-skills@main` at
+  `fbdab265b86b562e27a439a8c8a0130d2b877397` reports `17 passed` for
+  `skills/battle/tests/test_arena_live_battle_proof_contract.py`.

@@ -202,6 +202,7 @@ def _run_audit(args: argparse.Namespace, commands: list[dict[str, Any]]) -> dict
     caller_status = _git_status(repo, commands)
     source_ref = _verified_ref(repo, args.ref, commands)
     proofs = _validate_supplied_proofs(
+        expected_source_ref=source_ref,
         readiness_positive_browser=args.readiness_positive_browser_proof,
         readiness_negative_browser=args.readiness_negative_browser_proof,
         operator_positive_browser=args.operator_positive_browser_proof,
@@ -232,6 +233,11 @@ def _run_audit(args: argparse.Namespace, commands: list[dict[str, Any]]) -> dict
                 raise AuditError("detached_worktree_not_clean")
 
             wheel = _build_wheel(checkout, root, commands)
+            supplied_wheel = next(
+                item for item in proofs if item["label"] == "slice05_wheel"
+            )
+            if supplied_wheel.get("wheel_sha256") != _sha256(wheel):
+                raise AuditError("slice05_wheel_hash_mismatch")
             tau, python, purelib, installed_env = _install_wheel(wheel, root, commands)
             public_interface = _verify_public_interface(
                 tau=tau,
@@ -936,6 +942,7 @@ def _assert_publication(publish: Path, run_dir: Path, basename: str) -> None:
 
 def _validate_supplied_proofs(
     *,
+    expected_source_ref: str,
     readiness_positive_browser: Path,
     readiness_negative_browser: Path,
     operator_positive_browser: Path,
@@ -973,6 +980,8 @@ def _validate_supplied_proofs(
         schema = payload.get("schema")
         if not isinstance(schema, str) or not schema:
             raise AuditError(f"supplied_proof_schema_missing:{label}")
+        if label != "slice05_wheel" and payload.get("source_ref") != expected_source_ref:
+            raise AuditError(f"supplied_proof_source_ref_mismatch:{label}")
 
         checks = payload.get("checks")
         if label in browser_labels:
@@ -1022,6 +1031,8 @@ def _validate_supplied_proofs(
                 "screenshots": screenshots,
                 "publication_effect_count": payload.get("publication_effect_count"),
                 "repeated_resume_status": payload.get("repeated_resume_status"),
+                "source_ref": payload.get("source_ref"),
+                "wheel_sha256": payload.get("wheel_sha256"),
             }
         )
     return records

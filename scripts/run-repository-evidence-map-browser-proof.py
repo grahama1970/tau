@@ -29,6 +29,7 @@ def main() -> int:
         parser.add_argument(f"--{scenario}-mobile-screenshot", type=Path, required=True)
     args = parser.parse_args()
     node_root = _node_root()
+    source_ref = _source_ref()
     with tempfile.TemporaryDirectory(prefix="tau-evidence-map-browser-") as temporary:
         root = Path(temporary)
         positive = _scenario(
@@ -40,6 +41,7 @@ def main() -> int:
             args.positive_desktop_screenshot.resolve(),
             args.positive_mobile_screenshot.resolve(),
             node_root,
+            source_ref,
         )
         negative = _scenario(
             root / "negative-repo",
@@ -50,6 +52,7 @@ def main() -> int:
             args.negative_desktop_screenshot.resolve(),
             args.negative_mobile_screenshot.resolve(),
             node_root,
+            source_ref,
         )
     summary = {
         "schema": "tau.repository_evidence_map_browser_proof_summary.v1",
@@ -75,6 +78,7 @@ def _scenario(
     desktop: Path,
     mobile: Path,
     node_root: str,
+    source_ref: str,
 ) -> dict[str, Any]:
     _git_repo(repo, with_tests=with_tests)
     materialized = materialize_repository_evidence_map(
@@ -149,6 +153,8 @@ def _scenario(
             raise RuntimeError("negative_publish_dispatched")
         if (run_dir / "results").exists():
             raise RuntimeError("negative_results_exist")
+    receipt["source_ref"] = source_ref
+    output.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return receipt
 
 
@@ -219,6 +225,17 @@ def _node_root() -> str:
         text=True,
     )
     return result.stdout.strip()
+
+
+def _source_ref() -> str:
+    root = Path(__file__).resolve().parents[1]
+    return subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
 
 
 def _json(path: Path) -> dict[str, Any]:
