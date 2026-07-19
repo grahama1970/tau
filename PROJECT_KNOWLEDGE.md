@@ -7163,3 +7163,43 @@
   passed`; a detached clean `agent-skills@main` at
   `fbdab265b86b562e27a439a8c8a0130d2b877397` reports `17 passed` for
   `skills/battle/tests/test_arena_live_battle_proof_contract.py`.
+
+# 2026-07-19: Immutable Goal Human Acceptance And Ask/Tau Live Proof
+
+- The human's final acceptance condition was that project agents can discover,
+  understand, and execute the real `$ask` Tau DAG path rather than treating Git
+  or transport activity as success. That condition is satisfied and the human
+  acceptance criterion is now `ESTABLISHED`; `GOAL.md` is `Complete`.
+- `agent-skills@main` is
+  `f6cb5179ef69d2c1e5e26f6ce645cfddaa5956e5`. It exposes `skills/ask/run.sh
+  tau-dag`, resolves the active local SciLLM credential without serializing it
+  into DAG command arguments, preserves provider-derived solver outputs, gives
+  the reviewer both accepted solver results, and rejects an invalid winner or
+  missing rationale.
+- `tau@main` is `ffce7f1f7faeb9bd1e710b3e65dc61325d19528f`.
+  Project DAG node and final receipts now report `provider_live:true` only when
+  accepted provider-route evidence records `ok:true`, `live:true`, and
+  `provider_live:true`.
+- `/tmp/ask-tau-dag-clean-release-proof-latest.json` reports `PASS`,
+  `mocked:false`, `live:true`, `provider_live:true`, `19/19` checks, clean
+  source bindings to both refs, two concurrent GPT solver dispatches, one
+  Claude reviewer dispatch, and no failed check. SHA-256:
+  `bcae9558a76d4efaf4bb81ad125f742ea681cd0ae4c1eb79e921fcd41a196383`.
+- The authoritative Tau receipt is
+  `/tmp/ask-tau-dag-clean-release-proof-20260719T105912/ask-tau-ask-2-gpt-5-6-xhigh-subagents-co-b8f473e847e8/tau-receipts/dag-receipt.json`.
+  It reports `PASS`, `provider_live:true`, `max_observed_concurrency:2`, all
+  three node terminal states `success`, and a substantive criteria-bound
+  reviewer verdict selecting `solver-2`. SHA-256:
+  `5c0e4d078191918e7ea5eadbd9c345840ce4818fc1d4f36a105442ba01d77c5e`.
+- A recursive exact-value scan found no active SciLLM credential in the final
+  request, DAG, command specs, node artifacts, Tau journal/receipts, or outer
+  proof. Focused Ask tests report `31 passed`; focused Tau project-DAG/plan/view
+  tests report `132 passed`. The current full Ask suite retains one unrelated
+  citation-message assertion failure in `test_argue_verifier.py`; it is not a
+  Tau DAG execution or evidence failure.
+- This proves the exercised project-agent path can compile a strict DAG,
+  dispatch real providers through Tau, preserve useful solver outputs, compare
+  them using accepted predecessor evidence, expose truthful live-provider
+  state, and return inspectable artifacts. It does not prove arbitrary model
+  answers are true, all future providers remain available, or exhaustive
+  security against every credential source.
