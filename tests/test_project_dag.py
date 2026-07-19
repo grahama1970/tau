@@ -1038,6 +1038,55 @@ def test_project_dag_allows_provider_sensitive_contract_with_policy_prompt_and_e
     assert request["context"]["tau_dag_node"]["prompt_contract"] == prompt_contract
 
 
+def test_project_dag_aggregates_provider_live_from_ready_queue_node_evidence(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["nodes"][0]["required_evidence"].append("provider_route_receipt")
+    contract["required_evidence"].append("provider_route_receipt")
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    _write_response_spec(
+        tmp_path,
+        "coder",
+        _handoff(
+            "coder",
+            "reviewer",
+            [
+                *_creator_evidence(),
+                {
+                    "kind": "provider_route_receipt",
+                    "provider_receipt": {
+                        "schema": "test.provider_receipt.v1",
+                        "status": "PASS",
+                        "ok": True,
+                        "mocked": False,
+                        "live": True,
+                        "provider_live": True,
+                        "provider": "scillm",
+                        "provider_transport": "$scillm",
+                        "model": "gpt-5.5",
+                    },
+                },
+            ],
+        ),
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert receipt["provider_live"] is True
+    persisted = json.loads((tmp_path / "run" / "dag-receipt.json").read_text(encoding="utf-8"))
+    assert persisted["provider_live"] is True
+
+
 def test_project_dag_propagates_persistent_subagent_surface_to_node(
     tmp_path: Path,
 ) -> None:

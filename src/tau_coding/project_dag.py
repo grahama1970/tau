@@ -500,6 +500,8 @@ def run_project_dag_contract(
     alerts = _evaluate_loop_against_contract(contract, loop_payload)
     status = "PASS" if not alerts and loop_payload.get("ok") is True else "BLOCKED"
     verdict = "PASS" if status == "PASS" else _blocked_verdict(alerts, loop_payload)
+    dispatches = _dispatches(loop_payload)
+    provider_live = _dispatches_provider_live(dispatches)
     receipt = {
         "schema": DAG_RECEIPT_SCHEMA,
         "ok": status == "PASS",
@@ -507,7 +509,7 @@ def run_project_dag_contract(
         "verdict": verdict,
         "mocked": False,
         "live": True,
-        "provider_live": False,
+        "provider_live": provider_live,
         "scheduler": scheduler,
         "security_mode": security_context_result.receipt.get("security_mode"),
         "execution": "project_agent_dag_via_handoff_command_loop",
@@ -534,7 +536,7 @@ def run_project_dag_contract(
         ),
         "selected_agents": [
             dispatch.get("selected_agent")
-            for dispatch in _dispatches(loop_payload)
+            for dispatch in dispatches
             if dispatch.get("selected_agent")
         ],
         "observed_edges": _observed_edges(contract, loop_payload),
@@ -3225,6 +3227,7 @@ def _ready_queue_receipt(
                 "Node evidence and reviewer verdicts were checked against the immutable goal hash.",
             ]
         )
+    provider_live = _dispatches_provider_live(dispatches)
     receipt = {
         "schema": DAG_RECEIPT_SCHEMA,
         "ok": status == "PASS",
@@ -3232,7 +3235,7 @@ def _ready_queue_receipt(
         "verdict": verdict,
         "mocked": False,
         "live": True,
-        "provider_live": False,
+        "provider_live": provider_live,
         "scheduler": "bounded-ready-queue",
         "execution": "project_agent_dag_bounded_ready_queue",
         "dag_id": contract.dag_id,
@@ -4181,6 +4184,32 @@ def _response_payload(dispatch: dict[str, Any]) -> dict[str, Any] | None:
     except json.JSONDecodeError:
         return None
     return payload if isinstance(payload, dict) else None
+
+
+def _dispatches_provider_live(dispatches: list[dict[str, Any]]) -> bool:
+    for dispatch in dispatches:
+        response = _response_payload(dispatch)
+        if response is not None and _contains_provider_live_evidence(response):
+            return True
+    return False
+
+
+def _contains_provider_live_evidence(value: Any) -> bool:
+    if isinstance(value, dict):
+        provider_receipt = value.get("provider_receipt")
+        if isinstance(provider_receipt, dict) and provider_receipt.get("provider_live") is True:
+            return True
+        if value.get("provider_live") is True and (
+            value.get("kind") in {"provider_route_receipt", "provider_receipt"}
+            or value.get("route") is not None
+            or value.get("provider_transport") is not None
+            or value.get("provider") is not None
+        ):
+            return True
+        return any(_contains_provider_live_evidence(child) for child in value.values())
+    if isinstance(value, list):
+        return any(_contains_provider_live_evidence(child) for child in value)
+    return False
 
 
 def _dispatches(loop_payload: dict[str, Any]) -> list[dict[str, Any]]:
