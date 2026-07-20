@@ -2410,15 +2410,21 @@ def main(
 
     if prompt_option is None and command == "generated-ticket-github-create":
         try:
-            ticket_path, active_goal_hash, receipt_path, agents_root, apply_github = (
-                _parse_generated_ticket_github_create_cli_args(positional_args[1:])
-            )
+            (
+                ticket_path,
+                active_goal_hash,
+                receipt_path,
+                agents_root,
+                apply_github,
+                dedupe_preflight_path,
+            ) = _parse_generated_ticket_github_create_cli_args(positional_args[1:])
             ok = transport_generated_ticket_to_github_command(
                 ticket_path,
                 active_goal_hash=active_goal_hash,
                 receipt_path=receipt_path,
                 agents_root=agents_root,
                 apply_github=apply_github,
+                dedupe_preflight_path=dedupe_preflight_path,
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -7055,17 +7061,18 @@ def _parse_docker_sandbox_check_args(args: list[str]) -> dict[str, object]:
 
 def _parse_generated_ticket_github_create_cli_args(
     args: list[str],
-) -> tuple[Path, str | None, Path | None, Path | None, bool]:
+) -> tuple[Path, str | None, Path | None, Path | None, bool, Path | None]:
     if not args:
         raise RuntimeError(
             "Usage: tau generated-ticket-github-create <ticket.json> "
             "[--active-goal-hash <hash>] [--agents-root <dir>] "
-            "[--receipt <receipt.json>] [--apply]"
+            "[--receipt <receipt.json>] [--dedupe-preflight <receipt.json>] [--apply]"
         )
     ticket_path = Path(args[0])
     active_goal_hash: str | None = None
     receipt_path: Path | None = None
     agents_root: Path | None = None
+    dedupe_preflight_path: Path | None = None
     apply_github = False
     index = 1
     while index < len(args):
@@ -7091,12 +7098,19 @@ def _parse_generated_ticket_github_create_cli_args(
             agents_root = Path(args[index])
         elif arg.startswith("--agents-root="):
             agents_root = Path(arg.partition("=")[2])
+        elif arg == "--dedupe-preflight":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--dedupe-preflight requires a value")
+            dedupe_preflight_path = Path(args[index])
+        elif arg.startswith("--dedupe-preflight="):
+            dedupe_preflight_path = Path(arg.partition("=")[2])
         elif arg == "--apply":
             apply_github = True
         else:
             raise RuntimeError(f"Unknown generated-ticket-github-create option: {arg}")
         index += 1
-    return ticket_path, active_goal_hash, receipt_path, agents_root, apply_github
+    return ticket_path, active_goal_hash, receipt_path, agents_root, apply_github, dedupe_preflight_path
 
 
 def _parse_handoff_command_loop_github_transport_args(
@@ -9828,6 +9842,7 @@ def transport_generated_ticket_to_github_command(
     receipt_path: Path | None,
     agents_root: Path | None,
     apply_github: bool,
+    dedupe_preflight_path: Path | None = None,
 ) -> bool:
     """Render or apply GitHub issue creation for one validated generated ticket."""
 
@@ -9863,9 +9878,17 @@ def transport_generated_ticket_to_github_command(
         typer.echo(json.dumps(transport_receipt, indent=2, sort_keys=True))
         return False
 
+    dedupe_projection: dict[str, Any] | None = None
+    if dedupe_preflight_path is not None:
+        dedupe_projection = _load_json_object(
+            dedupe_preflight_path,
+            label="generated-ticket dedupe preflight receipt",
+        )
     transport = transport_generated_ticket_to_github(
         repo=repo,
         github_create=validation.github_create,
+        dedupe_projection=dedupe_projection,
+        require_dedupe_preflight=apply_github,
         apply=apply_github,
         receipt_path=receipt_path,
     )

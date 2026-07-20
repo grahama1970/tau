@@ -366,16 +366,34 @@ def transport_generated_ticket_to_github(
     *,
     repo: str,
     github_create: Mapping[str, Any],
+    dedupe_projection: Mapping[str, Any] | None = None,
+    require_dedupe_preflight: bool = False,
     apply: bool = False,
     receipt_path: Path | None = None,
     runner: CommandRunner | None = None,
 ) -> GitHubHandoffTransportResult:
-    """Render or apply a GitHub issue create command for one generated-ticket projection."""
+    """Render or apply GitHub commands for one generated-ticket projection."""
 
     errors: list[str] = []
-    commands = _generated_ticket_create_commands(repo, github_create, errors)
-    target = {"repo": repo, "target": "new"}
+    target = _generated_ticket_transport_target(repo, dedupe_projection)
     schema = "tau.github_generated_ticket_transport_receipt.v1"
+    if apply and require_dedupe_preflight and dedupe_projection is None:
+        result = GitHubHandoffTransportResult(
+            ok=False,
+            dry_run=False,
+            applied=False,
+            target=target,
+            commands=(),
+            errors=("dedupe preflight projection is required before applying generated tickets",),
+            schema=schema,
+        )
+        return _write_transport_receipt(result, receipt_path)
+    commands = _generated_ticket_transport_commands(
+        repo=repo,
+        github_create=github_create,
+        dedupe_projection=dedupe_projection,
+        errors=errors,
+    )
     if errors:
         result = GitHubHandoffTransportResult(
             ok=False,
@@ -400,23 +418,28 @@ def transport_generated_ticket_to_github(
         return _write_transport_receipt(result, receipt_path)
 
     command_runner = runner or _run_gh_command
-    completed = command_runner(commands[0], str(github_create["body"]))
-    command_results = (_completed_process_result(commands[0], completed),)
-    if completed.returncode != 0:
-        stderr = (completed.stderr or "").strip()
-        stdout = (completed.stdout or "").strip()
-        detail = stderr or stdout or f"exit_code={completed.returncode}"
-        result = GitHubHandoffTransportResult(
-            ok=False,
-            dry_run=False,
-            applied=False,
-            target=target,
-            commands=tuple(commands),
-            command_results=command_results,
-            errors=(f"GitHub command failed: {' '.join(commands[0])}: {detail}",),
-            schema=schema,
+    command_results: list[dict[str, Any]] = []
+    for command in commands:
+        completed = command_runner(
+            command,
+            _stdin_for_generated_ticket_command(command, github_create, dedupe_projection),
         )
-        return _write_transport_receipt(result, receipt_path)
+        command_results.append(_completed_process_result(command, completed))
+        if completed.returncode != 0:
+            stderr = (completed.stderr or "").strip()
+            stdout = (completed.stdout or "").strip()
+            detail = stderr or stdout or f"exit_code={completed.returncode}"
+            result = GitHubHandoffTransportResult(
+                ok=False,
+                dry_run=False,
+                applied=False,
+                target=target,
+                commands=tuple(commands),
+                command_results=tuple(command_results),
+                errors=(f"GitHub command failed: {' '.join(command)}: {detail}",),
+                schema=schema,
+            )
+            return _write_transport_receipt(result, receipt_path)
 
     result = GitHubHandoffTransportResult(
         ok=True,
@@ -424,7 +447,7 @@ def transport_generated_ticket_to_github(
         applied=True,
         target=target,
         commands=tuple(commands),
-        command_results=command_results,
+        command_results=tuple(command_results),
         schema=schema,
     )
     return _write_transport_receipt(result, receipt_path)
@@ -604,8 +627,82 @@ def _github_issue_list_command(
         "--limit",
         str(safe_limit),
         "--json",
-        "number,title,state,url,labels",
+        "number,title,state,url,labels,body",
     ]
+
+
+def _generated_ticket_transport_target(
+    repo: str,
+    dedupe_projection: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    if isinstance(dedupe_projection, Mapping):
+        target = dedupe_projection.get("target")
+        if isinstance(target, Mapping):
+            return dict(target)
+    return {"repo": repo, "target": "new"}
+
+
+def _generated_ticket_transport_commands(
+    *,
+    repo: str,
+    github_create: Mapping[str, Any],
+    dedupe_projection: Mapping[str, Any] | None,
+    errors: list[str],
+) -> list[list[str]]:
+    if dedupe_projection is None:
+        return _generated_ticket_create_commands(repo, github_create, errors)
+    if dedupe_projection.get("schema") != "tau.generated_ticket_dedupe_projection.v1":
+        errors.append("dedupe_projection.schema must be tau.generated_ticket_dedupe_projection.v1")
+        return []
+    if dedupe_projection.get("ok") is not True:
+        errors.append("dedupe_projection must be ok before generated-ticket GitHub transport")
+        return []
+    decision = dedupe_projection.get("decision")
+    if decision == "create_new":
+        projected_create = dedupe_projection.get("github_create")
+        if not isinstance(projected_create, Mapping):
+            errors.append("dedupe_projection.github_create must be present for create_new")
+            return []
+        return _generated_ticket_create_commands(repo, projected_create, errors)
+    if decision != "update_existing_issue":
+        errors.append("dedupe_projection.decision must be create_new or update_existing_issue")
+        return []
+
+    target = dedupe_projection.get("target")
+    if not isinstance(target, Mapping):
+        errors.append("dedupe_projection.target must be an object")
+        return []
+    target_repo = _non_empty_string(target, "repo", "dedupe_projection.target", errors)
+    target_ref = _non_empty_string(target, "target", "dedupe_projection.target", errors)
+    comment = dedupe_projection.get("comment")
+    body = comment.get("body") if isinstance(comment, Mapping) else None
+    if not isinstance(body, str) or not body.strip():
+        errors.append("dedupe_projection.comment.body must be a non-empty string")
+    labels = _string_list(dedupe_projection.get("labels"), "dedupe_projection.labels", errors)
+    if errors:
+        return []
+    ticket_kind, ticket_number = _parse_ticket_ref(target_ref, errors)
+    if ticket_kind != "issue":
+        errors.append("generated-ticket dedupe updates currently support issue#<number> only")
+    if errors:
+        return []
+    commands: list[list[str]] = [
+        ["gh", "issue", "comment", ticket_number, "--repo", target_repo, "--body-file", "-"]
+    ]
+    if labels:
+        commands.append(
+            [
+                "gh",
+                "issue",
+                "edit",
+                ticket_number,
+                "--repo",
+                target_repo,
+                "--add-label",
+                ",".join(labels),
+            ]
+        )
+    return commands
 
 
 def _generated_ticket_create_commands(
@@ -853,6 +950,7 @@ def _ticket_source_from_gh_issues(issues: list[object]) -> dict[str, Any]:
                 "title": title,
                 "url": issue.get("url") if isinstance(issue.get("url"), str) else None,
                 "labels": ticket_labels,
+                "body": issue.get("body") if isinstance(issue.get("body"), str) else "",
             }
         )
     return {"schema": "tau.goal_guardian_ticket_source.v1", "tickets": tickets}
@@ -919,6 +1017,26 @@ def _stdin_for_command(command: list[str], projection: Mapping[str, Any]) -> str
         return None
     body = comment.get("body")
     return body if isinstance(body, str) else None
+
+
+def _stdin_for_generated_ticket_command(
+    command: list[str],
+    github_create: Mapping[str, Any],
+    dedupe_projection: Mapping[str, Any] | None,
+) -> str | None:
+    if command[:3] == ["gh", "issue", "create"]:
+        body = github_create.get("body")
+        if isinstance(dedupe_projection, Mapping):
+            projected_create = dedupe_projection.get("github_create")
+            if isinstance(projected_create, Mapping):
+                body = projected_create.get("body")
+        return body if isinstance(body, str) else None
+    if command[:3] == ["gh", "issue", "comment"] and isinstance(dedupe_projection, Mapping):
+        comment = dedupe_projection.get("comment")
+        if isinstance(comment, Mapping):
+            body = comment.get("body")
+            return body if isinstance(body, str) else None
+    return None
 
 
 def _run_gh_command(command: list[str], stdin: str | None) -> subprocess.CompletedProcess[str]:

@@ -209,6 +209,100 @@ def test_generated_ticket_transport_dry_run_renders_issue_create_command() -> No
     )
 
 
+def test_generated_ticket_transport_dry_run_renders_existing_issue_update() -> None:
+    result = transport_generated_ticket_to_github(
+        repo="grahama1970/tau",
+        github_create=_valid_github_create(),
+        dedupe_projection={
+            "schema": "tau.generated_ticket_dedupe_projection.v1",
+            "ok": True,
+            "decision": "update_existing_issue",
+            "target": {"repo": "grahama1970/tau", "target": "issue#41"},
+            "comment": {"body": "Repeated generated-ticket observation."},
+            "labels": ["agent-work", "next:reviewer"],
+            "errors": [],
+        },
+        require_dedupe_preflight=True,
+        apply=False,
+    )
+
+    assert result.ok is True
+    assert result.dry_run is True
+    assert result.applied is False
+    assert result.target == {"repo": "grahama1970/tau", "target": "issue#41"}
+    assert result.commands == (
+        [
+            "gh",
+            "issue",
+            "comment",
+            "41",
+            "--repo",
+            "grahama1970/tau",
+            "--body-file",
+            "-",
+        ],
+        [
+            "gh",
+            "issue",
+            "edit",
+            "41",
+            "--repo",
+            "grahama1970/tau",
+            "--add-label",
+            "agent-work,next:reviewer",
+        ],
+    )
+
+
+def test_generated_ticket_transport_apply_requires_dedupe_preflight() -> None:
+    result = transport_generated_ticket_to_github(
+        repo="grahama1970/tau",
+        github_create=_valid_github_create(),
+        apply=True,
+        require_dedupe_preflight=True,
+    )
+
+    assert result.ok is False
+    assert result.dry_run is False
+    assert result.applied is False
+    assert result.commands == ()
+    assert "dedupe preflight projection is required before applying generated tickets" in result.errors
+
+
+def test_generated_ticket_transport_apply_existing_issue_uses_comment_stdin() -> None:
+    calls: list[tuple[list[str], str | None]] = []
+
+    def runner(command: list[str], stdin: str | None) -> subprocess.CompletedProcess[str]:
+        calls.append((command, stdin))
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    result = transport_generated_ticket_to_github(
+        repo="grahama1970/tau",
+        github_create=_valid_github_create(),
+        dedupe_projection={
+            "schema": "tau.generated_ticket_dedupe_projection.v1",
+            "ok": True,
+            "decision": "update_existing_issue",
+            "target": {"repo": "grahama1970/tau", "target": "issue#41"},
+            "comment": {"body": "Repeated generated-ticket observation."},
+            "labels": ["agent-work", "next:reviewer"],
+            "errors": [],
+        },
+        apply=True,
+        require_dedupe_preflight=True,
+        runner=runner,
+    )
+
+    assert result.ok is True
+    assert result.dry_run is False
+    assert result.applied is True
+    assert len(calls) == 2
+    assert calls[0][0][:3] == ["gh", "issue", "comment"]
+    assert calls[0][1] == "Repeated generated-ticket observation."
+    assert calls[1][0][:3] == ["gh", "issue", "edit"]
+    assert calls[1][1] is None
+
+
 def test_generated_ticket_transport_apply_uses_runner_with_body_stdin() -> None:
     calls: list[tuple[list[str], str | None]] = []
 
@@ -455,7 +549,7 @@ def test_goal_guardian_ticket_source_github_fetch_dry_run_renders_issue_list() -
         "--limit",
         "25",
         "--json",
-        "number,title,state,url,labels",
+        "number,title,state,url,labels,body",
     ]
     assert result.ticket_source is None
     assert result.ticket_source_path is None
@@ -474,6 +568,7 @@ def test_goal_guardian_ticket_source_github_fetch_execute_writes_ticket_source(
                 "state": "OPEN",
                 "url": "https://github.com/grahama1970/chatgpt-lab/issues/7",
                 "labels": [{"name": "agent-work"}, {"name": "ticket:goal"}],
+                "body": "defect_key: sha256:goal-7",
             },
             {
                 "number": 8,
@@ -481,6 +576,7 @@ def test_goal_guardian_ticket_source_github_fetch_execute_writes_ticket_source(
                 "state": "CLOSED",
                 "url": "https://github.com/grahama1970/chatgpt-lab/issues/8",
                 "labels": ["agent-done"],
+                "body": "",
             },
         ]
     )
@@ -512,6 +608,7 @@ def test_goal_guardian_ticket_source_github_fetch_execute_writes_ticket_source(
             "number": 7,
             "status": "open",
             "title": "Route goal update",
+            "body": "defect_key: sha256:goal-7",
             "url": "https://github.com/grahama1970/chatgpt-lab/issues/7",
             "labels": ["agent-work", "ticket:goal"],
         },
@@ -521,6 +618,7 @@ def test_goal_guardian_ticket_source_github_fetch_execute_writes_ticket_source(
             "number": 8,
             "status": "closed",
             "title": "Closed stale task",
+            "body": "",
             "url": "https://github.com/grahama1970/chatgpt-lab/issues/8",
             "labels": ["agent-done"],
         },

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -87,6 +88,7 @@ REQUIRED_GOAL_FIELDS = ("goal_id", "goal_version", "goal_hash")
 REQUIRED_CONTEXT_FIELDS = ("summary", "artifacts")
 REQUIRED_TICKET_FIELDS = ("kind", "title", "body")
 REQUIRED_NEXT_FIELDS = ("name", "reason")
+_DEFECT_KEY_PATTERN = re.compile(r"\bdefect_key\b\s*[:=]\s*`?([^\s,;`\"']+)")
 
 
 @dataclass(frozen=True, slots=True)
@@ -117,6 +119,40 @@ class GeneratedTicketValidationResult:
     next_agent: str | None = None
     github_create: dict[str, Any] | None = None
     errors: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class GeneratedTicketDedupeProjection:
+    """Tau-owned create-or-update projection for a generated ticket."""
+
+    ok: bool
+    decision: str
+    defect_key: str | None = None
+    target: dict[str, Any] | None = None
+    github_create: dict[str, Any] | None = None
+    matched_issue: dict[str, Any] | None = None
+    searched_issues: tuple[dict[str, Any], ...] = ()
+    labels: tuple[str, ...] = ()
+    comment: dict[str, str] | None = None
+    errors: tuple[str, ...] = ()
+    schema: str = "tau.generated_ticket_dedupe_projection.v1"
+
+    def as_dict(self) -> dict[str, Any]:
+        """Return a JSON-serializable dedupe projection receipt."""
+
+        return {
+            "schema": self.schema,
+            "ok": self.ok,
+            "decision": self.decision,
+            "defect_key": self.defect_key,
+            "target": self.target,
+            "github_create": self.github_create,
+            "matched_issue": self.matched_issue,
+            "searched_issues": list(self.searched_issues),
+            "labels": list(self.labels),
+            "comment": self.comment,
+            "errors": list(self.errors),
+        }
 
 
 @dataclass(frozen=True, slots=True)
@@ -356,6 +392,140 @@ def validate_generated_ticket(
     )
 
 
+def project_generated_ticket_dedupe(
+    payload: Mapping[str, Any],
+    ticket_source: Mapping[str, Any],
+    *,
+    active_goal_hash: str | None = None,
+    agent_registry_root: Path | None = None,
+) -> GeneratedTicketDedupeProjection:
+    """Project whether a generated ticket creates a new issue or updates one.
+
+    Matching is by exact ``defect_key`` presence in fetched issue bodies. Titles
+    and labels are deliberately ignored for matching so repeated observations do
+    not create duplicates from weak substring heuristics.
+    """
+
+    validation = validate_generated_ticket(
+        payload,
+        active_goal_hash=active_goal_hash,
+        agent_registry_root=agent_registry_root,
+    )
+    errors = list(validation.errors)
+    github = _mapping_field(payload, "github", "generated_ticket", errors)
+    repo = _non_empty_string(github, "repo", "github", errors)
+    defect_key = _generated_ticket_defect_key(payload)
+    if defect_key is None:
+        errors.append("generated ticket requires defect_key for dedupe projection")
+    if ticket_source.get("schema") != "tau.goal_guardian_ticket_source.v1":
+        errors.append("ticket_source.schema must be tau.goal_guardian_ticket_source.v1")
+    tickets = ticket_source.get("tickets")
+    if not isinstance(tickets, list):
+        errors.append("ticket_source.tickets must be a list")
+        tickets = []
+    if errors:
+        return GeneratedTicketDedupeProjection(
+            ok=False,
+            decision="blocked",
+            defect_key=defect_key,
+            errors=tuple(errors),
+        )
+
+    searched: list[dict[str, Any]] = []
+    matched: dict[str, Any] | None = None
+    for index, ticket in enumerate(tickets):
+        if not isinstance(ticket, Mapping):
+            errors.append(f"ticket_source.tickets[{index}] must be an object")
+            continue
+        body = ticket.get("body")
+        if not isinstance(body, str):
+            errors.append(
+                f"ticket_source.tickets[{index}].body must be present for defect_key dedupe"
+            )
+            continue
+        number = ticket.get("number")
+        title = ticket.get("title")
+        item = {
+            "id": ticket.get("id") if isinstance(ticket.get("id"), str) else None,
+            "number": number if isinstance(number, int) and not isinstance(number, bool) else None,
+            "title": title if isinstance(title, str) else None,
+            "body_contains_defect_key": defect_key in body,
+        }
+        searched.append(item)
+        if matched is None and item["body_contains_defect_key"] is True:
+            matched = {
+                "id": item["id"],
+                "kind": ticket.get("kind") if isinstance(ticket.get("kind"), str) else "issue",
+                "number": item["number"],
+                "title": item["title"],
+                "url": ticket.get("url") if isinstance(ticket.get("url"), str) else None,
+            }
+    if errors:
+        return GeneratedTicketDedupeProjection(
+            ok=False,
+            decision="blocked",
+            defect_key=defect_key,
+            searched_issues=tuple(searched),
+            errors=tuple(errors),
+        )
+    labels = tuple(validation.github_create.get("labels", [])) if validation.github_create else ()
+    if matched is not None:
+        target_ref = matched.get("id")
+        if not isinstance(target_ref, str) or not target_ref.startswith("issue#"):
+            number = matched.get("number")
+            target_ref = f"issue#{number}" if isinstance(number, int) else None
+        if not isinstance(target_ref, str):
+            return GeneratedTicketDedupeProjection(
+                ok=False,
+                decision="blocked",
+                defect_key=defect_key,
+                searched_issues=tuple(searched),
+                errors=("matched issue is missing a usable issue#<number> id",),
+            )
+        return GeneratedTicketDedupeProjection(
+            ok=True,
+            decision="update_existing_issue",
+            defect_key=defect_key,
+            target={"repo": repo, "target": target_ref},
+            matched_issue=matched,
+            searched_issues=tuple(searched),
+            labels=labels,
+            comment={"body": _render_generated_ticket_update_comment(payload, defect_key)},
+        )
+    return GeneratedTicketDedupeProjection(
+        ok=True,
+        decision="create_new",
+        defect_key=defect_key,
+        target={"repo": repo, "target": "new"},
+        github_create=validation.github_create,
+        searched_issues=tuple(searched),
+        labels=labels,
+    )
+
+
+def write_generated_ticket_dedupe_receipt(
+    payload: Mapping[str, Any],
+    ticket_source: Mapping[str, Any],
+    receipt_path: Path,
+    *,
+    active_goal_hash: str | None = None,
+    agent_registry_root: Path | None = None,
+) -> GeneratedTicketDedupeProjection:
+    """Write a non-mutating generated-ticket dedupe projection receipt."""
+
+    projection = project_generated_ticket_dedupe(
+        payload,
+        ticket_source,
+        active_goal_hash=active_goal_hash,
+        agent_registry_root=agent_registry_root,
+    )
+    resolved = receipt_path.expanduser().resolve()
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    receipt = {**projection.as_dict(), "receipt_path": str(resolved)}
+    resolved.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return projection
+
+
 def validate_agent_handoff(
     payload: Mapping[str, Any],
     *,
@@ -472,6 +642,47 @@ def render_agent_handoff_comment(payload: Mapping[str, Any]) -> str:
         "```json\n"
         f"{json_block}\n"
         "```\n"
+    )
+
+
+def _generated_ticket_defect_key(payload: Mapping[str, Any]) -> str | None:
+    for candidate in (
+        payload.get("defect_key"),
+        _mapping_field_or_empty(payload.get("ticket")).get("defect_key"),
+        _mapping_field_or_empty(payload.get("context")).get("defect_key"),
+    ):
+        if isinstance(candidate, str) and candidate.strip():
+            return candidate.strip()
+    ticket = payload.get("ticket")
+    body = ticket.get("body") if isinstance(ticket, Mapping) else None
+    if isinstance(body, str):
+        match = _DEFECT_KEY_PATTERN.search(body)
+        if match:
+            return match.group(1).strip()
+    return None
+
+
+def _mapping_field_or_empty(value: object) -> Mapping[str, Any]:
+    return value if isinstance(value, Mapping) else {}
+
+
+def _render_generated_ticket_update_comment(
+    payload: Mapping[str, Any],
+    defect_key: str,
+) -> str:
+    ticket = payload.get("ticket")
+    title = ticket.get("title") if isinstance(ticket, Mapping) else ""
+    body = ticket.get("body") if isinstance(ticket, Mapping) else ""
+    requested_work = payload.get("requested_work")
+    return (
+        "## Repeated generated-ticket observation\n\n"
+        f"- defect_key: `{defect_key}`\n"
+        f"- title: {title if isinstance(title, str) else ''}\n"
+        f"- requested_work: {requested_work if isinstance(requested_work, str) else ''}\n\n"
+        "<!-- tau-generated-ticket-dedupe:v1 -->\n"
+        "```text\n"
+        f"{body if isinstance(body, str) else ''}\n"
+        "\n```\n"
     )
 
 
