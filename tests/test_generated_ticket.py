@@ -9,6 +9,7 @@ from tau_coding.generated_ticket import (
     load_agent_registry_ids,
     project_agent_handoff,
     project_agent_handoff_chain,
+    project_generated_ticket_dedupe,
     run_agent_handoff_loop,
     validate_agent_handoff,
     validate_generated_ticket,
@@ -16,6 +17,7 @@ from tau_coding.generated_ticket import (
     write_agent_handoff_chain_receipt,
     write_agent_handoff_loop_receipt,
     write_agent_handoff_projection_receipt,
+    write_generated_ticket_dedupe_receipt,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -64,6 +66,148 @@ def test_generated_ticket_does_not_require_agent_authored_labels() -> None:
     assert result.ok is True
     assert result.github_create is not None
     assert result.github_create["labels"] == ["agent-work", "next:reviewer", "executor:either"]
+
+
+def test_generated_ticket_dedupe_projects_create_when_defect_key_is_new() -> None:
+    payload = _valid_generated_ticket_with_defect_key()
+    payload["ticket"].pop("defect_key")
+    payload["ticket"]["body"] = "- defect_key: `sha256:gs001`\n"
+    ticket_source = {"schema": "tau.goal_guardian_ticket_source.v1", "tickets": []}
+
+    projection = project_generated_ticket_dedupe(
+        payload,
+        ticket_source,
+        active_goal_hash="sha256:active-goal",
+    )
+    receipt = projection.as_dict()
+
+    assert projection.ok is True
+    assert receipt["decision"] == "create_new"
+    assert receipt["defect_key"] == "sha256:gs001"
+    assert receipt["target"] == {"repo": "grahama1970/tau", "target": "new"}
+    assert receipt["searched_issues"] == []
+    assert receipt["github_create"]["title"] == "Review Tau generated-ticket contract evidence"
+    assert receipt["comment"] is None
+
+
+def test_generated_ticket_dedupe_projects_update_for_exact_body_defect_key() -> None:
+    payload = _valid_generated_ticket_with_defect_key()
+    ticket_source = {
+        "schema": "tau.goal_guardian_ticket_source.v1",
+        "tickets": [
+            {
+                "id": "issue#40",
+                "kind": "issue",
+                "number": 40,
+                "status": "open",
+                "title": "Different title is not enough",
+                "body": "Existing defect_key: sha256:other",
+                "url": "https://github.com/grahama1970/tau/issues/40",
+                "labels": [],
+            },
+            {
+                "id": "issue#41",
+                "kind": "issue",
+                "number": 41,
+                "status": "open",
+                "title": "Existing GS001 defect",
+                "body": "Exact defect_key: sha256:gs001",
+                "url": "https://github.com/grahama1970/tau/issues/41",
+                "labels": ["existing"],
+            },
+        ],
+    }
+
+    projection = project_generated_ticket_dedupe(
+        payload,
+        ticket_source,
+        active_goal_hash="sha256:active-goal",
+    )
+    receipt = projection.as_dict()
+
+    assert projection.ok is True
+    assert receipt["decision"] == "update_existing_issue"
+    assert receipt["target"] == {"repo": "grahama1970/tau", "target": "issue#41"}
+    assert receipt["matched_issue"]["id"] == "issue#41"
+    assert receipt["searched_issues"] == [
+        {
+            "id": "issue#40",
+            "number": 40,
+            "title": "Different title is not enough",
+            "body_contains_defect_key": False,
+        },
+        {
+            "id": "issue#41",
+            "number": 41,
+            "title": "Existing GS001 defect",
+            "body_contains_defect_key": True,
+        },
+    ]
+    assert receipt["github_create"] is None
+    assert "Repeated generated-ticket observation" in receipt["comment"]["body"]
+    assert "sha256:gs001" in receipt["comment"]["body"]
+
+
+def test_generated_ticket_dedupe_refuses_missing_body_fields() -> None:
+    payload = _valid_generated_ticket_with_defect_key()
+    ticket_source = {
+        "schema": "tau.goal_guardian_ticket_source.v1",
+        "tickets": [
+            {
+                "id": "issue#41",
+                "kind": "issue",
+                "number": 41,
+                "status": "open",
+                "title": "Existing GS001 defect",
+                "url": "https://github.com/grahama1970/tau/issues/41",
+                "labels": [],
+            }
+        ],
+    }
+
+    projection = project_generated_ticket_dedupe(
+        payload,
+        ticket_source,
+        active_goal_hash="sha256:active-goal",
+    )
+
+    assert projection.ok is False
+    assert projection.decision == "blocked"
+    assert "ticket_source.tickets[0].body must be present for defect_key dedupe" in projection.errors
+
+
+def test_generated_ticket_dedupe_receipt_writes_decision_artifact(tmp_path: Path) -> None:
+    payload = _valid_generated_ticket_with_defect_key()
+    ticket_source = {
+        "schema": "tau.goal_guardian_ticket_source.v1",
+        "tickets": [
+            {
+                "id": "issue#41",
+                "kind": "issue",
+                "number": 41,
+                "status": "open",
+                "title": "Existing GS001 defect",
+                "body": "Exact defect_key: sha256:gs001",
+                "url": "https://github.com/grahama1970/tau/issues/41",
+                "labels": [],
+            }
+        ],
+    }
+    receipt_path = tmp_path / "generated-ticket-dedupe" / "receipt.json"
+
+    projection = write_generated_ticket_dedupe_receipt(
+        payload,
+        ticket_source,
+        receipt_path,
+        active_goal_hash="sha256:active-goal",
+    )
+    receipt = json.loads(receipt_path.read_text())
+
+    assert projection.ok is True
+    assert receipt["schema"] == "tau.generated_ticket_dedupe_projection.v1"
+    assert receipt["decision"] == "update_existing_issue"
+    assert receipt["receipt_path"] == str(receipt_path.resolve())
+    assert receipt["target"] == {"repo": "grahama1970/tau", "target": "issue#41"}
 
 
 def test_generated_ticket_defaults_executor_to_either() -> None:
@@ -509,3 +653,14 @@ def _valid_agent_handoff_payload() -> dict:
         "required_evidence": ["review-prompt PASS receipt"],
         "stop_condition": "Petey writes a matching prompt-health approval row.",
     }
+
+
+def _valid_generated_ticket_with_defect_key() -> dict:
+    payload = json.loads((FIXTURES / "valid-generated-ticket.json").read_text())
+    payload["github"]["repo"] = "grahama1970/tau"
+    payload["ticket"]["defect_key"] = "sha256:gs001"
+    payload["ticket"]["body"] = (
+        "Review the generated-ticket contract evidence.\n\n"
+        "defect_key: sha256:gs001\n"
+    )
+    return payload

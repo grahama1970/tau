@@ -1571,6 +1571,94 @@ def test_cli_generated_ticket_github_create_refuses_invalid_ticket(tmp_path: Pat
     assert receipt == payload
 
 
+def test_cli_generated_ticket_github_create_apply_requires_dedupe_preflight(
+    tmp_path: Path,
+) -> None:
+    ticket_path = tmp_path / "generated-ticket.json"
+    receipt_path = tmp_path / "generated-ticket-transport" / "receipt.json"
+    ticket = json.loads((FIXTURES / "valid-generated-ticket.json").read_text())
+    ticket["github"]["repo"] = "grahama1970/tau"
+    ticket["ticket"]["defect_key"] = "sha256:cli"
+    ticket["ticket"]["body"] = "defect_key: sha256:cli\n"
+    ticket_path.write_text(json.dumps(ticket), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "generated-ticket-github-create",
+            str(ticket_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt",
+            str(receipt_path),
+            "--apply",
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(receipt_path.read_text())
+
+    assert result.exit_code == 1
+    assert payload["schema"] == "tau.github_generated_ticket_transport_receipt.v1"
+    assert payload["ok"] is False
+    assert payload["dry_run"] is False
+    assert payload["applied"] is False
+    assert payload["commands"] == []
+    assert "dedupe preflight projection is required before applying generated tickets" in payload[
+        "errors"
+    ]
+    assert receipt == payload
+
+
+def test_cli_generated_ticket_github_create_dry_run_uses_dedupe_preflight(
+    tmp_path: Path,
+) -> None:
+    ticket_path = tmp_path / "generated-ticket.json"
+    preflight_path = tmp_path / "dedupe-preflight.json"
+    receipt_path = tmp_path / "generated-ticket-transport" / "receipt.json"
+    ticket = json.loads((FIXTURES / "valid-generated-ticket.json").read_text())
+    ticket["github"]["repo"] = "grahama1970/tau"
+    ticket_path.write_text(json.dumps(ticket), encoding="utf-8")
+    preflight_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.generated_ticket_dedupe_projection.v1",
+                "ok": True,
+                "decision": "update_existing_issue",
+                "target": {"repo": "grahama1970/tau", "target": "issue#41"},
+                "comment": {"body": "Repeated generated-ticket observation."},
+                "labels": ["agent-work", "next:reviewer"],
+                "errors": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "generated-ticket-github-create",
+            str(ticket_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--dedupe-preflight",
+            str(preflight_path),
+            "--receipt",
+            str(receipt_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(receipt_path.read_text())
+
+    assert result.exit_code == 0
+    assert payload["ok"] is True
+    assert payload["dry_run"] is True
+    assert payload["applied"] is False
+    assert payload["target"] == {"repo": "grahama1970/tau", "target": "issue#41"}
+    assert payload["commands"][0][:3] == ["gh", "issue", "comment"]
+    assert not any(command[:3] == ["gh", "issue", "create"] for command in payload["commands"])
+    assert receipt == payload
+
+
 def test_cli_handoff_chain_dry_run_writes_receipt_dir(tmp_path: Path) -> None:
     first = _valid_cli_handoff_payload()
     second = _valid_cli_handoff_payload()
@@ -3747,7 +3835,7 @@ def test_cli_goal_guardian_ticket_source_github_fetch_writes_dry_run_receipt(
         "--limit",
         "10",
         "--json",
-        "number,title,state,url,labels",
+        "number,title,state,url,labels,body",
     ]
     assert payload["ticket_source"] is None
     assert payload["ticket_source_path"] is None
