@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -699,6 +700,57 @@ def test_build_checks_registers_browser_cdp_proof(tmp_path: Path) -> None:
     assert "production browser/chat UI rendering" in receipt["proof_scope"]["does_not_prove"]
 
 
+def test_ready_queue_project_dag_fixtures_use_typed_route_conditions(
+    tmp_path: Path,
+) -> None:
+    module = _load_runner_module()
+
+    fixture = module.create_project_dag_fixture(
+        tmp_path,
+        scenario="concurrent",
+        goal_hash="sha256:test-ready-queue",
+    )
+    contract = json.loads(fixture["contract"].read_text(encoding="utf-8"))
+
+    reviewer = next(node for node in contract["nodes"] if node["id"] == "reviewer")
+    assert reviewer["route"] == {"mode": "exclusive"}
+    reviewer_edges = [
+        edge for edge in contract["edges"] if edge["from"] == "reviewer"
+    ]
+    assert reviewer_edges
+    assert all(
+        edge["condition"]["schema"] == "tau.route_condition.v1"
+        for edge in reviewer_edges
+    )
+    assert reviewer_edges[0]["condition"] == {
+        "schema": "tau.route_condition.v1",
+        "op": "in",
+        "field": "status",
+        "value": ["PASS", "BLOCKED"],
+    }
+
+
+def test_ready_queue_cycle_fixture_preserves_cycle_after_route_typing(
+    tmp_path: Path,
+) -> None:
+    module = _load_runner_module()
+
+    fixture = module.create_project_dag_policy_fixture(
+        tmp_path,
+        scenario="ready-queue-cycle",
+        mutation="cycle",
+    )
+    contract = json.loads(fixture["contract"].read_text(encoding="utf-8"))
+    cycle_edges = [
+        edge
+        for edge in contract["edges"]
+        if edge["from"] == "reviewer" and edge["to"] == "start"
+    ]
+
+    assert len(cycle_edges) == 1
+    assert cycle_edges[0]["condition"]["schema"] == "tau.route_condition.v1"
+
+
 def test_build_checks_registers_itar_containment_dag_and_demo_checks(
     tmp_path: Path,
 ) -> None:
@@ -739,9 +791,13 @@ def test_build_checks_registers_itar_containment_dag_and_demo_checks(
     assert viewer_link.output_receipt is None
     viewer_script = " ".join(viewer_link.command)
     assert "dag-viewer-link" in viewer_script
-    assert str(tmp_path / "provider-metadata-project-dag" / "dag-contract.json") in (
+    assert str(tmp_path / "concurrent-viewer-link-project-dag" / "dag-contract.json") in (
         viewer_script
     )
+    assert "--scheduler" in viewer_script
+    assert "bounded-ready-queue" in viewer_script
+    assert "launch_command did not use tau dag-view" in viewer_script
+    assert "viewer URL did not use the Tau DAG route" not in viewer_script
 
     missing_gate = by_id["advanced.project_dag_itar_access_gate_missing_fail_closed"]
     assert missing_gate.expected_status == "BLOCKED"

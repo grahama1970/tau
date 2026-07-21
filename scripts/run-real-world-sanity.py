@@ -191,6 +191,11 @@ def build_checks(
         scenario="concurrent-non-json-retry",
         goal_hash="sha256:rw-sanity-project-dag-concurrent-non-json-retry",
     )
+    project_dag_viewer_link = create_project_dag_fixture(
+        run_dir,
+        scenario="concurrent-viewer-link",
+        goal_hash="sha256:rw-sanity-project-dag-viewer-link",
+    )
     project_dag_concurrent_max_retries = create_project_dag_fixture(
         run_dir,
         scenario="concurrent-max-retries",
@@ -1491,11 +1496,13 @@ def build_checks(
                     producer_command=[
                         *uv_tau,
                         "dag-run",
-                        str(project_dag_provider_metadata["contract"]),
+                        str(project_dag_viewer_link["contract"]),
                         "--receipt-dir",
-                        str(project_dag_provider_metadata["run_dir"]),
+                        str(project_dag_viewer_link["run_dir"]),
                         "--agents-root",
-                        str(project_dag_provider_metadata["agents_root"]),
+                        str(project_dag_viewer_link["agents_root"]),
+                        "--scheduler",
+                        "bounded-ready-queue",
                     ],
                     status_command_prefix=[*uv_tau, "run-status"],
                     viewer_link_command_prefix=[*uv_tau, "dag-viewer-link"],
@@ -2263,10 +2270,23 @@ def create_project_dag_fixture(
     agents_root.mkdir(parents=True, exist_ok=True)
     worker = fixture_dir / "project_dag_worker.py"
     write_text(worker, project_dag_worker_script())
+
+    def route_status_condition(
+        op: str,
+        value: str | list[str],
+    ) -> dict[str, object]:
+        return {
+            "schema": "tau.route_condition.v1",
+            "op": op,
+            "field": "status",
+            "value": value,
+        }
+
     concurrent_scenarios = {
         "concurrent",
         "concurrent-timeout-retry",
         "concurrent-non-json-retry",
+        "concurrent-viewer-link",
         "concurrent-max-retries",
         "concurrent-pointless-test-drift",
         "concurrent-brave-required",
@@ -2428,6 +2448,7 @@ def create_project_dag_fixture(
                 "max_attempts": 1,
                 "command_spec": str(command_spec_root / "reviewer" / "tau-dispatch-command.json"),
                 "required_evidence": ["reviewer_verdict"],
+                "route": {"mode": "exclusive"},
                 "reviewer": {
                     "reviews_node": "coder",
                     "requires_goal_hash": True,
@@ -2439,7 +2460,11 @@ def create_project_dag_fixture(
             {"from": "start", "to": "coder"},
             {"from": "research", "to": "reviewer"},
             {"from": "coder", "to": "reviewer"},
-            {"from": "reviewer", "to": "human", "condition": "reviewer_pass_or_block"},
+            {
+                "from": "reviewer",
+                "to": "human",
+                "condition": route_status_condition("in", ["PASS", "BLOCKED"]),
+            },
         ]
         required_evidence = ["source_summary", "creator_artifact", "reviewer_verdict"]
     contract = {
@@ -2525,7 +2550,18 @@ def create_project_dag_policy_fixture(
     contract_path = fixture["contract"]
     contract = json.loads(contract_path.read_text(encoding="utf-8"))
     if mutation == "cycle":
-        contract["edges"].append({"from": "reviewer", "to": "start"})
+        contract["edges"].append(
+            {
+                "from": "reviewer",
+                "to": "start",
+                "condition": {
+                    "schema": "tau.route_condition.v1",
+                    "op": "eq",
+                    "field": "status",
+                    "value": "CYCLE_ONLY",
+                },
+            }
+        )
     elif mutation == "mutating":
         for node in contract["nodes"]:
             if node.get("id") == "coder":
@@ -5539,11 +5575,16 @@ def dag_viewer_link_after_project_dag_command(
             "if not isinstance(link_viewer, dict) or link_viewer.get('available') is not True:",
             "    errors.append('dag-viewer-link dag_viewer.available was not true')",
             "if isinstance(status_viewer, dict) and isinstance(link_viewer, dict):",
-            "    for key in ('url', 'contract_sha256', 'receipt_sha256', 'dag_id', 'goal_hash', 'receipt_status'):",
+            "    for key in ('contract_sha256', 'receipt_sha256', 'dag_id', 'goal_hash', 'receipt_status', 'source', 'store_path'):",
             "        if status_viewer.get(key) != link_viewer.get(key):",
             "            errors.append(f'dag viewer {key} mismatch: {status_viewer.get(key)!r} != {link_viewer.get(key)!r}')",
-            "    if not str(status_viewer.get('url') or '').startswith('http://localhost:3002/#tau/dag?run='):",
-            "        errors.append('viewer URL did not use the Tau DAG route')",
+            "    launch_command = status_viewer.get('launch_command')",
+            "    if not isinstance(launch_command, list) or launch_command[:2] != ['tau', 'dag-view']:",
+            "        errors.append('dag viewer launch_command did not use tau dag-view')",
+            "    if status_viewer.get('source') != 'dag-run.sqlite3':",
+            "        errors.append('dag viewer source was not dag-run.sqlite3')",
+            "    if not status_viewer.get('store_path'):",
+            "        errors.append('dag viewer store_path missing')",
             "    if not status_viewer.get('contract_sha256'):",
             "        errors.append('contract_sha256 missing')",
             "    if not status_viewer.get('receipt_sha256'):",
