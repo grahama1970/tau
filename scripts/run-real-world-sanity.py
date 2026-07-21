@@ -344,7 +344,10 @@ def build_checks(
         Check(
             check_id="simple.command_spec_catalog",
             level="simple",
-            purpose="Planner, orchestrator, coder, and reviewer command specs are real JSON files.",
+            purpose=(
+                "Goal guardian, project verifier, coder, and reviewer command specs "
+                "are real JSON files."
+            ),
             command=[
                 sys.executable,
                 "-c",
@@ -4631,6 +4634,7 @@ def create_cleanup_session_fixture(run_dir: Path) -> dict[str, Path]:
     manifest_payload = {
         "schema": "tau.provider_dag_runtime_manifest.v1",
         "run_id": "rw-sanity-herdr-cleanup-session",
+        "backend_session_id": "default",
         "provider_sessions": {
             "codex": {
                 "workspace_id": "w-rw-sanity-session-cleanup",
@@ -4700,7 +4704,8 @@ def create_cleanup_session_fixture(run_dir: Path) -> dict[str, Path]:
         '  printf \'{"error":{"code":"session_not_found","message":"session not found"}}\\n\'\n'
         "  exit 1\n"
         "fi\n"
-        'if [ "$1 $2 $3" = "workspace get w-rw-sanity-session-cleanup" ]; then\n'
+        'if [ "$1 $2 $3" = "workspace get w-rw-sanity-session-cleanup" ] || '
+        '[ "$3 $4 $5" = "workspace get w-rw-sanity-session-cleanup" ]; then\n'
         '  printf \'{"error":{"code":"workspace_not_found","message":"workspace not found"}}\\n\'\n'
         "  exit 1\n"
         "fi\n"
@@ -5767,7 +5772,7 @@ def valid_handoff() -> dict[str, Any]:
 
 
 def command_spec_probe(repo: Path) -> str:
-    roles = ("planner", "orchestrator", "coder", "reviewer")
+    roles = ("goal-guardian", "project-or-harness-verifier", "coder", "reviewer")
     return (
         "import json; from pathlib import Path; "
         f"root=Path({str(repo / 'experiments/goal-locked-subagents/agent-command-specs')!r}); "

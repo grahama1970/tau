@@ -667,6 +667,34 @@ def test_build_checks_registers_proof_index_build(tmp_path: Path) -> None:
     assert "--receipt" in check.command
 
 
+def test_command_spec_probe_checks_current_goal_locked_roles() -> None:
+    module = _load_runner_module()
+
+    script = module.command_spec_probe(Path("/tmp/repo"))
+
+    assert "goal-guardian" in script
+    assert "project-or-harness-verifier" in script
+    assert "planner" not in script
+    assert "orchestrator" not in script
+
+
+def test_cleanup_session_fixture_records_backend_session_id(
+    tmp_path: Path,
+) -> None:
+    module = _load_runner_module()
+
+    fixture = module.create_cleanup_session_fixture(tmp_path)
+    manifest = json.loads(
+        (fixture["owned_run_dir"] / "runtime-manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert manifest["backend_session_id"] == "default"
+    fake_herdr = fixture["owned_herdr"].read_text(encoding="utf-8")
+    assert '$3 $4 $5" = "workspace get w-rw-sanity-session-cleanup' in fake_herdr
+
+
 def test_build_checks_registers_browser_cdp_proof(tmp_path: Path) -> None:
     module = _load_runner_module()
 
