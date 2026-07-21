@@ -1,0 +1,97 @@
+{
+  "alert_codes": [
+    "scillm_chat_review_timeout",
+    "scillm_chat_review_service_unresponsive"
+  ],
+  "alerts": [
+    {
+      "code": "scillm_chat_review_timeout",
+      "message": "SciLLM chat review timed out",
+      "severity": "BLOCK"
+    },
+    {
+      "code": "scillm_chat_review_service_unresponsive",
+      "message": "SciLLM chat review service did not answer a minimal canary request within the diagnosis timeout",
+      "severity": "BLOCK"
+    }
+  ],
+  "apply_requested": true,
+  "caller_skill": "pdf-lab",
+  "created_at": "2026-07-21T15:11:47Z",
+  "dry_run": false,
+  "duration_seconds": 150.127532,
+  "endpoint": "/v1/chat/completions",
+  "error_bytes": 156,
+  "error_path": "/tmp/tau-issue122-pdf-lab-executor/experiments/goal-locked-subagents/proofs/issue-123-pdf-lab-chat-review-timeout-20260721/page39-diagnostic-receipt.error.json",
+  "error_sha256": "sha256:bf02dfc411bc78c876278e843741f0b61d91eccd474a7c88708b29c10109e33e",
+  "headers": {
+    "authorization": "REDACTED",
+    "authorization_source": "env_file:/home/graham/workspace/experiments/scillm/.env",
+    "content_type": "application/json",
+    "x_caller_skill": "pdf-lab"
+  },
+  "http_executed": true,
+  "http_status": null,
+  "launch_skipped": false,
+  "live": true,
+  "mocked": false,
+  "model": "vlm-free2",
+  "ok": false,
+  "parsed_candidate_finding_count": null,
+  "parsed_page_status": null,
+  "parsed_response_schema": null,
+  "provider_live": false,
+  "raw_response_bytes": null,
+  "raw_response_path": null,
+  "raw_response_sha256": null,
+  "recommended_next_action": "do not retry PDF Lab page payloads; repair or restart the SciLLM/Ollama route until a minimal Tau canary returns PASS, then rerun the page request through Tau",
+  "request_payload": {
+    "message_count": 1,
+    "messages": "<redacted-review-request-messages>",
+    "model": "vlm-free2",
+    "response_format": {
+      "type": "json_object"
+    },
+    "scillm_metadata": {
+      "batch_id": "pdf-lab-second-pass",
+      "case_id": "page_case_0001_p0039",
+      "item_id": "page_case_0001_p0039:ef941ce8b1d46ef7",
+      "request_sha256": "ef941ce8b1d46ef7dcd2187b7dc88a4cc2e17dd68121c677c4832dba42d43704"
+    },
+    "temperature": 0
+  },
+  "request_timeout_s": 120,
+  "response_format": {
+    "type": "json_object"
+  },
+  "response_output_bytes": null,
+  "response_output_path": "/tmp/tau-issue122-pdf-lab-executor/experiments/goal-locked-subagents/proofs/issue-123-pdf-lab-chat-review-timeout-20260721/page39-review-response.json",
+  "response_output_sha256": null,
+  "review_request_bytes": 700183,
+  "review_request_path": "/tmp/pdf_oxide_integrate_gs001_20260721/artifacts/pdf_lab/live_second_pass_page39_tau_prep_dpi110_20260721/page_case_0001_p0039/review_request.json",
+  "review_request_sha256": "sha256:64eb9ab2301c4827e56385921312615e565015660e5f5866d911891c70aa1a76",
+  "root_cause_basis": "primary request and minimal canary request both timed out before a response body was available",
+  "root_cause_code": "scillm_chat_review_service_unresponsive",
+  "schema": "tau.scillm_chat_review_receipt.v1",
+  "scillm_base_url": "http://127.0.0.1:4001",
+  "scillm_metadata": {
+    "batch_id": "pdf-lab-second-pass",
+    "case_id": "page_case_0001_p0039",
+    "item_id": "page_case_0001_p0039:ef941ce8b1d46ef7",
+    "request_sha256": "ef941ce8b1d46ef7dcd2187b7dc88a4cc2e17dd68121c677c4832dba42d43704"
+  },
+  "status": "BLOCKED",
+  "surface": "scillm.chat_completions",
+  "timed_out": true,
+  "timeout_diagnosis": {
+    "body_excerpt": "",
+    "error": "timed out",
+    "http_status": null,
+    "response_format_retry_reason": null,
+    "status": "TIMEOUT",
+    "timed_out": true
+  },
+  "timeout_diagnosis_mode": "live_canary",
+  "timeout_diagnosis_timeout_s": 30,
+  "url": "http://127.0.0.1:4001/v1/chat/completions"
+}

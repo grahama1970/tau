@@ -1,10 +1,32 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-20 13:15 by agent
+**Last updated:** 2026-07-21 15:12 by codex
 **Status:** Active development
 
 ## Current Understanding
 
+- 2026-07-21 PDF Lab `scillm-chat-review` timeout classification (#123):
+  Tau now distinguishes a transport timeout from an unparseable model response.
+  `review_response_not_parseable` is not emitted when `/v1/chat/completions`
+  times out before any body is available. The CLI accepts
+  `--timeout-diagnosis-mode live_canary` and
+  `--timeout-diagnosis-timeout-s`; on a primary timeout Tau sends a minimal
+  canary request through the same SciLLM chat surface. If both primary and
+  canary time out, the receipt records
+  `root_cause_code=scillm_chat_review_service_unresponsive`, a
+  `timeout_diagnosis` object, and `recommended_next_action` telling PDF Lab not
+  to retry page payloads until the SciLLM/Ollama route can answer a minimal Tau
+  canary. Focused tests:
+  `uv run pytest -q tests/test_scillm_chat_review.py
+  tests/test_coding_worker_adapters.py -k "scillm_chat_review or
+  scillm_worker_launch"` -> `34 passed, 90 deselected`. Live page39 diagnostic
+  receipt:
+  `experiments/goal-locked-subagents/proofs/issue-123-pdf-lab-chat-review-timeout-20260721/page39-diagnostic-receipt.json`
+  reports `mocked=false`, `live=true`, `provider_live=false`, primary
+  `request_timeout_s=120`, canary `timeout_diagnosis_timeout_s=30`, and
+  `root_cause_code=scillm_chat_review_service_unresponsive`. This proves Tau's
+  fail-closed classification and next-action receipt behavior; it does not
+  prove the external SciLLM/Ollama route is healthy.
 - 2026-07-17 canonical workflow Slice 03: `repository-evidence-map` is the
   third packaged workflow and has topology `FAN_OUT_FAN_IN`. One inventory node
   releases `analyze-documentation`, `analyze-tests`, and `analyze-package` at

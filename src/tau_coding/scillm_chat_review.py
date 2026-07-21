@@ -27,6 +27,7 @@ PDF_LAB_REVIEW_REQUEST_SCHEMA = "pdf_lab.second_pass.review_request.v1"
 PDF_LAB_REVIEW_RESPONSE_SCHEMA = "pdf_lab.second_pass.review_response.v1"
 SCILLM_CHAT_COMPLETIONS_ENDPOINT = "/v1/chat/completions"
 ALLOWED_PAGE_STATUSES = {"clean", "defect", "unsure", "substrate_blocked"}
+TIMEOUT_DIAGNOSIS_MODES = {"off", "live_canary"}
 
 
 def write_scillm_chat_review_receipt(
@@ -39,6 +40,8 @@ def write_scillm_chat_review_receipt(
     apply: bool = False,
     auth_token: str | None = None,
     request_timeout_s: int = 120,
+    timeout_diagnosis_mode: str = "off",
+    timeout_diagnosis_timeout_s: int = 30,
 ) -> dict[str, Any]:
     """Forward a model-ready chat review request through Tau and write a receipt."""
 
@@ -66,6 +69,17 @@ def write_scillm_chat_review_receipt(
     _append_scillm_base_url_alerts(scillm_base_url, alerts)
     if request_timeout_s <= 0:
         alerts.append(_alert("invalid_timeout", "request timeout must be a positive integer"))
+    if timeout_diagnosis_timeout_s <= 0:
+        alerts.append(
+            _alert("invalid_timeout", "timeout diagnosis timeout must be a positive integer")
+        )
+    if timeout_diagnosis_mode not in TIMEOUT_DIAGNOSIS_MODES:
+        alerts.append(
+            _alert(
+                "invalid_timeout_diagnosis_mode",
+                f"timeout diagnosis mode must be one of {sorted(TIMEOUT_DIAGNOSIS_MODES)}",
+            )
+        )
 
     auth_source = "explicit" if auth_token else "missing"
     effective_auth_token = auth_token
@@ -86,11 +100,18 @@ def write_scillm_chat_review_receipt(
         error_path=error_path,
         alerts=alerts,
         request_timeout_s=request_timeout_s,
+        timeout_diagnosis_mode=timeout_diagnosis_mode,
+        timeout_diagnosis_timeout_s=timeout_diagnosis_timeout_s,
     )
     parsed_response = launch_result.get("parsed_response")
     if isinstance(parsed_response, dict):
         _write_json(resolved_response_output, parsed_response)
-    elif apply and launch_result["http_executed"]:
+    elif (
+        apply
+        and launch_result["http_executed"]
+        and not launch_result["timed_out"]
+        and launch_result.get("body_present")
+    ):
         alerts.append(
             _alert(
                 "review_response_not_parseable",
@@ -121,6 +142,8 @@ def write_scillm_chat_review_receipt(
         "http_status": launch_result["http_status"],
         "timed_out": launch_result["timed_out"],
         "request_timeout_s": request_timeout_s,
+        "timeout_diagnosis_mode": timeout_diagnosis_mode,
+        "timeout_diagnosis_timeout_s": timeout_diagnosis_timeout_s,
         "caller_skill": caller_skill,
         "surface": "scillm.chat_completions",
         "endpoint": SCILLM_CHAT_COMPLETIONS_ENDPOINT,
@@ -148,6 +171,10 @@ def write_scillm_chat_review_receipt(
         "response_format": payload.get("response_format"),
         "scillm_metadata": payload.get("scillm_metadata"),
         "request_payload": payload_redaction,
+        "root_cause_code": launch_result.get("root_cause_code"),
+        "root_cause_basis": launch_result.get("root_cause_basis"),
+        "recommended_next_action": launch_result.get("recommended_next_action"),
+        "timeout_diagnosis": launch_result.get("timeout_diagnosis"),
         "parsed_response_schema": (
             parsed_response.get("schema") if isinstance(parsed_response, dict) else None
         ),
@@ -203,6 +230,8 @@ def _maybe_post_chat_review(
     error_path: Path,
     alerts: list[dict[str, Any]],
     request_timeout_s: int,
+    timeout_diagnosis_mode: str,
+    timeout_diagnosis_timeout_s: int,
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "http_executed": False,
@@ -210,6 +239,11 @@ def _maybe_post_chat_review(
         "http_status": None,
         "timed_out": False,
         "parsed_response": None,
+        "body_present": False,
+        "root_cause_code": None,
+        "root_cause_basis": None,
+        "recommended_next_action": None,
+        "timeout_diagnosis": None,
     }
     if not apply or alerts:
         return result
@@ -241,8 +275,46 @@ def _maybe_post_chat_review(
 
     result["http_status"] = selected.get("http_status")
     result["timed_out"] = bool(selected.get("timed_out"))
+    result["body_present"] = bool(selected.get("body_text"))
     if selected["status"] == "TIMEOUT":
         alerts.append(_alert("scillm_chat_review_timeout", "SciLLM chat review timed out"))
+        result["root_cause_code"] = "scillm_chat_review_request_timeout"
+        result["root_cause_basis"] = "primary request timed out before a response body was available"
+        result["recommended_next_action"] = (
+            "rerun with --timeout-diagnosis-mode live_canary before changing the caller payload"
+        )
+        if timeout_diagnosis_mode == "live_canary":
+            diagnosis = _run_timeout_canary(
+                base_url=base_url,
+                model=str(payload.get("model") or "vlm-free2"),
+                caller_skill=caller_skill,
+                auth_token=str(auth_token),
+                timeout_s=timeout_diagnosis_timeout_s,
+            )
+            result["timeout_diagnosis"] = diagnosis
+            if diagnosis.get("status") == "TIMEOUT":
+                result["root_cause_code"] = "scillm_chat_review_service_unresponsive"
+                result["root_cause_basis"] = (
+                    "primary request and minimal canary request both timed out before a response body was available"
+                )
+                result["recommended_next_action"] = (
+                    "do not retry PDF Lab page payloads; repair or restart the SciLLM/Ollama route "
+                    "until a minimal Tau canary returns PASS, then rerun the page request through Tau"
+                )
+                alerts.append(
+                    _alert(
+                        "scillm_chat_review_service_unresponsive",
+                        "SciLLM chat review service did not answer a minimal canary request within the diagnosis timeout",
+                    )
+                )
+            elif diagnosis.get("status") == "PASS":
+                result["root_cause_code"] = "scillm_chat_review_request_exceeded_live_budget"
+                result["root_cause_basis"] = (
+                    "primary request timed out but minimal canary request returned successfully"
+                )
+                result["recommended_next_action"] = (
+                    "keep model transport in Tau and reduce the page review unit or request budget before retrying"
+                )
     elif selected["status"] != "PASS" or int(selected.get("http_status") or 0) >= 400:
         alerts.append(
             _alert(
@@ -262,6 +334,48 @@ def _maybe_post_chat_review(
     result["parsed_response"] = parsed
     result["response_format_retry_reason"] = selected.get("response_format_retry_reason")
     return result
+
+
+def _run_timeout_canary(
+    *,
+    base_url: str,
+    model: str,
+    caller_skill: str,
+    auth_token: str,
+    timeout_s: int,
+) -> dict[str, Any]:
+    payload = {
+        "model": model,
+        "messages": [
+            {
+                "role": "user",
+                "content": (
+                    "Return this exact JSON object only: "
+                    '{"schema":"pdf_lab.second_pass.review_response.v1",'
+                    '"page_status":"clean","candidate_findings":['
+                    '{"candidate_id":"cand:p9999:0000:text","status":"clean",'
+                    '"evidence":"canary","rationale":"canary",'
+                    '"suggested_fix_surface":"none"}],"page_rationale":"canary"}'
+                ),
+            }
+        ],
+        "response_format": {"type": "json_object"},
+        "temperature": 0,
+        "scillm_metadata": {
+            "batch_id": "pdf-lab-second-pass-timeout-canary",
+            "case_id": "page_case_9999_p9999",
+            "item_id": "page_case_9999_p9999:timeout-canary",
+            "request_sha256": "timeout-canary",
+        },
+    }
+    response = _post_json(
+        url=f"{base_url.rstrip('/')}{SCILLM_CHAT_COMPLETIONS_ENDPOINT}",
+        payload=payload,
+        caller_skill=caller_skill,
+        auth_token=auth_token,
+        timeout_s=timeout_s,
+    )
+    return _safe_response_excerpt(response)
 
 
 def _post_json(

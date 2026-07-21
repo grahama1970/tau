@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from threading import Thread
@@ -156,6 +157,59 @@ def test_scillm_chat_review_blocks_invalid_response_schema(tmp_path: Path) -> No
     assert "invalid_review_response" in payload["alert_codes"]
 
 
+def test_scillm_chat_review_timeout_does_not_claim_parse_failure(tmp_path: Path) -> None:
+    server, base_url, _requests = _start_fake_chat_server(response_delay_s=2.0)
+    request = _write_review_request(tmp_path)
+    try:
+        payload = write_scillm_chat_review_receipt(
+            request_path=request,
+            output_path=tmp_path / "receipt.json",
+            scillm_base_url=base_url,
+            apply=True,
+            auth_token="test-token",
+            request_timeout_s=1,
+        )
+    finally:
+        server.shutdown()
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["timed_out"] is True
+    assert payload["root_cause_code"] == "scillm_chat_review_request_timeout"
+    assert payload["recommended_next_action"].startswith("rerun with --timeout-diagnosis-mode")
+    assert "scillm_chat_review_timeout" in payload["alert_codes"]
+    assert "review_response_not_parseable" not in payload["alert_codes"]
+    assert payload["raw_response_path"] is None
+
+
+def test_scillm_chat_review_timeout_canary_classifies_service_unresponsive(
+    tmp_path: Path,
+) -> None:
+    server, base_url, requests = _start_fake_chat_server(response_delay_s=2.0)
+    request = _write_review_request(tmp_path)
+    try:
+        payload = write_scillm_chat_review_receipt(
+            request_path=request,
+            output_path=tmp_path / "receipt.json",
+            scillm_base_url=base_url,
+            apply=True,
+            auth_token="test-token",
+            request_timeout_s=1,
+            timeout_diagnosis_mode="live_canary",
+            timeout_diagnosis_timeout_s=1,
+        )
+    finally:
+        server.shutdown()
+
+    assert len(requests) == 2
+    assert payload["status"] == "BLOCKED"
+    assert payload["timed_out"] is True
+    assert payload["root_cause_code"] == "scillm_chat_review_service_unresponsive"
+    assert payload["recommended_next_action"].startswith("do not retry PDF Lab page payloads")
+    assert payload["timeout_diagnosis"]["status"] == "TIMEOUT"
+    assert "scillm_chat_review_service_unresponsive" in payload["alert_codes"]
+    assert "review_response_not_parseable" not in payload["alert_codes"]
+
+
 def _write_review_request(tmp_path: Path) -> Path:
     request = {
         "schema": "pdf_lab.second_pass.review_request.v1",
@@ -199,6 +253,7 @@ def _write_review_request(tmp_path: Path) -> Path:
 def _start_fake_chat_server(
     *,
     review_response: dict | None = None,
+    response_delay_s: float = 0.0,
 ) -> tuple[ThreadingHTTPServer, str, list[dict]]:
     requests: list[dict] = []
 
@@ -214,6 +269,8 @@ def _start_fake_chat_server(
                     "payload": json.loads(body),
                 }
             )
+            if response_delay_s > 0:
+                time.sleep(response_delay_s)
             content = review_response or {
                 "schema": "pdf_lab.second_pass.review_response.v1",
                 "page_status": "clean",

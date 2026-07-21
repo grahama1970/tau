@@ -2288,6 +2288,8 @@ def main(
                 apply=bool(options["apply"]),
                 auth_token=_optional_str(options.get("auth_token")),
                 request_timeout_s=int(options["request_timeout_s"]),
+                timeout_diagnosis_mode=str(options["timeout_diagnosis_mode"]),
+                timeout_diagnosis_timeout_s=int(options["timeout_diagnosis_timeout_s"]),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -6061,6 +6063,8 @@ def _parse_scillm_chat_review_cli_args(args: list[str]) -> dict[str, object]:
         "apply": False,
         "auth_token": None,
         "request_timeout_s": 120,
+        "timeout_diagnosis_mode": "off",
+        "timeout_diagnosis_timeout_s": 30,
     }
     index = 0
     while index < len(args):
@@ -6073,12 +6077,18 @@ def _parse_scillm_chat_review_cli_args(args: list[str]) -> dict[str, object]:
             "--caller-skill",
             "--auth-token",
             "--request-timeout-s",
+            "--timeout-diagnosis-mode",
+            "--timeout-diagnosis-timeout-s",
         }:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
             key = arg.removeprefix("--").replace("-", "_")
-            options[key] = int(args[index]) if key == "request_timeout_s" else args[index]
+            options[key] = (
+                int(args[index])
+                if key in {"request_timeout_s", "timeout_diagnosis_timeout_s"}
+                else args[index]
+            )
         elif arg.startswith("--request="):
             options["request"] = arg.partition("=")[2]
         elif arg.startswith("--out="):
@@ -6093,6 +6103,10 @@ def _parse_scillm_chat_review_cli_args(args: list[str]) -> dict[str, object]:
             options["auth_token"] = arg.partition("=")[2]
         elif arg.startswith("--request-timeout-s="):
             options["request_timeout_s"] = int(arg.partition("=")[2])
+        elif arg.startswith("--timeout-diagnosis-mode="):
+            options["timeout_diagnosis_mode"] = arg.partition("=")[2]
+        elif arg.startswith("--timeout-diagnosis-timeout-s="):
+            options["timeout_diagnosis_timeout_s"] = int(arg.partition("=")[2])
         elif arg == "--apply":
             options["apply"] = True
         else:
