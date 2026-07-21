@@ -109,6 +109,18 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.required_evidence",
     },
+    "evidence_receipt_path_missing": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.path_backed_receipt_evidence",
+    },
+    "evidence_receipt_unreadable": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.path_backed_receipt_evidence",
+    },
+    "evidence_receipt_verdict_failed": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.path_backed_receipt_evidence",
+    },
     "missing_required_join": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.required_join",
@@ -2503,8 +2515,74 @@ def _node_response_alerts(
                 {"node_id": node.node_id, "missing": missing},
             )
         )
+    alerts.extend(_referenced_receipt_alerts(node, response))
     if node.reviewer is not None:
         alerts.extend(_reviewer_alerts(contract, node, response))
+    return alerts
+
+
+def _referenced_receipt_alerts(
+    node: ProjectDagNode,
+    response: dict[str, Any],
+) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    required = set(node.required_evidence)
+    path_required_kinds = {"handler_response_receipt", "roundtable_join_receipt"}
+    for evidence in _result_evidence(response):
+        if not isinstance(evidence, dict):
+            continue
+        kind = evidence.get("kind")
+        if not isinstance(kind, str) or kind not in required:
+            continue
+        if kind not in path_required_kinds and not (
+            kind.endswith("_receipt") and "path" in evidence
+        ):
+            continue
+        path_value = evidence.get("path")
+        if not isinstance(path_value, str) or not path_value:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "evidence_receipt_path_missing",
+                    "Required receipt evidence did not include a readable path.",
+                    {"node_id": node.node_id, "kind": kind},
+                )
+            )
+            continue
+        receipt_path = Path(path_value).expanduser()
+        try:
+            receipt = _read_json_object(receipt_path, label=f"{kind} evidence receipt")
+        except RuntimeError as exc:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "evidence_receipt_unreadable",
+                    "Required receipt evidence could not be read.",
+                    {
+                        "node_id": node.node_id,
+                        "kind": kind,
+                        "path": str(receipt_path),
+                        "error": str(exc),
+                    },
+                )
+            )
+            continue
+        receipt_verdict = receipt.get("verdict")
+        if isinstance(receipt_verdict, str) and receipt_verdict and receipt_verdict != "PASS":
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "evidence_receipt_verdict_failed",
+                    "Required receipt evidence recorded a non-PASS semantic verdict.",
+                    {
+                        "node_id": node.node_id,
+                        "kind": kind,
+                        "path": str(receipt_path),
+                        "receipt_status": receipt.get("status"),
+                        "receipt_verdict": receipt_verdict,
+                    },
+                )
+            )
     return alerts
 
 
@@ -3403,7 +3481,7 @@ def _run_shared_project_dag_plan(
             return {
                 "node_id": node.node_id,
                 "status": "BLOCKED",
-                "verdict": str(node_alerts[0]["code"]).upper(),
+                "verdict": _node_alert_verdict(node_alerts[0]),
                 "mocked": False,
                 "live": True,
                 "provider_live": False,
@@ -3573,7 +3651,7 @@ def _run_shared_project_dag_plan(
             )
         )
     status = "PASS" if result.status == "PASS" and not alerts else "BLOCKED"
-    verdict = "PASS" if status == "PASS" else str(alerts[0]["code"]).upper()
+    verdict = "PASS" if status == "PASS" else _ready_queue_blocked_verdict(alerts, result.verdict)
     prior_events = prior_receipt.get("scheduler_events")
     if result.replayed_event_count and isinstance(prior_events, list):
         events = _deduplicate_scheduler_events(
@@ -3834,6 +3912,23 @@ def _deduplicate_scheduler_events(events: list[dict[str, Any]]) -> list[dict[str
         observed.add(key)
         unique.append(event)
     return unique
+
+
+def _node_alert_verdict(alert: dict[str, Any]) -> str:
+    evidence = alert.get("evidence")
+    if isinstance(evidence, dict):
+        receipt_verdict = evidence.get("receipt_verdict")
+        if isinstance(receipt_verdict, str) and receipt_verdict and receipt_verdict != "PASS":
+            return receipt_verdict.upper()
+    return str(alert.get("code") or "node_blocked").upper()
+
+
+def _ready_queue_blocked_verdict(alerts: list[dict[str, Any]], result_verdict: str) -> str:
+    if result_verdict and result_verdict != "PASS":
+        return result_verdict.upper()
+    if alerts:
+        return str(alerts[0].get("code") or "dag_blocked").upper()
+    return "DAG_BLOCKED"
 
 
 def _max_concurrency(contract: ProjectDagContract) -> int:

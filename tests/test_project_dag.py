@@ -107,6 +107,59 @@ def test_project_dag_runs_creator_reviewer_loop(tmp_path: Path) -> None:
     assert Path(str(receipt["command_loop_receipt"])).exists()
 
 
+def test_ready_queue_blocks_failed_referenced_receipt_verdict(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["nodes"][0]["required_evidence"] = ["handler_response_receipt"]
+    contract["required_evidence"] = ["handler_response_receipt", "reviewer_verdict"]
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    handler_receipt = tmp_path / "handler-node-receipt.json"
+    handler_receipt.write_text(
+        json.dumps(
+            {
+                "schema": "ask.tau_dag_handler_receipt.v1",
+                "node_id": "coder",
+                "status": "PASS",
+                "verdict": "FAIL",
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    _write_response_spec(
+        tmp_path,
+        "coder",
+        _handoff(
+            "coder",
+            "reviewer",
+            [
+                {
+                    "kind": "handler_response_receipt",
+                    "node_id": "coder",
+                    "path": str(handler_receipt),
+                    "status": "PASS",
+                }
+            ],
+        ),
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "FAIL"
+    assert receipt["alerts"][0]["code"] == "evidence_receipt_verdict_failed"
+    assert receipt["alerts"][0]["evidence"]["receipt_verdict"] == "FAIL"
+    assert receipt["node_attempts"] == {"coder": 1}
+    assert "reviewer" not in receipt["node_attempts"]
+
+
 def test_project_dag_durable_replay_preserves_receipt_evidence(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
