@@ -210,6 +210,108 @@ def test_scillm_chat_review_timeout_canary_classifies_service_unresponsive(
     assert "review_response_not_parseable" not in payload["alert_codes"]
 
 
+def test_scillm_chat_review_http_429_classifies_provider_quota(tmp_path: Path) -> None:
+    server, base_url, _requests = _start_fake_chat_server(
+        response_sequence=[
+            {
+                "status": 429,
+                "body": {"error": {"status": "RESOURCE_EXHAUSTED", "message": "quota exceeded"}},
+            }
+        ]
+    )
+    request = _write_review_request(tmp_path)
+    try:
+        payload = write_scillm_chat_review_receipt(
+            request_path=request,
+            output_path=tmp_path / "receipt.json",
+            scillm_base_url=base_url,
+            apply=True,
+            auth_token="test-token",
+            request_timeout_s=5,
+        )
+    finally:
+        server.shutdown()
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["http_status"] == 429
+    assert payload["root_cause_code"] == "scillm_chat_review_provider_quota_exhausted"
+    assert "scillm_chat_review_provider_quota_exhausted" in payload["alert_codes"]
+    assert payload["recommended_next_action"].startswith("do not retry PDF Lab page payloads")
+
+
+def test_scillm_chat_review_http_502_classifies_route_exhausted(tmp_path: Path) -> None:
+    server, base_url, _requests = _start_fake_chat_server(
+        response_sequence=[
+            {
+                "status": 502,
+                "body": {
+                    "error": {
+                        "message": "All groups exhausted for model='vlm-free2': Connection error.",
+                        "type": "router_error",
+                        "code": 502,
+                        "advice": "All providers failed after exhausting fallbacks.",
+                    }
+                },
+            }
+        ]
+    )
+    request = _write_review_request(tmp_path)
+    try:
+        payload = write_scillm_chat_review_receipt(
+            request_path=request,
+            output_path=tmp_path / "receipt.json",
+            scillm_base_url=base_url,
+            apply=True,
+            auth_token="test-token",
+            request_timeout_s=5,
+        )
+    finally:
+        server.shutdown()
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["http_status"] == 502
+    assert payload["root_cause_code"] == "scillm_chat_review_route_exhausted"
+    assert "scillm_chat_review_route_exhausted" in payload["alert_codes"]
+    assert "review_response_not_parseable" not in payload["alert_codes"]
+    assert payload["recommended_next_action"].startswith("do not retry PDF Lab page payloads")
+
+
+def test_scillm_chat_review_timeout_canary_classifies_provider_quota(
+    tmp_path: Path,
+) -> None:
+    server, base_url, requests = _start_fake_chat_server(
+        response_sequence=[
+            {"delay_s": 2.0},
+            {
+                "status": 429,
+                "body": {"error": {"status": "RESOURCE_EXHAUSTED", "message": "quota exceeded"}},
+            },
+        ]
+    )
+    request = _write_review_request(tmp_path)
+    try:
+        payload = write_scillm_chat_review_receipt(
+            request_path=request,
+            output_path=tmp_path / "receipt.json",
+            scillm_base_url=base_url,
+            apply=True,
+            auth_token="test-token",
+            request_timeout_s=1,
+            timeout_diagnosis_mode="live_canary",
+            timeout_diagnosis_timeout_s=5,
+        )
+    finally:
+        server.shutdown()
+
+    assert len(requests) == 2
+    assert payload["status"] == "BLOCKED"
+    assert payload["timed_out"] is True
+    assert payload["timeout_diagnosis"]["http_status"] == 429
+    assert payload["root_cause_code"] == "scillm_chat_review_provider_quota_exhausted"
+    assert "scillm_chat_review_provider_quota_exhausted" in payload["alert_codes"]
+    assert "review_response_not_parseable" not in payload["alert_codes"]
+
+
 def _write_review_request(tmp_path: Path) -> Path:
     request = {
         "schema": "pdf_lab.second_pass.review_request.v1",
@@ -254,6 +356,7 @@ def _start_fake_chat_server(
     *,
     review_response: dict | None = None,
     response_delay_s: float = 0.0,
+    response_sequence: list[dict] | None = None,
 ) -> tuple[ThreadingHTTPServer, str, list[dict]]:
     requests: list[dict] = []
 
@@ -269,8 +372,15 @@ def _start_fake_chat_server(
                     "payload": json.loads(body),
                 }
             )
-            if response_delay_s > 0:
-                time.sleep(response_delay_s)
+            response_index = len(requests) - 1
+            response_plan = (
+                response_sequence[min(response_index, len(response_sequence) - 1)]
+                if response_sequence
+                else {}
+            )
+            delay_s = float(response_plan.get("delay_s", response_delay_s) or 0.0)
+            if delay_s > 0:
+                time.sleep(delay_s)
             content = review_response or {
                 "schema": "pdf_lab.second_pass.review_response.v1",
                 "page_status": "clean",
@@ -285,7 +395,8 @@ def _start_fake_chat_server(
                 ],
                 "page_rationale": "Fixture page is clean.",
             }
-            response_payload = {
+            status = int(response_plan.get("status", 200))
+            response_payload = response_plan.get("body") or {
                 "id": "chatcmpl-fixture",
                 "object": "chat.completion",
                 "choices": [
@@ -299,7 +410,7 @@ def _start_fake_chat_server(
                 ],
             }
             encoded = json.dumps(response_payload, sort_keys=True).encode("utf-8")
-            self.send_response(200)
+            self.send_response(status)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(encoded)))
             self.end_headers()

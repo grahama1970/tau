@@ -1,0 +1,87 @@
+{
+  "alert_codes": [
+    "scillm_chat_review_provider_quota_exhausted"
+  ],
+  "alerts": [
+    {
+      "code": "scillm_chat_review_provider_quota_exhausted",
+      "errors": [
+        "HTTP Error 429: Too Many Requests"
+      ],
+      "message": "SciLLM chat review route returned provider quota or rate-limit exhaustion",
+      "severity": "BLOCK"
+    }
+  ],
+  "apply_requested": true,
+  "caller_skill": "pdf-lab",
+  "created_at": "2026-07-21T15:30:13Z",
+  "dry_run": false,
+  "duration_seconds": 134.358564,
+  "endpoint": "/v1/chat/completions",
+  "error_bytes": 1799,
+  "error_path": "/tmp/tau-issue122-pdf-lab-executor/experiments/goal-locked-subagents/proofs/issue-123-pdf-lab-chat-review-timeout-20260721/quota-canary-receipt.error.json",
+  "error_sha256": "sha256:e98ce7c837b22ee30e48e67f61cf214c813edcd093050c973b64f41d92645748",
+  "headers": {
+    "authorization": "REDACTED",
+    "authorization_source": "env_file:/home/graham/workspace/experiments/scillm/.env",
+    "content_type": "application/json",
+    "x_caller_skill": "pdf-lab"
+  },
+  "http_executed": true,
+  "http_status": 429,
+  "launch_skipped": false,
+  "live": true,
+  "mocked": false,
+  "model": "vlm-free2",
+  "ok": false,
+  "parsed_candidate_finding_count": null,
+  "parsed_page_status": null,
+  "parsed_response_schema": null,
+  "provider_live": false,
+  "raw_response_bytes": 1579,
+  "raw_response_path": "/tmp/tau-issue122-pdf-lab-executor/experiments/goal-locked-subagents/proofs/issue-123-pdf-lab-chat-review-timeout-20260721/quota-canary-receipt.raw-response.json",
+  "raw_response_sha256": "sha256:27c9d748432bf942e95865a910c1e7ea97ef625ed7a2136b2ad30f75799dd99d",
+  "recommended_next_action": "do not retry PDF Lab page payloads against this model route; wait for quota recovery or switch Tau to an approved non-exhausted model route, then require a minimal Tau canary PASS",
+  "request_payload": {
+    "message_count": 1,
+    "messages": "<redacted-review-request-messages>",
+    "model": "vlm-free2",
+    "response_format": {
+      "type": "json_object"
+    },
+    "scillm_metadata": {
+      "batch_id": "pdf-lab-second-pass-canary",
+      "case_id": "page_case_9999_p9999",
+      "item_id": "page_case_9999_p9999:canary",
+      "request_sha256": "canary"
+    },
+    "temperature": 0
+  },
+  "request_timeout_s": 150,
+  "response_format": {
+    "type": "json_object"
+  },
+  "response_output_bytes": null,
+  "response_output_path": "/tmp/tau-issue122-pdf-lab-executor/experiments/goal-locked-subagents/proofs/issue-123-pdf-lab-chat-review-timeout-20260721/quota-canary-review-response.json",
+  "response_output_sha256": null,
+  "review_request_bytes": 1278,
+  "review_request_path": "/tmp/tau-issue123-canary/request.json",
+  "review_request_sha256": "sha256:463a6b47d2ac9819add7b34a279a3d34379564498ecbe0b9bbef8e606c8689a9",
+  "root_cause_basis": "provider returned quota or rate-limit exhaustion",
+  "root_cause_code": "scillm_chat_review_provider_quota_exhausted",
+  "schema": "tau.scillm_chat_review_receipt.v1",
+  "scillm_base_url": "http://127.0.0.1:4001",
+  "scillm_metadata": {
+    "batch_id": "pdf-lab-second-pass-canary",
+    "case_id": "page_case_9999_p9999",
+    "item_id": "page_case_9999_p9999:canary",
+    "request_sha256": "canary"
+  },
+  "status": "BLOCKED",
+  "surface": "scillm.chat_completions",
+  "timed_out": false,
+  "timeout_diagnosis": null,
+  "timeout_diagnosis_mode": "live_canary",
+  "timeout_diagnosis_timeout_s": 60,
+  "url": "http://127.0.0.1:4001/v1/chat/completions"
+}

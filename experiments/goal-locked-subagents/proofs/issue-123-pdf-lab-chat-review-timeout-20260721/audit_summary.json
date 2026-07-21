@@ -1,59 +1,86 @@
 {
+  "schema": "tau.issue_123_pdf_lab_chat_review_timeout_audit.v2",
+  "created_at": "2026-07-21T15:31:00Z",
+  "issue": "https://github.com/grahama1970/tau/issues/123",
+  "status": "root_cause_classified_fail_closed",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "root_cause_code": "scillm_chat_review_provider_quota_exhausted",
+  "root_cause_basis": "live Tau canary eventually surfaced HTTP 429 provider quota/rate-limit exhaustion on the vlm-free2 route; shorter page39 timeout diagnosis remains preserved as service-unresponsive within its 30s diagnosis budget",
+  "recommended_next_action": "do not retry PDF Lab page payloads against this model route; wait for quota recovery or switch Tau to an approved non-exhausted model route, then require a minimal Tau canary PASS",
   "changed_files": [
+    "PROJECT_KNOWLEDGE.md",
     "src/tau_coding/scillm_chat_review.py",
-    "src/tau_coding/cli.py",
     "tests/test_scillm_chat_review.py"
   ],
-  "created_at": "2026-07-21T15:12:31.934811Z",
-  "error_receipt": "experiments/goal-locked-subagents/proofs/issue-123-pdf-lab-chat-review-timeout-20260721/page39-diagnostic-receipt.error.json",
-  "issue": "https://github.com/grahama1970/tau/issues/123",
-  "live": true,
-  "mocked": false,
   "no_parseable_response_ambiguity": true,
+  "receipts": {
+    "page39_timeout_diagnostic": "experiments/goal-locked-subagents/proofs/issue-123-pdf-lab-chat-review-timeout-20260721/page39-diagnostic-receipt.json",
+    "page39_timeout_error": "experiments/goal-locked-subagents/proofs/issue-123-pdf-lab-chat-review-timeout-20260721/page39-diagnostic-receipt.error.json",
+    "quota_canary": "experiments/goal-locked-subagents/proofs/issue-123-pdf-lab-chat-review-timeout-20260721/quota-canary-receipt.json",
+    "quota_canary_error": "experiments/goal-locked-subagents/proofs/issue-123-pdf-lab-chat-review-timeout-20260721/quota-canary-receipt.error.json",
+    "quota_canary_raw_response": "experiments/goal-locked-subagents/proofs/issue-123-pdf-lab-chat-review-timeout-20260721/quota-canary-receipt.raw-response.json"
+  },
+  "external_unblock_attempts": [
+    {
+      "skill": "brave-search",
+      "command": "python /home/graham/workspace/experiments/agent-skills/skills/brave-search/brave_search.py web \"OpenAI compatible proxy 502 all groups exhausted circuit breaker quota rate limit\" --count 5 --json",
+      "result": "returned current/public rate-limit and quota-handling references; used as advisory context only"
+    }
+  ],
   "proof_commands": [
     {
       "command": "uv run pytest -q tests/test_scillm_chat_review.py tests/test_coding_worker_adapters.py -k \"scillm_chat_review or scillm_worker_launch\"",
-      "does_not_prove": "real SciLLM/Ollama service health or model semantic quality",
-      "live": false,
+      "result": "37 passed, 90 deselected in 16.71s",
       "mocked": false,
-      "proves": "executor/CLI receipt behavior and timeout classifier under local fake HTTP server",
+      "live": false,
       "provider_live": false,
-      "result": "34 passed, 90 deselected in 14.18s"
+      "proves": "executor/CLI receipt behavior and timeout/quota/route-exhaustion classifiers under local fake HTTP server",
+      "does_not_prove": "real SciLLM service health or model semantic quality"
     },
     {
       "command": "git diff --check && python -m py_compile src/tau_coding/scillm_chat_review.py src/tau_coding/cli.py",
-      "live": false,
+      "result": "pass",
       "mocked": false,
-      "provider_live": false,
-      "result": "pass"
+      "live": false,
+      "provider_live": false
     },
     {
       "command": "uv run tau scillm-chat-review --request /tmp/pdf_oxide_integrate_gs001_20260721/artifacts/pdf_lab/live_second_pass_page39_tau_prep_dpi110_20260721/page_case_0001_p0039/review_request.json --out experiments/goal-locked-subagents/proofs/issue-123-pdf-lab-chat-review-timeout-20260721/page39-diagnostic-receipt.json --response-out experiments/goal-locked-subagents/proofs/issue-123-pdf-lab-chat-review-timeout-20260721/page39-review-response.json --scillm-base-url http://127.0.0.1:4001 --caller-skill pdf-lab --apply --request-timeout-s 120 --timeout-diagnosis-mode live_canary --timeout-diagnosis-timeout-s 30",
-      "does_not_prove": "the SciLLM/Ollama route is healthy; receipt says it is currently unresponsive to a minimal canary",
-      "live": true,
-      "mocked": false,
-      "proves": "Tau can now fail closed with a non-parse-ambiguity root-cause classification for page39 timeout",
-      "provider_live": false,
       "result": {
+        "status": "BLOCKED",
+        "ok": false,
+        "mocked": false,
+        "live": true,
+        "provider_live": false,
+        "root_cause_code": "scillm_chat_review_service_unresponsive",
         "alert_codes": [
           "scillm_chat_review_timeout",
           "scillm_chat_review_service_unresponsive"
-        ],
-        "live": true,
-        "mocked": false,
+        ]
+      },
+      "proves": "Tau fails closed with a non-parse-ambiguity root-cause classification when the page request and short canary exceed their budgets",
+      "does_not_prove": "that the SciLLM route is healthy or that the underlying provider failure is permanently service-unresponsive"
+    },
+    {
+      "command": "uv run tau scillm-chat-review --request /tmp/tau-issue123-canary/request.json --out experiments/goal-locked-subagents/proofs/issue-123-pdf-lab-chat-review-timeout-20260721/quota-canary-receipt.json --response-out experiments/goal-locked-subagents/proofs/issue-123-pdf-lab-chat-review-timeout-20260721/quota-canary-review-response.json --scillm-base-url http://127.0.0.1:4001 --caller-skill pdf-lab --apply --request-timeout-s 150 --timeout-diagnosis-mode live_canary --timeout-diagnosis-timeout-s 60",
+      "result": {
+        "status": "BLOCKED",
         "ok": false,
+        "mocked": false,
+        "live": true,
         "provider_live": false,
-        "recommended_next_action": "do not retry PDF Lab page payloads; repair or restart the SciLLM/Ollama route until a minimal Tau canary returns PASS, then rerun the page request through Tau",
-        "root_cause_code": "scillm_chat_review_service_unresponsive",
-        "status": "BLOCKED"
-      }
+        "http_status": 429,
+        "timed_out": false,
+        "root_cause_code": "scillm_chat_review_provider_quota_exhausted",
+        "alert_codes": [
+          "scillm_chat_review_provider_quota_exhausted"
+        ],
+        "duration_seconds": 134.358564
+      },
+      "proves": "Tau classifies the live vlm-free2 route failure as provider quota/rate-limit exhaustion without emitting review_response_not_parseable",
+      "does_not_prove": "that any PDF Lab candidate can currently receive parseable live model review JSON"
     }
-  ],
-  "provider_live": false,
-  "receipt": "experiments/goal-locked-subagents/proofs/issue-123-pdf-lab-chat-review-timeout-20260721/page39-diagnostic-receipt.json",
-  "recommended_next_action": "do not retry PDF Lab page payloads; repair or restart the SciLLM/Ollama route until a minimal Tau canary returns PASS, then rerun the page request through Tau",
-  "root_cause_basis": "primary request and minimal canary request both timed out before a response body was available",
-  "root_cause_code": "scillm_chat_review_service_unresponsive",
-  "schema": "tau.issue_123_pdf_lab_chat_review_timeout_audit.v1",
-  "status": "root_cause_classified_fail_closed"
+  ]
 }

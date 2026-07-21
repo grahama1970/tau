@@ -111,6 +111,7 @@ def write_scillm_chat_review_receipt(
         and launch_result["http_executed"]
         and not launch_result["timed_out"]
         and launch_result.get("body_present")
+        and int(launch_result.get("http_status") or 0) < 400
     ):
         alerts.append(
             _alert(
@@ -307,6 +308,21 @@ def _maybe_post_chat_review(
                         "SciLLM chat review service did not answer a minimal canary request within the diagnosis timeout",
                     )
                 )
+            elif _is_quota_or_rate_limited(diagnosis):
+                result["root_cause_code"] = "scillm_chat_review_provider_quota_exhausted"
+                result["root_cause_basis"] = (
+                    "primary request timed out and minimal canary surfaced provider quota/rate-limit exhaustion"
+                )
+                result["recommended_next_action"] = (
+                    "do not retry PDF Lab page payloads against this model route; wait for quota recovery "
+                    "or switch Tau to an approved non-exhausted model route, then require a minimal Tau canary PASS"
+                )
+                alerts.append(
+                    _alert(
+                        "scillm_chat_review_provider_quota_exhausted",
+                        "SciLLM chat review route surfaced provider quota or rate-limit exhaustion during timeout diagnosis",
+                    )
+                )
             elif diagnosis.get("status") == "PASS":
                 result["root_cause_code"] = "scillm_chat_review_request_exceeded_live_budget"
                 result["root_cause_basis"] = (
@@ -316,13 +332,43 @@ def _maybe_post_chat_review(
                     "keep model transport in Tau and reduce the page review unit or request budget before retrying"
                 )
     elif selected["status"] != "PASS" or int(selected.get("http_status") or 0) >= 400:
-        alerts.append(
-            _alert(
-                "scillm_chat_review_http_error",
-                "SciLLM chat review request failed",
-                errors=[str(selected.get("error") or selected.get("status"))],
+        if _is_quota_or_rate_limited(selected):
+            result["root_cause_code"] = "scillm_chat_review_provider_quota_exhausted"
+            result["root_cause_basis"] = "provider returned quota or rate-limit exhaustion"
+            result["recommended_next_action"] = (
+                "do not retry PDF Lab page payloads against this model route; wait for quota recovery "
+                "or switch Tau to an approved non-exhausted model route, then require a minimal Tau canary PASS"
             )
-        )
+            alerts.append(
+                _alert(
+                    "scillm_chat_review_provider_quota_exhausted",
+                    "SciLLM chat review route returned provider quota or rate-limit exhaustion",
+                    errors=[str(selected.get("error") or selected.get("status"))],
+                )
+            )
+        elif _is_route_exhausted(selected):
+            result["root_cause_code"] = "scillm_chat_review_route_exhausted"
+            result["root_cause_basis"] = "SciLLM router reported all groups or providers exhausted"
+            result["recommended_next_action"] = (
+                "do not retry PDF Lab page payloads against this model route; repair the route, wait for "
+                "provider cooldown/quota recovery, or switch Tau to an approved healthy model route, then "
+                "require a minimal Tau canary PASS"
+            )
+            alerts.append(
+                _alert(
+                    "scillm_chat_review_route_exhausted",
+                    "SciLLM chat review route exhausted all provider groups",
+                    errors=[str(selected.get("error") or selected.get("status"))],
+                )
+            )
+        else:
+            alerts.append(
+                _alert(
+                    "scillm_chat_review_http_error",
+                    "SciLLM chat review request failed",
+                    errors=[str(selected.get("error") or selected.get("status"))],
+                )
+            )
 
     if selected.get("body_text"):
         _write_text(raw_response_path, str(selected["body_text"]))
@@ -376,6 +422,42 @@ def _run_timeout_canary(
         timeout_s=timeout_s,
     )
     return _safe_response_excerpt(response)
+
+
+def _is_quota_or_rate_limited(response: Mapping[str, Any]) -> bool:
+    if int(response.get("http_status") or 0) == 429:
+        return True
+    haystack = " ".join(
+        str(response.get(key) or "")
+        for key in ("error", "body_text", "body_excerpt")
+    ).lower()
+    return any(
+        marker in haystack
+        for marker in (
+            "quota",
+            "rate limit",
+            "rate-limit",
+            "resource_exhausted",
+            "too many requests",
+        )
+    )
+
+
+def _is_route_exhausted(response: Mapping[str, Any]) -> bool:
+    haystack = " ".join(
+        str(response.get(key) or "")
+        for key in ("error", "body_text", "body_excerpt")
+    ).lower()
+    return any(
+        marker in haystack
+        for marker in (
+            "all groups exhausted",
+            "all providers failed",
+            "fallback group",
+            "circuit_breaker",
+            "cooldown",
+        )
+    )
 
 
 def _post_json(
