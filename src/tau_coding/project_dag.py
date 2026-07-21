@@ -121,6 +121,10 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.path_backed_receipt_evidence",
     },
+    "BLOCKED_WEBGPT_CONVERSATION_FULL": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.downstream_skill_blocker",
+    },
     "missing_required_join": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.required_join",
@@ -3310,6 +3314,7 @@ def _run_shared_project_dag_plan(
             ]
         if result.get("ok") is not True:
             result_errors = [str(item) for item in result.get("errors", [])]
+            downstream_blocker = _downstream_skill_blocker(result.get("response"))
             if isinstance(dispatch, dict):
                 stop_reason = str(dispatch.get("stop_reason") or "node_dispatch_failed")
             elif isinstance(result.get("stop_reason"), str):
@@ -3318,6 +3323,8 @@ def _run_shared_project_dag_plan(
                 stop_reason = _command_spec_load_stop_reason("\n".join(result_errors))
             else:
                 stop_reason = "node_dispatch_failed"
+            if downstream_blocker is not None:
+                stop_reason = str(downstream_blocker["code"])
             blocked = {
                 "node_id": node.node_id,
                 "status": "BLOCKED",
@@ -3331,6 +3338,22 @@ def _run_shared_project_dag_plan(
                 "stop_reason": stop_reason,
                 "errors": result_errors,
             }
+            if downstream_blocker is not None:
+                blocked.update(
+                    {
+                        "verdict": str(downstream_blocker["code"]),
+                        "retryable": False,
+                        "alerts": [
+                            _alert(
+                                "BLOCK",
+                                str(downstream_blocker["code"]),
+                                str(downstream_blocker["message"]),
+                                dict(downstream_blocker["evidence"]),
+                            )
+                        ],
+                    }
+                )
+                return blocked
             drift_alert = _pointless_unit_test_drift_alert(
                 node_id=node.node_id,
                 node=node,
@@ -4429,6 +4452,15 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
             "next_agent": "goal-guardian",
             "reason": "Refresh provider OAuth/readiness before retrying the DAG node.",
         }
+    if normalized == "blocked_webgpt_conversation_full":
+        return {
+            "type": "rebind_webgpt_conversation",
+            "next_agent": "goal-guardian",
+            "reason": (
+                "Rebind the $ask/$surf WebGPT handler project to a fresh ChatGPT "
+                "conversation before rerunning the DAG node."
+            ),
+        }
     if normalized in {
         "missing_required_evidence",
         "missing_reviewer_verdict",
@@ -4998,6 +5030,62 @@ def _result_evidence(response: dict[str, Any]) -> list[Any]:
         return []
     evidence = result.get("evidence")
     return evidence if isinstance(evidence, list) else []
+
+
+def _downstream_skill_blocker(response: object) -> dict[str, Any] | None:
+    if not isinstance(response, dict):
+        return None
+    for evidence in _result_evidence(response):
+        if not isinstance(evidence, dict):
+            continue
+        code = str(evidence.get("failure_code") or evidence.get("verdict") or "")
+        if code == "BLOCKED_WEBGPT_CONVERSATION_FULL":
+            return {
+                "code": code,
+                "message": (
+                    "Downstream $ask/$surf WebGPT handler reported a full ChatGPT "
+                    "conversation before Tau could accept the node result."
+                ),
+                "evidence": {
+                    "kind": evidence.get("kind"),
+                    "node_id": evidence.get("node_id"),
+                    "handler": evidence.get("handler"),
+                    "path": evidence.get("path"),
+                    "source": "$ask/$surf",
+                    "recommended_action": "rebind_handler_project_to_fresh_chatgpt_conversation",
+                },
+            }
+        path_value = evidence.get("path")
+        if not isinstance(path_value, str) or not path_value:
+            continue
+        try:
+            receipt = _read_json_object(Path(path_value), label="downstream skill receipt")
+        except (OSError, ValueError):
+            continue
+        recovery_packet = receipt.get("recovery_packet")
+        recovery_code = (
+            recovery_packet.get("failure_code") if isinstance(recovery_packet, dict) else None
+        )
+        code = str(receipt.get("failure_code") or receipt.get("verdict") or recovery_code or "")
+        if code == "BLOCKED_WEBGPT_CONVERSATION_FULL":
+            return {
+                "code": code,
+                "message": (
+                    "Downstream $ask/$surf WebGPT handler receipt reported a full "
+                    "ChatGPT conversation before Tau could accept the node result."
+                ),
+                "evidence": {
+                    "kind": evidence.get("kind"),
+                    "node_id": receipt.get("node_id") or evidence.get("node_id"),
+                    "handler": receipt.get("handler") or evidence.get("handler"),
+                    "path": str(Path(path_value).expanduser().resolve()),
+                    "source": "$ask/$surf",
+                    "receipt_status": receipt.get("status"),
+                    "receipt_schema": receipt.get("schema"),
+                    "recommended_action": "rebind_handler_project_to_fresh_chatgpt_conversation",
+                },
+            }
+    return None
 
 
 def _response_payload(dispatch: dict[str, Any]) -> dict[str, Any] | None:

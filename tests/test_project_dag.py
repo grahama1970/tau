@@ -160,6 +160,31 @@ def test_ready_queue_blocks_failed_referenced_receipt_verdict(tmp_path: Path) ->
     assert "reviewer" not in receipt["node_attempts"]
 
 
+def test_ready_queue_surfaces_ask_surf_conversation_full_blocker(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    _write_blocked_ask_surf_response_spec(tmp_path, "coder")
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "BLOCKED_WEBGPT_CONVERSATION_FULL"
+    assert receipt["dag_error"]["failure_code"] == "BLOCKED_WEBGPT_CONVERSATION_FULL"
+    assert receipt["dag_error"]["recommended_action"]["type"] == "rebind_webgpt_conversation"
+    assert receipt["alerts"][0]["code"] == "BLOCKED_WEBGPT_CONVERSATION_FULL"
+    assert receipt["alerts"][0]["evidence"]["source"] == "$ask/$surf"
+    assert receipt["alerts"][0]["evidence"]["recommended_action"] == (
+        "rebind_handler_project_to_fresh_chatgpt_conversation"
+    )
+    assert "reviewer" not in receipt["node_attempts"]
+
+
 def test_project_dag_durable_replay_preserves_receipt_evidence(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -3858,6 +3883,80 @@ print({json.dumps(json.dumps(response))})
                     code,
                 ],
                 "timeout_s": timeout_s,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def _write_blocked_ask_surf_response_spec(tmp_path: Path, agent: str) -> None:
+    spec_path = tmp_path / "specs" / agent / "tau-dispatch-command.json"
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    code = """
+import json
+import os
+import sys
+from pathlib import Path
+
+payload = json.loads(sys.stdin.readline())
+artifact_dir = Path(os.environ["TAU_HANDOFF_COMMAND_ARTIFACT_DIR"])
+artifact_dir.mkdir(parents=True, exist_ok=True)
+receipt_path = artifact_dir / "node-receipt.json"
+receipt = {
+    "schema": "ask.tau_dag_handler_receipt.v1",
+    "node_id": "handler-webgpt",
+    "handler": "webgpt",
+    "status": "BLOCKED",
+    "ok": False,
+    "failure_code": "BLOCKED_WEBGPT_CONVERSATION_FULL",
+    "verdict": "BLOCKED_WEBGPT_CONVERSATION_FULL",
+    "recovery_packet": {
+        "failure_code": "BLOCKED_WEBGPT_CONVERSATION_FULL",
+        "next_command": ["surf", "webgpt.submit", "--create-tab"],
+    },
+}
+receipt_path.write_text(json.dumps(receipt, sort_keys=True), encoding="utf-8")
+response = {
+    "schema": "tau.agent_handoff.v1",
+    "github": payload["github"],
+    "goal": payload["goal"],
+    "previous_subagent": "handler-webgpt",
+    "context": {
+        "summary": "WebGPT handler blocked before review.",
+        "artifacts": [str(receipt_path)],
+    },
+    "result": {
+        "status": "BLOCKED",
+        "summary": "WebGPT handler conversation is full.",
+        "evidence": [
+            {
+                "kind": "handler_response_receipt",
+                "node_id": "handler-webgpt",
+                "handler": "webgpt",
+                "path": str(receipt_path),
+                "status": "BLOCKED",
+                "verdict": "BLOCKED_WEBGPT_CONVERSATION_FULL",
+                "failure_code": "BLOCKED_WEBGPT_CONVERSATION_FULL",
+            }
+        ],
+    },
+    "rationale": "The downstream Surf transport failed closed.",
+    "next_agent": {
+        "name": "human",
+        "executor": "human",
+        "reason": "Rebind WebGPT to a fresh ChatGPT conversation.",
+    },
+    "required_evidence": [],
+    "stop_condition": "Stop until browser-oracle is rebound.",
+}
+print(json.dumps(response, sort_keys=True))
+sys.exit(1)
+"""
+    spec_path.write_text(
+        json.dumps(
+            {
+                "command": [sys.executable, "-c", code],
+                "timeout_s": 5,
             }
         ),
         encoding="utf-8",
