@@ -1529,6 +1529,8 @@ def build_checks(
                 str(project_dag_containment_missing_itar["run_dir"]),
                 "--agents-root",
                 str(project_dag_containment_missing_itar["agents_root"]),
+                "--mode",
+                "secure",
             ],
             timeout_seconds=60,
             expected_exit_codes=(1,),
@@ -1552,6 +1554,8 @@ def build_checks(
                 str(project_dag_containment_all_gates["run_dir"]),
                 "--agents-root",
                 str(project_dag_containment_all_gates["agents_root"]),
+                "--mode",
+                "secure",
             ],
             timeout_seconds=90,
             expected_status="PASS",
@@ -3058,11 +3062,88 @@ def create_project_dag_containment_gate_fixture(
     contract["data_boundary"] = {
         "schema": "tau.data_boundary.v1",
         "classification": "ITAR",
+        "export_controlled": True,
         "goal_hash": goal_hash,
+        "itar": True,
+        "technical_data": True,
+        "foreign_person_access": "prohibited",
         "external_provider_allowed": False,
         "external_research_allowed": False,
         "public_repo_allowed": False,
     }
+    policy_profile = write_json(
+        fixture_dir / "policy-profile.json",
+        {
+            "schema": "tau.policy_profile.v1",
+            "profile_id": f"{scenario}-zero-trust-local-only",
+            "default_decision": "deny",
+            "requires_data_boundary": True,
+            "network": {"default": "deny", "allowed_domains": []},
+            "providers": {"cloud_llm": "deny", "local_model": "allow_with_review"},
+            "research": {
+                "external_search": "deny",
+                "manual_sanitized_receipt": "allow_with_review",
+            },
+            "memory": {"read": "allow", "write": "approval_required"},
+            "github": {"public_mutation": "deny", "dry_run_projection": "allow"},
+            "filesystem": {"write_allowlist": [], "read_denylist": []},
+        },
+    )
+    actor_manifest = write_json(
+        fixture_dir / "actor-access-manifest.json",
+        {
+            "schema": "tau.actor_access_manifest.v1",
+            "actor_id": "human:real-world-sanity",
+            "actor_type": "human",
+            "roles": ["approver"],
+            "trusted": True,
+            "verified": True,
+            "eligibility": {
+                "us_person": "verified",
+                "foreign_person": False,
+                "export_control_training_current": True,
+                "approved_for_boundary": ["ITAR"],
+            },
+        },
+    )
+    process_capability = {
+        "capability": "process.execute",
+        "target": "python3",
+        "resource_scope": [str(fixture_dir)],
+        "maximum_effect": {"max_processes": 1},
+    }
+    command_policy = write_json(
+        fixture_dir / "command-policy.json",
+        {
+            "schema": "tau.command_spec_policy.v1",
+            "allowed_command_roots": ["python3"],
+            "allowed_cwd_roots": [str(fixture_dir)],
+            "denied_commands": [],
+            "allows_network": False,
+            "allows_mutation": False,
+            "capability_grant_ttl_seconds": 300,
+            "capability_rules": [
+                {
+                    "capability": process_capability["capability"],
+                    "targets": [process_capability["target"]],
+                    "resource_scope": process_capability["resource_scope"],
+                    "maximum_effect": process_capability["maximum_effect"],
+                },
+            ],
+        },
+    )
+    for node in contract.get("nodes", []):
+        if isinstance(node, dict) and node.get("executor") == "local":
+            node["requested_capabilities"] = [process_capability]
+            spec_path_text = node.get("command_spec")
+            if isinstance(spec_path_text, str):
+                spec_path = Path(spec_path_text)
+                spec = read_json(spec_path)
+                spec["cwd"] = str(fixture_dir)
+                write_json(spec_path, spec)
+    contract["policy_profile"] = str(policy_profile)
+    contract["actor_access_manifest"] = str(actor_manifest)
+    contract["command_policy"] = str(command_policy)
     if mutation == "missing_itar":
         write_json(contract_path, contract)
         return fixture

@@ -830,6 +830,8 @@ def test_build_checks_registers_itar_containment_dag_and_demo_checks(
     missing_gate = by_id["advanced.project_dag_itar_access_gate_missing_fail_closed"]
     assert missing_gate.expected_status == "BLOCKED"
     assert missing_gate.expected_verdict == "MISSING_ITAR_ACCESS_PREFLIGHT"
+    assert "--mode" in missing_gate.command
+    assert "secure" in missing_gate.command
     assert missing_gate.output_receipt == (
         tmp_path / "containment-missing-itar-project-dag" / "run" / "dag-receipt.json"
     )
@@ -837,9 +839,80 @@ def test_build_checks_registers_itar_containment_dag_and_demo_checks(
     all_gates = by_id["advanced.project_dag_containment_gates_pass"]
     assert all_gates.expected_status == "PASS"
     assert all_gates.expected_verdict == "PASS"
+    assert "--mode" in all_gates.command
+    assert "secure" in all_gates.command
     assert all_gates.output_receipt == (
         tmp_path / "containment-all-gates-project-dag" / "run" / "dag-receipt.json"
     )
+    containment_contract = json.loads(
+        (
+            tmp_path / "containment-all-gates-project-dag" / "dag-contract.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert containment_contract["data_boundary"] == {
+        "schema": "tau.data_boundary.v1",
+        "classification": "ITAR",
+        "export_controlled": True,
+        "goal_hash": "sha256:rw-sanity-project-dag-containment-all-gates",
+        "itar": True,
+        "technical_data": True,
+        "foreign_person_access": "prohibited",
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": False,
+    }
+    assert containment_contract["policy_profile"] == str(
+        tmp_path / "containment-all-gates-project-dag" / "policy-profile.json"
+    )
+    assert containment_contract["actor_access_manifest"] == str(
+        tmp_path / "containment-all-gates-project-dag" / "actor-access-manifest.json"
+    )
+    assert containment_contract["command_policy"] == str(
+        tmp_path / "containment-all-gates-project-dag" / "command-policy.json"
+    )
+    policy_profile = json.loads(
+        (
+            tmp_path / "containment-all-gates-project-dag" / "policy-profile.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert policy_profile["schema"] == "tau.policy_profile.v1"
+    assert policy_profile["requires_data_boundary"] is True
+    assert policy_profile["providers"]["cloud_llm"] == "deny"
+    actor_manifest = json.loads(
+        (
+            tmp_path / "containment-all-gates-project-dag" / "actor-access-manifest.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert actor_manifest["schema"] == "tau.actor_access_manifest.v1"
+    assert actor_manifest["eligibility"]["approved_for_boundary"] == ["ITAR"]
+    command_policy = json.loads(
+        (
+            tmp_path / "containment-all-gates-project-dag" / "command-policy.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert command_policy["schema"] == "tau.command_spec_policy.v1"
+    assert command_policy["allowed_command_roots"] == ["python3"]
+    assert command_policy["allows_network"] is False
+    expected_capability = {
+        "capability": "process.execute",
+        "target": "python3",
+        "resource_scope": [str(tmp_path / "containment-all-gates-project-dag")],
+        "maximum_effect": {"max_processes": 1},
+    }
+    assert command_policy["capability_grant_ttl_seconds"] == 300
+    assert command_policy["capability_rules"] == [
+        {
+            "capability": expected_capability["capability"],
+            "targets": [expected_capability["target"]],
+            "resource_scope": expected_capability["resource_scope"],
+            "maximum_effect": expected_capability["maximum_effect"],
+        }
+    ]
+    for node in containment_contract["nodes"]:
+        if node["executor"] == "local":
+            assert node["requested_capabilities"] == [expected_capability]
+            command_spec = json.loads(Path(node["command_spec"]).read_text(encoding="utf-8"))
+            assert command_spec["cwd"] == str(tmp_path / "containment-all-gates-project-dag")
 
     redteam = by_id["advanced.zero_trust_redteam_itar_containment"]
     assert redteam.expected_status == "PASS"
