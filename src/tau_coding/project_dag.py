@@ -2052,6 +2052,11 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
         node_id = _required_string(item, "id", errors, prefix=f"nodes[{index}]")
         _validate_dag_identifier(node_id, f"nodes[{index}].id", errors)
         agent = _required_string(item, "agent", errors, prefix=f"nodes[{index}]")
+        if "skill" in item:
+            errors.append(
+                f"nodes[{index}].skill is not supported by {DAG_CONTRACT_SCHEMA}; "
+                "skill nodes require schema tau.generic_dag_spec.v1"
+            )
         executor = str(item.get("executor") or "local")
         max_attempts = int(item.get("max_attempts", 1))
         if max_attempts < 1:

@@ -1885,6 +1885,42 @@ def test_cli_dag_run_bad_project_contract_returns_course_correction_json(tmp_pat
     ]
 
 
+def test_cli_dag_run_skill_node_under_project_schema_names_generic_schema(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["nodes"][0].pop("command_spec")
+    payload["nodes"][0]["skill"] = {
+        "schema": "tau.skill_dag_node.v1",
+        "capability": "review",
+        "provider": "webgpt",
+        "request": {"prompt": "review this"},
+    }
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "dag-run",
+            str(contract_path),
+            "--receipt-dir",
+            str(tmp_path / "skill-node-project-schema-run"),
+            "--agents-root",
+            str(tmp_path / "agents"),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["schema"] == DAG_ERROR_SCHEMA
+    assert payload["status"] == "BLOCKED"
+    assert payload["failure_code"] == "dag_contract_invalid"
+    assert "nodes[0].skill is not supported by tau.dag_contract.v1" in payload["message"]
+    assert "skill nodes require schema tau.generic_dag_spec.v1" in payload["message"]
+    assert payload["evidence"]["primary_alert"]["message"] == payload["message"]
+
+
 def test_fail_closed_registry_payload_names_executable_invariants() -> None:
     payload = fail_closed_registry_payload()
 
