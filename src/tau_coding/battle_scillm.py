@@ -21,6 +21,14 @@ CALLER_SKILL = "battle"
 DEFAULT_DEV_PROXY_KEY = "sk-dev-proxy-123"
 SCILLM_AUTH_ENDPOINT = "/v1/scillm/auth"
 DISABLE_STALE_AUTH_REPAIR_ENV = "TAU_SCILLM_DISABLE_PROXY_RECREATE"
+HEALTHY_CODEX_AUTH_STATUSES = {
+    "authenticated",
+    "configured",
+    "ok",
+    "pass",
+    "ready",
+    "valid",
+}
 DEFAULT_SCILLM_COMPOSE_DIR = Path("/home/graham/workspace/experiments/scillm/deploy/docker")
 DEFAULT_SCILLM_REPAIR_COMMAND = [
     "docker",
@@ -350,7 +358,7 @@ def _codex_auth_problem(body: Any, *, model: str) -> str | None:
     if not isinstance(codex, dict):
         return "scillm_codex_auth_missing"
     status = str(codex.get("status") or "").strip().lower()
-    if status in {"ok", "pass", "valid", "ready", "authenticated"}:
+    if status in HEALTHY_CODEX_AUTH_STATUSES:
         return None
     if not status:
         return "scillm_codex_auth_status_missing"

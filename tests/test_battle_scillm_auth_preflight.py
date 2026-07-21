@@ -5,6 +5,48 @@ from pathlib import Path
 from tau_coding import battle_live_handoff, battle_scillm
 
 
+def test_codex_auth_problem_accepts_configured_status() -> None:
+    assert (
+        battle_scillm._codex_auth_problem(
+            {"codex": {"status": "configured"}},
+            model="gpt-5.5",
+        )
+        is None
+    )
+
+
+def test_codex_auth_problem_still_blocks_expired_status() -> None:
+    assert (
+        battle_scillm._codex_auth_problem(
+            {"codex": {"status": "expired"}},
+            model="gpt-5.5",
+        )
+        == "scillm_codex_auth_expired"
+    )
+
+
+def test_scillm_auth_preflight_accepts_configured_codex_status(monkeypatch) -> None:
+    def fake_auth(base_url: str, api_key: str) -> dict[str, object]:
+        return {
+            "status": "PASS",
+            "status_code": 200,
+            "body": {"codex": {"status": "configured"}},
+        }
+
+    monkeypatch.setattr(battle_scillm, "_request_scillm_auth", fake_auth)
+
+    receipt = battle_scillm.preflight_battle_scillm_auth(
+        scillm_base_url="http://127.0.0.1:4001",
+        model="gpt-5.5",
+        api_key="test-key",
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["ok"] is True
+    assert "reason" not in receipt
+    assert receipt["repair_attempted"] is False
+
+
 def test_scillm_auth_preflight_blocks_stale_codex_container_without_repair(
     monkeypatch,
 ) -> None:
