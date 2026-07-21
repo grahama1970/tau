@@ -1,0 +1,50 @@
+{
+  "schema": "tau.issue_122_pdf_lab_chat_review_audit.v1",
+  "created_at": "2026-07-21T14:22:10Z",
+  "issue": "https://github.com/grahama1970/tau/issues/122",
+  "status": "passing_with_live_page41_receipt",
+  "mocked": false,
+  "live": true,
+  "implemented_capability": {
+    "cli_command": "tau scillm-chat-review",
+    "receipt_schema": "tau.scillm_chat_review_receipt.v1",
+    "input_contract": "pdf_lab.second_pass.review_request.v1",
+    "output_contract": "pdf_lab.second_pass.review_response.v1",
+    "endpoint": "/v1/chat/completions",
+    "default_timeout_s": 120,
+    "boundary": "Tau owns the SciLLM chat/VLM transport; pdf_oxide supplies only deterministic review_request.json evidence."
+  },
+  "test_proof": {
+    "command": "uv run pytest -q tests/test_scillm_chat_review.py tests/test_coding_worker_adapters.py -k \"scillm_chat_review or scillm_worker_launch\"",
+    "result": "32 passed, 90 deselected in 11.77s",
+    "mocked": true,
+    "live": false,
+    "what_it_proves": "CLI/file-contract wiring, request forwarding to a fake OpenAI-compatible chat endpoint, image_url payload preservation, response parsing, response validation, auth fail-closed behavior, and preservation of existing scillm-worker-launch OpenCode route behavior.",
+    "what_it_does_not_prove": "Semantic model review quality or live SciLLM availability."
+  },
+  "dry_run_page41_proof": {
+    "command": "uv run tau scillm-chat-review --request /tmp/pdf_oxide_integrate_gs001_20260721/artifacts/pdf_lab/live_second_pass_page41_tau_prep_20260721/page_case_0001_p0041/review_request.json --out /tmp/tau-issue122-page41-dry-run/receipt.json --response-out /tmp/tau-issue122-page41-dry-run/review_response.json --scillm-base-url http://127.0.0.1:4001 --caller-skill pdf-lab --request-timeout-s 120",
+    "receipt": "experiments/goal-locked-subagents/proofs/issue-122-pdf-lab-chat-review-20260721/page41-dry-run-receipt.json",
+    "status": "PASS",
+    "mocked": false,
+    "live": false,
+    "what_it_proves": "The real pdf_oxide page41 review_request.json is accepted by the Tau command without executing HTTP."
+  },
+  "live_page41_proof": {
+    "command": "uv run tau scillm-chat-review --request /tmp/pdf_oxide_integrate_gs001_20260721/artifacts/pdf_lab/live_second_pass_page41_tau_prep_20260721/page_case_0001_p0041/review_request.json --out /tmp/tau-issue122-page41-live-20260721T1422/receipt.json --response-out /tmp/tau-issue122-page41-live-20260721T1422/review_response.json --scillm-base-url http://127.0.0.1:4001 --caller-skill pdf-lab --apply --request-timeout-s 120",
+    "receipt": "experiments/goal-locked-subagents/proofs/issue-122-pdf-lab-chat-review-20260721/page41-live-receipt.json",
+    "response": "experiments/goal-locked-subagents/proofs/issue-122-pdf-lab-chat-review-20260721/page41-review-response.json",
+    "raw_response": "experiments/goal-locked-subagents/proofs/issue-122-pdf-lab-chat-review-20260721/page41-raw-response.json",
+    "status": "PASS",
+    "mocked": false,
+    "live": true,
+    "provider_live": true,
+    "http_status": 200,
+    "duration_seconds": 20.373208,
+    "parsed_response_schema": "pdf_lab.second_pass.review_response.v1",
+    "parsed_page_status": "clean",
+    "parsed_candidate_finding_count": 13,
+    "what_it_proves": "Tau can consume the real pdf_oxide page41 review_request.json, call local SciLLM /v1/chat/completions with image_url parts, parse schema JSON, and write a provider-live receipt plus review_response.json under 120 seconds."
+  },
+  "remaining_pdf_oxide_step": "Copy the Tau live receipt and review_response into the pdf_oxide page41 case, run pdf_oxide review/terminal validation, then commit and push the page41 reviewed-clean evidence."
+}

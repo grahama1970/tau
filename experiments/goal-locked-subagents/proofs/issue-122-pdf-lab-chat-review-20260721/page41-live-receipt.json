@@ -1,0 +1,70 @@
+{
+  "alert_codes": [],
+  "alerts": [],
+  "apply_requested": true,
+  "caller_skill": "pdf-lab",
+  "created_at": "2026-07-21T14:21:42Z",
+  "dry_run": false,
+  "duration_seconds": 20.373208,
+  "endpoint": "/v1/chat/completions",
+  "error_bytes": null,
+  "error_path": null,
+  "error_sha256": null,
+  "headers": {
+    "authorization": "REDACTED",
+    "authorization_source": "env_file:/home/graham/workspace/experiments/scillm/.env",
+    "content_type": "application/json",
+    "x_caller_skill": "pdf-lab"
+  },
+  "http_executed": true,
+  "http_status": 200,
+  "launch_skipped": false,
+  "live": true,
+  "mocked": false,
+  "model": "vlm-free2",
+  "ok": true,
+  "parsed_candidate_finding_count": 13,
+  "parsed_page_status": "clean",
+  "parsed_response_schema": "pdf_lab.second_pass.review_response.v1",
+  "provider_live": true,
+  "raw_response_bytes": 7513,
+  "raw_response_path": "/tmp/tau-issue122-page41-live-20260721T1422/receipt.raw-response.json",
+  "raw_response_sha256": "sha256:b6156c0b4e94b3c3538c52f81aa22dfa6e33ccfe262750a95d6eb244d38d983d",
+  "request_payload": {
+    "message_count": 1,
+    "messages": "<redacted-review-request-messages>",
+    "model": "vlm-free2",
+    "response_format": {
+      "type": "json_object"
+    },
+    "scillm_metadata": {
+      "batch_id": "pdf-lab-second-pass",
+      "case_id": "page_case_0001_p0041",
+      "item_id": "page_case_0001_p0041:0d5241ec3e224f72",
+      "request_sha256": "0d5241ec3e224f72291138120f888832baf054a7dc4e4564183cc6f0725eff43"
+    },
+    "temperature": 0
+  },
+  "request_timeout_s": 120,
+  "response_format": {
+    "type": "json_object"
+  },
+  "response_output_bytes": 6287,
+  "response_output_path": "/tmp/tau-issue122-page41-live-20260721T1422/review_response.json",
+  "response_output_sha256": "sha256:864d1a93c010ea12d3018e086f5a0224eac6fd0d64a7e89c80c7798055767c98",
+  "review_request_bytes": 948548,
+  "review_request_path": "/tmp/pdf_oxide_integrate_gs001_20260721/artifacts/pdf_lab/live_second_pass_page41_tau_prep_20260721/page_case_0001_p0041/review_request.json",
+  "review_request_sha256": "sha256:e1c076e012660856fbedf9f5f9252c099274eb1d0315dd4e025343e20d1d527b",
+  "schema": "tau.scillm_chat_review_receipt.v1",
+  "scillm_base_url": "http://127.0.0.1:4001",
+  "scillm_metadata": {
+    "batch_id": "pdf-lab-second-pass",
+    "case_id": "page_case_0001_p0041",
+    "item_id": "page_case_0001_p0041:0d5241ec3e224f72",
+    "request_sha256": "0d5241ec3e224f72291138120f888832baf054a7dc4e4564183cc6f0725eff43"
+  },
+  "status": "PASS",
+  "surface": "scillm.chat_completions",
+  "timed_out": false,
+  "url": "http://127.0.0.1:4001/v1/chat/completions"
+}

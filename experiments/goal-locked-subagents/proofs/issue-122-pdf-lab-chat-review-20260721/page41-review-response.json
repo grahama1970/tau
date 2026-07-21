@@ -1,0 +1,98 @@
+{
+  "candidate_findings": [
+    {
+      "candidate_id": "cand:p0041:0000:side_chrome",
+      "evidence": "Extracted JSON block 0: type 'header_footer_noise', semantic_role 'page_chrome', source_type 'Header', text 'NIST SP 800-53, REV. 5 SECURITY AND PRIVACY CONTROLS FOR INFORMATION SYSTEMS AND ORGANIZATIONS'. Bbox matches visual.",
+      "rationale": "The extracted block accurately identifies the top header text, its bounding box, and correctly classifies it as side_chrome.",
+      "status": "clean",
+      "suggested_fix_surface": "none"
+    },
+    {
+      "candidate_id": "cand:p0041:0001:side_chrome",
+      "evidence": "Extracted JSON block 1: type 'header_footer_noise', semantic_role 'page_chrome', source_type 'Header', text '_________________________________________________________________________________________________'. Bbox matches visual.",
+      "rationale": "The extracted block accurately identifies the horizontal line below the header, its bounding box, and correctly classifies it as side_chrome.",
+      "status": "clean",
+      "suggested_fix_surface": "none"
+    },
+    {
+      "candidate_id": "cand:p0041:0002:side_chrome",
+      "evidence": "Extracted JSON block 2: type 'header_footer_noise', semantic_role 'page_chrome', source_type 'Footer', text 'CHAPTER TWO PAGE 14'. Bbox matches visual.",
+      "rationale": "The extracted block accurately identifies the bottom footer text, its bounding box, and correctly classifies it as side_chrome.",
+      "status": "clean",
+      "suggested_fix_surface": "none"
+    },
+    {
+      "candidate_id": "cand:p0041:0003:side_chrome",
+      "evidence": "Extracted JSON block 3: type 'header_footer_noise', source_type 'Boilerplate', text 'This publication is available free of charge from: https://doi.org/10.6028/NIST.SP.800 -53r5'. Bbox matches visual.",
+      "rationale": "The extracted block accurately identifies the vertical boilerplate text on the left margin, its bounding box, and correctly classifies it as side_chrome.",
+      "status": "clean",
+      "suggested_fix_surface": "none"
+    },
+    {
+      "candidate_id": "cand:p0041:0004:text",
+      "evidence": "Extracted JSON block 4: type 'paragraph_block', source_type 'Body', text matches rendered content. Bbox matches visual.",
+      "rationale": "The extracted block accurately captures the paragraph text, its bounding box, and is correctly classified as a generic text block.",
+      "status": "clean",
+      "suggested_fix_surface": "none"
+    },
+    {
+      "candidate_id": "cand:p0041:0005:text",
+      "evidence": "Extracted JSON block 5: type 'paragraph_block', source_type 'Body', text matches rendered content. Bbox matches visual.",
+      "rationale": "The extracted block accurately captures the paragraph text, its bounding box, and is correctly classified as a generic text block.",
+      "status": "clean",
+      "suggested_fix_surface": "none"
+    },
+    {
+      "candidate_id": "cand:p0041:0006:section_heading",
+      "evidence": "Extracted JSON block 6: type 'section_heading', source_type 'Title', text '2.5 TRUSTWORTHINESS AND ASSURANCE'. Bbox matches visual.",
+      "rationale": "The extracted block accurately captures the section heading text, its bounding box, and is correctly classified as a section_heading.",
+      "status": "clean",
+      "suggested_fix_surface": "none"
+    },
+    {
+      "candidate_id": "cand:p0041:0007:text",
+      "evidence": "Extracted JSON block 7: type 'paragraph_block', source_type 'Body', text matches rendered content. Bbox matches visual.",
+      "rationale": "The extracted block accurately captures the paragraph text, its bounding box, and is correctly classified as a generic text block.",
+      "status": "clean",
+      "suggested_fix_surface": "none"
+    },
+    {
+      "candidate_id": "cand:p0041:0008:text",
+      "evidence": "Extracted JSON block 8: type 'paragraph_block', source_type 'Body', text matches rendered content. Bbox matches visual.",
+      "rationale": "The extracted block accurately captures the paragraph text, its bounding box, and is correctly classified as a generic text block.",
+      "status": "clean",
+      "suggested_fix_surface": "none"
+    },
+    {
+      "candidate_id": "cand:p0041:0009:text",
+      "evidence": "Extracted JSON block 9: type 'paragraph_block', source_type 'Body', text matches rendered content. Bbox matches visual.",
+      "rationale": "The extracted block accurately captures the paragraph text, its bounding box, and is correctly classified as a generic text block.",
+      "status": "clean",
+      "suggested_fix_surface": "none"
+    },
+    {
+      "candidate_id": "cand:p0041:0010:footnote",
+      "evidence": "Extracted JSON block 10: type 'footnote', source_type 'Footnote', text '29 Resources to support information security and privacy program collaboration are available at [SP 800-53 RES].'. Bbox matches visual.",
+      "rationale": "The extracted block accurately captures the footnote text, its bounding box, and is correctly classified as a footnote.",
+      "status": "clean",
+      "suggested_fix_surface": "none"
+    },
+    {
+      "candidate_id": "cand:p0041:0011:footnote",
+      "evidence": "Extracted JSON block 11: type 'footnote', source_type 'Footnote', text '30 [SP 800-160-1] provides guidance on systems security engineering and the application of security design principles to achieve trustworthy systems.'. Bbox matches visual.",
+      "rationale": "The extracted block accurately captures the footnote text, its bounding box, and is correctly classified as a footnote.",
+      "status": "clean",
+      "suggested_fix_surface": "none"
+    },
+    {
+      "candidate_id": "cand:p0041:0012:footnote",
+      "evidence": "Extracted JSON block 13: type 'footnote', source_type 'Footnote', text '31 See [NEUM04].'. Bbox matches visual.",
+      "rationale": "The extracted block accurately captures the footnote text, its bounding box, and is correctly classified as a footnote.",
+      "status": "clean",
+      "suggested_fix_surface": "none"
+    }
+  ],
+  "page_rationale": "All candidates on page 41 are accurately extracted with correct bounding boxes and classifications, aligning with the rendered page and preset types.",
+  "page_status": "clean",
+  "schema": "pdf_lab.second_pass.review_response.v1"
+}

@@ -226,6 +226,7 @@ from tau_coding.review_findings import write_review_findings_receipt
 from tau_coding.run_report import write_run_report
 from tau_coding.run_status import build_dag_viewer_link, build_run_status
 from tau_coding.sandbox_run import run_sandboxed_command
+from tau_coding.scillm_chat_review import write_scillm_chat_review_receipt
 from tau_coding.scillm_subagent_gate import validate_scillm_subagent_loop_summary
 from tau_coding.self_fix_repair_loop import write_coder_reviewer_repair_loop
 from tau_coding.self_fix_ticket_repair import run_ticket_repair
@@ -2260,6 +2261,28 @@ def main(
             payload = write_scillm_worker_launch_receipt(
                 work_order_path=Path(str(options["work_order"])),
                 output_path=Path(str(options["out"])),
+                scillm_base_url=str(options["scillm_base_url"]),
+                caller_skill=str(options["caller_skill"]),
+                apply=bool(options["apply"]),
+                auth_token=_optional_str(options.get("auth_token")),
+                request_timeout_s=int(options["request_timeout_s"]),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
+
+    if prompt_option is None and command == "scillm-chat-review":
+        try:
+            options = _parse_scillm_chat_review_cli_args(positional_args[1:])
+            payload = write_scillm_chat_review_receipt(
+                request_path=Path(str(options["request"])),
+                output_path=Path(str(options["out"])),
+                response_output_path=(
+                    Path(str(options["response_out"]))
+                    if options.get("response_out") is not None
+                    else None
+                ),
                 scillm_base_url=str(options["scillm_base_url"]),
                 caller_skill=str(options["caller_skill"]),
                 apply=bool(options["apply"]),
@@ -6025,6 +6048,60 @@ def _parse_scillm_worker_launch_cli_args(args: list[str]) -> dict[str, object]:
         raise RuntimeError("Usage: tau scillm-worker-launch --work-order <json> --out <receipt>")
     if not _optional_str(options.get("out")):
         raise RuntimeError("Usage: tau scillm-worker-launch --work-order <json> --out <receipt>")
+    return options
+
+
+def _parse_scillm_chat_review_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "request": None,
+        "out": None,
+        "response_out": None,
+        "scillm_base_url": "http://localhost:4001",
+        "caller_skill": "tau",
+        "apply": False,
+        "auth_token": None,
+        "request_timeout_s": 120,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--request",
+            "--out",
+            "--response-out",
+            "--scillm-base-url",
+            "--caller-skill",
+            "--auth-token",
+            "--request-timeout-s",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            key = arg.removeprefix("--").replace("-", "_")
+            options[key] = int(args[index]) if key == "request_timeout_s" else args[index]
+        elif arg.startswith("--request="):
+            options["request"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--response-out="):
+            options["response_out"] = arg.partition("=")[2]
+        elif arg.startswith("--scillm-base-url="):
+            options["scillm_base_url"] = arg.partition("=")[2]
+        elif arg.startswith("--caller-skill="):
+            options["caller_skill"] = arg.partition("=")[2]
+        elif arg.startswith("--auth-token="):
+            options["auth_token"] = arg.partition("=")[2]
+        elif arg.startswith("--request-timeout-s="):
+            options["request_timeout_s"] = int(arg.partition("=")[2])
+        elif arg == "--apply":
+            options["apply"] = True
+        else:
+            raise RuntimeError(f"unknown scillm-chat-review option: {arg}")
+        index += 1
+    if not _optional_str(options.get("request")):
+        raise RuntimeError("Usage: tau scillm-chat-review --request <json> --out <receipt>")
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau scillm-chat-review --request <json> --out <receipt>")
     return options
 
 
