@@ -3674,7 +3674,13 @@ def _run_shared_project_dag_plan(
             )
         )
     status = "PASS" if result.status == "PASS" and not alerts else "BLOCKED"
-    verdict = "PASS" if status == "PASS" else _ready_queue_blocked_verdict(alerts, result.verdict)
+    node_semantic_verdicts = _ready_queue_node_semantic_verdicts(responses)
+    verdict = _ready_queue_final_verdict(
+        status=status,
+        alerts=alerts,
+        result_verdict=result.verdict,
+        node_semantic_verdicts=node_semantic_verdicts,
+    )
     prior_events = prior_receipt.get("scheduler_events")
     if result.replayed_event_count and isinstance(prior_events, list):
         events = _deduplicate_scheduler_events(
@@ -3715,6 +3721,7 @@ def _run_shared_project_dag_plan(
         errors=errors,
         node_artifacts=node_artifacts,
         course_correction_artifacts=course_correction_artifacts,
+        node_semantic_verdicts=node_semantic_verdicts,
         route_decision_artifacts=_transition_receipts_in_directory(
             result.transition_receipt_paths, "route-decisions"
         ),
@@ -3954,6 +3961,82 @@ def _ready_queue_blocked_verdict(alerts: list[dict[str, Any]], result_verdict: s
     return "DAG_BLOCKED"
 
 
+def _ready_queue_final_verdict(
+    *,
+    status: str,
+    alerts: list[dict[str, Any]],
+    result_verdict: str,
+    node_semantic_verdicts: list[dict[str, Any]],
+) -> str:
+    if status != "PASS":
+        return _ready_queue_blocked_verdict(alerts, result_verdict)
+    non_pass = [
+        item
+        for item in node_semantic_verdicts
+        if isinstance(item.get("verdict"), str) and item["verdict"].upper() != "PASS"
+    ]
+    if non_pass:
+        return str(non_pass[-1]["verdict"]).upper()
+    return "PASS"
+
+
+def _ready_queue_node_semantic_verdicts(
+    responses: Mapping[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    verdicts: list[dict[str, Any]] = []
+    for node_id, response in responses.items():
+        result = response.get("result")
+        if isinstance(result, dict):
+            result_verdict = result.get("verdict")
+            if isinstance(result_verdict, str) and result_verdict.strip():
+                verdicts.append(
+                    {
+                        "node_id": node_id,
+                        "kind": "node_result",
+                        "status": result.get("status"),
+                        "verdict": result_verdict.strip().upper(),
+                    }
+                )
+        for evidence in _result_evidence(response):
+            if not isinstance(evidence, dict):
+                continue
+            evidence_verdict = evidence.get("verdict")
+            if isinstance(evidence_verdict, str) and evidence_verdict.strip():
+                verdicts.append(
+                    {
+                        "node_id": str(evidence.get("node_id") or node_id),
+                        "kind": str(evidence.get("kind") or "evidence"),
+                        "handler": evidence.get("handler"),
+                        "status": evidence.get("status"),
+                        "verdict": evidence_verdict.strip().upper(),
+                    }
+                )
+            path_value = evidence.get("path")
+            if not isinstance(path_value, str) or not path_value:
+                continue
+            kind = str(evidence.get("kind") or "")
+            if not (kind.endswith("_receipt") or kind == "handler_response_receipt"):
+                continue
+            try:
+                receipt = _read_json_object(Path(path_value), label=f"{kind} semantic receipt")
+            except RuntimeError:
+                continue
+            receipt_verdict = receipt.get("verdict")
+            if not isinstance(receipt_verdict, str) or not receipt_verdict.strip():
+                continue
+            verdicts.append(
+                {
+                    "node_id": str(receipt.get("node_id") or evidence.get("node_id") or node_id),
+                    "kind": kind,
+                    "handler": receipt.get("handler") or evidence.get("handler"),
+                    "path": str(Path(path_value).expanduser()),
+                    "status": receipt.get("status") or evidence.get("status"),
+                    "verdict": receipt_verdict.strip().upper(),
+                }
+            )
+    return verdicts
+
+
 def _max_concurrency(contract: ProjectDagContract) -> int:
     raw = contract.limits.get("max_concurrency", 2)
     if isinstance(raw, bool) or not isinstance(raw, int) or raw < 1:
@@ -3993,6 +4076,7 @@ def _ready_queue_receipt(
     errors: list[str],
     node_artifacts: dict[str, list[str]] | None = None,
     course_correction_artifacts: list[str] | None = None,
+    node_semantic_verdicts: list[dict[str, Any]] | None = None,
     route_decision_artifacts: list[str] | None = None,
     terminal_contribution_artifacts: list[str] | None = None,
     join_decision_artifacts: list[str] | None = None,
@@ -4028,7 +4112,7 @@ def _ready_queue_receipt(
         )
     receipt = {
         "schema": DAG_RECEIPT_SCHEMA,
-        "ok": status == "PASS",
+        "ok": status == "PASS" and verdict == "PASS",
         "status": status,
         "verdict": verdict,
         "mocked": False,
@@ -4061,6 +4145,7 @@ def _ready_queue_receipt(
         "observed_edges": observed_edges,
         "node_attempts": node_attempts,
         "reviewer_verdicts": reviewer_verdicts,
+        "node_semantic_verdicts": node_semantic_verdicts or [],
         "scheduler_events": events,
         "dispatches": dispatches,
         "alerts": alerts,
@@ -4151,7 +4236,7 @@ def _write_project_dag_progress(
     ]
     payload = {
         "schema": DAG_PROGRESS_SCHEMA,
-        "ok": status not in {"BLOCKED", "FAIL", "FAILED"},
+        "ok": status not in {"BLOCKED", "FAIL", "FAILED"} and verdict in {None, "PASS"},
         "status": status,
         "verdict": verdict,
         "mocked": False,

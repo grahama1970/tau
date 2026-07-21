@@ -185,6 +185,144 @@ def test_ready_queue_surfaces_ask_surf_conversation_full_blocker(tmp_path: Path)
     assert "reviewer" not in receipt["node_attempts"]
 
 
+def test_ready_queue_derives_final_verdict_from_terminal_handler_receipt(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "agents").mkdir()
+    spec_root = tmp_path / "specs"
+    contract = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": "ask-sequential-terminal-handler-verdict",
+        "goal": {
+            "goal_id": "ask-sequential-terminal-handler-verdict",
+            "goal_version": 1,
+            "goal_hash": "sha256:active-goal",
+        },
+        "target": {
+            "repo": "grahama1970/tau",
+            "target": "issue-127",
+        },
+        "entry_node": "handler-webgpt",
+        "terminal_nodes": ["human"],
+        "limits": {
+            "resume": False,
+            "default_timeout_seconds": 30,
+            "max_total_attempts": 3,
+        },
+        "nodes": [
+            {
+                "id": "handler-webgpt",
+                "agent": "handler-webgpt",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(
+                    spec_root / "handler-webgpt" / "tau-dispatch-command.json"
+                ),
+                "required_evidence": ["normalized_handler_receipt"],
+            },
+            {
+                "id": "handler-webclaude",
+                "agent": "handler-webclaude",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(
+                    spec_root / "handler-webclaude" / "tau-dispatch-command.json"
+                ),
+                "required_evidence": ["normalized_handler_receipt"],
+            },
+            {
+                "id": "join",
+                "agent": "join",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "join" / "tau-dispatch-command.json"),
+                "required_evidence": ["roundtable_join_receipt"],
+            },
+        ],
+        "edges": [
+            {"from": "handler-webgpt", "to": "handler-webclaude"},
+            {"from": "handler-webclaude", "to": "join"},
+            {"from": "join", "to": "human"},
+        ],
+        "required_evidence": ["normalized_handler_receipt", "roundtable_join_receipt"],
+        "fail_closed_on": [
+            "goal_hash_mismatch",
+            "target_changed",
+            "unexpected_node",
+            "unexpected_edge",
+            "missing_required_evidence",
+            "max_attempts_exceeded",
+            "malformed_handoff",
+        ],
+    }
+    contract_path = tmp_path / "sequential-handler-verdict.json"
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    receipts_dir = tmp_path / "node-receipts"
+    receipts_dir.mkdir()
+    webgpt_receipt = _write_handler_receipt(
+        receipts_dir / "handler-webgpt.json",
+        node_id="handler-webgpt",
+        handler="webgpt",
+        verdict="PASS",
+    )
+    webclaude_receipt = _write_handler_receipt(
+        receipts_dir / "handler-webclaude.json",
+        node_id="handler-webclaude",
+        handler="webclaude",
+        verdict="FAIL",
+    )
+    join_receipt = _write_handler_receipt(
+        receipts_dir / "join.json",
+        node_id="join",
+        handler="join",
+        verdict=None,
+    )
+    _write_response_spec(
+        tmp_path,
+        "handler-webgpt",
+        _handler_handoff(
+            "handler-webgpt",
+            "handler-webclaude",
+            receipt_path=webgpt_receipt,
+            handler="webgpt",
+        ),
+    )
+    _write_response_spec(
+        tmp_path,
+        "handler-webclaude",
+        _handler_handoff(
+            "handler-webclaude",
+            "join",
+            receipt_path=webclaude_receipt,
+            handler="webclaude",
+        ),
+    )
+    _write_response_spec(
+        tmp_path,
+        "join",
+        _join_handoff("join", "human", receipt_path=join_receipt),
+    )
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["ok"] is False
+    assert receipt["verdict"] == "FAIL"
+    assert receipt["alerts"] == []
+    assert receipt["selected_agents"] == ["handler-webgpt", "handler-webclaude", "join"]
+    assert receipt["node_semantic_verdicts"][-1]["node_id"] == "handler-webclaude"
+    assert receipt["node_semantic_verdicts"][-1]["verdict"] == "FAIL"
+    progress = json.loads(Path(receipt["progress_path"]).read_text(encoding="utf-8"))
+    assert progress["status"] == "PASS"
+    assert progress["ok"] is False
+    assert progress["verdict"] == "FAIL"
+
+
 def test_project_dag_durable_replay_preserves_receipt_evidence(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -4098,6 +4236,94 @@ def _repeated_reviewer_handoff(
 
 def _creator_evidence() -> list[object]:
     return [{"kind": "creator_artifact", "path": "/tmp/creator-artifact.txt"}]
+
+
+def _write_handler_receipt(
+    path: Path,
+    *,
+    node_id: str,
+    handler: str,
+    verdict: str | None,
+) -> Path:
+    payload = {
+        "schema": "ask.tau_dag_handler_receipt.v1",
+        "ok": True,
+        "status": "PASS",
+        "verdict": verdict,
+        "node_id": node_id,
+        "handler": handler,
+    }
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def _handler_handoff(
+    previous_subagent: str,
+    next_agent: str,
+    *,
+    receipt_path: Path,
+    handler: str,
+) -> dict[str, object]:
+    payload = _handoff(
+        previous_subagent,
+        next_agent,
+        [
+            {
+                "kind": "handler_response_receipt",
+                "node_id": previous_subagent,
+                "handler": handler,
+                "path": str(receipt_path),
+                "status": "PASS",
+            },
+            {
+                "kind": "normalized_handler_receipt",
+                "node_id": previous_subagent,
+                "handler": handler,
+                "response_path": str(receipt_path.with_suffix(".md")),
+            },
+        ],
+    )
+    payload["github"] = {
+        "repo": "grahama1970/tau",
+        "target": "issue-127",
+    }
+    payload["goal"] = {
+        "goal_id": "ask-sequential-terminal-handler-verdict",
+        "goal_version": 1,
+        "goal_hash": "sha256:active-goal",
+    }
+    return payload
+
+
+def _join_handoff(
+    previous_subagent: str,
+    next_agent: str,
+    *,
+    receipt_path: Path,
+) -> dict[str, object]:
+    payload = _handoff(
+        previous_subagent,
+        next_agent,
+        [
+            {
+                "kind": "roundtable_join_receipt",
+                "path": str(receipt_path),
+                "status": "PASS",
+            },
+            {"kind": "handler_response_index", "count": 2, "failures": []},
+            {"kind": "unresolved_gaps", "items": []},
+        ],
+    )
+    payload["github"] = {
+        "repo": "grahama1970/tau",
+        "target": "issue-127",
+    }
+    payload["goal"] = {
+        "goal_id": "ask-sequential-terminal-handler-verdict",
+        "goal_version": 1,
+        "goal_hash": "sha256:active-goal",
+    }
+    return payload
 
 
 def _reviewer_handoff(*, goal_hash: str) -> dict[str, object]:
