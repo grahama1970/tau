@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 import tempfile
 import threading
 import time
@@ -75,6 +76,7 @@ FAIL_CLOSED_REGISTRY_SCHEMA = "tau.fail_closed_registry.v1"
 DAG_IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,63}$")
 PERSISTENT_SUBAGENT_SCHEMA = "tau.persistent_subagent.v1"
 PROVIDER_COMMAND_TIMEOUT_SECONDS = 900.0
+BROWSER_ORACLE_TAB_STALE_CODE = "BLOCKED_BROWSER_ORACLE_TAB_STALE"
 
 FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
     "branch_goal_hash_divergence": {
@@ -124,6 +126,10 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
     "BLOCKED_WEBGPT_CONVERSATION_FULL": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.downstream_skill_blocker",
+    },
+    BROWSER_ORACLE_TAB_STALE_CODE: {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.browser_oracle_pre_dispatch",
     },
     "missing_required_join": {
         "severity": "BLOCK",
@@ -942,6 +948,14 @@ def _run_bounded_ready_queue_project_dag(
         source_payload_sha256=canonical_sha256(contract.payload),
     )
     runtime_alerts = _project_runtime_preflight_alerts(plan)
+    runtime_alerts.extend(
+        _browser_oracle_pre_dispatch_alerts(
+            contract=contract,
+            contract_path=contract_path,
+            receipt_dir=receipt_dir,
+            command_spec_root=command_spec_root,
+        )
+    )
     if runtime_alerts:
         receipt = _ready_queue_receipt(
             contract=contract,
@@ -3915,6 +3929,285 @@ def _project_runtime_preflight_alert(
     )
 
 
+def _browser_oracle_pre_dispatch_alerts(
+    *,
+    contract: ProjectDagContract,
+    contract_path: Path,
+    receipt_dir: Path,
+    command_spec_root: Path | None,
+) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    for node_id, node in contract.nodes.items():
+        metadata = _browser_oracle_node_metadata(
+            contract=contract,
+            contract_path=contract_path,
+            node=node,
+            command_spec_root=command_spec_root,
+        )
+        if metadata is None:
+            continue
+        preflight = _run_browser_oracle_preflight(metadata)
+        receipt_path = _write_browser_oracle_preflight_receipt(
+            receipt_dir=receipt_dir,
+            node_id=node_id,
+            preflight=preflight,
+        )
+        if preflight["ok"] is True:
+            continue
+        evidence = {
+            "node_id": node_id,
+            "agent": node.agent,
+            "handler": metadata["handler"],
+            "backend": metadata["backend"],
+            "browser_oracle_project": metadata["project"],
+            "browser_oracle_run": metadata["browser_oracle_run"],
+            "browser_oracle_preflight_receipt": str(receipt_path),
+            "browser_oracle_exit_code": preflight["exit_code"],
+            "readiness": preflight.get("readiness"),
+            "issues": preflight.get("issues", []),
+            "dead_tab_id": preflight.get("tab_id"),
+            "binding_path": preflight.get("binding_path"),
+            "conversation_url": preflight.get("conversation_url"),
+            "rebind_command": _browser_oracle_rebind_command(
+                project=metadata["project"],
+                backend=metadata["backend"],
+                browser_oracle_run=metadata["browser_oracle_run"],
+                url=preflight.get("conversation_url"),
+            ),
+            "errors": [preflight["summary"]],
+        }
+        alerts.append(
+            _alert(
+                "BLOCK",
+                BROWSER_ORACLE_TAB_STALE_CODE,
+                "Browser-oracle tab binding is stale before handler dispatch.",
+                evidence,
+            )
+        )
+    return alerts
+
+
+def _browser_oracle_node_metadata(
+    *,
+    contract: ProjectDagContract,
+    contract_path: Path,
+    node: ProjectDagNode,
+    command_spec_root: Path | None,
+) -> dict[str, str] | None:
+    node_payload = _node_payload(contract, node.node_id)
+    context = node_payload.get("context") if isinstance(node_payload.get("context"), dict) else {}
+    handler_policy = (
+        context.get("handler_policy") if isinstance(context.get("handler_policy"), dict) else {}
+    )
+    transport = str(handler_policy.get("transport") or "")
+    execution_mode = str(
+        context.get("execution_mode") or contract.context.get("execution_mode") or ""
+    )
+    handler = str(context.get("handler") or handler_policy.get("id") or "")
+    project = str(context.get("browser_oracle_project") or "")
+    backend = handler if handler.startswith("web") else "webgpt"
+
+    spec_path = _node_command_spec_source(
+        contract=contract,
+        contract_path=contract_path,
+        node=node,
+        command_spec_root=command_spec_root,
+    )
+    spec = _read_json_object(spec_path, label=f"command_spec:{node.node_id}") if spec_path else {}
+    command = spec.get("command") if isinstance(spec.get("command"), list) else []
+    argv = [str(item) for item in command]
+    arg_project = _argv_value(argv, "--browser-oracle-project")
+    browser_oracle_run = _argv_value(argv, "--browser-oracle-run")
+    handler_arg = _argv_value(argv, "--handler")
+    if arg_project:
+        project = arg_project
+    if handler_arg:
+        handler = handler_arg
+        if handler.startswith("web"):
+            backend = handler
+
+    is_browser_handler = (
+        transport in {"webgpt.submit", "webclaude.submit", "webgemini.submit", "webkimi.submit"}
+        or execution_mode == "surf_browser_adapter"
+        or bool(browser_oracle_run)
+    )
+    if not is_browser_handler or not project or not browser_oracle_run:
+        return None
+    return {
+        "node_id": node.node_id,
+        "handler": handler or backend,
+        "backend": backend,
+        "project": project,
+        "browser_oracle_run": browser_oracle_run,
+    }
+
+
+def _node_command_spec_source(
+    *,
+    contract: ProjectDagContract,
+    contract_path: Path,
+    node: ProjectDagNode,
+    command_spec_root: Path | None,
+) -> Path | None:
+    if node.command_spec:
+        source = Path(str(node.command_spec))
+        if not source.is_absolute():
+            source = contract_path.parent / source
+        if source.is_dir():
+            source = source / "tau-dispatch-command.json"
+        return source if source.is_file() else None
+    return _fallback_command_spec_path(command_spec_root, node_id=node.node_id, agent=node.agent)
+
+
+def _argv_value(argv: list[str], flag: str) -> str | None:
+    try:
+        index = argv.index(flag)
+    except ValueError:
+        return None
+    next_index = index + 1
+    if next_index >= len(argv):
+        return None
+    value = argv[next_index].strip()
+    return value or None
+
+
+def _run_browser_oracle_preflight(metadata: dict[str, str]) -> dict[str, Any]:
+    command = [
+        metadata["browser_oracle_run"],
+        "doctor",
+        "--project",
+        metadata["project"],
+        "--backend",
+        metadata["backend"],
+        "--json",
+    ]
+    try:
+        completed = subprocess.run(  # noqa: S603 - command path is an explicit DAG input.
+            command,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+    except Exception as exc:
+        return {
+            "ok": False,
+            "exit_code": None,
+            "command": command,
+            "stdout": "",
+            "stderr": "",
+            "summary": f"browser-oracle preflight failed before dispatch: {exc}",
+        }
+    parsed = _first_json_object(completed.stdout)
+    issues = parsed.get("issues") if isinstance(parsed.get("issues"), list) else []
+    readiness = parsed.get("readiness") if isinstance(parsed.get("readiness"), str) else None
+    stale = completed.returncode != 0 and (
+        "tab_stale_manual_binding" in issues
+        or readiness == "needs_attention"
+        or "no longer open" in completed.stdout.lower()
+        or "missing_live_tab" in completed.stdout.lower()
+    )
+    return {
+        "ok": completed.returncode == 0,
+        "stale": stale,
+        "exit_code": completed.returncode,
+        "command": command,
+        "stdout": completed.stdout,
+        "stderr": completed.stderr,
+        "parsed": parsed,
+        "readiness": readiness,
+        "issues": issues,
+        "tab_id": parsed.get("tab_id"),
+        "binding_path": parsed.get("binding_path"),
+        "conversation_url": parsed.get("conversation_url"),
+        "summary": _browser_oracle_preflight_summary(
+            completed.returncode,
+            parsed,
+            completed.stdout,
+        ),
+    }
+
+
+def _browser_oracle_preflight_summary(
+    exit_code: int,
+    parsed: dict[str, Any],
+    stdout: str,
+) -> str:
+    issues = parsed.get("issues")
+    if isinstance(issues, list) and issues:
+        return f"browser-oracle preflight exited {exit_code}: {', '.join(map(str, issues))}"
+    for line in stdout.splitlines():
+        if "no longer open" in line or "Re-bind" in line:
+            return line.strip()
+    return f"browser-oracle preflight exited {exit_code}"
+
+
+def _write_browser_oracle_preflight_receipt(
+    *,
+    receipt_dir: Path,
+    node_id: str,
+    preflight: dict[str, Any],
+) -> Path:
+    path = receipt_dir / "browser-oracle-preflight" / f"{node_id}.json"
+    payload = {
+        "schema": "tau.browser_oracle_pre_dispatch_preflight.v1",
+        "ok": preflight["ok"],
+        "status": "PASS" if preflight["ok"] is True else "BLOCKED",
+        "failure_code": None if preflight["ok"] is True else BROWSER_ORACLE_TAB_STALE_CODE,
+        "node_id": node_id,
+        "command": preflight.get("command"),
+        "exit_code": preflight.get("exit_code"),
+        "readiness": preflight.get("readiness"),
+        "issues": preflight.get("issues", []),
+        "tab_id": preflight.get("tab_id"),
+        "binding_path": preflight.get("binding_path"),
+        "conversation_url": preflight.get("conversation_url"),
+        "stdout": preflight.get("stdout", ""),
+        "stderr": preflight.get("stderr", ""),
+        "parsed": preflight.get("parsed", {}),
+        "summary": preflight.get("summary"),
+        "timestamp": _utc_stamp(),
+    }
+    _write_json(path, payload)
+    return path
+
+
+def _first_json_object(text: str) -> dict[str, Any]:
+    start = text.find("{")
+    end = text.rfind("}")
+    if start < 0 or end < start:
+        return {}
+    try:
+        value = json.loads(text[start : end + 1])
+    except json.JSONDecodeError:
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
+def _browser_oracle_rebind_command(
+    *,
+    project: str,
+    backend: str,
+    browser_oracle_run: str,
+    url: object,
+) -> list[str]:
+    command = [
+        browser_oracle_run,
+        "bind",
+        project,
+        "--backend",
+        backend,
+        "--tab-id",
+        "<live-tab-id>",
+    ]
+    if isinstance(url, str) and url:
+        command.extend(["--url", url])
+    else:
+        command.extend(["--url", "<url>"])
+    command.append("--manual")
+    return command
+
+
 def _transition_receipts_in_directory(
     receipt_paths: tuple[str, ...], directory_name: str
 ) -> list[str]:
@@ -4544,6 +4837,15 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
             "reason": (
                 "Rebind the $ask/$surf WebGPT handler project to a fresh ChatGPT "
                 "conversation before rerunning the DAG node."
+            ),
+        }
+    if normalized == "blocked_browser_oracle_tab_stale":
+        return {
+            "type": "rebind_browser_oracle_tab",
+            "next_agent": "goal-guardian",
+            "reason": (
+                "Rebind the browser-oracle handler project to a live reviewer tab before "
+                "dispatching the DAG node."
             ),
         }
     if normalized in {

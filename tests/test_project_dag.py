@@ -185,6 +185,90 @@ def test_ready_queue_surfaces_ask_surf_conversation_full_blocker(tmp_path: Path)
     assert "reviewer" not in receipt["node_attempts"]
 
 
+def test_ready_queue_blocks_stale_browser_oracle_before_handler_dispatch(tmp_path: Path) -> None:
+    contract_path = _write_browser_handler_contract(tmp_path, browser_oracle_status="stale")
+    marker_path = tmp_path / "handler-executed.txt"
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "BLOCKED_BROWSER_ORACLE_TAB_STALE"
+    assert receipt["command_executed"] is False
+    assert receipt["node_attempts"] == {}
+    assert marker_path.exists() is False
+    assert receipt["alerts"][0]["code"] == "BLOCKED_BROWSER_ORACLE_TAB_STALE"
+    evidence = receipt["alerts"][0]["evidence"]
+    assert evidence["node_id"] == "handler-webgpt"
+    assert evidence["dead_tab_id"] == "837360717"
+    assert evidence["binding_path"].endswith("webgpt-projects/webgpt.json")
+    assert evidence["browser_oracle_project"] == "webgpt"
+    assert evidence["rebind_command"][-1] == "--manual"
+    assert "browser-oracle" in evidence["rebind_command"][0]
+    assert Path(evidence["browser_oracle_preflight_receipt"]).is_file()
+    assert receipt["dag_error"]["failure_code"] == "BLOCKED_BROWSER_ORACLE_TAB_STALE"
+    assert receipt["dag_error"]["recommended_action"]["type"] == "rebind_browser_oracle_tab"
+    assert receipt["dag_error"]["attempts"] == 0
+
+
+def test_cli_dag_run_surfaces_stale_browser_oracle_json_without_handler_attempt(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_browser_handler_contract(tmp_path, browser_oracle_status="stale")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "dag-run",
+            str(contract_path),
+            "--receipt-dir",
+            str(tmp_path / "cli-run"),
+            "--agents-root",
+            str(tmp_path / "agents"),
+            "--scheduler",
+            "bounded-ready-queue",
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["verdict"] == "BLOCKED_BROWSER_ORACLE_TAB_STALE"
+    assert payload["node_attempts"] == {}
+    assert payload["command_executed"] is False
+    assert payload["alerts"][0]["evidence"]["dead_tab_id"] == "837360717"
+    assert payload["dag_error"]["recommended_action"]["type"] == "rebind_browser_oracle_tab"
+
+
+def test_ready_queue_allows_live_browser_oracle_preflight_then_dispatch(tmp_path: Path) -> None:
+    contract_path = _write_browser_handler_contract(tmp_path, browser_oracle_status="ready")
+    marker_path = tmp_path / "handler-executed.txt"
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert receipt["verdict"] == "PASS"
+    assert receipt["node_attempts"] == {"handler-webgpt": 1}
+    assert marker_path.read_text(encoding="utf-8") == "executed"
+    preflight_receipt = (
+        tmp_path / "run" / "browser-oracle-preflight" / "handler-webgpt.json"
+    )
+    assert preflight_receipt.is_file()
+    preflight = json.loads(preflight_receipt.read_text(encoding="utf-8"))
+    assert preflight["status"] == "PASS"
+    assert preflight["tab_id"] == "837360999"
+
+
 def test_ready_queue_derives_final_verdict_from_terminal_handler_receipt(
     tmp_path: Path,
 ) -> None:
@@ -3231,6 +3315,164 @@ def _write_contract(tmp_path: Path) -> Path:
     path = tmp_path / "dag-contract.json"
     path.write_text(json.dumps(contract), encoding="utf-8")
     return path
+
+
+def _write_browser_handler_contract(tmp_path: Path, *, browser_oracle_status: str) -> Path:
+    (tmp_path / "agents").mkdir(exist_ok=True)
+    spec_root = tmp_path / "specs"
+    browser_oracle_run = tmp_path / "browser-oracle-run.py"
+    _write_fake_browser_oracle_run(browser_oracle_run, status=browser_oracle_status)
+    marker_path = tmp_path / "handler-executed.txt"
+    worker_path = tmp_path / "handler-worker.py"
+    worker_path.write_text(
+        "\n".join(
+            [
+                "import json",
+                "import sys",
+                "from pathlib import Path",
+                f"Path({str(marker_path)!r}).write_text('executed', encoding='utf-8')",
+                "payload = json.loads(sys.stdin.readline())",
+                "response = {",
+                "    'schema': 'tau.agent_handoff.v1',",
+                "    'github': payload['github'],",
+                "    'goal': payload['goal'],",
+                "    'previous_subagent': 'handler-webgpt',",
+                "    'context': {'summary': 'handler passed', 'artifacts': []},",
+                "    'result': {'status': 'PASS', 'summary': 'handler passed', 'evidence': []},",
+                "    'rationale': 'test handler',",
+                "    'next_agent': {'name': 'human', 'executor': 'human', 'reason': 'done'},",
+                "    'required_evidence': [],",
+                "    'stop_condition': 'done',",
+                "}",
+                "print(json.dumps(response, sort_keys=True))",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    spec_path = spec_root / "handler-webgpt" / "tau-dispatch-command.json"
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    spec_path.write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    str(worker_path),
+                    "--handler",
+                    "webgpt",
+                    "--browser-oracle-run",
+                    str(browser_oracle_run),
+                    "--browser-oracle-project",
+                    "webgpt",
+                ],
+                "timeout_s": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+    contract = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": f"browser-handler-{browser_oracle_status}",
+        "goal": {
+            "goal_id": f"browser-handler-{browser_oracle_status}",
+            "goal_version": 1,
+            "goal_hash": "sha256:active-goal",
+        },
+        "target": {
+            "repo": "grahama1970/tau",
+            "target": "issue-130",
+        },
+        "entry_node": "handler-webgpt",
+        "terminal_nodes": ["human"],
+        "limits": {
+            "resume": False,
+            "default_timeout_seconds": 30,
+            "max_total_attempts": 1,
+        },
+        "nodes": [
+            {
+                "id": "handler-webgpt",
+                "agent": "handler-webgpt",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_path),
+                "required_evidence": [],
+                "context": {
+                    "handler": "webgpt",
+                    "browser_oracle_project": "webgpt",
+                    "execution_mode": "surf_browser_adapter",
+                    "handler_policy": {
+                        "id": "webgpt",
+                        "runtime": "browser",
+                        "transport": "webgpt.submit",
+                        "transport_owner": "$surf",
+                    },
+                },
+            }
+        ],
+        "edges": [{"from": "handler-webgpt", "to": "human"}],
+        "required_evidence": [],
+        "fail_closed_on": [
+            "goal_hash_mismatch",
+            "target_changed",
+            "unexpected_node",
+            "unexpected_edge",
+            "missing_required_evidence",
+            "max_attempts_exceeded",
+            "malformed_handoff",
+            "BLOCKED_BROWSER_ORACLE_TAB_STALE",
+        ],
+    }
+    path = tmp_path / "browser-handler-dag.json"
+    path.write_text(json.dumps(contract), encoding="utf-8")
+    return path
+
+
+def _write_fake_browser_oracle_run(path: Path, *, status: str) -> None:
+    if status == "ready":
+        payload = {
+            "readiness": "ready",
+            "backend": "webgpt",
+            "project": "webgpt",
+            "binding_path": "/home/graham/.pi/webgpt-projects/webgpt.json",
+            "tab_id": "837360999",
+            "conversation_url": "https://chatgpt.com/c/live",
+            "issues": [],
+        }
+        exit_code = 0
+    elif status == "stale":
+        payload = {
+            "readiness": "needs_attention",
+            "backend": "webgpt",
+            "project": "webgpt",
+            "binding_path": "/home/graham/.pi/webgpt-projects/webgpt.json",
+            "tab_id": "837360717",
+            "conversation_url": "https://chatgpt.com/c/stale",
+            "issues": ["tab_stale_manual_binding"],
+            "resume_hint": (
+                "browser-oracle bind webgpt --backend webgpt --tab-id <id> "
+                "--url <url> --manual"
+            ),
+        }
+        exit_code = 2
+    else:  # pragma: no cover - helper contract guard.
+        raise AssertionError(f"unknown browser oracle status: {status}")
+    path.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import json",
+                "import sys",
+                "if 'doctor' not in sys.argv:",
+                "    raise SystemExit(64)",
+                f"print({json.dumps(json.dumps(payload, sort_keys=True))})",
+                f"raise SystemExit({exit_code})",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    path.chmod(0o755)
 
 
 def _embry_voice_persistent_subagent() -> dict[str, object]:
