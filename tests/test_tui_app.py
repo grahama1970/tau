@@ -2483,6 +2483,54 @@ async def test_tui_app_session_picker_named_filter_combines_with_search() -> Non
 
 
 @pytest.mark.anyio
+async def test_tui_app_session_picker_path_toggle_shows_session_cwd() -> None:
+    session = FakeSession()
+    session.session_manager = _FakeSessionManager(
+        [
+            CodingSessionRecord(
+                id="session-1",
+                path=Path("/tmp/session-1.jsonl"),
+                cwd=Path("/workspace/project-alpha"),
+                model="fake-model",
+                title="Shared task",
+                created_at=1.0,
+                updated_at=3.0,
+            ),
+            CodingSessionRecord(
+                id="session-2",
+                path=Path("/tmp/session-2.jsonl"),
+                cwd=Path("/workspace/project-beta"),
+                model="fake-model",
+                title="Shared task",
+                created_at=1.0,
+                updated_at=2.0,
+            ),
+        ]
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        await pilot.press("ctrl+r")
+        assert isinstance(app.screen, SessionPickerScreen)
+        labels_before = [
+            item.query_one(Label).content
+            for item in app.screen.query_one("#session-picker-list", ListView).children
+        ]
+
+        await pilot.press("ctrl+p")
+        labels_after = [
+            item.query_one(Label).content
+            for item in app.screen.query_one("#session-picker-list", ListView).children
+        ]
+        help_text = str(app.screen.query_one("#session-picker-help", Static).render())
+
+    assert all("/workspace/project-" not in str(label) for label in labels_before)
+    assert "/workspace/project-alpha" in str(labels_after[0])
+    assert "/workspace/project-beta" in str(labels_after[1])
+    assert "path:on" in help_text
+
+
+@pytest.mark.anyio
 async def test_tui_app_session_picker_arrow_keys_select_session() -> None:
     session = FakeSession(messages=[UserMessage(content="Earlier")])
     session.session_manager = _FakeSessionManager(
