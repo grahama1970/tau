@@ -177,6 +177,11 @@ class FakeSession:
                 handled=True,
                 message="Session info",
             )
+        if text == "/changelog":
+            return CommandResult(
+                handled=True,
+                message="# Changelog\n\n## Unreleased\n\n- Tau TUI parity.",
+            )
         if text == "/reload":
             self.reload_count += 1
             self.skills = (
@@ -3772,9 +3777,14 @@ async def test_tui_app_scrolls_completion_selection_into_view() -> None:
         )
         assert visible.items[0].display != "/prompt-00"
 
-        for _ in range(35):
+        for _ in range(80):
+            selected = app._completion_state.selected
+            if selected is not None and selected.display == "/prompt-15":
+                break
             app.action_completion_next()
             await pilot.pause()
+        else:  # pragma: no cover - defensive assertion for a broken completion list
+            raise AssertionError("expected to select /prompt-15")
 
         visible = tui_app._visible_completion_state(
             app._completion_state,
@@ -4062,6 +4072,22 @@ async def test_tui_app_help_uses_modal_instead_of_transcript() -> None:
         scroll = app.screen.query_one("#command-output-scroll", VerticalScroll)
         assert scroll is not None
         assert app.screen.focused is scroll
+
+
+@pytest.mark.anyio
+async def test_tui_app_changelog_uses_command_output_modal() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/changelog"
+        await pilot.press("enter")
+
+        assert isinstance(app.screen, CommandOutputScreen)
+        assert app.state.items == []
+        assert app.screen.title_text == "/changelog"
+        assert str(app.screen.query_one("#command-output-title", Static).render()) == "/changelog"
+        assert "Tau TUI parity" in app.screen.message
 
 
 @pytest.mark.anyio
