@@ -172,6 +172,7 @@ class FakeSession:
         self.streaming_behaviors: list[str | None] = []
         self.terminal_commands: list[tuple[str, bool]] = []
         self.cancel_count = 0
+        self.cancel_terminal_count = 0
         self.export_calls: list[tuple[Path | None, str | None]] = []
         self.import_calls: list[Path] = []
         self.share_count = 0
@@ -446,6 +447,9 @@ class FakeSession:
 
     def cancel(self) -> None:
         self.cancel_count += 1
+
+    def cancel_terminal_command(self) -> None:
+        self.cancel_terminal_count += 1
 
     def queue_update_event(self) -> QueueUpdateEvent:
         return QueueUpdateEvent(
@@ -5553,6 +5557,7 @@ async def test_tui_app_escape_cancels_running_terminal_command() -> None:
         release.set()
 
     assert session.terminal_commands == [("sleep 1", True)]
+    assert session.cancel_terminal_count == 1
     assert app._terminal_worker is None
     assert notifications == ["Cancelled terminal command."]
 

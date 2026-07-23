@@ -3601,6 +3601,9 @@ class TauTuiApp(App[None]):
         if worker is None or worker.is_finished or worker.is_cancelled:
             return False
 
+        cancel_terminal = getattr(self.session, "cancel_terminal_command", None)
+        if callable(cancel_terminal):
+            cancel_terminal()
         worker.cancel()
         self._terminal_worker = None
         self._refresh()

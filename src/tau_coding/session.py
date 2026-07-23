@@ -22,6 +22,7 @@ from tau_agent import (
     MessageEndEvent,
     QueuedMessages,
     QueueUpdateEvent,
+    SimpleCancellationToken,
 )
 from tau_agent.messages import AgentMessage, AssistantMessage, UserMessage
 from tau_agent.session import (
@@ -256,6 +257,7 @@ class CodingSession:
         self._auto_compact_token_threshold = config.auto_compact_token_threshold
         self._auto_compact_enabled = config.auto_compact_enabled
         self._thinking_level = _state_thinking_level(state, config.thinking_level)
+        self._terminal_signal: SimpleCancellationToken | None = None
         self._owned_providers: list[ClosableModelProvider] = []
         self._diagnostic_logger = AgentCallDiagnosticLogger.from_paths(self._resource_paths.paths)
         self._credential_store = FileCredentialStore(
@@ -666,6 +668,11 @@ class CodingSession:
     def cancel(self) -> None:
         """Cancel the currently running agent turn, if any."""
         self._harness.cancel()
+
+    def cancel_terminal_command(self) -> None:
+        """Cancel the currently running input-bar terminal command, if any."""
+        if self._terminal_signal is not None:
+            self._terminal_signal.cancel()
 
     def queue_update_event(self) -> QueueUpdateEvent:
         """Return the current queue state as an agent event."""
@@ -1300,7 +1307,13 @@ class CodingSession:
             raise ValueError("Terminal command cannot be empty")
 
         bash_tool = create_bash_tool(cwd=self.cwd)
-        result = await bash_tool.execute({"command": normalized_command})
+        signal = SimpleCancellationToken()
+        self._terminal_signal = signal
+        try:
+            result = await bash_tool.execute({"command": normalized_command}, signal=signal)
+        finally:
+            if self._terminal_signal is signal:
+                self._terminal_signal = None
         exit_code = None
         if result.data is not None:
             raw_exit_code = result.data.get("exit_code")
