@@ -388,6 +388,23 @@ def test_doctor_command_reports_read_only_runtime_preflight() -> None:
     assert "Live provider/model semantic quality." in payload["proof_boundary"]["does_not_prove"]
 
 
+def test_doctor_json_option_does_not_fall_through_to_tui() -> None:
+    result = CliRunner().invoke(app, ["doctor", "--json"])
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.doctor.v1"
+    assert payload["ok"] is True
+    assert "Ask Tau" not in result.output
+
+
+def test_doctor_rejects_unknown_options() -> None:
+    result = CliRunner().invoke(app, ["doctor", "--bogus"])
+
+    assert result.exit_code != 0
+    assert "unknown doctor option: --bogus" in result.output
+
+
 def test_cli_init_zero_trust_creates_starter_files(tmp_path: Path) -> None:
     result = CliRunner().invoke(
         app,

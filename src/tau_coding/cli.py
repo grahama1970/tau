@@ -944,7 +944,11 @@ def main(
         providers_command()
         raise typer.Exit()
 
-    if prompt_option is None and command == "doctor" and len(positional_args) == 1:
+    if prompt_option is None and command == "doctor":
+        try:
+            _parse_doctor_cli_args(positional_args[1:])
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
         payload = doctor_command(repo_root=Path(__file__).resolve().parents[2])
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         if not payload.get("ok"):
@@ -3190,6 +3194,13 @@ def _parse_loop2_scillm_doctor_receipt_cli_args(args: list[str]) -> Path:
     if len(args) != 1:
         raise RuntimeError("Usage: tau loop2-check-scillm-doctor <receipt.json>")
     return Path(args[0])
+
+
+def _parse_doctor_cli_args(args: list[str]) -> None:
+    allowed = {"--json"}
+    unknown = [arg for arg in args if arg not in allowed]
+    if unknown:
+        raise RuntimeError(f"unknown doctor option: {unknown[0]}")
 
 
 def _parse_visible_dag_poc_cli_args(args: list[str]) -> dict[str, object]:
