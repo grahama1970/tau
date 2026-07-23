@@ -64,6 +64,7 @@ class TuiKeybindings:
 
 
 type TuiThemeName = Literal["tau-dark", "tau-light", "high-contrast"]
+type DoubleEscapeAction = Literal["tree", "fork", "none"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -254,11 +255,13 @@ class TuiSettings:
     keybindings: TuiKeybindings = field(default_factory=TuiKeybindings)
     theme: TuiThemeName = "tau-dark"
     auto_copy_selection: bool = False
+    double_escape_action: DoubleEscapeAction = "tree"
 
     def to_json(self) -> dict[str, Any]:
         """Serialize these settings to JSON-compatible data."""
         return {
             "auto_copy_selection": self.auto_copy_selection,
+            "double_escape_action": self.double_escape_action,
             "keybindings": self.keybindings.to_json(),
             "theme": self.theme,
         }
@@ -295,7 +298,7 @@ def save_tui_settings(settings: TuiSettings, paths: TauPaths | None = None) -> P
 
 def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
     """Parse TUI settings from JSON-compatible data."""
-    allowed_fields = {"auto_copy_selection", "keybindings", "theme"}
+    allowed_fields = {"auto_copy_selection", "double_escape_action", "keybindings", "theme"}
     unknown_fields = set(data) - allowed_fields
     if unknown_fields:
         raise TuiConfigError(f"Unknown TUI settings field: {sorted(unknown_fields)[0]}")
@@ -310,6 +313,9 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
             data.get("auto_copy_selection", False),
             "auto_copy_selection",
         ),
+        double_escape_action=_double_escape_action(
+            data.get("double_escape_action", "tree"),
+        ),
     )
 
 
@@ -317,6 +323,12 @@ def _bool_setting(value: object, field_name: str) -> bool:
     if isinstance(value, bool):
         return value
     raise TuiConfigError(f"TUI setting must be a boolean: {field_name}")
+
+
+def _double_escape_action(value: object) -> DoubleEscapeAction:
+    if value in {"tree", "fork", "none"}:
+        return cast(DoubleEscapeAction, value)
+    raise TuiConfigError("TUI double_escape_action must be one of: tree, fork, none")
 
 
 def _keybindings_from_json(data: dict[str, Any]) -> TuiKeybindings:

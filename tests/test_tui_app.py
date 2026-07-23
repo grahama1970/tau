@@ -4081,6 +4081,45 @@ async def test_tui_app_escape_without_running_does_not_append_transcript_status(
 
 
 @pytest.mark.anyio
+async def test_tui_app_double_escape_opens_tree_picker_by_default() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        await pilot.press("escape", "escape")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+
+
+@pytest.mark.anyio
+async def test_tui_app_double_escape_can_open_fork_picker() -> None:
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(double_escape_action="fork"),
+    )
+
+    async with app.run_test() as pilot:
+        await pilot.press("escape", "escape")
+        await pilot.pause()
+
+        assert isinstance(app.screen, UserMessagePickerScreen)
+
+
+@pytest.mark.anyio
+async def test_tui_app_double_escape_can_be_disabled() -> None:
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(double_escape_action="none"),
+    )
+
+    async with app.run_test() as pilot:
+        await pilot.press("escape", "escape")
+        await pilot.pause()
+
+        assert not isinstance(app.screen, TreePickerScreen | UserMessagePickerScreen)
+
+
+@pytest.mark.anyio
 async def test_tui_app_uses_configured_command_palette_keybinding() -> None:
     app = TauTuiApp(
         FakeSession(),

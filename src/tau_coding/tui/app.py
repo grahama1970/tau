@@ -14,6 +14,7 @@ from datetime import datetime
 from inspect import isawaitable
 from io import StringIO
 from pathlib import Path
+from time import monotonic
 from typing import Any, ClassVar, Literal, Protocol, cast
 
 from rich.console import Console, Group
@@ -2740,6 +2741,7 @@ class TauTuiApp(App[None]):
         self._activity_timer: Timer | None = None
         self._active_notification_keys: set[tuple[str, str]] = set()
         self._supports_pyperclip: bool | None = None
+        self._last_empty_escape_at: float | None = None
         self._pty_proof_enabled = os.environ.get("TAU_TUI_PTY_PROOF") == "1"
         self._pty_proof_run_id = os.environ.get("TAU_TUI_PTY_RUN_ID", "tau-real-tui")
 
@@ -3072,6 +3074,7 @@ class TauTuiApp(App[None]):
             keybindings=self.tui_settings.keybindings,
             theme=theme,
             auto_copy_selection=self.tui_settings.auto_copy_selection,
+            double_escape_action=self.tui_settings.double_escape_action,
         )
         save_tui_settings(self.tui_settings)
         self.refresh_css(animate=False)
@@ -3191,8 +3194,12 @@ class TauTuiApp(App[None]):
     def action_cancel(self) -> None:
         """Cancel the active compaction or agent turn."""
         if self._cancel_active_compaction(notify=True):
+            self._last_empty_escape_at = None
             return
-        self._cancel_active_prompt(notify=True)
+        if self._cancel_active_prompt(notify=True):
+            self._last_empty_escape_at = None
+            return
+        self._handle_empty_prompt_escape()
 
     def _cancel_active_compaction(self, *, notify: bool) -> bool:
         """Cancel the active manual compaction worker and restore visible session state."""
@@ -3210,14 +3217,14 @@ class TauTuiApp(App[None]):
             self._notify("Cancelled compaction.")
         return True
 
-    def _cancel_active_prompt(self, *, notify: bool, interrupt: bool = False) -> None:
+    def _cancel_active_prompt(self, *, notify: bool, interrupt: bool = False) -> bool:
         """Cancel the active prompt worker and ignore any late events from it."""
         del interrupt
         worker = self._prompt_worker
         is_worker_active = worker is not None and not worker.is_cancelled
         is_session_running = bool(getattr(self.session, "is_running", False))
         if not (self.state.running or is_session_running or is_worker_active):
-            return
+            return False
 
         self._prompt_run_id += 1
         cancel = getattr(self.session, "cancel", None)
@@ -3231,6 +3238,34 @@ class TauTuiApp(App[None]):
         self._refresh()
         if notify:
             self._notify("Interrupted current operation.")
+        return True
+
+    def _handle_empty_prompt_escape(self) -> bool:
+        action = self.tui_settings.double_escape_action
+        if action == "none":
+            self._last_empty_escape_at = None
+            return False
+        try:
+            prompt = self.query_one("#prompt", PromptInput)
+        except NoMatches:
+            self._last_empty_escape_at = None
+            return False
+        if prompt.text.strip():
+            self._last_empty_escape_at = None
+            return False
+
+        now = monotonic()
+        last_escape_at = self._last_empty_escape_at
+        if last_escape_at is not None and now - last_escape_at <= 0.5:
+            self._last_empty_escape_at = None
+            if action == "tree":
+                self.run_worker(self._open_tree_picker(), exclusive=False)
+            elif action == "fork":
+                self.run_worker(self._open_fork_picker(), exclusive=False)
+            return True
+
+        self._last_empty_escape_at = now
+        return False
 
     def action_accept_completion(self) -> None:
         """Accept the currently selected prompt completion."""
