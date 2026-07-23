@@ -3849,6 +3849,36 @@ async def test_tui_model_opens_interactive_picker() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_model_picker_page_keys_move_by_page() -> None:
+    session = FakeSession()
+    session.available_model_choices = tuple(
+        ModelChoice(provider_name="openai", model=f"model-{index:02d}")
+        for index in range(30)
+    )
+    session.available_models = tuple(choice.model for choice in session.available_model_choices)
+    session.model = "model-00"
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/model"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ModelPickerScreen)
+        model_list = app.screen.query_one("#model-picker-list", ListView)
+        assert model_list.index == 0
+
+        await pilot.press("pagedown")
+        page_down_index = model_list.index
+        await pilot.press("pageup")
+
+    assert page_down_index is not None
+    assert page_down_index > 1
+    assert model_list.index == 0
+
+
+@pytest.mark.anyio
 async def test_tui_scoped_models_picker_toggles_scoped_models_without_switching_model() -> None:
     session = FakeSession()
     app = TauTuiApp(session)
