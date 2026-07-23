@@ -3265,6 +3265,76 @@ async def test_tui_app_tree_picker_direct_filter_shortcuts() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_tree_picker_search_filters_entries_and_escape_clears() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        tree_list = app.screen.query_one("#tree-picker-list", ListView)
+
+        await pilot.press("l", "e", "f", "t")
+        await pilot.pause()
+
+        assert [str(item.query_one(Label).render()) for item in tree_list.children] == [
+            "  assistant: Left"
+        ]
+        assert tree_list.index == 0
+        assert str(app.screen.query_one("#tree-picker-search", Static).render()) == "Search: left"
+
+        await pilot.press("escape")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        assert [str(item.query_one(Label).render()) for item in tree_list.children] == [
+            "  user: Root",
+            "  tool call: read",
+            "  assistant: Left",
+            "* assistant: Right",
+        ]
+        assert str(app.screen.query_one("#tree-picker-search", Static).render()) == (
+            "Search: type to filter"
+        )
+
+
+@pytest.mark.anyio
+async def test_tui_app_tree_picker_search_matches_labels_and_backspace() -> None:
+    session = FakeSession()
+    session.tree_labels["left"] = "bookmark"
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        tree_list = app.screen.query_one("#tree-picker-list", ListView)
+
+        await pilot.press("m", "a", "r", "k", "x")
+        await pilot.pause()
+
+        assert [str(item.query_one(Label).render()) for item in tree_list.children] == []
+        assert tree_list.index is None
+        assert str(app.screen.query_one("#tree-picker-search", Static).render()) == "Search: markx"
+
+        await pilot.press("backspace")
+        await pilot.pause()
+
+        assert [str(item.query_one(Label).render()) for item in tree_list.children] == [
+            "  [bookmark] assistant: Left"
+        ]
+        assert tree_list.index == 0
+        assert str(app.screen.query_one("#tree-picker-search", Static).render()) == "Search: mark"
+
+
+@pytest.mark.anyio
 async def test_tui_app_tree_picker_copies_selected_entry(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
