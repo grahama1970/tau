@@ -752,6 +752,8 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         Binding("escape", "cancel", "Cancel"),
         Binding("up", "cursor_up", "Up", show=False),
         Binding("down", "cursor_down", "Down", show=False),
+        Binding("pageup", "page_up", "Page up", show=False),
+        Binding("pagedown", "page_down", "Page down", show=False),
         Binding("enter", "select_cursor", "Branch", show=False),
         Binding("s", "select_with_summary", "Summarize", show=False),
         Binding("c", "select_with_custom_summary", "Custom summary", show=False),
@@ -796,6 +798,12 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         elif event.key == "down":
             event.stop()
             self.action_cursor_down()
+        elif event.key == "pageup":
+            event.stop()
+            self.action_page_up()
+        elif event.key == "pagedown":
+            event.stop()
+            self.action_page_down()
         elif event.key == "enter":
             event.stop()
             self.action_select_cursor()
@@ -820,6 +828,27 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
     def action_cursor_down(self) -> None:
         """Move to the next tree entry."""
         self.query_one("#tree-picker-list", ListView).action_cursor_down()
+
+    def action_page_up(self) -> None:
+        """Move up by a page of tree entries."""
+        self._move_tree_page(-1)
+
+    def action_page_down(self) -> None:
+        """Move down by a page of tree entries."""
+        self._move_tree_page(1)
+
+    def _move_tree_page(self, direction: Literal[-1, 1]) -> None:
+        """Move the selected tree entry by a viewport-sized page."""
+        visible_choices = self._visible_choices()
+        if not visible_choices:
+            return
+        tree_list = self.query_one("#tree-picker-list", ListView)
+        current_index = tree_list.index if tree_list.index is not None else 0
+        page_size = max(1, tree_list.size.height - 1)
+        if page_size <= 1:
+            page_size = 10
+        next_index = current_index + (direction * page_size)
+        tree_list.index = max(0, min(len(visible_choices) - 1, next_index))
 
     def action_select_cursor(self) -> None:
         """Branch from the highlighted entry without a summary."""

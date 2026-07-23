@@ -2829,6 +2829,41 @@ async def test_tui_app_tree_picker_branches_with_summary() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_tree_picker_page_keys_move_by_page() -> None:
+    class LongTreeSession(FakeSession):
+        async def tree_choices(self) -> tuple[SessionTreeChoice, ...]:
+            return tuple(
+                SessionTreeChoice(
+                    entry_id=f"entry-{index}",
+                    label=f"assistant: Entry {index:02d}",
+                    active=index == 0,
+                )
+                for index in range(30)
+            )
+
+    session = LongTreeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        tree_list = app.screen.query_one("#tree-picker-list", ListView)
+        assert tree_list.index == 0
+
+        await pilot.press("pagedown")
+        page_down_index = tree_list.index
+        await pilot.press("pageup")
+
+    assert page_down_index is not None
+    assert page_down_index > 1
+    assert tree_list.index == 0
+
+
+@pytest.mark.anyio
 async def test_tui_app_tree_picker_prefills_selected_user_message() -> None:
     class PrefillSession(FakeSession):
         async def branch_to_entry(
