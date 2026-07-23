@@ -4463,6 +4463,77 @@ async def test_tui_app_uses_configured_command_palette_keybinding() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_uses_configured_new_session_keybinding() -> None:
+    session = FakeSession(messages=[UserMessage(content="Earlier")])
+    app = TauTuiApp(
+        session,
+        tui_settings=TuiSettings(keybindings=TuiKeybindings(session_new="f1")),
+    )
+
+    async with app.run_test() as pilot:
+        await pilot.press("f1")
+        await pilot.pause()
+
+        assert session.new_session_count == 1
+        assert app.state.items == []
+
+
+@pytest.mark.anyio
+async def test_tui_app_uses_configured_session_tree_keybinding() -> None:
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(keybindings=TuiKeybindings(session_tree="f2")),
+    )
+
+    async with app.run_test() as pilot:
+        await pilot.press("f2")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+
+
+@pytest.mark.anyio
+async def test_tui_app_uses_configured_session_fork_keybinding() -> None:
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(keybindings=TuiKeybindings(session_fork="f3")),
+    )
+
+    async with app.run_test() as pilot:
+        await pilot.press("f3")
+        await pilot.pause()
+
+        assert isinstance(app.screen, UserMessagePickerScreen)
+
+
+@pytest.mark.anyio
+async def test_tui_app_uses_configured_session_resume_keybinding() -> None:
+    record = CodingSessionRecord(
+        id="session-1",
+        path=Path("/workspace/project/session-1.jsonl"),
+        cwd=Path("/workspace/project"),
+        model="fake-model",
+        title="Test session",
+        created_at=1.0,
+        updated_at=2.0,
+    )
+    session = FakeSession(messages=[UserMessage(content="Earlier")])
+    session.session_manager = _FakeSessionManager([record])
+    app = TauTuiApp(
+        session,
+        tui_settings=TuiSettings(keybindings=TuiKeybindings(session_resume="f4")),
+    )
+
+    async with app.run_test() as pilot:
+        await pilot.press("f4")
+        await pilot.pause()
+
+        assert isinstance(app.screen, SessionPickerScreen)
+        picker_list = app.screen.query_one("#session-picker-list", ListView)
+        assert picker_list.index == 0
+
+
+@pytest.mark.anyio
 async def test_tui_app_quits_from_focused_prompt_with_default_keybinding() -> None:
     app = TauTuiApp(FakeSession())
 

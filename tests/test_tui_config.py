@@ -39,6 +39,10 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
           "keybindings": {
             "command_palette": "ctrl+j",
             "session_picker": "ctrl+y",
+            "session_new": "f13",
+            "session_tree": "f14",
+            "session_fork": "f15",
+            "session_resume": "f16",
             "queue_follow_up": "f5",
             "dequeue_messages": "f9",
             "accept_completion": "f2",
@@ -63,6 +67,10 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
 
     assert settings.keybindings.command_palette == "ctrl+j"
     assert settings.keybindings.session_picker == "ctrl+y"
+    assert settings.keybindings.session_new == "f13"
+    assert settings.keybindings.session_tree == "f14"
+    assert settings.keybindings.session_fork == "f15"
+    assert settings.keybindings.session_resume == "f16"
     assert settings.keybindings.queue_follow_up == "f5"
     assert settings.keybindings.dequeue_messages == "f9"
     assert settings.keybindings.toggle_tool_results == "ctrl+o"
@@ -164,6 +172,10 @@ def test_tui_keybindings_serialize_to_json() -> None:
         keybindings=TuiKeybindings(
             command_palette="ctrl+j",
             session_picker="ctrl+y",
+            session_new="f13",
+            session_tree="f14",
+            session_fork="f15",
+            session_resume="f16",
             queue_follow_up="f5",
             dequeue_messages="f9",
             accept_completion="f2",
@@ -183,6 +195,10 @@ def test_tui_keybindings_serialize_to_json() -> None:
 
     assert settings.to_json()["keybindings"]["command_palette"] == "ctrl+j"
     assert settings.to_json()["keybindings"]["session_picker"] == "ctrl+y"
+    assert settings.to_json()["keybindings"]["session_new"] == "f13"
+    assert settings.to_json()["keybindings"]["session_tree"] == "f14"
+    assert settings.to_json()["keybindings"]["session_fork"] == "f15"
+    assert settings.to_json()["keybindings"]["session_resume"] == "f16"
     assert settings.to_json()["keybindings"]["queue_follow_up"] == "f5"
     assert settings.to_json()["keybindings"]["dequeue_messages"] == "f9"
     assert settings.to_json()["keybindings"]["toggle_tool_results"] == "ctrl+o"
