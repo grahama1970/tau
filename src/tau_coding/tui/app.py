@@ -414,6 +414,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         Binding("escape", "cancel", "Cancel"),
         Binding("ctrl+n", "toggle_named_filter", "Named"),
         Binding("ctrl+p", "toggle_path", "Path"),
+        Binding("ctrl+s", "toggle_sort", "Sort"),
         Binding("up", "cursor_up", "Up", show=False),
         Binding("down", "cursor_down", "Down", show=False),
         Binding("enter", "select_cursor", "Select", show=False),
@@ -432,6 +433,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         self.search_value = ""
         self.named_only = False
         self.show_path = False
+        self.sort_mode: Literal["recent", "name"] = "recent"
 
     def compose(self) -> ComposeResult:
         """Compose the session picker."""
@@ -477,6 +479,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
             self.records,
             self.search_value,
             named_only=self.named_only,
+            sort_mode=self.sort_mode,
         )
         session_list = self.query_one("#session-picker-list", ListView)
         session_list.clear()
@@ -492,15 +495,17 @@ class SessionPickerScreen(ModalScreen[str | None]):
         session_list.index = 0 if self.filtered_records else None
         named_state = "named:on" if self.named_only else "named:off"
         path_state = "path:on" if self.show_path else "path:off"
+        sort_state = f"sort:{self.sort_mode}"
         if self.filtered_records:
             help_text = (
                 f"Type to search - Ctrl+N {named_state} - "
-                f"Ctrl+P {path_state} - Enter selects - Escape closes"
+                f"Ctrl+P {path_state} - Ctrl+S {sort_state} - "
+                "Enter selects - Escape closes"
             )
         else:
             help_text = (
                 f"No matching sessions - Ctrl+N {named_state} - "
-                f"Ctrl+P {path_state} - Escape closes"
+                f"Ctrl+P {path_state} - Ctrl+S {sort_state} - Escape closes"
             )
         self.query_one("#session-picker-help", Static).update(help_text)
 
@@ -544,6 +549,11 @@ class SessionPickerScreen(ModalScreen[str | None]):
     def action_toggle_path(self) -> None:
         """Toggle session path visibility."""
         self.show_path = not self.show_path
+        self._refresh_session_list()
+
+    def action_toggle_sort(self) -> None:
+        """Toggle session sort order."""
+        self.sort_mode = "name" if self.sort_mode == "recent" else "recent"
         self._refresh_session_list()
 
     def action_cancel(self) -> None:
@@ -3283,18 +3293,38 @@ def _filter_session_picker_records(
     query: str,
     *,
     named_only: bool = False,
+    sort_mode: Literal["recent", "name"] = "recent",
 ) -> tuple[SessionCompletionRecord, ...]:
     normalized = " ".join(query.casefold().split())
     candidates = tuple(record for record in records if _named_session_title(record.title) is not None)
     if not named_only:
         candidates = tuple(records)
     if not normalized:
-        return candidates
-    return tuple(
-        record
-        for record in candidates
-        if normalized in _session_picker_search_text(record)
+        return _sort_session_picker_records(candidates, sort_mode=sort_mode)
+    filtered = tuple(
+        record for record in candidates if normalized in _session_picker_search_text(record)
     )
+    return _sort_session_picker_records(filtered, sort_mode=sort_mode)
+
+
+def _sort_session_picker_records(
+    records: Sequence[SessionCompletionRecord],
+    *,
+    sort_mode: Literal["recent", "name"],
+) -> tuple[SessionCompletionRecord, ...]:
+    if sort_mode == "name":
+        return tuple(
+            sorted(
+                records,
+                key=lambda record: (
+                    (_named_session_title(record.title) or "").casefold(),
+                    record.model.casefold(),
+                    _short_path(record.cwd).casefold(),
+                    record.id.casefold(),
+                ),
+            )
+        )
+    return tuple(records)
 
 
 def _session_picker_search_text(record: SessionCompletionRecord) -> str:
