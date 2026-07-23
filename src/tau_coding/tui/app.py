@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -629,15 +630,17 @@ class SessionPickerScreen(ModalScreen[str | None]):
         sort_state = f"sort:{self.sort_mode}"
         if self.filtered_records:
             help_text = (
-                f"Type to search - Tab {scope_state} - Ctrl+N {named_state} - "
-                f"Ctrl+P {path_state} - Ctrl+S {sort_state} - "
+                f'Type to search, re:<pattern>, or "phrase" - '
+                f"Tab {scope_state} - Ctrl+N {named_state} - Ctrl+P {path_state} - "
+                f"Ctrl+S {sort_state} - "
                 "Ctrl+R/F2 rename - Ctrl+D delete - "
                 "Enter selects - Escape closes"
             )
         else:
             help_text = (
-                f"No matching sessions - Tab {scope_state} - Ctrl+N {named_state} - "
-                f"Ctrl+P {path_state} - Ctrl+S {sort_state} - Escape closes"
+                f'No matching sessions - re:<pattern> regex, "phrase" exact - '
+                f"Tab {scope_state} - Ctrl+N {named_state} - Ctrl+P {path_state} - "
+                f"Ctrl+S {sort_state} - Escape closes"
             )
         self.query_one("#session-picker-help", Static).update(help_text)
 
@@ -4870,9 +4873,86 @@ def _filter_session_picker_records(
     if not normalized:
         return _sort_session_picker_records(candidates, sort_mode=sort_mode)
     filtered = tuple(
-        record for record in candidates if normalized in _session_picker_search_text(record)
+        record
+        for record in candidates
+        if _session_picker_record_matches_query(record, query)
     )
     return _sort_session_picker_records(filtered, sort_mode=sort_mode)
+
+
+def _session_picker_record_matches_query(
+    record: SessionCompletionRecord,
+    query: str,
+) -> bool:
+    text = _session_picker_search_text(record)
+    trimmed = query.strip()
+    if trimmed.startswith("re:"):
+        pattern = trimmed[3:].strip()
+        if not pattern:
+            return False
+        try:
+            return re.search(pattern, text, flags=re.IGNORECASE) is not None
+        except re.error:
+            return False
+
+    return all(
+        _session_picker_query_token_matches(text, kind=kind, value=value)
+        for kind, value in _session_picker_query_tokens(trimmed)
+    )
+
+
+def _session_picker_query_token_matches(
+    text: str,
+    *,
+    kind: Literal["token", "phrase"],
+    value: str,
+) -> bool:
+    normalized_value = " ".join(value.casefold().split())
+    if not normalized_value:
+        return True
+    if kind == "phrase":
+        return normalized_value in text
+    return normalized_value in text
+
+
+def _session_picker_query_tokens(query: str) -> tuple[tuple[Literal["token", "phrase"], str], ...]:
+    tokens: list[tuple[Literal["token", "phrase"], str]] = []
+    buffer: list[str] = []
+    in_quote = False
+    had_unclosed_quote = False
+
+    def flush(kind: Literal["token", "phrase"]) -> None:
+        value = "".join(buffer).strip()
+        buffer.clear()
+        if value:
+            tokens.append((kind, value))
+
+    for char in query:
+        if char == '"':
+            if in_quote:
+                flush("phrase")
+                in_quote = False
+            else:
+                flush("token")
+                in_quote = True
+            continue
+        if not in_quote and char.isspace():
+            flush("token")
+            continue
+        buffer.append(char)
+
+    if in_quote:
+        had_unclosed_quote = True
+
+    if had_unclosed_quote:
+        return tuple(
+            ("token", token)
+            for token in query.split()
+            if token.strip()
+        )
+
+    flush("phrase" if in_quote else "token")
+    return tuple(tokens)
 
 
 def _sort_session_picker_records(
