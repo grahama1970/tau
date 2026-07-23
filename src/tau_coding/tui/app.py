@@ -173,6 +173,8 @@ class CompletionActionTarget(Protocol):
 
     def action_cycle_model(self) -> None: ...
 
+    def action_cycle_model_previous(self) -> None: ...
+
     def action_open_model_picker(self) -> None: ...
 
     def action_toggle_tool_results(self) -> None: ...
@@ -299,6 +301,10 @@ class PromptInput(TextArea):
         """Cycle the app-level scoped model."""
         self._completion_target().action_cycle_model()
 
+    def action_cycle_model_previous(self) -> None:
+        """Cycle the app-level scoped model backwards."""
+        self._completion_target().action_cycle_model_previous()
+
     def action_open_model_picker(self) -> None:
         """Open the app-level model picker."""
         self._completion_target().action_open_model_picker()
@@ -404,6 +410,9 @@ class PromptInput(TextArea):
         elif event.key == keybindings.model_cycle:
             event.stop()
             self._completion_target().action_cycle_model()
+        elif event.key == keybindings.model_cycle_previous:
+            event.stop()
+            self._completion_target().action_cycle_model_previous()
         elif event.key == keybindings.model_picker:
             event.stop()
             self._completion_target().action_open_model_picker()
@@ -2825,6 +2834,13 @@ class TauTuiApp(App[None]):
             return
         self.run_worker(self._cycle_scoped_model(), exclusive=False)
 
+    def action_cycle_model_previous(self) -> None:
+        """Cycle backwards through scoped models."""
+        if self.state.running:
+            self._notify("Tau is already working. Press Escape to cancel.")
+            return
+        self.run_worker(self._cycle_scoped_model(direction="previous"), exclusive=False)
+
     def action_open_model_picker(self) -> None:
         """Open the interactive model picker."""
         if self.state.running:
@@ -3319,7 +3335,14 @@ class TauTuiApp(App[None]):
             return
         self._refresh()
 
-    async def _cycle_scoped_model(self) -> None:
+    async def _cycle_scoped_model(
+        self,
+        *,
+        direction: Literal["next", "previous"] = "next",
+    ) -> None:
+        if direction == "previous":
+            self._cycle_scoped_model_previous()
+            return
         cycler = getattr(self.session, "cycle_scoped_model", None)
         if cycler is None:
             self._notify("Scoped model controls are not available.", severity="warning")
@@ -3332,6 +3355,18 @@ class TauTuiApp(App[None]):
             self._notify(f"Could not switch scoped model: {exc}", severity="error")
             return
         self._refresh()
+
+    def _cycle_scoped_model_previous(self) -> None:
+        choices = tuple(getattr(self.session, "scoped_model_choices", ()))
+        if not choices:
+            self._notify("No scoped models configured.", severity="warning")
+            return
+        current = ModelChoice(provider_name=self.session.provider_name, model=self.session.model)
+        try:
+            index = choices.index(current)
+        except ValueError:
+            index = 0
+        self._handle_model_picker_result(choices[(index - 1) % len(choices)])
 
     def _notify(
         self,
@@ -4303,6 +4338,7 @@ def _hidden_prompt_bindings(
         (keybindings.dequeue_messages, "dequeue_messages"),
         (keybindings.thinking_cycle, "cycle_thinking"),
         (keybindings.model_cycle, "cycle_model"),
+        (keybindings.model_cycle_previous, "cycle_model_previous"),
         (keybindings.model_picker, "open_model_picker"),
         (keybindings.external_editor, "open_external_editor"),
         (keybindings.paste_clipboard, "paste_clipboard"),

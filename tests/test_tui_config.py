@@ -44,6 +44,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
             "accept_completion": "f2",
             "thinking_cycle": "f3",
             "model_cycle": "f6",
+            "model_cycle_previous": "f11",
             "model_picker": "f10",
             "toggle_thinking": "f4",
             "external_editor": "f7",
@@ -67,6 +68,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.keybindings.accept_completion == "f2"
     assert settings.keybindings.thinking_cycle == "f3"
     assert settings.keybindings.model_cycle == "f6"
+    assert settings.keybindings.model_cycle_previous == "f11"
     assert settings.keybindings.model_picker == "f10"
     assert settings.keybindings.external_editor == "f7"
     assert settings.keybindings.paste_clipboard == "f8"
@@ -150,6 +152,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
             accept_completion="f2",
             thinking_cycle="f3",
             model_cycle="f6",
+            model_cycle_previous="f11",
             model_picker="f10",
             toggle_thinking="f4",
             external_editor="f7",
@@ -168,6 +171,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["keybindings"]["accept_completion"] == "f2"
     assert settings.to_json()["keybindings"]["thinking_cycle"] == "f3"
     assert settings.to_json()["keybindings"]["model_cycle"] == "f6"
+    assert settings.to_json()["keybindings"]["model_cycle_previous"] == "f11"
     assert settings.to_json()["keybindings"]["model_picker"] == "f10"
     assert settings.to_json()["keybindings"]["external_editor"] == "f7"
     assert settings.to_json()["keybindings"]["paste_clipboard"] == "f8"
