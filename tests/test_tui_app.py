@@ -2994,7 +2994,8 @@ async def test_tui_app_session_picker_sort_toggle_reaches_relevance_sort() -> No
 
     assert "Billing plan" in str(labels[0])
     assert "Architecture billing review" in str(labels[1])
-    assert "sort:relevance" in help_text
+    assert "sort:fuzzy" in help_text
+    assert 're:<pattern> regex, or "phrase" exact' in help_text
 
 
 @pytest.mark.anyio

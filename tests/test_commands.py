@@ -348,6 +348,8 @@ def test_hotkeys_command_lists_common_tui_shortcuts(tmp_path: Path) -> None:
     assert "Common keyboard shortcuts:" in result.message
     assert "Ctrl+K: open slash-command completions" in result.message
     assert "Ctrl+R: open session picker" in result.message
+    assert 're:<pattern> regex, or "phrase" exact' in result.message
+    assert "Ctrl+S sort (recent/name/fuzzy)" in result.message
     assert "Session picker: Ctrl+R/F2 rename, Ctrl+D delete" in result.message
     assert "Ctrl+Backspace delete when search is empty" in result.message
     assert "session_new, session_tree, session_fork, session_resume" in result.message

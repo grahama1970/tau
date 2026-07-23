@@ -521,7 +521,9 @@ def _hotkeys_command(context: CommandContext) -> CommandResult:
         "- Ctrl+K: open slash-command completions",
         "- Ctrl+R: open session picker",
         "- Double Esc: open the session tree or configured double-escape action",
-        "- Session picker: Tab scope, Ctrl+N named, Ctrl+P path, Ctrl+S sort",
+        '- Session picker: type text, re:<pattern> regex, or "phrase" exact',
+        "- Session picker: Tab scope, Ctrl+N named, Ctrl+P path, Ctrl+S sort "
+        "(recent/name/fuzzy)",
         "- Session picker: Ctrl+R/F2 rename, Ctrl+D delete",
         "- Session picker: Ctrl+Backspace delete when search is empty",
         "- Optional Pi session keys in ~/.tau/tui.json: session_new, session_tree, "

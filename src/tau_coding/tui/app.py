@@ -627,10 +627,10 @@ class SessionPickerScreen(ModalScreen[str | None]):
         scope_state = f"scope:{self.scope}"
         named_state = "named:on" if self.named_only else "named:off"
         path_state = "path:on" if self.show_path else "path:off"
-        sort_state = f"sort:{self.sort_mode}"
+        sort_state = f"sort:{_session_picker_sort_label(self.sort_mode)}"
         if self.filtered_records:
             help_text = (
-                f'Type to search, re:<pattern>, or "phrase" - '
+                f'Type to search, re:<pattern> regex, or "phrase" exact - '
                 f"Tab {scope_state} - Ctrl+N {named_state} - Ctrl+P {path_state} - "
                 f"Ctrl+S {sort_state} - "
                 "Ctrl+R/F2 rename - Ctrl+D delete - "
@@ -4904,6 +4904,14 @@ def _session_picker_label(
     if show_path:
         parts.append(_short_path(record.cwd))
     return " - ".join(parts)
+
+
+def _session_picker_sort_label(sort_mode: Literal["recent", "relevance", "name"]) -> str:
+    """Return the Pi-facing label for a Tau session picker sort mode."""
+
+    if sort_mode == "relevance":
+        return "fuzzy"
+    return sort_mode
 
 
 def _filter_session_picker_records(
