@@ -3113,6 +3113,56 @@ async def test_tui_app_tree_picker_toggles_tool_calls() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_tree_picker_cycles_filter_modes() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        tree_list = app.screen.query_one("#tree-picker-list", ListView)
+
+        await pilot.press("ctrl+f")
+        await pilot.pause()
+
+        labels = [str(item.query_one(Label).render()) for item in tree_list.children]
+        assert labels == [
+            "  user: Root",
+            "  assistant: Left",
+            "* assistant: Right",
+        ]
+        assert tree_list.index == 2
+        assert "filter no-tools" in str(app.screen.query_one("#tree-picker-help", Static).render())
+
+        await pilot.press("ctrl+f")
+        await pilot.pause()
+
+        labels = [str(item.query_one(Label).render()) for item in tree_list.children]
+        assert labels == ["  user: Root"]
+        assert tree_list.index == 0
+        assert "filter user-only" in str(
+            app.screen.query_one("#tree-picker-help", Static).render()
+        )
+
+        await pilot.press("ctrl+f")
+        await pilot.pause()
+
+        labels = [str(item.query_one(Label).render()) for item in tree_list.children]
+        assert labels == [
+            "  user: Root",
+            "  tool call: read",
+            "  assistant: Left",
+            "* assistant: Right",
+        ]
+        assert tree_list.index == 0
+        assert "filter all" in str(app.screen.query_one("#tree-picker-help", Static).render())
+
+
+@pytest.mark.anyio
 def test_completion_selected_render_line_accounts_for_group_headers() -> None:
     state = CompletionState(
         items=(

@@ -822,6 +822,10 @@ class TreePickerResult:
     custom_instructions: str | None = None
 
 
+TreeFilterMode = Literal["default", "no-tools", "user-only", "all"]
+TREE_FILTER_MODES: tuple[TreeFilterMode, ...] = ("default", "no-tools", "user-only", "all")
+
+
 class TreePickerScreen(ModalScreen[TreePickerResult | None]):
     """Modal picker for branching from a previous session entry."""
 
@@ -835,6 +839,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         Binding("s", "select_with_summary", "Summarize", show=False),
         Binding("c", "select_with_custom_summary", "Custom summary", show=False),
         Binding("ctrl+t", "toggle_tool_calls", "Tool calls", show=False),
+        Binding("ctrl+f", "cycle_tree_filter", "Filter", show=False),
     ]
 
     def __init__(
@@ -847,6 +852,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         self.choices = tuple(choices)
         self.theme = theme
         self.show_tool_calls = True
+        self.filter_mode: TreeFilterMode = "default"
 
     def compose(self) -> ComposeResult:
         """Compose the tree picker."""
@@ -893,6 +899,9 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         elif event.key == "ctrl+t":
             event.stop()
             self.action_toggle_tool_calls()
+        elif event.key == "ctrl+f":
+            event.stop()
+            self.action_cycle_tree_filter()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected entry id."""
@@ -973,6 +982,23 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
     async def _toggle_tool_calls(self) -> None:
         selected_entry_id = self._selected_entry_id()
         self.show_tool_calls = not self.show_tool_calls
+        await self._refresh_tree_choices(selected_entry_id=selected_entry_id)
+
+    def action_cycle_tree_filter(self) -> None:
+        """Cycle Pi-style tree filter modes supported by Tau's tree choice model."""
+        self.run_worker(self._cycle_tree_filter())
+
+    async def _cycle_tree_filter(self) -> None:
+        selected_entry_id = self._selected_entry_id()
+        current_index = TREE_FILTER_MODES.index(self.filter_mode)
+        self.filter_mode = TREE_FILTER_MODES[(current_index + 1) % len(TREE_FILTER_MODES)]
+        if self.filter_mode == "no-tools":
+            self.show_tool_calls = False
+        elif self.filter_mode == "all":
+            self.show_tool_calls = True
+        await self._refresh_tree_choices(selected_entry_id=selected_entry_id)
+
+    async def _refresh_tree_choices(self, *, selected_entry_id: str | None = None) -> None:
         tree_list = self.query_one("#tree-picker-list", ListView)
         await tree_list.clear()
         await tree_list.extend(self._list_items())
@@ -989,9 +1015,15 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         return visible_choices[index].entry_id
 
     def _visible_choices(self) -> tuple[SessionTreeChoice, ...]:
-        if self.show_tool_calls:
-            return self.choices
-        return tuple(choice for choice in self.choices if not choice.is_tool_call)
+        return tuple(
+            choice
+            for choice in self.choices
+            if _tree_choice_matches_filter(
+                choice,
+                filter_mode=self.filter_mode,
+                show_tool_calls=self.show_tool_calls,
+            )
+        )
 
     def _list_items(self) -> list[ListItem]:
         return [
@@ -1001,9 +1033,11 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
 
     def _help_text(self) -> str:
         tool_call_state = "shown" if self.show_tool_calls else "hidden"
+        filter_label = "default" if self.filter_mode == "default" else self.filter_mode
         return (
             "Enter branches - S summarizes - C custom summary - "
-            f"Ctrl+T tool calls {tool_call_state} - Escape closes"
+            f"Ctrl+T tool calls {tool_call_state} - Ctrl+F filter {filter_label} - "
+            "Escape closes"
         )
 
     def action_cancel(self) -> None:
@@ -4019,6 +4053,20 @@ def _session_picker_search_text(record: SessionCompletionRecord) -> str:
         _session_picker_label(record),
     ]
     return " ".join(" ".join(field.casefold().split()) for field in fields)
+
+
+def _tree_choice_matches_filter(
+    choice: SessionTreeChoice,
+    *,
+    filter_mode: TreeFilterMode,
+    show_tool_calls: bool,
+) -> bool:
+    normalized_label = " ".join(choice.label.casefold().split())
+    if choice.is_tool_call and (filter_mode == "no-tools" or not show_tool_calls):
+        return False
+    if filter_mode == "user-only":
+        return normalized_label.startswith("user:")
+    return True
 
 
 def _tree_picker_label(choice: SessionTreeChoice, *, theme: TuiTheme) -> Text:
