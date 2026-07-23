@@ -418,6 +418,35 @@ async def test_terminal_command_can_run_without_context(tmp_path: Path) -> None:
     assert not any(isinstance(entry, MessageEntry) for entry in entries)
 
 
+@pytest.mark.anyio
+async def test_terminal_command_cancel_stops_running_shell_process(tmp_path: Path) -> None:
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    session = await CodingSession.load(_config(tmp_path, FakeProvider([]), storage))
+    started = tmp_path / "started"
+    finished = tmp_path / "finished"
+
+    task = asyncio.create_task(
+        session.run_terminal_command(
+            "printf started > started; sleep 5; printf finished > finished",
+            add_to_context=False,
+        )
+    )
+    for _ in range(100):
+        if started.exists():
+            break
+        await asyncio.sleep(0.01)
+    assert started.exists()
+
+    session.cancel_terminal_command()
+    result = await asyncio.wait_for(task, timeout=2)
+
+    assert result.ok is False
+    assert "Command cancelled" in result.output
+    assert finished.exists() is False
+    entries = await storage.read_all()
+    assert not any(isinstance(entry, MessageEntry) for entry in entries)
+
+
 def test_parse_terminal_command_prefixes() -> None:
     assert parse_terminal_command("! pwd") is not None
     add_request = parse_terminal_command("! pwd")
