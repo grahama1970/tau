@@ -412,6 +412,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
 
     BINDINGS: ClassVar[list[BindingEntry]] = [
         Binding("escape", "cancel", "Cancel"),
+        Binding("ctrl+n", "toggle_named_filter", "Named"),
         Binding("up", "cursor_up", "Up", show=False),
         Binding("down", "cursor_down", "Down", show=False),
         Binding("enter", "select_cursor", "Select", show=False),
@@ -428,6 +429,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         self.filtered_records = self.records
         self.theme = theme
         self.search_value = ""
+        self.named_only = False
 
     def compose(self) -> ComposeResult:
         """Compose the session picker."""
@@ -464,7 +466,11 @@ class SessionPickerScreen(ModalScreen[str | None]):
 
     def _refresh_session_list(self) -> None:
         """Rebuild the visible session rows from the current search query."""
-        self.filtered_records = _filter_session_picker_records(self.records, self.search_value)
+        self.filtered_records = _filter_session_picker_records(
+            self.records,
+            self.search_value,
+            named_only=self.named_only,
+        )
         session_list = self.query_one("#session-picker-list", ListView)
         session_list.clear()
         session_list.extend(
@@ -472,11 +478,11 @@ class SessionPickerScreen(ModalScreen[str | None]):
             for record in self.filtered_records
         )
         session_list.index = 0 if self.filtered_records else None
-        help_text = (
-            "Type to search - Enter selects - Escape closes"
-            if self.filtered_records
-            else "No matching sessions - Escape closes"
-        )
+        named_state = "named:on" if self.named_only else "named:off"
+        if self.filtered_records:
+            help_text = f"Type to search - Ctrl+N {named_state} - Enter selects - Escape closes"
+        else:
+            help_text = f"No matching sessions - Ctrl+N {named_state} - Escape closes"
         self.query_one("#session-picker-help", Static).update(help_text)
 
     def on_key(self, event: Key) -> None:
@@ -510,6 +516,11 @@ class SessionPickerScreen(ModalScreen[str | None]):
         if not self.filtered_records:
             return
         self.query_one("#session-picker-list", ListView).action_select_cursor()
+
+    def action_toggle_named_filter(self) -> None:
+        """Toggle whether the picker shows only named sessions."""
+        self.named_only = not self.named_only
+        self._refresh_session_list()
 
     def action_cancel(self) -> None:
         """Close the picker without selecting a session."""
@@ -3240,13 +3251,18 @@ def _session_picker_label(record: SessionCompletionRecord) -> str:
 def _filter_session_picker_records(
     records: Sequence[SessionCompletionRecord],
     query: str,
+    *,
+    named_only: bool = False,
 ) -> tuple[SessionCompletionRecord, ...]:
     normalized = " ".join(query.casefold().split())
+    candidates = tuple(record for record in records if _named_session_title(record.title) is not None)
+    if not named_only:
+        candidates = tuple(records)
     if not normalized:
-        return tuple(records)
+        return candidates
     return tuple(
         record
-        for record in records
+        for record in candidates
         if normalized in _session_picker_search_text(record)
     )
 
