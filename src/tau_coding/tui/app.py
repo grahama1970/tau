@@ -822,8 +822,14 @@ class TreePickerResult:
     custom_instructions: str | None = None
 
 
-TreeFilterMode = Literal["default", "no-tools", "user-only", "all"]
-TREE_FILTER_MODES: tuple[TreeFilterMode, ...] = ("default", "no-tools", "user-only", "all")
+TreeFilterMode = Literal["default", "no-tools", "user-only", "labeled-only", "all"]
+TREE_FILTER_MODES: tuple[TreeFilterMode, ...] = (
+    "default",
+    "no-tools",
+    "user-only",
+    "labeled-only",
+    "all",
+)
 
 
 class TreePickerScreen(ModalScreen[TreePickerResult | None]):
@@ -841,6 +847,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         Binding("ctrl+t", "toggle_tool_calls", "Tool calls", show=False),
         Binding("ctrl+d", "set_default_tree_filter", "Default filter", show=False),
         Binding("ctrl+u", "toggle_user_tree_filter", "User filter", show=False),
+        Binding("ctrl+l", "toggle_labeled_tree_filter", "Labeled filter", show=False),
         Binding("ctrl+a", "toggle_all_tree_filter", "All filter", show=False),
         Binding("ctrl+o", "cycle_tree_filter", "Cycle filter", show=False),
         Binding("ctrl+f", "cycle_tree_filter", "Filter", show=False),
@@ -918,6 +925,9 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         elif event.key == "ctrl+u":
             event.stop()
             self.action_toggle_user_tree_filter()
+        elif event.key == "ctrl+l":
+            event.stop()
+            self.action_toggle_labeled_tree_filter()
         elif event.key == "ctrl+a":
             event.stop()
             self.action_toggle_all_tree_filter()
@@ -1093,6 +1103,10 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
     def action_toggle_user_tree_filter(self) -> None:
         """Toggle Pi's user-only tree filter."""
         self.run_worker(self._set_tree_filter("user-only", toggle=True))
+
+    def action_toggle_labeled_tree_filter(self) -> None:
+        """Toggle Pi's labeled-only tree filter."""
+        self.run_worker(self._set_tree_filter("labeled-only", toggle=True))
 
     def action_toggle_all_tree_filter(self) -> None:
         """Toggle Pi's all-entries tree filter."""
@@ -4287,6 +4301,8 @@ def _tree_choice_matches_filter(
         return False
     if filter_mode == "user-only":
         return normalized_label.startswith("user:")
+    if filter_mode == "labeled-only":
+        return choice.tree_label is not None
     return True
 
 

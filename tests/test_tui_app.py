@@ -3152,6 +3152,7 @@ async def test_tui_app_tree_picker_toggles_tool_calls() -> None:
 @pytest.mark.anyio
 async def test_tui_app_tree_picker_cycles_filter_modes() -> None:
     session = FakeSession()
+    session.tree_labels["left"] = "bookmark"
     app = TauTuiApp(session)
 
     async with app.run_test() as pilot:
@@ -3169,7 +3170,7 @@ async def test_tui_app_tree_picker_cycles_filter_modes() -> None:
         labels = [str(item.query_one(Label).render()) for item in tree_list.children]
         assert labels == [
             "  user: Root",
-            "  assistant: Left",
+            "  [bookmark] assistant: Left",
             "* assistant: Right",
         ]
         assert tree_list.index == 2
@@ -3189,19 +3190,30 @@ async def test_tui_app_tree_picker_cycles_filter_modes() -> None:
         await pilot.pause()
 
         labels = [str(item.query_one(Label).render()) for item in tree_list.children]
+        assert labels == ["  [bookmark] assistant: Left"]
+        assert tree_list.index == 0
+        assert "filter labeled-only" in str(
+            app.screen.query_one("#tree-picker-help", Static).render()
+        )
+
+        await pilot.press("ctrl+f")
+        await pilot.pause()
+
+        labels = [str(item.query_one(Label).render()) for item in tree_list.children]
         assert labels == [
             "  user: Root",
             "  tool call: read",
-            "  assistant: Left",
+            "  [bookmark] assistant: Left",
             "* assistant: Right",
         ]
-        assert tree_list.index == 0
+        assert tree_list.index == 2
         assert "filter all" in str(app.screen.query_one("#tree-picker-help", Static).render())
 
 
 @pytest.mark.anyio
 async def test_tui_app_tree_picker_direct_filter_shortcuts() -> None:
     session = FakeSession()
+    session.tree_labels["left"] = "bookmark"
     app = TauTuiApp(session)
 
     async with app.run_test() as pilot:
@@ -3227,10 +3239,19 @@ async def test_tui_app_tree_picker_direct_filter_shortcuts() -> None:
         assert [str(item.query_one(Label).render()) for item in tree_list.children] == [
             "  user: Root",
             "  tool call: read",
-            "  assistant: Left",
+            "  [bookmark] assistant: Left",
             "* assistant: Right",
         ]
         assert "filter all" in str(app.screen.query_one("#tree-picker-help", Static).render())
+
+        await pilot.press("ctrl+l")
+        await pilot.pause()
+        assert [str(item.query_one(Label).render()) for item in tree_list.children] == [
+            "  [bookmark] assistant: Left"
+        ]
+        assert "filter labeled-only" in str(
+            app.screen.query_one("#tree-picker-help", Static).render()
+        )
 
         await pilot.press("ctrl+d")
         await pilot.pause()
