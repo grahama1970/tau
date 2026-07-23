@@ -138,6 +138,7 @@ class SessionTreeChoice:
 
     entry_id: str
     label: str
+    parent_entry_id: str | None = None
     active: bool = False
     is_tool_call: bool = False
     copy_text: str | None = None
@@ -399,6 +400,7 @@ class CodingSession:
             SessionTreeChoice(
                 entry_id=entry.id,
                 label=_tree_choice_label(entry, branch_indent=branch_indents.get(entry.id, 0)),
+                parent_entry_id=entry.parent_id,
                 active=entry.id == self._state.active_leaf_id,
                 is_tool_call=_is_tool_call_tree_entry(entry),
                 copy_text=_tree_choice_copy_text(entry),

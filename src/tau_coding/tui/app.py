@@ -845,6 +845,10 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         Binding("ctrl+o", "cycle_tree_filter", "Cycle filter", show=False),
         Binding("ctrl+f", "cycle_tree_filter", "Filter", show=False),
         Binding("ctrl+x", "copy_selected_tree_entry", "Copy", show=False),
+        Binding("ctrl+left", "fold_tree_branch", "Fold", show=False),
+        Binding("alt+left", "fold_tree_branch", "Fold", show=False),
+        Binding("ctrl+right", "unfold_tree_branch", "Unfold", show=False),
+        Binding("alt+right", "unfold_tree_branch", "Unfold", show=False),
     ]
 
     def __init__(
@@ -858,6 +862,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         self.theme = theme
         self.show_tool_calls = True
         self.filter_mode: TreeFilterMode = "default"
+        self.folded_entry_ids: set[str] = set()
 
     def compose(self) -> ComposeResult:
         """Compose the tree picker."""
@@ -922,6 +927,12 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         elif event.key == "ctrl+x":
             event.stop()
             self.action_copy_selected_tree_entry()
+        elif event.key in {"ctrl+left", "alt+left"}:
+            event.stop()
+            self.action_fold_tree_branch()
+        elif event.key in {"ctrl+right", "alt+right"}:
+            event.stop()
+            self.action_unfold_tree_branch()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected entry id."""
@@ -1005,6 +1016,28 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         app.copy_to_clipboard(choice.copy_text)
         app._notify("Copied selected tree entry to clipboard.")
 
+    def action_fold_tree_branch(self) -> None:
+        """Fold the selected tree branch when it has visible children."""
+        self.run_worker(self._fold_tree_branch())
+
+    async def _fold_tree_branch(self) -> None:
+        choice = self._selected_choice()
+        if choice is None or not _tree_choice_has_children(choice, self._filtered_choices()):
+            return
+        self.folded_entry_ids.add(choice.entry_id)
+        await self._refresh_tree_choices(selected_entry_id=choice.entry_id)
+
+    def action_unfold_tree_branch(self) -> None:
+        """Unfold the selected tree branch."""
+        self.run_worker(self._unfold_tree_branch())
+
+    async def _unfold_tree_branch(self) -> None:
+        choice = self._selected_choice()
+        if choice is None or choice.entry_id not in self.folded_entry_ids:
+            return
+        self.folded_entry_ids.remove(choice.entry_id)
+        await self._refresh_tree_choices(selected_entry_id=choice.entry_id)
+
     def action_toggle_tool_calls(self) -> None:
         """Toggle Pi's no-tools tree filter."""
         self.run_worker(self._set_tree_filter("no-tools", toggle=True))
@@ -1046,6 +1079,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
             "default" if toggle and self.filter_mode == filter_mode else filter_mode
         )
         self.show_tool_calls = self.filter_mode != "no-tools"
+        self.folded_entry_ids.clear()
         await self._refresh_tree_choices(selected_entry_id=selected_entry_id)
 
     async def _refresh_tree_choices(self, *, selected_entry_id: str | None = None) -> None:
@@ -1069,6 +1103,21 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         return visible_choices[index]
 
     def _visible_choices(self) -> tuple[SessionTreeChoice, ...]:
+        filtered = self._filtered_choices()
+        if not self.folded_entry_ids:
+            return filtered
+        choices_by_id = {choice.entry_id: choice for choice in filtered}
+        return tuple(
+            choice
+            for choice in filtered
+            if not _tree_choice_has_folded_ancestor(
+                choice,
+                choices_by_id=choices_by_id,
+                folded_entry_ids=self.folded_entry_ids,
+            )
+        )
+
+    def _filtered_choices(self) -> tuple[SessionTreeChoice, ...]:
         return tuple(
             choice
             for choice in self.choices
@@ -1090,7 +1139,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         filter_label = "default" if self.filter_mode == "default" else self.filter_mode
         return (
             "Enter branches - S summarizes - C custom summary - "
-            f"Ctrl+X copy - Ctrl+T no-tools ({tool_call_state}) - Ctrl+O filter {filter_label} - "
+            f"Ctrl+X copy - Ctrl+Left/Right fold - Ctrl+T no-tools ({tool_call_state}) - Ctrl+O filter {filter_label} - "
             "Escape closes"
         )
 
@@ -4121,6 +4170,32 @@ def _tree_choice_matches_filter(
     if filter_mode == "user-only":
         return normalized_label.startswith("user:")
     return True
+
+
+def _tree_choice_has_children(
+    choice: SessionTreeChoice,
+    choices: Sequence[SessionTreeChoice],
+) -> bool:
+    return any(candidate.parent_entry_id == choice.entry_id for candidate in choices)
+
+
+def _tree_choice_has_folded_ancestor(
+    choice: SessionTreeChoice,
+    *,
+    choices_by_id: dict[str, SessionTreeChoice],
+    folded_entry_ids: set[str],
+) -> bool:
+    parent_id = choice.parent_entry_id
+    seen: set[str] = set()
+    while parent_id is not None and parent_id not in seen:
+        if parent_id in folded_entry_ids:
+            return True
+        seen.add(parent_id)
+        parent = choices_by_id.get(parent_id)
+        if parent is None:
+            return False
+        parent_id = parent.parent_entry_id
+    return False
 
 
 def _tree_picker_label(choice: SessionTreeChoice, *, theme: TuiTheme) -> Text:

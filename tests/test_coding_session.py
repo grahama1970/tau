@@ -1255,6 +1255,14 @@ async def test_session_tree_choices_indent_only_diverged_branches(tmp_path: Path
         "user: Main follow-up",
         "  user: Follow-up",
     ]
+    assert [(choice.entry_id, choice.parent_entry_id) for choice in choices] == [
+        ("root", None),
+        ("main", "root"),
+        ("first-branch", "root"),
+        ("second-branch", "root"),
+        ("main-child", "main"),
+        ("first-branch-child", "first-branch"),
+    ]
 
 
 @pytest.mark.anyio

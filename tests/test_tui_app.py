@@ -307,13 +307,20 @@ class FakeSession:
             SessionTreeChoice(
                 entry_id="tool",
                 label="tool call: read",
+                parent_entry_id="root",
                 is_tool_call=True,
                 copy_text=None,
             ),
-            SessionTreeChoice(entry_id="left", label="assistant: Left", copy_text="Left"),
+            SessionTreeChoice(
+                entry_id="left",
+                label="assistant: Left",
+                parent_entry_id="root",
+                copy_text="Left",
+            ),
             SessionTreeChoice(
                 entry_id="right",
                 label="assistant: Right",
+                parent_entry_id="root",
                 active=True,
                 copy_text="Right",
             ),
@@ -3245,6 +3252,46 @@ async def test_tui_app_tree_picker_copies_selected_entry(
 
     assert copied == ["Left"]
     assert notifications == [("Copied selected tree entry to clipboard.", None)]
+
+
+@pytest.mark.anyio
+async def test_tui_app_tree_picker_folds_and_unfolds_selected_branch() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        tree_list = app.screen.query_one("#tree-picker-list", ListView)
+
+        await pilot.press("up", "up", "up")
+        assert tree_list.index == 0
+
+        await pilot.press("ctrl+left")
+        await pilot.pause()
+
+        assert [str(item.query_one(Label).render()) for item in tree_list.children] == [
+            "  user: Root"
+        ]
+        assert tree_list.index == 0
+        assert "Ctrl+Left/Right fold" in str(
+            app.screen.query_one("#tree-picker-help", Static).render()
+        )
+
+        await pilot.press("ctrl+right")
+        await pilot.pause()
+
+        assert [str(item.query_one(Label).render()) for item in tree_list.children] == [
+            "  user: Root",
+            "  tool call: read",
+            "  assistant: Left",
+            "* assistant: Right",
+        ]
+        assert tree_list.index == 0
 
 
 @pytest.mark.anyio
