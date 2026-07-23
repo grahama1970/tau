@@ -26,6 +26,7 @@ class TuiKeybindings:
     completion_previous: str = "up"
     thinking_cycle: str = "shift+tab"
     model_cycle: str = "ctrl+p"
+    model_cycle_previous: str = "shift+ctrl+p"
     model_picker: str = "ctrl+l"
     toggle_thinking: str = "ctrl+t"
     toggle_tool_results: str = "ctrl+o"
@@ -47,6 +48,7 @@ class TuiKeybindings:
             "completion_previous": self.completion_previous,
             "thinking_cycle": self.thinking_cycle,
             "model_cycle": self.model_cycle,
+            "model_cycle_previous": self.model_cycle_previous,
             "model_picker": self.model_picker,
             "toggle_thinking": self.toggle_thinking,
             "toggle_tool_results": self.toggle_tool_results,

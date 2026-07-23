@@ -4708,6 +4708,33 @@ async def test_tui_app_cycles_scoped_model_from_keybinding() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_cycles_scoped_model_backwards_from_keybinding() -> None:
+    session = FakeSession()
+    session.scoped_model_choices = (
+        ModelChoice(provider_name="openai", model="fake-model"),
+        ModelChoice(provider_name="openai", model="other-model"),
+        ModelChoice(provider_name="local", model="local-model"),
+    )
+    session.set_model_choice(ModelChoice(provider_name="openai", model="other-model"))
+    app = TauTuiApp(session)
+    notifications: list[str] = []
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        del kwargs
+        notifications.append(message)
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        await pilot.press("shift+ctrl+p")
+        await pilot.pause()
+
+    assert session.provider_name == "openai"
+    assert session.model == "fake-model"
+    assert notifications == []
+
+
+@pytest.mark.anyio
 async def test_tui_app_uses_configured_thinking_keybinding() -> None:
     session = FakeSession()
     app = TauTuiApp(
