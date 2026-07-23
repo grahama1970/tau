@@ -873,11 +873,13 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         self.show_tool_calls = True
         self.filter_mode: TreeFilterMode = "default"
         self.folded_entry_ids: set[str] = set()
+        self.search_value = ""
 
     def compose(self) -> ComposeResult:
         """Compose the tree picker."""
         with Vertical(id="tree-picker"):
             yield Static("Session Tree", id="tree-picker-title")
+            yield Static(self._search_text(), id="tree-picker-search")
             yield ListView(
                 *self._list_items(),
                 id="tree-picker-list",
@@ -931,10 +933,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         elif event.key == "ctrl+a":
             event.stop()
             self.action_toggle_all_tree_filter()
-        elif event.key == "ctrl+o":
-            event.stop()
-            self.action_cycle_tree_filter()
-        elif event.key == "ctrl+f":
+        elif event.key in {"ctrl+o", "ctrl+f"}:
             event.stop()
             self.action_cycle_tree_filter()
         elif event.key == "ctrl+x":
@@ -949,6 +948,13 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         elif event.key in {"shift+l", "L"}:
             event.stop()
             self.action_edit_tree_label()
+        elif event.key == "backspace":
+            if self.search_value:
+                event.stop()
+                self.run_worker(self._set_tree_search(self.search_value[:-1]))
+        elif search_character := _tree_search_character(event):
+            event.stop()
+            self.run_worker(self._set_tree_search(self.search_value + search_character))
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected entry id."""
@@ -1145,8 +1151,17 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         await tree_list.clear()
         await tree_list.extend(self._list_items())
         visible_choices = self._visible_choices()
-        tree_list.index = _tree_choice_index(visible_choices, selected_entry_id)
+        tree_list.index = (
+            _tree_choice_index(visible_choices, selected_entry_id) if visible_choices else None
+        )
+        self.query_one("#tree-picker-search", Static).update(self._search_text())
         self.query_one("#tree-picker-help", Static).update(self._help_text())
+
+    async def _set_tree_search(self, value: str) -> None:
+        selected_entry_id = self._selected_entry_id()
+        self.search_value = value
+        self.folded_entry_ids.clear()
+        await self._refresh_tree_choices(selected_entry_id=selected_entry_id)
 
     def _selected_entry_id(self) -> str | None:
         choice = self._selected_choice()
@@ -1184,6 +1199,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
                 filter_mode=self.filter_mode,
                 show_tool_calls=self.show_tool_calls,
             )
+            and _tree_choice_matches_search(choice, self.search_value)
         )
 
     def _list_items(self) -> list[ListItem]:
@@ -1196,13 +1212,22 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         tool_call_state = "shown" if self.show_tool_calls else "hidden"
         filter_label = "default" if self.filter_mode == "default" else self.filter_mode
         return (
-            "Enter branches - S summarizes - C custom summary - "
-            f"Ctrl+X copy - Shift+L label - Ctrl+Left/Right fold - Ctrl+T no-tools ({tool_call_state}) - Ctrl+O filter {filter_label} - "
-            "Escape closes"
+            "Type filters - Enter branches - S summarizes - C custom summary - "
+            f"Ctrl+X copy - Shift+L label - Ctrl+Left/Right fold - "
+            f"Ctrl+T no-tools ({tool_call_state}) - Ctrl+O filter {filter_label} - "
+            "Escape clears/closes"
         )
+
+    def _search_text(self) -> str:
+        if self.search_value:
+            return f"Search: {self.search_value}"
+        return "Search: type to filter"
 
     def action_cancel(self) -> None:
         """Close the picker without selecting an entry."""
+        if self.search_value:
+            self.run_worker(self._set_tree_search(""))
+            return
         self.dismiss(None)
 
 
@@ -2351,6 +2376,12 @@ class TauTuiApp(App[None]):
         height: 1;
         color: $tau-chrome-text;
         text-style: bold;
+        margin-bottom: 1;
+    }
+
+    #tree-picker-search {
+        height: 1;
+        color: $tau-muted-text;
         margin-bottom: 1;
     }
 
@@ -4304,6 +4335,35 @@ def _tree_choice_matches_filter(
     if filter_mode == "labeled-only":
         return choice.tree_label is not None
     return True
+
+
+def _tree_choice_matches_search(choice: SessionTreeChoice, query: str) -> bool:
+    tokens = query.casefold().split()
+    if not tokens:
+        return True
+    searchable = _tree_choice_search_text(choice)
+    return all(token in searchable for token in tokens)
+
+
+def _tree_choice_search_text(choice: SessionTreeChoice) -> str:
+    fields = [
+        choice.entry_id,
+        choice.label,
+        choice.tree_label or "",
+        choice.copy_text or "",
+    ]
+    return " ".join(" ".join(field.casefold().split()) for field in fields)
+
+
+def _tree_search_character(event: Key) -> str | None:
+    character = event.character
+    if character is None or len(character) != 1:
+        return None
+    if character.casefold() in {"s", "c"}:
+        return None
+    if ord(character) < 32 or ord(character) == 127:
+        return None
+    return character
 
 
 def _tree_choice_has_children(
