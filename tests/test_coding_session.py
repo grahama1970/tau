@@ -2518,6 +2518,76 @@ async def test_session_toggle_scoped_model_preserves_newer_provider_file_changes
 
 
 @pytest.mark.anyio
+async def test_session_set_scoped_models_replaces_list_and_preserves_provider_file_changes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("LOCAL_API_KEY", "local-key")
+    monkeypatch.setenv("REMOTE_API_KEY", "remote-key")
+    tau_paths = TauPaths(home=tmp_path / "tau-home", agents_home=tmp_path / "agents-home")
+    loaded_settings = ProviderSettings(
+        default_provider="local",
+        providers=(
+            OpenAICompatibleProviderConfig(
+                name="local",
+                api_key_env="LOCAL_API_KEY",
+                models=("qwen", "llama"),
+                default_model="qwen",
+            ),
+        ),
+        scoped_models=(ScopedModelConfig(provider="local", model="qwen"),),
+    )
+    newer_settings = ProviderSettings(
+        default_provider="local",
+        providers=(
+            loaded_settings.get_provider("local"),
+            OpenAICompatibleProviderConfig(
+                name="remote",
+                api_key_env="REMOTE_API_KEY",
+                models=("sonnet",),
+                default_model="sonnet",
+            ),
+        ),
+        scoped_models=(
+            ScopedModelConfig(provider="local", model="qwen"),
+            ScopedModelConfig(provider="remote", model="sonnet"),
+        ),
+    )
+    save_provider_settings(newer_settings, tau_paths)
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="qwen",
+            system="You are Tau.",
+            storage=JsonlSessionStorage(tmp_path / "scoped-session.jsonl"),
+            cwd=tmp_path,
+            provider_name="local",
+            provider_settings=loaded_settings,
+            resource_paths=TauResourcePaths(root=tau_paths.home, paths=tau_paths),
+        )
+    )
+
+    scoped = session.set_scoped_models(
+        (
+            ModelChoice(provider_name="remote", model="sonnet"),
+            ModelChoice(provider_name="local", model="llama"),
+            ModelChoice(provider_name="local", model="llama"),
+        )
+    )
+
+    saved = coding_session_module.load_provider_settings(tau_paths)
+    assert scoped == (
+        ModelChoice(provider_name="remote", model="sonnet"),
+        ModelChoice(provider_name="local", model="llama"),
+    )
+    assert saved.get_provider("remote").default_model == "sonnet"
+    assert saved.scoped_models == (
+        ScopedModelConfig(provider="remote", model="sonnet"),
+        ScopedModelConfig(provider="local", model="llama"),
+    )
+
+
+@pytest.mark.anyio
 async def test_session_set_model_persists_default_provider_model(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

@@ -1,6 +1,6 @@
 import asyncio
 import re
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Sequence
 from contextlib import nullcontext
 from dataclasses import replace
 from datetime import datetime
@@ -244,6 +244,10 @@ class FakeSession:
         else:
             scoped.append(choice)
         self.scoped_model_choices = tuple(scoped)
+        return self.scoped_model_choices
+
+    def set_scoped_models(self, choices: Sequence[ModelChoice]) -> tuple[ModelChoice, ...]:
+        self.scoped_model_choices = tuple(dict.fromkeys(choices))
         return self.scoped_model_choices
 
     def cycle_scoped_model(self) -> ModelChoice:
@@ -4233,6 +4237,61 @@ async def test_tui_scoped_models_picker_toggles_scoped_models_without_switching_
         assert session.scoped_model_choices == ()
         assert session.provider_name == "openai"
         assert session.model == "fake-model"
+
+
+@pytest.mark.anyio
+async def test_tui_scoped_models_picker_bulk_enables_and_clears_models() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/scoped-models"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ModelPickerScreen)
+        await pilot.press("ctrl+a")
+        await pilot.pause()
+
+        assert session.scoped_model_choices == session.available_model_choices
+        help_text = str(app.screen.query_one("#model-picker-help", Static).render())
+        assert "3 scoped" in help_text
+
+        await pilot.press("ctrl+x")
+        await pilot.pause()
+
+        assert session.scoped_model_choices == ()
+        help_text = str(app.screen.query_one("#model-picker-help", Static).render())
+        assert "0 scoped" in help_text
+
+
+@pytest.mark.anyio
+async def test_tui_scoped_models_picker_bulk_enable_respects_search_filter() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/scoped-models"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ModelPickerScreen)
+        search = app.screen.query_one("#model-picker-search", Input)
+        search.value = "local"
+        await pilot.pause()
+        await pilot.press("ctrl+a")
+        await pilot.pause()
+
+        assert session.scoped_model_choices == (
+            ModelChoice(provider_name="local", model="local-model"),
+        )
+        labels = [
+            str(item.query_one(Label).render())
+            for item in app.screen.query_one("#model-picker-list", ListView).children
+        ]
+        assert labels == ["  local:local-model [scoped]"]
 
 
 @pytest.mark.anyio

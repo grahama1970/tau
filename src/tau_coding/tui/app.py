@@ -1389,6 +1389,8 @@ class ModelPickerSearchInput(Input):
         Binding("escape", "cancel", "Cancel", show=False, priority=True),
         Binding("tab", "toggle_mode", "Mode", show=False, priority=True),
         Binding("ctrl+i", "toggle_mode", "Mode", show=False, priority=True),
+        Binding("ctrl+a", "enable_all_scoped", "Enable all", show=False, priority=True),
+        Binding("ctrl+x", "clear_scoped", "Clear", show=False, priority=True),
         Binding("up", "cursor_up", "Up", show=False, priority=True),
         Binding("down", "cursor_down", "Down", show=False, priority=True),
     ]
@@ -1410,6 +1412,14 @@ class ModelPickerSearchInput(Input):
             event.stop()
             event.prevent_default()
             self.action_toggle_mode()
+        elif event.key == "ctrl+a":
+            event.stop()
+            event.prevent_default()
+            self.action_enable_all_scoped()
+        elif event.key == "ctrl+x":
+            event.stop()
+            event.prevent_default()
+            self.action_clear_scoped()
         elif event.key == "escape":
             event.stop()
             event.prevent_default()
@@ -1426,6 +1436,14 @@ class ModelPickerSearchInput(Input):
     def action_toggle_mode(self) -> None:
         """Toggle between all and scoped picker modes."""
         self._picker().action_toggle_mode()
+
+    def action_enable_all_scoped(self) -> None:
+        """Enable all visible scoped model choices."""
+        self._picker().action_enable_all_scoped()
+
+    def action_clear_scoped(self) -> None:
+        """Clear all visible scoped model choices."""
+        self._picker().action_clear_scoped()
 
     def action_cancel(self) -> None:
         """Close the model picker."""
@@ -1444,6 +1462,8 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         Binding("pageup", "page_up", "Page up", show=False),
         Binding("pagedown", "page_down", "Page down", show=False),
         Binding("enter", "accept_model", "Select", show=False),
+        Binding("ctrl+a", "enable_all_scoped", "Enable all", show=False),
+        Binding("ctrl+x", "clear_scoped", "Clear", show=False),
     ]
 
     def __init__(
@@ -1455,6 +1475,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         provider_name: str,
         theme: TuiTheme,
         on_toggle_scoped: Callable[[ModelChoice], Sequence[ModelChoice]] | None = None,
+        on_set_scoped: Callable[[Sequence[ModelChoice]], Sequence[ModelChoice]] | None = None,
         picker_kind: Literal["model", "scoped"] = "model",
     ) -> None:
         super().__init__()
@@ -1465,6 +1486,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         self.provider_name = provider_name
         self.theme = theme
         self.on_toggle_scoped = on_toggle_scoped
+        self.on_set_scoped = on_set_scoped
         self.picker_kind = picker_kind
         self.mode: Literal["all", "scoped"] = "all"
         self.search_value = ""
@@ -1548,6 +1570,12 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         elif event.key == "enter":
             event.stop()
             self.action_accept_model()
+        elif event.key == "ctrl+a":
+            event.stop()
+            self.action_enable_all_scoped()
+        elif event.key == "ctrl+x":
+            event.stop()
+            self.action_clear_scoped()
         elif event.key in {"tab", "ctrl+i"}:
             event.stop()
             self.action_toggle_mode()
@@ -1608,6 +1636,30 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         self.scoped_choices = tuple(dict.fromkeys(self.on_toggle_scoped(choice)))
         self._refresh_model_list()
 
+    def action_enable_all_scoped(self) -> None:
+        """Add all visible target models to scoped models."""
+        if self.picker_kind != "scoped" or self.on_set_scoped is None:
+            return
+        target_choices = self.visible_choices if self.search_value else self.choices
+        self.scoped_choices = tuple(
+            dict.fromkeys(self.on_set_scoped((*self.scoped_choices, *target_choices)))
+        )
+        self._refresh_model_list()
+
+    def action_clear_scoped(self) -> None:
+        """Remove all visible target models from scoped models."""
+        if self.picker_kind != "scoped" or self.on_set_scoped is None:
+            return
+        target_choices = set(self.visible_choices if self.search_value else self.choices)
+        self.scoped_choices = tuple(
+            dict.fromkeys(
+                self.on_set_scoped(
+                    tuple(choice for choice in self.scoped_choices if choice not in target_choices)
+                )
+            )
+        )
+        self._refresh_model_list()
+
     def action_cancel(self) -> None:
         """Close without selecting a model."""
         self.dismiss(None)
@@ -1652,9 +1704,9 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         if self.picker_kind == "scoped":
             tabs.update("Scoped models setup — Enter toggles membership; active model is unchanged")
             help_text = (
-                "No matching models - Enter toggles scoped model"
+                "No matching models - Ctrl+A/Ctrl+X apply to matching models"
                 if not self.visible_choices
-                else f"Enter toggles scoped model - {scope_count} scoped"
+                else f"Enter toggles - Ctrl+A all - Ctrl+X clear - {scope_count} scoped"
             )
         elif self.mode == "all":
             tabs.update("Tabs: ● All models  ○ Scoped models")
@@ -3276,6 +3328,7 @@ class TauTuiApp(App[None]):
                 provider_name=self.session.provider_name,
                 theme=self.tui_settings.resolved_theme,
                 on_toggle_scoped=self._toggle_scoped_model,
+                on_set_scoped=self._set_scoped_models,
                 picker_kind="scoped",
             ),
             callback=self._handle_scoped_models_picker_result,
@@ -3288,6 +3341,17 @@ class TauTuiApp(App[None]):
             return tuple(getattr(self.session, "scoped_model_choices", ()))
         try:
             return tuple(toggle_scoped_model(choice))
+        except Exception as exc:  # noqa: BLE001 - surface session state failures in the TUI
+            self._notify(f"Could not update scoped models: {exc}", severity="error")
+            return tuple(getattr(self.session, "scoped_model_choices", ()))
+
+    def _set_scoped_models(self, choices: Sequence[ModelChoice]) -> Sequence[ModelChoice]:
+        set_scoped_models = getattr(self.session, "set_scoped_models", None)
+        if set_scoped_models is None:
+            self._notify("Scoped model controls are not available.", severity="warning")
+            return tuple(getattr(self.session, "scoped_model_choices", ()))
+        try:
+            return tuple(set_scoped_models(choices))
         except Exception as exc:  # noqa: BLE001 - surface session state failures in the TUI
             self._notify(f"Could not update scoped models: {exc}", severity="error")
             return tuple(getattr(self.session, "scoped_model_choices", ()))
