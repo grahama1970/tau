@@ -412,6 +412,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
 
     BINDINGS: ClassVar[list[BindingEntry]] = [
         Binding("escape", "cancel", "Cancel"),
+        Binding("tab", "toggle_scope", "Scope", priority=True),
         Binding("ctrl+n", "toggle_named_filter", "Named"),
         Binding("ctrl+p", "toggle_path", "Path"),
         Binding("ctrl+s", "toggle_sort", "Sort"),
@@ -425,12 +426,15 @@ class SessionPickerScreen(ModalScreen[str | None]):
         records: Sequence[SessionCompletionRecord],
         *,
         theme: TuiTheme,
+        all_records: Sequence[SessionCompletionRecord] | None = None,
     ) -> None:
         super().__init__()
-        self.records = tuple(records)
-        self.filtered_records = self.records
+        self.current_records = tuple(records)
+        self.all_records = tuple(all_records if all_records is not None else records)
+        self.filtered_records = self.current_records
         self.theme = theme
         self.search_value = ""
+        self.scope: Literal["current", "all"] = "current"
         self.named_only = False
         self.show_path = False
         self.sort_mode: Literal["recent", "name"] = "recent"
@@ -475,8 +479,9 @@ class SessionPickerScreen(ModalScreen[str | None]):
 
     def _refresh_session_list(self) -> None:
         """Rebuild the visible session rows from the current search query."""
+        records = self.current_records if self.scope == "current" else self.all_records
         self.filtered_records = _filter_session_picker_records(
-            self.records,
+            records,
             self.search_value,
             named_only=self.named_only,
             sort_mode=self.sort_mode,
@@ -493,18 +498,19 @@ class SessionPickerScreen(ModalScreen[str | None]):
             for record in self.filtered_records
         )
         session_list.index = 0 if self.filtered_records else None
+        scope_state = f"scope:{self.scope}"
         named_state = "named:on" if self.named_only else "named:off"
         path_state = "path:on" if self.show_path else "path:off"
         sort_state = f"sort:{self.sort_mode}"
         if self.filtered_records:
             help_text = (
-                f"Type to search - Ctrl+N {named_state} - "
+                f"Type to search - Tab {scope_state} - Ctrl+N {named_state} - "
                 f"Ctrl+P {path_state} - Ctrl+S {sort_state} - "
                 "Enter selects - Escape closes"
             )
         else:
             help_text = (
-                f"No matching sessions - Ctrl+N {named_state} - "
+                f"No matching sessions - Tab {scope_state} - Ctrl+N {named_state} - "
                 f"Ctrl+P {path_state} - Ctrl+S {sort_state} - Escape closes"
             )
         self.query_one("#session-picker-help", Static).update(help_text)
@@ -520,6 +526,9 @@ class SessionPickerScreen(ModalScreen[str | None]):
         elif event.key == "enter":
             event.stop()
             self.action_select_cursor()
+        elif event.key in {"tab", "ctrl+i"}:
+            event.stop()
+            self.action_toggle_scope()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected session id."""
@@ -540,6 +549,11 @@ class SessionPickerScreen(ModalScreen[str | None]):
         if not self.filtered_records:
             return
         self.query_one("#session-picker-list", ListView).action_select_cursor()
+
+    def action_toggle_scope(self) -> None:
+        """Toggle between current-project sessions and all indexed sessions."""
+        self.scope = "all" if self.scope == "current" else "current"
+        self._refresh_session_list()
 
     def action_toggle_named_filter(self) -> None:
         """Toggle whether the picker shows only named sessions."""
@@ -2373,10 +2387,12 @@ class TauTuiApp(App[None]):
         if isinstance(self.screen, ModelPickerScreen):
             self.screen.action_toggle_mode()
             return
+        if isinstance(self.screen, SessionPickerScreen):
+            self.screen.action_toggle_scope()
+            return
         if isinstance(
             self.screen,
-            SessionPickerScreen
-            | TreePickerScreen
+            TreePickerScreen
             | LoginMethodPickerScreen
             | LoginProviderPickerScreen
             | ThemePickerScreen,
@@ -2472,12 +2488,17 @@ class TauTuiApp(App[None]):
         if self.state.running:
             self._notify("Tau is already working. Press Escape to cancel.")
             return
-        records = _session_records(self.session)
-        if not records:
+        current_records = _session_records(self.session, scope="current")
+        all_records = _session_records(self.session, scope="all")
+        if not current_records and not all_records:
             self._notify("No sessions found.")
             return
         self.push_screen(
-            SessionPickerScreen(records, theme=self.tui_settings.resolved_theme),
+            SessionPickerScreen(
+                current_records,
+                theme=self.tui_settings.resolved_theme,
+                all_records=all_records,
+            ),
             callback=self._handle_session_picker_result,
         )
 
@@ -3245,10 +3266,19 @@ def _session_options(session: CodingSession) -> tuple[CompletionOption, ...]:
     return tuple(_session_option(record) for record in _session_records(session))
 
 
-def _session_records(session: CodingSession) -> tuple[SessionCompletionRecord, ...]:
+def _session_records(
+    session: CodingSession,
+    *,
+    scope: Literal["current", "all"] = "current",
+) -> tuple[SessionCompletionRecord, ...]:
     manager = getattr(session, "session_manager", None)
     if manager is None:
         return ()
+    if scope == "all":
+        try:
+            return tuple(manager.list_sessions())
+        except TypeError:
+            return tuple(manager.list_sessions(session.cwd))
     try:
         records = manager.list_sessions(session.cwd)
     except TypeError:

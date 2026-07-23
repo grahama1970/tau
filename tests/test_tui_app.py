@@ -2512,6 +2512,8 @@ async def test_tui_app_session_picker_path_toggle_shows_session_cwd() -> None:
     async with app.run_test() as pilot:
         await pilot.press("ctrl+r")
         assert isinstance(app.screen, SessionPickerScreen)
+
+        await pilot.press("tab")
         labels_before = [
             item.query_one(Label).content
             for item in app.screen.query_one("#session-picker-list", ListView).children
@@ -2577,6 +2579,57 @@ async def test_tui_app_session_picker_sort_toggle_orders_by_title() -> None:
     assert "Alpha work" in str(labels_after[0])
     assert "Zulu work" in str(labels_after[1])
     assert "sort:name" in help_text
+
+
+@pytest.mark.anyio
+async def test_tui_app_session_picker_scope_toggle_shows_all_sessions() -> None:
+    session = FakeSession()
+    session.cwd = Path("/workspace/project-alpha")
+    session.session_manager = _FakeSessionManager(
+        [
+            CodingSessionRecord(
+                id="session-1",
+                path=Path("/tmp/session-1.jsonl"),
+                cwd=Path("/workspace/project-alpha"),
+                model="fake-model",
+                title="Current task",
+                created_at=1.0,
+                updated_at=3.0,
+            ),
+            CodingSessionRecord(
+                id="session-2",
+                path=Path("/tmp/session-2.jsonl"),
+                cwd=Path("/workspace/project-beta"),
+                model="other-model",
+                title="Other task",
+                created_at=1.0,
+                updated_at=2.0,
+            ),
+        ]
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        await pilot.press("ctrl+r")
+        assert isinstance(app.screen, SessionPickerScreen)
+        labels_before = [
+            item.query_one(Label).content
+            for item in app.screen.query_one("#session-picker-list", ListView).children
+        ]
+
+        await pilot.press("tab")
+        labels_after = [
+            item.query_one(Label).content
+            for item in app.screen.query_one("#session-picker-list", ListView).children
+        ]
+        help_text = str(app.screen.query_one("#session-picker-help", Static).render())
+
+    assert len(labels_before) == 1
+    assert "Current task" in str(labels_before[0])
+    assert len(labels_after) == 2
+    assert "fake-model - Current task" in str(labels_after[0])
+    assert "other-model - Other task" in str(labels_after[1])
+    assert "scope:all" in help_text
 
 
 @pytest.mark.anyio
@@ -4890,5 +4943,6 @@ class _FakeSessionManager:
         self._records = records
 
     def list_sessions(self, cwd: Path | None = None) -> list[CodingSessionRecord]:
-        del cwd
+        if cwd is not None:
+            return [record for record in self._records if record.cwd == cwd]
         return self._records
