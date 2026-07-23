@@ -63,6 +63,7 @@ from tau_coding.tui.app import (
     OAuthLoginScreen,
     PromptInput,
     SessionPickerScreen,
+    SettingsPickerScreen,
     TauTuiApp,
     ThemePickerScreen,
     TreeLabelInputScreen,
@@ -211,6 +212,8 @@ class FakeSession:
             return CommandResult(handled=True, tree_picker_requested=True)
         if text == "/fork":
             return CommandResult(handled=True, fork_picker_requested=True)
+        if text == "/settings":
+            return CommandResult(handled=True, settings_picker_requested=True)
         if text == "/login":
             return CommandResult(handled=True, login_picker_requested=True)
         if text.startswith("/login "):
@@ -3039,6 +3042,60 @@ async def test_tui_app_fork_picker_branches_from_latest_user_message() -> None:
         assert [(item.role, item.text) for item in app.state.items] == [
             ("user", "Branched to second"),
         ]
+
+
+@pytest.mark.anyio
+async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(
+            theme="tau-dark",
+            auto_copy_selection=False,
+            double_escape_action="tree",
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/settings"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, SettingsPickerScreen)
+        settings_list = app.screen.query_one("#settings-picker-list", ListView)
+        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+            "Theme: tau-dark",
+            "Auto-copy selection: off",
+            "Double Escape: tree",
+        ]
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.auto_copy_selection is True
+        assert '"auto_copy_selection": true' in tui_settings_path().read_text(encoding="utf-8")
+        assert isinstance(app.screen, SettingsPickerScreen)
+        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+            "Theme: tau-dark",
+            "Auto-copy selection: on",
+            "Double Escape: tree",
+        ]
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.double_escape_action == "fork"
+        assert '"double_escape_action": "fork"' in tui_settings_path().read_text(
+            encoding="utf-8"
+        )
+
+        await pilot.press("up", "up", "enter")
+        await pilot.pause()
+        assert app.tui_settings.theme == "tau-light"
+        assert '"theme": "tau-light"' in tui_settings_path().read_text(encoding="utf-8")
+        assert isinstance(app.screen, SettingsPickerScreen)
 
 
 @pytest.mark.anyio

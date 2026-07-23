@@ -109,6 +109,7 @@ def test_registered_commands_are_pi_aligned(tmp_path: Path) -> None:
         "resume",
         "scoped-models",
         "session",
+        "settings",
         "skill",
         "theme",
         "tree",
@@ -159,6 +160,18 @@ def test_fork_command_requests_user_message_picker(tmp_path: Path) -> None:
     assert result.handled is True
     assert result.fork_picker_requested is True
     assert with_args.message == "Usage: /fork"
+
+
+def test_settings_command_requests_picker(tmp_path: Path) -> None:
+    registry = create_default_command_registry()
+    session = FakeSession(tmp_path)
+
+    result = registry.execute(session, "/settings")
+    with_args = registry.execute(session, "/settings theme")
+
+    assert result.handled is True
+    assert result.settings_picker_requested is True
+    assert with_args.message == "Usage: /settings"
 
 
 def test_export_command_requests_default_export(tmp_path: Path) -> None:
