@@ -2700,6 +2700,75 @@ async def test_session_import_session_rejects_empty_jsonl(tmp_path: Path) -> Non
 
 
 @pytest.mark.anyio
+async def test_session_share_creates_secret_gist_from_html_export(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        coding_session_module.shutil,
+        "which",
+        lambda name: f"/usr/bin/{name}",
+    )
+    monkeypatch.setenv("TAU_SHARE_VIEWER_URL", "https://tau.example/session/")
+    calls: list[list[str]] = []
+    exported_html: list[str] = []
+
+    def fake_run(
+        args: list[str],
+        *,
+        capture_output: bool,
+        text: bool,
+        check: bool,
+    ) -> subprocess.CompletedProcess[str]:
+        assert capture_output is True
+        assert text is True
+        assert check is False
+        calls.append(args)
+        if args == ["gh", "auth", "status"]:
+            return subprocess.CompletedProcess(args, 0, stdout="", stderr="")
+        assert args[:4] == ["gh", "gist", "create", "--public=false"]
+        html_path = Path(args[4])
+        exported_html.append(html_path.read_text(encoding="utf-8"))
+        return subprocess.CompletedProcess(
+            args,
+            0,
+            stdout="https://gist.github.com/graham/abc123\n",
+            stderr="",
+        )
+
+    monkeypatch.setattr(coding_session_module.subprocess, "run", fake_run)
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    await storage.append(SessionInfoEntry(cwd=str(tmp_path)))
+    await storage.append(ModelChangeEntry(model="fake"))
+    await storage.append(MessageEntry(message=UserMessage(content="Shared prompt")))
+    session = await CodingSession.load(_config(tmp_path, FakeProvider([]), storage))
+
+    message = await session.share()
+
+    assert calls[0] == ["gh", "auth", "status"]
+    assert calls[1][:4] == ["gh", "gist", "create", "--public=false"]
+    assert "Shared prompt" in exported_html[0]
+    assert message == (
+        "Share URL: https://tau.example/session/abc123\n"
+        "Gist: https://gist.github.com/graham/abc123"
+    )
+
+
+@pytest.mark.anyio
+async def test_session_share_rejects_missing_github_cli(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(coding_session_module.shutil, "which", lambda name: None)
+    session = await CodingSession.load(
+        _config(tmp_path, FakeProvider([]), JsonlSessionStorage(tmp_path / "session.jsonl"))
+    )
+
+    with pytest.raises(ValueError, match=r"GitHub CLI \(gh\) is not installed"):
+        await session.share()
+
+
+@pytest.mark.anyio
 async def test_session_toggle_scoped_model_preserves_newer_provider_file_changes(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

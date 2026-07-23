@@ -3079,6 +3079,8 @@ class TauTuiApp(App[None]):
                     self._notify(f"Could not export session: {exc}", severity="error")
             if command.import_requested and command.import_path is not None:
                 await self._import_session(command.import_path)
+            if command.share_requested:
+                await self._share_session()
             if command.resume_session_id is not None:
                 await self._resume_session(command.resume_session_id)
             if command.resume_picker_requested:
@@ -3764,6 +3766,18 @@ class TauTuiApp(App[None]):
             self.state.clear()
             self.state.set_skills(self.session.skills)
             self.state.load_messages(self.session.messages)
+            self._notify(message)
+        except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
+            self._notify(f"Error: {exc}", severity="error")
+        self._refresh()
+
+    async def _share_session(self) -> None:
+        share = getattr(self.session, "share", None)
+        if share is None:
+            self._notify("Session sharing is not available.", severity="warning")
+            return
+        try:
+            message = await share()
             self._notify(message)
         except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
             self._notify(f"Error: {exc}", severity="error")

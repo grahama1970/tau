@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import asyncio
 import fnmatch
+import os
 import shutil
+import subprocess
+import tempfile
 from collections.abc import AsyncIterator, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -1190,6 +1193,45 @@ class CodingSession:
         self._thinking_level = replacement._thinking_level
         return f"Imported session: {record.id}"
 
+    async def share(self) -> str:
+        """Export the current session and share it as a secret GitHub gist."""
+        if shutil.which("gh") is None:
+            raise ValueError("GitHub CLI (gh) is not installed.")
+
+        auth = await asyncio.to_thread(
+            subprocess.run,
+            ["gh", "auth", "status"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if auth.returncode != 0:
+            detail = (auth.stderr or auth.stdout).strip() or "Run 'gh auth login' first."
+            raise ValueError(f"GitHub CLI is not logged in: {detail}")
+
+        with tempfile.TemporaryDirectory(prefix="tau-share-") as temp_dir:
+            html_path = Path(temp_dir) / "session.html"
+            await self.export(html_path, format="html")
+            gist = await asyncio.to_thread(
+                subprocess.run,
+                ["gh", "gist", "create", "--public=false", str(html_path)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+        if gist.returncode != 0:
+            detail = (gist.stderr or gist.stdout).strip() or "Unknown error"
+            raise ValueError(f"Failed to create gist: {detail}")
+
+        gist_url = gist.stdout.strip().splitlines()[-1] if gist.stdout.strip() else ""
+        gist_id = gist_url.rstrip("/").split("/")[-1] if gist_url else ""
+        if not gist_id:
+            raise ValueError("Failed to parse gist ID from GitHub CLI output.")
+
+        viewer_url = _share_viewer_url(gist_id)
+        return f"Share URL: {viewer_url}\nGist: {gist_url}"
+
     async def compact(self, instructions: str | None = None) -> str:
         """Generate a manual compaction summary and rebuild active context."""
         plan = self._manual_compaction_plan()
@@ -2049,6 +2091,15 @@ def _resolve_export_destination(
         destination_dir=resolved,
         format=format,
     )
+
+
+def _share_viewer_url(gist_id: str) -> str:
+    base_url = os.environ.get("TAU_SHARE_VIEWER_URL") or os.environ.get(
+        "PI_SHARE_VIEWER_URL"
+    )
+    if not base_url:
+        base_url = "https://pi.dev/session/"
+    return f"{base_url.rstrip('/')}/{gist_id}"
 
 
 def _session_export_title(session: CodingSession) -> str:

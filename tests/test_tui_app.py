@@ -171,6 +171,7 @@ class FakeSession:
         self.cancel_count = 0
         self.export_calls: list[tuple[Path | None, str | None]] = []
         self.import_calls: list[Path] = []
+        self.share_count = 0
 
     def handle_command(self, text: str) -> CommandResult:
         if text == "/session":
@@ -231,6 +232,8 @@ class FakeSession:
             return CommandResult(handled=True, fork_picker_requested=True)
         if text == "/settings":
             return CommandResult(handled=True, settings_picker_requested=True)
+        if text == "/share":
+            return CommandResult(handled=True, share_requested=True)
         if text == "/login":
             return CommandResult(handled=True, login_picker_requested=True)
         if text.startswith("/login "):
@@ -329,6 +332,13 @@ class FakeSession:
         )
         self.context_token_estimate = 654
         return "Imported session: imported-session"
+
+    async def share(self) -> str:
+        self.share_count += 1
+        return (
+            "Share URL: https://tau.example/session/abc123\n"
+            "Gist: https://gist.github.com/x/abc123"
+        )
 
     async def resume(self, session_id: str) -> str:
         self.resumed_session_ids.append(session_id)
@@ -2203,6 +2213,31 @@ async def test_tui_app_import_command_reloads_visible_state() -> None:
             ("assistant", "Imported answer"),
         ]
         assert notifications == ["Imported session: imported-session"]
+        assert session.prompt_texts == []
+
+
+@pytest.mark.anyio
+async def test_tui_app_share_command_runs_session_share() -> None:
+    session = FakeSession(messages=[UserMessage(content="Earlier")])
+    app = TauTuiApp(session)
+    notifications: list[str] = []
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        del kwargs
+        notifications.append(message)
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/share"
+        await pilot.press("enter")
+
+        assert session.share_count == 1
+        assert notifications == [
+            "Share URL: https://tau.example/session/abc123\n"
+            "Gist: https://gist.github.com/x/abc123"
+        ]
         assert session.prompt_texts == []
 
 
