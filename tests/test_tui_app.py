@@ -2684,6 +2684,37 @@ def test_session_picker_filter_supports_pi_regex_and_exact_phrase_search() -> No
     assert invalid_regex_matches == ()
 
 
+def test_session_picker_filter_relevance_sort_orders_best_match_before_recency() -> None:
+    records = (
+        CodingSessionRecord(
+            id="session-1",
+            path=Path("/tmp/session-1.jsonl"),
+            cwd=Path("/workspace/project"),
+            model="fake-model",
+            title="Architecture billing review",
+            created_at=1.0,
+            updated_at=5.0,
+        ),
+        CodingSessionRecord(
+            id="session-2",
+            path=Path("/tmp/session-2.jsonl"),
+            cwd=Path("/workspace/project"),
+            model="fake-model",
+            title="Billing plan",
+            created_at=1.0,
+            updated_at=1.0,
+        ),
+    )
+
+    matches = _filter_session_picker_records(
+        records,
+        "billing",
+        sort_mode="relevance",
+    )
+
+    assert [record.id for record in matches] == ["session-2", "session-1"]
+
+
 @pytest.mark.anyio
 async def test_tui_app_session_picker_selects_filtered_session() -> None:
     session = FakeSession(messages=[UserMessage(content="Earlier")])
@@ -2916,6 +2947,50 @@ async def test_tui_app_session_picker_sort_toggle_orders_by_title() -> None:
     assert "Alpha work" in str(labels_after[0])
     assert "Zulu work" in str(labels_after[1])
     assert "sort:name" in help_text
+
+
+@pytest.mark.anyio
+async def test_tui_app_session_picker_sort_toggle_reaches_relevance_sort() -> None:
+    session = FakeSession()
+    session.session_manager = _FakeSessionManager(
+        [
+            CodingSessionRecord(
+                id="session-1",
+                path=Path("/tmp/session-1.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="fake-model",
+                title="Architecture billing review",
+                created_at=1.0,
+                updated_at=5.0,
+            ),
+            CodingSessionRecord(
+                id="session-2",
+                path=Path("/tmp/session-2.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="fake-model",
+                title="Billing plan",
+                created_at=1.0,
+                updated_at=1.0,
+            ),
+        ]
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        await pilot.press("ctrl+r")
+        assert isinstance(app.screen, SessionPickerScreen)
+
+        await pilot.press("b", "i", "l", "l")
+        await pilot.press("ctrl+s", "ctrl+s")
+        labels = [
+            item.query_one(Label).content
+            for item in app.screen.query_one("#session-picker-list", ListView).children
+        ]
+        help_text = str(app.screen.query_one("#session-picker-help", Static).render())
+
+    assert "Billing plan" in str(labels[0])
+    assert "Architecture billing review" in str(labels[1])
+    assert "sort:relevance" in help_text
 
 
 @pytest.mark.anyio
