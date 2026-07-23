@@ -187,6 +187,8 @@ class CompletionActionTarget(Protocol):
 
     def action_dequeue_messages(self) -> None: ...
 
+    def action_copy_last_message(self) -> None: ...
+
     def action_edit_queued_follow_up(self) -> bool: ...
 
     async def action_submit_prompt(self) -> None: ...
@@ -329,6 +331,10 @@ class PromptInput(TextArea):
         """Restore queued messages into the prompt."""
         self._completion_target().action_dequeue_messages()
 
+    def action_copy_last_message(self) -> None:
+        """Copy the last assistant message."""
+        self._completion_target().action_copy_last_message()
+
     def action_clear_prompt(self) -> None:
         """Clear the current prompt."""
         if self.selected_text:
@@ -429,6 +435,10 @@ class PromptInput(TextArea):
             event.stop()
             event.prevent_default()
             self._completion_target().action_paste_clipboard()
+        elif event.key == keybindings.copy_last_message:
+            event.stop()
+            event.prevent_default()
+            self._completion_target().action_copy_last_message()
         elif event.key == keybindings.copy_message:
             if self.selected_text:
                 return
@@ -2879,6 +2889,15 @@ class TauTuiApp(App[None]):
             suffix = "s" if restored != 1 else ""
             self._notify(f"Restored {restored} queued message{suffix}.")
 
+    def action_copy_last_message(self) -> None:
+        """Copy the most recent assistant message to the system clipboard."""
+        text = _last_assistant_text(self.state)
+        if not text:
+            self._notify("No assistant messages to copy.", severity="warning")
+            return
+        self.copy_to_clipboard(text)
+        self._notify("Copied last assistant message to clipboard.")
+
     async def _open_external_editor(self) -> None:
         prompt = self.query_one("#prompt", PromptInput)
         original_text = prompt.text
@@ -4200,6 +4219,14 @@ def _queued_message_preview(message: str) -> str:
     return lines[0] if lines else ""
 
 
+def _last_assistant_text(state: TuiState) -> str | None:
+    """Return the most recent assistant transcript text, if any."""
+    for item in reversed(state.items):
+        if item.role == "assistant" and item.text:
+            return item.text
+    return None
+
+
 def _prompt_footer_mode(
     state: TuiState,
     completion_state: CompletionState,
@@ -4252,6 +4279,7 @@ def _app_bindings(keybindings: TuiKeybindings) -> list[Binding]:
         Binding(keybindings.external_editor, "open_external_editor", "Editor"),
         Binding(keybindings.paste_clipboard, "paste_clipboard", "Paste"),
         Binding(keybindings.dequeue_messages, "dequeue_messages", "Restore queued"),
+        Binding(keybindings.copy_last_message, "copy_last_message", "Copy last message"),
         Binding(keybindings.copy_message, "clear_prompt", "Clear input"),
         Binding(keybindings.quit, "quit", "Quit"),
     ]
@@ -4342,6 +4370,7 @@ def _hidden_prompt_bindings(
         (keybindings.model_picker, "open_model_picker"),
         (keybindings.external_editor, "open_external_editor"),
         (keybindings.paste_clipboard, "paste_clipboard"),
+        (keybindings.copy_last_message, "copy_last_message"),
         (keybindings.toggle_tool_results, "toggle_tool_results"),
         (keybindings.toggle_thinking, "toggle_thinking"),
         (keybindings.copy_message, "clear_prompt"),
