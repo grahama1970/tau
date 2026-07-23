@@ -67,6 +67,7 @@ from tau_coding.tui.app import (
     ThemePickerScreen,
     TreeLabelInputScreen,
     TreePickerScreen,
+    UserMessagePickerScreen,
     _activity_prompt_border_color,
     _completion_selected_render_line,
     _edit_text_with_external_editor,
@@ -208,6 +209,8 @@ class FakeSession:
             return CommandResult(handled=True, resume_picker_requested=True)
         if text == "/tree":
             return CommandResult(handled=True, tree_picker_requested=True)
+        if text == "/fork":
+            return CommandResult(handled=True, fork_picker_requested=True)
         if text == "/login":
             return CommandResult(handled=True, login_picker_requested=True)
         if text.startswith("/login "):
@@ -2985,6 +2988,56 @@ async def test_tui_app_tree_picker_branches_with_summary() -> None:
         assert session.tree_branch_requests == [("left", True, None)]
         assert [(item.role, item.text) for item in app.state.items] == [
             ("user", "Branched to left"),
+        ]
+
+
+@pytest.mark.anyio
+async def test_tui_app_fork_picker_branches_from_latest_user_message() -> None:
+    class ForkSession(FakeSession):
+        async def tree_choices(self) -> tuple[SessionTreeChoice, ...]:
+            return (
+                SessionTreeChoice(
+                    entry_id="first",
+                    label="user: First prompt",
+                    copy_text="First prompt",
+                ),
+                SessionTreeChoice(
+                    entry_id="assistant",
+                    label="assistant: Prior answer",
+                    parent_entry_id="first",
+                    copy_text="Prior answer",
+                ),
+                SessionTreeChoice(
+                    entry_id="second",
+                    label="user: Second prompt",
+                    parent_entry_id="assistant",
+                    copy_text="Second prompt",
+                ),
+            )
+
+    session = ForkSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/fork"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, UserMessagePickerScreen)
+        message_list = app.screen.query_one("#user-message-picker-list", ListView)
+        assert [str(item.query_one(Label).render()) for item in message_list.children] == [
+            "Message 1 of 2: First prompt",
+            "Message 2 of 2: Second prompt",
+        ]
+        assert message_list.index == 1
+
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert session.tree_branch_requests == [("second", False, None)]
+        assert [(item.role, item.text) for item in app.state.items] == [
+            ("user", "Branched to second"),
         ]
 
 
