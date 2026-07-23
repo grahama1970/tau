@@ -51,6 +51,17 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "experiments" / "goal-locked-subagents" / "fixtures"
 
 
+def _loop2_src_for_tests() -> Path:
+    candidates = [
+        ROOT.parent / "agent-skills" / "skills" / "loop2" / "src",
+        Path.home() / "workspace" / "experiments" / "agent-skills" / "skills" / "loop2" / "src",
+    ]
+    for candidate in candidates:
+        if (candidate / "loop2" / "__init__.py").exists():
+            return candidate
+    pytest.skip("loop2 contract package unavailable")
+
+
 def _valid_public_policy_profile() -> dict[str, object]:
     return {
         "schema": "tau.policy_profile.v1",
@@ -6569,7 +6580,7 @@ async def test_run_print_mode_writes_loop2_receipts_from_contract_adapter(
     run_dir = run_dirs[0]
     validation = cli.validate_loop_receipt_with_loop2_contracts(
         run_dir,
-        loop2_src=Path(__file__).resolve().parents[2] / "agent-skills" / "skills" / "loop2" / "src",
+        loop2_src=_loop2_src_for_tests(),
     )
     receipt = json.loads((run_dir / "final-receipt.json").read_text())
     emitted_contract = json.loads((run_dir / "contract.json").read_text())
