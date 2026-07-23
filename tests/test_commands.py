@@ -95,6 +95,7 @@ def test_registered_commands_are_pi_aligned(tmp_path: Path) -> None:
     commands = create_default_command_registry().list_commands()
 
     assert [command.name for command in commands] == [
+        "changelog",
         "clone",
         "compact",
         "copy",
@@ -139,6 +140,28 @@ def test_clone_command_requests_session_clone(tmp_path: Path) -> None:
     assert result.handled is True
     assert result.clone_session_requested is True
     assert with_args.message == "Usage: /clone"
+
+
+def test_changelog_command_reads_local_changelog(tmp_path: Path) -> None:
+    (tmp_path / "CHANGELOG.md").write_text(
+        "# Changelog\n\n## Unreleased\n\n- Added local release notes.\n",
+        encoding="utf-8",
+    )
+    registry = create_default_command_registry()
+    session = FakeSession(tmp_path)
+
+    result = registry.execute(session, "/changelog")
+    with_args = registry.execute(session, "/changelog latest")
+
+    assert result.handled is True
+    assert result.message == "# Changelog\n\n## Unreleased\n\n- Added local release notes."
+    assert with_args.message == "Usage: /changelog"
+
+
+def test_changelog_command_reports_missing_entries(tmp_path: Path) -> None:
+    result = create_default_command_registry().execute(FakeSession(tmp_path), "/changelog")
+
+    assert result.message == "No changelog entries found."
 
 
 def test_compact_command_accepts_optional_instructions(tmp_path: Path) -> None:

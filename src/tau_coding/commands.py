@@ -226,6 +226,15 @@ def create_default_command_registry() -> CommandRegistry:
     )
     registry.register(
         SlashCommand(
+            name="changelog",
+            usage="/changelog",
+            description="Show local changelog entries.",
+            handler=_changelog_command,
+            search_terms=("release", "version", "news"),
+        )
+    )
+    registry.register(
+        SlashCommand(
             name="clone",
             usage="/clone",
             description="Duplicate the current session at the current position.",
@@ -388,6 +397,12 @@ def _exit_command(context: CommandContext) -> CommandResult:
 
 def _new_command(context: CommandContext) -> CommandResult:
     return CommandResult(handled=True, new_session_requested=True)
+
+
+def _changelog_command(context: CommandContext) -> CommandResult:
+    if context.args:
+        return CommandResult(handled=True, message="Usage: /changelog")
+    return CommandResult(handled=True, message=_load_changelog_text(context.session.cwd))
 
 
 def _clone_command(context: CommandContext) -> CommandResult:
@@ -838,6 +853,32 @@ def _parse_export_args(args: str) -> tuple[str | None, Path | None]:
             raise ValueError("Usage: /export [--format html|jsonl] [destination]")
         index += 1
     return export_format, destination
+
+
+def _load_changelog_text(cwd: Path) -> str:
+    for path in _candidate_changelog_paths(cwd):
+        if not path.exists() or not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8").strip()
+        if text:
+            return text
+    return "No changelog entries found."
+
+
+def _candidate_changelog_paths(cwd: Path) -> tuple[Path, ...]:
+    paths: list[Path] = []
+    try:
+        current = cwd.resolve()
+    except OSError:
+        current = cwd
+    for directory in (current, *current.parents):
+        paths.append(directory / "CHANGELOG.md")
+
+    package_root = Path(__file__).resolve().parents[2]
+    package_changelog = package_root / "CHANGELOG.md"
+    if package_changelog not in paths:
+        paths.append(package_changelog)
+    return tuple(paths)
 
 
 def _validated_session_name(value: str) -> str:
