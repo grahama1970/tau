@@ -29,6 +29,7 @@ class TuiKeybindings:
     toggle_tool_results: str = "ctrl+o"
     copy_message: str = "ctrl+c"
     external_editor: str = "ctrl+g"
+    paste_clipboard: str = "ctrl+v"
     quit: str = "ctrl+d"
 
     def to_json(self) -> dict[str, str]:
@@ -47,6 +48,7 @@ class TuiKeybindings:
             "toggle_tool_results": self.toggle_tool_results,
             "copy_message": self.copy_message,
             "external_editor": self.external_editor,
+            "paste_clipboard": self.paste_clipboard,
             "quit": self.quit,
         }
 

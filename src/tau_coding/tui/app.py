@@ -3,6 +3,8 @@
 import asyncio
 import os
 import shlex
+import shutil
+import subprocess
 import sys
 import tempfile
 from collections.abc import AsyncIterator, Callable, Sequence
@@ -177,6 +179,8 @@ class CompletionActionTarget(Protocol):
 
     def action_open_external_editor(self) -> None: ...
 
+    def action_paste_clipboard(self) -> None: ...
+
     def action_edit_queued_follow_up(self) -> bool: ...
 
     async def action_submit_prompt(self) -> None: ...
@@ -303,6 +307,10 @@ class PromptInput(TextArea):
         """Open the current prompt in the configured external editor."""
         self._completion_target().action_open_external_editor()
 
+    def action_paste_clipboard(self) -> None:
+        """Paste system clipboard text into the prompt."""
+        self._completion_target().action_paste_clipboard()
+
     def action_clear_prompt(self) -> None:
         """Clear the current prompt."""
         if self.selected_text:
@@ -389,6 +397,10 @@ class PromptInput(TextArea):
         elif event.key == keybindings.external_editor:
             event.stop()
             self._completion_target().action_open_external_editor()
+        elif event.key == keybindings.paste_clipboard:
+            event.stop()
+            event.prevent_default()
+            self._completion_target().action_paste_clipboard()
         elif event.key == keybindings.copy_message:
             if self.selected_text:
                 return
@@ -2812,6 +2824,10 @@ class TauTuiApp(App[None]):
             return
         self.run_worker(self._open_external_editor(), exclusive=False)
 
+    def action_paste_clipboard(self) -> None:
+        """Paste plain text from the system clipboard into the prompt."""
+        self.run_worker(self._paste_clipboard(), exclusive=False)
+
     async def _open_external_editor(self) -> None:
         prompt = self.query_one("#prompt", PromptInput)
         original_text = prompt.text
@@ -2830,6 +2846,21 @@ class TauTuiApp(App[None]):
             return
         prompt.text = result
         prompt.move_cursor(_text_end_location(result))
+        prompt.focus()
+        self._sync_prompt_shell_mode(prompt.text)
+        self._completion_state = self._build_completion_state(prompt.text)
+        self._refresh_completions()
+        self._refresh()
+
+    async def _paste_clipboard(self) -> None:
+        try:
+            text = await _read_clipboard_text()
+        except Exception:  # noqa: BLE001 - clipboard access is best effort
+            return
+        if not text:
+            return
+        prompt = self.query_one("#prompt", PromptInput)
+        prompt.insert(text)
         prompt.focus()
         self._sync_prompt_shell_mode(prompt.text)
         self._completion_state = self._build_completion_state(prompt.text)
@@ -3851,6 +3882,39 @@ def _tool_update_has_pipeline_stage(event: ToolExecutionUpdateEvent) -> bool:
     return any(key in event.data for key in ("memory_stage", "pipeline_stage", "stage"))
 
 
+_CLIPBOARD_TEXT_COMMANDS: tuple[tuple[str, ...], ...] = (
+    ("wl-paste", "--no-newline"),
+    ("xclip", "-selection", "clipboard", "-o"),
+    ("xsel", "--clipboard", "--output"),
+)
+
+
+async def _read_clipboard_text(timeout_s: float = 0.75) -> str | None:
+    """Return plain text from the system clipboard when a supported backend is available."""
+    for args in _CLIPBOARD_TEXT_COMMANDS:
+        if shutil.which(args[0]) is None:
+            continue
+        process = None
+        try:
+            process = await asyncio.create_subprocess_exec(
+                *args,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+            )
+            stdout, _ = await asyncio.wait_for(process.communicate(), timeout=timeout_s)
+        except (OSError, TimeoutError):
+            if process is not None and process.returncode is None:
+                process.kill()
+                with suppress(ProcessLookupError):
+                    await process.wait()
+            continue
+        if process.returncode == 0:
+            text = stdout.decode("utf-8", errors="replace")
+            if text:
+                return text
+    return None
+
+
 def _external_editor_command() -> str | None:
     """Return the configured external editor command, if any."""
     command = os.environ.get("VISUAL") or os.environ.get("EDITOR")
@@ -3977,6 +4041,7 @@ def _app_bindings(keybindings: TuiKeybindings) -> list[Binding]:
         Binding(keybindings.toggle_tool_results, "toggle_tool_results", "Tool results"),
         Binding(keybindings.toggle_thinking, "toggle_thinking", "Thinking tokens"),
         Binding(keybindings.external_editor, "open_external_editor", "Editor"),
+        Binding(keybindings.paste_clipboard, "paste_clipboard", "Paste"),
         Binding(keybindings.copy_message, "clear_prompt", "Clear input"),
         Binding(keybindings.quit, "quit", "Quit"),
     ]
@@ -4034,6 +4099,7 @@ def _prompt_bindings(
         Binding(keybindings.command_palette, "open_command_palette", "Commands", priority=True),
         Binding(keybindings.session_picker, "open_session_picker", "Sessions", priority=True),
         Binding(keybindings.external_editor, "open_external_editor", "Editor", priority=True),
+        Binding(keybindings.paste_clipboard, "paste_clipboard", "Paste", priority=True),
         Binding(keybindings.thinking_cycle, "cycle_thinking", "Thinking", priority=True),
         Binding(keybindings.model_cycle, "cycle_model", "Model", priority=True),
         Binding(
@@ -4060,6 +4126,7 @@ def _hidden_prompt_bindings(
         (keybindings.thinking_cycle, "cycle_thinking"),
         (keybindings.model_cycle, "cycle_model"),
         (keybindings.external_editor, "open_external_editor"),
+        (keybindings.paste_clipboard, "paste_clipboard"),
         (keybindings.toggle_tool_results, "toggle_tool_results"),
         (keybindings.toggle_thinking, "toggle_thinking"),
         (keybindings.copy_message, "clear_prompt"),
