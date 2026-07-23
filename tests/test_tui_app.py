@@ -2531,6 +2531,55 @@ async def test_tui_app_session_picker_path_toggle_shows_session_cwd() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_session_picker_sort_toggle_orders_by_title() -> None:
+    session = FakeSession()
+    session.session_manager = _FakeSessionManager(
+        [
+            CodingSessionRecord(
+                id="session-z",
+                path=Path("/tmp/session-z.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="fake-model",
+                title="Zulu work",
+                created_at=1.0,
+                updated_at=3.0,
+            ),
+            CodingSessionRecord(
+                id="session-a",
+                path=Path("/tmp/session-a.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="fake-model",
+                title="Alpha work",
+                created_at=1.0,
+                updated_at=2.0,
+            ),
+        ]
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        await pilot.press("ctrl+r")
+        assert isinstance(app.screen, SessionPickerScreen)
+        labels_before = [
+            item.query_one(Label).content
+            for item in app.screen.query_one("#session-picker-list", ListView).children
+        ]
+
+        await pilot.press("ctrl+s")
+        labels_after = [
+            item.query_one(Label).content
+            for item in app.screen.query_one("#session-picker-list", ListView).children
+        ]
+        help_text = str(app.screen.query_one("#session-picker-help", Static).render())
+
+    assert "Zulu work" in str(labels_before[0])
+    assert "Alpha work" in str(labels_before[1])
+    assert "Alpha work" in str(labels_after[0])
+    assert "Zulu work" in str(labels_after[1])
+    assert "sort:name" in help_text
+
+
+@pytest.mark.anyio
 async def test_tui_app_session_picker_arrow_keys_select_session() -> None:
     session = FakeSession(messages=[UserMessage(content="Earlier")])
     session.session_manager = _FakeSessionManager(
