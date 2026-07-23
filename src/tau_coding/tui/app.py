@@ -1391,6 +1391,7 @@ class ModelPickerSearchInput(Input):
         Binding("ctrl+i", "toggle_mode", "Mode", show=False, priority=True),
         Binding("ctrl+a", "enable_all_scoped", "Enable all", show=False, priority=True),
         Binding("ctrl+x", "clear_scoped", "Clear", show=False, priority=True),
+        Binding("ctrl+p", "toggle_scoped_provider", "Provider", show=False, priority=True),
         Binding("alt+up", "reorder_scoped_up", "Move up", show=False, priority=True),
         Binding("alt+down", "reorder_scoped_down", "Move down", show=False, priority=True),
         Binding("up", "cursor_up", "Up", show=False, priority=True),
@@ -1422,6 +1423,10 @@ class ModelPickerSearchInput(Input):
             event.stop()
             event.prevent_default()
             self.action_clear_scoped()
+        elif event.key == "ctrl+p":
+            event.stop()
+            event.prevent_default()
+            self.action_toggle_scoped_provider()
         elif event.key == "alt+up":
             event.stop()
             event.prevent_default()
@@ -1455,6 +1460,10 @@ class ModelPickerSearchInput(Input):
         """Clear all visible scoped model choices."""
         self._picker().action_clear_scoped()
 
+    def action_toggle_scoped_provider(self) -> None:
+        """Toggle scoped models for the highlighted provider."""
+        self._picker().action_toggle_scoped_provider()
+
     def action_reorder_scoped_up(self) -> None:
         """Move the highlighted scoped model earlier in cycle order."""
         self._picker().action_reorder_scoped_up()
@@ -1482,6 +1491,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         Binding("enter", "accept_model", "Select", show=False),
         Binding("ctrl+a", "enable_all_scoped", "Enable all", show=False),
         Binding("ctrl+x", "clear_scoped", "Clear", show=False),
+        Binding("ctrl+p", "toggle_scoped_provider", "Provider", show=False),
         Binding("alt+up", "reorder_scoped_up", "Move up", show=False),
         Binding("alt+down", "reorder_scoped_down", "Move down", show=False),
     ]
@@ -1596,6 +1606,9 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         elif event.key == "ctrl+x":
             event.stop()
             self.action_clear_scoped()
+        elif event.key == "ctrl+p":
+            event.stop()
+            self.action_toggle_scoped_provider()
         elif event.key == "alt+up":
             event.stop()
             self.action_reorder_scoped_up()
@@ -1686,6 +1699,26 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         )
         self._refresh_model_list()
 
+    def action_toggle_scoped_provider(self) -> None:
+        """Toggle all scoped models for the highlighted provider."""
+        if self.picker_kind != "scoped" or self.on_set_scoped is None or not self.visible_choices:
+            return
+        model_list = self.query_one("#model-picker-list", ListView)
+        index = model_list.index
+        if index is None:
+            return
+        provider_name = self.visible_choices[index].provider_name
+        provider_choices = tuple(
+            choice for choice in self.choices if choice.provider_name == provider_name
+        )
+        scoped = list(self.scoped_choices)
+        if provider_choices and all(choice in scoped for choice in provider_choices):
+            scoped = [choice for choice in scoped if choice.provider_name != provider_name]
+        else:
+            scoped = list(dict.fromkeys((*scoped, *provider_choices)))
+        self.scoped_choices = tuple(dict.fromkeys(self.on_set_scoped(tuple(scoped))))
+        self._refresh_model_list()
+
     def action_reorder_scoped_up(self) -> None:
         """Move the highlighted scoped model earlier in cycle order."""
         self._reorder_highlighted_scoped_choice(-1)
@@ -1765,7 +1798,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
                 if not self.visible_choices
                 else (
                     "Enter toggles - Ctrl+A all - Ctrl+X clear - "
-                    f"Alt+Up/Down reorder - {scope_count} scoped"
+                    f"Ctrl+P provider - Alt+Up/Down reorder - {scope_count} scoped"
                 )
             )
         elif self.mode == "all":

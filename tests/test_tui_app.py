@@ -4331,6 +4331,38 @@ async def test_tui_scoped_models_picker_reorders_scoped_cycle_order() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_scoped_models_picker_toggles_highlighted_provider() -> None:
+    session = FakeSession()
+    session.scoped_model_choices = (
+        ModelChoice(provider_name="local", model="local-model"),
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/scoped-models"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ModelPickerScreen)
+        await pilot.press("ctrl+p")
+        await pilot.pause()
+
+        assert session.scoped_model_choices == (
+            ModelChoice(provider_name="local", model="local-model"),
+            ModelChoice(provider_name="openai", model="fake-model"),
+            ModelChoice(provider_name="openai", model="other-model"),
+        )
+
+        await pilot.press("ctrl+p")
+        await pilot.pause()
+
+        assert session.scoped_model_choices == (
+            ModelChoice(provider_name="local", model="local-model"),
+        )
+
+
+@pytest.mark.anyio
 async def test_tui_app_runs_terminal_command_and_adds_context() -> None:
     session = FakeSession()
     app = TauTuiApp(session)
