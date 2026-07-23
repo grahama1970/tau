@@ -49,7 +49,8 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
             "toggle_thinking": "f4",
             "external_editor": "f7",
             "paste_clipboard": "f8",
-            "copy_message": "ctrl+b"
+            "copy_message": "ctrl+b",
+            "copy_last_message": "ctrl+x"
           },
           "theme": "high-contrast"
         }
@@ -73,6 +74,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.keybindings.external_editor == "f7"
     assert settings.keybindings.paste_clipboard == "f8"
     assert settings.keybindings.copy_message == "ctrl+b"
+    assert settings.keybindings.copy_last_message == "ctrl+x"
     assert settings.keybindings.cancel == "escape"
     assert settings.theme == "high-contrast"
     assert settings.resolved_theme == HIGH_CONTRAST_THEME
@@ -158,6 +160,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
             external_editor="f7",
             paste_clipboard="f8",
             copy_message="ctrl+b",
+            copy_last_message="ctrl+x",
         ),
         theme="high-contrast",
     )
@@ -176,6 +179,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["keybindings"]["external_editor"] == "f7"
     assert settings.to_json()["keybindings"]["paste_clipboard"] == "f8"
     assert settings.to_json()["keybindings"]["copy_message"] == "ctrl+b"
+    assert settings.to_json()["keybindings"]["copy_last_message"] == "ctrl+x"
     assert settings.to_json()["theme"] == "high-contrast"
     assert settings.to_json()["auto_copy_selection"] is False
 
