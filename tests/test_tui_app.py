@@ -2722,6 +2722,52 @@ async def test_tui_app_session_picker_deletes_selected_session_after_confirmatio
 
 
 @pytest.mark.anyio
+async def test_tui_app_session_picker_marks_and_preserves_active_session() -> None:
+    session = FakeSession()
+    session.session_id = "session-1"
+    manager = _FakeSessionManager(
+        [
+            CodingSessionRecord(
+                id="session-1",
+                path=Path("/tmp/session-1.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="fake-model",
+                title="Active work",
+                created_at=1.0,
+                updated_at=3.0,
+            ),
+            CodingSessionRecord(
+                id="session-2",
+                path=Path("/tmp/session-2.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="other-model",
+                title="Other work",
+                created_at=1.0,
+                updated_at=2.0,
+            ),
+        ]
+    )
+    session.session_manager = manager
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        await pilot.press("ctrl+r")
+        assert isinstance(app.screen, SessionPickerScreen)
+        labels = [
+            item.query_one(Label).content
+            for item in app.screen.query_one("#session-picker-list", ListView).children
+        ]
+
+        await pilot.press("ctrl+d", "ctrl+d")
+        help_text = str(app.screen.query_one("#session-picker-help", Static).render())
+
+    assert str(labels[0]).startswith("* ")
+    assert "fake-model - Active work" in str(labels[0])
+    assert "Cannot delete the active session." in help_text
+    assert [record.id for record in manager._records] == ["session-1", "session-2"]
+
+
+@pytest.mark.anyio
 async def test_tui_app_session_picker_arrow_keys_select_session() -> None:
     session = FakeSession(messages=[UserMessage(content="Earlier")])
     session.session_manager = _FakeSessionManager(
