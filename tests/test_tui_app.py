@@ -1464,6 +1464,7 @@ async def test_tui_app_uses_textual_footer_for_shortcut_hints() -> None:
             "Thinking": "shift+tab",
             "Model": "ctrl+p",
             "Models": "ctrl+l",
+            "Suspend": "ctrl+z",
             "Cancel": "escape",
         }
 
@@ -3827,6 +3828,22 @@ async def test_tui_app_quits_from_focused_prompt_with_default_keybinding() -> No
         await pilot.pause()
 
         assert app._exit is True
+
+
+@pytest.mark.anyio
+async def test_tui_app_exposes_suspend_keybinding_without_invoking_it() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test():
+        prompt = app.query_one("#prompt")
+        visible_bindings = [
+            binding for binding in prompt._bindings.get_bindings_for_key("ctrl+z") if binding.show
+        ]
+
+        assert any(
+            binding.action == "suspend_process" and binding.description == "Suspend"
+            for binding in visible_bindings
+        )
 
 
 @pytest.mark.anyio
