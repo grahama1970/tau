@@ -2974,7 +2974,45 @@ async def test_tui_app_session_picker_renames_selected_session() -> None:
 
     assert manager._records[0].title == "New title"
     assert "fake-model - New title" in str(labels[0])
-    assert "F2 rename" in help_text
+    assert "Ctrl+R/F2 rename" in help_text
+
+
+@pytest.mark.anyio
+async def test_tui_app_session_picker_renames_selected_session_with_pi_keybinding() -> None:
+    session = FakeSession()
+    manager = _FakeSessionManager(
+        [
+            CodingSessionRecord(
+                id="session-1",
+                path=Path("/tmp/session-1.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="fake-model",
+                title="Old title",
+                created_at=1.0,
+                updated_at=3.0,
+            )
+        ]
+    )
+    session.session_manager = manager
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        await pilot.press("ctrl+r")
+        assert isinstance(app.screen, SessionPickerScreen)
+
+        await pilot.press("ctrl+r")
+        rename_input = app.screen.query_one("#session-picker-search", Input)
+        assert rename_input.value == "Old title"
+        rename_input.value = "Renamed with Pi key"
+        await pilot.press("enter")
+
+        labels = [
+            item.query_one(Label).content
+            for item in app.screen.query_one("#session-picker-list", ListView).children
+        ]
+
+    assert manager._records[0].title == "Renamed with Pi key"
+    assert "fake-model - Renamed with Pi key" in str(labels[0])
 
 
 @pytest.mark.anyio
@@ -3023,6 +3061,45 @@ async def test_tui_app_session_picker_deletes_selected_session_after_confirmatio
     assert [record.id for record in manager._records] == ["session-2"]
     assert len(labels) == 1
     assert "other-model - Keep me" in str(labels[0])
+
+
+@pytest.mark.anyio
+async def test_tui_app_session_picker_delete_noninvasive_requires_empty_search() -> None:
+    session = FakeSession()
+    manager = _FakeSessionManager(
+        [
+            CodingSessionRecord(
+                id="session-1",
+                path=Path("/tmp/session-1.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="fake-model",
+                title="Delete me",
+                created_at=1.0,
+                updated_at=3.0,
+            )
+        ]
+    )
+    session.session_manager = manager
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        await pilot.press("ctrl+r")
+        assert isinstance(app.screen, SessionPickerScreen)
+
+        search = app.screen.query_one("#session-picker-search", Input)
+        search.value = "delete"
+        app.screen.search_value = "delete"
+        await pilot.press("ctrl+backspace", "ctrl+backspace")
+        assert [record.id for record in manager._records] == ["session-1"]
+
+        search.value = ""
+        app.screen.search_value = ""
+        await pilot.press("ctrl+backspace")
+        confirm_text = str(app.screen.query_one("#session-picker-help", Static).render())
+        await pilot.press("ctrl+backspace")
+
+    assert "Press Ctrl+D again" in confirm_text
+    assert manager._records == []
 
 
 @pytest.mark.anyio

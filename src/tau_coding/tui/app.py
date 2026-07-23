@@ -507,8 +507,10 @@ class SessionPickerScreen(ModalScreen[str | None]):
         Binding("escape", "cancel", "Cancel"),
         Binding("tab", "toggle_scope", "Scope", priority=True),
         Binding("f2", "start_rename", "Rename"),
+        Binding("ctrl+r", "start_rename", "Rename", priority=True),
         Binding("ctrl+e", "start_rename", "Rename", show=False),
         Binding("ctrl+d", "delete_session", "Delete"),
+        Binding("ctrl+backspace", "delete_session_noninvasive", "Delete", show=False),
         Binding("ctrl+n", "toggle_named_filter", "Named"),
         Binding("ctrl+p", "toggle_path", "Path"),
         Binding("ctrl+s", "toggle_sort", "Sort"),
@@ -629,7 +631,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
             help_text = (
                 f"Type to search - Tab {scope_state} - Ctrl+N {named_state} - "
                 f"Ctrl+P {path_state} - Ctrl+S {sort_state} - "
-                "F2 rename - Ctrl+D delete - "
+                "Ctrl+R/F2 rename - Ctrl+D delete - "
                 "Enter selects - Escape closes"
             )
         else:
@@ -668,6 +670,12 @@ class SessionPickerScreen(ModalScreen[str | None]):
         elif event.key == "ctrl+d":
             event.stop()
             self.action_delete_session()
+        elif event.key == "ctrl+r":
+            event.stop()
+            self.action_start_rename()
+        elif event.key == "ctrl+backspace" and not self.search_value.strip():
+            event.stop()
+            self.action_delete_session_noninvasive()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected session id."""
@@ -808,6 +816,12 @@ class SessionPickerScreen(ModalScreen[str | None]):
         self.current_records = _remove_session_picker_record(self.current_records, selected.id)
         self.all_records = _remove_session_picker_record(self.all_records, selected.id)
         self._refresh_session_list()
+
+    def action_delete_session_noninvasive(self) -> None:
+        """Delete only when the picker query is empty."""
+        if self.search_value.strip():
+            return
+        self.action_delete_session()
 
     def action_toggle_scope(self) -> None:
         """Toggle between current-project sessions and all indexed sessions."""
