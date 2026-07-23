@@ -3338,10 +3338,14 @@ async def test_tui_app_external_editor_warns_when_unconfigured(
 async def test_tui_app_pastes_clipboard_text_into_prompt(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    async def fake_read_clipboard_image() -> None:
+        return None
+
     async def fake_read_clipboard_text() -> str:
         return " pasted"
 
     app = TauTuiApp(FakeSession())
+    monkeypatch.setattr(tui_app, "_read_clipboard_image", fake_read_clipboard_image)
     monkeypatch.setattr(tui_app, "_read_clipboard_text", fake_read_clipboard_text)
 
     async with app.run_test() as pilot:
@@ -3360,10 +3364,14 @@ async def test_tui_app_pastes_clipboard_text_into_prompt(
 async def test_tui_app_clipboard_paste_ignores_unavailable_clipboard(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    async def fake_read_clipboard_image() -> None:
+        return None
+
     async def fake_read_clipboard_text() -> str | None:
         return None
 
     app = TauTuiApp(FakeSession())
+    monkeypatch.setattr(tui_app, "_read_clipboard_image", fake_read_clipboard_image)
     monkeypatch.setattr(tui_app, "_read_clipboard_text", fake_read_clipboard_text)
 
     async with app.run_test() as pilot:
@@ -3374,6 +3382,39 @@ async def test_tui_app_clipboard_paste_ignores_unavailable_clipboard(
         await pilot.pause()
 
         assert prompt.value == "draft"
+
+
+@pytest.mark.anyio
+async def test_tui_app_pastes_clipboard_image_path_into_prompt(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    image_bytes = b"\x89PNG\r\n\x1a\nfake"
+
+    async def fake_read_clipboard_image() -> object:
+        return tui_app._ClipboardImage(bytes=image_bytes, mime_type="image/png")
+
+    async def fail_read_clipboard_text() -> str:
+        raise AssertionError("image paste should not read text fallback")
+
+    app = TauTuiApp(FakeSession())
+    monkeypatch.setattr(tui_app, "_read_clipboard_image", fake_read_clipboard_image)
+    monkeypatch.setattr(tui_app, "_read_clipboard_text", fail_read_clipboard_text)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "inspect "
+        prompt.move_cursor((0, len("inspect ")))
+
+        await pilot.press("ctrl+v")
+        await pilot.pause()
+
+        pasted_path = Path(prompt.value.removeprefix("inspect "))
+        try:
+            assert pasted_path.name.startswith("tau-clipboard-")
+            assert pasted_path.suffix == ".png"
+            assert pasted_path.read_bytes() == image_bytes
+        finally:
+            pasted_path.unlink(missing_ok=True)
 
 
 @pytest.mark.anyio
