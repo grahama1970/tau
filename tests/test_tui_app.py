@@ -5461,6 +5461,103 @@ async def test_tui_app_renders_terminal_command_while_running(add_to_context: bo
 
 
 @pytest.mark.anyio
+async def test_tui_app_blocks_submit_while_terminal_command_is_running() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+    started = asyncio.Event()
+    release = asyncio.Event()
+    notifications: list[str] = []
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        del kwargs
+        notifications.append(message)
+
+    async def fake_run_terminal_command(
+        command: str,
+        *,
+        add_to_context: bool,
+    ) -> TerminalCommandResult:
+        session.terminal_commands.append((command, add_to_context))
+        started.set()
+        await release.wait()
+        return TerminalCommandResult(
+            command=command,
+            output="finished",
+            exit_code=0,
+            ok=True,
+            added_to_context=add_to_context,
+        )
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+    session.run_terminal_command = fake_run_terminal_command  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "! sleep 1"
+        await pilot.press("enter")
+        await asyncio.wait_for(started.wait(), timeout=1)
+
+        prompt.value = "!! pwd"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert session.terminal_commands == [("sleep 1", True)]
+        assert prompt.value == "!! pwd"
+        assert notifications == [
+            "A terminal command is already running. Press Escape to cancel it first."
+        ]
+
+        release.set()
+        await pilot.pause()
+
+
+@pytest.mark.anyio
+async def test_tui_app_escape_cancels_running_terminal_command() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+    started = asyncio.Event()
+    release = asyncio.Event()
+    notifications: list[str] = []
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        del kwargs
+        notifications.append(message)
+
+    async def fake_run_terminal_command(
+        command: str,
+        *,
+        add_to_context: bool,
+    ) -> TerminalCommandResult:
+        session.terminal_commands.append((command, add_to_context))
+        started.set()
+        await release.wait()
+        return TerminalCommandResult(
+            command=command,
+            output="finished",
+            exit_code=0,
+            ok=True,
+            added_to_context=add_to_context,
+        )
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+    session.run_terminal_command = fake_run_terminal_command  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "! sleep 1"
+        await pilot.press("enter")
+        await asyncio.wait_for(started.wait(), timeout=1)
+
+        await pilot.press("escape")
+        await pilot.pause()
+        release.set()
+
+    assert session.terminal_commands == [("sleep 1", True)]
+    assert app._terminal_worker is None
+    assert notifications == ["Cancelled terminal command."]
+
+
+@pytest.mark.anyio
 async def test_tui_app_marks_failed_terminal_command_as_error() -> None:
     session = FakeSession()
     app = TauTuiApp(session)
