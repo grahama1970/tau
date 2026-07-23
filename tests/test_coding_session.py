@@ -2769,6 +2769,30 @@ async def test_session_share_rejects_missing_github_cli(
 
 
 @pytest.mark.anyio
+async def test_session_project_trust_state_and_save_use_resource_paths(tmp_path: Path) -> None:
+    tau_paths = TauPaths(home=tmp_path / ".tau-home", agents_home=tmp_path / ".agents-home")
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="fake",
+            system="You are Tau.",
+            storage=JsonlSessionStorage(tmp_path / "session.jsonl"),
+            cwd=tmp_path,
+            resource_paths=TauResourcePaths(root=tau_paths.home, paths=tau_paths),
+        )
+    )
+
+    state = session.project_trust_state()
+    message = session.save_project_trust(state.options[0])
+
+    assert message == "Saved trust decision: trusted. Restart Tau for this to take effect."
+    assert session.project_trust_state().saved_decision is not None
+    assert (tau_paths.home / "trust.json").read_text(encoding="utf-8") == (
+        json.dumps({str(tmp_path.resolve()): True}, indent=2) + "\n"
+    )
+
+
+@pytest.mark.anyio
 async def test_session_toggle_scoped_model_preserves_newer_provider_file_changes(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
