@@ -432,6 +432,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         *,
         theme: TuiTheme,
         all_records: Sequence[SessionCompletionRecord] | None = None,
+        current_session_id: str | None = None,
         rename_session: Callable[[str, str], SessionCompletionRecord | None] | None = None,
         delete_session: Callable[[str], bool] | None = None,
     ) -> None:
@@ -440,6 +441,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         self.all_records = tuple(all_records if all_records is not None else records)
         self.filtered_records = self.current_records
         self.theme = theme
+        self.current_session_id = current_session_id
         self.search_value = ""
         self.scope: Literal["current", "all"] = "current"
         self.mode: Literal["list", "rename"] = "list"
@@ -461,7 +463,11 @@ class SessionPickerScreen(ModalScreen[str | None]):
                 *[
                     ListItem(
                         Label(
-                            _session_picker_label(record, show_path=self.show_path),
+                            _session_picker_label(
+                                record,
+                                show_path=self.show_path,
+                                current_session_id=self.current_session_id,
+                            ),
                             markup=False,
                         )
                     )
@@ -511,7 +517,11 @@ class SessionPickerScreen(ModalScreen[str | None]):
         session_list.extend(
             ListItem(
                 Label(
-                    _session_picker_label(record, show_path=self.show_path),
+                    _session_picker_label(
+                        record,
+                        show_path=self.show_path,
+                        current_session_id=self.current_session_id,
+                    ),
                     markup=False,
                 )
             )
@@ -683,6 +693,12 @@ class SessionPickerScreen(ModalScreen[str | None]):
             return
         selected = self._selected_session_record()
         if selected is None:
+            return
+        if selected.id == self.current_session_id:
+            self.delete_confirm_target_id = None
+            self.query_one("#session-picker-help", Static).update(
+                "Cannot delete the active session."
+            )
             return
         if self.delete_confirm_target_id != selected.id:
             self.delete_confirm_target_id = selected.id
@@ -2725,6 +2741,7 @@ class TauTuiApp(App[None]):
                 current_records,
                 theme=self.tui_settings.resolved_theme,
                 all_records=all_records,
+                current_session_id=getattr(self.session, "session_id", None),
                 rename_session=self._rename_picker_session,
                 delete_session=self._delete_picker_session,
             ),
@@ -3559,8 +3576,10 @@ def _session_picker_label(
     record: SessionCompletionRecord,
     *,
     show_path: bool = False,
+    current_session_id: str | None = None,
 ) -> str:
-    parts = [_session_updated_at_label(record.updated_at)]
+    marker = "* " if current_session_id is not None and record.id == current_session_id else ""
+    parts = [f"{marker}{_session_updated_at_label(record.updated_at)}"]
     if record.model:
         parts.append(record.model)
     title = _named_session_title(record.title)
