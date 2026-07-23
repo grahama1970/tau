@@ -96,6 +96,7 @@ def test_registered_commands_are_pi_aligned(tmp_path: Path) -> None:
 
     assert [command.name for command in commands] == [
         "compact",
+        "copy",
         "export",
         "fork",
         "hotkeys",
@@ -136,6 +137,18 @@ def test_compact_command_accepts_optional_instructions(tmp_path: Path) -> None:
 
     assert default.compact_summary == ""
     assert requested.compact_summary == "Summary of prior work."
+
+
+def test_copy_command_requests_last_assistant_message_copy(tmp_path: Path) -> None:
+    registry = create_default_command_registry()
+    session = FakeSession(tmp_path)
+
+    result = registry.execute(session, "/copy")
+    with_args = registry.execute(session, "/copy now")
+
+    assert result.handled is True
+    assert result.copy_last_message_requested is True
+    assert with_args.message == "Usage: /copy"
 
 
 def test_tree_command_requests_picker(tmp_path: Path) -> None:

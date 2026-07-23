@@ -3064,6 +3064,8 @@ class TauTuiApp(App[None]):
                         self._run_compaction(command.compact_summary),
                         exclusive=False,
                     )
+            if command.copy_last_message_requested:
+                self.action_copy_last_message()
             if command.export_requested:
                 try:
                     exported_path = await self.session.export(
