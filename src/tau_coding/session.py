@@ -69,6 +69,7 @@ from tau_coding.provider_config import (
     ProviderConfig,
     ProviderConfigError,
     ProviderSettings,
+    ScopedModelConfig,
     load_provider_settings,
     provider_default_thinking_level,
     provider_has_usable_credentials,
@@ -76,6 +77,7 @@ from tau_coding.provider_config import (
     provider_thinking_unavailable_reason,
     resolve_provider_selection,
     save_default_provider_model,
+    set_saved_scoped_models,
     toggle_saved_scoped_model,
 )
 from tau_coding.provider_runtime import ClosableModelProvider, create_model_provider
@@ -674,6 +676,21 @@ class CodingSession:
         self._provider_settings = toggle_saved_scoped_model(
             provider_name=choice.provider_name,
             model=choice.model,
+            paths=self._resource_paths.paths,
+            fallback_settings=self._provider_settings,
+        )
+        self._sync_thinking_level_to_active_model()
+        return self.scoped_model_choices
+
+    def set_scoped_models(self, choices: Sequence[ModelChoice]) -> tuple[ModelChoice, ...]:
+        """Replace the persisted scoped model list."""
+        if self._provider_settings is None:
+            raise ProviderConfigError("Provider settings are not available for this session")
+        self._provider_settings = set_saved_scoped_models(
+            tuple(
+                ScopedModelConfig(provider=choice.provider_name, model=choice.model)
+                for choice in choices
+            ),
             paths=self._resource_paths.paths,
             fallback_settings=self._provider_settings,
         )

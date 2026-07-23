@@ -409,6 +409,35 @@ def toggle_saved_scoped_model(
     return updated
 
 
+def set_saved_scoped_models(
+    choices: tuple[ScopedModelConfig, ...],
+    *,
+    paths: TauPaths | None = None,
+    fallback_settings: ProviderSettings | None = None,
+) -> ProviderSettings:
+    """Reload settings, replace scoped models, persist them, and return them."""
+    settings = _load_provider_settings_for_write(paths, fallback_settings=fallback_settings)
+    available = {
+        (provider.name, model)
+        for provider in settings.providers
+        for model in provider.models
+    }
+    scoped: list[ScopedModelConfig] = []
+    seen: set[tuple[str, str]] = set()
+    for choice in choices:
+        key = (choice.provider, choice.model)
+        if key not in available:
+            raise ProviderConfigError(
+                f"Model is not configured: {choice.provider}:{choice.model}"
+            )
+        if key not in seen:
+            scoped.append(choice)
+            seen.add(key)
+    updated = replace(settings, scoped_models=tuple(scoped))
+    save_provider_settings(updated, paths)
+    return updated
+
+
 def upsert_saved_provider(
     provider: ProviderConfig,
     *,
