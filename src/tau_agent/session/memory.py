@@ -78,7 +78,8 @@ class SessionState:
                 case "thinking_level_change":
                     thinking_level = entry.thinking_level
                 case "label":
-                    label = entry.label
+                    if entry.target_entry_id is None:
+                        label = entry.label
                 case "leaf":
                     active_leaf_id = entry.entry_id
                 case "session_info":

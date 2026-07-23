@@ -72,6 +72,7 @@ class LabelEntry(BaseSessionEntry):
 
     type: Literal["label"] = "label"
     label: str
+    target_entry_id: str | None = None
 
 
 class LeafEntry(BaseSessionEntry):

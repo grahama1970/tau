@@ -65,6 +65,7 @@ from tau_coding.tui.app import (
     SessionPickerScreen,
     TauTuiApp,
     ThemePickerScreen,
+    TreeLabelInputScreen,
     TreePickerScreen,
     _activity_prompt_border_color,
     _completion_selected_render_line,
@@ -154,6 +155,8 @@ class FakeSession:
         self.compact_summaries: list[str] = []
         self.resumed_session_ids: list[str] = []
         self.tree_branch_requests: list[tuple[str, bool, str | None]] = []
+        self.tree_label_requests: list[tuple[str, str | None]] = []
+        self.tree_labels: dict[str, str] = {}
         self.new_session_count = 0
         self.prompt_texts: list[str] = []
         self.reload_count = 0
@@ -303,19 +306,26 @@ class FakeSession:
 
     async def tree_choices(self) -> tuple[SessionTreeChoice, ...]:
         return (
-            SessionTreeChoice(entry_id="root", label="user: Root", copy_text="Root"),
+            SessionTreeChoice(
+                entry_id="root",
+                label="user: Root",
+                copy_text="Root",
+                tree_label=self.tree_labels.get("root"),
+            ),
             SessionTreeChoice(
                 entry_id="tool",
                 label="tool call: read",
                 parent_entry_id="root",
                 is_tool_call=True,
                 copy_text=None,
+                tree_label=self.tree_labels.get("tool"),
             ),
             SessionTreeChoice(
                 entry_id="left",
                 label="assistant: Left",
                 parent_entry_id="root",
                 copy_text="Left",
+                tree_label=self.tree_labels.get("left"),
             ),
             SessionTreeChoice(
                 entry_id="right",
@@ -323,8 +333,17 @@ class FakeSession:
                 parent_entry_id="root",
                 active=True,
                 copy_text="Right",
+                tree_label=self.tree_labels.get("right"),
             ),
         )
+
+    async def set_tree_entry_label(self, entry_id: str, label: str | None) -> str:
+        self.tree_label_requests.append((entry_id, label))
+        if label:
+            self.tree_labels[entry_id] = label
+            return f"Labeled tree entry: {entry_id}"
+        self.tree_labels.pop(entry_id, None)
+        return f"Cleared label for tree entry: {entry_id}"
 
     async def branch_to_entry(
         self,
@@ -3292,6 +3311,48 @@ async def test_tui_app_tree_picker_folds_and_unfolds_selected_branch() -> None:
             "* assistant: Right",
         ]
         assert tree_list.index == 0
+
+
+@pytest.mark.anyio
+async def test_tui_app_tree_picker_edits_selected_entry_label() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+    notifications: list[str] = []
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        del kwargs
+        notifications.append(message)
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        await pilot.press("up")
+        await pilot.press("shift+l")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreeLabelInputScreen)
+        label_input = app.screen.query_one("#tree-label-value", Input)
+        label_input.value = "bookmark"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        tree_list = app.screen.query_one("#tree-picker-list", ListView)
+        assert [str(item.query_one(Label).render()) for item in tree_list.children] == [
+            "  user: Root",
+            "  tool call: read",
+            "  [bookmark] assistant: Left",
+            "* assistant: Right",
+        ]
+
+    assert session.tree_label_requests == [("left", "bookmark")]
+    assert notifications == ["Labeled tree entry: left"]
 
 
 @pytest.mark.anyio

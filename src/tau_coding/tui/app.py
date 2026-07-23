@@ -849,6 +849,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         Binding("alt+left", "fold_tree_branch", "Fold", show=False),
         Binding("ctrl+right", "unfold_tree_branch", "Unfold", show=False),
         Binding("alt+right", "unfold_tree_branch", "Unfold", show=False),
+        Binding("shift+l", "edit_tree_label", "Label", show=False),
     ]
 
     def __init__(
@@ -856,10 +857,12 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         choices: Sequence[SessionTreeChoice],
         *,
         theme: TuiTheme,
+        set_entry_label: Callable[[str, str | None], object] | None = None,
     ) -> None:
         super().__init__()
         self.choices = tuple(choices)
         self.theme = theme
+        self.set_entry_label = set_entry_label
         self.show_tool_calls = True
         self.filter_mode: TreeFilterMode = "default"
         self.folded_entry_ids: set[str] = set()
@@ -933,6 +936,9 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         elif event.key in {"ctrl+right", "alt+right"}:
             event.stop()
             self.action_unfold_tree_branch()
+        elif event.key in {"shift+l", "L"}:
+            event.stop()
+            self.action_edit_tree_label()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected entry id."""
@@ -1038,6 +1044,44 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         self.folded_entry_ids.remove(choice.entry_id)
         await self._refresh_tree_choices(selected_entry_id=choice.entry_id)
 
+    def action_edit_tree_label(self) -> None:
+        """Edit the selected tree entry label."""
+        choice = self._selected_choice()
+        app = cast(Any, self.app)
+        if choice is None:
+            return
+        if self.set_entry_label is None:
+            app._notify("Tree labels are not available.", severity="warning")
+            return
+        app.push_screen(
+            TreeLabelInputScreen(
+                entry_id=choice.entry_id,
+                current_label=choice.tree_label,
+                theme=self.theme,
+            ),
+            callback=self._handle_tree_label_input,
+        )
+
+    def _handle_tree_label_input(self, result: tuple[str, str | None] | None) -> None:
+        if result is None:
+            return
+        entry_id, label = result
+        self.run_worker(self._apply_tree_label(entry_id, label))
+
+    async def _apply_tree_label(self, entry_id: str, label: str | None) -> None:
+        if self.set_entry_label is None:
+            return
+        app = cast(Any, self.app)
+        try:
+            result = self.set_entry_label(entry_id, label)
+            if isawaitable(result):
+                result = await result
+            if result is not None:
+                self.choices = tuple(cast(Sequence[SessionTreeChoice], result))
+            await self._refresh_tree_choices(selected_entry_id=entry_id)
+        except Exception as exc:  # noqa: BLE001 - surface label failures in the TUI
+            app._notify(f"Error: {exc}", severity="error")
+
     def action_toggle_tool_calls(self) -> None:
         """Toggle Pi's no-tools tree filter."""
         self.run_worker(self._set_tree_filter("no-tools", toggle=True))
@@ -1139,7 +1183,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         filter_label = "default" if self.filter_mode == "default" else self.filter_mode
         return (
             "Enter branches - S summarizes - C custom summary - "
-            f"Ctrl+X copy - Ctrl+Left/Right fold - Ctrl+T no-tools ({tool_call_state}) - Ctrl+O filter {filter_label} - "
+            f"Ctrl+X copy - Shift+L label - Ctrl+Left/Right fold - Ctrl+T no-tools ({tool_call_state}) - Ctrl+O filter {filter_label} - "
             "Escape closes"
         )
 
@@ -1190,6 +1234,55 @@ class BranchSummaryInstructionsScreen(ModalScreen[str | None]):
 
     def action_cancel(self) -> None:
         """Cancel custom instructions."""
+        self.dismiss(None)
+
+
+class TreeLabelInputScreen(ModalScreen[tuple[str, str | None] | None]):
+    """Prompt for a tree entry label."""
+
+    BINDINGS: ClassVar[list[BindingEntry]] = [Binding("escape", "cancel", "Cancel")]
+
+    def __init__(
+        self,
+        *,
+        entry_id: str,
+        current_label: str | None,
+        theme: TuiTheme,
+    ) -> None:
+        super().__init__()
+        self.entry_id = entry_id
+        self.current_label = current_label or ""
+        self.theme = theme
+
+    def compose(self) -> ComposeResult:
+        """Compose the tree-label editor."""
+        with Vertical(id="tree-label-input"):
+            yield Static("Tree entry label", id="tree-label-title")
+            yield Input(value=self.current_label, id="tree-label-value")
+            yield Static("Enter saves - empty clears - Escape returns to tree", id="tree-label-help")
+
+    def on_mount(self) -> None:
+        """Focus the label input."""
+        label_input = self.query_one("#tree-label-value", Input)
+        label_input.cursor_position = len(self.current_label)
+        label_input.focus()
+
+    def on_key(self, event: Key) -> None:
+        """Submit or cancel the label edit."""
+        if event.key == "enter":
+            event.stop()
+            self.action_submit()
+        elif event.key == "escape":
+            event.stop()
+            self.action_cancel()
+
+    def action_submit(self) -> None:
+        """Submit the label edit."""
+        value = self.query_one("#tree-label-value", Input).value.strip()
+        self.dismiss((self.entry_id, value or None))
+
+    def action_cancel(self) -> None:
+        """Cancel the label edit."""
         self.dismiss(None)
 
 
@@ -2221,12 +2314,14 @@ class TauTuiApp(App[None]):
 
     SessionPickerScreen,
     TreePickerScreen,
+    TreeLabelInputScreen,
     CommandOutputScreen {
         align: center middle;
     }
 
     #session-picker,
-    #tree-picker {
+    #tree-picker,
+    #tree-label-input {
         width: 76;
         max-width: 90%;
         height: auto;
@@ -2237,7 +2332,8 @@ class TauTuiApp(App[None]):
     }
 
     #session-picker-title,
-    #tree-picker-title {
+    #tree-picker-title,
+    #tree-label-title {
         height: 1;
         color: $tau-chrome-text;
         text-style: bold;
@@ -2263,13 +2359,15 @@ class TauTuiApp(App[None]):
     }
 
     #session-picker-help,
-    #tree-picker-help {
+    #tree-picker-help,
+    #tree-label-help {
         height: 1;
         margin-top: 1;
         color: $tau-muted-text;
     }
 
-    #session-picker-search {
+    #session-picker-search,
+    #tree-label-value {
         height: 3;
         margin-bottom: 1;
         background: $tau-prompt-background;
@@ -3284,9 +3382,29 @@ class TauTuiApp(App[None]):
             self._notify("No session entries are available for branching.", severity="warning")
             return
         self.push_screen(
-            TreePickerScreen(choices, theme=self.tui_settings.resolved_theme),
+            TreePickerScreen(
+                choices,
+                theme=self.tui_settings.resolved_theme,
+                set_entry_label=self._set_tree_entry_label_from_picker,
+            ),
             callback=self._handle_tree_picker_result,
         )
+
+    async def _set_tree_entry_label_from_picker(
+        self,
+        entry_id: str,
+        label: str | None,
+    ) -> tuple[SessionTreeChoice, ...]:
+        set_tree_entry_label = getattr(self.session, "set_tree_entry_label", None)
+        tree_choices = getattr(self.session, "tree_choices", None)
+        if set_tree_entry_label is None or tree_choices is None:
+            raise RuntimeError("Session tree labels are not available.")
+        result = set_tree_entry_label(entry_id, label)
+        if isawaitable(result):
+            result = await result
+        if result:
+            self._notify(str(result))
+        return tuple(await tree_choices())
 
     def _handle_tree_picker_result(self, result: TreePickerResult | None) -> None:
         if result is None:
@@ -4206,6 +4324,8 @@ def _tree_picker_label(choice: SessionTreeChoice, *, theme: TuiTheme) -> Text:
     body = label[indent_width:]
     author, separator, rest = body.partition(":")
     text = Text(f"{marker}{indent}")
+    if choice.tree_label:
+        text.append(f"[{choice.tree_label}] ", style=theme.accent)
     if separator:
         text.append(author, style=theme.accent)
         text.append(f"{separator}{rest}")

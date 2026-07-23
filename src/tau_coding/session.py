@@ -25,6 +25,7 @@ from tau_agent.session import (
     BranchSummaryEntry,
     CompactionEntry,
     JsonlSessionStorage,
+    LabelEntry,
     LeafEntry,
     MessageEntry,
     ModelChangeEntry,
@@ -142,6 +143,8 @@ class SessionTreeChoice:
     active: bool = False
     is_tool_call: bool = False
     copy_text: str | None = None
+    tree_label: str | None = None
+    tree_label_timestamp: float | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -396,6 +399,7 @@ class CodingSession:
         """Return branchable session entries for a tree picker."""
         entries = await self._read_session_entries()
         branch_indents = _tree_branch_indents(entries)
+        tree_labels = _tree_entry_labels(entries)
         return tuple(
             SessionTreeChoice(
                 entry_id=entry.id,
@@ -404,10 +408,32 @@ class CodingSession:
                 active=entry.id == self._state.active_leaf_id,
                 is_tool_call=_is_tool_call_tree_entry(entry),
                 copy_text=_tree_choice_copy_text(entry),
+                tree_label=tree_labels.get(entry.id, (None, None))[0],
+                tree_label_timestamp=tree_labels.get(entry.id, (None, None))[1],
             )
             for entry in _ordered_tree_entries(entries)
             if _is_branchable_tree_entry(entry)
         )
+
+    async def set_tree_entry_label(self, entry_id: str, label: str | None) -> str:
+        """Set or clear a human label on one tree entry."""
+        entries = await self._read_session_entries()
+        by_id = {entry.id: entry for entry in entries}
+        target = by_id.get(entry_id)
+        if target is None:
+            raise ValueError(f"Unknown session entry: {entry_id}")
+        if not _is_branchable_tree_entry(target):
+            raise ValueError(f"Session entry cannot be labeled: {entry_id}")
+
+        normalized = (label or "").strip()
+        entry = LabelEntry(
+            parent_id=self._last_parent_id,
+            target_entry_id=entry_id,
+            label=normalized,
+        )
+        await self._append_session_entry(entry)
+        action = "Cleared label for" if not normalized else "Labeled"
+        return f"{action} tree entry: {entry_id}"
 
     async def branch_to_entry(
         self,
@@ -1727,6 +1753,19 @@ def _is_branchable_tree_entry(entry: SessionEntry) -> bool:
     if entry.type != "message":
         return False
     return isinstance(entry.message, UserMessage | AssistantMessage)
+
+
+def _tree_entry_labels(entries: list[SessionEntry]) -> dict[str, tuple[str, float]]:
+    labels: dict[str, tuple[str, float]] = {}
+    for entry in entries:
+        if not isinstance(entry, LabelEntry) or entry.target_entry_id is None:
+            continue
+        normalized = entry.label.strip()
+        if normalized:
+            labels[entry.target_entry_id] = (normalized, entry.timestamp)
+        else:
+            labels.pop(entry.target_entry_id, None)
+    return labels
 
 
 def _tree_choice_label(entry: SessionEntry, *, branch_indent: int = 0) -> str:
