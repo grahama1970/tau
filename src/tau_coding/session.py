@@ -112,6 +112,12 @@ from tau_coding.thinking import (
     normalize_thinking_level,
 )
 from tau_coding.tools import create_bash_tool, create_coding_tools
+from tau_coding.trust import (
+    ProjectTrustOption,
+    ProjectTrustState,
+    ProjectTrustStore,
+    project_trust_state,
+)
 
 StreamingBehavior = Literal["steer", "follow_up"]
 _UNSET_LEAF_ID: Final[object] = object()
@@ -1231,6 +1237,18 @@ class CodingSession:
 
         viewer_url = _share_viewer_url(gist_id)
         return f"Share URL: {viewer_url}\nGist: {gist_url}"
+
+    def project_trust_state(self) -> ProjectTrustState:
+        """Return project trust state for the active cwd."""
+        store = ProjectTrustStore.from_resource_paths(self._resource_paths)
+        return project_trust_state(self.cwd, store)
+
+    def save_project_trust(self, option: ProjectTrustOption) -> str:
+        """Persist one selected project trust option."""
+        store = ProjectTrustStore.from_resource_paths(self._resource_paths)
+        store.set_many(option.updates)
+        decision = "trusted" if option.trusted else "untrusted"
+        return f"Saved trust decision: {decision}. Restart Tau for this to take effect."
 
     async def compact(self, instructions: str | None = None) -> str:
         """Generate a manual compaction summary and rebuild active context."""

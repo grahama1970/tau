@@ -118,6 +118,7 @@ def test_registered_commands_are_pi_aligned(tmp_path: Path) -> None:
         "skill",
         "theme",
         "tree",
+        "trust",
     ]
 
 
@@ -277,6 +278,18 @@ def test_share_command_requests_session_share(tmp_path: Path) -> None:
     assert result.handled is True
     assert result.share_requested is True
     assert with_args.message == "Usage: /share"
+
+
+def test_trust_command_requests_project_trust_picker(tmp_path: Path) -> None:
+    registry = create_default_command_registry()
+    session = FakeSession(tmp_path)
+
+    result = registry.execute(session, "/trust")
+    with_args = registry.execute(session, "/trust yes")
+
+    assert result.handled is True
+    assert result.trust_picker_requested is True
+    assert with_args.message == "Usage: /trust"
 
 
 def test_session_command_includes_session_details(tmp_path: Path) -> None:

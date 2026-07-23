@@ -112,6 +112,7 @@ class CommandResult:
     model_picker_requested: bool = False
     scoped_models_picker_requested: bool = False
     settings_picker_requested: bool = False
+    trust_picker_requested: bool = False
     theme_picker_requested: bool = False
     thinking_level: str | None = None
     theme: str | None = None
@@ -388,6 +389,15 @@ def create_default_command_registry() -> CommandRegistry:
     )
     registry.register(
         SlashCommand(
+            name="trust",
+            usage="/trust",
+            description="Save a project trust decision.",
+            handler=_trust_command,
+            search_terms=("project", "resources"),
+        )
+    )
+    registry.register(
+        SlashCommand(
             name="login",
             usage="/login [provider]",
             description="Save an API key for a built-in provider.",
@@ -626,6 +636,12 @@ def _share_command(context: CommandContext) -> CommandResult:
     if context.args:
         return CommandResult(handled=True, message="Usage: /share")
     return CommandResult(handled=True, share_requested=True)
+
+
+def _trust_command(context: CommandContext) -> CommandResult:
+    if context.args:
+        return CommandResult(handled=True, message="Usage: /trust")
+    return CommandResult(handled=True, trust_picker_requested=True)
 
 
 def _name_command(context: CommandContext) -> CommandResult:

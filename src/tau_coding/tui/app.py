@@ -114,6 +114,7 @@ from tau_coding.tui.widgets import (
     TranscriptView,
     render_completion_suggestions,
 )
+from tau_coding.trust import ProjectTrustOption, ProjectTrustState, ProjectTrustStoreEntry
 
 type BindingEntry = Binding | tuple[str, str] | tuple[str, str, str]
 SIDEBAR_MIN_WIDTH = 96
@@ -929,6 +930,96 @@ class SettingsPickerScreen(ModalScreen[None]):
         return [
             ListItem(Label(_settings_picker_label(item), markup=False))
             for item in _settings_picker_items(self.settings)
+        ]
+
+
+class TrustPickerScreen(ModalScreen[ProjectTrustOption | None]):
+    """Modal picker for project trust decisions."""
+
+    BINDINGS: ClassVar[list[BindingEntry]] = [
+        Binding("escape", "cancel", "Cancel", priority=True),
+        Binding("up", "cursor_up", "Up", show=False, priority=True),
+        Binding("down", "cursor_down", "Down", show=False, priority=True),
+        Binding("enter", "select_cursor", "Save", show=False, priority=True),
+    ]
+
+    def __init__(self, state: ProjectTrustState) -> None:
+        super().__init__()
+        self.trust_state = state
+
+    def compose(self) -> ComposeResult:
+        """Compose the trust picker."""
+        with Vertical(id="trust-picker"):
+            yield Static("Project trust", id="trust-picker-title")
+            yield Static(str(self.trust_state.cwd), id="trust-picker-cwd", markup=False)
+            yield Static(
+                f"Saved decision: {_project_trust_decision_label(self.trust_state.saved_decision)}",
+                id="trust-picker-current",
+                markup=False,
+            )
+            yield ListView(
+                *self._list_items(),
+                id="trust-picker-list",
+            )
+            yield Static("Enter saves - Escape closes", id="trust-picker-help")
+
+    def on_mount(self) -> None:
+        """Focus the trust list."""
+        trust_list = self.query_one("#trust-picker-list", ListView)
+        trust_list.index = 0
+        trust_list.focus()
+
+    def on_key(self, event: Key) -> None:
+        """Route trust picker keys to the list."""
+        if event.key == "up":
+            event.stop()
+            self.action_cursor_up()
+        elif event.key == "down":
+            event.stop()
+            self.action_cursor_down()
+        elif event.key == "enter":
+            event.stop()
+            self.action_select_cursor()
+        elif event.key == "escape":
+            event.stop()
+            self.action_cancel()
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """Dismiss with the selected trust option."""
+        if event.index >= len(self.trust_state.options):
+            return
+        self.dismiss(self.trust_state.options[event.index])
+
+    def action_cursor_up(self) -> None:
+        """Move to the previous trust option."""
+        self.query_one("#trust-picker-list", ListView).action_cursor_up()
+
+    def action_cursor_down(self) -> None:
+        """Move to the next trust option."""
+        self.query_one("#trust-picker-list", ListView).action_cursor_down()
+
+    def action_select_cursor(self) -> None:
+        """Choose the highlighted trust option."""
+        trust_list = self.query_one("#trust-picker-list", ListView)
+        if trust_list.index is None:
+            return
+        if trust_list.index >= len(self.trust_state.options):
+            return
+        self.dismiss(self.trust_state.options[trust_list.index])
+
+    def action_cancel(self) -> None:
+        """Cancel the trust picker."""
+        self.dismiss(None)
+
+    def _list_items(self) -> list[ListItem]:
+        return [
+            ListItem(
+                Label(
+                    _project_trust_option_label(item, self.trust_state.saved_decision),
+                    markup=False,
+                )
+            )
+            for item in self.trust_state.options
         ]
 
 
@@ -3103,6 +3194,8 @@ class TauTuiApp(App[None]):
                 self._open_scoped_models_picker()
             if command.settings_picker_requested:
                 self._open_settings_picker()
+            if command.trust_picker_requested:
+                self._open_trust_picker()
             if command.theme_picker_requested:
                 self._open_theme_picker()
             if command.thinking_level is not None:
@@ -3251,6 +3344,41 @@ class TauTuiApp(App[None]):
                 apply_settings=self._settings_picker_settings_changed,
             )
         )
+
+    def _open_trust_picker(self) -> None:
+        project_trust_state = getattr(self.session, "project_trust_state", None)
+        if project_trust_state is None:
+            self._notify("Project trust is not available.", severity="warning")
+            return
+        try:
+            state = project_trust_state()
+        except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
+            self._notify(f"Error: {exc}", severity="error")
+            return
+        self.push_screen(TrustPickerScreen(state), callback=self._handle_trust_picker_result)
+
+    def _handle_trust_picker_result(self, option: ProjectTrustOption | None) -> None:
+        if option is None:
+            return
+        save_project_trust = getattr(self.session, "save_project_trust", None)
+        if save_project_trust is None:
+            self._notify("Project trust is not available.", severity="warning")
+            return
+        try:
+            result = save_project_trust(option)
+            if isawaitable(result):
+                self.run_worker(self._notify_awaited_trust_result(result), exclusive=False)
+                return
+            self._notify(str(result))
+        except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
+            self._notify(f"Error: {exc}", severity="error")
+
+    async def _notify_awaited_trust_result(self, result: object) -> None:
+        try:
+            message = await result
+            self._notify(str(message))
+        except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
+            self._notify(f"Error: {exc}", severity="error")
 
     async def _queue_prompt(
         self,
@@ -5003,6 +5131,28 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
 
 def _settings_picker_label(item: SettingsPickerItem) -> str:
     return f"{item.label}: {item.value}"
+
+
+def _project_trust_decision_label(decision: ProjectTrustStoreEntry | None) -> str:
+    if decision is None:
+        return "none"
+    label = "trusted" if decision.decision else "untrusted"
+    return f"{label} ({decision.path})"
+
+
+def _project_trust_option_label(
+    option: ProjectTrustOption,
+    saved_decision: ProjectTrustStoreEntry | None,
+) -> str:
+    marker = (
+        "✓ "
+        if option.saved_path is not None
+        and saved_decision is not None
+        and option.saved_path == saved_decision.path
+        and option.trusted == saved_decision.decision
+        else "  "
+    )
+    return f"{marker}{option.label}"
 
 
 def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSettings:

@@ -66,6 +66,7 @@ from tau_coding.tui.app import (
     SettingsPickerScreen,
     TauTuiApp,
     ThemePickerScreen,
+    TrustPickerScreen,
     TreeLabelInputScreen,
     TreePickerScreen,
     UserMessagePickerScreen,
@@ -100,6 +101,7 @@ from tau_coding.tui.widgets import (
     render_session_sidebar,
     transcript_item_selection_text,
 )
+from tau_coding.trust import ProjectTrustOption, ProjectTrustState, ProjectTrustUpdate
 
 ANSI_PATTERN = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 
@@ -172,6 +174,25 @@ class FakeSession:
         self.export_calls: list[tuple[Path | None, str | None]] = []
         self.import_calls: list[Path] = []
         self.share_count = 0
+        self.trust_options_saved: list[ProjectTrustOption] = []
+        self.trust_state = ProjectTrustState(
+            cwd=self.cwd,
+            saved_decision=None,
+            options=(
+                ProjectTrustOption(
+                    label="Trust",
+                    trusted=True,
+                    updates=(ProjectTrustUpdate(path=self.cwd, decision=True),),
+                    saved_path=self.cwd,
+                ),
+                ProjectTrustOption(
+                    label="Do not trust",
+                    trusted=False,
+                    updates=(ProjectTrustUpdate(path=self.cwd, decision=False),),
+                    saved_path=self.cwd,
+                ),
+            ),
+        )
 
     def handle_command(self, text: str) -> CommandResult:
         if text == "/session":
@@ -234,6 +255,8 @@ class FakeSession:
             return CommandResult(handled=True, settings_picker_requested=True)
         if text == "/share":
             return CommandResult(handled=True, share_requested=True)
+        if text == "/trust":
+            return CommandResult(handled=True, trust_picker_requested=True)
         if text == "/login":
             return CommandResult(handled=True, login_picker_requested=True)
         if text.startswith("/login "):
@@ -339,6 +362,13 @@ class FakeSession:
             "Share URL: https://tau.example/session/abc123\n"
             "Gist: https://gist.github.com/x/abc123"
         )
+
+    def project_trust_state(self) -> ProjectTrustState:
+        return self.trust_state
+
+    def save_project_trust(self, option: ProjectTrustOption) -> str:
+        self.trust_options_saved.append(option)
+        return f"Saved trust decision: {'trusted' if option.trusted else 'untrusted'}."
 
     async def resume(self, session_id: str) -> str:
         self.resumed_session_ids.append(session_id)
@@ -3250,6 +3280,40 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert app.tui_settings.theme == "tau-light"
         assert '"theme": "tau-light"' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
+
+
+@pytest.mark.anyio
+async def test_tui_app_trust_picker_saves_selected_decision() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+    notifications: list[str] = []
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        del kwargs
+        notifications.append(message)
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/trust"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TrustPickerScreen)
+        trust_list = app.screen.query_one("#trust-picker-list", ListView)
+        assert [str(item.query_one(Label).render()) for item in trust_list.children] == [
+            "  Trust",
+            "  Do not trust",
+        ]
+
+        app.screen.action_cursor_down()
+        assert trust_list.index == 1
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert [option.label for option in session.trust_options_saved] == ["Do not trust"]
+        assert notifications == ["Saved trust decision: untrusted."]
 
 
 @pytest.mark.anyio
