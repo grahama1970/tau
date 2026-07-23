@@ -73,6 +73,7 @@ from tau_coding.tui.app import (
     _activity_prompt_border_color,
     _completion_selected_render_line,
     _edit_text_with_external_editor,
+    _filter_session_picker_records,
     _terminal_command_prefix_span,
     _theme_css_variables,
     _visible_completion_state,
@@ -2650,6 +2651,37 @@ async def test_tui_app_session_picker_search_filters_visible_sessions() -> None:
     assert len(labels) == 1
     assert "other-model - Investigate billing" in str(labels[0])
     assert "Refactor auth" not in str(labels[0])
+
+
+def test_session_picker_filter_supports_pi_regex_and_exact_phrase_search() -> None:
+    records = (
+        CodingSessionRecord(
+            id="session-1",
+            path=Path("/tmp/session-1.jsonl"),
+            cwd=Path("/workspace/project"),
+            model="fake-model",
+            title="Auth hardening plan",
+            created_at=1.0,
+            updated_at=3.0,
+        ),
+        CodingSessionRecord(
+            id="session-2",
+            path=Path("/tmp/session-2.jsonl"),
+            cwd=Path("/workspace/project"),
+            model="other-model",
+            title="Investigate billing",
+            created_at=1.0,
+            updated_at=2.0,
+        ),
+    )
+
+    regex_matches = _filter_session_picker_records(records, r"re:bill(ing)?$")
+    phrase_matches = _filter_session_picker_records(records, '"auth hardening"')
+    invalid_regex_matches = _filter_session_picker_records(records, "re:[")
+
+    assert [record.id for record in regex_matches] == ["session-2"]
+    assert [record.id for record in phrase_matches] == ["session-1"]
+    assert invalid_regex_matches == ()
 
 
 @pytest.mark.anyio
