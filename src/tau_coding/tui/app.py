@@ -1391,6 +1391,8 @@ class ModelPickerSearchInput(Input):
         Binding("ctrl+i", "toggle_mode", "Mode", show=False, priority=True),
         Binding("ctrl+a", "enable_all_scoped", "Enable all", show=False, priority=True),
         Binding("ctrl+x", "clear_scoped", "Clear", show=False, priority=True),
+        Binding("alt+up", "reorder_scoped_up", "Move up", show=False, priority=True),
+        Binding("alt+down", "reorder_scoped_down", "Move down", show=False, priority=True),
         Binding("up", "cursor_up", "Up", show=False, priority=True),
         Binding("down", "cursor_down", "Down", show=False, priority=True),
     ]
@@ -1420,6 +1422,14 @@ class ModelPickerSearchInput(Input):
             event.stop()
             event.prevent_default()
             self.action_clear_scoped()
+        elif event.key == "alt+up":
+            event.stop()
+            event.prevent_default()
+            self.action_reorder_scoped_up()
+        elif event.key == "alt+down":
+            event.stop()
+            event.prevent_default()
+            self.action_reorder_scoped_down()
         elif event.key == "escape":
             event.stop()
             event.prevent_default()
@@ -1445,6 +1455,14 @@ class ModelPickerSearchInput(Input):
         """Clear all visible scoped model choices."""
         self._picker().action_clear_scoped()
 
+    def action_reorder_scoped_up(self) -> None:
+        """Move the highlighted scoped model earlier in cycle order."""
+        self._picker().action_reorder_scoped_up()
+
+    def action_reorder_scoped_down(self) -> None:
+        """Move the highlighted scoped model later in cycle order."""
+        self._picker().action_reorder_scoped_down()
+
     def action_cancel(self) -> None:
         """Close the model picker."""
         self._picker().action_cancel()
@@ -1464,6 +1482,8 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         Binding("enter", "accept_model", "Select", show=False),
         Binding("ctrl+a", "enable_all_scoped", "Enable all", show=False),
         Binding("ctrl+x", "clear_scoped", "Clear", show=False),
+        Binding("alt+up", "reorder_scoped_up", "Move up", show=False),
+        Binding("alt+down", "reorder_scoped_down", "Move down", show=False),
     ]
 
     def __init__(
@@ -1576,6 +1596,12 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         elif event.key == "ctrl+x":
             event.stop()
             self.action_clear_scoped()
+        elif event.key == "alt+up":
+            event.stop()
+            self.action_reorder_scoped_up()
+        elif event.key == "alt+down":
+            event.stop()
+            self.action_reorder_scoped_down()
         elif event.key in {"tab", "ctrl+i"}:
             event.stop()
             self.action_toggle_mode()
@@ -1660,6 +1686,37 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         )
         self._refresh_model_list()
 
+    def action_reorder_scoped_up(self) -> None:
+        """Move the highlighted scoped model earlier in cycle order."""
+        self._reorder_highlighted_scoped_choice(-1)
+
+    def action_reorder_scoped_down(self) -> None:
+        """Move the highlighted scoped model later in cycle order."""
+        self._reorder_highlighted_scoped_choice(1)
+
+    def _reorder_highlighted_scoped_choice(self, delta: Literal[-1, 1]) -> None:
+        """Move the highlighted scoped model in the persisted scoped order."""
+        if self.picker_kind != "scoped" or self.on_set_scoped is None or not self.visible_choices:
+            return
+        model_list = self.query_one("#model-picker-list", ListView)
+        index = model_list.index
+        if index is None:
+            return
+        choice = self.visible_choices[index]
+        scoped = list(self.scoped_choices)
+        try:
+            scoped_index = scoped.index(choice)
+        except ValueError:
+            return
+        next_index = scoped_index + delta
+        if next_index < 0 or next_index >= len(scoped):
+            return
+        scoped[scoped_index], scoped[next_index] = scoped[next_index], scoped[scoped_index]
+        self.scoped_choices = tuple(dict.fromkeys(self.on_set_scoped(tuple(scoped))))
+        self._refresh_model_list()
+        if choice in self.visible_choices:
+            model_list.index = self.visible_choices.index(choice)
+
     def action_cancel(self) -> None:
         """Close without selecting a model."""
         self.dismiss(None)
@@ -1706,7 +1763,10 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
             help_text = (
                 "No matching models - Ctrl+A/Ctrl+X apply to matching models"
                 if not self.visible_choices
-                else f"Enter toggles - Ctrl+A all - Ctrl+X clear - {scope_count} scoped"
+                else (
+                    "Enter toggles - Ctrl+A all - Ctrl+X clear - "
+                    f"Alt+Up/Down reorder - {scope_count} scoped"
+                )
             )
         elif self.mode == "all":
             tabs.update("Tabs: ● All models  ○ Scoped models")
