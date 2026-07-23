@@ -1,6 +1,7 @@
 import asyncio
 import re
 from collections.abc import AsyncIterator
+from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 
@@ -2633,6 +2634,46 @@ async def test_tui_app_session_picker_scope_toggle_shows_all_sessions() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_session_picker_renames_selected_session() -> None:
+    session = FakeSession()
+    manager = _FakeSessionManager(
+        [
+            CodingSessionRecord(
+                id="session-1",
+                path=Path("/tmp/session-1.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="fake-model",
+                title="Old title",
+                created_at=1.0,
+                updated_at=3.0,
+            )
+        ]
+    )
+    session.session_manager = manager
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        await pilot.press("ctrl+r")
+        assert isinstance(app.screen, SessionPickerScreen)
+
+        await pilot.press("f2")
+        rename_input = app.screen.query_one("#session-picker-search", Input)
+        assert rename_input.value == "Old title"
+        rename_input.value = "New title"
+        await pilot.press("enter")
+
+        labels = [
+            item.query_one(Label).content
+            for item in app.screen.query_one("#session-picker-list", ListView).children
+        ]
+        help_text = str(app.screen.query_one("#session-picker-help", Static).render())
+
+    assert manager._records[0].title == "New title"
+    assert "fake-model - New title" in str(labels[0])
+    assert "F2 rename" in help_text
+
+
+@pytest.mark.anyio
 async def test_tui_app_session_picker_arrow_keys_select_session() -> None:
     session = FakeSession(messages=[UserMessage(content="Earlier")])
     session.session_manager = _FakeSessionManager(
@@ -4980,3 +5021,25 @@ class _FakeSessionManager:
         if cwd is not None:
             return [record for record in self._records if record.cwd == cwd]
         return self._records
+
+    def touch_session(
+        self,
+        session_id: str,
+        *,
+        model: str | None = None,
+        provider_name: str | None = None,
+        title: str | None = None,
+    ) -> CodingSessionRecord | None:
+        for index, record in enumerate(self._records):
+            if record.id != session_id:
+                continue
+            updated = replace(
+                record,
+                model=model or record.model,
+                provider_name=provider_name if provider_name is not None else record.provider_name,
+                title=title if title is not None else record.title,
+                updated_at=record.updated_at + 1,
+            )
+            self._records[index] = updated
+            return updated
+        return None
