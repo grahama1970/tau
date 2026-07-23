@@ -95,6 +95,7 @@ def test_registered_commands_are_pi_aligned(tmp_path: Path) -> None:
     commands = create_default_command_registry().list_commands()
 
     assert [command.name for command in commands] == [
+        "clone",
         "compact",
         "copy",
         "export",
@@ -126,6 +127,18 @@ def test_quit_and_new_return_control_flags(tmp_path: Path) -> None:
     assert registry.execute(session, "/q").message == "Unknown command: /q"
     assert registry.execute(session, "/new").new_session_requested is True
     assert registry.execute(session, "/clear").message == "Unknown command: /clear"
+
+
+def test_clone_command_requests_session_clone(tmp_path: Path) -> None:
+    registry = create_default_command_registry()
+    session = FakeSession(tmp_path)
+
+    result = registry.execute(session, "/clone")
+    with_args = registry.execute(session, "/clone root")
+
+    assert result.handled is True
+    assert result.clone_session_requested is True
+    assert with_args.message == "Usage: /clone"
 
 
 def test_compact_command_accepts_optional_instructions(tmp_path: Path) -> None:

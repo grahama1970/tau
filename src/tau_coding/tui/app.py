@@ -3048,6 +3048,8 @@ class TauTuiApp(App[None]):
                 self.state.clear()
             if command.new_session_requested:
                 await self._new_session()
+            if command.clone_session_requested:
+                await self._clone_session()
             if command.compact_summary is not None:
                 if self._is_compaction_active():
                     self._notify("A compaction is already running.", severity="warning")
@@ -3885,6 +3887,21 @@ class TauTuiApp(App[None]):
             self.state.clear()
             self.state.set_skills(self.session.skills)
             self.state.load_messages(self.session.messages)
+        except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
+            self._notify(f"Error: {exc}", severity="error")
+        self._refresh()
+
+    async def _clone_session(self) -> None:
+        clone_current_session = getattr(self.session, "clone_current_session", None)
+        if clone_current_session is None:
+            self._notify("Session manager is not available.", severity="warning")
+            return
+        try:
+            message = await clone_current_session()
+            self.state.clear()
+            self.state.set_skills(self.session.skills)
+            self.state.load_messages(self.session.messages)
+            self._notify(message)
         except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
             self._notify(f"Error: {exc}", severity="error")
         self._refresh()

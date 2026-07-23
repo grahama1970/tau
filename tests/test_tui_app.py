@@ -160,6 +160,7 @@ class FakeSession:
         self.tree_label_requests: list[tuple[str, str | None]] = []
         self.tree_labels: dict[str, str] = {}
         self.new_session_count = 0
+        self.clone_session_count = 0
         self.prompt_texts: list[str] = []
         self.reload_count = 0
         self.provider_reload_count = 0
@@ -191,6 +192,8 @@ class FakeSession:
             )
         if text == "/new":
             return CommandResult(handled=True, new_session_requested=True)
+        if text == "/clone":
+            return CommandResult(handled=True, clone_session_requested=True)
         if text == "/compact":
             return CommandResult(handled=True, compact_summary="")
         if text.startswith("/compact "):
@@ -369,6 +372,15 @@ class FakeSession:
         self.messages = ()
         self.context_token_estimate = 0
         return "Started new session: new-session"
+
+    async def clone_current_session(self) -> str:
+        self.clone_session_count += 1
+        self.messages = (
+            UserMessage(content="Cloned prompt"),
+            AssistantMessage(content="Cloned answer"),
+        )
+        self.context_token_estimate = 321
+        return "Cloned to new session: cloned-session"
 
     def cancel(self) -> None:
         self.cancel_count += 1
@@ -1923,6 +1935,31 @@ async def test_tui_app_new_command_starts_new_visible_state() -> None:
         assert app.session.new_session_count == 1
         assert app.state.items == []
         assert notifications == []
+
+
+@pytest.mark.anyio
+async def test_tui_app_clone_command_clones_current_visible_state() -> None:
+    session = FakeSession(messages=[UserMessage(content="Earlier")])
+    app = TauTuiApp(session)
+    notifications: list[str] = []
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        del kwargs
+        notifications.append(message)
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/clone"
+        await pilot.press("enter")
+
+        assert session.clone_session_count == 1
+        assert [(item.role, item.text) for item in app.state.items] == [
+            ("user", "Cloned prompt"),
+            ("assistant", "Cloned answer"),
+        ]
+        assert notifications == ["Cloned to new session: cloned-session"]
 
 
 @pytest.mark.anyio

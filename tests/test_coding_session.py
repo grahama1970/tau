@@ -2542,6 +2542,72 @@ async def test_session_resumes_indexed_session(tmp_path: Path) -> None:
 
 
 @pytest.mark.anyio
+async def test_session_clone_current_session_copies_only_active_path(tmp_path: Path) -> None:
+    manager = SessionManager(TauPaths(home=tmp_path / ".tau", agents_home=tmp_path / ".agents"))
+    record = manager.create_session(cwd=tmp_path, model="fake", provider_name="fake-provider")
+    storage = JsonlSessionStorage(record.path)
+    await storage.append(SessionInfoEntry(id="info", cwd=str(tmp_path)))
+    await storage.append(ModelChangeEntry(id="model", parent_id="info", model="fake"))
+    await storage.append(
+        MessageEntry(
+            id="root",
+            parent_id="model",
+            message=UserMessage(content="Root prompt"),
+        )
+    )
+    await storage.append(
+        MessageEntry(
+            id="left",
+            parent_id="root",
+            message=AssistantMessage(content="Inactive branch"),
+        )
+    )
+    await storage.append(
+        MessageEntry(
+            id="right",
+            parent_id="root",
+            message=AssistantMessage(content="Active branch"),
+        )
+    )
+    await storage.append(LeafEntry(id="leaf", parent_id="right", entry_id="right"))
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="fake",
+            system="You are Tau.",
+            storage=storage,
+            cwd=record.cwd,
+            session_id=record.id,
+            session_manager=manager,
+            provider_name="fake-provider",
+        )
+    )
+
+    message = await session.clone_current_session()
+
+    clone_id = session.session_id
+    assert clone_id is not None
+    clone_record = manager.get_session(clone_id)
+    assert clone_record is not None
+    assert clone_id != record.id
+    assert message == f"Cloned to new session: {clone_id}"
+    assert clone_record.provider_name == "fake-provider"
+    assert clone_record.model == "fake"
+    clone_entries = await JsonlSessionStorage(clone_record.path).read_all()
+    assert [entry.id for entry in clone_entries if entry.type != "leaf"] == [
+        "info",
+        "model",
+        "root",
+        "right",
+    ]
+    assert clone_entries[-1].type == "leaf"
+    assert session.messages == (
+        UserMessage(content="Root prompt"),
+        AssistantMessage(content="Active branch"),
+    )
+
+
+@pytest.mark.anyio
 async def test_session_toggle_scoped_model_preserves_newer_provider_file_changes(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

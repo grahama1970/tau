@@ -1064,6 +1064,69 @@ class CodingSession:
         self._thinking_level = replacement._thinking_level
         return f"Started new session: {record.id}"
 
+    async def clone_current_session(self) -> str:
+        """Clone the current active path into a newly indexed session and resume it."""
+        manager = self._config.session_manager
+        if manager is None:
+            raise ValueError("Session manager is not available")
+        active_leaf_id = self._state.active_leaf_id
+        if active_leaf_id is None:
+            raise ValueError("Nothing to clone yet")
+
+        entries = await self._read_session_entries()
+        try:
+            active_path = path_to_entry(entries, active_leaf_id)
+        except SessionTreeError as exc:
+            raise ValueError(f"Cannot clone current session: {exc}") from exc
+        if not any(_is_branchable_tree_entry(entry) for entry in active_path):
+            raise ValueError("Nothing to clone yet")
+
+        title = self.session_title
+        provider_name = self._provider_name
+        model = self.model
+        record = manager.create_session(
+            cwd=self.cwd,
+            model=model,
+            provider_name=provider_name,
+            title=f"Clone of {title}" if title else None,
+        )
+        storage = jsonl_session_storage(record.path)
+        for entry in active_path:
+            await storage.append(entry)
+        await storage.append(LeafEntry(parent_id=active_leaf_id, entry_id=active_leaf_id))
+
+        replacement = await type(self).load(
+            replace(
+                self._config,
+                provider=self._harness.config.provider,
+                model=record.model or model,
+                cwd=record.cwd,
+                storage=storage,
+                session_id=record.id,
+                provider_name=provider_name,
+                provider_settings=self._provider_settings,
+                runtime_provider_config=self._runtime_provider_config,
+                thinking_level=self._thinking_level,
+            )
+        )
+        self._config = replacement._config
+        self._state = replacement._state
+        self._harness = replacement._harness
+        self._last_parent_id = replacement._last_parent_id
+        self._skills = replacement._skills
+        self._prompt_templates = replacement._prompt_templates
+        self._context_files = replacement._context_files
+        self._resource_diagnostics = replacement._resource_diagnostics
+        self._command_registry = replacement._command_registry
+        self._provider_name = replacement._provider_name
+        self._provider_settings = replacement._provider_settings
+        self._runtime_provider_config = replacement._runtime_provider_config
+        self._resource_paths = replacement._resource_paths
+        self._auto_compact_token_threshold = replacement._auto_compact_token_threshold
+        self._auto_compact_enabled = replacement._auto_compact_enabled
+        self._thinking_level = replacement._thinking_level
+        return f"Cloned to new session: {record.id}"
+
     async def compact(self, instructions: str | None = None) -> str:
         """Generate a manual compaction summary and rebuild active context."""
         plan = self._manual_compaction_plan()
