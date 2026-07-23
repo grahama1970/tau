@@ -4522,6 +4522,7 @@ def _app_bindings(keybindings: TuiKeybindings) -> list[Binding]:
         Binding(keybindings.dequeue_messages, "dequeue_messages", "Restore queued"),
         Binding(keybindings.copy_last_message, "copy_last_message", "Copy last message"),
         Binding(keybindings.copy_message, "clear_prompt", "Clear input"),
+        Binding(keybindings.suspend, "suspend_process", "Suspend"),
         Binding(keybindings.quit, "quit", "Quit"),
     ]
 
@@ -4589,6 +4590,7 @@ def _prompt_bindings(
             "Clear",
             priority=True,
         ),
+        Binding(keybindings.suspend, "suspend_process", "Suspend", priority=True),
         Binding(keybindings.quit, "quit", "Quit", priority=True),
     ]
     return bindings + _hidden_prompt_bindings(keybindings, visible_bindings=bindings)
@@ -4615,6 +4617,7 @@ def _hidden_prompt_bindings(
         (keybindings.toggle_tool_results, "toggle_tool_results"),
         (keybindings.toggle_thinking, "toggle_thinking"),
         (keybindings.copy_message, "clear_prompt"),
+        (keybindings.suspend, "suspend_process"),
         (keybindings.accept_completion, "accept_completion"),
         (keybindings.completion_next, "completion_next"),
         (keybindings.completion_previous, "completion_previous"),

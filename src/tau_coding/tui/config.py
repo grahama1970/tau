@@ -34,6 +34,7 @@ class TuiKeybindings:
     copy_last_message: str = "ctrl+x"
     external_editor: str = "ctrl+g"
     paste_clipboard: str = "ctrl+v"
+    suspend: str = "ctrl+z"
     quit: str = "ctrl+d"
 
     def to_json(self) -> dict[str, str]:
@@ -57,6 +58,7 @@ class TuiKeybindings:
             "copy_last_message": self.copy_last_message,
             "external_editor": self.external_editor,
             "paste_clipboard": self.paste_clipboard,
+            "suspend": self.suspend,
             "quit": self.quit,
         }
 
