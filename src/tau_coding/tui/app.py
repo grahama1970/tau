@@ -2,7 +2,9 @@
 
 import asyncio
 import os
+import shlex
 import sys
+import tempfile
 from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import suppress
 from dataclasses import dataclass
@@ -173,6 +175,8 @@ class CompletionActionTarget(Protocol):
 
     def action_toggle_thinking(self) -> None: ...
 
+    def action_open_external_editor(self) -> None: ...
+
     def action_edit_queued_follow_up(self) -> bool: ...
 
     async def action_submit_prompt(self) -> None: ...
@@ -295,6 +299,10 @@ class PromptInput(TextArea):
         """Toggle app-level thinking-token display."""
         self._completion_target().action_toggle_thinking()
 
+    def action_open_external_editor(self) -> None:
+        """Open the current prompt in the configured external editor."""
+        self._completion_target().action_open_external_editor()
+
     def action_clear_prompt(self) -> None:
         """Clear the current prompt."""
         if self.selected_text:
@@ -378,6 +386,9 @@ class PromptInput(TextArea):
         elif event.key == keybindings.toggle_thinking:
             event.stop()
             self._completion_target().action_toggle_thinking()
+        elif event.key == keybindings.external_editor:
+            event.stop()
+            self._completion_target().action_open_external_editor()
         elif event.key == keybindings.copy_message:
             if self.selected_text:
                 return
@@ -2794,6 +2805,37 @@ class TauTuiApp(App[None]):
         self.state.toggle_thinking()
         self._refresh()
 
+    def action_open_external_editor(self) -> None:
+        """Open the prompt text in the configured external editor."""
+        if self.state.running:
+            self._notify("Tau is already working. Press Escape to cancel.")
+            return
+        self.run_worker(self._open_external_editor(), exclusive=False)
+
+    async def _open_external_editor(self) -> None:
+        prompt = self.query_one("#prompt", PromptInput)
+        original_text = prompt.text
+        editor_command = _external_editor_command()
+        if editor_command is None:
+            self._notify("Set VISUAL or EDITOR to use the external editor.", severity="warning")
+            return
+        try:
+            with self.suspend():
+                result = await _edit_text_with_external_editor(editor_command, original_text)
+        except Exception as exc:  # noqa: BLE001 - surface editor launch failures in the TUI
+            self._notify(f"External editor failed: {exc}", severity="error")
+            return
+        if result is None:
+            self._notify("External editor exited without changes.", severity="warning")
+            return
+        prompt.text = result
+        prompt.move_cursor(_text_end_location(result))
+        prompt.focus()
+        self._sync_prompt_shell_mode(prompt.text)
+        self._completion_state = self._build_completion_state(prompt.text)
+        self._refresh_completions()
+        self._refresh()
+
     def _handle_session_picker_result(self, session_id: str | None) -> None:
         if session_id is None:
             return
@@ -3809,6 +3851,29 @@ def _tool_update_has_pipeline_stage(event: ToolExecutionUpdateEvent) -> bool:
     return any(key in event.data for key in ("memory_stage", "pipeline_stage", "stage"))
 
 
+def _external_editor_command() -> str | None:
+    """Return the configured external editor command, if any."""
+    command = os.environ.get("VISUAL") or os.environ.get("EDITOR")
+    if command is None or not command.strip():
+        return None
+    return command.strip()
+
+
+async def _edit_text_with_external_editor(command: str, content: str) -> str | None:
+    """Edit text in an external editor and return updated content on success."""
+    with tempfile.TemporaryDirectory(prefix="tau-editor-") as temp_dir:
+        prompt_path = Path(temp_dir) / "prompt.md"
+        prompt_path.write_text(content, encoding="utf-8")
+        args = [*shlex.split(command), str(prompt_path)]
+        if len(args) == 1:
+            return None
+        process = await asyncio.create_subprocess_exec(*args)
+        exit_code = await process.wait()
+        if exit_code != 0:
+            return None
+        return prompt_path.read_text(encoding="utf-8").removesuffix("\n")
+
+
 def _theme_css_variables(theme: TuiTheme) -> dict[str, str]:
     return {
         "tau-screen-background": theme.screen_background,
@@ -3911,6 +3976,7 @@ def _app_bindings(keybindings: TuiKeybindings) -> list[Binding]:
         ),
         Binding(keybindings.toggle_tool_results, "toggle_tool_results", "Tool results"),
         Binding(keybindings.toggle_thinking, "toggle_thinking", "Thinking tokens"),
+        Binding(keybindings.external_editor, "open_external_editor", "Editor"),
         Binding(keybindings.copy_message, "clear_prompt", "Clear input"),
         Binding(keybindings.quit, "quit", "Quit"),
     ]
@@ -3967,6 +4033,7 @@ def _prompt_bindings(
         Binding("shift+enter", "insert_newline", "Newline", priority=True),
         Binding(keybindings.command_palette, "open_command_palette", "Commands", priority=True),
         Binding(keybindings.session_picker, "open_session_picker", "Sessions", priority=True),
+        Binding(keybindings.external_editor, "open_external_editor", "Editor", priority=True),
         Binding(keybindings.thinking_cycle, "cycle_thinking", "Thinking", priority=True),
         Binding(keybindings.model_cycle, "cycle_model", "Model", priority=True),
         Binding(
@@ -3992,6 +4059,7 @@ def _hidden_prompt_bindings(
         (keybindings.queue_follow_up, "submit_follow_up"),
         (keybindings.thinking_cycle, "cycle_thinking"),
         (keybindings.model_cycle, "cycle_model"),
+        (keybindings.external_editor, "open_external_editor"),
         (keybindings.toggle_tool_results, "toggle_tool_results"),
         (keybindings.toggle_thinking, "toggle_thinking"),
         (keybindings.copy_message, "clear_prompt"),

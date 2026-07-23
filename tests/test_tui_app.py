@@ -1,6 +1,7 @@
 import asyncio
 import re
 from collections.abc import AsyncIterator
+from contextlib import nullcontext
 from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
@@ -66,6 +67,7 @@ from tau_coding.tui.app import (
     TreePickerScreen,
     _activity_prompt_border_color,
     _completion_selected_render_line,
+    _edit_text_with_external_editor,
     _terminal_command_prefix_span,
     _theme_css_variables,
     _visible_completion_state,
@@ -1386,6 +1388,7 @@ async def test_tui_app_uses_textual_footer_for_shortcut_hints() -> None:
             "Submit": "enter",
             "Newline": "shift+enter",
             "Sessions": "ctrl+r",
+            "Editor": "ctrl+g",
             "Thinking": "shift+tab",
             "Model": "ctrl+p",
             "Cancel": "escape",
@@ -3273,6 +3276,76 @@ async def test_tui_app_clicking_transcript_refocuses_prompt() -> None:
         await pilot.pause()
 
         assert app.screen.focused is prompt
+
+
+@pytest.mark.anyio
+async def test_tui_app_external_editor_replaces_prompt(monkeypatch: pytest.MonkeyPatch) -> None:
+    edited_calls: list[tuple[str, str]] = []
+
+    async def fake_edit(command: str, content: str) -> str:
+        edited_calls.append((command, content))
+        return "edited prompt"
+
+    app = TauTuiApp(FakeSession())
+    monkeypatch.setenv("VISUAL", "fake-editor --flag")
+    monkeypatch.setattr(tui_app, "_edit_text_with_external_editor", fake_edit)
+    monkeypatch.setattr(app, "suspend", lambda: nullcontext())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "draft prompt"
+
+        await pilot.press("ctrl+g")
+        await pilot.pause()
+
+        assert prompt.value == "edited prompt"
+        assert prompt.cursor_location == (0, len("edited prompt"))
+
+    assert edited_calls == [("fake-editor --flag", "draft prompt")]
+
+
+@pytest.mark.anyio
+async def test_tui_app_external_editor_warns_when_unconfigured(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = TauTuiApp(FakeSession())
+    notifications: list[tuple[str, str | None]] = []
+    monkeypatch.delenv("VISUAL", raising=False)
+    monkeypatch.delenv("EDITOR", raising=False)
+    monkeypatch.setattr(app, "suspend", lambda: nullcontext())
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        notifications.append((message, kwargs.get("severity")))
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "draft prompt"
+
+        await pilot.press("ctrl+g")
+        await pilot.pause()
+
+        assert prompt.value == "draft prompt"
+
+    assert notifications == [
+        ("Set VISUAL or EDITOR to use the external editor.", "warning"),
+    ]
+
+
+@pytest.mark.anyio
+async def test_external_editor_helper_runs_real_command(tmp_path: Path) -> None:
+    editor = tmp_path / "editor.sh"
+    editor.write_text(
+        "#!/bin/sh\n"
+        "printf 'edited by script\\n' > \"$1\"\n",
+        encoding="utf-8",
+    )
+    editor.chmod(0o700)
+
+    edited = await _edit_text_with_external_editor(str(editor), "draft")
+
+    assert edited == "edited by script"
 
 
 @pytest.mark.anyio
