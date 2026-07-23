@@ -520,6 +520,12 @@ def _hotkeys_command(context: CommandContext) -> CommandResult:
         "- Esc: cancel active run",
         "- Ctrl+K: open slash-command completions",
         "- Ctrl+R: open session picker",
+        "- Double Esc: open the session tree or configured double-escape action",
+        "- Session picker: Tab scope, Ctrl+N named, Ctrl+P path, Ctrl+S sort",
+        "- Session picker: Ctrl+R/F2 rename, Ctrl+D delete",
+        "- Session picker: Ctrl+Backspace delete when search is empty",
+        "- Optional Pi session keys in ~/.tau/tui.json: session_new, session_tree, "
+        "session_fork, session_resume",
         "- Shift+Tab: cycle thinking mode",
         "- Ctrl+T: toggle thinking tokens",
         "- Ctrl+O: collapse or expand tool output",
