@@ -2793,6 +2793,51 @@ async def test_session_project_trust_state_and_save_use_resource_paths(tmp_path:
 
 
 @pytest.mark.anyio
+async def test_session_ignores_project_resources_until_project_is_trusted(
+    tmp_path: Path,
+) -> None:
+    tau_paths = TauPaths(home=tmp_path / ".tau-home", agents_home=tmp_path / ".agents-home")
+    user_skill_dir = tau_paths.user_skills_dir
+    project_skill_dir = tau_paths.project_skills_dir(tmp_path)
+    user_skill_dir.mkdir(parents=True)
+    project_skill_dir.mkdir(parents=True)
+    (user_skill_dir / "user.md").write_text("# User skill", encoding="utf-8")
+    (project_skill_dir / "project.md").write_text("# Project skill", encoding="utf-8")
+    (tmp_path / "AGENTS.md").write_text("Project instructions", encoding="utf-8")
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="fake",
+            system="You are Tau.",
+            storage=JsonlSessionStorage(tmp_path / "session.jsonl"),
+            cwd=tmp_path,
+            resource_paths=TauResourcePaths(root=tau_paths.home, paths=tau_paths),
+        )
+    )
+
+    assert [skill.name for skill in session.skills] == ["user"]
+    assert session.context_files == ()
+    assert [(diagnostic.kind, diagnostic.message) for diagnostic in session.resource_diagnostics] == [
+        (
+            "trust",
+            "project-local resources ignored until this project is trusted with /trust",
+        )
+    ]
+
+    trust_state = session.project_trust_state()
+    session.save_project_trust(trust_state.options[0])
+    session.reload()
+
+    assert [skill.name for skill in session.skills] == ["project", "user"]
+    assert [Path(context_file.path).name for context_file in session.context_files] == [
+        "AGENTS.md"
+    ]
+    assert not [
+        diagnostic for diagnostic in session.resource_diagnostics if diagnostic.kind == "trust"
+    ]
+
+
+@pytest.mark.anyio
 async def test_session_toggle_scoped_model_preserves_newer_provider_file_changes(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

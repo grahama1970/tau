@@ -116,6 +116,7 @@ from tau_coding.trust import (
     ProjectTrustOption,
     ProjectTrustState,
     ProjectTrustStore,
+    has_trust_requiring_project_resources,
     project_trust_state,
 )
 
@@ -2259,18 +2260,58 @@ def _load_session_resources(
     resource_paths: TauResourcePaths,
     explicit_context_files: tuple[ProjectContextFile, ...],
 ) -> SessionResources:
-    loaded_skills, skill_diagnostics = load_skills_with_diagnostics(resource_paths)
+    effective_paths, trust_diagnostics = _project_trusted_resource_paths(resource_paths)
+    loaded_skills, skill_diagnostics = load_skills_with_diagnostics(effective_paths)
     loaded_prompt_templates, prompt_diagnostics = load_prompt_templates_with_diagnostics(
-        resource_paths
+        effective_paths
     )
     discovered_context, context_diagnostics = discover_project_context_with_diagnostics(
-        resource_paths
+        effective_paths
     )
     return SessionResources(
         skills=tuple(loaded_skills),
         prompt_templates=tuple(loaded_prompt_templates),
         context_files=_merge_context_files(explicit_context_files, discovered_context),
-        diagnostics=tuple([*skill_diagnostics, *prompt_diagnostics, *context_diagnostics]),
+        diagnostics=tuple(
+            [
+                *trust_diagnostics,
+                *skill_diagnostics,
+                *prompt_diagnostics,
+                *context_diagnostics,
+            ]
+        ),
+    )
+
+
+def _project_trusted_resource_paths(
+    resource_paths: TauResourcePaths,
+) -> tuple[TauResourcePaths, tuple[ResourceDiagnostic, ...]]:
+    cwd = resource_paths.cwd
+    if cwd is None:
+        return resource_paths, ()
+    tau_paths = resource_paths.paths or TauPaths(
+        home=resource_paths.root,
+        agents_home=resource_paths.agents_root or Path.home() / ".agents",
+    )
+    if not has_trust_requiring_project_resources(cwd, tau_paths):
+        return resource_paths, ()
+    store = ProjectTrustStore.from_resource_paths(resource_paths)
+    if store.get(cwd) is True:
+        return resource_paths, ()
+    return (
+        TauResourcePaths(
+            root=resource_paths.root,
+            cwd=None,
+            agents_root=resource_paths.agents_root,
+            paths=resource_paths.paths,
+        ),
+        (
+            ResourceDiagnostic(
+                kind="trust",
+                path=cwd,
+                message="project-local resources ignored until this project is trusted with /trust",
+            ),
+        ),
     )
 
 
