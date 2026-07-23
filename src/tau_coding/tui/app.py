@@ -413,6 +413,8 @@ class SessionPickerScreen(ModalScreen[str | None]):
     BINDINGS: ClassVar[list[BindingEntry]] = [
         Binding("escape", "cancel", "Cancel"),
         Binding("tab", "toggle_scope", "Scope", priority=True),
+        Binding("f2", "start_rename", "Rename"),
+        Binding("ctrl+e", "start_rename", "Rename", show=False),
         Binding("ctrl+n", "toggle_named_filter", "Named"),
         Binding("ctrl+p", "toggle_path", "Path"),
         Binding("ctrl+s", "toggle_sort", "Sort"),
@@ -429,6 +431,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         *,
         theme: TuiTheme,
         all_records: Sequence[SessionCompletionRecord] | None = None,
+        rename_session: Callable[[str, str], SessionCompletionRecord | None] | None = None,
     ) -> None:
         super().__init__()
         self.current_records = tuple(records)
@@ -437,6 +440,10 @@ class SessionPickerScreen(ModalScreen[str | None]):
         self.theme = theme
         self.search_value = ""
         self.scope: Literal["current", "all"] = "current"
+        self.mode: Literal["list", "rename"] = "list"
+        self.rename_target_id: str | None = None
+        self.rename_previous_query = ""
+        self.rename_session = rename_session
         self.named_only = False
         self.show_path = False
         self.sort_mode: Literal["recent", "name"] = "recent"
@@ -469,6 +476,8 @@ class SessionPickerScreen(ModalScreen[str | None]):
         """Filter sessions as the search value changes."""
         if event.input.id != "session-picker-search":
             return
+        if self.mode == "rename":
+            return
         self.search_value = event.value
         self._refresh_session_list()
 
@@ -477,10 +486,15 @@ class SessionPickerScreen(ModalScreen[str | None]):
         if event.input.id != "session-picker-search":
             return
         event.stop()
+        if self.mode == "rename":
+            self._confirm_rename(event.value)
+            return
         self.action_select_cursor()
 
     def _refresh_session_list(self) -> None:
         """Rebuild the visible session rows from the current search query."""
+        if self.mode == "rename":
+            return
         records = self.current_records if self.scope == "current" else self.all_records
         self.filtered_records = _filter_session_picker_records(
             records,
@@ -507,7 +521,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         if self.filtered_records:
             help_text = (
                 f"Type to search - Tab {scope_state} - Ctrl+N {named_state} - "
-                f"Ctrl+P {path_state} - Ctrl+S {sort_state} - "
+                f"Ctrl+P {path_state} - Ctrl+S {sort_state} - F2 rename - "
                 "Enter selects - Escape closes"
             )
         else:
@@ -519,6 +533,8 @@ class SessionPickerScreen(ModalScreen[str | None]):
 
     def on_key(self, event: Key) -> None:
         """Route session picker keys to the list."""
+        if self.mode == "rename":
+            return
         if event.key == "up":
             event.stop()
             self.action_cursor_up()
@@ -540,6 +556,8 @@ class SessionPickerScreen(ModalScreen[str | None]):
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected session id."""
+        if self.mode != "list":
+            return
         if event.index < 0 or event.index >= len(self.filtered_records):
             return
         self.dismiss(self.filtered_records[event.index].id)
@@ -574,9 +592,77 @@ class SessionPickerScreen(ModalScreen[str | None]):
 
     def action_select_cursor(self) -> None:
         """Select the highlighted session."""
+        if self.mode != "list":
+            return
         if not self.filtered_records:
             return
         self.query_one("#session-picker-list", ListView).action_select_cursor()
+
+    def action_start_rename(self) -> None:
+        """Rename the highlighted session."""
+        if self.rename_session is None or self.mode != "list":
+            return
+        selected = self._selected_session_record()
+        if selected is None:
+            return
+        self.mode = "rename"
+        self.rename_target_id = selected.id
+        self.rename_previous_query = self.search_value
+        title = _named_session_title(selected.title) or ""
+        search = self.query_one("#session-picker-search", Input)
+        search.placeholder = "Rename session"
+        search.value = title
+        search.focus()
+        self.query_one("#session-picker-title", Static).update("Rename Session")
+        self.query_one("#session-picker-help", Static).update(
+            "Enter saves - Escape cancels rename"
+        )
+
+    def _confirm_rename(self, value: str) -> None:
+        """Save the active rename target and return to list mode."""
+        name = value.strip()
+        if not name:
+            self.query_one("#session-picker-help", Static).update("Session name is required.")
+            return
+        if any(char in name for char in "\r\n\t"):
+            self.query_one("#session-picker-help", Static).update(
+                "Session name must be a single line."
+            )
+            return
+        target_id = self.rename_target_id
+        rename_session = self.rename_session
+        if target_id is None or rename_session is None:
+            self._exit_rename_mode()
+            return
+        updated = rename_session(target_id, name)
+        if updated is None:
+            self.query_one("#session-picker-help", Static).update(
+                f"Unknown session: {target_id}"
+            )
+            return
+        self.current_records = _replace_session_picker_record(self.current_records, updated)
+        self.all_records = _replace_session_picker_record(self.all_records, updated)
+        self._exit_rename_mode()
+
+    def _exit_rename_mode(self) -> None:
+        """Return from rename mode to list mode."""
+        self.mode = "list"
+        self.rename_target_id = None
+        self.search_value = self.rename_previous_query
+        search = self.query_one("#session-picker-search", Input)
+        search.placeholder = "Search sessions"
+        search.value = self.search_value
+        self.query_one("#session-picker-title", Static).update("Sessions")
+        self._refresh_session_list()
+
+    def _selected_session_record(self) -> SessionCompletionRecord | None:
+        """Return the currently highlighted filtered session."""
+        if not self.filtered_records:
+            return None
+        index = self.query_one("#session-picker-list", ListView).index
+        if index is None or index < 0 or index >= len(self.filtered_records):
+            return None
+        return self.filtered_records[index]
 
     def action_toggle_scope(self) -> None:
         """Toggle between current-project sessions and all indexed sessions."""
@@ -600,6 +686,9 @@ class SessionPickerScreen(ModalScreen[str | None]):
 
     def action_cancel(self) -> None:
         """Close the picker without selecting a session."""
+        if self.mode == "rename":
+            self._exit_rename_mode()
+            return
         self.dismiss(None)
 
 
@@ -2526,8 +2615,25 @@ class TauTuiApp(App[None]):
                 current_records,
                 theme=self.tui_settings.resolved_theme,
                 all_records=all_records,
+                rename_session=self._rename_picker_session,
             ),
             callback=self._handle_session_picker_result,
+        )
+
+    def _rename_picker_session(
+        self,
+        session_id: str,
+        name: str,
+    ) -> SessionCompletionRecord | None:
+        """Rename an indexed session from the session picker."""
+        manager = getattr(self.session, "session_manager", None)
+        if manager is None:
+            return None
+        return manager.touch_session(
+            session_id,
+            model=self.session.model,
+            provider_name=self.session.provider_name,
+            title=name,
         )
 
     def action_cycle_thinking(self) -> None:
@@ -3383,6 +3489,24 @@ def _sort_session_picker_records(
             )
         )
     return tuple(records)
+
+
+def _replace_session_picker_record(
+    records: Sequence[SessionCompletionRecord],
+    updated: SessionCompletionRecord,
+) -> tuple[SessionCompletionRecord, ...]:
+    """Return records with a matching session id replaced by an updated record."""
+    replaced = False
+    next_records: list[SessionCompletionRecord] = []
+    for record in records:
+        if record.id == updated.id:
+            next_records.append(updated)
+            replaced = True
+        else:
+            next_records.append(record)
+    if not replaced:
+        next_records.append(updated)
+    return tuple(next_records)
 
 
 def _session_picker_search_text(record: SessionCompletionRecord) -> str:
