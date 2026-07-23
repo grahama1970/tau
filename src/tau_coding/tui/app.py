@@ -1335,6 +1335,8 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         Binding("ctrl+i", "toggle_mode", "Mode", show=False, priority=True),
         Binding("up", "cursor_up", "Up", show=False),
         Binding("down", "cursor_down", "Down", show=False),
+        Binding("pageup", "page_up", "Page up", show=False),
+        Binding("pagedown", "page_down", "Page down", show=False),
         Binding("enter", "accept_model", "Select", show=False),
     ]
 
@@ -1431,6 +1433,12 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         elif event.key == "down":
             event.stop()
             self.action_cursor_down()
+        elif event.key == "pageup":
+            event.stop()
+            self.action_page_up()
+        elif event.key == "pagedown":
+            event.stop()
+            self.action_page_down()
         elif event.key == "enter":
             event.stop()
             self.action_accept_model()
@@ -1450,6 +1458,26 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
     def action_cursor_down(self) -> None:
         """Move to the next model."""
         self.query_one("#model-picker-list", ListView).action_cursor_down()
+
+    def action_page_up(self) -> None:
+        """Move up by a page of models."""
+        self._move_model_page(-1)
+
+    def action_page_down(self) -> None:
+        """Move down by a page of models."""
+        self._move_model_page(1)
+
+    def _move_model_page(self, direction: Literal[-1, 1]) -> None:
+        """Move the selected model by a viewport-sized page."""
+        if not self.visible_choices:
+            return
+        model_list = self.query_one("#model-picker-list", ListView)
+        current_index = model_list.index if model_list.index is not None else 0
+        page_size = max(1, model_list.size.height - 1)
+        if page_size <= 1:
+            page_size = 10
+        next_index = current_index + (direction * page_size)
+        model_list.index = max(0, min(len(self.visible_choices) - 1, next_index))
 
     def action_accept_model(self) -> None:
         """Select the highlighted model."""
