@@ -44,6 +44,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
             "thinking_cycle": "f3",
             "model_cycle": "f6",
             "toggle_thinking": "f4",
+            "external_editor": "f7",
             "copy_message": "ctrl+b"
           },
           "theme": "high-contrast"
@@ -62,6 +63,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.keybindings.accept_completion == "f2"
     assert settings.keybindings.thinking_cycle == "f3"
     assert settings.keybindings.model_cycle == "f6"
+    assert settings.keybindings.external_editor == "f7"
     assert settings.keybindings.copy_message == "ctrl+b"
     assert settings.keybindings.cancel == "escape"
     assert settings.theme == "high-contrast"
@@ -142,6 +144,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
             thinking_cycle="f3",
             model_cycle="f6",
             toggle_thinking="f4",
+            external_editor="f7",
             copy_message="ctrl+b",
         ),
         theme="high-contrast",
@@ -155,6 +158,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["keybindings"]["accept_completion"] == "f2"
     assert settings.to_json()["keybindings"]["thinking_cycle"] == "f3"
     assert settings.to_json()["keybindings"]["model_cycle"] == "f6"
+    assert settings.to_json()["keybindings"]["external_editor"] == "f7"
     assert settings.to_json()["keybindings"]["copy_message"] == "ctrl+b"
     assert settings.to_json()["theme"] == "high-contrast"
     assert settings.to_json()["auto_copy_selection"] is False
