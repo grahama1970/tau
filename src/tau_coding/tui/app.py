@@ -1161,7 +1161,14 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
 
     async def _fold_tree_branch(self) -> None:
         choice = self._selected_choice()
-        if choice is None or not _tree_choice_has_children(choice, self._filtered_choices()):
+        filtered_choices = self._filtered_choices()
+        if choice is None:
+            return
+        if not _tree_choice_is_branch_foldable(choice, filtered_choices):
+            self._move_tree_branch_segment("up")
+            return
+        if choice.entry_id in self.folded_entry_ids:
+            self._move_tree_branch_segment("up")
             return
         self.folded_entry_ids.add(choice.entry_id)
         await self._refresh_tree_choices(selected_entry_id=choice.entry_id)
@@ -1172,10 +1179,27 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
 
     async def _unfold_tree_branch(self) -> None:
         choice = self._selected_choice()
-        if choice is None or choice.entry_id not in self.folded_entry_ids:
+        if choice is None:
             return
-        self.folded_entry_ids.remove(choice.entry_id)
-        await self._refresh_tree_choices(selected_entry_id=choice.entry_id)
+        if choice.entry_id in self.folded_entry_ids:
+            self.folded_entry_ids.remove(choice.entry_id)
+            await self._refresh_tree_choices(selected_entry_id=choice.entry_id)
+            return
+        self._move_tree_branch_segment("down")
+
+    def _move_tree_branch_segment(self, direction: Literal["up", "down"]) -> None:
+        visible_choices = self._visible_choices()
+        if not visible_choices:
+            return
+        tree_list = self.query_one("#tree-picker-list", ListView)
+        selected_index = tree_list.index
+        if selected_index is None or selected_index >= len(visible_choices):
+            return
+        tree_list.index = _tree_branch_segment_index(
+            visible_choices,
+            selected_index,
+            direction=direction,
+        )
 
     def action_edit_tree_label(self) -> None:
         """Edit the selected tree entry label."""
@@ -4573,6 +4597,79 @@ def _tree_choice_has_children(
     choices: Sequence[SessionTreeChoice],
 ) -> bool:
     return any(candidate.parent_entry_id == choice.entry_id for candidate in choices)
+
+
+def _tree_choice_is_branch_foldable(
+    choice: SessionTreeChoice,
+    choices: Sequence[SessionTreeChoice],
+) -> bool:
+    children_by_parent, parent_by_id = _visible_tree_relationships(choices)
+    if not children_by_parent.get(choice.entry_id):
+        return False
+    parent_id = parent_by_id.get(choice.entry_id)
+    if parent_id is None:
+        return True
+    return len(children_by_parent.get(parent_id, ())) > 1
+
+
+def _tree_branch_segment_index(
+    choices: Sequence[SessionTreeChoice],
+    selected_index: int,
+    *,
+    direction: Literal["up", "down"],
+) -> int:
+    if selected_index < 0 or selected_index >= len(choices):
+        return 0
+    children_by_parent, parent_by_id = _visible_tree_relationships(choices)
+    index_by_id = {choice.entry_id: index for index, choice in enumerate(choices)}
+    current_id = choices[selected_index].entry_id
+
+    if direction == "down":
+        while True:
+            children = children_by_parent.get(current_id, ())
+            if not children:
+                return index_by_id[current_id]
+            if len(children) > 1:
+                return index_by_id[children[0]]
+            current_id = children[0]
+
+    while True:
+        parent_id = parent_by_id.get(current_id)
+        if parent_id is None:
+            return index_by_id[current_id]
+        siblings = children_by_parent.get(parent_id, ())
+        current_index = index_by_id[current_id]
+        if len(siblings) > 1 and current_index < selected_index:
+            return current_index
+        current_id = parent_id
+
+
+def _visible_tree_relationships(
+    choices: Sequence[SessionTreeChoice],
+) -> tuple[dict[str | None, tuple[str, ...]], dict[str, str | None]]:
+    visible_ids = {choice.entry_id for choice in choices}
+    source_parent_by_id = {choice.entry_id: choice.parent_entry_id for choice in choices}
+    children_by_parent_lists: dict[str | None, list[str]] = {None: []}
+    parent_by_id: dict[str, str | None] = {}
+
+    for choice in choices:
+        parent_id = choice.parent_entry_id
+        seen: set[str] = set()
+        while parent_id is not None and parent_id not in visible_ids and parent_id not in seen:
+            seen.add(parent_id)
+            parent_id = source_parent_by_id.get(parent_id)
+        if parent_id not in visible_ids:
+            parent_id = None
+        parent_by_id[choice.entry_id] = parent_id
+        children_by_parent_lists.setdefault(parent_id, []).append(choice.entry_id)
+
+    return (
+        {
+            parent_id: tuple(child_ids)
+            for parent_id, child_ids in children_by_parent_lists.items()
+        },
+        parent_by_id,
+    )
 
 
 def _tree_choice_has_folded_ancestor(
