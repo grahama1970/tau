@@ -100,6 +100,7 @@ class CommandResult:
     export_format: str | None = None
     import_requested: bool = False
     import_path: Path | None = None
+    share_requested: bool = False
     resume_session_id: str | None = None
     resume_picker_requested: bool = False
     tree_picker_requested: bool = False
@@ -369,6 +370,15 @@ def create_default_command_registry() -> CommandRegistry:
     )
     registry.register(
         SlashCommand(
+            name="share",
+            usage="/share",
+            description="Share the current session as a secret GitHub gist.",
+            handler=_share_command,
+            search_terms=("gist", "url"),
+        )
+    )
+    registry.register(
+        SlashCommand(
             name="theme",
             usage="/theme [name]",
             description="Show or set the TUI theme.",
@@ -610,6 +620,12 @@ def _settings_command(context: CommandContext) -> CommandResult:
     if context.args:
         return CommandResult(handled=True, message="Usage: /settings")
     return CommandResult(handled=True, settings_picker_requested=True)
+
+
+def _share_command(context: CommandContext) -> CommandResult:
+    if context.args:
+        return CommandResult(handled=True, message="Usage: /share")
+    return CommandResult(handled=True, share_requested=True)
 
 
 def _name_command(context: CommandContext) -> CommandResult:
