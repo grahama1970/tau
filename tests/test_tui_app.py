@@ -195,6 +195,8 @@ class FakeSession:
             return CommandResult(handled=True, compact_summary="")
         if text.startswith("/compact "):
             return CommandResult(handled=True, compact_summary=text.removeprefix("/compact "))
+        if text == "/copy":
+            return CommandResult(handled=True, copy_last_message_requested=True)
         if text == "/export":
             return CommandResult(handled=True, export_requested=True)
         if text.startswith("/export "):
@@ -1305,6 +1307,39 @@ async def test_tui_app_copies_last_assistant_message_from_keybinding(
         await pilot.pause()
 
     assert copied == ["latest answer"]
+    assert notifications == ["Copied last assistant message to clipboard."]
+
+
+@pytest.mark.anyio
+async def test_tui_app_copies_last_assistant_message_from_slash_command(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = TauTuiApp(
+        FakeSession(
+            messages=[
+                AssistantMessage(content="old answer"),
+                UserMessage(content="next request"),
+                AssistantMessage(content="copy from slash command"),
+            ]
+        )
+    )
+    copied: list[str] = []
+    notifications: list[str] = []
+    monkeypatch.setattr(app, "copy_to_clipboard", copied.append)
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        del kwargs
+        notifications.append(message)
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/copy"
+        await pilot.press("enter")
+        await pilot.pause()
+
+    assert copied == ["copy from slash command"]
     assert notifications == ["Copied last assistant message to clipboard."]
 
 

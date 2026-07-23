@@ -93,6 +93,7 @@ class CommandResult:
     clear_requested: bool = False
     new_session_requested: bool = False
     compact_summary: str | None = None
+    copy_last_message_requested: bool = False
     export_requested: bool = False
     export_destination: Path | None = None
     export_format: str | None = None
@@ -220,6 +221,15 @@ def create_default_command_registry() -> CommandRegistry:
             usage="/compact [instructions]",
             description="Summarize and compact active context.",
             handler=_compact_command,
+        )
+    )
+    registry.register(
+        SlashCommand(
+            name="copy",
+            usage="/copy",
+            description="Copy the last assistant message to the clipboard.",
+            handler=_copy_command,
+            search_terms=("clipboard", "assistant", "message"),
         )
     )
     registry.register(
@@ -375,6 +385,12 @@ def _compact_command(context: CommandContext) -> CommandResult:
         handled=True,
         compact_summary=context.args.strip(),
     )
+
+
+def _copy_command(context: CommandContext) -> CommandResult:
+    if context.args:
+        return CommandResult(handled=True, message="Usage: /copy")
+    return CommandResult(handled=True, copy_last_message_requested=True)
 
 
 def _export_command(context: CommandContext) -> CommandResult:
