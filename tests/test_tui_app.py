@@ -3458,6 +3458,32 @@ async def test_tui_app_tree_picker_folds_and_unfolds_selected_branch() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_tree_picker_fold_keys_jump_between_branch_segments() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        tree_list = app.screen.query_one("#tree-picker-list", ListView)
+        assert tree_list.index == 3
+
+        await pilot.press("ctrl+left")
+        await pilot.pause()
+
+        assert tree_list.index == 0
+
+        await pilot.press("ctrl+right")
+        await pilot.pause()
+
+        assert tree_list.index == 1
+
+
+@pytest.mark.anyio
 async def test_tui_app_tree_picker_edits_selected_entry_label() -> None:
     session = FakeSession()
     app = TauTuiApp(session)
