@@ -98,6 +98,8 @@ class CommandResult:
     export_requested: bool = False
     export_destination: Path | None = None
     export_format: str | None = None
+    import_requested: bool = False
+    import_path: Path | None = None
     resume_session_id: str | None = None
     resume_picker_requested: bool = False
     tree_picker_requested: bool = False
@@ -257,6 +259,15 @@ def create_default_command_registry() -> CommandRegistry:
             usage="/export [--format html|jsonl] [destination]",
             description="Export the current session.",
             handler=_export_command,
+        )
+    )
+    registry.register(
+        SlashCommand(
+            name="import",
+            usage="/import <path.jsonl>",
+            description="Import and resume a session from a JSONL file.",
+            handler=_import_command,
+            search_terms=("jsonl", "restore"),
         )
     )
     registry.register(
@@ -434,6 +445,18 @@ def _export_command(context: CommandContext) -> CommandResult:
         export_requested=True,
         export_destination=destination,
         export_format=export_format,
+    )
+
+
+def _import_command(context: CommandContext) -> CommandResult:
+    try:
+        import_path = _parse_import_args(context.args)
+    except ValueError as exc:
+        return CommandResult(handled=True, message=str(exc))
+    return CommandResult(
+        handled=True,
+        import_requested=True,
+        import_path=import_path,
     )
 
 
@@ -853,6 +876,13 @@ def _parse_export_args(args: str) -> tuple[str | None, Path | None]:
             raise ValueError("Usage: /export [--format html|jsonl] [destination]")
         index += 1
     return export_format, destination
+
+
+def _parse_import_args(args: str) -> Path:
+    parts = args.split()
+    if len(parts) != 1:
+        raise ValueError("Usage: /import <path.jsonl>")
+    return Path(parts[0]).expanduser()
 
 
 def _load_changelog_text(cwd: Path) -> str:
