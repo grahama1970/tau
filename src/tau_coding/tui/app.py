@@ -839,6 +839,10 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         Binding("s", "select_with_summary", "Summarize", show=False),
         Binding("c", "select_with_custom_summary", "Custom summary", show=False),
         Binding("ctrl+t", "toggle_tool_calls", "Tool calls", show=False),
+        Binding("ctrl+d", "set_default_tree_filter", "Default filter", show=False),
+        Binding("ctrl+u", "toggle_user_tree_filter", "User filter", show=False),
+        Binding("ctrl+a", "toggle_all_tree_filter", "All filter", show=False),
+        Binding("ctrl+o", "cycle_tree_filter", "Cycle filter", show=False),
         Binding("ctrl+f", "cycle_tree_filter", "Filter", show=False),
     ]
 
@@ -899,6 +903,18 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         elif event.key == "ctrl+t":
             event.stop()
             self.action_toggle_tool_calls()
+        elif event.key == "ctrl+d":
+            event.stop()
+            self.action_set_default_tree_filter()
+        elif event.key == "ctrl+u":
+            event.stop()
+            self.action_toggle_user_tree_filter()
+        elif event.key == "ctrl+a":
+            event.stop()
+            self.action_toggle_all_tree_filter()
+        elif event.key == "ctrl+o":
+            event.stop()
+            self.action_cycle_tree_filter()
         elif event.key == "ctrl+f":
             event.stop()
             self.action_cycle_tree_filter()
@@ -976,13 +992,20 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         )
 
     def action_toggle_tool_calls(self) -> None:
-        """Toggle tool-call entries in the tree picker."""
-        self.run_worker(self._toggle_tool_calls())
+        """Toggle Pi's no-tools tree filter."""
+        self.run_worker(self._set_tree_filter("no-tools", toggle=True))
 
-    async def _toggle_tool_calls(self) -> None:
-        selected_entry_id = self._selected_entry_id()
-        self.show_tool_calls = not self.show_tool_calls
-        await self._refresh_tree_choices(selected_entry_id=selected_entry_id)
+    def action_set_default_tree_filter(self) -> None:
+        """Set the tree picker to its default filter mode."""
+        self.run_worker(self._set_tree_filter("default"))
+
+    def action_toggle_user_tree_filter(self) -> None:
+        """Toggle Pi's user-only tree filter."""
+        self.run_worker(self._set_tree_filter("user-only", toggle=True))
+
+    def action_toggle_all_tree_filter(self) -> None:
+        """Toggle Pi's all-entries tree filter."""
+        self.run_worker(self._set_tree_filter("all", toggle=True))
 
     def action_cycle_tree_filter(self) -> None:
         """Cycle Pi-style tree filter modes supported by Tau's tree choice model."""
@@ -996,6 +1019,19 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
             self.show_tool_calls = False
         elif self.filter_mode == "all":
             self.show_tool_calls = True
+        await self._refresh_tree_choices(selected_entry_id=selected_entry_id)
+
+    async def _set_tree_filter(
+        self,
+        filter_mode: TreeFilterMode,
+        *,
+        toggle: bool = False,
+    ) -> None:
+        selected_entry_id = self._selected_entry_id()
+        self.filter_mode = (
+            "default" if toggle and self.filter_mode == filter_mode else filter_mode
+        )
+        self.show_tool_calls = self.filter_mode != "no-tools"
         await self._refresh_tree_choices(selected_entry_id=selected_entry_id)
 
     async def _refresh_tree_choices(self, *, selected_entry_id: str | None = None) -> None:
@@ -1036,7 +1072,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         filter_label = "default" if self.filter_mode == "default" else self.filter_mode
         return (
             "Enter branches - S summarizes - C custom summary - "
-            f"Ctrl+T tool calls {tool_call_state} - Ctrl+F filter {filter_label} - "
+            f"Ctrl+T no-tools ({tool_call_state}) - Ctrl+O filter {filter_label} - "
             "Escape closes"
         )
 
