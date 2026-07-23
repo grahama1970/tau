@@ -408,7 +408,7 @@ class PromptInput(TextArea):
 
 
 class SessionPickerScreen(ModalScreen[str | None]):
-    """Minimal modal picker for indexed sessions."""
+    """Searchable modal picker for indexed sessions."""
 
     BINDINGS: ClassVar[list[BindingEntry]] = [
         Binding("escape", "cancel", "Cancel"),
@@ -425,26 +425,59 @@ class SessionPickerScreen(ModalScreen[str | None]):
     ) -> None:
         super().__init__()
         self.records = tuple(records)
+        self.filtered_records = self.records
         self.theme = theme
+        self.search_value = ""
 
     def compose(self) -> ComposeResult:
         """Compose the session picker."""
         with Vertical(id="session-picker"):
             yield Static("Sessions", id="session-picker-title")
+            yield Input(placeholder="Search sessions", id="session-picker-search")
             yield ListView(
                 *[
                     ListItem(Label(_session_picker_label(record), markup=False))
-                    for record in self.records
+                    for record in self.filtered_records
                 ],
                 id="session-picker-list",
             )
-            yield Static("Enter selects - Escape closes", id="session-picker-help")
+            yield Static("", id="session-picker-help")
 
     def on_mount(self) -> None:
-        """Focus the session list for keyboard navigation."""
+        """Focus search input for Pi-style picker filtering."""
+        self._refresh_session_list()
+        self.query_one("#session-picker-search", Input).focus()
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """Filter sessions as the search value changes."""
+        if event.input.id != "session-picker-search":
+            return
+        self.search_value = event.value
+        self._refresh_session_list()
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Select the highlighted filtered session from the search input."""
+        if event.input.id != "session-picker-search":
+            return
+        event.stop()
+        self.action_select_cursor()
+
+    def _refresh_session_list(self) -> None:
+        """Rebuild the visible session rows from the current search query."""
+        self.filtered_records = _filter_session_picker_records(self.records, self.search_value)
         session_list = self.query_one("#session-picker-list", ListView)
-        session_list.index = 0
-        session_list.focus()
+        session_list.clear()
+        session_list.extend(
+            ListItem(Label(_session_picker_label(record), markup=False))
+            for record in self.filtered_records
+        )
+        session_list.index = 0 if self.filtered_records else None
+        help_text = (
+            "Type to search - Enter selects - Escape closes"
+            if self.filtered_records
+            else "No matching sessions - Escape closes"
+        )
+        self.query_one("#session-picker-help", Static).update(help_text)
 
     def on_key(self, event: Key) -> None:
         """Route session picker keys to the list."""
@@ -460,7 +493,9 @@ class SessionPickerScreen(ModalScreen[str | None]):
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected session id."""
-        self.dismiss(self.records[event.index].id)
+        if event.index < 0 or event.index >= len(self.filtered_records):
+            return
+        self.dismiss(self.filtered_records[event.index].id)
 
     def action_cursor_up(self) -> None:
         """Move to the previous session."""
@@ -472,6 +507,8 @@ class SessionPickerScreen(ModalScreen[str | None]):
 
     def action_select_cursor(self) -> None:
         """Select the highlighted session."""
+        if not self.filtered_records:
+            return
         self.query_one("#session-picker-list", ListView).action_select_cursor()
 
     def action_cancel(self) -> None:
@@ -1594,6 +1631,14 @@ class TauTuiApp(App[None]):
         height: 1;
         margin-top: 1;
         color: $tau-muted-text;
+    }
+
+    #session-picker-search {
+        height: 3;
+        margin-bottom: 1;
+        background: $tau-prompt-background;
+        color: $tau-prompt-text;
+        border: tall $tau-prompt-border;
     }
 
     #command-output {
@@ -3190,6 +3235,32 @@ def _session_picker_label(record: SessionCompletionRecord) -> str:
     if title is not None:
         parts.append(title)
     return " - ".join(parts)
+
+
+def _filter_session_picker_records(
+    records: Sequence[SessionCompletionRecord],
+    query: str,
+) -> tuple[SessionCompletionRecord, ...]:
+    normalized = " ".join(query.casefold().split())
+    if not normalized:
+        return tuple(records)
+    return tuple(
+        record
+        for record in records
+        if normalized in _session_picker_search_text(record)
+    )
+
+
+def _session_picker_search_text(record: SessionCompletionRecord) -> str:
+    fields = [
+        record.id,
+        record.title or "",
+        record.model,
+        str(record.cwd),
+        _short_path(record.cwd),
+        _session_picker_label(record),
+    ]
+    return " ".join(" ".join(field.casefold().split()) for field in fields)
 
 
 def _tree_picker_label(choice: SessionTreeChoice, *, theme: TuiTheme) -> Text:

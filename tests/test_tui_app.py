@@ -2304,6 +2304,87 @@ async def test_tui_app_session_picker_shows_human_readable_session_metadata() ->
 
 
 @pytest.mark.anyio
+async def test_tui_app_session_picker_search_filters_visible_sessions() -> None:
+    session = FakeSession()
+    session.session_manager = _FakeSessionManager(
+        [
+            CodingSessionRecord(
+                id="session-1",
+                path=Path("/tmp/session-1.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="fake-model",
+                title="Refactor auth",
+                created_at=1.0,
+                updated_at=3.0,
+            ),
+            CodingSessionRecord(
+                id="session-2",
+                path=Path("/tmp/session-2.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="other-model",
+                title="Investigate billing",
+                created_at=1.0,
+                updated_at=2.0,
+            ),
+        ]
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        await pilot.press("ctrl+r")
+        assert isinstance(app.screen, SessionPickerScreen)
+        search = app.screen.query_one("#session-picker-search", Input)
+        assert search.has_focus
+
+        await pilot.press("b", "i", "l", "l")
+        labels = [
+            item.query_one(Label).content
+            for item in app.screen.query_one("#session-picker-list", ListView).children
+        ]
+
+    assert len(labels) == 1
+    assert "other-model - Investigate billing" in str(labels[0])
+    assert "Refactor auth" not in str(labels[0])
+
+
+@pytest.mark.anyio
+async def test_tui_app_session_picker_selects_filtered_session() -> None:
+    session = FakeSession(messages=[UserMessage(content="Earlier")])
+    session.session_manager = _FakeSessionManager(
+        [
+            CodingSessionRecord(
+                id="session-1",
+                path=Path("/tmp/session-1.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="fake-model",
+                title="Refactor auth",
+                created_at=1.0,
+                updated_at=3.0,
+            ),
+            CodingSessionRecord(
+                id="session-2",
+                path=Path("/tmp/session-2.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="other-model",
+                title="Investigate billing",
+                created_at=1.0,
+                updated_at=2.0,
+            ),
+        ]
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        await pilot.press("ctrl+r")
+        assert isinstance(app.screen, SessionPickerScreen)
+
+        await pilot.press("b", "i", "l", "l", "enter")
+        await pilot.pause()
+
+        assert session.resumed_session_ids == ["session-2"]
+
+
+@pytest.mark.anyio
 async def test_tui_app_session_picker_arrow_keys_select_session() -> None:
     session = FakeSession(messages=[UserMessage(content="Earlier")])
     session.session_manager = _FakeSessionManager(
