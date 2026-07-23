@@ -184,6 +184,17 @@ class SessionManager:
         self._upsert(updated)
         return updated
 
+    def delete_session(self, session_id: str) -> CodingSessionRecord | None:
+        """Remove a session from indexes and delete its session file when safe."""
+        existing = self.get_session(session_id)
+        if existing is None:
+            return None
+
+        self._delete_from_index(self.project_index_path(existing.cwd), session_id)
+        self._delete_from_index(self.index_path, session_id)
+        self._delete_session_file(existing.path)
+        return existing
+
     def _read_index(self, path: Path) -> list[CodingSessionRecord]:
         if not path.exists():
             return []
@@ -223,6 +234,23 @@ class SessionManager:
         records = [item for item in self._read_index(path) if item.id != record.id]
         records.append(record)
         self._write_index(path, records)
+
+    def _delete_from_index(self, path: Path, session_id: str) -> None:
+        records = [item for item in self._read_index(path) if item.id != session_id]
+        self._write_index(path, records)
+
+    def _delete_session_file(self, path: Path) -> None:
+        try:
+            resolved_path = path.resolve()
+            sessions_dir = self.paths.sessions_dir.resolve()
+        except OSError:
+            return
+        if not resolved_path.is_relative_to(sessions_dir):
+            return
+        try:
+            resolved_path.unlink()
+        except FileNotFoundError:
+            return
 
 
 def _deduplicate_records(records: list[CodingSessionRecord]) -> list[CodingSessionRecord]:

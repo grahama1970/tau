@@ -415,6 +415,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         Binding("tab", "toggle_scope", "Scope", priority=True),
         Binding("f2", "start_rename", "Rename"),
         Binding("ctrl+e", "start_rename", "Rename", show=False),
+        Binding("ctrl+d", "delete_session", "Delete"),
         Binding("ctrl+n", "toggle_named_filter", "Named"),
         Binding("ctrl+p", "toggle_path", "Path"),
         Binding("ctrl+s", "toggle_sort", "Sort"),
@@ -432,6 +433,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         theme: TuiTheme,
         all_records: Sequence[SessionCompletionRecord] | None = None,
         rename_session: Callable[[str, str], SessionCompletionRecord | None] | None = None,
+        delete_session: Callable[[str], bool] | None = None,
     ) -> None:
         super().__init__()
         self.current_records = tuple(records)
@@ -444,6 +446,8 @@ class SessionPickerScreen(ModalScreen[str | None]):
         self.rename_target_id: str | None = None
         self.rename_previous_query = ""
         self.rename_session = rename_session
+        self.delete_confirm_target_id: str | None = None
+        self.delete_session = delete_session
         self.named_only = False
         self.show_path = False
         self.sort_mode: Literal["recent", "name"] = "recent"
@@ -521,7 +525,8 @@ class SessionPickerScreen(ModalScreen[str | None]):
         if self.filtered_records:
             help_text = (
                 f"Type to search - Tab {scope_state} - Ctrl+N {named_state} - "
-                f"Ctrl+P {path_state} - Ctrl+S {sort_state} - F2 rename - "
+                f"Ctrl+P {path_state} - Ctrl+S {sort_state} - "
+                "F2 rename - Ctrl+D delete - "
                 "Enter selects - Escape closes"
             )
         else:
@@ -537,15 +542,19 @@ class SessionPickerScreen(ModalScreen[str | None]):
             return
         if event.key == "up":
             event.stop()
+            self.delete_confirm_target_id = None
             self.action_cursor_up()
         elif event.key == "down":
             event.stop()
+            self.delete_confirm_target_id = None
             self.action_cursor_down()
         elif event.key == "pageup":
             event.stop()
+            self.delete_confirm_target_id = None
             self.action_page_up()
         elif event.key == "pagedown":
             event.stop()
+            self.delete_confirm_target_id = None
             self.action_page_down()
         elif event.key == "enter":
             event.stop()
@@ -553,6 +562,9 @@ class SessionPickerScreen(ModalScreen[str | None]):
         elif event.key in {"tab", "ctrl+i"}:
             event.stop()
             self.action_toggle_scope()
+        elif event.key == "ctrl+d":
+            event.stop()
+            self.action_delete_session()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected session id."""
@@ -602,6 +614,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         """Rename the highlighted session."""
         if self.rename_session is None or self.mode != "list":
             return
+        self.delete_confirm_target_id = None
         selected = self._selected_session_record()
         if selected is None:
             return
@@ -664,23 +677,50 @@ class SessionPickerScreen(ModalScreen[str | None]):
             return None
         return self.filtered_records[index]
 
+    def action_delete_session(self) -> None:
+        """Delete the highlighted session after a second delete press confirms it."""
+        if self.delete_session is None or self.mode != "list":
+            return
+        selected = self._selected_session_record()
+        if selected is None:
+            return
+        if self.delete_confirm_target_id != selected.id:
+            self.delete_confirm_target_id = selected.id
+            self.query_one("#session-picker-help", Static).update(
+                "Press Ctrl+D again to delete this session - Escape cancels"
+            )
+            return
+        self.delete_confirm_target_id = None
+        if not self.delete_session(selected.id):
+            self.query_one("#session-picker-help", Static).update(
+                f"Failed to delete session: {selected.id}"
+            )
+            return
+        self.current_records = _remove_session_picker_record(self.current_records, selected.id)
+        self.all_records = _remove_session_picker_record(self.all_records, selected.id)
+        self._refresh_session_list()
+
     def action_toggle_scope(self) -> None:
         """Toggle between current-project sessions and all indexed sessions."""
+        self.delete_confirm_target_id = None
         self.scope = "all" if self.scope == "current" else "current"
         self._refresh_session_list()
 
     def action_toggle_named_filter(self) -> None:
         """Toggle whether the picker shows only named sessions."""
+        self.delete_confirm_target_id = None
         self.named_only = not self.named_only
         self._refresh_session_list()
 
     def action_toggle_path(self) -> None:
         """Toggle session path visibility."""
+        self.delete_confirm_target_id = None
         self.show_path = not self.show_path
         self._refresh_session_list()
 
     def action_toggle_sort(self) -> None:
         """Toggle session sort order."""
+        self.delete_confirm_target_id = None
         self.sort_mode = "name" if self.sort_mode == "recent" else "recent"
         self._refresh_session_list()
 
@@ -688,6 +728,10 @@ class SessionPickerScreen(ModalScreen[str | None]):
         """Close the picker without selecting a session."""
         if self.mode == "rename":
             self._exit_rename_mode()
+            return
+        if self.delete_confirm_target_id is not None:
+            self.delete_confirm_target_id = None
+            self._refresh_session_list()
             return
         self.dismiss(None)
 
@@ -2525,6 +2569,15 @@ class TauTuiApp(App[None]):
         self._completion_state = self._build_completion_state(prompt.text)
         self._refresh_completions()
 
+    async def action_quit(self) -> None:
+        """Quit the app, or use picker-local quit bindings when a modal owns them."""
+        if isinstance(self.screen, SessionPickerScreen):
+            self.screen.action_delete_session()
+            return
+        result = super().action_quit()
+        if isawaitable(result):
+            await result
+
     def action_completion_next(self) -> None:
         """Select the next prompt completion or move down in the prompt."""
         if isinstance(self.screen, CommandOutputScreen):
@@ -2616,6 +2669,7 @@ class TauTuiApp(App[None]):
                 theme=self.tui_settings.resolved_theme,
                 all_records=all_records,
                 rename_session=self._rename_picker_session,
+                delete_session=self._delete_picker_session,
             ),
             callback=self._handle_session_picker_result,
         )
@@ -2635,6 +2689,14 @@ class TauTuiApp(App[None]):
             provider_name=self.session.provider_name,
             title=name,
         )
+
+    def _delete_picker_session(self, session_id: str) -> bool:
+        """Delete an indexed session from the session picker."""
+        manager = getattr(self.session, "session_manager", None)
+        delete_session = getattr(manager, "delete_session", None)
+        if not callable(delete_session):
+            return False
+        return delete_session(session_id) is not None
 
     def action_cycle_thinking(self) -> None:
         """Cycle the active thinking mode."""
@@ -3507,6 +3569,14 @@ def _replace_session_picker_record(
     if not replaced:
         next_records.append(updated)
     return tuple(next_records)
+
+
+def _remove_session_picker_record(
+    records: Sequence[SessionCompletionRecord],
+    session_id: str,
+) -> tuple[SessionCompletionRecord, ...]:
+    """Return records without a matching session id."""
+    return tuple(record for record in records if record.id != session_id)
 
 
 def _session_picker_search_text(record: SessionCompletionRecord) -> str:
