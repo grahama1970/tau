@@ -2674,6 +2674,54 @@ async def test_tui_app_session_picker_renames_selected_session() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_session_picker_deletes_selected_session_after_confirmation() -> None:
+    session = FakeSession()
+    manager = _FakeSessionManager(
+        [
+            CodingSessionRecord(
+                id="session-1",
+                path=Path("/tmp/session-1.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="fake-model",
+                title="Delete me",
+                created_at=1.0,
+                updated_at=3.0,
+            ),
+            CodingSessionRecord(
+                id="session-2",
+                path=Path("/tmp/session-2.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="other-model",
+                title="Keep me",
+                created_at=1.0,
+                updated_at=2.0,
+            ),
+        ]
+    )
+    session.session_manager = manager
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        await pilot.press("ctrl+r")
+        assert isinstance(app.screen, SessionPickerScreen)
+
+        await pilot.press("ctrl+d")
+        assert [record.id for record in manager._records] == ["session-1", "session-2"]
+        confirm_text = str(app.screen.query_one("#session-picker-help", Static).render())
+
+        await pilot.press("ctrl+d")
+        labels = [
+            item.query_one(Label).content
+            for item in app.screen.query_one("#session-picker-list", ListView).children
+        ]
+
+    assert "Press Ctrl+D again" in confirm_text
+    assert [record.id for record in manager._records] == ["session-2"]
+    assert len(labels) == 1
+    assert "other-model - Keep me" in str(labels[0])
+
+
+@pytest.mark.anyio
 async def test_tui_app_session_picker_arrow_keys_select_session() -> None:
     session = FakeSession(messages=[UserMessage(content="Earlier")])
     session.session_manager = _FakeSessionManager(
@@ -5042,4 +5090,11 @@ class _FakeSessionManager:
             )
             self._records[index] = updated
             return updated
+        return None
+
+    def delete_session(self, session_id: str) -> CodingSessionRecord | None:
+        for index, record in enumerate(self._records):
+            if record.id != session_id:
+                continue
+            return self._records.pop(index)
         return None

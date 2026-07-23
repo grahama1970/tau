@@ -130,6 +130,52 @@ def test_session_manager_touch_updates_metadata(tmp_path: Path) -> None:
     assert manager.get_session(record.id) == updated
 
 
+def test_session_manager_deletes_session_record_and_file(tmp_path: Path) -> None:
+    manager = SessionManager(TauPaths(home=tmp_path / ".tau", agents_home=tmp_path / ".agents"))
+    cwd = tmp_path / "project"
+    cwd.mkdir()
+    record = manager.create_session(cwd=cwd, model="fake", session_id="session-1")
+    record.path.write_text("{}", encoding="utf-8")
+
+    deleted = manager.delete_session(record.id)
+
+    assert deleted == record
+    assert manager.get_session(record.id) is None
+    assert manager.list_sessions(cwd) == []
+    assert manager.list_sessions() == []
+    assert not record.path.exists()
+
+
+def test_session_manager_delete_skips_session_file_outside_sessions_dir(tmp_path: Path) -> None:
+    manager = SessionManager(TauPaths(home=tmp_path / ".tau", agents_home=tmp_path / ".agents"))
+    cwd = tmp_path / "project"
+    cwd.mkdir()
+    outside_path = tmp_path / "outside.jsonl"
+    outside_path.write_text("{}", encoding="utf-8")
+    manager.project_index_path(cwd).parent.mkdir(parents=True)
+    manager.project_index_path(cwd).write_text(
+        json.dumps(
+            {
+                "id": "session-1",
+                "path": str(outside_path),
+                "cwd": str(cwd.resolve()),
+                "model": "fake",
+                "title": "Unsafe path",
+                "created_at": 1.0,
+                "updated_at": 2.0,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    deleted = manager.delete_session("session-1")
+
+    assert deleted is not None
+    assert manager.get_session("session-1") is None
+    assert outside_path.exists()
+
+
 def test_session_manager_sorts_newest_updated_first(tmp_path: Path) -> None:
     manager = SessionManager(TauPaths(home=tmp_path / ".tau", agents_home=tmp_path / ".agents"))
     cwd = tmp_path / "project"
