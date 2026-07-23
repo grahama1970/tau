@@ -1406,6 +1406,7 @@ async def test_tui_app_uses_textual_footer_for_shortcut_hints() -> None:
             "Paste": "ctrl+v",
             "Thinking": "shift+tab",
             "Model": "ctrl+p",
+            "Models": "ctrl+l",
             "Cancel": "escape",
         }
 
@@ -4099,6 +4100,20 @@ async def test_tui_model_opens_interactive_picker() -> None:
     assert session.model == "local-model"
     assert session.prompt_texts == []
     assert notifications == []
+
+
+@pytest.mark.anyio
+async def test_tui_model_picker_opens_from_keybinding() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        await pilot.press("ctrl+l")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ModelPickerScreen)
+        model_list = app.screen.query_one("#model-picker-list", ListView)
+        labels = [str(item.query_one(Label).render()) for item in model_list.children]
+        assert labels[0] == "* openai:fake-model"
 
 
 @pytest.mark.anyio

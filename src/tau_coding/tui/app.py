@@ -173,6 +173,8 @@ class CompletionActionTarget(Protocol):
 
     def action_cycle_model(self) -> None: ...
 
+    def action_open_model_picker(self) -> None: ...
+
     def action_toggle_tool_results(self) -> None: ...
 
     def action_toggle_thinking(self) -> None: ...
@@ -297,6 +299,10 @@ class PromptInput(TextArea):
         """Cycle the app-level scoped model."""
         self._completion_target().action_cycle_model()
 
+    def action_open_model_picker(self) -> None:
+        """Open the app-level model picker."""
+        self._completion_target().action_open_model_picker()
+
     def action_toggle_tool_results(self) -> None:
         """Toggle app-level tool result display."""
         self._completion_target().action_toggle_tool_results()
@@ -398,6 +404,9 @@ class PromptInput(TextArea):
         elif event.key == keybindings.model_cycle:
             event.stop()
             self._completion_target().action_cycle_model()
+        elif event.key == keybindings.model_picker:
+            event.stop()
+            self._completion_target().action_open_model_picker()
         elif event.key == keybindings.toggle_tool_results:
             event.stop()
             self._completion_target().action_toggle_tool_results()
@@ -2816,6 +2825,13 @@ class TauTuiApp(App[None]):
             return
         self.run_worker(self._cycle_scoped_model(), exclusive=False)
 
+    def action_open_model_picker(self) -> None:
+        """Open the interactive model picker."""
+        if self.state.running:
+            self._notify("Tau is already working. Press Escape to cancel.")
+            return
+        self._open_model_picker()
+
     def action_toggle_tool_results(self) -> None:
         """Toggle inline tool result details in the transcript."""
         expanded = self.state.toggle_tool_results()
@@ -4171,6 +4187,7 @@ def _app_bindings(keybindings: TuiKeybindings) -> list[Binding]:
         Binding(keybindings.session_picker, "open_session_picker", "Sessions"),
         Binding(keybindings.thinking_cycle, "cycle_thinking", "Thinking"),
         Binding(keybindings.model_cycle, "cycle_model", "Model"),
+        Binding(keybindings.model_picker, "open_model_picker", "Model picker"),
         Binding(
             keybindings.accept_completion,
             "accept_completion",
@@ -4261,6 +4278,7 @@ def _prompt_bindings(
         Binding(keybindings.paste_clipboard, "paste_clipboard", "Paste", priority=True),
         Binding(keybindings.thinking_cycle, "cycle_thinking", "Thinking", priority=True),
         Binding(keybindings.model_cycle, "cycle_model", "Model", priority=True),
+        Binding(keybindings.model_picker, "open_model_picker", "Models", priority=True),
         Binding(
             keybindings.copy_message,
             "clear_prompt",
@@ -4285,6 +4303,7 @@ def _hidden_prompt_bindings(
         (keybindings.dequeue_messages, "dequeue_messages"),
         (keybindings.thinking_cycle, "cycle_thinking"),
         (keybindings.model_cycle, "cycle_model"),
+        (keybindings.model_picker, "open_model_picker"),
         (keybindings.external_editor, "open_external_editor"),
         (keybindings.paste_clipboard, "paste_clipboard"),
         (keybindings.toggle_tool_results, "toggle_tool_results"),
