@@ -25,6 +25,7 @@ from tau_agent import (
     MessageEndEvent,
     MessageStartEvent,
     QueueUpdateEvent,
+    QueuedMessages,
     ToolCall,
     ToolExecutionEndEvent,
     ToolExecutionStartEvent,
@@ -329,6 +330,19 @@ class FakeSession:
             steering=self.queued_steering_messages,
             follow_up=self.queued_follow_up_messages,
         )
+
+    def clear_queued_messages(self) -> QueuedMessages:
+        queued = QueuedMessages(
+            steering=tuple(
+                UserMessage(content=message) for message in self.queued_steering_messages
+            ),
+            follow_up=tuple(
+                UserMessage(content=message) for message in self.queued_follow_up_messages
+            ),
+        )
+        self.queued_steering_messages = ()
+        self.queued_follow_up_messages = ()
+        return queued
 
     async def run_terminal_command(
         self,
@@ -1424,6 +1438,7 @@ async def test_tui_app_footer_hints_update_while_running() -> None:
         assert _visible_footer_bindings(app) == {
             "Steer": "enter",
             "Follow-up": "alt+enter",
+            "Restore": "alt+up",
             "Cancel": "escape",
             "Thinking": "ctrl+t",
             "Tools": "ctrl+o",
@@ -4456,6 +4471,59 @@ async def test_tui_app_up_arrow_edits_latest_queued_follow_up() -> None:
         assert app.state.queued_follow_up == ("first follow-up",)
         queued_messages = app.query_one("#queued-messages")
         assert queued_messages.display is True
+
+
+@pytest.mark.anyio
+async def test_tui_app_dequeues_all_messages_into_prompt_from_keybinding() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+    notifications: list[str] = []
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        del kwargs
+        notifications.append(message)
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        app.state.running = True
+        session.queued_steering_messages = ("steer one",)
+        session.queued_follow_up_messages = ("follow one", "follow two")
+        app._refresh()
+
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.text = "current draft"
+        prompt.focus()
+        await pilot.press("alt+up")
+        await pilot.pause()
+
+        assert prompt.text == "steer one\n\nfollow one\n\nfollow two\n\ncurrent draft"
+        assert prompt.cursor_location == (6, len("current draft"))
+        assert session.queued_steering_messages == ()
+        assert session.queued_follow_up_messages == ()
+        assert app.state.queued_steering == ()
+        assert app.state.queued_follow_up == ()
+        assert app.query_one("#queued-messages").display is False
+
+    assert notifications == ["Restored 3 queued messages."]
+
+
+@pytest.mark.anyio
+async def test_tui_app_dequeue_messages_reports_empty_queue() -> None:
+    app = TauTuiApp(FakeSession())
+    notifications: list[str] = []
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        del kwargs
+        notifications.append(message)
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        await pilot.press("alt+up")
+        await pilot.pause()
+
+    assert notifications == ["No queued messages to restore."]
 
 
 @pytest.mark.anyio

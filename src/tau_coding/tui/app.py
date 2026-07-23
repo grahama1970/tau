@@ -181,6 +181,8 @@ class CompletionActionTarget(Protocol):
 
     def action_paste_clipboard(self) -> None: ...
 
+    def action_dequeue_messages(self) -> None: ...
+
     def action_edit_queued_follow_up(self) -> bool: ...
 
     async def action_submit_prompt(self) -> None: ...
@@ -311,6 +313,10 @@ class PromptInput(TextArea):
         """Paste system clipboard text into the prompt."""
         self._completion_target().action_paste_clipboard()
 
+    def action_dequeue_messages(self) -> None:
+        """Restore queued messages into the prompt."""
+        self._completion_target().action_dequeue_messages()
+
     def action_clear_prompt(self) -> None:
         """Clear the current prompt."""
         if self.selected_text:
@@ -362,6 +368,10 @@ class PromptInput(TextArea):
             event.stop()
             event.prevent_default()
             await self._completion_target().action_submit_follow_up()
+        elif event.key == keybindings.dequeue_messages:
+            event.stop()
+            event.prevent_default()
+            self._completion_target().action_dequeue_messages()
         elif event.key == "enter":
             event.stop()
             event.prevent_default()
@@ -2828,6 +2838,15 @@ class TauTuiApp(App[None]):
         """Paste plain text from the system clipboard into the prompt."""
         self.run_worker(self._paste_clipboard(), exclusive=False)
 
+    def action_dequeue_messages(self) -> None:
+        """Restore all queued messages into the prompt for editing."""
+        restored = self._restore_queued_messages_to_prompt()
+        if restored == 0:
+            self._notify("No queued messages to restore.")
+        else:
+            suffix = "s" if restored != 1 else ""
+            self._notify(f"Restored {restored} queued message{suffix}.")
+
     async def _open_external_editor(self) -> None:
         prompt = self.query_one("#prompt", PromptInput)
         original_text = prompt.text
@@ -2873,6 +2892,34 @@ class TauTuiApp(App[None]):
         self._completion_state = self._build_completion_state(prompt.text)
         self._refresh_completions()
         self._refresh()
+
+    def _restore_queued_messages_to_prompt(self) -> int:
+        clear_queued = getattr(self.session, "clear_queued_messages", None)
+        if not callable(clear_queued):
+            return 0
+        queued = clear_queued()
+        messages = [
+            *(message.content for message in queued.steering),
+            *(message.content for message in queued.follow_up),
+        ]
+        if not messages:
+            self._sync_queue_state()
+            self._refresh()
+            return 0
+        prompt = self.query_one("#prompt", PromptInput)
+        queued_text = "\n\n".join(messages)
+        combined_text = "\n\n".join(
+            part for part in (queued_text, prompt.text) if part.strip()
+        )
+        prompt.text = combined_text
+        prompt.move_cursor(_text_end_location(combined_text))
+        prompt.focus()
+        self._sync_prompt_shell_mode(prompt.text)
+        self._sync_queue_state()
+        self._completion_state = self._build_completion_state(prompt.text)
+        self._refresh_completions()
+        self._refresh()
+        return len(messages)
 
     def _handle_session_picker_result(self, session_id: str | None) -> None:
         if session_id is None:
@@ -4152,6 +4199,7 @@ def _app_bindings(keybindings: TuiKeybindings) -> list[Binding]:
         Binding(keybindings.toggle_thinking, "toggle_thinking", "Thinking tokens"),
         Binding(keybindings.external_editor, "open_external_editor", "Editor"),
         Binding(keybindings.paste_clipboard, "paste_clipboard", "Paste"),
+        Binding(keybindings.dequeue_messages, "dequeue_messages", "Restore queued"),
         Binding(keybindings.copy_message, "clear_prompt", "Clear input"),
         Binding(keybindings.quit, "quit", "Quit"),
     ]
@@ -4188,6 +4236,7 @@ def _prompt_bindings(
         bindings = [
             Binding("enter", "submit_prompt", "Steer", priority=True),
             Binding(keybindings.queue_follow_up, "submit_follow_up", "Follow-up", priority=True),
+            Binding(keybindings.dequeue_messages, "dequeue_messages", "Restore", priority=True),
             Binding(keybindings.cancel, "cancel", "Cancel", priority=True),
             Binding(
                 keybindings.toggle_thinking,
@@ -4233,6 +4282,7 @@ def _hidden_prompt_bindings(
         (keybindings.command_palette, "open_command_palette"),
         (keybindings.session_picker, "open_session_picker"),
         (keybindings.queue_follow_up, "submit_follow_up"),
+        (keybindings.dequeue_messages, "dequeue_messages"),
         (keybindings.thinking_cycle, "cycle_thinking"),
         (keybindings.model_cycle, "cycle_model"),
         (keybindings.external_editor, "open_external_editor"),
