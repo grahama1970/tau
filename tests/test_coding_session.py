@@ -20,10 +20,12 @@ from tau_agent import (
 from tau_agent.session import (
     CompactionEntry,
     JsonlSessionStorage,
+    LabelEntry,
     LeafEntry,
     MessageEntry,
     ModelChangeEntry,
     SessionInfoEntry,
+    SessionState,
     ThinkingLevelChangeEntry,
 )
 from tau_ai import (
@@ -1292,6 +1294,52 @@ async def test_session_tree_choices_include_full_copy_text(tmp_path: Path) -> No
         ("assistant", "Answer\nwith details"),
         ("compact", "Summary\nwith details"),
     ]
+
+
+@pytest.mark.anyio
+async def test_session_tree_entry_labels_are_append_only_and_clearable(tmp_path: Path) -> None:
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    root = MessageEntry(id="root", message=UserMessage(content="Root"))
+    assistant = MessageEntry(id="assistant", parent_id="root", message=AssistantMessage(content="Answer"))
+    await storage.append(root)
+    await storage.append(assistant)
+    await storage.append(LeafEntry(entry_id="assistant"))
+    session = await CodingSession.load(_config(tmp_path, FakeProvider([]), storage))
+
+    labeled = await session.set_tree_entry_label("assistant", "bookmark")
+    choices = await session.tree_choices()
+
+    assert labeled == "Labeled tree entry: assistant"
+    assert [(choice.entry_id, choice.tree_label) for choice in choices] == [
+        ("root", None),
+        ("assistant", "bookmark"),
+    ]
+
+    cleared = await session.set_tree_entry_label("assistant", "")
+    choices = await session.tree_choices()
+    label_entries = [entry for entry in await storage.read_all() if isinstance(entry, LabelEntry)]
+
+    assert cleared == "Cleared label for tree entry: assistant"
+    assert [(choice.entry_id, choice.tree_label) for choice in choices] == [
+        ("root", None),
+        ("assistant", None),
+    ]
+    assert [(entry.target_entry_id, entry.label) for entry in label_entries] == [
+        ("assistant", "bookmark"),
+        ("assistant", ""),
+    ]
+
+
+def test_session_state_ignores_targeted_tree_labels_for_session_label() -> None:
+    entries = [
+        MessageEntry(id="user", message=UserMessage(content="Hi")),
+        LabelEntry(id="session-label", label="Session label"),
+        LabelEntry(id="tree-label", target_entry_id="user", label="Tree label"),
+    ]
+
+    state = SessionState.from_entries(entries)
+
+    assert state.label == "Session label"
 
 
 @pytest.mark.anyio
