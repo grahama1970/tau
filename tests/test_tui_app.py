@@ -3095,7 +3095,7 @@ async def test_tui_app_tree_picker_toggles_tool_calls() -> None:
             "* assistant: Right",
         ]
         assert tree_list.index == 2
-        assert "tool calls hidden" in str(
+        assert "no-tools (hidden)" in str(
             app.screen.query_one("#tree-picker-help", Static).render()
         )
 
@@ -3160,6 +3160,50 @@ async def test_tui_app_tree_picker_cycles_filter_modes() -> None:
         ]
         assert tree_list.index == 0
         assert "filter all" in str(app.screen.query_one("#tree-picker-help", Static).render())
+
+
+@pytest.mark.anyio
+async def test_tui_app_tree_picker_direct_filter_shortcuts() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        tree_list = app.screen.query_one("#tree-picker-list", ListView)
+
+        await pilot.press("ctrl+u")
+        await pilot.pause()
+        assert [str(item.query_one(Label).render()) for item in tree_list.children] == [
+            "  user: Root"
+        ]
+        assert "filter user-only" in str(
+            app.screen.query_one("#tree-picker-help", Static).render()
+        )
+
+        await pilot.press("ctrl+a")
+        await pilot.pause()
+        assert [str(item.query_one(Label).render()) for item in tree_list.children] == [
+            "  user: Root",
+            "  tool call: read",
+            "  assistant: Left",
+            "* assistant: Right",
+        ]
+        assert "filter all" in str(app.screen.query_one("#tree-picker-help", Static).render())
+
+        await pilot.press("ctrl+d")
+        await pilot.pause()
+        assert "filter default" in str(
+            app.screen.query_one("#tree-picker-help", Static).render()
+        )
+
+        await pilot.press("ctrl+o")
+        await pilot.pause()
+        assert "filter no-tools" in str(app.screen.query_one("#tree-picker-help", Static).render())
 
 
 @pytest.mark.anyio
