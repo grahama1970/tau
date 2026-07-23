@@ -413,6 +413,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
     BINDINGS: ClassVar[list[BindingEntry]] = [
         Binding("escape", "cancel", "Cancel"),
         Binding("ctrl+n", "toggle_named_filter", "Named"),
+        Binding("ctrl+p", "toggle_path", "Path"),
         Binding("up", "cursor_up", "Up", show=False),
         Binding("down", "cursor_down", "Down", show=False),
         Binding("enter", "select_cursor", "Select", show=False),
@@ -430,6 +431,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         self.theme = theme
         self.search_value = ""
         self.named_only = False
+        self.show_path = False
 
     def compose(self) -> ComposeResult:
         """Compose the session picker."""
@@ -438,7 +440,12 @@ class SessionPickerScreen(ModalScreen[str | None]):
             yield Input(placeholder="Search sessions", id="session-picker-search")
             yield ListView(
                 *[
-                    ListItem(Label(_session_picker_label(record), markup=False))
+                    ListItem(
+                        Label(
+                            _session_picker_label(record, show_path=self.show_path),
+                            markup=False,
+                        )
+                    )
                     for record in self.filtered_records
                 ],
                 id="session-picker-list",
@@ -474,15 +481,27 @@ class SessionPickerScreen(ModalScreen[str | None]):
         session_list = self.query_one("#session-picker-list", ListView)
         session_list.clear()
         session_list.extend(
-            ListItem(Label(_session_picker_label(record), markup=False))
+            ListItem(
+                Label(
+                    _session_picker_label(record, show_path=self.show_path),
+                    markup=False,
+                )
+            )
             for record in self.filtered_records
         )
         session_list.index = 0 if self.filtered_records else None
         named_state = "named:on" if self.named_only else "named:off"
+        path_state = "path:on" if self.show_path else "path:off"
         if self.filtered_records:
-            help_text = f"Type to search - Ctrl+N {named_state} - Enter selects - Escape closes"
+            help_text = (
+                f"Type to search - Ctrl+N {named_state} - "
+                f"Ctrl+P {path_state} - Enter selects - Escape closes"
+            )
         else:
-            help_text = f"No matching sessions - Ctrl+N {named_state} - Escape closes"
+            help_text = (
+                f"No matching sessions - Ctrl+N {named_state} - "
+                f"Ctrl+P {path_state} - Escape closes"
+            )
         self.query_one("#session-picker-help", Static).update(help_text)
 
     def on_key(self, event: Key) -> None:
@@ -520,6 +539,11 @@ class SessionPickerScreen(ModalScreen[str | None]):
     def action_toggle_named_filter(self) -> None:
         """Toggle whether the picker shows only named sessions."""
         self.named_only = not self.named_only
+        self._refresh_session_list()
+
+    def action_toggle_path(self) -> None:
+        """Toggle session path visibility."""
+        self.show_path = not self.show_path
         self._refresh_session_list()
 
     def action_cancel(self) -> None:
@@ -3238,13 +3262,19 @@ def _short_path(path: Path) -> str:
         return str(path)
 
 
-def _session_picker_label(record: SessionCompletionRecord) -> str:
+def _session_picker_label(
+    record: SessionCompletionRecord,
+    *,
+    show_path: bool = False,
+) -> str:
     parts = [_session_updated_at_label(record.updated_at)]
     if record.model:
         parts.append(record.model)
     title = _named_session_title(record.title)
     if title is not None:
         parts.append(title)
+    if show_path:
+        parts.append(_short_path(record.cwd))
     return " - ".join(parts)
 
 
