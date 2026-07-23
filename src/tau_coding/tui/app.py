@@ -171,6 +171,12 @@ class CompletionActionTarget(Protocol):
 
     def action_open_session_picker(self) -> None: ...
 
+    def action_new_session(self) -> None: ...
+
+    def action_open_tree_picker(self) -> None: ...
+
+    def action_open_fork_picker(self) -> None: ...
+
     def action_cycle_thinking(self) -> None: ...
 
     def action_cycle_model(self) -> None: ...
@@ -297,6 +303,18 @@ class PromptInput(TextArea):
         """Open the app-level session picker."""
         self._completion_target().action_open_session_picker()
 
+    def action_new_session(self) -> None:
+        """Start a new app-level session."""
+        self._completion_target().action_new_session()
+
+    def action_open_tree_picker(self) -> None:
+        """Open the app-level session tree picker."""
+        self._completion_target().action_open_tree_picker()
+
+    def action_open_fork_picker(self) -> None:
+        """Open the app-level fork picker."""
+        self._completion_target().action_open_fork_picker()
+
     def action_cycle_thinking(self) -> None:
         """Cycle the app-level thinking mode."""
         self._completion_target().action_cycle_thinking()
@@ -410,6 +428,18 @@ class PromptInput(TextArea):
             event.stop()
             self._completion_target().action_open_command_palette()
         elif event.key == keybindings.session_picker:
+            event.stop()
+            self._completion_target().action_open_session_picker()
+        elif keybindings.session_new and event.key == keybindings.session_new:
+            event.stop()
+            self._completion_target().action_new_session()
+        elif keybindings.session_tree and event.key == keybindings.session_tree:
+            event.stop()
+            self._completion_target().action_open_tree_picker()
+        elif keybindings.session_fork and event.key == keybindings.session_fork:
+            event.stop()
+            self._completion_target().action_open_fork_picker()
+        elif keybindings.session_resume and event.key == keybindings.session_resume:
             event.stop()
             self._completion_target().action_open_session_picker()
         elif _is_thinking_cycle_key(event.key, keybindings.thinking_cycle):
@@ -3705,6 +3735,27 @@ class TauTuiApp(App[None]):
             callback=self._handle_session_picker_result,
         )
 
+    def action_new_session(self) -> None:
+        """Start a new session from a configured app keybinding."""
+        if self.state.running:
+            self._notify("Tau is already working. Press Escape to cancel.")
+            return
+        self.run_worker(self._new_session(), exclusive=False)
+
+    def action_open_tree_picker(self) -> None:
+        """Open the session tree from a configured app keybinding."""
+        if self.state.running:
+            self._notify("Tau is already working. Press Escape to cancel.")
+            return
+        self.run_worker(self._open_tree_picker(), exclusive=False)
+
+    def action_open_fork_picker(self) -> None:
+        """Open the session fork picker from a configured app keybinding."""
+        if self.state.running:
+            self._notify("Tau is already working. Press Escape to cancel.")
+            return
+        self.run_worker(self._open_fork_picker(), exclusive=False)
+
     def _rename_picker_session(
         self,
         session_id: str,
@@ -5489,10 +5540,18 @@ def _key_hint(key: str) -> str:
 
 
 def _app_bindings(keybindings: TuiKeybindings) -> list[Binding]:
-    return [
+    bindings = [
         Binding(keybindings.cancel, "cancel", "Cancel"),
         Binding(keybindings.command_palette, "open_command_palette", "Commands"),
         Binding(keybindings.session_picker, "open_session_picker", "Sessions"),
+        *_optional_bindings(
+            (
+                (keybindings.session_new, "new_session", "New session"),
+                (keybindings.session_tree, "open_tree_picker", "Tree"),
+                (keybindings.session_fork, "open_fork_picker", "Fork"),
+                (keybindings.session_resume, "open_session_picker", "Resume"),
+            )
+        ),
         Binding(keybindings.thinking_cycle, "cycle_thinking", "Thinking"),
         Binding(keybindings.model_cycle, "cycle_model", "Model"),
         Binding(keybindings.model_picker, "open_model_picker", "Model picker"),
@@ -5530,6 +5589,7 @@ def _app_bindings(keybindings: TuiKeybindings) -> list[Binding]:
         Binding(keybindings.suspend, "suspend_process", "Suspend"),
         Binding(keybindings.quit, "quit", "Quit"),
     ]
+    return bindings
 
 
 def _prompt_bindings(
@@ -5584,6 +5644,15 @@ def _prompt_bindings(
         Binding("shift+enter", "insert_newline", "Newline", priority=True),
         Binding(keybindings.command_palette, "open_command_palette", "Commands", priority=True),
         Binding(keybindings.session_picker, "open_session_picker", "Sessions", priority=True),
+        *_optional_bindings(
+            (
+                (keybindings.session_new, "new_session", "New",),
+                (keybindings.session_tree, "open_tree_picker", "Tree"),
+                (keybindings.session_fork, "open_fork_picker", "Fork"),
+                (keybindings.session_resume, "open_session_picker", "Resume"),
+            ),
+            priority=True,
+        ),
         Binding(keybindings.external_editor, "open_external_editor", "Editor", priority=True),
         Binding(keybindings.paste_clipboard, "paste_clipboard", "Paste", priority=True),
         Binding(keybindings.thinking_cycle, "cycle_thinking", "Thinking", priority=True),
@@ -5610,6 +5679,10 @@ def _hidden_prompt_bindings(
     candidates = (
         (keybindings.command_palette, "open_command_palette"),
         (keybindings.session_picker, "open_session_picker"),
+        (keybindings.session_new, "new_session"),
+        (keybindings.session_tree, "open_tree_picker"),
+        (keybindings.session_fork, "open_fork_picker"),
+        (keybindings.session_resume, "open_session_picker"),
         (keybindings.queue_follow_up, "submit_follow_up"),
         (keybindings.dequeue_messages, "dequeue_messages"),
         (keybindings.thinking_cycle, "cycle_thinking"),
@@ -5631,7 +5704,19 @@ def _hidden_prompt_bindings(
     return [
         Binding(key, action, show=False, priority=True)
         for key, action in candidates
-        if key not in visible_keys
+        if key and key not in visible_keys
+    ]
+
+
+def _optional_bindings(
+    entries: Sequence[tuple[str, str, str]],
+    *,
+    priority: bool = False,
+) -> list[Binding]:
+    return [
+        Binding(key, action, description, priority=priority)
+        for key, action, description in entries
+        if key
     ]
 
 

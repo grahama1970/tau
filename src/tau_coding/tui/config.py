@@ -19,6 +19,10 @@ class TuiKeybindings:
     cancel: str = "escape"
     command_palette: str = "ctrl+k"
     session_picker: str = "ctrl+r"
+    session_new: str = ""
+    session_tree: str = ""
+    session_fork: str = ""
+    session_resume: str = ""
     queue_follow_up: str = "alt+enter"
     dequeue_messages: str = "alt+up"
     accept_completion: str = "tab"
@@ -43,6 +47,10 @@ class TuiKeybindings:
             "cancel": self.cancel,
             "command_palette": self.command_palette,
             "session_picker": self.session_picker,
+            "session_new": self.session_new,
+            "session_tree": self.session_tree,
+            "session_fork": self.session_fork,
+            "session_resume": self.session_resume,
             "queue_follow_up": self.queue_follow_up,
             "dequeue_messages": self.dequeue_messages,
             "accept_completion": self.accept_completion,
@@ -340,7 +348,9 @@ def _keybindings_from_json(data: dict[str, Any]) -> TuiKeybindings:
         raise TuiConfigError(f"Unknown TUI keybinding: {sorted(unknown_fields)[0]}")
 
     values = {
-        field_name: _key_string(data.get(field_name, default_value), field_name)
+        field_name: _optional_key_string(data.get(field_name, default_value), field_name)
+        if field_name in _OPTIONAL_KEYBINDING_FIELDS
+        else _key_string(data.get(field_name, default_value), field_name)
         for field_name, default_value in defaults.to_json().items()
     }
     _reject_duplicate_keys(values)
@@ -350,6 +360,20 @@ def _keybindings_from_json(data: dict[str, Any]) -> TuiKeybindings:
 def _key_string(value: object, field_name: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise TuiConfigError(f"TUI keybinding must be a non-empty string: {field_name}")
+    return value.strip()
+
+
+_OPTIONAL_KEYBINDING_FIELDS = {
+    "session_new",
+    "session_tree",
+    "session_fork",
+    "session_resume",
+}
+
+
+def _optional_key_string(value: object, field_name: str) -> str:
+    if not isinstance(value, str):
+        raise TuiConfigError(f"TUI keybinding must be a string: {field_name}")
     return value.strip()
 
 
@@ -365,6 +389,8 @@ def _theme_name(value: object) -> TuiThemeName:
 def _reject_duplicate_keys(values: dict[str, str]) -> None:
     key_to_action: dict[str, str] = {}
     for action, key in values.items():
+        if not key:
+            continue
         previous_action = key_to_action.get(key)
         if previous_action is not None:
             raise TuiConfigError(
