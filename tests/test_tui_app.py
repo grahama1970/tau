@@ -1389,6 +1389,7 @@ async def test_tui_app_uses_textual_footer_for_shortcut_hints() -> None:
             "Newline": "shift+enter",
             "Sessions": "ctrl+r",
             "Editor": "ctrl+g",
+            "Paste": "ctrl+v",
             "Thinking": "shift+tab",
             "Model": "ctrl+p",
             "Cancel": "escape",
@@ -3331,6 +3332,48 @@ async def test_tui_app_external_editor_warns_when_unconfigured(
     assert notifications == [
         ("Set VISUAL or EDITOR to use the external editor.", "warning"),
     ]
+
+
+@pytest.mark.anyio
+async def test_tui_app_pastes_clipboard_text_into_prompt(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_read_clipboard_text() -> str:
+        return " pasted"
+
+    app = TauTuiApp(FakeSession())
+    monkeypatch.setattr(tui_app, "_read_clipboard_text", fake_read_clipboard_text)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "draft"
+        prompt.move_cursor((0, len("draft")))
+
+        await pilot.press("ctrl+v")
+        await pilot.pause()
+
+        assert prompt.value == "draft pasted"
+        assert prompt.cursor_location == (0, len("draft pasted"))
+
+
+@pytest.mark.anyio
+async def test_tui_app_clipboard_paste_ignores_unavailable_clipboard(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_read_clipboard_text() -> str | None:
+        return None
+
+    app = TauTuiApp(FakeSession())
+    monkeypatch.setattr(tui_app, "_read_clipboard_text", fake_read_clipboard_text)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "draft"
+
+        await pilot.press("ctrl+v")
+        await pilot.pause()
+
+        assert prompt.value == "draft"
 
 
 @pytest.mark.anyio
