@@ -548,7 +548,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         self.delete_session = delete_session
         self.named_only = False
         self.show_path = False
-        self.sort_mode: Literal["recent", "name"] = "recent"
+        self.sort_mode: Literal["recent", "relevance", "name"] = "recent"
 
     def compose(self) -> ComposeResult:
         """Compose the session picker."""
@@ -847,7 +847,12 @@ class SessionPickerScreen(ModalScreen[str | None]):
     def action_toggle_sort(self) -> None:
         """Toggle session sort order."""
         self.delete_confirm_target_id = None
-        self.sort_mode = "name" if self.sort_mode == "recent" else "recent"
+        sort_order: tuple[Literal["recent", "relevance", "name"], ...] = (
+            "recent",
+            "name",
+            "relevance",
+        )
+        self.sort_mode = sort_order[(sort_order.index(self.sort_mode) + 1) % len(sort_order)]
         self._refresh_session_list()
 
     def action_cancel(self) -> None:
@@ -4864,7 +4869,7 @@ def _filter_session_picker_records(
     query: str,
     *,
     named_only: bool = False,
-    sort_mode: Literal["recent", "name"] = "recent",
+    sort_mode: Literal["recent", "relevance", "name"] = "recent",
 ) -> tuple[SessionCompletionRecord, ...]:
     normalized = " ".join(query.casefold().split())
     candidates = tuple(record for record in records if _named_session_title(record.title) is not None)
@@ -4872,47 +4877,72 @@ def _filter_session_picker_records(
         candidates = tuple(records)
     if not normalized:
         return _sort_session_picker_records(candidates, sort_mode=sort_mode)
+    if sort_mode == "relevance":
+        scored = tuple(
+            (record, score)
+            for record in candidates
+            if (score := _session_picker_record_match_score(record, query)) is not None
+        )
+        return tuple(
+            record
+            for record, _score in sorted(
+                scored,
+                key=lambda item: (item[1], -item[0].updated_at),
+            )
+        )
     filtered = tuple(
-        record
-        for record in candidates
-        if _session_picker_record_matches_query(record, query)
+        record for record in candidates if _session_picker_record_matches_query(record, query)
     )
     return _sort_session_picker_records(filtered, sort_mode=sort_mode)
+
+
+def _session_picker_record_match_score(
+    record: SessionCompletionRecord,
+    query: str,
+) -> float | None:
+    text = _session_picker_search_text(record)
+    trimmed = query.strip()
+    if trimmed.startswith("re:"):
+        pattern = trimmed[3:].strip()
+        if not pattern:
+            return None
+        try:
+            match = re.search(pattern, text, flags=re.IGNORECASE)
+        except re.error:
+            return None
+        if match is None:
+            return None
+        return match.start() * 0.1
+
+    score = 0.0
+    for kind, value in _session_picker_query_tokens(trimmed):
+        token_score = _session_picker_query_token_score(text, kind=kind, value=value)
+        if token_score is None:
+            return None
+        score += token_score
+    return score
 
 
 def _session_picker_record_matches_query(
     record: SessionCompletionRecord,
     query: str,
 ) -> bool:
-    text = _session_picker_search_text(record)
-    trimmed = query.strip()
-    if trimmed.startswith("re:"):
-        pattern = trimmed[3:].strip()
-        if not pattern:
-            return False
-        try:
-            return re.search(pattern, text, flags=re.IGNORECASE) is not None
-        except re.error:
-            return False
-
-    return all(
-        _session_picker_query_token_matches(text, kind=kind, value=value)
-        for kind, value in _session_picker_query_tokens(trimmed)
-    )
+    return _session_picker_record_match_score(record, query) is not None
 
 
-def _session_picker_query_token_matches(
+def _session_picker_query_token_score(
     text: str,
     *,
     kind: Literal["token", "phrase"],
     value: str,
-) -> bool:
+) -> float | None:
     normalized_value = " ".join(value.casefold().split())
     if not normalized_value:
-        return True
-    if kind == "phrase":
-        return normalized_value in text
-    return normalized_value in text
+        return 0.0
+    index = text.find(normalized_value)
+    if index < 0:
+        return None
+    return index * 0.1
 
 
 def _session_picker_query_tokens(query: str) -> tuple[tuple[Literal["token", "phrase"], str], ...]:
@@ -4958,7 +4988,7 @@ def _session_picker_query_tokens(query: str) -> tuple[tuple[Literal["token", "ph
 def _sort_session_picker_records(
     records: Sequence[SessionCompletionRecord],
     *,
-    sort_mode: Literal["recent", "name"],
+    sort_mode: Literal["recent", "relevance", "name"],
 ) -> tuple[SessionCompletionRecord, ...]:
     if sort_mode == "name":
         return tuple(
