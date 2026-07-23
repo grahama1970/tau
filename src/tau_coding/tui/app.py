@@ -2854,11 +2854,18 @@ class TauTuiApp(App[None]):
 
     async def _paste_clipboard(self) -> None:
         try:
+            image = await _read_clipboard_image()
+            if image is not None:
+                self._insert_prompt_text(str(_write_clipboard_image_to_temp(image)))
+                return
             text = await _read_clipboard_text()
         except Exception:  # noqa: BLE001 - clipboard access is best effort
             return
         if not text:
             return
+        self._insert_prompt_text(text)
+
+    def _insert_prompt_text(self, text: str) -> None:
         prompt = self.query_one("#prompt", PromptInput)
         prompt.insert(text)
         prompt.focus()
@@ -3887,32 +3894,135 @@ _CLIPBOARD_TEXT_COMMANDS: tuple[tuple[str, ...], ...] = (
     ("xclip", "-selection", "clipboard", "-o"),
     ("xsel", "--clipboard", "--output"),
 )
+_SUPPORTED_CLIPBOARD_IMAGE_MIME_TYPES: tuple[str, ...] = (
+    "image/png",
+    "image/jpeg",
+    "image/webp",
+    "image/gif",
+)
+_CLIPBOARD_IMAGE_EXTENSIONS: dict[str, str] = {
+    "image/png": "png",
+    "image/jpeg": "jpg",
+    "image/webp": "webp",
+    "image/gif": "gif",
+}
+
+
+@dataclass(frozen=True, slots=True)
+class _ClipboardImage:
+    bytes: bytes
+    mime_type: str
 
 
 async def _read_clipboard_text(timeout_s: float = 0.75) -> str | None:
     """Return plain text from the system clipboard when a supported backend is available."""
     for args in _CLIPBOARD_TEXT_COMMANDS:
-        if shutil.which(args[0]) is None:
+        stdout = await _run_clipboard_command(args, timeout_s=timeout_s)
+        if stdout is None:
             continue
-        process = None
-        try:
-            process = await asyncio.create_subprocess_exec(
-                *args,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=subprocess.DEVNULL,
-            )
-            stdout, _ = await asyncio.wait_for(process.communicate(), timeout=timeout_s)
-        except (OSError, TimeoutError):
-            if process is not None and process.returncode is None:
-                process.kill()
-                with suppress(ProcessLookupError):
-                    await process.wait()
-            continue
-        if process.returncode == 0:
-            text = stdout.decode("utf-8", errors="replace")
-            if text:
-                return text
+        text = stdout.decode("utf-8", errors="replace")
+        if text:
+            return text
     return None
+
+
+async def _read_clipboard_image() -> _ClipboardImage | None:
+    """Return image bytes from Wayland or X11 clipboards when available."""
+    wayland = await _read_clipboard_image_via_wl_paste()
+    if wayland is not None:
+        return wayland
+    return await _read_clipboard_image_via_xclip()
+
+
+async def _read_clipboard_image_via_wl_paste() -> _ClipboardImage | None:
+    targets = await _run_clipboard_command(("wl-paste", "--list-types"), timeout_s=1.0)
+    if targets is None:
+        return None
+    mime_type = _select_preferred_image_mime_type(
+        targets.decode("utf-8", errors="replace").splitlines()
+    )
+    if mime_type is None:
+        return None
+    data = await _run_clipboard_command(
+        ("wl-paste", "--type", mime_type, "--no-newline"),
+        timeout_s=3.0,
+    )
+    if not data:
+        return None
+    return _ClipboardImage(bytes=data, mime_type=_base_mime_type(mime_type))
+
+
+async def _read_clipboard_image_via_xclip() -> _ClipboardImage | None:
+    targets = await _run_clipboard_command(
+        ("xclip", "-selection", "clipboard", "-t", "TARGETS", "-o"),
+        timeout_s=1.0,
+    )
+    candidate_mime_types: list[str] = []
+    if targets is not None:
+        preferred = _select_preferred_image_mime_type(
+            targets.decode("utf-8", errors="replace").splitlines()
+        )
+        if preferred is not None:
+            candidate_mime_types.append(preferred)
+    candidate_mime_types.extend(_SUPPORTED_CLIPBOARD_IMAGE_MIME_TYPES)
+    for mime_type in dict.fromkeys(candidate_mime_types):
+        data = await _run_clipboard_command(
+            ("xclip", "-selection", "clipboard", "-t", mime_type, "-o"),
+            timeout_s=3.0,
+        )
+        if data:
+            return _ClipboardImage(bytes=data, mime_type=_base_mime_type(mime_type))
+    return None
+
+
+async def _run_clipboard_command(args: tuple[str, ...], *, timeout_s: float) -> bytes | None:
+    if shutil.which(args[0]) is None:
+        return None
+    process = None
+    try:
+        process = await asyncio.create_subprocess_exec(
+            *args,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+        )
+        stdout, _ = await asyncio.wait_for(process.communicate(), timeout=timeout_s)
+    except (OSError, TimeoutError):
+        if process is not None and process.returncode is None:
+            process.kill()
+            with suppress(ProcessLookupError):
+                await process.wait()
+        return None
+    if process.returncode != 0:
+        return None
+    return stdout
+
+
+def _write_clipboard_image_to_temp(image: _ClipboardImage) -> Path:
+    ext = _CLIPBOARD_IMAGE_EXTENSIONS.get(_base_mime_type(image.mime_type), "png")
+    with tempfile.NamedTemporaryFile(
+        prefix="tau-clipboard-",
+        suffix=f".{ext}",
+        delete=False,
+    ) as image_file:
+        image_file.write(image.bytes)
+        return Path(image_file.name)
+
+
+def _select_preferred_image_mime_type(mime_types: Sequence[str]) -> str | None:
+    normalized = [
+        (raw.strip(), _base_mime_type(raw))
+        for raw in mime_types
+        if raw.strip()
+    ]
+    for preferred in _SUPPORTED_CLIPBOARD_IMAGE_MIME_TYPES:
+        for raw, base in normalized:
+            if base == preferred:
+                return raw
+    return None
+
+
+def _base_mime_type(mime_type: str) -> str:
+    return mime_type.split(";", maxsplit=1)[0].strip().lower()
 
 
 def _external_editor_command() -> str | None:
