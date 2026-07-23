@@ -2608,6 +2608,98 @@ async def test_session_clone_current_session_copies_only_active_path(tmp_path: P
 
 
 @pytest.mark.anyio
+async def test_session_import_session_copies_jsonl_into_indexed_session(tmp_path: Path) -> None:
+    manager = SessionManager(TauPaths(home=tmp_path / ".tau", agents_home=tmp_path / ".agents"))
+    current_record = manager.create_session(
+        cwd=tmp_path,
+        model="current-model",
+        provider_name="fake-provider",
+    )
+    current_storage = JsonlSessionStorage(current_record.path)
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="current-model",
+            system="You are Tau.",
+            storage=current_storage,
+            cwd=current_record.cwd,
+            session_id=current_record.id,
+            session_manager=manager,
+            provider_name="fake-provider",
+        )
+    )
+    import_path = tmp_path / "exports" / "session.jsonl"
+    import_storage = JsonlSessionStorage(import_path)
+    await import_storage.append(SessionInfoEntry(id="info", cwd="/external/project"))
+    await import_storage.append(
+        ModelChangeEntry(id="model", parent_id="info", model="imported-model")
+    )
+    await import_storage.append(
+        MessageEntry(
+            id="root",
+            parent_id="model",
+            message=UserMessage(content="Imported prompt"),
+        )
+    )
+    await import_storage.append(
+        MessageEntry(
+            id="assistant",
+            parent_id="root",
+            message=AssistantMessage(content="Imported answer"),
+        )
+    )
+    await import_storage.append(LeafEntry(id="leaf", parent_id="assistant", entry_id="assistant"))
+
+    message = await session.import_session(Path("exports/session.jsonl"))
+
+    imported_id = session.session_id
+    assert imported_id is not None
+    imported_record = manager.get_session(imported_id)
+    assert imported_record is not None
+    assert imported_id != current_record.id
+    assert message == f"Imported session: {imported_id}"
+    assert imported_record.cwd == tmp_path.resolve()
+    assert imported_record.model == "imported-model"
+    assert imported_record.provider_name == "fake-provider"
+    assert imported_record.title == "Imported session.jsonl"
+    imported_entries = await JsonlSessionStorage(imported_record.path).read_all()
+    source_entries = await import_storage.read_all()
+    assert imported_entries == source_entries
+    assert session.model == "imported-model"
+    assert session.messages == (
+        UserMessage(content="Imported prompt"),
+        AssistantMessage(content="Imported answer"),
+    )
+
+
+@pytest.mark.anyio
+async def test_session_import_session_rejects_empty_jsonl(tmp_path: Path) -> None:
+    manager = SessionManager(TauPaths(home=tmp_path / ".tau", agents_home=tmp_path / ".agents"))
+    record = manager.create_session(cwd=tmp_path, model="fake", provider_name="fake-provider")
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="fake",
+            system="You are Tau.",
+            storage=JsonlSessionStorage(record.path),
+            cwd=record.cwd,
+            session_id=record.id,
+            session_manager=manager,
+            provider_name="fake-provider",
+        )
+    )
+    import_path = tmp_path / "empty.jsonl"
+    import_path.parent.mkdir(parents=True, exist_ok=True)
+    import_path.write_text("", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="no session entries"):
+        await session.import_session(import_path)
+
+    assert session.session_id == record.id
+    assert manager.list_sessions(tmp_path) == [record]
+
+
+@pytest.mark.anyio
 async def test_session_toggle_scoped_model_preserves_newer_provider_file_changes(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

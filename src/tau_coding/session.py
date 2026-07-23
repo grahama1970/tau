@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import fnmatch
 import shutil
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
 from time import monotonic
@@ -1126,6 +1126,69 @@ class CodingSession:
         self._auto_compact_enabled = replacement._auto_compact_enabled
         self._thinking_level = replacement._thinking_level
         return f"Cloned to new session: {record.id}"
+
+    async def import_session(self, path: Path) -> str:
+        """Import a JSONL session artifact into a newly indexed session and resume it."""
+        manager = self._config.session_manager
+        if manager is None:
+            raise ValueError("Session manager is not available")
+
+        source_path = path.expanduser()
+        if not source_path.is_absolute():
+            source_path = self.cwd / source_path
+        if not source_path.exists():
+            raise ValueError(f"Import file does not exist: {source_path}")
+        if not source_path.is_file():
+            raise ValueError(f"Import path is not a file: {source_path}")
+
+        source_storage = jsonl_session_storage(source_path)
+        entries = await source_storage.read_all()
+        if not entries:
+            raise ValueError(f"Import file has no session entries: {source_path}")
+
+        state = SessionState.from_entries(_detach_missing_parents(entries))
+        model = state.model or self.model
+        record = manager.create_session(
+            cwd=self.cwd,
+            model=model,
+            provider_name=self._provider_name,
+            title=f"Imported {source_path.name}",
+        )
+        storage = jsonl_session_storage(record.path)
+        for entry in entries:
+            await storage.append(entry)
+
+        replacement = await type(self).load(
+            replace(
+                self._config,
+                provider=self._harness.config.provider,
+                model=record.model or model,
+                cwd=record.cwd,
+                storage=storage,
+                session_id=record.id,
+                provider_name=self._provider_name,
+                provider_settings=self._provider_settings,
+                runtime_provider_config=self._runtime_provider_config,
+                thinking_level=self._thinking_level,
+            )
+        )
+        self._config = replacement._config
+        self._state = replacement._state
+        self._harness = replacement._harness
+        self._last_parent_id = replacement._last_parent_id
+        self._skills = replacement._skills
+        self._prompt_templates = replacement._prompt_templates
+        self._context_files = replacement._context_files
+        self._resource_diagnostics = replacement._resource_diagnostics
+        self._command_registry = replacement._command_registry
+        self._provider_name = replacement._provider_name
+        self._provider_settings = replacement._provider_settings
+        self._runtime_provider_config = replacement._runtime_provider_config
+        self._resource_paths = replacement._resource_paths
+        self._auto_compact_token_threshold = replacement._auto_compact_token_threshold
+        self._auto_compact_enabled = replacement._auto_compact_enabled
+        self._thinking_level = replacement._thinking_level
+        return f"Imported session: {record.id}"
 
     async def compact(self, instructions: str | None = None) -> str:
         """Generate a manual compaction summary and rebuild active context."""

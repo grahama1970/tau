@@ -170,6 +170,7 @@ class FakeSession:
         self.terminal_commands: list[tuple[str, bool]] = []
         self.cancel_count = 0
         self.export_calls: list[tuple[Path | None, str | None]] = []
+        self.import_calls: list[Path] = []
 
     def handle_command(self, text: str) -> CommandResult:
         if text == "/session":
@@ -213,6 +214,12 @@ class FakeSession:
                 export_requested=True,
                 export_destination=Path("out.jsonl"),
                 export_format="jsonl",
+            )
+        if text.startswith("/import "):
+            return CommandResult(
+                handled=True,
+                import_requested=True,
+                import_path=Path(text.removeprefix("/import ")),
             )
         if text.startswith("/resume "):
             return CommandResult(handled=True, resume_session_id=text.removeprefix("/resume "))
@@ -313,6 +320,15 @@ class FakeSession:
     async def export(self, destination: Path | None = None, *, format: str | None = None) -> Path:
         self.export_calls.append((destination, format))
         return self.cwd / "session.html"
+
+    async def import_session(self, path: Path) -> str:
+        self.import_calls.append(path)
+        self.messages = (
+            UserMessage(content="Imported prompt"),
+            AssistantMessage(content="Imported answer"),
+        )
+        self.context_token_estimate = 654
+        return "Imported session: imported-session"
 
     async def resume(self, session_id: str) -> str:
         self.resumed_session_ids.append(session_id)
@@ -2161,6 +2177,32 @@ async def test_tui_app_export_command_runs_session_export() -> None:
 
         assert session.export_calls == [(Path("out.jsonl"), "jsonl")]
         assert notifications == ["Exported session to /workspace/project/session.html"]
+        assert session.prompt_texts == []
+
+
+@pytest.mark.anyio
+async def test_tui_app_import_command_reloads_visible_state() -> None:
+    session = FakeSession(messages=[UserMessage(content="Earlier")])
+    app = TauTuiApp(session)
+    notifications: list[str] = []
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        del kwargs
+        notifications.append(message)
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/import exports/session.jsonl"
+        await pilot.press("enter")
+
+        assert session.import_calls == [Path("exports/session.jsonl")]
+        assert [(item.role, item.text) for item in app.state.items] == [
+            ("user", "Imported prompt"),
+            ("assistant", "Imported answer"),
+        ]
+        assert notifications == ["Imported session: imported-session"]
         assert session.prompt_texts == []
 
 

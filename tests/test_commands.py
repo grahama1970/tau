@@ -102,6 +102,7 @@ def test_registered_commands_are_pi_aligned(tmp_path: Path) -> None:
         "export",
         "fork",
         "hotkeys",
+        "import",
         "login",
         "logout",
         "model",
@@ -241,6 +242,28 @@ def test_export_command_parses_format_and_destination(tmp_path: Path) -> None:
     assert result.export_requested is True
     assert result.export_format == "jsonl"
     assert result.export_destination == Path("exports/session.jsonl")
+
+
+def test_import_command_requests_jsonl_import(tmp_path: Path) -> None:
+    result = create_default_command_registry().execute(
+        FakeSession(tmp_path),
+        "/import exports/session.jsonl",
+    )
+
+    assert result.handled is True
+    assert result.import_requested is True
+    assert result.import_path == Path("exports/session.jsonl")
+
+
+def test_import_command_requires_single_path(tmp_path: Path) -> None:
+    registry = create_default_command_registry()
+    session = FakeSession(tmp_path)
+
+    assert registry.execute(session, "/import").message == "Usage: /import <path.jsonl>"
+    assert (
+        registry.execute(session, "/import one.jsonl two.jsonl").message
+        == "Usage: /import <path.jsonl>"
+    )
 
 
 def test_session_command_includes_session_details(tmp_path: Path) -> None:
