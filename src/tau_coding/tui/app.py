@@ -844,6 +844,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         Binding("ctrl+a", "toggle_all_tree_filter", "All filter", show=False),
         Binding("ctrl+o", "cycle_tree_filter", "Cycle filter", show=False),
         Binding("ctrl+f", "cycle_tree_filter", "Filter", show=False),
+        Binding("ctrl+x", "copy_selected_tree_entry", "Copy", show=False),
     ]
 
     def __init__(
@@ -918,6 +919,9 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         elif event.key == "ctrl+f":
             event.stop()
             self.action_cycle_tree_filter()
+        elif event.key == "ctrl+x":
+            event.stop()
+            self.action_copy_selected_tree_entry()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected entry id."""
@@ -991,6 +995,16 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
             )
         )
 
+    def action_copy_selected_tree_entry(self) -> None:
+        """Copy the selected tree entry's full text when available."""
+        choice = self._selected_choice()
+        app = cast(Any, self.app)
+        if choice is None or not choice.copy_text:
+            app._notify("Selected tree entry has no text to copy.", severity="warning")
+            return
+        app.copy_to_clipboard(choice.copy_text)
+        app._notify("Copied selected tree entry to clipboard.")
+
     def action_toggle_tool_calls(self) -> None:
         """Toggle Pi's no-tools tree filter."""
         self.run_worker(self._set_tree_filter("no-tools", toggle=True))
@@ -1043,12 +1057,16 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         self.query_one("#tree-picker-help", Static).update(self._help_text())
 
     def _selected_entry_id(self) -> str | None:
+        choice = self._selected_choice()
+        return choice.entry_id if choice is not None else None
+
+    def _selected_choice(self) -> SessionTreeChoice | None:
         tree_list = self.query_one("#tree-picker-list", ListView)
         index = tree_list.index
         visible_choices = self._visible_choices()
         if index is None or index >= len(visible_choices):
             return None
-        return visible_choices[index].entry_id
+        return visible_choices[index]
 
     def _visible_choices(self) -> tuple[SessionTreeChoice, ...]:
         return tuple(
@@ -1072,7 +1090,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         filter_label = "default" if self.filter_mode == "default" else self.filter_mode
         return (
             "Enter branches - S summarizes - C custom summary - "
-            f"Ctrl+T no-tools ({tool_call_state}) - Ctrl+O filter {filter_label} - "
+            f"Ctrl+X copy - Ctrl+T no-tools ({tool_call_state}) - Ctrl+O filter {filter_label} - "
             "Escape closes"
         )
 

@@ -140,6 +140,7 @@ class SessionTreeChoice:
     label: str
     active: bool = False
     is_tool_call: bool = False
+    copy_text: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -400,6 +401,7 @@ class CodingSession:
                 label=_tree_choice_label(entry, branch_indent=branch_indents.get(entry.id, 0)),
                 active=entry.id == self._state.active_leaf_id,
                 is_tool_call=_is_tool_call_tree_entry(entry),
+                copy_text=_tree_choice_copy_text(entry),
             )
             for entry in _ordered_tree_entries(entries)
             if _is_branchable_tree_entry(entry)
@@ -1800,6 +1802,18 @@ def _tree_entry_title(entry: SessionEntry) -> str:
             return f"branch summary: {_short_preview(entry.summary)}"
         case _:
             return entry.type
+
+
+def _tree_choice_copy_text(entry: SessionEntry) -> str | None:
+    match entry.type:
+        case "message":
+            content = entry.message.content.strip()
+            return content or None
+        case "compaction" | "branch_summary":
+            summary = entry.summary.strip()
+            return summary or None
+        case _:
+            return None
 
 
 def _message_text_preview(message: AgentMessage) -> str:
