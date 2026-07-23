@@ -303,10 +303,20 @@ class FakeSession:
 
     async def tree_choices(self) -> tuple[SessionTreeChoice, ...]:
         return (
-            SessionTreeChoice(entry_id="root", label="user: Root"),
-            SessionTreeChoice(entry_id="tool", label="tool call: read", is_tool_call=True),
-            SessionTreeChoice(entry_id="left", label="assistant: Left"),
-            SessionTreeChoice(entry_id="right", label="assistant: Right", active=True),
+            SessionTreeChoice(entry_id="root", label="user: Root", copy_text="Root"),
+            SessionTreeChoice(
+                entry_id="tool",
+                label="tool call: read",
+                is_tool_call=True,
+                copy_text=None,
+            ),
+            SessionTreeChoice(entry_id="left", label="assistant: Left", copy_text="Left"),
+            SessionTreeChoice(
+                entry_id="right",
+                label="assistant: Right",
+                active=True,
+                copy_text="Right",
+            ),
         )
 
     async def branch_to_entry(
@@ -3205,6 +3215,36 @@ async def test_tui_app_tree_picker_direct_filter_shortcuts() -> None:
         await pilot.press("ctrl+o")
         await pilot.pause()
         assert "filter no-tools" in str(app.screen.query_one("#tree-picker-help", Static).render())
+
+
+@pytest.mark.anyio
+async def test_tui_app_tree_picker_copies_selected_entry(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+    copied: list[str] = []
+    notifications: list[tuple[str, str | None]] = []
+    monkeypatch.setattr(app, "copy_to_clipboard", copied.append)
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        notifications.append((message, kwargs.get("severity")))
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        await pilot.press("up")
+        await pilot.press("ctrl+x")
+        await pilot.pause()
+
+    assert copied == ["Left"]
+    assert notifications == [("Copied selected tree entry to clipboard.", None)]
 
 
 @pytest.mark.anyio

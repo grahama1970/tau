@@ -1258,6 +1258,35 @@ async def test_session_tree_choices_indent_only_diverged_branches(tmp_path: Path
 
 
 @pytest.mark.anyio
+async def test_session_tree_choices_include_full_copy_text(tmp_path: Path) -> None:
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    root = MessageEntry(id="root", message=UserMessage(content="Root\nwith details"))
+    assistant = MessageEntry(
+        id="assistant",
+        parent_id="root",
+        message=AssistantMessage(content="Answer\nwith details"),
+    )
+    compaction = CompactionEntry(
+        id="compact",
+        parent_id="assistant",
+        summary="Summary\nwith details",
+    )
+    await storage.append(root)
+    await storage.append(assistant)
+    await storage.append(compaction)
+    await storage.append(LeafEntry(entry_id="compact"))
+    session = await CodingSession.load(_config(tmp_path, FakeProvider([]), storage))
+
+    choices = await session.tree_choices()
+
+    assert [(choice.entry_id, choice.copy_text) for choice in choices] == [
+        ("root", "Root\nwith details"),
+        ("assistant", "Answer\nwith details"),
+        ("compact", "Summary\nwith details"),
+    ]
+
+
+@pytest.mark.anyio
 async def test_session_branches_to_previous_entry_without_destroying_history(
     tmp_path: Path,
 ) -> None:
