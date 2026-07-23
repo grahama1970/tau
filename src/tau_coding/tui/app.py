@@ -822,6 +822,122 @@ class TreePickerResult:
     custom_instructions: str | None = None
 
 
+class UserMessagePickerScreen(ModalScreen[str | None]):
+    """Modal picker for forking from a previous user message."""
+
+    BINDINGS: ClassVar[list[BindingEntry]] = [
+        Binding("escape", "cancel", "Cancel"),
+        Binding("up", "cursor_up", "Up", show=False),
+        Binding("down", "cursor_down", "Down", show=False),
+        Binding("pageup", "page_up", "Page up", show=False),
+        Binding("pagedown", "page_down", "Page down", show=False),
+        Binding("enter", "select_cursor", "Fork", show=False),
+    ]
+
+    def __init__(self, choices: Sequence[SessionTreeChoice]) -> None:
+        super().__init__()
+        self.choices = tuple(choices)
+
+    def compose(self) -> ComposeResult:
+        """Compose the user-message picker."""
+        with Vertical(id="user-message-picker"):
+            yield Static("Fork from Message", id="user-message-picker-title")
+            yield Static(
+                "Select a user message to copy the active path up to that point.",
+                id="user-message-picker-description",
+            )
+            yield ListView(
+                *self._list_items(),
+                id="user-message-picker-list",
+            )
+            yield Static(
+                "Enter forks - Escape cancels",
+                id="user-message-picker-help",
+            )
+
+    def on_mount(self) -> None:
+        """Focus the user-message list for keyboard navigation."""
+        message_list = self.query_one("#user-message-picker-list", ListView)
+        message_list.index = len(self.choices) - 1 if self.choices else None
+        message_list.focus()
+
+    def on_key(self, event: Key) -> None:
+        """Route picker keys to the list."""
+        if event.key == "up":
+            event.stop()
+            self.action_cursor_up()
+        elif event.key == "down":
+            event.stop()
+            self.action_cursor_down()
+        elif event.key == "pageup":
+            event.stop()
+            self.action_page_up()
+        elif event.key == "pagedown":
+            event.stop()
+            self.action_page_down()
+        elif event.key == "enter":
+            event.stop()
+            self.action_select_cursor()
+        elif event.key == "escape":
+            event.stop()
+            self.action_cancel()
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """Dismiss with the selected entry id."""
+        if event.index >= len(self.choices):
+            return
+        self.dismiss(self.choices[event.index].entry_id)
+
+    def action_cursor_up(self) -> None:
+        """Move to the previous user message."""
+        self._move(-1)
+
+    def action_cursor_down(self) -> None:
+        """Move to the next user message."""
+        self._move(1)
+
+    def action_page_up(self) -> None:
+        """Move up by a page of user messages."""
+        self._move_page(-1)
+
+    def action_page_down(self) -> None:
+        """Move down by a page of user messages."""
+        self._move_page(1)
+
+    def _move(self, direction: Literal[-1, 1]) -> None:
+        if not self.choices:
+            return
+        message_list = self.query_one("#user-message-picker-list", ListView)
+        current_index = message_list.index if message_list.index is not None else 0
+        message_list.index = (current_index + direction) % len(self.choices)
+
+    def _move_page(self, direction: Literal[-1, 1]) -> None:
+        if not self.choices:
+            return
+        message_list = self.query_one("#user-message-picker-list", ListView)
+        current_index = message_list.index if message_list.index is not None else 0
+        page_size = max(1, message_list.size.height - 1)
+        if page_size <= 1:
+            page_size = 10
+        next_index = current_index + (direction * page_size)
+        message_list.index = max(0, min(len(self.choices) - 1, next_index))
+
+    def action_select_cursor(self) -> None:
+        """Fork from the highlighted user message."""
+        self.query_one("#user-message-picker-list", ListView).action_select_cursor()
+
+    def action_cancel(self) -> None:
+        """Close the picker without forking."""
+        self.dismiss(None)
+
+    def _list_items(self) -> list[ListItem]:
+        total = len(self.choices)
+        return [
+            ListItem(Label(_user_message_picker_label(choice, index, total), markup=False))
+            for index, choice in enumerate(self.choices)
+        ]
+
+
 TreeFilterMode = Literal["default", "no-tools", "user-only", "labeled-only", "all"]
 TREE_FILTER_MODES: tuple[TreeFilterMode, ...] = (
     "default",
@@ -2353,6 +2469,7 @@ class TauTuiApp(App[None]):
 
     SessionPickerScreen,
     TreePickerScreen,
+    UserMessagePickerScreen,
     TreeLabelInputScreen,
     CommandOutputScreen {
         align: center middle;
@@ -2360,6 +2477,7 @@ class TauTuiApp(App[None]):
 
     #session-picker,
     #tree-picker,
+    #user-message-picker,
     #tree-label-input {
         width: 76;
         max-width: 90%;
@@ -2372,10 +2490,18 @@ class TauTuiApp(App[None]):
 
     #session-picker-title,
     #tree-picker-title,
+    #user-message-picker-title,
     #tree-label-title {
         height: 1;
         color: $tau-chrome-text;
         text-style: bold;
+        margin-bottom: 1;
+    }
+
+    #user-message-picker-description {
+        height: auto;
+        max-height: 2;
+        color: $tau-muted-text;
         margin-bottom: 1;
     }
 
@@ -2386,7 +2512,8 @@ class TauTuiApp(App[None]):
     }
 
     #session-picker-list,
-    #tree-picker-list {
+    #tree-picker-list,
+    #user-message-picker-list {
         height: auto;
         max-height: 16;
         background: $tau-transcript-background;
@@ -2405,6 +2532,7 @@ class TauTuiApp(App[None]):
 
     #session-picker-help,
     #tree-picker-help,
+    #user-message-picker-help,
     #tree-label-help {
         height: 1;
         margin-top: 1;
@@ -2811,6 +2939,8 @@ class TauTuiApp(App[None]):
                 self.action_open_session_picker()
             if command.tree_picker_requested:
                 await self._open_tree_picker()
+            if command.fork_picker_requested:
+                await self._open_fork_picker()
             if command.login_picker_requested:
                 self._open_login_picker()
             if command.login_provider is not None:
@@ -3113,6 +3243,7 @@ class TauTuiApp(App[None]):
         if isinstance(
             self.screen,
             TreePickerScreen
+            | UserMessagePickerScreen
             | LoginMethodPickerScreen
             | LoginProviderPickerScreen
             | ThemePickerScreen,
@@ -3146,6 +3277,7 @@ class TauTuiApp(App[None]):
             self.screen,
             SessionPickerScreen
             | TreePickerScreen
+            | UserMessagePickerScreen
             | LoginMethodPickerScreen
             | LoginProviderPickerScreen
             | ThemePickerScreen
@@ -3168,6 +3300,7 @@ class TauTuiApp(App[None]):
             self.screen,
             SessionPickerScreen
             | TreePickerScreen
+            | UserMessagePickerScreen
             | LoginMethodPickerScreen
             | LoginProviderPickerScreen
             | ThemePickerScreen
@@ -3433,6 +3566,40 @@ class TauTuiApp(App[None]):
                 set_entry_label=self._set_tree_entry_label_from_picker,
             ),
             callback=self._handle_tree_picker_result,
+        )
+
+    async def _open_fork_picker(self) -> None:
+        tree_choices = getattr(self.session, "tree_choices", None)
+        if tree_choices is None:
+            self._notify("Session tree is not available.", severity="warning")
+            return
+        try:
+            choices = tuple(
+                choice
+                for choice in await tree_choices()
+                if _tree_choice_matches_filter(
+                    choice,
+                    filter_mode="user-only",
+                    show_tool_calls=True,
+                )
+            )
+        except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
+            self._notify(f"Error: {exc}", severity="error")
+            return
+        if not choices:
+            self._notify("No messages to fork from.", severity="warning")
+            return
+        self.push_screen(
+            UserMessagePickerScreen(choices),
+            callback=self._handle_fork_picker_result,
+        )
+
+    def _handle_fork_picker_result(self, entry_id: str | None) -> None:
+        if entry_id is None:
+            return
+        self.run_worker(
+            self._branch_to_tree_entry(entry_id, summarize=False),
+            exclusive=False,
         )
 
     async def _set_tree_entry_label_from_picker(
@@ -4408,6 +4575,15 @@ def _tree_picker_label(choice: SessionTreeChoice, *, theme: TuiTheme) -> Text:
     else:
         text.append(body)
     return text
+
+
+def _user_message_picker_label(choice: SessionTreeChoice, index: int, total: int) -> str:
+    preview = " ".join((choice.copy_text or choice.label).split())
+    if preview.startswith("user:"):
+        preview = preview.partition(":")[2].strip()
+    if len(preview) > 72:
+        preview = f"{preview[:69]}..."
+    return f"Message {index + 1} of {total}: {preview}"
 
 
 def _active_tree_choice_index(choices: Sequence[SessionTreeChoice]) -> int:

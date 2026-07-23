@@ -99,6 +99,7 @@ class CommandResult:
     resume_session_id: str | None = None
     resume_picker_requested: bool = False
     tree_picker_requested: bool = False
+    fork_picker_requested: bool = False
     login_picker_requested: bool = False
     login_provider: str | None = None
     logout_picker_requested: bool = False
@@ -226,6 +227,15 @@ def create_default_command_registry() -> CommandRegistry:
             usage="/export [--format html|jsonl] [destination]",
             description="Export the current session.",
             handler=_export_command,
+        )
+    )
+    registry.register(
+        SlashCommand(
+            name="fork",
+            usage="/fork",
+            description="Create a new fork from a previous user message.",
+            handler=_fork_command,
+            search_terms=("branch", "history", "user"),
         )
     )
     registry.register(
@@ -508,6 +518,12 @@ def _tree_command(context: CommandContext) -> CommandResult:
     if context.args:
         return CommandResult(handled=True, message="Usage: /tree")
     return CommandResult(handled=True, tree_picker_requested=True)
+
+
+def _fork_command(context: CommandContext) -> CommandResult:
+    if context.args:
+        return CommandResult(handled=True, message="Usage: /fork")
+    return CommandResult(handled=True, fork_picker_requested=True)
 
 
 def _name_command(context: CommandContext) -> CommandResult:
