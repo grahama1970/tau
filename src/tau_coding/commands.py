@@ -106,6 +106,7 @@ class CommandResult:
     logout_provider: str | None = None
     model_picker_requested: bool = False
     scoped_models_picker_requested: bool = False
+    settings_picker_requested: bool = False
     theme_picker_requested: bool = False
     thinking_level: str | None = None
     theme: str | None = None
@@ -319,6 +320,15 @@ def create_default_command_registry() -> CommandRegistry:
     )
     registry.register(
         SlashCommand(
+            name="settings",
+            usage="/settings",
+            description="Open durable TUI settings.",
+            handler=_settings_command,
+            search_terms=("preferences", "config", "theme"),
+        )
+    )
+    registry.register(
+        SlashCommand(
             name="theme",
             usage="/theme [name]",
             description="Show or set the TUI theme.",
@@ -524,6 +534,12 @@ def _fork_command(context: CommandContext) -> CommandResult:
     if context.args:
         return CommandResult(handled=True, message="Usage: /fork")
     return CommandResult(handled=True, fork_picker_requested=True)
+
+
+def _settings_command(context: CommandContext) -> CommandResult:
+    if context.args:
+        return CommandResult(handled=True, message="Usage: /settings")
+    return CommandResult(handled=True, settings_picker_requested=True)
 
 
 def _name_command(context: CommandContext) -> CommandResult:

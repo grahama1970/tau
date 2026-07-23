@@ -823,6 +823,115 @@ class TreePickerResult:
     custom_instructions: str | None = None
 
 
+SettingsPickerKey = Literal["theme", "auto_copy_selection", "double_escape_action"]
+
+
+@dataclass(frozen=True, slots=True)
+class SettingsPickerItem:
+    """One durable TUI setting row."""
+
+    key: SettingsPickerKey
+    label: str
+    value: str
+
+
+class SettingsPickerScreen(ModalScreen[None]):
+    """Modal picker for durable TUI settings."""
+
+    BINDINGS: ClassVar[list[BindingEntry]] = [
+        Binding("escape", "cancel", "Cancel", priority=True),
+        Binding("up", "cursor_up", "Up", show=False, priority=True),
+        Binding("down", "cursor_down", "Down", show=False, priority=True),
+        Binding("enter", "select_cursor", "Change", show=False, priority=True),
+    ]
+
+    def __init__(
+        self,
+        settings: TuiSettings,
+        *,
+        apply_settings: Callable[[TuiSettings], None],
+    ) -> None:
+        super().__init__()
+        self.settings = settings
+        self.apply_settings = apply_settings
+
+    def compose(self) -> ComposeResult:
+        """Compose the settings picker."""
+        with Vertical(id="settings-picker"):
+            yield Static("Settings", id="settings-picker-title")
+            yield ListView(
+                *self._list_items(),
+                id="settings-picker-list",
+            )
+            yield Static("Enter changes - Escape closes", id="settings-picker-help")
+
+    def on_mount(self) -> None:
+        """Focus the settings list."""
+        settings_list = self.query_one("#settings-picker-list", ListView)
+        settings_list.index = 0
+        settings_list.focus()
+
+    def on_key(self, event: Key) -> None:
+        """Route settings picker keys to the list."""
+        if event.key == "up":
+            event.stop()
+            self.action_cursor_up()
+        elif event.key == "down":
+            event.stop()
+            self.action_cursor_down()
+        elif event.key == "enter":
+            event.stop()
+            self.action_select_cursor()
+        elif event.key == "escape":
+            event.stop()
+            self.action_cancel()
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """Change the selected setting and keep the picker open."""
+        if event.index >= len(_settings_picker_items(self.settings)):
+            return
+        self._change_setting(event.index)
+
+    def action_cursor_up(self) -> None:
+        """Move to the previous setting."""
+        self.query_one("#settings-picker-list", ListView).action_cursor_up()
+
+    def action_cursor_down(self) -> None:
+        """Move to the next setting."""
+        self.query_one("#settings-picker-list", ListView).action_cursor_down()
+
+    def action_select_cursor(self) -> None:
+        """Change the highlighted setting."""
+        settings_list = self.query_one("#settings-picker-list", ListView)
+        if settings_list.index is None:
+            return
+        self._change_setting(settings_list.index)
+
+    def action_cancel(self) -> None:
+        """Close the settings picker."""
+        self.dismiss(None)
+
+    def _change_setting(self, index: int) -> None:
+        items = _settings_picker_items(self.settings)
+        if index >= len(items):
+            return
+        self.settings = _next_tui_settings(self.settings, items[index].key)
+        self.apply_settings(self.settings)
+        self._refresh_settings_list(index)
+
+    def _refresh_settings_list(self, index: int) -> None:
+        settings_list = self.query_one("#settings-picker-list", ListView)
+        settings_list.clear()
+        settings_list.extend(self._list_items())
+        settings_list.index = min(index, len(settings_list.children) - 1)
+
+    def _list_items(self) -> list[ListItem]:
+        return [
+            ListItem(Label(_settings_picker_label(item), markup=False))
+            for item in _settings_picker_items(self.settings)
+        ]
+
+
 class UserMessagePickerScreen(ModalScreen[str | None]):
     """Modal picker for forking from a previous user message."""
 
@@ -2493,6 +2602,7 @@ class TauTuiApp(App[None]):
     }
 
     SessionPickerScreen,
+    SettingsPickerScreen,
     TreePickerScreen,
     UserMessagePickerScreen,
     TreeLabelInputScreen,
@@ -2501,6 +2611,7 @@ class TauTuiApp(App[None]):
     }
 
     #session-picker,
+    #settings-picker,
     #tree-picker,
     #user-message-picker,
     #tree-label-input {
@@ -2514,6 +2625,7 @@ class TauTuiApp(App[None]):
     }
 
     #session-picker-title,
+    #settings-picker-title,
     #tree-picker-title,
     #user-message-picker-title,
     #tree-label-title {
@@ -2537,6 +2649,7 @@ class TauTuiApp(App[None]):
     }
 
     #session-picker-list,
+    #settings-picker-list,
     #tree-picker-list,
     #user-message-picker-list {
         height: auto;
@@ -2556,6 +2669,7 @@ class TauTuiApp(App[None]):
     }
 
     #session-picker-help,
+    #settings-picker-help,
     #tree-picker-help,
     #user-message-picker-help,
     #tree-label-help {
@@ -2979,6 +3093,8 @@ class TauTuiApp(App[None]):
                 self._open_model_picker()
             if command.scoped_models_picker_requested:
                 self._open_scoped_models_picker()
+            if command.settings_picker_requested:
+                self._open_settings_picker()
             if command.theme_picker_requested:
                 self._open_theme_picker()
             if command.thinking_level is not None:
@@ -3094,15 +3210,39 @@ class TauTuiApp(App[None]):
         self._refresh()
 
     def _set_tui_theme(self, theme: TuiThemeName) -> None:
-        self.tui_settings = TuiSettings(
-            keybindings=self.tui_settings.keybindings,
-            theme=theme,
-            auto_copy_selection=self.tui_settings.auto_copy_selection,
-            double_escape_action=self.tui_settings.double_escape_action,
+        self._set_tui_settings(
+            TuiSettings(
+                keybindings=self.tui_settings.keybindings,
+                theme=theme,
+                auto_copy_selection=self.tui_settings.auto_copy_selection,
+                double_escape_action=self.tui_settings.double_escape_action,
+            )
         )
+
+    def _set_tui_settings(self, settings: TuiSettings) -> None:
+        self.tui_settings = settings
         save_tui_settings(self.tui_settings)
+        self._bindings = BindingsMap(_app_bindings(self.tui_settings.keybindings))
+        with suppress(NoMatches):
+            prompt = self.query_one("#prompt", PromptInput)
+            prompt.tui_keybindings = self.tui_settings.keybindings
+            prompt.shell_mode_style = self.tui_settings.resolved_theme.accent
+            prompt._apply_prompt_bindings()
+            prompt.refresh_bindings()
+        self.refresh_bindings()
         self.refresh_css(animate=False)
         self._refresh()
+
+    def _settings_picker_settings_changed(self, settings: TuiSettings) -> None:
+        self._set_tui_settings(settings)
+
+    def _open_settings_picker(self) -> None:
+        self.push_screen(
+            SettingsPickerScreen(
+                self.tui_settings,
+                apply_settings=self._settings_picker_settings_changed,
+            )
+        )
 
     async def _queue_prompt(
         self,
@@ -3303,6 +3443,7 @@ class TauTuiApp(App[None]):
             self.screen,
             TreePickerScreen
             | UserMessagePickerScreen
+            | SettingsPickerScreen
             | LoginMethodPickerScreen
             | LoginProviderPickerScreen
             | ThemePickerScreen,
@@ -3335,6 +3476,7 @@ class TauTuiApp(App[None]):
         if isinstance(
             self.screen,
             SessionPickerScreen
+            | SettingsPickerScreen
             | TreePickerScreen
             | UserMessagePickerScreen
             | LoginMethodPickerScreen
@@ -3358,6 +3500,7 @@ class TauTuiApp(App[None]):
         if isinstance(
             self.screen,
             SessionPickerScreen
+            | SettingsPickerScreen
             | TreePickerScreen
             | UserMessagePickerScreen
             | LoginMethodPickerScreen
@@ -4786,6 +4929,71 @@ def _credential_store_has_entry(
 def _theme_picker_label(theme_name: TuiThemeName, *, current_theme: TuiThemeName) -> str:
     marker = "✓" if theme_name == current_theme else " "
     return f"{marker} {theme_name}"
+
+
+def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, ...]:
+    return (
+        SettingsPickerItem(
+            key="theme",
+            label="Theme",
+            value=settings.theme,
+        ),
+        SettingsPickerItem(
+            key="auto_copy_selection",
+            label="Auto-copy selection",
+            value="on" if settings.auto_copy_selection else "off",
+        ),
+        SettingsPickerItem(
+            key="double_escape_action",
+            label="Double Escape",
+            value=settings.double_escape_action,
+        ),
+    )
+
+
+def _settings_picker_label(item: SettingsPickerItem) -> str:
+    return f"{item.label}: {item.value}"
+
+
+def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSettings:
+    if key == "theme":
+        try:
+            current_index = BUILTIN_TUI_THEME_NAMES.index(settings.theme)
+        except ValueError:
+            current_index = -1
+        next_theme = BUILTIN_TUI_THEME_NAMES[
+            (current_index + 1) % len(BUILTIN_TUI_THEME_NAMES)
+        ]
+        return TuiSettings(
+            keybindings=settings.keybindings,
+            theme=next_theme,
+            auto_copy_selection=settings.auto_copy_selection,
+            double_escape_action=settings.double_escape_action,
+        )
+    if key == "auto_copy_selection":
+        return TuiSettings(
+            keybindings=settings.keybindings,
+            theme=settings.theme,
+            auto_copy_selection=not settings.auto_copy_selection,
+            double_escape_action=settings.double_escape_action,
+        )
+    double_escape_actions: tuple[Literal["tree", "fork", "none"], ...] = (
+        "tree",
+        "fork",
+        "none",
+    )
+    try:
+        current_index = double_escape_actions.index(settings.double_escape_action)
+    except ValueError:
+        current_index = -1
+    return TuiSettings(
+        keybindings=settings.keybindings,
+        theme=settings.theme,
+        auto_copy_selection=settings.auto_copy_selection,
+        double_escape_action=double_escape_actions[
+            (current_index + 1) % len(double_escape_actions)
+        ],
+    )
 
 
 def _model_picker_label(
