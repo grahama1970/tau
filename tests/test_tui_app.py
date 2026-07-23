@@ -2670,6 +2670,40 @@ async def test_tui_app_session_picker_arrow_keys_select_session() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_session_picker_page_keys_move_by_page() -> None:
+    session = FakeSession()
+    session.session_manager = _FakeSessionManager(
+        [
+            CodingSessionRecord(
+                id=f"session-{index}",
+                path=Path(f"/tmp/session-{index}.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="fake-model",
+                title=f"Task {index:02d}",
+                created_at=1.0,
+                updated_at=100.0 - index,
+            )
+            for index in range(30)
+        ]
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        await pilot.press("ctrl+r")
+        assert isinstance(app.screen, SessionPickerScreen)
+        picker_list = app.screen.query_one("#session-picker-list", ListView)
+        assert picker_list.index == 0
+
+        await pilot.press("pagedown")
+        page_down_index = picker_list.index
+        await pilot.press("pageup")
+
+    assert page_down_index is not None
+    assert page_down_index > 1
+    assert picker_list.index == 0
+
+
+@pytest.mark.anyio
 async def test_tui_app_tree_picker_branches_with_summary() -> None:
     session = FakeSession()
     app = TauTuiApp(session)
