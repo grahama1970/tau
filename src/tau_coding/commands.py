@@ -92,6 +92,7 @@ class CommandResult:
     exit_requested: bool = False
     clear_requested: bool = False
     new_session_requested: bool = False
+    clone_session_requested: bool = False
     compact_summary: str | None = None
     copy_last_message_requested: bool = False
     export_requested: bool = False
@@ -221,6 +222,15 @@ def create_default_command_registry() -> CommandRegistry:
             usage="/compact [instructions]",
             description="Summarize and compact active context.",
             handler=_compact_command,
+        )
+    )
+    registry.register(
+        SlashCommand(
+            name="clone",
+            usage="/clone",
+            description="Duplicate the current session at the current position.",
+            handler=_clone_command,
+            search_terms=("duplicate", "fork", "branch"),
         )
     )
     registry.register(
@@ -378,6 +388,12 @@ def _exit_command(context: CommandContext) -> CommandResult:
 
 def _new_command(context: CommandContext) -> CommandResult:
     return CommandResult(handled=True, new_session_requested=True)
+
+
+def _clone_command(context: CommandContext) -> CommandResult:
+    if context.args:
+        return CommandResult(handled=True, message="Usage: /clone")
+    return CommandResult(handled=True, clone_session_requested=True)
 
 
 def _compact_command(context: CommandContext) -> CommandResult:
