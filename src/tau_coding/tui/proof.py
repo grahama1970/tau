@@ -38,6 +38,7 @@ class FixtureTuiProofSession:
         next_agent: str,
     ) -> None:
         self.cwd = Path("/workspace/project")
+        self.session_title = "Tau TUI proof fixture"
         self.provider_name = "openai"
         self.model = "fixture-model"
         self.available_models = ("fixture-model",)

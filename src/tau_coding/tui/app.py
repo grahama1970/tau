@@ -1599,11 +1599,13 @@ class SettingsPickerScreen(ModalScreen[None]):
         *,
         apply_settings: Callable[[TuiSettings], None],
         thinking_levels: Sequence[ThinkingLevel] = THINKING_LEVELS,
+        keybindings: TuiKeybindings | None = None,
     ) -> None:
         super().__init__()
         self.settings = settings
         self.apply_settings = apply_settings
         self.thinking_levels = tuple(thinking_levels) or THINKING_LEVELS
+        self.keybindings = keybindings or TuiKeybindings()
         self.search_value = ""
         self.filtered_items = _settings_picker_items(settings)
 
@@ -1639,16 +1641,24 @@ class SettingsPickerScreen(ModalScreen[None]):
 
     def on_key(self, event: Key) -> None:
         """Route settings picker keys to the list."""
-        if event.key == "up":
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
             event.stop()
             self.action_cursor_up()
-        elif event.key == "down":
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
             event.stop()
             self.action_cursor_down()
-        elif event.key == "enter":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
             event.stop()
             self.action_select_cursor()
-        elif event.key == "escape":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
             event.stop()
             self.action_cancel()
 
@@ -1724,9 +1734,15 @@ class TrustPickerScreen(ModalScreen[ProjectTrustOption | None]):
         Binding("enter", "select_cursor", "Save", show=False, priority=True),
     ]
 
-    def __init__(self, state: ProjectTrustState) -> None:
+    def __init__(
+        self,
+        state: ProjectTrustState,
+        *,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
         super().__init__()
         self.trust_state = state
+        self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
         """Compose the trust picker."""
@@ -1752,16 +1768,24 @@ class TrustPickerScreen(ModalScreen[ProjectTrustOption | None]):
 
     def on_key(self, event: Key) -> None:
         """Route trust picker keys to the list."""
-        if event.key == "up":
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
             event.stop()
             self.action_cursor_up()
-        elif event.key == "down":
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
             event.stop()
             self.action_cursor_down()
-        elif event.key == "enter":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
             event.stop()
             self.action_select_cursor()
-        elif event.key == "escape":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
             event.stop()
             self.action_cancel()
 
@@ -1816,9 +1840,15 @@ class UserMessagePickerScreen(ModalScreen[str | None]):
         Binding("enter", "select_cursor", "Fork", show=False),
     ]
 
-    def __init__(self, choices: Sequence[SessionTreeChoice]) -> None:
+    def __init__(
+        self,
+        choices: Sequence[SessionTreeChoice],
+        *,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
         super().__init__()
         self.choices = tuple(choices)
+        self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
         """Compose the user-message picker."""
@@ -1845,22 +1875,38 @@ class UserMessagePickerScreen(ModalScreen[str | None]):
 
     def on_key(self, event: Key) -> None:
         """Route picker keys to the list."""
-        if event.key == "up":
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
             event.stop()
             self.action_cursor_up()
-        elif event.key == "down":
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
             event.stop()
             self.action_cursor_down()
-        elif event.key == "pageup":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_page_up,
+            "pageup",
+        ):
             event.stop()
             self.action_page_up()
-        elif event.key == "pagedown":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_page_down,
+            "pagedown",
+        ):
             event.stop()
             self.action_page_down()
-        elif event.key == "enter":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
             event.stop()
             self.action_select_cursor()
-        elif event.key == "escape":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
             event.stop()
             self.action_cancel()
 
@@ -2635,11 +2681,13 @@ class LoginProviderPickerScreen(ModalScreen[str | None]):
         *,
         theme: TuiTheme,
         title: str = "Login",
+        keybindings: TuiKeybindings | None = None,
     ) -> None:
         super().__init__()
         self.providers = tuple(providers)
         self.theme = theme
         self.title_text = title
+        self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
         """Compose the provider picker."""
@@ -2662,15 +2710,26 @@ class LoginProviderPickerScreen(ModalScreen[str | None]):
 
     def on_key(self, event: Key) -> None:
         """Route provider picker keys to the list."""
-        if event.key == "up":
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
             event.stop()
             self.action_cursor_up()
-        elif event.key == "down":
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
             event.stop()
             self.action_cursor_down()
-        elif event.key == "enter":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
             event.stop()
             self.action_select_cursor()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.action_cancel()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected provider name."""
@@ -2703,9 +2762,15 @@ class LoginMethodPickerScreen(ModalScreen[str | None]):
         Binding("enter", "select_cursor", "Select", show=False, priority=True),
     ]
 
-    def __init__(self, *, theme: TuiTheme) -> None:
+    def __init__(
+        self,
+        *,
+        theme: TuiTheme,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
         super().__init__()
         self.theme = theme
+        self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
         """Compose the login method picker."""
@@ -2733,15 +2798,26 @@ class LoginMethodPickerScreen(ModalScreen[str | None]):
 
     def on_key(self, event: Key) -> None:
         """Route arrow keys between login method buttons."""
-        if event.key == "up":
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
             event.stop()
             self.action_cursor_up()
-        elif event.key == "down":
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
             event.stop()
             self.action_cursor_down()
-        elif event.key == "enter":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
             event.stop()
             self.action_select_cursor()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.action_cancel()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Dismiss with the selected login method."""
@@ -2813,10 +2889,17 @@ class ThemePickerScreen(ModalScreen[TuiThemeName | None]):
         Binding("enter", "select_cursor", "Select", show=False, priority=True),
     ]
 
-    def __init__(self, *, current_theme: TuiThemeName, theme: TuiTheme) -> None:
+    def __init__(
+        self,
+        *,
+        current_theme: TuiThemeName,
+        theme: TuiTheme,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
         super().__init__()
         self.current_theme = current_theme
         self.theme = theme
+        self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
         """Compose the theme picker."""
@@ -2847,15 +2930,26 @@ class ThemePickerScreen(ModalScreen[TuiThemeName | None]):
 
     def on_key(self, event: Key) -> None:
         """Route theme picker keys to the list."""
-        if event.key == "up":
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
             event.stop()
             self.action_cursor_up()
-        elif event.key == "down":
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
             event.stop()
             self.action_cursor_down()
-        elif event.key == "enter":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
             event.stop()
             self.action_select_cursor()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.action_cancel()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected theme name."""
@@ -4449,6 +4543,7 @@ class TauTuiApp(App[None]):
                 apply_settings=self._settings_picker_settings_changed,
                 thinking_levels=tuple(getattr(self.session, "available_thinking_levels", ()))
                 or THINKING_LEVELS,
+                keybindings=self.tui_settings.keybindings,
             )
         )
 
@@ -4462,7 +4557,10 @@ class TauTuiApp(App[None]):
         except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
             self._notify(f"Error: {exc}", severity="error")
             return
-        self.push_screen(TrustPickerScreen(state), callback=self._handle_trust_picker_result)
+        self.push_screen(
+            TrustPickerScreen(state, keybindings=self.tui_settings.keybindings),
+            callback=self._handle_trust_picker_result,
+        )
 
     def _handle_trust_picker_result(self, option: ProjectTrustOption | None) -> None:
         if option is None:
@@ -5120,7 +5218,7 @@ class TauTuiApp(App[None]):
             self._notify("No messages to fork from.", severity="warning")
             return
         self.push_screen(
-            UserMessagePickerScreen(choices),
+            UserMessagePickerScreen(choices, keybindings=self.tui_settings.keybindings),
             callback=self._handle_fork_picker_result,
         )
 
@@ -5251,7 +5349,10 @@ class TauTuiApp(App[None]):
 
     def _open_login_picker(self) -> None:
         self.push_screen(
-            LoginMethodPickerScreen(theme=self.tui_settings.resolved_theme),
+            LoginMethodPickerScreen(
+                theme=self.tui_settings.resolved_theme,
+                keybindings=self.tui_settings.keybindings,
+            ),
             callback=self._handle_login_method_result,
         )
 
@@ -5272,6 +5373,7 @@ class TauTuiApp(App[None]):
             LoginProviderPickerScreen(
                 providers,
                 theme=self.tui_settings.resolved_theme,
+                keybindings=self.tui_settings.keybindings,
             ),
             callback=self._handle_login_provider_result,
         )
@@ -5347,6 +5449,7 @@ class TauTuiApp(App[None]):
                 providers,
                 theme=self.tui_settings.resolved_theme,
                 title="Logout",
+                keybindings=self.tui_settings.keybindings,
             ),
             callback=self._handle_logout_provider_result,
         )
@@ -5488,6 +5591,7 @@ class TauTuiApp(App[None]):
             ThemePickerScreen(
                 current_theme=self.tui_settings.theme,
                 theme=self.tui_settings.resolved_theme,
+                keybindings=self.tui_settings.keybindings,
             ),
             callback=self._handle_theme_picker_result,
         )

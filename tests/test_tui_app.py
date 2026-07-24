@@ -2173,6 +2173,41 @@ async def test_tui_app_theme_command_opens_picker_and_persists_selection(
 
 
 @pytest.mark.anyio
+async def test_tui_app_theme_picker_uses_configured_pi_select_keybindings(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(
+                select_up="f5",
+                select_down="f6",
+                select_confirm="f7",
+                select_cancel="f8",
+            )
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/theme"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ThemePickerScreen)
+        theme_list = app.screen.query_one("#theme-picker-list", ListView)
+
+        await pilot.press("f6", "f7")
+        await pilot.pause()
+
+        assert theme_list.index == 1
+        assert app.tui_settings.theme == "tau-light"
+        assert tui_settings_path().read_text(encoding="utf-8").find('"theme": "tau-light"') != -1
+
+
+@pytest.mark.anyio
 async def test_tui_app_theme_command_argument_updates_theme_and_persists(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -4587,6 +4622,61 @@ async def test_tui_app_fork_picker_branches_from_latest_user_message() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_fork_picker_uses_configured_pi_select_keybindings() -> None:
+    class ForkSession(FakeSession):
+        async def tree_choices(self) -> tuple[SessionTreeChoice, ...]:
+            return (
+                SessionTreeChoice(
+                    entry_id="first",
+                    label="user: First prompt",
+                    copy_text="First prompt",
+                ),
+                SessionTreeChoice(
+                    entry_id="assistant",
+                    label="assistant: Prior answer",
+                    parent_entry_id="first",
+                    copy_text="Prior answer",
+                ),
+                SessionTreeChoice(
+                    entry_id="second",
+                    label="user: Second prompt",
+                    parent_entry_id="assistant",
+                    copy_text="Second prompt",
+                ),
+            )
+
+    session = ForkSession()
+    app = TauTuiApp(
+        session,
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(
+                select_up="f5",
+                select_down="f6",
+                select_page_up="f7",
+                select_page_down="f8",
+                select_confirm="f9",
+                select_cancel="f10",
+            )
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/fork"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, UserMessagePickerScreen)
+        message_list = app.screen.query_one("#user-message-picker-list", ListView)
+        assert message_list.index == 1
+
+        await pilot.press("f5", "f9")
+        await pilot.pause()
+
+        assert session.tree_branch_requests == [("first", False, None)]
+
+
+@pytest.mark.anyio
 async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -5026,6 +5116,42 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
 
 
 @pytest.mark.anyio
+async def test_tui_app_settings_picker_uses_configured_pi_select_keybindings(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(
+                select_up="f5",
+                select_down="f6",
+                select_confirm="f7",
+                select_cancel="f8",
+            )
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/settings"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, SettingsPickerScreen)
+        settings_list = app.screen.query_one("#settings-picker-list", ListView)
+        assert settings_list.index == 0
+
+        await pilot.press("f6", "f7")
+        await pilot.pause()
+
+        assert settings_list.index == 1
+        assert app.tui_settings.auto_compact is False
+        assert '"auto_compact": false' in tui_settings_path().read_text(encoding="utf-8")
+
+
+@pytest.mark.anyio
 async def test_tui_app_settings_picker_search_filters_before_change(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -5097,6 +5223,37 @@ async def test_tui_app_trust_picker_saves_selected_decision() -> None:
 
         assert [option.label for option in session.trust_options_saved] == ["Do not trust"]
         assert notifications == ["Saved trust decision: untrusted."]
+
+
+@pytest.mark.anyio
+async def test_tui_app_trust_picker_uses_configured_pi_select_keybindings() -> None:
+    session = FakeSession()
+    app = TauTuiApp(
+        session,
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(
+                select_up="f5",
+                select_down="f6",
+                select_confirm="f7",
+                select_cancel="f8",
+            )
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/trust"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TrustPickerScreen)
+        trust_list = app.screen.query_one("#trust-picker-list", ListView)
+
+        await pilot.press("f6", "f7")
+        await pilot.pause()
+
+        assert trust_list.index == 1
+        assert [option.label for option in session.trust_options_saved] == ["Do not trust"]
 
 
 @pytest.mark.anyio
@@ -7231,6 +7388,44 @@ async def test_tui_login_method_picker_supports_arrow_keys() -> None:
         provider_list = app.screen.query_one("#login-provider-list", ListView)
         labels = [str(item.query_one(Label).render()) for item in provider_list.children]
         assert labels[0] == "OpenAI\n  openai"
+
+
+@pytest.mark.anyio
+async def test_tui_login_pickers_use_configured_pi_select_keybindings() -> None:
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(
+                select_up="f5",
+                select_down="f6",
+                select_confirm="f7",
+                select_cancel="f8",
+            )
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/login"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, LoginMethodPickerScreen)
+        method_list = app.screen.query_one("#login-method-list", ListView)
+
+        await pilot.press("f6", "f7")
+        await pilot.pause()
+
+        assert method_list.index == 1
+        assert isinstance(app.screen, LoginProviderPickerScreen)
+        provider_list = app.screen.query_one("#login-provider-list", ListView)
+
+        await pilot.press("f6", "f7")
+        await pilot.pause()
+
+        assert provider_list.index == 1
+        assert isinstance(app.screen, LoginScreen)
+        assert app.screen.provider.name == "anthropic"
 
 
 @pytest.mark.anyio
