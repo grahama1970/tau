@@ -46,6 +46,7 @@ from tau_coding.tui.terminal_image import TerminalImage, TerminalImageOptions
 TAU_SIDEBAR_LOGO = "τ = 2π"
 TOOL_RESULT_VISUAL_PREVIEW_LINES = TOOL_RESULT_PREVIEW_LINES + 1
 SIDEBAR_BULLET_LIST_LIMIT = 5
+VISIBLE_TAB_REPLACEMENT = "   "
 
 
 @dataclass(frozen=True, slots=True)
@@ -71,7 +72,7 @@ class VisualPreviewText:
     ) -> RenderResult:
         width = max(1, options.max_width)
         wrapped_lines = Text(
-            self.text,
+            _normalize_terminal_preview_text(self.text),
             style=self.style,
             overflow="fold",
             no_wrap=False,
@@ -107,6 +108,53 @@ class VisualPreviewText:
                 ),
             ]
         yield Text("\n").join(parts)
+
+
+def _normalize_terminal_preview_text(text: str) -> str:
+    """Normalize terminal-preview-only text without changing transcript content."""
+    if "\t" not in text and "\r" not in text:
+        return text
+
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+    if "\t" not in normalized:
+        return normalized
+
+    parts: list[str] = []
+    index = 0
+    while index < len(normalized):
+        if normalized[index] == "\x1b":
+            end = _terminal_escape_sequence_end(normalized, index)
+            parts.append(normalized[index:end])
+            index = end
+            continue
+        parts.append(VISIBLE_TAB_REPLACEMENT if normalized[index] == "\t" else normalized[index])
+        index += 1
+    return "".join(parts)
+
+
+def _terminal_escape_sequence_end(text: str, start: int) -> int:
+    if start + 1 >= len(text):
+        return start + 1
+
+    introducer = text[start + 1]
+    if introducer in {"]", "P", "^", "_"}:
+        bel = text.find("\x07", start + 2)
+        st = text.find("\x1b\\", start + 2)
+        candidates = [end for end in (bel + 1, st + 2) if end > 1]
+        return min(candidates) if candidates else len(text)
+
+    if introducer == "[":
+        index = start + 2
+        while index < len(text):
+            codepoint = ord(text[index])
+            if 0x40 <= codepoint <= 0x7E:
+                return index + 1
+            index += 1
+        return len(text)
+
+    if introducer in {"(", ")", "*", "+", "-", ".", "/", "#", "%"}:
+        return min(start + 3, len(text))
+    return start + 2
 
 
 class SessionSummarySource(Protocol):
