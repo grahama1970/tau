@@ -6960,7 +6960,21 @@ class TauTuiApp(App[None]):
             )
         )
 
+    def _refresh_provider_settings_for_picker(self) -> bool:
+        """Reload provider settings before showing provider-backed pickers."""
+        reload_provider_settings = getattr(self.session, "reload_provider_settings", None)
+        if not callable(reload_provider_settings):
+            return True
+        try:
+            reload_provider_settings()
+        except Exception as exc:  # noqa: BLE001 - keep stale provider config out of picker choices
+            self._notify(f"Could not reload provider settings: {exc}", severity="error")
+            return False
+        return True
+
     def _open_model_picker(self, *, initial_search: str = "") -> None:
+        if not self._refresh_provider_settings_for_picker():
+            return
         choices = self._available_model_choices()
         if not choices:
             self._notify(
@@ -6984,6 +6998,8 @@ class TauTuiApp(App[None]):
         )
 
     def _open_scoped_models_picker(self) -> None:
+        if not self._refresh_provider_settings_for_picker():
+            return
         choices = self._available_model_choices()
         if not choices:
             self._notify(
