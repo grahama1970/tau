@@ -1,5 +1,7 @@
 """Translate agent events into Textual TUI display state."""
 
+from math import ceil
+
 from tau_agent import (
     AgentEndEvent,
     AgentEvent,
@@ -79,7 +81,7 @@ class TuiEventAdapter:
             return
 
         if isinstance(event, RetryEvent):
-            self.state.add_item("status", f"… {event.message}")
+            self.state.add_item("status", _retry_status_message(event))
             return
 
         if isinstance(event, ToolExecutionEndEvent):
@@ -119,3 +121,8 @@ class TuiEventAdapter:
         if monitor_status is None:
             monitor_status = event.data.get("tau_loop_monitor")
         self.state.set_loop_monitor_status_from_payload(monitor_status)
+
+
+def _retry_status_message(event: RetryEvent) -> str:
+    seconds = max(0, ceil(event.delay_seconds))
+    return f"Retrying ({event.attempt}/{event.max_attempts}) in {seconds}s... (Escape to cancel)"
