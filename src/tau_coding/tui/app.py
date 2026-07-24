@@ -6682,7 +6682,7 @@ class TauTuiApp(App[None]):
         except Exception as exc:  # noqa: BLE001 - surface login failures in the TUI
             self._notify(f"Could not save login: {exc}", severity="error")
             return
-        self._notify(f"Saved login for {entry.display_name}.")
+        self._notify(_login_success_message(entry, self.session))
         self._refresh()
 
     def _handle_oauth_login_result(
@@ -6704,7 +6704,7 @@ class TauTuiApp(App[None]):
         except Exception as exc:  # noqa: BLE001 - surface login failures in the TUI
             self._notify(f"Could not save login: {exc}", severity="error")
             return
-        self._notify(f"Saved login for {entry.display_name}.")
+        self._notify(_login_success_message(entry, self.session))
         self._refresh()
 
     def _open_logout_picker(self) -> None:
@@ -7996,6 +7996,14 @@ def _credential_store_has_entry(
         credential_store.get(credential_name) is not None
         or credential_store.get_oauth(credential_name) is not None
     )
+
+
+def _login_success_message(entry: ProviderCatalogEntry, session: CodingSession) -> str:
+    provider_name = getattr(session, "provider_name", entry.name)
+    model = getattr(session, "model", None)
+    if isinstance(model, str) and model:
+        return f"Saved login for {entry.display_name}. Selected {provider_name}:{model}."
+    return f"Saved login for {entry.display_name}."
 
 
 def _theme_picker_choices() -> tuple[str, ...]:
