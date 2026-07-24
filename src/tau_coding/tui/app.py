@@ -2347,10 +2347,16 @@ class TrustPickerScreen(ModalScreen[ProjectTrustOption | None]):
 
     def on_key(self, event: Key) -> None:
         """Route trust picker keys to the list."""
-        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
+        if (
+            _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up")
+            or event.key == "k"
+        ):
             event.stop()
             self.action_cursor_up()
-        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
+        elif (
+            _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down")
+            or event.key == "j"
+        ):
             event.stop()
             self.action_cursor_down()
         elif _matches_configured_or_default_key(
@@ -3529,10 +3535,16 @@ class LoginProviderPickerScreen(ModalScreen[str | None]):
 
     def on_key(self, event: Key) -> None:
         """Route provider picker keys to the list."""
-        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
+        if (
+            _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up")
+            or event.key == "k"
+        ):
             event.stop()
             self.action_cursor_up()
-        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
+        elif (
+            _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down")
+            or event.key == "j"
+        ):
             event.stop()
             self.action_cursor_down()
         elif _matches_configured_or_default_key(
@@ -3619,10 +3631,16 @@ class LoginMethodPickerScreen(ModalScreen[str | None]):
 
     def on_key(self, event: Key) -> None:
         """Route arrow keys between login method buttons."""
-        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
+        if (
+            _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up")
+            or event.key == "k"
+        ):
             event.stop()
             self.action_cursor_up()
-        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
+        elif (
+            _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down")
+            or event.key == "j"
+        ):
             event.stop()
             self.action_cursor_down()
         elif _matches_configured_or_default_key(
@@ -3756,10 +3774,16 @@ class ThemePickerScreen(ModalScreen[str | None]):
 
     def on_key(self, event: Key) -> None:
         """Route theme picker keys to the list."""
-        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
+        if (
+            _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up")
+            or event.key == "k"
+        ):
             event.stop()
             self.action_cursor_up()
-        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
+        elif (
+            _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down")
+            or event.key == "j"
+        ):
             event.stop()
             self.action_cursor_down()
         elif _matches_configured_or_default_key(
