@@ -7,6 +7,7 @@ import re
 import sys
 from collections.abc import Callable, Mapping
 from contextlib import suppress
+from pathlib import Path
 from typing import TextIO, cast
 
 MAX_TERMINAL_TITLE_LENGTH = 120
@@ -52,16 +53,19 @@ def sanitize_terminal_title(
 def build_terminal_title(
     session_title: str | None,
     *,
+    cwd: Path | str | None = None,
     running: bool,
     frame: int = 0,
 ) -> str:
     """Return Tau's terminal tab title for the current session/running state."""
     title = sanitize_terminal_title(session_title)
-    title = (
-        TAU_TITLE_MARK
-        if not title or title.lower() == "untitled session"
-        else f"{TAU_TITLE_MARK} | {title}"
-    )
+    cwd_name = _cwd_basename(cwd)
+    parts = [TAU_TITLE_MARK]
+    if title and title.lower() != "untitled session":
+        parts.append(title)
+    if cwd_name:
+        parts.append(cwd_name)
+    title = " | ".join(parts)
     if not running:
         return title
     return f"{RUNNING_TITLE_FRAMES[frame % len(RUNNING_TITLE_FRAMES)]} {title}"
@@ -102,11 +106,18 @@ class TerminalTitleController:
         self.enabled = False
         return False
 
-    def update(self, session_title: str | None, *, running: bool, frame: int = 0) -> None:
+    def update(
+        self,
+        session_title: str | None,
+        *,
+        cwd: Path | str | None = None,
+        running: bool,
+        frame: int = 0,
+    ) -> None:
         """Write the current Tau title if it differs from the last emitted title."""
         if not self.enabled:
             return
-        title = build_terminal_title(session_title, running=running, frame=frame)
+        title = build_terminal_title(session_title, cwd=cwd, running=running, frame=frame)
         if title == self._last_title:
             return
         if self._write(osc_terminal_title_sequence(title)):
@@ -122,3 +133,11 @@ class TerminalTitleController:
     def _default_write(self, sequence: str) -> None:
         self._stream.write(sequence)
         self._stream.flush()
+
+
+def _cwd_basename(cwd: Path | str | None) -> str:
+    if cwd is None:
+        return ""
+    raw = cwd if isinstance(cwd, Path) else Path(cwd)
+    name = raw.name or str(raw)
+    return sanitize_terminal_title(name)

@@ -5567,11 +5567,18 @@ async def test_tui_app_startup_notification_shows_when_not_quiet(
 async def test_tui_app_syncs_terminal_title_on_mount_activity_and_unmount(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    updates: list[tuple[str | None, bool, int] | tuple[str]] = []
+    updates: list[tuple[str | None, Path | None, bool, int] | tuple[str]] = []
 
     class FakeTerminalTitleController:
-        def update(self, session_title: str | None, *, running: bool, frame: int = 0) -> None:
-            updates.append((session_title, running, frame))
+        def update(
+            self,
+            session_title: str | None,
+            *,
+            cwd: Path | None = None,
+            running: bool,
+            frame: int = 0,
+        ) -> None:
+            updates.append((session_title, cwd, running, frame))
 
         def restore(self) -> None:
             updates.append(("restore",))
@@ -5589,9 +5596,9 @@ async def test_tui_app_syncs_terminal_title_on_mount_activity_and_unmount(
         app.state.running = False
         app._sync_activity_indicator()
 
-    assert ("Release review", False, 0) in updates
-    assert ("Release review", True, 0) in updates
-    assert ("Release review", True, 1) in updates
+    assert ("Release review", session.cwd, False, 0) in updates
+    assert ("Release review", session.cwd, True, 0) in updates
+    assert ("Release review", session.cwd, True, 1) in updates
     assert updates[-1] == ("restore",)
 
 

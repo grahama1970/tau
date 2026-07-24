@@ -6652,6 +6652,7 @@ class TauTuiApp(App[None]):
     def _sync_terminal_title(self) -> None:
         self._terminal_title.update(
             getattr(self.session, "session_title", None),
+            cwd=getattr(self.session, "cwd", None),
             running=self.state.running,
             frame=self._activity_frame,
         )

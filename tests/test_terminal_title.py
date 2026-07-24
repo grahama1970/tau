@@ -27,6 +27,14 @@ def test_build_terminal_title_uses_session_name_and_running_frame() -> None:
     assert build_terminal_title("build notes", running=True, frame=1) == "⠙ τ | build notes"
 
 
+def test_build_terminal_title_includes_cwd_basename() -> None:
+    assert (
+        build_terminal_title("build notes", cwd="/workspace/project", running=False)
+        == "τ | build notes | project"
+    )
+    assert build_terminal_title(None, cwd="/workspace/project", running=False) == "τ | project"
+
+
 def test_build_terminal_title_falls_back_for_unnamed_sessions() -> None:
     assert build_terminal_title(None, running=False) == "τ"
     assert build_terminal_title(" Untitled session ", running=True) == "⠋ τ"
