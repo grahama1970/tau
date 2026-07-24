@@ -353,6 +353,7 @@ def test_hotkeys_command_lists_common_tui_shortcuts(tmp_path: Path) -> None:
     assert "Session picker: Ctrl+R/F2 rename, Ctrl+D delete" in result.message
     assert "Ctrl+Backspace delete when search is empty" in result.message
     assert "session_new, session_tree, session_fork, session_resume" in result.message
+    assert "Tree picker: Ctrl+O cycles filters, Shift+Ctrl+O cycles backward" in result.message
     assert "Shift+Tab: cycle thinking mode" in result.message
 
 

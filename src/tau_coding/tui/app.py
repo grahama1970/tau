@@ -1219,6 +1219,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         Binding("ctrl+l", "toggle_labeled_tree_filter", "Labeled filter", show=False),
         Binding("ctrl+a", "toggle_all_tree_filter", "All filter", show=False),
         Binding("ctrl+o", "cycle_tree_filter", "Cycle filter", show=False),
+        Binding("shift+ctrl+o", "cycle_tree_filter_backward", "Cycle filter backward", show=False),
         Binding("ctrl+f", "cycle_tree_filter", "Filter", show=False),
         Binding("ctrl+x", "copy_selected_tree_entry", "Copy", show=False),
         Binding("ctrl+left", "fold_tree_branch", "Fold", show=False),
@@ -1305,6 +1306,9 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         elif event.key in {"ctrl+o", "ctrl+f"}:
             event.stop()
             self.action_cycle_tree_filter()
+        elif event.key in {"shift+ctrl+o", "ctrl+shift+o"}:
+            event.stop()
+            self.action_cycle_tree_filter_backward()
         elif event.key == "ctrl+x":
             event.stop()
             self.action_copy_selected_tree_entry()
@@ -1515,10 +1519,16 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         """Cycle Pi-style tree filter modes supported by Tau's tree choice model."""
         self.run_worker(self._cycle_tree_filter())
 
-    async def _cycle_tree_filter(self) -> None:
+    def action_cycle_tree_filter_backward(self) -> None:
+        """Cycle Pi-style tree filter modes backward."""
+        self.run_worker(self._cycle_tree_filter(direction=-1))
+
+    async def _cycle_tree_filter(self, *, direction: Literal[-1, 1] = 1) -> None:
         selected_entry_id = self._selected_entry_id()
         current_index = TREE_FILTER_MODES.index(self.filter_mode)
-        self.filter_mode = TREE_FILTER_MODES[(current_index + 1) % len(TREE_FILTER_MODES)]
+        self.filter_mode = TREE_FILTER_MODES[
+            (current_index + direction) % len(TREE_FILTER_MODES)
+        ]
         if self.filter_mode == "no-tools":
             self.show_tool_calls = False
         elif self.filter_mode == "all":
@@ -1607,7 +1617,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         return (
             "Type filters - Enter branches - S summarizes - C custom summary - "
             f"Ctrl+X copy - Shift+L label - Ctrl+Left/Right fold - "
-            f"Ctrl+T no-tools ({tool_call_state}) - Ctrl+O filter {filter_label} - "
+            f"Ctrl+T no-tools ({tool_call_state}) - Ctrl+O/Shift+Ctrl+O filter {filter_label} - "
             "Escape clears/closes"
         )
 

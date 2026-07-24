@@ -3728,6 +3728,37 @@ async def test_tui_app_tree_picker_cycles_filter_modes() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_tree_picker_cycles_filter_modes_backward_with_pi_key() -> None:
+    session = FakeSession()
+    session.tree_labels["left"] = "bookmark"
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        tree_list = app.screen.query_one("#tree-picker-list", ListView)
+
+        await pilot.press("shift+ctrl+o")
+        await pilot.pause()
+
+        labels = [str(item.query_one(Label).render()) for item in tree_list.children]
+        assert labels == [
+            "  user: Root",
+            "  tool call: read",
+            "  [bookmark] assistant: Left",
+            "* assistant: Right",
+        ]
+        assert tree_list.index == 3
+        assert "Ctrl+O/Shift+Ctrl+O filter all" in str(
+            app.screen.query_one("#tree-picker-help", Static).render()
+        )
+
+
+@pytest.mark.anyio
 async def test_tui_app_tree_picker_direct_filter_shortcuts() -> None:
     session = FakeSession()
     session.tree_labels["left"] = "bookmark"
