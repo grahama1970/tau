@@ -148,6 +148,7 @@ def test_tui_settings_reads_pi_keybinding_aliases() -> None:
                 "app.tree.filter.userOnly": "ctrl+u",
                 "app.tree.filter.cycleForward": "ctrl+o",
                 "app.tree.toggleLabelTimestamp": "shift+t",
+                "tui.input.newLine": ["shift+enter", "ctrl+j"],
                 "cycleModelForward": "f10",
                 "selectModel": "f11",
                 "tab": "f12",
@@ -179,6 +180,7 @@ def test_tui_settings_reads_pi_keybinding_aliases() -> None:
     assert settings.keybindings.tree_filter_user_only == "ctrl+u"
     assert settings.keybindings.tree_filter_cycle == "ctrl+o"
     assert settings.keybindings.tree_toggle_label_timestamp == "shift+t"
+    assert settings.keybindings.insert_newline == "shift+enter,ctrl+j"
     assert settings.keybindings.model_cycle == "f10"
     assert settings.keybindings.model_picker == "f11"
     assert settings.keybindings.accept_completion == "f12"
@@ -527,6 +529,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
             session_resume="f16",
             queue_follow_up="f5",
             dequeue_messages="f9",
+            insert_newline="shift+enter,ctrl+j",
             accept_completion="f2",
             thinking_cycle="f3",
             model_cycle="f6",
@@ -551,6 +554,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["keybindings"]["session_resume"] == "f16"
     assert settings.to_json()["keybindings"]["queue_follow_up"] == "f5"
     assert settings.to_json()["keybindings"]["dequeue_messages"] == "f9"
+    assert settings.to_json()["keybindings"]["insert_newline"] == "shift+enter,ctrl+j"
     assert settings.to_json()["keybindings"]["toggle_tool_results"] == "ctrl+o"
     assert settings.to_json()["keybindings"]["toggle_thinking"] == "f4"
     assert settings.to_json()["keybindings"]["accept_completion"] == "f2"

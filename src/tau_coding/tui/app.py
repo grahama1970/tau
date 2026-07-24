@@ -6999,6 +6999,12 @@ def _key_hint_with_default(configured_key: str, default_key: str) -> str:
     return _key_hint(active_key)
 
 
+def _newline_key_hint(keybindings: TuiKeybindings) -> str:
+    if keybindings.insert_newline == "shift+enter":
+        return "Shift+Enter" if keybindings.command_palette == "ctrl+j" else "Shift+Enter/Ctrl+J"
+    return _key_hint(keybindings.insert_newline)
+
+
 def _local_tui_command(
     text: str,
     keybindings: TuiKeybindings,
@@ -7019,11 +7025,7 @@ def _local_tui_command(
 
 
 def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
-    newline_hint = (
-        "Shift+Enter"
-        if keybindings.command_palette == "ctrl+j"
-        else "Shift+Enter/Ctrl+J"
-    )
+    newline_hint = _newline_key_hint(keybindings)
     lines = [
         "Keyboard Shortcuts",
         "",
@@ -7276,7 +7278,7 @@ def _prompt_bindings(
         return bindings + _hidden_prompt_bindings(keybindings, visible_bindings=bindings)
     bindings = [
         Binding("enter", "submit_prompt", "Submit", priority=True),
-        Binding("shift+enter", "insert_newline", "Newline", priority=True),
+        Binding(keybindings.insert_newline, "insert_newline", "Newline", priority=True),
         Binding(
             keybindings.command_palette,
             (

@@ -3189,6 +3189,33 @@ async def test_tui_app_ctrl_j_inserts_multiline_prompt_newline() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_uses_configured_pi_newline_keybinding() -> None:
+    session = FakeSession(
+        events=[
+            AgentStartEvent(),
+            MessageEndEvent(message=UserMessage(content="first\nsecond")),
+            AgentEndEvent(),
+        ]
+    )
+    app = TauTuiApp(
+        session,
+        tui_settings=TuiSettings(keybindings=TuiKeybindings(insert_newline="f8")),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "first"
+        prompt.cursor_position = len(prompt.value)
+        await pilot.press("f8")
+        prompt.value += "second"
+        await pilot.press("enter")
+        await pilot.pause()
+
+    assert session.prompt_texts == ["first\nsecond"]
+    assert prompt.value == ""
+
+
+@pytest.mark.anyio
 async def test_prompt_ctrl_minus_undoes_inserted_newline() -> None:
     app = TauTuiApp(FakeSession())
 
