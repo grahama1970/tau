@@ -3529,6 +3529,44 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
 
 
 @pytest.mark.anyio
+async def test_tui_app_settings_picker_search_filters_before_change(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(
+            theme="tau-dark",
+            auto_copy_selection=False,
+            double_escape_action="tree",
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/settings"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, SettingsPickerScreen)
+        search = app.screen.query_one("#settings-picker-search", Input)
+        assert search.has_focus
+
+        await pilot.press("e", "s", "c", "a", "p", "e")
+        settings_list = app.screen.query_one("#settings-picker-list", ListView)
+        labels = [str(item.query_one(Label).render()) for item in settings_list.children]
+
+        await pilot.press("enter")
+        await pilot.pause()
+
+    assert labels == ["Double Escape: tree"]
+    assert app.tui_settings.double_escape_action == "fork"
+    assert app.tui_settings.theme == "tau-dark"
+    assert app.tui_settings.auto_copy_selection is False
+
+
+@pytest.mark.anyio
 async def test_tui_app_trust_picker_saves_selected_decision() -> None:
     session = FakeSession()
     app = TauTuiApp(session)

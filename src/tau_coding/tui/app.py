@@ -915,22 +915,38 @@ class SettingsPickerScreen(ModalScreen[None]):
         super().__init__()
         self.settings = settings
         self.apply_settings = apply_settings
+        self.search_value = ""
+        self.filtered_items = _settings_picker_items(settings)
 
     def compose(self) -> ComposeResult:
         """Compose the settings picker."""
         with Vertical(id="settings-picker"):
             yield Static("Settings", id="settings-picker-title")
+            yield Input(placeholder="Search settings", id="settings-picker-search")
             yield ListView(
                 *self._list_items(),
                 id="settings-picker-list",
             )
-            yield Static("Enter changes - Escape closes", id="settings-picker-help")
+            yield Static(self._help_text(), id="settings-picker-help")
 
     def on_mount(self) -> None:
-        """Focus the settings list."""
-        settings_list = self.query_one("#settings-picker-list", ListView)
-        settings_list.index = 0
-        settings_list.focus()
+        """Focus the settings search input."""
+        self._refresh_settings_list(0)
+        self.query_one("#settings-picker-search", Input).focus()
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """Filter settings as the search value changes."""
+        if event.input.id != "settings-picker-search":
+            return
+        self.search_value = event.value
+        self._refresh_settings_list(0)
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Change the highlighted filtered setting from the search input."""
+        if event.input.id != "settings-picker-search":
+            return
+        event.stop()
+        self.action_select_cursor()
 
     def on_key(self, event: Key) -> None:
         """Route settings picker keys to the list."""
@@ -949,7 +965,7 @@ class SettingsPickerScreen(ModalScreen[None]):
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Change the selected setting and keep the picker open."""
-        if event.index >= len(_settings_picker_items(self.settings)):
+        if event.index >= len(self.filtered_items):
             return
         self._change_setting(event.index)
 
@@ -973,24 +989,36 @@ class SettingsPickerScreen(ModalScreen[None]):
         self.dismiss(None)
 
     def _change_setting(self, index: int) -> None:
-        items = _settings_picker_items(self.settings)
-        if index >= len(items):
+        if index >= len(self.filtered_items):
             return
-        self.settings = _next_tui_settings(self.settings, items[index].key)
+        selected_key = self.filtered_items[index].key
+        self.settings = _next_tui_settings(self.settings, selected_key)
         self.apply_settings(self.settings)
         self._refresh_settings_list(index)
 
     def _refresh_settings_list(self, index: int) -> None:
+        self.filtered_items = _filter_settings_picker_items(
+            _settings_picker_items(self.settings),
+            self.search_value,
+        )
         settings_list = self.query_one("#settings-picker-list", ListView)
         settings_list.clear()
         settings_list.extend(self._list_items())
-        settings_list.index = min(index, len(settings_list.children) - 1)
+        settings_list.index = (
+            min(index, len(settings_list.children) - 1) if self.filtered_items else None
+        )
+        self.query_one("#settings-picker-help", Static).update(self._help_text())
 
     def _list_items(self) -> list[ListItem]:
         return [
             ListItem(Label(_settings_picker_label(item), markup=False))
-            for item in _settings_picker_items(self.settings)
+            for item in self.filtered_items
         ]
+
+    def _help_text(self) -> str:
+        if self.filtered_items:
+            return "Type to search - Enter changes - Escape closes"
+        return "No matching settings - Escape closes"
 
 
 class TrustPickerScreen(ModalScreen[ProjectTrustOption | None]):
@@ -5531,6 +5559,20 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
 
 def _settings_picker_label(item: SettingsPickerItem) -> str:
     return f"{item.label}: {item.value}"
+
+
+def _filter_settings_picker_items(
+    items: Sequence[SettingsPickerItem],
+    query: str,
+) -> tuple[SettingsPickerItem, ...]:
+    normalized = " ".join(query.casefold().split())
+    if not normalized:
+        return tuple(items)
+    return tuple(
+        item
+        for item in items
+        if normalized in f"{item.label} {item.value} {item.key}".casefold()
+    )
 
 
 def _project_trust_decision_label(decision: ProjectTrustStoreEntry | None) -> str:
