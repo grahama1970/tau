@@ -6858,6 +6858,51 @@ async def test_tui_app_pastes_clipboard_text_into_prompt(
 
 
 @pytest.mark.anyio
+async def test_prompt_paste_normalizes_dropped_file_paths(tmp_path: Path) -> None:
+    dropped = tmp_path / "dropped file.txt"
+    dropped.write_text("hello", encoding="utf-8")
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "inspect"
+        prompt.cursor_position = len("inspect")
+        prompt.insert_paste_text(str(dropped))
+        await pilot.pause()
+
+        assert prompt.value == f'inspect "{dropped}" '
+
+
+@pytest.mark.anyio
+async def test_prompt_native_paste_intercepts_file_drop(tmp_path: Path) -> None:
+    dropped = tmp_path / "dropped.txt"
+    dropped.write_text("hello", encoding="utf-8")
+    app = TauTuiApp(FakeSession())
+
+    class FakePaste:
+        def __init__(self, text: str) -> None:
+            self.text = text
+            self.stopped = False
+            self.prevented = False
+
+        def stop(self) -> None:
+            self.stopped = True
+
+        def prevent_default(self) -> None:
+            self.prevented = True
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        event = FakePaste(str(dropped))
+        prompt.on_paste(event)  # type: ignore[arg-type]
+        await pilot.pause()
+
+        assert prompt.value == f"{dropped} "
+        assert event.stopped is True
+        assert event.prevented is True
+
+
+@pytest.mark.anyio
 async def test_tui_app_compacts_large_clipboard_paste_but_submits_expanded_text(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

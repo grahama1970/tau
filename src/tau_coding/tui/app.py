@@ -124,6 +124,7 @@ from tau_coding.tui.config import (
     load_tui_settings,
     save_tui_settings,
 )
+from tau_coding.tui.file_drop import normalize_dropped_paths
 from tau_coding.tui.pty_proof import pty_input_received_line, pty_ready_line
 from tau_coding.tui.state import (
     TuiState,
@@ -810,6 +811,11 @@ class PromptInput(TextArea):
 
     def insert_paste_text(self, text: str) -> None:
         """Insert clipboard text, compacting large pastes behind Pi-style markers."""
+        dropped_paths = normalize_dropped_paths(text)
+        if dropped_paths is not None:
+            self._insert_dropped_paths(dropped_paths)
+            return
+
         filtered = _normalize_pasted_text(text)
         if not filtered:
             return
@@ -839,6 +845,36 @@ class PromptInput(TextArea):
 
         self._push_undo_snapshot()
         self.insert(filtered)
+
+    def on_paste(self, event: events.Paste) -> None:
+        """Handle file drops and collapse very large pasted text."""
+        dropped_paths = normalize_dropped_paths(event.text)
+        if dropped_paths is not None:
+            event.stop()
+            event.prevent_default()
+            self._insert_dropped_paths(dropped_paths)
+            return
+        filtered = _normalize_pasted_text(event.text)
+        if (
+            len(filtered.split("\n")) <= self.LARGE_PASTE_LINE_THRESHOLD
+            and len(filtered) <= self.LARGE_PASTE_CHAR_THRESHOLD
+        ):
+            return
+        event.stop()
+        event.prevent_default()
+        self.insert_paste_text(event.text)
+
+    def _insert_dropped_paths(self, insertion: str) -> None:
+        """Insert dropped paths at the cursor, separated from surrounding text."""
+        position = self.cursor_position
+        before = self.text[:position]
+        after = self.text[position:]
+        if before and not before[-1].isspace():
+            insertion = f" {insertion}"
+        if not after or not after[0].isspace():
+            insertion = f"{insertion} "
+        self._push_undo_snapshot()
+        self.insert(insertion)
 
     @property
     def cursor_position(self) -> int:
