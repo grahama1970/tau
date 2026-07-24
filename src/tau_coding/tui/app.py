@@ -386,6 +386,13 @@ class PromptInput(TextArea):
         """Open the app-level command palette."""
         self._completion_target().action_open_command_palette()
 
+    def action_command_palette_or_delete_to_line_end(self) -> None:
+        """Use Ctrl+K as Pi line-end delete when editing, or commands when empty."""
+        if self.text:
+            self.action_delete_to_line_end()
+            return
+        self._completion_target().action_open_command_palette()
+
     def action_open_session_picker(self) -> None:
         """Open the app-level session picker."""
         self._completion_target().action_open_session_picker()
@@ -549,6 +556,64 @@ class PromptInput(TextArea):
         self.text = "\n".join(lines)
         self.prune_paste_markers()
         self.move_cursor((row, column))
+
+    def action_delete_to_line_end(self) -> None:
+        """Delete prompt text from the cursor forward to the current line end."""
+        if self.selected_text:
+            return
+        text = self.text
+        if not text:
+            return
+        row, column = self.cursor_location
+        lines = text.split("\n")
+        if row >= len(lines):
+            return
+        current_line = lines[row]
+        if column < len(current_line):
+            self._push_undo_snapshot()
+            self._push_kill(current_line[column:], prepend=False)
+            lines[row] = current_line[:column]
+            self.text = "\n".join(lines)
+            self.prune_paste_markers()
+            self.move_cursor((row, column))
+            return
+        if row < len(lines) - 1:
+            self._push_undo_snapshot()
+            lines[row] = f"{current_line}{lines[row + 1]}"
+            del lines[row + 1]
+            self.text = "\n".join(lines)
+            self._push_kill("\n", prepend=False)
+            self.prune_paste_markers()
+            self.move_cursor((row, len(current_line)))
+
+    def action_delete_character_forward(self) -> None:
+        """Delete the character under the cursor."""
+        if self.selected_text:
+            return
+        text = self.text
+        if not text:
+            return
+        row, column = self.cursor_location
+        lines = text.split("\n")
+        if row >= len(lines):
+            return
+        current_line = lines[row]
+        self._last_prompt_edit = None
+        self._last_yank_range = None
+        if column < len(current_line):
+            self._push_undo_snapshot()
+            lines[row] = f"{current_line[:column]}{current_line[column + 1:]}"
+            self.text = "\n".join(lines)
+            self.prune_paste_markers()
+            self.move_cursor((row, column))
+            return
+        if row < len(lines) - 1:
+            self._push_undo_snapshot()
+            lines[row] = f"{current_line}{lines[row + 1]}"
+            del lines[row + 1]
+            self.text = "\n".join(lines)
+            self.prune_paste_markers()
+            self.move_cursor((row, len(current_line)))
 
     def action_move_to_line_start(self) -> None:
         """Move the prompt cursor to the start of the current line."""
@@ -733,6 +798,9 @@ class PromptInput(TextArea):
 
     async def action_quit(self) -> None:
         """Quit the app through the app-level action."""
+        if self.text:
+            self.action_delete_character_forward()
+            return
         await self.app.action_quit()
 
     def action_scroll_down(self) -> None:
@@ -782,6 +850,10 @@ class PromptInput(TextArea):
         elif event.key == keybindings.cancel:
             event.stop()
             self._completion_target().action_cancel()
+        elif event.key == "ctrl+k" and self.text:
+            event.stop()
+            event.prevent_default()
+            self.action_delete_to_line_end()
         elif event.key == keybindings.command_palette:
             event.stop()
             self._completion_target().action_open_command_palette()
@@ -850,6 +922,14 @@ class PromptInput(TextArea):
             event.stop()
             event.prevent_default()
             self.action_delete_word_forward()
+        elif event.key == "ctrl+k" and event.key != keybindings.command_palette:
+            event.stop()
+            event.prevent_default()
+            self.action_delete_to_line_end()
+        elif event.key == "delete" or (event.key == "ctrl+d" and self.text):
+            event.stop()
+            event.prevent_default()
+            self.action_delete_character_forward()
         elif event.key == "ctrl+y":
             event.stop()
             event.prevent_default()
@@ -6717,6 +6797,8 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         "- Alt+F/Ctrl+Right/Alt+Right: move word right",
         "- Ctrl+]/Ctrl+Alt+]: jump to next or previous character",
         "- Ctrl+U: delete to line start",
+        "- Ctrl+K: delete to line end when not used for commands",
+        "- Delete/Ctrl+D: delete next character; Ctrl+D quits when the editor is empty",
         "- Ctrl+W/Alt+Backspace: delete previous word",
         "- Alt+D/Alt+Delete: delete next word",
         "- Ctrl+Y/Alt+Y: yank or cycle deleted text",
@@ -6864,7 +6946,16 @@ def _prompt_bindings(
     bindings = [
         Binding("enter", "submit_prompt", "Submit", priority=True),
         Binding("shift+enter", "insert_newline", "Newline", priority=True),
-        Binding(keybindings.command_palette, "open_command_palette", "Commands", priority=True),
+        Binding(
+            keybindings.command_palette,
+            (
+                "command_palette_or_delete_to_line_end"
+                if keybindings.command_palette == "ctrl+k"
+                else "open_command_palette"
+            ),
+            "Commands",
+            priority=True,
+        ),
         Binding(keybindings.session_picker, "open_session_picker", "Sessions", priority=True),
         *_optional_bindings(
             (
