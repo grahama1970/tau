@@ -1227,6 +1227,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         Binding("ctrl+right", "unfold_tree_branch", "Unfold", show=False),
         Binding("alt+right", "unfold_tree_branch", "Unfold", show=False),
         Binding("shift+l", "edit_tree_label", "Label", show=False),
+        Binding("shift+t", "toggle_tree_label_timestamps", "Label time", show=False),
     ]
 
     def __init__(
@@ -1241,6 +1242,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         self.theme = theme
         self.set_entry_label = set_entry_label
         self.show_tool_calls = True
+        self.show_label_timestamps = False
         self.filter_mode: TreeFilterMode = "default"
         self.folded_entry_ids: set[str] = set()
         self.search_value = ""
@@ -1321,6 +1323,9 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         elif event.key in {"shift+l", "L"}:
             event.stop()
             self.action_edit_tree_label()
+        elif event.key in {"shift+t", "T"}:
+            event.stop()
+            self.action_toggle_tree_label_timestamps()
         elif event.key == "backspace":
             if self.search_value:
                 event.stop()
@@ -1495,6 +1500,11 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         except Exception as exc:  # noqa: BLE001 - surface label failures in the TUI
             app._notify(f"Error: {exc}", severity="error")
 
+    def action_toggle_tree_label_timestamps(self) -> None:
+        """Toggle Pi-style label timestamp display."""
+        self.show_label_timestamps = not self.show_label_timestamps
+        self.run_worker(self._refresh_tree_choices(selected_entry_id=self._selected_entry_id()))
+
     def action_toggle_tool_calls(self) -> None:
         """Toggle Pi's no-tools tree filter."""
         self.run_worker(self._set_tree_filter("no-tools", toggle=True))
@@ -1607,16 +1617,27 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
 
     def _list_items(self) -> list[ListItem]:
         return [
-            ListItem(Label(_tree_picker_label(choice, theme=self.theme), markup=False))
+            ListItem(
+                Label(
+                    _tree_picker_label(
+                        choice,
+                        theme=self.theme,
+                        show_label_timestamps=self.show_label_timestamps,
+                    ),
+                    markup=False,
+                )
+            )
             for choice in self._visible_choices()
         ]
 
     def _help_text(self) -> str:
         tool_call_state = "shown" if self.show_tool_calls else "hidden"
         filter_label = "default" if self.filter_mode == "default" else self.filter_mode
+        label_time_state = "on" if self.show_label_timestamps else "off"
         return (
             "Type filters - Enter branches - S summarizes - C custom summary - "
-            f"Ctrl+X copy - Shift+L label - Ctrl+Left/Right fold - "
+            f"Ctrl+X copy - Shift+L label - Shift+T label time ({label_time_state}) - "
+            "Ctrl+Left/Right fold - "
             f"Ctrl+T no-tools ({tool_call_state}) - Ctrl+O/Shift+Ctrl+O filter {filter_label} - "
             "Escape clears/closes"
         )
@@ -5247,7 +5268,12 @@ def _tree_choice_has_folded_ancestor(
     return False
 
 
-def _tree_picker_label(choice: SessionTreeChoice, *, theme: TuiTheme) -> Text:
+def _tree_picker_label(
+    choice: SessionTreeChoice,
+    *,
+    theme: TuiTheme,
+    show_label_timestamps: bool = False,
+) -> Text:
     marker = "* " if choice.active else "  "
     label = choice.label
     indent_width = len(label) - len(label.lstrip(" "))
@@ -5257,6 +5283,8 @@ def _tree_picker_label(choice: SessionTreeChoice, *, theme: TuiTheme) -> Text:
     text = Text(f"{marker}{indent}")
     if choice.tree_label:
         text.append(f"[{choice.tree_label}] ", style=theme.accent)
+        if show_label_timestamps and choice.tree_label_timestamp is not None:
+            text.append(f"{_session_updated_at_label(choice.tree_label_timestamp)} ")
     if separator:
         text.append(author, style=theme.accent)
         text.append(f"{separator}{rest}")

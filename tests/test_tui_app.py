@@ -162,6 +162,7 @@ class FakeSession:
         self.tree_branch_requests: list[tuple[str, bool, str | None]] = []
         self.tree_label_requests: list[tuple[str, str | None]] = []
         self.tree_labels: dict[str, str] = {}
+        self.tree_label_timestamps: dict[str, float] = {}
         self.new_session_count = 0
         self.clone_session_count = 0
         self.prompt_texts: list[str] = []
@@ -385,6 +386,7 @@ class FakeSession:
                 label="user: Root",
                 copy_text="Root",
                 tree_label=self.tree_labels.get("root"),
+                tree_label_timestamp=self.tree_label_timestamps.get("root"),
             ),
             SessionTreeChoice(
                 entry_id="tool",
@@ -393,6 +395,7 @@ class FakeSession:
                 is_tool_call=True,
                 copy_text=None,
                 tree_label=self.tree_labels.get("tool"),
+                tree_label_timestamp=self.tree_label_timestamps.get("tool"),
             ),
             SessionTreeChoice(
                 entry_id="left",
@@ -400,6 +403,7 @@ class FakeSession:
                 parent_entry_id="root",
                 copy_text="Left",
                 tree_label=self.tree_labels.get("left"),
+                tree_label_timestamp=self.tree_label_timestamps.get("left"),
             ),
             SessionTreeChoice(
                 entry_id="right",
@@ -408,6 +412,7 @@ class FakeSession:
                 active=True,
                 copy_text="Right",
                 tree_label=self.tree_labels.get("right"),
+                tree_label_timestamp=self.tree_label_timestamps.get("right"),
             ),
         )
 
@@ -4018,6 +4023,39 @@ async def test_tui_app_tree_picker_edits_selected_entry_label() -> None:
 
     assert session.tree_label_requests == [("left", "bookmark")]
     assert notifications == ["Labeled tree entry: left"]
+
+
+@pytest.mark.anyio
+async def test_tui_app_tree_picker_toggles_label_timestamps_with_pi_key() -> None:
+    session = FakeSession()
+    session.tree_labels["left"] = "bookmark"
+    session.tree_label_timestamps["left"] = datetime(2026, 6, 19, 14, 30).timestamp()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        labels_before = [
+            str(item.query_one(Label).render())
+            for item in app.screen.query_one("#tree-picker-list", ListView).children
+        ]
+
+        await pilot.press("shift+t")
+        await pilot.pause()
+
+        labels_after = [
+            str(item.query_one(Label).render())
+            for item in app.screen.query_one("#tree-picker-list", ListView).children
+        ]
+        help_text = str(app.screen.query_one("#tree-picker-help", Static).render())
+
+    assert "2026-06-19 14:30" not in "\n".join(labels_before)
+    assert "  [bookmark] 2026-06-19 14:30 assistant: Left" in labels_after
+    assert "Shift+T label time (on)" in help_text
 
 
 @pytest.mark.anyio

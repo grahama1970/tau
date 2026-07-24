@@ -529,6 +529,7 @@ def _hotkeys_command(context: CommandContext) -> CommandResult:
         "- Optional Pi session keys in ~/.tau/tui.json: session_new, session_tree, "
         "session_fork, session_resume",
         "- Tree picker: Ctrl+O cycles filters, Shift+Ctrl+O cycles backward",
+        "- Tree picker: Shift+L edits labels, Shift+T toggles label timestamps",
         "- Shift+Tab: cycle thinking mode",
         "- Ctrl+T: toggle thinking tokens",
         "- Ctrl+O: collapse or expand tool output",
