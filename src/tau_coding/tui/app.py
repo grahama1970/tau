@@ -440,6 +440,25 @@ class PromptInput(TextArea):
             self.clear_paste_markers()
             self.move_cursor((0, 0))
 
+    def action_delete_to_line_start(self) -> None:
+        """Delete prompt text from the cursor back to the current line start."""
+        if self.selected_text:
+            return
+        text = self.text
+        if not text:
+            return
+        row, column = self.cursor_location
+        if column <= 0:
+            return
+        lines = text.split("\n")
+        if row >= len(lines):
+            return
+        line_start_offset = sum(len(line) + 1 for line in lines[:row])
+        delete_end_offset = line_start_offset + column
+        self.text = text[:line_start_offset] + text[delete_end_offset:]
+        self.prune_paste_markers()
+        self.move_cursor((row, 0))
+
     def get_line(self, line_index: int) -> Text:
         """Retrieve one prompt line with shell prefixes highlighted."""
         line = super().get_line(line_index)
@@ -556,6 +575,10 @@ class PromptInput(TextArea):
             if self.text:
                 self.text = ""
                 self.move_cursor((0, 0))
+        elif event.key == "ctrl+u":
+            event.stop()
+            event.prevent_default()
+            self.action_delete_to_line_start()
         elif event.key == keybindings.completion_next:
             event.stop()
             if self._has_completion_options():
@@ -6329,6 +6352,7 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         "Editing:",
         "- Enter: submit prompt",
         "- Shift+Enter: insert newline",
+        "- Ctrl+U: delete to line start",
         f"- {_key_hint(keybindings.accept_completion)}: accept autocomplete or path completion",
         f"- {_key_hint(keybindings.external_editor)}: edit prompt in external editor",
         f"- {_key_hint(keybindings.paste_clipboard)}: paste clipboard text or image",

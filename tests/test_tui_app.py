@@ -2495,6 +2495,36 @@ async def test_prompt_arrow_keys_move_between_lines_without_completions() -> Non
 
 
 @pytest.mark.anyio
+async def test_prompt_ctrl_u_deletes_to_line_start() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha beta"
+        prompt.move_cursor((0, len("alpha ")))
+
+        await pilot.press("ctrl+u")
+
+        assert prompt.text == "beta"
+        assert prompt.cursor_location == (0, 0)
+
+
+@pytest.mark.anyio
+async def test_prompt_ctrl_u_deletes_current_line_prefix_only() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "first\nsecond third"
+        prompt.move_cursor((1, len("second")))
+
+        await pilot.press("ctrl+u")
+
+        assert prompt.text == "first\n third"
+        assert prompt.cursor_location == (1, 0)
+
+
+@pytest.mark.anyio
 async def test_tui_app_submits_multiline_prompt_with_enter() -> None:
     session = FakeSession(
         events=[
@@ -5339,6 +5369,7 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "F5: queue follow-up while running" in app.screen.message
         assert "Ctrl+Y: copy last assistant message" in app.screen.message
         assert "F2: open session tree" in app.screen.message
+        assert "Ctrl+U: delete to line start" in app.screen.message
 
 
 @pytest.mark.anyio
