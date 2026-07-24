@@ -591,6 +591,11 @@ class CodingSession:
         return self._context_files
 
     @property
+    def system_prompt(self) -> str:
+        """Return the active system prompt."""
+        return self._harness.config.system
+
+    @property
     def context_token_estimate(self) -> int:
         """Return a rough token estimate for the active provider context."""
         return self.context_usage.total_tokens

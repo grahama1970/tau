@@ -165,6 +165,7 @@ class FakeSession:
         self.available_thinking_levels = ("off", "minimal", "low", "medium", "high", "xhigh")
         self.steering_queue_mode = "one_at_a_time"
         self.follow_up_queue_mode = "one_at_a_time"
+        self.system_prompt = "You are Tau."
         self.state = FakeSessionState()
         self.resource_diagnostics = ()
         self.session_manager = None
@@ -295,6 +296,7 @@ class FakeSession:
             or text.startswith("/tools")
             or text.startswith("/skills")
             or text.startswith("/prompts")
+            or text.startswith("/system")
         ):
             return create_default_command_registry().execute(self, text)
         if text.startswith("/name "):
@@ -919,6 +921,16 @@ def test_transcript_plain_tool_body_renders_patch_as_colored_diff() -> None:
     assert "+new" in plain
     assert re.search(r"\x1b\[91;[^m]*m-old", styled)
     assert re.search(r"\x1b\[92;[^m]*m\+new", styled)
+
+
+def test_status_chat_item_renders_slash_command_text_literally() -> None:
+    console = Console(record=True, width=80)
+
+    console.print(render_chat_item(ChatItem(role="status", text="/system\nYou are Tau.")))
+
+    output = console.export_text()
+    assert "/system" in output
+    assert "You are Tau." in output
 
 
 def test_thinking_chat_items_use_distinct_style_and_markdown() -> None:
@@ -6889,6 +6901,22 @@ async def test_tui_app_resources_command_uses_command_output_modal() -> None:
         assert "- /review (.agents/prompts/review.md)" in app.screen.message
         assert "Tools:" in app.screen.message
         assert "- read" in app.screen.message
+
+
+@pytest.mark.anyio
+async def test_tui_app_system_appends_command_output_to_transcript() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/system"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert not isinstance(app.screen, CommandOutputScreen)
+        assert [(item.role, item.text) for item in app.state.items] == [
+            ("status", "/system\nYou are Tau.")
+        ]
 
 
 @pytest.mark.anyio

@@ -43,6 +43,7 @@ class FakeSession:
         self.thinking_unavailable_reason: str | None = None
         self.tui_theme = "tau-dark"
         self.resource_diagnostics = ()
+        self.system_prompt = "You are Tau.\nFollow project instructions."
         self.session_id = "session-1"
         self.session_title: str | None = None
         self.session_manager: SessionManager | None = manager
@@ -118,6 +119,7 @@ def test_registered_commands_are_pi_aligned(tmp_path: Path) -> None:
         "share",
         "skill",
         "skills",
+        "system",
         "theme",
         "tools",
         "tree",
@@ -502,6 +504,17 @@ def test_prompts_command_rejects_arguments(tmp_path: Path) -> None:
     assert result.handled is True
     assert result.prompts_picker_requested is False
     assert result.message == "Usage: /prompts"
+
+
+def test_system_command_returns_active_prompt(tmp_path: Path) -> None:
+    registry = create_default_command_registry()
+    session = FakeSession(tmp_path)
+
+    result = registry.execute(session, "/system")
+
+    assert result.handled is True
+    assert result.message == "You are Tau.\nFollow project instructions."
+    assert registry.execute(session, "/system extra").message == "Usage: /system"
 
 
 def test_model_command_rejects_unknown_model(tmp_path: Path) -> None:

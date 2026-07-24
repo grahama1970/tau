@@ -70,6 +70,9 @@ class CommandSession(Protocol):
     def resource_diagnostics(self) -> Sequence[ResourceDiagnostic]: ...
 
     @property
+    def system_prompt(self) -> str: ...
+
+    @property
     def session_id(self) -> str | None: ...
 
     @property
@@ -423,6 +426,15 @@ def create_default_command_registry() -> CommandRegistry:
     )
     registry.register(
         SlashCommand(
+            name="system",
+            usage="/system",
+            description="Show the active system prompt without saving it.",
+            handler=_system_command,
+            search_terms=("prompt", "instructions"),
+        )
+    )
+    registry.register(
+        SlashCommand(
             name="theme",
             usage="/theme [name]",
             description="Show or set the TUI theme.",
@@ -727,6 +739,12 @@ def _skill_command(context: CommandContext) -> CommandResult:
         handled=True,
         message="Use /skill:<name> [request] to expand a loaded skill into your prompt.",
     )
+
+
+def _system_command(context: CommandContext) -> CommandResult:
+    if context.args:
+        return CommandResult(handled=True, message="Usage: /system")
+    return CommandResult(handled=True, message=context.session.system_prompt)
 
 
 def _prompts_command(context: CommandContext) -> CommandResult:
