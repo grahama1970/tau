@@ -8256,6 +8256,8 @@ async def test_tui_app_summarizes_blocked_workflow_terminal_receipt() -> None:
     assert "workflow: approved-release-bundle" in tool_result
     assert "status: BLOCKED" in tool_result
     assert "next: inspect the workflow receipt" in tool_result
+    assert "approve command: uv run tau workflows approve /tmp/blocked-run" in tool_result
+    assert "resume command: uv run tau workflows resume /tmp/blocked-run" in tool_result
 
 
 @pytest.mark.anyio

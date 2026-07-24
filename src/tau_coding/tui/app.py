@@ -6808,9 +6808,10 @@ def _format_workflow_terminal_output(output: str) -> str | None:
         if isinstance(url, str) and url:
             lines.append(f"viewer url: {url}")
     if payload.get("ok") is not True:
-        lines.append(
-            "next: inspect the workflow receipt or run the listed approve/repair/resume command"
-        )
+        lines.append("next: inspect the workflow receipt")
+        if isinstance(run_dir, str):
+            lines.append(f"approve command: uv run tau workflows approve {shlex.quote(run_dir)}")
+            lines.append(f"resume command: uv run tau workflows resume {shlex.quote(run_dir)}")
     lines.extend(["", "Raw output:", output.strip()])
     return "\n".join(lines)
 
