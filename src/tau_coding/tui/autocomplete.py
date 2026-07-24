@@ -25,6 +25,7 @@ IGNORED_FILE_COMPLETION_DIRS = frozenset(
     }
 )
 MAX_FILE_COMPLETIONS = 50
+PATH_COMPLETION_DELIMITERS = frozenset({" ", "\t", '"', "'", "="})
 
 
 @dataclass(frozen=True, slots=True)
@@ -106,6 +107,11 @@ def build_completion_state(
             shell_completions = _shell_path_completions(text=text, cwd=cwd)
             if shell_completions is not None:
                 return CompletionState(shell_completions)
+            if _active_file_reference_token(text) is not None:
+                return CompletionState(_file_reference_completions(text=text, cwd=cwd))
+            path_completions = _path_completions(text=text, cwd=cwd)
+            if path_completions is not None:
+                return CompletionState(path_completions)
             return CompletionState(_file_reference_completions(text=text, cwd=cwd))
         return CompletionState()
 
@@ -215,6 +221,117 @@ def _is_ignored_file_completion_path(path: Path, *, cwd: Path) -> bool:
     return any(
         part.startswith(".") or part in IGNORED_FILE_COMPLETION_DIRS for part in relative_parts
     )
+
+
+def _path_completions(*, text: str, cwd: Path) -> tuple[CompletionItem, ...] | None:
+    token = _active_path_completion_token(text)
+    if token is None:
+        return None
+    start, end, quoted = token
+    raw_token = text[start + 1 : end] if quoted else text[start:end]
+
+    path_token = _parse_path_completion_token(raw_token)
+    if path_token is None:
+        return ()
+    parent_text, name_prefix, replacement_prefix = path_token
+
+    parent_dir = cwd / parent_text if parent_text else cwd
+    if not parent_dir.exists() or not parent_dir.is_dir():
+        return ()
+    if parent_dir != cwd and _is_ignored_file_completion_path(parent_dir, cwd=cwd):
+        return ()
+
+    try:
+        children = sorted(
+            parent_dir.iterdir(),
+            key=lambda path: (not path.is_dir(), path.name.lower()),
+        )
+    except OSError:
+        return ()
+
+    suggestions: list[CompletionItem] = []
+    for child in children:
+        if _is_ignored_file_completion_path(child, cwd=cwd):
+            continue
+        if not child.name.lower().startswith(name_prefix.lower()):
+            continue
+        relative = child.relative_to(cwd).as_posix()
+        replacement = f"{replacement_prefix}{relative}"
+        if child.is_dir():
+            replacement += "/"
+        elif quoted:
+            replacement += '"'
+        if quoted:
+            replacement = f'"{replacement}'
+        if replacement == text[start:end]:
+            continue
+        suggestions.append(
+            CompletionItem(
+                display=replacement,
+                replacement=replacement,
+                start=start,
+                end=end,
+                description="Directory" if child.is_dir() else "File",
+            )
+        )
+        if len(suggestions) >= MAX_FILE_COMPLETIONS:
+            break
+    return tuple(suggestions)
+
+
+def _active_path_completion_token(text: str) -> tuple[int, int, bool] | None:
+    quoted_start = _unclosed_quote_start(text)
+    if quoted_start is not None and _is_path_token_start(text, quoted_start):
+        return quoted_start, len(text), True
+
+    token_start = 0
+    for index in range(len(text) - 1, -1, -1):
+        if text[index] in PATH_COMPLETION_DELIMITERS or text[index].isspace():
+            token_start = index + 1
+            break
+    token = text[token_start:]
+    if not token:
+        return None
+    if token.startswith("@"):
+        return None
+    if "/" in token or token.startswith(".") or token.startswith("~/"):
+        return token_start, len(text), False
+    return None
+
+
+def _unclosed_quote_start(text: str) -> int | None:
+    in_quotes = False
+    quote_start = -1
+    for index, char in enumerate(text):
+        if char == '"':
+            in_quotes = not in_quotes
+            if in_quotes:
+                quote_start = index
+    return quote_start if in_quotes else None
+
+
+def _is_path_token_start(text: str, index: int) -> bool:
+    return index == 0 or text[index - 1] in PATH_COMPLETION_DELIMITERS or text[index - 1].isspace()
+
+
+def _parse_path_completion_token(token: str) -> tuple[str, str, str] | None:
+    if not token:
+        return "", "", ""
+    if token.startswith(("/", "~")) and not token.startswith("~/"):
+        return None
+    if any(char in token for char in "\"'`$*?[{"):
+        return None
+
+    replacement_prefix = "./" if token.startswith("./") else ""
+    path_text = token[2:] if replacement_prefix else token
+    parent_text, separator, name_prefix = path_text.rpartition("/")
+    if separator and not parent_text:
+        return "", name_prefix, replacement_prefix
+
+    parent_parts = parent_text.split("/") if parent_text else []
+    if any(part in {"", ".", ".."} for part in parent_parts):
+        return None
+    return parent_text, name_prefix, replacement_prefix
 
 
 def _shell_path_completions(*, text: str, cwd: Path) -> tuple[CompletionItem, ...] | None:

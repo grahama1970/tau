@@ -520,6 +520,56 @@ def test_file_reference_completion_stays_off_for_slash_commands(tmp_path: Path) 
     assert state.items == ()
 
 
+def test_path_completion_matches_path_like_tokens_in_prompt_text(tmp_path: Path) -> None:
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src" / "main.py").write_text("print('hi')\n", encoding="utf-8")
+
+    state = build_completion_state(
+        "inspect src/ma",
+        command_registry=create_default_command_registry(),
+        skills=(),
+        prompt_templates=(),
+        cwd=tmp_path,
+    )
+
+    assert [item.display for item in state.items] == ["src/main.py"]
+    assert state.selected is not None
+    assert state.selected.apply("inspect src/ma") == "inspect src/main.py"
+
+
+def test_path_completion_closes_quoted_file_paths(tmp_path: Path) -> None:
+    (tmp_path / "my file.txt").write_text("notes\n", encoding="utf-8")
+
+    state = build_completion_state(
+        'inspect "my',
+        command_registry=create_default_command_registry(),
+        skills=(),
+        prompt_templates=(),
+        cwd=tmp_path,
+    )
+
+    assert [item.display for item in state.items] == ['"my file.txt"']
+    assert state.selected is not None
+    assert state.selected.apply('inspect "my') == 'inspect "my file.txt"'
+
+
+def test_path_completion_keeps_quoted_directories_open(tmp_path: Path) -> None:
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src" / "main.py").write_text("print('hi')\n", encoding="utf-8")
+
+    state = build_completion_state(
+        'inspect "sr',
+        command_registry=create_default_command_registry(),
+        skills=(),
+        prompt_templates=(),
+        cwd=tmp_path,
+    )
+
+    assert [item.display for item in state.items] == ['"src/']
+    assert state.selected is not None
+    assert state.selected.apply('inspect "sr') == 'inspect "src/'
+
+
 def test_shell_path_completion_preserves_bang_prefix(tmp_path: Path) -> None:
     (tmp_path / "README.md").write_text("# Project\n", encoding="utf-8")
 
