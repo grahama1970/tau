@@ -19,6 +19,7 @@ import subprocess
 import tempfile
 from collections.abc import Callable, Mapping
 from dataclasses import asdict, dataclass
+from math import isfinite
 from pathlib import Path
 from time import monotonic
 
@@ -30,6 +31,7 @@ DEFAULT_MAX_OUTPUT_LINES = 2_000
 DEFAULT_IMAGE_MAX_WIDTH_PX = 2000
 DEFAULT_IMAGE_MAX_HEIGHT_PX = 2000
 DEFAULT_INLINE_IMAGE_MAX_BASE64_BYTES = int(4.5 * 1024 * 1024)
+MAX_BASH_TIMEOUT_SECONDS = 2_147_483_647 / 1000
 SUPPORTED_IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 UTF8_BOM = "\ufeff"
 
@@ -513,8 +515,7 @@ def create_bash_tool_definition(
     ) -> AgentToolResult:
         command = _str_arg(arguments, "command")
         timeout = _optional_float_arg(arguments, "timeout")
-        if timeout is not None and timeout <= 0:
-            raise ToolInputError("timeout must be greater than 0")
+        timeout = _validate_bash_timeout(timeout)
         if signal is not None and signal.is_cancelled():
             raise ToolInputError("Command cancelled")
 
@@ -649,6 +650,18 @@ def format_size(bytes_count: int) -> str:
 def append_status_block(text: str, status: str) -> str:
     """Append command status text after a blank line when output already exists."""
     return f"{text}\n\n{status}" if text else status
+
+
+def _validate_bash_timeout(timeout: float | None) -> float | None:
+    if timeout is None:
+        return None
+    if not isfinite(timeout):
+        raise ToolInputError("timeout must be a finite number of seconds")
+    if timeout <= 0:
+        raise ToolInputError("timeout must be greater than 0")
+    if timeout > MAX_BASH_TIMEOUT_SECONDS:
+        raise ToolInputError(f"timeout must be at most {MAX_BASH_TIMEOUT_SECONDS:g} seconds")
+    return timeout
 
 
 async def _communicate_with_cancellation(
