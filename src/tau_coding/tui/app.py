@@ -3306,13 +3306,13 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
             "shift+ctrl+o",
         )
         return (
-            f"Type filters - {branch_key} branches - S summarizes - C custom summary - "
-            f"{copy_key} copy - {label_key} label - "
-            f"{label_time_key} label time ({label_time_state}) - "
-            f"{page_left_key}/{page_right_key} page - {fold_key}/{unfold_key} fold - "
-            f"{no_tools_key} no-tools ({tool_call_state}) - "
-            f"{filter_next_key}/{filter_previous_key} filter {filter_label} - "
-            f"{cancel_key} clears/closes"
+            f"Type to filter | {branch_key} branch | S summarize | C custom | "
+            f"{copy_key} copy | {label_key} label | "
+            f"{label_time_key} label time {label_time_state} | "
+            f"{page_left_key}/{page_right_key} page | {fold_key}/{unfold_key} fold | "
+            f"{no_tools_key} no-tools {tool_call_state} | "
+            f"{filter_next_key}/{filter_previous_key} filter {filter_label} | "
+            f"{cancel_key} clear/close"
         )
 
     def _search_text(self) -> str:
@@ -4888,6 +4888,11 @@ class TauTuiApp(App[None]):
         height: 1;
         margin-top: 1;
         color: $tau-muted-text;
+    }
+
+    #tree-picker-help {
+        height: auto;
+        max-height: 3;
     }
 
     #session-picker-search,
