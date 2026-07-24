@@ -940,10 +940,11 @@ def _name_command(context: CommandContext) -> CommandResult:
         return CommandResult(handled=True, message=f"Unknown current session: {session_id}")
 
     if not context.args:
-        title = record.title or "Untitled session"
+        if not record.title:
+            return CommandResult(handled=True, message="Usage: /name <name>")
         return CommandResult(
             handled=True,
-            message=f"Current session name: {title}\nUsage: /name <new name>",
+            message=f"Current session name: {record.title}\nUsage: /name <name>",
         )
 
     try:
@@ -1260,7 +1261,7 @@ def _candidate_changelog_paths(cwd: Path) -> tuple[Path, ...]:
 def _validated_session_name(value: str) -> str:
     name = value.strip()
     if not name:
-        raise ValueError("Usage: /name <new name>")
+        raise ValueError("Usage: /name <name>")
     if any(char in name for char in "\r\n\t"):
         raise ValueError("Session name must be a single line.")
     return name
