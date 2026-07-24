@@ -236,6 +236,8 @@ class CompletionActionTarget(Protocol):
 
     def action_copy_last_message(self) -> None: ...
 
+    def action_suspend_process(self) -> None: ...
+
     def action_edit_queued_follow_up(self) -> bool: ...
 
     async def action_submit_prompt(self) -> None: ...
@@ -1467,6 +1469,10 @@ class PromptInput(TextArea):
             event.stop()
             event.prevent_default()
             self._completion_target().action_copy_last_message()
+        elif _matches_configured_key(event.key, keybindings.suspend):
+            event.stop()
+            event.prevent_default()
+            self._completion_target().action_suspend_process()
         elif _matches_configured_key(event.key, keybindings.copy_message):
             if self.selected_text:
                 return
