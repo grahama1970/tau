@@ -255,6 +255,9 @@ class PromptInput(TextArea):
         self._footer_mode: Literal["normal", "completion", "running"] = "normal"
         self._paste_counter = 0
         self._paste_markers: dict[str, str] = {}
+        self._kill_ring: list[str] = []
+        self._last_prompt_edit: Literal["kill", "yank"] | None = None
+        self._last_yank_range: tuple[int, int] | None = None
         self._apply_prompt_bindings()
 
     def set_footer_mode(self, mode: Literal["normal", "completion", "running"]) -> None:
@@ -282,6 +285,8 @@ class PromptInput(TextArea):
     def value(self, text: str) -> None:
         self.text = text
         self.clear_paste_markers()
+        self._last_prompt_edit = None
+        self._last_yank_range = None
 
     def clear_paste_markers(self) -> None:
         """Forget compacted paste payloads when replacing editor contents."""
@@ -448,13 +453,23 @@ class PromptInput(TextArea):
         if not text:
             return
         row, column = self.cursor_location
-        if column <= 0:
-            return
         lines = text.split("\n")
         if row >= len(lines):
             return
+        if column <= 0:
+            if row <= 0:
+                return
+            previous_line_length = len(lines[row - 1])
+            lines[row - 1] = f"{lines[row - 1]}{lines[row]}"
+            del lines[row]
+            self.text = "\n".join(lines)
+            self._push_kill("\n", prepend=True)
+            self.prune_paste_markers()
+            self.move_cursor((row - 1, previous_line_length))
+            return
         line_start_offset = sum(len(line) + 1 for line in lines[:row])
         delete_end_offset = line_start_offset + column
+        self._push_kill(text[line_start_offset:delete_end_offset], prepend=True)
         self.text = text[:line_start_offset] + text[delete_end_offset:]
         self.prune_paste_markers()
         self.move_cursor((row, 0))
@@ -477,6 +492,7 @@ class PromptInput(TextArea):
             lines[row - 1] = f"{lines[row - 1]}{lines[row]}"
             del lines[row]
             self.text = "\n".join(lines)
+            self._push_kill("\n", prepend=True)
             self.prune_paste_markers()
             self.move_cursor((row - 1, previous_line_length))
             return
@@ -484,6 +500,7 @@ class PromptInput(TextArea):
         delete_start = _find_word_delete_start(current_line, column)
         if delete_start == column:
             return
+        self._push_kill(current_line[delete_start:column], prepend=True)
         lines[row] = f"{current_line[:delete_start]}{current_line[column:]}"
         self.text = "\n".join(lines)
         self.prune_paste_markers()
@@ -507,12 +524,14 @@ class PromptInput(TextArea):
             lines[row] = f"{current_line}{lines[row + 1]}"
             del lines[row + 1]
             self.text = "\n".join(lines)
+            self._push_kill("\n", prepend=False)
             self.prune_paste_markers()
             self.move_cursor((row, len(current_line)))
             return
         delete_end = _find_word_delete_end(current_line, column)
         if delete_end == column:
             return
+        self._push_kill(current_line[column:delete_end], prepend=False)
         lines[row] = f"{current_line[:column]}{current_line[delete_end:]}"
         self.text = "\n".join(lines)
         self.prune_paste_markers()
@@ -520,15 +539,76 @@ class PromptInput(TextArea):
 
     def action_move_to_line_start(self) -> None:
         """Move the prompt cursor to the start of the current line."""
+        self._last_prompt_edit = None
+        self._last_yank_range = None
         row, _column = self.cursor_location
         self.move_cursor((row, 0))
 
     def action_move_to_line_end(self) -> None:
         """Move the prompt cursor to the end of the current line."""
+        self._last_prompt_edit = None
+        self._last_yank_range = None
         row, _column = self.cursor_location
         lines = self.text.split("\n")
         line = lines[row] if row < len(lines) else ""
         self.move_cursor((row, len(line)))
+
+    def action_yank_kill_ring(self) -> None:
+        """Insert the most recently deleted prompt text at the cursor."""
+        killed_text = self._peek_kill()
+        if not killed_text:
+            return
+        start = self.cursor_position
+        self._replace_prompt_range(start, start, killed_text)
+        self._last_prompt_edit = "yank"
+        self._last_yank_range = (start, start + len(killed_text))
+
+    def action_yank_pop_kill_ring(self) -> None:
+        """Replace the previous yank with the next kill-ring entry."""
+        if self._last_prompt_edit != "yank" or self._last_yank_range is None:
+            return
+        if len(self._kill_ring) <= 1:
+            return
+        start, end = self._last_yank_range
+        text = self.text
+        if start < 0 or end > len(text) or start > end:
+            return
+        without_last_yank = f"{text[:start]}{text[end:]}"
+        self._rotate_kill_ring()
+        killed_text = self._peek_kill()
+        if not killed_text:
+            return
+        self.text = f"{without_last_yank[:start]}{killed_text}{without_last_yank[start:]}"
+        self.prune_paste_markers()
+        self.cursor_position = start + len(killed_text)
+        self._last_prompt_edit = "yank"
+        self._last_yank_range = (start, start + len(killed_text))
+
+    def _push_kill(self, text: str, *, prepend: bool) -> None:
+        if not text:
+            return
+        if self._last_prompt_edit == "kill" and self._kill_ring:
+            previous = self._kill_ring.pop()
+            self._kill_ring.append(f"{text}{previous}" if prepend else f"{previous}{text}")
+        else:
+            self._kill_ring.append(text)
+        self._last_prompt_edit = "kill"
+        self._last_yank_range = None
+
+    def _peek_kill(self) -> str | None:
+        return self._kill_ring[-1] if self._kill_ring else None
+
+    def _rotate_kill_ring(self) -> None:
+        if len(self._kill_ring) > 1:
+            self._kill_ring.insert(0, self._kill_ring.pop())
+
+    def _replace_prompt_range(self, start: int, end: int, replacement: str) -> None:
+        text = self.text
+        start = min(max(start, 0), len(text))
+        end = min(max(end, start), len(text))
+        self.text = f"{text[:start]}{replacement}{text[end:]}"
+        self.prune_paste_markers()
+        self.cursor_position = start + len(replacement)
 
     def get_line(self, line_index: int) -> Text:
         """Retrieve one prompt line with shell prefixes highlighted."""
@@ -658,6 +738,14 @@ class PromptInput(TextArea):
             event.stop()
             event.prevent_default()
             self.action_delete_word_forward()
+        elif event.key == "ctrl+y":
+            event.stop()
+            event.prevent_default()
+            self.action_yank_kill_ring()
+        elif event.key == "alt+y":
+            event.stop()
+            event.prevent_default()
+            self.action_yank_pop_kill_ring()
         elif event.key == "ctrl+a":
             event.stop()
             event.prevent_default()
@@ -678,6 +766,9 @@ class PromptInput(TextArea):
         elif event.key == keybindings.quit:
             event.stop()
             await self.action_quit()
+        else:
+            self._last_prompt_edit = None
+            self._last_yank_range = None
 
     def _has_completion_options(self) -> bool:
         completion_state = getattr(self.app, "_completion_state", None)
@@ -6481,6 +6572,7 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         "- Ctrl+U: delete to line start",
         "- Ctrl+W/Alt+Backspace: delete previous word",
         "- Alt+D/Alt+Delete: delete next word",
+        "- Ctrl+Y/Alt+Y: yank or cycle deleted text",
         f"- {_key_hint(keybindings.accept_completion)}: accept autocomplete or path completion",
         f"- {_key_hint(keybindings.external_editor)}: edit prompt in external editor",
         f"- {_key_hint(keybindings.paste_clipboard)}: paste clipboard text or image",

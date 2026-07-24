@@ -2525,6 +2525,22 @@ async def test_prompt_ctrl_u_deletes_current_line_prefix_only() -> None:
 
 
 @pytest.mark.anyio
+async def test_prompt_ctrl_u_at_line_start_kills_newline() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "first\nsecond"
+        prompt.move_cursor((1, 0))
+
+        await pilot.press("ctrl+u")
+        await pilot.press("ctrl+y")
+
+        assert prompt.text == "first\nsecond"
+        assert prompt.cursor_location == (1, 0)
+
+
+@pytest.mark.anyio
 async def test_prompt_ctrl_w_deletes_previous_word() -> None:
     app = TauTuiApp(FakeSession())
 
@@ -2582,6 +2598,77 @@ async def test_prompt_ctrl_w_at_line_start_merges_previous_line() -> None:
 
         assert prompt.text == "firstsecond"
         assert prompt.cursor_location == (0, len("first"))
+
+
+@pytest.mark.anyio
+async def test_prompt_ctrl_y_yanks_previous_backward_kill() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha beta"
+        prompt.move_cursor((0, len(prompt.text)))
+
+        await pilot.press("ctrl+w")
+        await pilot.press("ctrl+y")
+
+        assert prompt.text == "alpha beta"
+        assert prompt.cursor_location == (0, len("alpha beta"))
+
+
+@pytest.mark.anyio
+async def test_prompt_ctrl_y_yanks_previous_forward_kill() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha beta"
+        prompt.move_cursor((0, len("alpha ")))
+
+        await pilot.press("alt+d")
+        await pilot.press("ctrl+y")
+
+        assert prompt.text == "alpha beta"
+        assert prompt.cursor_location == (0, len("alpha beta"))
+
+
+@pytest.mark.anyio
+async def test_prompt_consecutive_kills_accumulate_for_yank() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha beta gamma"
+        prompt.move_cursor((0, len(prompt.text)))
+
+        await pilot.press("ctrl+w")
+        await pilot.press("ctrl+w")
+        await pilot.press("ctrl+y")
+
+        assert prompt.text == "alpha beta gamma"
+        assert prompt.cursor_location == (0, len("alpha beta gamma"))
+
+
+@pytest.mark.anyio
+async def test_prompt_alt_y_cycles_after_yank() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha beta"
+        prompt.move_cursor((0, len(prompt.text)))
+        await pilot.press("ctrl+w")
+
+        prompt.value = "one two"
+        prompt.move_cursor((0, len(prompt.text)))
+        await pilot.press("ctrl+w")
+
+        await pilot.press("ctrl+y")
+        assert prompt.text == "one two"
+
+        await pilot.press("alt+y")
+        assert prompt.text == "one beta"
+        assert prompt.cursor_location == (0, len("one beta"))
 
 
 @pytest.mark.anyio
@@ -5521,6 +5608,7 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "Ctrl+U: delete to line start" in app.screen.message
         assert "Ctrl+W/Alt+Backspace: delete previous word" in app.screen.message
         assert "Alt+D/Alt+Delete: delete next word" in app.screen.message
+        assert "Ctrl+Y/Alt+Y: yank or cycle deleted text" in app.screen.message
 
 
 @pytest.mark.anyio
