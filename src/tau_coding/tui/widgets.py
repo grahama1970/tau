@@ -72,7 +72,7 @@ class VisualPreviewText:
     ) -> RenderResult:
         width = max(1, options.max_width)
         wrapped_lines = Text(
-            _normalize_terminal_preview_text(self.text),
+            _normalize_terminal_display_text(self.text),
             style=self.style,
             overflow="fold",
             no_wrap=False,
@@ -110,8 +110,8 @@ class VisualPreviewText:
         yield Text("\n").join(parts)
 
 
-def _normalize_terminal_preview_text(text: str) -> str:
-    """Normalize terminal-preview-only text without changing transcript content."""
+def _normalize_terminal_display_text(text: str) -> str:
+    """Normalize text for terminal display without changing transcript content."""
     if "\t" not in text and "\r" not in text:
         return text
 
@@ -298,7 +298,10 @@ class ThemedMarkdownWidget(TextualMarkdown):
         classes: str | None = None,
     ) -> None:
         self.tau_link_style = theme.markdown_link
-        super().__init__(markdown, classes=classes)
+        super().__init__(
+            None if markdown is None else _normalize_terminal_display_text(markdown),
+            classes=classes,
+        )
 
 
 class TranscriptMessageWidget(Horizontal):
@@ -424,7 +427,7 @@ class StreamingTranscriptMessageWidget(ThemedMarkdownWidget):
         self.item = item
         self.selection_text = item.text
         self._stream: MarkdownStream | None = None
-        super().__init__(item.text, theme=theme)
+        super().__init__(_normalize_terminal_display_text(item.text), theme=theme)
         self.add_class("transcript-message")
         self.styles.padding = Spacing.unpack((0, output_padding_x))
 
@@ -441,14 +444,14 @@ class StreamingTranscriptMessageWidget(ThemedMarkdownWidget):
         self.item.text += fragment
         self.selection_text += fragment
         self._stream = None
-        await self.update(self.item.text)
+        await self.update(_normalize_terminal_display_text(self.item.text))
 
     async def replace_text(self, text: str) -> None:
         """Replace the current markdown text, usually with the final provider message."""
         self.item.text = text
         self.selection_text = text
         self._stream = None
-        await self.update(text)
+        await self.update(_normalize_terminal_display_text(text))
 
     def get_selection(self, selection: Selection) -> tuple[str, str] | None:
         """Return selected text from this streamed message block."""
@@ -820,7 +823,12 @@ def _transcript_plain_body_text(
 ) -> RenderableType:
     """Return styled transcript text for selectable plain rows."""
     if item.role != "tool":
-        return Text(text, style=body_style, overflow="fold", no_wrap=False)
+        return Text(
+            _normalize_terminal_display_text(text),
+            style=body_style,
+            overflow="fold",
+            no_wrap=False,
+        )
 
     invocation, separator, result_text = text.partition("\n\n")
     invocation_text = _render_transcript_tool_invocation(
@@ -1253,8 +1261,9 @@ def _render_chat_body(
     syntax_theme: str,
     theme: TuiTheme,
 ) -> RenderableType:
+    display_text = _normalize_terminal_display_text(text)
     patch_body = _render_patch_body(
-        text,
+        display_text,
         body_style=body_style,
         syntax_theme=syntax_theme,
         code_block_background=theme.markdown_code_block_background,
@@ -1262,12 +1271,12 @@ def _render_chat_body(
     if patch_body is not None:
         return patch_body
     if role == "status":
-        return _plain_text(text, body_style=body_style)
+        return _plain_text(display_text, body_style=body_style)
     if role in {"assistant", "thinking"}:
-        if _has_unclosed_fence(text):
-            return _plain_text(text, body_style=body_style)
+        if _has_unclosed_fence(display_text):
+            return _plain_text(display_text, body_style=body_style)
         return ThemedMarkdown(
-            text,
+            display_text,
             style=body_style,
             code_theme=syntax_theme,
             inline_code_theme=syntax_theme,
@@ -1279,16 +1288,16 @@ def _render_chat_body(
             code_block_background=theme.markdown_code_block_background,
         )
     fenced_body = _render_fenced_body(
-        text,
+        display_text,
         body_style=body_style,
         syntax_theme=syntax_theme,
         code_block_background=theme.markdown_code_block_background,
     )
     if fenced_body is not None:
         return fenced_body
-    if "```" in text:
-        return _plain_text(text, body_style=body_style)
-    return _plain_text(text, body_style=body_style)
+    if "```" in display_text:
+        return _plain_text(display_text, body_style=body_style)
+    return _plain_text(display_text, body_style=body_style)
 
 
 def _render_patch_body(
@@ -1507,7 +1516,12 @@ def _append_plain(
 
 
 def _plain_text(text: str, *, body_style: str) -> Text:
-    return Text(text, style=body_style, overflow="fold", no_wrap=False)
+    return Text(
+        _normalize_terminal_display_text(text),
+        style=body_style,
+        overflow="fold",
+        no_wrap=False,
+    )
 
 
 def _context_usage(session: SessionSummarySource) -> str:
