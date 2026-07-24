@@ -2622,6 +2622,7 @@ async def test_session_clone_current_session_copies_only_active_path(tmp_path: P
     assert message == f"Cloned to new session: {clone_id}"
     assert clone_record.provider_name == "fake-provider"
     assert clone_record.model == "fake"
+    assert clone_record.parent_session_id == record.id
     clone_entries = await JsonlSessionStorage(clone_record.path).read_all()
     assert [entry.id for entry in clone_entries if entry.type != "leaf"] == [
         "info",

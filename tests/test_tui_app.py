@@ -2724,6 +2724,43 @@ def test_session_picker_filter_relevance_sort_orders_best_match_before_recency()
     assert [record.id for record in matches] == ["session-2", "session-1"]
 
 
+def test_session_picker_threaded_sort_keeps_children_under_parent() -> None:
+    records = (
+        CodingSessionRecord(
+            id="child",
+            path=Path("/tmp/child.jsonl"),
+            cwd=Path("/workspace/project"),
+            model="fake-model",
+            title="Child",
+            created_at=1.0,
+            updated_at=5.0,
+            parent_session_id="parent",
+        ),
+        CodingSessionRecord(
+            id="sibling-root",
+            path=Path("/tmp/sibling-root.jsonl"),
+            cwd=Path("/workspace/project"),
+            model="fake-model",
+            title="Sibling",
+            created_at=1.0,
+            updated_at=4.0,
+        ),
+        CodingSessionRecord(
+            id="parent",
+            path=Path("/tmp/parent.jsonl"),
+            cwd=Path("/workspace/project"),
+            model="fake-model",
+            title="Parent",
+            created_at=1.0,
+            updated_at=1.0,
+        ),
+    )
+
+    matches = _filter_session_picker_records(records, "", sort_mode="threaded")
+
+    assert [record.id for record in matches] == ["parent", "child", "sibling-root"]
+
+
 @pytest.mark.anyio
 async def test_tui_app_session_picker_selects_filtered_session() -> None:
     session = FakeSession(messages=[UserMessage(content="Earlier")])
@@ -2910,25 +2947,35 @@ async def test_tui_app_session_picker_path_toggle_shows_session_cwd() -> None:
 
 
 @pytest.mark.anyio
-async def test_tui_app_session_picker_sort_toggle_orders_by_title() -> None:
+async def test_tui_app_session_picker_defaults_to_threaded_parent_child_order() -> None:
     session = FakeSession()
     session.session_manager = _FakeSessionManager(
         [
             CodingSessionRecord(
-                id="session-z",
-                path=Path("/tmp/session-z.jsonl"),
+                id="child-session",
+                path=Path("/tmp/child-session.jsonl"),
                 cwd=Path("/workspace/project"),
                 model="fake-model",
-                title="Zulu work",
+                title="Clone of Root work",
+                created_at=1.0,
+                updated_at=5.0,
+                parent_session_id="root-session",
+            ),
+            CodingSessionRecord(
+                id="other-session",
+                path=Path("/tmp/other-session.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="fake-model",
+                title="Unrelated work",
                 created_at=1.0,
                 updated_at=3.0,
             ),
             CodingSessionRecord(
-                id="session-a",
-                path=Path("/tmp/session-a.jsonl"),
+                id="root-session",
+                path=Path("/tmp/root-session.jsonl"),
                 cwd=Path("/workspace/project"),
                 model="fake-model",
-                title="Alpha work",
+                title="Root work",
                 created_at=1.0,
                 updated_at=2.0,
             ),
@@ -2943,6 +2990,7 @@ async def test_tui_app_session_picker_sort_toggle_orders_by_title() -> None:
             item.query_one(Label).content
             for item in app.screen.query_one("#session-picker-list", ListView).children
         ]
+        help_text_before = str(app.screen.query_one("#session-picker-help", Static).render())
 
         await pilot.press("ctrl+s")
         labels_after = [
@@ -2951,11 +2999,15 @@ async def test_tui_app_session_picker_sort_toggle_orders_by_title() -> None:
         ]
         help_text = str(app.screen.query_one("#session-picker-help", Static).render())
 
-    assert "Zulu work" in str(labels_before[0])
-    assert "Alpha work" in str(labels_before[1])
-    assert "Alpha work" in str(labels_after[0])
-    assert "Zulu work" in str(labels_after[1])
-    assert "sort:name" in help_text
+    assert "Root work" in str(labels_before[0])
+    assert "Clone of Root work" in str(labels_before[1])
+    assert str(labels_before[1]).startswith("  ")
+    assert "Unrelated work" in str(labels_before[2])
+    assert "sort:threaded" in help_text_before
+    assert "Clone of Root work" in str(labels_after[0])
+    assert "Unrelated work" in str(labels_after[1])
+    assert "Root work" in str(labels_after[2])
+    assert "sort:recent" in help_text
 
 
 @pytest.mark.anyio

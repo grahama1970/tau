@@ -25,6 +25,7 @@ class SessionRecordModel(BaseModel):
     title: str | None = None
     created_at: float
     updated_at: float
+    parent_session_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,6 +40,7 @@ class CodingSessionRecord:
     created_at: float
     updated_at: float
     provider_name: str | None = None
+    parent_session_id: str | None = None
 
     @classmethod
     def from_model(cls, model: SessionRecordModel) -> CodingSessionRecord:
@@ -52,6 +54,7 @@ class CodingSessionRecord:
             created_at=model.created_at,
             updated_at=model.updated_at,
             provider_name=model.provider_name,
+            parent_session_id=model.parent_session_id,
         )
 
     def to_model(self) -> SessionRecordModel:
@@ -65,6 +68,7 @@ class CodingSessionRecord:
             created_at=self.created_at,
             updated_at=self.updated_at,
             provider_name=self.provider_name,
+            parent_session_id=self.parent_session_id,
         )
 
 
@@ -113,6 +117,7 @@ class SessionManager:
         provider_name: str | None = None,
         title: str | None = None,
         session_id: str | None = None,
+        parent_session_id: str | None = None,
     ) -> CodingSessionRecord:
         """Create and index a new session record."""
         now = time()
@@ -129,6 +134,7 @@ class SessionManager:
             title=title,
             created_at=now,
             updated_at=now,
+            parent_session_id=parent_session_id,
         )
         self._upsert(record)
         return record
@@ -180,6 +186,7 @@ class SessionManager:
             title=title if title is not None else existing.title,
             created_at=existing.created_at,
             updated_at=time(),
+            parent_session_id=existing.parent_session_id,
         )
         self._upsert(updated)
         return updated

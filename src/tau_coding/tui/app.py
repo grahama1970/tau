@@ -118,6 +118,7 @@ from tau_coding.tui.widgets import (
 from tau_coding.trust import ProjectTrustOption, ProjectTrustState, ProjectTrustStoreEntry
 
 type BindingEntry = Binding | tuple[str, str] | tuple[str, str, str]
+type SessionPickerSortMode = Literal["threaded", "recent", "relevance", "name"]
 SIDEBAR_MIN_WIDTH = 96
 SIDEBAR_MIN_HEIGHT = 24
 ACTIVITY_TICK_SECONDS = 0.15
@@ -213,6 +214,7 @@ class SessionCompletionRecord(Protocol):
     model: str
     cwd: Path
     updated_at: float
+    parent_session_id: str | None
 
 
 class PromptInput(TextArea):
@@ -548,7 +550,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         self.delete_session = delete_session
         self.named_only = False
         self.show_path = False
-        self.sort_mode: Literal["recent", "relevance", "name"] = "recent"
+        self.sort_mode: SessionPickerSortMode = "threaded"
 
     def compose(self) -> ComposeResult:
         """Compose the session picker."""
@@ -608,6 +610,11 @@ class SessionPickerScreen(ModalScreen[str | None]):
             named_only=self.named_only,
             sort_mode=self.sort_mode,
         )
+        tree_depths = (
+            _session_picker_thread_depths(self.filtered_records)
+            if self.sort_mode == "threaded"
+            else {}
+        )
         session_list = self.query_one("#session-picker-list", ListView)
         session_list.clear()
         session_list.extend(
@@ -617,6 +624,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
                         record,
                         show_path=self.show_path,
                         current_session_id=self.current_session_id,
+                        thread_depth=tree_depths.get(record.id, 0),
                     ),
                     markup=False,
                 )
@@ -847,9 +855,9 @@ class SessionPickerScreen(ModalScreen[str | None]):
     def action_toggle_sort(self) -> None:
         """Toggle session sort order."""
         self.delete_confirm_target_id = None
-        sort_order: tuple[Literal["recent", "relevance", "name"], ...] = (
+        sort_order: tuple[SessionPickerSortMode, ...] = (
+            "threaded",
             "recent",
-            "name",
             "relevance",
         )
         self.sort_mode = sort_order[(sort_order.index(self.sort_mode) + 1) % len(sort_order)]
@@ -4966,9 +4974,11 @@ def _session_picker_label(
     *,
     show_path: bool = False,
     current_session_id: str | None = None,
+    thread_depth: int = 0,
 ) -> str:
     marker = "* " if current_session_id is not None and record.id == current_session_id else ""
-    parts = [f"{marker}{_session_updated_at_label(record.updated_at)}"]
+    indent = "  " * max(0, thread_depth)
+    parts = [f"{marker}{indent}{_session_updated_at_label(record.updated_at)}"]
     if record.model:
         parts.append(record.model)
     title = _named_session_title(record.title)
@@ -4979,7 +4989,7 @@ def _session_picker_label(
     return " - ".join(parts)
 
 
-def _session_picker_sort_label(sort_mode: Literal["recent", "relevance", "name"]) -> str:
+def _session_picker_sort_label(sort_mode: SessionPickerSortMode) -> str:
     """Return the Pi-facing label for a Tau session picker sort mode."""
 
     if sort_mode == "relevance":
@@ -4992,10 +5002,12 @@ def _filter_session_picker_records(
     query: str,
     *,
     named_only: bool = False,
-    sort_mode: Literal["recent", "relevance", "name"] = "recent",
+    sort_mode: SessionPickerSortMode = "threaded",
 ) -> tuple[SessionCompletionRecord, ...]:
     normalized = " ".join(query.casefold().split())
-    candidates = tuple(record for record in records if _named_session_title(record.title) is not None)
+    candidates = tuple(
+        record for record in records if _named_session_title(record.title) is not None
+    )
     if not named_only:
         candidates = tuple(records)
     if not normalized:
@@ -5111,8 +5123,10 @@ def _session_picker_query_tokens(query: str) -> tuple[tuple[Literal["token", "ph
 def _sort_session_picker_records(
     records: Sequence[SessionCompletionRecord],
     *,
-    sort_mode: Literal["recent", "relevance", "name"],
+    sort_mode: SessionPickerSortMode,
 ) -> tuple[SessionCompletionRecord, ...]:
+    if sort_mode == "threaded":
+        return _sort_threaded_session_picker_records(records)
     if sort_mode == "name":
         return tuple(
             sorted(
@@ -5126,6 +5140,87 @@ def _sort_session_picker_records(
             )
         )
     return tuple(records)
+
+
+def _sort_threaded_session_picker_records(
+    records: Sequence[SessionCompletionRecord],
+) -> tuple[SessionCompletionRecord, ...]:
+    by_id = {record.id: record for record in records}
+    children: dict[str | None, list[SessionCompletionRecord]] = {None: []}
+    for record in records:
+        parent_id = getattr(record, "parent_session_id", None)
+        if parent_id not in by_id:
+            parent_id = None
+        children.setdefault(parent_id, []).append(record)
+
+    latest_by_id: dict[str, float] = {}
+
+    def latest_subtree_update(
+        record: SessionCompletionRecord,
+        seen: frozenset[str] = frozenset(),
+    ) -> float:
+        if record.id in latest_by_id:
+            return latest_by_id[record.id]
+        if record.id in seen:
+            return record.updated_at
+        latest = max(
+            [record.updated_at]
+            + [
+                latest_subtree_update(child, seen | {record.id})
+                for child in children.get(record.id, [])
+                if child.id != record.id
+            ]
+        )
+        latest_by_id[record.id] = latest
+        return latest
+
+    def sort_key(record: SessionCompletionRecord) -> tuple[float, float, str]:
+        return (-latest_subtree_update(record), -record.updated_at, record.id.casefold())
+
+    ordered: list[SessionCompletionRecord] = []
+    emitted: set[str] = set()
+
+    def append_tree(parent_id: str | None, seen: frozenset[str] = frozenset()) -> None:
+        for record in sorted(children.get(parent_id, []), key=sort_key):
+            if record.id in emitted:
+                continue
+            ordered.append(record)
+            emitted.add(record.id)
+            if record.id in seen:
+                continue
+            append_tree(record.id, seen | {record.id})
+
+    append_tree(None)
+    if len(ordered) != len(records):
+        for record in sorted(records, key=sort_key):
+            if record.id not in emitted:
+                ordered.append(record)
+                emitted.add(record.id)
+                append_tree(record.id, frozenset({record.id}))
+    return tuple(ordered)
+
+
+def _session_picker_thread_depths(
+    records: Sequence[SessionCompletionRecord],
+) -> dict[str, int]:
+    by_id = {record.id: record for record in records}
+    depths: dict[str, int] = {}
+
+    def depth_for(record: SessionCompletionRecord, seen: frozenset[str] = frozenset()) -> int:
+        cached = depths.get(record.id)
+        if cached is not None:
+            return cached
+        parent_id = getattr(record, "parent_session_id", None)
+        if parent_id is None or parent_id not in by_id or parent_id in seen:
+            depths[record.id] = 0
+            return 0
+        depth = depth_for(by_id[parent_id], seen | {record.id}) + 1
+        depths[record.id] = depth
+        return depth
+
+    for record in records:
+        depth_for(record)
+    return depths
 
 
 def _replace_session_picker_record(

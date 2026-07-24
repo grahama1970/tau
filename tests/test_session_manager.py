@@ -18,6 +18,7 @@ def test_session_manager_creates_and_lists_sessions(tmp_path: Path) -> None:
     )
 
     assert record.provider_name == "fake-provider"
+    assert record.parent_session_id is None
     assert record.path.parent.parent == tmp_path / ".tau" / "sessions"
     assert "project-" in record.path.parent.name
     assert len(record.path.parent.name.rsplit("-", maxsplit=1)[-1]) == 6
@@ -27,6 +28,29 @@ def test_session_manager_creates_and_lists_sessions(tmp_path: Path) -> None:
     assert manager.get_session(record.id) == record
     assert manager.list_sessions() == [record]
     assert manager.list_sessions(cwd) == [record]
+
+
+def test_session_manager_persists_parent_session_lineage(tmp_path: Path) -> None:
+    manager = SessionManager(TauPaths(home=tmp_path / ".tau", agents_home=tmp_path / ".agents"))
+    cwd = tmp_path / "project"
+    cwd.mkdir()
+    parent = manager.create_session(cwd=cwd, model="fake", session_id="parent")
+    child = manager.create_session(
+        cwd=cwd,
+        model="fake",
+        session_id="child",
+        parent_session_id=parent.id,
+    )
+
+    reloaded = manager.get_session(child.id)
+
+    assert reloaded is not None
+    assert reloaded.parent_session_id == parent.id
+
+    touched = manager.touch_session(child.id, title="Child")
+
+    assert touched is not None
+    assert touched.parent_session_id == parent.id
 
 
 def test_session_manager_filters_sessions_by_project_cwd(tmp_path: Path) -> None:
@@ -89,6 +113,7 @@ def test_session_manager_ignores_extra_index_metadata(tmp_path: Path) -> None:
     assert record.id == "session-1"
     assert record.path == session_path
     assert record.model == "gpt-5"
+    assert record.parent_session_id is None
 
 
 def test_session_manager_gets_or_creates_default_session(tmp_path: Path) -> None:

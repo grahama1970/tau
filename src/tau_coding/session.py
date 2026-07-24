@@ -1106,6 +1106,7 @@ class CodingSession:
             model=model,
             provider_name=provider_name,
             title=f"Clone of {title}" if title else None,
+            parent_session_id=self._config.session_id,
         )
         storage = jsonl_session_storage(record.path)
         for entry in active_path:
