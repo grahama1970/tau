@@ -5804,7 +5804,7 @@ class TauTuiApp(App[None]):
     async def _run_compaction(self, summary: str) -> None:
         """Run manual compaction without disabling prompt editing."""
         self.state.clear()
-        self.state.add_item("status", "Compacting session…")
+        self.state.add_item("status", "Compacting session... (Escape to cancel)")
         self._refresh()
         try:
             compact_message = await self.session.compact(summary)
@@ -6736,7 +6736,7 @@ class TauTuiApp(App[None]):
         try:
             if summarize:
                 self.state.clear()
-                self.state.add_item("status", "Summarizing branch…")
+                self.state.add_item("status", "Summarizing branch... (Escape to cancel)")
                 self._refresh()
 
             result = branch_to_entry(
