@@ -3994,6 +3994,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         current_model: str,
         provider_name: str,
         theme: TuiTheme,
+        initial_search: str = "",
         on_toggle_scoped: Callable[[ModelChoice], Sequence[ModelChoice]] | None = None,
         on_set_scoped: Callable[[Sequence[ModelChoice]], Sequence[ModelChoice]] | None = None,
         keybindings: TuiKeybindings | None = None,
@@ -4013,7 +4014,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         self.mode: Literal["all", "scoped"] = (
             "scoped" if picker_kind == "model" and self.scoped_choices else "all"
         )
-        self.search_value = ""
+        self.search_value = initial_search
 
     def compose(self) -> ComposeResult:
         """Compose the model picker."""
@@ -4023,7 +4024,11 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
             )
             yield Static(title, id="model-picker-title")
             yield Static("", id="model-picker-tabs")
-            yield ModelPickerSearchInput(placeholder="Search models", id="model-picker-search")
+            yield ModelPickerSearchInput(
+                value=self.search_value,
+                placeholder="Search models",
+                id="model-picker-search",
+            )
             yield ListView(
                 *[
                     ListItem(
@@ -5277,7 +5282,7 @@ class TauTuiApp(App[None]):
             if command.logout_provider is not None:
                 self._logout(command.logout_provider)
             if command.model_picker_requested:
-                self._open_model_picker()
+                self._open_model_picker(initial_search=command.model_picker_query or "")
             if command.scoped_models_picker_requested:
                 self._open_scoped_models_picker()
             if command.settings_picker_requested:
@@ -6614,7 +6619,7 @@ class TauTuiApp(App[None]):
             )
         )
 
-    def _open_model_picker(self) -> None:
+    def _open_model_picker(self, *, initial_search: str = "") -> None:
         choices = self._available_model_choices()
         if not choices:
             self._notify(
@@ -6629,6 +6634,7 @@ class TauTuiApp(App[None]):
                 current_model=self.session.model,
                 provider_name=self.session.provider_name,
                 theme=self.tui_settings.resolved_theme,
+                initial_search=initial_search,
                 on_toggle_scoped=None,
                 keybindings=self.tui_settings.keybindings,
                 picker_kind="model",

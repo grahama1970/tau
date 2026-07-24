@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol, cast
 
 from tau_agent.messages import AgentMessage, AssistantMessage, ToolResultMessage, UserMessage
 from tau_agent.tools import AgentTool
@@ -122,6 +122,7 @@ class CommandResult:
     logout_picker_requested: bool = False
     logout_provider: str | None = None
     model_picker_requested: bool = False
+    model_picker_query: str | None = None
     scoped_models_picker_requested: bool = False
     settings_picker_requested: bool = False
     trust_picker_requested: bool = False
@@ -966,14 +967,23 @@ def _model_command(context: CommandContext) -> CommandResult:
         return refresh_error
 
     if context.args:
-        model = context.args.strip()
+        query = context.args.strip()
+        choice = _find_exact_model_choice(context.session, query)
+        if choice is not None:
+            model = str(cast(Any, choice).model)
+            _set_model_choice(context.session, choice)
+            message = f"Current model: {model}"
+            daxnuts_message = daxnuts_easter_message(context.session.provider_name, model)
+            if daxnuts_message is not None:
+                message = f"{message}\n\n{daxnuts_message}"
+            return CommandResult(handled=True, message=message)
+        model = query
         available_models = set(context.session.available_models)
         if available_models and model not in available_models:
-            models = ", ".join(sorted(available_models))
             return CommandResult(
                 handled=True,
-                message=f"Unknown model for provider {context.session.provider_name}: {model}\n"
-                f"Available models: {models}",
+                model_picker_requested=True,
+                model_picker_query=query,
             )
         context.session.set_model(model)
         message = f"Current model: {model}"
@@ -1263,6 +1273,37 @@ _DAXNUTS_MESSAGE = "\n".join(
         "https://mistral.ai/news/mistral-vibe-2-0",
     )
 )
+
+
+def _find_exact_model_choice(session: CommandSession, query: str) -> object | None:
+    normalized = query.strip().lower()
+    if not normalized:
+        return None
+    choices = tuple(getattr(session, "available_model_choices", ()))
+    for choice in choices:
+        provider_name = str(getattr(choice, "provider_name", "")).strip()
+        model = str(getattr(choice, "model", "")).strip()
+        candidates = {
+            model.lower(),
+            f"{provider_name}:{model}".lower(),
+            f"{provider_name}/{model}".lower(),
+        }
+        if normalized in candidates:
+            return choice
+    return None
+
+
+def _set_model_choice(session: CommandSession, choice: object) -> None:
+    set_model_choice = getattr(session, "set_model_choice", None)
+    if callable(set_model_choice):
+        set_model_choice(choice)
+        return
+    provider_name = str(getattr(choice, "provider_name", ""))
+    model = str(getattr(choice, "model", ""))
+    set_provider = getattr(session, "set_provider", None)
+    if callable(set_provider) and provider_name and provider_name != session.provider_name:
+        set_provider(provider_name)
+    session.set_model(model)
 
 
 def _normalize_name(name: str) -> str:

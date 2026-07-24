@@ -557,13 +557,14 @@ def test_system_command_returns_active_prompt(tmp_path: Path) -> None:
     assert registry.execute(session, "/system extra").message == "Usage: /system"
 
 
-def test_model_command_rejects_unknown_model(tmp_path: Path) -> None:
+def test_model_command_opens_picker_with_unknown_model_query(tmp_path: Path) -> None:
     session = FakeSession(tmp_path)
 
     result = create_default_command_registry().execute(session, "/model missing")
 
-    assert result.message is not None
-    assert "Unknown model for provider openai: missing" in result.message
+    assert result.model_picker_requested is True
+    assert result.model_picker_query == "missing"
+    assert result.message is None
     assert session.model == "fake-model"
 
 
