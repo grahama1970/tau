@@ -687,7 +687,7 @@ def _hotkeys_command(context: CommandContext) -> CommandResult:
     lines = [
         "Common keyboard shortcuts:",
         "- Enter: submit prompt",
-        "- Shift+Enter: insert newline",
+        "- Shift+Enter/Ctrl+J: insert newline",
         "- Alt+Enter: queue follow-up while running",
         "- Esc: cancel active run",
         "- Ctrl+K: open slash-command completions",
