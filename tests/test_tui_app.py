@@ -960,6 +960,32 @@ def test_tool_image_payload_uses_kitty_sequence_when_terminal_supports_images() 
         reset_capabilities_cache()
 
 
+def test_tool_image_payload_honors_show_images_setting() -> None:
+    set_capabilities(TerminalCapabilities(images="kitty", true_color=True, hyperlinks=True))
+    try:
+        item = ChatItem(
+            role="tool",
+            text="→ read image.png",
+            tool_result_text="✓ read\nRead image file [image/png]",
+            tool_image=ToolImagePayload(
+                path="/workspace/image.png",
+                mime_type="image/png",
+                bytes=68,
+                image_base64=PNG_1X1_BASE64,
+            ),
+        )
+
+        console = Console(record=True, width=80)
+        console.print(render_chat_item(item, show_tool_results=True, show_images=False))
+        output = console.export_text(clear=False)
+
+        assert "\x1b_G" not in output
+        assert "image.png" in output
+        assert "1x1" in output
+    finally:
+        reset_capabilities_cache()
+
+
 EDIT_TOOL_RESULT_WITH_PATCH = (
     "✓ edit\n"
     "Successfully replaced 1 block.\n"
@@ -4828,6 +4854,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: one-at-a-time",
             "Follow-up mode: one-at-a-time",
             "Block images: off",
+            "Show images: on",
             "Skill commands: on",
             "Show hardware cursor: on",
             "Editor padding: 1",
@@ -4855,6 +4882,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: one-at-a-time",
             "Follow-up mode: one-at-a-time",
             "Block images: off",
+            "Show images: on",
             "Skill commands: on",
             "Show hardware cursor: on",
             "Editor padding: 1",
@@ -4882,6 +4910,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: one-at-a-time",
             "Block images: off",
+            "Show images: on",
             "Skill commands: on",
             "Show hardware cursor: on",
             "Editor padding: 1",
@@ -4909,6 +4938,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: all",
             "Block images: off",
+            "Show images: on",
             "Skill commands: on",
             "Show hardware cursor: on",
             "Editor padding: 1",
@@ -4935,6 +4965,34 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: all",
             "Block images: on",
+            "Show images: on",
+            "Skill commands: on",
+            "Show hardware cursor: on",
+            "Editor padding: 1",
+            "Output padding: 1",
+            "Autocomplete max items: 7",
+            "Clear on shrink: off",
+            "Terminal progress: off",
+            "Auto-copy selection: off",
+            "Hide thinking: on",
+            "Thinking level: medium",
+            "Double Escape: tree",
+            "Tree filter mode: default",
+            "Default project trust: ask",
+        ]
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.show_images is False
+        assert '"show_images": false' in tui_settings_path().read_text(encoding="utf-8")
+        assert isinstance(app.screen, SettingsPickerScreen)
+        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+            "Theme: tau-dark",
+            "Auto-compact: off",
+            "Steering mode: all",
+            "Follow-up mode: all",
+            "Block images: on",
+            "Show images: off",
             "Skill commands: on",
             "Show hardware cursor: on",
             "Editor padding: 1",
@@ -4961,6 +5019,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: all",
             "Block images: on",
+            "Show images: off",
             "Skill commands: off",
             "Show hardware cursor: on",
             "Editor padding: 1",
@@ -4988,6 +5047,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: all",
             "Block images: on",
+            "Show images: off",
             "Skill commands: off",
             "Show hardware cursor: off",
             "Editor padding: 1",
@@ -5015,6 +5075,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: all",
             "Block images: on",
+            "Show images: off",
             "Skill commands: off",
             "Show hardware cursor: off",
             "Editor padding: 2",
@@ -5041,6 +5102,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: all",
             "Block images: on",
+            "Show images: off",
             "Skill commands: off",
             "Show hardware cursor: off",
             "Editor padding: 2",
@@ -5067,6 +5129,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: all",
             "Block images: on",
+            "Show images: off",
             "Skill commands: off",
             "Show hardware cursor: off",
             "Editor padding: 2",
@@ -5093,6 +5156,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: all",
             "Block images: on",
+            "Show images: off",
             "Skill commands: off",
             "Show hardware cursor: off",
             "Editor padding: 2",
@@ -5119,6 +5183,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: all",
             "Block images: on",
+            "Show images: off",
             "Skill commands: off",
             "Show hardware cursor: off",
             "Editor padding: 2",
@@ -5145,6 +5210,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: all",
             "Block images: on",
+            "Show images: off",
             "Skill commands: off",
             "Show hardware cursor: off",
             "Editor padding: 2",
@@ -5193,6 +5259,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "up",
             "up",
             "up",
+            "up",
             "enter",
         )
         await pilot.pause()
@@ -5201,6 +5268,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert isinstance(app.screen, SettingsPickerScreen)
 
         await pilot.press(
+            "down",
             "down",
             "down",
             "down",

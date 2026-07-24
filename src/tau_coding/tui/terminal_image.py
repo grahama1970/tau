@@ -66,6 +66,7 @@ class TerminalImageOptions:
     max_height_cells: int | None = None
     filename: str | None = None
     image_id: int | None = None
+    show: bool = True
 
 
 class TerminalImage:
@@ -109,7 +110,7 @@ class TerminalImage:
         max_height = self.options.max_height_cells or default_max_height
         capabilities = get_capabilities()
 
-        if capabilities.images is None:
+        if not self.options.show or capabilities.images is None:
             lines = (
                 image_fallback(self.mime_type, self.dimensions, self.options.filename),
             )

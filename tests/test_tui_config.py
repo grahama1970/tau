@@ -465,6 +465,21 @@ def test_tui_settings_reject_invalid_block_images() -> None:
         tui_settings_from_json({"block_images": "true"})
 
 
+def test_tui_settings_load_show_images_aliases() -> None:
+    camel = tui_settings_from_json({"showImages": False})
+    snake = tui_settings_from_json({"show_images": False})
+    nested = tui_settings_from_json({"terminal": {"showImages": False}})
+
+    assert camel.show_images is False
+    assert snake.show_images is False
+    assert nested.show_images is False
+
+
+def test_tui_settings_reject_invalid_show_images() -> None:
+    with pytest.raises(TuiConfigError, match="show_images"):
+        tui_settings_from_json({"show_images": "false"})
+
+
 def test_tui_settings_load_editor_padding_x_aliases() -> None:
     camel = tui_settings_from_json({"editorPaddingX": 2})
     snake = tui_settings_from_json({"editor_padding_x": 3})
@@ -649,6 +664,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["keybindings"]["copy_last_message"] == "ctrl+x"
     assert settings.to_json()["autocomplete_max_visible"] == 5
     assert settings.to_json()["block_images"] is False
+    assert settings.to_json()["show_images"] is True
     assert settings.to_json()["editor_padding_x"] == 1
     assert settings.to_json()["enable_skill_commands"] is True
     assert settings.to_json()["output_padding_x"] == 1

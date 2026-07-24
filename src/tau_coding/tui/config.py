@@ -389,6 +389,7 @@ class TuiSettings:
     theme: TuiThemeName = "tau-dark"
     auto_compact: bool = True
     auto_copy_selection: bool = False
+    show_images: bool = True
     block_images: bool = False
     double_escape_action: DoubleEscapeAction = "tree"
     tree_filter_mode: TuiTreeFilterMode = "default"
@@ -421,6 +422,7 @@ class TuiSettings:
             "keybindings": self.keybindings.to_json(),
             "output_padding_x": self.output_padding_x,
             "clear_on_shrink": self.clear_on_shrink,
+            "show_images": self.show_images,
             "show_hardware_cursor": self.show_hardware_cursor,
             "show_terminal_progress": self.show_terminal_progress,
             "external_editor": self.external_editor,
@@ -485,6 +487,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "keybindings",
         "outputPad",
         "output_padding_x",
+        "showImages",
+        "show_images",
         "showTerminalProgress",
         "showHardwareCursor",
         "show_hardware_cursor",
@@ -520,6 +524,16 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         block_images=_bool_setting(
             data.get("block_images", data.get("blockImages", False)),
             "block_images",
+        ),
+        show_images=_bool_setting(
+            data.get(
+                "show_images",
+                data.get(
+                    "showImages",
+                    terminal_data.get("show_images", terminal_data.get("showImages", True)),
+                ),
+            ),
+            "show_images",
         ),
         double_escape_action=_double_escape_action(
             data.get("double_escape_action", "tree"),

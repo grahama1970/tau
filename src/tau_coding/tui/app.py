@@ -2048,6 +2048,7 @@ SettingsPickerKey = Literal[
     "editor_padding_x",
     "enable_skill_commands",
     "output_padding_x",
+    "show_images",
     "show_hardware_cursor",
     "show_terminal_progress",
     "theme",
@@ -5413,6 +5414,7 @@ class TauTuiApp(App[None]):
                 self.state.items[-1],
                 theme=theme,
                 show_tool_results=self.state.show_tool_results,
+                show_images=self.tui_settings.show_images,
                 output_padding_x=self.tui_settings.output_padding_x,
             )
             self._refresh_chrome()
@@ -5428,6 +5430,7 @@ class TauTuiApp(App[None]):
                     self.state.items[-1],
                     theme=theme,
                     show_tool_results=self.state.show_tool_results,
+                    show_images=self.tui_settings.show_images,
                     output_padding_x=self.tui_settings.output_padding_x,
                 )
             self._refresh_chrome()
@@ -6528,6 +6531,7 @@ class TauTuiApp(App[None]):
         transcript.update_from_state(
             self.state,
             theme=theme,
+            show_images=self.tui_settings.show_images,
             clear_on_shrink=self.tui_settings.clear_on_shrink,
             output_padding_x=self.tui_settings.output_padding_x,
         )
@@ -7543,6 +7547,11 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             value="on" if settings.block_images else "off",
         ),
         SettingsPickerItem(
+            key="show_images",
+            label="Show images",
+            value="on" if settings.show_images else "off",
+        ),
+        SettingsPickerItem(
             key="enable_skill_commands",
             label="Skill commands",
             value="on" if settings.enable_skill_commands else "off",
@@ -7706,6 +7715,8 @@ def _next_tui_settings(
         )
     if key == "block_images":
         return replace(settings, block_images=not settings.block_images)
+    if key == "show_images":
+        return replace(settings, show_images=not settings.show_images)
     if key == "enable_skill_commands":
         return replace(settings, enable_skill_commands=not settings.enable_skill_commands)
     if key == "show_hardware_cursor":
