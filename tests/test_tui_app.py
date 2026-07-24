@@ -82,6 +82,7 @@ from tau_coding.tui.app import (
     _activity_prompt_border_color,
     _completion_selected_render_line,
     _edit_text_with_external_editor,
+    _filter_model_choices,
     _filter_session_picker_records,
     _next_tui_settings,
     _terminal_command_prefix_span,
@@ -8739,6 +8740,33 @@ async def test_tui_model_opens_interactive_picker() -> None:
     assert session.model == "local-model"
     assert session.prompt_texts == []
     assert notifications == []
+
+
+def test_model_picker_filter_matches_provider_prefixed_queries() -> None:
+    choices = (
+        ModelChoice(provider_name="openai", model="gpt-5.6"),
+        ModelChoice(provider_name="openrouter", model="openai/gpt-5.6"),
+        ModelChoice(provider_name="anthropic", model="claude-sonnet-4.5"),
+    )
+
+    assert _filter_model_choices(choices, "openai/gpt-5.6") == (
+        ModelChoice(provider_name="openai", model="gpt-5.6"),
+        ModelChoice(provider_name="openrouter", model="openai/gpt-5.6"),
+    )
+
+
+def test_model_picker_filter_ranks_provider_prefixed_prefix_before_proxy_id() -> None:
+    choices = (
+        ModelChoice(provider_name="openrouter", model="openai/gpt-5.6"),
+        ModelChoice(provider_name="openai", model="gpt-5.6"),
+        ModelChoice(provider_name="openai", model="gpt-5.6-mini"),
+    )
+
+    assert _filter_model_choices(choices, "openai/gpt-5.6") == (
+        ModelChoice(provider_name="openai", model="gpt-5.6"),
+        ModelChoice(provider_name="openai", model="gpt-5.6-mini"),
+        ModelChoice(provider_name="openrouter", model="openai/gpt-5.6"),
+    )
 
 
 @pytest.mark.anyio

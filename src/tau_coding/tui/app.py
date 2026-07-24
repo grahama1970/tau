@@ -8006,11 +8006,33 @@ def _filter_model_choices(choices: Sequence[ModelChoice], query: str) -> tuple[M
     normalized = query.strip().lower()
     if not normalized:
         return tuple(choices)
-    return tuple(
+    matches = [
         choice
         for choice in choices
-        if normalized in choice.provider_name.lower() or normalized in choice.model.lower()
-    )
+        if normalized in _model_picker_search_text(choice)
+    ]
+    return tuple(sorted(matches, key=lambda choice: _model_picker_search_rank(choice, normalized)))
+
+
+def _model_picker_search_text(choice: ModelChoice) -> str:
+    provider = choice.provider_name.lower()
+    model = choice.model.lower()
+    return f"{provider} {provider}/{model} {provider} {model}"
+
+
+def _model_picker_search_rank(choice: ModelChoice, normalized_query: str) -> tuple[int, str, str]:
+    provider = choice.provider_name.lower()
+    model = choice.model.lower()
+    reference = f"{provider}/{model}"
+    if reference == normalized_query:
+        rank = 0
+    elif reference.startswith(normalized_query):
+        rank = 1
+    elif provider == normalized_query or model == normalized_query:
+        rank = 2
+    else:
+        rank = 3
+    return rank, provider, model
 
 
 def _filter_workflow_picker_records(
