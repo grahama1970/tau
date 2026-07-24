@@ -110,6 +110,10 @@ def test_registry_ignores_ordinary_prompts_and_skill_expansion(tmp_path: Path) -
 
     assert registry.execute(session, "hello").handled is False
     assert registry.execute(session, "/skill:review fix this").handled is False
+    for prompt in ("/missing", "/README.md", "/tmp", "/Users/me/screenshot.png"):
+        result = registry.execute(session, prompt)
+        assert result.handled is False
+        assert result.message is None
 
 
 def test_registered_commands_are_pi_aligned(tmp_path: Path) -> None:
@@ -155,10 +159,10 @@ def test_quit_and_new_return_control_flags(tmp_path: Path) -> None:
     session = FakeSession(tmp_path)
 
     assert registry.execute(session, "/quit").exit_requested is True
-    assert registry.execute(session, "/exit").message == "Unknown command: /exit"
-    assert registry.execute(session, "/q").message == "Unknown command: /q"
+    assert registry.execute(session, "/exit").handled is False
+    assert registry.execute(session, "/q").handled is False
     assert registry.execute(session, "/new").new_session_requested is True
-    assert registry.execute(session, "/clear").message == "Unknown command: /clear"
+    assert registry.execute(session, "/clear").handled is False
 
 
 def test_clone_command_requests_session_clone(tmp_path: Path) -> None:
@@ -355,8 +359,7 @@ def test_session_command_includes_session_details(tmp_path: Path) -> None:
     assert "Session: session-1" in result.message
     assert "Session name:" not in result.message
     assert (
-        create_default_command_registry().execute(FakeSession(tmp_path), "/status").message
-        == "Unknown command: /status"
+        create_default_command_registry().execute(FakeSession(tmp_path), "/status").handled is False
     )
 
 
@@ -618,8 +621,8 @@ def test_non_pi_commands_are_not_registered(tmp_path: Path) -> None:
 
     for command in ("/provider", "/resources", "/context", "/help"):
         result = registry.execute(session, command)
-        assert result.handled is True
-        assert result.message == f"Unknown command: {command}"
+        assert result.handled is False
+        assert result.message is None
 
 
 def test_login_command_requests_provider_picker(tmp_path: Path) -> None:
@@ -684,9 +687,7 @@ def test_resume_without_argument_requests_picker(tmp_path: Path) -> None:
 
     assert result.resume_picker_requested is True
     assert result.message is None
-    assert create_default_command_registry().execute(session, "/sessions").message == (
-        "Unknown command: /sessions"
-    )
+    assert create_default_command_registry().execute(session, "/sessions").handled is False
 
 
 def test_resume_command_requests_indexed_session(tmp_path: Path) -> None:
@@ -752,13 +753,6 @@ def test_name_command_rejects_multiline_name(tmp_path: Path) -> None:
 
     assert result.message == "Session name must be a single line."
     assert manager.get_session(record.id) == record
-
-
-def test_unknown_command_returns_message(tmp_path: Path) -> None:
-    result = create_default_command_registry().execute(FakeSession(tmp_path), "/missing")
-
-    assert result.handled is True
-    assert result.message == "Unknown command: /missing"
 
 
 def test_registry_rejects_duplicate_commands_and_aliases() -> None:
