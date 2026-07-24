@@ -6497,6 +6497,40 @@ async def test_tui_app_tree_picker_uses_configured_pi_tree_filter_shortcut() -> 
 
 
 @pytest.mark.anyio
+async def test_tui_app_tree_picker_help_uses_configured_tree_keybindings() -> None:
+    session = FakeSession()
+    app = TauTuiApp(
+        session,
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(
+                tree_edit_label="f6",
+                tree_toggle_label_timestamp="f7",
+                tree_fold_or_up="f8",
+                tree_unfold_or_down="f9",
+                tree_filter_no_tools="f10",
+                tree_filter_cycle="f11",
+                tree_filter_cycle_previous="f12",
+            ),
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        help_text = str(app.screen.query_one("#tree-picker-help", Static).render())
+
+    assert "F6 label" in help_text
+    assert "F7 label time" in help_text
+    assert "F8/F9 fold" in help_text
+    assert "F10 no-tools" in help_text
+    assert "F11/F12 filter default" in help_text
+
+
+@pytest.mark.anyio
 async def test_tui_app_tree_picker_search_filters_entries_and_escape_clears() -> None:
     session = FakeSession()
     app = TauTuiApp(session)
@@ -6656,7 +6690,7 @@ async def test_tui_app_tree_picker_folds_and_unfolds_selected_branch() -> None:
             "  user: Root"
         ]
         assert tree_list.index == 0
-        assert "Ctrl+Left/Right fold" in str(
+        assert "Ctrl+Left/Ctrl+Right fold" in str(
             app.screen.query_one("#tree-picker-help", Static).render()
         )
 
