@@ -3518,12 +3518,18 @@ class LoginProviderPickerScreen(ModalScreen[str | None]):
         self.theme = theme
         self.title_text = title
         self.initial_search = initial_search
+        self.search_value = initial_search
         self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
         """Compose the provider picker."""
         with Vertical(id="login-provider-picker"):
             yield Static(self.title_text, id="login-provider-title")
+            yield Input(
+                value=self.search_value,
+                placeholder="Search providers",
+                id="login-provider-search",
+            )
             yield ListView(
                 *[
                     ListItem(Label(_login_provider_label(provider), markup=False))
@@ -3541,9 +3547,42 @@ class LoginProviderPickerScreen(ModalScreen[str | None]):
 
     def on_mount(self) -> None:
         """Focus the provider list."""
+        self._refresh_provider_list()
+        self.query_one("#login-provider-search", Input).focus()
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """Filter login providers as the search changes."""
+        if event.input.id != "login-provider-search":
+            return
+        event.stop()
+        self.search_value = event.value
+        self._refresh_provider_list()
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Select the highlighted provider from the search input."""
+        if event.input.id != "login-provider-search":
+            return
+        event.stop()
+        self.action_select_cursor()
+
+    def _refresh_provider_list(self) -> None:
+        self.visible_providers = _filter_login_providers(self.providers, self.search_value)
         provider_list = self.query_one("#login-provider-list", ListView)
+        provider_list.clear()
+        provider_list.extend(
+            ListItem(Label(_login_provider_label(provider), markup=False))
+            for provider in self.visible_providers
+        )
         provider_list.index = 0 if self.visible_providers else None
-        provider_list.focus()
+        select_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+        if self.search_value:
+            help_text = f'filter "{self.search_value}" - {select_key} selects - {cancel_key} closes'
+        elif self.visible_providers:
+            help_text = f"{select_key} selects - {cancel_key} closes"
+        else:
+            help_text = f"No matching providers - {cancel_key} closes"
+        self.query_one("#login-provider-help", Static).update(help_text)
 
     def on_key(self, event: Key) -> None:
         """Route provider picker keys to the list."""
@@ -3588,6 +3627,8 @@ class LoginProviderPickerScreen(ModalScreen[str | None]):
 
     def action_select_cursor(self) -> None:
         """Select the highlighted provider."""
+        if not self.visible_providers:
+            return
         self.query_one("#login-provider-list", ListView).action_select_cursor()
 
     def action_cancel(self) -> None:
@@ -4916,6 +4957,7 @@ class TauTuiApp(App[None]):
         max-height: 6;
     }
 
+    #login-provider-search,
     #model-picker-search {
         height: 3;
         margin-bottom: 1;
