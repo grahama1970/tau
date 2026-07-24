@@ -19,6 +19,7 @@ from pathlib import Path
 from time import monotonic
 from typing import Any, ClassVar, Literal, Protocol, cast
 
+from rich.cells import cell_len
 from rich.console import Console, Group
 from rich.text import Text
 from textual import events, on
@@ -2821,6 +2822,8 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         """Focus the tree list for keyboard navigation."""
         tree_list = self.query_one("#tree-picker-list", ListView)
         tree_list.index = _active_tree_choice_index(self.choices)
+        self._refresh_tree_item_labels()
+        self.call_after_refresh(self._refresh_tree_item_labels)
         tree_list.focus()
 
     def on_key(self, event: Key) -> None:
@@ -2995,6 +2998,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         tree_list = self.query_one("#tree-picker-list", ListView)
         current_index = tree_list.index if tree_list.index is not None else 0
         tree_list.index = (current_index + direction) % len(visible_choices)
+        self._refresh_tree_item_labels()
 
     def action_page_up(self) -> None:
         """Move up by a page of tree entries."""
@@ -3016,6 +3020,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
             page_size = 10
         next_index = current_index + (direction * page_size)
         tree_list.index = max(0, min(len(visible_choices) - 1, next_index))
+        self._refresh_tree_item_labels()
 
     def action_select_cursor(self) -> None:
         """Branch from the highlighted entry without a summary."""
@@ -3111,6 +3116,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
             selected_index,
             direction=direction,
         )
+        self._refresh_tree_item_labels()
 
     def action_edit_tree_label(self) -> None:
         """Edit the selected tree entry label."""
@@ -3214,6 +3220,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         tree_list.index = (
             _tree_choice_index(visible_choices, selected_entry_id) if visible_choices else None
         )
+        self._refresh_tree_item_labels()
         self.query_one("#tree-picker-search", Static).update(self._search_text())
         self.query_one("#tree-picker-help", Static).update(self._help_text())
 
@@ -3263,19 +3270,52 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         )
 
     def _list_items(self) -> list[ListItem]:
+        tree_width = self._tree_viewport_width()
+        selected_index = (
+            self.query_one("#tree-picker-list", ListView).index if self.is_mounted else None
+        )
         return [
             ListItem(
                 Label(
-                    _tree_picker_label(
+                    _tree_picker_viewport_label(
                         choice,
                         theme=self.theme,
                         show_label_timestamps=self.show_label_timestamps,
+                        selected=index == selected_index,
+                        viewport_width=tree_width,
                     ),
                     markup=False,
                 )
             )
-            for choice in self._visible_choices()
+            for index, choice in enumerate(self._visible_choices())
         ]
+
+    def _refresh_tree_item_labels(self) -> None:
+        """Refresh visible tree row labels after selection changes for horizontal panning."""
+        if not self.is_mounted:
+            return
+        tree_list = self.query_one("#tree-picker-list", ListView)
+        selected_index = tree_list.index
+        tree_width = self._tree_viewport_width()
+        for index, choice in enumerate(self._visible_choices()):
+            if index >= len(tree_list.children):
+                break
+            label = tree_list.children[index].query_one(Label)
+            label.update(
+                _tree_picker_viewport_label(
+                    choice,
+                    theme=self.theme,
+                    show_label_timestamps=self.show_label_timestamps,
+                    selected=index == selected_index,
+                    viewport_width=tree_width,
+                )
+            )
+
+    def _tree_viewport_width(self) -> int:
+        if not self.is_mounted:
+            return 0
+        tree_list = self.query_one("#tree-picker-list", ListView)
+        return max(0, tree_list.size.width - 4)
 
     def _help_text(self) -> str:
         tool_call_state = "shown" if self.show_tool_calls else "hidden"
@@ -7851,6 +7891,68 @@ def _tree_picker_label(
     else:
         text.append(body)
     return text
+
+
+def _tree_picker_viewport_label(
+    choice: SessionTreeChoice,
+    *,
+    theme: TuiTheme,
+    show_label_timestamps: bool = False,
+    selected: bool = False,
+    viewport_width: int = 0,
+) -> Text:
+    label = _tree_picker_label(
+        choice,
+        theme=theme,
+        show_label_timestamps=show_label_timestamps,
+    )
+    if not selected or viewport_width <= 0 or label.cell_len <= viewport_width:
+        return label
+
+    marker_width = 2
+    plain = label.plain
+    gutter = plain[:marker_width]
+    body = plain[marker_width:]
+    body_width = max(0, viewport_width - marker_width)
+    anchor_col = _tree_label_anchor_col(body)
+    min_visible_anchor = min(20, max(4, body_width // 3))
+    if anchor_col <= body_width - min_visible_anchor:
+        return _right_crop_text(label, viewport_width)
+
+    anchor_context = min(12, max(2, body_width // 4))
+    scroll = max(0, anchor_col - anchor_context)
+    viewport_body = _slice_cells(body, scroll, body_width)
+    if scroll:
+        viewport_body = f"...{viewport_body[3:]}" if cell_len(viewport_body) > 3 else "..."
+    return Text(f"{gutter}{viewport_body}")
+
+
+def _right_crop_text(text: Text, width: int) -> Text:
+    cropped = text.copy()
+    cropped.truncate(width, overflow="crop")
+    return cropped
+
+
+def _tree_label_anchor_col(body: str) -> int:
+    leading_spaces = len(body) - len(body.lstrip(" "))
+    return cell_len(body[:leading_spaces])
+
+
+def _slice_cells(value: str, start: int, width: int) -> str:
+    if width <= 0:
+        return ""
+    end = start + width
+    parts: list[str] = []
+    cursor = 0
+    for character in value:
+        character_width = cell_len(character)
+        next_cursor = cursor + character_width
+        if next_cursor > start and cursor < end:
+            parts.append(character)
+        cursor = next_cursor
+        if cursor >= end:
+            break
+    return "".join(parts)
 
 
 def _user_message_picker_label(choice: SessionTreeChoice, index: int, total: int) -> str:
