@@ -887,6 +887,7 @@ class TreePickerResult:
 SettingsPickerKey = Literal[
     "theme",
     "auto_copy_selection",
+    "hide_thinking",
     "double_escape_action",
     "tree_filter_mode",
 ]
@@ -3127,7 +3128,10 @@ class TauTuiApp(App[None]):
         super().__init__()
         self._bindings = BindingsMap(_app_bindings(self.tui_settings.keybindings))
         self.session = session
-        self.state = TuiState(skills=session.skills)
+        self.state = TuiState(
+            skills=session.skills,
+            show_thinking=not self.tui_settings.hide_thinking,
+        )
         self.state.load_messages(session.messages)
         self.adapter = TuiEventAdapter(self.state)
         self._prompt_worker: Worker[None] | None = None
@@ -3508,12 +3512,14 @@ class TauTuiApp(App[None]):
                 theme=theme,
                 auto_copy_selection=self.tui_settings.auto_copy_selection,
                 double_escape_action=self.tui_settings.double_escape_action,
+                hide_thinking=self.tui_settings.hide_thinking,
                 tree_filter_mode=self.tui_settings.tree_filter_mode,
             )
         )
 
     def _set_tui_settings(self, settings: TuiSettings) -> None:
         self.tui_settings = settings
+        self.state.show_thinking = not settings.hide_thinking
         save_tui_settings(self.tui_settings)
         self._bindings = BindingsMap(_app_bindings(self.tui_settings.keybindings))
         with suppress(NoMatches):
@@ -5559,6 +5565,11 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             value="on" if settings.auto_copy_selection else "off",
         ),
         SettingsPickerItem(
+            key="hide_thinking",
+            label="Hide thinking",
+            value="on" if settings.hide_thinking else "off",
+        ),
+        SettingsPickerItem(
             key="double_escape_action",
             label="Double Escape",
             value=settings.double_escape_action,
@@ -5625,6 +5636,7 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
             theme=next_theme,
             auto_copy_selection=settings.auto_copy_selection,
             double_escape_action=settings.double_escape_action,
+            hide_thinking=settings.hide_thinking,
             tree_filter_mode=settings.tree_filter_mode,
         )
     if key == "auto_copy_selection":
@@ -5633,6 +5645,16 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
             theme=settings.theme,
             auto_copy_selection=not settings.auto_copy_selection,
             double_escape_action=settings.double_escape_action,
+            hide_thinking=settings.hide_thinking,
+            tree_filter_mode=settings.tree_filter_mode,
+        )
+    if key == "hide_thinking":
+        return TuiSettings(
+            keybindings=settings.keybindings,
+            theme=settings.theme,
+            auto_copy_selection=settings.auto_copy_selection,
+            double_escape_action=settings.double_escape_action,
+            hide_thinking=not settings.hide_thinking,
             tree_filter_mode=settings.tree_filter_mode,
         )
     if key == "double_escape_action":
@@ -5652,6 +5674,7 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
             double_escape_action=double_escape_actions[
                 (current_index + 1) % len(double_escape_actions)
             ],
+            hide_thinking=settings.hide_thinking,
             tree_filter_mode=settings.tree_filter_mode,
         )
     try:
@@ -5663,6 +5686,7 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
         theme=settings.theme,
         auto_copy_selection=settings.auto_copy_selection,
         double_escape_action=settings.double_escape_action,
+        hide_thinking=settings.hide_thinking,
         tree_filter_mode=TREE_FILTER_MODES[(current_index + 1) % len(TREE_FILTER_MODES)],
     )
 

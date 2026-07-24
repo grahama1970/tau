@@ -89,6 +89,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.keybindings.cancel == "escape"
     assert settings.theme == "high-contrast"
     assert settings.double_escape_action == "tree"
+    assert settings.hide_thinking is True
     assert settings.tree_filter_mode == "user-only"
     assert settings.resolved_theme == HIGH_CONTRAST_THEME
 
@@ -166,6 +167,13 @@ def test_tui_settings_load_tree_filter_mode() -> None:
     assert settings.to_json()["tree_filter_mode"] == "labeled-only"
 
 
+def test_tui_settings_load_hide_thinking() -> None:
+    settings = tui_settings_from_json({"hide_thinking": False})
+
+    assert settings.hide_thinking is False
+    assert settings.to_json()["hide_thinking"] is False
+
+
 def test_tui_settings_reject_invalid_double_escape_action() -> None:
     with pytest.raises(TuiConfigError, match="double_escape_action"):
         tui_settings_from_json({"double_escape_action": "open"})
@@ -174,6 +182,11 @@ def test_tui_settings_reject_invalid_double_escape_action() -> None:
 def test_tui_settings_reject_invalid_tree_filter_mode() -> None:
     with pytest.raises(TuiConfigError, match="tree_filter_mode"):
         tui_settings_from_json({"tree_filter_mode": "named"})
+
+
+def test_tui_settings_reject_invalid_hide_thinking() -> None:
+    with pytest.raises(TuiConfigError, match="hide_thinking"):
+        tui_settings_from_json({"hide_thinking": "yes"})
 
 
 def test_tui_settings_reject_invalid_auto_copy_selection() -> None:
@@ -230,6 +243,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["theme"] == "high-contrast"
     assert settings.to_json()["auto_copy_selection"] is False
     assert settings.to_json()["double_escape_action"] == "tree"
+    assert settings.to_json()["hide_thinking"] is True
     assert settings.to_json()["tree_filter_mode"] == "default"
 
 

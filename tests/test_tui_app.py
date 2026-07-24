@@ -3513,6 +3513,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             auto_copy_selection=False,
             double_escape_action="tree",
             tree_filter_mode="default",
+            hide_thinking=True,
         ),
     )
 
@@ -3527,6 +3528,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
             "Theme: tau-dark",
             "Auto-copy selection: off",
+            "Hide thinking: on",
             "Double Escape: tree",
             "Tree filter mode: default",
         ]
@@ -3539,9 +3541,16 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
             "Theme: tau-dark",
             "Auto-copy selection: on",
+            "Hide thinking: on",
             "Double Escape: tree",
             "Tree filter mode: default",
         ]
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.hide_thinking is False
+        assert app.state.show_thinking is True
+        assert '"hide_thinking": false' in tui_settings_path().read_text(encoding="utf-8")
 
         await pilot.press("down", "enter")
         await pilot.pause()
@@ -3550,13 +3559,13 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             encoding="utf-8"
         )
 
-        await pilot.press("up", "up", "enter")
+        await pilot.press("up", "up", "up", "enter")
         await pilot.pause()
         assert app.tui_settings.theme == "tau-light"
         assert '"theme": "tau-light"' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
 
-        await pilot.press("down", "down", "down", "enter")
+        await pilot.press("down", "down", "down", "down", "enter")
         await pilot.pause()
         assert app.tui_settings.tree_filter_mode == "no-tools"
         assert '"tree_filter_mode": "no-tools"' in tui_settings_path().read_text(
@@ -3577,6 +3586,7 @@ async def test_tui_app_settings_picker_search_filters_before_change(
             auto_copy_selection=False,
             double_escape_action="tree",
             tree_filter_mode="default",
+            hide_thinking=True,
         ),
     )
 
@@ -6150,6 +6160,15 @@ async def test_tui_app_dequeue_messages_reports_empty_queue() -> None:
         await pilot.pause()
 
     assert notifications == ["No queued messages to restore."]
+
+
+@pytest.mark.anyio
+async def test_tui_app_initializes_thinking_visibility_from_settings() -> None:
+    hidden_app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(hide_thinking=True))
+    visible_app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(hide_thinking=False))
+
+    assert hidden_app.state.show_thinking is False
+    assert visible_app.state.show_thinking is True
 
 
 @pytest.mark.anyio

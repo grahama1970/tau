@@ -266,12 +266,14 @@ class TuiSettings:
     auto_copy_selection: bool = False
     double_escape_action: DoubleEscapeAction = "tree"
     tree_filter_mode: TuiTreeFilterMode = "default"
+    hide_thinking: bool = True
 
     def to_json(self) -> dict[str, Any]:
         """Serialize these settings to JSON-compatible data."""
         return {
             "auto_copy_selection": self.auto_copy_selection,
             "double_escape_action": self.double_escape_action,
+            "hide_thinking": self.hide_thinking,
             "keybindings": self.keybindings.to_json(),
             "theme": self.theme,
             "tree_filter_mode": self.tree_filter_mode,
@@ -312,6 +314,7 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
     allowed_fields = {
         "auto_copy_selection",
         "double_escape_action",
+        "hide_thinking",
         "keybindings",
         "theme",
         "tree_filter_mode",
@@ -333,6 +336,7 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         double_escape_action=_double_escape_action(
             data.get("double_escape_action", "tree"),
         ),
+        hide_thinking=_bool_setting(data.get("hide_thinking", True), "hide_thinking"),
         tree_filter_mode=_tree_filter_mode(data.get("tree_filter_mode", "default")),
     )
 
