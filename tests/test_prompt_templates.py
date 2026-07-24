@@ -122,6 +122,45 @@ def test_expand_prompt_template_command_replaces_slash_command() -> None:
     )
 
 
+def test_expand_prompt_template_command_substitutes_pi_positional_arguments() -> None:
+    template = PromptTemplate(
+        name="component",
+        path=Path("component.md"),
+        content="Create $1 with features: $@",
+    )
+
+    assert expand_prompt_template_command('/component Button "click handler"', [template]) == (
+        "Create Button with features: Button click handler"
+    )
+
+
+def test_expand_prompt_template_command_substitutes_pi_defaults_and_slices() -> None:
+    template = PromptTemplate(
+        name="summarize",
+        path=Path("summarize.md"),
+        content="Depth: ${1:-7}\nRest: ${@:2}\nAll: ${ARGUMENTS:-none}",
+    )
+
+    assert expand_prompt_template_command("/summarize 3 src tests", [template]) == (
+        "Depth: 3\nRest: src tests\nAll: 3 src tests"
+    )
+    assert expand_prompt_template_command("/summarize", [template]) == (
+        "Depth: 7\nRest: \nAll: none"
+    )
+
+
+def test_expand_prompt_template_command_substitutes_pi_limited_slices() -> None:
+    template = PromptTemplate(
+        name="pair",
+        path=Path("pair.md"),
+        content="Pair: ${@:2:2}",
+    )
+
+    assert expand_prompt_template_command("/pair one two three four", [template]) == (
+        "Pair: two three"
+    )
+
+
 def test_expand_prompt_template_command_blanks_missing_custom_variables() -> None:
     template = PromptTemplate(
         name="review",

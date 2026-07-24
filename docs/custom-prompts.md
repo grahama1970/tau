@@ -60,6 +60,13 @@ Implement this feature:
 ```
 
 Variables are placeholders that can be filled in when the template is rendered by Tau code or future prompt-expansion UI.
+When a prompt is invoked as `/name arguments`, Tau also supports Pi-style argument placeholders:
+
+```md
+Create a component named $1 with features: $@
+```
+
+Supported argument forms include `$1`, `$2`, `$@`, `$ARGUMENTS`, `${1:-default}`, `${@:-default}`, `${ARGUMENTS:-default}`, `${@:N}`, and `${@:N:L}`.
 
 ## Prompts added to `~/.agents`
 
