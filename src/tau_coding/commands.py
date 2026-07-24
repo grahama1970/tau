@@ -143,6 +143,7 @@ class SlashCommand:
     handler: CommandHandler
     aliases: tuple[str, ...] = ()
     search_terms: tuple[str, ...] = ()
+    argument_hint: str | None = None
 
 
 class CommandRegistry:
@@ -349,6 +350,7 @@ def create_default_command_registry() -> CommandRegistry:
             usage="/model",
             description="Choose the active model.",
             handler=_model_command,
+            argument_hint="<provider/model>",
         )
     )
     registry.register(
@@ -402,6 +404,7 @@ def create_default_command_registry() -> CommandRegistry:
             usage="/login [provider]",
             description="Save an API key for a built-in provider.",
             handler=_login_command,
+            argument_hint="<provider>",
         )
     )
     registry.register(

@@ -88,6 +88,25 @@ def test_command_completion_suggests_registered_commands() -> None:
     assert state.selected.apply("/se") == "/session"
 
 
+def test_command_completion_renders_argument_hints_without_inserting_them() -> None:
+    state = build_completion_state(
+        "/mo",
+        command_registry=create_default_command_registry(),
+        skills=(),
+        prompt_templates=(),
+    )
+
+    assert state.selected is not None
+    assert state.selected.display == "/model"
+    assert state.selected.argument_hint == "<provider/model>"
+    assert state.selected.apply("/mo") == "/model"
+
+    console = Console(width=100, record=True)
+    console.print(render_completion_suggestions(state))
+    rendered = console.export_text()
+    assert "/model <provider/model>" in rendered
+
+
 def test_command_completion_matches_search_terms_with_canonical_replacement() -> None:
     clear_state = build_completion_state(
         "/cl",

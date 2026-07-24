@@ -45,6 +45,7 @@ class CompletionItem:
     end: int
     description: str | None = None
     category: str | None = None
+    argument_hint: str | None = None
 
     def apply(self, text: str) -> str:
         """Apply this completion to input text."""
@@ -402,6 +403,9 @@ def _command_alias_completions(
                 end=token_end,
                 description=command.description,
                 category="Commands",
+                argument_hint=(
+                    command.argument_hint if replacement_name == command.name else None
+                ),
             )
         )
     return suggestions

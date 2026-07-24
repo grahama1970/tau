@@ -1422,6 +1422,8 @@ def render_completion_suggestions(
         )
         command = Text(prefix, style=style)
         command.append(item.display, style=style)
+        if item.argument_hint:
+            command.append(f" {item.argument_hint}", style=description_style)
         command.append("  ", style=style)
         table.add_row(command, Text(item.description or "", style=description_style))
     return table
