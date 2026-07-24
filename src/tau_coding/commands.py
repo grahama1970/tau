@@ -447,6 +447,16 @@ def create_default_command_registry() -> CommandRegistry:
     )
     registry.register(
         SlashCommand(
+            name="thinking",
+            usage="/thinking [level]",
+            description="Show or set the active thinking level.",
+            handler=_thinking_command,
+            search_terms=("reasoning", "effort"),
+            argument_hint="<level>",
+        )
+    )
+    registry.register(
+        SlashCommand(
             name="settings",
             usage="/settings",
             description="Open durable TUI settings.",

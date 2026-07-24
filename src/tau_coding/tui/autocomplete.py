@@ -627,6 +627,13 @@ def _command_argument_completions(
             options=_completion_options(theme_names, description="Set TUI theme"),
             sort=False,
         )
+    if command_name == "thinking":
+        return _value_completions(
+            text=text,
+            start=token_end + 1,
+            options=_completion_options(thinking_levels, description="Set thinking level"),
+            sort=False,
+        )
     return None
 
 

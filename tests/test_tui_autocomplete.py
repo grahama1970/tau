@@ -400,7 +400,9 @@ def test_provider_argument_completion_is_not_available() -> None:
         provider_names=("openai", "local"),
     )
 
-    assert state.items == ()
+    assert [item.display for item in state.items] == ["high"]
+    assert state.selected is not None
+    assert state.selected.apply("/thinking h") == "/thinking high"
 
 
 def test_login_argument_completion_uses_available_providers() -> None:
@@ -436,7 +438,9 @@ def test_thinking_argument_completion_uses_available_modes() -> None:
         thinking_levels=("off", "minimal", "low", "medium", "high", "xhigh"),
     )
 
-    assert state.items == ()
+    assert [item.display for item in state.items] == ["high"]
+    assert state.selected is not None
+    assert state.selected.apply("/thinking h") == "/thinking high"
 
 
 def test_theme_argument_completion_uses_theme_names() -> None:
