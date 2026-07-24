@@ -8710,9 +8710,9 @@ def _external_editor_command(configured_command: str | None = None) -> str | Non
     if configured_command is not None and configured_command.strip():
         return configured_command.strip()
     command = os.environ.get("VISUAL") or os.environ.get("EDITOR")
-    if command is None or not command.strip():
-        return None
-    return command.strip()
+    if command is not None and command.strip():
+        return command.strip()
+    return "notepad" if sys.platform == "win32" else "nano"
 
 
 async def _edit_text_with_external_editor(command: str, content: str) -> str | None:
