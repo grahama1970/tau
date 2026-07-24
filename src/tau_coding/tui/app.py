@@ -1508,6 +1508,12 @@ class PromptInput(TextArea):
         """Move the prompt cursor back by one Pi-style word boundary."""
         self._last_prompt_edit = None
         self._last_yank_range = None
+        paste_marker_span = self._paste_marker_span_touching_cursor(direction="backward")
+        if paste_marker_span is not None:
+            start, _end, _marker = paste_marker_span
+            self.cursor_position = start
+            self._refresh_completions_after_cursor_move()
+            return
         row, column = self.cursor_location
         lines = self.text.split("\n")
         if row >= len(lines):
@@ -1524,6 +1530,12 @@ class PromptInput(TextArea):
         """Move the prompt cursor forward by one Pi-style word boundary."""
         self._last_prompt_edit = None
         self._last_yank_range = None
+        paste_marker_span = self._paste_marker_span_touching_cursor(direction="forward")
+        if paste_marker_span is not None:
+            _start, end, _marker = paste_marker_span
+            self.cursor_position = end
+            self._refresh_completions_after_cursor_move()
+            return
         row, column = self.cursor_location
         lines = self.text.split("\n")
         if row >= len(lines):
