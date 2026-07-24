@@ -946,6 +946,18 @@ class PromptInput(TextArea):
             event.stop()
             event.prevent_default()
             self.action_move_to_line_end()
+        elif event.key == "ctrl+b":
+            event.stop()
+            event.prevent_default()
+            self._last_prompt_edit = None
+            self._last_yank_range = None
+            self.action_cursor_left()
+        elif event.key == "ctrl+f":
+            event.stop()
+            event.prevent_default()
+            self._last_prompt_edit = None
+            self._last_yank_range = None
+            self.action_cursor_right()
         elif event.key in {"alt+b", "ctrl+left", "alt+left"}:
             event.stop()
             event.prevent_default()
@@ -6793,6 +6805,7 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         "- Enter: submit prompt",
         f"- {newline_hint}: insert newline",
         "- Ctrl+A/Ctrl+E: move to line start/end",
+        "- Ctrl+B/Ctrl+F: move one character left/right",
         "- Alt+B/Ctrl+Left/Alt+Left: move word left",
         "- Alt+F/Ctrl+Right/Alt+Right: move word right",
         "- Ctrl+]/Ctrl+Alt+]: jump to next or previous character",

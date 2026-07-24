@@ -2891,6 +2891,34 @@ async def test_prompt_ctrl_e_moves_to_current_line_end() -> None:
 
 
 @pytest.mark.anyio
+async def test_prompt_ctrl_b_moves_one_character_left() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha"
+        prompt.move_cursor((0, 3))
+
+        await pilot.press("ctrl+b")
+
+        assert prompt.cursor_location == (0, 2)
+
+
+@pytest.mark.anyio
+async def test_prompt_ctrl_f_moves_one_character_right() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha"
+        prompt.move_cursor((0, 2))
+
+        await pilot.press("ctrl+f")
+
+        assert prompt.cursor_location == (0, 3)
+
+
+@pytest.mark.anyio
 async def test_prompt_alt_b_moves_to_previous_word_boundary() -> None:
     app = TauTuiApp(FakeSession())
 
@@ -5962,6 +5990,7 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "Ctrl+Y: copy last assistant message" in app.screen.message
         assert "F2: open session tree" in app.screen.message
         assert "Ctrl+A/Ctrl+E: move to line start/end" in app.screen.message
+        assert "Ctrl+B/Ctrl+F: move one character left/right" in app.screen.message
         assert "Alt+B/Ctrl+Left/Alt+Left: move word left" in app.screen.message
         assert "Alt+F/Ctrl+Right/Alt+Right: move word right" in app.screen.message
         assert "Ctrl+]/Ctrl+Alt+]: jump to next or previous character" in app.screen.message
