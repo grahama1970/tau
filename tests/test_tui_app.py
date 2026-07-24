@@ -97,7 +97,13 @@ from tau_coding.tui.config import (
     save_tui_settings,
     tui_settings_path,
 )
-from tau_coding.tui.state import ChatItem, LoopMonitorStatus, ToolImagePayload, TuiState
+from tau_coding.tui.state import (
+    ChatItem,
+    LoopMonitorStatus,
+    ToolImagePayload,
+    TuiState,
+    format_terminal_command_running_block,
+)
 from tau_coding.tui.terminal_image import (
     TerminalCapabilities,
     reset_capabilities_cache,
@@ -765,6 +771,13 @@ def test_compact_token_count_uses_thousands_suffix() -> None:
     assert _compact_token_count(499) == "<1k"
     assert _compact_token_count(12034) == "12k"
     assert _compact_token_count(12500) == "13k"
+
+
+def test_terminal_command_running_block_shows_cancel_hint() -> None:
+    assert (
+        format_terminal_command_running_block(added_to_context=False)
+        == "… bash · not added to context\nRunning... (Escape to cancel)"
+    )
 
 
 def test_compact_session_info_wraps_to_available_width() -> None:
@@ -8989,7 +9002,12 @@ async def test_tui_app_renders_terminal_command_while_running(add_to_context: bo
         await pilot.pause()
 
         assert [(item.role, item.text, item.tool_result_text) for item in app.state.items] == [
-            ("tool", "$ sleep 1", None)
+            (
+                "tool",
+                "$ sleep 1",
+                f"… bash · {('added to context' if add_to_context else 'not added to context')}\n"
+                "Running... (Escape to cancel)",
+            )
         ]
         assert app.state.items[-1].always_show_tool_result is True
 
@@ -9095,6 +9113,7 @@ async def test_tui_app_escape_cancels_running_terminal_command() -> None:
     assert session.terminal_commands == [("sleep 1", True)]
     assert session.cancel_terminal_count == 1
     assert app._terminal_worker is None
+    assert app.state.items[-1].tool_result_text == "✗ bash · added to context\ncancelled"
     assert notifications == ["Cancelled terminal command."]
 
 

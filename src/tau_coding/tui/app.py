@@ -125,7 +125,11 @@ from tau_coding.tui.config import (
     save_tui_settings,
 )
 from tau_coding.tui.pty_proof import pty_input_received_line, pty_ready_line
-from tau_coding.tui.state import TuiState, format_terminal_command_result_block
+from tau_coding.tui.state import (
+    TuiState,
+    format_terminal_command_result_block,
+    format_terminal_command_running_block,
+)
 from tau_coding.tui.widgets import (
     CompactSessionInfo,
     SessionSidebar,
@@ -5210,6 +5214,9 @@ class TauTuiApp(App[None]):
         self.state.add_item(
             "tool",
             f"$ {command.strip()}",
+            tool_result_text=format_terminal_command_running_block(
+                added_to_context=add_to_context
+            ),
             always_show_tool_result=True,
         )
         self._follow_transcript_output()
@@ -5218,6 +5225,13 @@ class TauTuiApp(App[None]):
         try:
             result = await run_terminal_command(command, add_to_context=add_to_context)
         except asyncio.CancelledError:
+            if item_index < len(self.state.items):
+                item = self.state.items[item_index]
+                item.tool_result_text = format_terminal_command_result_block(
+                    ok=False,
+                    added_to_context=add_to_context,
+                    output="cancelled",
+                )
             self._terminal_worker = None
             self._refresh()
             return

@@ -502,6 +502,12 @@ def format_terminal_command_result_block(
     return "\n".join(lines)
 
 
+def format_terminal_command_running_block(*, added_to_context: bool) -> str:
+    """Format an input-bar terminal command while it is still running."""
+    suffix = " · added to context" if added_to_context else " · not added to context"
+    return f"… bash{suffix}\nRunning... (Escape to cancel)"
+
+
 def _result_patch(
     *,
     name: str,
