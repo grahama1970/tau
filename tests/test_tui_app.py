@@ -4970,6 +4970,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Double Escape: tree",
             "Tree filter mode: default",
             "Default project trust: ask",
+            "Quiet startup: off",
         ]
 
         await pilot.press("down", "enter")
@@ -4999,6 +5000,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Double Escape: tree",
             "Tree filter mode: default",
             "Default project trust: ask",
+            "Quiet startup: off",
         ]
 
         await pilot.press("down", "enter")
@@ -5028,6 +5030,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Double Escape: tree",
             "Tree filter mode: default",
             "Default project trust: ask",
+            "Quiet startup: off",
         ]
 
         await pilot.press("down", "enter")
@@ -5057,6 +5060,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Double Escape: tree",
             "Tree filter mode: default",
             "Default project trust: ask",
+            "Quiet startup: off",
         ]
 
         await pilot.press("down", "enter")
@@ -5085,6 +5089,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Double Escape: tree",
             "Tree filter mode: default",
             "Default project trust: ask",
+            "Quiet startup: off",
         ]
 
         await pilot.press("down", "enter")
@@ -5113,6 +5118,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Double Escape: tree",
             "Tree filter mode: default",
             "Default project trust: ask",
+            "Quiet startup: off",
         ]
 
         await pilot.press("down", "enter")
@@ -5141,6 +5147,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Double Escape: tree",
             "Tree filter mode: default",
             "Default project trust: ask",
+            "Quiet startup: off",
         ]
 
         await pilot.press("down", "enter")
@@ -5169,6 +5176,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Double Escape: tree",
             "Tree filter mode: default",
             "Default project trust: ask",
+            "Quiet startup: off",
         ]
 
         await pilot.press("down", "enter")
@@ -5198,6 +5206,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Double Escape: tree",
             "Tree filter mode: default",
             "Default project trust: ask",
+            "Quiet startup: off",
         ]
 
         await pilot.press("down", "enter")
@@ -5227,6 +5236,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Double Escape: tree",
             "Tree filter mode: default",
             "Default project trust: ask",
+            "Quiet startup: off",
         ]
 
         await pilot.press("down", "enter")
@@ -5255,6 +5265,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Double Escape: tree",
             "Tree filter mode: default",
             "Default project trust: ask",
+            "Quiet startup: off",
         ]
 
         await pilot.press("down", "enter")
@@ -5283,6 +5294,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Double Escape: tree",
             "Tree filter mode: default",
             "Default project trust: ask",
+            "Quiet startup: off",
         ]
 
         await pilot.press("down", "enter")
@@ -5311,6 +5323,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Double Escape: tree",
             "Tree filter mode: default",
             "Default project trust: ask",
+            "Quiet startup: off",
         ]
 
         await pilot.press("down", "enter")
@@ -5339,6 +5352,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Double Escape: tree",
             "Tree filter mode: default",
             "Default project trust: ask",
+            "Quiet startup: off",
         ]
 
         await pilot.press("down", "enter")
@@ -5367,6 +5381,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Double Escape: tree",
             "Tree filter mode: default",
             "Default project trust: ask",
+            "Quiet startup: off",
         ]
 
         await pilot.press("down", "enter")
@@ -5442,6 +5457,51 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert '"default_project_trust": "always"' in tui_settings_path().read_text(
             encoding="utf-8"
         )
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.quiet_startup is True
+        assert '"quiet_startup": true' in tui_settings_path().read_text(encoding="utf-8")
+
+
+@pytest.mark.anyio
+async def test_tui_app_quiet_startup_suppresses_startup_notification(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    notifications: list[tuple[str, str]] = []
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(quiet_startup=True),
+        startup_message="Login required.",
+    )
+    monkeypatch.setattr(
+        app,
+        "_notify",
+        lambda message, severity="information": notifications.append((message, severity)),
+    )
+
+    async with app.run_test() as pilot:
+        await pilot.pause()
+
+    assert notifications == []
+
+
+@pytest.mark.anyio
+async def test_tui_app_startup_notification_shows_when_not_quiet(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    notifications: list[tuple[str, str]] = []
+    app = TauTuiApp(FakeSession(), startup_message="Login required.")
+    monkeypatch.setattr(
+        app,
+        "_notify",
+        lambda message, severity="information": notifications.append((message, severity)),
+    )
+
+    async with app.run_test() as pilot:
+        await pilot.pause()
+
+    assert notifications == [("Login required.", "warning")]
 
 
 @pytest.mark.anyio

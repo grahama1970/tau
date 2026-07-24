@@ -72,6 +72,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
           "followUpMode": "all",
           "defaultProjectTrust": "always",
           "externalEditor": "configured-editor --flag",
+          "quietStartup": true,
           "terminal": {"clearOnShrink": true, "showTerminalProgress": true},
           "thinkingLevel": "high"
         }
@@ -117,6 +118,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.follow_up_mode == "all"
     assert settings.default_project_trust == "always"
     assert settings.external_editor == "configured-editor --flag"
+    assert settings.quiet_startup is True
     assert settings.show_terminal_progress is True
     assert settings.thinking_level == "high"
     assert settings.tree_filter_mode == "user-only"
@@ -606,6 +608,19 @@ def test_tui_settings_reject_invalid_show_terminal_progress() -> None:
         tui_settings_from_json({"terminal": "true"})
 
 
+def test_tui_settings_load_quiet_startup_aliases() -> None:
+    camel = tui_settings_from_json({"quietStartup": True})
+    snake = tui_settings_from_json({"quiet_startup": True})
+
+    assert camel.quiet_startup is True
+    assert snake.quiet_startup is True
+
+
+def test_tui_settings_reject_invalid_quiet_startup() -> None:
+    with pytest.raises(TuiConfigError, match="quiet_startup"):
+        tui_settings_from_json({"quiet_startup": "true"})
+
+
 def test_tui_settings_load_clear_on_shrink_aliases() -> None:
     camel = tui_settings_from_json({"clearOnShrink": True})
     snake = tui_settings_from_json({"clear_on_shrink": True})
@@ -747,6 +762,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["clear_on_shrink"] is False
     assert settings.to_json()["show_hardware_cursor"] is True
     assert settings.to_json()["show_terminal_progress"] is False
+    assert settings.to_json()["quiet_startup"] is False
     assert settings.to_json()["external_editor"] == "configured-editor --flag"
     assert settings.to_json()["theme"] == "high-contrast"
     assert settings.to_json()["auto_compact"] is True

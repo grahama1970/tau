@@ -2054,6 +2054,7 @@ SettingsPickerKey = Literal[
     "enable_skill_commands",
     "image_width_cells",
     "output_padding_x",
+    "quiet_startup",
     "show_images",
     "show_hardware_cursor",
     "show_terminal_progress",
@@ -4913,7 +4914,7 @@ class TauTuiApp(App[None]):
         self._update_responsive_layout(self.size.width, self.size.height)
         self._refresh()
         self._refresh_completions()
-        if self.startup_message:
+        if self.startup_message and not self.tui_settings.quiet_startup:
             self._notify(self.startup_message, severity="warning")
         if self.initial_prompt and self.initial_prompt.strip():
             self._submit_prompt(self.initial_prompt.strip())
@@ -7681,6 +7682,12 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             value=settings.default_project_trust,
             description="Fallback trust policy when no saved project decision exists",
         ),
+        SettingsPickerItem(
+            key="quiet_startup",
+            label="Quiet startup",
+            value="on" if settings.quiet_startup else "off",
+            description="Suppress startup notifications from the TUI",
+        ),
     )
 
 
@@ -7825,6 +7832,8 @@ def _next_tui_settings(
         return replace(settings, show_terminal_progress=not settings.show_terminal_progress)
     if key == "clear_on_shrink":
         return replace(settings, clear_on_shrink=not settings.clear_on_shrink)
+    if key == "quiet_startup":
+        return replace(settings, quiet_startup=not settings.quiet_startup)
     if key == "auto_copy_selection":
         return replace(settings, auto_copy_selection=not settings.auto_copy_selection)
     if key == "hide_thinking":

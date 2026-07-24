@@ -460,6 +460,7 @@ class TuiSettings:
     clear_on_shrink: bool = field(default_factory=_default_clear_on_shrink)
     show_hardware_cursor: bool = True
     show_terminal_progress: bool = False
+    quiet_startup: bool = False
     external_editor: str | None = None
 
     def to_json(self) -> dict[str, Any]:
@@ -481,6 +482,7 @@ class TuiSettings:
             "image_width_cells": self.image_width_cells,
             "show_hardware_cursor": self.show_hardware_cursor,
             "show_terminal_progress": self.show_terminal_progress,
+            "quiet_startup": self.quiet_startup,
             "external_editor": self.external_editor,
             "follow_up_mode": self.follow_up_mode,
             "steering_mode": self.steering_mode,
@@ -545,6 +547,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "keybindings",
         "outputPad",
         "output_padding_x",
+        "quietStartup",
+        "quiet_startup",
         "showImages",
         "show_images",
         "showTerminalProgress",
@@ -665,6 +669,10 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
                 ),
             ),
             "show_terminal_progress",
+        ),
+        quiet_startup=_bool_setting(
+            data.get("quiet_startup", data.get("quietStartup", False)),
+            "quiet_startup",
         ),
         external_editor=_optional_string_setting(
             data.get("external_editor", data.get("externalEditor")),
