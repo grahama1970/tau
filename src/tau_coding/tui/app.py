@@ -2782,32 +2782,6 @@ TREE_FILTER_MODES: tuple[TreeFilterMode, ...] = (
 class TreePickerScreen(ModalScreen[TreePickerResult | None]):
     """Modal picker for branching from a previous session entry."""
 
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel"),
-        Binding("up", "cursor_up", "Up", show=False),
-        Binding("down", "cursor_down", "Down", show=False),
-        Binding("pageup", "page_up", "Page up", show=False),
-        Binding("pagedown", "page_down", "Page down", show=False),
-        Binding("enter", "select_cursor", "Branch", show=False),
-        Binding("s", "select_with_summary", "Summarize", show=False),
-        Binding("c", "select_with_custom_summary", "Custom summary", show=False),
-        Binding("ctrl+t", "toggle_tool_calls", "Tool calls", show=False),
-        Binding("ctrl+d", "set_default_tree_filter", "Default filter", show=False),
-        Binding("ctrl+u", "toggle_user_tree_filter", "User filter", show=False),
-        Binding("ctrl+l", "toggle_labeled_tree_filter", "Labeled filter", show=False),
-        Binding("ctrl+a", "toggle_all_tree_filter", "All filter", show=False),
-        Binding("ctrl+o", "cycle_tree_filter", "Cycle filter", show=False),
-        Binding("shift+ctrl+o", "cycle_tree_filter_backward", "Cycle filter backward", show=False),
-        Binding("ctrl+f", "cycle_tree_filter", "Filter", show=False),
-        Binding("ctrl+x", "copy_selected_tree_entry", "Copy", show=False),
-        Binding("ctrl+left", "fold_tree_branch", "Fold", show=False),
-        Binding("alt+left", "fold_tree_branch", "Fold", show=False),
-        Binding("ctrl+right", "unfold_tree_branch", "Unfold", show=False),
-        Binding("alt+right", "unfold_tree_branch", "Unfold", show=False),
-        Binding("shift+l", "edit_tree_label", "Label", show=False),
-        Binding("shift+t", "toggle_tree_label_timestamps", "Label time", show=False),
-    ]
-
     def __init__(
         self,
         choices: Sequence[SessionTreeChoice],
@@ -3306,6 +3280,8 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         tool_call_state = "shown" if self.show_tool_calls else "hidden"
         filter_label = "default" if self.filter_mode == "default" else self.filter_mode
         label_time_state = "on" if self.show_label_timestamps else "off"
+        branch_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
         copy_key = _key_hint_with_default(self.keybindings.copy_last_message, "ctrl+x")
         page_left_key = _key_hint_with_default(self.keybindings.editor_cursor_left, "left")
         page_right_key = _key_hint_with_default(self.keybindings.editor_cursor_right, "right")
@@ -3329,13 +3305,13 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
             "shift+ctrl+o",
         )
         return (
-            "Type filters - Enter branches - S summarizes - C custom summary - "
+            f"Type filters - {branch_key} branches - S summarizes - C custom summary - "
             f"{copy_key} copy - {label_key} label - "
             f"{label_time_key} label time ({label_time_state}) - "
             f"{page_left_key}/{page_right_key} page - {fold_key}/{unfold_key} fold - "
             f"{no_tools_key} no-tools ({tool_call_state}) - "
             f"{filter_next_key}/{filter_previous_key} filter {filter_label} - "
-            "Escape clears/closes"
+            f"{cancel_key} clears/closes"
         )
 
     def _search_text(self) -> str:
