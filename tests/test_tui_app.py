@@ -4413,6 +4413,68 @@ async def test_tui_app_session_picker_page_keys_move_by_page() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_session_picker_uses_configured_pi_select_keybindings() -> None:
+    session = FakeSession(messages=[UserMessage(content="Earlier")])
+    session.session_manager = _FakeSessionManager(
+        [
+            CodingSessionRecord(
+                id="session-1",
+                path=Path("/tmp/session-1.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="fake-model",
+                title=None,
+                created_at=1.0,
+                updated_at=3.0,
+            ),
+            CodingSessionRecord(
+                id="session-2",
+                path=Path("/tmp/session-2.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="other-model",
+                title=None,
+                created_at=1.0,
+                updated_at=2.0,
+            ),
+        ]
+    )
+    app = TauTuiApp(
+        session,
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(
+                select_up="f5",
+                select_down="f6",
+                select_confirm="f9",
+                select_cancel="f10",
+            ),
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        await pilot.press("ctrl+r")
+        assert isinstance(app.screen, SessionPickerScreen)
+
+        picker_list = app.screen.query_one("#session-picker-list", ListView)
+        await pilot.press("f6")
+        await pilot.press("f5")
+        await pilot.press("f6")
+        await pilot.press("f9")
+        await pilot.pause()
+
+        assert picker_list.index == 1
+        assert not isinstance(app.screen, SessionPickerScreen)
+        assert session.resumed_session_ids == ["session-2"]
+
+        await pilot.press("ctrl+r")
+        await pilot.pause()
+
+        assert isinstance(app.screen, SessionPickerScreen)
+        await pilot.press("f10")
+        await pilot.pause()
+
+        assert not isinstance(app.screen, SessionPickerScreen)
+
+
+@pytest.mark.anyio
 async def test_tui_app_tree_picker_branches_with_summary() -> None:
     session = FakeSession()
     app = TauTuiApp(session)
@@ -5070,6 +5132,73 @@ async def test_tui_app_tree_picker_page_keys_move_by_page() -> None:
     assert page_down_index is not None
     assert page_down_index > 1
     assert tree_list.index == 0
+
+
+@pytest.mark.anyio
+async def test_tui_app_tree_picker_uses_configured_pi_select_keybindings() -> None:
+    class LongTreeSession(FakeSession):
+        async def tree_choices(self) -> tuple[SessionTreeChoice, ...]:
+            return tuple(
+                SessionTreeChoice(
+                    entry_id=f"entry-{index}",
+                    label=f"assistant: Entry {index:02d}",
+                    active=index == 0,
+                )
+                for index in range(30)
+            )
+
+    session = LongTreeSession()
+    app = TauTuiApp(
+        session,
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(
+                select_up="f5",
+                select_down="f6",
+                select_page_down="f7",
+                select_page_up="f8",
+                select_confirm="f9",
+                select_cancel="f10",
+            ),
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        tree_list = app.screen.query_one("#tree-picker-list", ListView)
+        assert tree_list.index == 0
+
+        await pilot.press("f7")
+        page_down_index = tree_list.index
+        await pilot.press("f8")
+        await pilot.pause()
+
+        assert page_down_index is not None
+        assert page_down_index > 1
+        assert tree_list.index == 0
+
+        await pilot.press("f6")
+        await pilot.press("f5")
+        await pilot.press("f6")
+        await pilot.press("f9")
+        await pilot.pause()
+
+        assert session.tree_branch_requests == [("entry-1", False, None)]
+        assert not isinstance(app.screen, TreePickerScreen)
+
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        await pilot.press("f10")
+        await pilot.pause()
+
+        assert not isinstance(app.screen, TreePickerScreen)
 
 
 @pytest.mark.anyio

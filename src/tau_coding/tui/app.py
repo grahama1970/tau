@@ -1276,23 +1276,35 @@ class SessionPickerScreen(ModalScreen[str | None]):
         """Route session picker keys to the list."""
         if self.mode == "rename":
             return
-        if event.key == "up":
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
             event.stop()
             self.delete_confirm_target_id = None
             self.action_cursor_up()
-        elif event.key == "down":
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
             event.stop()
             self.delete_confirm_target_id = None
             self.action_cursor_down()
-        elif event.key == "pageup":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_page_up,
+            "pageup",
+        ):
             event.stop()
             self.delete_confirm_target_id = None
             self.action_page_up()
-        elif event.key == "pagedown":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_page_down,
+            "pagedown",
+        ):
             event.stop()
             self.delete_confirm_target_id = None
             self.action_page_down()
-        elif event.key == "enter":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
             event.stop()
             self.action_select_cursor()
         elif event.key in {"tab", "ctrl+i"}:
@@ -1340,6 +1352,13 @@ class SessionPickerScreen(ModalScreen[str | None]):
         ):
             event.stop()
             self.action_toggle_sort()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.action_cancel()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected session id."""
@@ -1983,19 +2002,31 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
 
     def on_key(self, event: Key) -> None:
         """Route tree picker keys to the list."""
-        if event.key == "up":
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
             event.stop()
             self.action_cursor_up()
-        elif event.key == "down":
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
             event.stop()
             self.action_cursor_down()
-        elif event.key == "pageup":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_page_up,
+            "pageup",
+        ):
             event.stop()
             self.action_page_up()
-        elif event.key == "pagedown":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_page_down,
+            "pagedown",
+        ):
             event.stop()
             self.action_page_down()
-        elif event.key == "enter":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
             event.stop()
             self.action_select_cursor()
         elif event.key == "s":
@@ -2084,6 +2115,13 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         ):
             event.stop()
             self.action_toggle_tree_label_timestamps()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.action_cancel()
         elif event.key == "backspace":
             if self.search_value:
                 event.stop()
