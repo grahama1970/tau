@@ -5515,9 +5515,30 @@ class TauTuiApp(App[None]):
         )
         self._follow_transcript_output()
         self._refresh()
+        streamed_output_parts: list[str] = []
+
+        def update_terminal_output(delta: str) -> None:
+            streamed_output_parts.append(delta)
+            if item_index >= len(self.state.items):
+                return
+            item = self.state.items[item_index]
+            item.tool_result_text = format_terminal_command_running_block(
+                added_to_context=add_to_context,
+                output="".join(streamed_output_parts),
+            )
+            self._refresh()
 
         try:
-            result = await run_terminal_command(command, add_to_context=add_to_context)
+            try:
+                result = await run_terminal_command(
+                    command,
+                    add_to_context=add_to_context,
+                    on_output_chunk=update_terminal_output,
+                )
+            except TypeError as exc:
+                if "on_output_chunk" not in str(exc):
+                    raise
+                result = await run_terminal_command(command, add_to_context=add_to_context)
         except asyncio.CancelledError:
             if item_index < len(self.state.items):
                 item = self.state.items[item_index]

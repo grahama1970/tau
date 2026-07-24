@@ -8,7 +8,7 @@ import os
 import shutil
 import subprocess
 import tempfile
-from collections.abc import AsyncIterator, Sequence
+from collections.abc import AsyncIterator, Callable, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
 from time import monotonic
@@ -1408,6 +1408,7 @@ class CodingSession:
         command: str,
         *,
         add_to_context: bool,
+        on_output_chunk: Callable[[str], None] | None = None,
     ) -> TerminalCommandResult:
         """Run a shell command in the session cwd, optionally adding output to context."""
         normalized_command = command.strip()
@@ -1418,7 +1419,11 @@ class CodingSession:
             normalized_command,
             self._shell_command_prefix,
         )
-        bash_tool = create_bash_tool(cwd=self.cwd, shell_path=self._shell_path)
+        bash_tool = create_bash_tool(
+            cwd=self.cwd,
+            shell_path=self._shell_path,
+            on_output_chunk=on_output_chunk,
+        )
         signal = SimpleCancellationToken()
         self._terminal_signal = signal
         try:

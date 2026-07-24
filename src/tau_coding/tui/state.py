@@ -535,10 +535,17 @@ def format_terminal_command_result_block(
     return "\n".join(lines)
 
 
-def format_terminal_command_running_block(*, added_to_context: bool) -> str:
+def format_terminal_command_running_block(
+    *,
+    added_to_context: bool,
+    output: str | None = None,
+) -> str:
     """Format an input-bar terminal command while it is still running."""
     suffix = " · added to context" if added_to_context else " · not added to context"
-    return f"… bash{suffix}\nRunning... (Escape to cancel)"
+    lines = [f"… bash{suffix}", "Running... (Escape to cancel)"]
+    if output:
+        lines.append(_preview_tail_text(output, max_lines=TERMINAL_COMMAND_OUTPUT_PREVIEW_LINES))
+    return "\n".join(lines)
 
 
 def _result_patch(

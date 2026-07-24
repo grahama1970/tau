@@ -17,7 +17,7 @@ import shutil
 import signal
 import subprocess
 import tempfile
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from time import monotonic
@@ -486,6 +486,7 @@ def create_bash_tool_definition(
     *,
     cwd: str | Path | None = None,
     shell_path: str | Path | None = None,
+    on_output_chunk: Callable[[str], None] | None = None,
 ) -> ToolDefinition:
     """Create a definition for the `bash` tool.
 
@@ -539,6 +540,7 @@ def create_bash_tool_definition(
             process,
             timeout=timeout,
             signal=signal,
+            on_output_chunk=on_output_chunk,
         )
 
         output = output_bytes.decode(errors="replace")
@@ -626,9 +628,14 @@ def create_bash_tool(
     *,
     cwd: str | Path | None = None,
     shell_path: str | Path | None = None,
+    on_output_chunk: Callable[[str], None] | None = None,
 ) -> AgentTool:
     """Create an `AgentTool` for executing shell commands with captured output."""
-    return create_bash_tool_definition(cwd=cwd, shell_path=shell_path).to_agent_tool()
+    return create_bash_tool_definition(
+        cwd=cwd,
+        shell_path=shell_path,
+        on_output_chunk=on_output_chunk,
+    ).to_agent_tool()
 
 
 def format_size(bytes_count: int) -> str:
@@ -649,7 +656,16 @@ async def _communicate_with_cancellation(
     *,
     timeout: float | None,
     signal: ToolCancellationToken | None,
+    on_output_chunk: Callable[[str], None] | None = None,
 ) -> tuple[bytes, bytes | None, bool, bool]:
+    if on_output_chunk is not None:
+        return await _stream_with_cancellation(
+            process,
+            timeout=timeout,
+            signal=signal,
+            on_output_chunk=on_output_chunk,
+        )
+
     communicate = asyncio.create_task(process.communicate())
     cancel_watch: asyncio.Task[None] | None = None
     try:
@@ -682,6 +698,64 @@ async def _communicate_with_cancellation(
     finally:
         if cancel_watch is not None:
             cancel_watch.cancel()
+
+
+async def _stream_with_cancellation(
+    process: asyncio.subprocess.Process,
+    *,
+    timeout: float | None,
+    signal: ToolCancellationToken | None,
+    on_output_chunk: Callable[[str], None],
+) -> tuple[bytes, bytes | None, bool, bool]:
+    output_task = asyncio.create_task(_read_process_output(process, on_output_chunk))
+    wait_task = asyncio.create_task(process.wait())
+    cancel_watch: asyncio.Task[None] | None = None
+    try:
+        wait_for = {wait_task}
+        if signal is not None:
+            cancel_watch = asyncio.create_task(_wait_for_cancel(signal))
+            wait_for.add(cancel_watch)
+
+        done, _pending = await asyncio.wait(
+            wait_for,
+            timeout=timeout,
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+        if wait_task in done:
+            output_bytes = await output_task
+            return output_bytes, None, False, False
+
+        cancelled = cancel_watch is not None and cancel_watch in done
+        _kill_process_tree(process)
+        output_bytes = await output_task
+        return output_bytes, None, not cancelled, cancelled
+    except asyncio.CancelledError:
+        _kill_process_tree(process)
+        if not output_task.done():
+            output_task.cancel()
+        if not wait_task.done():
+            wait_task.cancel()
+        raise
+    finally:
+        if cancel_watch is not None:
+            cancel_watch.cancel()
+
+
+async def _read_process_output(
+    process: asyncio.subprocess.Process,
+    on_output_chunk: Callable[[str], None],
+) -> bytes:
+    if process.stdout is None:
+        return b""
+    chunks: list[bytes] = []
+    while True:
+        chunk = await process.stdout.read(4096)
+        if not chunk:
+            break
+        chunks.append(chunk)
+        with contextlib.suppress(Exception):
+            on_output_chunk(chunk.decode(errors="replace"))
+    return b"".join(chunks)
 
 
 async def _wait_for_cancel(signal: ToolCancellationToken) -> None:
