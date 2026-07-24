@@ -67,6 +67,7 @@ from tau_coding.tui.app import (
     PromptInput,
     SessionPickerScreen,
     SettingsPickerScreen,
+    SkillPickerScreen,
     TauTuiApp,
     ThemePickerScreen,
     ToolsReferenceScreen,
@@ -287,7 +288,12 @@ class FakeSession:
             return CommandResult(handled=True, theme_picker_requested=True)
         if text.startswith("/theme "):
             return CommandResult(handled=True, theme=text.removeprefix("/theme "))
-        if text == "/workflows" or text.startswith("/workflows ") or text.startswith("/tools"):
+        if (
+            text == "/workflows"
+            or text.startswith("/workflows ")
+            or text.startswith("/tools")
+            or text.startswith("/skills")
+        ):
             return create_default_command_registry().execute(self, text)
         if text.startswith("/name "):
             return CommandResult(
@@ -6881,6 +6887,111 @@ async def test_tui_app_resources_command_uses_command_output_modal() -> None:
         assert "- /review (.agents/prompts/review.md)" in app.screen.message
         assert "Tools:" in app.screen.message
         assert "- read" in app.screen.message
+
+
+@pytest.mark.anyio
+async def test_tui_app_skills_command_opens_searchable_skill_picker() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/skills"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, SkillPickerScreen)
+        search = app.screen.query_one("#skill-picker-search", Input)
+        assert app.screen.focused is search
+        skill_list = app.screen.query_one("#skill-picker-list", ListView)
+        assert skill_list.index == 0
+        labels = [
+            str(label.render())
+            for item in skill_list.children
+            for label in item.query(Label)
+        ]
+        assert "review" in labels
+
+
+@pytest.mark.anyio
+async def test_tui_app_skills_picker_filters_and_inserts_skill_command() -> None:
+    session = FakeSession()
+    session.skills = (
+        Skill(
+            name="review",
+            path=session.cwd / "review.md",
+            content="Review code",
+            description="Review code",
+        ),
+        Skill(
+            name="debugger",
+            path=session.cwd / "debugger.md",
+            content="Debug code",
+            description="Inspect runtime state",
+        ),
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/skills"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, SkillPickerScreen)
+        app.screen.query_one("#skill-picker-search", Input).value = "debug"
+        await pilot.pause()
+        skill_list = app.screen.query_one("#skill-picker-list", ListView)
+        labels = [
+            str(label.render())
+            for item in skill_list.children
+            for label in item.query(Label)
+        ]
+        assert labels == ["debugger", "Inspect runtime state"]
+
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert prompt.value == "/skill:debugger"
+        assert app.state.items == []
+
+
+@pytest.mark.anyio
+async def test_tui_app_skills_picker_previews_description_and_transcript_content() -> None:
+    session = FakeSession()
+    session.skills = (
+        Skill(
+            name="review",
+            path=session.cwd / "review.md",
+            content="Full review skill body.",
+            description="Review selected code.",
+        ),
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/skills"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, SkillPickerScreen)
+        app.screen.action_show_description()
+        await pilot.pause()
+
+        assert isinstance(app.screen, CommandOutputScreen)
+        assert app.screen.title_text == "Skill description: review"
+        assert app.screen.message == "Review selected code."
+        await pilot.press("escape")
+        await pilot.pause()
+
+        assert isinstance(app.screen, SkillPickerScreen)
+        app.screen.action_show_in_transcript()
+        await pilot.pause()
+
+        assert prompt.value == ""
+        assert [(item.role, item.text) for item in app.state.items] == [
+            ("status", "Skill: review (not added to context)\nFull review skill body.")
+        ]
 
 
 @pytest.mark.anyio

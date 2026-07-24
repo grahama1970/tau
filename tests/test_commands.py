@@ -116,6 +116,7 @@ def test_registered_commands_are_pi_aligned(tmp_path: Path) -> None:
         "settings",
         "share",
         "skill",
+        "skills",
         "theme",
         "tools",
         "tree",
@@ -470,6 +471,22 @@ def test_tools_command_rejects_arguments(tmp_path: Path) -> None:
     assert result.message == "Usage: /tools"
 
 
+def test_skills_command_requests_skills_picker(tmp_path: Path) -> None:
+    result = create_default_command_registry().execute(FakeSession(tmp_path), "/skills")
+
+    assert result.handled is True
+    assert result.skills_picker_requested is True
+    assert result.message is None
+
+
+def test_skills_command_rejects_arguments(tmp_path: Path) -> None:
+    result = create_default_command_registry().execute(FakeSession(tmp_path), "/skills review")
+
+    assert result.handled is True
+    assert result.skills_picker_requested is False
+    assert result.message == "Usage: /skills"
+
+
 def test_model_command_rejects_unknown_model(tmp_path: Path) -> None:
     session = FakeSession(tmp_path)
 
@@ -509,7 +526,7 @@ def test_non_pi_commands_are_not_registered(tmp_path: Path) -> None:
     registry = create_default_command_registry()
     session = FakeSession(tmp_path)
 
-    for command in ("/provider", "/skills", "/resources", "/context", "/help"):
+    for command in ("/provider", "/resources", "/context", "/help"):
         result = registry.execute(session, command)
         assert result.handled is True
         assert result.message == f"Unknown command: {command}"

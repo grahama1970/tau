@@ -90,6 +90,7 @@ from tau_coding.session import (
     parse_terminal_command,
 )
 from tau_coding.session_manager import CodingSessionRecord, SessionManager
+from tau_coding.skills import Skill
 from tau_coding.system_prompt import ProjectContextFile
 from tau_coding.thinking import (
     DEFAULT_THINKING_LEVEL,
@@ -422,6 +423,178 @@ class ToolsReferenceScreen(ModalScreen[None]):
     def _source_label(self, tool: AgentTool) -> str:
         extension = self.extension_sources.get(tool.name)
         return extension if extension is not None else "Built in"
+
+
+class SkillPickerSearchInput(Input):
+    """Search input that keeps skill-picker navigation local."""
+
+    BINDINGS: ClassVar[list[BindingEntry]] = [
+        Binding("escape", "cancel", "Cancel", show=False, priority=True),
+        Binding("up", "cursor_up", "Up", show=False, priority=True),
+        Binding("down", "cursor_down", "Down", show=False, priority=True),
+        Binding("enter", "select_cursor", "Insert", show=False, priority=True),
+    ]
+
+    def _picker(self) -> SkillPickerScreen:
+        return cast(SkillPickerScreen, self.screen)
+
+    def on_key(self, event: Key) -> None:
+        """Route picker control keys before the input edits its text."""
+        if event.key == "up":
+            event.stop()
+            event.prevent_default()
+            self._picker().action_cursor_up()
+        elif event.key == "down":
+            event.stop()
+            event.prevent_default()
+            self._picker().action_cursor_down()
+        elif event.key == "escape":
+            event.stop()
+            event.prevent_default()
+            self._picker().action_cancel()
+        elif event.key == "enter":
+            event.stop()
+            event.prevent_default()
+            self._picker().action_select_cursor()
+        elif event.key == "f1":
+            event.stop()
+            event.prevent_default()
+            self._picker().action_show_description()
+        elif event.key == "ctrl+enter":
+            event.stop()
+            event.prevent_default()
+            self._picker().action_show_in_transcript()
+
+
+@dataclass(frozen=True, slots=True)
+class SkillPickerResult:
+    """A skill selection and the requested inspection action."""
+
+    skill: Skill
+    action: Literal["insert", "transcript"]
+
+
+class SkillPickerScreen(ModalScreen[SkillPickerResult | None]):
+    """Searchable modal containing every loaded skill."""
+
+    BINDINGS: ClassVar[list[BindingEntry]] = [
+        Binding("escape", "cancel", "Cancel", priority=True),
+        Binding("up", "cursor_up", "Up", show=False, priority=True),
+        Binding("down", "cursor_down", "Down", show=False, priority=True),
+        Binding("enter", "select_cursor", "Insert", show=False, priority=True),
+        Binding("f1", "show_description", "Description", show=False, priority=True),
+        Binding("ctrl+enter", "show_in_transcript", "Transcript", show=False, priority=True),
+    ]
+
+    def __init__(self, skills: Sequence[Skill], *, theme: TuiTheme) -> None:
+        super().__init__()
+        self.skills = tuple(sorted(skills, key=lambda skill: skill.name.casefold()))
+        self.visible_skills = self.skills
+        self.theme = theme
+
+    def compose(self) -> ComposeResult:
+        """Compose the skills picker."""
+        with Vertical(id="skill-picker"):
+            yield Static("Skills", id="skill-picker-title")
+            yield SkillPickerSearchInput(placeholder="Search skills", id="skill-picker-search")
+            yield ListView(id="skill-picker-list")
+            yield Static("", id="skill-picker-help")
+
+    def on_mount(self) -> None:
+        """Populate the list and focus search on open."""
+        self.query_one("#skill-picker-search", Input).focus()
+        self._refresh_skill_list("")
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """Filter skills as the search text changes."""
+        if event.input.id == "skill-picker-search":
+            event.stop()
+            self._refresh_skill_list(event.value)
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Insert the highlighted skill when search is submitted."""
+        if event.input.id == "skill-picker-search":
+            event.stop()
+            self.action_select_cursor()
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """Insert the selected skill."""
+        event.stop()
+        self.action_select_cursor()
+
+    def action_cursor_up(self) -> None:
+        skill_list = self.query_one("#skill-picker-list", ListView)
+        if skill_list.index is not None:
+            skill_list.index = max(0, skill_list.index - 1)
+
+    def action_cursor_down(self) -> None:
+        skill_list = self.query_one("#skill-picker-list", ListView)
+        if skill_list.index is not None:
+            skill_list.index = min(len(self.visible_skills) - 1, skill_list.index + 1)
+
+    def action_select_cursor(self) -> None:
+        skill = self._selected_skill()
+        if skill is not None:
+            self.dismiss(SkillPickerResult(skill, "insert"))
+
+    def action_show_description(self) -> None:
+        skill = self._selected_skill()
+        if skill is not None:
+            self.app.push_screen(
+                CommandOutputScreen(
+                    f"Skill description: {skill.name}",
+                    skill.description or "No description",
+                    theme=self.theme,
+                )
+            )
+
+    def action_show_in_transcript(self) -> None:
+        skill = self._selected_skill()
+        if skill is not None:
+            self.dismiss(SkillPickerResult(skill, "transcript"))
+
+    def action_cancel(self) -> None:
+        self.dismiss(None)
+
+    def _selected_skill(self) -> Skill | None:
+        index = self.query_one("#skill-picker-list", ListView).index
+        if index is None or not self.visible_skills:
+            return None
+        return self.visible_skills[index]
+
+    def _refresh_skill_list(self, search: str) -> None:
+        query = search.casefold().strip()
+        self.visible_skills = tuple(
+            skill
+            for skill in self.skills
+            if not query
+            or query in skill.name.casefold()
+            or query in (skill.description or "").casefold()
+        )
+        skill_list = self.query_one("#skill-picker-list", ListView)
+        skill_list.clear()
+        skill_list.extend(
+            ListItem(
+                Horizontal(
+                    Label(skill.name, classes="skill-picker-name", markup=False),
+                    Label(
+                        skill.description or "No description",
+                        classes="skill-picker-description",
+                        markup=False,
+                    ),
+                    classes="skill-picker-row",
+                )
+            )
+            for skill in self.visible_skills
+        )
+        skill_list.index = 0 if self.visible_skills else None
+        if not self.skills:
+            help_text = "No skills loaded - Escape closes"
+        elif not self.visible_skills:
+            help_text = "No matching skills - Escape closes"
+        else:
+            help_text = "Enter inserts - F1 describes - Ctrl+Enter shows full skill"
+        self.query_one("#skill-picker-help", Static).update(help_text)
 
 
 class PromptInput(TextArea):
@@ -4198,6 +4371,7 @@ class TauTuiApp(App[None]):
     UserMessagePickerScreen,
     WorkflowPickerScreen,
     ToolsReferenceScreen,
+    SkillPickerScreen,
     TreeLabelInputScreen,
     CommandOutputScreen {
         align: center middle;
@@ -4209,6 +4383,7 @@ class TauTuiApp(App[None]):
     #user-message-picker,
     #workflow-picker,
     #tools-reference,
+    #skill-picker,
     #tree-label-input {
         width: 76;
         max-width: 90%;
@@ -4225,6 +4400,7 @@ class TauTuiApp(App[None]):
     #user-message-picker-title,
     #workflow-picker-title,
     #tools-reference-title,
+    #skill-picker-title,
     #tree-label-title {
         height: 1;
         color: $tau-chrome-text;
@@ -4257,7 +4433,8 @@ class TauTuiApp(App[None]):
     #tree-picker-list,
     #user-message-picker-list,
     #workflow-picker-list,
-    #tools-reference-list {
+    #tools-reference-list,
+    #skill-picker-list {
         height: auto;
         max-height: 16;
         background: $tau-transcript-background;
@@ -4280,6 +4457,7 @@ class TauTuiApp(App[None]):
     #user-message-picker-help,
     #workflow-picker-help,
     #tools-reference-help,
+    #skill-picker-help,
     #tree-label-help {
         height: 1;
         margin-top: 1;
@@ -4289,12 +4467,27 @@ class TauTuiApp(App[None]):
     #session-picker-search,
     #workflow-picker-search,
     #tools-reference-search,
+    #skill-picker-search,
     #tree-label-value {
         height: 3;
         margin-bottom: 1;
         background: $tau-prompt-background;
         color: $tau-prompt-text;
         border: tall $tau-prompt-border;
+    }
+
+    .skill-picker-row {
+        height: 1;
+    }
+
+    .skill-picker-name {
+        width: 24;
+        color: $tau-screen-text;
+    }
+
+    .skill-picker-description {
+        width: 1fr;
+        color: $tau-muted-text;
     }
 
     #command-output {
@@ -4762,6 +4955,8 @@ class TauTuiApp(App[None]):
                 self._open_workflow_picker()
             if command.tools_picker_requested:
                 self._open_tools_reference()
+            if command.skills_picker_requested:
+                self._open_skill_picker()
             if command.thinking_level is not None:
                 await self._set_thinking_level(command.thinking_level)
             if command.theme is not None:
@@ -5220,6 +5415,7 @@ class TauTuiApp(App[None]):
             | SettingsPickerScreen
             | LoginMethodPickerScreen
             | LoginProviderPickerScreen
+            | SkillPickerScreen
             | ThemePickerScreen,
         ):
             self.screen.action_select_cursor()
@@ -5776,6 +5972,35 @@ class TauTuiApp(App[None]):
                 theme=self.tui_settings.resolved_theme,
             )
         )
+
+    def _open_skill_picker(self) -> None:
+        """Open a searchable skill picker for the active session."""
+        self.push_screen(
+            SkillPickerScreen(
+                self.session.skills,
+                theme=self.tui_settings.resolved_theme,
+            ),
+            callback=self._handle_skill_picker_result,
+        )
+
+    def _handle_skill_picker_result(self, result: SkillPickerResult | None) -> None:
+        prompt = self.query_one("#prompt", PromptInput)
+        if result is None:
+            prompt.text = ""
+        elif result.action == "insert":
+            prompt.text = f"/skill:{result.skill.name}"
+        else:
+            prompt.text = ""
+            self.state.add_item(
+                "status",
+                (
+                    f"Skill: {result.skill.name} (not added to context)\n"
+                    f"{result.skill.content}"
+                ),
+            )
+            self._refresh()
+        prompt.move_cursor(_text_end_location(prompt.text))
+        prompt.focus()
 
     def _handle_workflow_picker_result(self, result: WorkflowPickerResult | None) -> None:
         if result is None:
