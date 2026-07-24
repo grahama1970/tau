@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from time import time
@@ -131,7 +132,7 @@ class SessionManager:
             cwd=resolved_cwd,
             model=model,
             provider_name=provider_name,
-            title=title,
+            title=_sanitize_session_title(title),
             created_at=now,
             updated_at=now,
             parent_session_id=parent_session_id,
@@ -183,7 +184,7 @@ class SessionManager:
             cwd=existing.cwd,
             model=model or existing.model,
             provider_name=provider_name if provider_name is not None else existing.provider_name,
-            title=title if title is not None else existing.title,
+            title=_sanitize_session_title(title) if title is not None else existing.title,
             created_at=existing.created_at,
             updated_at=time(),
             parent_session_id=existing.parent_session_id,
@@ -258,6 +259,13 @@ class SessionManager:
             resolved_path.unlink()
         except FileNotFoundError:
             return
+
+
+def _sanitize_session_title(title: str | None) -> str | None:
+    """Normalize user-facing session titles for single-line picker display."""
+    if title is None:
+        return None
+    return re.sub(r"[\r\n]+", " ", title).strip()
 
 
 def _deduplicate_records(records: list[CodingSessionRecord]) -> list[CodingSessionRecord]:
