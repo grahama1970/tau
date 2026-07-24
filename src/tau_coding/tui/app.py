@@ -884,7 +884,12 @@ class TreePickerResult:
     custom_instructions: str | None = None
 
 
-SettingsPickerKey = Literal["theme", "auto_copy_selection", "double_escape_action"]
+SettingsPickerKey = Literal[
+    "theme",
+    "auto_copy_selection",
+    "double_escape_action",
+    "tree_filter_mode",
+]
 
 
 @dataclass(frozen=True, slots=True)
@@ -1271,6 +1276,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         choices: Sequence[SessionTreeChoice],
         *,
         theme: TuiTheme,
+        initial_filter_mode: TreeFilterMode = "default",
         set_entry_label: Callable[[str, str | None], object] | None = None,
     ) -> None:
         super().__init__()
@@ -1279,7 +1285,8 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         self.set_entry_label = set_entry_label
         self.show_tool_calls = True
         self.show_label_timestamps = False
-        self.filter_mode: TreeFilterMode = "default"
+        self.filter_mode = initial_filter_mode
+        self.show_tool_calls = self.filter_mode != "no-tools"
         self.folded_entry_ids: set[str] = set()
         self.search_value = ""
 
@@ -3501,6 +3508,7 @@ class TauTuiApp(App[None]):
                 theme=theme,
                 auto_copy_selection=self.tui_settings.auto_copy_selection,
                 double_escape_action=self.tui_settings.double_escape_action,
+                tree_filter_mode=self.tui_settings.tree_filter_mode,
             )
         )
 
@@ -4152,6 +4160,7 @@ class TauTuiApp(App[None]):
             TreePickerScreen(
                 choices,
                 theme=self.tui_settings.resolved_theme,
+                initial_filter_mode=cast(TreeFilterMode, self.tui_settings.tree_filter_mode),
                 set_entry_label=self._set_tree_entry_label_from_picker,
             ),
             callback=self._handle_tree_picker_result,
@@ -5554,6 +5563,11 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             label="Double Escape",
             value=settings.double_escape_action,
         ),
+        SettingsPickerItem(
+            key="tree_filter_mode",
+            label="Tree filter mode",
+            value=settings.tree_filter_mode,
+        ),
     )
 
 
@@ -5611,6 +5625,7 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
             theme=next_theme,
             auto_copy_selection=settings.auto_copy_selection,
             double_escape_action=settings.double_escape_action,
+            tree_filter_mode=settings.tree_filter_mode,
         )
     if key == "auto_copy_selection":
         return TuiSettings(
@@ -5618,23 +5633,37 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
             theme=settings.theme,
             auto_copy_selection=not settings.auto_copy_selection,
             double_escape_action=settings.double_escape_action,
+            tree_filter_mode=settings.tree_filter_mode,
         )
-    double_escape_actions: tuple[Literal["tree", "fork", "none"], ...] = (
-        "tree",
-        "fork",
-        "none",
-    )
+    if key == "double_escape_action":
+        double_escape_actions: tuple[Literal["tree", "fork", "none"], ...] = (
+            "tree",
+            "fork",
+            "none",
+        )
+        try:
+            current_index = double_escape_actions.index(settings.double_escape_action)
+        except ValueError:
+            current_index = -1
+        return TuiSettings(
+            keybindings=settings.keybindings,
+            theme=settings.theme,
+            auto_copy_selection=settings.auto_copy_selection,
+            double_escape_action=double_escape_actions[
+                (current_index + 1) % len(double_escape_actions)
+            ],
+            tree_filter_mode=settings.tree_filter_mode,
+        )
     try:
-        current_index = double_escape_actions.index(settings.double_escape_action)
+        current_index = TREE_FILTER_MODES.index(cast(TreeFilterMode, settings.tree_filter_mode))
     except ValueError:
         current_index = -1
     return TuiSettings(
         keybindings=settings.keybindings,
         theme=settings.theme,
         auto_copy_selection=settings.auto_copy_selection,
-        double_escape_action=double_escape_actions[
-            (current_index + 1) % len(double_escape_actions)
-        ],
+        double_escape_action=settings.double_escape_action,
+        tree_filter_mode=TREE_FILTER_MODES[(current_index + 1) % len(TREE_FILTER_MODES)],
     )
 
 

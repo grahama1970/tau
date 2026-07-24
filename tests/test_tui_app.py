@@ -3425,6 +3425,32 @@ async def test_tui_app_tree_picker_branches_with_summary() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_tree_picker_uses_persisted_default_filter_mode() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session, tui_settings=TuiSettings(tree_filter_mode="no-tools"))
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        filter_mode = app.screen.filter_mode
+        tree_list = app.screen.query_one("#tree-picker-list", ListView)
+        labels = [str(item.query_one(Label).render()) for item in tree_list.children]
+        help_text = str(app.screen.query_one("#tree-picker-help", Static).render())
+
+    assert filter_mode == "no-tools"
+    assert labels == [
+        "  user: Root",
+        "  assistant: Left",
+        "* assistant: Right",
+    ]
+    assert "filter no-tools" in help_text
+
+
+@pytest.mark.anyio
 async def test_tui_app_fork_picker_branches_from_latest_user_message() -> None:
     class ForkSession(FakeSession):
         async def tree_choices(self) -> tuple[SessionTreeChoice, ...]:
@@ -3486,6 +3512,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             theme="tau-dark",
             auto_copy_selection=False,
             double_escape_action="tree",
+            tree_filter_mode="default",
         ),
     )
 
@@ -3501,6 +3528,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Theme: tau-dark",
             "Auto-copy selection: off",
             "Double Escape: tree",
+            "Tree filter mode: default",
         ]
 
         await pilot.press("down", "enter")
@@ -3512,6 +3540,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Theme: tau-dark",
             "Auto-copy selection: on",
             "Double Escape: tree",
+            "Tree filter mode: default",
         ]
 
         await pilot.press("down", "enter")
@@ -3527,6 +3556,13 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert '"theme": "tau-light"' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
 
+        await pilot.press("down", "down", "down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.tree_filter_mode == "no-tools"
+        assert '"tree_filter_mode": "no-tools"' in tui_settings_path().read_text(
+            encoding="utf-8"
+        )
+
 
 @pytest.mark.anyio
 async def test_tui_app_settings_picker_search_filters_before_change(
@@ -3540,6 +3576,7 @@ async def test_tui_app_settings_picker_search_filters_before_change(
             theme="tau-dark",
             auto_copy_selection=False,
             double_escape_action="tree",
+            tree_filter_mode="default",
         ),
     )
 

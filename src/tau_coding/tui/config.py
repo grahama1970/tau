@@ -73,6 +73,7 @@ class TuiKeybindings:
 
 type TuiThemeName = Literal["tau-dark", "tau-light", "high-contrast"]
 type DoubleEscapeAction = Literal["tree", "fork", "none"]
+type TuiTreeFilterMode = Literal["default", "no-tools", "user-only", "labeled-only", "all"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -264,6 +265,7 @@ class TuiSettings:
     theme: TuiThemeName = "tau-dark"
     auto_copy_selection: bool = False
     double_escape_action: DoubleEscapeAction = "tree"
+    tree_filter_mode: TuiTreeFilterMode = "default"
 
     def to_json(self) -> dict[str, Any]:
         """Serialize these settings to JSON-compatible data."""
@@ -272,6 +274,7 @@ class TuiSettings:
             "double_escape_action": self.double_escape_action,
             "keybindings": self.keybindings.to_json(),
             "theme": self.theme,
+            "tree_filter_mode": self.tree_filter_mode,
         }
 
     @property
@@ -306,7 +309,13 @@ def save_tui_settings(settings: TuiSettings, paths: TauPaths | None = None) -> P
 
 def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
     """Parse TUI settings from JSON-compatible data."""
-    allowed_fields = {"auto_copy_selection", "double_escape_action", "keybindings", "theme"}
+    allowed_fields = {
+        "auto_copy_selection",
+        "double_escape_action",
+        "keybindings",
+        "theme",
+        "tree_filter_mode",
+    }
     unknown_fields = set(data) - allowed_fields
     if unknown_fields:
         raise TuiConfigError(f"Unknown TUI settings field: {sorted(unknown_fields)[0]}")
@@ -324,6 +333,7 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         double_escape_action=_double_escape_action(
             data.get("double_escape_action", "tree"),
         ),
+        tree_filter_mode=_tree_filter_mode(data.get("tree_filter_mode", "default")),
     )
 
 
@@ -337,6 +347,14 @@ def _double_escape_action(value: object) -> DoubleEscapeAction:
     if value in {"tree", "fork", "none"}:
         return cast(DoubleEscapeAction, value)
     raise TuiConfigError("TUI double_escape_action must be one of: tree, fork, none")
+
+
+def _tree_filter_mode(value: object) -> TuiTreeFilterMode:
+    if value in {"default", "no-tools", "user-only", "labeled-only", "all"}:
+        return cast(TuiTreeFilterMode, value)
+    raise TuiConfigError(
+        "TUI tree_filter_mode must be one of: default, no-tools, user-only, labeled-only, all"
+    )
 
 
 def _keybindings_from_json(data: dict[str, Any]) -> TuiKeybindings:
