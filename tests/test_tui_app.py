@@ -10119,7 +10119,7 @@ async def test_tui_prompt_worker_refreshes_context_after_message_changes() -> No
     assert [(item.role, item.text, item.tool_result_text) for item in app.state.items] == [
         ("user", "read README", None),
         ("assistant", "Using a tool.", None),
-        ("tool", "→ read README.md", "✓ read\ncontents"),
+        ("tool", "→ read docs README.md (Ctrl+O to expand)", "✓ read\ncontents"),
     ]
 
 

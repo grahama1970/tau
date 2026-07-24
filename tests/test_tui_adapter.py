@@ -273,6 +273,43 @@ def test_tui_adapter_leaves_ordinary_reads_as_tool_items() -> None:
     ]
 
 
+def test_read_tool_call_blocks_compact_tau_docs_and_resources() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+
+    assert (
+        format_tool_call_block(
+            ToolCall(id="call-1", name="read", arguments={"path": str(repo_root / "README.md")})
+        )
+        == "→ read docs README.md (Ctrl+O to expand)"
+    )
+    assert (
+        format_tool_call_block(
+            ToolCall(
+                id="call-2",
+                name="read",
+                arguments={"path": str(repo_root / "docs" / "configuration.md")},
+            )
+        )
+        == "→ read docs docs/configuration.md (Ctrl+O to expand)"
+    )
+    assert (
+        format_tool_call_block(
+            ToolCall(
+                id="call-3",
+                name="read",
+                arguments={"path": str(repo_root / "examples" / "README.md"), "offset": 2},
+            )
+        )
+        == "→ read docs examples/README.md:2- (Ctrl+O to expand)"
+    )
+    assert (
+        format_tool_call_block(
+            ToolCall(id="call-4", name="read", arguments={"path": str(repo_root / "AGENTS.md")})
+        )
+        == "→ read resource AGENTS.md (Ctrl+O to expand)"
+    )
+
+
 def test_tool_call_blocks_use_human_readable_invocations() -> None:
     assert (
         format_tool_call_block(

@@ -16,6 +16,7 @@ TOOL_PATCH_PREVIEW_LINES = 32
 TOOL_RESULT_PREVIEW_CHARS = 2_000
 TERMINAL_COMMAND_OUTPUT_PREVIEW_LINES = 120
 DEFAULT_THINKING_PLACEHOLDER_TEXT = "Thinking… Press Ctrl+T to show thinking tokens."
+COMPACT_RESOURCE_FILE_NAMES = frozenset({"AGENTS.md", "AGENTS.MD", "CLAUDE.md", "CLAUDE.MD"})
 MEMORY_PIPELINE_STAGE_LABELS = {
     "intent": "Getting Intent...",
     "get_intent": "Getting Intent...",
@@ -368,6 +369,10 @@ def format_tool_call_invocation(tool_call: ToolCall) -> str:
         path = _string_argument(arguments, "path")
         if path is None:
             return _fallback_tool_call_invocation(tool_call)
+        classification = _compact_read_classification(path)
+        if classification is not None:
+            kind, label = classification
+            return f"read {kind} {label}{_read_line_suffix(arguments)} (Ctrl+O to expand)"
         return f"read {path}{_read_line_suffix(arguments)}"
     if tool_call.name == "edit":
         path = _string_argument(arguments, "path")
@@ -404,6 +409,44 @@ def _fallback_tool_call_invocation(tool_call: ToolCall) -> str:
     if tool_call.arguments:
         return f"{tool_call.name} {tool_call.arguments}"
     return tool_call.name
+
+
+def _compact_read_classification(path: str) -> tuple[str, str] | None:
+    read_path = _normalized_path(path)
+    if read_path.name == "SKILL.md":
+        return ("skill", read_path.parent.name or read_path.name)
+
+    docs_label = _tau_docs_label(read_path)
+    if docs_label is not None:
+        return ("docs", docs_label)
+
+    if read_path.name in COMPACT_RESOURCE_FILE_NAMES:
+        return ("resource", _display_path_relative_to_cwd(read_path))
+
+    return None
+
+
+def _tau_docs_label(read_path: Path) -> str | None:
+    try:
+        relative = read_path.relative_to(_tau_package_root())
+    except ValueError:
+        return None
+    label = relative.as_posix()
+    if label == "README.md" or label.startswith(("docs/", "examples/")):
+        return label
+    return None
+
+
+def _tau_package_root() -> Path:
+    return Path(__file__).resolve().parents[3]
+
+
+def _display_path_relative_to_cwd(path: Path) -> str:
+    cwd = Path.cwd().resolve(strict=False)
+    try:
+        return path.relative_to(cwd).as_posix()
+    except ValueError:
+        return str(path)
 
 
 def _string_argument(arguments: dict[str, JSONValue], key: str) -> str | None:
