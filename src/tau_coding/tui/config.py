@@ -8,6 +8,7 @@ from typing import Any, Literal, cast
 
 from tau_coding.paths import TauPaths
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL, THINKING_LEVELS, ThinkingLevel
+from tau_coding.trust import DefaultProjectTrust
 
 
 class TuiConfigError(ValueError):
@@ -291,6 +292,7 @@ class TuiSettings:
     thinking_level: ThinkingLevel = DEFAULT_THINKING_LEVEL
     steering_mode: TuiQueueDrainMode = "one-at-a-time"
     follow_up_mode: TuiQueueDrainMode = "one-at-a-time"
+    default_project_trust: DefaultProjectTrust = "ask"
     autocomplete_max_visible: int = DEFAULT_AUTOCOMPLETE_MAX_VISIBLE
     enable_skill_commands: bool = True
     editor_padding_x: int = DEFAULT_EDITOR_PADDING_X
@@ -306,6 +308,7 @@ class TuiSettings:
             "auto_compact": self.auto_compact,
             "auto_copy_selection": self.auto_copy_selection,
             "block_images": self.block_images,
+            "default_project_trust": self.default_project_trust,
             "double_escape_action": self.double_escape_action,
             "editor_padding_x": self.editor_padding_x,
             "enable_skill_commands": self.enable_skill_commands,
@@ -363,6 +366,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "block_images",
         "clearOnShrink",
         "clear_on_shrink",
+        "defaultProjectTrust",
+        "default_project_trust",
         "double_escape_action",
         "editorPaddingX",
         "editor_padding_x",
@@ -419,6 +424,9 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         follow_up_mode=_queue_drain_mode(
             data.get("follow_up_mode", data.get("followUpMode", "one-at-a-time")),
             "follow_up_mode",
+        ),
+        default_project_trust=_default_project_trust(
+            data.get("default_project_trust", data.get("defaultProjectTrust", "ask"))
         ),
         autocomplete_max_visible=_autocomplete_max_visible(
             data.get(
@@ -497,6 +505,12 @@ def _queue_drain_mode(value: object, field_name: str) -> TuiQueueDrainMode:
     if value in {"one-at-a-time", "all"}:
         return cast(TuiQueueDrainMode, value)
     raise TuiConfigError(f"TUI {field_name} must be one of: one-at-a-time, all")
+
+
+def _default_project_trust(value: object) -> DefaultProjectTrust:
+    if value in {"ask", "always", "never"}:
+        return cast(DefaultProjectTrust, value)
+    raise TuiConfigError("TUI default_project_trust must be one of: ask, always, never")
 
 
 def _autocomplete_max_visible(value: object) -> int:

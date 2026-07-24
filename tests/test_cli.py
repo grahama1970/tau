@@ -46,6 +46,7 @@ from tau_coding.rendering import PrintOutputMode
 from tau_coding.resources import TauResourcePaths
 from tau_coding.system_prompt import BuildSystemPromptOptions, build_system_prompt
 from tau_coding.tools import create_coding_tools
+from tau_coding.tui.config import TuiSettings, save_tui_settings
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "experiments" / "goal-locked-subagents" / "fixtures"
@@ -6300,6 +6301,40 @@ async def test_run_print_mode_includes_discovered_context(
     assert ok is True
     assert "Use the local rules." in provider.calls[0][1]
     assert f'<project_instructions path="{tmp_path / "AGENTS.md"}">' in provider.calls[0][1]
+
+
+@pytest.mark.anyio
+async def test_run_print_mode_uses_default_project_trust_setting_for_project_resources(
+    capsys: pytest.CaptureFixture[str], tmp_path: Path
+) -> None:
+    tau_home = tmp_path / "resources"
+    project_tau = tmp_path / ".tau"
+    project_tau.mkdir()
+    (project_tau / "AGENTS.md").write_text("Use trusted project rules.", encoding="utf-8")
+    save_tui_settings(
+        TuiSettings(default_project_trust="always"),
+        TauPaths(home=tau_home, agents_home=tmp_path / ".agents-home"),
+    )
+    provider = FakeProvider(
+        [
+            [
+                ProviderResponseStartEvent(model="fake"),
+                ProviderResponseEndEvent(message=AssistantMessage(content="Done")),
+            ]
+        ]
+    )
+
+    ok = await run_print_mode(
+        prompt="Say hello",
+        model="fake",
+        cwd=tmp_path,
+        provider=provider,
+        resource_paths=TauResourcePaths(root=tau_home, agents_root=tmp_path / ".agents-home"),
+    )
+
+    _captured = capsys.readouterr()
+    assert ok is True
+    assert "Use trusted project rules." in provider.calls[0][1]
 
 
 @pytest.mark.anyio

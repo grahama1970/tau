@@ -5,11 +5,13 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
 
 from tau_coding.paths import TauPaths
 from tau_coding.resources import TauResourcePaths
 
 ProjectTrustDecision = bool | None
+DefaultProjectTrust = Literal["ask", "always", "never"]
 
 TRUST_REQUIRING_PROJECT_RESOURCES = (
     "settings.json",

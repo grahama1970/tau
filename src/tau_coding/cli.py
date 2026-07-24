@@ -160,6 +160,7 @@ from tau_coding.orchestration_evidence import build_orchestration_evidence
 from tau_coding.orchestration_redteam import run_orchestration_redteam
 from tau_coding.orchestration_reliability import write_orchestration_reliability_receipt
 from tau_coding.package_validate import write_compliance_package_validation_receipt
+from tau_coding.paths import TauPaths
 from tau_coding.persona_dream_panel_proof import (
     DEFAULT_AGENT_REGISTRY_ROOT as DEFAULT_PERSONA_DREAM_PANEL_AGENT_ROOT,
 )
@@ -255,6 +256,7 @@ from tau_coding.test_run_receipt import write_test_run_receipt
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL
 from tau_coding.traycer.cli import parse_traycer_validate_cli_args, traycer_validate_command
 from tau_coding.tui import run_tui_app
+from tau_coding.tui.config import load_tui_settings
 from tau_coding.tui.proof import (
     DEFAULT_TUI_PROOF_PROMPT,
     DEFAULT_TUI_PROOF_RUN_ID,
@@ -7771,7 +7773,14 @@ def _parse_generated_ticket_github_create_cli_args(
         else:
             raise RuntimeError(f"Unknown generated-ticket-github-create option: {arg}")
         index += 1
-    return ticket_path, active_goal_hash, receipt_path, agents_root, apply_github, dedupe_preflight_path
+    return (
+        ticket_path,
+        active_goal_hash,
+        receipt_path,
+        agents_root,
+        apply_github,
+        dedupe_preflight_path,
+    )
 
 
 def _parse_handoff_command_loop_github_transport_args(
@@ -12736,6 +12745,7 @@ async def run_print_mode(
     Returns False when the agent emits a non-recoverable error so CLI callers
     can fail non-interactive runs while still rendering the error message.
     """
+    tui_settings = load_tui_settings(_tui_settings_paths(resource_paths))
     session = await CodingSession.load(
         CodingSessionConfig(
             provider=provider,
@@ -12748,6 +12758,7 @@ async def run_print_mode(
             provider_name=provider_name,
             provider_settings=provider_settings,
             runtime_provider_config=runtime_provider_config,
+            default_project_trust=tui_settings.default_project_trust,
             loop_receipt=loop_receipt,
         )
     )
@@ -12779,6 +12790,17 @@ class _MemorySessionStorage:
 
     async def read_all(self) -> list[SessionEntry]:
         return list(self.entries)
+
+
+def _tui_settings_paths(resource_paths: TauResourcePaths | None) -> TauPaths | None:
+    if resource_paths is None:
+        return None
+    if resource_paths.paths is not None:
+        return resource_paths.paths
+    return TauPaths(
+        home=resource_paths.root,
+        agents_home=resource_paths.agents_root or Path.home() / ".agents",
+    )
 
 
 def _format_terminal_command_result(result: TerminalCommandResult) -> str:

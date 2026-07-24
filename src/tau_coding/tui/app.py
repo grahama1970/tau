@@ -96,7 +96,12 @@ from tau_coding.thinking import (
     ThinkingLevel,
     next_thinking_level,
 )
-from tau_coding.trust import ProjectTrustOption, ProjectTrustState, ProjectTrustStoreEntry
+from tau_coding.trust import (
+    DefaultProjectTrust,
+    ProjectTrustOption,
+    ProjectTrustState,
+    ProjectTrustStoreEntry,
+)
 from tau_coding.tui.adapter import TuiEventAdapter
 from tau_coding.tui.autocomplete import (
     CompletionItem,
@@ -906,6 +911,7 @@ SettingsPickerKey = Literal[
     "auto_compact",
     "steering_mode",
     "follow_up_mode",
+    "default_project_trust",
     "auto_copy_selection",
     "hide_thinking",
     "thinking_level",
@@ -3582,6 +3588,9 @@ class TauTuiApp(App[None]):
         set_follow_up_mode = getattr(self.session, "set_follow_up_queue_mode", None)
         if callable(set_follow_up_mode):
             set_follow_up_mode(_agent_queue_mode_from_tui(settings.follow_up_mode))
+        set_default_project_trust = getattr(self.session, "set_default_project_trust", None)
+        if callable(set_default_project_trust):
+            set_default_project_trust(settings.default_project_trust)
         if settings.thinking_level != previous_settings.thinking_level:
             self.run_worker(
                 self._set_thinking_level(settings.thinking_level),
@@ -5737,6 +5746,11 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             label="Tree filter mode",
             value=settings.tree_filter_mode,
         ),
+        SettingsPickerItem(
+            key="default_project_trust",
+            label="Default project trust",
+            value=settings.default_project_trust,
+        ),
     )
 
 
@@ -5805,6 +5819,22 @@ def _next_tui_settings(
         return replace(settings, steering_mode=_next_queue_drain_mode(settings.steering_mode))
     if key == "follow_up_mode":
         return replace(settings, follow_up_mode=_next_queue_drain_mode(settings.follow_up_mode))
+    if key == "default_project_trust":
+        default_project_trust_choices: tuple[DefaultProjectTrust, ...] = (
+            "ask",
+            "always",
+            "never",
+        )
+        try:
+            current_index = default_project_trust_choices.index(settings.default_project_trust)
+        except ValueError:
+            current_index = -1
+        return replace(
+            settings,
+            default_project_trust=default_project_trust_choices[
+                (current_index + 1) % len(default_project_trust_choices)
+            ],
+        )
     if key == "autocomplete_max_visible":
         try:
             current_index = AUTOCOMPLETE_MAX_VISIBLE_CHOICES.index(
@@ -6647,6 +6677,7 @@ async def run_tui_app(
                 auto_compact_enabled=tui_settings.auto_compact,
                 steering_queue_mode=_agent_queue_mode_from_tui(tui_settings.steering_mode),
                 follow_up_queue_mode=_agent_queue_mode_from_tui(tui_settings.follow_up_mode),
+                default_project_trust=tui_settings.default_project_trust,
                 thinking_level=tui_settings.thinking_level,
             )
         )

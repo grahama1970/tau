@@ -3739,6 +3739,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
+            "Default project trust: ask",
         ]
 
         await pilot.press("down", "enter")
@@ -3765,6 +3766,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
+            "Default project trust: ask",
         ]
 
         await pilot.press("down", "enter")
@@ -3791,6 +3793,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
+            "Default project trust: ask",
         ]
 
         await pilot.press("down", "enter")
@@ -3817,6 +3820,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
+            "Default project trust: ask",
         ]
 
         await pilot.press("down", "enter")
@@ -3842,6 +3846,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
+            "Default project trust: ask",
         ]
 
         await pilot.press("down", "enter")
@@ -3867,6 +3872,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
+            "Default project trust: ask",
         ]
 
         await pilot.press("down", "enter")
@@ -3893,6 +3899,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
+            "Default project trust: ask",
         ]
 
         await pilot.press("down", "enter")
@@ -3919,6 +3926,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
+            "Default project trust: ask",
         ]
 
         await pilot.press("down", "enter")
@@ -3944,6 +3952,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
+            "Default project trust: ask",
         ]
 
         await pilot.press("down", "enter")
@@ -3969,6 +3978,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
+            "Default project trust: ask",
         ]
 
         await pilot.press("down", "enter")
@@ -3994,6 +4004,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
+            "Default project trust: ask",
         ]
 
         await pilot.press("down", "enter")
@@ -4019,6 +4030,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
+            "Default project trust: ask",
         ]
 
         await pilot.press("down", "enter")
@@ -4044,6 +4056,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
+            "Default project trust: ask",
         ]
 
         await pilot.press("down", "enter")
@@ -4108,6 +4121,13 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         await pilot.pause()
         assert app.tui_settings.tree_filter_mode == "no-tools"
         assert '"tree_filter_mode": "no-tools"' in tui_settings_path().read_text(encoding="utf-8")
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.default_project_trust == "always"
+        assert '"default_project_trust": "always"' in tui_settings_path().read_text(
+            encoding="utf-8"
+        )
 
 
 @pytest.mark.anyio

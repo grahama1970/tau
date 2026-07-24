@@ -20,8 +20,8 @@ from tau_agent import (
     AgentHarnessConfig,
     ErrorEvent,
     MessageEndEvent,
-    QueueMode,
     QueuedMessages,
+    QueueMode,
     QueueUpdateEvent,
     SimpleCancellationToken,
 )
@@ -115,6 +115,7 @@ from tau_coding.thinking import (
 )
 from tau_coding.tools import create_bash_tool, create_coding_tools
 from tau_coding.trust import (
+    DefaultProjectTrust,
     ProjectTrustOption,
     ProjectTrustState,
     ProjectTrustStore,
@@ -217,6 +218,7 @@ class CodingSessionConfig:
     auto_compact_enabled: bool = True
     steering_queue_mode: QueueMode = "one_at_a_time"
     follow_up_queue_mode: QueueMode = "one_at_a_time"
+    default_project_trust: DefaultProjectTrust = "ask"
     thinking_level: ThinkingLevel = DEFAULT_THINKING_LEVEL
     loop_receipt: LoopReceiptConfig | None = None
 
@@ -294,7 +296,11 @@ class CodingSession:
         )
         tools = config.tools if config.tools is not None else create_coding_tools(cwd=config.cwd)
         resource_paths = resource_paths_with_cwd(config.resource_paths, config.cwd)
-        resources = _load_session_resources(resource_paths, config.context_files)
+        resources = _load_session_resources(
+            resource_paths,
+            config.context_files,
+            default_project_trust=config.default_project_trust,
+        )
         system = (
             config.system
             if config.system is not None
@@ -929,7 +935,11 @@ class CodingSession:
             context_files=self._context_files,
         )
 
-        resources = _load_session_resources(self._resource_paths, self._config.context_files)
+        resources = _load_session_resources(
+            self._resource_paths,
+            self._config.context_files,
+            default_project_trust=self._config.default_project_trust,
+        )
 
         after_skills = _skill_signatures(resources.skills)
         after_prompt_templates = _prompt_template_signatures(resources.prompt_templates)
@@ -1037,6 +1047,7 @@ class CodingSession:
                 auto_compact_enabled=self._auto_compact_enabled,
                 steering_queue_mode=self.steering_queue_mode,
                 follow_up_queue_mode=self.follow_up_queue_mode,
+                default_project_trust=self._config.default_project_trust,
                 thinking_level=self._thinking_level,
             )
         )
@@ -1293,6 +1304,10 @@ class CodingSession:
         store.set_many(option.updates)
         decision = "trusted" if option.trusted else "untrusted"
         return f"Saved trust decision: {decision}. Restart Tau for this to take effect."
+
+    def set_default_project_trust(self, default_project_trust: DefaultProjectTrust) -> None:
+        """Update the fallback project trust policy used by future resource reloads."""
+        self._config = replace(self._config, default_project_trust=default_project_trust)
 
     async def compact(self, instructions: str | None = None) -> str:
         """Generate a manual compaction summary and rebuild active context."""
@@ -2310,8 +2325,13 @@ def _system_prompt_resource_signatures(
 def _load_session_resources(
     resource_paths: TauResourcePaths,
     explicit_context_files: tuple[ProjectContextFile, ...],
+    *,
+    default_project_trust: DefaultProjectTrust = "ask",
 ) -> SessionResources:
-    effective_paths, trust_diagnostics = _project_trusted_resource_paths(resource_paths)
+    effective_paths, trust_diagnostics = _project_trusted_resource_paths(
+        resource_paths,
+        default_project_trust=default_project_trust,
+    )
     loaded_skills, skill_diagnostics = load_skills_with_diagnostics(effective_paths)
     loaded_prompt_templates, prompt_diagnostics = load_prompt_templates_with_diagnostics(
         effective_paths
@@ -2336,6 +2356,8 @@ def _load_session_resources(
 
 def _project_trusted_resource_paths(
     resource_paths: TauResourcePaths,
+    *,
+    default_project_trust: DefaultProjectTrust = "ask",
 ) -> tuple[TauResourcePaths, tuple[ResourceDiagnostic, ...]]:
     cwd = resource_paths.cwd
     if cwd is None:
@@ -2347,7 +2369,10 @@ def _project_trusted_resource_paths(
     if not has_trust_requiring_project_resources(cwd, tau_paths):
         return resource_paths, ()
     store = ProjectTrustStore.from_resource_paths(resource_paths)
-    if store.get(cwd) is True:
+    decision = store.get(cwd)
+    if decision is True:
+        return resource_paths, ()
+    if decision is None and default_project_trust == "always":
         return resource_paths, ()
     return (
         TauResourcePaths(

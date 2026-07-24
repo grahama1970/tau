@@ -55,6 +55,7 @@ from tau_coding import (
 )
 from tau_coding import session as coding_session_module
 from tau_coding.session import parse_terminal_command
+from tau_coding.trust import ProjectTrustStore
 
 
 async def _collect_session_events(session_stream: object) -> list[object]:
@@ -2916,6 +2917,71 @@ async def test_session_ignores_project_resources_until_project_is_trusted(
     assert [Path(context_file.path).name for context_file in session.context_files] == ["AGENTS.md"]
     assert not [
         diagnostic for diagnostic in session.resource_diagnostics if diagnostic.kind == "trust"
+    ]
+
+
+@pytest.mark.anyio
+async def test_session_default_project_trust_always_loads_unsaved_project_resources(
+    tmp_path: Path,
+) -> None:
+    tau_paths = TauPaths(home=tmp_path / ".tau-home", agents_home=tmp_path / ".agents-home")
+    user_skill_dir = tau_paths.user_skills_dir
+    project_skill_dir = tau_paths.project_skills_dir(tmp_path)
+    user_skill_dir.mkdir(parents=True)
+    project_skill_dir.mkdir(parents=True)
+    (user_skill_dir / "user.md").write_text("# User skill", encoding="utf-8")
+    (project_skill_dir / "project.md").write_text("# Project skill", encoding="utf-8")
+    (tmp_path / "AGENTS.md").write_text("Project instructions", encoding="utf-8")
+
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="fake",
+            system="You are Tau.",
+            storage=JsonlSessionStorage(tmp_path / "session.jsonl"),
+            cwd=tmp_path,
+            resource_paths=TauResourcePaths(root=tau_paths.home, paths=tau_paths),
+            default_project_trust="always",
+        )
+    )
+
+    assert [skill.name for skill in session.skills] == ["project", "user"]
+    assert [Path(context_file.path).name for context_file in session.context_files] == ["AGENTS.md"]
+    assert not [
+        diagnostic for diagnostic in session.resource_diagnostics if diagnostic.kind == "trust"
+    ]
+
+
+@pytest.mark.anyio
+async def test_session_saved_untrusted_decision_overrides_default_project_trust_always(
+    tmp_path: Path,
+) -> None:
+    tau_paths = TauPaths(home=tmp_path / ".tau-home", agents_home=tmp_path / ".agents-home")
+    project_skill_dir = tau_paths.project_skills_dir(tmp_path)
+    project_skill_dir.mkdir(parents=True)
+    (project_skill_dir / "project.md").write_text("# Project skill", encoding="utf-8")
+    ProjectTrustStore(tau_paths.home / "trust.json").set(tmp_path, False)
+
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="fake",
+            system="You are Tau.",
+            storage=JsonlSessionStorage(tmp_path / "session.jsonl"),
+            cwd=tmp_path,
+            resource_paths=TauResourcePaths(root=tau_paths.home, paths=tau_paths),
+            default_project_trust="always",
+        )
+    )
+
+    assert [skill.name for skill in session.skills] == []
+    assert [
+        (diagnostic.kind, diagnostic.message) for diagnostic in session.resource_diagnostics
+    ] == [
+        (
+            "trust",
+            "project-local resources ignored until this project is trusted with /trust",
+        )
     ]
 
 

@@ -67,6 +67,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
           "tree_filter_mode": "user-only",
           "steering_mode": "all",
           "followUpMode": "all",
+          "defaultProjectTrust": "always",
           "terminal": {"clearOnShrink": true, "showTerminalProgress": true},
           "thinkingLevel": "high"
         }
@@ -110,6 +111,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.hide_thinking is True
     assert settings.steering_mode == "all"
     assert settings.follow_up_mode == "all"
+    assert settings.default_project_trust == "always"
     assert settings.show_terminal_progress is True
     assert settings.thinking_level == "high"
     assert settings.tree_filter_mode == "user-only"
@@ -148,6 +150,11 @@ def test_tui_settings_reject_invalid_queue_modes() -> None:
         tui_settings_from_json({"steering_mode": "latest"})
     with pytest.raises(TuiConfigError, match="follow_up_mode"):
         tui_settings_from_json({"follow_up_mode": "latest"})
+
+
+def test_tui_settings_reject_invalid_default_project_trust() -> None:
+    with pytest.raises(TuiConfigError, match="default_project_trust"):
+        tui_settings_from_json({"default_project_trust": "sometimes"})
 
 
 def test_tui_settings_reject_invalid_thinking_level() -> None:
@@ -206,6 +213,16 @@ def test_tui_settings_load_tree_filter_mode() -> None:
 
     assert settings.tree_filter_mode == "labeled-only"
     assert settings.to_json()["tree_filter_mode"] == "labeled-only"
+
+
+def test_tui_settings_load_default_project_trust_aliases() -> None:
+    camel = tui_settings_from_json({"defaultProjectTrust": "always"})
+    snake = tui_settings_from_json({"default_project_trust": "never"})
+
+    assert camel.default_project_trust == "always"
+    assert camel.to_json()["default_project_trust"] == "always"
+    assert snake.default_project_trust == "never"
+    assert snake.to_json()["default_project_trust"] == "never"
 
 
 def test_tui_settings_load_hide_thinking() -> None:
