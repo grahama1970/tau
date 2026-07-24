@@ -2585,6 +2585,66 @@ async def test_prompt_ctrl_w_at_line_start_merges_previous_line() -> None:
 
 
 @pytest.mark.anyio
+async def test_prompt_alt_d_deletes_next_word() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha   beta"
+        prompt.move_cursor((0, len("alpha")))
+
+        await pilot.press("alt+d")
+
+        assert prompt.text == "alpha"
+        assert prompt.cursor_location == (0, len("alpha"))
+
+
+@pytest.mark.anyio
+async def test_prompt_alt_delete_deletes_next_word() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha beta"
+        prompt.move_cursor((0, len("alpha ")))
+
+        await pilot.press("alt+delete")
+
+        assert prompt.text == "alpha "
+        assert prompt.cursor_location == (0, len("alpha "))
+
+
+@pytest.mark.anyio
+async def test_prompt_alt_d_preserves_punctuation_boundary() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha.beta"
+        prompt.move_cursor((0, 0))
+
+        await pilot.press("alt+d")
+
+        assert prompt.text == ".beta"
+        assert prompt.cursor_location == (0, 0)
+
+
+@pytest.mark.anyio
+async def test_prompt_alt_d_at_line_end_merges_next_line() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "first\nsecond"
+        prompt.move_cursor((0, len("first")))
+
+        await pilot.press("alt+d")
+
+        assert prompt.text == "firstsecond"
+        assert prompt.cursor_location == (0, len("first"))
+
+
+@pytest.mark.anyio
 async def test_prompt_ctrl_a_moves_to_current_line_start() -> None:
     app = TauTuiApp(FakeSession())
 
@@ -5460,6 +5520,7 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "Ctrl+A/Ctrl+E: move to line start/end" in app.screen.message
         assert "Ctrl+U: delete to line start" in app.screen.message
         assert "Ctrl+W/Alt+Backspace: delete previous word" in app.screen.message
+        assert "Alt+D/Alt+Delete: delete next word" in app.screen.message
 
 
 @pytest.mark.anyio

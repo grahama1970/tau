@@ -489,6 +489,35 @@ class PromptInput(TextArea):
         self.prune_paste_markers()
         self.move_cursor((row, delete_start))
 
+    def action_delete_word_forward(self) -> None:
+        """Delete prompt text from the cursor forward to the next word boundary."""
+        if self.selected_text:
+            return
+        text = self.text
+        if not text:
+            return
+        row, column = self.cursor_location
+        lines = text.split("\n")
+        if row >= len(lines):
+            return
+        current_line = lines[row]
+        if column >= len(current_line):
+            if row >= len(lines) - 1:
+                return
+            lines[row] = f"{current_line}{lines[row + 1]}"
+            del lines[row + 1]
+            self.text = "\n".join(lines)
+            self.prune_paste_markers()
+            self.move_cursor((row, len(current_line)))
+            return
+        delete_end = _find_word_delete_end(current_line, column)
+        if delete_end == column:
+            return
+        lines[row] = f"{current_line[:column]}{current_line[delete_end:]}"
+        self.text = "\n".join(lines)
+        self.prune_paste_markers()
+        self.move_cursor((row, column))
+
     def action_move_to_line_start(self) -> None:
         """Move the prompt cursor to the start of the current line."""
         row, _column = self.cursor_location
@@ -625,6 +654,10 @@ class PromptInput(TextArea):
             event.stop()
             event.prevent_default()
             self.action_delete_word_backward()
+        elif event.key in {"alt+d", "alt+delete"}:
+            event.stop()
+            event.prevent_default()
+            self.action_delete_word_forward()
         elif event.key == "ctrl+a":
             event.stop()
             event.prevent_default()
@@ -6187,6 +6220,25 @@ def _find_word_delete_start(line: str, cursor_column: int) -> int:
     return index
 
 
+def _find_word_delete_end(line: str, cursor_column: int) -> int:
+    """Return the line column reached by a Pi-style forward word delete."""
+    index = min(max(cursor_column, 0), len(line))
+    while index < len(line) and line[index].isspace():
+        index += 1
+    if index >= len(line):
+        return index
+    current = line[index]
+    if current.isalnum() or current == "_":
+        while index < len(line) and (line[index].isalnum() or line[index] == "_"):
+            index += 1
+        return index
+    while index < len(line) and not line[index].isspace() and not (
+        line[index].isalnum() or line[index] == "_"
+    ):
+        index += 1
+    return index
+
+
 def _decode_csi_u_control(code: str, fallback: str) -> str:
     codepoint = int(code)
     if 97 <= codepoint <= 122:
@@ -6428,6 +6480,7 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         "- Ctrl+A/Ctrl+E: move to line start/end",
         "- Ctrl+U: delete to line start",
         "- Ctrl+W/Alt+Backspace: delete previous word",
+        "- Alt+D/Alt+Delete: delete next word",
         f"- {_key_hint(keybindings.accept_completion)}: accept autocomplete or path completion",
         f"- {_key_hint(keybindings.external_editor)}: edit prompt in external editor",
         f"- {_key_hint(keybindings.paste_clipboard)}: paste clipboard text or image",
