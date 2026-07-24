@@ -857,6 +857,7 @@ class TuiSettings:
     show_hardware_cursor: bool = True
     show_terminal_progress: bool = False
     quiet_startup: bool = False
+    collapse_changelog: bool = False
     turn_notification: TurnNotificationMode = "desktop"
     external_editor: str | None = None
     shell_path: str | None = None
@@ -883,6 +884,7 @@ class TuiSettings:
             "show_hardware_cursor": self.show_hardware_cursor,
             "show_terminal_progress": self.show_terminal_progress,
             "quiet_startup": self.quiet_startup,
+            "collapse_changelog": self.collapse_changelog,
             "turn_notification": self.turn_notification,
             "external_editor": self.external_editor,
             "shell_path": self.shell_path,
@@ -955,6 +957,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "output_padding_x",
         "quietStartup",
         "quiet_startup",
+        "collapseChangelog",
+        "collapse_changelog",
         "turnNotification",
         "turn_notification",
         "showImages",
@@ -1098,6 +1102,10 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         quiet_startup=_bool_setting(
             data.get("quiet_startup", data.get("quietStartup", False)),
             "quiet_startup",
+        ),
+        collapse_changelog=_bool_setting(
+            data.get("collapse_changelog", data.get("collapseChangelog", False)),
+            "collapse_changelog",
         ),
         turn_notification=_turn_notification_mode(
             data.get("turn_notification", data.get("turnNotification", "desktop")),

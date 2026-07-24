@@ -5164,6 +5164,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Collapse changelog: off",
             "Turn notification: desktop",
             "Auto-resize images: on",
         ]
@@ -5196,6 +5197,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Collapse changelog: off",
             "Turn notification: desktop",
             "Auto-resize images: on",
         ]
@@ -5228,6 +5230,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Collapse changelog: off",
             "Turn notification: desktop",
             "Auto-resize images: on",
         ]
@@ -5260,6 +5263,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Collapse changelog: off",
             "Turn notification: desktop",
             "Auto-resize images: on",
         ]
@@ -5291,6 +5295,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Collapse changelog: off",
             "Turn notification: desktop",
             "Auto-resize images: on",
         ]
@@ -5322,6 +5327,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Collapse changelog: off",
             "Turn notification: desktop",
             "Auto-resize images: on",
         ]
@@ -5353,6 +5359,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Collapse changelog: off",
             "Turn notification: desktop",
             "Auto-resize images: on",
         ]
@@ -5384,6 +5391,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Collapse changelog: off",
             "Turn notification: desktop",
             "Auto-resize images: on",
         ]
@@ -5416,6 +5424,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Collapse changelog: off",
             "Turn notification: desktop",
             "Auto-resize images: on",
         ]
@@ -5448,6 +5457,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Collapse changelog: off",
             "Turn notification: desktop",
             "Auto-resize images: on",
         ]
@@ -5479,6 +5489,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Collapse changelog: off",
             "Turn notification: desktop",
             "Auto-resize images: on",
         ]
@@ -5510,6 +5521,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Collapse changelog: off",
             "Turn notification: desktop",
             "Auto-resize images: on",
         ]
@@ -5541,6 +5553,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Collapse changelog: off",
             "Turn notification: desktop",
             "Auto-resize images: on",
         ]
@@ -5572,6 +5585,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Collapse changelog: off",
             "Turn notification: desktop",
             "Auto-resize images: on",
         ]
@@ -5603,6 +5617,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Collapse changelog: off",
             "Turn notification: desktop",
             "Auto-resize images: on",
         ]
@@ -5685,6 +5700,11 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         await pilot.pause()
         assert app.tui_settings.quiet_startup is True
         assert '"quiet_startup": true' in tui_settings_path().read_text(encoding="utf-8")
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.collapse_changelog is True
+        assert '"collapse_changelog": true' in tui_settings_path().read_text(encoding="utf-8")
 
         await pilot.press("down", "enter")
         await pilot.pause()

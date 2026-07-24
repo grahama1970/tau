@@ -2102,6 +2102,7 @@ SettingsPickerKey = Literal[
     "image_width_cells",
     "output_padding_x",
     "quiet_startup",
+    "collapse_changelog",
     "show_images",
     "show_hardware_cursor",
     "show_terminal_progress",
@@ -7853,6 +7854,12 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             description="Suppress startup notifications from the TUI",
         ),
         SettingsPickerItem(
+            key="collapse_changelog",
+            label="Collapse changelog",
+            value="on" if settings.collapse_changelog else "off",
+            description="Prefer condensed changelog notifications after updates",
+        ),
+        SettingsPickerItem(
             key="turn_notification",
             label="Turn notification",
             value=settings.turn_notification,
@@ -8013,6 +8020,8 @@ def _next_tui_settings(
         return replace(settings, clear_on_shrink=not settings.clear_on_shrink)
     if key == "quiet_startup":
         return replace(settings, quiet_startup=not settings.quiet_startup)
+    if key == "collapse_changelog":
+        return replace(settings, collapse_changelog=not settings.collapse_changelog)
     if key == "turn_notification":
         modes = ("desktop", "bell", "off")
         try:

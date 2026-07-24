@@ -76,6 +76,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
           "shellPath": "/bin/zsh",
           "shellCommandPrefix": "export TAU_PREFIXED=1",
           "quietStartup": true,
+          "collapseChangelog": true,
           "terminal": {"clearOnShrink": true, "showTerminalProgress": true},
           "thinkingLevel": "high"
         }
@@ -125,6 +126,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.shell_path == "/bin/zsh"
     assert settings.shell_command_prefix == "export TAU_PREFIXED=1"
     assert settings.quiet_startup is True
+    assert settings.collapse_changelog is True
     assert settings.turn_notification == "desktop"
     assert settings.show_terminal_progress is True
     assert settings.thinking_level == "high"
@@ -649,6 +651,20 @@ def test_tui_settings_reject_invalid_quiet_startup() -> None:
         tui_settings_from_json({"quiet_startup": "true"})
 
 
+def test_tui_settings_load_collapse_changelog_aliases() -> None:
+    camel = tui_settings_from_json({"collapseChangelog": True})
+    snake = tui_settings_from_json({"collapse_changelog": True})
+
+    assert camel.collapse_changelog is True
+    assert snake.collapse_changelog is True
+    assert snake.to_json()["collapse_changelog"] is True
+
+
+def test_tui_settings_reject_invalid_collapse_changelog() -> None:
+    with pytest.raises(TuiConfigError, match="collapse_changelog"):
+        tui_settings_from_json({"collapse_changelog": "true"})
+
+
 def test_tui_settings_load_clear_on_shrink_aliases() -> None:
     camel = tui_settings_from_json({"clearOnShrink": True})
     snake = tui_settings_from_json({"clear_on_shrink": True})
@@ -843,6 +859,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["show_hardware_cursor"] is True
     assert settings.to_json()["show_terminal_progress"] is False
     assert settings.to_json()["quiet_startup"] is False
+    assert settings.to_json()["collapse_changelog"] is False
     assert settings.to_json()["turn_notification"] == "bell"
     assert settings.to_json()["external_editor"] == "configured-editor --flag"
     assert settings.to_json()["shell_path"] == "/bin/zsh"
