@@ -3888,6 +3888,7 @@ class TauTuiApp(App[None]):
         command = _local_tui_command(
             text,
             self.tui_settings.keybindings,
+            self.session,
         ) or self.session.handle_command(text)
         if command.handled:
             if command.clear_requested:
@@ -6825,13 +6826,23 @@ def _key_hint(key: str) -> str:
     )
 
 
-def _local_tui_command(text: str, keybindings: TuiKeybindings) -> CommandResult | None:
-    if text.strip().casefold() != "/hotkeys":
-        return None
-    return CommandResult(
-        handled=True,
-        message=_render_tui_hotkeys_message(keybindings),
-    )
+def _local_tui_command(
+    text: str,
+    keybindings: TuiKeybindings,
+    session: CodingSession,
+) -> CommandResult | None:
+    command = text.strip().casefold()
+    if command == "/hotkeys":
+        return CommandResult(
+            handled=True,
+            message=_render_tui_hotkeys_message(keybindings),
+        )
+    if command == "/resources":
+        return CommandResult(
+            handled=True,
+            message=_render_tui_resources_message(session),
+        )
+    return None
 
 
 def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
@@ -6890,6 +6901,7 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         "",
         "Slash and shell:",
         "- /: slash commands",
+        "- /resources: show loaded context, skills, prompts, and tools",
         "- !: run bash command and add output to context",
         "- !!: run bash command without adding output to context",
     ]
@@ -6903,6 +6915,90 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         f"- {_key_hint(key)}: {description}" for key, description in optional_lines if key
     )
     return "\n".join(lines)
+
+
+def _render_tui_resources_message(session: CodingSession) -> str:
+    sections = [
+        ("Context", _resource_context_lines(session.context_files, cwd=session.cwd)),
+        (
+            "Skills",
+            _resource_name_path_lines(
+                session.skills,
+                cwd=session.cwd,
+                empty="No skills loaded",
+            ),
+        ),
+        ("Prompts", _resource_prompt_lines(session.prompt_templates, cwd=session.cwd)),
+        (
+            "Tools",
+            _resource_name_path_lines(
+                session.tools,
+                cwd=session.cwd,
+                empty="No tools available",
+            ),
+        ),
+    ]
+    lines = ["Loaded Resources", ""]
+    for title, entries in sections:
+        lines.append(f"{title}:")
+        lines.extend(f"- {entry}" for entry in entries)
+        lines.append("")
+    return "\n".join(lines).rstrip()
+
+
+def _resource_context_lines(
+    context_files: Sequence[ProjectContextFile],
+    *,
+    cwd: Path,
+) -> list[str]:
+    if not context_files:
+        return ["No context files"]
+    return [
+        _display_resource_path(Path(context_file.path), cwd=cwd)
+        for context_file in context_files
+    ]
+
+
+def _resource_prompt_lines(prompt_templates: Sequence[Any], *, cwd: Path) -> list[str]:
+    if not prompt_templates:
+        return ["No prompt templates"]
+    lines: list[str] = []
+    for template in prompt_templates:
+        name = getattr(template, "name", "unknown")
+        path = getattr(template, "path", None)
+        if path is None:
+            lines.append(f"/{name}")
+        else:
+            lines.append(f"/{name} ({_display_resource_path(Path(path), cwd=cwd)})")
+    return lines
+
+
+def _resource_name_path_lines(
+    resources: Sequence[Any],
+    *,
+    cwd: Path,
+    empty: str,
+) -> list[str]:
+    if not resources:
+        return [empty]
+    lines: list[str] = []
+    for resource in resources:
+        name = getattr(resource, "name", "unknown")
+        path = getattr(resource, "path", None)
+        lines.append(
+            name
+            if path is None
+            else f"{name} ({_display_resource_path(Path(path), cwd=cwd)})"
+        )
+    return lines
+
+
+def _display_resource_path(path: Path, *, cwd: Path) -> str:
+    if not path.is_absolute():
+        return str(path)
+    with suppress(ValueError):
+        return str(path.resolve().relative_to(cwd.resolve()))
+    return str(path)
 
 
 def _app_bindings(keybindings: TuiKeybindings) -> list[Binding]:

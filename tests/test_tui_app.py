@@ -6103,6 +6103,7 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "Alt+D/Alt+Delete: delete next word" in app.screen.message
         assert "Ctrl+Y/Alt+Y: yank or cycle deleted text" in app.screen.message
         assert "Ctrl+-: undo previous prompt edit" in app.screen.message
+        assert "/resources: show loaded context, skills, prompts, and tools" in app.screen.message
 
 
 @pytest.mark.anyio
@@ -6144,6 +6145,37 @@ async def test_tui_app_hotkeys_lists_default_ctrl_j_newline() -> None:
 
         assert isinstance(app.screen, CommandOutputScreen)
         assert "Shift+Enter/Ctrl+J: insert newline" in app.screen.message
+
+
+@pytest.mark.anyio
+async def test_tui_app_resources_command_uses_command_output_modal() -> None:
+    session = FakeSession()
+    session.prompt_templates = (
+        PromptTemplate(
+            name="review",
+            path=session.cwd / ".agents" / "prompts" / "review.md",
+            content="Review this.",
+        ),
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/resources"
+        await pilot.press("enter")
+
+        assert isinstance(app.screen, CommandOutputScreen)
+        assert app.state.items == []
+        assert app.screen.title_text == "/resources"
+        assert "Loaded Resources" in app.screen.message
+        assert "Context:" in app.screen.message
+        assert "- AGENTS.md" in app.screen.message
+        assert "Skills:" in app.screen.message
+        assert "- review (review.md)" in app.screen.message
+        assert "Prompts:" in app.screen.message
+        assert "- /review (.agents/prompts/review.md)" in app.screen.message
+        assert "Tools:" in app.screen.message
+        assert "- read" in app.screen.message
 
 
 @pytest.mark.anyio
