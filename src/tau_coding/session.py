@@ -221,6 +221,7 @@ class CodingSessionConfig:
     default_project_trust: DefaultProjectTrust = "ask"
     thinking_level: ThinkingLevel = DEFAULT_THINKING_LEVEL
     loop_receipt: LoopReceiptConfig | None = None
+    shell_path: str | None = None
     shell_command_prefix: str | None = None
 
 
@@ -263,6 +264,7 @@ class CodingSession:
         self._auto_compact_token_threshold = config.auto_compact_token_threshold
         self._auto_compact_enabled = config.auto_compact_enabled
         self._thinking_level = _state_thinking_level(state, config.thinking_level)
+        self._shell_path = config.shell_path
         self._shell_command_prefix = config.shell_command_prefix
         self._terminal_signal: SimpleCancellationToken | None = None
         self._owned_providers: list[ClosableModelProvider] = []
@@ -296,7 +298,11 @@ class CodingSession:
             if latest_leaf is not None
             else linear_state
         )
-        tools = config.tools if config.tools is not None else create_coding_tools(cwd=config.cwd)
+        tools = (
+            config.tools
+            if config.tools is not None
+            else create_coding_tools(cwd=config.cwd, shell_path=config.shell_path)
+        )
         resource_paths = resource_paths_with_cwd(config.resource_paths, config.cwd)
         resources = _load_session_resources(
             resource_paths,
@@ -632,6 +638,13 @@ class CodingSession:
         self._config = replace(self._config, shell_command_prefix=prefix)
         state = "configured" if prefix else "cleared"
         return f"Shell command prefix {state}."
+
+    def set_shell_path(self, path: str | None) -> str:
+        """Set the shell executable used for future bash tool calls."""
+        self._shell_path = path
+        self._config = replace(self._config, shell_path=path)
+        state = "configured" if path else "cleared"
+        return f"Shell path {state}."
 
     @property
     def steering_queue_mode(self) -> QueueMode:
@@ -1063,6 +1076,7 @@ class CodingSession:
                 follow_up_queue_mode=self.follow_up_queue_mode,
                 default_project_trust=self._config.default_project_trust,
                 thinking_level=self._thinking_level,
+                shell_path=self._shell_path,
                 shell_command_prefix=self._shell_command_prefix,
             )
         )
@@ -1376,7 +1390,7 @@ class CodingSession:
             normalized_command,
             self._shell_command_prefix,
         )
-        bash_tool = create_bash_tool(cwd=self.cwd)
+        bash_tool = create_bash_tool(cwd=self.cwd, shell_path=self._shell_path)
         signal = SimpleCancellationToken()
         self._terminal_signal = signal
         try:

@@ -90,7 +90,11 @@ class ToolDefinition:
 _file_locks: dict[Path, asyncio.Lock] = {}
 
 
-def create_coding_tools(*, cwd: str | Path | None = None) -> list[AgentTool]:
+def create_coding_tools(
+    *,
+    cwd: str | Path | None = None,
+    shell_path: str | Path | None = None,
+) -> list[AgentTool]:
     """Create the default coding-tool set for a local project.
 
     The returned tools are ordered as `read`, `write`, `edit`, and `bash`.
@@ -104,7 +108,7 @@ def create_coding_tools(*, cwd: str | Path | None = None) -> list[AgentTool]:
         create_read_tool(cwd=root),
         create_write_tool(cwd=root),
         create_edit_tool(cwd=root),
-        create_bash_tool(cwd=root),
+        create_bash_tool(cwd=root, shell_path=shell_path),
     ]
 
 
@@ -422,7 +426,11 @@ def create_edit_tool(*, cwd: str | Path | None = None) -> AgentTool:
     return create_edit_tool_definition(cwd=cwd).to_agent_tool()
 
 
-def create_bash_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinition:
+def create_bash_tool_definition(
+    *,
+    cwd: str | Path | None = None,
+    shell_path: str | Path | None = None,
+) -> ToolDefinition:
     """Create a definition for the `bash` tool.
 
     The tool runs a shell command with `cwd` as the subprocess working
@@ -440,6 +448,7 @@ def create_bash_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinit
     duration, truncation metadata, and full-output path metadata.
     """
     root = Path.cwd() if cwd is None else Path(cwd)
+    shell_executable = None if shell_path is None else str(shell_path)
 
     async def execute(
         arguments: Mapping[str, JSONValue],
@@ -459,6 +468,7 @@ def create_bash_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinit
                 cwd=root,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT,
+                executable=shell_executable,
                 start_new_session=True,
             )
         else:
@@ -467,6 +477,7 @@ def create_bash_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinit
                 cwd=root,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT,
+                executable=shell_executable,
             )
         output_bytes, _stderr, timed_out, cancelled = await _communicate_with_cancellation(
             process,
@@ -555,9 +566,13 @@ def create_bash_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinit
     )
 
 
-def create_bash_tool(*, cwd: str | Path | None = None) -> AgentTool:
+def create_bash_tool(
+    *,
+    cwd: str | Path | None = None,
+    shell_path: str | Path | None = None,
+) -> AgentTool:
     """Create an `AgentTool` for executing shell commands with captured output."""
-    return create_bash_tool_definition(cwd=cwd).to_agent_tool()
+    return create_bash_tool_definition(cwd=cwd, shell_path=shell_path).to_agent_tool()
 
 
 def format_size(bytes_count: int) -> str:

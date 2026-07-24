@@ -160,6 +160,43 @@ async def test_bash_tool_captures_stdout_and_exit_code(tmp_path: Path) -> None:
 
 
 @pytest.mark.anyio
+async def test_bash_tool_uses_custom_shell_path(tmp_path: Path) -> None:
+    shell = tmp_path / "custom-shell"
+    shell.write_text(
+        "#!/bin/sh\n"
+        "printf 'custom-shell:'\n"
+        "exec /bin/sh \"$@\"\n",
+        encoding="utf-8",
+    )
+    shell.chmod(0o755)
+    tool = create_bash_tool(cwd=tmp_path, shell_path=shell)
+
+    result = await tool.execute({"command": "printf hello"})
+
+    assert result.ok is True
+    assert result.content == "custom-shell:hello"
+
+
+@pytest.mark.anyio
+async def test_create_coding_tools_passes_custom_shell_path_to_bash(tmp_path: Path) -> None:
+    shell = tmp_path / "custom-shell"
+    shell.write_text(
+        "#!/bin/sh\n"
+        "printf 'tool-shell:'\n"
+        "exec /bin/sh \"$@\"\n",
+        encoding="utf-8",
+    )
+    shell.chmod(0o755)
+    tools = create_coding_tools(cwd=tmp_path, shell_path=shell)
+    bash = tools[-1]
+
+    result = await bash.execute({"command": "printf hello"})
+
+    assert result.ok is True
+    assert result.content == "tool-shell:hello"
+
+
+@pytest.mark.anyio
 async def test_bash_tool_reports_timeout(tmp_path: Path) -> None:
     tool = create_bash_tool(cwd=tmp_path)
 

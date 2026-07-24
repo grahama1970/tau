@@ -202,6 +202,7 @@ class FakeSession:
         self.available_thinking_levels = ("off", "minimal", "low", "medium", "high", "xhigh")
         self.steering_queue_mode = "one_at_a_time"
         self.follow_up_queue_mode = "one_at_a_time"
+        self.shell_path: str | None = None
         self.shell_command_prefix: str | None = None
         self.system_prompt = "You are Tau."
         self.state = FakeSessionState()
@@ -402,6 +403,11 @@ class FakeSession:
         self.shell_command_prefix = prefix
         state = "configured" if prefix else "cleared"
         return f"Shell command prefix {state}."
+
+    def set_shell_path(self, path: str | None) -> str:
+        self.shell_path = path
+        state = "configured" if path else "cleared"
+        return f"Shell path {state}."
 
     def set_steering_queue_mode(self, mode: str) -> str:
         self.steering_queue_mode = mode
@@ -7736,6 +7742,7 @@ async def test_tui_app_reload_refreshes_tui_settings_from_disk(
             keybindings=TuiKeybindings(command_palette="ctrl+j"),
             editor_padding_x=2,
             output_padding_x=0,
+            shell_path="/bin/zsh",
             shell_command_prefix="export TAU_PREFIXED=1",
         )
     )
@@ -7760,6 +7767,7 @@ async def test_tui_app_reload_refreshes_tui_settings_from_disk(
         assert prompt.tui_keybindings.command_palette == "ctrl+j"
         assert prompt.styles.padding == Spacing.unpack((0, 2))
         assert transcript.output_padding_x == 0
+        assert session.shell_path == "/bin/zsh"
         assert session.shell_command_prefix == "export TAU_PREFIXED=1"
 
 
@@ -9987,6 +9995,7 @@ async def test_run_tui_app_falls_back_to_first_credentialed_provider(
         @classmethod
         async def load(cls, config: object) -> str:
             assert config.provider_name == "openai"  # type: ignore[attr-defined]
+            assert config.shell_path == "/bin/zsh"  # type: ignore[attr-defined]
             assert config.shell_command_prefix == "export TAU_PREFIXED=1"  # type: ignore[attr-defined]
             calls.append("load")
             return "session"
@@ -10023,7 +10032,7 @@ async def test_run_tui_app_falls_back_to_first_credentialed_provider(
     monkeypatch.setattr(
         tui_app,
         "load_tui_settings",
-        lambda: TuiSettings(shell_command_prefix="export TAU_PREFIXED=1"),
+        lambda: TuiSettings(shell_path="/bin/zsh", shell_command_prefix="export TAU_PREFIXED=1"),
     )
     monkeypatch.setattr(
         tui_app,

@@ -72,6 +72,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
           "followUpMode": "all",
           "defaultProjectTrust": "always",
           "externalEditor": "configured-editor --flag",
+          "shellPath": "/bin/zsh",
           "shellCommandPrefix": "export TAU_PREFIXED=1",
           "quietStartup": true,
           "terminal": {"clearOnShrink": true, "showTerminalProgress": true},
@@ -119,6 +120,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.follow_up_mode == "all"
     assert settings.default_project_trust == "always"
     assert settings.external_editor == "configured-editor --flag"
+    assert settings.shell_path == "/bin/zsh"
     assert settings.shell_command_prefix == "export TAU_PREFIXED=1"
     assert settings.quiet_startup is True
     assert settings.show_terminal_progress is True
@@ -689,6 +691,19 @@ def test_tui_settings_load_shell_command_prefix_aliases() -> None:
     assert snake.shell_command_prefix == "source ~/.profile"
 
 
+def test_tui_settings_load_shell_path_aliases() -> None:
+    camel = tui_settings_from_json({"shellPath": "/bin/zsh"})
+    snake = tui_settings_from_json({"shell_path": "/usr/local/bin/bash"})
+
+    assert camel.shell_path == "/bin/zsh"
+    assert snake.shell_path == "/usr/local/bin/bash"
+
+
+def test_tui_settings_reject_invalid_shell_path() -> None:
+    with pytest.raises(TuiConfigError, match="shell_path"):
+        tui_settings_from_json({"shell_path": ["/bin/zsh"]})
+
+
 def test_tui_settings_reject_invalid_shell_command_prefix() -> None:
     with pytest.raises(TuiConfigError, match="shell_command_prefix"):
         tui_settings_from_json({"shell_command_prefix": ["source ~/.bashrc"]})
@@ -732,6 +747,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
         ),
         theme="high-contrast",
         external_editor="configured-editor --flag",
+        shell_path="/bin/zsh",
         shell_command_prefix="export TAU_PREFIXED=1",
     )
 
@@ -780,6 +796,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["show_terminal_progress"] is False
     assert settings.to_json()["quiet_startup"] is False
     assert settings.to_json()["external_editor"] == "configured-editor --flag"
+    assert settings.to_json()["shell_path"] == "/bin/zsh"
     assert settings.to_json()["shell_command_prefix"] == "export TAU_PREFIXED=1"
     assert settings.to_json()["theme"] == "high-contrast"
     assert settings.to_json()["auto_compact"] is True

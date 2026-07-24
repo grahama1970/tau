@@ -12759,6 +12759,7 @@ async def run_print_mode(
             provider_settings=provider_settings,
             runtime_provider_config=runtime_provider_config,
             default_project_trust=tui_settings.default_project_trust,
+            shell_path=tui_settings.shell_path,
             shell_command_prefix=tui_settings.shell_command_prefix,
             loop_receipt=loop_receipt,
         )

@@ -187,6 +187,27 @@ async def test_load_empty_session_defers_transcript_file(tmp_path: Path) -> None
 
 
 @pytest.mark.anyio
+async def test_session_bash_tool_uses_shell_path(tmp_path: Path) -> None:
+    shell = tmp_path / "custom-shell"
+    shell.write_text(
+        "#!/bin/sh\n"
+        "printf 'agent-shell:'\n"
+        "exec /bin/sh \"$@\"\n",
+        encoding="utf-8",
+    )
+    shell.chmod(0o755)
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    config = _config(tmp_path, FakeProvider([]), storage)
+    session = await CodingSession.load(replace(config, shell_path=str(shell)))
+    bash = next(tool for tool in session.tools if tool.name == "bash")
+
+    result = await bash.execute({"command": "printf hello"})
+
+    assert result.ok is True
+    assert result.content == "agent-shell:hello"
+
+
+@pytest.mark.anyio
 async def test_session_export_defaults_to_cwd(tmp_path: Path) -> None:
     storage = JsonlSessionStorage(tmp_path / ".tau" / "sessions" / "session-1.jsonl")
     session = await CodingSession.load(_config(tmp_path, FakeProvider([]), storage))
@@ -440,6 +461,27 @@ async def test_terminal_command_applies_shell_command_prefix(tmp_path: Path) -> 
     assert isinstance(messages[0], UserMessage)
     assert 'printf "$TAU_PREFIXED"' in messages[0].content
     assert "export TAU_PREFIXED" not in messages[0].content
+
+
+@pytest.mark.anyio
+async def test_terminal_command_uses_shell_path(tmp_path: Path) -> None:
+    shell = tmp_path / "custom-shell"
+    shell.write_text(
+        "#!/bin/sh\n"
+        "printf 'session-shell:'\n"
+        "exec /bin/sh \"$@\"\n",
+        encoding="utf-8",
+    )
+    shell.chmod(0o755)
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    config = _config(tmp_path, FakeProvider([]), storage)
+    session = await CodingSession.load(replace(config, shell_path=str(shell)))
+
+    result = await session.run_terminal_command("printf hello", add_to_context=True)
+
+    assert result.ok is True
+    assert result.command == "printf hello"
+    assert result.output == "session-shell:hello"
 
 
 @pytest.mark.anyio
