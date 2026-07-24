@@ -398,6 +398,60 @@ async def test_harness_can_drain_all_queued_messages_together() -> None:
 
 
 @pytest.mark.anyio
+async def test_harness_drains_steering_all_without_changing_follow_up_default() -> None:
+    provider = FakeProvider(
+        [
+            [
+                ProviderResponseStartEvent(model="fake"),
+                ProviderResponseEndEvent(message=AssistantMessage(content="First")),
+            ],
+            [
+                ProviderResponseStartEvent(model="fake"),
+                ProviderResponseEndEvent(message=AssistantMessage(content="Second")),
+            ],
+            [
+                ProviderResponseStartEvent(model="fake"),
+                ProviderResponseEndEvent(message=AssistantMessage(content="Third")),
+            ],
+            [
+                ProviderResponseStartEvent(model="fake"),
+                ProviderResponseEndEvent(message=AssistantMessage(content="Fourth")),
+            ],
+        ]
+    )
+    harness = AgentHarness(
+        AgentHarnessConfig(
+            provider=provider,
+            model="fake",
+            system="You are Tau.",
+            steering_queue_mode="all",
+        )
+    )
+
+    async for event in harness.prompt("Hi"):
+        if isinstance(event, MessageEndEvent) and event.message.content == "First":
+            harness.steer("Steer one")
+            harness.steer("Steer two")
+            harness.follow_up("Follow one")
+            harness.follow_up("Follow two")
+
+    assert harness.messages == (
+        UserMessage(content="Hi"),
+        AssistantMessage(content="First"),
+        UserMessage(content="Steer one"),
+        UserMessage(content="Steer two"),
+        AssistantMessage(content="Second"),
+        UserMessage(content="Follow one"),
+        AssistantMessage(content="Third"),
+        UserMessage(content="Follow two"),
+        AssistantMessage(content="Fourth"),
+    )
+    assert provider.calls[1][2] == list(harness.messages[:4])
+    assert provider.calls[2][2] == list(harness.messages[:6])
+    assert provider.calls[3][2] == list(harness.messages[:8])
+
+
+@pytest.mark.anyio
 async def test_harness_passes_tools_to_loop() -> None:
     async def executor(
         arguments: Mapping[str, JSONValue],

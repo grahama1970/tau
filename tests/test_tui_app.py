@@ -155,6 +155,8 @@ class FakeSession:
         self.context_window_tokens = 216384
         self.thinking_level = "medium"
         self.available_thinking_levels = ("off", "minimal", "low", "medium", "high", "xhigh")
+        self.steering_queue_mode = "one_at_a_time"
+        self.follow_up_queue_mode = "one_at_a_time"
         self.state = FakeSessionState()
         self.resource_diagnostics = ()
         self.session_manager = None
@@ -340,6 +342,14 @@ class FakeSession:
         state = "enabled" if enabled else "disabled"
         return f"Auto-compact {state}."
 
+    def set_steering_queue_mode(self, mode: str) -> str:
+        self.steering_queue_mode = mode
+        return f"Steering mode: {mode}."
+
+    def set_follow_up_queue_mode(self, mode: str) -> str:
+        self.follow_up_queue_mode = mode
+        return f"Follow-up mode: {mode}."
+
     async def cycle_thinking_level(self) -> str:
         levels = self.available_thinking_levels
         current_index = levels.index(self.thinking_level)
@@ -369,8 +379,7 @@ class FakeSession:
     async def share(self) -> str:
         self.share_count += 1
         return (
-            "Share URL: https://tau.example/session/abc123\n"
-            "Gist: https://gist.github.com/x/abc123"
+            "Share URL: https://tau.example/session/abc123\nGist: https://gist.github.com/x/abc123"
         )
 
     def project_trust_state(self) -> ProjectTrustState:
@@ -1081,7 +1090,9 @@ def test_assistant_markdown_titles_use_highlight_color_and_left_alignment() -> N
 
 def test_dark_theme_markdown_links_use_theme_link_color() -> None:
     console = Console(record=True, width=80, color_system="truecolor")
-    console.print(render_chat_item(ChatItem(role="assistant", text="Read [docs](https://example.com).")))
+    console.print(
+        render_chat_item(ChatItem(role="assistant", text="Read [docs](https://example.com)."))
+    )
 
     output = console.export_text(styles=True)
 
@@ -1100,7 +1111,9 @@ def test_dark_theme_markdown_bullets_use_theme_bullet_color() -> None:
 def test_markdown_tables_use_highlight_color_for_headers() -> None:
     console = Console(record=True, width=80, color_system="truecolor")
     console.print(
-        render_chat_item(ChatItem(role="assistant", text="| Name | Value |\n| --- | --- |\n| A | B |"))
+        render_chat_item(
+            ChatItem(role="assistant", text="| Name | Value |\n| --- | --- |\n| A | B |")
+        )
     )
 
     output = console.export_text(styles=True)
@@ -1240,7 +1253,6 @@ def test_chat_items_preserve_malformed_fenced_code() -> None:
     assert 'print("hi")' in output
 
 
-
 @pytest.mark.anyio
 async def test_transcript_message_widget_extracts_plain_text_selection() -> None:
     app = TauTuiApp(
@@ -1283,7 +1295,6 @@ async def test_streaming_transcript_deltas_do_not_force_scroll_end() -> None:
         await pilot.pause()
 
     assert forced_scrolls == 0
-
 
 
 @pytest.mark.anyio
@@ -2081,7 +2092,9 @@ async def test_tui_app_blocks_session_commands_while_compacting(blocked_command:
             self.compact_summaries.append(summary)
             started.set()
             await finish.wait()
-            self.messages = (UserMessage(content="Previous conversation summary:\nGenerated summary"),)
+            self.messages = (
+                UserMessage(content="Previous conversation summary:\nGenerated summary"),
+            )
             self.context_token_estimate = 42
             return "Compacted 2 context entries."
 
@@ -2108,7 +2121,9 @@ async def test_tui_app_blocks_session_commands_while_compacting(blocked_command:
         assert session.new_session_count == 0
         assert session.resumed_session_ids == []
         assert prompt.value == blocked_command
-        assert notifications == ["Compaction is still running. You can keep editing, but wait to submit."]
+        assert notifications == [
+            "Compaction is still running. You can keep editing, but wait to submit."
+        ]
 
         finish.set()
         await pilot.pause()
@@ -2179,7 +2194,9 @@ async def test_tui_app_escape_cancels_active_compaction() -> None:
             self.compact_summaries.append(summary)
             started.set()
             await finish.wait()
-            self.messages = (UserMessage(content="Previous conversation summary:\nGenerated summary"),)
+            self.messages = (
+                UserMessage(content="Previous conversation summary:\nGenerated summary"),
+            )
             self.context_token_estimate = 42
             return "Compacted 2 context entries."
 
@@ -2282,8 +2299,7 @@ async def test_tui_app_share_command_runs_session_share() -> None:
 
         assert session.share_count == 1
         assert notifications == [
-            "Share URL: https://tau.example/session/abc123\n"
-            "Gist: https://gist.github.com/x/abc123"
+            "Share URL: https://tau.example/session/abc123\nGist: https://gist.github.com/x/abc123"
         ]
         assert session.prompt_texts == []
 
@@ -3519,8 +3535,10 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             theme="tau-dark",
             auto_copy_selection=False,
             double_escape_action="tree",
+            follow_up_mode="one-at-a-time",
             tree_filter_mode="default",
             hide_thinking=True,
+            steering_mode="one-at-a-time",
         ),
     )
 
@@ -3535,6 +3553,8 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
             "Theme: tau-dark",
             "Auto-compact: on",
+            "Steering mode: one-at-a-time",
+            "Follow-up mode: one-at-a-time",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Double Escape: tree",
@@ -3550,6 +3570,42 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
             "Theme: tau-dark",
             "Auto-compact: off",
+            "Steering mode: one-at-a-time",
+            "Follow-up mode: one-at-a-time",
+            "Auto-copy selection: off",
+            "Hide thinking: on",
+            "Double Escape: tree",
+            "Tree filter mode: default",
+        ]
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.steering_mode == "all"
+        assert app.session.steering_queue_mode == "all"
+        assert '"steering_mode": "all"' in tui_settings_path().read_text(encoding="utf-8")
+        assert isinstance(app.screen, SettingsPickerScreen)
+        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+            "Theme: tau-dark",
+            "Auto-compact: off",
+            "Steering mode: all",
+            "Follow-up mode: one-at-a-time",
+            "Auto-copy selection: off",
+            "Hide thinking: on",
+            "Double Escape: tree",
+            "Tree filter mode: default",
+        ]
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.follow_up_mode == "all"
+        assert app.session.follow_up_queue_mode == "all"
+        assert '"follow_up_mode": "all"' in tui_settings_path().read_text(encoding="utf-8")
+        assert isinstance(app.screen, SettingsPickerScreen)
+        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+            "Theme: tau-dark",
+            "Auto-compact: off",
+            "Steering mode: all",
+            "Follow-up mode: all",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Double Escape: tree",
@@ -3564,6 +3620,8 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
             "Theme: tau-dark",
             "Auto-compact: off",
+            "Steering mode: all",
+            "Follow-up mode: all",
             "Auto-copy selection: on",
             "Hide thinking: on",
             "Double Escape: tree",
@@ -3579,22 +3637,18 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         await pilot.press("down", "enter")
         await pilot.pause()
         assert app.tui_settings.double_escape_action == "fork"
-        assert '"double_escape_action": "fork"' in tui_settings_path().read_text(
-            encoding="utf-8"
-        )
+        assert '"double_escape_action": "fork"' in tui_settings_path().read_text(encoding="utf-8")
 
-        await pilot.press("up", "up", "up", "up", "enter")
+        await pilot.press("up", "up", "up", "up", "up", "up", "enter")
         await pilot.pause()
         assert app.tui_settings.theme == "tau-light"
         assert '"theme": "tau-light"' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
 
-        await pilot.press("down", "down", "down", "down", "down", "enter")
+        await pilot.press("down", "down", "down", "down", "down", "down", "down", "enter")
         await pilot.pause()
         assert app.tui_settings.tree_filter_mode == "no-tools"
-        assert '"tree_filter_mode": "no-tools"' in tui_settings_path().read_text(
-            encoding="utf-8"
-        )
+        assert '"tree_filter_mode": "no-tools"' in tui_settings_path().read_text(encoding="utf-8")
 
 
 @pytest.mark.anyio
@@ -3889,9 +3943,7 @@ async def test_tui_app_tree_picker_cycles_filter_modes() -> None:
         labels = [str(item.query_one(Label).render()) for item in tree_list.children]
         assert labels == ["  user: Root"]
         assert tree_list.index == 0
-        assert "filter user-only" in str(
-            app.screen.query_one("#tree-picker-help", Static).render()
-        )
+        assert "filter user-only" in str(app.screen.query_one("#tree-picker-help", Static).render())
 
         await pilot.press("ctrl+f")
         await pilot.pause()
@@ -3968,9 +4020,7 @@ async def test_tui_app_tree_picker_direct_filter_shortcuts() -> None:
         assert [str(item.query_one(Label).render()) for item in tree_list.children] == [
             "  user: Root"
         ]
-        assert "filter user-only" in str(
-            app.screen.query_one("#tree-picker-help", Static).render()
-        )
+        assert "filter user-only" in str(app.screen.query_one("#tree-picker-help", Static).render())
 
         await pilot.press("ctrl+a")
         await pilot.pause()
@@ -3993,9 +4043,7 @@ async def test_tui_app_tree_picker_direct_filter_shortcuts() -> None:
 
         await pilot.press("ctrl+d")
         await pilot.pause()
-        assert "filter default" in str(
-            app.screen.query_one("#tree-picker-help", Static).render()
-        )
+        assert "filter default" in str(app.screen.query_one("#tree-picker-help", Static).render())
 
         await pilot.press("ctrl+o")
         await pilot.pause()
@@ -4630,8 +4678,7 @@ async def test_tui_app_pastes_clipboard_image_path_into_prompt(
 async def test_external_editor_helper_runs_real_command(tmp_path: Path) -> None:
     editor = tmp_path / "editor.sh"
     editor.write_text(
-        "#!/bin/sh\n"
-        "printf 'edited by script\\n' > \"$1\"\n",
+        "#!/bin/sh\nprintf 'edited by script\\n' > \"$1\"\n",
         encoding="utf-8",
     )
     editor.chmod(0o700)
@@ -5454,9 +5501,7 @@ async def test_tui_model_picker_opens_from_keybinding() -> None:
 @pytest.mark.anyio
 async def test_tui_model_picker_starts_in_scoped_tab_when_scoped_models_exist() -> None:
     session = FakeSession()
-    session.scoped_model_choices = (
-        ModelChoice(provider_name="local", model="local-model"),
-    )
+    session.scoped_model_choices = (ModelChoice(provider_name="local", model="local-model"),)
     app = TauTuiApp(session)
 
     async with app.run_test() as pilot:
@@ -5508,8 +5553,7 @@ async def test_tui_model_picker_arrow_keys_wrap_like_pi() -> None:
 async def test_tui_model_picker_page_keys_move_by_page() -> None:
     session = FakeSession()
     session.available_model_choices = tuple(
-        ModelChoice(provider_name="openai", model=f"model-{index:02d}")
-        for index in range(30)
+        ModelChoice(provider_name="openai", model=f"model-{index:02d}") for index in range(30)
     )
     session.available_models = tuple(choice.model for choice in session.available_model_choices)
     session.model = "model-00"
@@ -5700,9 +5744,7 @@ async def test_tui_scoped_models_picker_reorders_scoped_cycle_order() -> None:
 @pytest.mark.anyio
 async def test_tui_scoped_models_picker_toggles_highlighted_provider() -> None:
     session = FakeSession()
-    session.scoped_model_choices = (
-        ModelChoice(provider_name="local", model="local-model"),
-    )
+    session.scoped_model_choices = (ModelChoice(provider_name="local", model="local-model"),)
     app = TauTuiApp(session)
 
     async with app.run_test() as pilot:
@@ -6917,6 +6959,8 @@ async def test_run_tui_app_creates_new_session_by_default(
             assert config.provider_name == "local"  # type: ignore[attr-defined]
             assert config.auto_compact_token_threshold == 1000  # type: ignore[attr-defined]
             assert config.auto_compact_enabled is False  # type: ignore[attr-defined]
+            assert config.steering_queue_mode == "all"  # type: ignore[attr-defined]
+            assert config.follow_up_queue_mode == "one_at_a_time"  # type: ignore[attr-defined]
             calls.append("load")
             return "session"
 
@@ -6950,7 +6994,11 @@ async def test_run_tui_app_creates_new_session_by_default(
     )
     monkeypatch.setattr(tui_app, "CodingSession", FakeCodingSession)
     monkeypatch.setattr(tui_app, "TauTuiApp", FakeApp)
-    monkeypatch.setattr(tui_app, "load_tui_settings", lambda: TuiSettings(auto_compact=False))
+    monkeypatch.setattr(
+        tui_app,
+        "load_tui_settings",
+        lambda: TuiSettings(auto_compact=False, steering_mode="all"),
+    )
 
     await tui_app.run_tui_app(
         model=None,

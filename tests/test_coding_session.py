@@ -566,9 +566,7 @@ async def test_prompt_writes_loop2_receipt_artifacts_when_enabled(tmp_path: Path
     assert contract["allowed_globs"] == ["src/**", "tests/**"]
     assert contract["checks"] == [check_command]
     assert contract["backend"] == "fixture"
-    assert [row["event"]["type"] for row in rows[: len(events)]] == [
-        event.type for event in events
-    ]
+    assert [row["event"]["type"] for row in rows[: len(events)]] == [event.type for event in events]
     assert [row["event_type"] for row in rows[len(events) :]] == [
         "checks_started",
         "check_finished",
@@ -637,8 +635,7 @@ async def test_prompt_loop2_receipt_marks_failed_check(tmp_path: Path) -> None:
     )
     receipt_root = tmp_path / ".tau-loop2" / "runs"
     check_command = (
-        f"{sys.executable} -c "
-        "\"import sys; sys.stderr.write('bad check\\\\n'); sys.exit(7)\""
+        f"{sys.executable} -c \"import sys; sys.stderr.write('bad check\\\\n'); sys.exit(7)\""
     )
     session = await CodingSession.load(
         CodingSessionConfig(
@@ -1329,7 +1326,9 @@ async def test_session_tree_choices_include_full_copy_text(tmp_path: Path) -> No
 async def test_session_tree_entry_labels_are_append_only_and_clearable(tmp_path: Path) -> None:
     storage = JsonlSessionStorage(tmp_path / "session.jsonl")
     root = MessageEntry(id="root", message=UserMessage(content="Root"))
-    assistant = MessageEntry(id="assistant", parent_id="root", message=AssistantMessage(content="Answer"))
+    assistant = MessageEntry(
+        id="assistant", parent_id="root", message=AssistantMessage(content="Answer")
+    )
     await storage.append(root)
     await storage.append(assistant)
     await storage.append(LeafEntry(entry_id="assistant"))
@@ -2254,6 +2253,33 @@ async def test_session_can_disable_auto_compaction_at_runtime(tmp_path: Path) ->
 
 
 @pytest.mark.anyio
+async def test_session_exposes_independent_queue_modes(tmp_path: Path) -> None:
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="fake",
+            system="You are Tau.",
+            storage=storage,
+            cwd=tmp_path,
+            steering_queue_mode="all",
+            follow_up_queue_mode="one_at_a_time",
+        )
+    )
+
+    assert session.steering_queue_mode == "all"
+    assert session.follow_up_queue_mode == "one_at_a_time"
+
+    steering_message = session.set_steering_queue_mode("one_at_a_time")
+    follow_up_message = session.set_follow_up_queue_mode("all")
+
+    assert steering_message == "Steering mode: one-at-a-time."
+    assert follow_up_message == "Follow-up mode: all."
+    assert session.steering_queue_mode == "one_at_a_time"
+    assert session.follow_up_queue_mode == "all"
+
+
+@pytest.mark.anyio
 async def test_session_compacts_and_retries_once_after_context_overflow(
     tmp_path: Path,
 ) -> None:
@@ -2806,8 +2832,7 @@ async def test_session_share_creates_secret_gist_from_html_export(
     assert calls[1][:4] == ["gh", "gist", "create", "--public=false"]
     assert "Shared prompt" in exported_html[0]
     assert message == (
-        "Share URL: https://tau.example/session/abc123\n"
-        "Gist: https://gist.github.com/graham/abc123"
+        "Share URL: https://tau.example/session/abc123\nGist: https://gist.github.com/graham/abc123"
     )
 
 
@@ -2874,7 +2899,9 @@ async def test_session_ignores_project_resources_until_project_is_trusted(
 
     assert [skill.name for skill in session.skills] == ["user"]
     assert session.context_files == ()
-    assert [(diagnostic.kind, diagnostic.message) for diagnostic in session.resource_diagnostics] == [
+    assert [
+        (diagnostic.kind, diagnostic.message) for diagnostic in session.resource_diagnostics
+    ] == [
         (
             "trust",
             "project-local resources ignored until this project is trusted with /trust",
@@ -2886,9 +2913,7 @@ async def test_session_ignores_project_resources_until_project_is_trusted(
     session.reload()
 
     assert [skill.name for skill in session.skills] == ["project", "user"]
-    assert [Path(context_file.path).name for context_file in session.context_files] == [
-        "AGENTS.md"
-    ]
+    assert [Path(context_file.path).name for context_file in session.context_files] == ["AGENTS.md"]
     assert not [
         diagnostic for diagnostic in session.resource_diagnostics if diagnostic.kind == "trust"
     ]

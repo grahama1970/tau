@@ -101,6 +101,7 @@ from tau_coding.tui.config import (
     BUILTIN_TUI_THEME_NAMES,
     TAU_DARK_THEME,
     TuiKeybindings,
+    TuiQueueDrainMode,
     TuiSettings,
     TuiTheme,
     TuiThemeName,
@@ -749,9 +750,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         search.value = title
         search.focus()
         self.query_one("#session-picker-title", Static).update("Rename Session")
-        self.query_one("#session-picker-help", Static).update(
-            "Enter saves - Escape cancels rename"
-        )
+        self.query_one("#session-picker-help", Static).update("Enter saves - Escape cancels rename")
 
     def _confirm_rename(self, value: str) -> None:
         """Save the active rename target and return to list mode."""
@@ -771,9 +770,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
             return
         updated = rename_session(target_id, name)
         if updated is None:
-            self.query_one("#session-picker-help", Static).update(
-                f"Unknown session: {target_id}"
-            )
+            self.query_one("#session-picker-help", Static).update(f"Unknown session: {target_id}")
             return
         self.current_records = _replace_session_picker_record(self.current_records, updated)
         self.all_records = _replace_session_picker_record(self.all_records, updated)
@@ -887,6 +884,8 @@ class TreePickerResult:
 SettingsPickerKey = Literal[
     "theme",
     "auto_compact",
+    "steering_mode",
+    "follow_up_mode",
     "auto_copy_selection",
     "hide_thinking",
     "double_escape_action",
@@ -1590,9 +1589,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
     async def _cycle_tree_filter(self, *, direction: Literal[-1, 1] = 1) -> None:
         selected_entry_id = self._selected_entry_id()
         current_index = TREE_FILTER_MODES.index(self.filter_mode)
-        self.filter_mode = TREE_FILTER_MODES[
-            (current_index + direction) % len(TREE_FILTER_MODES)
-        ]
+        self.filter_mode = TREE_FILTER_MODES[(current_index + direction) % len(TREE_FILTER_MODES)]
         if self.filter_mode == "no-tools":
             self.show_tool_calls = False
         elif self.filter_mode == "all":
@@ -1606,9 +1603,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         toggle: bool = False,
     ) -> None:
         selected_entry_id = self._selected_entry_id()
-        self.filter_mode = (
-            "default" if toggle and self.filter_mode == filter_mode else filter_mode
-        )
+        self.filter_mode = "default" if toggle and self.filter_mode == filter_mode else filter_mode
         self.show_tool_calls = self.filter_mode != "no-tools"
         self.folded_entry_ids.clear()
         await self._refresh_tree_choices(selected_entry_id=selected_entry_id)
@@ -1776,7 +1771,9 @@ class TreeLabelInputScreen(ModalScreen[tuple[str, str | None] | None]):
         with Vertical(id="tree-label-input"):
             yield Static("Tree entry label", id="tree-label-title")
             yield Input(value=self.current_label, id="tree-label-value")
-            yield Static("Enter saves - empty clears - Escape returns to tree", id="tree-label-help")
+            yield Static(
+                "Enter saves - empty clears - Escape returns to tree", id="tree-label-help"
+            )
 
     def on_mount(self) -> None:
         """Focus the label input."""
@@ -3420,7 +3417,12 @@ class TauTuiApp(App[None]):
         worker = self._prompt_worker
         is_worker_active = worker is not None and not worker.is_finished and not worker.is_cancelled
         is_session_running = bool(getattr(self.session, "is_running", False))
-        return self.state.running or is_session_running or is_worker_active or self.state.queued_message_count > 0
+        return (
+            self.state.running
+            or is_session_running
+            or is_worker_active
+            or self.state.queued_message_count > 0
+        )
 
     async def _run_compaction(self, summary: str) -> None:
         """Run manual compaction without disabling prompt editing."""
@@ -3514,7 +3516,9 @@ class TauTuiApp(App[None]):
                 auto_compact=self.tui_settings.auto_compact,
                 auto_copy_selection=self.tui_settings.auto_copy_selection,
                 double_escape_action=self.tui_settings.double_escape_action,
+                follow_up_mode=self.tui_settings.follow_up_mode,
                 hide_thinking=self.tui_settings.hide_thinking,
+                steering_mode=self.tui_settings.steering_mode,
                 tree_filter_mode=self.tui_settings.tree_filter_mode,
             )
         )
@@ -3525,6 +3529,12 @@ class TauTuiApp(App[None]):
         set_auto_compact = getattr(self.session, "set_auto_compact_enabled", None)
         if callable(set_auto_compact):
             set_auto_compact(settings.auto_compact)
+        set_steering_mode = getattr(self.session, "set_steering_queue_mode", None)
+        if callable(set_steering_mode):
+            set_steering_mode(_agent_queue_mode_from_tui(settings.steering_mode))
+        set_follow_up_mode = getattr(self.session, "set_follow_up_queue_mode", None)
+        if callable(set_follow_up_mode):
+            set_follow_up_mode(_agent_queue_mode_from_tui(settings.follow_up_mode))
         save_tui_settings(self.tui_settings)
         self._bindings = BindingsMap(_app_bindings(self.tui_settings.keybindings))
         with suppress(NoMatches):
@@ -4098,9 +4108,7 @@ class TauTuiApp(App[None]):
             return 0
         prompt = self.query_one("#prompt", PromptInput)
         queued_text = "\n\n".join(messages)
-        combined_text = "\n\n".join(
-            part for part in (queued_text, prompt.text) if part.strip()
-        )
+        combined_text = "\n\n".join(part for part in (queued_text, prompt.text) if part.strip())
         prompt.text = combined_text
         prompt.move_cursor(_text_end_location(combined_text))
         prompt.focus()
@@ -5158,11 +5166,7 @@ def _session_picker_query_tokens(query: str) -> tuple[tuple[Literal["token", "ph
         had_unclosed_quote = True
 
     if had_unclosed_quote:
-        return tuple(
-            ("token", token)
-            for token in query.split()
-            if token.strip()
-        )
+        return tuple(("token", token) for token in query.split() if token.strip())
 
     flush("phrase" if in_quote else "token")
     return tuple(tokens)
@@ -5426,10 +5430,7 @@ def _visible_tree_relationships(
         children_by_parent_lists.setdefault(parent_id, []).append(choice.entry_id)
 
     return (
-        {
-            parent_id: tuple(child_ids)
-            for parent_id, child_ids in children_by_parent_lists.items()
-        },
+        {parent_id: tuple(child_ids) for parent_id, child_ids in children_by_parent_lists.items()},
         parent_by_id,
     )
 
@@ -5570,6 +5571,16 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             value="on" if settings.auto_compact else "off",
         ),
         SettingsPickerItem(
+            key="steering_mode",
+            label="Steering mode",
+            value=settings.steering_mode,
+        ),
+        SettingsPickerItem(
+            key="follow_up_mode",
+            label="Follow-up mode",
+            value=settings.follow_up_mode,
+        ),
+        SettingsPickerItem(
             key="auto_copy_selection",
             label="Auto-copy selection",
             value="on" if settings.auto_copy_selection else "off",
@@ -5604,10 +5615,16 @@ def _filter_settings_picker_items(
     if not normalized:
         return tuple(items)
     return tuple(
-        item
-        for item in items
-        if normalized in f"{item.label} {item.value} {item.key}".casefold()
+        item for item in items if normalized in f"{item.label} {item.value} {item.key}".casefold()
     )
+
+
+def _next_queue_drain_mode(mode: TuiQueueDrainMode) -> TuiQueueDrainMode:
+    return "all" if mode == "one-at-a-time" else "one-at-a-time"
+
+
+def _agent_queue_mode_from_tui(mode: TuiQueueDrainMode) -> Literal["one_at_a_time", "all"]:
+    return "one_at_a_time" if mode == "one-at-a-time" else "all"
 
 
 def _project_trust_decision_label(decision: ProjectTrustStoreEntry | None) -> str:
@@ -5638,16 +5655,16 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
             current_index = BUILTIN_TUI_THEME_NAMES.index(settings.theme)
         except ValueError:
             current_index = -1
-        next_theme = BUILTIN_TUI_THEME_NAMES[
-            (current_index + 1) % len(BUILTIN_TUI_THEME_NAMES)
-        ]
+        next_theme = BUILTIN_TUI_THEME_NAMES[(current_index + 1) % len(BUILTIN_TUI_THEME_NAMES)]
         return TuiSettings(
             keybindings=settings.keybindings,
             theme=next_theme,
             auto_compact=settings.auto_compact,
             auto_copy_selection=settings.auto_copy_selection,
             double_escape_action=settings.double_escape_action,
+            follow_up_mode=settings.follow_up_mode,
             hide_thinking=settings.hide_thinking,
+            steering_mode=settings.steering_mode,
             tree_filter_mode=settings.tree_filter_mode,
         )
     if key == "auto_compact":
@@ -5657,7 +5674,33 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
             auto_compact=not settings.auto_compact,
             auto_copy_selection=settings.auto_copy_selection,
             double_escape_action=settings.double_escape_action,
+            follow_up_mode=settings.follow_up_mode,
             hide_thinking=settings.hide_thinking,
+            steering_mode=settings.steering_mode,
+            tree_filter_mode=settings.tree_filter_mode,
+        )
+    if key == "steering_mode":
+        return TuiSettings(
+            keybindings=settings.keybindings,
+            theme=settings.theme,
+            auto_compact=settings.auto_compact,
+            auto_copy_selection=settings.auto_copy_selection,
+            double_escape_action=settings.double_escape_action,
+            follow_up_mode=settings.follow_up_mode,
+            hide_thinking=settings.hide_thinking,
+            steering_mode=_next_queue_drain_mode(settings.steering_mode),
+            tree_filter_mode=settings.tree_filter_mode,
+        )
+    if key == "follow_up_mode":
+        return TuiSettings(
+            keybindings=settings.keybindings,
+            theme=settings.theme,
+            auto_compact=settings.auto_compact,
+            auto_copy_selection=settings.auto_copy_selection,
+            double_escape_action=settings.double_escape_action,
+            follow_up_mode=_next_queue_drain_mode(settings.follow_up_mode),
+            hide_thinking=settings.hide_thinking,
+            steering_mode=settings.steering_mode,
             tree_filter_mode=settings.tree_filter_mode,
         )
     if key == "auto_copy_selection":
@@ -5667,7 +5710,9 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
             auto_compact=settings.auto_compact,
             auto_copy_selection=not settings.auto_copy_selection,
             double_escape_action=settings.double_escape_action,
+            follow_up_mode=settings.follow_up_mode,
             hide_thinking=settings.hide_thinking,
+            steering_mode=settings.steering_mode,
             tree_filter_mode=settings.tree_filter_mode,
         )
     if key == "hide_thinking":
@@ -5677,7 +5722,9 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
             auto_compact=settings.auto_compact,
             auto_copy_selection=settings.auto_copy_selection,
             double_escape_action=settings.double_escape_action,
+            follow_up_mode=settings.follow_up_mode,
             hide_thinking=not settings.hide_thinking,
+            steering_mode=settings.steering_mode,
             tree_filter_mode=settings.tree_filter_mode,
         )
     if key == "double_escape_action":
@@ -5698,7 +5745,9 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
             double_escape_action=double_escape_actions[
                 (current_index + 1) % len(double_escape_actions)
             ],
+            follow_up_mode=settings.follow_up_mode,
             hide_thinking=settings.hide_thinking,
+            steering_mode=settings.steering_mode,
             tree_filter_mode=settings.tree_filter_mode,
         )
     try:
@@ -5711,7 +5760,9 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
         auto_compact=settings.auto_compact,
         auto_copy_selection=settings.auto_copy_selection,
         double_escape_action=settings.double_escape_action,
+        follow_up_mode=settings.follow_up_mode,
         hide_thinking=settings.hide_thinking,
+        steering_mode=settings.steering_mode,
         tree_filter_mode=TREE_FILTER_MODES[(current_index + 1) % len(TREE_FILTER_MODES)],
     )
 
@@ -5869,7 +5920,7 @@ async def _run_clipboard_command(args: tuple[str, ...], *, timeout_s: float) -> 
             stderr=subprocess.DEVNULL,
         )
         stdout, _ = await asyncio.wait_for(process.communicate(), timeout=timeout_s)
-    except (OSError, TimeoutError):
+    except OSError, TimeoutError:
         if process is not None and process.returncode is None:
             process.kill()
             with suppress(ProcessLookupError):
@@ -5892,11 +5943,7 @@ def _write_clipboard_image_to_temp(image: _ClipboardImage) -> Path:
 
 
 def _select_preferred_image_mime_type(mime_types: Sequence[str]) -> str | None:
-    normalized = [
-        (raw.strip(), _base_mime_type(raw))
-        for raw in mime_types
-        if raw.strip()
-    ]
+    normalized = [(raw.strip(), _base_mime_type(raw)) for raw in mime_types if raw.strip()]
     for preferred in _SUPPORTED_CLIPBOARD_IMAGE_MIME_TYPES:
         for raw, base in normalized:
             if base == preferred:
@@ -6115,7 +6162,11 @@ def _prompt_bindings(
         Binding(keybindings.session_picker, "open_session_picker", "Sessions", priority=True),
         *_optional_bindings(
             (
-                (keybindings.session_new, "new_session", "New",),
+                (
+                    keybindings.session_new,
+                    "new_session",
+                    "New",
+                ),
                 (keybindings.session_tree, "open_tree_picker", "Tree"),
                 (keybindings.session_fork, "open_fork_picker", "Fork"),
                 (keybindings.session_resume, "open_session_picker", "Resume"),
@@ -6395,6 +6446,8 @@ async def run_tui_app(
                 runtime_provider_config=runtime_provider_config,
                 auto_compact_token_threshold=auto_compact_token_threshold,
                 auto_compact_enabled=tui_settings.auto_compact,
+                steering_queue_mode=_agent_queue_mode_from_tui(tui_settings.steering_mode),
+                follow_up_queue_mode=_agent_queue_mode_from_tui(tui_settings.follow_up_mode),
             )
         )
         app = TauTuiApp(

@@ -40,6 +40,8 @@ class AgentHarnessConfig:
     tools: list[AgentTool] = field(default_factory=list)
     max_turns: int | None = None
     queue_mode: QueueMode = "one_at_a_time"
+    steering_queue_mode: QueueMode | None = None
+    follow_up_queue_mode: QueueMode | None = None
 
 
 class SimpleCancellationToken:
@@ -106,6 +108,24 @@ class AgentHarness:
     def pending_message_count(self) -> int:
         """Return the total queued message count."""
         return self.queued_messages.count
+
+    @property
+    def steering_queue_mode(self) -> QueueMode:
+        """Return how queued steering messages drain into the loop."""
+        return self._config.steering_queue_mode or self._config.queue_mode
+
+    def set_steering_queue_mode(self, mode: QueueMode) -> None:
+        """Set how queued steering messages drain into the loop."""
+        self._config.steering_queue_mode = mode
+
+    @property
+    def follow_up_queue_mode(self) -> QueueMode:
+        """Return how queued follow-up messages drain into the loop."""
+        return self._config.follow_up_queue_mode or self._config.queue_mode
+
+    def set_follow_up_queue_mode(self, mode: QueueMode) -> None:
+        """Set how queued follow-up messages drain into the loop."""
+        self._config.follow_up_queue_mode = mode
 
     def has_queued_messages(self) -> bool:
         """Return whether either queue has pending messages."""
@@ -234,15 +254,20 @@ class AgentHarness:
             )
 
     def _drain_steering_messages(self) -> tuple[AgentMessage, ...]:
-        return self._drain_queue(self._steering_queue)
+        return self._drain_queue(self._steering_queue, mode=self.steering_queue_mode)
 
     def _drain_follow_up_messages(self) -> tuple[AgentMessage, ...]:
-        return self._drain_queue(self._follow_up_queue)
+        return self._drain_queue(self._follow_up_queue, mode=self.follow_up_queue_mode)
 
-    def _drain_queue(self, queue: deque[AgentMessage]) -> tuple[AgentMessage, ...]:
+    def _drain_queue(
+        self,
+        queue: deque[AgentMessage],
+        *,
+        mode: QueueMode,
+    ) -> tuple[AgentMessage, ...]:
         if not queue:
             return ()
-        if self._config.queue_mode == "all":
+        if mode == "all":
             messages = tuple(queue)
             queue.clear()
             return messages

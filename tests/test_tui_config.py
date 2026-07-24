@@ -58,7 +58,9 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
             "copy_last_message": "ctrl+x"
           },
           "theme": "high-contrast",
-          "tree_filter_mode": "user-only"
+          "tree_filter_mode": "user-only",
+          "steering_mode": "all",
+          "followUpMode": "all"
         }
         """,
         encoding="utf-8",
@@ -91,6 +93,8 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.auto_compact is True
     assert settings.double_escape_action == "tree"
     assert settings.hide_thinking is True
+    assert settings.steering_mode == "all"
+    assert settings.follow_up_mode == "all"
     assert settings.tree_filter_mode == "user-only"
     assert settings.resolved_theme == HIGH_CONTRAST_THEME
 
@@ -120,6 +124,13 @@ def test_tui_settings_ignores_removed_message_selection_keybindings() -> None:
 def test_tui_settings_reject_unknown_fields() -> None:
     with pytest.raises(TuiConfigError, match="Unknown TUI settings field"):
         tui_settings_from_json({"palette": {}})
+
+
+def test_tui_settings_reject_invalid_queue_modes() -> None:
+    with pytest.raises(TuiConfigError, match="steering_mode"):
+        tui_settings_from_json({"steering_mode": "latest"})
+    with pytest.raises(TuiConfigError, match="follow_up_mode"):
+        tui_settings_from_json({"follow_up_mode": "latest"})
 
 
 def test_tui_keybindings_reject_duplicate_keys() -> None:

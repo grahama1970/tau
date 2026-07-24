@@ -20,6 +20,7 @@ from tau_agent import (
     AgentHarnessConfig,
     ErrorEvent,
     MessageEndEvent,
+    QueueMode,
     QueuedMessages,
     QueueUpdateEvent,
     SimpleCancellationToken,
@@ -214,6 +215,8 @@ class CodingSessionConfig:
     runtime_provider_config: ProviderConfig | None = None
     auto_compact_token_threshold: int | None = None
     auto_compact_enabled: bool = True
+    steering_queue_mode: QueueMode = "one_at_a_time"
+    follow_up_queue_mode: QueueMode = "one_at_a_time"
     thinking_level: ThinkingLevel = DEFAULT_THINKING_LEVEL
     loop_receipt: LoopReceiptConfig | None = None
 
@@ -312,6 +315,8 @@ class CodingSession:
                 model=state.model or config.model,
                 system=system,
                 tools=tools,
+                steering_queue_mode=config.steering_queue_mode,
+                follow_up_queue_mode=config.follow_up_queue_mode,
             ),
             messages=state.messages,
         )
@@ -607,6 +612,28 @@ class CodingSession:
         self._auto_compact_enabled = enabled
         state = "enabled" if enabled else "disabled"
         return f"Auto-compact {state}."
+
+    @property
+    def steering_queue_mode(self) -> QueueMode:
+        """Return how queued steering messages drain into the agent loop."""
+        return self._harness.steering_queue_mode
+
+    def set_steering_queue_mode(self, mode: QueueMode) -> str:
+        """Set how queued steering messages drain into the agent loop."""
+        self._config = replace(self._config, steering_queue_mode=mode)
+        self._harness.set_steering_queue_mode(mode)
+        return f"Steering mode: {_display_queue_mode(mode)}."
+
+    @property
+    def follow_up_queue_mode(self) -> QueueMode:
+        """Return how queued follow-up messages drain into the agent loop."""
+        return self._harness.follow_up_queue_mode
+
+    def set_follow_up_queue_mode(self, mode: QueueMode) -> str:
+        """Set how queued follow-up messages drain into the agent loop."""
+        self._config = replace(self._config, follow_up_queue_mode=mode)
+        self._harness.set_follow_up_queue_mode(mode)
+        return f"Follow-up mode: {_display_queue_mode(mode)}."
 
     @property
     def context_window_tokens(self) -> int:
@@ -1008,6 +1035,8 @@ class CodingSession:
                 runtime_provider_config=runtime_provider_config,
                 auto_compact_token_threshold=self._auto_compact_token_threshold,
                 auto_compact_enabled=self._auto_compact_enabled,
+                steering_queue_mode=self.steering_queue_mode,
+                follow_up_queue_mode=self.follow_up_queue_mode,
                 thinking_level=self._thinking_level,
             )
         )
@@ -2133,9 +2162,7 @@ def _resolve_export_destination(
 
 
 def _share_viewer_url(gist_id: str) -> str:
-    base_url = os.environ.get("TAU_SHARE_VIEWER_URL") or os.environ.get(
-        "PI_SHARE_VIEWER_URL"
-    )
+    base_url = os.environ.get("TAU_SHARE_VIEWER_URL") or os.environ.get("PI_SHARE_VIEWER_URL")
     if not base_url:
         base_url = "https://pi.dev/session/"
     return f"{base_url.rstrip('/')}/{gist_id}"
@@ -2180,6 +2207,10 @@ def _unavailable_thinking_message(session: CodingSession) -> str:
     if reason:
         return f"{message}: {reason}"
     return message
+
+
+def _display_queue_mode(mode: QueueMode) -> str:
+    return "one-at-a-time" if mode == "one_at_a_time" else mode
 
 
 def _terminal_command_context_message(command: str, output: str) -> str:

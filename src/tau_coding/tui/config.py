@@ -74,6 +74,7 @@ class TuiKeybindings:
 type TuiThemeName = Literal["tau-dark", "tau-light", "high-contrast"]
 type DoubleEscapeAction = Literal["tree", "fork", "none"]
 type TuiTreeFilterMode = Literal["default", "no-tools", "user-only", "labeled-only", "all"]
+type TuiQueueDrainMode = Literal["one-at-a-time", "all"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -268,6 +269,8 @@ class TuiSettings:
     double_escape_action: DoubleEscapeAction = "tree"
     tree_filter_mode: TuiTreeFilterMode = "default"
     hide_thinking: bool = True
+    steering_mode: TuiQueueDrainMode = "one-at-a-time"
+    follow_up_mode: TuiQueueDrainMode = "one-at-a-time"
 
     def to_json(self) -> dict[str, Any]:
         """Serialize these settings to JSON-compatible data."""
@@ -277,6 +280,8 @@ class TuiSettings:
             "double_escape_action": self.double_escape_action,
             "hide_thinking": self.hide_thinking,
             "keybindings": self.keybindings.to_json(),
+            "follow_up_mode": self.follow_up_mode,
+            "steering_mode": self.steering_mode,
             "theme": self.theme,
             "tree_filter_mode": self.tree_filter_mode,
         }
@@ -319,6 +324,10 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "double_escape_action",
         "hide_thinking",
         "keybindings",
+        "followUpMode",
+        "follow_up_mode",
+        "steeringMode",
+        "steering_mode",
         "theme",
         "tree_filter_mode",
     }
@@ -341,6 +350,14 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
             data.get("double_escape_action", "tree"),
         ),
         hide_thinking=_bool_setting(data.get("hide_thinking", True), "hide_thinking"),
+        steering_mode=_queue_drain_mode(
+            data.get("steering_mode", data.get("steeringMode", "one-at-a-time")),
+            "steering_mode",
+        ),
+        follow_up_mode=_queue_drain_mode(
+            data.get("follow_up_mode", data.get("followUpMode", "one-at-a-time")),
+            "follow_up_mode",
+        ),
         tree_filter_mode=_tree_filter_mode(data.get("tree_filter_mode", "default")),
     )
 
@@ -363,6 +380,12 @@ def _tree_filter_mode(value: object) -> TuiTreeFilterMode:
     raise TuiConfigError(
         "TUI tree_filter_mode must be one of: default, no-tools, user-only, labeled-only, all"
     )
+
+
+def _queue_drain_mode(value: object, field_name: str) -> TuiQueueDrainMode:
+    if value in {"one-at-a-time", "all"}:
+        return cast(TuiQueueDrainMode, value)
+    raise TuiConfigError(f"TUI {field_name} must be one of: one-at-a-time, all")
 
 
 def _keybindings_from_json(data: dict[str, Any]) -> TuiKeybindings:

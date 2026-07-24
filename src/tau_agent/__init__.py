@@ -21,6 +21,7 @@ from tau_agent.harness import (
     AgentHarness,
     AgentHarnessConfig,
     EventListener,
+    QueueMode,
     QueuedMessages,
     SimpleCancellationToken,
 )
@@ -70,6 +71,7 @@ __all__ = [
     "MessageStartEvent",
     "ModelChangeEntry",
     "QueuedMessages",
+    "QueueMode",
     "QueueUpdateEvent",
     "RetryEvent",
     "SessionEntry",
