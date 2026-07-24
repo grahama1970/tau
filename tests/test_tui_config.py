@@ -150,6 +150,27 @@ def test_tui_settings_reads_pi_keybinding_aliases() -> None:
                 "app.tree.toggleLabelTimestamp": "shift+t",
                 "tui.input.newLine": ["shift+enter", "ctrl+j"],
                 "tui.input.submit": "f13",
+                "tui.editor.cursorUp": "alt+u",
+                "tui.editor.cursorDown": "alt+d",
+                "tui.editor.cursorLeft": "alt+l",
+                "tui.editor.cursorRight": "alt+r",
+                "tui.editor.cursorWordLeft": "alt+shift+l",
+                "tui.editor.cursorWordRight": "alt+shift+r",
+                "tui.editor.cursorLineStart": "alt+home",
+                "tui.editor.cursorLineEnd": "alt+end",
+                "tui.editor.jumpForward": "alt+j",
+                "tui.editor.jumpBackward": "alt+shift+j",
+                "tui.editor.pageUp": "alt+pageup",
+                "tui.editor.pageDown": "alt+pagedown",
+                "tui.editor.deleteCharBackward": "alt+backspace",
+                "tui.editor.deleteCharForward": "alt+delete",
+                "tui.editor.deleteWordBackward": "alt+shift+backspace",
+                "tui.editor.deleteWordForward": "alt+shift+delete",
+                "tui.editor.deleteToLineStart": "alt+u",
+                "tui.editor.deleteToLineEnd": "alt+k",
+                "tui.editor.yank": "alt+y",
+                "tui.editor.yankPop": "alt+shift+y",
+                "tui.editor.undo": "alt+z",
                 "tui.select.up": "shift+up",
                 "tui.select.down": "shift+down",
                 "tui.select.pageUp": "shift+pageup",
@@ -189,6 +210,27 @@ def test_tui_settings_reads_pi_keybinding_aliases() -> None:
     assert settings.keybindings.tree_toggle_label_timestamp == "shift+t"
     assert settings.keybindings.insert_newline == "shift+enter,ctrl+j"
     assert settings.keybindings.submit_prompt == "f13"
+    assert settings.keybindings.editor_cursor_up == "alt+u"
+    assert settings.keybindings.editor_cursor_down == "alt+d"
+    assert settings.keybindings.editor_cursor_left == "alt+l"
+    assert settings.keybindings.editor_cursor_right == "alt+r"
+    assert settings.keybindings.editor_cursor_word_left == "alt+shift+l"
+    assert settings.keybindings.editor_cursor_word_right == "alt+shift+r"
+    assert settings.keybindings.editor_cursor_line_start == "alt+home"
+    assert settings.keybindings.editor_cursor_line_end == "alt+end"
+    assert settings.keybindings.editor_jump_forward == "alt+j"
+    assert settings.keybindings.editor_jump_backward == "alt+shift+j"
+    assert settings.keybindings.editor_page_up == "alt+pageup"
+    assert settings.keybindings.editor_page_down == "alt+pagedown"
+    assert settings.keybindings.editor_delete_char_backward == "alt+backspace"
+    assert settings.keybindings.editor_delete_char_forward == "alt+delete"
+    assert settings.keybindings.editor_delete_word_backward == "alt+shift+backspace"
+    assert settings.keybindings.editor_delete_word_forward == "alt+shift+delete"
+    assert settings.keybindings.editor_delete_to_line_start == "alt+u"
+    assert settings.keybindings.editor_delete_to_line_end == "alt+k"
+    assert settings.keybindings.editor_yank == "alt+y"
+    assert settings.keybindings.editor_yank_pop == "alt+shift+y"
+    assert settings.keybindings.editor_undo == "alt+z"
     assert settings.keybindings.select_up == "shift+up"
     assert settings.keybindings.select_down == "shift+down"
     assert settings.keybindings.select_page_up == "shift+pageup"
@@ -546,6 +588,11 @@ def test_tui_keybindings_serialize_to_json() -> None:
             submit_prompt="f4",
             insert_newline="shift+enter,ctrl+j",
             accept_completion="f2",
+            editor_delete_to_line_start="f13",
+            editor_delete_to_line_end="f14",
+            editor_yank="f15",
+            editor_yank_pop="f16",
+            editor_undo="f17",
             thinking_cycle="f3",
             model_cycle="f6",
             model_cycle_previous="f11",
@@ -580,6 +627,11 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["keybindings"]["toggle_tool_results"] == "ctrl+o"
     assert settings.to_json()["keybindings"]["toggle_thinking"] == "f4"
     assert settings.to_json()["keybindings"]["accept_completion"] == "f2"
+    assert settings.to_json()["keybindings"]["editor_delete_to_line_start"] == "f13"
+    assert settings.to_json()["keybindings"]["editor_delete_to_line_end"] == "f14"
+    assert settings.to_json()["keybindings"]["editor_yank"] == "f15"
+    assert settings.to_json()["keybindings"]["editor_yank_pop"] == "f16"
+    assert settings.to_json()["keybindings"]["editor_undo"] == "f17"
     assert settings.to_json()["keybindings"]["thinking_cycle"] == "f3"
     assert settings.to_json()["keybindings"]["model_cycle"] == "f6"
     assert settings.to_json()["keybindings"]["model_cycle_previous"] == "f11"

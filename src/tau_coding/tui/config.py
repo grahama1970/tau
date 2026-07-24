@@ -37,6 +37,27 @@ class TuiKeybindings:
     submit_prompt: str = "enter"
     insert_newline: str = "shift+enter"
     accept_completion: str = "tab"
+    editor_cursor_up: str = "up"
+    editor_cursor_down: str = "down"
+    editor_cursor_left: str = "left,ctrl+b"
+    editor_cursor_right: str = "right,ctrl+f"
+    editor_cursor_word_left: str = "alt+left,ctrl+left,alt+b"
+    editor_cursor_word_right: str = "alt+right,ctrl+right,alt+f"
+    editor_cursor_line_start: str = "home,ctrl+a"
+    editor_cursor_line_end: str = "end,ctrl+e"
+    editor_jump_forward: str = "ctrl+]"
+    editor_jump_backward: str = "ctrl+alt+]"
+    editor_page_up: str = "pageup"
+    editor_page_down: str = "pagedown"
+    editor_delete_char_backward: str = "backspace"
+    editor_delete_char_forward: str = "delete,ctrl+d"
+    editor_delete_word_backward: str = "ctrl+w,alt+backspace"
+    editor_delete_word_forward: str = "alt+d,alt+delete"
+    editor_delete_to_line_start: str = "ctrl+u"
+    editor_delete_to_line_end: str = "ctrl+k"
+    editor_yank: str = "ctrl+y"
+    editor_yank_pop: str = "alt+y"
+    editor_undo: str = "ctrl+-,ctrl+minus"
     completion_next: str = "down"
     completion_previous: str = "up"
     thinking_cycle: str = "shift+tab"
@@ -96,6 +117,27 @@ class TuiKeybindings:
             "submit_prompt": self.submit_prompt,
             "insert_newline": self.insert_newline,
             "accept_completion": self.accept_completion,
+            "editor_cursor_up": self.editor_cursor_up,
+            "editor_cursor_down": self.editor_cursor_down,
+            "editor_cursor_left": self.editor_cursor_left,
+            "editor_cursor_right": self.editor_cursor_right,
+            "editor_cursor_word_left": self.editor_cursor_word_left,
+            "editor_cursor_word_right": self.editor_cursor_word_right,
+            "editor_cursor_line_start": self.editor_cursor_line_start,
+            "editor_cursor_line_end": self.editor_cursor_line_end,
+            "editor_jump_forward": self.editor_jump_forward,
+            "editor_jump_backward": self.editor_jump_backward,
+            "editor_page_up": self.editor_page_up,
+            "editor_page_down": self.editor_page_down,
+            "editor_delete_char_backward": self.editor_delete_char_backward,
+            "editor_delete_char_forward": self.editor_delete_char_forward,
+            "editor_delete_word_backward": self.editor_delete_word_backward,
+            "editor_delete_word_forward": self.editor_delete_word_forward,
+            "editor_delete_to_line_start": self.editor_delete_to_line_start,
+            "editor_delete_to_line_end": self.editor_delete_to_line_end,
+            "editor_yank": self.editor_yank,
+            "editor_yank_pop": self.editor_yank_pop,
+            "editor_undo": self.editor_undo,
             "completion_next": self.completion_next,
             "completion_previous": self.completion_previous,
             "thinking_cycle": self.thinking_cycle,
@@ -695,6 +737,27 @@ _PI_KEYBINDING_ALIASES = {
     "tui.input.newLine": "insert_newline",
     "tui.input.submit": "submit_prompt",
     "tui.input.tab": "accept_completion",
+    "tui.editor.cursorUp": "editor_cursor_up",
+    "tui.editor.cursorDown": "editor_cursor_down",
+    "tui.editor.cursorLeft": "editor_cursor_left",
+    "tui.editor.cursorRight": "editor_cursor_right",
+    "tui.editor.cursorWordLeft": "editor_cursor_word_left",
+    "tui.editor.cursorWordRight": "editor_cursor_word_right",
+    "tui.editor.cursorLineStart": "editor_cursor_line_start",
+    "tui.editor.cursorLineEnd": "editor_cursor_line_end",
+    "tui.editor.jumpForward": "editor_jump_forward",
+    "tui.editor.jumpBackward": "editor_jump_backward",
+    "tui.editor.pageUp": "editor_page_up",
+    "tui.editor.pageDown": "editor_page_down",
+    "tui.editor.deleteCharBackward": "editor_delete_char_backward",
+    "tui.editor.deleteCharForward": "editor_delete_char_forward",
+    "tui.editor.deleteWordBackward": "editor_delete_word_backward",
+    "tui.editor.deleteWordForward": "editor_delete_word_forward",
+    "tui.editor.deleteToLineStart": "editor_delete_to_line_start",
+    "tui.editor.deleteToLineEnd": "editor_delete_to_line_end",
+    "tui.editor.yank": "editor_yank",
+    "tui.editor.yankPop": "editor_yank_pop",
+    "tui.editor.undo": "editor_undo",
     "tui.select.up": "select_up",
     "tui.select.down": "select_down",
     "tui.select.pageUp": "select_page_up",
@@ -745,6 +808,27 @@ _PI_KEYBINDING_ALIASES = {
     "newLine": "insert_newline",
     "submit": "submit_prompt",
     "tab": "accept_completion",
+    "cursorUp": "editor_cursor_up",
+    "cursorDown": "editor_cursor_down",
+    "cursorLeft": "editor_cursor_left",
+    "cursorRight": "editor_cursor_right",
+    "cursorWordLeft": "editor_cursor_word_left",
+    "cursorWordRight": "editor_cursor_word_right",
+    "cursorLineStart": "editor_cursor_line_start",
+    "cursorLineEnd": "editor_cursor_line_end",
+    "jumpForward": "editor_jump_forward",
+    "jumpBackward": "editor_jump_backward",
+    "pageUp": "editor_page_up",
+    "pageDown": "editor_page_down",
+    "deleteCharBackward": "editor_delete_char_backward",
+    "deleteCharForward": "editor_delete_char_forward",
+    "deleteWordBackward": "editor_delete_word_backward",
+    "deleteWordForward": "editor_delete_word_forward",
+    "deleteToLineStart": "editor_delete_to_line_start",
+    "deleteToLineEnd": "editor_delete_to_line_end",
+    "yank": "editor_yank",
+    "yankPop": "editor_yank_pop",
+    "undo": "editor_undo",
     "selectUp": "select_up",
     "selectDown": "select_down",
     "selectPageUp": "select_page_up",
@@ -796,6 +880,27 @@ _OPTIONAL_KEYBINDING_FIELDS = {
     "select_page_down",
     "select_confirm",
     "select_cancel",
+    "editor_cursor_up",
+    "editor_cursor_down",
+    "editor_cursor_left",
+    "editor_cursor_right",
+    "editor_cursor_word_left",
+    "editor_cursor_word_right",
+    "editor_cursor_line_start",
+    "editor_cursor_line_end",
+    "editor_jump_forward",
+    "editor_jump_backward",
+    "editor_page_up",
+    "editor_page_down",
+    "editor_delete_char_backward",
+    "editor_delete_char_forward",
+    "editor_delete_word_backward",
+    "editor_delete_word_forward",
+    "editor_delete_to_line_start",
+    "editor_delete_to_line_end",
+    "editor_yank",
+    "editor_yank_pop",
+    "editor_undo",
     "tree_fold_or_up",
     "tree_unfold_or_down",
     "tree_edit_label",
@@ -829,6 +934,27 @@ _SCOPED_KEYBINDING_FIELDS = {
     "select_page_down",
     "select_confirm",
     "select_cancel",
+    "editor_cursor_up",
+    "editor_cursor_down",
+    "editor_cursor_left",
+    "editor_cursor_right",
+    "editor_cursor_word_left",
+    "editor_cursor_word_right",
+    "editor_cursor_line_start",
+    "editor_cursor_line_end",
+    "editor_jump_forward",
+    "editor_jump_backward",
+    "editor_page_up",
+    "editor_page_down",
+    "editor_delete_char_backward",
+    "editor_delete_char_forward",
+    "editor_delete_word_backward",
+    "editor_delete_word_forward",
+    "editor_delete_to_line_start",
+    "editor_delete_to_line_end",
+    "editor_yank",
+    "editor_yank_pop",
+    "editor_undo",
     "tree_fold_or_up",
     "tree_unfold_or_down",
     "tree_edit_label",

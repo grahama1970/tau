@@ -856,7 +856,11 @@ class PromptInput(TextArea):
         elif _matches_configured_key(event.key, keybindings.cancel):
             event.stop()
             self._completion_target().action_cancel()
-        elif event.key == "ctrl+k" and self.text:
+        elif self.text and _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_delete_to_line_end,
+            "ctrl+k",
+        ):
             event.stop()
             event.prevent_default()
             self.action_delete_to_line_end()
@@ -924,73 +928,151 @@ class PromptInput(TextArea):
                 self._push_undo_snapshot()
                 self.text = ""
                 self.move_cursor((0, 0))
-        elif event.key == "ctrl+u":
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_delete_to_line_start,
+            "ctrl+u",
+        ):
             event.stop()
             event.prevent_default()
             self.action_delete_to_line_start()
-        elif event.key in {"ctrl+w", "alt+backspace"}:
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_delete_word_backward,
+            "ctrl+w,alt+backspace",
+        ):
             event.stop()
             event.prevent_default()
             self.action_delete_word_backward()
-        elif event.key in {"alt+d", "alt+delete"}:
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_delete_word_forward,
+            "alt+d,alt+delete",
+        ):
             event.stop()
             event.prevent_default()
             self.action_delete_word_forward()
-        elif event.key == "ctrl+k" and not _matches_configured_key(
-            event.key, keybindings.command_palette
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_delete_to_line_end,
+            "ctrl+k",
         ):
             event.stop()
             event.prevent_default()
             self.action_delete_to_line_end()
-        elif event.key == "delete" or (event.key == "ctrl+d" and self.text):
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_delete_char_backward,
+            "backspace",
+        ):
+            event.stop()
+            event.prevent_default()
+            self.action_delete_left()
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_delete_char_forward,
+            "delete,ctrl+d",
+        ) and (event.key != "ctrl+d" or self.text):
             event.stop()
             event.prevent_default()
             self.action_delete_character_forward()
-        elif event.key == "ctrl+y":
+        elif _matches_configured_or_default_key(event.key, keybindings.editor_yank, "ctrl+y"):
             event.stop()
             event.prevent_default()
             self.action_yank_kill_ring()
-        elif event.key == "alt+y":
+        elif _matches_configured_or_default_key(event.key, keybindings.editor_yank_pop, "alt+y"):
             event.stop()
             event.prevent_default()
             self.action_yank_pop_kill_ring()
-        elif event.key == "ctrl+a":
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_cursor_line_start,
+            "home,ctrl+a",
+        ):
             event.stop()
             event.prevent_default()
             self.action_move_to_line_start()
-        elif event.key == "ctrl+e":
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_cursor_line_end,
+            "end,ctrl+e",
+        ):
             event.stop()
             event.prevent_default()
             self.action_move_to_line_end()
-        elif event.key == "ctrl+b":
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_cursor_left,
+            "left,ctrl+b",
+        ):
             event.stop()
             event.prevent_default()
             self._last_prompt_edit = None
             self._last_yank_range = None
             self.action_cursor_left()
-        elif event.key == "ctrl+f":
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_cursor_right,
+            "right,ctrl+f",
+        ):
             event.stop()
             event.prevent_default()
             self._last_prompt_edit = None
             self._last_yank_range = None
             self.action_cursor_right()
-        elif event.key in {"alt+b", "ctrl+left", "alt+left"}:
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_cursor_word_left,
+            "alt+left,ctrl+left,alt+b",
+        ):
             event.stop()
             event.prevent_default()
             self.action_move_word_backward()
-        elif event.key in {"alt+f", "ctrl+right", "alt+right"}:
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_cursor_word_right,
+            "alt+right,ctrl+right,alt+f",
+        ):
             event.stop()
             event.prevent_default()
             self.action_move_word_forward()
-        elif event.key in {"ctrl+-", "ctrl+minus"}:
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_undo,
+            "ctrl+-,ctrl+minus",
+        ):
             event.stop()
             event.prevent_default()
             self.action_undo_prompt_edit()
-        elif event.key == "ctrl+]":
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_page_up,
+            "pageup",
+        ):
+            event.stop()
+            event.prevent_default()
+            self.action_cursor_page_up()
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_page_down,
+            "pagedown",
+        ):
+            event.stop()
+            event.prevent_default()
+            self.action_cursor_page_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_jump_forward,
+            "ctrl+]",
+        ):
             event.stop()
             event.prevent_default()
             self.action_start_jump_forward()
-        elif event.key == "ctrl+alt+]":
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_jump_backward,
+            "ctrl+alt+]",
+        ):
             event.stop()
             event.prevent_default()
             self.action_start_jump_backward()
@@ -1003,6 +1085,22 @@ class PromptInput(TextArea):
         elif _matches_configured_key(event.key, keybindings.completion_previous):
             event.stop()
             self.action_completion_previous()
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_cursor_down,
+            "down",
+        ):
+            event.stop()
+            event.prevent_default()
+            self.action_cursor_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.editor_cursor_up,
+            "up",
+        ):
+            event.stop()
+            event.prevent_default()
+            self.action_cursor_up()
         elif _matches_configured_key(event.key, keybindings.quit):
             event.stop()
             await self.action_quit()

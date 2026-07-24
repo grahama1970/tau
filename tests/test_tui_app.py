@@ -3141,6 +3141,54 @@ async def test_prompt_jump_trigger_twice_cancels_jump_mode() -> None:
 
 
 @pytest.mark.anyio
+async def test_prompt_uses_configured_pi_editor_keybindings() -> None:
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(
+                editor_cursor_word_left="f5",
+                editor_delete_to_line_start="f6",
+                editor_yank="f7",
+                editor_undo="f8",
+                editor_jump_forward="f9",
+            ),
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "alpha beta gamma"
+        prompt.cursor_position = len(prompt.value)
+
+        await pilot.press("f5")
+        await pilot.press("f6")
+        await pilot.pause()
+
+        assert prompt.value == "gamma"
+        assert prompt.cursor_location == (0, 0)
+
+        await pilot.press("f7")
+        await pilot.pause()
+
+        assert prompt.value == "alpha beta gamma"
+        assert prompt.cursor_location == (0, len("alpha beta "))
+
+        await pilot.press("f8")
+        await pilot.pause()
+
+        assert prompt.value == "gamma"
+        assert prompt.cursor_location == (0, 0)
+
+        prompt.value = "alpha beta gamma"
+        prompt.cursor_position = 0
+        await pilot.press("f9")
+        await pilot.press("b")
+        await pilot.pause()
+
+        assert prompt.cursor_location == (0, len("alpha "))
+
+
+@pytest.mark.anyio
 async def test_tui_app_submits_multiline_prompt_with_enter() -> None:
     session = FakeSession(
         events=[
