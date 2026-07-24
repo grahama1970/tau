@@ -116,6 +116,7 @@ class CommandResult:
     trust_picker_requested: bool = False
     theme_picker_requested: bool = False
     workflow_picker_requested: bool = False
+    tools_picker_requested: bool = False
     thinking_level: str | None = None
     theme: str | None = None
     message: str | None = None
@@ -318,6 +319,15 @@ def create_default_command_registry() -> CommandRegistry:
             description="List packaged canonical Tau workflows and launch commands.",
             handler=_workflows_command,
             search_terms=("canonical", "dag", "viewer", "launch", "progress"),
+        )
+    )
+    registry.register(
+        SlashCommand(
+            name="tools",
+            usage="/tools",
+            description="Browse tools available to the active session.",
+            handler=_tools_command,
+            search_terms=("capabilities", "reference"),
         )
     )
     registry.register(
@@ -668,6 +678,12 @@ def _resources_command(context: CommandContext) -> CommandResult:
     else:
         lines.append("Resource diagnostics: none")
     return CommandResult(handled=True, message="\n".join(lines))
+
+
+def _tools_command(context: CommandContext) -> CommandResult:
+    if context.args:
+        return CommandResult(handled=True, message="Usage: /tools")
+    return CommandResult(handled=True, tools_picker_requested=True)
 
 
 def _reload_command(context: CommandContext) -> CommandResult:

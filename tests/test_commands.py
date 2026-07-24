@@ -117,6 +117,7 @@ def test_registered_commands_are_pi_aligned(tmp_path: Path) -> None:
         "share",
         "skill",
         "theme",
+        "tools",
         "tree",
         "trust",
         "workflows",
@@ -451,6 +452,22 @@ def test_scoped_models_command_requests_scoped_picker(tmp_path: Path) -> None:
     assert dashed_result.scoped_models_picker_requested is True
     assert pi_style_result.scoped_models_picker_requested is True
     assert session.provider_reload_called is True
+
+
+def test_tools_command_requests_tools_picker(tmp_path: Path) -> None:
+    result = create_default_command_registry().execute(FakeSession(tmp_path), "/tools")
+
+    assert result.handled is True
+    assert result.tools_picker_requested is True
+    assert result.message is None
+
+
+def test_tools_command_rejects_arguments(tmp_path: Path) -> None:
+    result = create_default_command_registry().execute(FakeSession(tmp_path), "/tools read")
+
+    assert result.handled is True
+    assert result.tools_picker_requested is False
+    assert result.message == "Usage: /tools"
 
 
 def test_model_command_rejects_unknown_model(tmp_path: Path) -> None:

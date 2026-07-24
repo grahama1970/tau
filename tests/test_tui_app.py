@@ -69,6 +69,7 @@ from tau_coding.tui.app import (
     SettingsPickerScreen,
     TauTuiApp,
     ThemePickerScreen,
+    ToolsReferenceScreen,
     TreeLabelInputScreen,
     TreePickerScreen,
     TrustPickerScreen,
@@ -286,7 +287,7 @@ class FakeSession:
             return CommandResult(handled=True, theme_picker_requested=True)
         if text.startswith("/theme "):
             return CommandResult(handled=True, theme=text.removeprefix("/theme "))
-        if text == "/workflows" or text.startswith("/workflows "):
+        if text == "/workflows" or text.startswith("/workflows ") or text.startswith("/tools"):
             return create_default_command_registry().execute(self, text)
         if text.startswith("/name "):
             return CommandResult(
@@ -6880,6 +6881,66 @@ async def test_tui_app_resources_command_uses_command_output_modal() -> None:
         assert "- /review (.agents/prompts/review.md)" in app.screen.message
         assert "Tools:" in app.screen.message
         assert "- read" in app.screen.message
+
+
+@pytest.mark.anyio
+async def test_tui_app_tools_command_opens_searchable_tools_reference() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tools"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ToolsReferenceScreen)
+        search = app.screen.query_one("#tools-reference-search", Input)
+        assert app.screen.focused is search
+        tool_list = app.screen.query_one("#tools-reference-list", ListView)
+        assert tool_list.index == 0
+        labels = [str(item.query_one(Label).render()) for item in tool_list.children]
+        assert any(label.startswith("read ") for label in labels)
+
+
+@pytest.mark.anyio
+async def test_tui_app_tools_reference_search_filters_tools() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tools"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ToolsReferenceScreen)
+        app.screen.query_one("#tools-reference-search", Input).value = "bash"
+        await pilot.pause()
+
+        tool_list = app.screen.query_one("#tools-reference-list", ListView)
+        labels = [str(item.query_one(Label).render()) for item in tool_list.children]
+        assert len(labels) == 1
+        assert labels[0].startswith("bash ")
+
+
+@pytest.mark.anyio
+async def test_tui_app_tools_reference_opens_selected_description() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tools"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ToolsReferenceScreen)
+        app.screen.query_one("#tools-reference-search", Input).value = "bash"
+        await pilot.pause()
+        app.screen.action_open_selected()
+        await pilot.pause()
+
+        assert isinstance(app.screen, CommandOutputScreen)
+        assert app.screen.title_text == "bash - Built in"
+        assert "bash command" in app.screen.message.lower()
 
 
 @pytest.mark.anyio
