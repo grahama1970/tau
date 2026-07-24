@@ -2891,7 +2891,11 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         ):
             event.stop()
             self.action_cycle_tree_filter_backward()
-        elif event.key == "ctrl+x":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.copy_last_message,
+            "ctrl+x",
+        ):
             event.stop()
             self.action_copy_selected_tree_entry()
         elif _matches_configured_or_default_key(
@@ -3242,9 +3246,10 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         tool_call_state = "shown" if self.show_tool_calls else "hidden"
         filter_label = "default" if self.filter_mode == "default" else self.filter_mode
         label_time_state = "on" if self.show_label_timestamps else "off"
+        copy_key = _key_hint_with_default(self.keybindings.copy_last_message, "ctrl+x")
         return (
             "Type filters - Enter branches - S summarizes - C custom summary - "
-            f"Ctrl+X copy - Shift+L label - Shift+T label time ({label_time_state}) - "
+            f"{copy_key} copy - Shift+L label - Shift+T label time ({label_time_state}) - "
             "Ctrl+Left/Right fold - "
             f"Ctrl+T no-tools ({tool_call_state}) - Ctrl+O/Shift+Ctrl+O filter {filter_label} - "
             "Escape clears/closes"

@@ -6496,6 +6496,42 @@ async def test_tui_app_tree_picker_search_matches_labels_and_backspace() -> None
 
 
 @pytest.mark.anyio
+async def test_tui_app_tree_picker_uses_configured_copy_shortcut(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    session = FakeSession()
+    app = TauTuiApp(
+        session,
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(copy_last_message="f8"),
+        ),
+    )
+    copied: list[str] = []
+    notifications: list[tuple[str, str | None]] = []
+    monkeypatch.setattr(app, "copy_to_clipboard", copied.append)
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        notifications.append((message, kwargs.get("severity")))
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        assert "F8 copy" in str(app.screen.query_one("#tree-picker-help", Static).render())
+        await pilot.press("up")
+        await pilot.press("f8")
+        await pilot.pause()
+
+    assert copied == ["Left"]
+    assert notifications == [("Copied selected tree entry to clipboard.", None)]
+
+
+@pytest.mark.anyio
 async def test_tui_app_tree_picker_copies_selected_entry(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
