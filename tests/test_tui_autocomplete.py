@@ -107,6 +107,33 @@ def test_command_completion_renders_argument_hints_without_inserting_them() -> N
     assert "/model <provider/model>" in rendered
 
 
+def test_prompt_template_completion_renders_argument_hint_without_inserting_it() -> None:
+    state = build_completion_state(
+        "/ex",
+        command_registry=create_default_command_registry(),
+        skills=(),
+        prompt_templates=(
+            PromptTemplate(
+                name="explain",
+                path=Path("explain.md"),
+                content="Explain {{ arguments }}.",
+                description="Explain a topic.",
+                argument_hint="<topic>",
+            ),
+        ),
+    )
+
+    item = next(item for item in state.items if item.display == "/explain")
+    assert item.argument_hint == "<topic>"
+    assert item.apply("/ex") == "/explain"
+
+    console = Console(width=100, record=True)
+    console.print(render_completion_suggestions(state))
+    rendered = console.export_text()
+    assert "/explain <topic>" in rendered
+    assert "Explain a topic." in rendered
+
+
 def test_command_completion_matches_search_terms_with_canonical_replacement() -> None:
     clear_state = build_completion_state(
         "/cl",

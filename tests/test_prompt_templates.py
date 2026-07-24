@@ -21,7 +21,7 @@ def test_load_prompt_templates_from_markdown_files(tmp_path: Path) -> None:
     prompts_dir = tmp_path / "prompts"
     prompts_dir.mkdir()
     (prompts_dir / "review.md").write_text(
-        "---\ndescription: Review code\n---\nReview {{ topic }}.",
+        "---\ndescription: Review code\nargument-hint: \"<topic>\"\n---\nReview {{ topic }}.",
         encoding="utf-8",
     )
 
@@ -30,6 +30,7 @@ def test_load_prompt_templates_from_markdown_files(tmp_path: Path) -> None:
     assert len(templates) == 1
     assert templates[0].name == "review"
     assert templates[0].description == "Review code"
+    assert templates[0].argument_hint == "<topic>"
 
 
 def test_load_prompt_templates_includes_agents_directories(tmp_path: Path) -> None:

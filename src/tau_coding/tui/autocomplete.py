@@ -357,6 +357,7 @@ def _command_completions(
             end=token_end,
             description=template.description or "Prompt template",
             category="Custom prompts",
+            argument_hint=template.argument_hint,
         )
         for template in prompt_templates
         if template.name.lower().startswith(prefix)

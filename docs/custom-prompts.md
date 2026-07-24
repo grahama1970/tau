@@ -43,12 +43,14 @@ A prompt template is a Markdown file. It can start with frontmatter:
 ```md
 ---
 description: Short explanation shown by Tau.
+argument-hint: "<topic>"
 ---
 
 Prompt instructions go here.
 ```
 
 The `description` helps identify what the prompt is for.
+The optional `argument-hint` shows expected arguments in TUI autocomplete without inserting the hint into the prompt input.
 
 Prompt templates can also include variables:
 

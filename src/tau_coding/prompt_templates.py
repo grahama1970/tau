@@ -25,6 +25,7 @@ class PromptTemplate:
     path: Path
     content: str
     description: str | None = None
+    argument_hint: str | None = None
 
 
 def load_prompt_templates(paths: TauResourcePaths | None = None) -> list[PromptTemplate]:
@@ -193,4 +194,11 @@ def _load_prompt_template(name: str, path: Path) -> PromptTemplate:
     raw = path.read_text(encoding="utf-8")
     metadata, content = parse_markdown_resource(raw)
     description = metadata.get("description") or derive_description(content)
-    return PromptTemplate(name=name, path=path, content=content, description=description)
+    argument_hint = metadata.get("argument-hint")
+    return PromptTemplate(
+        name=name,
+        path=path,
+        content=content,
+        description=description,
+        argument_hint=argument_hint,
+    )
