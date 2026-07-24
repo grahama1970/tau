@@ -3592,15 +3592,19 @@ class LoginProviderPickerScreen(ModalScreen[str | None]):
 
     def on_key(self, event: Key) -> None:
         """Route provider picker keys to the list."""
+        search_focused = (
+            isinstance(self.focused, Input)
+            and getattr(self.focused, "id", None) == "login-provider-search"
+        )
         if (
             _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up")
-            or event.key == "k"
+            or (event.key == "k" and not search_focused)
         ):
             event.stop()
             self.action_cursor_up()
         elif (
             _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down")
-            or event.key == "j"
+            or (event.key == "j" and not search_focused)
         ):
             event.stop()
             self.action_cursor_down()
