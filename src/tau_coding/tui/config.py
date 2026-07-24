@@ -287,6 +287,7 @@ class TuiSettings:
     enable_skill_commands: bool = True
     editor_padding_x: int = DEFAULT_EDITOR_PADDING_X
     output_padding_x: int = DEFAULT_OUTPUT_PADDING_X
+    show_terminal_progress: bool = False
 
     def to_json(self) -> dict[str, Any]:
         """Serialize these settings to JSON-compatible data."""
@@ -301,6 +302,7 @@ class TuiSettings:
             "hide_thinking": self.hide_thinking,
             "keybindings": self.keybindings.to_json(),
             "output_padding_x": self.output_padding_x,
+            "show_terminal_progress": self.show_terminal_progress,
             "follow_up_mode": self.follow_up_mode,
             "steering_mode": self.steering_mode,
             "theme": self.theme,
@@ -356,6 +358,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "keybindings",
         "outputPad",
         "output_padding_x",
+        "showTerminalProgress",
+        "show_terminal_progress",
         "followUpMode",
         "follow_up_mode",
         "steeringMode",
@@ -363,6 +367,7 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "theme",
         "thinkingLevel",
         "thinking_level",
+        "terminal",
         "tree_filter_mode",
     }
     unknown_fields = set(data) - allowed_fields
@@ -372,6 +377,9 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
     keybindings_data = data.get("keybindings", {})
     if not isinstance(keybindings_data, dict):
         raise TuiConfigError("TUI keybindings must be a JSON object")
+    terminal_data = data.get("terminal", {})
+    if not isinstance(terminal_data, dict):
+        raise TuiConfigError("TUI terminal settings must be a JSON object")
     return TuiSettings(
         keybindings=_keybindings_from_json(keybindings_data),
         theme=_theme_name(data.get("theme", "tau-dark")),
@@ -411,6 +419,16 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         ),
         output_padding_x=_output_padding_x(
             data.get("output_padding_x", data.get("outputPad", DEFAULT_OUTPUT_PADDING_X))
+        ),
+        show_terminal_progress=_bool_setting(
+            data.get(
+                "show_terminal_progress",
+                data.get(
+                    "showTerminalProgress",
+                    terminal_data.get("showTerminalProgress", False),
+                ),
+            ),
+            "show_terminal_progress",
         ),
         thinking_level=_thinking_level(
             data.get("thinking_level", data.get("thinkingLevel", DEFAULT_THINKING_LEVEL))

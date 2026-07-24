@@ -132,6 +132,8 @@ SIDEBAR_MIN_HEIGHT = 24
 ACTIVITY_TICK_SECONDS = 0.15
 ACTIVITY_COLOR_FADE_STEPS = 24
 ACTIVITY_INDICATOR_HEIGHT = 3
+TERMINAL_PROGRESS_ACTIVE_SEQUENCE = "\x1b]9;4;3\x07"
+TERMINAL_PROGRESS_CLEAR_SEQUENCE = "\x1b]9;4;0;\x07"
 COMPLETION_MAX_VISIBLE_LINES = DEFAULT_AUTOCOMPLETE_MAX_VISIBLE
 AUTOCOMPLETE_MAX_VISIBLE_CHOICES = (3, 5, 7, 10, 15, 20)
 EDITOR_PADDING_X_CHOICES = (0, 1, 2, 3)
@@ -897,6 +899,7 @@ SettingsPickerKey = Literal[
     "editor_padding_x",
     "enable_skill_commands",
     "output_padding_x",
+    "show_terminal_progress",
     "theme",
     "auto_compact",
     "steering_mode",
@@ -3161,6 +3164,7 @@ class TauTuiApp(App[None]):
         self._completion_state = CompletionState()
         self._activity_frame = 0
         self._activity_timer: Timer | None = None
+        self._terminal_progress_active = False
         self._active_notification_keys: set[tuple[str, str]] = set()
         self._supports_pyperclip: bool | None = None
         self._last_empty_escape_at: float | None = None
@@ -3236,6 +3240,9 @@ class TauTuiApp(App[None]):
         if self._activity_timer is not None:
             self._activity_timer.stop()
             self._activity_timer = None
+        if self._terminal_progress_active:
+            self._terminal_progress_active = False
+            self._write_terminal_progress(active=False)
 
     def on_resize(self, event: Resize) -> None:
         """Update responsive chrome when the terminal changes size."""
@@ -3561,6 +3568,7 @@ class TauTuiApp(App[None]):
         previous_settings = self.tui_settings
         self.tui_settings = settings
         self.state.show_thinking = not settings.hide_thinking
+        self._sync_terminal_progress_indicator()
         set_auto_compact = getattr(self.session, "set_auto_compact_enabled", None)
         if callable(set_auto_compact):
             set_auto_compact(settings.auto_compact)
@@ -4754,11 +4762,31 @@ class TauTuiApp(App[None]):
             else:
                 self._activity_timer.resume()
             self._apply_activity_indicator()
+            self._sync_terminal_progress_indicator()
             return
         self._activity_frame = 0
         if self._activity_timer is not None:
             self._activity_timer.pause()
         self._apply_activity_indicator()
+        self._sync_terminal_progress_indicator()
+
+    def _sync_terminal_progress_indicator(self) -> None:
+        active = self.state.running and self.tui_settings.show_terminal_progress
+        if active == self._terminal_progress_active:
+            return
+        self._terminal_progress_active = active
+        self._write_terminal_progress(active=active)
+
+    def _write_terminal_progress(self, *, active: bool) -> None:
+        stream = getattr(self.console, "file", None)
+        if stream is None:
+            return
+        stream.write(
+            TERMINAL_PROGRESS_ACTIVE_SEQUENCE if active else TERMINAL_PROGRESS_CLEAR_SEQUENCE
+        )
+        flush = getattr(stream, "flush", None)
+        if callable(flush):
+            flush()
 
     def _tick_activity(self) -> None:
         if not self.state.running:
@@ -5664,6 +5692,11 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             value=str(settings.autocomplete_max_visible),
         ),
         SettingsPickerItem(
+            key="show_terminal_progress",
+            label="Terminal progress",
+            value="on" if settings.show_terminal_progress else "off",
+        ),
+        SettingsPickerItem(
             key="auto_copy_selection",
             label="Auto-copy selection",
             value="on" if settings.auto_copy_selection else "off",
@@ -5795,6 +5828,8 @@ def _next_tui_settings(
                 (current_index + 1) % len(OUTPUT_PADDING_X_CHOICES)
             ],
         )
+    if key == "show_terminal_progress":
+        return replace(settings, show_terminal_progress=not settings.show_terminal_progress)
     if key == "auto_copy_selection":
         return replace(settings, auto_copy_selection=not settings.auto_copy_selection)
     if key == "hide_thinking":

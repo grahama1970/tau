@@ -56,6 +56,8 @@ from tau_coding.tools import create_coding_tools
 from tau_coding.trust import ProjectTrustOption, ProjectTrustState, ProjectTrustUpdate
 from tau_coding.tui import app as tui_app
 from tau_coding.tui.app import (
+    TERMINAL_PROGRESS_ACTIVE_SEQUENCE,
+    TERMINAL_PROGRESS_CLEAR_SEQUENCE,
     CommandOutputScreen,
     LoginMethodPickerScreen,
     LoginProviderPickerScreen,
@@ -1935,6 +1937,57 @@ async def test_tui_app_shows_activity_indicator_while_running() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_emits_terminal_progress_when_enabled() -> None:
+    app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(show_terminal_progress=True))
+    emitted: list[str] = []
+
+    def capture_terminal_progress(*, active: bool) -> None:
+        emitted.append(
+            TERMINAL_PROGRESS_ACTIVE_SEQUENCE if active else TERMINAL_PROGRESS_CLEAR_SEQUENCE
+        )
+
+    app._write_terminal_progress = capture_terminal_progress  # type: ignore[method-assign]
+
+    async with app.run_test():
+        app.adapter.apply(AgentStartEvent())
+        app._refresh()
+        app._refresh()
+
+        assert emitted == [TERMINAL_PROGRESS_ACTIVE_SEQUENCE]
+
+        app.adapter.apply(AgentEndEvent())
+        app._refresh()
+
+        assert emitted == [
+            TERMINAL_PROGRESS_ACTIVE_SEQUENCE,
+            TERMINAL_PROGRESS_CLEAR_SEQUENCE,
+        ]
+
+
+@pytest.mark.anyio
+async def test_tui_app_clears_terminal_progress_when_setting_disabled_while_running() -> None:
+    app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(show_terminal_progress=True))
+    emitted: list[str] = []
+
+    def capture_terminal_progress(*, active: bool) -> None:
+        emitted.append(
+            TERMINAL_PROGRESS_ACTIVE_SEQUENCE if active else TERMINAL_PROGRESS_CLEAR_SEQUENCE
+        )
+
+    app._write_terminal_progress = capture_terminal_progress  # type: ignore[method-assign]
+
+    async with app.run_test():
+        app.adapter.apply(AgentStartEvent())
+        app._refresh()
+        app._set_tui_settings(replace(app.tui_settings, show_terminal_progress=False))
+
+        assert emitted == [
+            TERMINAL_PROGRESS_ACTIVE_SEQUENCE,
+            TERMINAL_PROGRESS_CLEAR_SEQUENCE,
+        ]
+
+
+@pytest.mark.anyio
 async def test_tui_app_applies_configured_editor_padding_on_startup() -> None:
     app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(editor_padding_x=3))
 
@@ -3642,6 +3695,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
+            "Terminal progress: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3665,6 +3719,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
+            "Terminal progress: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3688,6 +3743,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
+            "Terminal progress: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3711,6 +3767,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
+            "Terminal progress: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3733,6 +3790,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
+            "Terminal progress: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3755,6 +3813,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
+            "Terminal progress: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3778,6 +3837,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 2",
             "Output padding: 1",
             "Autocomplete max items: 7",
+            "Terminal progress: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3800,6 +3860,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 2",
             "Output padding: 0",
             "Autocomplete max items: 7",
+            "Terminal progress: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3822,6 +3883,30 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 2",
             "Output padding: 0",
             "Autocomplete max items: 10",
+            "Terminal progress: off",
+            "Auto-copy selection: off",
+            "Hide thinking: on",
+            "Thinking level: medium",
+            "Double Escape: tree",
+            "Tree filter mode: default",
+        ]
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.show_terminal_progress is True
+        assert '"show_terminal_progress": true' in tui_settings_path().read_text(encoding="utf-8")
+        assert isinstance(app.screen, SettingsPickerScreen)
+        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+            "Theme: tau-dark",
+            "Auto-compact: off",
+            "Steering mode: all",
+            "Follow-up mode: all",
+            "Block images: on",
+            "Skill commands: off",
+            "Editor padding: 2",
+            "Output padding: 0",
+            "Autocomplete max items: 10",
+            "Terminal progress: on",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3844,6 +3929,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 2",
             "Output padding: 0",
             "Autocomplete max items: 10",
+            "Terminal progress: on",
             "Auto-copy selection: on",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3881,6 +3967,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "up",
             "up",
             "up",
+            "up",
             "enter",
         )
         await pilot.pause()
@@ -3889,6 +3976,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert isinstance(app.screen, SettingsPickerScreen)
 
         await pilot.press(
+            "down",
             "down",
             "down",
             "down",

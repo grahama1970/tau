@@ -66,6 +66,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
           "tree_filter_mode": "user-only",
           "steering_mode": "all",
           "followUpMode": "all",
+          "terminal": {"showTerminalProgress": true},
           "thinkingLevel": "high"
         }
         """,
@@ -106,6 +107,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.hide_thinking is True
     assert settings.steering_mode == "all"
     assert settings.follow_up_mode == "all"
+    assert settings.show_terminal_progress is True
     assert settings.thinking_level == "high"
     assert settings.tree_filter_mode == "user-only"
     assert settings.resolved_theme == HIGH_CONTRAST_THEME
@@ -299,6 +301,23 @@ def test_tui_settings_reject_invalid_output_padding_x() -> None:
         tui_settings_from_json({"output_padding_x": "1"})
 
 
+def test_tui_settings_load_show_terminal_progress_aliases() -> None:
+    camel = tui_settings_from_json({"showTerminalProgress": True})
+    snake = tui_settings_from_json({"show_terminal_progress": True})
+    nested = tui_settings_from_json({"terminal": {"showTerminalProgress": True}})
+
+    assert camel.show_terminal_progress is True
+    assert snake.show_terminal_progress is True
+    assert nested.show_terminal_progress is True
+
+
+def test_tui_settings_reject_invalid_show_terminal_progress() -> None:
+    with pytest.raises(TuiConfigError, match="show_terminal_progress"):
+        tui_settings_from_json({"show_terminal_progress": "true"})
+    with pytest.raises(TuiConfigError, match="terminal settings"):
+        tui_settings_from_json({"terminal": "true"})
+
+
 def test_tui_settings_load_enable_skill_commands_aliases() -> None:
     camel = tui_settings_from_json({"enableSkillCommands": False})
     snake = tui_settings_from_json({"enable_skill_commands": False})
@@ -363,6 +382,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["editor_padding_x"] == 1
     assert settings.to_json()["enable_skill_commands"] is True
     assert settings.to_json()["output_padding_x"] == 1
+    assert settings.to_json()["show_terminal_progress"] is False
     assert settings.to_json()["theme"] == "high-contrast"
     assert settings.to_json()["auto_compact"] is True
     assert settings.to_json()["auto_copy_selection"] is False
