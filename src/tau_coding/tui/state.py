@@ -66,6 +66,16 @@ class LoopMonitorStatus:
     source: str = ""
 
 
+@dataclass(frozen=True, slots=True)
+class ToolImagePayload:
+    """Image metadata returned by a tool result for TUI transcript rendering."""
+
+    path: str
+    mime_type: str
+    bytes: int
+    image_base64: str
+
+
 @dataclass(slots=True)
 class ChatItem:
     """One rendered item in the TUI transcript."""
@@ -74,6 +84,7 @@ class ChatItem:
     text: str
     tool_call_id: str | None = None
     tool_result_text: str | None = None
+    tool_image: ToolImagePayload | None = None
     always_show_tool_result: bool = False
 
 
@@ -100,6 +111,7 @@ class TuiState:
         *,
         tool_call_id: str | None = None,
         tool_result_text: str | None = None,
+        tool_image: ToolImagePayload | None = None,
         always_show_tool_result: bool = False,
     ) -> None:
         """Append a transcript item."""
@@ -109,6 +121,7 @@ class TuiState:
                 text=text,
                 tool_call_id=tool_call_id,
                 tool_result_text=tool_result_text,
+                tool_image=tool_image,
                 always_show_tool_result=always_show_tool_result,
             )
         )
@@ -172,15 +185,18 @@ class TuiState:
             content=result.content,
             data=result.data,
         )
+        image = _tool_image_payload(result)
         for item in reversed(self.items):
             if item.role in {"tool", "skill"} and item.tool_call_id == result.tool_call_id:
                 item.tool_result_text = result_text
+                item.tool_image = image
                 return
         self.add_item(
             "tool",
             format_tool_result_summary(name=result.name, ok=result.ok),
             tool_call_id=result.tool_call_id,
             tool_result_text=result_text,
+            tool_image=image,
         )
 
     def toggle_tool_results(self) -> bool:
@@ -441,6 +457,30 @@ def format_tool_result_block(
     if patch:
         lines.extend(["", "Patch:", _preview_text(patch, max_lines=TOOL_PATCH_PREVIEW_LINES)])
     return "\n".join(lines)
+
+
+def _tool_image_payload(result: AgentToolResult) -> ToolImagePayload | None:
+    """Return image metadata for tool results that carry a supported image."""
+    data = result.data
+    if not result.ok or not isinstance(data, dict):
+        return None
+    image_base64 = data.get("image_base64")
+    mime_type = data.get("mime_type")
+    path = data.get("path")
+    size = data.get("bytes")
+    if (
+        isinstance(image_base64, str)
+        and isinstance(mime_type, str)
+        and isinstance(path, str)
+        and isinstance(size, int)
+    ):
+        return ToolImagePayload(
+            path=path,
+            mime_type=mime_type,
+            bytes=size,
+            image_base64=image_base64,
+        )
+    return None
 
 
 def format_terminal_command_result_block(

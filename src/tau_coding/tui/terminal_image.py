@@ -6,7 +6,7 @@ import random
 import subprocess
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any, Literal
 
 ImageProtocol = Literal["kitty", "iterm2"] | None
 
@@ -145,6 +145,11 @@ class TerminalImage:
         self._cached_width = width
         self._cached_lines = lines
         return lines
+
+    def __rich_console__(self, console: Any, options: Any) -> Any:
+        """Render terminal image lines through Rich/Textual render paths."""
+        del console
+        yield from self.render(options.max_width)
 
     def get_image_id(self) -> int | None:
         """Return the Kitty image id allocated for this image, if any."""

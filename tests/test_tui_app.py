@@ -95,7 +95,12 @@ from tau_coding.tui.config import (
     save_tui_settings,
     tui_settings_path,
 )
-from tau_coding.tui.state import ChatItem, LoopMonitorStatus, TuiState
+from tau_coding.tui.state import ChatItem, LoopMonitorStatus, ToolImagePayload, TuiState
+from tau_coding.tui.terminal_image import (
+    TerminalCapabilities,
+    reset_capabilities_cache,
+    set_capabilities,
+)
 from tau_coding.tui.widgets import (
     LeftAlignedMarkdownHeading,
     StreamingTranscriptMessageWidget,
@@ -112,6 +117,9 @@ from tau_coding.tui.widgets import (
 )
 
 ANSI_PATTERN = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+PNG_1X1_BASE64 = (
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII="
+)
 
 
 def _strip_ansi(text: str) -> str:
@@ -864,6 +872,92 @@ def test_tool_chat_items_hide_and_show_result_text() -> None:
     assert "full file contents" not in collapsed
     assert "→ read" in expanded
     assert "full file contents" in expanded
+
+
+def test_record_tool_result_preserves_image_payload_for_tui_rendering() -> None:
+    state = TuiState()
+    state.add_tool_call(ToolCall(id="call-1", name="read", arguments={"path": "image.png"}))
+
+    state.record_tool_result(
+        AgentToolResult(
+            tool_call_id="call-1",
+            name="read",
+            ok=True,
+            content="Read image file [image/png]",
+            data={
+                "path": "/workspace/image.png",
+                "mime_type": "image/png",
+                "bytes": 68,
+                "image_base64": PNG_1X1_BASE64,
+            },
+        )
+    )
+
+    assert state.items[-1].tool_result_text == "✓ read\nRead image file [image/png]"
+    assert state.items[-1].tool_image == ToolImagePayload(
+        path="/workspace/image.png",
+        mime_type="image/png",
+        bytes=68,
+        image_base64=PNG_1X1_BASE64,
+    )
+
+
+def test_tool_image_payload_is_hidden_until_tool_results_expand() -> None:
+    reset_capabilities_cache()
+    item = ChatItem(
+        role="tool",
+        text="→ read image.png",
+        tool_result_text="✓ read\nRead image file [image/png]",
+        tool_image=ToolImagePayload(
+            path="/workspace/image.png",
+            mime_type="image/png",
+            bytes=68,
+            image_base64=PNG_1X1_BASE64,
+        ),
+    )
+
+    collapsed_console = Console(record=True, width=80)
+    collapsed_console.print(render_chat_item(item, show_tool_results=False))
+    collapsed = collapsed_console.export_text()
+
+    expanded_console = Console(record=True, width=80)
+    expanded_console.print(render_chat_item(item, show_tool_results=True))
+    expanded = expanded_console.export_text()
+
+    assert "→ read image.png" in collapsed
+    assert "Read image file" not in collapsed
+    assert "[image/png]" not in collapsed
+    assert "→ read image.png" in expanded
+    assert "Read image file" in expanded
+    assert "[image/png]" in expanded
+    assert "image.png" in expanded
+    assert "1x1" in expanded
+
+
+def test_tool_image_payload_uses_kitty_sequence_when_terminal_supports_images() -> None:
+    set_capabilities(TerminalCapabilities(images="kitty", true_color=True, hyperlinks=True))
+    try:
+        item = ChatItem(
+            role="tool",
+            text="→ read image.png",
+            tool_result_text="✓ read\nRead image file [image/png]",
+            tool_image=ToolImagePayload(
+                path="/workspace/image.png",
+                mime_type="image/png",
+                bytes=68,
+                image_base64=PNG_1X1_BASE64,
+            ),
+        )
+
+        console = Console(record=True, width=80)
+        console.print(render_chat_item(item, show_tool_results=True))
+        output = console.export_text(clear=False)
+
+        assert "\x1b_G" in output
+        assert "a=T" in output
+        assert "f=100" in output
+    finally:
+        reset_capabilities_cache()
 
 
 EDIT_TOOL_RESULT_WITH_PATCH = (

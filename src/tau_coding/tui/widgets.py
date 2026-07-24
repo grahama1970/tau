@@ -37,8 +37,10 @@ from tau_coding.tui.state import (
     DEFAULT_THINKING_PLACEHOLDER_TEXT,
     ChatItem,
     LoopMonitorStatus,
+    ToolImagePayload,
     TuiState,
 )
+from tau_coding.tui.terminal_image import TerminalImage, TerminalImageOptions
 
 TAU_SIDEBAR_LOGO = "τ = 2π"
 
@@ -685,6 +687,8 @@ def _transcript_plain_body_text(
     rendered.append(invocation_text)
     rendered.append(separator)
     rendered.append(result_text, style=body_style)
+    if item.tool_image is not None:
+        return Group(rendered, Text(""), _render_tool_image(item.tool_image))
     return rendered
 
 
@@ -966,7 +970,18 @@ def _render_tool_chat_body(
         syntax_theme=syntax_theme,
         theme=theme,
     )
+    if item.tool_image is not None:
+        return Group(text, Text(""), result_body, Text(""), _render_tool_image(item.tool_image))
     return Group(text, Text(""), result_body)
+
+
+def _render_tool_image(payload: ToolImagePayload) -> TerminalImage:
+    """Return a terminal-image renderable for image tool results."""
+    return TerminalImage(
+        payload.image_base64,
+        payload.mime_type,
+        TerminalImageOptions(filename=Path(payload.path).name),
+    )
 
 
 def _render_tool_invocation(text: str, *, body_style: str, accent_style: str | None) -> Text:
