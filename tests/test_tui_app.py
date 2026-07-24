@@ -931,6 +931,24 @@ def test_tool_chat_items_hide_and_show_result_text() -> None:
     assert "full file contents" in expanded
 
 
+def test_tool_chat_result_preview_limits_wrapped_visual_lines() -> None:
+    item = ChatItem(
+        role="tool",
+        text="→ read long.txt",
+        tool_result_text=f"✓ read\n{'x' * 600}",
+    )
+
+    console = Console(record=True, width=40)
+    console.print(render_chat_item(item, show_tool_results=True))
+    output = console.export_text()
+    wrapped_content_lines = [line for line in output.splitlines() if "xxxx" in line]
+
+    assert "→ read long.txt" in output
+    assert "[Preview only:" in output
+    assert "wrapped lines" in output
+    assert len(wrapped_content_lines) <= 8
+
+
 def test_record_tool_result_preserves_image_payload_for_tui_rendering() -> None:
     state = TuiState()
     state.add_tool_call(ToolCall(id="call-1", name="read", arguments={"path": "image.png"}))

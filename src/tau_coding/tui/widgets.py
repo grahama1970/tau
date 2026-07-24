@@ -9,7 +9,7 @@ from typing import Any, ClassVar, Protocol
 from pygments.lexers import get_lexer_by_name  # type: ignore[import-untyped]
 from pygments.util import ClassNotFound  # type: ignore[import-untyped]
 from rich.align import Align
-from rich.console import Console, Group, RenderableType
+from rich.console import Console, ConsoleOptions, Group, RenderableType, RenderResult
 from rich.markdown import CodeBlock, Heading, Markdown
 from rich.padding import Padding
 from rich.rule import Rule
@@ -35,6 +35,7 @@ from tau_coding.tui.autocomplete import CompletionState
 from tau_coding.tui.config import TAU_DARK_THEME, TuiRoleStyle, TuiTheme
 from tau_coding.tui.state import (
     DEFAULT_THINKING_PLACEHOLDER_TEXT,
+    TOOL_RESULT_PREVIEW_LINES,
     ChatItem,
     LoopMonitorStatus,
     ToolImagePayload,
@@ -43,6 +44,7 @@ from tau_coding.tui.state import (
 from tau_coding.tui.terminal_image import TerminalImage, TerminalImageOptions
 
 TAU_SIDEBAR_LOGO = "τ = 2π"
+TOOL_RESULT_VISUAL_PREVIEW_LINES = TOOL_RESULT_PREVIEW_LINES + 1
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,6 +52,60 @@ class TranscriptLine:
     """Plain transcript line used by compatibility inspection helpers."""
 
     text: str
+
+
+@dataclass(frozen=True, slots=True)
+class VisualPreviewText:
+    """Width-aware text preview that limits wrapped terminal rows."""
+
+    text: str
+    max_visual_lines: int
+    style: str
+    tail: bool = False
+
+    def __rich_console__(
+        self,
+        console: Console,
+        options: ConsoleOptions,
+    ) -> RenderResult:
+        width = max(1, options.max_width)
+        wrapped_lines = Text(
+            self.text,
+            style=self.style,
+            overflow="fold",
+            no_wrap=False,
+        ).wrap(console, width, overflow="fold", no_wrap=False)
+        if len(wrapped_lines) <= self.max_visual_lines:
+            yield Text("\n").join(wrapped_lines)
+            return
+
+        if self.tail:
+            visible_lines = wrapped_lines[-self.max_visual_lines :]
+            skipped = len(wrapped_lines) - len(visible_lines)
+            parts: list[Text] = [
+                Text(
+                    "[Preview only: "
+                    f"{skipped} earlier wrapped line{'s' if skipped != 1 else ''} "
+                    "hidden from the TUI.]",
+                    style=self.style,
+                ),
+                Text(""),
+                *visible_lines,
+            ]
+        else:
+            visible_lines = wrapped_lines[: self.max_visual_lines]
+            skipped = len(wrapped_lines) - len(visible_lines)
+            parts = [
+                *visible_lines,
+                Text(""),
+                Text(
+                    "[Preview only: "
+                    f"{skipped} more wrapped line{'s' if skipped != 1 else ''} "
+                    "hidden from the TUI.]",
+                    style=self.style,
+                ),
+            ]
+        yield Text("\n").join(parts)
 
 
 class SessionSummarySource(Protocol):
@@ -714,13 +770,16 @@ def _transcript_plain_body_text(
     if patch_body is not None:
         return Group(invocation_text, Text(""), patch_body)
 
-    rendered = Text(style=body_style, overflow="fold", no_wrap=False)
-    rendered.append(invocation_text)
-    rendered.append(separator)
-    rendered.append(result_text, style=body_style)
+    rendered_result = VisualPreviewText(
+        result_text,
+        max_visual_lines=TOOL_RESULT_VISUAL_PREVIEW_LINES,
+        style=body_style,
+    )
     if item.tool_image is not None:
         return Group(
-            rendered,
+            invocation_text,
+            Text(""),
+            rendered_result,
             Text(""),
             _render_tool_image(
                 item.tool_image,
@@ -728,7 +787,7 @@ def _transcript_plain_body_text(
                 image_width_cells=image_width_cells,
             ),
         )
-    return rendered
+    return Group(invocation_text, Text(""), rendered_result)
 
 
 def _render_transcript_tool_invocation(
@@ -1011,6 +1070,17 @@ def _render_tool_chat_body(
         syntax_theme=syntax_theme,
         theme=theme,
     )
+    if _render_patch_body(
+        item.tool_result_text,
+        body_style=body_style,
+        syntax_theme=syntax_theme,
+        code_block_background=theme.markdown_code_block_background,
+    ) is None:
+        result_body = VisualPreviewText(
+            item.tool_result_text,
+            max_visual_lines=TOOL_RESULT_VISUAL_PREVIEW_LINES,
+            style=body_style,
+        )
     if item.tool_image is not None:
         return Group(
             text,
