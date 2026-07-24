@@ -4998,6 +4998,37 @@ async def test_tui_app_help_uses_modal_instead_of_transcript() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(
+                command_palette="ctrl+j",
+                session_picker="f6",
+                queue_follow_up="f5",
+                copy_last_message="ctrl+y",
+                session_tree="f2",
+            )
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/hotkeys"
+        await pilot.press("enter")
+
+        assert isinstance(app.screen, CommandOutputScreen)
+        assert app.state.items == []
+        assert app.screen.title_text == "/hotkeys"
+        assert "Keyboard Shortcuts" in app.screen.message
+        assert "Ctrl+J: open slash-command completions" in app.screen.message
+        assert "F6: open session picker" in app.screen.message
+        assert "F5: queue follow-up while running" in app.screen.message
+        assert "Ctrl+Y: copy last assistant message" in app.screen.message
+        assert "F2: open session tree" in app.screen.message
+
+
+@pytest.mark.anyio
 async def test_tui_app_changelog_uses_command_output_modal() -> None:
     app = TauTuiApp(FakeSession())
 

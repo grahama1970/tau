@@ -3345,7 +3345,10 @@ class TauTuiApp(App[None]):
             )
             return
 
-        command = self.session.handle_command(text)
+        command = _local_tui_command(
+            text,
+            self.tui_settings.keybindings,
+        ) or self.session.handle_command(text)
         if command.handled:
             if command.clear_requested:
                 self.state.clear()
@@ -6120,6 +6123,68 @@ def _prompt_footer_mode(
 
 def _key_hint(key: str) -> str:
     return "+".join(part.capitalize() for part in key.split("+"))
+
+
+def _local_tui_command(text: str, keybindings: TuiKeybindings) -> CommandResult | None:
+    if text.strip().casefold() != "/hotkeys":
+        return None
+    return CommandResult(
+        handled=True,
+        message=_render_tui_hotkeys_message(keybindings),
+    )
+
+
+def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
+    lines = [
+        "Keyboard Shortcuts",
+        "",
+        "Navigation:",
+        "- Up/Down/Left/Right: move cursor or browse prompt history",
+        f"- {_key_hint(keybindings.completion_previous)}/"
+        f"{_key_hint(keybindings.completion_next)}: move through completions",
+        "- Home/End: move to line start/end",
+        "",
+        "Editing:",
+        "- Enter: submit prompt",
+        "- Shift+Enter: insert newline",
+        f"- {_key_hint(keybindings.accept_completion)}: accept autocomplete or path completion",
+        f"- {_key_hint(keybindings.external_editor)}: edit prompt in external editor",
+        f"- {_key_hint(keybindings.paste_clipboard)}: paste clipboard text or image",
+        f"- {_key_hint(keybindings.copy_message)}: clear input",
+        "",
+        "Agent:",
+        f"- {_key_hint(keybindings.cancel)}: cancel autocomplete or active run",
+        f"- {_key_hint(keybindings.queue_follow_up)}: queue follow-up while running",
+        f"- {_key_hint(keybindings.dequeue_messages)}: restore queued message",
+        f"- {_key_hint(keybindings.toggle_tool_results)}: collapse or expand tool output",
+        f"- {_key_hint(keybindings.toggle_thinking)}: toggle thinking tokens",
+        f"- {_key_hint(keybindings.thinking_cycle)}: cycle thinking level",
+        "",
+        "Sessions and models:",
+        f"- {_key_hint(keybindings.command_palette)}: open slash-command completions",
+        f"- {_key_hint(keybindings.session_picker)}: open session picker",
+        f"- {_key_hint(keybindings.model_cycle)}: cycle model forward",
+        f"- {_key_hint(keybindings.model_cycle_previous)}: cycle model backward",
+        f"- {_key_hint(keybindings.model_picker)}: open model picker",
+        f"- {_key_hint(keybindings.copy_last_message)}: copy last assistant message",
+        f"- {_key_hint(keybindings.suspend)}: suspend to background",
+        f"- {_key_hint(keybindings.quit)}: quit when the editor is empty",
+        "",
+        "Slash and shell:",
+        "- /: slash commands",
+        "- !: run bash command and add output to context",
+        "- !!: run bash command without adding output to context",
+    ]
+    optional_lines = [
+        (keybindings.session_new, "start a new session"),
+        (keybindings.session_tree, "open session tree"),
+        (keybindings.session_fork, "fork from a previous message"),
+        (keybindings.session_resume, "resume a previous session"),
+    ]
+    lines.extend(
+        f"- {_key_hint(key)}: {description}" for key, description in optional_lines if key
+    )
+    return "\n".join(lines)
 
 
 def _app_bindings(keybindings: TuiKeybindings) -> list[Binding]:
