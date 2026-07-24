@@ -1060,9 +1060,11 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
             data.get("external_editor", data.get("externalEditor")),
             "external_editor",
         ),
-        shell_path=_optional_string_setting(
-            data.get("shell_path", data.get("shellPath")),
-            "shell_path",
+        shell_path=_expand_optional_user_path(
+            _optional_string_setting(
+                data.get("shell_path", data.get("shellPath")),
+                "shell_path",
+            )
         ),
         shell_command_prefix=_optional_string_setting(
             data.get("shell_command_prefix", data.get("shellCommandPrefix")),
@@ -1094,6 +1096,12 @@ def _optional_string_setting(value: object, field_name: str) -> str | None:
         raise TuiConfigError(f"TUI setting must be a string or null: {field_name}")
     stripped = value.strip()
     return stripped or None
+
+
+def _expand_optional_user_path(value: str | None) -> str | None:
+    if value is None:
+        return None
+    return str(Path(value).expanduser())
 
 
 def _double_escape_action(value: object) -> DoubleEscapeAction:
