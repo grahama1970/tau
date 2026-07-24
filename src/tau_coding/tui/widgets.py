@@ -1029,7 +1029,10 @@ def render_compact_session_info(
     theme: TuiTheme = TAU_DARK_THEME,
 ) -> RenderableType:
     """Render the session facts below the prompt."""
-    path_label = f"{_short_path(session.cwd)} ({_git_branch(session.cwd)})"
+    path_label = _short_path(session.cwd)
+    git_branch = _git_branch(session.cwd)
+    if git_branch:
+        path_label = f"{path_label} ({git_branch})"
     title = _named_session_title(session.session_title)
     if title is not None:
         path_label = f"{path_label} • {title}"
@@ -1660,7 +1663,7 @@ def _loop_monitor_evidence_label(status: LoopMonitorStatus) -> str:
     return " ".join(parts)
 
 
-def _git_branch(cwd: Path) -> str:
+def _git_branch(cwd: Path) -> str | None:
     try:
         result = run(
             ["git", "-C", str(cwd), "branch", "--show-current"],
@@ -1670,13 +1673,15 @@ def _git_branch(cwd: Path) -> str:
             timeout=0.5,
         )
     except OSError:
-        return "--"
+        return None
     except TimeoutExpired:
-        return "--"
+        return None
+    if result.returncode != 0:
+        return None
     branch = result.stdout.strip()
     if branch:
         return branch
-    return "--"
+    return None
 
 
 def _has_unclosed_fence(text: str) -> bool:
