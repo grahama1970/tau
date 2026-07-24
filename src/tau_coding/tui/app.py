@@ -5524,6 +5524,7 @@ class TauTuiApp(App[None]):
                 show_images=self.tui_settings.show_images,
                 image_width_cells=self.tui_settings.image_width_cells,
                 output_padding_x=self.tui_settings.output_padding_x,
+                tool_results_key_hint=_key_hint(self.tui_settings.keybindings.toggle_tool_results),
             )
             self._refresh_chrome()
             return
@@ -5541,6 +5542,9 @@ class TauTuiApp(App[None]):
                     show_images=self.tui_settings.show_images,
                     image_width_cells=self.tui_settings.image_width_cells,
                     output_padding_x=self.tui_settings.output_padding_x,
+                    tool_results_key_hint=_key_hint(
+                        self.tui_settings.keybindings.toggle_tool_results
+                    ),
                 )
             self._refresh_chrome()
             return
@@ -6644,6 +6648,7 @@ class TauTuiApp(App[None]):
             image_width_cells=self.tui_settings.image_width_cells,
             clear_on_shrink=self.tui_settings.clear_on_shrink,
             output_padding_x=self.tui_settings.output_padding_x,
+            tool_results_key_hint=_key_hint(self.tui_settings.keybindings.toggle_tool_results),
         )
 
     def _refresh_chrome(self, *, theme: TuiTheme | None = None) -> None:

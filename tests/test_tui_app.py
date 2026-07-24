@@ -1233,6 +1233,60 @@ def test_compaction_summary_chat_items_expand_with_tool_results_toggle() -> None
     assert "Detailed compaction text" in expanded
 
 
+def test_compact_summary_hints_use_configured_tool_results_key() -> None:
+    item = ChatItem(
+        role="branch_summary",
+        text="Branch summary (Ctrl+O to expand)",
+        tool_result_text="Detailed summary text",
+    )
+
+    console = Console(record=True, width=80)
+    console.print(
+        render_chat_item(
+            item,
+            show_tool_results=False,
+            tool_results_key_hint="F8",
+        )
+    )
+
+    output = console.export_text()
+    assert "Branch summary (F8 to expand)" in output
+    assert "Ctrl+O to expand" not in output
+    assert (
+        transcript_item_selection_text(
+            item,
+            show_tool_results=False,
+            tool_results_key_hint="F8",
+        )
+        == "Branch summary (F8 to expand)"
+    )
+
+
+@pytest.mark.anyio
+async def test_tui_app_compact_summary_hints_use_configured_tool_results_key() -> None:
+    app = TauTuiApp(
+        FakeSession(
+            messages=[
+                UserMessage(
+                    content=(
+                        "The following is a summary of a branch that this conversation "
+                        "came back from:\n<summary>\nImportant context.\n</summary>"
+                    )
+                )
+            ]
+        ),
+        tui_settings=TuiSettings(keybindings=TuiKeybindings(toggle_tool_results="f8")),
+    )
+
+    async with app.run_test(size=(80, 24)) as pilot:
+        await pilot.pause()
+        transcript = app.query_one("#transcript", TranscriptView)
+        rendered_lines = [line.text for line in transcript.lines]
+
+    assert "Branch summary (F8 to expand)" in rendered_lines
+    assert "Branch summary (Ctrl+O to expand)" not in rendered_lines
+
+
 def test_tui_state_compacts_branch_summary_messages() -> None:
     state = tui_app.TuiState()
 

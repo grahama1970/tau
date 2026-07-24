@@ -288,15 +288,18 @@ class TranscriptMessageWidget(Horizontal):
         show_images: bool = True,
         image_width_cells: int | None = None,
         output_padding_x: int = 1,
+        tool_results_key_hint: str = "Ctrl+O",
     ) -> None:
         self.item = item
         self.selection_text = transcript_item_selection_text(
             item,
             show_tool_results=show_tool_results,
+            tool_results_key_hint=tool_results_key_hint,
         )
         self._markdown_text = _transcript_item_markdown(
             item,
             show_tool_results=show_tool_results,
+            tool_results_key_hint=tool_results_key_hint,
         )
         self._theme = theme
         self._show_images = show_images
@@ -427,6 +430,7 @@ class TranscriptView(VerticalScroll):
         self._active_assistant_widget: StreamingTranscriptMessageWidget | None = None
         self._active_thinking_widget: StreamingTranscriptMessageWidget | None = None
         self._hidden_thinking_placeholder_visible = False
+        self.tool_results_key_hint = "Ctrl+O"
 
     def on_mount(self) -> None:
         """Follow new transcript content until the user scrolls away."""
@@ -450,6 +454,7 @@ class TranscriptView(VerticalScroll):
         image_width_cells: int | None = None,
         clear_on_shrink: bool | None = None,
         output_padding_x: int | None = None,
+        tool_results_key_hint: str | None = None,
     ) -> None:
         """Redraw the transcript from display state."""
         self._render_state = state
@@ -460,6 +465,8 @@ class TranscriptView(VerticalScroll):
             self.clear_on_shrink = clear_on_shrink
         if output_padding_x is not None:
             self.output_padding_x = output_padding_x
+        if tool_results_key_hint is not None:
+            self.tool_results_key_hint = tool_results_key_hint
         self._redraw(scroll_end=self._should_follow_output)
 
     def on_resize(self, event: Resize) -> None:
@@ -512,6 +519,7 @@ class TranscriptView(VerticalScroll):
                             show_images=self._show_images,
                             image_width_cells=self._image_width_cells,
                             output_padding_x=self.output_padding_x,
+                            tool_results_key_hint=self.tool_results_key_hint,
                         )
                     )
                     hidden_thinking_placeholder = True
@@ -525,6 +533,7 @@ class TranscriptView(VerticalScroll):
                     show_images=self._show_images,
                     image_width_cells=self._image_width_cells,
                     output_padding_x=self.output_padding_x,
+                    tool_results_key_hint=self.tool_results_key_hint,
                 )
             )
         if state.assistant_buffer:
@@ -536,6 +545,7 @@ class TranscriptView(VerticalScroll):
                     show_images=self._show_images,
                     image_width_cells=self._image_width_cells,
                     output_padding_x=self.output_padding_x,
+                    tool_results_key_hint=self.tool_results_key_hint,
                 )
             )
         self.refresh(layout=True)
@@ -554,12 +564,15 @@ class TranscriptView(VerticalScroll):
         show_images: bool = True,
         image_width_cells: int | None = None,
         output_padding_x: int | None = None,
+        tool_results_key_hint: str | None = None,
         scroll_end: bool = False,
     ) -> TranscriptMessageWidget | StreamingTranscriptMessageWidget:
         """Append one transcript item without rebuilding previous blocks."""
         self._render_theme = theme
         if output_padding_x is not None:
             self.output_padding_x = output_padding_x
+        if tool_results_key_hint is not None:
+            self.tool_results_key_hint = tool_results_key_hint
         widget = _transcript_widget(
             item,
             theme=theme,
@@ -567,6 +580,7 @@ class TranscriptView(VerticalScroll):
             show_images=show_images,
             image_width_cells=image_width_cells,
             output_padding_x=self.output_padding_x,
+            tool_results_key_hint=self.tool_results_key_hint,
         )
         await self.mount(widget)
         self._active_assistant_widget = None
@@ -700,6 +714,7 @@ def _transcript_widget(
     show_images: bool = True,
     image_width_cells: int | None = None,
     output_padding_x: int = 1,
+    tool_results_key_hint: str = "Ctrl+O",
 ) -> TranscriptMessageWidget | StreamingTranscriptMessageWidget:
     if item.role in {"assistant", "thinking"}:
         return StreamingTranscriptMessageWidget(
@@ -714,6 +729,7 @@ def _transcript_widget(
         show_images=show_images,
         image_width_cells=image_width_cells,
         output_padding_x=output_padding_x,
+        tool_results_key_hint=tool_results_key_hint,
     )
 
 
@@ -721,9 +737,14 @@ def transcript_item_selection_text(
     item: ChatItem,
     *,
     show_tool_results: bool = False,
+    tool_results_key_hint: str = "Ctrl+O",
 ) -> str:
     """Return the plain text represented by a selectable transcript item."""
-    return _visible_chat_text(item, show_tool_results=show_tool_results)
+    return _visible_chat_text(
+        item,
+        show_tool_results=show_tool_results,
+        tool_results_key_hint=tool_results_key_hint,
+    )
 
 
 def _split_rich_style_colors(style: str) -> tuple[str | None, str | None]:
@@ -810,9 +831,14 @@ def _transcript_item_markdown(
     item: ChatItem,
     *,
     show_tool_results: bool,
+    tool_results_key_hint: str = "Ctrl+O",
 ) -> str:
     """Return Markdown for a transcript item using native Textual Markdown blocks."""
-    visible_text = _visible_chat_text(item, show_tool_results=show_tool_results)
+    visible_text = _visible_chat_text(
+        item,
+        show_tool_results=show_tool_results,
+        tool_results_key_hint=tool_results_key_hint,
+    )
     if item.role in {"assistant", "thinking", "status", "branch_summary", "compaction_summary"}:
         return visible_text
     return _plain_markdown(visible_text)
@@ -978,6 +1004,7 @@ def render_chat_item(
     show_tool_results: bool = False,
     show_images: bool = True,
     image_width_cells: int | None = None,
+    tool_results_key_hint: str = "Ctrl+O",
 ) -> RenderableType:
     """Render a chat item as a standalone Toad-inspired transcript block."""
     role_style = _chat_item_role_style(item, theme)
@@ -994,7 +1021,11 @@ def render_chat_item(
         )
         if item.role == "tool"
         else _render_chat_body(
-            _visible_chat_text(item, show_tool_results=show_tool_results),
+            _visible_chat_text(
+                item,
+                show_tool_results=show_tool_results,
+                tool_results_key_hint=tool_results_key_hint,
+            ),
             role=item.role,
             body_style=role_style.body,
             syntax_theme=theme.syntax_theme,
@@ -1135,18 +1166,30 @@ def _split_tool_invocation(text: str) -> tuple[str, str, str]:
     return "", name, f"{separator}{remainder}" if separator else ""
 
 
-def _visible_chat_text(item: ChatItem, *, show_tool_results: bool) -> str:
+def _visible_chat_text(
+    item: ChatItem,
+    *,
+    show_tool_results: bool,
+    tool_results_key_hint: str = "Ctrl+O",
+) -> str:
     if item.role == "branch_summary":
         if show_tool_results and item.tool_result_text:
             return f"**Branch Summary**\n\n{item.tool_result_text}"
-        return item.text
+        return _with_tool_results_key_hint(item.text, tool_results_key_hint)
     if item.role == "compaction_summary":
         if show_tool_results and item.tool_result_text:
             return f"**Compaction Summary**\n\n{item.tool_result_text}"
-        return item.text
+        return _with_tool_results_key_hint(item.text, tool_results_key_hint)
     if item.role not in {"tool", "skill"} or not show_tool_results or not item.tool_result_text:
-        return item.text
+        return _with_tool_results_key_hint(item.text, tool_results_key_hint)
     return f"{item.text}\n\n{item.tool_result_text}"
+
+
+def _with_tool_results_key_hint(text: str, key_hint: str) -> str:
+    key_hint = key_hint.strip() or "Ctrl+O"
+    if key_hint == "Ctrl+O":
+        return text
+    return text.replace("(Ctrl+O to expand)", f"({key_hint} to expand)")
 
 
 def _render_chat_body(
