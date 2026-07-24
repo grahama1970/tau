@@ -886,6 +886,7 @@ class TreePickerResult:
 
 SettingsPickerKey = Literal[
     "theme",
+    "auto_compact",
     "auto_copy_selection",
     "hide_thinking",
     "double_escape_action",
@@ -3510,6 +3511,7 @@ class TauTuiApp(App[None]):
             TuiSettings(
                 keybindings=self.tui_settings.keybindings,
                 theme=theme,
+                auto_compact=self.tui_settings.auto_compact,
                 auto_copy_selection=self.tui_settings.auto_copy_selection,
                 double_escape_action=self.tui_settings.double_escape_action,
                 hide_thinking=self.tui_settings.hide_thinking,
@@ -3520,6 +3522,9 @@ class TauTuiApp(App[None]):
     def _set_tui_settings(self, settings: TuiSettings) -> None:
         self.tui_settings = settings
         self.state.show_thinking = not settings.hide_thinking
+        set_auto_compact = getattr(self.session, "set_auto_compact_enabled", None)
+        if callable(set_auto_compact):
+            set_auto_compact(settings.auto_compact)
         save_tui_settings(self.tui_settings)
         self._bindings = BindingsMap(_app_bindings(self.tui_settings.keybindings))
         with suppress(NoMatches):
@@ -5560,6 +5565,11 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             value=settings.theme,
         ),
         SettingsPickerItem(
+            key="auto_compact",
+            label="Auto-compact",
+            value="on" if settings.auto_compact else "off",
+        ),
+        SettingsPickerItem(
             key="auto_copy_selection",
             label="Auto-copy selection",
             value="on" if settings.auto_copy_selection else "off",
@@ -5634,6 +5644,17 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
         return TuiSettings(
             keybindings=settings.keybindings,
             theme=next_theme,
+            auto_compact=settings.auto_compact,
+            auto_copy_selection=settings.auto_copy_selection,
+            double_escape_action=settings.double_escape_action,
+            hide_thinking=settings.hide_thinking,
+            tree_filter_mode=settings.tree_filter_mode,
+        )
+    if key == "auto_compact":
+        return TuiSettings(
+            keybindings=settings.keybindings,
+            theme=settings.theme,
+            auto_compact=not settings.auto_compact,
             auto_copy_selection=settings.auto_copy_selection,
             double_escape_action=settings.double_escape_action,
             hide_thinking=settings.hide_thinking,
@@ -5643,6 +5664,7 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
         return TuiSettings(
             keybindings=settings.keybindings,
             theme=settings.theme,
+            auto_compact=settings.auto_compact,
             auto_copy_selection=not settings.auto_copy_selection,
             double_escape_action=settings.double_escape_action,
             hide_thinking=settings.hide_thinking,
@@ -5652,6 +5674,7 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
         return TuiSettings(
             keybindings=settings.keybindings,
             theme=settings.theme,
+            auto_compact=settings.auto_compact,
             auto_copy_selection=settings.auto_copy_selection,
             double_escape_action=settings.double_escape_action,
             hide_thinking=not settings.hide_thinking,
@@ -5670,6 +5693,7 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
         return TuiSettings(
             keybindings=settings.keybindings,
             theme=settings.theme,
+            auto_compact=settings.auto_compact,
             auto_copy_selection=settings.auto_copy_selection,
             double_escape_action=double_escape_actions[
                 (current_index + 1) % len(double_escape_actions)
@@ -5684,6 +5708,7 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
     return TuiSettings(
         keybindings=settings.keybindings,
         theme=settings.theme,
+        auto_compact=settings.auto_compact,
         auto_copy_selection=settings.auto_copy_selection,
         double_escape_action=settings.double_escape_action,
         hide_thinking=settings.hide_thinking,
@@ -6320,6 +6345,7 @@ async def run_tui_app(
         raise RuntimeError("--resume and --new-session cannot be used together")
 
     provider_settings = load_provider_settings()
+    tui_settings = load_tui_settings()
     manager = session_manager or SessionManager()
     record = _explicit_resume_record(
         manager,
@@ -6368,11 +6394,12 @@ async def run_tui_app(
                 provider_settings=provider_settings,
                 runtime_provider_config=runtime_provider_config,
                 auto_compact_token_threshold=auto_compact_token_threshold,
+                auto_compact_enabled=tui_settings.auto_compact,
             )
         )
         app = TauTuiApp(
             session,
-            tui_settings=load_tui_settings(),
+            tui_settings=tui_settings,
             startup_message=startup_message,
             initial_prompt=initial_prompt,
         )

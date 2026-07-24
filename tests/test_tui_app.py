@@ -150,6 +150,7 @@ class FakeSession:
             ProjectContextFile(path=str(self.cwd / "AGENTS.md"), content="Follow rules."),
         )
         self.context_token_estimate = 12034
+        self.auto_compact_enabled = True
         self.auto_compact_token_threshold = 200000
         self.context_window_tokens = 216384
         self.thinking_level = "medium"
@@ -332,6 +333,12 @@ class FakeSession:
         self.thinking_level = level
         self.state.thinking_level = level
         return f"Thinking mode: {level}"
+
+    def set_auto_compact_enabled(self, enabled: bool) -> str:
+        self.auto_compact_enabled = enabled
+        self.auto_compact_token_threshold = 200000 if enabled else None
+        state = "enabled" if enabled else "disabled"
+        return f"Auto-compact {state}."
 
     async def cycle_thinking_level(self) -> str:
         levels = self.available_thinking_levels
@@ -3527,6 +3534,22 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         settings_list = app.screen.query_one("#settings-picker-list", ListView)
         assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
             "Theme: tau-dark",
+            "Auto-compact: on",
+            "Auto-copy selection: off",
+            "Hide thinking: on",
+            "Double Escape: tree",
+            "Tree filter mode: default",
+        ]
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.auto_compact is False
+        assert app.session.auto_compact_enabled is False
+        assert '"auto_compact": false' in tui_settings_path().read_text(encoding="utf-8")
+        assert isinstance(app.screen, SettingsPickerScreen)
+        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+            "Theme: tau-dark",
+            "Auto-compact: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Double Escape: tree",
@@ -3540,6 +3563,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert isinstance(app.screen, SettingsPickerScreen)
         assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
             "Theme: tau-dark",
+            "Auto-compact: off",
             "Auto-copy selection: on",
             "Hide thinking: on",
             "Double Escape: tree",
@@ -3559,13 +3583,13 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             encoding="utf-8"
         )
 
-        await pilot.press("up", "up", "up", "enter")
+        await pilot.press("up", "up", "up", "up", "enter")
         await pilot.pause()
         assert app.tui_settings.theme == "tau-light"
         assert '"theme": "tau-light"' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
 
-        await pilot.press("down", "down", "down", "down", "enter")
+        await pilot.press("down", "down", "down", "down", "down", "enter")
         await pilot.pause()
         assert app.tui_settings.tree_filter_mode == "no-tools"
         assert '"tree_filter_mode": "no-tools"' in tui_settings_path().read_text(
@@ -6892,6 +6916,7 @@ async def test_run_tui_app_creates_new_session_by_default(
         async def load(cls, config: object) -> str:
             assert config.provider_name == "local"  # type: ignore[attr-defined]
             assert config.auto_compact_token_threshold == 1000  # type: ignore[attr-defined]
+            assert config.auto_compact_enabled is False  # type: ignore[attr-defined]
             calls.append("load")
             return "session"
 
@@ -6899,6 +6924,7 @@ async def test_run_tui_app_creates_new_session_by_default(
         def __init__(self, session: str, **kwargs: object) -> None:
             assert session == "session"
             assert isinstance(kwargs["tui_settings"], TuiSettings)
+            assert kwargs["tui_settings"].auto_compact is False
             assert kwargs["initial_prompt"] == "explain this repo"
 
         async def run_async(self) -> None:
@@ -6924,7 +6950,7 @@ async def test_run_tui_app_creates_new_session_by_default(
     )
     monkeypatch.setattr(tui_app, "CodingSession", FakeCodingSession)
     monkeypatch.setattr(tui_app, "TauTuiApp", FakeApp)
-    monkeypatch.setattr(tui_app, "load_tui_settings", lambda: TuiSettings())
+    monkeypatch.setattr(tui_app, "load_tui_settings", lambda: TuiSettings(auto_compact=False))
 
     await tui_app.run_tui_app(
         model=None,

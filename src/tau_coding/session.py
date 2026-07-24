@@ -602,6 +602,12 @@ class CodingSession:
             return self._auto_compact_token_threshold
         return auto_compaction_threshold_for_context_window(self.context_window_tokens)
 
+    def set_auto_compact_enabled(self, enabled: bool) -> str:
+        """Enable or disable automatic compaction for this running session."""
+        self._auto_compact_enabled = enabled
+        state = "enabled" if enabled else "disabled"
+        return f"Auto-compact {state}."
+
     @property
     def context_window_tokens(self) -> int:
         """Return the active model's configured context window, or Tau's fallback."""

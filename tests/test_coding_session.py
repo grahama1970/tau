@@ -2227,6 +2227,33 @@ async def test_session_auto_compacts_with_pi_style_default_threshold(
 
 
 @pytest.mark.anyio
+async def test_session_can_disable_auto_compaction_at_runtime(tmp_path: Path) -> None:
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="fake",
+            system="You are Tau.",
+            storage=storage,
+            cwd=tmp_path,
+            auto_compact_token_threshold=1,
+        )
+    )
+
+    assert session.auto_compact_token_threshold == 1
+
+    message = session.set_auto_compact_enabled(False)
+
+    assert message == "Auto-compact disabled."
+    assert session.auto_compact_token_threshold is None
+
+    message = session.set_auto_compact_enabled(True)
+
+    assert message == "Auto-compact enabled."
+    assert session.auto_compact_token_threshold == 1
+
+
+@pytest.mark.anyio
 async def test_session_compacts_and_retries_once_after_context_overflow(
     tmp_path: Path,
 ) -> None:

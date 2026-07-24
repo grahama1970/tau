@@ -263,6 +263,7 @@ class TuiSettings:
 
     keybindings: TuiKeybindings = field(default_factory=TuiKeybindings)
     theme: TuiThemeName = "tau-dark"
+    auto_compact: bool = True
     auto_copy_selection: bool = False
     double_escape_action: DoubleEscapeAction = "tree"
     tree_filter_mode: TuiTreeFilterMode = "default"
@@ -271,6 +272,7 @@ class TuiSettings:
     def to_json(self) -> dict[str, Any]:
         """Serialize these settings to JSON-compatible data."""
         return {
+            "auto_compact": self.auto_compact,
             "auto_copy_selection": self.auto_copy_selection,
             "double_escape_action": self.double_escape_action,
             "hide_thinking": self.hide_thinking,
@@ -312,6 +314,7 @@ def save_tui_settings(settings: TuiSettings, paths: TauPaths | None = None) -> P
 def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
     """Parse TUI settings from JSON-compatible data."""
     allowed_fields = {
+        "auto_compact",
         "auto_copy_selection",
         "double_escape_action",
         "hide_thinking",
@@ -329,6 +332,7 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
     return TuiSettings(
         keybindings=_keybindings_from_json(keybindings_data),
         theme=_theme_name(data.get("theme", "tau-dark")),
+        auto_compact=_bool_setting(data.get("auto_compact", True), "auto_compact"),
         auto_copy_selection=_bool_setting(
             data.get("auto_copy_selection", False),
             "auto_copy_selection",

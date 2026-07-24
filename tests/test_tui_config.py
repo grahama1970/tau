@@ -88,6 +88,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.keybindings.copy_last_message == "ctrl+x"
     assert settings.keybindings.cancel == "escape"
     assert settings.theme == "high-contrast"
+    assert settings.auto_compact is True
     assert settings.double_escape_action == "tree"
     assert settings.hide_thinking is True
     assert settings.tree_filter_mode == "user-only"
@@ -153,6 +154,13 @@ def test_tui_settings_load_auto_copy_selection() -> None:
     assert settings.to_json()["auto_copy_selection"] is True
 
 
+def test_tui_settings_load_auto_compact() -> None:
+    settings = tui_settings_from_json({"auto_compact": False})
+
+    assert settings.auto_compact is False
+    assert settings.to_json()["auto_compact"] is False
+
+
 def test_tui_settings_load_double_escape_action() -> None:
     settings = tui_settings_from_json({"double_escape_action": "fork"})
 
@@ -192,6 +200,11 @@ def test_tui_settings_reject_invalid_hide_thinking() -> None:
 def test_tui_settings_reject_invalid_auto_copy_selection() -> None:
     with pytest.raises(TuiConfigError, match="auto_copy_selection"):
         tui_settings_from_json({"auto_copy_selection": "yes"})
+
+
+def test_tui_settings_reject_invalid_auto_compact() -> None:
+    with pytest.raises(TuiConfigError, match="auto_compact"):
+        tui_settings_from_json({"auto_compact": "no"})
 
 
 def test_tui_keybindings_serialize_to_json() -> None:
@@ -241,6 +254,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["keybindings"]["copy_message"] == "ctrl+b"
     assert settings.to_json()["keybindings"]["copy_last_message"] == "ctrl+x"
     assert settings.to_json()["theme"] == "high-contrast"
+    assert settings.to_json()["auto_compact"] is True
     assert settings.to_json()["auto_copy_selection"] is False
     assert settings.to_json()["double_escape_action"] == "tree"
     assert settings.to_json()["hide_thinking"] is True
