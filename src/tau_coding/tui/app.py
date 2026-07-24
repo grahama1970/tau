@@ -6,6 +6,7 @@ import os
 import re
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -1266,6 +1267,10 @@ class PromptInput(TextArea):
     def action_copy_last_message(self) -> None:
         """Copy the last assistant message."""
         self._completion_target().action_copy_last_message()
+
+    def action_suspend_process(self) -> None:
+        """Suspend the Tau process to the background."""
+        self._completion_target().action_suspend_process()
 
     async def action_clear_prompt(self) -> None:
         """Clear the current prompt."""
@@ -6595,6 +6600,19 @@ class TauTuiApp(App[None]):
             return
         self.copy_to_clipboard(text)
         self._notify("Copied last assistant message to clipboard.")
+
+    def action_suspend_process(self) -> None:
+        """Suspend Tau to the background and restore the TUI after foregrounding."""
+        if sys.platform == "win32":
+            self._notify("Suspend to background is not supported on Windows.", severity="warning")
+            return
+        try:
+            with self.suspend():
+                os.kill(0, signal.SIGTSTP)
+        except Exception as exc:  # noqa: BLE001 - surface terminal/signal failures in the TUI
+            self._notify(f"Could not suspend Tau: {exc}", severity="error")
+            return
+        self._refresh()
 
     async def _open_external_editor(self) -> None:
         prompt = self.query_one("#prompt", PromptInput)
