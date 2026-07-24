@@ -809,6 +809,9 @@ class PromptInput(TextArea):
     BINDINGS: ClassVar[list[BindingEntry]] = []
     LARGE_PASTE_CHAR_THRESHOLD: ClassVar[int] = 1000
     LARGE_PASTE_LINE_THRESHOLD: ClassVar[int] = 10
+    PASTE_MARKER_PATTERN: ClassVar[re.Pattern[str]] = re.compile(
+        r"\[paste #\d+(?: (?:\+\d+ lines|\d+ chars))?\]"
+    )
     shell_mode_style: str = ""
 
     def __init__(
@@ -893,6 +896,64 @@ class PromptInput(TextArea):
             del self._paste_markers[marker]
         if not self._paste_markers:
             self._paste_counter = 0
+
+    def _valid_paste_marker_spans(self) -> list[tuple[int, int, str]]:
+        if not self._paste_markers:
+            return []
+        spans: list[tuple[int, int, str]] = []
+        for match in self.PASTE_MARKER_PATTERN.finditer(self.text):
+            marker = match.group(0)
+            if marker in self._paste_markers:
+                spans.append((match.start(), match.end(), marker))
+        return spans
+
+    def _paste_marker_span_touching_cursor(
+        self,
+        *,
+        direction: Literal["backward", "forward"],
+    ) -> tuple[int, int, str] | None:
+        cursor = self.cursor_position
+        for start, end, marker in self._valid_paste_marker_spans():
+            if direction == "backward" and start < cursor <= end:
+                return start, end, marker
+            if direction == "forward" and start <= cursor < end:
+                return start, end, marker
+        return None
+
+    def _snap_cursor_out_of_paste_marker(
+        self,
+        *,
+        direction: Literal["backward", "forward"],
+    ) -> bool:
+        cursor = self.cursor_position
+        for start, end, _marker in self._valid_paste_marker_spans():
+            if direction == "backward" and end == cursor:
+                self.cursor_position = start
+                return True
+            if direction == "forward" and start == cursor:
+                self.cursor_position = end
+                return True
+            if start < cursor < end:
+                self.cursor_position = start if direction == "backward" else end
+                return True
+        return False
+
+    def _delete_paste_marker_span(
+        self,
+        start: int,
+        end: int,
+        marker: str,
+        *,
+        prepend_kill: bool,
+    ) -> None:
+        self._push_undo_snapshot()
+        self._push_kill(marker, prepend=prepend_kill)
+        text = self.text
+        self.text = f"{text[:start]}{text[end:]}"
+        self._paste_markers.pop(marker, None)
+        if not self._paste_markers:
+            self._paste_counter = 0
+        self.cursor_position = start
 
     def expanded_text(self) -> str:
         """Return prompt text with compacted paste markers expanded."""
@@ -983,7 +1044,11 @@ class PromptInput(TextArea):
         self.move_cursor((before.count("\n"), len(before.rsplit("\n", 1)[-1])))
 
     def _refresh_completions_after_cursor_move(self) -> None:
-        if self._has_completion_options():
+        try:
+            has_completion_options = self._has_completion_options()
+        except Exception:  # noqa: BLE001 - unmounted prompt widgets have no active Textual app
+            return
+        if has_completion_options:
             self._completion_target().action_refresh_completions_for_cursor()
 
     def action_accept_completion(self) -> None:
@@ -1050,16 +1115,24 @@ class PromptInput(TextArea):
 
     def action_cursor_left(self) -> None:
         """Move left and refresh any open prompt completion context."""
+        if self._snap_cursor_out_of_paste_marker(direction="backward"):
+            self._refresh_completions_after_cursor_move()
+            return
         result = super().action_cursor_left()
         if isawaitable(result):
             self.run_worker(result)
+        self._snap_cursor_out_of_paste_marker(direction="backward")
         self._refresh_completions_after_cursor_move()
 
     def action_cursor_right(self) -> None:
         """Move right and refresh any open prompt completion context."""
+        if self._snap_cursor_out_of_paste_marker(direction="forward"):
+            self._refresh_completions_after_cursor_move()
+            return
         result = super().action_cursor_right()
         if isawaitable(result):
             self.run_worker(result)
+        self._snap_cursor_out_of_paste_marker(direction="forward")
         self._refresh_completions_after_cursor_move()
 
     def _navigate_prompt_history(self, direction: Literal[-1, 1]) -> None:
@@ -1223,6 +1296,13 @@ class PromptInput(TextArea):
         text = self.text
         if not text:
             return
+        paste_marker_span = self._paste_marker_span_touching_cursor(direction="backward")
+        if paste_marker_span is not None:
+            self._last_prompt_edit = None
+            self._last_yank_range = None
+            start, end, marker = paste_marker_span
+            self._delete_paste_marker_span(start, end, marker, prepend_kill=True)
+            return
         row, column = self.cursor_location
         lines = text.split("\n")
         if row >= len(lines):
@@ -1253,6 +1333,13 @@ class PromptInput(TextArea):
             return
         text = self.text
         if not text:
+            return
+        paste_marker_span = self._paste_marker_span_touching_cursor(direction="backward")
+        if paste_marker_span is not None:
+            self._last_prompt_edit = None
+            self._last_yank_range = None
+            start, end, marker = paste_marker_span
+            self._delete_paste_marker_span(start, end, marker, prepend_kill=True)
             return
         row, column = self.cursor_location
         lines = text.split("\n")
@@ -1287,6 +1374,13 @@ class PromptInput(TextArea):
             return
         text = self.text
         if not text:
+            return
+        paste_marker_span = self._paste_marker_span_touching_cursor(direction="forward")
+        if paste_marker_span is not None:
+            self._last_prompt_edit = None
+            self._last_yank_range = None
+            start, end, marker = paste_marker_span
+            self._delete_paste_marker_span(start, end, marker, prepend_kill=False)
             return
         row, column = self.cursor_location
         lines = text.split("\n")
@@ -1350,6 +1444,13 @@ class PromptInput(TextArea):
         text = self.text
         if not text:
             return
+        paste_marker_span = self._paste_marker_span_touching_cursor(direction="forward")
+        if paste_marker_span is not None:
+            self._last_prompt_edit = None
+            self._last_yank_range = None
+            start, end, marker = paste_marker_span
+            self._delete_paste_marker_span(start, end, marker, prepend_kill=False)
+            return
         row, column = self.cursor_location
         lines = text.split("\n")
         if row >= len(lines):
@@ -1371,6 +1472,22 @@ class PromptInput(TextArea):
             self.text = "\n".join(lines)
             self.prune_paste_markers()
             self.move_cursor((row, len(current_line)))
+
+    def action_delete_character_backward(self) -> None:
+        """Delete the character before the cursor."""
+        if self.selected_text:
+            return
+        paste_marker_span = self._paste_marker_span_touching_cursor(direction="backward")
+        if paste_marker_span is not None:
+            self._last_prompt_edit = None
+            self._last_yank_range = None
+            start, end, marker = paste_marker_span
+            self._delete_paste_marker_span(start, end, marker, prepend_kill=True)
+            return
+        result = super().action_delete_left()
+        if isawaitable(result):
+            self.run_worker(result)
+        self.prune_paste_markers()
 
     def action_move_to_line_start(self) -> None:
         """Move the prompt cursor to the start of the current line."""
@@ -1733,7 +1850,7 @@ class PromptInput(TextArea):
         ):
             event.stop()
             event.prevent_default()
-            self.action_delete_left()
+            self.action_delete_character_backward()
         elif _matches_configured_or_default_key(
             event.key,
             keybindings.editor_delete_char_forward,
