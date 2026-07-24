@@ -1999,6 +1999,8 @@ class WorkflowPickerScreen(ModalScreen[WorkflowPickerResult | None]):
     ) -> None:
         super().__init__()
         self.workflows = tuple(workflows)
+        self.filtered_workflows = self.workflows
+        self.search_value = ""
         self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
@@ -2009,20 +2011,31 @@ class WorkflowPickerScreen(ModalScreen[WorkflowPickerResult | None]):
                 "Select a packaged Tau DAG to inspect its launch contract.",
                 id="workflow-picker-description",
             )
+            yield Input(placeholder="Search workflows", id="workflow-picker-search")
             yield ListView(
                 *self._list_items(),
                 id="workflow-picker-list",
             )
-            yield Static(
-                "Enter opens details - Ctrl+R inserts run command - Escape cancels",
-                id="workflow-picker-help",
-            )
+            yield Static(self._help_text(), id="workflow-picker-help")
 
     def on_mount(self) -> None:
-        """Focus the workflow list."""
-        workflow_list = self.query_one("#workflow-picker-list", ListView)
-        workflow_list.index = 0 if self.workflows else None
-        workflow_list.focus()
+        """Focus the workflow search input."""
+        self._refresh_workflow_list(0)
+        self.query_one("#workflow-picker-search", Input).focus()
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """Filter workflows as the search value changes."""
+        if event.input.id != "workflow-picker-search":
+            return
+        self.search_value = event.value
+        self._refresh_workflow_list(0)
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Open details for the highlighted filtered workflow."""
+        if event.input.id != "workflow-picker-search":
+            return
+        event.stop()
+        self.action_select_cursor()
 
     def on_key(self, event: Key) -> None:
         """Route configured Pi select keys to the workflow list."""
@@ -2066,9 +2079,11 @@ class WorkflowPickerScreen(ModalScreen[WorkflowPickerResult | None]):
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected workflow id."""
-        if event.index >= len(self.workflows):
+        if event.index >= len(self.filtered_workflows):
             return
-        self.dismiss(WorkflowPickerResult(self.workflows[event.index].workflow_id, "details"))
+        self.dismiss(
+            WorkflowPickerResult(self.filtered_workflows[event.index].workflow_id, "details")
+        )
 
     def action_cursor_up(self) -> None:
         """Move to the previous workflow."""
@@ -2087,7 +2102,7 @@ class WorkflowPickerScreen(ModalScreen[WorkflowPickerResult | None]):
         self._move_page(1)
 
     def _move_page(self, direction: Literal[-1, 1]) -> None:
-        if not self.workflows:
+        if not self.filtered_workflows:
             return
         workflow_list = self.query_one("#workflow-picker-list", ListView)
         current_index = workflow_list.index if workflow_list.index is not None else 0
@@ -2095,7 +2110,7 @@ class WorkflowPickerScreen(ModalScreen[WorkflowPickerResult | None]):
         if page_size <= 1:
             page_size = 10
         next_index = current_index + (direction * page_size)
-        workflow_list.index = max(0, min(len(self.workflows) - 1, next_index))
+        workflow_list.index = max(0, min(len(self.filtered_workflows) - 1, next_index))
 
     def action_select_cursor(self) -> None:
         """Open details for the highlighted workflow."""
@@ -2104,11 +2119,14 @@ class WorkflowPickerScreen(ModalScreen[WorkflowPickerResult | None]):
     def action_insert_run_command(self) -> None:
         """Insert a runnable shell command for the highlighted workflow."""
         workflow_list = self.query_one("#workflow-picker-list", ListView)
-        if workflow_list.index is None or workflow_list.index >= len(self.workflows):
+        if (
+            workflow_list.index is None
+            or workflow_list.index >= len(self.filtered_workflows)
+        ):
             return
         self.dismiss(
             WorkflowPickerResult(
-                self.workflows[workflow_list.index].workflow_id,
+                self.filtered_workflows[workflow_list.index].workflow_id,
                 "insert_run",
             )
         )
@@ -2120,8 +2138,29 @@ class WorkflowPickerScreen(ModalScreen[WorkflowPickerResult | None]):
     def _list_items(self) -> list[ListItem]:
         return [
             ListItem(Label(_workflow_picker_label(workflow), markup=False))
-            for workflow in self.workflows
+            for workflow in self.filtered_workflows
         ]
+
+    def _refresh_workflow_list(self, index: int) -> None:
+        self.filtered_workflows = _filter_workflow_picker_records(
+            self.workflows,
+            self.search_value,
+        )
+        workflow_list = self.query_one("#workflow-picker-list", ListView)
+        workflow_list.clear()
+        workflow_list.extend(self._list_items())
+        workflow_list.index = (
+            min(index, len(workflow_list.children) - 1) if self.filtered_workflows else None
+        )
+        self.query_one("#workflow-picker-help", Static).update(self._help_text())
+
+    def _help_text(self) -> str:
+        if self.filtered_workflows:
+            return (
+                "Type to search - Enter opens details - "
+                "Ctrl+R inserts run command - Escape cancels"
+            )
+        return "No matching workflows - Escape cancels"
 
 
 TreeFilterMode = Literal["default", "no-tools", "user-only", "labeled-only", "all"]
@@ -7171,6 +7210,30 @@ def _filter_model_choices(choices: Sequence[ModelChoice], query: str) -> tuple[M
         for choice in choices
         if normalized in choice.provider_name.lower() or normalized in choice.model.lower()
     )
+
+
+def _filter_workflow_picker_records(
+    workflows: Sequence[WorkflowDefinition],
+    query: str,
+) -> tuple[WorkflowDefinition, ...]:
+    tokens = query.casefold().split()
+    if not tokens:
+        return tuple(workflows)
+    return tuple(
+        workflow
+        for workflow in workflows
+        if all(token in _workflow_picker_search_text(workflow) for token in tokens)
+    )
+
+
+def _workflow_picker_search_text(workflow: WorkflowDefinition) -> str:
+    fields = [
+        workflow.workflow_id,
+        workflow.summary,
+        workflow.topology,
+        _workflow_picker_label(workflow),
+    ]
+    return " ".join(" ".join(field.casefold().split()) for field in fields)
 
 
 def _command_message_uses_transcript(command_text: str) -> bool:

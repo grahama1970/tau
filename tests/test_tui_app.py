@@ -6566,6 +6566,51 @@ async def test_tui_app_workflows_picker_selection_opens_detail_modal() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_workflows_picker_search_filters_visible_workflows() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/workflows"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, WorkflowPickerScreen)
+        search = app.screen.query_one("#workflow-picker-search", Input)
+        search.value = "durable qualification"
+        await pilot.pause()
+
+        workflow_list = app.screen.query_one("#workflow-picker-list", ListView)
+        labels = [str(item.query_one(Label).render()) for item in workflow_list.children]
+        assert labels == [
+            "durable-repository-qualification: Durable Repository Qualification\n"
+            "  topology: DURABLE_MIXED_REPAIR_APPROVAL"
+        ]
+        assert workflow_list.index == 0
+
+
+@pytest.mark.anyio
+async def test_tui_app_workflows_picker_filtered_selection_uses_filtered_workflow() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/workflows"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, WorkflowPickerScreen)
+        app.screen.query_one("#workflow-picker-search", Input).value = "operator"
+        await pilot.pause()
+
+        app.screen.action_select_cursor()
+        await pilot.pause()
+
+        assert isinstance(app.screen, CommandOutputScreen)
+        assert "Workflow: tau-operator-reference" in app.screen.message
+
+
+@pytest.mark.anyio
 async def test_tui_app_workflows_picker_uses_configured_pi_select_keybindings() -> None:
     app = TauTuiApp(
         FakeSession(),
@@ -6649,6 +6694,29 @@ async def test_tui_app_workflows_picker_inserts_operator_reference_without_goal(
         assert "--goal" not in prompt.value
         assert "--publish-path" not in prompt.value
         assert prompt.value.endswith(" --open-viewer")
+
+
+@pytest.mark.anyio
+async def test_tui_app_workflows_picker_filtered_insert_uses_filtered_workflow() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "/workflows"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, WorkflowPickerScreen)
+        app.screen.query_one("#workflow-picker-search", Input).value = "operator"
+        await pilot.pause()
+
+        app.screen.action_insert_run_command()
+        await pilot.pause()
+
+        assert prompt.value.startswith(
+            "!! uv run tau workflows run tau-operator-reference --repo /workspace/project "
+        )
+        assert "--goal" not in prompt.value
 
 
 @pytest.mark.anyio
