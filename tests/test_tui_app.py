@@ -5157,6 +5157,37 @@ async def test_tui_app_compacts_large_single_line_clipboard_paste(
 
 
 @pytest.mark.anyio
+async def test_tui_app_prunes_removed_large_paste_markers(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    large_text = "\n".join(f"line {index}" for index in range(11))
+
+    async def fake_read_clipboard_image() -> None:
+        return None
+
+    async def fake_read_clipboard_text() -> str:
+        return large_text
+
+    app = TauTuiApp(FakeSession())
+    monkeypatch.setattr(tui_app, "_read_clipboard_image", fake_read_clipboard_image)
+    monkeypatch.setattr(tui_app, "_read_clipboard_text", fake_read_clipboard_text)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+
+        await pilot.press("ctrl+v")
+        await pilot.pause()
+
+        assert prompt.expanded_text() == large_text
+
+        prompt.text = ""
+        prompt.prune_paste_markers()
+        prompt.text = "[paste #1 +11 lines]"
+
+        assert prompt.expanded_text() == "[paste #1 +11 lines]"
+
+
+@pytest.mark.anyio
 async def test_tui_app_clipboard_paste_ignores_unavailable_clipboard(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

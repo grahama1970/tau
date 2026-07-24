@@ -288,6 +288,14 @@ class PromptInput(TextArea):
         self._paste_counter = 0
         self._paste_markers.clear()
 
+    def prune_paste_markers(self) -> None:
+        """Drop compacted paste payloads whose visible marker was removed."""
+        stale_markers = [marker for marker in self._paste_markers if marker not in self.text]
+        for marker in stale_markers:
+            del self._paste_markers[marker]
+        if not self._paste_markers:
+            self._paste_counter = 0
+
     def expanded_text(self) -> str:
         """Return prompt text with compacted paste markers expanded."""
         text = self.text
@@ -3327,6 +3335,8 @@ class TauTuiApp(App[None]):
         """Update prompt autocomplete when the prompt text changes."""
         if event.text_area.id != "prompt":
             return
+        if isinstance(event.text_area, PromptInput):
+            event.text_area.prune_paste_markers()
         if self._pty_proof_enabled and "TAU_TUI_PTY_BROWSER_INPUT" in event.text_area.text:
             with suppress(NoMatches):
                 self.query_one("#pty-proof-ready", Static).update(
