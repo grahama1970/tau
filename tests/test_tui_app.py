@@ -3708,6 +3708,24 @@ async def test_tui_app_uses_configured_pi_submit_keybinding() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_prompt_placeholder_uses_configured_submit_and_newline_keys() -> None:
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(
+                submit_prompt="f9",
+                insert_newline="f8",
+            ),
+        ),
+    )
+
+    async with app.run_test():
+        prompt = app.query_one("#prompt", PromptInput)
+
+    assert prompt.placeholder == "Ask Tau…  F9 submits, F8 inserts a newline"
+
+
+@pytest.mark.anyio
 async def test_tui_app_ctrl_j_inserts_multiline_prompt_newline() -> None:
     session = FakeSession(
         events=[

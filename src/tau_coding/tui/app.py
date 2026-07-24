@@ -4983,7 +4983,7 @@ class TauTuiApp(App[None]):
                 with Horizontal(id="prompt-row"):
                     yield Static("τ", id="prompt-prefix")
                     yield PromptInput(
-                        placeholder="Ask Tau…  Enter submits, Shift+Enter inserts a newline",
+                        placeholder=_prompt_placeholder(self.tui_settings.keybindings),
                         id="prompt",
                         tui_keybindings=self.tui_settings.keybindings,
                         show_cursor=self.tui_settings.show_hardware_cursor,
@@ -8541,6 +8541,14 @@ def _newline_key_hint(keybindings: TuiKeybindings) -> str:
     if keybindings.insert_newline == "shift+enter":
         return "Shift+Enter" if keybindings.command_palette == "ctrl+j" else "Shift+Enter/Ctrl+J"
     return _key_hint(keybindings.insert_newline)
+
+
+def _prompt_placeholder(keybindings: TuiKeybindings) -> str:
+    """Return the prompt placeholder using the active submit/newline keys."""
+    return (
+        f"Ask Tau…  {_key_hint(keybindings.submit_prompt)} submits, "
+        f"{_newline_key_hint(keybindings)} inserts a newline"
+    )
 
 
 def _local_tui_command(
