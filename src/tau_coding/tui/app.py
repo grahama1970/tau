@@ -1002,15 +1002,21 @@ class PromptInput(TextArea):
 
     def action_cursor_up(self) -> None:
         """Move up or browse prompt history from the first prompt line."""
-        row, _column = self.cursor_location
+        row, column = self.cursor_location
         if self._prompt_history_text_changed():
             self._exit_prompt_history()
             result = super().action_cursor_up()
             if isawaitable(result):
                 self.run_worker(result)
             return
-        if self._prompt_history and row <= 0:
+        can_browse_history = (
+            self._is_prompt_empty() or self._prompt_history_index >= 0 or column == 0
+        )
+        if self._prompt_history and row <= 0 and can_browse_history:
             self._navigate_prompt_history(-1)
+            return
+        if row <= 0 and column > 0:
+            self.move_cursor((0, 0))
             return
         result = super().action_cursor_up()
         if isawaitable(result):
@@ -1086,6 +1092,9 @@ class PromptInput(TextArea):
     def _exit_prompt_history(self) -> None:
         self._prompt_history_index = -1
         self._prompt_history_draft = None
+
+    def _is_prompt_empty(self) -> bool:
+        return self.text == ""
 
     def _prompt_history_text_changed(self) -> bool:
         index = self._prompt_history_index
