@@ -245,6 +245,28 @@ def test_tui_settings_reads_pi_keybinding_aliases() -> None:
     assert settings.keybindings.accept_completion == "f12"
 
 
+def test_tui_settings_reads_exact_pi_legacy_session_keybinding_aliases() -> None:
+    settings = tui_settings_from_json(
+        {
+            "keybindings": {
+                "toggleSessionNamedFilter": "f1",
+                "toggleSessionPath": "f2",
+                "toggleSessionSort": "f3",
+                "renameSession": "f4",
+                "deleteSession": "f5",
+                "deleteSessionNoninvasive": "f6",
+            }
+        }
+    )
+
+    assert settings.keybindings.session_toggle_named_filter == "f1"
+    assert settings.keybindings.session_toggle_path == "f2"
+    assert settings.keybindings.session_toggle_sort == "f3"
+    assert settings.keybindings.session_rename == "f4"
+    assert settings.keybindings.session_delete == "f5"
+    assert settings.keybindings.session_delete_noninvasive == "f6"
+
+
 def test_save_tui_settings_writes_json(tmp_path: Path) -> None:
     paths = TauPaths(home=tmp_path / ".tau", agents_home=tmp_path / ".agents")
 
