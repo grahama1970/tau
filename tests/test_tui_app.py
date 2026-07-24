@@ -2881,6 +2881,77 @@ async def test_prompt_alt_right_at_line_end_moves_to_next_line_start() -> None:
 
 
 @pytest.mark.anyio
+async def test_prompt_ctrl_bracket_jumps_forward_to_character() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha beta\nbravo"
+        prompt.move_cursor((0, 0))
+
+        await pilot.press("ctrl+]", "b")
+
+        assert prompt.cursor_location == (0, len("alpha "))
+
+
+@pytest.mark.anyio
+async def test_prompt_ctrl_alt_bracket_jumps_backward_to_character() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha beta\nbravo"
+        prompt.move_cursor((1, len("bravo")))
+
+        await pilot.press("ctrl+alt+]", "b")
+
+        assert prompt.cursor_location == (1, 0)
+
+
+@pytest.mark.anyio
+async def test_prompt_jump_forward_searches_later_lines() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha\nbravo"
+        prompt.move_cursor((0, len("alpha")))
+
+        await pilot.press("ctrl+]", "b")
+
+        assert prompt.cursor_location == (1, 0)
+
+
+@pytest.mark.anyio
+async def test_prompt_jump_no_match_keeps_cursor() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha"
+        prompt.move_cursor((0, 2))
+
+        await pilot.press("ctrl+]", "z")
+
+        assert prompt.cursor_location == (0, 2)
+
+
+@pytest.mark.anyio
+async def test_prompt_jump_trigger_twice_cancels_jump_mode() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha beta"
+        prompt.move_cursor((0, 0))
+
+        await pilot.press("ctrl+]", "ctrl+]", "b")
+
+        assert prompt.text == "balpha beta"
+        assert prompt.cursor_location == (0, 1)
+
+
+@pytest.mark.anyio
 async def test_tui_app_submits_multiline_prompt_with_enter() -> None:
     session = FakeSession(
         events=[
@@ -5799,6 +5870,7 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "Ctrl+A/Ctrl+E: move to line start/end" in app.screen.message
         assert "Alt+B/Ctrl+Left/Alt+Left: move word left" in app.screen.message
         assert "Alt+F/Ctrl+Right/Alt+Right: move word right" in app.screen.message
+        assert "Ctrl+]/Ctrl+Alt+]: jump to next or previous character" in app.screen.message
         assert "Ctrl+U: delete to line start" in app.screen.message
         assert "Ctrl+W/Alt+Backspace: delete previous word" in app.screen.message
         assert "Alt+D/Alt+Delete: delete next word" in app.screen.message

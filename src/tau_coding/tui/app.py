@@ -259,6 +259,7 @@ class PromptInput(TextArea):
         self._last_prompt_edit: Literal["kill", "yank"] | None = None
         self._last_yank_range: tuple[int, int] | None = None
         self._undo_stack: list[tuple[str, int, dict[str, str], int]] = []
+        self._jump_direction: Literal["forward", "backward"] | None = None
         self._apply_prompt_bindings()
 
     def set_footer_mode(self, mode: Literal["normal", "completion", "running"]) -> None:
@@ -289,6 +290,7 @@ class PromptInput(TextArea):
         self._last_prompt_edit = None
         self._last_yank_range = None
         self._undo_stack.clear()
+        self._jump_direction = None
 
     def clear_paste_markers(self) -> None:
         """Forget compacted paste payloads when replacing editor contents."""
@@ -592,6 +594,43 @@ class PromptInput(TextArea):
             return
         self.move_cursor((row, _find_word_delete_end(lines[row], column)))
 
+    def action_start_jump_forward(self) -> None:
+        """Arm Pi-style forward character jump mode."""
+        self._last_prompt_edit = None
+        self._last_yank_range = None
+        self._jump_direction = "forward"
+
+    def action_start_jump_backward(self) -> None:
+        """Arm Pi-style backward character jump mode."""
+        self._last_prompt_edit = None
+        self._last_yank_range = None
+        self._jump_direction = "backward"
+
+    def action_jump_to_character(self, character: str) -> None:
+        """Move the cursor to the next matching character in the armed direction."""
+        direction = self._jump_direction
+        self._jump_direction = None
+        if direction is None or not character:
+            return
+        row, column = self.cursor_location
+        lines = self.text.split("\n")
+        if direction == "forward":
+            for line_index in range(row, len(lines)):
+                line = lines[line_index]
+                search_from = column + 1 if line_index == row else 0
+                match_column = line.find(character, search_from)
+                if match_column != -1:
+                    self.move_cursor((line_index, match_column))
+                    return
+            return
+        for line_index in range(row, -1, -1):
+            line = lines[line_index]
+            search_to = column if line_index == row else len(line)
+            match_column = line.rfind(character, 0, search_to)
+            if match_column != -1:
+                self.move_cursor((line_index, match_column))
+                return
+
     def action_yank_kill_ring(self) -> None:
         """Insert the most recently deleted prompt text at the cursor."""
         killed_text = self._peek_kill()
@@ -707,7 +746,18 @@ class PromptInput(TextArea):
     async def on_key(self, event: Key) -> None:
         """Route completion and submission keys before default input handling."""
         keybindings = self.tui_keybindings
-        if event.key == keybindings.queue_follow_up:
+        if self._jump_direction is not None:
+            event.stop()
+            event.prevent_default()
+            if event.key in {"ctrl+]", "ctrl+alt+]"}:
+                self._jump_direction = None
+                return
+            character = _jump_character_from_key(event.key)
+            if character is None:
+                self._jump_direction = None
+                return
+            self.action_jump_to_character(character)
+        elif event.key == keybindings.queue_follow_up:
             event.stop()
             event.prevent_default()
             await self._completion_target().action_submit_follow_up()
@@ -828,6 +878,14 @@ class PromptInput(TextArea):
             event.stop()
             event.prevent_default()
             self.action_undo_prompt_edit()
+        elif event.key == "ctrl+]":
+            event.stop()
+            event.prevent_default()
+            self.action_start_jump_forward()
+        elif event.key == "ctrl+alt+]":
+            event.stop()
+            event.prevent_default()
+            self.action_start_jump_backward()
         elif event.key == keybindings.completion_next:
             event.stop()
             if self._has_completion_options():
@@ -6404,6 +6462,13 @@ def _find_word_delete_end(line: str, cursor_column: int) -> int:
     return index
 
 
+def _jump_character_from_key(key: str) -> str | None:
+    """Return a printable character for Pi-style jump mode key input."""
+    if key == "space":
+        return " "
+    return key if len(key) == 1 and key.isprintable() else None
+
+
 def _decode_csi_u_control(code: str, fallback: str) -> str:
     codepoint = int(code)
     if 97 <= codepoint <= 122:
@@ -6650,6 +6715,7 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         "- Ctrl+A/Ctrl+E: move to line start/end",
         "- Alt+B/Ctrl+Left/Alt+Left: move word left",
         "- Alt+F/Ctrl+Right/Alt+Right: move word right",
+        "- Ctrl+]/Ctrl+Alt+]: jump to next or previous character",
         "- Ctrl+U: delete to line start",
         "- Ctrl+W/Alt+Backspace: delete previous word",
         "- Alt+D/Alt+Delete: delete next word",
