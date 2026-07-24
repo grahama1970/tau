@@ -8383,15 +8383,22 @@ def _filter_model_choices(choices: Sequence[ModelChoice], query: str) -> tuple[M
     matches = [
         choice
         for choice in choices
-        if normalized in _model_picker_search_text(choice)
+        if _model_picker_choice_matches(choice, normalized)
     ]
     return tuple(sorted(matches, key=lambda choice: _model_picker_search_rank(choice, normalized)))
+
+
+def _model_picker_choice_matches(choice: ModelChoice, normalized_query: str) -> bool:
+    search_text = _model_picker_search_text(choice)
+    if normalized_query in search_text:
+        return True
+    return all(token in search_text for token in normalized_query.split())
 
 
 def _model_picker_search_text(choice: ModelChoice) -> str:
     provider = choice.provider_name.lower()
     model = choice.model.lower()
-    return f"{provider} {provider}/{model} {provider} {model}"
+    return f"{model} {provider} {provider}/{model} {provider} {model} {model} {provider}"
 
 
 def _model_picker_search_rank(choice: ModelChoice, normalized_query: str) -> tuple[int, str, str]:
