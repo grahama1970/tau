@@ -5924,7 +5924,10 @@ class TauTuiApp(App[None]):
                 return
             if event.message.role == "assistant":
                 await transcript.finish_assistant_message(event.message.content)
-                self._refresh_chrome()
+                if event.message.finish_reason == "length":
+                    self._refresh()
+                else:
+                    self._refresh_chrome()
                 return
             return
         if isinstance(event, ToolExecutionStartEvent):

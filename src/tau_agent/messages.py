@@ -30,6 +30,7 @@ class AssistantMessage(BaseModel):
     role: Literal["assistant"] = "assistant"
     content: str = ""
     tool_calls: list[ToolCall] = Field(default_factory=list)
+    finish_reason: str | None = None
 
     @field_validator("content", mode="before")
     @classmethod

@@ -15,7 +15,7 @@ from tau_agent import (
     ToolExecutionStartEvent,
     ToolExecutionUpdateEvent,
 )
-from tau_coding.tui.state import TuiState
+from tau_coding.tui.state import ASSISTANT_LENGTH_STOP_ERROR_TEXT, TuiState
 
 
 class TuiEventAdapter:
@@ -62,6 +62,8 @@ class TuiEventAdapter:
             text = event.message.content or self.state.assistant_buffer
             if text:
                 self.state.add_item("assistant", text)
+            if event.message.finish_reason == "length":
+                self.state.add_item("error", ASSISTANT_LENGTH_STOP_ERROR_TEXT)
             self.state.assistant_buffer = ""
             return
 

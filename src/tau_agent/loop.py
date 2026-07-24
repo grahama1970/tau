@@ -94,6 +94,10 @@ async def run_agent_loop(
                 )
             elif isinstance(provider_event, ProviderResponseEndEvent):
                 assistant_message = provider_event.message
+                if provider_event.finish_reason is not None:
+                    assistant_message = assistant_message.model_copy(
+                        update={"finish_reason": provider_event.finish_reason}
+                    )
                 messages.append(assistant_message)
                 yield MessageEndEvent(message=assistant_message)
             elif isinstance(provider_event, ProviderErrorEvent):

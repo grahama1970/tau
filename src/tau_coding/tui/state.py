@@ -15,6 +15,10 @@ TOOL_RESULT_PREVIEW_LINES = 8
 TOOL_PATCH_PREVIEW_LINES = 32
 TOOL_RESULT_PREVIEW_CHARS = 2_000
 TERMINAL_COMMAND_OUTPUT_PREVIEW_LINES = 120
+ASSISTANT_LENGTH_STOP_ERROR_TEXT = (
+    "Error: Model stopped because it reached the maximum output token limit. "
+    "The response may be incomplete."
+)
 DEFAULT_THINKING_PLACEHOLDER_TEXT = "Thinking… Press Ctrl+T to show thinking tokens."
 COMPACT_RESOURCE_FILE_NAMES = frozenset({"AGENTS.md", "AGENTS.MD", "CLAUDE.md", "CLAUDE.MD"})
 MEMORY_PIPELINE_STAGE_LABELS = {
@@ -260,6 +264,8 @@ class TuiState:
             elif message.role == "assistant":
                 if message.content:
                     self.add_item("assistant", message.content)
+                if message.finish_reason == "length":
+                    self.add_item("error", ASSISTANT_LENGTH_STOP_ERROR_TEXT)
                 for tool_call in message.tool_calls:
                     self.add_tool_call(tool_call)
             elif message.role == "tool":
