@@ -5296,6 +5296,30 @@ async def test_tui_model_picker_starts_in_scoped_tab_when_scoped_models_exist() 
 
 
 @pytest.mark.anyio
+async def test_tui_model_picker_arrow_keys_wrap_like_pi() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/model"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ModelPickerScreen)
+        model_list = app.screen.query_one("#model-picker-list", ListView)
+        assert model_list.index == 0
+
+        await pilot.press("up")
+        await pilot.pause()
+        assert model_list.index == 2
+
+        await pilot.press("down")
+        await pilot.pause()
+        assert model_list.index == 0
+
+
+@pytest.mark.anyio
 async def test_tui_model_picker_page_keys_move_by_page() -> None:
     session = FakeSession()
     session.available_model_choices = tuple(

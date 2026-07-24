@@ -2334,11 +2334,19 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
 
     def action_cursor_up(self) -> None:
         """Move to the previous model."""
-        self.query_one("#model-picker-list", ListView).action_cursor_up()
+        self._move_model_cursor(-1)
 
     def action_cursor_down(self) -> None:
         """Move to the next model."""
-        self.query_one("#model-picker-list", ListView).action_cursor_down()
+        self._move_model_cursor(1)
+
+    def _move_model_cursor(self, direction: Literal[-1, 1]) -> None:
+        """Move selected model, wrapping at list boundaries like Pi."""
+        if not self.visible_choices:
+            return
+        model_list = self.query_one("#model-picker-list", ListView)
+        current_index = model_list.index if model_list.index is not None else 0
+        model_list.index = (current_index + direction) % len(self.visible_choices)
 
     def action_page_up(self) -> None:
         """Move up by a page of models."""
