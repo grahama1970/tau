@@ -2604,6 +2604,9 @@ async def test_tui_app_theme_picker_uses_configured_pi_select_keybindings(
 
         assert isinstance(app.screen, ThemePickerScreen)
         theme_list = app.screen.query_one("#theme-picker-list", ListView)
+        assert str(app.screen.query_one("#theme-picker-help", Static).render()) == (
+            "F7 selects - F8 closes"
+        )
 
         await pilot.press("f6", "f7")
         await pilot.pause()
@@ -6026,6 +6029,9 @@ async def test_tui_app_trust_picker_uses_configured_pi_select_keybindings() -> N
 
         assert isinstance(app.screen, TrustPickerScreen)
         trust_list = app.screen.query_one("#trust-picker-list", ListView)
+        assert str(app.screen.query_one("#trust-picker-help", Static).render()) == (
+            "F7 saves - F8 closes"
+        )
 
         await pilot.press("f6", "f7")
         await pilot.pause()
@@ -7606,6 +7612,9 @@ async def test_tui_app_workflows_picker_uses_configured_pi_select_keybindings() 
         assert isinstance(app.screen, WorkflowPickerScreen)
         workflow_list = app.screen.query_one("#workflow-picker-list", ListView)
         assert workflow_list.index == 0
+        assert str(app.screen.query_one("#workflow-picker-help", Static).render()) == (
+            "Type to search - F7 opens details - Ctrl+R inserts run command - F8 cancels"
+        )
 
         await pilot.press("f6", "f7")
         await pilot.pause()
@@ -8883,6 +8892,9 @@ async def test_tui_login_pickers_use_configured_pi_select_keybindings() -> None:
 
         assert isinstance(app.screen, LoginMethodPickerScreen)
         method_list = app.screen.query_one("#login-method-list", ListView)
+        assert str(app.screen.query_one("#login-method-help", Static).render()) == (
+            "F7 selects - F8 closes"
+        )
 
         await pilot.press("f6", "f7")
         await pilot.pause()
@@ -8890,6 +8902,9 @@ async def test_tui_login_pickers_use_configured_pi_select_keybindings() -> None:
         assert method_list.index == 1
         assert isinstance(app.screen, LoginProviderPickerScreen)
         provider_list = app.screen.query_one("#login-provider-list", ListView)
+        assert str(app.screen.query_one("#login-provider-help", Static).render()) == (
+            "F7 selects - F8 closes"
+        )
 
         await pilot.press("f6", "f7")
         await pilot.pause()

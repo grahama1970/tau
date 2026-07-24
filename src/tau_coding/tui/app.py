@@ -2327,7 +2327,9 @@ class TrustPickerScreen(ModalScreen[ProjectTrustOption | None]):
                 *self._list_items(),
                 id="trust-picker-list",
             )
-            yield Static("Enter saves - Escape closes", id="trust-picker-help")
+            save_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+            cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+            yield Static(f"{save_key} saves - {cancel_key} closes", id="trust-picker-help")
 
     def on_mount(self) -> None:
         """Focus the trust list."""
@@ -2721,12 +2723,14 @@ class WorkflowPickerScreen(ModalScreen[WorkflowPickerResult | None]):
         self.query_one("#workflow-picker-help", Static).update(self._help_text())
 
     def _help_text(self) -> str:
+        details_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
         if self.filtered_workflows:
             return (
-                "Type to search - Enter opens details - "
-                "Ctrl+R inserts run command - Escape cancels"
+                f"Type to search - {details_key} opens details - "
+                f"Ctrl+R inserts run command - {cancel_key} cancels"
             )
-        return "No matching workflows - Escape cancels"
+        return f"No matching workflows - {cancel_key} cancels"
 
 
 TreeFilterMode = Literal["default", "no-tools", "user-only", "labeled-only", "all"]
@@ -3505,7 +3509,9 @@ class LoginProviderPickerScreen(ModalScreen[str | None]):
                 ],
                 id="login-provider-list",
             )
-            yield Static("Enter selects - Escape closes", id="login-provider-help")
+            select_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+            cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+            yield Static(f"{select_key} selects - {cancel_key} closes", id="login-provider-help")
 
     def on_mount(self) -> None:
         """Focus the provider list."""
@@ -3593,7 +3599,9 @@ class LoginMethodPickerScreen(ModalScreen[str | None]):
                 ),
                 id="login-method-list",
             )
-            yield Static("Enter selects - Escape closes", id="login-method-help")
+            select_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+            cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+            yield Static(f"{select_key} selects - {cancel_key} closes", id="login-method-help")
 
     def on_mount(self) -> None:
         """Focus the default subscription method."""
@@ -3725,7 +3733,9 @@ class ThemePickerScreen(ModalScreen[str | None]):
                 ],
                 id="theme-picker-list",
             )
-            yield Static("Enter selects - Escape closes", id="theme-picker-help")
+            select_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+            cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+            yield Static(f"{select_key} selects - {cancel_key} closes", id="theme-picker-help")
 
     def on_mount(self) -> None:
         """Select the current theme."""
