@@ -396,6 +396,7 @@ class ToolsReferenceScreen(ModalScreen[None]):
                 f"{tool.name} - {self._source_label(tool)}",
                 tool.description or "No description",
                 theme=self.theme,
+                keybindings=self.keybindings,
             )
         )
 
@@ -619,6 +620,7 @@ class SkillPickerScreen(ModalScreen[SkillPickerResult | None]):
                     f"Skill description: {skill.name}",
                     skill.description or "No description",
                     theme=self.theme,
+                    keybindings=self.keybindings,
                 )
             )
 
@@ -3526,11 +3528,6 @@ class TreeLabelInputScreen(ModalScreen[tuple[str, str | None] | None]):
 class CommandOutputScroll(VerticalScroll):
     """Scrollable command output area with deterministic arrow-key scrolling."""
 
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("up", "scroll_up", "Scroll up", show=False, priority=True),
-        Binding("down", "scroll_down", "Scroll down", show=False, priority=True),
-    ]
-
     def action_scroll_up(self) -> None:
         """Scroll command output up."""
         self.scroll_y = max(0, self.scroll_y - 1)
@@ -3543,39 +3540,67 @@ class CommandOutputScroll(VerticalScroll):
 class CommandOutputScreen(ModalScreen[None]):
     """Dismissible modal for slash-command output."""
 
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "close", "Close"),
-        Binding("enter", "close", "Close"),
-        Binding("up", "scroll_up", "Scroll up", show=False, priority=True),
-        Binding("down", "scroll_down", "Scroll down", show=False, priority=True),
-    ]
-
-    def __init__(self, title: str, message: str, *, theme: TuiTheme) -> None:
+    def __init__(
+        self,
+        title: str,
+        message: str,
+        *,
+        theme: TuiTheme,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
         super().__init__()
         self.title_text = title
         self.message = message
         self.theme = theme
+        self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
         """Compose command output."""
+        confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
         with Vertical(id="command-output"):
             yield Static(self.title_text, id="command-output-title")
             with CommandOutputScroll(id="command-output-scroll"):
                 yield Static(self.message, id="command-output-body", markup=False)
-            yield Static("Enter or Escape closes", id="command-output-help")
+            yield Static(f"{confirm_key} or {cancel_key} closes", id="command-output-help")
 
     def on_mount(self) -> None:
         """Focus the scroll area so arrow keys navigate long output."""
         self.query_one("#command-output-scroll", VerticalScroll).focus()
 
     def on_key(self, event: Key) -> None:
-        """Route arrow keys to the command output scroll area."""
-        if event.key == "up":
+        """Route configured keys to the command output scroll area."""
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
             event.stop()
             self.action_scroll_up()
-        elif event.key == "down":
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
             event.stop()
             self.action_scroll_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_page_up,
+            "pageup",
+        ):
+            event.stop()
+            self.action_scroll_page_up()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_page_down,
+            "pagedown",
+        ):
+            event.stop()
+            self.action_scroll_page_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ) or _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.action_close()
 
     def action_close(self) -> None:
         """Close the command output modal."""
@@ -3588,6 +3613,16 @@ class CommandOutputScreen(ModalScreen[None]):
     def action_scroll_down(self) -> None:
         """Scroll command output down."""
         self.query_one("#command-output-scroll", CommandOutputScroll).action_scroll_down()
+
+    def action_scroll_page_up(self) -> None:
+        """Scroll command output up by one viewport."""
+        scroll = self.query_one("#command-output-scroll", CommandOutputScroll)
+        scroll.scroll_y = max(0, scroll.scroll_y - max(1, scroll.size.height - 1))
+
+    def action_scroll_page_down(self) -> None:
+        """Scroll command output down by one viewport."""
+        scroll = self.query_one("#command-output-scroll", CommandOutputScroll)
+        scroll.scroll_y = min(scroll.max_scroll_y, scroll.scroll_y + max(1, scroll.size.height - 1))
 
 
 class LoginProviderPickerScreen(ModalScreen[str | None]):
@@ -6511,6 +6546,7 @@ class TauTuiApp(App[None]):
                 _command_output_title(command_text),
                 message,
                 theme=self.tui_settings.resolved_theme,
+                keybindings=self.tui_settings.keybindings,
             )
         )
 
