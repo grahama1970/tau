@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from rich.console import Console
 
 from tau_coding.commands import create_default_command_registry
@@ -568,6 +569,47 @@ def test_path_completion_keeps_quoted_directories_open(tmp_path: Path) -> None:
     assert [item.display for item in state.items] == ['"src/']
     assert state.selected is not None
     assert state.selected.apply('inspect "sr') == 'inspect "src/'
+
+
+def test_path_completion_expands_home_prefix(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    home = tmp_path / "home"
+    home.mkdir()
+    (home / "notes.md").write_text("notes\n", encoding="utf-8")
+    monkeypatch.setattr(Path, "home", lambda: home)
+
+    state = build_completion_state(
+        "inspect ~/no",
+        command_registry=create_default_command_registry(),
+        skills=(),
+        prompt_templates=(),
+        cwd=tmp_path / "project",
+    )
+
+    assert [item.display for item in state.items] == ["~/notes.md"]
+    assert state.selected is not None
+    assert state.selected.apply("inspect ~/no") == "inspect ~/notes.md"
+
+
+def test_path_completion_matches_absolute_prefix(tmp_path: Path) -> None:
+    absolute_dir = tmp_path / "absolute"
+    absolute_dir.mkdir()
+    (absolute_dir / "report.md").write_text("report\n", encoding="utf-8")
+    prefix = str(absolute_dir / "rep")
+
+    state = build_completion_state(
+        f"inspect {prefix}",
+        command_registry=create_default_command_registry(),
+        skills=(),
+        prompt_templates=(),
+        cwd=tmp_path / "project",
+    )
+
+    assert [item.display for item in state.items] == [str(absolute_dir / "report.md")]
+    assert state.selected is not None
+    assert state.selected.apply(f"inspect {prefix}") == f"inspect {absolute_dir / 'report.md'}"
 
 
 def test_shell_path_completion_preserves_bang_prefix(tmp_path: Path) -> None:

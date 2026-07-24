@@ -230,15 +230,17 @@ def _path_completions(*, text: str, cwd: Path) -> tuple[CompletionItem, ...] | N
     start, end, quoted = token
     raw_token = text[start + 1 : end] if quoted else text[start:end]
 
-    path_token = _parse_path_completion_token(raw_token)
+    path_token = _parse_path_completion_token(raw_token, cwd=cwd)
     if path_token is None:
         return ()
-    parent_text, name_prefix, replacement_prefix = path_token
+    parent_dir, display_prefix, name_prefix = path_token
 
-    parent_dir = cwd / parent_text if parent_text else cwd
     if not parent_dir.exists() or not parent_dir.is_dir():
         return ()
-    if parent_dir != cwd and _is_ignored_file_completion_path(parent_dir, cwd=cwd):
+    if _is_project_relative_path(parent_dir, cwd=cwd) and parent_dir != cwd:
+        if _is_ignored_file_completion_path(parent_dir, cwd=cwd):
+            return ()
+    elif _is_hidden_or_ignored_external_path(parent_dir):
         return ()
 
     try:
@@ -251,12 +253,14 @@ def _path_completions(*, text: str, cwd: Path) -> tuple[CompletionItem, ...] | N
 
     suggestions: list[CompletionItem] = []
     for child in children:
-        if _is_ignored_file_completion_path(child, cwd=cwd):
+        if _is_project_relative_path(child, cwd=cwd):
+            if _is_ignored_file_completion_path(child, cwd=cwd):
+                continue
+        elif _is_hidden_or_ignored_external_path(child):
             continue
         if not child.name.lower().startswith(name_prefix.lower()):
             continue
-        relative = child.relative_to(cwd).as_posix()
-        replacement = f"{replacement_prefix}{relative}"
+        replacement = f"{display_prefix}{child.name}"
         if child.is_dir():
             replacement += "/"
         elif quoted:
@@ -294,7 +298,7 @@ def _active_path_completion_token(text: str) -> tuple[int, int, bool] | None:
         return None
     if token.startswith("@"):
         return None
-    if "/" in token or token.startswith(".") or token.startswith("~/"):
+    if "/" in token or token.startswith(".") or token.startswith(("~", "/")):
         return token_start, len(text), False
     return None
 
@@ -314,24 +318,53 @@ def _is_path_token_start(text: str, index: int) -> bool:
     return index == 0 or text[index - 1] in PATH_COMPLETION_DELIMITERS or text[index - 1].isspace()
 
 
-def _parse_path_completion_token(token: str) -> tuple[str, str, str] | None:
+def _parse_path_completion_token(token: str, *, cwd: Path) -> tuple[Path, str, str] | None:
     if not token:
-        return "", "", ""
-    if token.startswith(("/", "~")) and not token.startswith("~/"):
+        return cwd, "", ""
+    if token == "~":
+        return Path.home(), "~/", ""
+    if token.startswith("~") and not token.startswith("~/"):
         return None
     if any(char in token for char in "\"'`$*?[{"):
         return None
 
-    replacement_prefix = "./" if token.startswith("./") else ""
-    path_text = token[2:] if replacement_prefix else token
+    if token.startswith("~/"):
+        home_relative = token[2:]
+        parent_text, separator, name_prefix = home_relative.rpartition("/")
+        parent_dir = Path.home() / parent_text if parent_text else Path.home()
+        display_prefix = f"~/{parent_text}/" if separator and parent_text else "~/"
+        return parent_dir, display_prefix, name_prefix
+
+    if token.startswith("/"):
+        parent_text, _separator, name_prefix = token.rpartition("/")
+        parent_dir = Path(parent_text or "/")
+        display_prefix = f"{parent_text}/" if parent_text else "/"
+        return parent_dir, display_prefix, name_prefix
+
+    display_root = "./" if token.startswith("./") else ""
+    path_text = token[2:] if display_root else token
     parent_text, separator, name_prefix = path_text.rpartition("/")
     if separator and not parent_text:
-        return "", name_prefix, replacement_prefix
+        return cwd, display_root, name_prefix
 
     parent_parts = parent_text.split("/") if parent_text else []
     if any(part in {"", ".", ".."} for part in parent_parts):
         return None
-    return parent_text, name_prefix, replacement_prefix
+    parent_dir = cwd / parent_text if parent_text else cwd
+    display_prefix = f"{display_root}{parent_text}/" if parent_text else display_root
+    return parent_dir, display_prefix, name_prefix
+
+
+def _is_project_relative_path(path: Path, *, cwd: Path) -> bool:
+    try:
+        path.relative_to(cwd)
+    except ValueError:
+        return False
+    return True
+
+
+def _is_hidden_or_ignored_external_path(path: Path) -> bool:
+    return path.name.startswith(".") or path.name in IGNORED_FILE_COMPLETION_DIRS
 
 
 def _shell_path_completions(*, text: str, cwd: Path) -> tuple[CompletionItem, ...] | None:
