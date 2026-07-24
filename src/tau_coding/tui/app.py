@@ -3038,7 +3038,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         if index is None:
             return
         self.app.push_screen(
-            BranchSummaryInstructionsScreen(theme=self.theme),
+            BranchSummaryInstructionsScreen(theme=self.theme, keybindings=self.keybindings),
             callback=lambda instructions: self._dismiss_with_custom_summary(index, instructions),
         )
 
@@ -3126,6 +3126,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
                 entry_id=choice.entry_id,
                 current_label=choice.tree_label,
                 theme=self.theme,
+                keybindings=self.keybindings,
             ),
             callback=self._handle_tree_label_input,
         )
@@ -3330,14 +3331,19 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
 class BranchSummaryInstructionsScreen(ModalScreen[str | None]):
     """Prompt for custom branch-summary instructions."""
 
-    BINDINGS: ClassVar[list[BindingEntry]] = [Binding("escape", "cancel", "Cancel")]
-
-    def __init__(self, *, theme: TuiTheme) -> None:
+    def __init__(
+        self,
+        *,
+        theme: TuiTheme,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
         super().__init__()
         self.theme = theme
+        self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
         """Compose the custom-instructions prompt."""
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
         with Vertical(id="branch-summary-instructions"):
             yield Static(
                 "Custom summarization instructions",
@@ -3345,7 +3351,7 @@ class BranchSummaryInstructionsScreen(ModalScreen[str | None]):
             )
             yield TextArea(id="branch-summary-instructions-input")
             yield Static(
-                "Ctrl+Enter submits - Escape returns to tree",
+                f"Ctrl+Enter submits - {cancel_key} returns to tree",
                 id="branch-summary-instructions-help",
             )
 
@@ -3358,7 +3364,11 @@ class BranchSummaryInstructionsScreen(ModalScreen[str | None]):
         if event.key == "ctrl+enter":
             event.stop()
             self.action_submit()
-        elif event.key == "escape":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
             event.stop()
             self.action_cancel()
 
@@ -3375,27 +3385,30 @@ class BranchSummaryInstructionsScreen(ModalScreen[str | None]):
 class TreeLabelInputScreen(ModalScreen[tuple[str, str | None] | None]):
     """Prompt for a tree entry label."""
 
-    BINDINGS: ClassVar[list[BindingEntry]] = [Binding("escape", "cancel", "Cancel")]
-
     def __init__(
         self,
         *,
         entry_id: str,
         current_label: str | None,
         theme: TuiTheme,
+        keybindings: TuiKeybindings | None = None,
     ) -> None:
         super().__init__()
         self.entry_id = entry_id
         self.current_label = current_label or ""
         self.theme = theme
+        self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
         """Compose the tree-label editor."""
+        save_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
         with Vertical(id="tree-label-input"):
             yield Static("Tree entry label", id="tree-label-title")
             yield Input(value=self.current_label, id="tree-label-value")
             yield Static(
-                "Enter saves - empty clears - Escape returns to tree", id="tree-label-help"
+                f"{save_key} saves - empty clears - {cancel_key} returns to tree",
+                id="tree-label-help",
             )
 
     def on_mount(self) -> None:
@@ -3406,10 +3419,18 @@ class TreeLabelInputScreen(ModalScreen[tuple[str, str | None] | None]):
 
     def on_key(self, event: Key) -> None:
         """Submit or cancel the label edit."""
-        if event.key == "enter":
+        if _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
             event.stop()
             self.action_submit()
-        elif event.key == "escape":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
             event.stop()
             self.action_cancel()
 
