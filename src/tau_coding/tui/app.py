@@ -2978,7 +2978,11 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         ):
             event.stop()
             self.action_cancel()
-        elif event.key == "backspace":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.editor_delete_char_backward,
+            "backspace",
+        ):
             if self.search_value:
                 event.stop()
                 self.run_worker(self._set_tree_search(self.search_value[:-1]))
