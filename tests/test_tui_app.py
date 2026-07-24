@@ -2525,6 +2525,66 @@ async def test_prompt_ctrl_u_deletes_current_line_prefix_only() -> None:
 
 
 @pytest.mark.anyio
+async def test_prompt_ctrl_w_deletes_previous_word() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha beta   "
+        prompt.move_cursor((0, len(prompt.text)))
+
+        await pilot.press("ctrl+w")
+
+        assert prompt.text == "alpha "
+        assert prompt.cursor_location == (0, len("alpha "))
+
+
+@pytest.mark.anyio
+async def test_prompt_alt_backspace_deletes_previous_word() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha beta"
+        prompt.move_cursor((0, len(prompt.text)))
+
+        await pilot.press("alt+backspace")
+
+        assert prompt.text == "alpha "
+        assert prompt.cursor_location == (0, len("alpha "))
+
+
+@pytest.mark.anyio
+async def test_prompt_ctrl_w_preserves_punctuation_boundary() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha.beta"
+        prompt.move_cursor((0, len(prompt.text)))
+
+        await pilot.press("ctrl+w")
+
+        assert prompt.text == "alpha."
+        assert prompt.cursor_location == (0, len("alpha."))
+
+
+@pytest.mark.anyio
+async def test_prompt_ctrl_w_at_line_start_merges_previous_line() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "first\nsecond"
+        prompt.move_cursor((1, 0))
+
+        await pilot.press("ctrl+w")
+
+        assert prompt.text == "firstsecond"
+        assert prompt.cursor_location == (0, len("first"))
+
+
+@pytest.mark.anyio
 async def test_tui_app_submits_multiline_prompt_with_enter() -> None:
     session = FakeSession(
         events=[
@@ -5370,6 +5430,7 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "Ctrl+Y: copy last assistant message" in app.screen.message
         assert "F2: open session tree" in app.screen.message
         assert "Ctrl+U: delete to line start" in app.screen.message
+        assert "Ctrl+W/Alt+Backspace: delete previous word" in app.screen.message
 
 
 @pytest.mark.anyio

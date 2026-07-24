@@ -459,6 +459,36 @@ class PromptInput(TextArea):
         self.prune_paste_markers()
         self.move_cursor((row, 0))
 
+    def action_delete_word_backward(self) -> None:
+        """Delete prompt text from the cursor back to the previous word boundary."""
+        if self.selected_text:
+            return
+        text = self.text
+        if not text:
+            return
+        row, column = self.cursor_location
+        lines = text.split("\n")
+        if row >= len(lines):
+            return
+        if column <= 0:
+            if row <= 0:
+                return
+            previous_line_length = len(lines[row - 1])
+            lines[row - 1] = f"{lines[row - 1]}{lines[row]}"
+            del lines[row]
+            self.text = "\n".join(lines)
+            self.prune_paste_markers()
+            self.move_cursor((row - 1, previous_line_length))
+            return
+        current_line = lines[row]
+        delete_start = _find_word_delete_start(current_line, column)
+        if delete_start == column:
+            return
+        lines[row] = f"{current_line[:delete_start]}{current_line[column:]}"
+        self.text = "\n".join(lines)
+        self.prune_paste_markers()
+        self.move_cursor((row, delete_start))
+
     def get_line(self, line_index: int) -> Text:
         """Retrieve one prompt line with shell prefixes highlighted."""
         line = super().get_line(line_index)
@@ -579,6 +609,10 @@ class PromptInput(TextArea):
             event.stop()
             event.prevent_default()
             self.action_delete_to_line_start()
+        elif event.key in {"ctrl+w", "alt+backspace"}:
+            event.stop()
+            event.prevent_default()
+            self.action_delete_word_backward()
         elif event.key == keybindings.completion_next:
             event.stop()
             if self._has_completion_options():
@@ -6114,6 +6148,25 @@ def _normalize_pasted_text(text: str) -> str:
     return "".join(char for char in normalized if char == "\n" or ord(char) >= 32)
 
 
+def _find_word_delete_start(line: str, cursor_column: int) -> int:
+    """Return the line column reached by a Pi-style backward word delete."""
+    index = min(max(cursor_column, 0), len(line))
+    while index > 0 and line[index - 1].isspace():
+        index -= 1
+    if index <= 0:
+        return index
+    previous = line[index - 1]
+    if previous.isalnum() or previous == "_":
+        while index > 0 and (line[index - 1].isalnum() or line[index - 1] == "_"):
+            index -= 1
+        return index
+    while index > 0 and not line[index - 1].isspace() and not (
+        line[index - 1].isalnum() or line[index - 1] == "_"
+    ):
+        index -= 1
+    return index
+
+
 def _decode_csi_u_control(code: str, fallback: str) -> str:
     codepoint = int(code)
     if 97 <= codepoint <= 122:
@@ -6353,6 +6406,7 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         "- Enter: submit prompt",
         "- Shift+Enter: insert newline",
         "- Ctrl+U: delete to line start",
+        "- Ctrl+W/Alt+Backspace: delete previous word",
         f"- {_key_hint(keybindings.accept_completion)}: accept autocomplete or path completion",
         f"- {_key_hint(keybindings.external_editor)}: edit prompt in external editor",
         f"- {_key_hint(keybindings.paste_clipboard)}: paste clipboard text or image",
