@@ -59,6 +59,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
           },
           "theme": "high-contrast",
           "autocompleteMaxVisible": 12,
+          "enableSkillCommands": false,
           "tree_filter_mode": "user-only",
           "steering_mode": "all",
           "followUpMode": "all",
@@ -93,6 +94,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.keybindings.cancel == "escape"
     assert settings.theme == "high-contrast"
     assert settings.autocomplete_max_visible == 12
+    assert settings.enable_skill_commands is False
     assert settings.auto_compact is True
     assert settings.double_escape_action == "tree"
     assert settings.hide_thinking is True
@@ -244,6 +246,19 @@ def test_tui_settings_reject_invalid_autocomplete_max_visible() -> None:
         tui_settings_from_json({"autocomplete_max_visible": "5"})
 
 
+def test_tui_settings_load_enable_skill_commands_aliases() -> None:
+    camel = tui_settings_from_json({"enableSkillCommands": False})
+    snake = tui_settings_from_json({"enable_skill_commands": False})
+
+    assert camel.enable_skill_commands is False
+    assert snake.enable_skill_commands is False
+
+
+def test_tui_settings_reject_invalid_enable_skill_commands() -> None:
+    with pytest.raises(TuiConfigError, match="enable_skill_commands"):
+        tui_settings_from_json({"enable_skill_commands": "false"})
+
+
 def test_tui_keybindings_serialize_to_json() -> None:
     settings = TuiSettings(
         keybindings=TuiKeybindings(
@@ -291,6 +306,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["keybindings"]["copy_message"] == "ctrl+b"
     assert settings.to_json()["keybindings"]["copy_last_message"] == "ctrl+x"
     assert settings.to_json()["autocomplete_max_visible"] == 5
+    assert settings.to_json()["enable_skill_commands"] is True
     assert settings.to_json()["theme"] == "high-contrast"
     assert settings.to_json()["auto_compact"] is True
     assert settings.to_json()["auto_copy_selection"] is False

@@ -97,6 +97,7 @@ def build_completion_state(
     session_ids: Sequence[str] = (),
     session_options: Sequence[CompletionOption] = (),
     cwd: Path | None = None,
+    enable_skill_commands: bool = True,
 ) -> CompletionState:
     """Build autocomplete suggestions for the current prompt text."""
     if not text.startswith("/") or text.startswith("//"):
@@ -111,6 +112,8 @@ def build_completion_state(
     token = text[:token_end]
     has_argument_text = token_end < len(text)
     if token.startswith("/skill:"):
+        if not enable_skill_commands:
+            return CompletionState()
         if has_argument_text and _matches_skill_command(token, skills):
             return CompletionState()
         return CompletionState(_skill_completions(token=token, token_end=token_end, skills=skills))
@@ -143,6 +146,7 @@ def build_completion_state(
             token_end=token_end,
             registry=command_registry,
             prompt_templates=prompt_templates,
+            enable_skill_commands=enable_skill_commands,
         )
     )
 
@@ -334,10 +338,13 @@ def _command_completions(
     token_end: int,
     registry: CommandRegistry,
     prompt_templates: Sequence[PromptTemplate],
+    enable_skill_commands: bool,
 ) -> tuple[CompletionItem, ...]:
     prefix = token.removeprefix("/").lower()
     command_suggestions: list[CompletionItem] = []
     for command in registry.list_commands():
+        if command.name == "skill" and not enable_skill_commands:
+            continue
         command_suggestions.extend(
             _command_alias_completions(command, prefix=prefix, token_end=token_end)
         )

@@ -890,6 +890,7 @@ class TreePickerResult:
 
 SettingsPickerKey = Literal[
     "autocomplete_max_visible",
+    "enable_skill_commands",
     "theme",
     "auto_compact",
     "steering_mode",
@@ -3313,6 +3314,14 @@ class TauTuiApp(App[None]):
             )
             return
 
+        if _is_skill_command_text(text) and not self.tui_settings.enable_skill_commands:
+            prompt.text = raw_text
+            prompt.move_cursor(_text_end_location(raw_text))
+            self._completion_state = CompletionState()
+            self._refresh_completions()
+            self._notify("Skill commands are disabled in TUI settings.", severity="warning")
+            return
+
         prompt.text = ""
         self._completion_state = CompletionState()
         self._refresh_completions()
@@ -3527,20 +3536,7 @@ class TauTuiApp(App[None]):
         self._terminal_worker = None
 
     def _set_tui_theme(self, theme: TuiThemeName) -> None:
-        self._set_tui_settings(
-            TuiSettings(
-                keybindings=self.tui_settings.keybindings,
-                theme=theme,
-                auto_compact=self.tui_settings.auto_compact,
-                auto_copy_selection=self.tui_settings.auto_copy_selection,
-                double_escape_action=self.tui_settings.double_escape_action,
-                follow_up_mode=self.tui_settings.follow_up_mode,
-                hide_thinking=self.tui_settings.hide_thinking,
-                steering_mode=self.tui_settings.steering_mode,
-                thinking_level=self.tui_settings.thinking_level,
-                tree_filter_mode=self.tui_settings.tree_filter_mode,
-            )
-        )
+        self._set_tui_settings(replace(self.tui_settings, theme=theme))
 
     def _set_tui_settings(self, settings: TuiSettings) -> None:
         previous_settings = self.tui_settings
@@ -4792,6 +4788,7 @@ class TauTuiApp(App[None]):
             theme_names=BUILTIN_TUI_THEME_NAMES,
             session_options=_session_options(self.session),
             cwd=self.session.cwd,
+            enable_skill_commands=self.tui_settings.enable_skill_commands,
         )
 
     def _refresh_footer_bindings(self) -> None:
@@ -5613,6 +5610,11 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             value=str(settings.autocomplete_max_visible),
         ),
         SettingsPickerItem(
+            key="enable_skill_commands",
+            label="Skill commands",
+            value="on" if settings.enable_skill_commands else "off",
+        ),
+        SettingsPickerItem(
             key="auto_copy_selection",
             label="Auto-copy selection",
             value="on" if settings.auto_copy_selection else "off",
@@ -5718,6 +5720,8 @@ def _next_tui_settings(
                 (current_index + 1) % len(AUTOCOMPLETE_MAX_VISIBLE_CHOICES)
             ],
         )
+    if key == "enable_skill_commands":
+        return replace(settings, enable_skill_commands=not settings.enable_skill_commands)
     if key == "auto_copy_selection":
         return replace(settings, auto_copy_selection=not settings.auto_copy_selection)
     if key == "hide_thinking":
@@ -5794,6 +5798,11 @@ def _command_message_uses_notification(command_text: str, message: str) -> bool:
     """Return whether slash-command output should appear as a notification."""
     command_name = command_text.split(maxsplit=1)[0].casefold()
     return command_name == "/name" and message.startswith("Session renamed: ")
+
+
+def _is_skill_command_text(text: str) -> bool:
+    """Return whether submitted text starts with Tau's skill command prefix."""
+    return text.strip().casefold().startswith("/skill:")
 
 
 def _command_output_title(command_text: str) -> str:

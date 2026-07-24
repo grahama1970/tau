@@ -2518,6 +2518,42 @@ async def test_tui_app_completes_skill_name() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_hides_skill_completion_when_skill_commands_disabled() -> None:
+    app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(enable_skill_commands=False))
+
+    async with app.run_test():
+        prompt = app.query_one("#prompt")
+        prompt.value = "/skill:r"
+        app._completion_state = app._build_completion_state(prompt.value)
+        app._refresh_completions()
+
+        assert app._completion_state.items == ()
+
+
+@pytest.mark.anyio
+async def test_tui_app_blocks_skill_submit_when_skill_commands_disabled() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session, tui_settings=TuiSettings(enable_skill_commands=False))
+    notifications: list[str] = []
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        del kwargs
+        notifications.append(message)
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/skill:review fix this"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert prompt.value == "/skill:review fix this"
+        assert session.prompt_texts == []
+        assert notifications == ["Skill commands are disabled in TUI settings."]
+
+
+@pytest.mark.anyio
 async def test_tui_app_completes_model_argument() -> None:
     app = TauTuiApp(FakeSession())
 
@@ -3558,6 +3594,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: one-at-a-time",
             "Follow-up mode: one-at-a-time",
             "Autocomplete rows: 7",
+            "Skill commands: on",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3577,6 +3614,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: one-at-a-time",
             "Follow-up mode: one-at-a-time",
             "Autocomplete rows: 7",
+            "Skill commands: on",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3596,6 +3634,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: one-at-a-time",
             "Autocomplete rows: 7",
+            "Skill commands: on",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3615,6 +3654,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: all",
             "Autocomplete rows: 7",
+            "Skill commands: on",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3633,6 +3673,26 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: all",
             "Autocomplete rows: 10",
+            "Skill commands: on",
+            "Auto-copy selection: off",
+            "Hide thinking: on",
+            "Thinking level: medium",
+            "Double Escape: tree",
+            "Tree filter mode: default",
+        ]
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.enable_skill_commands is False
+        assert '"enable_skill_commands": false' in tui_settings_path().read_text(encoding="utf-8")
+        assert isinstance(app.screen, SettingsPickerScreen)
+        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+            "Theme: tau-dark",
+            "Auto-compact: off",
+            "Steering mode: all",
+            "Follow-up mode: all",
+            "Autocomplete rows: 10",
+            "Skill commands: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3651,6 +3711,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: all",
             "Autocomplete rows: 10",
+            "Skill commands: off",
             "Auto-copy selection: on",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3675,14 +3736,24 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert app.tui_settings.double_escape_action == "fork"
         assert '"double_escape_action": "fork"' in tui_settings_path().read_text(encoding="utf-8")
 
-        await pilot.press("up", "up", "up", "up", "up", "up", "up", "up", "enter")
+        await pilot.press("up", "up", "up", "up", "up", "up", "up", "up", "up", "enter")
         await pilot.pause()
         assert app.tui_settings.theme == "tau-light"
         assert '"theme": "tau-light"' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
 
         await pilot.press(
-            "down", "down", "down", "down", "down", "down", "down", "down", "down", "enter"
+            "down",
+            "down",
+            "down",
+            "down",
+            "down",
+            "down",
+            "down",
+            "down",
+            "down",
+            "down",
+            "enter",
         )
         await pilot.pause()
         assert app.tui_settings.tree_filter_mode == "no-tools"

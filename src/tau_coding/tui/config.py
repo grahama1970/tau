@@ -277,6 +277,7 @@ class TuiSettings:
     steering_mode: TuiQueueDrainMode = "one-at-a-time"
     follow_up_mode: TuiQueueDrainMode = "one-at-a-time"
     autocomplete_max_visible: int = DEFAULT_AUTOCOMPLETE_MAX_VISIBLE
+    enable_skill_commands: bool = True
 
     def to_json(self) -> dict[str, Any]:
         """Serialize these settings to JSON-compatible data."""
@@ -285,6 +286,7 @@ class TuiSettings:
             "auto_compact": self.auto_compact,
             "auto_copy_selection": self.auto_copy_selection,
             "double_escape_action": self.double_escape_action,
+            "enable_skill_commands": self.enable_skill_commands,
             "hide_thinking": self.hide_thinking,
             "keybindings": self.keybindings.to_json(),
             "follow_up_mode": self.follow_up_mode,
@@ -332,6 +334,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "autocompleteMaxVisible",
         "autocomplete_max_visible",
         "double_escape_action",
+        "enableSkillCommands",
+        "enable_skill_commands",
         "hide_thinking",
         "keybindings",
         "followUpMode",
@@ -375,6 +379,10 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
                 "autocomplete_max_visible",
                 data.get("autocompleteMaxVisible", DEFAULT_AUTOCOMPLETE_MAX_VISIBLE),
             )
+        ),
+        enable_skill_commands=_bool_setting(
+            data.get("enable_skill_commands", data.get("enableSkillCommands", True)),
+            "enable_skill_commands",
         ),
         thinking_level=_thinking_level(
             data.get("thinking_level", data.get("thinkingLevel", DEFAULT_THINKING_LEVEL))
