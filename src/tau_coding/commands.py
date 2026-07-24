@@ -572,8 +572,7 @@ def _workflows_command(context: CommandContext) -> CommandResult:
     workflows = list_workflows()
     lines = [
         "Packaged canonical Tau workflows:",
-        "Run from a shell with "
-        "`uv run tau workflows run <workflow-id> --goal ... --run-dir ... --open-viewer`.",
+        "Run from a shell with the per-workflow command shown below.",
         "Use `uv run tau workflows describe <workflow-id> --json` for the exact input contract.",
     ]
     for workflow in workflows:
@@ -585,10 +584,7 @@ def _workflows_command(context: CommandContext) -> CommandResult:
                 f"  availability: {workflow.availability}",
                 f"  result: {workflow.result_schema} via {workflow.result_node_id}",
                 f"  describe: uv run tau workflows describe {workflow.workflow_id} --json",
-                (
-                    f"  run: uv run tau workflows run {workflow.workflow_id} "
-                    "--goal <goal> --run-dir <dir> --open-viewer"
-                ),
+                f"  run: {_format_workflow_run_command(workflow.workflow_id)}",
             ]
         )
     return CommandResult(handled=True, workflow_picker_requested=True, message="\n".join(lines))
@@ -623,13 +619,21 @@ def _format_workflow_detail(payload: dict[str, object]) -> str:
     lines.extend(
         [
             f"Describe: uv run tau workflows describe {workflow_id} --json",
-            (
-                f"Run: uv run tau workflows run {workflow_id} "
-                "--goal <goal> --run-dir <dir> --open-viewer"
-            ),
+            f"Run: {_format_workflow_run_command(workflow_id)}",
         ]
     )
     return "\n".join(lines)
+
+
+def _format_workflow_run_command(workflow_id: str) -> str:
+    parts = ["uv run tau workflows run", workflow_id, "--repo <repo>"]
+    if workflow_id != "tau-operator-reference":
+        parts.extend(["--goal <goal>"])
+    parts.extend(["--run-dir <dir>"])
+    if workflow_id in {"approved-release-bundle", "durable-repository-qualification"}:
+        parts.extend(["--publish-path <publish-dir>"])
+    parts.extend(["--open-viewer"])
+    return " ".join(parts)
 
 
 def _skills_command(context: CommandContext) -> CommandResult:

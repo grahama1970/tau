@@ -381,7 +381,18 @@ def test_workflows_command_lists_canonical_workflow_launch_commands(tmp_path: Pa
         in result.message
     )
     assert (
-        "uv run tau workflows run repository-readiness --goal <goal> --run-dir <dir> --open-viewer"
+        "uv run tau workflows run repository-readiness --repo <repo> --goal <goal> "
+        "--run-dir <dir> --open-viewer"
+        in result.message
+    )
+    assert (
+        "uv run tau workflows run durable-repository-qualification --repo <repo> "
+        "--goal <goal> --run-dir <dir> --publish-path <publish-dir> --open-viewer"
+        in result.message
+    )
+    assert (
+        "uv run tau workflows run tau-operator-reference --repo <repo> "
+        "--run-dir <dir> --open-viewer"
         in result.message
     )
 
@@ -401,7 +412,8 @@ def test_workflows_command_describes_one_workflow(tmp_path: Path) -> None:
     assert "Proof boundary: live=True, mocked=False, provider_live=False" in result.message
     assert (
         "Run: uv run tau workflows run durable-repository-qualification "
-        "--goal <goal> --run-dir <dir> --open-viewer"
+        "--repo <repo> --goal <goal> --run-dir <dir> "
+        "--publish-path <publish-dir> --open-viewer"
     ) in result.message
 
 

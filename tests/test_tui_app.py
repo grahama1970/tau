@@ -6560,7 +6560,8 @@ async def test_tui_app_workflows_picker_selection_opens_detail_modal() -> None:
         assert "Topology: DURABLE_MIXED_REPAIR_APPROVAL" in app.screen.message
         assert (
             "Run: uv run tau workflows run durable-repository-qualification "
-            "--goal <goal> --run-dir <dir> --open-viewer"
+            "--repo <repo> --goal <goal> --run-dir <dir> "
+            "--publish-path <publish-dir> --open-viewer"
         ) in app.screen.message
 
 
@@ -6611,7 +6612,8 @@ async def test_tui_app_workflows_detail_command_uses_command_output_modal() -> N
         assert "Result node: finalize-qualification" in app.screen.message
         assert (
             "Run: uv run tau workflows run durable-repository-qualification "
-            "--goal <goal> --run-dir <dir> --open-viewer"
+            "--repo <repo> --goal <goal> --run-dir <dir> "
+            "--publish-path <publish-dir> --open-viewer"
         ) in app.screen.message
 
 
