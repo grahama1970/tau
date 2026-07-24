@@ -3534,7 +3534,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         tui_settings=TuiSettings(
             theme="tau-dark",
             auto_copy_selection=False,
-            autocomplete_max_visible=8,
+            autocomplete_max_visible=7,
             double_escape_action="tree",
             follow_up_mode="one-at-a-time",
             tree_filter_mode="default",
@@ -3557,7 +3557,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: on",
             "Steering mode: one-at-a-time",
             "Follow-up mode: one-at-a-time",
-            "Autocomplete rows: 8",
+            "Autocomplete rows: 7",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3576,7 +3576,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: one-at-a-time",
             "Follow-up mode: one-at-a-time",
-            "Autocomplete rows: 8",
+            "Autocomplete rows: 7",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3595,7 +3595,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: one-at-a-time",
-            "Autocomplete rows: 8",
+            "Autocomplete rows: 7",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3614,7 +3614,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
-            "Autocomplete rows: 8",
+            "Autocomplete rows: 7",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3624,15 +3624,15 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
 
         await pilot.press("down", "enter")
         await pilot.pause()
-        assert app.tui_settings.autocomplete_max_visible == 12
-        assert '"autocomplete_max_visible": 12' in tui_settings_path().read_text(encoding="utf-8")
+        assert app.tui_settings.autocomplete_max_visible == 10
+        assert '"autocomplete_max_visible": 10' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
         assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
             "Theme: tau-dark",
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
-            "Autocomplete rows: 12",
+            "Autocomplete rows: 10",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3650,7 +3650,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
-            "Autocomplete rows: 12",
+            "Autocomplete rows: 10",
             "Auto-copy selection: on",
             "Hide thinking: on",
             "Thinking level: medium",
