@@ -7428,6 +7428,7 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "Alt+B/Ctrl+Left/Alt+Left: move word left" in app.screen.message
         assert "Alt+F/Ctrl+Right/Alt+Right: move word right" in app.screen.message
         assert "Ctrl+]/Ctrl+Alt+]: jump to next or previous character" in app.screen.message
+        assert "drop files: attach paths to the prompt" in app.screen.message
         assert "Ctrl+U: delete to line start" in app.screen.message
         assert "Ctrl+K: delete to line end when not used for commands" in app.screen.message
         assert (

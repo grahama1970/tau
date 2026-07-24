@@ -8443,6 +8443,7 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         f"- {_key_hint(keybindings.accept_completion)}: accept autocomplete or path completion",
         f"- {_key_hint(keybindings.external_editor)}: edit prompt in external editor",
         f"- {_key_hint(keybindings.paste_clipboard)}: paste clipboard text or image",
+        "- drop files: attach paths to the prompt",
         f"- {_key_hint(keybindings.copy_message)}: clear input",
         "",
         "Agent:",
