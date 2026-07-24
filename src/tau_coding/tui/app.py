@@ -661,7 +661,9 @@ class PromptInput(TextArea):
             event.stop()
             event.prevent_default()
             await self._completion_target().action_submit_prompt()
-        elif event.key == "shift+enter":
+        elif event.key == "shift+enter" or (
+            event.key == "ctrl+j" and event.key != keybindings.command_palette
+        ):
             event.stop()
             event.prevent_default()
             self.insert("\n")
@@ -6556,6 +6558,11 @@ def _local_tui_command(text: str, keybindings: TuiKeybindings) -> CommandResult 
 
 
 def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
+    newline_hint = (
+        "Shift+Enter"
+        if keybindings.command_palette == "ctrl+j"
+        else "Shift+Enter/Ctrl+J"
+    )
     lines = [
         "Keyboard Shortcuts",
         "",
@@ -6567,7 +6574,7 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         "",
         "Editing:",
         "- Enter: submit prompt",
-        "- Shift+Enter: insert newline",
+        f"- {newline_hint}: insert newline",
         "- Ctrl+A/Ctrl+E: move to line start/end",
         "- Ctrl+U: delete to line start",
         "- Ctrl+W/Alt+Backspace: delete previous word",

@@ -2784,6 +2784,30 @@ async def test_tui_app_submits_multiline_prompt_with_enter() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_ctrl_j_inserts_multiline_prompt_newline() -> None:
+    session = FakeSession(
+        events=[
+            AgentStartEvent(),
+            MessageEndEvent(message=UserMessage(content="first\nsecond")),
+            AgentEndEvent(),
+        ]
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "first"
+        prompt.cursor_position = len(prompt.value)
+        await pilot.press("ctrl+j")
+        prompt.value += "second"
+        await pilot.press("enter")
+        await pilot.pause()
+
+    assert session.prompt_texts == ["first\nsecond"]
+    assert prompt.value == ""
+
+
+@pytest.mark.anyio
 async def test_tui_app_completes_custom_prompt_slash_command() -> None:
     session = FakeSession()
     session.prompt_templates = (
@@ -5609,6 +5633,19 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "Ctrl+W/Alt+Backspace: delete previous word" in app.screen.message
         assert "Alt+D/Alt+Delete: delete next word" in app.screen.message
         assert "Ctrl+Y/Alt+Y: yank or cycle deleted text" in app.screen.message
+
+
+@pytest.mark.anyio
+async def test_tui_app_hotkeys_lists_default_ctrl_j_newline() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/hotkeys"
+        await pilot.press("enter")
+
+        assert isinstance(app.screen, CommandOutputScreen)
+        assert "Shift+Enter/Ctrl+J: insert newline" in app.screen.message
 
 
 @pytest.mark.anyio
