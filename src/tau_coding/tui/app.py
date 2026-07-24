@@ -2893,6 +2893,20 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
             self.action_cycle_tree_filter_backward()
         elif _matches_configured_or_default_key(
             event.key,
+            self.keybindings.editor_cursor_left,
+            "left",
+        ):
+            event.stop()
+            self.action_page_up()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.editor_cursor_right,
+            "right",
+        ):
+            event.stop()
+            self.action_page_down()
+        elif _matches_configured_or_default_key(
+            event.key,
             self.keybindings.copy_last_message,
             "ctrl+x",
         ):
@@ -3247,10 +3261,12 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         filter_label = "default" if self.filter_mode == "default" else self.filter_mode
         label_time_state = "on" if self.show_label_timestamps else "off"
         copy_key = _key_hint_with_default(self.keybindings.copy_last_message, "ctrl+x")
+        page_left_key = _key_hint_with_default(self.keybindings.editor_cursor_left, "left")
+        page_right_key = _key_hint_with_default(self.keybindings.editor_cursor_right, "right")
         return (
             "Type filters - Enter branches - S summarizes - C custom summary - "
             f"{copy_key} copy - Shift+L label - Shift+T label time ({label_time_state}) - "
-            "Ctrl+Left/Right fold - "
+            f"{page_left_key}/{page_right_key} page - Ctrl+Left/Right fold - "
             f"Ctrl+T no-tools ({tool_call_state}) - Ctrl+O/Shift+Ctrl+O filter {filter_label} - "
             "Escape clears/closes"
         )

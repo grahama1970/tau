@@ -6030,10 +6030,63 @@ async def test_tui_app_tree_picker_page_keys_move_by_page() -> None:
         assert isinstance(app.screen, TreePickerScreen)
         tree_list = app.screen.query_one("#tree-picker-list", ListView)
         assert tree_list.index == 0
+        assert "Left/Ctrl+B/Right/Ctrl+F page" in str(
+            app.screen.query_one("#tree-picker-help", Static).render()
+        )
 
         await pilot.press("pagedown")
         page_down_index = tree_list.index
         await pilot.press("pageup")
+        await pilot.press("right")
+        right_page_down_index = tree_list.index
+        await pilot.press("left")
+
+    assert page_down_index is not None
+    assert page_down_index > 1
+    assert right_page_down_index is not None
+    assert right_page_down_index > 1
+    assert tree_list.index == 0
+
+
+@pytest.mark.anyio
+async def test_tui_app_tree_picker_uses_configured_pi_cursor_page_keybindings() -> None:
+    class LongTreeSession(FakeSession):
+        async def tree_choices(self) -> tuple[SessionTreeChoice, ...]:
+            return tuple(
+                SessionTreeChoice(
+                    entry_id=f"entry-{index}",
+                    label=f"assistant: Entry {index:02d}",
+                    active=index == 0,
+                )
+                for index in range(30)
+            )
+
+    session = LongTreeSession()
+    app = TauTuiApp(
+        session,
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(
+                editor_cursor_left="f7",
+                editor_cursor_right="f8",
+            ),
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        tree_list = app.screen.query_one("#tree-picker-list", ListView)
+        assert tree_list.index == 0
+        assert "F7/F8 page" in str(app.screen.query_one("#tree-picker-help", Static).render())
+
+        await pilot.press("f8")
+        page_down_index = tree_list.index
+        await pilot.press("f7")
+        await pilot.pause()
 
     assert page_down_index is not None
     assert page_down_index > 1
