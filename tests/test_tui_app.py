@@ -2760,6 +2760,90 @@ async def test_prompt_ctrl_e_moves_to_current_line_end() -> None:
 
 
 @pytest.mark.anyio
+async def test_prompt_alt_b_moves_to_previous_word_boundary() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha beta   "
+        prompt.move_cursor((0, len(prompt.text)))
+
+        await pilot.press("alt+b")
+
+        assert prompt.cursor_location == (0, len("alpha "))
+
+
+@pytest.mark.anyio
+async def test_prompt_ctrl_left_moves_to_previous_word_boundary() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha.beta"
+        prompt.move_cursor((0, len(prompt.text)))
+
+        await pilot.press("ctrl+left")
+
+        assert prompt.cursor_location == (0, len("alpha."))
+
+
+@pytest.mark.anyio
+async def test_prompt_alt_left_at_line_start_moves_to_previous_line_end() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "first\nsecond"
+        prompt.move_cursor((1, 0))
+
+        await pilot.press("alt+left")
+
+        assert prompt.cursor_location == (0, len("first"))
+
+
+@pytest.mark.anyio
+async def test_prompt_alt_f_moves_to_next_word_boundary() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha   beta"
+        prompt.move_cursor((0, len("alpha")))
+
+        await pilot.press("alt+f")
+
+        assert prompt.cursor_location == (0, len("alpha   beta"))
+
+
+@pytest.mark.anyio
+async def test_prompt_ctrl_right_moves_to_next_word_boundary() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha.beta"
+        prompt.move_cursor((0, 0))
+
+        await pilot.press("ctrl+right")
+
+        assert prompt.cursor_location == (0, len("alpha"))
+
+
+@pytest.mark.anyio
+async def test_prompt_alt_right_at_line_end_moves_to_next_line_start() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "first\nsecond"
+        prompt.move_cursor((0, len("first")))
+
+        await pilot.press("alt+right")
+
+        assert prompt.cursor_location == (1, 0)
+
+
+@pytest.mark.anyio
 async def test_tui_app_submits_multiline_prompt_with_enter() -> None:
     session = FakeSession(
         events=[
@@ -5629,6 +5713,8 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "Ctrl+Y: copy last assistant message" in app.screen.message
         assert "F2: open session tree" in app.screen.message
         assert "Ctrl+A/Ctrl+E: move to line start/end" in app.screen.message
+        assert "Alt+B/Ctrl+Left/Alt+Left: move word left" in app.screen.message
+        assert "Alt+F/Ctrl+Right/Alt+Right: move word right" in app.screen.message
         assert "Ctrl+U: delete to line start" in app.screen.message
         assert "Ctrl+W/Alt+Backspace: delete previous word" in app.screen.message
         assert "Alt+D/Alt+Delete: delete next word" in app.screen.message

@@ -553,6 +553,34 @@ class PromptInput(TextArea):
         line = lines[row] if row < len(lines) else ""
         self.move_cursor((row, len(line)))
 
+    def action_move_word_backward(self) -> None:
+        """Move the prompt cursor back by one Pi-style word boundary."""
+        self._last_prompt_edit = None
+        self._last_yank_range = None
+        row, column = self.cursor_location
+        lines = self.text.split("\n")
+        if row >= len(lines):
+            return
+        if column <= 0:
+            if row > 0:
+                self.move_cursor((row - 1, len(lines[row - 1])))
+            return
+        self.move_cursor((row, _find_word_delete_start(lines[row], column)))
+
+    def action_move_word_forward(self) -> None:
+        """Move the prompt cursor forward by one Pi-style word boundary."""
+        self._last_prompt_edit = None
+        self._last_yank_range = None
+        row, column = self.cursor_location
+        lines = self.text.split("\n")
+        if row >= len(lines):
+            return
+        if column >= len(lines[row]):
+            if row < len(lines) - 1:
+                self.move_cursor((row + 1, 0))
+            return
+        self.move_cursor((row, _find_word_delete_end(lines[row], column)))
+
     def action_yank_kill_ring(self) -> None:
         """Insert the most recently deleted prompt text at the cursor."""
         killed_text = self._peek_kill()
@@ -756,6 +784,14 @@ class PromptInput(TextArea):
             event.stop()
             event.prevent_default()
             self.action_move_to_line_end()
+        elif event.key in {"alt+b", "ctrl+left", "alt+left"}:
+            event.stop()
+            event.prevent_default()
+            self.action_move_word_backward()
+        elif event.key in {"alt+f", "ctrl+right", "alt+right"}:
+            event.stop()
+            event.prevent_default()
+            self.action_move_word_forward()
         elif event.key == keybindings.completion_next:
             event.stop()
             if self._has_completion_options():
@@ -6576,6 +6612,8 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         "- Enter: submit prompt",
         f"- {newline_hint}: insert newline",
         "- Ctrl+A/Ctrl+E: move to line start/end",
+        "- Alt+B/Ctrl+Left/Alt+Left: move word left",
+        "- Alt+F/Ctrl+Right/Alt+Right: move word right",
         "- Ctrl+U: delete to line start",
         "- Ctrl+W/Alt+Backspace: delete previous word",
         "- Alt+D/Alt+Delete: delete next word",
