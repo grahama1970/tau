@@ -33,7 +33,7 @@ from tau_agent import (
     ToolResultMessage,
     UserMessage,
 )
-from tau_coding.commands import CommandResult
+from tau_coding.commands import CommandResult, create_default_command_registry
 from tau_coding.credentials import FileCredentialStore, OAuthCredential
 from tau_coding.prompt_templates import PromptTemplate
 from tau_coding.provider_config import (
@@ -284,6 +284,8 @@ class FakeSession:
             return CommandResult(handled=True, theme_picker_requested=True)
         if text.startswith("/theme "):
             return CommandResult(handled=True, theme=text.removeprefix("/theme "))
+        if text == "/workflows" or text.startswith("/workflows "):
+            return create_default_command_registry().execute(self, text)
         if text.startswith("/name "):
             return CommandResult(
                 handled=True,
@@ -5973,6 +5975,29 @@ async def test_tui_app_help_uses_modal_instead_of_transcript() -> None:
         scroll = app.screen.query_one("#command-output-scroll", VerticalScroll)
         assert scroll is not None
         assert app.screen.focused is scroll
+
+
+@pytest.mark.anyio
+async def test_tui_app_workflows_command_uses_command_output_modal() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/workflows"
+        await pilot.press("enter")
+
+        assert isinstance(app.screen, CommandOutputScreen)
+        assert app.state.items == []
+        assert app.screen.title_text == "/workflows"
+        assert "Packaged canonical Tau workflows:" in app.screen.message
+        assert "repository-readiness: Repository Readiness" in app.screen.message
+        assert "durable-repository-qualification: Durable Repository Qualification" in (
+            app.screen.message
+        )
+        assert (
+            "uv run tau workflows run repository-readiness --goal <goal> "
+            "--run-dir <dir> --open-viewer"
+        ) in app.screen.message
 
 
 @pytest.mark.anyio

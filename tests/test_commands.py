@@ -119,6 +119,7 @@ def test_registered_commands_are_pi_aligned(tmp_path: Path) -> None:
         "theme",
         "tree",
         "trust",
+        "workflows",
     ]
 
 
@@ -356,6 +357,40 @@ def test_hotkeys_command_lists_common_tui_shortcuts(tmp_path: Path) -> None:
     assert "Tree picker: Ctrl+O cycles filters, Shift+Ctrl+O cycles backward" in result.message
     assert "Tree picker: Shift+L edits labels, Shift+T toggles label timestamps" in result.message
     assert "Shift+Tab: cycle thinking mode" in result.message
+
+
+def test_workflows_command_lists_canonical_workflow_launch_commands(tmp_path: Path) -> None:
+    result = create_default_command_registry().execute(FakeSession(tmp_path), "/workflows")
+
+    assert result.handled is True
+    assert result.message is not None
+    assert "Packaged canonical Tau workflows:" in result.message
+    assert "repository-readiness: Repository Readiness" in result.message
+    assert "tau-operator-reference: Tau Operator Reference" in result.message
+    assert "repository-evidence-map: Repository Evidence Map" in result.message
+    assert "approved-release-bundle: Approved Release Bundle" in result.message
+    assert (
+        "durable-repository-qualification: Durable Repository Qualification"
+        in result.message
+    )
+    assert "topology: LINEAR" in result.message
+    assert "topology: DURABLE_MIXED_REPAIR_APPROVAL" in result.message
+    assert (
+        "uv run tau workflows describe durable-repository-qualification --json"
+        in result.message
+    )
+    assert (
+        "uv run tau workflows run repository-readiness --goal <goal> --run-dir <dir> --open-viewer"
+        in result.message
+    )
+
+
+def test_workflows_command_rejects_arguments(tmp_path: Path) -> None:
+    result = create_default_command_registry().execute(
+        FakeSession(tmp_path), "/workflows repository-readiness"
+    )
+
+    assert result.message == "Usage: /workflows"
 
 
 def test_model_command_requests_picker_and_switches_models(tmp_path: Path) -> None:

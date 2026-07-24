@@ -16,6 +16,7 @@ from tau_coding.session_manager import CodingSessionRecord, SessionManager
 from tau_coding.skills import Skill
 from tau_coding.system_prompt import ProjectContextFile
 from tau_coding.thinking import normalize_thinking_level
+from tau_coding.workflows.catalog import list_workflows
 
 BUILTIN_TUI_THEME_NAMES = ("tau-dark", "tau-light", "high-contrast")
 
@@ -311,6 +312,15 @@ def create_default_command_registry() -> CommandRegistry:
     )
     registry.register(
         SlashCommand(
+            name="workflows",
+            usage="/workflows",
+            description="List packaged canonical Tau workflows and launch commands.",
+            handler=_workflows_command,
+            search_terms=("canonical", "dag", "viewer", "launch", "progress"),
+        )
+    )
+    registry.register(
+        SlashCommand(
             name="reload",
             usage="/reload",
             description="Reload local resources and project context.",
@@ -539,6 +549,35 @@ def _hotkeys_command(context: CommandContext) -> CommandResult:
         "- Ctrl+C: clear prompt input",
         "- Ctrl+D: quit",
     ]
+    return CommandResult(handled=True, message="\n".join(lines))
+
+
+def _workflows_command(context: CommandContext) -> CommandResult:
+    if context.args:
+        return CommandResult(handled=True, message="Usage: /workflows")
+
+    workflows = list_workflows()
+    lines = [
+        "Packaged canonical Tau workflows:",
+        "Run from a shell with "
+        "`uv run tau workflows run <workflow-id> --goal ... --run-dir ... --open-viewer`.",
+        "Use `uv run tau workflows describe <workflow-id> --json` for the exact input contract.",
+    ]
+    for workflow in workflows:
+        lines.extend(
+            [
+                "",
+                f"- {workflow.workflow_id}: {workflow.title}",
+                f"  topology: {workflow.topology}",
+                f"  availability: {workflow.availability}",
+                f"  result: {workflow.result_schema} via {workflow.result_node_id}",
+                f"  describe: uv run tau workflows describe {workflow.workflow_id} --json",
+                (
+                    f"  run: uv run tau workflows run {workflow.workflow_id} "
+                    "--goal <goal> --run-dir <dir> --open-viewer"
+                ),
+            ]
+        )
     return CommandResult(handled=True, message="\n".join(lines))
 
 
