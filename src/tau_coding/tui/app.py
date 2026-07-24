@@ -825,11 +825,11 @@ class PromptInput(TextArea):
                 self._jump_direction = None
                 return
             self.action_jump_to_character(character)
-        elif event.key == keybindings.queue_follow_up:
+        elif _matches_configured_key(event.key, keybindings.queue_follow_up):
             event.stop()
             event.prevent_default()
             await self._completion_target().action_submit_follow_up()
-        elif event.key == keybindings.dequeue_messages:
+        elif _matches_configured_key(event.key, keybindings.dequeue_messages):
             event.stop()
             event.prevent_default()
             self._completion_target().action_dequeue_messages()
@@ -838,7 +838,8 @@ class PromptInput(TextArea):
             event.prevent_default()
             await self._completion_target().action_submit_prompt()
         elif event.key == "shift+enter" or (
-            event.key == "ctrl+j" and event.key != keybindings.command_palette
+            event.key == "ctrl+j"
+            and not _matches_configured_key(event.key, keybindings.command_palette)
         ):
             event.stop()
             event.prevent_default()
@@ -849,64 +850,72 @@ class PromptInput(TextArea):
             event.prevent_default()
             self._push_undo_snapshot()
             self.insert(" ")
-        elif event.key == keybindings.accept_completion:
+        elif _matches_configured_key(event.key, keybindings.accept_completion):
             event.stop()
             self._completion_target().action_accept_completion()
-        elif event.key == keybindings.cancel:
+        elif _matches_configured_key(event.key, keybindings.cancel):
             event.stop()
             self._completion_target().action_cancel()
         elif event.key == "ctrl+k" and self.text:
             event.stop()
             event.prevent_default()
             self.action_delete_to_line_end()
-        elif event.key == keybindings.command_palette:
+        elif _matches_configured_key(event.key, keybindings.command_palette):
             event.stop()
             self._completion_target().action_open_command_palette()
-        elif event.key == keybindings.session_picker:
+        elif _matches_configured_key(event.key, keybindings.session_picker):
             event.stop()
             self._completion_target().action_open_session_picker()
-        elif keybindings.session_new and event.key == keybindings.session_new:
+        elif keybindings.session_new and _matches_configured_key(
+            event.key, keybindings.session_new
+        ):
             event.stop()
             self._completion_target().action_new_session()
-        elif keybindings.session_tree and event.key == keybindings.session_tree:
+        elif keybindings.session_tree and _matches_configured_key(
+            event.key, keybindings.session_tree
+        ):
             event.stop()
             self._completion_target().action_open_tree_picker()
-        elif keybindings.session_fork and event.key == keybindings.session_fork:
+        elif keybindings.session_fork and _matches_configured_key(
+            event.key, keybindings.session_fork
+        ):
             event.stop()
             self._completion_target().action_open_fork_picker()
-        elif keybindings.session_resume and event.key == keybindings.session_resume:
+        elif keybindings.session_resume and _matches_configured_key(
+            event.key, keybindings.session_resume
+        ):
             event.stop()
             self._completion_target().action_open_session_picker()
         elif _is_thinking_cycle_key(event.key, keybindings.thinking_cycle):
             event.stop()
             self._completion_target().action_cycle_thinking()
-        elif event.key == keybindings.model_cycle:
+        elif _matches_configured_key(event.key, keybindings.model_cycle):
             event.stop()
             self._completion_target().action_cycle_model()
-        elif event.key == keybindings.model_cycle_previous:
+        elif _matches_configured_key(event.key, keybindings.model_cycle_previous):
             event.stop()
             self._completion_target().action_cycle_model_previous()
-        elif event.key == keybindings.model_picker:
+        elif _matches_configured_key(event.key, keybindings.model_picker):
             event.stop()
             self._completion_target().action_open_model_picker()
-        elif event.key == keybindings.toggle_tool_results:
+        elif _matches_configured_key(event.key, keybindings.toggle_tool_results):
             event.stop()
             self._completion_target().action_toggle_tool_results()
-        elif event.key == keybindings.toggle_thinking:
+        elif _matches_configured_key(event.key, keybindings.toggle_thinking):
             event.stop()
             self._completion_target().action_toggle_thinking()
-        elif event.key == keybindings.external_editor:
+        elif _matches_configured_key(event.key, keybindings.external_editor):
             event.stop()
             self._completion_target().action_open_external_editor()
-        elif event.key == keybindings.paste_clipboard:
+        elif _matches_configured_key(event.key, keybindings.paste_clipboard):
             event.stop()
             event.prevent_default()
             self._completion_target().action_paste_clipboard()
-        elif event.key == keybindings.copy_last_message:
+        elif _matches_configured_key(event.key, keybindings.copy_last_message):
             event.stop()
             event.prevent_default()
             self._completion_target().action_copy_last_message()
-        elif event.key == keybindings.copy_message:
+        elif _matches_configured_key(event.key, keybindings.copy_message):
             if self.selected_text:
                 return
             event.stop()
@@ -927,7 +936,9 @@ class PromptInput(TextArea):
             event.stop()
             event.prevent_default()
             self.action_delete_word_forward()
-        elif event.key == "ctrl+k" and event.key != keybindings.command_palette:
+        elif event.key == "ctrl+k" and not _matches_configured_key(
+            event.key, keybindings.command_palette
+        ):
             event.stop()
             event.prevent_default()
             self.action_delete_to_line_end()
@@ -983,16 +994,16 @@ class PromptInput(TextArea):
             event.stop()
             event.prevent_default()
             self.action_start_jump_backward()
-        elif event.key == keybindings.completion_next:
+        elif _matches_configured_key(event.key, keybindings.completion_next):
             event.stop()
             if self._has_completion_options():
                 self._completion_target().action_completion_next()
             else:
                 self.action_cursor_down()
-        elif event.key == keybindings.completion_previous:
+        elif _matches_configured_key(event.key, keybindings.completion_previous):
             event.stop()
             self.action_completion_previous()
-        elif event.key == keybindings.quit:
+        elif _matches_configured_key(event.key, keybindings.quit):
             event.stop()
             await self.action_quit()
         else:
@@ -6474,9 +6485,17 @@ def _command_output_title(command_text: str) -> str:
 
 
 def _is_thinking_cycle_key(key: str, configured_key: str) -> bool:
-    if key == configured_key:
+    if _matches_configured_key(key, configured_key):
         return True
-    return configured_key == "shift+tab" and key == "backtab"
+    return "shift+tab" in _configured_key_parts(configured_key) and key == "backtab"
+
+
+def _matches_configured_key(key: str, configured_key: str) -> bool:
+    return key in _configured_key_parts(configured_key)
+
+
+def _configured_key_parts(configured_key: str) -> tuple[str, ...]:
+    return tuple(part.strip() for part in configured_key.split(",") if part.strip())
 
 
 def _tool_update_has_pipeline_stage(event: ToolExecutionUpdateEvent) -> bool:
@@ -6779,7 +6798,10 @@ def _prompt_footer_mode(
 
 
 def _key_hint(key: str) -> str:
-    return "+".join(part.capitalize() for part in key.split("+"))
+    return "/".join(
+        "+".join(piece.capitalize() for piece in part.split("+"))
+        for part in _configured_key_parts(key)
+    )
 
 
 def _local_tui_command(text: str, keybindings: TuiKeybindings) -> CommandResult | None:

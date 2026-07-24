@@ -6068,6 +6068,34 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_accepts_pi_style_keybinding_lists(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = TauTuiApp(
+        FakeSession(
+            messages=[
+                UserMessage(content="question"),
+                AssistantMessage(content="pi-style copy binding"),
+            ]
+        ),
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(copy_last_message="ctrl+x,f8")
+        ),
+    )
+    copied: list[str] = []
+    notifications: list[str] = []
+    monkeypatch.setattr(app, "copy_to_clipboard", copied.append)
+    monkeypatch.setattr(app, "_notify", lambda message, **_: notifications.append(message))
+
+    async with app.run_test() as pilot:
+        await pilot.press("f8")
+        await pilot.pause()
+
+    assert copied == ["pi-style copy binding"]
+    assert notifications == ["Copied last assistant message to clipboard."]
+
+
+@pytest.mark.anyio
 async def test_tui_app_hotkeys_lists_default_ctrl_j_newline() -> None:
     app = TauTuiApp(FakeSession())
 

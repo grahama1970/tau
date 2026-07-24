@@ -118,6 +118,38 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.resolved_theme == HIGH_CONTRAST_THEME
 
 
+def test_tui_settings_reads_pi_keybinding_aliases() -> None:
+    settings = tui_settings_from_json(
+        {
+            "keybindings": {
+                "app.interrupt": "f1",
+                "app.clear": "f2",
+                "app.message.copy": ["f3", "f4"],
+                "app.message.followUp": "f5",
+                "app.message.dequeue": "f6",
+                "app.clipboard.pasteImage": "f7",
+                "app.editor.external": "f8",
+                "app.session.tree": "f9",
+                "cycleModelForward": "f10",
+                "selectModel": "f11",
+                "tab": "f12",
+            }
+        }
+    )
+
+    assert settings.keybindings.cancel == "f1"
+    assert settings.keybindings.copy_message == "f2"
+    assert settings.keybindings.copy_last_message == "f3,f4"
+    assert settings.keybindings.queue_follow_up == "f5"
+    assert settings.keybindings.dequeue_messages == "f6"
+    assert settings.keybindings.paste_clipboard == "f7"
+    assert settings.keybindings.external_editor == "f8"
+    assert settings.keybindings.session_tree == "f9"
+    assert settings.keybindings.model_cycle == "f10"
+    assert settings.keybindings.model_picker == "f11"
+    assert settings.keybindings.accept_completion == "f12"
+
+
 def test_save_tui_settings_writes_json(tmp_path: Path) -> None:
     paths = TauPaths(home=tmp_path / ".tau", agents_home=tmp_path / ".agents")
 
@@ -169,6 +201,18 @@ def test_tui_keybindings_reject_duplicate_keys() -> None:
                 "keybindings": {
                     "cancel": "escape",
                     "command_palette": "escape",
+                }
+            }
+        )
+
+
+def test_tui_keybindings_reject_duplicate_keys_inside_pi_alias_lists() -> None:
+    with pytest.raises(TuiConfigError, match="assigned to both"):
+        tui_settings_from_json(
+            {
+                "keybindings": {
+                    "app.clear": "f2",
+                    "app.message.copy": ["f1", "f2"],
                 }
             }
         )

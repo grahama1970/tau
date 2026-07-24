@@ -555,24 +555,81 @@ def _keybindings_from_json(data: dict[str, Any]) -> TuiKeybindings:
     defaults = TuiKeybindings()
     allowed_fields = set(defaults.to_json())
     legacy_fields = {"message_previous", "message_next"}
-    unknown_fields = set(data) - allowed_fields - legacy_fields
+    normalized_data = _normalize_keybinding_fields(data)
+    unknown_fields = set(normalized_data) - allowed_fields - legacy_fields
     if unknown_fields:
         raise TuiConfigError(f"Unknown TUI keybinding: {sorted(unknown_fields)[0]}")
 
     values = {
-        field_name: _optional_key_string(data.get(field_name, default_value), field_name)
+        field_name: _optional_key_string(normalized_data.get(field_name, default_value), field_name)
         if field_name in _OPTIONAL_KEYBINDING_FIELDS
-        else _key_string(data.get(field_name, default_value), field_name)
+        else _key_string(normalized_data.get(field_name, default_value), field_name)
         for field_name, default_value in defaults.to_json().items()
     }
     _reject_duplicate_keys(values)
     return TuiKeybindings(**values)
 
 
+_PI_KEYBINDING_ALIASES = {
+    "app.interrupt": "cancel",
+    "app.clear": "copy_message",
+    "app.exit": "quit",
+    "app.suspend": "suspend",
+    "app.editor.external": "external_editor",
+    "app.clipboard.pasteImage": "paste_clipboard",
+    "app.message.copy": "copy_last_message",
+    "app.message.followUp": "queue_follow_up",
+    "app.message.dequeue": "dequeue_messages",
+    "app.tools.expand": "toggle_tool_results",
+    "app.thinking.toggle": "toggle_thinking",
+    "app.thinking.cycle": "thinking_cycle",
+    "app.model.cycleForward": "model_cycle",
+    "app.model.cycleBackward": "model_cycle_previous",
+    "app.model.select": "model_picker",
+    "app.session.new": "session_new",
+    "app.session.tree": "session_tree",
+    "app.session.fork": "session_fork",
+    "app.session.resume": "session_resume",
+    "tui.input.tab": "accept_completion",
+    "interrupt": "cancel",
+    "clear": "copy_message",
+    "exit": "quit",
+    "suspend": "suspend",
+    "externalEditor": "external_editor",
+    "pasteImage": "paste_clipboard",
+    "followUp": "queue_follow_up",
+    "dequeue": "dequeue_messages",
+    "expandTools": "toggle_tool_results",
+    "toggleThinking": "toggle_thinking",
+    "cycleThinkingLevel": "thinking_cycle",
+    "cycleModelForward": "model_cycle",
+    "cycleModelBackward": "model_cycle_previous",
+    "selectModel": "model_picker",
+    "newSession": "session_new",
+    "tree": "session_tree",
+    "fork": "session_fork",
+    "resume": "session_resume",
+    "tab": "accept_completion",
+}
+
+
+def _normalize_keybinding_fields(data: dict[str, Any]) -> dict[str, Any]:
+    normalized: dict[str, Any] = {}
+    for raw_field, value in data.items():
+        field_name = _PI_KEYBINDING_ALIASES.get(raw_field, raw_field)
+        if field_name != raw_field and field_name in data:
+            continue
+        if field_name in normalized and normalized[field_name] != value:
+            raise TuiConfigError(f"Duplicate TUI keybinding: {field_name}")
+        normalized[field_name] = value
+    return normalized
+
+
 def _key_string(value: object, field_name: str) -> str:
-    if not isinstance(value, str) or not value.strip():
+    keys = _key_list(value, field_name)
+    if not keys:
         raise TuiConfigError(f"TUI keybinding must be a non-empty string: {field_name}")
-    return value.strip()
+    return ",".join(keys)
 
 
 _OPTIONAL_KEYBINDING_FIELDS = {
@@ -584,9 +641,23 @@ _OPTIONAL_KEYBINDING_FIELDS = {
 
 
 def _optional_key_string(value: object, field_name: str) -> str:
-    if not isinstance(value, str):
-        raise TuiConfigError(f"TUI keybinding must be a string: {field_name}")
-    return value.strip()
+    return ",".join(_key_list(value, field_name))
+
+
+def _key_list(value: object, field_name: str) -> list[str]:
+    if isinstance(value, str):
+        stripped = value.strip()
+        return [stripped] if stripped else []
+    if isinstance(value, list):
+        keys: list[str] = []
+        for item in value:
+            if not isinstance(item, str) or not item.strip():
+                raise TuiConfigError(
+                    f"TUI keybinding list entries must be non-empty strings: {field_name}"
+                )
+            keys.append(item.strip())
+        return keys
+    raise TuiConfigError(f"TUI keybinding must be a string or string list: {field_name}")
 
 
 def _theme_name(value: object) -> TuiThemeName:
@@ -600,12 +671,15 @@ def _theme_name(value: object) -> TuiThemeName:
 
 def _reject_duplicate_keys(values: dict[str, str]) -> None:
     key_to_action: dict[str, str] = {}
-    for action, key in values.items():
-        if not key:
-            continue
-        previous_action = key_to_action.get(key)
-        if previous_action is not None:
-            raise TuiConfigError(
-                f"TUI keybinding {key!r} is assigned to both {previous_action!r} and {action!r}"
-            )
-        key_to_action[key] = action
+    for action, keys in values.items():
+        for key in _configured_key_parts(keys):
+            previous_action = key_to_action.get(key)
+            if previous_action is not None:
+                raise TuiConfigError(
+                    f"TUI keybinding {key!r} is assigned to both {previous_action!r} and {action!r}"
+                )
+            key_to_action[key] = action
+
+
+def _configured_key_parts(keys: str) -> tuple[str, ...]:
+    return tuple(key.strip() for key in keys.split(",") if key.strip())
