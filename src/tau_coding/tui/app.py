@@ -26,6 +26,7 @@ from textual.binding import Binding, BindingsMap
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.css.query import NoMatches
 from textual.events import Key, Resize
+from textual.geometry import Spacing
 from textual.screen import ModalScreen
 from textual.timer import Timer
 from textual.widgets import (
@@ -133,6 +134,7 @@ ACTIVITY_COLOR_FADE_STEPS = 24
 ACTIVITY_INDICATOR_HEIGHT = 3
 COMPLETION_MAX_VISIBLE_LINES = DEFAULT_AUTOCOMPLETE_MAX_VISIBLE
 AUTOCOMPLETE_MAX_VISIBLE_CHOICES = (3, 5, 7, 10, 15, 20)
+EDITOR_PADDING_X_CHOICES = (0, 1, 2, 3)
 NO_STORED_CREDENTIALS_MESSAGE = (
     "No stored credentials to remove. /logout only removes credentials saved by /login; "
     "environment variables and providers.json config are unchanged."
@@ -891,6 +893,7 @@ class TreePickerResult:
 SettingsPickerKey = Literal[
     "autocomplete_max_visible",
     "block_images",
+    "editor_padding_x",
     "enable_skill_commands",
     "theme",
     "auto_compact",
@@ -3214,6 +3217,7 @@ class TauTuiApp(App[None]):
         """Focus the prompt when the app starts."""
         prompt = self.query_one(PromptInput)
         prompt.shell_mode_style = self.tui_settings.resolved_theme.accent
+        _apply_prompt_padding(prompt, self.tui_settings.editor_padding_x)
         self._sync_prompt_shell_mode(prompt.text)
         prompt.focus()
         self._update_responsive_layout(self.size.width, self.size.height)
@@ -3563,6 +3567,7 @@ class TauTuiApp(App[None]):
             prompt = self.query_one("#prompt", PromptInput)
             prompt.tui_keybindings = self.tui_settings.keybindings
             prompt.shell_mode_style = self.tui_settings.resolved_theme.accent
+            _apply_prompt_padding(prompt, self.tui_settings.editor_padding_x)
             prompt._apply_prompt_bindings()
             prompt.refresh_bindings()
         self.refresh_bindings()
@@ -5609,11 +5614,6 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             value=settings.follow_up_mode,
         ),
         SettingsPickerItem(
-            key="autocomplete_max_visible",
-            label="Autocomplete max items",
-            value=str(settings.autocomplete_max_visible),
-        ),
-        SettingsPickerItem(
             key="block_images",
             label="Block images",
             value="on" if settings.block_images else "off",
@@ -5622,6 +5622,16 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             key="enable_skill_commands",
             label="Skill commands",
             value="on" if settings.enable_skill_commands else "off",
+        ),
+        SettingsPickerItem(
+            key="editor_padding_x",
+            label="Editor padding",
+            value=str(settings.editor_padding_x),
+        ),
+        SettingsPickerItem(
+            key="autocomplete_max_visible",
+            label="Autocomplete max items",
+            value=str(settings.autocomplete_max_visible),
         ),
         SettingsPickerItem(
             key="auto_copy_selection",
@@ -5733,6 +5743,17 @@ def _next_tui_settings(
         return replace(settings, block_images=not settings.block_images)
     if key == "enable_skill_commands":
         return replace(settings, enable_skill_commands=not settings.enable_skill_commands)
+    if key == "editor_padding_x":
+        try:
+            current_index = EDITOR_PADDING_X_CHOICES.index(settings.editor_padding_x)
+        except ValueError:
+            current_index = -1
+        return replace(
+            settings,
+            editor_padding_x=EDITOR_PADDING_X_CHOICES[
+                (current_index + 1) % len(EDITOR_PADDING_X_CHOICES)
+            ],
+        )
     if key == "auto_copy_selection":
         return replace(settings, auto_copy_selection=not settings.auto_copy_selection)
     if key == "hide_thinking":
@@ -5814,6 +5835,12 @@ def _command_message_uses_notification(command_text: str, message: str) -> bool:
 def _is_skill_command_text(text: str) -> bool:
     """Return whether submitted text starts with Tau's skill command prefix."""
     return text.strip().casefold().startswith("/skill:")
+
+
+def _apply_prompt_padding(prompt: PromptInput, padding_x: int) -> None:
+    """Apply Pi-style horizontal editor padding to Tau's prompt widget."""
+    prompt.styles.padding = Spacing.unpack((0, padding_x))
+    prompt.refresh(layout=True)
 
 
 def _command_output_title(command_text: str) -> str:

@@ -79,6 +79,9 @@ type TuiQueueDrainMode = Literal["one-at-a-time", "all"]
 DEFAULT_AUTOCOMPLETE_MAX_VISIBLE = 5
 MIN_AUTOCOMPLETE_MAX_VISIBLE = 3
 MAX_AUTOCOMPLETE_MAX_VISIBLE = 20
+DEFAULT_EDITOR_PADDING_X = 1
+MIN_EDITOR_PADDING_X = 0
+MAX_EDITOR_PADDING_X = 3
 
 
 @dataclass(frozen=True, slots=True)
@@ -279,6 +282,7 @@ class TuiSettings:
     follow_up_mode: TuiQueueDrainMode = "one-at-a-time"
     autocomplete_max_visible: int = DEFAULT_AUTOCOMPLETE_MAX_VISIBLE
     enable_skill_commands: bool = True
+    editor_padding_x: int = DEFAULT_EDITOR_PADDING_X
 
     def to_json(self) -> dict[str, Any]:
         """Serialize these settings to JSON-compatible data."""
@@ -288,6 +292,7 @@ class TuiSettings:
             "auto_copy_selection": self.auto_copy_selection,
             "block_images": self.block_images,
             "double_escape_action": self.double_escape_action,
+            "editor_padding_x": self.editor_padding_x,
             "enable_skill_commands": self.enable_skill_commands,
             "hide_thinking": self.hide_thinking,
             "keybindings": self.keybindings.to_json(),
@@ -338,6 +343,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "blockImages",
         "block_images",
         "double_escape_action",
+        "editorPaddingX",
+        "editor_padding_x",
         "enableSkillCommands",
         "enable_skill_commands",
         "hide_thinking",
@@ -392,6 +399,9 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
             data.get("enable_skill_commands", data.get("enableSkillCommands", True)),
             "enable_skill_commands",
         ),
+        editor_padding_x=_editor_padding_x(
+            data.get("editor_padding_x", data.get("editorPaddingX", DEFAULT_EDITOR_PADDING_X))
+        ),
         thinking_level=_thinking_level(
             data.get("thinking_level", data.get("thinkingLevel", DEFAULT_THINKING_LEVEL))
         ),
@@ -433,6 +443,16 @@ def _autocomplete_max_visible(value: object) -> int:
     raise TuiConfigError(
         "TUI autocomplete_max_visible must be between "
         f"{MIN_AUTOCOMPLETE_MAX_VISIBLE} and {MAX_AUTOCOMPLETE_MAX_VISIBLE}"
+    )
+
+
+def _editor_padding_x(value: object) -> int:
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise TuiConfigError("TUI editor_padding_x must be an integer")
+    if MIN_EDITOR_PADDING_X <= value <= MAX_EDITOR_PADDING_X:
+        return value
+    raise TuiConfigError(
+        f"TUI editor_padding_x must be between {MIN_EDITOR_PADDING_X} and {MAX_EDITOR_PADDING_X}"
     )
 
 

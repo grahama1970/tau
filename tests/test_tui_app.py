@@ -10,7 +10,7 @@ import pytest
 from rich.console import Console
 from rich.panel import Panel
 from textual.containers import VerticalScroll
-from textual.geometry import Offset
+from textual.geometry import Offset, Spacing
 from textual.selection import SELECT_ALL, Selection
 from textual.widgets import Footer, Input, Label, ListItem, ListView, Static, TextArea
 
@@ -1934,6 +1934,16 @@ async def test_tui_app_shows_activity_indicator_while_running() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_applies_configured_editor_padding_on_startup() -> None:
+    app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(editor_padding_x=3))
+
+    async with app.run_test():
+        prompt = app.query_one("#prompt", PromptInput)
+
+        assert prompt.styles.padding == Spacing.unpack((0, 3))
+
+
+@pytest.mark.anyio
 async def test_tui_app_clears_activity_status_on_error() -> None:
     app = TauTuiApp(FakeSession())
 
@@ -3571,6 +3581,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             theme="tau-dark",
             auto_copy_selection=False,
             autocomplete_max_visible=7,
+            editor_padding_x=1,
             double_escape_action="tree",
             follow_up_mode="one-at-a-time",
             tree_filter_mode="default",
@@ -3593,9 +3604,10 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: on",
             "Steering mode: one-at-a-time",
             "Follow-up mode: one-at-a-time",
-            "Autocomplete max items: 7",
             "Block images: off",
             "Skill commands: on",
+            "Editor padding: 1",
+            "Autocomplete max items: 7",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3614,9 +3626,10 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: one-at-a-time",
             "Follow-up mode: one-at-a-time",
-            "Autocomplete max items: 7",
             "Block images: off",
             "Skill commands: on",
+            "Editor padding: 1",
+            "Autocomplete max items: 7",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3635,9 +3648,10 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: one-at-a-time",
-            "Autocomplete max items: 7",
             "Block images: off",
             "Skill commands: on",
+            "Editor padding: 1",
+            "Autocomplete max items: 7",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3656,29 +3670,10 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
+            "Block images: off",
+            "Skill commands: on",
+            "Editor padding: 1",
             "Autocomplete max items: 7",
-            "Block images: off",
-            "Skill commands: on",
-            "Auto-copy selection: off",
-            "Hide thinking: on",
-            "Thinking level: medium",
-            "Double Escape: tree",
-            "Tree filter mode: default",
-        ]
-
-        await pilot.press("down", "enter")
-        await pilot.pause()
-        assert app.tui_settings.autocomplete_max_visible == 10
-        assert '"autocomplete_max_visible": 10' in tui_settings_path().read_text(encoding="utf-8")
-        assert isinstance(app.screen, SettingsPickerScreen)
-        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
-            "Theme: tau-dark",
-            "Auto-compact: off",
-            "Steering mode: all",
-            "Follow-up mode: all",
-            "Autocomplete max items: 10",
-            "Block images: off",
-            "Skill commands: on",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3696,9 +3691,10 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
-            "Autocomplete max items: 10",
             "Block images: on",
             "Skill commands: on",
+            "Editor padding: 1",
+            "Autocomplete max items: 7",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3716,9 +3712,53 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
-            "Autocomplete max items: 10",
             "Block images: on",
             "Skill commands: off",
+            "Editor padding: 1",
+            "Autocomplete max items: 7",
+            "Auto-copy selection: off",
+            "Hide thinking: on",
+            "Thinking level: medium",
+            "Double Escape: tree",
+            "Tree filter mode: default",
+        ]
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.editor_padding_x == 2
+        assert '"editor_padding_x": 2' in tui_settings_path().read_text(encoding="utf-8")
+        assert app.query_one("#prompt", PromptInput).styles.padding == Spacing.unpack((0, 2))
+        assert isinstance(app.screen, SettingsPickerScreen)
+        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+            "Theme: tau-dark",
+            "Auto-compact: off",
+            "Steering mode: all",
+            "Follow-up mode: all",
+            "Block images: on",
+            "Skill commands: off",
+            "Editor padding: 2",
+            "Autocomplete max items: 7",
+            "Auto-copy selection: off",
+            "Hide thinking: on",
+            "Thinking level: medium",
+            "Double Escape: tree",
+            "Tree filter mode: default",
+        ]
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.autocomplete_max_visible == 10
+        assert '"autocomplete_max_visible": 10' in tui_settings_path().read_text(encoding="utf-8")
+        assert isinstance(app.screen, SettingsPickerScreen)
+        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+            "Theme: tau-dark",
+            "Auto-compact: off",
+            "Steering mode: all",
+            "Follow-up mode: all",
+            "Block images: on",
+            "Skill commands: off",
+            "Editor padding: 2",
+            "Autocomplete max items: 10",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3736,9 +3776,10 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
-            "Autocomplete max items: 10",
             "Block images: on",
             "Skill commands: off",
+            "Editor padding: 2",
+            "Autocomplete max items: 10",
             "Auto-copy selection: on",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3763,13 +3804,14 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert app.tui_settings.double_escape_action == "fork"
         assert '"double_escape_action": "fork"' in tui_settings_path().read_text(encoding="utf-8")
 
-        await pilot.press("up", "up", "up", "up", "up", "up", "up", "up", "up", "up", "enter")
+        await pilot.press("up", "up", "up", "up", "up", "up", "up", "up", "up", "up", "up", "enter")
         await pilot.pause()
         assert app.tui_settings.theme == "tau-light"
         assert '"theme": "tau-light"' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
 
         await pilot.press(
+            "down",
             "down",
             "down",
             "down",
