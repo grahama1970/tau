@@ -150,6 +150,12 @@ def test_tui_settings_reads_pi_keybinding_aliases() -> None:
                 "app.tree.toggleLabelTimestamp": "shift+t",
                 "tui.input.newLine": ["shift+enter", "ctrl+j"],
                 "tui.input.submit": "f13",
+                "tui.select.up": "shift+up",
+                "tui.select.down": "shift+down",
+                "tui.select.pageUp": "shift+pageup",
+                "tui.select.pageDown": "shift+pagedown",
+                "tui.select.confirm": "shift+enter",
+                "tui.select.cancel": "shift+escape",
                 "cycleModelForward": "f10",
                 "selectModel": "f11",
                 "tab": "f12",
@@ -183,6 +189,12 @@ def test_tui_settings_reads_pi_keybinding_aliases() -> None:
     assert settings.keybindings.tree_toggle_label_timestamp == "shift+t"
     assert settings.keybindings.insert_newline == "shift+enter,ctrl+j"
     assert settings.keybindings.submit_prompt == "f13"
+    assert settings.keybindings.select_up == "shift+up"
+    assert settings.keybindings.select_down == "shift+down"
+    assert settings.keybindings.select_page_up == "shift+pageup"
+    assert settings.keybindings.select_page_down == "shift+pagedown"
+    assert settings.keybindings.select_confirm == "shift+enter"
+    assert settings.keybindings.select_cancel == "shift+escape"
     assert settings.keybindings.model_cycle == "f10"
     assert settings.keybindings.model_picker == "f11"
     assert settings.keybindings.accept_completion == "f12"
@@ -538,6 +550,12 @@ def test_tui_keybindings_serialize_to_json() -> None:
             model_cycle="f6",
             model_cycle_previous="f11",
             model_picker="f10",
+            select_up="f13",
+            select_down="f14",
+            select_page_up="f15",
+            select_page_down="f16",
+            select_confirm="f17",
+            select_cancel="f18",
             toggle_thinking="f4",
             external_editor="f7",
             paste_clipboard="f8",
@@ -566,6 +584,12 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["keybindings"]["model_cycle"] == "f6"
     assert settings.to_json()["keybindings"]["model_cycle_previous"] == "f11"
     assert settings.to_json()["keybindings"]["model_picker"] == "f10"
+    assert settings.to_json()["keybindings"]["select_up"] == "f13"
+    assert settings.to_json()["keybindings"]["select_down"] == "f14"
+    assert settings.to_json()["keybindings"]["select_page_up"] == "f15"
+    assert settings.to_json()["keybindings"]["select_page_down"] == "f16"
+    assert settings.to_json()["keybindings"]["select_confirm"] == "f17"
+    assert settings.to_json()["keybindings"]["select_cancel"] == "f18"
     assert settings.to_json()["keybindings"]["external_editor"] == "f7"
     assert settings.to_json()["keybindings"]["paste_clipboard"] == "f8"
     assert settings.to_json()["keybindings"]["suspend"] == "f12"

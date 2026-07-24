@@ -2766,11 +2766,11 @@ class ModelPickerSearchInput(Input):
     def on_key(self, event: Key) -> None:
         """Route picker control keys before the input edits its text."""
         keybindings = self._picker().keybindings
-        if event.key == "up":
+        if _matches_configured_or_default_key(event.key, keybindings.select_up, "up"):
             event.stop()
             event.prevent_default()
             self.action_cursor_up()
-        elif event.key == "down":
+        elif _matches_configured_or_default_key(event.key, keybindings.select_down, "down"):
             event.stop()
             event.prevent_default()
             self.action_cursor_down()
@@ -2830,7 +2830,7 @@ class ModelPickerSearchInput(Input):
             event.stop()
             event.prevent_default()
             self.action_clear_or_cancel()
-        elif event.key == "escape":
+        elif _matches_configured_or_default_key(event.key, keybindings.select_cancel, "escape"):
             event.stop()
             event.prevent_default()
             self.action_cancel()
@@ -2994,19 +2994,31 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
 
     def on_key(self, event: Key) -> None:
         """Route model picker keys to the list."""
-        if event.key == "up":
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
             event.stop()
             self.action_cursor_up()
-        elif event.key == "down":
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
             event.stop()
             self.action_cursor_down()
-        elif event.key == "pageup":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_page_up,
+            "pageup",
+        ):
             event.stop()
             self.action_page_up()
-        elif event.key == "pagedown":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_page_down,
+            "pagedown",
+        ):
             event.stop()
             self.action_page_down()
-        elif event.key == "enter":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
             event.stop()
             self.action_accept_model()
         elif _matches_configured_or_default_key(
@@ -3057,6 +3069,13 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         elif event.key in {"tab", "ctrl+i"}:
             event.stop()
             self.action_toggle_mode()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.action_cancel()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Handle the selected row."""

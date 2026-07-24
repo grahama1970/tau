@@ -7253,6 +7253,68 @@ async def test_tui_model_picker_page_keys_move_by_page() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_model_picker_uses_configured_pi_select_keybindings() -> None:
+    session = FakeSession()
+    session.available_model_choices = tuple(
+        ModelChoice(provider_name="openai", model=f"model-{index:02d}") for index in range(30)
+    )
+    session.available_models = tuple(choice.model for choice in session.available_model_choices)
+    session.model = "model-00"
+    app = TauTuiApp(
+        session,
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(
+                select_up="f5",
+                select_down="f6",
+                select_page_down="f7",
+                select_page_up="f8",
+                select_confirm="f9",
+                select_cancel="f10",
+            ),
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/model"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ModelPickerScreen)
+        model_list = app.screen.query_one("#model-picker-list", ListView)
+        assert model_list.index == 0
+
+        await pilot.press("f7")
+        page_down_index = model_list.index
+        await pilot.press("f8")
+        await pilot.pause()
+
+        assert page_down_index is not None
+        assert page_down_index > 1
+        assert model_list.index == 0
+
+        await pilot.press("f6")
+        await pilot.press("f5")
+        await pilot.press("f6")
+        await pilot.press("f9")
+        await pilot.pause()
+
+        assert not isinstance(app.screen, ModelPickerScreen)
+        assert session.model == "model-01"
+
+        prompt = app.query_one("#prompt")
+        prompt.value = "/model"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ModelPickerScreen)
+        await pilot.press("f10")
+        await pilot.pause()
+
+        assert not isinstance(app.screen, ModelPickerScreen)
+
+
+@pytest.mark.anyio
 async def test_tui_scoped_models_picker_toggles_scoped_models_without_switching_model() -> None:
     session = FakeSession()
     app = TauTuiApp(session)

@@ -49,6 +49,12 @@ class TuiKeybindings:
     models_toggle_provider: str = ""
     models_reorder_up: str = ""
     models_reorder_down: str = ""
+    select_up: str = "up"
+    select_down: str = "down"
+    select_page_up: str = "pageup"
+    select_page_down: str = "pagedown"
+    select_confirm: str = "enter"
+    select_cancel: str = "escape"
     toggle_thinking: str = "ctrl+t"
     toggle_tool_results: str = "ctrl+o"
     copy_message: str = "ctrl+c"
@@ -102,6 +108,12 @@ class TuiKeybindings:
             "models_toggle_provider": self.models_toggle_provider,
             "models_reorder_up": self.models_reorder_up,
             "models_reorder_down": self.models_reorder_down,
+            "select_up": self.select_up,
+            "select_down": self.select_down,
+            "select_page_up": self.select_page_up,
+            "select_page_down": self.select_page_down,
+            "select_confirm": self.select_confirm,
+            "select_cancel": self.select_cancel,
             "toggle_thinking": self.toggle_thinking,
             "toggle_tool_results": self.toggle_tool_results,
             "copy_message": self.copy_message,
@@ -683,6 +695,12 @@ _PI_KEYBINDING_ALIASES = {
     "tui.input.newLine": "insert_newline",
     "tui.input.submit": "submit_prompt",
     "tui.input.tab": "accept_completion",
+    "tui.select.up": "select_up",
+    "tui.select.down": "select_down",
+    "tui.select.pageUp": "select_page_up",
+    "tui.select.pageDown": "select_page_down",
+    "tui.select.confirm": "select_confirm",
+    "tui.select.cancel": "select_cancel",
     "interrupt": "cancel",
     "clear": "copy_message",
     "exit": "quit",
@@ -727,6 +745,12 @@ _PI_KEYBINDING_ALIASES = {
     "newLine": "insert_newline",
     "submit": "submit_prompt",
     "tab": "accept_completion",
+    "selectUp": "select_up",
+    "selectDown": "select_down",
+    "selectPageUp": "select_page_up",
+    "selectPageDown": "select_page_down",
+    "selectConfirm": "select_confirm",
+    "selectCancel": "select_cancel",
 }
 
 
@@ -766,6 +790,12 @@ _OPTIONAL_KEYBINDING_FIELDS = {
     "models_toggle_provider",
     "models_reorder_up",
     "models_reorder_down",
+    "select_up",
+    "select_down",
+    "select_page_up",
+    "select_page_down",
+    "select_confirm",
+    "select_cancel",
     "tree_fold_or_up",
     "tree_unfold_or_down",
     "tree_edit_label",
@@ -793,6 +823,12 @@ _SCOPED_KEYBINDING_FIELDS = {
     "models_toggle_provider",
     "models_reorder_up",
     "models_reorder_down",
+    "select_up",
+    "select_down",
+    "select_page_up",
+    "select_page_down",
+    "select_confirm",
+    "select_cancel",
     "tree_fold_or_up",
     "tree_unfold_or_down",
     "tree_edit_label",
