@@ -296,6 +296,7 @@ class TuiSettings:
     editor_padding_x: int = DEFAULT_EDITOR_PADDING_X
     output_padding_x: int = DEFAULT_OUTPUT_PADDING_X
     clear_on_shrink: bool = field(default_factory=_default_clear_on_shrink)
+    show_hardware_cursor: bool = True
     show_terminal_progress: bool = False
 
     def to_json(self) -> dict[str, Any]:
@@ -312,6 +313,7 @@ class TuiSettings:
             "keybindings": self.keybindings.to_json(),
             "output_padding_x": self.output_padding_x,
             "clear_on_shrink": self.clear_on_shrink,
+            "show_hardware_cursor": self.show_hardware_cursor,
             "show_terminal_progress": self.show_terminal_progress,
             "follow_up_mode": self.follow_up_mode,
             "steering_mode": self.steering_mode,
@@ -371,6 +373,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "outputPad",
         "output_padding_x",
         "showTerminalProgress",
+        "showHardwareCursor",
+        "show_hardware_cursor",
         "show_terminal_progress",
         "followUpMode",
         "follow_up_mode",
@@ -441,6 +445,16 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
                 ),
             ),
             "clear_on_shrink",
+        ),
+        show_hardware_cursor=_bool_setting(
+            data.get(
+                "show_hardware_cursor",
+                data.get(
+                    "showHardwareCursor",
+                    terminal_data.get("showHardwareCursor", True),
+                ),
+            ),
+            "show_hardware_cursor",
         ),
         show_terminal_progress=_bool_setting(
             data.get(

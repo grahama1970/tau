@@ -900,6 +900,7 @@ SettingsPickerKey = Literal[
     "editor_padding_x",
     "enable_skill_commands",
     "output_padding_x",
+    "show_hardware_cursor",
     "show_terminal_progress",
     "theme",
     "auto_compact",
@@ -3217,6 +3218,7 @@ class TauTuiApp(App[None]):
                         placeholder="Ask Tau…  Enter submits, Shift+Enter inserts a newline",
                         id="prompt",
                         tui_keybindings=self.tui_settings.keybindings,
+                        show_cursor=self.tui_settings.show_hardware_cursor,
                     )
                 yield CompactSessionInfo(id="compact-session-info")
                 yield Static("", id="autocomplete")
@@ -3590,6 +3592,7 @@ class TauTuiApp(App[None]):
         with suppress(NoMatches):
             prompt = self.query_one("#prompt", PromptInput)
             prompt.tui_keybindings = self.tui_settings.keybindings
+            prompt.show_cursor = self.tui_settings.show_hardware_cursor
             prompt.shell_mode_style = self.tui_settings.resolved_theme.accent
             _apply_prompt_padding(prompt, self.tui_settings.editor_padding_x)
             prompt._apply_prompt_bindings()
@@ -5680,6 +5683,11 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             value="on" if settings.enable_skill_commands else "off",
         ),
         SettingsPickerItem(
+            key="show_hardware_cursor",
+            label="Show hardware cursor",
+            value="on" if settings.show_hardware_cursor else "off",
+        ),
+        SettingsPickerItem(
             key="editor_padding_x",
             label="Editor padding",
             value=str(settings.editor_padding_x),
@@ -5814,6 +5822,8 @@ def _next_tui_settings(
         return replace(settings, block_images=not settings.block_images)
     if key == "enable_skill_commands":
         return replace(settings, enable_skill_commands=not settings.enable_skill_commands)
+    if key == "show_hardware_cursor":
+        return replace(settings, show_hardware_cursor=not settings.show_hardware_cursor)
     if key == "editor_padding_x":
         try:
             current_index = EDITOR_PADDING_X_CHOICES.index(settings.editor_padding_x)

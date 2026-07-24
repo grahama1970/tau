@@ -62,6 +62,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
           "blockImages": true,
           "editorPaddingX": 2,
           "enableSkillCommands": false,
+          "showHardwareCursor": false,
           "outputPad": 0,
           "tree_filter_mode": "user-only",
           "steering_mode": "all",
@@ -101,6 +102,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.block_images is True
     assert settings.editor_padding_x == 2
     assert settings.enable_skill_commands is False
+    assert settings.show_hardware_cursor is False
     assert settings.output_padding_x == 0
     assert settings.clear_on_shrink is True
     assert settings.auto_compact is True
@@ -344,6 +346,21 @@ def test_tui_settings_reject_invalid_clear_on_shrink() -> None:
         tui_settings_from_json({"clear_on_shrink": "true"})
 
 
+def test_tui_settings_load_show_hardware_cursor_aliases() -> None:
+    camel = tui_settings_from_json({"showHardwareCursor": False})
+    snake = tui_settings_from_json({"show_hardware_cursor": False})
+    nested = tui_settings_from_json({"terminal": {"showHardwareCursor": False}})
+
+    assert camel.show_hardware_cursor is False
+    assert snake.show_hardware_cursor is False
+    assert nested.show_hardware_cursor is False
+
+
+def test_tui_settings_reject_invalid_show_hardware_cursor() -> None:
+    with pytest.raises(TuiConfigError, match="show_hardware_cursor"):
+        tui_settings_from_json({"show_hardware_cursor": "false"})
+
+
 def test_tui_settings_load_enable_skill_commands_aliases() -> None:
     camel = tui_settings_from_json({"enableSkillCommands": False})
     snake = tui_settings_from_json({"enable_skill_commands": False})
@@ -409,6 +426,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["enable_skill_commands"] is True
     assert settings.to_json()["output_padding_x"] == 1
     assert settings.to_json()["clear_on_shrink"] is False
+    assert settings.to_json()["show_hardware_cursor"] is True
     assert settings.to_json()["show_terminal_progress"] is False
     assert settings.to_json()["theme"] == "high-contrast"
     assert settings.to_json()["auto_compact"] is True

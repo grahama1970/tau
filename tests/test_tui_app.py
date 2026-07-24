@@ -3728,6 +3728,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: one-at-a-time",
             "Block images: off",
             "Skill commands: on",
+            "Show hardware cursor: on",
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
@@ -3753,6 +3754,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: one-at-a-time",
             "Block images: off",
             "Skill commands: on",
+            "Show hardware cursor: on",
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
@@ -3778,6 +3780,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: one-at-a-time",
             "Block images: off",
             "Skill commands: on",
+            "Show hardware cursor: on",
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
@@ -3803,6 +3806,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: off",
             "Skill commands: on",
+            "Show hardware cursor: on",
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
@@ -3827,6 +3831,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Skill commands: on",
+            "Show hardware cursor: on",
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
@@ -3851,6 +3856,33 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Skill commands: off",
+            "Show hardware cursor: on",
+            "Editor padding: 1",
+            "Output padding: 1",
+            "Autocomplete max items: 7",
+            "Clear on shrink: off",
+            "Terminal progress: off",
+            "Auto-copy selection: off",
+            "Hide thinking: on",
+            "Thinking level: medium",
+            "Double Escape: tree",
+            "Tree filter mode: default",
+        ]
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.show_hardware_cursor is False
+        assert app.query_one("#prompt", PromptInput).show_cursor is False
+        assert '"show_hardware_cursor": false' in tui_settings_path().read_text(encoding="utf-8")
+        assert isinstance(app.screen, SettingsPickerScreen)
+        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+            "Theme: tau-dark",
+            "Auto-compact: off",
+            "Steering mode: all",
+            "Follow-up mode: all",
+            "Block images: on",
+            "Skill commands: off",
+            "Show hardware cursor: off",
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
@@ -3876,6 +3908,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Skill commands: off",
+            "Show hardware cursor: off",
             "Editor padding: 2",
             "Output padding: 1",
             "Autocomplete max items: 7",
@@ -3900,6 +3933,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Skill commands: off",
+            "Show hardware cursor: off",
             "Editor padding: 2",
             "Output padding: 0",
             "Autocomplete max items: 7",
@@ -3924,6 +3958,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Skill commands: off",
+            "Show hardware cursor: off",
             "Editor padding: 2",
             "Output padding: 0",
             "Autocomplete max items: 10",
@@ -3948,6 +3983,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Skill commands: off",
+            "Show hardware cursor: off",
             "Editor padding: 2",
             "Output padding: 0",
             "Autocomplete max items: 10",
@@ -3972,6 +4008,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Skill commands: off",
+            "Show hardware cursor: off",
             "Editor padding: 2",
             "Output padding: 0",
             "Autocomplete max items: 10",
@@ -3996,6 +4033,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Skill commands: off",
+            "Show hardware cursor: off",
             "Editor padding: 2",
             "Output padding: 0",
             "Autocomplete max items: 10",
@@ -4040,6 +4078,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "up",
             "up",
             "up",
+            "up",
             "enter",
         )
         await pilot.pause()
@@ -4048,6 +4087,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert isinstance(app.screen, SettingsPickerScreen)
 
         await pilot.press(
+            "down",
             "down",
             "down",
             "down",
