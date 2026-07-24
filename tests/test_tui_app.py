@@ -2510,6 +2510,21 @@ async def test_prompt_ctrl_u_deletes_to_line_start() -> None:
 
 
 @pytest.mark.anyio
+async def test_prompt_shift_space_inserts_literal_space() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alphabeta"
+        prompt.move_cursor((0, len("alpha")))
+
+        await pilot.press("shift+space")
+
+        assert prompt.text == "alpha beta"
+        assert prompt.cursor_location == (0, len("alpha "))
+
+
+@pytest.mark.anyio
 async def test_prompt_ctrl_u_deletes_current_line_prefix_only() -> None:
     app = TauTuiApp(FakeSession())
 
@@ -5989,6 +6004,7 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "F5: queue follow-up while running" in app.screen.message
         assert "Ctrl+Y: copy last assistant message" in app.screen.message
         assert "F2: open session tree" in app.screen.message
+        assert "Shift+Space: insert a literal space" in app.screen.message
         assert "Ctrl+A/Ctrl+E: move to line start/end" in app.screen.message
         assert "Ctrl+B/Ctrl+F: move one character left/right" in app.screen.message
         assert "Alt+B/Ctrl+Left/Alt+Left: move word left" in app.screen.message

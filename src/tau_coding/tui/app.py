@@ -844,6 +844,11 @@ class PromptInput(TextArea):
             event.prevent_default()
             self._push_undo_snapshot()
             self.insert("\n")
+        elif event.key == "shift+space":
+            event.stop()
+            event.prevent_default()
+            self._push_undo_snapshot()
+            self.insert(" ")
         elif event.key == keybindings.accept_completion:
             event.stop()
             self._completion_target().action_accept_completion()
@@ -6804,6 +6809,7 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         "Editing:",
         "- Enter: submit prompt",
         f"- {newline_hint}: insert newline",
+        "- Shift+Space: insert a literal space",
         "- Ctrl+A/Ctrl+E: move to line start/end",
         "- Ctrl+B/Ctrl+F: move one character left/right",
         "- Alt+B/Ctrl+Left/Alt+Left: move word left",
