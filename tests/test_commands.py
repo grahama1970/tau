@@ -106,6 +106,7 @@ def test_registered_commands_are_pi_aligned(tmp_path: Path) -> None:
         "clone",
         "compact",
         "copy",
+        "debug",
         "export",
         "fork",
         "hotkeys",
@@ -155,6 +156,18 @@ def test_clone_command_requests_session_clone(tmp_path: Path) -> None:
     assert result.handled is True
     assert result.clone_session_requested is True
     assert with_args.message == "Usage: /clone"
+
+
+def test_debug_command_is_discoverable_for_interactive_tui(tmp_path: Path) -> None:
+    registry = create_default_command_registry()
+    session = FakeSession(tmp_path)
+
+    result = registry.execute(session, "/debug")
+    with_args = registry.execute(session, "/debug now")
+
+    assert result.handled is True
+    assert result.message == "Use /debug in the interactive TUI to write a runtime diagnostic log."
+    assert with_args.message == "Usage: /debug"
 
 
 def test_changelog_command_reads_local_changelog(tmp_path: Path) -> None:

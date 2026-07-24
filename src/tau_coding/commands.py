@@ -266,6 +266,15 @@ def create_default_command_registry() -> CommandRegistry:
     )
     registry.register(
         SlashCommand(
+            name="debug",
+            usage="/debug",
+            description="Write an interactive TUI diagnostic log.",
+            handler=_debug_command,
+            search_terms=("diagnostics", "runtime", "layout", "screen"),
+        )
+    )
+    registry.register(
+        SlashCommand(
             name="export",
             usage="/export [--format html|jsonl] [destination]",
             description="Export the current session.",
@@ -509,6 +518,15 @@ def _copy_command(context: CommandContext) -> CommandResult:
     if context.args:
         return CommandResult(handled=True, message="Usage: /copy")
     return CommandResult(handled=True, copy_last_message_requested=True)
+
+
+def _debug_command(context: CommandContext) -> CommandResult:
+    if context.args:
+        return CommandResult(handled=True, message="Usage: /debug")
+    return CommandResult(
+        handled=True,
+        message="Use /debug in the interactive TUI to write a runtime diagnostic log.",
+    )
 
 
 def _export_command(context: CommandContext) -> CommandResult:

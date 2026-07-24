@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import json
 import re
 from collections.abc import AsyncIterator, Sequence
 from contextlib import nullcontext
@@ -7308,6 +7309,34 @@ async def test_tui_app_workflows_command_opens_picker() -> None:
         ]
         workflow_list = app.screen.query_one("#workflow-picker-list", ListView)
         assert workflow_list.index == 0
+
+
+@pytest.mark.anyio
+async def test_tui_app_debug_command_writes_runtime_log(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    session = FakeSession(messages=(UserMessage(content="hello"),))
+    app = TauTuiApp(session)
+
+    async with app.run_test(size=(120, 30)) as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/debug"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        log_path = tmp_path / ".tau" / "logs" / "tui-debug.log"
+        assert log_path.is_file()
+        payload = json.loads(log_path.read_text(encoding="utf-8"))
+        assert payload["terminal"] == {"width": 120, "height": 30}
+        assert payload["screen"] == "Screen"
+        assert payload["session"]["cwd"] == str(session.cwd)
+        assert payload["messages"][0]["role"] == "user"
+        assert payload["state"]["items"][-1]["role"] == "user"
+        assert payload["state"]["items"][-1]["text"] == "hello"
+        assert app.state.items[-1].role == "status"
+        assert str(log_path) in app.state.items[-1].text
 
 
 @pytest.mark.anyio

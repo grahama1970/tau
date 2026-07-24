@@ -65,6 +65,7 @@ from tau_ai.provider import CancellationToken
 from tau_coding.commands import CommandRegistry, CommandResult, create_default_command_registry
 from tau_coding.credentials import FileCredentialStore, OAuthCredential
 from tau_coding.oauth import OAuthAuthInfo, OAuthPrompt, login_openai_codex
+from tau_coding.paths import TauPaths
 from tau_coding.prompt_templates import PromptTemplate
 from tau_coding.provider_catalog import (
     BUILTIN_PROVIDER_CATALOG,
@@ -5115,6 +5116,12 @@ class TauTuiApp(App[None]):
             )
             return
 
+        if text.casefold() == "/debug":
+            debug_log_path = self._write_debug_log()
+            self._append_command_message(text, f"Debug log written\n{debug_log_path}")
+            self._refresh()
+            return
+
         command = _local_tui_command(
             text,
             self.tui_settings.keybindings,
@@ -6209,6 +6216,47 @@ class TauTuiApp(App[None]):
     def _append_command_message(self, command_text: str, message: str) -> None:
         """Append non-persistent command output to the visible transcript."""
         self.state.add_item("status", f"{_command_output_title(command_text)}\n{message}")
+
+    def _write_debug_log(self) -> Path:
+        """Write a TUI runtime diagnostic log and return its path."""
+        path = TauPaths().logs_dir / "tui-debug.log"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            screenshot = self.export_screenshot()
+        except Exception:  # noqa: BLE001 - diagnostics should never break the TUI
+            screenshot = ""
+        payload = {
+            "timestamp": datetime.now().isoformat(timespec="seconds"),
+            "terminal": {"width": self.size.width, "height": self.size.height},
+            "screen": type(self.screen).__name__,
+            "focused": {
+                "type": type(self.focused).__name__ if self.focused is not None else None,
+                "id": getattr(self.focused, "id", None),
+            },
+            "session": {
+                "id": getattr(self.session, "session_id", None),
+                "title": getattr(self.session, "session_title", None),
+                "cwd": str(self.session.cwd),
+                "provider": self.session.provider_name,
+                "model": self.session.model,
+            },
+            "state": {
+                "running": self.state.running,
+                "items": [
+                    {
+                        "role": item.role,
+                        "text": item.text,
+                        "tool_call_id": item.tool_call_id,
+                        "has_tool_result": item.tool_result_text is not None,
+                    }
+                    for item in self.state.items
+                ],
+            },
+            "messages": [_debug_message_payload(message) for message in self.session.messages],
+            "screenshot_svg_chars": len(screenshot),
+        }
+        path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        return path
 
     def _show_command_message(self, command_text: str, message: str) -> None:
         self.push_screen(
@@ -8094,6 +8142,13 @@ def _command_message_uses_notification(command_text: str, message: str) -> bool:
     """Return whether slash-command output should appear as a notification."""
     command_name = command_text.split(maxsplit=1)[0].casefold()
     return command_name == "/name" and message.startswith("Session renamed: ")
+
+
+def _debug_message_payload(message: AgentMessage) -> object:
+    model_dump = getattr(message, "model_dump", None)
+    if callable(model_dump):
+        return model_dump(mode="json")
+    return str(message)
 
 
 def _is_reload_command_text(text: str) -> bool:
