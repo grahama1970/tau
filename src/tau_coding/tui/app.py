@@ -62,7 +62,12 @@ from tau_agent.messages import AgentMessage
 from tau_agent.tools import AgentTool
 from tau_ai import ProviderErrorEvent, ProviderEvent
 from tau_ai.provider import CancellationToken
-from tau_coding.commands import CommandRegistry, CommandResult, create_default_command_registry
+from tau_coding.commands import (
+    CommandRegistry,
+    CommandResult,
+    create_default_command_registry,
+    daxnuts_easter_message,
+)
 from tau_coding.credentials import FileCredentialStore, OAuthCredential
 from tau_coding.oauth import OAuthAuthInfo, OAuthPrompt, login_openai_codex
 from tau_coding.paths import TauPaths
@@ -6694,6 +6699,9 @@ class TauTuiApp(App[None]):
         except Exception as exc:  # noqa: BLE001 - surface model switch failures in the TUI
             self._notify(f"Could not switch model: {exc}", severity="error")
             return
+        daxnuts_message = daxnuts_easter_message(choice.provider_name, choice.model)
+        if daxnuts_message is not None:
+            self.state.add_item("status", daxnuts_message)
         self._refresh()
 
     def _open_theme_picker(self) -> None:

@@ -966,7 +966,11 @@ def _model_command(context: CommandContext) -> CommandResult:
                 f"Available models: {models}",
             )
         context.session.set_model(model)
-        return CommandResult(handled=True, message=f"Current model: {model}")
+        message = f"Current model: {model}"
+        daxnuts_message = daxnuts_easter_message(context.session.provider_name, model)
+        if daxnuts_message is not None:
+            message = f"{message}\n\n{daxnuts_message}"
+        return CommandResult(handled=True, message=message)
 
     return CommandResult(handled=True, model_picker_requested=True)
 
@@ -1226,6 +1230,29 @@ def _validated_session_name(value: str) -> str:
     if any(char in name for char in "\r\n\t"):
         raise ValueError("Session name must be a single line.")
     return name
+
+
+def daxnuts_easter_message(provider_name: str, model: str) -> str | None:
+    """Return Pi's Daxnuts easter message for matching OpenCode Kimi models."""
+    provider = provider_name.strip().lower()
+    model_id = model.strip().lower()
+    if provider == "opencode" and "kimi-k2.5" in model_id:
+        return _DAXNUTS_MESSAGE
+    if model_id.startswith("opencode-go/kimi-k2.5"):
+        return _DAXNUTS_MESSAGE
+    return None
+
+
+_DAXNUTS_MESSAGE = "\n".join(
+    (
+        "Free Kimi K2.5 via OpenCode Zen",
+        '"Powered by daxnuts"',
+        "-- @thdxr",
+        "",
+        "Try OpenCode",
+        "https://mistral.ai/news/mistral-vibe-2-0",
+    )
+)
 
 
 def _normalize_name(name: str) -> str:
