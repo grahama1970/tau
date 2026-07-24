@@ -65,6 +65,7 @@ from tau_ai.provider import CancellationToken
 from tau_coding.commands import CommandRegistry, CommandResult, create_default_command_registry
 from tau_coding.credentials import FileCredentialStore, OAuthCredential
 from tau_coding.oauth import OAuthAuthInfo, OAuthPrompt, login_openai_codex
+from tau_coding.prompt_templates import PromptTemplate
 from tau_coding.provider_catalog import (
     BUILTIN_PROVIDER_CATALOG,
     ProviderCatalogEntry,
@@ -595,6 +596,132 @@ class SkillPickerScreen(ModalScreen[SkillPickerResult | None]):
         else:
             help_text = "Enter inserts - F1 describes - Ctrl+Enter shows full skill"
         self.query_one("#skill-picker-help", Static).update(help_text)
+
+
+class PromptTemplatePickerSearchInput(Input):
+    """Search input that keeps prompt-template picker navigation local."""
+
+    BINDINGS: ClassVar[list[BindingEntry]] = [
+        Binding("escape", "cancel", "Cancel", show=False, priority=True),
+        Binding("up", "cursor_up", "Up", show=False, priority=True),
+        Binding("down", "cursor_down", "Down", show=False, priority=True),
+        Binding("enter", "select_cursor", "Select", show=False, priority=True),
+    ]
+
+    def _picker(self) -> PromptTemplatePickerScreen:
+        return cast(PromptTemplatePickerScreen, self.screen)
+
+    def on_key(self, event: Key) -> None:
+        """Route picker control keys before the input edits its text."""
+        if event.key == "up":
+            event.stop()
+            event.prevent_default()
+            self._picker().action_cursor_up()
+        elif event.key == "down":
+            event.stop()
+            event.prevent_default()
+            self._picker().action_cursor_down()
+        elif event.key == "escape":
+            event.stop()
+            event.prevent_default()
+            self._picker().action_cancel()
+        elif event.key == "enter":
+            event.stop()
+            event.prevent_default()
+            self._picker().action_select_cursor()
+
+
+class PromptTemplatePickerScreen(ModalScreen[str | None]):
+    """Searchable picker for loaded prompt templates."""
+
+    BINDINGS: ClassVar[list[BindingEntry]] = [
+        Binding("escape", "cancel", "Cancel"),
+        Binding("up", "cursor_up", "Up", show=False),
+        Binding("down", "cursor_down", "Down", show=False),
+        Binding("enter", "select_cursor", "Select", show=False),
+    ]
+
+    def __init__(self, templates: Sequence[PromptTemplate]) -> None:
+        super().__init__()
+        self.templates = tuple(sorted(templates, key=lambda item: item.name.casefold()))
+        self.visible_templates = self.templates
+
+    def compose(self) -> ComposeResult:
+        """Compose the prompt template picker."""
+        with Vertical(id="prompt-template-picker"):
+            yield Static("Prompt templates", id="prompt-template-picker-title")
+            yield PromptTemplatePickerSearchInput(
+                placeholder="Search prompt templates",
+                id="prompt-template-picker-search",
+            )
+            yield ListView(id="prompt-template-picker-list")
+            yield Static("", id="prompt-template-picker-help")
+
+    def on_mount(self) -> None:
+        """Populate the list and focus search on open."""
+        self.query_one("#prompt-template-picker-search", Input).focus()
+        self._refresh_list("")
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """Filter prompt templates as the search text changes."""
+        if event.input.id != "prompt-template-picker-search":
+            return
+        event.stop()
+        self._refresh_list(event.value)
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Select the highlighted prompt template."""
+        if event.input.id == "prompt-template-picker-search":
+            event.stop()
+            self.action_select_cursor()
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """Select the clicked prompt template."""
+        event.stop()
+        self.action_select_cursor()
+
+    def action_cursor_up(self) -> None:
+        self.query_one("#prompt-template-picker-list", ListView).action_cursor_up()
+
+    def action_cursor_down(self) -> None:
+        self.query_one("#prompt-template-picker-list", ListView).action_cursor_down()
+
+    def action_select_cursor(self) -> None:
+        picker_list = self.query_one("#prompt-template-picker-list", ListView)
+        if self.visible_templates and picker_list.index is not None:
+            self.dismiss(self.visible_templates[picker_list.index].name)
+
+    def action_cancel(self) -> None:
+        self.dismiss(None)
+
+    def _refresh_list(self, search: str) -> None:
+        query = search.casefold().strip()
+        self.visible_templates = tuple(
+            template
+            for template in self.templates
+            if not query
+            or query in template.name.casefold()
+            or query in (template.description or "").casefold()
+        )
+        picker_list = self.query_one("#prompt-template-picker-list", ListView)
+        picker_list.clear()
+        picker_list.extend(
+            ListItem(
+                Label(
+                    f"/{template.name} - {template.description or 'No description'}",
+                    markup=False,
+                )
+            )
+            for template in self.visible_templates
+        )
+        picker_list.index = 0 if self.visible_templates else None
+        if self.visible_templates:
+            help_text = "Enter selects - Escape closes"
+        elif self.templates:
+            help_text = "No matching prompt templates - Escape closes"
+        else:
+            help_text = "No prompt templates loaded - Escape closes"
+        self.query_one("#prompt-template-picker-help", Static).update(help_text)
 
 
 class PromptInput(TextArea):
@@ -4372,6 +4499,7 @@ class TauTuiApp(App[None]):
     WorkflowPickerScreen,
     ToolsReferenceScreen,
     SkillPickerScreen,
+    PromptTemplatePickerScreen,
     TreeLabelInputScreen,
     CommandOutputScreen {
         align: center middle;
@@ -4384,6 +4512,7 @@ class TauTuiApp(App[None]):
     #workflow-picker,
     #tools-reference,
     #skill-picker,
+    #prompt-template-picker,
     #tree-label-input {
         width: 76;
         max-width: 90%;
@@ -4401,6 +4530,7 @@ class TauTuiApp(App[None]):
     #workflow-picker-title,
     #tools-reference-title,
     #skill-picker-title,
+    #prompt-template-picker-title,
     #tree-label-title {
         height: 1;
         color: $tau-chrome-text;
@@ -4434,7 +4564,8 @@ class TauTuiApp(App[None]):
     #user-message-picker-list,
     #workflow-picker-list,
     #tools-reference-list,
-    #skill-picker-list {
+    #skill-picker-list,
+    #prompt-template-picker-list {
         height: auto;
         max-height: 16;
         background: $tau-transcript-background;
@@ -4458,6 +4589,7 @@ class TauTuiApp(App[None]):
     #workflow-picker-help,
     #tools-reference-help,
     #skill-picker-help,
+    #prompt-template-picker-help,
     #tree-label-help {
         height: 1;
         margin-top: 1;
@@ -4468,6 +4600,7 @@ class TauTuiApp(App[None]):
     #workflow-picker-search,
     #tools-reference-search,
     #skill-picker-search,
+    #prompt-template-picker-search,
     #tree-label-value {
         height: 3;
         margin-bottom: 1;
@@ -4951,6 +5084,8 @@ class TauTuiApp(App[None]):
                 self._open_trust_picker()
             if command.theme_picker_requested:
                 self._open_theme_picker()
+            if command.prompts_picker_requested:
+                self._open_prompt_template_picker()
             if command.workflow_picker_requested:
                 self._open_workflow_picker()
             if command.tools_picker_requested:
@@ -5416,6 +5551,7 @@ class TauTuiApp(App[None]):
             | LoginMethodPickerScreen
             | LoginProviderPickerScreen
             | SkillPickerScreen
+            | PromptTemplatePickerScreen
             | ThemePickerScreen,
         ):
             self.screen.action_select_cursor()
@@ -6001,6 +6137,24 @@ class TauTuiApp(App[None]):
             self._refresh()
         prompt.move_cursor(_text_end_location(prompt.text))
         prompt.focus()
+
+    def _open_prompt_template_picker(self) -> None:
+        """Open a searchable prompt-template picker for the active session."""
+        self.push_screen(
+            PromptTemplatePickerScreen(self.session.prompt_templates),
+            callback=self._handle_prompt_template_picker_result,
+        )
+
+    def _handle_prompt_template_picker_result(self, name: str | None) -> None:
+        prompt = self.query_one("#prompt", PromptInput)
+        prompt.focus()
+        if name is None:
+            return
+        invocation = f"/{name}"
+        prompt.text = invocation
+        prompt.move_cursor(_text_end_location(invocation))
+        self._completion_state = self._build_completion_state(invocation)
+        self._refresh_completions()
 
     def _handle_workflow_picker_result(self, result: WorkflowPickerResult | None) -> None:
         if result is None:

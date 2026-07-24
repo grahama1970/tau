@@ -65,6 +65,7 @@ from tau_coding.tui.app import (
     ModelPickerScreen,
     OAuthLoginScreen,
     PromptInput,
+    PromptTemplatePickerScreen,
     SessionPickerScreen,
     SettingsPickerScreen,
     SkillPickerScreen,
@@ -293,6 +294,7 @@ class FakeSession:
             or text.startswith("/workflows ")
             or text.startswith("/tools")
             or text.startswith("/skills")
+            or text.startswith("/prompts")
         ):
             return create_default_command_registry().execute(self, text)
         if text.startswith("/name "):
@@ -6887,6 +6889,96 @@ async def test_tui_app_resources_command_uses_command_output_modal() -> None:
         assert "- /review (.agents/prompts/review.md)" in app.screen.message
         assert "Tools:" in app.screen.message
         assert "- read" in app.screen.message
+
+
+@pytest.mark.anyio
+async def test_tui_app_prompts_command_opens_searchable_prompt_template_picker() -> None:
+    session = FakeSession()
+    session.prompt_templates = (
+        PromptTemplate(
+            name="review",
+            path=session.cwd / "review.md",
+            content="Review this.",
+            description="Review selected code.",
+        ),
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/prompts"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, PromptTemplatePickerScreen)
+        search = app.screen.query_one("#prompt-template-picker-search", Input)
+        assert app.screen.focused is search
+        picker_list = app.screen.query_one("#prompt-template-picker-list", ListView)
+        assert picker_list.index == 0
+        labels = [str(item.query_one(Label).render()) for item in picker_list.children]
+        assert labels == ["/review - Review selected code."]
+
+
+@pytest.mark.anyio
+async def test_tui_app_prompt_template_picker_filters_and_inserts_prompt_command() -> None:
+    session = FakeSession()
+    session.prompt_templates = (
+        PromptTemplate(
+            name="review",
+            path=session.cwd / "review.md",
+            content="Review this.",
+            description="Review selected code.",
+        ),
+        PromptTemplate(
+            name="debug",
+            path=session.cwd / "debug.md",
+            content="Debug this.",
+            description="Inspect runtime state.",
+        ),
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/prompts"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, PromptTemplatePickerScreen)
+        app.screen.query_one("#prompt-template-picker-search", Input).value = "runtime"
+        await pilot.pause()
+        picker_list = app.screen.query_one("#prompt-template-picker-list", ListView)
+        labels = [str(item.query_one(Label).render()) for item in picker_list.children]
+        assert labels == ["/debug - Inspect runtime state."]
+
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert prompt.value == "/debug"
+        assert app.state.items == []
+
+
+@pytest.mark.anyio
+async def test_tui_app_prompt_template_picker_cancel_keeps_prompt_text() -> None:
+    session = FakeSession()
+    session.prompt_templates = (
+        PromptTemplate(name="review", path=session.cwd / "review.md", content="Review this."),
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/prompts"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, PromptTemplatePickerScreen)
+        await pilot.press("escape")
+        await pilot.pause()
+
+        assert prompt.value == ""
+        assert not isinstance(app.screen, PromptTemplatePickerScreen)
+        assert app.state.items == []
 
 
 @pytest.mark.anyio
