@@ -544,12 +544,15 @@ def test_theme_command_requests_picker_and_sets_theme(tmp_path: Path) -> None:
 
     list_result = registry.execute(session, "/theme")
     switch_result = registry.execute(session, "/theme tau-light")
+    automatic_result = registry.execute(session, "/theme tau-light/tau-dark")
     unknown_result = registry.execute(session, "/theme solarized")
 
     assert list_result.theme_picker_requested is True
     assert switch_result.theme == "tau-light"
+    assert automatic_result.theme == "tau-light/tau-dark"
     assert unknown_result.message is not None
     assert "Unknown theme: solarized" in unknown_result.message
+    assert "<light-theme>/<dark-theme>" in unknown_result.message
 
 
 def test_non_pi_commands_are_not_registered(tmp_path: Path) -> None:

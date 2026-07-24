@@ -378,6 +378,7 @@ _THEMES: dict[TuiThemeName, TuiTheme] = {
     HIGH_CONTRAST_THEME.name: HIGH_CONTRAST_THEME,
 }
 BUILTIN_TUI_THEME_NAMES: tuple[TuiThemeName, ...] = tuple(_THEMES)
+DEFAULT_AUTOMATIC_TUI_THEME_SETTING = "tau-light/tau-dark"
 
 
 def get_tui_theme(name: TuiThemeName = "tau-dark") -> TuiTheme:

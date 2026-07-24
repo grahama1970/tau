@@ -933,14 +933,25 @@ def _theme_command(context: CommandContext) -> CommandResult:
     if not context.args:
         return CommandResult(handled=True, theme_picker_requested=True)
 
-    theme_name = context.args.strip()
-    if theme_name not in BUILTIN_TUI_THEME_NAMES:
-        themes = ", ".join(BUILTIN_TUI_THEME_NAMES)
+    theme_setting = context.args.strip()
+    if not _is_known_tui_theme_setting(theme_setting):
+        themes = ", ".join((*BUILTIN_TUI_THEME_NAMES, "<light-theme>/<dark-theme>"))
         return CommandResult(
             handled=True,
-            message=f"Unknown theme: {theme_name}\nAvailable themes: {themes}",
+            message=f"Unknown theme: {theme_setting}\nAvailable themes: {themes}",
         )
-    return CommandResult(handled=True, theme=theme_name)
+    return CommandResult(handled=True, theme=theme_setting)
+
+
+def _is_known_tui_theme_setting(theme_setting: str) -> bool:
+    if theme_setting in BUILTIN_TUI_THEME_NAMES:
+        return True
+    slash_index = theme_setting.find("/")
+    if slash_index < 0:
+        return False
+    light_theme = theme_setting[:slash_index].strip()
+    dark_theme = theme_setting[slash_index + 1 :].strip()
+    return light_theme in BUILTIN_TUI_THEME_NAMES and dark_theme in BUILTIN_TUI_THEME_NAMES
 
 
 def _login_command(context: CommandContext) -> CommandResult:

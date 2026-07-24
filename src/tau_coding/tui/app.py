@@ -115,12 +115,12 @@ from tau_coding.tui.autocomplete import (
 from tau_coding.tui.config import (
     BUILTIN_TUI_THEME_NAMES,
     DEFAULT_AUTOCOMPLETE_MAX_VISIBLE,
+    DEFAULT_AUTOMATIC_TUI_THEME_SETTING,
     TAU_DARK_THEME,
     TuiKeybindings,
     TuiQueueDrainMode,
     TuiSettings,
     TuiTheme,
-    TuiThemeName,
     load_tui_settings,
     save_tui_settings,
 )
@@ -3591,7 +3591,7 @@ class LoginMethodListView(ListView):
         self.index = (current_index + offset) % item_count
 
 
-class ThemePickerScreen(ModalScreen[TuiThemeName | None]):
+class ThemePickerScreen(ModalScreen[str | None]):
     """Theme picker for the built-in TUI themes."""
 
     BINDINGS: ClassVar[list[BindingEntry]] = [
@@ -3604,7 +3604,7 @@ class ThemePickerScreen(ModalScreen[TuiThemeName | None]):
     def __init__(
         self,
         *,
-        current_theme: TuiThemeName,
+        current_theme: str,
         theme: TuiTheme,
         keybindings: TuiKeybindings | None = None,
     ) -> None:
@@ -3621,11 +3621,14 @@ class ThemePickerScreen(ModalScreen[TuiThemeName | None]):
                 *[
                     ListItem(
                         Label(
-                            _theme_picker_label(theme_name, current_theme=self.current_theme),
+                            _theme_picker_label(
+                                theme_setting,
+                                current_theme=self.current_theme,
+                            ),
                             markup=False,
                         )
                     )
-                    for theme_name in BUILTIN_TUI_THEME_NAMES
+                    for theme_setting in _theme_picker_choices()
                 ],
                 id="theme-picker-list",
             )
@@ -3635,7 +3638,7 @@ class ThemePickerScreen(ModalScreen[TuiThemeName | None]):
         """Select the current theme."""
         theme_list = self.query_one("#theme-picker-list", ListView)
         try:
-            theme_list.index = BUILTIN_TUI_THEME_NAMES.index(self.current_theme)
+            theme_list.index = _theme_picker_choices().index(self.current_theme)
         except ValueError:
             theme_list.index = 0
         theme_list.focus()
@@ -3665,7 +3668,7 @@ class ThemePickerScreen(ModalScreen[TuiThemeName | None]):
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected theme name."""
-        self.dismiss(BUILTIN_TUI_THEME_NAMES[event.index])
+        self.dismiss(_theme_picker_choices()[event.index])
 
     def action_cursor_up(self) -> None:
         """Move to the previous theme."""
@@ -5124,7 +5127,7 @@ class TauTuiApp(App[None]):
             if command.thinking_level is not None:
                 await self._set_thinking_level(command.thinking_level)
             if command.theme is not None:
-                self._set_tui_theme(cast(TuiThemeName, command.theme))
+                self._set_tui_theme(command.theme)
             if _is_reload_command_text(text):
                 self._reload_tui_settings()
             self.state.set_skills(self.session.skills)
@@ -5264,7 +5267,7 @@ class TauTuiApp(App[None]):
         self._refresh()
         self._terminal_worker = None
 
-    def _set_tui_theme(self, theme: TuiThemeName) -> None:
+    def _set_tui_theme(self, theme: str) -> None:
         self._set_tui_settings(replace(self.tui_settings, theme=theme))
 
     def _reload_tui_settings(self) -> None:
@@ -6481,7 +6484,7 @@ class TauTuiApp(App[None]):
             callback=self._handle_theme_picker_result,
         )
 
-    def _handle_theme_picker_result(self, theme: TuiThemeName | None) -> None:
+    def _handle_theme_picker_result(self, theme: str | None) -> None:
         if theme is None:
             return
         self._set_tui_theme(theme)
@@ -7555,9 +7558,15 @@ def _credential_store_has_entry(
     )
 
 
-def _theme_picker_label(theme_name: TuiThemeName, *, current_theme: TuiThemeName) -> str:
-    marker = "✓" if theme_name == current_theme else " "
-    return f"{marker} {theme_name}"
+def _theme_picker_choices() -> tuple[str, ...]:
+    return (*BUILTIN_TUI_THEME_NAMES, DEFAULT_AUTOMATIC_TUI_THEME_SETTING)
+
+
+def _theme_picker_label(theme_setting: str, *, current_theme: str) -> str:
+    marker = "✓" if theme_setting == current_theme else " "
+    if theme_setting == DEFAULT_AUTOMATIC_TUI_THEME_SETTING:
+        return f"{marker} automatic ({theme_setting})"
+    return f"{marker} {theme_setting}"
 
 
 def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, ...]:
@@ -7747,10 +7756,11 @@ def _next_tui_settings(
 ) -> TuiSettings:
     if key == "theme":
         try:
-            current_index = BUILTIN_TUI_THEME_NAMES.index(settings.theme)
+            current_index = _theme_picker_choices().index(settings.theme)
         except ValueError:
             current_index = -1
-        next_theme = BUILTIN_TUI_THEME_NAMES[(current_index + 1) % len(BUILTIN_TUI_THEME_NAMES)]
+        choices = _theme_picker_choices()
+        next_theme = choices[(current_index + 1) % len(choices)]
         return replace(settings, theme=next_theme)
     if key == "auto_compact":
         return replace(settings, auto_compact=not settings.auto_compact)
