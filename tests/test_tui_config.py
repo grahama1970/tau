@@ -59,6 +59,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
           },
           "theme": "high-contrast",
           "autocompleteMaxVisible": 12,
+          "blockImages": true,
           "enableSkillCommands": false,
           "tree_filter_mode": "user-only",
           "steering_mode": "all",
@@ -94,6 +95,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.keybindings.cancel == "escape"
     assert settings.theme == "high-contrast"
     assert settings.autocomplete_max_visible == 12
+    assert settings.block_images is True
     assert settings.enable_skill_commands is False
     assert settings.auto_compact is True
     assert settings.double_escape_action == "tree"
@@ -246,6 +248,19 @@ def test_tui_settings_reject_invalid_autocomplete_max_visible() -> None:
         tui_settings_from_json({"autocomplete_max_visible": "5"})
 
 
+def test_tui_settings_load_block_images_aliases() -> None:
+    camel = tui_settings_from_json({"blockImages": True})
+    snake = tui_settings_from_json({"block_images": True})
+
+    assert camel.block_images is True
+    assert snake.block_images is True
+
+
+def test_tui_settings_reject_invalid_block_images() -> None:
+    with pytest.raises(TuiConfigError, match="block_images"):
+        tui_settings_from_json({"block_images": "true"})
+
+
 def test_tui_settings_load_enable_skill_commands_aliases() -> None:
     camel = tui_settings_from_json({"enableSkillCommands": False})
     snake = tui_settings_from_json({"enable_skill_commands": False})
@@ -306,6 +321,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["keybindings"]["copy_message"] == "ctrl+b"
     assert settings.to_json()["keybindings"]["copy_last_message"] == "ctrl+x"
     assert settings.to_json()["autocomplete_max_visible"] == 5
+    assert settings.to_json()["block_images"] is False
     assert settings.to_json()["enable_skill_commands"] is True
     assert settings.to_json()["theme"] == "high-contrast"
     assert settings.to_json()["auto_compact"] is True

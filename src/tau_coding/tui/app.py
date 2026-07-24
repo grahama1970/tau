@@ -890,6 +890,7 @@ class TreePickerResult:
 
 SettingsPickerKey = Literal[
     "autocomplete_max_visible",
+    "block_images",
     "enable_skill_commands",
     "theme",
     "auto_compact",
@@ -4098,6 +4099,9 @@ class TauTuiApp(App[None]):
         try:
             image = await _read_clipboard_image()
             if image is not None:
+                if self.tui_settings.block_images:
+                    self._notify("Image paste is blocked by TUI settings.", severity="warning")
+                    return
                 self._insert_prompt_text(str(_write_clipboard_image_to_temp(image)))
                 return
             text = await _read_clipboard_text()
@@ -5610,6 +5614,11 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             value=str(settings.autocomplete_max_visible),
         ),
         SettingsPickerItem(
+            key="block_images",
+            label="Block images",
+            value="on" if settings.block_images else "off",
+        ),
+        SettingsPickerItem(
             key="enable_skill_commands",
             label="Skill commands",
             value="on" if settings.enable_skill_commands else "off",
@@ -5720,6 +5729,8 @@ def _next_tui_settings(
                 (current_index + 1) % len(AUTOCOMPLETE_MAX_VISIBLE_CHOICES)
             ],
         )
+    if key == "block_images":
+        return replace(settings, block_images=not settings.block_images)
     if key == "enable_skill_commands":
         return replace(settings, enable_skill_commands=not settings.enable_skill_commands)
     if key == "auto_copy_selection":

@@ -3594,6 +3594,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: one-at-a-time",
             "Follow-up mode: one-at-a-time",
             "Autocomplete max items: 7",
+            "Block images: off",
             "Skill commands: on",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3614,6 +3615,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: one-at-a-time",
             "Follow-up mode: one-at-a-time",
             "Autocomplete max items: 7",
+            "Block images: off",
             "Skill commands: on",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3634,6 +3636,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: one-at-a-time",
             "Autocomplete max items: 7",
+            "Block images: off",
             "Skill commands: on",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3654,6 +3657,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: all",
             "Autocomplete max items: 7",
+            "Block images: off",
             "Skill commands: on",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3673,6 +3677,27 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: all",
             "Autocomplete max items: 10",
+            "Block images: off",
+            "Skill commands: on",
+            "Auto-copy selection: off",
+            "Hide thinking: on",
+            "Thinking level: medium",
+            "Double Escape: tree",
+            "Tree filter mode: default",
+        ]
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.block_images is True
+        assert '"block_images": true' in tui_settings_path().read_text(encoding="utf-8")
+        assert isinstance(app.screen, SettingsPickerScreen)
+        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+            "Theme: tau-dark",
+            "Auto-compact: off",
+            "Steering mode: all",
+            "Follow-up mode: all",
+            "Autocomplete max items: 10",
+            "Block images: on",
             "Skill commands: on",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3692,6 +3717,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: all",
             "Autocomplete max items: 10",
+            "Block images: on",
             "Skill commands: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3711,6 +3737,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Steering mode: all",
             "Follow-up mode: all",
             "Autocomplete max items: 10",
+            "Block images: on",
             "Skill commands: off",
             "Auto-copy selection: on",
             "Hide thinking: on",
@@ -3736,13 +3763,14 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert app.tui_settings.double_escape_action == "fork"
         assert '"double_escape_action": "fork"' in tui_settings_path().read_text(encoding="utf-8")
 
-        await pilot.press("up", "up", "up", "up", "up", "up", "up", "up", "up", "enter")
+        await pilot.press("up", "up", "up", "up", "up", "up", "up", "up", "up", "up", "enter")
         await pilot.pause()
         assert app.tui_settings.theme == "tau-light"
         assert '"theme": "tau-light"' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
 
         await pilot.press(
+            "down",
             "down",
             "down",
             "down",
@@ -4781,6 +4809,41 @@ async def test_tui_app_pastes_clipboard_image_path_into_prompt(
             assert pasted_path.read_bytes() == image_bytes
         finally:
             pasted_path.unlink(missing_ok=True)
+
+
+@pytest.mark.anyio
+async def test_tui_app_blocks_clipboard_image_paste_when_configured(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    image_bytes = b"\x89PNG\r\n\x1a\nfake"
+
+    async def fake_read_clipboard_image() -> object:
+        return tui_app._ClipboardImage(bytes=image_bytes, mime_type="image/png")
+
+    async def fail_read_clipboard_text() -> str:
+        raise AssertionError("blocked image paste should not read text fallback")
+
+    app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(block_images=True))
+    notifications: list[tuple[str, str | None]] = []
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        notifications.append((message, kwargs.get("severity")))
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+    monkeypatch.setattr(tui_app, "_read_clipboard_image", fake_read_clipboard_image)
+    monkeypatch.setattr(tui_app, "_read_clipboard_text", fail_read_clipboard_text)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "inspect "
+        prompt.move_cursor((0, len("inspect ")))
+
+        await pilot.press("ctrl+v")
+        await pilot.pause()
+
+        assert prompt.value == "inspect "
+
+    assert notifications == [("Image paste is blocked by TUI settings.", "warning")]
 
 
 @pytest.mark.anyio

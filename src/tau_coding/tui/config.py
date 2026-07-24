@@ -270,6 +270,7 @@ class TuiSettings:
     theme: TuiThemeName = "tau-dark"
     auto_compact: bool = True
     auto_copy_selection: bool = False
+    block_images: bool = False
     double_escape_action: DoubleEscapeAction = "tree"
     tree_filter_mode: TuiTreeFilterMode = "default"
     hide_thinking: bool = True
@@ -285,6 +286,7 @@ class TuiSettings:
             "autocomplete_max_visible": self.autocomplete_max_visible,
             "auto_compact": self.auto_compact,
             "auto_copy_selection": self.auto_copy_selection,
+            "block_images": self.block_images,
             "double_escape_action": self.double_escape_action,
             "enable_skill_commands": self.enable_skill_commands,
             "hide_thinking": self.hide_thinking,
@@ -333,6 +335,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "auto_copy_selection",
         "autocompleteMaxVisible",
         "autocomplete_max_visible",
+        "blockImages",
+        "block_images",
         "double_escape_action",
         "enableSkillCommands",
         "enable_skill_commands",
@@ -361,6 +365,10 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         auto_copy_selection=_bool_setting(
             data.get("auto_copy_selection", False),
             "auto_copy_selection",
+        ),
+        block_images=_bool_setting(
+            data.get("block_images", data.get("blockImages", False)),
+            "block_images",
         ),
         double_escape_action=_double_escape_action(
             data.get("double_escape_action", "tree"),
