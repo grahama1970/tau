@@ -86,6 +86,9 @@ class SessionSummarySource(Protocol):
     def context_window_tokens(self) -> int: ...
 
     @property
+    def context_usage(self) -> Any: ...
+
+    @property
     def thinking_level(self) -> str: ...
 
     @property
@@ -1347,15 +1350,44 @@ def _plain_text(text: str, *, body_style: str) -> Text:
 
 def _context_usage(session: SessionSummarySource) -> str:
     threshold = session.auto_compact_token_threshold
+    budget = threshold if threshold is not None and threshold > 0 else session.context_window_tokens
     if threshold is None or threshold <= 0:
-        return (
+        label = (
             f"{_compact_token_count(session.context_token_estimate)}"
             f"/{_compact_token_count(session.context_window_tokens)} context"
         )
-    return (
-        f"{_compact_token_count(session.context_token_estimate)}"
-        f"/{_compact_token_count(threshold)} context (auto)"
+    else:
+        label = (
+            f"{_compact_token_count(session.context_token_estimate)}"
+            f"/{_compact_token_count(threshold)} context (auto)"
+        )
+    percent = _context_percent(session.context_token_estimate, budget)
+    breakdown = _context_breakdown(getattr(session, "context_usage", None))
+    details = [detail for detail in (percent, breakdown) if detail]
+    return f"{label} {' '.join(details)}" if details else label
+
+
+def _context_percent(used_tokens: int, budget_tokens: int) -> str | None:
+    if budget_tokens <= 0 or used_tokens < 0:
+        return None
+    return f"{round((used_tokens / budget_tokens) * 100)}%"
+
+
+def _context_breakdown(context_usage: Any) -> str | None:
+    if context_usage is None:
+        return None
+    token_fields = (
+        ("sys", "system_tokens"),
+        ("msg", "message_tokens"),
+        ("tools", "tool_tokens"),
     )
+    parts: list[str] = []
+    for label, field_name in token_fields:
+        value = getattr(context_usage, field_name, None)
+        if not isinstance(value, int):
+            return None
+        parts.append(f"{label} {_compact_token_count(value)}")
+    return "(" + " ".join(parts) + ")"
 
 
 def _compact_token_count(value: int) -> str:

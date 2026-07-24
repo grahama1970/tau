@@ -35,6 +35,7 @@ from tau_agent import (
     UserMessage,
 )
 from tau_coding.commands import CommandResult, create_default_command_registry
+from tau_coding.context_window import ContextUsageEstimate
 from tau_coding.credentials import FileCredentialStore, OAuthCredential
 from tau_coding.prompt_templates import PromptTemplate
 from tau_coding.provider_config import (
@@ -178,6 +179,14 @@ class FakeSession:
             ProjectContextFile(path=str(self.cwd / "AGENTS.md"), content="Follow rules."),
         )
         self.context_token_estimate = 12034
+        self.context_usage = ContextUsageEstimate(
+            total_tokens=12034,
+            system_tokens=80,
+            message_tokens=2048,
+            tool_tokens=9906,
+            message_count=3,
+            tool_count=7,
+        )
         self.auto_compact_enabled = True
         self.auto_compact_token_threshold = 200000
         self.context_window_tokens = 216384
@@ -697,6 +706,8 @@ def test_compact_session_info_renders_sidebar_facts() -> None:
     output = console.export_text()
     assert "/workspace/project (--)" in output
     assert "12k/200k context (auto)" in output
+    assert "6%" in output
+    assert "(sys <1k msg 2k tools 10k)" in output
     assert "openai:fake-model" in output
     assert "(medium)" in output
 
