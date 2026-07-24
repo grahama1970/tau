@@ -1276,7 +1276,7 @@ def _context_usage(session: SessionSummarySource) -> str:
         )
     return (
         f"{_compact_token_count(session.context_token_estimate)}"
-        f"/{_compact_token_count(threshold)} context"
+        f"/{_compact_token_count(threshold)} context (auto)"
     )
 
 

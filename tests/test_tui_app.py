@@ -663,7 +663,7 @@ def test_compact_session_info_renders_sidebar_facts() -> None:
 
     output = console.export_text()
     assert "/workspace/project (--)" in output
-    assert "12k/200k context" in output
+    assert "12k/200k context (auto)" in output
     assert "openai:fake-model" in output
     assert "(medium)" in output
 
@@ -677,7 +677,19 @@ def test_compact_session_info_includes_named_session_title() -> None:
 
     output = console.export_text()
     assert "/workspace/project (--) • Release review" in output
-    assert "12k/200k context" in output
+    assert "12k/200k context (auto)" in output
+
+
+def test_compact_session_info_omits_auto_indicator_when_auto_compact_disabled() -> None:
+    session = FakeSession()
+    session.auto_compact_token_threshold = None
+    console = Console(record=True, width=120)
+
+    console.print(render_compact_session_info(session))
+
+    output = console.export_text()
+    assert "12k/216k context" in output
+    assert "(auto)" not in output
 
 
 def test_compact_session_info_omits_untitled_session_title() -> None:
