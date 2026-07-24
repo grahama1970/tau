@@ -896,6 +896,7 @@ class TreePickerResult:
 SettingsPickerKey = Literal[
     "autocomplete_max_visible",
     "block_images",
+    "clear_on_shrink",
     "editor_padding_x",
     "enable_skill_commands",
     "output_padding_x",
@@ -3203,6 +3204,7 @@ class TauTuiApp(App[None]):
                 yield TranscriptView(
                     id="transcript",
                     min_width=1,
+                    clear_on_shrink=self.tui_settings.clear_on_shrink,
                     output_padding_x=self.tui_settings.output_padding_x,
                     wrap=True,
                     highlight=True,
@@ -4728,6 +4730,7 @@ class TauTuiApp(App[None]):
         transcript.update_from_state(
             self.state,
             theme=theme,
+            clear_on_shrink=self.tui_settings.clear_on_shrink,
             output_padding_x=self.tui_settings.output_padding_x,
         )
 
@@ -5692,6 +5695,11 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             value=str(settings.autocomplete_max_visible),
         ),
         SettingsPickerItem(
+            key="clear_on_shrink",
+            label="Clear on shrink",
+            value="on" if settings.clear_on_shrink else "off",
+        ),
+        SettingsPickerItem(
             key="show_terminal_progress",
             label="Terminal progress",
             value="on" if settings.show_terminal_progress else "off",
@@ -5830,6 +5838,8 @@ def _next_tui_settings(
         )
     if key == "show_terminal_progress":
         return replace(settings, show_terminal_progress=not settings.show_terminal_progress)
+    if key == "clear_on_shrink":
+        return replace(settings, clear_on_shrink=not settings.clear_on_shrink)
     if key == "auto_copy_selection":
         return replace(settings, auto_copy_selection=not settings.auto_copy_selection)
     if key == "hide_thinking":

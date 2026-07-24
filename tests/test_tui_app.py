@@ -91,7 +91,7 @@ from tau_coding.tui.config import (
     save_tui_settings,
     tui_settings_path,
 )
-from tau_coding.tui.state import ChatItem, LoopMonitorStatus
+from tau_coding.tui.state import ChatItem, LoopMonitorStatus, TuiState
 from tau_coding.tui.widgets import (
     LeftAlignedMarkdownHeading,
     StreamingTranscriptMessageWidget,
@@ -1298,6 +1298,42 @@ async def test_streaming_transcript_deltas_do_not_force_scroll_end() -> None:
         await pilot.pause()
 
     assert forced_scrolls == 0
+
+
+@pytest.mark.anyio
+async def test_transcript_clear_on_shrink_requests_full_app_refresh() -> None:
+    app = TauTuiApp(FakeSession(messages=[]))
+
+    async with app.run_test(size=(60, 20)) as pilot:
+        await pilot.pause()
+        transcript = app.query_one("#transcript", TranscriptView)
+        app_refreshes = 0
+        original_refresh = app.refresh
+
+        def tracking_refresh(*args: object, **kwargs: object) -> object:
+            nonlocal app_refreshes
+            app_refreshes += 1
+            return original_refresh(*args, **kwargs)
+
+        app.refresh = tracking_refresh  # type: ignore[method-assign]
+        transcript.update_from_state(
+            TuiState(
+                items=[
+                    ChatItem(role="user", text="one"),
+                    ChatItem(role="assistant", text="two"),
+                ]
+            ),
+            clear_on_shrink=True,
+        )
+        await pilot.pause()
+
+        transcript.update_from_state(
+            TuiState(items=[ChatItem(role="user", text="one")]),
+            clear_on_shrink=True,
+        )
+        await pilot.pause()
+
+    assert app_refreshes == 1
 
 
 @pytest.mark.anyio
@@ -3695,6 +3731,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
+            "Clear on shrink: off",
             "Terminal progress: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3719,6 +3756,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
+            "Clear on shrink: off",
             "Terminal progress: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3743,6 +3781,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
+            "Clear on shrink: off",
             "Terminal progress: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3767,6 +3806,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
+            "Clear on shrink: off",
             "Terminal progress: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3790,6 +3830,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
+            "Clear on shrink: off",
             "Terminal progress: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3813,6 +3854,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 1",
             "Output padding: 1",
             "Autocomplete max items: 7",
+            "Clear on shrink: off",
             "Terminal progress: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3837,6 +3879,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 2",
             "Output padding: 1",
             "Autocomplete max items: 7",
+            "Clear on shrink: off",
             "Terminal progress: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3860,6 +3903,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 2",
             "Output padding: 0",
             "Autocomplete max items: 7",
+            "Clear on shrink: off",
             "Terminal progress: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3883,6 +3927,31 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 2",
             "Output padding: 0",
             "Autocomplete max items: 10",
+            "Clear on shrink: off",
+            "Terminal progress: off",
+            "Auto-copy selection: off",
+            "Hide thinking: on",
+            "Thinking level: medium",
+            "Double Escape: tree",
+            "Tree filter mode: default",
+        ]
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.clear_on_shrink is True
+        assert '"clear_on_shrink": true' in tui_settings_path().read_text(encoding="utf-8")
+        assert isinstance(app.screen, SettingsPickerScreen)
+        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+            "Theme: tau-dark",
+            "Auto-compact: off",
+            "Steering mode: all",
+            "Follow-up mode: all",
+            "Block images: on",
+            "Skill commands: off",
+            "Editor padding: 2",
+            "Output padding: 0",
+            "Autocomplete max items: 10",
+            "Clear on shrink: on",
             "Terminal progress: off",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3906,6 +3975,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 2",
             "Output padding: 0",
             "Autocomplete max items: 10",
+            "Clear on shrink: on",
             "Terminal progress: on",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3929,6 +3999,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Editor padding: 2",
             "Output padding: 0",
             "Autocomplete max items: 10",
+            "Clear on shrink: on",
             "Terminal progress: on",
             "Auto-copy selection: on",
             "Hide thinking: on",
@@ -3968,6 +4039,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "up",
             "up",
             "up",
+            "up",
             "enter",
         )
         await pilot.pause()
@@ -3976,6 +4048,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert isinstance(app.screen, SettingsPickerScreen)
 
         await pilot.press(
+            "down",
             "down",
             "down",
             "down",

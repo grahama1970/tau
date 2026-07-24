@@ -343,6 +343,7 @@ class TranscriptView(VerticalScroll):
         for legacy_option in ("wrap", "highlight", "markup"):
             kwargs.pop(legacy_option, None)
         min_width = kwargs.pop("min_width", None)
+        self.clear_on_shrink = kwargs.pop("clear_on_shrink", False)
         self.output_padding_x = kwargs.pop("output_padding_x", 1)
         super().__init__(*args, **kwargs)
         self.min_width = min_width
@@ -373,11 +374,14 @@ class TranscriptView(VerticalScroll):
         state: TuiState,
         *,
         theme: TuiTheme = TAU_DARK_THEME,
+        clear_on_shrink: bool | None = None,
         output_padding_x: int | None = None,
     ) -> None:
         """Redraw the transcript from display state."""
         self._render_state = state
         self._render_theme = theme
+        if clear_on_shrink is not None:
+            self.clear_on_shrink = clear_on_shrink
         if output_padding_x is not None:
             self.output_padding_x = output_padding_x
         self._redraw(scroll_end=self._should_follow_output)
@@ -399,6 +403,13 @@ class TranscriptView(VerticalScroll):
         if state is None:
             return
         theme = self._render_theme
+        previous_child_count = len(
+            [
+                child
+                for child in self.children
+                if isinstance(child, TranscriptMessageWidget | StreamingTranscriptMessageWidget)
+            ]
+        )
         self._last_render_width = self.scrollable_content_region.width
         self.remove_children(
             [
@@ -446,6 +457,9 @@ class TranscriptView(VerticalScroll):
                 )
             )
         self.refresh(layout=True)
+        rendered_child_count = len(state.items) + (1 if state.assistant_buffer else 0)
+        if self.clear_on_shrink and rendered_child_count < previous_child_count:
+            self.app.refresh(layout=True)
         if scroll_end:
             self.scroll_end(animate=False)
 

@@ -66,7 +66,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
           "tree_filter_mode": "user-only",
           "steering_mode": "all",
           "followUpMode": "all",
-          "terminal": {"showTerminalProgress": true},
+          "terminal": {"clearOnShrink": true, "showTerminalProgress": true},
           "thinkingLevel": "high"
         }
         """,
@@ -102,6 +102,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.editor_padding_x == 2
     assert settings.enable_skill_commands is False
     assert settings.output_padding_x == 0
+    assert settings.clear_on_shrink is True
     assert settings.auto_compact is True
     assert settings.double_escape_action == "tree"
     assert settings.hide_thinking is True
@@ -318,6 +319,31 @@ def test_tui_settings_reject_invalid_show_terminal_progress() -> None:
         tui_settings_from_json({"terminal": "true"})
 
 
+def test_tui_settings_load_clear_on_shrink_aliases() -> None:
+    camel = tui_settings_from_json({"clearOnShrink": True})
+    snake = tui_settings_from_json({"clear_on_shrink": True})
+    nested = tui_settings_from_json({"terminal": {"clearOnShrink": True}})
+
+    assert camel.clear_on_shrink is True
+    assert snake.clear_on_shrink is True
+    assert nested.clear_on_shrink is True
+
+
+def test_tui_settings_default_clear_on_shrink_from_pi_env(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("PI_CLEAR_ON_SHRINK", "1")
+
+    settings = tui_settings_from_json({})
+
+    assert settings.clear_on_shrink is True
+
+
+def test_tui_settings_reject_invalid_clear_on_shrink() -> None:
+    with pytest.raises(TuiConfigError, match="clear_on_shrink"):
+        tui_settings_from_json({"clear_on_shrink": "true"})
+
+
 def test_tui_settings_load_enable_skill_commands_aliases() -> None:
     camel = tui_settings_from_json({"enableSkillCommands": False})
     snake = tui_settings_from_json({"enable_skill_commands": False})
@@ -382,6 +408,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["editor_padding_x"] == 1
     assert settings.to_json()["enable_skill_commands"] is True
     assert settings.to_json()["output_padding_x"] == 1
+    assert settings.to_json()["clear_on_shrink"] is False
     assert settings.to_json()["show_terminal_progress"] is False
     assert settings.to_json()["theme"] == "high-contrast"
     assert settings.to_json()["auto_compact"] is True

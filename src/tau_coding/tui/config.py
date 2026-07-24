@@ -1,5 +1,6 @@
 """Durable Textual TUI configuration for Tau."""
 
+import os
 from dataclasses import dataclass, field
 from json import dumps, loads
 from pathlib import Path
@@ -85,6 +86,13 @@ MAX_EDITOR_PADDING_X = 3
 DEFAULT_OUTPUT_PADDING_X = 1
 MIN_OUTPUT_PADDING_X = 0
 MAX_OUTPUT_PADDING_X = 1
+
+
+def _default_clear_on_shrink() -> bool:
+    """Return Pi-compatible terminal shrink clearing default from the environment."""
+    return os.environ.get("TAU_CLEAR_ON_SHRINK") == "1" or os.environ.get(
+        "PI_CLEAR_ON_SHRINK"
+    ) == "1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -287,6 +295,7 @@ class TuiSettings:
     enable_skill_commands: bool = True
     editor_padding_x: int = DEFAULT_EDITOR_PADDING_X
     output_padding_x: int = DEFAULT_OUTPUT_PADDING_X
+    clear_on_shrink: bool = field(default_factory=_default_clear_on_shrink)
     show_terminal_progress: bool = False
 
     def to_json(self) -> dict[str, Any]:
@@ -302,6 +311,7 @@ class TuiSettings:
             "hide_thinking": self.hide_thinking,
             "keybindings": self.keybindings.to_json(),
             "output_padding_x": self.output_padding_x,
+            "clear_on_shrink": self.clear_on_shrink,
             "show_terminal_progress": self.show_terminal_progress,
             "follow_up_mode": self.follow_up_mode,
             "steering_mode": self.steering_mode,
@@ -349,6 +359,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "autocomplete_max_visible",
         "blockImages",
         "block_images",
+        "clearOnShrink",
+        "clear_on_shrink",
         "double_escape_action",
         "editorPaddingX",
         "editor_padding_x",
@@ -419,6 +431,16 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         ),
         output_padding_x=_output_padding_x(
             data.get("output_padding_x", data.get("outputPad", DEFAULT_OUTPUT_PADDING_X))
+        ),
+        clear_on_shrink=_bool_setting(
+            data.get(
+                "clear_on_shrink",
+                data.get(
+                    "clearOnShrink",
+                    terminal_data.get("clearOnShrink", _default_clear_on_shrink()),
+                ),
+            ),
+            "clear_on_shrink",
         ),
         show_terminal_progress=_bool_setting(
             data.get(
