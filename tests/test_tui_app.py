@@ -2633,6 +2633,43 @@ async def test_prompt_ctrl_y_yanks_previous_forward_kill() -> None:
 
 
 @pytest.mark.anyio
+async def test_prompt_ctrl_minus_undoes_word_delete() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha beta"
+        prompt.move_cursor((0, len(prompt.text)))
+
+        await pilot.press("ctrl+w")
+        assert prompt.text == "alpha "
+
+        await pilot.press("ctrl+-")
+
+        assert prompt.text == "alpha beta"
+        assert prompt.cursor_location == (0, len("alpha beta"))
+
+
+@pytest.mark.anyio
+async def test_prompt_ctrl_minus_undoes_yank() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "alpha beta"
+        prompt.move_cursor((0, len(prompt.text)))
+        await pilot.press("ctrl+w")
+
+        await pilot.press("ctrl+y")
+        assert prompt.text == "alpha beta"
+
+        await pilot.press("ctrl+-")
+
+        assert prompt.text == "alpha "
+        assert prompt.cursor_location == (0, len("alpha "))
+
+
+@pytest.mark.anyio
 async def test_prompt_consecutive_kills_accumulate_for_yank() -> None:
     app = TauTuiApp(FakeSession())
 
@@ -2889,6 +2926,22 @@ async def test_tui_app_ctrl_j_inserts_multiline_prompt_newline() -> None:
 
     assert session.prompt_texts == ["first\nsecond"]
     assert prompt.value == ""
+
+
+@pytest.mark.anyio
+async def test_prompt_ctrl_minus_undoes_inserted_newline() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.value = "first"
+        prompt.cursor_position = len(prompt.value)
+
+        await pilot.press("ctrl+j")
+        await pilot.press("ctrl+-")
+
+        assert prompt.value == "first"
+        assert prompt.cursor_location == (0, len("first"))
 
 
 @pytest.mark.anyio
@@ -5530,6 +5583,37 @@ async def test_tui_app_compacts_large_single_line_clipboard_paste(
 
 
 @pytest.mark.anyio
+async def test_prompt_ctrl_minus_undoes_large_paste_marker_state(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    large_text = "\n".join(f"line {index}" for index in range(11))
+
+    async def fake_read_clipboard_image() -> None:
+        return None
+
+    async def fake_read_clipboard_text() -> str:
+        return large_text
+
+    app = TauTuiApp(FakeSession())
+    monkeypatch.setattr(tui_app, "_read_clipboard_image", fake_read_clipboard_image)
+    monkeypatch.setattr(tui_app, "_read_clipboard_text", fake_read_clipboard_text)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+
+        await pilot.press("ctrl+v")
+        await pilot.pause()
+        assert prompt.value == "[paste #1 +11 lines]"
+        assert prompt.expanded_text() == large_text
+
+        await pilot.press("ctrl+-")
+
+        assert prompt.value == ""
+        assert prompt.expanded_text() == ""
+        assert prompt.cursor_location == (0, 0)
+
+
+@pytest.mark.anyio
 async def test_tui_app_prunes_removed_large_paste_markers(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -5719,6 +5803,7 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "Ctrl+W/Alt+Backspace: delete previous word" in app.screen.message
         assert "Alt+D/Alt+Delete: delete next word" in app.screen.message
         assert "Ctrl+Y/Alt+Y: yank or cycle deleted text" in app.screen.message
+        assert "Ctrl+-: undo previous prompt edit" in app.screen.message
 
 
 @pytest.mark.anyio
