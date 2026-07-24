@@ -3672,6 +3672,30 @@ async def test_tui_app_tree_picker_toggles_tool_calls() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_tree_picker_arrow_keys_wrap_like_pi() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        tree_list = app.screen.query_one("#tree-picker-list", ListView)
+        assert tree_list.index == 3
+
+        await pilot.press("down")
+        await pilot.pause()
+        assert tree_list.index == 0
+
+        await pilot.press("up")
+        await pilot.pause()
+        assert tree_list.index == 3
+
+
+@pytest.mark.anyio
 async def test_tui_app_tree_picker_cycles_filter_modes() -> None:
     session = FakeSession()
     session.tree_labels["left"] = "bookmark"

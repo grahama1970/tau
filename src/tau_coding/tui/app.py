@@ -1340,11 +1340,20 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
 
     def action_cursor_up(self) -> None:
         """Move to the previous tree entry."""
-        self.query_one("#tree-picker-list", ListView).action_cursor_up()
+        self._move_tree_cursor(-1)
 
     def action_cursor_down(self) -> None:
         """Move to the next tree entry."""
-        self.query_one("#tree-picker-list", ListView).action_cursor_down()
+        self._move_tree_cursor(1)
+
+    def _move_tree_cursor(self, direction: Literal[-1, 1]) -> None:
+        """Move selected tree row, wrapping at list boundaries like Pi."""
+        visible_choices = self._visible_choices()
+        if not visible_choices:
+            return
+        tree_list = self.query_one("#tree-picker-list", ListView)
+        current_index = tree_list.index if tree_list.index is not None else 0
+        tree_list.index = (current_index + direction) % len(visible_choices)
 
     def action_page_up(self) -> None:
         """Move up by a page of tree entries."""
