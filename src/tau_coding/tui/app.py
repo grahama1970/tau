@@ -391,14 +391,14 @@ class ToolsReferenceScreen(ModalScreen[None]):
         )
 
     def _refresh_tools(self, query: str) -> None:
-        needle = query.casefold().strip()
+        tokens = _query_tokens(query)
         self.visible_tools = tuple(
             tool
             for tool in self.tools
-            if not needle
-            or needle in tool.name.casefold()
-            or needle in tool.description.casefold()
-            or needle in self._source_label(tool).casefold()
+            if _query_tokens_match(
+                tokens,
+                f"{tool.name} {tool.description} {self._source_label(tool)}",
+            )
         )
         tool_list = self.query_one("#tools-reference-list", ListView)
         tool_list.clear()
@@ -624,13 +624,11 @@ class SkillPickerScreen(ModalScreen[SkillPickerResult | None]):
         return self.visible_skills[index]
 
     def _refresh_skill_list(self, search: str) -> None:
-        query = search.casefold().strip()
+        tokens = _query_tokens(search)
         self.visible_skills = tuple(
             skill
             for skill in self.skills
-            if not query
-            or query in skill.name.casefold()
-            or query in (skill.description or "").casefold()
+            if _query_tokens_match(tokens, f"{skill.name} {skill.description or ''}")
         )
         skill_list = self.query_one("#skill-picker-list", ListView)
         skill_list.clear()
@@ -773,13 +771,11 @@ class PromptTemplatePickerScreen(ModalScreen[str | None]):
         self.dismiss(None)
 
     def _refresh_list(self, search: str) -> None:
-        query = search.casefold().strip()
+        tokens = _query_tokens(search)
         self.visible_templates = tuple(
             template
             for template in self.templates
-            if not query
-            or query in template.name.casefold()
-            or query in (template.description or "").casefold()
+            if _query_tokens_match(tokens, f"{template.name} {template.description or ''}")
         )
         picker_list = self.query_one("#prompt-template-picker-list", ListView)
         picker_list.clear()
@@ -7914,7 +7910,7 @@ def _session_picker_query_tokens(query: str) -> tuple[tuple[Literal["token", "ph
         had_unclosed_quote = True
 
     if had_unclosed_quote:
-        return tuple(("token", token) for token in query.split() if token.strip())
+        return tuple(("token", token) for token in _query_tokens(query))
 
     flush("phrase" if in_quote else "token")
     return tuple(tokens)
@@ -8078,11 +8074,11 @@ def _tree_choice_matches_filter(
 
 
 def _tree_choice_matches_search(choice: SessionTreeChoice, query: str) -> bool:
-    tokens = query.casefold().split()
+    tokens = _query_tokens(query)
     if not tokens:
         return True
     searchable = _tree_choice_search_text(choice)
-    return all(token in searchable for token in tokens)
+    return _query_tokens_match(tokens, searchable)
 
 
 def _tree_choice_search_text(choice: SessionTreeChoice) -> str:
@@ -8417,13 +8413,13 @@ def _filter_login_providers(
     providers: Sequence[ProviderCatalogEntry],
     query: str,
 ) -> tuple[ProviderCatalogEntry, ...]:
-    normalized = query.strip().lower()
-    if not normalized:
+    tokens = _query_tokens(query)
+    if not tokens:
         return tuple(providers)
     return tuple(
         provider
         for provider in providers
-        if normalized in provider.name.lower() or normalized in provider.display_name.lower()
+        if _query_tokens_match(tokens, f"{provider.name} {provider.display_name}")
     )
 
 
@@ -8636,13 +8632,13 @@ def _filter_settings_picker_items(
     items: Sequence[SettingsPickerItem],
     query: str,
 ) -> tuple[SettingsPickerItem, ...]:
-    normalized = " ".join(query.casefold().split())
-    if not normalized:
+    tokens = _query_tokens(query)
+    if not tokens:
         return tuple(items)
     return tuple(
         item
         for item in items
-        if normalized in f"{item.label} {item.value} {item.key} {item.description}".casefold()
+        if _query_tokens_match(tokens, f"{item.label} {item.value} {item.key} {item.description}")
     )
 
 
@@ -8854,7 +8850,7 @@ def _model_picker_choice_matches(choice: ModelChoice, normalized_query: str) -> 
     search_text = _model_picker_search_text(choice)
     if normalized_query in search_text:
         return True
-    return all(token in search_text for token in normalized_query.split())
+    return _query_tokens_match(_query_tokens(normalized_query), search_text)
 
 
 def _model_picker_search_text(choice: ModelChoice) -> str:
@@ -8882,13 +8878,13 @@ def _filter_workflow_picker_records(
     workflows: Sequence[WorkflowDefinition],
     query: str,
 ) -> tuple[WorkflowDefinition, ...]:
-    tokens = query.casefold().split()
+    tokens = _query_tokens(query)
     if not tokens:
         return tuple(workflows)
     return tuple(
         workflow
         for workflow in workflows
-        if all(token in _workflow_picker_search_text(workflow) for token in tokens)
+        if _query_tokens_match(tokens, _workflow_picker_search_text(workflow))
     )
 
 
@@ -9521,6 +9517,22 @@ def _display_resource_path(path: Path, *, cwd: Path) -> str:
     with suppress(ValueError):
         return str(path.resolve().relative_to(cwd.resolve()))
     return str(path)
+
+
+def _query_tokens(query: str) -> tuple[str, ...]:
+    """Return Pi-style whitespace-or-slash search tokens."""
+    return tuple(
+        token
+        for token in re.split(r"[\s/]+", query.casefold().strip())
+        if token
+    )
+
+
+def _query_tokens_match(tokens: Sequence[str], text: str) -> bool:
+    if not tokens:
+        return True
+    searchable = text.casefold()
+    return all(token in searchable for token in tokens)
 
 
 def _app_bindings(keybindings: TuiKeybindings) -> list[Binding]:
