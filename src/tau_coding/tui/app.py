@@ -4646,9 +4646,12 @@ class TauTuiApp(App[None]):
     async def _open_external_editor(self) -> None:
         prompt = self.query_one("#prompt", PromptInput)
         original_text = prompt.expanded_text()
-        editor_command = _external_editor_command()
+        editor_command = _external_editor_command(self.tui_settings.external_editor)
         if editor_command is None:
-            self._notify("Set VISUAL or EDITOR to use the external editor.", severity="warning")
+            self._notify(
+                "Set TUI external_editor, VISUAL, or EDITOR to use the external editor.",
+                severity="warning",
+            )
             return
         try:
             with self.suspend():
@@ -6723,8 +6726,10 @@ def _base_mime_type(mime_type: str) -> str:
     return mime_type.split(";", maxsplit=1)[0].strip().lower()
 
 
-def _external_editor_command() -> str | None:
+def _external_editor_command(configured_command: str | None = None) -> str | None:
     """Return the configured external editor command, if any."""
+    if configured_command is not None and configured_command.strip():
+        return configured_command.strip()
     command = os.environ.get("VISUAL") or os.environ.get("EDITOR")
     if command is None or not command.strip():
         return None

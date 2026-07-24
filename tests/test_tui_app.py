@@ -5716,6 +5716,33 @@ async def test_tui_app_external_editor_replaces_prompt(monkeypatch: pytest.Monke
 
 
 @pytest.mark.anyio
+async def test_tui_app_external_editor_uses_tui_setting_before_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    edited_calls: list[tuple[str, str]] = []
+
+    async def fake_edit(command: str, content: str) -> str:
+        edited_calls.append((command, content))
+        return "configured edit"
+
+    app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(external_editor="configured-editor"))
+    monkeypatch.setenv("VISUAL", "env-editor")
+    monkeypatch.setattr(tui_app, "_edit_text_with_external_editor", fake_edit)
+    monkeypatch.setattr(app, "suspend", lambda: nullcontext())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "draft prompt"
+
+        await pilot.press("ctrl+g")
+        await pilot.pause()
+
+        assert prompt.value == "configured edit"
+
+    assert edited_calls == [("configured-editor", "draft prompt")]
+
+
+@pytest.mark.anyio
 async def test_tui_app_external_editor_warns_when_unconfigured(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -5740,7 +5767,7 @@ async def test_tui_app_external_editor_warns_when_unconfigured(
         assert prompt.value == "draft prompt"
 
     assert notifications == [
-        ("Set VISUAL or EDITOR to use the external editor.", "warning"),
+        ("Set TUI external_editor, VISUAL, or EDITOR to use the external editor.", "warning"),
     ]
 
 

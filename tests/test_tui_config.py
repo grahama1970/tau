@@ -68,6 +68,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
           "steering_mode": "all",
           "followUpMode": "all",
           "defaultProjectTrust": "always",
+          "externalEditor": "configured-editor --flag",
           "terminal": {"clearOnShrink": true, "showTerminalProgress": true},
           "thinkingLevel": "high"
         }
@@ -112,6 +113,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.steering_mode == "all"
     assert settings.follow_up_mode == "all"
     assert settings.default_project_trust == "always"
+    assert settings.external_editor == "configured-editor --flag"
     assert settings.show_terminal_progress is True
     assert settings.thinking_level == "high"
     assert settings.tree_filter_mode == "user-only"
@@ -435,6 +437,11 @@ def test_tui_settings_reject_invalid_enable_skill_commands() -> None:
         tui_settings_from_json({"enable_skill_commands": "false"})
 
 
+def test_tui_settings_reject_invalid_external_editor() -> None:
+    with pytest.raises(TuiConfigError, match="external_editor"):
+        tui_settings_from_json({"external_editor": ["vim"]})
+
+
 def test_tui_keybindings_serialize_to_json() -> None:
     settings = TuiSettings(
         keybindings=TuiKeybindings(
@@ -459,6 +466,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
             copy_last_message="ctrl+x",
         ),
         theme="high-contrast",
+        external_editor="configured-editor --flag",
     )
 
     assert settings.to_json()["keybindings"]["command_palette"] == "ctrl+j"
@@ -489,6 +497,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["clear_on_shrink"] is False
     assert settings.to_json()["show_hardware_cursor"] is True
     assert settings.to_json()["show_terminal_progress"] is False
+    assert settings.to_json()["external_editor"] == "configured-editor --flag"
     assert settings.to_json()["theme"] == "high-contrast"
     assert settings.to_json()["auto_compact"] is True
     assert settings.to_json()["auto_copy_selection"] is False

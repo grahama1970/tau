@@ -300,6 +300,7 @@ class TuiSettings:
     clear_on_shrink: bool = field(default_factory=_default_clear_on_shrink)
     show_hardware_cursor: bool = True
     show_terminal_progress: bool = False
+    external_editor: str | None = None
 
     def to_json(self) -> dict[str, Any]:
         """Serialize these settings to JSON-compatible data."""
@@ -318,6 +319,7 @@ class TuiSettings:
             "clear_on_shrink": self.clear_on_shrink,
             "show_hardware_cursor": self.show_hardware_cursor,
             "show_terminal_progress": self.show_terminal_progress,
+            "external_editor": self.external_editor,
             "follow_up_mode": self.follow_up_mode,
             "steering_mode": self.steering_mode,
             "theme": self.theme,
@@ -373,6 +375,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "editor_padding_x",
         "enableSkillCommands",
         "enable_skill_commands",
+        "externalEditor",
+        "external_editor",
         "hide_thinking",
         "keybindings",
         "outputPad",
@@ -474,6 +478,10 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
             ),
             "show_terminal_progress",
         ),
+        external_editor=_optional_string_setting(
+            data.get("external_editor", data.get("externalEditor")),
+            "external_editor",
+        ),
         thinking_level=_thinking_level(
             data.get("thinking_level", data.get("thinkingLevel", DEFAULT_THINKING_LEVEL))
         ),
@@ -485,6 +493,15 @@ def _bool_setting(value: object, field_name: str) -> bool:
     if isinstance(value, bool):
         return value
     raise TuiConfigError(f"TUI setting must be a boolean: {field_name}")
+
+
+def _optional_string_setting(value: object, field_name: str) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise TuiConfigError(f"TUI setting must be a string or null: {field_name}")
+    stripped = value.strip()
+    return stripped or None
 
 
 def _double_escape_action(value: object) -> DoubleEscapeAction:
