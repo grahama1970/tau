@@ -826,6 +826,10 @@ class PromptInput(TextArea):
         self._last_yank_range: tuple[int, int] | None = None
         self._undo_stack: list[tuple[str, int, dict[str, str], int]] = []
         self._jump_direction: Literal["forward", "backward"] | None = None
+        self._prompt_history: list[str] = []
+        self._prompt_history_index = -1
+        self._prompt_history_draft: tuple[str, tuple[int, int], dict[str, str], int] | None = None
+        self._setting_history_text = False
         self._apply_prompt_bindings()
 
     def set_footer_mode(self, mode: Literal["normal", "completion", "running"]) -> None:
@@ -851,12 +855,29 @@ class PromptInput(TextArea):
 
     @value.setter
     def value(self, text: str) -> None:
+        self._exit_prompt_history()
         self.text = text
         self.clear_paste_markers()
         self._last_prompt_edit = None
         self._last_yank_range = None
         self._undo_stack.clear()
         self._jump_direction = None
+
+    def watch_text(self, old_text: str, new_text: str) -> None:
+        """Leave history browsing when regular editing changes the prompt."""
+        del old_text, new_text
+        if not self._setting_history_text:
+            self._exit_prompt_history()
+
+    def add_to_history(self, text: str) -> None:
+        """Add submitted prompt text for Pi-style up/down recall."""
+        prompt = text.strip()
+        if not prompt:
+            return
+        if self._prompt_history and self._prompt_history[0] == prompt:
+            return
+        self._prompt_history.insert(0, prompt)
+        del self._prompt_history[100:]
 
     def clear_paste_markers(self) -> None:
         """Forget compacted paste payloads when replacing editor contents."""
@@ -978,6 +999,99 @@ class PromptInput(TextArea):
             return
         else:
             self.action_cursor_up()
+
+    def action_cursor_up(self) -> None:
+        """Move up or browse prompt history from the first prompt line."""
+        row, _column = self.cursor_location
+        if self._prompt_history_text_changed():
+            self._exit_prompt_history()
+            result = super().action_cursor_up()
+            if isawaitable(result):
+                self.run_worker(result)
+            return
+        if self._prompt_history and row <= 0:
+            self._navigate_prompt_history(-1)
+            return
+        result = super().action_cursor_up()
+        if isawaitable(result):
+            self.run_worker(result)
+
+    def action_cursor_down(self) -> None:
+        """Move down or restore the live draft after prompt history browsing."""
+        row, _column = self.cursor_location
+        lines = self.text.split("\n")
+        if self._prompt_history_text_changed():
+            self._exit_prompt_history()
+            result = super().action_cursor_down()
+            if isawaitable(result):
+                self.run_worker(result)
+            return
+        if self._prompt_history_index >= 0 and row >= len(lines) - 1:
+            self._navigate_prompt_history(1)
+            return
+        result = super().action_cursor_down()
+        if isawaitable(result):
+            self.run_worker(result)
+
+    def _navigate_prompt_history(self, direction: Literal[-1, 1]) -> None:
+        next_index = self._prompt_history_index - direction
+        if next_index < -1 or next_index >= len(self._prompt_history):
+            return
+        if self._prompt_history_index == -1 and next_index >= 0:
+            self._push_undo_snapshot()
+            self._prompt_history_draft = (
+                self.text,
+                self.cursor_location,
+                dict(self._paste_markers),
+                self._paste_counter,
+            )
+        self._prompt_history_index = next_index
+        if next_index == -1:
+            draft = self._prompt_history_draft
+            self._prompt_history_draft = None
+            if draft is None:
+                self._set_prompt_history_text("", cursor_placement="end")
+                return
+            text, cursor_location, paste_markers, paste_counter = draft
+            self._setting_history_text = True
+            try:
+                self.text = text
+                self._paste_markers = dict(paste_markers)
+                self._paste_counter = paste_counter
+                self.move_cursor(cursor_location)
+            finally:
+                self._setting_history_text = False
+            return
+        cursor_placement: Literal["start", "end"] = "start" if direction == -1 else "end"
+        self._set_prompt_history_text(
+            self._prompt_history[next_index],
+            cursor_placement=cursor_placement,
+        )
+
+    def _set_prompt_history_text(
+        self,
+        text: str,
+        *,
+        cursor_placement: Literal["start", "end"],
+    ) -> None:
+        self._setting_history_text = True
+        try:
+            self.text = text
+            self.clear_paste_markers()
+            location = (0, 0) if cursor_placement == "start" else _text_end_location(text)
+            self.move_cursor(location)
+        finally:
+            self._setting_history_text = False
+
+    def _exit_prompt_history(self) -> None:
+        self._prompt_history_index = -1
+        self._prompt_history_draft = None
+
+    def _prompt_history_text_changed(self) -> bool:
+        index = self._prompt_history_index
+        if index < 0 or index >= len(self._prompt_history):
+            return False
+        return self.text != self._prompt_history[index]
 
     def action_cancel(self) -> None:
         """Run the app-level cancel action."""
@@ -5352,6 +5466,7 @@ class TauTuiApp(App[None]):
             self._notify("Skill commands are disabled in TUI settings.", severity="warning")
             return
 
+        prompt.add_to_history(text)
         prompt.text = ""
         prompt.clear_paste_markers()
         self._completion_state = CompletionState()
