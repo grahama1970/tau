@@ -8,8 +8,11 @@ from tau_coding.tui.config import (
     TuiConfigError,
     TuiKeybindings,
     TuiSettings,
+    detect_terminal_theme_from_env,
     get_tui_theme,
     load_tui_settings,
+    parse_tui_auto_theme_setting,
+    resolve_tui_theme_name,
     save_tui_settings,
     tui_settings_from_json,
     tui_settings_path,
@@ -363,6 +366,37 @@ def test_tui_settings_accept_light_theme() -> None:
     assert settings.theme == "tau-light"
     assert settings.resolved_theme.screen_background == "#ffffff"
     assert settings.resolved_theme.syntax_theme == "ansi_light"
+
+
+def test_tui_settings_accept_pi_style_automatic_theme_pair(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("COLORFGBG", "0;15")
+
+    settings = tui_settings_from_json({"theme": "tau-light/tau-dark"})
+
+    assert settings.theme == "tau-light/tau-dark"
+    assert parse_tui_auto_theme_setting(settings.theme) == ("tau-light", "tau-dark")
+    assert settings.resolved_theme.name == "tau-light"
+    assert settings.to_json()["theme"] == "tau-light/tau-dark"
+
+
+def test_tui_automatic_theme_resolves_dark_when_terminal_theme_is_dark() -> None:
+    assert (
+        resolve_tui_theme_name("tau-light/high-contrast", terminal_theme="dark")
+        == "high-contrast"
+    )
+
+
+def test_tui_automatic_theme_rejects_unknown_pair_member() -> None:
+    with pytest.raises(TuiConfigError, match="Unknown TUI theme"):
+        tui_settings_from_json({"theme": "tau-light/solarized"})
+
+
+def test_terminal_theme_detection_uses_colorfgbg_background() -> None:
+    assert detect_terminal_theme_from_env({"COLORFGBG": "0;15"}) == "light"
+    assert detect_terminal_theme_from_env({"COLORFGBG": "15;0"}) == "dark"
+    assert detect_terminal_theme_from_env({}) == "dark"
 
 
 def test_tui_settings_load_auto_copy_selection() -> None:

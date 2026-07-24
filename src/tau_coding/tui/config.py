@@ -179,6 +179,7 @@ class TuiKeybindings:
 
 
 type TuiThemeName = Literal["tau-dark", "tau-light", "high-contrast"]
+type TerminalTheme = Literal["dark", "light"]
 type DoubleEscapeAction = Literal["tree", "fork", "none"]
 type TuiTreeFilterMode = Literal["default", "no-tools", "user-only", "labeled-only", "all"]
 type TuiQueueDrainMode = Literal["one-at-a-time", "all"]
@@ -384,12 +385,62 @@ def get_tui_theme(name: TuiThemeName = "tau-dark") -> TuiTheme:
     return _THEMES[name]
 
 
+def parse_tui_auto_theme_setting(theme_setting: str) -> tuple[TuiThemeName, TuiThemeName] | None:
+    """Parse Pi-style ``light-theme/dark-theme`` automatic theme settings."""
+    slash_index = theme_setting.find("/")
+    if slash_index < 0:
+        return None
+    light_theme = theme_setting[:slash_index].strip()
+    dark_theme = theme_setting[slash_index + 1 :].strip()
+    if not light_theme or not dark_theme:
+        raise TuiConfigError("TUI automatic theme must be '<light-theme>/<dark-theme>'")
+    return _fixed_theme_name(light_theme), _fixed_theme_name(dark_theme)
+
+
+def resolve_tui_theme_name(
+    theme_setting: str,
+    *,
+    terminal_theme: TerminalTheme | None = None,
+) -> TuiThemeName:
+    """Resolve a fixed or automatic theme setting to one built-in theme name."""
+    auto_theme = parse_tui_auto_theme_setting(theme_setting)
+    if auto_theme is None:
+        return _fixed_theme_name(theme_setting)
+    light_theme, dark_theme = auto_theme
+    detected_theme = terminal_theme or detect_terminal_theme_from_env()
+    return light_theme if detected_theme == "light" else dark_theme
+
+
+def resolve_tui_theme_setting(
+    theme_setting: str,
+    *,
+    terminal_theme: TerminalTheme | None = None,
+) -> TuiTheme:
+    """Resolve a fixed or Pi-style automatic theme setting to a built-in theme."""
+    return get_tui_theme(
+        resolve_tui_theme_name(theme_setting, terminal_theme=terminal_theme)
+    )
+
+
+def detect_terminal_theme_from_env(environ: dict[str, str] | None = None) -> TerminalTheme:
+    """Infer terminal background from ``COLORFGBG`` when the terminal exposes it."""
+    values = os.environ if environ is None else environ
+    colorfgbg = values.get("COLORFGBG", "")
+    if colorfgbg:
+        raw_background = colorfgbg.split(";")[-1].strip()
+        if raw_background.isdigit():
+            luminance = _ansi_color_luminance(int(raw_background))
+            if luminance is not None:
+                return "light" if luminance >= 0.5 else "dark"
+    return "dark"
+
+
 @dataclass(frozen=True, slots=True)
 class TuiSettings:
     """Tau TUI settings loaded from Tau home."""
 
     keybindings: TuiKeybindings = field(default_factory=TuiKeybindings)
-    theme: TuiThemeName = "tau-dark"
+    theme: str = "tau-dark"
     auto_compact: bool = True
     auto_copy_selection: bool = False
     show_images: bool = True
@@ -441,7 +492,7 @@ class TuiSettings:
     @property
     def resolved_theme(self) -> TuiTheme:
         """Return the selected built-in theme."""
-        return get_tui_theme(self.theme)
+        return resolve_tui_theme_setting(self.theme)
 
 
 def tui_settings_path(paths: TauPaths | None = None) -> Path:
@@ -714,6 +765,40 @@ def _thinking_level(value: object) -> ThinkingLevel:
         return cast(ThinkingLevel, value)
     allowed = ", ".join(THINKING_LEVELS)
     raise TuiConfigError(f"TUI thinking_level must be one of: {allowed}")
+
+
+def _ansi_color_luminance(color_index: int) -> float | None:
+    if color_index < 0 or color_index > 255:
+        return None
+    if color_index < 16:
+        colors = (
+            (0, 0, 0),
+            (128, 0, 0),
+            (0, 128, 0),
+            (128, 128, 0),
+            (0, 0, 128),
+            (128, 0, 128),
+            (0, 128, 128),
+            (192, 192, 192),
+            (128, 128, 128),
+            (255, 0, 0),
+            (0, 255, 0),
+            (255, 255, 0),
+            (0, 0, 255),
+            (255, 0, 255),
+            (0, 255, 255),
+            (255, 255, 255),
+        )
+        red, green, blue = colors[color_index]
+    elif color_index < 232:
+        levels = (0, 95, 135, 175, 215, 255)
+        offset = color_index - 16
+        red = levels[offset // 36]
+        green = levels[(offset % 36) // 6]
+        blue = levels[offset % 6]
+    else:
+        red = green = blue = 8 + ((color_index - 232) * 10)
+    return ((0.2126 * red) + (0.7152 * green) + (0.0722 * blue)) / 255
 
 
 def _keybindings_from_json(data: dict[str, Any]) -> TuiKeybindings:
@@ -1033,10 +1118,16 @@ def _key_list(value: object, field_name: str) -> list[str]:
     raise TuiConfigError(f"TUI keybinding must be a string or string list: {field_name}")
 
 
-def _theme_name(value: object) -> TuiThemeName:
+def _theme_name(value: object) -> str:
     if not isinstance(value, str) or not value.strip():
         raise TuiConfigError("TUI theme must be a non-empty string")
     name = value.strip()
+    if parse_tui_auto_theme_setting(name) is not None:
+        return name
+    return _fixed_theme_name(name)
+
+
+def _fixed_theme_name(name: str) -> TuiThemeName:
     if name == "tau-dark" or name == "tau-light" or name == "high-contrast":
         return cast(TuiThemeName, name)
     raise TuiConfigError(f"Unknown TUI theme: {name}")
