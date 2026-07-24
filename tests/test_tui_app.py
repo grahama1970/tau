@@ -5204,6 +5204,34 @@ async def test_tui_app_tree_picker_direct_filter_shortcuts() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_tree_picker_uses_configured_pi_tree_filter_shortcut() -> None:
+    session = FakeSession()
+    app = TauTuiApp(
+        session,
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(tree_filter_user_only="f8"),
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        tree_list = app.screen.query_one("#tree-picker-list", ListView)
+
+        await pilot.press("f8")
+        await pilot.pause()
+
+        assert [str(item.query_one(Label).render()) for item in tree_list.children] == [
+            "  user: Root"
+        ]
+        assert "filter user-only" in str(app.screen.query_one("#tree-picker-help", Static).render())
+
+
+@pytest.mark.anyio
 async def test_tui_app_tree_picker_search_filters_entries_and_escape_clears() -> None:
     session = FakeSession()
     app = TauTuiApp(session)

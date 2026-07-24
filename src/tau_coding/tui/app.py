@@ -1808,12 +1808,14 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         *,
         theme: TuiTheme,
         initial_filter_mode: TreeFilterMode = "default",
+        keybindings: TuiKeybindings | None = None,
         set_entry_label: Callable[[str, str | None], object] | None = None,
     ) -> None:
         super().__init__()
         self.choices = tuple(choices)
         self.theme = theme
         self.set_entry_label = set_entry_label
+        self.keybindings = keybindings or TuiKeybindings()
         self.show_tool_calls = True
         self.show_label_timestamps = False
         self.filter_mode = initial_filter_mode
@@ -1864,40 +1866,84 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         elif event.key == "c":
             event.stop()
             self.action_select_with_custom_summary()
-        elif event.key == "ctrl+t":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.tree_filter_no_tools,
+            "ctrl+t",
+        ):
             event.stop()
             self.action_toggle_tool_calls()
-        elif event.key == "ctrl+d":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.tree_filter_default,
+            "ctrl+d",
+        ):
             event.stop()
             self.action_set_default_tree_filter()
-        elif event.key == "ctrl+u":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.tree_filter_user_only,
+            "ctrl+u",
+        ):
             event.stop()
             self.action_toggle_user_tree_filter()
-        elif event.key == "ctrl+l":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.tree_filter_labeled_only,
+            "ctrl+l",
+        ):
             event.stop()
             self.action_toggle_labeled_tree_filter()
-        elif event.key == "ctrl+a":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.tree_filter_all,
+            "ctrl+a",
+        ):
             event.stop()
             self.action_toggle_all_tree_filter()
-        elif event.key in {"ctrl+o", "ctrl+f"}:
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.tree_filter_cycle,
+            "ctrl+o,ctrl+f",
+        ):
             event.stop()
             self.action_cycle_tree_filter()
-        elif event.key in {"shift+ctrl+o", "ctrl+shift+o"}:
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.tree_filter_cycle_previous,
+            "shift+ctrl+o,ctrl+shift+o",
+        ):
             event.stop()
             self.action_cycle_tree_filter_backward()
         elif event.key == "ctrl+x":
             event.stop()
             self.action_copy_selected_tree_entry()
-        elif event.key in {"ctrl+left", "alt+left"}:
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.tree_fold_or_up,
+            "ctrl+left,alt+left",
+        ):
             event.stop()
             self.action_fold_tree_branch()
-        elif event.key in {"ctrl+right", "alt+right"}:
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.tree_unfold_or_down,
+            "ctrl+right,alt+right",
+        ):
             event.stop()
             self.action_unfold_tree_branch()
-        elif event.key in {"shift+l", "L"}:
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.tree_edit_label,
+            "shift+l,L",
+        ):
             event.stop()
             self.action_edit_tree_label()
-        elif event.key in {"shift+t", "T"}:
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.tree_toggle_label_timestamp,
+            "shift+t,T",
+        ):
             event.stop()
             self.action_toggle_tree_label_timestamps()
         elif event.key == "backspace":
@@ -4786,6 +4832,7 @@ class TauTuiApp(App[None]):
                 choices,
                 theme=self.tui_settings.resolved_theme,
                 initial_filter_mode=cast(TreeFilterMode, self.tui_settings.tree_filter_mode),
+                keybindings=self.tui_settings.keybindings,
                 set_entry_label=self._set_tree_entry_label_from_picker,
             ),
             callback=self._handle_tree_picker_result,
@@ -6517,6 +6564,15 @@ def _is_thinking_cycle_key(key: str, configured_key: str) -> bool:
 
 def _matches_configured_key(key: str, configured_key: str) -> bool:
     return key in _configured_key_parts(configured_key)
+
+
+def _matches_configured_or_default_key(
+    key: str,
+    configured_key: str,
+    default_key: str,
+) -> bool:
+    active_key = configured_key if configured_key.strip() else default_key
+    return _matches_configured_key(key, active_key)
 
 
 def _configured_key_parts(configured_key: str) -> tuple[str, ...]:

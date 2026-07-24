@@ -43,6 +43,17 @@ class TuiKeybindings:
     paste_clipboard: str = "ctrl+v"
     suspend: str = "ctrl+z"
     quit: str = "ctrl+d"
+    tree_fold_or_up: str = ""
+    tree_unfold_or_down: str = ""
+    tree_edit_label: str = ""
+    tree_toggle_label_timestamp: str = ""
+    tree_filter_default: str = ""
+    tree_filter_no_tools: str = ""
+    tree_filter_user_only: str = ""
+    tree_filter_labeled_only: str = ""
+    tree_filter_all: str = ""
+    tree_filter_cycle: str = ""
+    tree_filter_cycle_previous: str = ""
 
     def to_json(self) -> dict[str, str]:
         """Serialize these keybindings to JSON-compatible data."""
@@ -71,6 +82,17 @@ class TuiKeybindings:
             "paste_clipboard": self.paste_clipboard,
             "suspend": self.suspend,
             "quit": self.quit,
+            "tree_fold_or_up": self.tree_fold_or_up,
+            "tree_unfold_or_down": self.tree_unfold_or_down,
+            "tree_edit_label": self.tree_edit_label,
+            "tree_toggle_label_timestamp": self.tree_toggle_label_timestamp,
+            "tree_filter_default": self.tree_filter_default,
+            "tree_filter_no_tools": self.tree_filter_no_tools,
+            "tree_filter_user_only": self.tree_filter_user_only,
+            "tree_filter_labeled_only": self.tree_filter_labeled_only,
+            "tree_filter_all": self.tree_filter_all,
+            "tree_filter_cycle": self.tree_filter_cycle,
+            "tree_filter_cycle_previous": self.tree_filter_cycle_previous,
         }
 
 
@@ -607,6 +629,17 @@ _PI_KEYBINDING_ALIASES = {
     "app.session.tree": "session_tree",
     "app.session.fork": "session_fork",
     "app.session.resume": "session_resume",
+    "app.tree.foldOrUp": "tree_fold_or_up",
+    "app.tree.unfoldOrDown": "tree_unfold_or_down",
+    "app.tree.editLabel": "tree_edit_label",
+    "app.tree.toggleLabelTimestamp": "tree_toggle_label_timestamp",
+    "app.tree.filter.default": "tree_filter_default",
+    "app.tree.filter.noTools": "tree_filter_no_tools",
+    "app.tree.filter.userOnly": "tree_filter_user_only",
+    "app.tree.filter.labeledOnly": "tree_filter_labeled_only",
+    "app.tree.filter.all": "tree_filter_all",
+    "app.tree.filter.cycleForward": "tree_filter_cycle",
+    "app.tree.filter.cycleBackward": "tree_filter_cycle_previous",
     "tui.input.tab": "accept_completion",
     "interrupt": "cancel",
     "clear": "copy_message",
@@ -626,6 +659,17 @@ _PI_KEYBINDING_ALIASES = {
     "tree": "session_tree",
     "fork": "session_fork",
     "resume": "session_resume",
+    "treeFoldOrUp": "tree_fold_or_up",
+    "treeUnfoldOrDown": "tree_unfold_or_down",
+    "treeEditLabel": "tree_edit_label",
+    "treeToggleLabelTimestamp": "tree_toggle_label_timestamp",
+    "treeFilterDefault": "tree_filter_default",
+    "treeFilterNoTools": "tree_filter_no_tools",
+    "treeFilterUserOnly": "tree_filter_user_only",
+    "treeFilterLabeledOnly": "tree_filter_labeled_only",
+    "treeFilterAll": "tree_filter_all",
+    "treeFilterCycleForward": "tree_filter_cycle",
+    "treeFilterCycleBackward": "tree_filter_cycle_previous",
     "tab": "accept_completion",
 }
 
@@ -654,6 +698,32 @@ _OPTIONAL_KEYBINDING_FIELDS = {
     "session_tree",
     "session_fork",
     "session_resume",
+    "tree_fold_or_up",
+    "tree_unfold_or_down",
+    "tree_edit_label",
+    "tree_toggle_label_timestamp",
+    "tree_filter_default",
+    "tree_filter_no_tools",
+    "tree_filter_user_only",
+    "tree_filter_labeled_only",
+    "tree_filter_all",
+    "tree_filter_cycle",
+    "tree_filter_cycle_previous",
+}
+
+
+_SCOPED_KEYBINDING_FIELDS = {
+    "tree_fold_or_up",
+    "tree_unfold_or_down",
+    "tree_edit_label",
+    "tree_toggle_label_timestamp",
+    "tree_filter_default",
+    "tree_filter_no_tools",
+    "tree_filter_user_only",
+    "tree_filter_labeled_only",
+    "tree_filter_all",
+    "tree_filter_cycle",
+    "tree_filter_cycle_previous",
 }
 
 
@@ -689,6 +759,8 @@ def _theme_name(value: object) -> TuiThemeName:
 def _reject_duplicate_keys(values: dict[str, str]) -> None:
     key_to_action: dict[str, str] = {}
     for action, keys in values.items():
+        if action in _SCOPED_KEYBINDING_FIELDS:
+            continue
         for key in _configured_key_parts(keys):
             previous_action = key_to_action.get(key)
             if previous_action is not None:
