@@ -6097,6 +6097,7 @@ class TauTuiApp(App[None]):
         if isinstance(event, MessageEndEvent):
             if event.message.role == "user":
                 self._refresh()
+                self._sync_terminal_title()
                 return
             if event.message.role == "assistant":
                 await transcript.finish_assistant_message(event.message.content)
