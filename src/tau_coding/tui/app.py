@@ -7036,7 +7036,7 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         "- Home/End: move to line start/end",
         "",
         "Editing:",
-        "- Enter: submit prompt",
+        f"- {_key_hint(keybindings.submit_prompt)}: submit prompt",
         f"- {newline_hint}: insert newline",
         "- Shift+Space: insert a literal space",
         "- Ctrl+A/Ctrl+E: move to line start/end",
@@ -7258,7 +7258,7 @@ def _prompt_bindings(
         return bindings + _hidden_prompt_bindings(keybindings, visible_bindings=bindings)
     if mode == "running":
         bindings = [
-            Binding("enter", "submit_prompt", "Steer", priority=True),
+            Binding(keybindings.submit_prompt, "submit_prompt", "Steer", priority=True),
             Binding(keybindings.queue_follow_up, "submit_follow_up", "Follow-up", priority=True),
             Binding(keybindings.dequeue_messages, "dequeue_messages", "Restore", priority=True),
             Binding(keybindings.cancel, "cancel", "Cancel", priority=True),
@@ -7277,7 +7277,7 @@ def _prompt_bindings(
         ]
         return bindings + _hidden_prompt_bindings(keybindings, visible_bindings=bindings)
     bindings = [
-        Binding("enter", "submit_prompt", "Submit", priority=True),
+        Binding(keybindings.submit_prompt, "submit_prompt", "Submit", priority=True),
         Binding(keybindings.insert_newline, "insert_newline", "Newline", priority=True),
         Binding(
             keybindings.command_palette,

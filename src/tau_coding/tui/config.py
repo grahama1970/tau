@@ -34,6 +34,7 @@ class TuiKeybindings:
     session_delete_noninvasive: str = ""
     queue_follow_up: str = "alt+enter"
     dequeue_messages: str = "alt+up"
+    submit_prompt: str = "enter"
     insert_newline: str = "shift+enter"
     accept_completion: str = "tab"
     completion_next: str = "down"
@@ -86,6 +87,7 @@ class TuiKeybindings:
             "session_delete_noninvasive": self.session_delete_noninvasive,
             "queue_follow_up": self.queue_follow_up,
             "dequeue_messages": self.dequeue_messages,
+            "submit_prompt": self.submit_prompt,
             "insert_newline": self.insert_newline,
             "accept_completion": self.accept_completion,
             "completion_next": self.completion_next,
@@ -679,6 +681,7 @@ _PI_KEYBINDING_ALIASES = {
     "app.tree.filter.cycleForward": "tree_filter_cycle",
     "app.tree.filter.cycleBackward": "tree_filter_cycle_previous",
     "tui.input.newLine": "insert_newline",
+    "tui.input.submit": "submit_prompt",
     "tui.input.tab": "accept_completion",
     "interrupt": "cancel",
     "clear": "copy_message",
@@ -722,6 +725,7 @@ _PI_KEYBINDING_ALIASES = {
     "treeFilterCycleForward": "tree_filter_cycle",
     "treeFilterCycleBackward": "tree_filter_cycle_previous",
     "newLine": "insert_newline",
+    "submit": "submit_prompt",
     "tab": "accept_completion",
 }
 

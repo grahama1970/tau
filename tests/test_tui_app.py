@@ -3165,6 +3165,30 @@ async def test_tui_app_submits_multiline_prompt_with_enter() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_uses_configured_pi_submit_keybinding() -> None:
+    session = FakeSession(
+        events=[
+            AgentStartEvent(),
+            MessageEndEvent(message=UserMessage(content="configured submit")),
+            AgentEndEvent(),
+        ]
+    )
+    app = TauTuiApp(
+        session,
+        tui_settings=TuiSettings(keybindings=TuiKeybindings(submit_prompt="f9")),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "configured submit"
+        await pilot.press("f9")
+        await pilot.pause()
+
+    assert session.prompt_texts == ["configured submit"]
+    assert prompt.value == ""
+
+
+@pytest.mark.anyio
 async def test_tui_app_ctrl_j_inserts_multiline_prompt_newline() -> None:
     session = FakeSession(
         events=[
