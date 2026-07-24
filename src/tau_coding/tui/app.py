@@ -167,6 +167,7 @@ NO_STORED_CREDENTIALS_MESSAGE = (
     "No stored credentials to remove. /logout only removes credentials saved by /login; "
     "environment variables and providers.json config are unchanged."
 )
+TREE_RUNNING_MESSAGE = "Tau is already working. Press Escape to cancel before branching."
 
 
 class LoginRequiredProvider:
@@ -5705,8 +5706,18 @@ class TauTuiApp(App[None]):
             if command.resume_picker_requested:
                 self.action_open_session_picker()
             if command.tree_picker_requested:
+                if self._is_agent_or_queue_active():
+                    prompt.text = raw_text
+                    prompt.move_cursor(_text_end_location(raw_text))
+                    self._notify(TREE_RUNNING_MESSAGE, severity="warning")
+                    return
                 await self._open_tree_picker()
             if command.fork_picker_requested:
+                if self._is_agent_or_queue_active():
+                    prompt.text = raw_text
+                    prompt.move_cursor(_text_end_location(raw_text))
+                    self._notify(TREE_RUNNING_MESSAGE, severity="warning")
+                    return
                 await self._open_fork_picker()
             if command.login_picker_requested:
                 self._open_login_picker(initial_search=command.login_picker_query or "")
@@ -6381,15 +6392,15 @@ class TauTuiApp(App[None]):
 
     def action_open_tree_picker(self) -> None:
         """Open the session tree from a configured app keybinding."""
-        if self.state.running:
-            self._notify("Tau is already working. Press Escape to cancel.")
+        if self._is_agent_or_queue_active():
+            self._notify(TREE_RUNNING_MESSAGE, severity="warning")
             return
         self.run_worker(self._open_tree_picker(), exclusive=False)
 
     def action_open_fork_picker(self) -> None:
         """Open the session fork picker from a configured app keybinding."""
-        if self.state.running:
-            self._notify("Tau is already working. Press Escape to cancel.")
+        if self._is_agent_or_queue_active():
+            self._notify(TREE_RUNNING_MESSAGE, severity="warning")
             return
         self.run_worker(self._open_fork_picker(), exclusive=False)
 
@@ -6608,6 +6619,9 @@ class TauTuiApp(App[None]):
         self._refresh()
 
     async def _open_tree_picker(self) -> None:
+        if self._is_agent_or_queue_active():
+            self._notify(TREE_RUNNING_MESSAGE, severity="warning")
+            return
         tree_choices = getattr(self.session, "tree_choices", None)
         if tree_choices is None:
             self._notify("Session tree is not available.", severity="warning")
@@ -6632,6 +6646,9 @@ class TauTuiApp(App[None]):
         )
 
     async def _open_fork_picker(self) -> None:
+        if self._is_agent_or_queue_active():
+            self._notify(TREE_RUNNING_MESSAGE, severity="warning")
+            return
         tree_choices = getattr(self.session, "tree_choices", None)
         if tree_choices is None:
             self._notify("Session tree is not available.", severity="warning")
@@ -6700,6 +6717,9 @@ class TauTuiApp(App[None]):
         summarize: bool,
         custom_instructions: str | None = None,
     ) -> None:
+        if self._is_agent_or_queue_active():
+            self._notify(TREE_RUNNING_MESSAGE, severity="warning")
+            return
         branch_to_entry = getattr(self.session, "branch_to_entry", None)
         if branch_to_entry is None:
             self._notify("Session tree is not available.", severity="warning")
