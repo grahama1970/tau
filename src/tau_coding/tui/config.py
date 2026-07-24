@@ -191,6 +191,9 @@ MAX_EDITOR_PADDING_X = 3
 DEFAULT_OUTPUT_PADDING_X = 1
 MIN_OUTPUT_PADDING_X = 0
 MAX_OUTPUT_PADDING_X = 1
+DEFAULT_IMAGE_WIDTH_CELLS = 60
+MIN_IMAGE_WIDTH_CELLS = 1
+MAX_IMAGE_WIDTH_CELLS = 240
 
 
 def _default_clear_on_shrink() -> bool:
@@ -390,6 +393,7 @@ class TuiSettings:
     auto_compact: bool = True
     auto_copy_selection: bool = False
     show_images: bool = True
+    image_width_cells: int = DEFAULT_IMAGE_WIDTH_CELLS
     block_images: bool = False
     double_escape_action: DoubleEscapeAction = "tree"
     tree_filter_mode: TuiTreeFilterMode = "default"
@@ -423,6 +427,7 @@ class TuiSettings:
             "output_padding_x": self.output_padding_x,
             "clear_on_shrink": self.clear_on_shrink,
             "show_images": self.show_images,
+            "image_width_cells": self.image_width_cells,
             "show_hardware_cursor": self.show_hardware_cursor,
             "show_terminal_progress": self.show_terminal_progress,
             "external_editor": self.external_editor,
@@ -484,6 +489,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "externalEditor",
         "external_editor",
         "hide_thinking",
+        "imageWidthCells",
+        "image_width_cells",
         "keybindings",
         "outputPad",
         "output_padding_x",
@@ -534,6 +541,18 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
                 ),
             ),
             "show_images",
+        ),
+        image_width_cells=_image_width_cells(
+            data.get(
+                "image_width_cells",
+                data.get(
+                    "imageWidthCells",
+                    terminal_data.get(
+                        "image_width_cells",
+                        terminal_data.get("imageWidthCells", DEFAULT_IMAGE_WIDTH_CELLS),
+                    ),
+                ),
+            )
         ),
         double_escape_action=_double_escape_action(
             data.get("double_escape_action", "tree"),
@@ -676,6 +695,17 @@ def _output_padding_x(value: object) -> int:
         return value
     raise TuiConfigError(
         f"TUI output_padding_x must be between {MIN_OUTPUT_PADDING_X} and {MAX_OUTPUT_PADDING_X}"
+    )
+
+
+def _image_width_cells(value: object) -> int:
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise TuiConfigError("TUI image_width_cells must be an integer")
+    if MIN_IMAGE_WIDTH_CELLS <= value <= MAX_IMAGE_WIDTH_CELLS:
+        return value
+    raise TuiConfigError(
+        "TUI image_width_cells must be between "
+        f"{MIN_IMAGE_WIDTH_CELLS} and {MAX_IMAGE_WIDTH_CELLS}"
     )
 
 

@@ -480,6 +480,25 @@ def test_tui_settings_reject_invalid_show_images() -> None:
         tui_settings_from_json({"show_images": "false"})
 
 
+def test_tui_settings_load_image_width_cells_aliases() -> None:
+    camel = tui_settings_from_json({"imageWidthCells": 80})
+    snake = tui_settings_from_json({"image_width_cells": 120})
+    nested = tui_settings_from_json({"terminal": {"imageWidthCells": 80}})
+
+    assert camel.image_width_cells == 80
+    assert snake.image_width_cells == 120
+    assert nested.image_width_cells == 80
+
+
+def test_tui_settings_reject_invalid_image_width_cells() -> None:
+    with pytest.raises(TuiConfigError, match="image_width_cells"):
+        tui_settings_from_json({"image_width_cells": 0})
+    with pytest.raises(TuiConfigError, match="image_width_cells"):
+        tui_settings_from_json({"image_width_cells": 241})
+    with pytest.raises(TuiConfigError, match="image_width_cells"):
+        tui_settings_from_json({"image_width_cells": "80"})
+
+
 def test_tui_settings_load_editor_padding_x_aliases() -> None:
     camel = tui_settings_from_json({"editorPaddingX": 2})
     snake = tui_settings_from_json({"editor_padding_x": 3})
@@ -665,6 +684,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["autocomplete_max_visible"] == 5
     assert settings.to_json()["block_images"] is False
     assert settings.to_json()["show_images"] is True
+    assert settings.to_json()["image_width_cells"] == 60
     assert settings.to_json()["editor_padding_x"] == 1
     assert settings.to_json()["enable_skill_commands"] is True
     assert settings.to_json()["output_padding_x"] == 1

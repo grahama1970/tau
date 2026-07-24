@@ -227,6 +227,7 @@ class TranscriptMessageWidget(Horizontal):
         theme: TuiTheme,
         show_tool_results: bool,
         show_images: bool = True,
+        image_width_cells: int | None = None,
         output_padding_x: int = 1,
     ) -> None:
         self.item = item
@@ -240,6 +241,7 @@ class TranscriptMessageWidget(Horizontal):
         )
         self._theme = theme
         self._show_images = show_images
+        self._image_width_cells = image_width_cells
         self._role_style = _chat_item_role_style(item, theme)
         self._output_padding_x = output_padding_x
         super().__init__(classes="transcript-message")
@@ -260,6 +262,7 @@ class TranscriptMessageWidget(Horizontal):
                     body_style=self._role_style.body,
                     theme=self._theme,
                     show_images=self._show_images,
+                    image_width_cells=self._image_width_cells,
                 ),
                 expand=True,
                 shrink=True,
@@ -360,6 +363,7 @@ class TranscriptView(VerticalScroll):
         self._render_state: TuiState | None = None
         self._render_theme: TuiTheme = TAU_DARK_THEME
         self._show_images = True
+        self._image_width_cells: int | None = None
         self._last_render_width = 0
         self._active_assistant_widget: StreamingTranscriptMessageWidget | None = None
         self._active_thinking_widget: StreamingTranscriptMessageWidget | None = None
@@ -384,6 +388,7 @@ class TranscriptView(VerticalScroll):
         *,
         theme: TuiTheme = TAU_DARK_THEME,
         show_images: bool = True,
+        image_width_cells: int | None = None,
         clear_on_shrink: bool | None = None,
         output_padding_x: int | None = None,
     ) -> None:
@@ -391,6 +396,7 @@ class TranscriptView(VerticalScroll):
         self._render_state = state
         self._render_theme = theme
         self._show_images = show_images
+        self._image_width_cells = image_width_cells
         if clear_on_shrink is not None:
             self.clear_on_shrink = clear_on_shrink
         if output_padding_x is not None:
@@ -445,6 +451,7 @@ class TranscriptView(VerticalScroll):
                             theme=theme,
                             show_tool_results=state.show_tool_results,
                             show_images=self._show_images,
+                            image_width_cells=self._image_width_cells,
                             output_padding_x=self.output_padding_x,
                         )
                     )
@@ -457,6 +464,7 @@ class TranscriptView(VerticalScroll):
                     theme=theme,
                     show_tool_results=state.show_tool_results or item.always_show_tool_result,
                     show_images=self._show_images,
+                    image_width_cells=self._image_width_cells,
                     output_padding_x=self.output_padding_x,
                 )
             )
@@ -467,6 +475,7 @@ class TranscriptView(VerticalScroll):
                     theme=theme,
                     show_tool_results=state.show_tool_results,
                     show_images=self._show_images,
+                    image_width_cells=self._image_width_cells,
                     output_padding_x=self.output_padding_x,
                 )
             )
@@ -484,6 +493,7 @@ class TranscriptView(VerticalScroll):
         theme: TuiTheme = TAU_DARK_THEME,
         show_tool_results: bool = False,
         show_images: bool = True,
+        image_width_cells: int | None = None,
         output_padding_x: int | None = None,
         scroll_end: bool = False,
     ) -> TranscriptMessageWidget | StreamingTranscriptMessageWidget:
@@ -496,6 +506,7 @@ class TranscriptView(VerticalScroll):
             theme=theme,
             show_tool_results=show_tool_results,
             show_images=show_images,
+            image_width_cells=image_width_cells,
             output_padding_x=self.output_padding_x,
         )
         await self.mount(widget)
@@ -628,6 +639,7 @@ def _transcript_widget(
     theme: TuiTheme,
     show_tool_results: bool,
     show_images: bool = True,
+    image_width_cells: int | None = None,
     output_padding_x: int = 1,
 ) -> TranscriptMessageWidget | StreamingTranscriptMessageWidget:
     if item.role in {"assistant", "thinking"}:
@@ -641,6 +653,7 @@ def _transcript_widget(
         theme=theme,
         show_tool_results=show_tool_results,
         show_images=show_images,
+        image_width_cells=image_width_cells,
         output_padding_x=output_padding_x,
     )
 
@@ -674,6 +687,7 @@ def _transcript_plain_body_text(
     body_style: str,
     theme: TuiTheme,
     show_images: bool = True,
+    image_width_cells: int | None = None,
 ) -> RenderableType:
     """Return styled transcript text for selectable plain rows."""
     if item.role != "tool":
@@ -705,7 +719,11 @@ def _transcript_plain_body_text(
         return Group(
             rendered,
             Text(""),
-            _render_tool_image(item.tool_image, show_images=show_images),
+            _render_tool_image(
+                item.tool_image,
+                show_images=show_images,
+                image_width_cells=image_width_cells,
+            ),
         )
     return rendered
 
@@ -897,6 +915,7 @@ def render_chat_item(
     theme: TuiTheme = TAU_DARK_THEME,
     show_tool_results: bool = False,
     show_images: bool = True,
+    image_width_cells: int | None = None,
 ) -> RenderableType:
     """Render a chat item as a standalone Toad-inspired transcript block."""
     role_style = _chat_item_role_style(item, theme)
@@ -907,6 +926,7 @@ def render_chat_item(
             accent_style=_tool_accent_style(item, theme=theme),
             show_tool_results=show_tool_results,
             show_images=show_images,
+            image_width_cells=image_width_cells,
             syntax_theme=theme.syntax_theme,
             theme=theme,
         )
@@ -977,6 +997,7 @@ def _render_tool_chat_body(
     accent_style: str | None,
     show_tool_results: bool,
     show_images: bool,
+    image_width_cells: int | None,
     syntax_theme: str,
     theme: TuiTheme,
 ) -> RenderableType:
@@ -997,17 +1018,30 @@ def _render_tool_chat_body(
             Text(""),
             result_body,
             Text(""),
-            _render_tool_image(item.tool_image, show_images=show_images),
+            _render_tool_image(
+                item.tool_image,
+                show_images=show_images,
+                image_width_cells=image_width_cells,
+            ),
         )
     return Group(text, Text(""), result_body)
 
 
-def _render_tool_image(payload: ToolImagePayload, *, show_images: bool) -> TerminalImage:
+def _render_tool_image(
+    payload: ToolImagePayload,
+    *,
+    show_images: bool,
+    image_width_cells: int | None,
+) -> TerminalImage:
     """Return a terminal-image renderable for image tool results."""
     return TerminalImage(
         payload.image_base64,
         payload.mime_type,
-        TerminalImageOptions(filename=Path(payload.path).name, show=show_images),
+        TerminalImageOptions(
+            filename=Path(payload.path).name,
+            max_width_cells=image_width_cells,
+            show=show_images,
+        ),
     )
 
 

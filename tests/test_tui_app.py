@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import re
 from collections.abc import AsyncIterator, Sequence
 from contextlib import nullcontext
@@ -120,6 +121,18 @@ ANSI_PATTERN = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 PNG_1X1_BASE64 = (
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII="
 )
+
+
+def _png_base64_with_dimensions(width_px: int, height_px: int) -> str:
+    png_header = (
+        b"\x89PNG\r\n\x1a\n"
+        + (13).to_bytes(4, "big")
+        + b"IHDR"
+        + width_px.to_bytes(4, "big")
+        + height_px.to_bytes(4, "big")
+        + b"\x08\x02\x00\x00\x00"
+    )
+    return base64.b64encode(png_header).decode("ascii")
 
 
 def _strip_ansi(text: str) -> str:
@@ -982,6 +995,31 @@ def test_tool_image_payload_honors_show_images_setting() -> None:
         assert "\x1b_G" not in output
         assert "image.png" in output
         assert "1x1" in output
+    finally:
+        reset_capabilities_cache()
+
+
+def test_tool_image_payload_uses_configured_image_width_cells() -> None:
+    set_capabilities(TerminalCapabilities(images="kitty", true_color=True, hyperlinks=True))
+    try:
+        item = ChatItem(
+            role="tool",
+            text="→ read wide.png",
+            tool_result_text="✓ read\nRead image file [image/png]",
+            tool_image=ToolImagePayload(
+                path="/workspace/wide.png",
+                mime_type="image/png",
+                bytes=33,
+                image_base64=_png_base64_with_dimensions(1200, 600),
+            ),
+        )
+
+        console = Console(record=True, width=100)
+        console.print(render_chat_item(item, show_tool_results=True, image_width_cells=12))
+        output = console.export_text(clear=False)
+
+        assert "\x1b_G" in output
+        assert "c=12" in output
     finally:
         reset_capabilities_cache()
 
@@ -4855,6 +4893,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: one-at-a-time",
             "Block images: off",
             "Show images: on",
+            "Image width: 60",
             "Skill commands: on",
             "Show hardware cursor: on",
             "Editor padding: 1",
@@ -4883,6 +4922,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: one-at-a-time",
             "Block images: off",
             "Show images: on",
+            "Image width: 60",
             "Skill commands: on",
             "Show hardware cursor: on",
             "Editor padding: 1",
@@ -4911,6 +4951,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: one-at-a-time",
             "Block images: off",
             "Show images: on",
+            "Image width: 60",
             "Skill commands: on",
             "Show hardware cursor: on",
             "Editor padding: 1",
@@ -4939,6 +4980,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: off",
             "Show images: on",
+            "Image width: 60",
             "Skill commands: on",
             "Show hardware cursor: on",
             "Editor padding: 1",
@@ -4966,6 +5008,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Show images: on",
+            "Image width: 60",
             "Skill commands: on",
             "Show hardware cursor: on",
             "Editor padding: 1",
@@ -4993,6 +5036,35 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Show images: off",
+            "Image width: 60",
+            "Skill commands: on",
+            "Show hardware cursor: on",
+            "Editor padding: 1",
+            "Output padding: 1",
+            "Autocomplete max items: 7",
+            "Clear on shrink: off",
+            "Terminal progress: off",
+            "Auto-copy selection: off",
+            "Hide thinking: on",
+            "Thinking level: medium",
+            "Double Escape: tree",
+            "Tree filter mode: default",
+            "Default project trust: ask",
+        ]
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.image_width_cells == 80
+        assert '"image_width_cells": 80' in tui_settings_path().read_text(encoding="utf-8")
+        assert isinstance(app.screen, SettingsPickerScreen)
+        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+            "Theme: tau-dark",
+            "Auto-compact: off",
+            "Steering mode: all",
+            "Follow-up mode: all",
+            "Block images: on",
+            "Show images: off",
+            "Image width: 80",
             "Skill commands: on",
             "Show hardware cursor: on",
             "Editor padding: 1",
@@ -5020,6 +5092,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Show images: off",
+            "Image width: 80",
             "Skill commands: off",
             "Show hardware cursor: on",
             "Editor padding: 1",
@@ -5048,6 +5121,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Show images: off",
+            "Image width: 80",
             "Skill commands: off",
             "Show hardware cursor: off",
             "Editor padding: 1",
@@ -5076,6 +5150,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Show images: off",
+            "Image width: 80",
             "Skill commands: off",
             "Show hardware cursor: off",
             "Editor padding: 2",
@@ -5103,6 +5178,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Show images: off",
+            "Image width: 80",
             "Skill commands: off",
             "Show hardware cursor: off",
             "Editor padding: 2",
@@ -5130,6 +5206,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Show images: off",
+            "Image width: 80",
             "Skill commands: off",
             "Show hardware cursor: off",
             "Editor padding: 2",
@@ -5157,6 +5234,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Show images: off",
+            "Image width: 80",
             "Skill commands: off",
             "Show hardware cursor: off",
             "Editor padding: 2",
@@ -5184,6 +5262,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Show images: off",
+            "Image width: 80",
             "Skill commands: off",
             "Show hardware cursor: off",
             "Editor padding: 2",
@@ -5211,6 +5290,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Block images: on",
             "Show images: off",
+            "Image width: 80",
             "Skill commands: off",
             "Show hardware cursor: off",
             "Editor padding: 2",
@@ -5260,6 +5340,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "up",
             "up",
             "up",
+            "up",
             "enter",
         )
         await pilot.pause()
@@ -5268,6 +5349,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert isinstance(app.screen, SettingsPickerScreen)
 
         await pilot.press(
+            "down",
             "down",
             "down",
             "down",

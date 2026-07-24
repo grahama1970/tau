@@ -148,6 +148,7 @@ COMPLETION_MAX_VISIBLE_LINES = DEFAULT_AUTOCOMPLETE_MAX_VISIBLE
 AUTOCOMPLETE_MAX_VISIBLE_CHOICES = (3, 5, 7, 10, 15, 20)
 EDITOR_PADDING_X_CHOICES = (0, 1, 2, 3)
 OUTPUT_PADDING_X_CHOICES = (0, 1)
+IMAGE_WIDTH_CELL_CHOICES = (60, 80, 120)
 NO_STORED_CREDENTIALS_MESSAGE = (
     "No stored credentials to remove. /logout only removes credentials saved by /login; "
     "environment variables and providers.json config are unchanged."
@@ -2047,6 +2048,7 @@ SettingsPickerKey = Literal[
     "clear_on_shrink",
     "editor_padding_x",
     "enable_skill_commands",
+    "image_width_cells",
     "output_padding_x",
     "show_images",
     "show_hardware_cursor",
@@ -5415,6 +5417,7 @@ class TauTuiApp(App[None]):
                 theme=theme,
                 show_tool_results=self.state.show_tool_results,
                 show_images=self.tui_settings.show_images,
+                image_width_cells=self.tui_settings.image_width_cells,
                 output_padding_x=self.tui_settings.output_padding_x,
             )
             self._refresh_chrome()
@@ -5431,6 +5434,7 @@ class TauTuiApp(App[None]):
                     theme=theme,
                     show_tool_results=self.state.show_tool_results,
                     show_images=self.tui_settings.show_images,
+                    image_width_cells=self.tui_settings.image_width_cells,
                     output_padding_x=self.tui_settings.output_padding_x,
                 )
             self._refresh_chrome()
@@ -6532,6 +6536,7 @@ class TauTuiApp(App[None]):
             self.state,
             theme=theme,
             show_images=self.tui_settings.show_images,
+            image_width_cells=self.tui_settings.image_width_cells,
             clear_on_shrink=self.tui_settings.clear_on_shrink,
             output_padding_x=self.tui_settings.output_padding_x,
         )
@@ -7552,6 +7557,11 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             value="on" if settings.show_images else "off",
         ),
         SettingsPickerItem(
+            key="image_width_cells",
+            label="Image width",
+            value=str(settings.image_width_cells),
+        ),
+        SettingsPickerItem(
             key="enable_skill_commands",
             label="Skill commands",
             value="on" if settings.enable_skill_commands else "off",
@@ -7717,6 +7727,17 @@ def _next_tui_settings(
         return replace(settings, block_images=not settings.block_images)
     if key == "show_images":
         return replace(settings, show_images=not settings.show_images)
+    if key == "image_width_cells":
+        try:
+            current_index = IMAGE_WIDTH_CELL_CHOICES.index(settings.image_width_cells)
+        except ValueError:
+            current_index = -1
+        return replace(
+            settings,
+            image_width_cells=IMAGE_WIDTH_CELL_CHOICES[
+                (current_index + 1) % len(IMAGE_WIDTH_CELL_CHOICES)
+            ],
+        )
     if key == "enable_skill_commands":
         return replace(settings, enable_skill_commands=not settings.enable_skill_commands)
     if key == "show_hardware_cursor":
