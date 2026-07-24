@@ -7378,7 +7378,13 @@ class TauTuiApp(App[None]):
         startup_resources.update(startup_text)
         queued_messages = self.query_one("#queued-messages", Static)
         queued_messages.display = self.state.queued_message_count > 0
-        queued_messages.update(_render_queued_messages(self.state, theme=theme))
+        queued_messages.update(
+            _render_queued_messages(
+                self.state,
+                theme=theme,
+                keybindings=self.tui_settings.keybindings,
+            )
+        )
         self._sync_activity_indicator()
         self._refresh_footer_bindings()
 
@@ -9236,7 +9242,12 @@ def _theme_css_variables(theme: TuiTheme) -> dict[str, str]:
     }
 
 
-def _render_queued_messages(state: TuiState, *, theme: TuiTheme) -> Group:
+def _render_queued_messages(
+    state: TuiState,
+    *,
+    theme: TuiTheme,
+    keybindings: TuiKeybindings,
+) -> Group:
     """Render queued prompts stacked above the prompt input."""
     rows: list[Text] = []
     for message in state.queued_steering:
@@ -9247,6 +9258,13 @@ def _render_queued_messages(state: TuiState, *, theme: TuiTheme) -> Group:
         row = Text("↳ follow-up · queued: ", style=theme.muted_text)
         row.append(_queued_message_preview(message), style=theme.prompt_text)
         rows.append(row)
+    if rows:
+        rows.append(
+            Text(
+                f"↳ {_key_hint(keybindings.dequeue_messages)} to edit all queued messages",
+                style=theme.muted_text,
+            )
+        )
     return Group(*rows)
 
 
@@ -9366,7 +9384,7 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         "Agent:",
         f"- {_key_hint(keybindings.cancel)}: cancel autocomplete or active run",
         f"- {_key_hint(keybindings.queue_follow_up)}: queue follow-up while running",
-        f"- {_key_hint(keybindings.dequeue_messages)}: restore queued message",
+        f"- {_key_hint(keybindings.dequeue_messages)}: restore queued messages",
         f"- {_key_hint(keybindings.toggle_tool_results)}: collapse or expand tool output",
         f"- {_key_hint(keybindings.toggle_thinking)}: toggle thinking tokens",
         f"- {_key_hint(keybindings.thinking_cycle)}: cycle thinking level",
