@@ -73,6 +73,7 @@ from tau_coding.tui.app import (
     TreePickerScreen,
     TrustPickerScreen,
     UserMessagePickerScreen,
+    WorkflowPickerScreen,
     _activity_prompt_border_color,
     _completion_selected_render_line,
     _edit_text_with_external_editor,
@@ -6516,7 +6517,7 @@ async def test_tui_app_help_uses_modal_instead_of_transcript() -> None:
 
 
 @pytest.mark.anyio
-async def test_tui_app_workflows_command_uses_command_output_modal() -> None:
+async def test_tui_app_workflows_command_opens_picker() -> None:
     app = TauTuiApp(FakeSession())
 
     async with app.run_test() as pilot:
@@ -6524,18 +6525,74 @@ async def test_tui_app_workflows_command_uses_command_output_modal() -> None:
         prompt.value = "/workflows"
         await pilot.press("enter")
 
-        assert isinstance(app.screen, CommandOutputScreen)
+        assert isinstance(app.screen, WorkflowPickerScreen)
         assert app.state.items == []
+        assert [workflow.workflow_id for workflow in app.screen.workflows] == [
+            "approved-release-bundle",
+            "durable-repository-qualification",
+            "repository-evidence-map",
+            "repository-readiness",
+            "tau-operator-reference",
+        ]
+        workflow_list = app.screen.query_one("#workflow-picker-list", ListView)
+        assert workflow_list.index == 0
+
+
+@pytest.mark.anyio
+async def test_tui_app_workflows_picker_selection_opens_detail_modal() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/workflows"
+        await pilot.press("enter")
+        await pilot.pause()
+        assert isinstance(app.screen, WorkflowPickerScreen)
+
+        workflow_list = app.screen.query_one("#workflow-picker-list", ListView)
+        workflow_list.index = 1
+        app.screen.action_select_cursor()
+        await pilot.pause()
+
+        assert isinstance(app.screen, CommandOutputScreen)
         assert app.screen.title_text == "/workflows"
-        assert "Packaged canonical Tau workflows:" in app.screen.message
-        assert "repository-readiness: Repository Readiness" in app.screen.message
-        assert "durable-repository-qualification: Durable Repository Qualification" in (
-            app.screen.message
-        )
+        assert "Workflow: durable-repository-qualification" in app.screen.message
+        assert "Topology: DURABLE_MIXED_REPAIR_APPROVAL" in app.screen.message
         assert (
-            "uv run tau workflows run repository-readiness --goal <goal> "
-            "--run-dir <dir> --open-viewer"
+            "Run: uv run tau workflows run durable-repository-qualification "
+            "--goal <goal> --run-dir <dir> --open-viewer"
         ) in app.screen.message
+
+
+@pytest.mark.anyio
+async def test_tui_app_workflows_picker_uses_configured_pi_select_keybindings() -> None:
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(
+                select_up="f5",
+                select_down="f6",
+                select_confirm="f7",
+                select_cancel="f8",
+            )
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/workflows"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, WorkflowPickerScreen)
+        workflow_list = app.screen.query_one("#workflow-picker-list", ListView)
+        assert workflow_list.index == 0
+
+        await pilot.press("f6", "f7")
+        await pilot.pause()
+
+        assert isinstance(app.screen, CommandOutputScreen)
+        assert "Workflow: durable-repository-qualification" in app.screen.message
 
 
 @pytest.mark.anyio

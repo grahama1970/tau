@@ -363,6 +363,7 @@ def test_workflows_command_lists_canonical_workflow_launch_commands(tmp_path: Pa
     result = create_default_command_registry().execute(FakeSession(tmp_path), "/workflows")
 
     assert result.handled is True
+    assert result.workflow_picker_requested is True
     assert result.message is not None
     assert "Packaged canonical Tau workflows:" in result.message
     assert "repository-readiness: Repository Readiness" in result.message

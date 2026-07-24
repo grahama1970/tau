@@ -129,6 +129,8 @@ from tau_coding.tui.widgets import (
     TranscriptView,
     render_completion_suggestions,
 )
+from tau_coding.workflows.catalog import list_workflows
+from tau_coding.workflows.contracts import WorkflowDefinition
 
 type BindingEntry = Binding | tuple[str, str] | tuple[str, str, str]
 type SessionPickerSortMode = Literal["threaded", "recent", "relevance", "name"]
@@ -1963,6 +1965,136 @@ class UserMessagePickerScreen(ModalScreen[str | None]):
         return [
             ListItem(Label(_user_message_picker_label(choice, index, total), markup=False))
             for index, choice in enumerate(self.choices)
+        ]
+
+
+class WorkflowPickerScreen(ModalScreen[str | None]):
+    """Modal picker for packaged canonical Tau workflows."""
+
+    BINDINGS: ClassVar[list[BindingEntry]] = [
+        Binding("escape", "cancel", "Cancel"),
+        Binding("up", "cursor_up", "Up", show=False),
+        Binding("down", "cursor_down", "Down", show=False),
+        Binding("pageup", "page_up", "Page up", show=False),
+        Binding("pagedown", "page_down", "Page down", show=False),
+        Binding("enter", "select_cursor", "Details", show=False),
+    ]
+
+    def __init__(
+        self,
+        workflows: Sequence[WorkflowDefinition],
+        *,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
+        super().__init__()
+        self.workflows = tuple(workflows)
+        self.keybindings = keybindings or TuiKeybindings()
+
+    def compose(self) -> ComposeResult:
+        """Compose the workflow picker."""
+        with Vertical(id="workflow-picker"):
+            yield Static("Canonical Workflows", id="workflow-picker-title")
+            yield Static(
+                "Select a packaged Tau DAG to inspect its launch contract.",
+                id="workflow-picker-description",
+            )
+            yield ListView(
+                *self._list_items(),
+                id="workflow-picker-list",
+            )
+            yield Static(
+                "Enter opens details - Escape cancels",
+                id="workflow-picker-help",
+            )
+
+    def on_mount(self) -> None:
+        """Focus the workflow list."""
+        workflow_list = self.query_one("#workflow-picker-list", ListView)
+        workflow_list.index = 0 if self.workflows else None
+        workflow_list.focus()
+
+    def on_key(self, event: Key) -> None:
+        """Route configured Pi select keys to the workflow list."""
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
+            event.stop()
+            self.action_cursor_up()
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
+            event.stop()
+            self.action_cursor_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_page_up,
+            "pageup",
+        ):
+            event.stop()
+            self.action_page_up()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_page_down,
+            "pagedown",
+        ):
+            event.stop()
+            self.action_page_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
+            event.stop()
+            self.action_select_cursor()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.action_cancel()
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """Dismiss with the selected workflow id."""
+        if event.index >= len(self.workflows):
+            return
+        self.dismiss(self.workflows[event.index].workflow_id)
+
+    def action_cursor_up(self) -> None:
+        """Move to the previous workflow."""
+        self.query_one("#workflow-picker-list", ListView).action_cursor_up()
+
+    def action_cursor_down(self) -> None:
+        """Move to the next workflow."""
+        self.query_one("#workflow-picker-list", ListView).action_cursor_down()
+
+    def action_page_up(self) -> None:
+        """Move up by a page of workflows."""
+        self._move_page(-1)
+
+    def action_page_down(self) -> None:
+        """Move down by a page of workflows."""
+        self._move_page(1)
+
+    def _move_page(self, direction: Literal[-1, 1]) -> None:
+        if not self.workflows:
+            return
+        workflow_list = self.query_one("#workflow-picker-list", ListView)
+        current_index = workflow_list.index if workflow_list.index is not None else 0
+        page_size = max(1, workflow_list.size.height - 1)
+        if page_size <= 1:
+            page_size = 10
+        next_index = current_index + (direction * page_size)
+        workflow_list.index = max(0, min(len(self.workflows) - 1, next_index))
+
+    def action_select_cursor(self) -> None:
+        """Open details for the highlighted workflow."""
+        self.query_one("#workflow-picker-list", ListView).action_select_cursor()
+
+    def action_cancel(self) -> None:
+        """Close the picker without selecting a workflow."""
+        self.dismiss(None)
+
+    def _list_items(self) -> list[ListItem]:
+        return [
+            ListItem(Label(_workflow_picker_label(workflow), markup=False))
+            for workflow in self.workflows
         ]
 
 
@@ -3813,6 +3945,7 @@ class TauTuiApp(App[None]):
     SettingsPickerScreen,
     TreePickerScreen,
     UserMessagePickerScreen,
+    WorkflowPickerScreen,
     TreeLabelInputScreen,
     CommandOutputScreen {
         align: center middle;
@@ -3822,6 +3955,7 @@ class TauTuiApp(App[None]):
     #settings-picker,
     #tree-picker,
     #user-message-picker,
+    #workflow-picker,
     #tree-label-input {
         width: 76;
         max-width: 90%;
@@ -3836,6 +3970,7 @@ class TauTuiApp(App[None]):
     #settings-picker-title,
     #tree-picker-title,
     #user-message-picker-title,
+    #workflow-picker-title,
     #tree-label-title {
         height: 1;
         color: $tau-chrome-text;
@@ -3843,7 +3978,8 @@ class TauTuiApp(App[None]):
         margin-bottom: 1;
     }
 
-    #user-message-picker-description {
+    #user-message-picker-description,
+    #workflow-picker-description {
         height: auto;
         max-height: 2;
         color: $tau-muted-text;
@@ -3859,7 +3995,8 @@ class TauTuiApp(App[None]):
     #session-picker-list,
     #settings-picker-list,
     #tree-picker-list,
-    #user-message-picker-list {
+    #user-message-picker-list,
+    #workflow-picker-list {
         height: auto;
         max-height: 16;
         background: $tau-transcript-background;
@@ -3880,6 +4017,7 @@ class TauTuiApp(App[None]):
     #settings-picker-help,
     #tree-picker-help,
     #user-message-picker-help,
+    #workflow-picker-help,
     #tree-label-help {
         height: 1;
         margin-top: 1;
@@ -4356,6 +4494,8 @@ class TauTuiApp(App[None]):
                 self._open_trust_picker()
             if command.theme_picker_requested:
                 self._open_theme_picker()
+            if command.workflow_picker_requested:
+                self._open_workflow_picker()
             if command.thinking_level is not None:
                 await self._set_thinking_level(command.thinking_level)
             if command.theme is not None:
@@ -4363,7 +4503,7 @@ class TauTuiApp(App[None]):
             if _is_reload_command_text(text):
                 self._reload_tui_settings()
             self.state.set_skills(self.session.skills)
-            if command.message:
+            if command.message and not command.workflow_picker_requested:
                 if _command_message_uses_notification(text, command.message):
                     self._notify(command.message)
                 elif _command_message_uses_transcript(text):
@@ -5346,6 +5486,30 @@ class TauTuiApp(App[None]):
                 theme=self.tui_settings.resolved_theme,
             )
         )
+
+    def _open_workflow_picker(self) -> None:
+        workflows = list_workflows()
+        if not workflows:
+            self._notify("No packaged Tau workflows are available.", severity="warning")
+            return
+        self.push_screen(
+            WorkflowPickerScreen(
+                workflows,
+                keybindings=self.tui_settings.keybindings,
+            ),
+            callback=self._handle_workflow_picker_result,
+        )
+
+    def _handle_workflow_picker_result(self, workflow_id: str | None) -> None:
+        if workflow_id is None:
+            return
+        registry = _session_command_registry(self.session)
+        command_text = f"/workflows {workflow_id}"
+        result = registry.execute(self.session, command_text)
+        if result.message is None:
+            self._notify(f"Could not describe workflow: {workflow_id}", severity="error")
+            return
+        self._show_command_message(command_text, result.message)
 
     def _open_login_picker(self) -> None:
         self.push_screen(
@@ -6531,6 +6695,10 @@ def _user_message_picker_label(choice: SessionTreeChoice, index: int, total: int
     if len(preview) > 72:
         preview = f"{preview[:69]}..."
     return f"Message {index + 1} of {total}: {preview}"
+
+
+def _workflow_picker_label(workflow: WorkflowDefinition) -> str:
+    return f"{workflow.workflow_id}: {workflow.title}\n  topology: {workflow.topology}"
 
 
 def _active_tree_choice_index(choices: Sequence[SessionTreeChoice]) -> int:

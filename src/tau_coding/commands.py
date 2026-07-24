@@ -115,6 +115,7 @@ class CommandResult:
     settings_picker_requested: bool = False
     trust_picker_requested: bool = False
     theme_picker_requested: bool = False
+    workflow_picker_requested: bool = False
     thinking_level: str | None = None
     theme: str | None = None
     message: str | None = None
@@ -590,7 +591,7 @@ def _workflows_command(context: CommandContext) -> CommandResult:
                 ),
             ]
         )
-    return CommandResult(handled=True, message="\n".join(lines))
+    return CommandResult(handled=True, workflow_picker_requested=True, message="\n".join(lines))
 
 
 def _format_workflow_detail(payload: dict[str, object]) -> str:
