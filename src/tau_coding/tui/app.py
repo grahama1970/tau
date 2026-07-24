@@ -2073,6 +2073,7 @@ class SettingsPickerItem:
     key: SettingsPickerKey
     label: str
     value: str
+    description: str = ""
 
 
 class SettingsPickerScreen(ModalScreen[None]):
@@ -2163,10 +2164,12 @@ class SettingsPickerScreen(ModalScreen[None]):
     def action_cursor_up(self) -> None:
         """Move to the previous setting."""
         self.query_one("#settings-picker-list", ListView).action_cursor_up()
+        self._refresh_help_text()
 
     def action_cursor_down(self) -> None:
         """Move to the next setting."""
         self.query_one("#settings-picker-list", ListView).action_cursor_down()
+        self._refresh_help_text()
 
     def action_select_cursor(self) -> None:
         """Change the highlighted setting."""
@@ -2178,6 +2181,11 @@ class SettingsPickerScreen(ModalScreen[None]):
     def action_cancel(self) -> None:
         """Close the settings picker."""
         self.dismiss(None)
+
+    def on_list_view_highlighted(self, event: ListView.Highlighted) -> None:
+        """Refresh the selected setting description as the highlight changes."""
+        if event.list_view.id == "settings-picker-list":
+            self._refresh_help_text()
 
     def _change_setting(self, index: int) -> None:
         if index >= len(self.filtered_items):
@@ -2202,7 +2210,7 @@ class SettingsPickerScreen(ModalScreen[None]):
         settings_list.index = (
             min(index, len(settings_list.children) - 1) if self.filtered_items else None
         )
-        self.query_one("#settings-picker-help", Static).update(self._help_text())
+        self._refresh_help_text()
 
     def _list_items(self) -> list[ListItem]:
         return [
@@ -2211,9 +2219,22 @@ class SettingsPickerScreen(ModalScreen[None]):
         ]
 
     def _help_text(self) -> str:
-        if self.filtered_items:
+        if not self.filtered_items:
+            return "No matching settings - Escape closes"
+        try:
+            settings_list = self.query_one("#settings-picker-list", ListView)
+        except NoMatches:
             return "Type to search - Enter changes - Escape closes"
-        return "No matching settings - Escape closes"
+        index = settings_list.index
+        if index is None or index >= len(self.filtered_items):
+            return "Type to search - Enter changes - Escape closes"
+        description = self.filtered_items[index].description.strip()
+        if description:
+            return f"{description} - Enter changes - Escape closes"
+        return "Type to search - Enter changes - Escape closes"
+
+    def _refresh_help_text(self) -> None:
+        self.query_one("#settings-picker-help", Static).update(self._help_text())
 
 
 class TrustPickerScreen(ModalScreen[ProjectTrustOption | None]):
@@ -7530,101 +7551,121 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             key="theme",
             label="Theme",
             value=settings.theme,
+            description="Color theme for the interface",
         ),
         SettingsPickerItem(
             key="auto_compact",
             label="Auto-compact",
             value="on" if settings.auto_compact else "off",
+            description="Automatically compact context when the session approaches its limit",
         ),
         SettingsPickerItem(
             key="steering_mode",
             label="Steering mode",
             value=settings.steering_mode,
+            description="How queued steering messages are drained into running turns",
         ),
         SettingsPickerItem(
             key="follow_up_mode",
             label="Follow-up mode",
             value=settings.follow_up_mode,
+            description="How queued follow-up prompts are submitted after a turn",
         ),
         SettingsPickerItem(
             key="block_images",
             label="Block images",
             value="on" if settings.block_images else "off",
+            description="Prevent clipboard and prompt images from being sent to providers",
         ),
         SettingsPickerItem(
             key="show_images",
             label="Show images",
             value="on" if settings.show_images else "off",
+            description="Render image tool results inline when the terminal supports images",
         ),
         SettingsPickerItem(
             key="image_width_cells",
             label="Image width",
             value=str(settings.image_width_cells),
+            description="Preferred inline image width in terminal cells",
         ),
         SettingsPickerItem(
             key="enable_skill_commands",
             label="Skill commands",
             value="on" if settings.enable_skill_commands else "off",
+            description="Allow skills to register slash commands",
         ),
         SettingsPickerItem(
             key="show_hardware_cursor",
             label="Show hardware cursor",
             value="on" if settings.show_hardware_cursor else "off",
+            description="Show the terminal cursor while preserving IME positioning",
         ),
         SettingsPickerItem(
             key="editor_padding_x",
             label="Editor padding",
             value=str(settings.editor_padding_x),
+            description="Horizontal padding for the prompt editor",
         ),
         SettingsPickerItem(
             key="output_padding_x",
             label="Output padding",
             value=str(settings.output_padding_x),
+            description="Horizontal padding for transcript output",
         ),
         SettingsPickerItem(
             key="autocomplete_max_visible",
             label="Autocomplete max items",
             value=str(settings.autocomplete_max_visible),
+            description="Maximum visible rows in autocomplete suggestions",
         ),
         SettingsPickerItem(
             key="clear_on_shrink",
             label="Clear on shrink",
             value="on" if settings.clear_on_shrink else "off",
+            description="Clear empty rows when transcript content shrinks",
         ),
         SettingsPickerItem(
             key="show_terminal_progress",
             label="Terminal progress",
             value="on" if settings.show_terminal_progress else "off",
+            description="Emit terminal progress indicators while Tau is running",
         ),
         SettingsPickerItem(
             key="auto_copy_selection",
             label="Auto-copy selection",
             value="on" if settings.auto_copy_selection else "off",
+            description="Copy selected transcript text to the clipboard automatically",
         ),
         SettingsPickerItem(
             key="hide_thinking",
             label="Hide thinking",
             value="on" if settings.hide_thinking else "off",
+            description="Hide streamed thinking tokens behind a status placeholder",
         ),
         SettingsPickerItem(
             key="thinking_level",
             label="Thinking level",
             value=settings.thinking_level,
+            description="Reasoning depth for thinking-capable models",
         ),
         SettingsPickerItem(
             key="double_escape_action",
             label="Double Escape",
             value=settings.double_escape_action,
+            description="Action to take when Escape is pressed twice on an empty prompt",
         ),
         SettingsPickerItem(
             key="tree_filter_mode",
             label="Tree filter mode",
             value=settings.tree_filter_mode,
+            description="Default filter used by the session tree picker",
         ),
         SettingsPickerItem(
             key="default_project_trust",
             label="Default project trust",
             value=settings.default_project_trust,
+            description="Fallback trust policy when no saved project decision exists",
         ),
     )
 
@@ -7641,7 +7682,9 @@ def _filter_settings_picker_items(
     if not normalized:
         return tuple(items)
     return tuple(
-        item for item in items if normalized in f"{item.label} {item.value} {item.key}".casefold()
+        item
+        for item in items
+        if normalized in f"{item.label} {item.value} {item.key} {item.description}".casefold()
     )
 
 

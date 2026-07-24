@@ -5382,6 +5382,48 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
 
 
 @pytest.mark.anyio
+async def test_tui_app_settings_picker_shows_selected_setting_description() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/settings"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, SettingsPickerScreen)
+        help_text = str(app.screen.query_one("#settings-picker-help", Static).render())
+        assert "Color theme for the interface" in help_text
+
+        await pilot.press("down")
+        await pilot.pause()
+
+        help_text = str(app.screen.query_one("#settings-picker-help", Static).render())
+        assert "Automatically compact context" in help_text
+
+
+@pytest.mark.anyio
+async def test_tui_app_settings_picker_search_matches_descriptions() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/settings"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, SettingsPickerScreen)
+        search = app.screen.query_one("#settings-picker-search", Input)
+        search.value = "terminal supports images"
+        await pilot.pause()
+
+        settings_list = app.screen.query_one("#settings-picker-list", ListView)
+        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+            "Show images: on",
+        ]
+
+
+@pytest.mark.anyio
 async def test_tui_app_settings_picker_uses_configured_pi_select_keybindings(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
