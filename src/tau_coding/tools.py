@@ -32,7 +32,8 @@ DEFAULT_IMAGE_MAX_WIDTH_PX = 2000
 DEFAULT_IMAGE_MAX_HEIGHT_PX = 2000
 DEFAULT_INLINE_IMAGE_MAX_BASE64_BYTES = int(4.5 * 1024 * 1024)
 MAX_BASH_TIMEOUT_SECONDS = 2_147_483_647 / 1000
-SUPPORTED_IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+INLINE_IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+SUPPORTED_IMAGE_MIME_TYPES = INLINE_IMAGE_MIME_TYPES | {"image/bmp"}
 UTF8_BOM = "\ufeff"
 
 
@@ -1129,7 +1130,13 @@ def _no_change_error(path: str, total_edits: int) -> str:
 
 def _detect_supported_image_mime_type(path: Path) -> str | None:
     mime_type, _encoding = mimetypes.guess_type(path)
-    return mime_type if mime_type in SUPPORTED_IMAGE_MIME_TYPES else None
+    if mime_type in SUPPORTED_IMAGE_MIME_TYPES:
+        return mime_type
+    with contextlib.suppress(OSError):
+        header = path.read_bytes()[:30]
+        if _is_bmp_header(header):
+            return "image/bmp"
+    return None
 
 
 def _process_image_for_read(
@@ -1139,6 +1146,29 @@ def _process_image_for_read(
     auto_resize_images: bool,
 ) -> ReadImageResult:
     data = path.read_bytes()
+    if mime_type not in INLINE_IMAGE_MIME_TYPES:
+        converted = _resize_image_with_magick(path)
+        if converted is None:
+            return ReadImageResult(
+                mime_type=mime_type,
+                bytes=len(data),
+                image_base64=None,
+                message=(
+                    "[Image omitted: could not be converted to a supported inline image format.]"
+                ),
+                omitted=True,
+            )
+        converted_mime_type, converted_data = converted
+        return ReadImageResult(
+            mime_type=converted_mime_type,
+            bytes=len(converted_data),
+            image_base64=_base64_text(converted_data),
+            message=f"Read image file [{converted_mime_type}] (converted from {mime_type})",
+            resized=True,
+            original_mime_type=mime_type,
+            original_bytes=len(data),
+        )
+
     if not auto_resize_images or _image_fits_inline(path, data):
         return ReadImageResult(
             mime_type=mime_type,
@@ -1176,6 +1206,29 @@ def _image_fits_inline(path: Path, data: bytes) -> bool:
         return True
     width_px, height_px = dimensions
     return width_px <= DEFAULT_IMAGE_MAX_WIDTH_PX and height_px <= DEFAULT_IMAGE_MAX_HEIGHT_PX
+
+
+def _is_bmp_header(header: bytes) -> bool:
+    if len(header) < 30 or not header.startswith(b"BM"):
+        return False
+    declared_file_size = int.from_bytes(header[2:6], "little")
+    pixel_data_offset = int.from_bytes(header[10:14], "little")
+    dib_header_size = int.from_bytes(header[14:18], "little")
+    if declared_file_size != 0 and declared_file_size < 26:
+        return False
+    if pixel_data_offset < 14 + dib_header_size:
+        return False
+    if declared_file_size != 0 and pixel_data_offset >= declared_file_size:
+        return False
+    if dib_header_size == 12:
+        color_planes = int.from_bytes(header[22:24], "little")
+        bits_per_pixel = int.from_bytes(header[24:26], "little")
+    elif 40 <= dib_header_size <= 124:
+        color_planes = int.from_bytes(header[26:28], "little")
+        bits_per_pixel = int.from_bytes(header[28:30], "little")
+    else:
+        return False
+    return color_planes == 1 and bits_per_pixel in {1, 4, 8, 16, 24, 32}
 
 
 def _resize_image_with_magick(path: Path) -> tuple[str, bytes] | None:
