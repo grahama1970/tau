@@ -2087,6 +2087,7 @@ class ModelPickerSearchInput(Input):
         Binding("ctrl+p", "toggle_scoped_provider", "Provider", show=False, priority=True),
         Binding("alt+up", "reorder_scoped_up", "Move up", show=False, priority=True),
         Binding("alt+down", "reorder_scoped_down", "Move down", show=False, priority=True),
+        Binding("ctrl+c", "clear_or_cancel", "Clear", show=False, priority=True),
         Binding("up", "cursor_up", "Up", show=False, priority=True),
         Binding("down", "cursor_down", "Down", show=False, priority=True),
     ]
@@ -2128,6 +2129,10 @@ class ModelPickerSearchInput(Input):
             event.stop()
             event.prevent_default()
             self.action_reorder_scoped_down()
+        elif event.key == "ctrl+c":
+            event.stop()
+            event.prevent_default()
+            self.action_clear_or_cancel()
         elif event.key == "escape":
             event.stop()
             event.prevent_default()
@@ -2165,6 +2170,10 @@ class ModelPickerSearchInput(Input):
         """Move the highlighted scoped model later in cycle order."""
         self._picker().action_reorder_scoped_down()
 
+    def action_clear_or_cancel(self) -> None:
+        """Clear the model search, or close the picker if search is already empty."""
+        self._picker().action_clear_search_or_cancel()
+
     def action_cancel(self) -> None:
         """Close the model picker."""
         self._picker().action_cancel()
@@ -2187,6 +2196,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         Binding("ctrl+p", "toggle_scoped_provider", "Provider", show=False),
         Binding("alt+up", "reorder_scoped_up", "Move up", show=False),
         Binding("alt+down", "reorder_scoped_down", "Move down", show=False),
+        Binding("ctrl+c", "clear_search_or_cancel", "Clear", show=False),
     ]
 
     def __init__(
@@ -2308,6 +2318,9 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         elif event.key == "alt+down":
             event.stop()
             self.action_reorder_scoped_down()
+        elif event.key == "ctrl+c":
+            event.stop()
+            self.action_clear_search_or_cancel()
         elif event.key in {"tab", "ctrl+i"}:
             event.stop()
             self.action_toggle_mode()
@@ -2446,6 +2459,16 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
     def action_cancel(self) -> None:
         """Close without selecting a model."""
         self.dismiss(None)
+
+    def action_clear_search_or_cancel(self) -> None:
+        """Clear search text, or cancel when the picker search is already empty."""
+        if self.search_value:
+            self.search_value = ""
+            search = self.query_one("#model-picker-search", Input)
+            search.value = ""
+            self._refresh_model_list()
+            return
+        self.action_cancel()
 
     def _select_visible_choice(self) -> None:
         if not self.visible_choices:

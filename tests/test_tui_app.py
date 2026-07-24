@@ -5388,6 +5388,42 @@ async def test_tui_scoped_models_picker_bulk_enable_respects_search_filter() -> 
 
 
 @pytest.mark.anyio
+async def test_tui_model_picker_ctrl_c_clears_search_then_cancels() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/scoped-models"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ModelPickerScreen)
+        search = app.screen.query_one("#model-picker-search", Input)
+        search.value = "local"
+        await pilot.pause()
+
+        assert app.screen.search_value == "local"
+        assert [
+            str(item.query_one(Label).render())
+            for item in app.screen.query_one("#model-picker-list", ListView).children
+        ] == ["  local:local-model"]
+
+        await pilot.press("ctrl+c")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ModelPickerScreen)
+        assert search.value == ""
+        assert app.screen.search_value == ""
+        assert len(app.screen.query_one("#model-picker-list", ListView).children) == 3
+
+        await pilot.press("ctrl+c")
+        await pilot.pause()
+
+        assert not isinstance(app.screen, ModelPickerScreen)
+
+
+@pytest.mark.anyio
 async def test_tui_scoped_models_picker_reorders_scoped_cycle_order() -> None:
     session = FakeSession()
     session.scoped_model_choices = (
