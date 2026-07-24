@@ -5606,7 +5606,7 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
         ),
         SettingsPickerItem(
             key="autocomplete_max_visible",
-            label="Autocomplete rows",
+            label="Autocomplete max items",
             value=str(settings.autocomplete_max_visible),
         ),
         SettingsPickerItem(
