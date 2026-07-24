@@ -6652,6 +6652,28 @@ async def test_tui_app_workflows_picker_inserts_operator_reference_without_goal(
 
 
 @pytest.mark.anyio
+async def test_tui_app_workflows_inserted_command_launches_terminal_run() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "/workflows"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, WorkflowPickerScreen)
+        await pilot.press("ctrl+r")
+        await pilot.pause()
+        inserted_command = prompt.value.removeprefix("!! ")
+
+        await pilot.press("enter")
+        await pilot.pause()
+
+    assert session.terminal_commands == [(inserted_command, False)]
+
+
+@pytest.mark.anyio
 async def test_tui_app_workflows_detail_command_uses_command_output_modal() -> None:
     app = TauTuiApp(FakeSession())
 
