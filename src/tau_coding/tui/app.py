@@ -163,6 +163,7 @@ AUTOCOMPLETE_MAX_VISIBLE_CHOICES = (3, 5, 7, 10, 15, 20)
 EDITOR_PADDING_X_CHOICES = (0, 1, 2, 3)
 OUTPUT_PADDING_X_CHOICES = (0, 1)
 IMAGE_WIDTH_CELL_CHOICES = (60, 80, 120)
+QUEUED_MESSAGE_PREVIEW_CHARS = 120
 NO_STORED_CREDENTIALS_MESSAGE = (
     "No stored credentials to remove. /logout only removes credentials saved by /login; "
     "environment variables and providers.json config are unchanged."
@@ -9270,8 +9271,10 @@ def _render_queued_messages(
 
 def _queued_message_preview(message: str) -> str:
     """Return the single-line preview shown above the prompt."""
-    lines = message.splitlines()
-    return lines[0] if lines else ""
+    preview = " ".join(message.split())
+    if len(preview) <= QUEUED_MESSAGE_PREVIEW_CHARS:
+        return preview
+    return f"{preview[: QUEUED_MESSAGE_PREVIEW_CHARS - 3]}..."
 
 
 def _last_assistant_text(state: TuiState) -> str | None:
