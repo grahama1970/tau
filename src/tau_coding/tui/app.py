@@ -1383,15 +1383,15 @@ class PromptInput(TextArea):
         self._last_yank_range = None
 
     def get_line(self, line_index: int) -> Text:
-        """Retrieve one prompt line with shell prefixes highlighted."""
+        """Retrieve one prompt line, coloring terminal commands like a running tool."""
         line = super().get_line(line_index)
-        if line_index != 0 or not self.shell_mode_style:
+        if not self.shell_mode_style:
             return line
         span = _terminal_command_prefix_span(self.text)
         if span is None:
             return line
-        start, end = span
-        line.stylize(self.shell_mode_style, start, end)
+        start, _ = span
+        line.stylize(self.shell_mode_style, start if line_index == 0 else 0)
         return line
 
     async def action_submit_follow_up(self) -> None:
@@ -4764,7 +4764,7 @@ class TauTuiApp(App[None]):
     }
 
     #prompt.-shell-mode {
-        border: tall $tau-accent;
+        border: tall $tau-tool-running;
     }
 
     #compact-session-info {
@@ -5180,7 +5180,7 @@ class TauTuiApp(App[None]):
     async def on_mount(self) -> None:
         """Focus the prompt when the app starts."""
         prompt = self.query_one(PromptInput)
-        prompt.shell_mode_style = self.tui_settings.resolved_theme.accent
+        prompt.shell_mode_style = self.tui_settings.resolved_theme.role_styles["tool"].border
         _apply_prompt_padding(prompt, self.tui_settings.editor_padding_x)
         self._sync_prompt_shell_mode(prompt.text)
         prompt.focus()
@@ -5599,7 +5599,7 @@ class TauTuiApp(App[None]):
             prompt = self.query_one("#prompt", PromptInput)
             prompt.tui_keybindings = self.tui_settings.keybindings
             prompt.show_cursor = self.tui_settings.show_hardware_cursor
-            prompt.shell_mode_style = self.tui_settings.resolved_theme.accent
+            prompt.shell_mode_style = self.tui_settings.resolved_theme.role_styles["tool"].border
             _apply_prompt_padding(prompt, self.tui_settings.editor_padding_x)
             prompt._apply_prompt_bindings()
             prompt.refresh_bindings()
@@ -7068,6 +7068,7 @@ class TauTuiApp(App[None]):
                 theme,
                 frame=self._activity_frame,
                 running=self.state.running,
+                shell_mode=_is_terminal_command_prompt(prompt.text),
             )
         )
 
@@ -7112,7 +7113,7 @@ class TauTuiApp(App[None]):
 
     def _sync_prompt_shell_mode(self, text: str) -> None:
         prompt = self.query_one("#prompt", PromptInput)
-        prompt.shell_mode_style = self.tui_settings.resolved_theme.accent
+        prompt.shell_mode_style = self.tui_settings.resolved_theme.role_styles["tool"].border
         prompt.set_class(_is_terminal_command_prompt(text), "-shell-mode")
         prompt.refresh()
         self._apply_activity_indicator()
@@ -7128,12 +7129,20 @@ def _activity_prompt_border_color(
     """Return the prompt border color for the current activity animation frame."""
     del frame, running
     if shell_mode:
-        return theme.accent
+        return theme.role_styles["tool"].border
     return theme.prompt_border
 
 
-def _render_activity_indicator(theme: TuiTheme, *, frame: int, running: bool) -> Text:
-    """Render the prompt prefix, turning Tau into a moving square while running."""
+def _render_activity_indicator(
+    theme: TuiTheme,
+    *,
+    frame: int,
+    running: bool,
+    shell_mode: bool = False,
+) -> Text:
+    """Render the prompt prefix: a moving square while running, ``$`` in shell mode."""
+    if shell_mode and not running:
+        return Text("$", style=f"bold {theme.role_styles['tool'].border}")
     if not running:
         return Text("τ", style=f"bold {theme.accent}")
 
@@ -8721,6 +8730,7 @@ def _theme_css_variables(theme: TuiTheme) -> dict[str, str]:
         "tau-prompt-border": theme.prompt_border,
         "tau-autocomplete-background": theme.autocomplete_background,
         "tau-accent": theme.accent,
+        "tau-tool-running": theme.role_styles["tool"].border,
         "tau-highlight-background": theme.highlight_background,
         "tau-highlight-text": theme.highlight_text,
         "tau-markdown-highlight": theme.markdown_heading,

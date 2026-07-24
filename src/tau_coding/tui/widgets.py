@@ -45,6 +45,7 @@ from tau_coding.tui.terminal_image import TerminalImage, TerminalImageOptions
 
 TAU_SIDEBAR_LOGO = "τ = 2π"
 TOOL_RESULT_VISUAL_PREVIEW_LINES = TOOL_RESULT_PREVIEW_LINES + 1
+SIDEBAR_BULLET_LIST_LIMIT = 5
 
 
 @dataclass(frozen=True, slots=True)
@@ -900,18 +901,22 @@ def render_session_sidebar(
     metadata.add_row("tools", str(len(session.tools)))
     metadata.add_row("skills", str(len(session.skills)))
 
-    tools = _bullet_list([tool.name for tool in session.tools], empty="No tools", theme=theme)
-    skills = _bullet_list(
+    tools = _limited_bullet_list(
+        [tool.name for tool in session.tools],
+        empty="No tools",
+        theme=theme,
+    )
+    skills = _limited_bullet_list(
         [skill.name for skill in session.skills],
         empty="No skills loaded yet",
         theme=theme,
     )
-    prompts = _bullet_list(
+    prompts = _limited_bullet_list(
         [template.name for template in session.prompt_templates],
         empty="No prompt templates",
         theme=theme,
     )
-    context = _bullet_list(
+    context = _limited_bullet_list(
         _context_file_labels(session.context_files, cwd=session.cwd),
         empty="No context files",
         theme=theme,
@@ -1683,6 +1688,23 @@ def _bullet_list(
             text.append("\n")
         text.append("• ", style=theme.completion_description)
         text.append(item, style=theme.prompt_text)
+    return text
+
+
+def _limited_bullet_list(
+    items: Sequence[str],
+    *,
+    empty: str,
+    theme: TuiTheme,
+) -> Text:
+    text = _bullet_list(
+        items[:SIDEBAR_BULLET_LIST_LIMIT],
+        empty=empty,
+        theme=theme,
+    )
+    hidden_count = len(items) - SIDEBAR_BULLET_LIST_LIMIT
+    if hidden_count > 0:
+        text.append(f"\n...({hidden_count} more)", style=theme.completion_description)
     return text
 
 
