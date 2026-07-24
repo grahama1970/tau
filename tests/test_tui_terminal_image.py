@@ -4,6 +4,8 @@ from tau_coding.tui.terminal_image import (
     CellDimensions,
     ImageDimensions,
     TerminalCapabilities,
+    TerminalImage,
+    TerminalImageOptions,
     calculate_image_cell_size,
     delete_all_kitty_images,
     delete_kitty_image,
@@ -157,6 +159,70 @@ def test_render_image_uses_configured_protocol_and_cell_size() -> None:
 
         set_capabilities(TerminalCapabilities(images=None, true_color=True, hyperlinks=True))
         assert render_image("AAAA", ImageDimensions(width_px=20, height_px=20)) is None
+    finally:
+        reset_capabilities_cache()
+        set_cell_dimensions(CellDimensions(width_px=9, height_px=18))
+
+
+def test_terminal_image_falls_back_when_terminal_has_no_image_protocol() -> None:
+    set_capabilities(TerminalCapabilities(images=None, true_color=True, hyperlinks=True))
+    try:
+        image = TerminalImage(
+            "AAAA",
+            "image/png",
+            TerminalImageOptions(filename="figure.png"),
+            ImageDimensions(width_px=20, height_px=10),
+        )
+
+        assert image.render(80) == ("[Image: figure.png [image/png] 20x10]",)
+        assert image.get_image_id() is None
+    finally:
+        reset_capabilities_cache()
+
+
+def test_terminal_image_places_kitty_sequence_on_first_line_with_padding_rows() -> None:
+    set_capabilities(TerminalCapabilities(images="kitty", true_color=True, hyperlinks=True))
+    set_cell_dimensions(CellDimensions(width_px=10, height_px=10))
+    try:
+        image = TerminalImage(
+            "AAAA",
+            "image/png",
+            TerminalImageOptions(max_width_cells=2),
+            ImageDimensions(width_px=20, height_px=20),
+        )
+
+        lines = image.render(4)
+        image_id = image.get_image_id()
+
+        assert isinstance(image_id, int)
+        assert len(lines) == 2
+        assert lines[0].startswith("\x1b_G")
+        assert ",C=1," in lines[0]
+        assert f",i={image_id}" in lines[0]
+        assert lines[1] == ""
+        assert image.render(4) is lines
+        image.invalidate()
+        assert image.render(4) is not lines
+    finally:
+        reset_capabilities_cache()
+        set_cell_dimensions(CellDimensions(width_px=9, height_px=18))
+
+
+def test_terminal_image_places_iterm2_sequence_on_last_reserved_line() -> None:
+    set_capabilities(TerminalCapabilities(images="iterm2", true_color=True, hyperlinks=True))
+    set_cell_dimensions(CellDimensions(width_px=10, height_px=10))
+    try:
+        image = TerminalImage(
+            "AAAA",
+            "image/png",
+            TerminalImageOptions(max_width_cells=2),
+            ImageDimensions(width_px=20, height_px=20),
+        )
+
+        lines = image.render(4)
+
+        assert lines[0] == ""
+        assert lines[1].startswith("\x1b[1A\x1b]1337;File=inline=1;width=2;height=auto:")
     finally:
         reset_capabilities_cache()
         set_cell_dimensions(CellDimensions(width_px=9, height_px=18))

@@ -58,6 +58,99 @@ class ImageRenderResult:
     image_id: int | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class TerminalImageOptions:
+    """Sizing and placement options for terminal image rendering."""
+
+    max_width_cells: int | None = None
+    max_height_cells: int | None = None
+    filename: str | None = None
+    image_id: int | None = None
+
+
+class TerminalImage:
+    """Pi-style terminal image render helper with a visible fallback string."""
+
+    def __init__(
+        self,
+        base64_data: str,
+        mime_type: str,
+        options: TerminalImageOptions | None = None,
+        dimensions: ImageDimensions | None = None,
+    ) -> None:
+        self.base64_data = base64_data
+        self.mime_type = mime_type
+        self.options = options or TerminalImageOptions()
+        self.dimensions = (
+            dimensions
+            or get_image_dimensions(base64_data, mime_type)
+            or ImageDimensions(width_px=800, height_px=600)
+        )
+        self.image_id = self.options.image_id
+        self._cached_width: int | None = None
+        self._cached_lines: tuple[str, ...] | None = None
+
+    def invalidate(self) -> None:
+        """Clear cached render lines."""
+        self._cached_width = None
+        self._cached_lines = None
+
+    def render(self, width: int) -> tuple[str, ...]:
+        """Return terminal lines for this image at the provided render width."""
+        if self._cached_width == width and self._cached_lines is not None:
+            return self._cached_lines
+
+        max_width = max(1, min(width - 2, self.options.max_width_cells or 60))
+        cell_dimensions = get_cell_dimensions()
+        default_max_height = max(
+            1,
+            _ceil_div_scaled(max_width * cell_dimensions.width_px, cell_dimensions.height_px),
+        )
+        max_height = self.options.max_height_cells or default_max_height
+        capabilities = get_capabilities()
+
+        if capabilities.images is None:
+            lines = (
+                image_fallback(self.mime_type, self.dimensions, self.options.filename),
+            )
+            self._cached_width = width
+            self._cached_lines = lines
+            return lines
+
+        image_id = self.image_id
+        if capabilities.images == "kitty" and image_id is None:
+            image_id = allocate_image_id()
+            self.image_id = image_id
+
+        result = render_image(
+            self.base64_data,
+            self.dimensions,
+            max_width_cells=max_width,
+            max_height_cells=max_height,
+            image_id=image_id,
+            move_cursor=False,
+        )
+        if result is None:
+            lines = (
+                image_fallback(self.mime_type, self.dimensions, self.options.filename),
+            )
+        elif capabilities.images == "kitty":
+            lines = (result.sequence, *("" for _ in range(result.rows - 1)))
+        else:
+            empty_rows = tuple("" for _ in range(max(0, result.rows - 1)))
+            row_offset = result.rows - 1
+            move_up = f"\x1b[{row_offset}A" if row_offset > 0 else ""
+            lines = (*empty_rows, f"{move_up}{result.sequence}")
+
+        self._cached_width = width
+        self._cached_lines = lines
+        return lines
+
+    def get_image_id(self) -> int | None:
+        """Return the Kitty image id allocated for this image, if any."""
+        return self.image_id
+
+
 _cached_capabilities: TerminalCapabilities | None = None
 _cell_dimensions = CellDimensions(width_px=9, height_px=18)
 
