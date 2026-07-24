@@ -4493,6 +4493,14 @@ class TauTuiApp(App[None]):
         padding: 1 1 0 1;
     }
 
+    #startup-resources {
+        height: auto;
+        max-height: 12;
+        margin: 0 1 1 2;
+        padding: 0 1;
+        color: $tau-muted-text;
+    }
+
     #transcript {
         height: 1fr;
         border: none;
@@ -4930,6 +4938,7 @@ class TauTuiApp(App[None]):
             with Vertical(id="main-pane"):
                 if self._pty_proof_enabled:
                     yield Static(pty_ready_line(self._pty_proof_run_id), id="pty-proof-ready")
+                yield Static("", id="startup-resources")
                 yield TranscriptView(
                     id="transcript",
                     min_width=1,
@@ -6659,6 +6668,14 @@ class TauTuiApp(App[None]):
         sidebar.update_from_session(self.session, theme=theme)
         compact_info = self.query_one("#compact-session-info", CompactSessionInfo)
         compact_info.update_from_session(self.session, theme=theme)
+        startup_resources = self.query_one("#startup-resources", Static)
+        startup_text = _render_startup_resources_summary(
+            self.session,
+            keybindings=self.tui_settings.keybindings,
+            expanded=self.state.show_tool_results,
+        )
+        startup_resources.display = bool(startup_text) and not self.tui_settings.quiet_startup
+        startup_resources.update(startup_text)
         queued_messages = self.query_one("#queued-messages", Static)
         queued_messages.display = self.state.queued_message_count > 0
         queued_messages.update(_render_queued_messages(self.state, theme=theme))
@@ -8548,6 +8565,55 @@ def _render_tui_resources_message(session: CodingSession) -> str:
         lines.extend(f"- {entry}" for entry in entries)
         lines.append("")
     return "\n".join(lines).rstrip()
+
+
+def _render_startup_resources_summary(
+    session: CodingSession,
+    *,
+    keybindings: TuiKeybindings,
+    expanded: bool,
+) -> str:
+    if expanded:
+        return (
+            f"{_render_tui_resources_message(session)}\n\n"
+            f"{_key_hint(keybindings.toggle_tool_results)}: "
+            "collapse startup resources and tool output"
+        )
+
+    sections = [
+        ("Context", _compact_context_labels(session.context_files, cwd=session.cwd)),
+        ("Skills", _compact_named_resource_labels(session.skills)),
+        ("Prompts", _compact_prompt_labels(session.prompt_templates)),
+    ]
+    visible_sections = [
+        f"[{title}] {', '.join(labels)}" for title, labels in sections if labels
+    ]
+    if not visible_sections:
+        return ""
+    visible_sections.append(
+        f"{_key_hint(keybindings.toggle_tool_results)} expands startup resources; "
+        "/resources opens details"
+    )
+    return "\n".join(visible_sections)
+
+
+def _compact_context_labels(
+    context_files: Sequence[ProjectContextFile],
+    *,
+    cwd: Path,
+) -> list[str]:
+    return [
+        _display_resource_path(Path(context_file.path), cwd=cwd)
+        for context_file in context_files
+    ]
+
+
+def _compact_named_resource_labels(resources: Sequence[Any]) -> list[str]:
+    return [str(getattr(resource, "name", "unknown")) for resource in resources]
+
+
+def _compact_prompt_labels(prompt_templates: Sequence[Any]) -> list[str]:
+    return [f"/{getattr(template, 'name', 'unknown')}" for template in prompt_templates]
 
 
 def _resource_context_lines(

@@ -1997,12 +1997,53 @@ async def test_tui_app_mounts_sidebar_and_transcript() -> None:
 
     async with app.run_test(size=(120, 30)):
         assert app.query_one("#sidebar") is not None
+        startup_resources = app.query_one("#startup-resources", Static)
+        assert startup_resources.display is True
+        startup_text = startup_resources.content
+        assert "[Context] AGENTS.md" in startup_text
+        assert "[Skills] review" in startup_text
+        assert "Ctrl+O expands startup resources" in startup_text
         transcript = app.query_one("#transcript")
         assert transcript is not None
         assert transcript.min_width == 1
         prompt = app.query_one("#prompt")
         assert isinstance(prompt, TextArea)
         assert prompt.soft_wrap is True
+
+
+@pytest.mark.anyio
+async def test_tui_startup_resources_expand_with_tool_results_key() -> None:
+    session = FakeSession()
+    session.prompt_templates = (
+        PromptTemplate(
+            name="review",
+            path=session.cwd / ".agents" / "prompts" / "review.md",
+            content="Review this.",
+        ),
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test(size=(120, 30)) as pilot:
+        startup_resources = app.query_one("#startup-resources", Static)
+        assert "[Prompts] /review" in startup_resources.content
+
+        await pilot.press("ctrl+o")
+        await pilot.pause()
+
+        expanded = startup_resources.content
+        assert "Loaded Resources" in expanded
+        assert "- /review (.agents/prompts/review.md)" in expanded
+        assert "Ctrl+O: collapse startup resources and tool output" in expanded
+
+
+@pytest.mark.anyio
+async def test_tui_quiet_startup_hides_startup_resources() -> None:
+    app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(quiet_startup=True))
+
+    async with app.run_test(size=(120, 30)):
+        startup_resources = app.query_one("#startup-resources", Static)
+        assert startup_resources.display is False
+        assert startup_resources.content
 
 
 def test_terminal_command_prefix_span_detects_shell_mode_prefix() -> None:
