@@ -271,19 +271,20 @@ class ToolsReferenceSearchInput(Input):
 
     def on_key(self, event: Key) -> None:
         """Route navigation without changing the search text."""
-        if event.key == "up":
+        keybindings = self._reference().keybindings
+        if _matches_configured_or_default_key(event.key, keybindings.select_up, "up"):
             event.stop()
             event.prevent_default()
             self._reference().action_cursor_up()
-        elif event.key == "down":
+        elif _matches_configured_or_default_key(event.key, keybindings.select_down, "down"):
             event.stop()
             event.prevent_default()
             self._reference().action_cursor_down()
-        elif event.key == "escape":
+        elif _matches_configured_or_default_key(event.key, keybindings.select_cancel, "escape"):
             event.stop()
             event.prevent_default()
             self._reference().action_cancel()
-        elif event.key == "enter":
+        elif _matches_configured_or_default_key(event.key, keybindings.select_confirm, "enter"):
             event.stop()
             event.prevent_default()
             self._reference().action_open_selected()
@@ -308,12 +309,14 @@ class ToolsReferenceScreen(ModalScreen[None]):
         *,
         extension_sources: Mapping[str, str] | None = None,
         theme: TuiTheme,
+        keybindings: TuiKeybindings | None = None,
     ) -> None:
         super().__init__()
         self.extension_sources = dict(extension_sources or {})
         self.tools = self._order_tools(tools)
         self.visible_tools = self.tools
         self.theme = theme
+        self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
         """Compose the tool reference."""
@@ -346,6 +349,29 @@ class ToolsReferenceScreen(ModalScreen[None]):
         """Open the selected tool's full description."""
         event.stop()
         self._open_tool(event.index)
+
+    def on_key(self, event: Key) -> None:
+        """Route configured picker keys when the list is focused."""
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
+            event.stop()
+            self.action_cursor_up()
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
+            event.stop()
+            self.action_cursor_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
+            event.stop()
+            self.action_open_selected()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.action_cancel()
 
     def action_cursor_up(self) -> None:
         self.query_one("#tools-reference-list", ListView).action_cursor_up()
@@ -6447,6 +6473,7 @@ class TauTuiApp(App[None]):
                 self.session.tools,
                 extension_sources=getattr(self.session, "extension_tool_sources", {}),
                 theme=self.tui_settings.resolved_theme,
+                keybindings=self.tui_settings.keybindings,
             )
         )
 
