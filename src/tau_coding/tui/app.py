@@ -130,6 +130,7 @@ from tau_coding.tui.state import (
     format_terminal_command_result_block,
     format_terminal_command_running_block,
 )
+from tau_coding.tui.terminal_notification import TerminalNotificationController
 from tau_coding.tui.terminal_title import TerminalTitleController
 from tau_coding.tui.widgets import (
     CompactSessionInfo,
@@ -2060,6 +2061,7 @@ SettingsPickerKey = Literal[
     "show_hardware_cursor",
     "show_terminal_progress",
     "theme",
+    "turn_notification",
     "auto_compact",
     "steering_mode",
     "follow_up_mode",
@@ -4852,6 +4854,10 @@ class TauTuiApp(App[None]):
         self._activity_timer: Timer | None = None
         self._terminal_progress_active = False
         self._terminal_title = TerminalTitleController()
+        self._terminal_notification = TerminalNotificationController(
+            self.tui_settings.turn_notification
+        )
+        self._app_has_focus = True
         self._active_notification_keys: set[tuple[str, str]] = set()
         self._supports_pyperclip: bool | None = None
         self._last_empty_escape_at: float | None = None
@@ -4933,6 +4939,14 @@ class TauTuiApp(App[None]):
             self._terminal_progress_active = False
             self._write_terminal_progress(active=False)
         self._terminal_title.restore()
+
+    def on_app_blur(self) -> None:
+        """Track when the TUI loses focus for turn-completion notifications."""
+        self._app_has_focus = False
+
+    def on_app_focus(self) -> None:
+        """Track when the TUI has focus and should not request attention."""
+        self._app_has_focus = True
 
     def on_resize(self, event: Resize) -> None:
         """Update responsive chrome when the terminal changes size."""
@@ -5293,6 +5307,7 @@ class TauTuiApp(App[None]):
         set_shell_command_prefix = getattr(self.session, "set_shell_command_prefix", None)
         if callable(set_shell_command_prefix):
             set_shell_command_prefix(settings.shell_command_prefix)
+        self._terminal_notification.mode = settings.turn_notification
         set_steering_mode = getattr(self.session, "set_steering_queue_mode", None)
         if callable(set_steering_mode):
             set_steering_mode(_agent_queue_mode_from_tui(settings.steering_mode))
@@ -5399,6 +5414,8 @@ class TauTuiApp(App[None]):
                 if isinstance(event, ErrorEvent) and not event.recoverable:
                     _attach_diagnostic_log_path_to_error(self.state, self.session)
                 await self._apply_streaming_transcript_event(event)
+                if isinstance(event, AgentEndEvent) and not self._app_has_focus:
+                    self._terminal_notification.notify_turn_finished()
         except Exception as exc:  # noqa: BLE001 - surface unexpected worker errors in the TUI
             if active_run_id != self._prompt_run_id:
                 return
@@ -7717,6 +7734,12 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             value="on" if settings.quiet_startup else "off",
             description="Suppress startup notifications from the TUI",
         ),
+        SettingsPickerItem(
+            key="turn_notification",
+            label="Turn notification",
+            value=settings.turn_notification,
+            description="Request terminal attention when a Tau turn finishes in the background",
+        ),
     )
 
 
@@ -7864,6 +7887,13 @@ def _next_tui_settings(
         return replace(settings, clear_on_shrink=not settings.clear_on_shrink)
     if key == "quiet_startup":
         return replace(settings, quiet_startup=not settings.quiet_startup)
+    if key == "turn_notification":
+        modes = ("desktop", "bell", "off")
+        try:
+            current_index = modes.index(settings.turn_notification)
+        except ValueError:
+            current_index = -1
+        return replace(settings, turn_notification=modes[(current_index + 1) % len(modes)])
     if key == "auto_copy_selection":
         return replace(settings, auto_copy_selection=not settings.auto_copy_selection)
     if key == "hide_thinking":

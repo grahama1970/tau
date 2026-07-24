@@ -123,6 +123,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.shell_path == "/bin/zsh"
     assert settings.shell_command_prefix == "export TAU_PREFIXED=1"
     assert settings.quiet_startup is True
+    assert settings.turn_notification == "desktop"
     assert settings.show_terminal_progress is True
     assert settings.thinking_level == "high"
     assert settings.tree_filter_mode == "user-only"
@@ -709,6 +710,28 @@ def test_tui_settings_reject_invalid_shell_command_prefix() -> None:
         tui_settings_from_json({"shell_command_prefix": ["source ~/.bashrc"]})
 
 
+def test_tui_turn_notification_defaults_to_desktop() -> None:
+    assert TuiSettings().turn_notification == "desktop"
+    assert tui_settings_from_json({}).turn_notification == "desktop"
+
+
+def test_tui_turn_notification_roundtrips_and_accepts_pi_alias() -> None:
+    for value in ("off", "bell", "desktop"):
+        settings = tui_settings_from_json({"turn_notification": value})
+        assert settings.turn_notification == value
+        assert settings.to_json()["turn_notification"] == value
+
+    assert tui_settings_from_json({"turnNotification": "bell"}).turn_notification == "bell"
+
+
+def test_tui_turn_notification_rejects_invalid_value() -> None:
+    with pytest.raises(TuiConfigError, match="turn_notification"):
+        tui_settings_from_json({"turn_notification": "sound"})
+
+    with pytest.raises(TuiConfigError, match="turn_notification"):
+        tui_settings_from_json({"turn_notification": True})
+
+
 def test_tui_keybindings_serialize_to_json() -> None:
     settings = TuiSettings(
         keybindings=TuiKeybindings(
@@ -746,6 +769,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
             copy_last_message="ctrl+x",
         ),
         theme="high-contrast",
+        turn_notification="bell",
         external_editor="configured-editor --flag",
         shell_path="/bin/zsh",
         shell_command_prefix="export TAU_PREFIXED=1",
@@ -795,6 +819,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["show_hardware_cursor"] is True
     assert settings.to_json()["show_terminal_progress"] is False
     assert settings.to_json()["quiet_startup"] is False
+    assert settings.to_json()["turn_notification"] == "bell"
     assert settings.to_json()["external_editor"] == "configured-editor --flag"
     assert settings.to_json()["shell_path"] == "/bin/zsh"
     assert settings.to_json()["shell_command_prefix"] == "export TAU_PREFIXED=1"

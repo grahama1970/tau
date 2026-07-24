@@ -110,6 +110,7 @@ from tau_coding.tui.terminal_image import (
     reset_capabilities_cache,
     set_capabilities,
 )
+from tau_coding.tui.terminal_notification import TerminalNotificationController
 from tau_coding.tui.widgets import (
     LeftAlignedMarkdownHeading,
     StreamingTranscriptMessageWidget,
@@ -5042,6 +5043,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Turn notification: desktop",
         ]
 
         await pilot.press("down", "enter")
@@ -5072,6 +5074,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Turn notification: desktop",
         ]
 
         await pilot.press("down", "enter")
@@ -5102,6 +5105,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Turn notification: desktop",
         ]
 
         await pilot.press("down", "enter")
@@ -5132,6 +5136,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Turn notification: desktop",
         ]
 
         await pilot.press("down", "enter")
@@ -5161,6 +5166,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Turn notification: desktop",
         ]
 
         await pilot.press("down", "enter")
@@ -5190,6 +5196,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Turn notification: desktop",
         ]
 
         await pilot.press("down", "enter")
@@ -5219,6 +5226,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Turn notification: desktop",
         ]
 
         await pilot.press("down", "enter")
@@ -5248,6 +5256,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Turn notification: desktop",
         ]
 
         await pilot.press("down", "enter")
@@ -5278,6 +5287,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Turn notification: desktop",
         ]
 
         await pilot.press("down", "enter")
@@ -5308,6 +5318,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Turn notification: desktop",
         ]
 
         await pilot.press("down", "enter")
@@ -5337,6 +5348,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Turn notification: desktop",
         ]
 
         await pilot.press("down", "enter")
@@ -5366,6 +5378,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Turn notification: desktop",
         ]
 
         await pilot.press("down", "enter")
@@ -5395,6 +5408,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Turn notification: desktop",
         ]
 
         await pilot.press("down", "enter")
@@ -5424,6 +5438,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Turn notification: desktop",
         ]
 
         await pilot.press("down", "enter")
@@ -5453,6 +5468,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Tree filter mode: default",
             "Default project trust: ask",
             "Quiet startup: off",
+            "Turn notification: desktop",
         ]
 
         await pilot.press("down", "enter")
@@ -5534,6 +5550,11 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert app.tui_settings.quiet_startup is True
         assert '"quiet_startup": true' in tui_settings_path().read_text(encoding="utf-8")
 
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.turn_notification == "bell"
+        assert '"turn_notification": "bell"' in tui_settings_path().read_text(encoding="utf-8")
+
 
 @pytest.mark.anyio
 async def test_tui_app_quiet_startup_suppresses_startup_notification(
@@ -5573,6 +5594,31 @@ async def test_tui_app_startup_notification_shows_when_not_quiet(
         await pilot.pause()
 
     assert notifications == [("Login required.", "warning")]
+
+
+@pytest.mark.anyio
+async def test_tui_app_notifies_background_turn_completion() -> None:
+    session = FakeSession(events=[AgentStartEvent(), AgentEndEvent()])
+    app = TauTuiApp(session, tui_settings=TuiSettings(turn_notification="desktop"))
+    writes: list[str] = []
+    app._terminal_notification = TerminalNotificationController(
+        "desktop",
+        enabled=True,
+        writer=writes.append,
+        environ={"TERM_PROGRAM": "ghostty"},
+    )
+
+    async with app.run_test():
+        await app._run_prompt("focused")
+        assert writes == []
+
+        app.on_app_blur()
+        await app._run_prompt("background")
+        assert writes == ["\x1b]9;Tau turn finished\x07"]
+
+        app.on_app_focus()
+        await app._run_prompt("focused again")
+        assert writes == ["\x1b]9;Tau turn finished\x07"]
 
 
 @pytest.mark.anyio

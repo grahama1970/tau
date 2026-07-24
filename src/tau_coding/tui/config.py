@@ -15,6 +15,9 @@ class TuiConfigError(ValueError):
     """Raised when Tau TUI configuration is invalid."""
 
 
+type TurnNotificationMode = Literal["off", "bell", "desktop"]
+
+
 @dataclass(frozen=True, slots=True)
 class TuiKeybindings:
     """Configurable keys for Tau's built-in Textual frontend."""
@@ -462,6 +465,7 @@ class TuiSettings:
     show_hardware_cursor: bool = True
     show_terminal_progress: bool = False
     quiet_startup: bool = False
+    turn_notification: TurnNotificationMode = "desktop"
     external_editor: str | None = None
     shell_path: str | None = None
     shell_command_prefix: str | None = None
@@ -486,6 +490,7 @@ class TuiSettings:
             "show_hardware_cursor": self.show_hardware_cursor,
             "show_terminal_progress": self.show_terminal_progress,
             "quiet_startup": self.quiet_startup,
+            "turn_notification": self.turn_notification,
             "external_editor": self.external_editor,
             "shell_path": self.shell_path,
             "shell_command_prefix": self.shell_command_prefix,
@@ -554,6 +559,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "output_padding_x",
         "quietStartup",
         "quiet_startup",
+        "turnNotification",
+        "turn_notification",
         "showImages",
         "show_images",
         "shellPath",
@@ -683,6 +690,9 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
             data.get("quiet_startup", data.get("quietStartup", False)),
             "quiet_startup",
         ),
+        turn_notification=_turn_notification_mode(
+            data.get("turn_notification", data.get("turnNotification", "desktop")),
+        ),
         external_editor=_optional_string_setting(
             data.get("external_editor", data.get("externalEditor")),
             "external_editor",
@@ -706,6 +716,12 @@ def _bool_setting(value: object, field_name: str) -> bool:
     if isinstance(value, bool):
         return value
     raise TuiConfigError(f"TUI setting must be a boolean: {field_name}")
+
+
+def _turn_notification_mode(value: object) -> TurnNotificationMode:
+    if isinstance(value, str) and value in {"off", "bell", "desktop"}:
+        return cast(TurnNotificationMode, value)
+    raise TuiConfigError("turn_notification must be 'off', 'bell', or 'desktop'")
 
 
 def _optional_string_setting(value: object, field_name: str) -> str | None:
