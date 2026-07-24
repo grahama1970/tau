@@ -7861,7 +7861,20 @@ def _named_session_title(title: str | None) -> str | None:
 
 
 def _login_provider_label(provider: ProviderCatalogEntry) -> str:
-    return f"{provider.display_name}\n  {provider.name}"
+    status = _login_provider_status_label(provider)
+    return f"{provider.display_name}\n  {provider.name} - {status}"
+
+
+def _login_provider_status_label(provider: ProviderCatalogEntry) -> str:
+    try:
+        config = provider_config_from_catalog_entry(provider.name)
+        configured = provider_has_usable_credentials(
+            config,
+            credential_reader=FileCredentialStore(),
+        )
+    except Exception:  # noqa: BLE001 - auth status should not prevent opening the picker
+        return "status unavailable"
+    return "configured" if configured else "unconfigured"
 
 
 def _filter_login_providers(
