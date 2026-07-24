@@ -928,63 +928,9 @@ def save_tui_settings(settings: TuiSettings, paths: TauPaths | None = None) -> P
 
 def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
     """Parse TUI settings from JSON-compatible data."""
-    allowed_fields = {
-        "auto_compact",
-        "auto_copy_selection",
-        "autoResizeImages",
-        "auto_resize_images",
-        "autocompleteMaxVisible",
-        "autocomplete_max_visible",
-        "blockImages",
-        "block_images",
-        "clearOnShrink",
-        "clear_on_shrink",
-        "defaultProjectTrust",
-        "default_project_trust",
-        "double_escape_action",
-        "editorPaddingX",
-        "editor_padding_x",
-        "enableSkillCommands",
-        "enable_skill_commands",
-        "externalEditor",
-        "external_editor",
-        "hide_thinking",
-        "imageWidthCells",
-        "image_width_cells",
-        "images",
-        "keybindings",
-        "outputPad",
-        "output_padding_x",
-        "quietStartup",
-        "quiet_startup",
-        "collapseChangelog",
-        "collapse_changelog",
-        "turnNotification",
-        "turn_notification",
-        "showImages",
-        "show_images",
-        "shellPath",
-        "shell_path",
-        "shellCommandPrefix",
-        "shell_command_prefix",
-        "showTerminalProgress",
-        "showHardwareCursor",
-        "show_hardware_cursor",
-        "show_terminal_progress",
-        "followUpMode",
-        "follow_up_mode",
-        "steeringMode",
-        "steering_mode",
-        "theme",
-        "thinkingLevel",
-        "thinking_level",
-        "terminal",
-        "tree_filter_mode",
-    }
-    unknown_fields = set(data) - allowed_fields
-    if unknown_fields:
-        raise TuiConfigError(f"Unknown TUI settings field: {sorted(unknown_fields)[0]}")
-
+    # Ignore settings from newer Tau versions so one user-level file can survive
+    # upgrades, downgrades, and multiple installations. Known fields below still
+    # keep strict type and value validation.
     keybindings_data = data.get("keybindings", {})
     if not isinstance(keybindings_data, dict):
         raise TuiConfigError("TUI keybindings must be a JSON object")
@@ -1261,13 +1207,9 @@ def _ansi_color_luminance(color_index: int) -> float | None:
 
 def _keybindings_from_json(data: dict[str, Any]) -> TuiKeybindings:
     defaults = TuiKeybindings()
-    allowed_fields = set(defaults.to_json())
-    legacy_fields = {"message_previous", "message_next"}
     normalized_data = _normalize_keybinding_fields(data)
-    unknown_fields = set(normalized_data) - allowed_fields - legacy_fields
-    if unknown_fields:
-        raise TuiConfigError(f"Unknown TUI keybinding: {sorted(unknown_fields)[0]}")
-
+    # Future versions may add actions. Read only actions this version supports;
+    # recognized actions still reject invalid or duplicate key values.
     values = {
         field_name: _optional_key_string(normalized_data.get(field_name, default_value), field_name)
         if field_name in _OPTIONAL_KEYBINDING_FIELDS
