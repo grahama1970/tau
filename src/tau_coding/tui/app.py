@@ -1796,19 +1796,21 @@ class SessionPickerScreen(ModalScreen[str | None]):
         sort_key = _key_hint_with_default(self.keybindings.session_toggle_sort, "ctrl+s")
         rename_key = _key_hint_with_default(self.keybindings.session_rename, "ctrl+r,f2")
         delete_key = _key_hint_with_default(self.keybindings.session_delete, "ctrl+d")
+        select_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
         if self.filtered_records:
             help_text = (
                 f'Type to search, re:<pattern> regex, or "phrase" exact - '
                 f"Tab {scope_state} - {named_key} {named_state} - {path_key} {path_state} - "
                 f"{sort_key} {sort_state} - "
                 f"{rename_key} rename - {delete_key} delete - "
-                "Enter selects - Escape closes"
+                f"{select_key} selects - {cancel_key} closes"
             )
         else:
             help_text = (
                 f'No matching sessions - re:<pattern> regex, "phrase" exact - '
                 f"Tab {scope_state} - {named_key} {named_state} - {path_key} {path_state} - "
-                f"{sort_key} {sort_state} - Escape closes"
+                f"{sort_key} {sort_state} - {cancel_key} closes"
             )
         self.query_one("#session-picker-help", Static).update(help_text)
 
@@ -1961,7 +1963,11 @@ class SessionPickerScreen(ModalScreen[str | None]):
         search.value = title
         search.focus()
         self.query_one("#session-picker-title", Static).update("Rename Session")
-        self.query_one("#session-picker-help", Static).update("Enter saves - Escape cancels rename")
+        save_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+        self.query_one("#session-picker-help", Static).update(
+            f"{save_key} saves - {cancel_key} cancels rename"
+        )
 
     def _confirm_rename(self, value: str) -> None:
         """Save the active rename target and return to list mode."""
@@ -2022,8 +2028,10 @@ class SessionPickerScreen(ModalScreen[str | None]):
             return
         if self.delete_confirm_target_id != selected.id:
             self.delete_confirm_target_id = selected.id
+            delete_key = _key_hint_with_default(self.keybindings.session_delete, "ctrl+d")
+            cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
             self.query_one("#session-picker-help", Static).update(
-                "Press Ctrl+D again to delete this session - Escape cancels"
+                f"Press {delete_key} again to delete this session - {cancel_key} cancels"
             )
             return
         self.delete_confirm_target_id = None
