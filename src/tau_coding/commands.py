@@ -649,37 +649,52 @@ def _status_command(context: CommandContext) -> CommandResult:
     tool_calls = sum(
         len(message.tool_calls) for message in messages if isinstance(message, AssistantMessage)
     )
-    lines = [
-        f"Model: {session.model}",
-        f"CWD: {session.cwd}",
-        f"Session file: {session_path if session_path is not None else 'In-memory'}",
-        f"Tools: {len(session.tools)}",
-        f"Skills: {len(session.skills)}",
-        f"Prompt templates: {len(session.prompt_templates)}",
-        f"Context files: {len(session.context_files)}",
-        f"Messages: {len(messages)}",
-        f"User messages: {user_messages}",
-        f"Assistant messages: {assistant_messages}",
-        f"Tool calls: {tool_calls}",
-        f"Tool results: {tool_results}",
-        f"Estimated context tokens: {session.context_token_estimate}",
-        f"Context window: {session.context_window_tokens}",
-    ]
-    if context_usage is not None:
-        lines.append(
-            "Context token breakdown: "
-            f"system={context_usage.system_tokens}, "
-            f"messages={context_usage.message_tokens}, "
-            f"tools={context_usage.tool_tokens}",
-        )
-    lines.extend(_thinking_status_lines(session))
-    lines.append(f"Resource diagnostics: {len(session.resource_diagnostics)}")
-    if session.auto_compact_token_threshold is not None:
-        lines.append(f"Auto compact threshold: {session.auto_compact_token_threshold}")
-    if session.session_id is not None:
-        lines.append(f"Session: {session.session_id}")
+    lines = ["Session Info", ""]
     if session.session_title:
-        lines.append(f"Session name: {session.session_title}")
+        lines.append(f"Name: {session.session_title}")
+    lines.extend(
+        (
+            f"File: {session_path if session_path is not None else 'In-memory'}",
+            f"ID: {session.session_id if session.session_id is not None else 'In-memory'}",
+            f"CWD: {session.cwd}",
+            "",
+            "Model",
+            f"Provider: {session.provider_name}",
+            f"Current: {session.model}",
+            "",
+            "Messages",
+            f"Total: {len(messages):,}",
+            f"User: {user_messages:,}",
+            f"Assistant: {assistant_messages:,}",
+            f"Tools: {tool_calls:,} calls, {tool_results:,} results",
+            "",
+            "Tokens",
+            f"Estimated context: {session.context_token_estimate:,}",
+            f"Context window: {session.context_window_tokens:,}",
+        )
+    )
+    if context_usage is not None:
+        lines.extend(
+            (
+                f"  System: {context_usage.system_tokens:,}",
+                f"  Messages: {context_usage.message_tokens:,}",
+                f"  Tools: {context_usage.tool_tokens:,}",
+            )
+        )
+    lines.extend(
+        (
+            "",
+            "Resources",
+            f"Tools: {len(session.tools):,}",
+            f"Skills: {len(session.skills):,}",
+            f"Prompt templates: {len(session.prompt_templates):,}",
+            f"Context files: {len(session.context_files):,}",
+            f"Diagnostics: {len(session.resource_diagnostics):,}",
+        )
+    )
+    lines.extend(_thinking_status_lines(session))
+    if session.auto_compact_token_threshold is not None:
+        lines.append(f"Auto compact threshold: {session.auto_compact_token_threshold:,}")
     return CommandResult(handled=True, message="\n".join(lines))
 
 
