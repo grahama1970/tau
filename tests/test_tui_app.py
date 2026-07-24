@@ -1237,8 +1237,47 @@ def test_tui_state_compacts_expanded_skill_messages() -> None:
         ]
     )
 
-    assert [(item.role, item.text) for item in state.items] == [
-        ("skill", "Using skill: review"),
+    assert [(item.role, item.text, item.tool_result_text) for item in state.items] == [
+        (
+            "skill",
+            "Using skill: review (Ctrl+O to expand)",
+            "**review**\n\n"
+            "References are relative to /workspace/.tau/skills.\n\n"
+            "# Review\nFull noisy instructions.",
+        ),
+        ("user", "check the auth flow", None),
+    ]
+
+
+def test_expanded_skill_invocation_messages_show_skill_body() -> None:
+    skill = Skill(
+        name="review",
+        path=Path("/workspace/.tau/skills/review.md"),
+        content="# Review\nFull noisy instructions.",
+        description="Review code",
+    )
+    state = tui_app.TuiState()
+    state.load_messages(
+        [
+            UserMessage(
+                content=format_skill_invocation(
+                    skill,
+                    "check the auth flow",
+                )
+            )
+        ]
+    )
+    item = state.items[0]
+    collapsed_console = Console(record=True, width=80)
+    collapsed_console.print(render_chat_item(item, show_tool_results=False))
+    expanded_console = Console(record=True, width=80)
+    expanded_console.print(render_chat_item(item, show_tool_results=True))
+
+    assert "Full noisy instructions" not in collapsed_console.export_text()
+    expanded = expanded_console.export_text()
+    assert "review" in expanded
+    assert "Full noisy instructions" in expanded
+    assert [(item.role, item.text) for item in state.items[1:]] == [
         ("user", "check the auth flow"),
     ]
 

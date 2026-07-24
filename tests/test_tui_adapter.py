@@ -77,9 +77,15 @@ def test_tui_adapter_compacts_streamed_skill_invocations() -> None:
         )
     )
 
-    assert [(item.role, item.text) for item in state.items] == [
-        ("skill", "Using skill: review"),
-        ("user", "check the auth flow"),
+    assert [(item.role, item.text, item.tool_result_text) for item in state.items] == [
+        (
+            "skill",
+            "Using skill: review (Ctrl+O to expand)",
+            "**review**\n\n"
+            "References are relative to /workspace/.tau/skills.\n\n"
+            "# Review\nFull noisy instructions.",
+        ),
+        ("user", "check the auth flow", None),
     ]
 
 

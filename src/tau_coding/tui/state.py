@@ -166,7 +166,11 @@ class TuiState:
         if skill_invocation is None:
             self.add_item("user", content)
             return
-        self.add_item("skill", f"Using skill: {skill_invocation.name}")
+        self.add_item(
+            "skill",
+            f"Using skill: {skill_invocation.name} (Ctrl+O to expand)",
+            tool_result_text=f"**{skill_invocation.name}**\n\n{skill_invocation.content}",
+        )
         if skill_invocation.additional_instructions:
             self.add_item("user", skill_invocation.additional_instructions)
 
