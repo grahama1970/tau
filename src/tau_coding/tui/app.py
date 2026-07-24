@@ -259,13 +259,6 @@ class SessionCompletionRecord(Protocol):
 class ToolsReferenceSearchInput(Input):
     """Search input that keeps tool-reference navigation local."""
 
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel", show=False, priority=True),
-        Binding("up", "cursor_up", "Up", show=False, priority=True),
-        Binding("down", "cursor_down", "Down", show=False, priority=True),
-        Binding("enter", "open_selected", "Open", show=False, priority=True),
-    ]
-
     def _reference(self) -> ToolsReferenceScreen:
         return cast(ToolsReferenceScreen, self.screen)
 
@@ -296,13 +289,6 @@ class ToolsReferenceSearchInput(Input):
 class ToolsReferenceScreen(ModalScreen[None]):
     """Searchable read-only reference for active session tools."""
 
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Close"),
-        Binding("up", "cursor_up", "Up", show=False),
-        Binding("down", "cursor_down", "Down", show=False),
-        Binding("enter", "open_selected", "Open", show=False),
-    ]
-
     def __init__(
         self,
         tools: Sequence[AgentTool],
@@ -331,7 +317,7 @@ class ToolsReferenceScreen(ModalScreen[None]):
                 id="tools-reference-header",
             )
             yield ListView(id="tools-reference-list")
-            yield Static("Enter opens description - Escape closes", id="tools-reference-help")
+            yield Static(self._help_text(), id="tools-reference-help")
 
     def on_mount(self) -> None:
         """Populate the list and focus search on open."""
@@ -468,16 +454,14 @@ class ToolsReferenceScreen(ModalScreen[None]):
         extension = self.extension_sources.get(tool.name)
         return extension if extension is not None else "Built in"
 
+    def _help_text(self) -> str:
+        confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+        return f"{confirm_key} opens description - {cancel_key} closes"
+
 
 class SkillPickerSearchInput(Input):
     """Search input that keeps skill-picker navigation local."""
-
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel", show=False, priority=True),
-        Binding("up", "cursor_up", "Up", show=False, priority=True),
-        Binding("down", "cursor_down", "Down", show=False, priority=True),
-        Binding("enter", "select_cursor", "Insert", show=False, priority=True),
-    ]
 
     def _picker(self) -> SkillPickerScreen:
         return cast(SkillPickerScreen, self.screen)
@@ -521,15 +505,6 @@ class SkillPickerResult:
 
 class SkillPickerScreen(ModalScreen[SkillPickerResult | None]):
     """Searchable modal containing every loaded skill."""
-
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel", priority=True),
-        Binding("up", "cursor_up", "Up", show=False, priority=True),
-        Binding("down", "cursor_down", "Down", show=False, priority=True),
-        Binding("enter", "select_cursor", "Insert", show=False, priority=True),
-        Binding("f1", "show_description", "Description", show=False, priority=True),
-        Binding("ctrl+enter", "show_in_transcript", "Transcript", show=False, priority=True),
-    ]
 
     def __init__(
         self,
@@ -596,6 +571,12 @@ class SkillPickerScreen(ModalScreen[SkillPickerResult | None]):
         ):
             event.stop()
             self.action_cancel()
+        elif event.key == "f1":
+            event.stop()
+            self.action_show_description()
+        elif event.key == "ctrl+enter":
+            event.stop()
+            self.action_show_in_transcript()
 
     def action_cursor_up(self) -> None:
         skill_list = self.query_one("#skill-picker-list", ListView)
@@ -664,24 +645,19 @@ class SkillPickerScreen(ModalScreen[SkillPickerResult | None]):
             for skill in self.visible_skills
         )
         skill_list.index = 0 if self.visible_skills else None
+        select_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
         if not self.skills:
-            help_text = "No skills loaded - Escape closes"
+            help_text = f"No skills loaded - {cancel_key} closes"
         elif not self.visible_skills:
-            help_text = "No matching skills - Escape closes"
+            help_text = f"No matching skills - {cancel_key} closes"
         else:
-            help_text = "Enter inserts - F1 describes - Ctrl+Enter shows full skill"
+            help_text = f"{select_key} inserts - F1 describes - Ctrl+Enter shows full skill"
         self.query_one("#skill-picker-help", Static).update(help_text)
 
 
 class PromptTemplatePickerSearchInput(Input):
     """Search input that keeps prompt-template picker navigation local."""
-
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel", show=False, priority=True),
-        Binding("up", "cursor_up", "Up", show=False, priority=True),
-        Binding("down", "cursor_down", "Down", show=False, priority=True),
-        Binding("enter", "select_cursor", "Select", show=False, priority=True),
-    ]
 
     def _picker(self) -> PromptTemplatePickerScreen:
         return cast(PromptTemplatePickerScreen, self.screen)
@@ -709,13 +685,6 @@ class PromptTemplatePickerSearchInput(Input):
 
 class PromptTemplatePickerScreen(ModalScreen[str | None]):
     """Searchable picker for loaded prompt templates."""
-
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel"),
-        Binding("up", "cursor_up", "Up", show=False),
-        Binding("down", "cursor_down", "Down", show=False),
-        Binding("enter", "select_cursor", "Select", show=False),
-    ]
 
     def __init__(
         self,
@@ -820,12 +789,14 @@ class PromptTemplatePickerScreen(ModalScreen[str | None]):
             for template in self.visible_templates
         )
         picker_list.index = 0 if self.visible_templates else None
+        select_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
         if self.visible_templates:
-            help_text = "Enter selects - Escape closes"
+            help_text = f"{select_key} selects - {cancel_key} closes"
         elif self.templates:
-            help_text = "No matching prompt templates - Escape closes"
+            help_text = f"No matching prompt templates - {cancel_key} closes"
         else:
-            help_text = "No prompt templates loaded - Escape closes"
+            help_text = f"No prompt templates loaded - {cancel_key} closes"
         self.query_one("#prompt-template-picker-help", Static).update(help_text)
 
 
