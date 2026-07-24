@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import re
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
+from shutil import which
 from time import time
 from uuid import uuid4
 
@@ -255,10 +257,30 @@ class SessionManager:
             return
         if not resolved_path.is_relative_to(sessions_dir):
             return
+        if _move_to_trash(resolved_path):
+            return
         try:
             resolved_path.unlink()
         except FileNotFoundError:
             return
+
+
+def _move_to_trash(path: Path) -> bool:
+    """Move a session file to trash when the desktop trash CLI is available."""
+    trash = which("trash")
+    if trash is None:
+        return False
+    try:
+        result = subprocess.run(
+            [trash, str(path)],
+            capture_output=True,
+            check=False,
+            text=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    return result.returncode == 0 or not path.exists()
 
 
 def _sanitize_session_title(title: str | None) -> str | None:
