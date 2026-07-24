@@ -428,6 +428,11 @@ class CodingSession:
         return self._harness.messages
 
     @property
+    def session_path(self) -> Path | None:
+        """Return the local session file path when this session is file-backed."""
+        return _storage_path(self._config.storage)
+
+    @property
     def state(self) -> SessionState:
         """Return the last replayed durable session state."""
         return self._state

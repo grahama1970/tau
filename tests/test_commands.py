@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from tau_agent.messages import AssistantMessage, ToolResultMessage, UserMessage
+from tau_agent.tools import ToolCall
 from tau_coding.commands import CommandRegistry, SlashCommand, create_default_command_registry
 from tau_coding.paths import TauPaths
 from tau_coding.reload import CodingReloadSummary, ReloadCategorySummary
@@ -53,6 +55,18 @@ class FakeSession:
         self.session_id = "session-1"
         self.session_title: str | None = None
         self.session_manager: SessionManager | None = manager
+        self.session_path: Path | None = tmp_path / ".tau" / "sessions" / "session-1.jsonl"
+        self.messages = (
+            UserMessage(content="Fix the failing test."),
+            AssistantMessage(
+                content="I'll inspect it.",
+                tool_calls=[
+                    ToolCall(id="call-1", name="read_file", arguments={"path": "tests.py"}),
+                    ToolCall(id="call-2", name="run_shell", arguments={"command": "pytest"}),
+                ],
+            ),
+            ToolResultMessage(tool_call_id="call-1", name="read_file", content="ok"),
+        )
         self.reload_called = False
         self.provider_reload_called = False
 
@@ -323,9 +337,15 @@ def test_session_command_includes_session_details(tmp_path: Path) -> None:
     assert result.message is not None
     assert "Model: fake-model" in result.message
     assert f"CWD: {tmp_path}" in result.message
+    assert f"Session file: {tmp_path / '.tau' / 'sessions' / 'session-1.jsonl'}" in result.message
     assert "Tools: 4" in result.message
     assert "Skills: 1" in result.message
     assert "Context files: 1" in result.message
+    assert "Messages: 3" in result.message
+    assert "User messages: 1" in result.message
+    assert "Assistant messages: 1" in result.message
+    assert "Tool calls: 2" in result.message
+    assert "Tool results: 1" in result.message
     assert "Estimated context tokens: 123" in result.message
     assert "Context window: 584" in result.message
     assert "Thinking mode: medium" in result.message

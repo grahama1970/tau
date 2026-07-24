@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
+from tau_agent.messages import AgentMessage, AssistantMessage, ToolResultMessage, UserMessage
 from tau_agent.tools import AgentTool
 from tau_coding.prompt_templates import PromptTemplate
 from tau_coding.provider_catalog import BUILTIN_PROVIDER_CATALOG, builtin_provider_entry
@@ -80,6 +81,12 @@ class CommandSession(Protocol):
 
     @property
     def session_manager(self) -> SessionManager | None: ...
+
+    @property
+    def session_path(self) -> Path | None: ...
+
+    @property
+    def messages(self) -> Sequence[AgentMessage]: ...
 
     def set_model(self, model: str) -> None: ...
 
@@ -557,13 +564,27 @@ def _import_command(context: CommandContext) -> CommandResult:
 def _status_command(context: CommandContext) -> CommandResult:
     session = context.session
     context_usage = getattr(session, "context_usage", None)
+    session_path = getattr(session, "session_path", None)
+    messages = tuple(getattr(session, "messages", ()))
+    user_messages = sum(isinstance(message, UserMessage) for message in messages)
+    assistant_messages = sum(isinstance(message, AssistantMessage) for message in messages)
+    tool_results = sum(isinstance(message, ToolResultMessage) for message in messages)
+    tool_calls = sum(
+        len(message.tool_calls) for message in messages if isinstance(message, AssistantMessage)
+    )
     lines = [
         f"Model: {session.model}",
         f"CWD: {session.cwd}",
+        f"Session file: {session_path if session_path is not None else 'In-memory'}",
         f"Tools: {len(session.tools)}",
         f"Skills: {len(session.skills)}",
         f"Prompt templates: {len(session.prompt_templates)}",
         f"Context files: {len(session.context_files)}",
+        f"Messages: {len(messages)}",
+        f"User messages: {user_messages}",
+        f"Assistant messages: {assistant_messages}",
+        f"Tool calls: {tool_calls}",
+        f"Tool results: {tool_results}",
         f"Estimated context tokens: {session.context_token_estimate}",
         f"Context window: {session.context_window_tokens}",
     ]
