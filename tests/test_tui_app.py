@@ -5097,6 +5097,66 @@ async def test_tui_app_pastes_clipboard_text_into_prompt(
 
 
 @pytest.mark.anyio
+async def test_tui_app_compacts_large_clipboard_paste_but_submits_expanded_text(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    large_text = "\n".join(f"line {index}" for index in range(11))
+
+    async def fake_read_clipboard_image() -> None:
+        return None
+
+    async def fake_read_clipboard_text() -> str:
+        return large_text
+
+    session = FakeSession()
+    app = TauTuiApp(session)
+    monkeypatch.setattr(tui_app, "_read_clipboard_image", fake_read_clipboard_image)
+    monkeypatch.setattr(tui_app, "_read_clipboard_text", fake_read_clipboard_text)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+
+        await pilot.press("ctrl+v")
+        await pilot.pause()
+
+        assert prompt.value == "[paste #1 +11 lines]"
+        assert prompt.expanded_text() == large_text
+
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert prompt.value == ""
+
+    assert session.prompt_texts == [large_text]
+
+
+@pytest.mark.anyio
+async def test_tui_app_compacts_large_single_line_clipboard_paste(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    large_text = "x" * 1001
+
+    async def fake_read_clipboard_image() -> None:
+        return None
+
+    async def fake_read_clipboard_text() -> str:
+        return large_text
+
+    app = TauTuiApp(FakeSession())
+    monkeypatch.setattr(tui_app, "_read_clipboard_image", fake_read_clipboard_image)
+    monkeypatch.setattr(tui_app, "_read_clipboard_text", fake_read_clipboard_text)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+
+        await pilot.press("ctrl+v")
+        await pilot.pause()
+
+        assert prompt.value == "[paste #1 1001 chars]"
+        assert prompt.expanded_text() == large_text
+
+
+@pytest.mark.anyio
 async def test_tui_app_clipboard_paste_ignores_unavailable_clipboard(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

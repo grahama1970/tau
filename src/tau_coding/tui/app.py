@@ -239,6 +239,8 @@ class PromptInput(TextArea):
     """Multiline prompt input with completion key bindings."""
 
     BINDINGS: ClassVar[list[BindingEntry]] = []
+    LARGE_PASTE_CHAR_THRESHOLD: ClassVar[int] = 1000
+    LARGE_PASTE_LINE_THRESHOLD: ClassVar[int] = 10
     shell_mode_style: str = ""
 
     def __init__(
@@ -251,6 +253,8 @@ class PromptInput(TextArea):
         self.tui_keybindings = tui_keybindings or TuiKeybindings()
         self._base_bindings = self._bindings.copy()
         self._footer_mode: Literal["normal", "completion", "running"] = "normal"
+        self._paste_counter = 0
+        self._paste_markers: dict[str, str] = {}
         self._apply_prompt_bindings()
 
     def set_footer_mode(self, mode: Literal["normal", "completion", "running"]) -> None:
@@ -277,6 +281,49 @@ class PromptInput(TextArea):
     @value.setter
     def value(self, text: str) -> None:
         self.text = text
+        self.clear_paste_markers()
+
+    def clear_paste_markers(self) -> None:
+        """Forget compacted paste payloads when replacing editor contents."""
+        self._paste_counter = 0
+        self._paste_markers.clear()
+
+    def expanded_text(self) -> str:
+        """Return prompt text with compacted paste markers expanded."""
+        text = self.text
+        for marker, content in self._paste_markers.items():
+            text = text.replace(marker, content)
+        return text
+
+    def insert_paste_text(self, text: str) -> None:
+        """Insert clipboard text, compacting large pastes behind Pi-style markers."""
+        filtered = _normalize_pasted_text(text)
+        if not filtered:
+            return
+
+        if filtered.startswith(("/", "~", ".")):
+            row, column = self.cursor_location
+            line = self.text.split("\n")[row] if self.text else ""
+            char_before_cursor = line[column - 1] if column > 0 else ""
+            if char_before_cursor and (char_before_cursor.isalnum() or char_before_cursor == "_"):
+                filtered = f" {filtered}"
+
+        lines = filtered.split("\n")
+        is_large_paste = (
+            len(lines) > self.LARGE_PASTE_LINE_THRESHOLD
+            or len(filtered) > self.LARGE_PASTE_CHAR_THRESHOLD
+        )
+        if is_large_paste:
+            self._paste_counter += 1
+            if len(lines) > self.LARGE_PASTE_LINE_THRESHOLD:
+                marker = f"[paste #{self._paste_counter} +{len(lines)} lines]"
+            else:
+                marker = f"[paste #{self._paste_counter} {len(filtered)} chars]"
+            self._paste_markers[marker] = filtered
+            self.insert(marker)
+            return
+
+        self.insert(filtered)
 
     @property
     def cursor_position(self) -> int:
@@ -382,6 +429,7 @@ class PromptInput(TextArea):
             return
         if self.text:
             self.text = ""
+            self.clear_paste_markers()
             self.move_cursor((0, 0))
 
     def get_line(self, line_index: int) -> Text:
@@ -3311,9 +3359,11 @@ class TauTuiApp(App[None]):
             self._refresh_completions()
             return
 
-        text = raw_text.strip()
+        expanded_text = prompt.expanded_text()
+        text = expanded_text.strip()
         if not text:
             prompt.text = ""
+            prompt.clear_paste_markers()
             self._completion_state = CompletionState()
             self._refresh_completions()
             return
@@ -3348,6 +3398,7 @@ class TauTuiApp(App[None]):
             return
 
         prompt.text = ""
+        prompt.clear_paste_markers()
         self._completion_state = CompletionState()
         self._refresh_completions()
 
@@ -4121,7 +4172,7 @@ class TauTuiApp(App[None]):
 
     async def _open_external_editor(self) -> None:
         prompt = self.query_one("#prompt", PromptInput)
-        original_text = prompt.text
+        original_text = prompt.expanded_text()
         editor_command = _external_editor_command()
         if editor_command is None:
             self._notify("Set VISUAL or EDITOR to use the external editor.", severity="warning")
@@ -4136,6 +4187,7 @@ class TauTuiApp(App[None]):
             self._notify("External editor exited without changes.", severity="warning")
             return
         prompt.text = result
+        prompt.clear_paste_markers()
         prompt.move_cursor(_text_end_location(result))
         prompt.focus()
         self._sync_prompt_shell_mode(prompt.text)
@@ -4157,11 +4209,14 @@ class TauTuiApp(App[None]):
             return
         if not text:
             return
-        self._insert_prompt_text(text)
+        self._insert_prompt_text(text, compact_large_paste=True)
 
-    def _insert_prompt_text(self, text: str) -> None:
+    def _insert_prompt_text(self, text: str, *, compact_large_paste: bool = False) -> None:
         prompt = self.query_one("#prompt", PromptInput)
-        prompt.insert(text)
+        if compact_large_paste:
+            prompt.insert_paste_text(text)
+        else:
+            prompt.insert(text)
         prompt.focus()
         self._sync_prompt_shell_mode(prompt.text)
         self._completion_state = self._build_completion_state(prompt.text)
@@ -6013,6 +6068,26 @@ _CLIPBOARD_IMAGE_EXTENSIONS: dict[str, str] = {
 class _ClipboardImage:
     bytes: bytes
     mime_type: str
+
+
+def _normalize_pasted_text(text: str) -> str:
+    """Normalize clipboard text before inserting it into the prompt editor."""
+    decoded = re.sub(
+        r"\x1b\[(\d+);5u",
+        lambda match: _decode_csi_u_control(match.group(1), match.group(0)),
+        text,
+    )
+    normalized = decoded.replace("\r\n", "\n").replace("\r", "\n").replace("\t", "    ")
+    return "".join(char for char in normalized if char == "\n" or ord(char) >= 32)
+
+
+def _decode_csi_u_control(code: str, fallback: str) -> str:
+    codepoint = int(code)
+    if 97 <= codepoint <= 122:
+        return chr(codepoint - 96)
+    if 65 <= codepoint <= 90:
+        return chr(codepoint - 64)
+    return fallback
 
 
 async def _read_clipboard_text(timeout_s: float = 0.75) -> str | None:
