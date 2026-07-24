@@ -960,7 +960,10 @@ def _chat_item_role_style(item: ChatItem, theme: TuiTheme) -> TuiRoleStyle:
                 body=theme.role_styles["tool"].body,
             )
         if item.tool_result_text.startswith("✗"):
-            return TuiRoleStyle(border="#ff4f4f", body=theme.role_styles["tool"].body)
+            return TuiRoleStyle(
+                border=theme.error,
+                body=theme.role_styles["tool"].body,
+            )
     return theme.role_styles[item.role]
 
 
@@ -975,22 +978,15 @@ def _tool_accent_style(item: ChatItem, *, theme: TuiTheme) -> str | None:
 
 
 def _tool_success_color(theme: TuiTheme) -> str:
-    if theme.name == "tau-light":
-        return "#166534"
-    return "#9cffb1"
+    return theme.success
 
 
 def _tool_success_style(theme: TuiTheme) -> str:
-    color = _tool_success_color(theme)
-    if theme.name == "tau-light":
-        return color
-    return f"{color} on #000000"
+    return theme.tool_success_text
 
 
 def _tool_error_style(theme: TuiTheme) -> str:
-    if theme.name == "tau-light":
-        return theme.role_styles["error"].border
-    return "#ff4f4f on #000000"
+    return theme.tool_error_text
 
 
 def _render_tool_chat_body(

@@ -57,6 +57,12 @@ from tau_coding import (
 from tau_coding import session as coding_session_module
 from tau_coding.session import parse_terminal_command
 from tau_coding.trust import ProjectTrustStore
+from tau_coding.tui.themes import (
+    THEME_COLOR_FIELDS,
+    TRANSCRIPT_ROLES,
+    get_tui_theme,
+    set_custom_tui_themes,
+)
 
 
 async def _collect_session_events(session_stream: object) -> list[object]:
@@ -73,6 +79,40 @@ def _config(
         storage=storage,
         cwd=tmp_path,
     )
+
+
+@pytest.mark.anyio
+async def test_session_load_registers_project_tui_themes(tmp_path: Path) -> None:
+    theme_data = {
+        "name": "midnight",
+        "colors": {field_name: "#101010" for field_name in THEME_COLOR_FIELDS},
+        "roles": {role: {"border": "#101010", "body": "#e0e0e0"} for role in TRANSCRIPT_ROLES},
+    }
+    themes_dir = tmp_path / ".tau" / "themes"
+    themes_dir.mkdir(parents=True)
+    (themes_dir / "midnight.json").write_text(json.dumps(theme_data), encoding="utf-8")
+    (themes_dir / "broken.json").write_text("{not json", encoding="utf-8")
+    resource_paths = TauResourcePaths(
+        root=tmp_path / "home" / ".tau",
+        cwd=tmp_path,
+        agents_root=None,
+    )
+    config = CodingSessionConfig(
+        provider=FakeProvider([]),
+        model="fake",
+        system="You are Tau.",
+        storage=JsonlSessionStorage(tmp_path / "session.jsonl"),
+        cwd=tmp_path,
+        resource_paths=resource_paths,
+        default_project_trust="always",
+    )
+    try:
+        session = await CodingSession.load(config)
+
+        assert get_tui_theme("midnight").accent == "#101010"
+        assert any(diagnostic.kind == "theme" for diagnostic in session.resource_diagnostics)
+    finally:
+        set_custom_tui_themes({})
 
 
 class SwitchableFakeProvider:

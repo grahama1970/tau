@@ -122,6 +122,7 @@ from tau_coding.trust import (
     has_trust_requiring_project_resources,
     project_trust_state,
 )
+from tau_coding.tui.config import load_custom_tui_themes, set_custom_tui_themes
 
 StreamingBehavior = Literal["steer", "follow_up"]
 _UNSET_LEAF_ID: Final[object] = object()
@@ -2379,6 +2380,8 @@ def _load_session_resources(
     discovered_context, context_diagnostics = discover_project_context_with_diagnostics(
         effective_paths
     )
+    custom_themes, theme_diagnostics = load_custom_tui_themes(effective_paths.themes_dirs)
+    set_custom_tui_themes(custom_themes)
     return SessionResources(
         skills=tuple(loaded_skills),
         prompt_templates=tuple(loaded_prompt_templates),
@@ -2389,6 +2392,7 @@ def _load_session_resources(
                 *skill_diagnostics,
                 *prompt_diagnostics,
                 *context_diagnostics,
+                *theme_diagnostics,
             ]
         ),
     )

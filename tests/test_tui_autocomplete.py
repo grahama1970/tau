@@ -84,7 +84,7 @@ def test_command_completion_suggests_registered_commands() -> None:
         prompt_templates=(),
     )
 
-    assert [item.display for item in state.items] == ["/session", "/settings"]
+    assert [item.display for item in state.items] == ["/session", "/settings", "/skills"]
     assert state.selected is not None
     assert state.selected.apply("/se") == "/session"
 
@@ -178,7 +178,7 @@ def test_skill_command_is_available_for_command_completion() -> None:
         prompt_templates=(),
     )
 
-    assert [item.display for item in state.items] == ["/skill:"]
+    assert [item.display for item in state.items] == ["/skill:", "/skills"]
     assert state.selected is not None
     assert state.selected.apply("/ski") == "/skill:"
 
@@ -192,7 +192,7 @@ def test_skill_command_completion_can_be_disabled() -> None:
         enable_skill_commands=False,
     )
 
-    assert state.items == ()
+    assert [item.display for item in state.items] == ["/skills"]
 
 
 def test_skill_name_completion_preserves_request_text_for_incomplete_name() -> None:
@@ -451,6 +451,20 @@ def test_theme_argument_completion_uses_theme_names() -> None:
     assert [item.display for item in state.items] == ["tau-dark", "tau-light"]
     assert state.selected is not None
     assert state.selected.apply("/theme tau-") == "/theme tau-dark"
+
+
+def test_theme_argument_completion_includes_custom_theme_names() -> None:
+    state = build_completion_state(
+        "/theme mid",
+        command_registry=create_default_command_registry(),
+        skills=(),
+        prompt_templates=(),
+        theme_names=("tau-dark", "tau-light", "midnight"),
+    )
+
+    assert [item.display for item in state.items] == ["midnight"]
+    assert state.selected is not None
+    assert state.selected.apply("/theme mid") == "/theme midnight"
 
 
 def test_resume_argument_completion_uses_session_ids() -> None:

@@ -113,7 +113,6 @@ from tau_coding.tui.autocomplete import (
     build_completion_state,
 )
 from tau_coding.tui.config import (
-    BUILTIN_TUI_THEME_NAMES,
     DEFAULT_AUTOCOMPLETE_MAX_VISIBLE,
     DEFAULT_AUTOMATIC_TUI_THEME_SETTING,
     TAU_DARK_THEME,
@@ -121,6 +120,7 @@ from tau_coding.tui.config import (
     TuiQueueDrainMode,
     TuiSettings,
     TuiTheme,
+    available_tui_theme_names,
     load_tui_settings,
     save_tui_settings,
 )
@@ -6769,7 +6769,7 @@ class TauTuiApp(App[None]):
             model_names=self.session.available_models,
             provider_names=self.session.available_providers,
             thinking_levels=getattr(self.session, "available_thinking_levels", ()),
-            theme_names=BUILTIN_TUI_THEME_NAMES,
+            theme_names=available_tui_theme_names(),
             session_options=_session_options(self.session),
             cwd=self.session.cwd,
             enable_skill_commands=self.tui_settings.enable_skill_commands,
@@ -7632,7 +7632,7 @@ def _credential_store_has_entry(
 
 
 def _theme_picker_choices() -> tuple[str, ...]:
-    return (*BUILTIN_TUI_THEME_NAMES, DEFAULT_AUTOMATIC_TUI_THEME_SETTING)
+    return (*available_tui_theme_names(), DEFAULT_AUTOMATIC_TUI_THEME_SETTING)
 
 
 def _theme_picker_label(theme_setting: str, *, current_theme: str) -> str:

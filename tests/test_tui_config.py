@@ -384,9 +384,11 @@ def test_tui_keybindings_reject_duplicate_keys_inside_pi_alias_lists() -> None:
         )
 
 
-def test_tui_settings_reject_unknown_theme() -> None:
-    with pytest.raises(TuiConfigError, match="Unknown TUI theme"):
-        tui_settings_from_json({"theme": "solarized"})
+def test_tui_settings_accept_unknown_theme_for_later_custom_resolution() -> None:
+    settings = tui_settings_from_json({"theme": "solarized"})
+
+    assert settings.theme == "solarized"
+    assert settings.resolved_theme.name == "tau-dark"
 
 
 def test_tui_settings_accept_light_theme() -> None:
@@ -417,9 +419,11 @@ def test_tui_automatic_theme_resolves_dark_when_terminal_theme_is_dark() -> None
     )
 
 
-def test_tui_automatic_theme_rejects_unknown_pair_member() -> None:
-    with pytest.raises(TuiConfigError, match="Unknown TUI theme"):
-        tui_settings_from_json({"theme": "tau-light/solarized"})
+def test_tui_automatic_theme_accepts_unknown_pair_member_for_later_custom_resolution() -> None:
+    settings = tui_settings_from_json({"theme": "tau-light/solarized"})
+
+    assert settings.theme == "tau-light/solarized"
+    assert settings.resolved_theme.name == "tau-dark"
 
 
 def test_terminal_theme_detection_uses_colorfgbg_background() -> None:

@@ -935,7 +935,7 @@ def _theme_command(context: CommandContext) -> CommandResult:
 
     theme_setting = context.args.strip()
     if not _is_known_tui_theme_setting(theme_setting):
-        themes = ", ".join((*BUILTIN_TUI_THEME_NAMES, "<light-theme>/<dark-theme>"))
+        themes = ", ".join((*_available_tui_theme_names(), "<light-theme>/<dark-theme>"))
         return CommandResult(
             handled=True,
             message=f"Unknown theme: {theme_setting}\nAvailable themes: {themes}",
@@ -944,14 +944,21 @@ def _theme_command(context: CommandContext) -> CommandResult:
 
 
 def _is_known_tui_theme_setting(theme_setting: str) -> bool:
-    if theme_setting in BUILTIN_TUI_THEME_NAMES:
+    theme_names = _available_tui_theme_names()
+    if theme_setting in theme_names:
         return True
     slash_index = theme_setting.find("/")
     if slash_index < 0:
         return False
     light_theme = theme_setting[:slash_index].strip()
     dark_theme = theme_setting[slash_index + 1 :].strip()
-    return light_theme in BUILTIN_TUI_THEME_NAMES and dark_theme in BUILTIN_TUI_THEME_NAMES
+    return light_theme in theme_names and dark_theme in theme_names
+
+
+def _available_tui_theme_names() -> tuple[str, ...]:
+    from tau_coding.tui.config import available_tui_theme_names
+
+    return available_tui_theme_names()
 
 
 def _login_command(context: CommandContext) -> CommandResult:

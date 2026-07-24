@@ -8,6 +8,12 @@ from tau_coding.session_manager import SessionManager
 from tau_coding.skills import Skill
 from tau_coding.system_prompt import ProjectContextFile
 from tau_coding.tools import create_coding_tools
+from tau_coding.tui.themes import (
+    THEME_COLOR_FIELDS,
+    TRANSCRIPT_ROLES,
+    parse_tui_theme_json,
+    set_custom_tui_themes,
+)
 
 
 class FakeSession:
@@ -553,6 +559,22 @@ def test_theme_command_requests_picker_and_sets_theme(tmp_path: Path) -> None:
     assert unknown_result.message is not None
     assert "Unknown theme: solarized" in unknown_result.message
     assert "<light-theme>/<dark-theme>" in unknown_result.message
+
+
+def test_theme_command_accepts_registered_custom_theme(tmp_path: Path) -> None:
+    data = {
+        "name": "midnight",
+        "colors": {field_name: "#101010" for field_name in THEME_COLOR_FIELDS},
+        "roles": {role: {"border": "#101010", "body": "#e0e0e0"} for role in TRANSCRIPT_ROLES},
+    }
+    try:
+        set_custom_tui_themes({"midnight": parse_tui_theme_json(data)})
+
+        result = create_default_command_registry().execute(FakeSession(tmp_path), "/theme midnight")
+    finally:
+        set_custom_tui_themes({})
+
+    assert result.theme == "midnight"
 
 
 def test_non_pi_commands_are_not_registered(tmp_path: Path) -> None:
