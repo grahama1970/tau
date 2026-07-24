@@ -498,7 +498,7 @@ def format_terminal_command_result_block(
     suffix = " · added to context" if added_to_context else " · not added to context"
     lines = [f"{status} bash{suffix}"]
     if output:
-        lines.append(_preview_text(output, max_lines=TERMINAL_COMMAND_OUTPUT_PREVIEW_LINES))
+        lines.append(_preview_tail_text(output, max_lines=TERMINAL_COMMAND_OUTPUT_PREVIEW_LINES))
     return "\n".join(lines)
 
 
@@ -540,4 +540,29 @@ def _preview_text(text: str, *, max_lines: int) -> str:
         if truncated_by_chars:
             details.append("additional text")
         preview = f"{preview}\n\n[Preview only: {', '.join(details)} hidden from the TUI.]"
+    return preview
+
+
+def _preview_tail_text(text: str, *, max_lines: int) -> str:
+    lines = text.splitlines()
+    if not lines:
+        return text[:TOOL_RESULT_PREVIEW_CHARS]
+
+    preview_lines = lines[-max_lines:]
+    preview = "\n".join(preview_lines)
+    hidden_lines = max(0, len(lines) - len(preview_lines))
+
+    truncated_by_chars = len(preview) > TOOL_RESULT_PREVIEW_CHARS
+    if truncated_by_chars:
+        preview = preview[-TOOL_RESULT_PREVIEW_CHARS:].lstrip()
+
+    if hidden_lines or truncated_by_chars:
+        details: list[str] = []
+        if hidden_lines:
+            details.append(
+                f"{hidden_lines} earlier line{'s' if hidden_lines != 1 else ''}"
+            )
+        if truncated_by_chars:
+            details.append("earlier text")
+        preview = f"[Preview only: {', '.join(details)} hidden from the TUI.]\n\n{preview}"
     return preview

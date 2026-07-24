@@ -9217,9 +9217,11 @@ async def test_tui_app_limits_terminal_command_output_preview() -> None:
 
     result_text = app.state.items[-1].tool_result_text
     assert result_text is not None
-    assert "line 119" in result_text
-    assert "line 120" not in result_text
-    assert "10 more lines" in result_text
+    result_lines = result_text.splitlines()
+    assert "line 9" not in result_lines
+    assert "line 10" in result_lines
+    assert "line 129" in result_lines
+    assert "10 earlier lines" in result_text
 
 
 @pytest.mark.anyio
