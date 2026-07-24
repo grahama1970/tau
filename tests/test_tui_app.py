@@ -2585,6 +2585,34 @@ async def test_prompt_ctrl_w_at_line_start_merges_previous_line() -> None:
 
 
 @pytest.mark.anyio
+async def test_prompt_ctrl_a_moves_to_current_line_start() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "first\nsecond third"
+        prompt.move_cursor((1, len("second")))
+
+        await pilot.press("ctrl+a")
+
+        assert prompt.cursor_location == (1, 0)
+
+
+@pytest.mark.anyio
+async def test_prompt_ctrl_e_moves_to_current_line_end() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "first\nsecond third"
+        prompt.move_cursor((1, len("second")))
+
+        await pilot.press("ctrl+e")
+
+        assert prompt.cursor_location == (1, len("second third"))
+
+
+@pytest.mark.anyio
 async def test_tui_app_submits_multiline_prompt_with_enter() -> None:
     session = FakeSession(
         events=[
@@ -5429,6 +5457,7 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "F5: queue follow-up while running" in app.screen.message
         assert "Ctrl+Y: copy last assistant message" in app.screen.message
         assert "F2: open session tree" in app.screen.message
+        assert "Ctrl+A/Ctrl+E: move to line start/end" in app.screen.message
         assert "Ctrl+U: delete to line start" in app.screen.message
         assert "Ctrl+W/Alt+Backspace: delete previous word" in app.screen.message
 

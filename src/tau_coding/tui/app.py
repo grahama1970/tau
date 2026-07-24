@@ -489,6 +489,18 @@ class PromptInput(TextArea):
         self.prune_paste_markers()
         self.move_cursor((row, delete_start))
 
+    def action_move_to_line_start(self) -> None:
+        """Move the prompt cursor to the start of the current line."""
+        row, _column = self.cursor_location
+        self.move_cursor((row, 0))
+
+    def action_move_to_line_end(self) -> None:
+        """Move the prompt cursor to the end of the current line."""
+        row, _column = self.cursor_location
+        lines = self.text.split("\n")
+        line = lines[row] if row < len(lines) else ""
+        self.move_cursor((row, len(line)))
+
     def get_line(self, line_index: int) -> Text:
         """Retrieve one prompt line with shell prefixes highlighted."""
         line = super().get_line(line_index)
@@ -613,6 +625,14 @@ class PromptInput(TextArea):
             event.stop()
             event.prevent_default()
             self.action_delete_word_backward()
+        elif event.key == "ctrl+a":
+            event.stop()
+            event.prevent_default()
+            self.action_move_to_line_start()
+        elif event.key == "ctrl+e":
+            event.stop()
+            event.prevent_default()
+            self.action_move_to_line_end()
         elif event.key == keybindings.completion_next:
             event.stop()
             if self._has_completion_options():
@@ -6405,6 +6425,7 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         "Editing:",
         "- Enter: submit prompt",
         "- Shift+Enter: insert newline",
+        "- Ctrl+A/Ctrl+E: move to line start/end",
         "- Ctrl+U: delete to line start",
         "- Ctrl+W/Alt+Backspace: delete previous word",
         f"- {_key_hint(keybindings.accept_completion)}: accept autocomplete or path completion",
