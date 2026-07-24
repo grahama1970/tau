@@ -32,6 +32,7 @@ class AnthropicConfig:
     api_key: str
     base_url: str = DEFAULT_ANTHROPIC_BASE_URL
     headers: Mapping[str, str] | None = None
+    use_bearer_auth: bool = False
     timeout_seconds: float = DEFAULT_OPENAI_COMPATIBLE_TIMEOUT_SECONDS
     max_retries: int = DEFAULT_OPENAI_COMPATIBLE_MAX_RETRIES
     max_retry_delay_seconds: float = DEFAULT_OPENAI_COMPATIBLE_MAX_RETRY_DELAY_SECONDS

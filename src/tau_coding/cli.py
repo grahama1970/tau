@@ -190,6 +190,7 @@ from tau_coding.provenance import (
     parse_actor_spec,
 )
 from tau_coding.provider_config import (
+    ANTHROPIC_AUTH_TOKEN_ENV,
     DEFAULT_MODEL,
     DEFAULT_PROVIDER_NAME,
     CredentialReader,
@@ -9351,6 +9352,8 @@ def _provider_credential_status(
                 return f"stored:{provider.credential_name}"
         elif credential_reader.get(provider.credential_name):
             return f"stored:{provider.credential_name}"
+    if provider_kind(provider) == "anthropic" and environ.get(ANTHROPIC_AUTH_TOKEN_ENV):
+        return f"env:{ANTHROPIC_AUTH_TOKEN_ENV}"
     if environ.get(provider.api_key_env):
         return f"env:{provider.api_key_env}"
     return "missing"

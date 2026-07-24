@@ -33,6 +33,7 @@ from tau_coding.thinking import (
 )
 
 DEFAULT_PROVIDER_NAME = "openai"
+ANTHROPIC_AUTH_TOKEN_ENV = "ANTHROPIC_AUTH_TOKEN"
 DEFAULT_MODEL = "gpt-5.5"
 
 
@@ -775,7 +776,10 @@ def anthropic_config_from_provider(
     thinking_level: ThinkingLevel | None = None,
 ) -> AnthropicConfig:
     """Build Anthropic runtime config from durable settings."""
-    api_key = _api_key_from_provider(provider, credential_reader=credential_reader)
+    api_key, use_bearer_auth = _anthropic_auth_from_provider(
+        provider,
+        credential_reader=credential_reader,
+    )
     thinking_budget_tokens = _anthropic_thinking_budget_from_provider(
         provider,
         thinking_level=thinking_level,
@@ -784,6 +788,7 @@ def anthropic_config_from_provider(
         api_key=api_key,
         base_url=provider.base_url.rstrip("/"),
         headers=provider.headers,
+        use_bearer_auth=use_bearer_auth,
         timeout_seconds=provider.timeout_seconds,
         max_retries=provider.max_retries,
         max_retry_delay_seconds=provider.max_retry_delay_seconds,
@@ -813,6 +818,8 @@ def provider_has_usable_credentials(
                 return True
         elif credential_reader.get(provider.credential_name):
             return True
+    if isinstance(provider, AnthropicProviderConfig) and environ.get(ANTHROPIC_AUTH_TOKEN_ENV):
+        return True
     return bool(environ.get(provider.api_key_env))
 
 
@@ -982,6 +989,30 @@ def _api_key_from_provider(
         return api_key
     credential_hint = f" or run /login {provider.name}" if provider.credential_name else ""
     raise RuntimeError(f"Missing provider API key. Set {provider.api_key_env}{credential_hint}.")
+
+
+def _anthropic_auth_from_provider(
+    provider: AnthropicProviderConfig,
+    *,
+    credential_reader: CredentialReader | None,
+) -> tuple[str, bool]:
+    if provider.credential_name and credential_reader is not None:
+        credential = credential_reader.get(provider.credential_name)
+        if credential:
+            return credential, False
+
+    auth_token = environ.get(ANTHROPIC_AUTH_TOKEN_ENV)
+    if auth_token:
+        return auth_token, True
+
+    api_key = environ.get(provider.api_key_env)
+    if api_key:
+        return api_key, False
+    credential_hint = f" or run /login {provider.name}" if provider.credential_name else ""
+    raise RuntimeError(
+        "Missing provider API key. "
+        f"Set {ANTHROPIC_AUTH_TOKEN_ENV} or {provider.api_key_env}{credential_hint}."
+    )
 
 
 def _validate_provider_numbers(
