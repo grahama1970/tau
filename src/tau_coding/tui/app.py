@@ -207,6 +207,8 @@ class CompletionActionTarget(Protocol):
 
     def action_completion_previous(self) -> None: ...
 
+    def action_refresh_completions_for_cursor(self) -> None: ...
+
     def action_open_command_palette(self) -> None: ...
 
     def action_open_session_picker(self) -> None: ...
@@ -980,6 +982,10 @@ class PromptInput(TextArea):
         before = text[:bounded]
         self.move_cursor((before.count("\n"), len(before.rsplit("\n", 1)[-1])))
 
+    def _refresh_completions_after_cursor_move(self) -> None:
+        if self._has_completion_options():
+            self._completion_target().action_refresh_completions_for_cursor()
+
     def action_accept_completion(self) -> None:
         """Accept the selected app-level completion."""
         self._completion_target().action_accept_completion()
@@ -1017,10 +1023,12 @@ class PromptInput(TextArea):
             return
         if row <= 0 and column > 0:
             self.move_cursor((0, 0))
+            self._refresh_completions_after_cursor_move()
             return
         result = super().action_cursor_up()
         if isawaitable(result):
             self.run_worker(result)
+        self._refresh_completions_after_cursor_move()
 
     def action_cursor_down(self) -> None:
         """Move down or restore the live draft after prompt history browsing."""
@@ -1038,6 +1046,21 @@ class PromptInput(TextArea):
         result = super().action_cursor_down()
         if isawaitable(result):
             self.run_worker(result)
+        self._refresh_completions_after_cursor_move()
+
+    def action_cursor_left(self) -> None:
+        """Move left and refresh any open prompt completion context."""
+        result = super().action_cursor_left()
+        if isawaitable(result):
+            self.run_worker(result)
+        self._refresh_completions_after_cursor_move()
+
+    def action_cursor_right(self) -> None:
+        """Move right and refresh any open prompt completion context."""
+        result = super().action_cursor_right()
+        if isawaitable(result):
+            self.run_worker(result)
+        self._refresh_completions_after_cursor_move()
 
     def _navigate_prompt_history(self, direction: Literal[-1, 1]) -> None:
         next_index = self._prompt_history_index - direction
@@ -1355,6 +1378,7 @@ class PromptInput(TextArea):
         self._last_yank_range = None
         row, _column = self.cursor_location
         self.move_cursor((row, 0))
+        self._refresh_completions_after_cursor_move()
 
     def action_move_to_line_end(self) -> None:
         """Move the prompt cursor to the end of the current line."""
@@ -1364,6 +1388,7 @@ class PromptInput(TextArea):
         lines = self.text.split("\n")
         line = lines[row] if row < len(lines) else ""
         self.move_cursor((row, len(line)))
+        self._refresh_completions_after_cursor_move()
 
     def action_move_word_backward(self) -> None:
         """Move the prompt cursor back by one Pi-style word boundary."""
@@ -1376,8 +1401,10 @@ class PromptInput(TextArea):
         if column <= 0:
             if row > 0:
                 self.move_cursor((row - 1, len(lines[row - 1])))
+                self._refresh_completions_after_cursor_move()
             return
         self.move_cursor((row, _find_word_delete_start(lines[row], column)))
+        self._refresh_completions_after_cursor_move()
 
     def action_move_word_forward(self) -> None:
         """Move the prompt cursor forward by one Pi-style word boundary."""
@@ -1390,8 +1417,10 @@ class PromptInput(TextArea):
         if column >= len(lines[row]):
             if row < len(lines) - 1:
                 self.move_cursor((row + 1, 0))
+                self._refresh_completions_after_cursor_move()
             return
         self.move_cursor((row, _find_word_delete_end(lines[row], column)))
+        self._refresh_completions_after_cursor_move()
 
     def action_start_jump_forward(self) -> None:
         """Arm Pi-style forward character jump mode."""
@@ -1420,6 +1449,7 @@ class PromptInput(TextArea):
                 match_column = line.find(character, search_from)
                 if match_column != -1:
                     self.move_cursor((line_index, match_column))
+                    self._refresh_completions_after_cursor_move()
                     return
             return
         for line_index in range(row, -1, -1):
@@ -1428,6 +1458,7 @@ class PromptInput(TextArea):
             match_column = line.rfind(character, 0, search_to)
             if match_column != -1:
                 self.move_cursor((line_index, match_column))
+                self._refresh_completions_after_cursor_move()
                 return
 
     def action_yank_kill_ring(self) -> None:
@@ -5411,7 +5442,15 @@ class TauTuiApp(App[None]):
                     pty_input_received_line(self._pty_proof_run_id, event.text_area.text)
                 )
         self._sync_prompt_shell_mode(event.text_area.text)
-        self._completion_state = self._build_completion_state(event.text_area.text)
+        cursor_position = (
+            event.text_area.cursor_position
+            if isinstance(event.text_area, PromptInput)
+            else len(event.text_area.text)
+        )
+        self._completion_state = self._build_completion_state(
+            event.text_area.text,
+            cursor_position=cursor_position,
+        )
         self._refresh_completions()
 
     async def action_submit_prompt(self) -> None:
@@ -7300,7 +7339,12 @@ class TauTuiApp(App[None]):
         show_sidebar = width >= SIDEBAR_MIN_WIDTH and height >= SIDEBAR_MIN_HEIGHT
         self.set_class(not show_sidebar, "-hide-sidebar")
 
-    def _build_completion_state(self, text: str) -> CompletionState:
+    def _build_completion_state(
+        self,
+        text: str,
+        *,
+        cursor_position: int | None = None,
+    ) -> CompletionState:
         registry = _session_command_registry(self.session)
         return build_completion_state(
             text,
@@ -7314,7 +7358,16 @@ class TauTuiApp(App[None]):
             session_options=_session_options(self.session),
             cwd=self.session.cwd,
             enable_skill_commands=self.tui_settings.enable_skill_commands,
+            cursor_position=cursor_position,
         )
+
+    def action_refresh_completions_for_cursor(self) -> None:
+        prompt = self.query_one("#prompt", PromptInput)
+        self._completion_state = self._build_completion_state(
+            prompt.text,
+            cursor_position=prompt.cursor_position,
+        )
+        self._refresh_completions()
 
     def _refresh_footer_bindings(self) -> None:
         prompt = self.query_one("#prompt", PromptInput)

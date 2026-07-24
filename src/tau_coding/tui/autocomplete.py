@@ -100,24 +100,29 @@ def build_completion_state(
     session_options: Sequence[CompletionOption] = (),
     cwd: Path | None = None,
     enable_skill_commands: bool = True,
+    cursor_position: int | None = None,
 ) -> CompletionState:
     """Build autocomplete suggestions for the current prompt text."""
-    if not text.startswith("/") or text.startswith("//"):
+    cursor = len(text) if cursor_position is None else max(0, min(cursor_position, len(text)))
+    text_before_cursor = text[:cursor]
+    if not text_before_cursor.startswith("/") or text_before_cursor.startswith("//"):
         if cwd is not None:
-            shell_completions = _shell_path_completions(text=text, cwd=cwd)
+            shell_completions = _shell_path_completions(text=text_before_cursor, cwd=cwd)
             if shell_completions is not None:
                 return CompletionState(shell_completions)
-            if _active_file_reference_token(text) is not None:
-                return CompletionState(_file_reference_completions(text=text, cwd=cwd))
-            path_completions = _path_completions(text=text, cwd=cwd)
+            if _active_file_reference_token(text_before_cursor) is not None:
+                return CompletionState(
+                    _file_reference_completions(text=text_before_cursor, cwd=cwd)
+                )
+            path_completions = _path_completions(text=text_before_cursor, cwd=cwd)
             if path_completions is not None:
                 return CompletionState(path_completions)
-            return CompletionState(_file_reference_completions(text=text, cwd=cwd))
+            return CompletionState(_file_reference_completions(text=text_before_cursor, cwd=cwd))
         return CompletionState()
 
-    token_end = _first_token_end(text)
-    token = text[:token_end]
-    has_argument_text = token_end < len(text)
+    token_end = _first_token_end(text_before_cursor)
+    token = text_before_cursor[:token_end]
+    has_argument_text = token_end < len(text_before_cursor)
     if token.startswith("/skill:"):
         if not enable_skill_commands:
             return CompletionState()
@@ -129,7 +134,7 @@ def build_completion_state(
         return CompletionState()
 
     argument_completions = _command_argument_completions(
-        text=text,
+        text=text_before_cursor,
         token_end=token_end,
         model_names=model_names,
         provider_names=provider_names,
