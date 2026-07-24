@@ -2212,13 +2212,6 @@ class SettingsPickerItem:
 class SettingsPickerScreen(ModalScreen[None]):
     """Modal picker for durable TUI settings."""
 
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel", priority=True),
-        Binding("up", "cursor_up", "Up", show=False, priority=True),
-        Binding("down", "cursor_down", "Down", show=False, priority=True),
-        Binding("enter", "select_cursor", "Change", show=False, priority=True),
-    ]
-
     def __init__(
         self,
         settings: TuiSettings,
@@ -2374,13 +2367,6 @@ class SettingsPickerScreen(ModalScreen[None]):
 
 class TrustPickerScreen(ModalScreen[ProjectTrustOption | None]):
     """Modal picker for project trust decisions."""
-
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel", priority=True),
-        Binding("up", "cursor_up", "Up", show=False, priority=True),
-        Binding("down", "cursor_down", "Down", show=False, priority=True),
-        Binding("enter", "select_cursor", "Save", show=False, priority=True),
-    ]
 
     def __init__(
         self,
@@ -3746,13 +3732,6 @@ class LoginProviderPickerScreen(ModalScreen[str | None]):
 class LoginMethodPickerScreen(ModalScreen[str | None]):
     """Login method picker for the TUI login flow."""
 
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel", priority=True),
-        Binding("up", "cursor_up", "Up", show=False, priority=True),
-        Binding("down", "cursor_down", "Down", show=False, priority=True),
-        Binding("enter", "select_cursor", "Select", show=False, priority=True),
-    ]
-
     def __init__(
         self,
         *,
@@ -3880,13 +3859,6 @@ class LoginMethodListView(ListView):
 
 class ThemePickerScreen(ModalScreen[str | None]):
     """Theme picker for the built-in TUI themes."""
-
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel", priority=True),
-        Binding("up", "cursor_up", "Up", show=False, priority=True),
-        Binding("down", "cursor_down", "Down", show=False, priority=True),
-        Binding("enter", "select_cursor", "Select", show=False, priority=True),
-    ]
 
     def __init__(
         self,
