@@ -3922,21 +3922,6 @@ class ThemePickerScreen(ModalScreen[str | None]):
 class ModelPickerSearchInput(Input):
     """Search input that keeps model-picker control keys local to the picker."""
 
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel", show=False, priority=True),
-        Binding("tab", "toggle_mode", "Mode", show=False, priority=True),
-        Binding("ctrl+i", "toggle_mode", "Mode", show=False, priority=True),
-        Binding("ctrl+a", "enable_all_scoped", "Enable all", show=False, priority=True),
-        Binding("ctrl+x", "clear_scoped", "Clear", show=False, priority=True),
-        Binding("ctrl+s", "save_scoped", "Save", show=False, priority=True),
-        Binding("ctrl+p", "toggle_scoped_provider", "Provider", show=False, priority=True),
-        Binding("alt+up", "reorder_scoped_up", "Move up", show=False, priority=True),
-        Binding("alt+down", "reorder_scoped_down", "Move down", show=False, priority=True),
-        Binding("ctrl+c", "clear_or_cancel", "Clear", show=False, priority=True),
-        Binding("up", "cursor_up", "Up", show=False, priority=True),
-        Binding("down", "cursor_down", "Down", show=False, priority=True),
-    ]
-
     def _picker(self) -> ModelPickerScreen:
         return cast(ModelPickerScreen, self.screen)
 
@@ -4003,7 +3988,7 @@ class ModelPickerSearchInput(Input):
             event.stop()
             event.prevent_default()
             self.action_reorder_scoped_down()
-        elif event.key == "ctrl+c":
+        elif _matches_configured_or_default_key(event.key, keybindings.copy_message, "ctrl+c"):
             event.stop()
             event.prevent_default()
             self.action_clear_or_cancel()
@@ -4059,24 +4044,6 @@ class ModelPickerSearchInput(Input):
 
 class ModelPickerScreen(ModalScreen[ModelChoice | None]):
     """Model picker for the active TUI provider."""
-
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel"),
-        Binding("tab", "toggle_mode", "Mode", show=False, priority=True),
-        Binding("ctrl+i", "toggle_mode", "Mode", show=False, priority=True),
-        Binding("up", "cursor_up", "Up", show=False),
-        Binding("down", "cursor_down", "Down", show=False),
-        Binding("pageup", "page_up", "Page up", show=False),
-        Binding("pagedown", "page_down", "Page down", show=False),
-        Binding("enter", "accept_model", "Select", show=False),
-        Binding("ctrl+a", "enable_all_scoped", "Enable all", show=False),
-        Binding("ctrl+x", "clear_scoped", "Clear", show=False),
-        Binding("ctrl+s", "save_scoped", "Save", show=False),
-        Binding("ctrl+p", "toggle_scoped_provider", "Provider", show=False),
-        Binding("alt+up", "reorder_scoped_up", "Move up", show=False),
-        Binding("alt+down", "reorder_scoped_down", "Move down", show=False),
-        Binding("ctrl+c", "clear_search_or_cancel", "Clear", show=False),
-    ]
 
     def __init__(
         self,
@@ -4245,7 +4212,11 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         ):
             event.stop()
             self.action_reorder_scoped_down()
-        elif event.key == "ctrl+c":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.copy_message,
+            "ctrl+c",
+        ):
             event.stop()
             self.action_clear_search_or_cancel()
         elif event.key in {"tab", "ctrl+i"}:
@@ -4458,6 +4429,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         scope_count = len(self.scoped_choices)
         tabs = self.query_one("#model-picker-tabs", Static)
         if self.picker_kind == "scoped":
+            select_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
             enable_key = _key_hint_with_default(self.keybindings.models_enable_all, "ctrl+a")
             clear_key = _key_hint_with_default(self.keybindings.models_clear_all, "ctrl+x")
             provider_key = _key_hint_with_default(
@@ -4470,32 +4442,36 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
                 "alt+down",
             )
             save_key = _key_hint_with_default(self.keybindings.models_save, "ctrl+s")
-            tabs.update("Scoped models setup — Enter toggles membership; active model is unchanged")
+            tabs.update(
+                f"Scoped models setup - {select_key} toggles membership; active model is unchanged"
+            )
             help_text = (
                 f"No matching models - {enable_key}/{clear_key} apply to matching models"
                 if not self.visible_choices
                 else (
-                    f"Enter toggles - {enable_key} all - {clear_key} clear - "
+                    f"{select_key} toggles - {enable_key} all - {clear_key} clear - "
                     f"{provider_key} provider - {reorder_up_key}/{reorder_down_key} reorder - "
                     f"{save_key} save - {scope_count} scoped"
                 )
             )
         elif self.mode == "all":
+            select_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
             tabs.update("Tabs: ● All models  ○ Scoped models")
             help_text = (
                 "all models: no matching models - Tab switches to scoped models"
                 if not self.visible_choices
                 else (
-                    "All models - Enter selects active model - Tab switches tabs - "
+                    f"All models - {select_key} selects active model - Tab switches tabs - "
                     f"{scope_count} scoped"
                 )
             )
         else:
+            select_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
             tabs.update("Tabs: ○ All models  ● Scoped models")
             help_text = (
                 "scoped models: no matching models - Tab switches to all models"
                 if not self.visible_choices
-                else "Scoped models - Enter selects active model - Tab switches tabs"
+                else f"Scoped models - {select_key} selects active model - Tab switches tabs"
             )
         self.query_one("#model-picker-help", Static).update(help_text)
 
