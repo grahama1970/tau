@@ -981,10 +981,20 @@ class PromptInput(TextArea):
         """Copy the last assistant message."""
         self._completion_target().action_copy_last_message()
 
-    def action_clear_prompt(self) -> None:
+    async def action_clear_prompt(self) -> None:
         """Clear the current prompt."""
         if self.selected_text:
             return
+        app = self._completion_target()
+        now = monotonic()
+        last_clear_at = getattr(app, "_last_clear_prompt_at", None)
+        if last_clear_at is not None and now - last_clear_at <= 0.5:
+            app._last_clear_prompt_at = None
+            result = app.action_quit()
+            if isawaitable(result):
+                await result
+            return
+        app._last_clear_prompt_at = now
         if self.text:
             self._push_undo_snapshot()
             self.text = ""
@@ -1456,10 +1466,7 @@ class PromptInput(TextArea):
                 return
             event.stop()
             event.prevent_default()
-            if self.text:
-                self._push_undo_snapshot()
-                self.text = ""
-                self.move_cursor((0, 0))
+            await self.action_clear_prompt()
         elif _matches_configured_or_default_key(
             event.key,
             keybindings.editor_delete_to_line_start,
@@ -4905,6 +4912,7 @@ class TauTuiApp(App[None]):
         self._app_has_focus = True
         self._active_notification_keys: set[tuple[str, str]] = set()
         self._supports_pyperclip: bool | None = None
+        self._last_clear_prompt_at: float | None = None
         self._last_empty_escape_at: float | None = None
         self._pty_proof_enabled = os.environ.get("TAU_TUI_PTY_PROOF") == "1"
         self._pty_proof_run_id = os.environ.get("TAU_TUI_PTY_RUN_ID", "tau-real-tui")
@@ -8500,7 +8508,7 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         f"- {_key_hint(keybindings.external_editor)}: edit prompt in external editor",
         f"- {_key_hint(keybindings.paste_clipboard)}: paste clipboard text or image",
         "- drop files: attach paths to the prompt",
-        f"- {_key_hint(keybindings.copy_message)}: clear input",
+        f"- {_key_hint(keybindings.copy_message)}: clear input; press twice to quit",
         "",
         "Agent:",
         f"- {_key_hint(keybindings.cancel)}: cancel autocomplete or active run",

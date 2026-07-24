@@ -9944,6 +9944,45 @@ async def test_tui_prompt_ctrl_c_clears_text() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_prompt_ctrl_c_twice_quits_after_clearing_text() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.focus()
+        prompt.text = "discard this prompt"
+        await pilot.pause()
+
+        await pilot.press("ctrl+c")
+        await pilot.pause()
+        assert prompt.text == ""
+        assert app._exit is False
+
+        await pilot.press("ctrl+c")
+        await pilot.pause()
+
+        assert app._exit is True
+
+
+@pytest.mark.anyio
+async def test_tui_prompt_ctrl_c_twice_quits_from_empty_prompt() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.focus()
+
+        await pilot.press("ctrl+c")
+        await pilot.pause()
+        assert app._exit is False
+
+        await pilot.press("ctrl+c")
+        await pilot.pause()
+
+        assert app._exit is True
+
+
+@pytest.mark.anyio
 async def test_tui_app_cycles_thinking_from_keybinding() -> None:
     session = FakeSession()
     app = TauTuiApp(session)
