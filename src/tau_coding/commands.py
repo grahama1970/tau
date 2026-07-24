@@ -118,6 +118,7 @@ class CommandResult:
     tree_picker_requested: bool = False
     fork_picker_requested: bool = False
     login_picker_requested: bool = False
+    login_picker_query: str | None = None
     login_provider: str | None = None
     logout_picker_requested: bool = False
     logout_provider: str | None = None
@@ -1094,12 +1095,10 @@ def _login_command(context: CommandContext) -> CommandResult:
     if provider_name:
         entry = builtin_provider_entry(provider_name)
         if entry is None:
-            providers = ", ".join(entry.name for entry in BUILTIN_PROVIDER_CATALOG)
             return CommandResult(
                 handled=True,
-                message=(
-                    f"Unknown login provider: {provider_name}\nAvailable providers: {providers}"
-                ),
+                login_picker_requested=True,
+                login_picker_query=provider_name,
             )
         return CommandResult(handled=True, login_provider=entry.name)
 

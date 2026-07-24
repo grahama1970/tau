@@ -3509,12 +3509,15 @@ class LoginProviderPickerScreen(ModalScreen[str | None]):
         *,
         theme: TuiTheme,
         title: str = "Login",
+        initial_search: str = "",
         keybindings: TuiKeybindings | None = None,
     ) -> None:
         super().__init__()
         self.providers = tuple(providers)
+        self.visible_providers = _filter_login_providers(self.providers, initial_search)
         self.theme = theme
         self.title_text = title
+        self.initial_search = initial_search
         self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
@@ -3524,18 +3527,22 @@ class LoginProviderPickerScreen(ModalScreen[str | None]):
             yield ListView(
                 *[
                     ListItem(Label(_login_provider_label(provider), markup=False))
-                    for provider in self.providers
+                    for provider in self.visible_providers
                 ],
                 id="login-provider-list",
             )
             select_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
             cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
-            yield Static(f"{select_key} selects - {cancel_key} closes", id="login-provider-help")
+            prefix = f'filter "{self.initial_search}" - ' if self.initial_search else ""
+            yield Static(
+                f"{prefix}{select_key} selects - {cancel_key} closes",
+                id="login-provider-help",
+            )
 
     def on_mount(self) -> None:
         """Focus the provider list."""
         provider_list = self.query_one("#login-provider-list", ListView)
-        provider_list.index = 0
+        provider_list.index = 0 if self.visible_providers else None
         provider_list.focus()
 
     def on_key(self, event: Key) -> None:
@@ -3569,7 +3576,7 @@ class LoginProviderPickerScreen(ModalScreen[str | None]):
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected provider name."""
-        self.dismiss(self.providers[event.index].name)
+        self.dismiss(self.visible_providers[event.index].name)
 
     def action_cursor_up(self) -> None:
         """Move to the previous provider."""
@@ -5274,7 +5281,7 @@ class TauTuiApp(App[None]):
             if command.fork_picker_requested:
                 await self._open_fork_picker()
             if command.login_picker_requested:
-                self._open_login_picker()
+                self._open_login_picker(initial_search=command.login_picker_query or "")
             if command.login_provider is not None:
                 self._open_login(command.login_provider)
             if command.logout_picker_requested:
@@ -6467,7 +6474,13 @@ class TauTuiApp(App[None]):
         self._notify(f"Inserted run command for {workflow.workflow_id}. Press Enter to launch.")
         self._refresh()
 
-    def _open_login_picker(self) -> None:
+    def _open_login_picker(self, *, initial_search: str = "") -> None:
+        if initial_search:
+            self._open_login_provider_picker(
+                BUILTIN_PROVIDER_CATALOG,
+                initial_search=initial_search,
+            )
+            return
         self.push_screen(
             LoginMethodPickerScreen(
                 theme=self.tui_settings.resolved_theme,
@@ -6489,10 +6502,28 @@ class TauTuiApp(App[None]):
         if not providers:
             self._notify("No login providers are available for that method.", severity="warning")
             return
+        self._open_login_provider_picker(providers)
+
+    def _open_login_provider_picker(
+        self,
+        providers: Sequence[ProviderCatalogEntry],
+        *,
+        initial_search: str = "",
+        title: str = "Login",
+    ) -> None:
+        visible_providers = _filter_login_providers(providers, initial_search)
+        if not visible_providers:
+            self._notify(
+                f"No login providers match: {initial_search}",
+                severity="warning",
+            )
+            return
         self.push_screen(
             LoginProviderPickerScreen(
                 providers,
                 theme=self.tui_settings.resolved_theme,
+                title=title,
+                initial_search=initial_search,
                 keybindings=self.tui_settings.keybindings,
             ),
             callback=self._handle_login_provider_result,
@@ -7779,6 +7810,20 @@ def _named_session_title(title: str | None) -> str | None:
 
 def _login_provider_label(provider: ProviderCatalogEntry) -> str:
     return f"{provider.display_name}\n  {provider.name}"
+
+
+def _filter_login_providers(
+    providers: Sequence[ProviderCatalogEntry],
+    query: str,
+) -> tuple[ProviderCatalogEntry, ...]:
+    normalized = query.strip().lower()
+    if not normalized:
+        return tuple(providers)
+    return tuple(
+        provider
+        for provider in providers
+        if normalized in provider.name.lower() or normalized in provider.display_name.lower()
+    )
 
 
 def _subscription_login_providers(
