@@ -7080,6 +7080,37 @@ async def test_tui_scoped_models_picker_bulk_enables_and_clears_models() -> None
 
 
 @pytest.mark.anyio
+async def test_tui_scoped_models_picker_ctrl_s_reports_saved(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+    notifications: list[str] = []
+    monkeypatch.setattr(app, "_notify", lambda message, **_: notifications.append(message))
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/scoped-models"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ModelPickerScreen)
+        await pilot.press("enter")
+        await pilot.pause()
+
+        help_text = str(app.screen.query_one("#model-picker-help", Static).render())
+        assert "Ctrl+S save" in help_text
+
+        await pilot.press("ctrl+s")
+        await pilot.pause()
+
+    assert session.scoped_model_choices == (
+        ModelChoice(provider_name="openai", model="fake-model"),
+    )
+    assert notifications == ["Scoped models saved (1 scoped)."]
+
+
+@pytest.mark.anyio
 async def test_tui_scoped_models_picker_bulk_enable_respects_search_filter() -> None:
     session = FakeSession()
     app = TauTuiApp(session)
