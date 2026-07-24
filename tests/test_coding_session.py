@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import sys
 from collections.abc import AsyncIterator
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -418,6 +419,27 @@ async def test_terminal_command_can_run_without_context(tmp_path: Path) -> None:
     assert result.added_to_context is False
     entries = await storage.read_all()
     assert not any(isinstance(entry, MessageEntry) for entry in entries)
+
+
+@pytest.mark.anyio
+async def test_terminal_command_applies_shell_command_prefix(tmp_path: Path) -> None:
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    config = _config(tmp_path, FakeProvider([]), storage)
+    session = await CodingSession.load(
+        replace(config, shell_command_prefix="export TAU_PREFIXED=from-prefix")
+    )
+
+    result = await session.run_terminal_command("printf \"$TAU_PREFIXED\"", add_to_context=True)
+
+    assert result.ok is True
+    assert result.command == 'printf "$TAU_PREFIXED"'
+    assert result.output == "from-prefix"
+    entries = await storage.read_all()
+    messages = [entry.message for entry in entries if isinstance(entry, MessageEntry)]
+    assert len(messages) == 1
+    assert isinstance(messages[0], UserMessage)
+    assert 'printf "$TAU_PREFIXED"' in messages[0].content
+    assert "export TAU_PREFIXED" not in messages[0].content
 
 
 @pytest.mark.anyio

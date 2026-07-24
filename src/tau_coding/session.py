@@ -221,6 +221,7 @@ class CodingSessionConfig:
     default_project_trust: DefaultProjectTrust = "ask"
     thinking_level: ThinkingLevel = DEFAULT_THINKING_LEVEL
     loop_receipt: LoopReceiptConfig | None = None
+    shell_command_prefix: str | None = None
 
 
 class CodingSession:
@@ -262,6 +263,7 @@ class CodingSession:
         self._auto_compact_token_threshold = config.auto_compact_token_threshold
         self._auto_compact_enabled = config.auto_compact_enabled
         self._thinking_level = _state_thinking_level(state, config.thinking_level)
+        self._shell_command_prefix = config.shell_command_prefix
         self._terminal_signal: SimpleCancellationToken | None = None
         self._owned_providers: list[ClosableModelProvider] = []
         self._diagnostic_logger = AgentCallDiagnosticLogger.from_paths(self._resource_paths.paths)
@@ -623,6 +625,13 @@ class CodingSession:
         self._auto_compact_enabled = enabled
         state = "enabled" if enabled else "disabled"
         return f"Auto-compact {state}."
+
+    def set_shell_command_prefix(self, prefix: str | None) -> str:
+        """Set the shell snippet prepended to future input-bar terminal commands."""
+        self._shell_command_prefix = prefix
+        self._config = replace(self._config, shell_command_prefix=prefix)
+        state = "configured" if prefix else "cleared"
+        return f"Shell command prefix {state}."
 
     @property
     def steering_queue_mode(self) -> QueueMode:
@@ -1054,6 +1063,7 @@ class CodingSession:
                 follow_up_queue_mode=self.follow_up_queue_mode,
                 default_project_trust=self._config.default_project_trust,
                 thinking_level=self._thinking_level,
+                shell_command_prefix=self._shell_command_prefix,
             )
         )
         self._config = replacement._config
@@ -1362,11 +1372,15 @@ class CodingSession:
         if not normalized_command:
             raise ValueError("Terminal command cannot be empty")
 
+        shell_command = _apply_shell_command_prefix(
+            normalized_command,
+            self._shell_command_prefix,
+        )
         bash_tool = create_bash_tool(cwd=self.cwd)
         signal = SimpleCancellationToken()
         self._terminal_signal = signal
         try:
-            result = await bash_tool.execute({"command": normalized_command}, signal=signal)
+            result = await bash_tool.execute({"command": shell_command}, signal=signal)
         finally:
             if self._terminal_signal is signal:
                 self._terminal_signal = None
@@ -2255,6 +2269,13 @@ def parse_terminal_command(text: str) -> TerminalCommandRequest | None:
             return None
         return TerminalCommandRequest(command=command, add_to_context=True)
     return None
+
+
+def _apply_shell_command_prefix(command: str, prefix: str | None) -> str:
+    stripped_prefix = prefix.strip() if prefix is not None else ""
+    if not stripped_prefix:
+        return command
+    return f"{stripped_prefix}\n{command}"
 
 
 def _missing_required_changed_globs(

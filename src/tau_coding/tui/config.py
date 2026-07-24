@@ -463,6 +463,7 @@ class TuiSettings:
     show_terminal_progress: bool = False
     quiet_startup: bool = False
     external_editor: str | None = None
+    shell_command_prefix: str | None = None
 
     def to_json(self) -> dict[str, Any]:
         """Serialize these settings to JSON-compatible data."""
@@ -485,6 +486,7 @@ class TuiSettings:
             "show_terminal_progress": self.show_terminal_progress,
             "quiet_startup": self.quiet_startup,
             "external_editor": self.external_editor,
+            "shell_command_prefix": self.shell_command_prefix,
             "follow_up_mode": self.follow_up_mode,
             "steering_mode": self.steering_mode,
             "theme": self.theme,
@@ -552,6 +554,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "quiet_startup",
         "showImages",
         "show_images",
+        "shellCommandPrefix",
+        "shell_command_prefix",
         "showTerminalProgress",
         "showHardwareCursor",
         "show_hardware_cursor",
@@ -678,6 +682,10 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         external_editor=_optional_string_setting(
             data.get("external_editor", data.get("externalEditor")),
             "external_editor",
+        ),
+        shell_command_prefix=_optional_string_setting(
+            data.get("shell_command_prefix", data.get("shellCommandPrefix")),
+            "shell_command_prefix",
         ),
         thinking_level=_thinking_level(
             data.get("thinking_level", data.get("thinkingLevel", DEFAULT_THINKING_LEVEL))

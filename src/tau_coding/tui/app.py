@@ -5287,6 +5287,9 @@ class TauTuiApp(App[None]):
         set_auto_compact = getattr(self.session, "set_auto_compact_enabled", None)
         if callable(set_auto_compact):
             set_auto_compact(settings.auto_compact)
+        set_shell_command_prefix = getattr(self.session, "set_shell_command_prefix", None)
+        if callable(set_shell_command_prefix):
+            set_shell_command_prefix(settings.shell_command_prefix)
         set_steering_mode = getattr(self.session, "set_steering_queue_mode", None)
         if callable(set_steering_mode):
             set_steering_mode(_agent_queue_mode_from_tui(settings.steering_mode))
@@ -8897,6 +8900,7 @@ async def run_tui_app(
                 follow_up_queue_mode=_agent_queue_mode_from_tui(tui_settings.follow_up_mode),
                 default_project_trust=tui_settings.default_project_trust,
                 thinking_level=tui_settings.thinking_level,
+                shell_command_prefix=tui_settings.shell_command_prefix,
             )
         )
         app = TauTuiApp(
