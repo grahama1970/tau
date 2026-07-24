@@ -2765,6 +2765,7 @@ class ModelPickerSearchInput(Input):
 
     def on_key(self, event: Key) -> None:
         """Route picker control keys before the input edits its text."""
+        keybindings = self._picker().keybindings
         if event.key == "up":
             event.stop()
             event.prevent_default()
@@ -2777,27 +2778,51 @@ class ModelPickerSearchInput(Input):
             event.stop()
             event.prevent_default()
             self.action_toggle_mode()
-        elif event.key == "ctrl+a":
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.models_enable_all,
+            "ctrl+a",
+        ):
             event.stop()
             event.prevent_default()
             self.action_enable_all_scoped()
-        elif event.key == "ctrl+x":
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.models_clear_all,
+            "ctrl+x",
+        ):
             event.stop()
             event.prevent_default()
             self.action_clear_scoped()
-        elif event.key == "ctrl+s":
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.models_save,
+            "ctrl+s",
+        ):
             event.stop()
             event.prevent_default()
             self.action_save_scoped()
-        elif event.key == "ctrl+p":
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.models_toggle_provider,
+            "ctrl+p",
+        ):
             event.stop()
             event.prevent_default()
             self.action_toggle_scoped_provider()
-        elif event.key == "alt+up":
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.models_reorder_up,
+            "alt+up",
+        ):
             event.stop()
             event.prevent_default()
             self.action_reorder_scoped_up()
-        elif event.key == "alt+down":
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.models_reorder_down,
+            "alt+down",
+        ):
             event.stop()
             event.prevent_default()
             self.action_reorder_scoped_down()
@@ -2886,6 +2911,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         theme: TuiTheme,
         on_toggle_scoped: Callable[[ModelChoice], Sequence[ModelChoice]] | None = None,
         on_set_scoped: Callable[[Sequence[ModelChoice]], Sequence[ModelChoice]] | None = None,
+        keybindings: TuiKeybindings | None = None,
         picker_kind: Literal["model", "scoped"] = "model",
     ) -> None:
         super().__init__()
@@ -2897,6 +2923,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         self.theme = theme
         self.on_toggle_scoped = on_toggle_scoped
         self.on_set_scoped = on_set_scoped
+        self.keybindings = keybindings or TuiKeybindings()
         self.picker_kind = picker_kind
         self.mode: Literal["all", "scoped"] = (
             "scoped" if picker_kind == "model" and self.scoped_choices else "all"
@@ -2982,22 +3009,46 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         elif event.key == "enter":
             event.stop()
             self.action_accept_model()
-        elif event.key == "ctrl+a":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.models_enable_all,
+            "ctrl+a",
+        ):
             event.stop()
             self.action_enable_all_scoped()
-        elif event.key == "ctrl+x":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.models_clear_all,
+            "ctrl+x",
+        ):
             event.stop()
             self.action_clear_scoped()
-        elif event.key == "ctrl+s":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.models_save,
+            "ctrl+s",
+        ):
             event.stop()
             self.action_save_scoped()
-        elif event.key == "ctrl+p":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.models_toggle_provider,
+            "ctrl+p",
+        ):
             event.stop()
             self.action_toggle_scoped_provider()
-        elif event.key == "alt+up":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.models_reorder_up,
+            "alt+up",
+        ):
             event.stop()
             self.action_reorder_scoped_up()
-        elif event.key == "alt+down":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.models_reorder_down,
+            "alt+down",
+        ):
             event.stop()
             self.action_reorder_scoped_down()
         elif event.key == "ctrl+c":
@@ -3206,13 +3257,26 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         scope_count = len(self.scoped_choices)
         tabs = self.query_one("#model-picker-tabs", Static)
         if self.picker_kind == "scoped":
+            enable_key = _key_hint_with_default(self.keybindings.models_enable_all, "ctrl+a")
+            clear_key = _key_hint_with_default(self.keybindings.models_clear_all, "ctrl+x")
+            provider_key = _key_hint_with_default(
+                self.keybindings.models_toggle_provider,
+                "ctrl+p",
+            )
+            reorder_up_key = _key_hint_with_default(self.keybindings.models_reorder_up, "alt+up")
+            reorder_down_key = _key_hint_with_default(
+                self.keybindings.models_reorder_down,
+                "alt+down",
+            )
+            save_key = _key_hint_with_default(self.keybindings.models_save, "ctrl+s")
             tabs.update("Scoped models setup — Enter toggles membership; active model is unchanged")
             help_text = (
-                "No matching models - Ctrl+A/Ctrl+X apply to matching models"
+                f"No matching models - {enable_key}/{clear_key} apply to matching models"
                 if not self.visible_choices
                 else (
-                    "Enter toggles - Ctrl+A all - Ctrl+X clear - "
-                    f"Ctrl+P provider - Alt+Up/Down reorder - Ctrl+S save - {scope_count} scoped"
+                    f"Enter toggles - {enable_key} all - {clear_key} clear - "
+                    f"{provider_key} provider - {reorder_up_key}/{reorder_down_key} reorder - "
+                    f"{save_key} save - {scope_count} scoped"
                 )
             )
         elif self.mode == "all":
@@ -5193,6 +5257,7 @@ class TauTuiApp(App[None]):
                 provider_name=self.session.provider_name,
                 theme=self.tui_settings.resolved_theme,
                 on_toggle_scoped=None,
+                keybindings=self.tui_settings.keybindings,
                 picker_kind="model",
             ),
             callback=self._handle_model_picker_result,
@@ -5215,6 +5280,7 @@ class TauTuiApp(App[None]):
                 theme=self.tui_settings.resolved_theme,
                 on_toggle_scoped=self._toggle_scoped_model,
                 on_set_scoped=self._set_scoped_models,
+                keybindings=self.tui_settings.keybindings,
                 picker_kind="scoped",
             ),
             callback=self._handle_scoped_models_picker_result,

@@ -138,6 +138,12 @@ def test_tui_settings_reads_pi_keybinding_aliases() -> None:
                 "app.session.rename": "shift+r",
                 "app.session.delete": "shift+d",
                 "app.session.deleteNoninvasive": "ctrl+shift+d",
+                "app.models.save": "ctrl+shift+s",
+                "app.models.enableAll": "shift+a",
+                "app.models.clearAll": "shift+x",
+                "app.models.toggleProvider": "shift+p",
+                "app.models.reorderUp": "shift+up",
+                "app.models.reorderDown": "shift+down",
                 "app.tree.foldOrUp": ["ctrl+left", "alt+left"],
                 "app.tree.filter.userOnly": "ctrl+u",
                 "app.tree.filter.cycleForward": "ctrl+o",
@@ -163,6 +169,12 @@ def test_tui_settings_reads_pi_keybinding_aliases() -> None:
     assert settings.keybindings.session_rename == "shift+r"
     assert settings.keybindings.session_delete == "shift+d"
     assert settings.keybindings.session_delete_noninvasive == "ctrl+shift+d"
+    assert settings.keybindings.models_save == "ctrl+shift+s"
+    assert settings.keybindings.models_enable_all == "shift+a"
+    assert settings.keybindings.models_clear_all == "shift+x"
+    assert settings.keybindings.models_toggle_provider == "shift+p"
+    assert settings.keybindings.models_reorder_up == "shift+up"
+    assert settings.keybindings.models_reorder_down == "shift+down"
     assert settings.keybindings.tree_fold_or_up == "ctrl+left,alt+left"
     assert settings.keybindings.tree_filter_user_only == "ctrl+u"
     assert settings.keybindings.tree_filter_cycle == "ctrl+o"
@@ -242,6 +254,20 @@ def test_tui_keybindings_allow_scoped_session_key_to_match_global_key() -> None:
 
     assert settings.keybindings.quit == "ctrl+d"
     assert settings.keybindings.session_delete == "ctrl+d"
+
+
+def test_tui_keybindings_allow_scoped_models_key_to_match_global_key() -> None:
+    settings = tui_settings_from_json(
+        {
+            "keybindings": {
+                "copy_last_message": "ctrl+x",
+                "app.models.clearAll": "ctrl+x",
+            }
+        }
+    )
+
+    assert settings.keybindings.copy_last_message == "ctrl+x"
+    assert settings.keybindings.models_clear_all == "ctrl+x"
 
 
 def test_tui_keybindings_reject_duplicate_keys() -> None:

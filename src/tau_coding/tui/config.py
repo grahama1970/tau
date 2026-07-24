@@ -41,6 +41,12 @@ class TuiKeybindings:
     model_cycle: str = "ctrl+p"
     model_cycle_previous: str = "shift+ctrl+p"
     model_picker: str = "ctrl+l"
+    models_save: str = ""
+    models_enable_all: str = ""
+    models_clear_all: str = ""
+    models_toggle_provider: str = ""
+    models_reorder_up: str = ""
+    models_reorder_down: str = ""
     toggle_thinking: str = "ctrl+t"
     toggle_tool_results: str = "ctrl+o"
     copy_message: str = "ctrl+c"
@@ -86,6 +92,12 @@ class TuiKeybindings:
             "model_cycle": self.model_cycle,
             "model_cycle_previous": self.model_cycle_previous,
             "model_picker": self.model_picker,
+            "models_save": self.models_save,
+            "models_enable_all": self.models_enable_all,
+            "models_clear_all": self.models_clear_all,
+            "models_toggle_provider": self.models_toggle_provider,
+            "models_reorder_up": self.models_reorder_up,
+            "models_reorder_down": self.models_reorder_down,
             "toggle_thinking": self.toggle_thinking,
             "toggle_tool_results": self.toggle_tool_results,
             "copy_message": self.copy_message,
@@ -637,6 +649,12 @@ _PI_KEYBINDING_ALIASES = {
     "app.model.cycleForward": "model_cycle",
     "app.model.cycleBackward": "model_cycle_previous",
     "app.model.select": "model_picker",
+    "app.models.save": "models_save",
+    "app.models.enableAll": "models_enable_all",
+    "app.models.clearAll": "models_clear_all",
+    "app.models.toggleProvider": "models_toggle_provider",
+    "app.models.reorderUp": "models_reorder_up",
+    "app.models.reorderDown": "models_reorder_down",
     "app.session.new": "session_new",
     "app.session.tree": "session_tree",
     "app.session.fork": "session_fork",
@@ -673,6 +691,12 @@ _PI_KEYBINDING_ALIASES = {
     "cycleModelForward": "model_cycle",
     "cycleModelBackward": "model_cycle_previous",
     "selectModel": "model_picker",
+    "modelsSave": "models_save",
+    "modelsEnableAll": "models_enable_all",
+    "modelsClearAll": "models_clear_all",
+    "modelsToggleProvider": "models_toggle_provider",
+    "modelsReorderUp": "models_reorder_up",
+    "modelsReorderDown": "models_reorder_down",
     "newSession": "session_new",
     "tree": "session_tree",
     "fork": "session_fork",
@@ -728,6 +752,12 @@ _OPTIONAL_KEYBINDING_FIELDS = {
     "session_rename",
     "session_delete",
     "session_delete_noninvasive",
+    "models_save",
+    "models_enable_all",
+    "models_clear_all",
+    "models_toggle_provider",
+    "models_reorder_up",
+    "models_reorder_down",
     "tree_fold_or_up",
     "tree_unfold_or_down",
     "tree_edit_label",
@@ -749,6 +779,12 @@ _SCOPED_KEYBINDING_FIELDS = {
     "session_rename",
     "session_delete",
     "session_delete_noninvasive",
+    "models_save",
+    "models_enable_all",
+    "models_clear_all",
+    "models_toggle_provider",
+    "models_reorder_up",
+    "models_reorder_down",
     "tree_fold_or_up",
     "tree_unfold_or_down",
     "tree_edit_label",

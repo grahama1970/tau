@@ -7284,6 +7284,84 @@ async def test_tui_scoped_models_picker_ctrl_s_reports_saved(
 
 
 @pytest.mark.anyio
+async def test_tui_scoped_models_picker_uses_configured_pi_model_shortcuts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    session = FakeSession()
+    app = TauTuiApp(
+        session,
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(
+                models_enable_all="f5",
+                models_clear_all="f6",
+                models_save="f7",
+                models_toggle_provider="f8",
+                models_reorder_up="f9",
+                models_reorder_down="f10",
+            ),
+        ),
+    )
+    notifications: list[str] = []
+    monkeypatch.setattr(app, "_notify", lambda message, **_: notifications.append(message))
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/scoped-models"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ModelPickerScreen)
+        help_text = str(app.screen.query_one("#model-picker-help", Static).render())
+        assert "F5 all" in help_text
+        assert "F6 clear" in help_text
+        assert "F8 provider" in help_text
+        assert "F9/F10 reorder" in help_text
+        assert "F7 save" in help_text
+
+        await pilot.press("f5")
+        await pilot.pause()
+
+        assert session.scoped_model_choices == session.available_model_choices
+
+        await pilot.press("f6")
+        await pilot.pause()
+
+        assert session.scoped_model_choices == ()
+
+        await pilot.press("enter")
+        await pilot.press("down")
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert session.scoped_model_choices == (
+            ModelChoice(provider_name="openai", model="fake-model"),
+            ModelChoice(provider_name="openai", model="other-model"),
+        )
+
+        await pilot.press("down")
+        await pilot.press("f9")
+        await pilot.pause()
+
+        assert session.scoped_model_choices == (
+            ModelChoice(provider_name="openai", model="other-model"),
+            ModelChoice(provider_name="openai", model="fake-model"),
+        )
+
+        await pilot.press("f10")
+        await pilot.pause()
+
+        assert session.scoped_model_choices == (
+            ModelChoice(provider_name="openai", model="fake-model"),
+            ModelChoice(provider_name="openai", model="other-model"),
+        )
+
+        await pilot.press("f7")
+        await pilot.pause()
+
+    assert notifications == ["Scoped models saved (2 scoped)."]
+
+
+@pytest.mark.anyio
 async def test_tui_scoped_models_picker_bulk_enable_respects_search_filter() -> None:
     session = FakeSession()
     app = TauTuiApp(session)
