@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from tau_agent.tools import ToolCall
 from tau_agent.types import JSONValue
@@ -16,6 +16,11 @@ class UserMessage(BaseModel):
     role: Literal["user"] = "user"
     content: str
 
+    @field_validator("content", mode="before")
+    @classmethod
+    def _normalize_content(cls, value: object) -> object:
+        return "" if value is None else value
+
 
 class AssistantMessage(BaseModel):
     """A message authored by the assistant, optionally requesting tool calls."""
@@ -25,6 +30,11 @@ class AssistantMessage(BaseModel):
     role: Literal["assistant"] = "assistant"
     content: str = ""
     tool_calls: list[ToolCall] = Field(default_factory=list)
+
+    @field_validator("content", mode="before")
+    @classmethod
+    def _normalize_content(cls, value: object) -> object:
+        return "" if value is None else value
 
 
 class ToolResultMessage(BaseModel):
@@ -40,6 +50,11 @@ class ToolResultMessage(BaseModel):
     data: dict[str, JSONValue] | None = None
     details: dict[str, JSONValue] | None = None
     error: str | None = None
+
+    @field_validator("content", mode="before")
+    @classmethod
+    def _normalize_content(cls, value: object) -> object:
+        return "" if value is None else value
 
 
 type AgentMessage = UserMessage | AssistantMessage | ToolResultMessage
