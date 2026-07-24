@@ -157,6 +157,7 @@ class FakeSession:
         self.auto_compact_token_threshold = 200000
         self.context_window_tokens = 216384
         self.thinking_level = "medium"
+        self.session_title = None
         self.available_thinking_levels = ("off", "minimal", "low", "medium", "high", "xhigh")
         self.steering_queue_mode = "one_at_a_time"
         self.follow_up_queue_mode = "one_at_a_time"
@@ -556,6 +557,7 @@ def test_session_sidebar_renders_session_metadata() -> None:
     assert "████████" not in output
     assert "τ = 2π" in output
     assert "session" in output
+    assert "name" not in output
     assert "context" in output
     assert "AGENTS.md" in output
     assert "12k" not in output
@@ -612,6 +614,18 @@ def test_session_sidebar_lists_multiple_context_files() -> None:
     assert "docs/AGENTS.md" in output
 
 
+def test_session_sidebar_includes_named_session_title() -> None:
+    session = FakeSession()
+    session.session_title = "Release review"
+    console = Console(record=True, width=120)
+
+    console.print(render_session_sidebar(session))
+
+    output = console.export_text()
+    assert "name" in output
+    assert "Release review" in output
+
+
 def test_session_sidebar_renders_loop_monitor_status() -> None:
     session = FakeSession()
     session.state.loop_monitor_status = LoopMonitorStatus(
@@ -652,6 +666,30 @@ def test_compact_session_info_renders_sidebar_facts() -> None:
     assert "12k/200k context" in output
     assert "openai:fake-model" in output
     assert "(medium)" in output
+
+
+def test_compact_session_info_includes_named_session_title() -> None:
+    session = FakeSession()
+    session.session_title = "Release review"
+    console = Console(record=True, width=120)
+
+    console.print(render_compact_session_info(session))
+
+    output = console.export_text()
+    assert "/workspace/project (--) • Release review" in output
+    assert "12k/200k context" in output
+
+
+def test_compact_session_info_omits_untitled_session_title() -> None:
+    session = FakeSession()
+    session.session_title = "Untitled session"
+    console = Console(record=True, width=120)
+
+    console.print(render_compact_session_info(session))
+
+    output = console.export_text()
+    assert "Untitled session" not in output
+    assert "/workspace/project (--)" in output
 
 
 def test_compact_session_info_includes_loop_monitor_status() -> None:

@@ -86,6 +86,9 @@ class SessionSummarySource(Protocol):
     @property
     def thinking_level(self) -> str: ...
 
+    @property
+    def session_title(self) -> str | None: ...
+
 
 class SessionSidebar(Static):
     """Compact sidebar with current session metadata."""
@@ -760,6 +763,9 @@ def render_session_sidebar(
     metadata = Table.grid(padding=(0, 1))
     metadata.add_column(style=theme.completion_description, no_wrap=True)
     metadata.add_column(style=theme.prompt_text)
+    title = _named_session_title(session.session_title)
+    if title is not None:
+        metadata.add_row("name", title)
     metadata.add_row("provider", session.provider_name)
     metadata.add_row("model", session.model)
     metadata.add_row("thinking", _thinking_level(session))
@@ -834,8 +840,12 @@ def render_compact_session_info(
     theme: TuiTheme = TAU_DARK_THEME,
 ) -> RenderableType:
     """Render the session facts below the prompt."""
+    path_label = f"{_short_path(session.cwd)} ({_git_branch(session.cwd)})"
+    title = _named_session_title(session.session_title)
+    if title is not None:
+        path_label = f"{path_label} • {title}"
     left = Text(
-        f"{_short_path(session.cwd)} ({_git_branch(session.cwd)})",
+        path_label,
         style=theme.prompt_text,
         overflow="fold",
         no_wrap=False,
@@ -1276,6 +1286,15 @@ def _compact_token_count(value: int) -> str:
     if value < 1000:
         return "<1k"
     return f"{(value + 500) // 1000}k"
+
+
+def _named_session_title(title: str | None) -> str | None:
+    if title is None:
+        return None
+    stripped = title.strip()
+    if not stripped or stripped.lower() == "untitled session":
+        return None
+    return stripped
 
 
 def _context_file_labels(
