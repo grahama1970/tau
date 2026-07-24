@@ -6001,6 +6001,26 @@ async def test_tui_app_workflows_command_uses_command_output_modal() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_workflows_detail_command_uses_command_output_modal() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/workflows durable-repository-qualification"
+        await pilot.press("enter")
+
+        assert isinstance(app.screen, CommandOutputScreen)
+        assert app.screen.title_text == "/workflows"
+        assert "Workflow: durable-repository-qualification" in app.screen.message
+        assert "Topology: DURABLE_MIXED_REPAIR_APPROVAL" in app.screen.message
+        assert "Result node: finalize-qualification" in app.screen.message
+        assert (
+            "Run: uv run tau workflows run durable-repository-qualification "
+            "--goal <goal> --run-dir <dir> --open-viewer"
+        ) in app.screen.message
+
+
+@pytest.mark.anyio
 async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
     app = TauTuiApp(
         FakeSession(),

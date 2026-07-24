@@ -16,7 +16,7 @@ from tau_coding.session_manager import CodingSessionRecord, SessionManager
 from tau_coding.skills import Skill
 from tau_coding.system_prompt import ProjectContextFile
 from tau_coding.thinking import normalize_thinking_level
-from tau_coding.workflows.catalog import list_workflows
+from tau_coding.workflows.catalog import get_workflow, list_workflows
 
 BUILTIN_TUI_THEME_NAMES = ("tau-dark", "tau-light", "high-contrast")
 
@@ -553,8 +553,20 @@ def _hotkeys_command(context: CommandContext) -> CommandResult:
 
 
 def _workflows_command(context: CommandContext) -> CommandResult:
-    if context.args:
-        return CommandResult(handled=True, message="Usage: /workflows")
+    workflow_id = context.args.strip()
+    if workflow_id:
+        try:
+            workflow = get_workflow(workflow_id)
+        except RuntimeError:
+            available = ", ".join(workflow.workflow_id for workflow in list_workflows())
+            return CommandResult(
+                handled=True,
+                message=f"Unknown workflow: {workflow_id}\nAvailable workflows: {available}",
+            )
+        return CommandResult(
+            handled=True,
+            message=_format_workflow_detail(workflow.public_payload()),
+        )
 
     workflows = list_workflows()
     lines = [
@@ -579,6 +591,44 @@ def _workflows_command(context: CommandContext) -> CommandResult:
             ]
         )
     return CommandResult(handled=True, message="\n".join(lines))
+
+
+def _format_workflow_detail(payload: dict[str, object]) -> str:
+    runtime = payload.get("runtime")
+    proof_boundary = payload.get("proof_boundary")
+    lines = [
+        f"Workflow: {payload['workflow_id']}",
+        f"Title: {payload['title']}",
+        f"Summary: {payload['summary']}",
+        f"Topology: {payload['topology']}",
+        f"Availability: {payload['availability']}",
+        f"Input schema: {payload['input_schema']}",
+        f"Result schema: {payload['result_schema']}",
+        f"Result node: {payload['result_node_id']}",
+    ]
+    if isinstance(runtime, dict):
+        runtime_parts = [
+            f"{key}={value}" for key, value in sorted(runtime.items()) if isinstance(key, str)
+        ]
+        lines.append(f"Runtime: {', '.join(runtime_parts)}")
+    if isinstance(proof_boundary, dict):
+        proof_parts = [
+            f"{key}={value}"
+            for key, value in sorted(proof_boundary.items())
+            if isinstance(key, str)
+        ]
+        lines.append(f"Proof boundary: {', '.join(proof_parts)}")
+    workflow_id = str(payload["workflow_id"])
+    lines.extend(
+        [
+            f"Describe: uv run tau workflows describe {workflow_id} --json",
+            (
+                f"Run: uv run tau workflows run {workflow_id} "
+                "--goal <goal> --run-dir <dir> --open-viewer"
+            ),
+        ]
+    )
+    return "\n".join(lines)
 
 
 def _skills_command(context: CommandContext) -> CommandResult:

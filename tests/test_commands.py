@@ -385,12 +385,34 @@ def test_workflows_command_lists_canonical_workflow_launch_commands(tmp_path: Pa
     )
 
 
-def test_workflows_command_rejects_arguments(tmp_path: Path) -> None:
+def test_workflows_command_describes_one_workflow(tmp_path: Path) -> None:
     result = create_default_command_registry().execute(
-        FakeSession(tmp_path), "/workflows repository-readiness"
+        FakeSession(tmp_path), "/workflows durable-repository-qualification"
     )
 
-    assert result.message == "Usage: /workflows"
+    assert result.message is not None
+    assert "Workflow: durable-repository-qualification" in result.message
+    assert "Title: Durable Repository Qualification" in result.message
+    assert "Topology: DURABLE_MIXED_REPAIR_APPROVAL" in result.message
+    assert "Input schema: tau.durable_repository_qualification_request.v1" in result.message
+    assert "Result node: finalize-qualification" in result.message
+    assert "Runtime: local=True, mutation_allowed=False" in result.message
+    assert "Proof boundary: live=True, mocked=False, provider_live=False" in result.message
+    assert (
+        "Run: uv run tau workflows run durable-repository-qualification "
+        "--goal <goal> --run-dir <dir> --open-viewer"
+    ) in result.message
+
+
+def test_workflows_command_rejects_unknown_workflow(tmp_path: Path) -> None:
+    result = create_default_command_registry().execute(
+        FakeSession(tmp_path), "/workflows missing-workflow"
+    )
+
+    assert result.message is not None
+    assert "Unknown workflow: missing-workflow" in result.message
+    assert "repository-readiness" in result.message
+    assert "durable-repository-qualification" in result.message
 
 
 def test_model_command_requests_picker_and_switches_models(tmp_path: Path) -> None:
