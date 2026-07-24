@@ -3526,13 +3526,6 @@ class CommandOutputScreen(ModalScreen[None]):
 class LoginProviderPickerScreen(ModalScreen[str | None]):
     """Provider picker for the TUI login flow."""
 
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel"),
-        Binding("up", "cursor_up", "Up", show=False),
-        Binding("down", "cursor_down", "Down", show=False),
-        Binding("enter", "select_cursor", "Select", show=False),
-    ]
-
     def __init__(
         self,
         providers: Sequence[ProviderCatalogEntry],
@@ -4455,22 +4448,27 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
 class LoginScreen(ModalScreen[str | None]):
     """Password prompt for saving a provider API key."""
 
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel"),
-    ]
-
-    def __init__(self, provider: ProviderCatalogEntry, *, theme: TuiTheme) -> None:
+    def __init__(
+        self,
+        provider: ProviderCatalogEntry,
+        *,
+        theme: TuiTheme,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
         super().__init__()
         self.provider = provider
         self.theme = theme
+        self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
         """Compose the provider login prompt."""
+        confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
         with Vertical(id="login-screen"):
             yield Static(f"Login: {self.provider.display_name}", id="login-title")
             yield Static("Paste this provider's API key.", id="login-help")
             yield Input(placeholder="Paste API key", password=True, id="login-api-key")
-            yield Static("Enter saves - Escape closes", id="login-footer")
+            yield Static(f"{confirm_key} saves - {cancel_key} closes", id="login-footer")
 
     def on_mount(self) -> None:
         """Focus the API key field."""
@@ -4481,7 +4479,28 @@ class LoginScreen(ModalScreen[str | None]):
         if event.input.id != "login-api-key":
             return
         event.stop()
-        self.dismiss(event.value.strip() or None)
+        self._submit_api_key()
+
+    def on_key(self, event: Key) -> None:
+        """Route configured login dialog keys."""
+        if _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
+            event.stop()
+            self._submit_api_key()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.action_cancel()
+
+    def _submit_api_key(self) -> None:
+        value = self.query_one("#login-api-key", Input).value.strip()
+        self.dismiss(value or None)
 
     def action_cancel(self) -> None:
         """Close without saving."""
@@ -4491,19 +4510,24 @@ class LoginScreen(ModalScreen[str | None]):
 class OAuthLoginScreen(ModalScreen[OAuthCredential | None]):
     """OAuth login flow for providers backed by subscription auth."""
 
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel"),
-    ]
-
-    def __init__(self, provider: ProviderCatalogEntry, *, theme: TuiTheme) -> None:
+    def __init__(
+        self,
+        provider: ProviderCatalogEntry,
+        *,
+        theme: TuiTheme,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
         super().__init__()
         self.provider = provider
         self.theme = theme
+        self.keybindings = keybindings or TuiKeybindings()
         self._manual_code_future: asyncio.Future[str] | None = None
         self._manual_code_value: str | None = None
 
     def compose(self) -> ComposeResult:
         """Compose the OAuth login prompt."""
+        confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
         with Vertical(id="login-screen"):
             yield Static(f"Login: {self.provider.display_name}", id="login-title")
             yield Static("Complete the browser login, or paste the redirect URL.", id="login-help")
@@ -4512,7 +4536,7 @@ class OAuthLoginScreen(ModalScreen[OAuthCredential | None]):
                 placeholder="Paste redirect URL or authorization code",
                 id="login-oauth-code",
             )
-            yield Static("Enter submits - Escape closes", id="login-footer")
+            yield Static(f"{confirm_key} submits - {cancel_key} closes", id="login-footer")
 
     def on_mount(self) -> None:
         """Focus the manual-code field and start OAuth."""
@@ -4555,7 +4579,27 @@ class OAuthLoginScreen(ModalScreen[OAuthCredential | None]):
         if event.input.id != "login-oauth-code":
             return
         event.stop()
-        value = event.value.strip()
+        self._submit_manual_code()
+
+    def on_key(self, event: Key) -> None:
+        """Route configured OAuth dialog keys."""
+        if _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
+            event.stop()
+            self._submit_manual_code()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.action_cancel()
+
+    def _submit_manual_code(self) -> None:
+        value = self.query_one("#login-oauth-code", Input).value.strip()
         if not value:
             return
         self._manual_code_value = value
@@ -6585,12 +6629,20 @@ class TauTuiApp(App[None]):
             return
         if entry.kind == "openai-codex":
             self.push_screen(
-                OAuthLoginScreen(entry, theme=self.tui_settings.resolved_theme),
+                OAuthLoginScreen(
+                    entry,
+                    theme=self.tui_settings.resolved_theme,
+                    keybindings=self.tui_settings.keybindings,
+                ),
                 callback=lambda credential: self._handle_oauth_login_result(entry, credential),
             )
             return
         self.push_screen(
-            LoginScreen(entry, theme=self.tui_settings.resolved_theme),
+            LoginScreen(
+                entry,
+                theme=self.tui_settings.resolved_theme,
+                keybindings=self.tui_settings.keybindings,
+            ),
             callback=lambda api_key: self._handle_login_result(entry, api_key),
         )
 
