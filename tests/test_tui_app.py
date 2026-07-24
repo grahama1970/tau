@@ -5909,6 +5909,9 @@ async def test_tui_app_settings_picker_uses_configured_pi_select_keybindings(
         assert isinstance(app.screen, SettingsPickerScreen)
         settings_list = app.screen.query_one("#settings-picker-list", ListView)
         assert settings_list.index == 0
+        help_text = str(app.screen.query_one("#settings-picker-help", Static).render())
+        assert "F7 changes" in help_text
+        assert "F8 closes" in help_text
 
         await pilot.press("f6", "f7")
         await pilot.pause()
@@ -5916,6 +5919,14 @@ async def test_tui_app_settings_picker_uses_configured_pi_select_keybindings(
         assert settings_list.index == 1
         assert app.tui_settings.auto_compact is False
         assert '"auto_compact": false' in tui_settings_path().read_text(encoding="utf-8")
+
+        search = app.screen.query_one("#settings-picker-search", Input)
+        search.value = "missing-setting-name"
+        await pilot.pause()
+
+        assert str(app.screen.query_one("#settings-picker-help", Static).render()) == (
+            "No matching settings - F8 closes"
+        )
 
 
 @pytest.mark.anyio

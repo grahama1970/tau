@@ -2273,19 +2273,21 @@ class SettingsPickerScreen(ModalScreen[None]):
         ]
 
     def _help_text(self) -> str:
+        change_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
         if not self.filtered_items:
-            return "No matching settings - Escape closes"
+            return f"No matching settings - {cancel_key} closes"
         try:
             settings_list = self.query_one("#settings-picker-list", ListView)
         except NoMatches:
-            return "Type to search - Enter changes - Escape closes"
+            return f"Type to search - {change_key} changes - {cancel_key} closes"
         index = settings_list.index
         if index is None or index >= len(self.filtered_items):
-            return "Type to search - Enter changes - Escape closes"
+            return f"Type to search - {change_key} changes - {cancel_key} closes"
         description = self.filtered_items[index].description.strip()
         if description:
-            return f"{description} - Enter changes - Escape closes"
-        return "Type to search - Enter changes - Escape closes"
+            return f"{description} - {change_key} changes - {cancel_key} closes"
+        return f"Type to search - {change_key} changes - {cancel_key} closes"
 
     def _refresh_help_text(self) -> None:
         self.query_one("#settings-picker-help", Static).update(self._help_text())
