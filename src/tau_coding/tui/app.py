@@ -9390,8 +9390,8 @@ async def run_tui_app(
     auto_compact_token_threshold: int | None = None,
     initial_prompt: str | None = None,
     session_manager: SessionManager | None = None,
-) -> None:
-    """Create the default provider/session and run the Textual app."""
+) -> str | None:
+    """Create the default provider/session, run the Textual app, and return the session id."""
     if new_session and session_id is not None:
         raise RuntimeError("--resume and --new-session cannot be used together")
 
@@ -9462,6 +9462,7 @@ async def run_tui_app(
             initial_prompt=initial_prompt,
         )
         await app.run_async()
+        return record.id
     finally:
         if session is not None:
             close_session = getattr(session, "aclose", None)
