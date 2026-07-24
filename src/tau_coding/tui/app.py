@@ -483,19 +483,20 @@ class SkillPickerSearchInput(Input):
 
     def on_key(self, event: Key) -> None:
         """Route picker control keys before the input edits its text."""
-        if event.key == "up":
+        keybindings = self._picker().keybindings
+        if _matches_configured_or_default_key(event.key, keybindings.select_up, "up"):
             event.stop()
             event.prevent_default()
             self._picker().action_cursor_up()
-        elif event.key == "down":
+        elif _matches_configured_or_default_key(event.key, keybindings.select_down, "down"):
             event.stop()
             event.prevent_default()
             self._picker().action_cursor_down()
-        elif event.key == "escape":
+        elif _matches_configured_or_default_key(event.key, keybindings.select_cancel, "escape"):
             event.stop()
             event.prevent_default()
             self._picker().action_cancel()
-        elif event.key == "enter":
+        elif _matches_configured_or_default_key(event.key, keybindings.select_confirm, "enter"):
             event.stop()
             event.prevent_default()
             self._picker().action_select_cursor()
@@ -529,11 +530,18 @@ class SkillPickerScreen(ModalScreen[SkillPickerResult | None]):
         Binding("ctrl+enter", "show_in_transcript", "Transcript", show=False, priority=True),
     ]
 
-    def __init__(self, skills: Sequence[Skill], *, theme: TuiTheme) -> None:
+    def __init__(
+        self,
+        skills: Sequence[Skill],
+        *,
+        theme: TuiTheme,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
         super().__init__()
         self.skills = tuple(sorted(skills, key=lambda skill: skill.name.casefold()))
         self.visible_skills = self.skills
         self.theme = theme
+        self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
         """Compose the skills picker."""
@@ -564,6 +572,29 @@ class SkillPickerScreen(ModalScreen[SkillPickerResult | None]):
         """Insert the selected skill."""
         event.stop()
         self.action_select_cursor()
+
+    def on_key(self, event: Key) -> None:
+        """Route configured picker keys when the list is focused."""
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
+            event.stop()
+            self.action_cursor_up()
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
+            event.stop()
+            self.action_cursor_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
+            event.stop()
+            self.action_select_cursor()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.action_cancel()
 
     def action_cursor_up(self) -> None:
         skill_list = self.query_one("#skill-picker-list", ListView)
@@ -655,19 +686,20 @@ class PromptTemplatePickerSearchInput(Input):
 
     def on_key(self, event: Key) -> None:
         """Route picker control keys before the input edits its text."""
-        if event.key == "up":
+        keybindings = self._picker().keybindings
+        if _matches_configured_or_default_key(event.key, keybindings.select_up, "up"):
             event.stop()
             event.prevent_default()
             self._picker().action_cursor_up()
-        elif event.key == "down":
+        elif _matches_configured_or_default_key(event.key, keybindings.select_down, "down"):
             event.stop()
             event.prevent_default()
             self._picker().action_cursor_down()
-        elif event.key == "escape":
+        elif _matches_configured_or_default_key(event.key, keybindings.select_cancel, "escape"):
             event.stop()
             event.prevent_default()
             self._picker().action_cancel()
-        elif event.key == "enter":
+        elif _matches_configured_or_default_key(event.key, keybindings.select_confirm, "enter"):
             event.stop()
             event.prevent_default()
             self._picker().action_select_cursor()
@@ -683,10 +715,16 @@ class PromptTemplatePickerScreen(ModalScreen[str | None]):
         Binding("enter", "select_cursor", "Select", show=False),
     ]
 
-    def __init__(self, templates: Sequence[PromptTemplate]) -> None:
+    def __init__(
+        self,
+        templates: Sequence[PromptTemplate],
+        *,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
         super().__init__()
         self.templates = tuple(sorted(templates, key=lambda item: item.name.casefold()))
         self.visible_templates = self.templates
+        self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
         """Compose the prompt template picker."""
@@ -721,6 +759,29 @@ class PromptTemplatePickerScreen(ModalScreen[str | None]):
         """Select the clicked prompt template."""
         event.stop()
         self.action_select_cursor()
+
+    def on_key(self, event: Key) -> None:
+        """Route configured picker keys when the list is focused."""
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
+            event.stop()
+            self.action_cursor_up()
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
+            event.stop()
+            self.action_cursor_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
+            event.stop()
+            self.action_select_cursor()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.action_cancel()
 
     def action_cursor_up(self) -> None:
         self.query_one("#prompt-template-picker-list", ListView).action_cursor_up()
@@ -6483,6 +6544,7 @@ class TauTuiApp(App[None]):
             SkillPickerScreen(
                 self.session.skills,
                 theme=self.tui_settings.resolved_theme,
+                keybindings=self.tui_settings.keybindings,
             ),
             callback=self._handle_skill_picker_result,
         )
@@ -6509,7 +6571,10 @@ class TauTuiApp(App[None]):
     def _open_prompt_template_picker(self) -> None:
         """Open a searchable prompt-template picker for the active session."""
         self.push_screen(
-            PromptTemplatePickerScreen(self.session.prompt_templates),
+            PromptTemplatePickerScreen(
+                self.session.prompt_templates,
+                keybindings=self.tui_settings.keybindings,
+            ),
             callback=self._handle_prompt_template_picker_result,
         )
 
