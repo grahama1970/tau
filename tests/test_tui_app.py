@@ -3716,6 +3716,54 @@ async def test_tui_app_session_picker_named_filter_hides_unnamed_sessions() -> N
 
 
 @pytest.mark.anyio
+async def test_tui_app_session_picker_uses_configured_pi_named_filter_shortcut() -> None:
+    session = FakeSession()
+    session.session_manager = _FakeSessionManager(
+        [
+            CodingSessionRecord(
+                id="session-1",
+                path=Path("/tmp/session-1.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="fake-model",
+                title="Untitled session",
+                created_at=1.0,
+                updated_at=2.0,
+            ),
+            CodingSessionRecord(
+                id="session-2",
+                path=Path("/tmp/session-2.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="review-model",
+                title="Release review",
+                created_at=1.0,
+                updated_at=1.0,
+            ),
+        ]
+    )
+    app = TauTuiApp(
+        session,
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(session_toggle_named_filter="f8"),
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        await pilot.press("ctrl+r")
+        assert isinstance(app.screen, SessionPickerScreen)
+
+        await pilot.press("f8")
+        labels = [
+            item.query_one(Label).content
+            for item in app.screen.query_one("#session-picker-list", ListView).children
+        ]
+        help_text = str(app.screen.query_one("#session-picker-help", Static).render())
+
+    assert len(labels) == 1
+    assert "review-model - Release review" in str(labels[0])
+    assert "F8 named:on" in help_text
+
+
+@pytest.mark.anyio
 async def test_tui_app_session_picker_named_filter_combines_with_search() -> None:
     session = FakeSession(messages=[UserMessage(content="Earlier")])
     session.session_manager = _FakeSessionManager(

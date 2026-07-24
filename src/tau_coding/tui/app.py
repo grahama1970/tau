@@ -1046,6 +1046,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         theme: TuiTheme,
         all_records: Sequence[SessionCompletionRecord] | None = None,
         current_session_id: str | None = None,
+        keybindings: TuiKeybindings | None = None,
         rename_session: Callable[[str, str], SessionCompletionRecord | None] | None = None,
         delete_session: Callable[[str], bool] | None = None,
     ) -> None:
@@ -1055,6 +1056,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         self.filtered_records = self.current_records
         self.theme = theme
         self.current_session_id = current_session_id
+        self.keybindings = keybindings or TuiKeybindings()
         self.search_value = ""
         self.scope: Literal["current", "all"] = "current"
         self.mode: Literal["list", "rename"] = "list"
@@ -1151,19 +1153,24 @@ class SessionPickerScreen(ModalScreen[str | None]):
         named_state = "named:on" if self.named_only else "named:off"
         path_state = "path:on" if self.show_path else "path:off"
         sort_state = f"sort:{_session_picker_sort_label(self.sort_mode)}"
+        named_key = _key_hint_with_default(self.keybindings.session_toggle_named_filter, "ctrl+n")
+        path_key = _key_hint_with_default(self.keybindings.session_toggle_path, "ctrl+p")
+        sort_key = _key_hint_with_default(self.keybindings.session_toggle_sort, "ctrl+s")
+        rename_key = _key_hint_with_default(self.keybindings.session_rename, "ctrl+r,f2")
+        delete_key = _key_hint_with_default(self.keybindings.session_delete, "ctrl+d")
         if self.filtered_records:
             help_text = (
                 f'Type to search, re:<pattern> regex, or "phrase" exact - '
-                f"Tab {scope_state} - Ctrl+N {named_state} - Ctrl+P {path_state} - "
-                f"Ctrl+S {sort_state} - "
-                "Ctrl+R/F2 rename - Ctrl+D delete - "
+                f"Tab {scope_state} - {named_key} {named_state} - {path_key} {path_state} - "
+                f"{sort_key} {sort_state} - "
+                f"{rename_key} rename - {delete_key} delete - "
                 "Enter selects - Escape closes"
             )
         else:
             help_text = (
                 f'No matching sessions - re:<pattern> regex, "phrase" exact - '
-                f"Tab {scope_state} - Ctrl+N {named_state} - Ctrl+P {path_state} - "
-                f"Ctrl+S {sort_state} - Escape closes"
+                f"Tab {scope_state} - {named_key} {named_state} - {path_key} {path_state} - "
+                f"{sort_key} {sort_state} - Escape closes"
             )
         self.query_one("#session-picker-help", Static).update(help_text)
 
@@ -1193,15 +1200,48 @@ class SessionPickerScreen(ModalScreen[str | None]):
         elif event.key in {"tab", "ctrl+i"}:
             event.stop()
             self.action_toggle_scope()
-        elif event.key == "ctrl+d":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.session_delete,
+            "ctrl+d",
+        ):
             event.stop()
             self.action_delete_session()
-        elif event.key == "ctrl+r":
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.session_rename,
+            "ctrl+r,f2",
+        ):
             event.stop()
             self.action_start_rename()
-        elif event.key == "ctrl+backspace" and not self.search_value.strip():
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.session_delete_noninvasive,
+            "ctrl+backspace",
+        ) and not self.search_value.strip():
             event.stop()
             self.action_delete_session_noninvasive()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.session_toggle_named_filter,
+            "ctrl+n",
+        ):
+            event.stop()
+            self.action_toggle_named_filter()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.session_toggle_path,
+            "ctrl+p",
+        ):
+            event.stop()
+            self.action_toggle_path()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.session_toggle_sort,
+            "ctrl+s",
+        ):
+            event.stop()
+            self.action_toggle_sort()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected session id."""
@@ -4573,6 +4613,7 @@ class TauTuiApp(App[None]):
                 theme=self.tui_settings.resolved_theme,
                 all_records=all_records,
                 current_session_id=getattr(self.session, "session_id", None),
+                keybindings=self.tui_settings.keybindings,
                 rename_session=self._rename_picker_session,
                 delete_session=self._delete_picker_session,
             ),
@@ -6885,6 +6926,11 @@ def _key_hint(key: str) -> str:
         "+".join(piece.capitalize() for piece in part.split("+"))
         for part in _configured_key_parts(key)
     )
+
+
+def _key_hint_with_default(configured_key: str, default_key: str) -> str:
+    active_key = configured_key if configured_key.strip() else default_key
+    return _key_hint(active_key)
 
 
 def _local_tui_command(

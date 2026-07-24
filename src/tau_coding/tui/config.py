@@ -26,6 +26,12 @@ class TuiKeybindings:
     session_tree: str = ""
     session_fork: str = ""
     session_resume: str = ""
+    session_toggle_named_filter: str = ""
+    session_toggle_path: str = ""
+    session_toggle_sort: str = ""
+    session_rename: str = ""
+    session_delete: str = ""
+    session_delete_noninvasive: str = ""
     queue_follow_up: str = "alt+enter"
     dequeue_messages: str = "alt+up"
     accept_completion: str = "tab"
@@ -65,6 +71,12 @@ class TuiKeybindings:
             "session_tree": self.session_tree,
             "session_fork": self.session_fork,
             "session_resume": self.session_resume,
+            "session_toggle_named_filter": self.session_toggle_named_filter,
+            "session_toggle_path": self.session_toggle_path,
+            "session_toggle_sort": self.session_toggle_sort,
+            "session_rename": self.session_rename,
+            "session_delete": self.session_delete,
+            "session_delete_noninvasive": self.session_delete_noninvasive,
             "queue_follow_up": self.queue_follow_up,
             "dequeue_messages": self.dequeue_messages,
             "accept_completion": self.accept_completion,
@@ -629,6 +641,12 @@ _PI_KEYBINDING_ALIASES = {
     "app.session.tree": "session_tree",
     "app.session.fork": "session_fork",
     "app.session.resume": "session_resume",
+    "app.session.toggleNamedFilter": "session_toggle_named_filter",
+    "app.session.togglePath": "session_toggle_path",
+    "app.session.toggleSort": "session_toggle_sort",
+    "app.session.rename": "session_rename",
+    "app.session.delete": "session_delete",
+    "app.session.deleteNoninvasive": "session_delete_noninvasive",
     "app.tree.foldOrUp": "tree_fold_or_up",
     "app.tree.unfoldOrDown": "tree_unfold_or_down",
     "app.tree.editLabel": "tree_edit_label",
@@ -659,6 +677,12 @@ _PI_KEYBINDING_ALIASES = {
     "tree": "session_tree",
     "fork": "session_fork",
     "resume": "session_resume",
+    "sessionToggleNamedFilter": "session_toggle_named_filter",
+    "sessionTogglePath": "session_toggle_path",
+    "sessionToggleSort": "session_toggle_sort",
+    "sessionRename": "session_rename",
+    "sessionDelete": "session_delete",
+    "sessionDeleteNoninvasive": "session_delete_noninvasive",
     "treeFoldOrUp": "tree_fold_or_up",
     "treeUnfoldOrDown": "tree_unfold_or_down",
     "treeEditLabel": "tree_edit_label",
@@ -698,6 +722,12 @@ _OPTIONAL_KEYBINDING_FIELDS = {
     "session_tree",
     "session_fork",
     "session_resume",
+    "session_toggle_named_filter",
+    "session_toggle_path",
+    "session_toggle_sort",
+    "session_rename",
+    "session_delete",
+    "session_delete_noninvasive",
     "tree_fold_or_up",
     "tree_unfold_or_down",
     "tree_edit_label",
@@ -713,6 +743,12 @@ _OPTIONAL_KEYBINDING_FIELDS = {
 
 
 _SCOPED_KEYBINDING_FIELDS = {
+    "session_toggle_named_filter",
+    "session_toggle_path",
+    "session_toggle_sort",
+    "session_rename",
+    "session_delete",
+    "session_delete_noninvasive",
     "tree_fold_or_up",
     "tree_unfold_or_down",
     "tree_edit_label",

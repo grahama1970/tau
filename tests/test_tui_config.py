@@ -132,6 +132,12 @@ def test_tui_settings_reads_pi_keybinding_aliases() -> None:
                 "app.clipboard.pasteImage": "f7",
                 "app.editor.external": "f8",
                 "app.session.tree": "f9",
+                "app.session.toggleNamedFilter": "shift+n",
+                "app.session.togglePath": "shift+p",
+                "app.session.toggleSort": "shift+s",
+                "app.session.rename": "shift+r",
+                "app.session.delete": "shift+d",
+                "app.session.deleteNoninvasive": "ctrl+shift+d",
                 "app.tree.foldOrUp": ["ctrl+left", "alt+left"],
                 "app.tree.filter.userOnly": "ctrl+u",
                 "app.tree.filter.cycleForward": "ctrl+o",
@@ -151,6 +157,12 @@ def test_tui_settings_reads_pi_keybinding_aliases() -> None:
     assert settings.keybindings.paste_clipboard == "f7"
     assert settings.keybindings.external_editor == "f8"
     assert settings.keybindings.session_tree == "f9"
+    assert settings.keybindings.session_toggle_named_filter == "shift+n"
+    assert settings.keybindings.session_toggle_path == "shift+p"
+    assert settings.keybindings.session_toggle_sort == "shift+s"
+    assert settings.keybindings.session_rename == "shift+r"
+    assert settings.keybindings.session_delete == "shift+d"
+    assert settings.keybindings.session_delete_noninvasive == "ctrl+shift+d"
     assert settings.keybindings.tree_fold_or_up == "ctrl+left,alt+left"
     assert settings.keybindings.tree_filter_user_only == "ctrl+u"
     assert settings.keybindings.tree_filter_cycle == "ctrl+o"
@@ -216,6 +228,20 @@ def test_tui_keybindings_allow_scoped_tree_key_to_match_global_key() -> None:
 
     assert settings.keybindings.quit == "ctrl+d"
     assert settings.keybindings.tree_filter_default == "ctrl+d"
+
+
+def test_tui_keybindings_allow_scoped_session_key_to_match_global_key() -> None:
+    settings = tui_settings_from_json(
+        {
+            "keybindings": {
+                "quit": "ctrl+d",
+                "app.session.delete": "ctrl+d",
+            }
+        }
+    )
+
+    assert settings.keybindings.quit == "ctrl+d"
+    assert settings.keybindings.session_delete == "ctrl+d"
 
 
 def test_tui_keybindings_reject_duplicate_keys() -> None:
