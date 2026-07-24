@@ -6597,6 +6597,61 @@ async def test_tui_app_workflows_picker_uses_configured_pi_select_keybindings() 
 
 
 @pytest.mark.anyio
+async def test_tui_app_workflows_picker_inserts_runnable_command() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "/workflows"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, WorkflowPickerScreen)
+        await pilot.press("ctrl+r")
+        await pilot.pause()
+
+        assert prompt.value.startswith(
+            "!! uv run tau workflows run approved-release-bundle --repo /workspace/project "
+            "--goal 'Run Approved Release Bundle for /workspace/project' "
+        )
+        assert (
+            "--run-dir /workspace/project/.tau/workflow-runs/approved-release-bundle-"
+            in prompt.value
+        )
+        assert (
+            "--publish-path /workspace/project/.tau/workflow-runs/approved-release-bundle-"
+            in prompt.value
+        )
+        assert prompt.value.endswith("/publish --open-viewer")
+        assert prompt.has_class("-shell-mode")
+
+
+@pytest.mark.anyio
+async def test_tui_app_workflows_picker_inserts_operator_reference_without_goal() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "/workflows"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, WorkflowPickerScreen)
+        workflow_list = app.screen.query_one("#workflow-picker-list", ListView)
+        workflow_list.index = 4
+        app.screen.action_insert_run_command()
+        await pilot.pause()
+
+        assert prompt.value.startswith(
+            "!! uv run tau workflows run tau-operator-reference --repo /workspace/project "
+            "--run-dir /workspace/project/.tau/workflow-runs/tau-operator-reference-"
+        )
+        assert "--goal" not in prompt.value
+        assert "--publish-path" not in prompt.value
+        assert prompt.value.endswith(" --open-viewer")
+
+
+@pytest.mark.anyio
 async def test_tui_app_workflows_detail_command_uses_command_output_modal() -> None:
     app = TauTuiApp(FakeSession())
 

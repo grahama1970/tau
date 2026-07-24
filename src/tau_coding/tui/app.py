@@ -129,7 +129,7 @@ from tau_coding.tui.widgets import (
     TranscriptView,
     render_completion_suggestions,
 )
-from tau_coding.workflows.catalog import list_workflows
+from tau_coding.workflows.catalog import get_workflow, list_workflows
 from tau_coding.workflows.contracts import WorkflowDefinition
 
 type BindingEntry = Binding | tuple[str, str] | tuple[str, str, str]
@@ -1968,7 +1968,16 @@ class UserMessagePickerScreen(ModalScreen[str | None]):
         ]
 
 
-class WorkflowPickerScreen(ModalScreen[str | None]):
+type WorkflowPickerAction = Literal["details", "insert_run"]
+
+
+@dataclass(frozen=True, slots=True)
+class WorkflowPickerResult:
+    workflow_id: str
+    action: WorkflowPickerAction
+
+
+class WorkflowPickerScreen(ModalScreen[WorkflowPickerResult | None]):
     """Modal picker for packaged canonical Tau workflows."""
 
     BINDINGS: ClassVar[list[BindingEntry]] = [
@@ -1978,6 +1987,7 @@ class WorkflowPickerScreen(ModalScreen[str | None]):
         Binding("pageup", "page_up", "Page up", show=False),
         Binding("pagedown", "page_down", "Page down", show=False),
         Binding("enter", "select_cursor", "Details", show=False),
+        Binding("ctrl+r", "insert_run_command", "Run", show=False),
     ]
 
     def __init__(
@@ -2003,7 +2013,7 @@ class WorkflowPickerScreen(ModalScreen[str | None]):
                 id="workflow-picker-list",
             )
             yield Static(
-                "Enter opens details - Escape cancels",
+                "Enter opens details - Ctrl+R inserts run command - Escape cancels",
                 id="workflow-picker-help",
             )
 
@@ -2042,6 +2052,9 @@ class WorkflowPickerScreen(ModalScreen[str | None]):
         ):
             event.stop()
             self.action_select_cursor()
+        elif event.key == "ctrl+r":
+            event.stop()
+            self.action_insert_run_command()
         elif _matches_configured_or_default_key(
             event.key,
             self.keybindings.select_cancel,
@@ -2054,7 +2067,7 @@ class WorkflowPickerScreen(ModalScreen[str | None]):
         """Dismiss with the selected workflow id."""
         if event.index >= len(self.workflows):
             return
-        self.dismiss(self.workflows[event.index].workflow_id)
+        self.dismiss(WorkflowPickerResult(self.workflows[event.index].workflow_id, "details"))
 
     def action_cursor_up(self) -> None:
         """Move to the previous workflow."""
@@ -2086,6 +2099,18 @@ class WorkflowPickerScreen(ModalScreen[str | None]):
     def action_select_cursor(self) -> None:
         """Open details for the highlighted workflow."""
         self.query_one("#workflow-picker-list", ListView).action_select_cursor()
+
+    def action_insert_run_command(self) -> None:
+        """Insert a runnable shell command for the highlighted workflow."""
+        workflow_list = self.query_one("#workflow-picker-list", ListView)
+        if workflow_list.index is None or workflow_list.index >= len(self.workflows):
+            return
+        self.dismiss(
+            WorkflowPickerResult(
+                self.workflows[workflow_list.index].workflow_id,
+                "insert_run",
+            )
+        )
 
     def action_cancel(self) -> None:
         """Close the picker without selecting a workflow."""
@@ -5500,16 +5525,38 @@ class TauTuiApp(App[None]):
             callback=self._handle_workflow_picker_result,
         )
 
-    def _handle_workflow_picker_result(self, workflow_id: str | None) -> None:
-        if workflow_id is None:
+    def _handle_workflow_picker_result(self, result: WorkflowPickerResult | None) -> None:
+        if result is None:
+            return
+        workflow_id = result.workflow_id
+        if result.action == "insert_run":
+            self._insert_workflow_run_command(workflow_id)
             return
         registry = _session_command_registry(self.session)
         command_text = f"/workflows {workflow_id}"
-        result = registry.execute(self.session, command_text)
-        if result.message is None:
+        command_result = registry.execute(self.session, command_text)
+        if command_result.message is None:
             self._notify(f"Could not describe workflow: {workflow_id}", severity="error")
             return
-        self._show_command_message(command_text, result.message)
+        self._show_command_message(command_text, command_result.message)
+
+    def _insert_workflow_run_command(self, workflow_id: str) -> None:
+        try:
+            workflow = get_workflow(workflow_id)
+        except RuntimeError:
+            self._notify(f"Unknown workflow: {workflow_id}", severity="error")
+            return
+        command = _workflow_run_terminal_command(workflow, cwd=self.session.cwd)
+        text = f"!! {command}"
+        prompt = self.query_one("#prompt", PromptInput)
+        prompt.text = text
+        prompt.move_cursor(_text_end_location(text))
+        prompt.focus()
+        self._sync_prompt_shell_mode(prompt.text)
+        self._completion_state = self._build_completion_state(prompt.text)
+        self._refresh_completions()
+        self._notify(f"Inserted run command for {workflow.workflow_id}. Press Enter to launch.")
+        self._refresh()
 
     def _open_login_picker(self) -> None:
         self.push_screen(
@@ -6699,6 +6746,31 @@ def _user_message_picker_label(choice: SessionTreeChoice, index: int, total: int
 
 def _workflow_picker_label(workflow: WorkflowDefinition) -> str:
     return f"{workflow.workflow_id}: {workflow.title}\n  topology: {workflow.topology}"
+
+
+def _workflow_run_terminal_command(workflow: WorkflowDefinition, *, cwd: Path) -> str:
+    run_dir = cwd / ".tau" / "workflow-runs" / _workflow_run_directory_name(workflow.workflow_id)
+    parts = [
+        "uv",
+        "run",
+        "tau",
+        "workflows",
+        "run",
+        workflow.workflow_id,
+        "--repo",
+        str(cwd),
+    ]
+    if workflow.workflow_id != "tau-operator-reference":
+        parts.extend(["--goal", f"Run {workflow.title} for {cwd}"])
+    parts.extend(["--run-dir", str(run_dir)])
+    if workflow.workflow_id in {"approved-release-bundle", "durable-repository-qualification"}:
+        parts.extend(["--publish-path", str(run_dir / "publish")])
+    parts.append("--open-viewer")
+    return shlex.join(parts)
+
+
+def _workflow_run_directory_name(workflow_id: str) -> str:
+    return f"{workflow_id}-{datetime.now().strftime('%Y%m%dT%H%M%S')}"
 
 
 def _active_tree_choice_index(choices: Sequence[SessionTreeChoice]) -> int:
