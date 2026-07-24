@@ -7372,6 +7372,7 @@ class TauTuiApp(App[None]):
             self.session,
             keybindings=self.tui_settings.keybindings,
             expanded=self.state.show_tool_results,
+            startup_notice=self.startup_message,
         )
         startup_resources.display = bool(startup_text) and not self.tui_settings.quiet_startup
         startup_resources.update(startup_text)
@@ -9432,13 +9433,22 @@ def _render_startup_resources_summary(
     *,
     keybindings: TuiKeybindings,
     expanded: bool,
+    startup_notice: str | None = None,
 ) -> str:
+    notice = startup_notice.strip() if startup_notice else ""
     if expanded:
-        return (
-            f"{_render_tui_resources_message(session)}\n\n"
-            f"{_key_hint(keybindings.toggle_tool_results)}: "
-            "collapse startup resources and tool output"
+        lines: list[str] = []
+        if notice:
+            lines.extend(("Startup Notice", f"- {notice}", ""))
+        lines.extend(
+            (
+                _render_tui_resources_message(session),
+                "",
+                f"{_key_hint(keybindings.toggle_tool_results)}: "
+                "collapse startup resources and tool output",
+            )
         )
+        return "\n".join(lines)
 
     sections = [
         ("Context", _compact_context_labels(session.context_files, cwd=session.cwd)),
@@ -9448,6 +9458,8 @@ def _render_startup_resources_summary(
     visible_sections = [
         f"[{title}] {', '.join(labels)}" for title, labels in sections if labels
     ]
+    if notice:
+        visible_sections.insert(0, f"[Notice] {notice}")
     if not visible_sections:
         return ""
     visible_sections.append(
