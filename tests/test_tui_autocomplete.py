@@ -83,7 +83,7 @@ def test_command_completion_suggests_registered_commands() -> None:
         prompt_templates=(),
     )
 
-    assert [item.display for item in state.items] == ["/session"]
+    assert [item.display for item in state.items] == ["/session", "/settings"]
     assert state.selected is not None
     assert state.selected.apply("/se") == "/session"
 
@@ -102,9 +102,9 @@ def test_command_completion_matches_search_terms_with_canonical_replacement() ->
         prompt_templates=(),
     )
 
-    assert [item.display for item in clear_state.items] == ["/new"]
+    assert [item.display for item in clear_state.items] == ["/clone", "/copy", "/new"]
     assert clear_state.selected is not None
-    assert clear_state.selected.apply("/cl") == "/new"
+    assert clear_state.selected.apply("/cl") == "/clone"
     assert [item.display for item in sessions_state.items] == ["/session"]
     assert sessions_state.selected is not None
     assert sessions_state.selected.apply("/sess") == "/session"
@@ -118,7 +118,7 @@ def test_command_completion_prioritizes_direct_matches_over_search_terms() -> No
         prompt_templates=(),
     )
 
-    assert [item.display for item in state.items[:2]] == ["/resume", "/new"]
+    assert [item.display for item in state.items[:3]] == ["/resume", "/import", "/new"]
     assert state.selected is not None
     assert state.selected.apply("/res") == "/resume"
 

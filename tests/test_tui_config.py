@@ -58,6 +58,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
             "copy_last_message": "ctrl+x"
           },
           "theme": "high-contrast",
+          "autocompleteMaxVisible": 12,
           "tree_filter_mode": "user-only",
           "steering_mode": "all",
           "followUpMode": "all",
@@ -91,6 +92,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.keybindings.copy_last_message == "ctrl+x"
     assert settings.keybindings.cancel == "escape"
     assert settings.theme == "high-contrast"
+    assert settings.autocomplete_max_visible == 12
     assert settings.auto_compact is True
     assert settings.double_escape_action == "tree"
     assert settings.hide_thinking is True
@@ -225,6 +227,23 @@ def test_tui_settings_reject_invalid_auto_compact() -> None:
         tui_settings_from_json({"auto_compact": "no"})
 
 
+def test_tui_settings_load_autocomplete_max_visible_aliases() -> None:
+    camel = tui_settings_from_json({"autocompleteMaxVisible": 8})
+    snake = tui_settings_from_json({"autocomplete_max_visible": 12})
+
+    assert camel.autocomplete_max_visible == 8
+    assert snake.autocomplete_max_visible == 12
+
+
+def test_tui_settings_reject_invalid_autocomplete_max_visible() -> None:
+    with pytest.raises(TuiConfigError, match="autocomplete_max_visible"):
+        tui_settings_from_json({"autocomplete_max_visible": 2})
+    with pytest.raises(TuiConfigError, match="autocomplete_max_visible"):
+        tui_settings_from_json({"autocomplete_max_visible": 21})
+    with pytest.raises(TuiConfigError, match="autocomplete_max_visible"):
+        tui_settings_from_json({"autocomplete_max_visible": "5"})
+
+
 def test_tui_keybindings_serialize_to_json() -> None:
     settings = TuiSettings(
         keybindings=TuiKeybindings(
@@ -271,6 +290,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["keybindings"]["suspend"] == "f12"
     assert settings.to_json()["keybindings"]["copy_message"] == "ctrl+b"
     assert settings.to_json()["keybindings"]["copy_last_message"] == "ctrl+x"
+    assert settings.to_json()["autocomplete_max_visible"] == 5
     assert settings.to_json()["theme"] == "high-contrast"
     assert settings.to_json()["auto_compact"] is True
     assert settings.to_json()["auto_copy_selection"] is False

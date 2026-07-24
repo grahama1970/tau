@@ -24,8 +24,8 @@ from tau_agent import (
     MessageDeltaEvent,
     MessageEndEvent,
     MessageStartEvent,
-    QueueUpdateEvent,
     QueuedMessages,
+    QueueUpdateEvent,
     ToolCall,
     ToolExecutionEndEvent,
     ToolExecutionStartEvent,
@@ -53,6 +53,7 @@ from tau_coding.session_manager import CodingSessionRecord
 from tau_coding.skills import Skill, format_skill_invocation
 from tau_coding.system_prompt import ProjectContextFile
 from tau_coding.tools import create_coding_tools
+from tau_coding.trust import ProjectTrustOption, ProjectTrustState, ProjectTrustUpdate
 from tau_coding.tui import app as tui_app
 from tau_coding.tui.app import (
     CommandOutputScreen,
@@ -66,9 +67,9 @@ from tau_coding.tui.app import (
     SettingsPickerScreen,
     TauTuiApp,
     ThemePickerScreen,
-    TrustPickerScreen,
     TreeLabelInputScreen,
     TreePickerScreen,
+    TrustPickerScreen,
     UserMessagePickerScreen,
     _activity_prompt_border_color,
     _completion_selected_render_line,
@@ -102,7 +103,6 @@ from tau_coding.tui.widgets import (
     render_session_sidebar,
     transcript_item_selection_text,
 )
-from tau_coding.trust import ProjectTrustOption, ProjectTrustState, ProjectTrustUpdate
 
 ANSI_PATTERN = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 
@@ -3534,6 +3534,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         tui_settings=TuiSettings(
             theme="tau-dark",
             auto_copy_selection=False,
+            autocomplete_max_visible=8,
             double_escape_action="tree",
             follow_up_mode="one-at-a-time",
             tree_filter_mode="default",
@@ -3556,6 +3557,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: on",
             "Steering mode: one-at-a-time",
             "Follow-up mode: one-at-a-time",
+            "Autocomplete rows: 8",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3574,6 +3576,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: one-at-a-time",
             "Follow-up mode: one-at-a-time",
+            "Autocomplete rows: 8",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3592,6 +3595,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: one-at-a-time",
+            "Autocomplete rows: 8",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3610,6 +3614,25 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
+            "Autocomplete rows: 8",
+            "Auto-copy selection: off",
+            "Hide thinking: on",
+            "Thinking level: medium",
+            "Double Escape: tree",
+            "Tree filter mode: default",
+        ]
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.autocomplete_max_visible == 12
+        assert '"autocomplete_max_visible": 12' in tui_settings_path().read_text(encoding="utf-8")
+        assert isinstance(app.screen, SettingsPickerScreen)
+        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+            "Theme: tau-dark",
+            "Auto-compact: off",
+            "Steering mode: all",
+            "Follow-up mode: all",
+            "Autocomplete rows: 12",
             "Auto-copy selection: off",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3627,6 +3650,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
+            "Autocomplete rows: 12",
             "Auto-copy selection: on",
             "Hide thinking: on",
             "Thinking level: medium",
@@ -3651,13 +3675,15 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert app.tui_settings.double_escape_action == "fork"
         assert '"double_escape_action": "fork"' in tui_settings_path().read_text(encoding="utf-8")
 
-        await pilot.press("up", "up", "up", "up", "up", "up", "up", "enter")
+        await pilot.press("up", "up", "up", "up", "up", "up", "up", "up", "enter")
         await pilot.pause()
         assert app.tui_settings.theme == "tau-light"
         assert '"theme": "tau-light"' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
 
-        await pilot.press("down", "down", "down", "down", "down", "down", "down", "down", "enter")
+        await pilot.press(
+            "down", "down", "down", "down", "down", "down", "down", "down", "down", "enter"
+        )
         await pilot.pause()
         assert app.tui_settings.tree_filter_mode == "no-tools"
         assert '"tree_filter_mode": "no-tools"' in tui_settings_path().read_text(encoding="utf-8")

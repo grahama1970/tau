@@ -10,7 +10,7 @@ import sys
 import tempfile
 from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import suppress
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 from inspect import isawaitable
 from io import StringIO
@@ -95,6 +95,7 @@ from tau_coding.thinking import (
     ThinkingLevel,
     next_thinking_level,
 )
+from tau_coding.trust import ProjectTrustOption, ProjectTrustState, ProjectTrustStoreEntry
 from tau_coding.tui.adapter import TuiEventAdapter
 from tau_coding.tui.autocomplete import (
     CompletionItem,
@@ -104,6 +105,7 @@ from tau_coding.tui.autocomplete import (
 )
 from tau_coding.tui.config import (
     BUILTIN_TUI_THEME_NAMES,
+    DEFAULT_AUTOCOMPLETE_MAX_VISIBLE,
     TAU_DARK_THEME,
     TuiKeybindings,
     TuiQueueDrainMode,
@@ -121,7 +123,6 @@ from tau_coding.tui.widgets import (
     TranscriptView,
     render_completion_suggestions,
 )
-from tau_coding.trust import ProjectTrustOption, ProjectTrustState, ProjectTrustStoreEntry
 
 type BindingEntry = Binding | tuple[str, str] | tuple[str, str, str]
 type SessionPickerSortMode = Literal["threaded", "recent", "relevance", "name"]
@@ -130,7 +131,8 @@ SIDEBAR_MIN_HEIGHT = 24
 ACTIVITY_TICK_SECONDS = 0.15
 ACTIVITY_COLOR_FADE_STEPS = 24
 ACTIVITY_INDICATOR_HEIGHT = 3
-COMPLETION_MAX_VISIBLE_LINES = 16
+COMPLETION_MAX_VISIBLE_LINES = DEFAULT_AUTOCOMPLETE_MAX_VISIBLE
+AUTOCOMPLETE_MAX_VISIBLE_CHOICES = (3, 5, 8, 12, 16, 20)
 NO_STORED_CREDENTIALS_MESSAGE = (
     "No stored credentials to remove. /logout only removes credentials saved by /login; "
     "environment variables and providers.json config are unchanged."
@@ -887,6 +889,7 @@ class TreePickerResult:
 
 
 SettingsPickerKey = Literal[
+    "autocomplete_max_visible",
     "theme",
     "auto_compact",
     "steering_mode",
@@ -3340,7 +3343,10 @@ class TauTuiApp(App[None]):
                     prompt.text = raw_text
                     prompt.move_cursor(_text_end_location(raw_text))
                     self._notify(
-                        "Wait for the current agent turn and queued messages to finish before compacting.",
+                        (
+                            "Wait for the current agent turn and queued messages "
+                            "to finish before compacting."
+                        ),
                         severity="warning",
                     )
                     return
@@ -4761,7 +4767,7 @@ class TauTuiApp(App[None]):
             render_completion_suggestions(
                 _visible_completion_state(
                     self._completion_state,
-                    max_lines=COMPLETION_MAX_VISIBLE_LINES,
+                    max_lines=self.tui_settings.autocomplete_max_visible,
                     width=max(suggestions.content_size.width or suggestions.size.width, 1),
                 ),
                 theme=self.tui_settings.resolved_theme,
@@ -5602,6 +5608,11 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             value=settings.follow_up_mode,
         ),
         SettingsPickerItem(
+            key="autocomplete_max_visible",
+            label="Autocomplete rows",
+            value=str(settings.autocomplete_max_visible),
+        ),
+        SettingsPickerItem(
             key="auto_copy_selection",
             label="Auto-copy selection",
             value="on" if settings.auto_copy_selection else "off",
@@ -5687,99 +5698,38 @@ def _next_tui_settings(
         except ValueError:
             current_index = -1
         next_theme = BUILTIN_TUI_THEME_NAMES[(current_index + 1) % len(BUILTIN_TUI_THEME_NAMES)]
-        return TuiSettings(
-            keybindings=settings.keybindings,
-            theme=next_theme,
-            auto_compact=settings.auto_compact,
-            auto_copy_selection=settings.auto_copy_selection,
-            double_escape_action=settings.double_escape_action,
-            follow_up_mode=settings.follow_up_mode,
-            hide_thinking=settings.hide_thinking,
-            steering_mode=settings.steering_mode,
-            thinking_level=settings.thinking_level,
-            tree_filter_mode=settings.tree_filter_mode,
-        )
+        return replace(settings, theme=next_theme)
     if key == "auto_compact":
-        return TuiSettings(
-            keybindings=settings.keybindings,
-            theme=settings.theme,
-            auto_compact=not settings.auto_compact,
-            auto_copy_selection=settings.auto_copy_selection,
-            double_escape_action=settings.double_escape_action,
-            follow_up_mode=settings.follow_up_mode,
-            hide_thinking=settings.hide_thinking,
-            steering_mode=settings.steering_mode,
-            thinking_level=settings.thinking_level,
-            tree_filter_mode=settings.tree_filter_mode,
-        )
+        return replace(settings, auto_compact=not settings.auto_compact)
     if key == "steering_mode":
-        return TuiSettings(
-            keybindings=settings.keybindings,
-            theme=settings.theme,
-            auto_compact=settings.auto_compact,
-            auto_copy_selection=settings.auto_copy_selection,
-            double_escape_action=settings.double_escape_action,
-            follow_up_mode=settings.follow_up_mode,
-            hide_thinking=settings.hide_thinking,
-            steering_mode=_next_queue_drain_mode(settings.steering_mode),
-            thinking_level=settings.thinking_level,
-            tree_filter_mode=settings.tree_filter_mode,
-        )
+        return replace(settings, steering_mode=_next_queue_drain_mode(settings.steering_mode))
     if key == "follow_up_mode":
-        return TuiSettings(
-            keybindings=settings.keybindings,
-            theme=settings.theme,
-            auto_compact=settings.auto_compact,
-            auto_copy_selection=settings.auto_copy_selection,
-            double_escape_action=settings.double_escape_action,
-            follow_up_mode=_next_queue_drain_mode(settings.follow_up_mode),
-            hide_thinking=settings.hide_thinking,
-            steering_mode=settings.steering_mode,
-            thinking_level=settings.thinking_level,
-            tree_filter_mode=settings.tree_filter_mode,
+        return replace(settings, follow_up_mode=_next_queue_drain_mode(settings.follow_up_mode))
+    if key == "autocomplete_max_visible":
+        try:
+            current_index = AUTOCOMPLETE_MAX_VISIBLE_CHOICES.index(
+                settings.autocomplete_max_visible
+            )
+        except ValueError:
+            current_index = -1
+        return replace(
+            settings,
+            autocomplete_max_visible=AUTOCOMPLETE_MAX_VISIBLE_CHOICES[
+                (current_index + 1) % len(AUTOCOMPLETE_MAX_VISIBLE_CHOICES)
+            ],
         )
     if key == "auto_copy_selection":
-        return TuiSettings(
-            keybindings=settings.keybindings,
-            theme=settings.theme,
-            auto_compact=settings.auto_compact,
-            auto_copy_selection=not settings.auto_copy_selection,
-            double_escape_action=settings.double_escape_action,
-            follow_up_mode=settings.follow_up_mode,
-            hide_thinking=settings.hide_thinking,
-            steering_mode=settings.steering_mode,
-            thinking_level=settings.thinking_level,
-            tree_filter_mode=settings.tree_filter_mode,
-        )
+        return replace(settings, auto_copy_selection=not settings.auto_copy_selection)
     if key == "hide_thinking":
-        return TuiSettings(
-            keybindings=settings.keybindings,
-            theme=settings.theme,
-            auto_compact=settings.auto_compact,
-            auto_copy_selection=settings.auto_copy_selection,
-            double_escape_action=settings.double_escape_action,
-            follow_up_mode=settings.follow_up_mode,
-            hide_thinking=not settings.hide_thinking,
-            steering_mode=settings.steering_mode,
-            thinking_level=settings.thinking_level,
-            tree_filter_mode=settings.tree_filter_mode,
-        )
+        return replace(settings, hide_thinking=not settings.hide_thinking)
     if key == "thinking_level":
         available = tuple(level for level in thinking_levels if level in THINKING_LEVELS)
-        return TuiSettings(
-            keybindings=settings.keybindings,
-            theme=settings.theme,
-            auto_compact=settings.auto_compact,
-            auto_copy_selection=settings.auto_copy_selection,
-            double_escape_action=settings.double_escape_action,
-            follow_up_mode=settings.follow_up_mode,
-            hide_thinking=settings.hide_thinking,
-            steering_mode=settings.steering_mode,
+        return replace(
+            settings,
             thinking_level=next_thinking_level(
                 settings.thinking_level,
                 available=available or THINKING_LEVELS,
             ),
-            tree_filter_mode=settings.tree_filter_mode,
         )
     if key == "double_escape_action":
         double_escape_actions: tuple[Literal["tree", "fork", "none"], ...] = (
@@ -5791,34 +5741,18 @@ def _next_tui_settings(
             current_index = double_escape_actions.index(settings.double_escape_action)
         except ValueError:
             current_index = -1
-        return TuiSettings(
-            keybindings=settings.keybindings,
-            theme=settings.theme,
-            auto_compact=settings.auto_compact,
-            auto_copy_selection=settings.auto_copy_selection,
+        return replace(
+            settings,
             double_escape_action=double_escape_actions[
                 (current_index + 1) % len(double_escape_actions)
             ],
-            follow_up_mode=settings.follow_up_mode,
-            hide_thinking=settings.hide_thinking,
-            steering_mode=settings.steering_mode,
-            thinking_level=settings.thinking_level,
-            tree_filter_mode=settings.tree_filter_mode,
         )
     try:
         current_index = TREE_FILTER_MODES.index(cast(TreeFilterMode, settings.tree_filter_mode))
     except ValueError:
         current_index = -1
-    return TuiSettings(
-        keybindings=settings.keybindings,
-        theme=settings.theme,
-        auto_compact=settings.auto_compact,
-        auto_copy_selection=settings.auto_copy_selection,
-        double_escape_action=settings.double_escape_action,
-        follow_up_mode=settings.follow_up_mode,
-        hide_thinking=settings.hide_thinking,
-        steering_mode=settings.steering_mode,
-        thinking_level=settings.thinking_level,
+    return replace(
+        settings,
         tree_filter_mode=TREE_FILTER_MODES[(current_index + 1) % len(TREE_FILTER_MODES)],
     )
 

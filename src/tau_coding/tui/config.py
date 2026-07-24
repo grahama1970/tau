@@ -76,6 +76,9 @@ type TuiThemeName = Literal["tau-dark", "tau-light", "high-contrast"]
 type DoubleEscapeAction = Literal["tree", "fork", "none"]
 type TuiTreeFilterMode = Literal["default", "no-tools", "user-only", "labeled-only", "all"]
 type TuiQueueDrainMode = Literal["one-at-a-time", "all"]
+DEFAULT_AUTOCOMPLETE_MAX_VISIBLE = 5
+MIN_AUTOCOMPLETE_MAX_VISIBLE = 3
+MAX_AUTOCOMPLETE_MAX_VISIBLE = 20
 
 
 @dataclass(frozen=True, slots=True)
@@ -273,10 +276,12 @@ class TuiSettings:
     thinking_level: ThinkingLevel = DEFAULT_THINKING_LEVEL
     steering_mode: TuiQueueDrainMode = "one-at-a-time"
     follow_up_mode: TuiQueueDrainMode = "one-at-a-time"
+    autocomplete_max_visible: int = DEFAULT_AUTOCOMPLETE_MAX_VISIBLE
 
     def to_json(self) -> dict[str, Any]:
         """Serialize these settings to JSON-compatible data."""
         return {
+            "autocomplete_max_visible": self.autocomplete_max_visible,
             "auto_compact": self.auto_compact,
             "auto_copy_selection": self.auto_copy_selection,
             "double_escape_action": self.double_escape_action,
@@ -324,6 +329,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
     allowed_fields = {
         "auto_compact",
         "auto_copy_selection",
+        "autocompleteMaxVisible",
+        "autocomplete_max_visible",
         "double_escape_action",
         "hide_thinking",
         "keybindings",
@@ -363,6 +370,12 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
             data.get("follow_up_mode", data.get("followUpMode", "one-at-a-time")),
             "follow_up_mode",
         ),
+        autocomplete_max_visible=_autocomplete_max_visible(
+            data.get(
+                "autocomplete_max_visible",
+                data.get("autocompleteMaxVisible", DEFAULT_AUTOCOMPLETE_MAX_VISIBLE),
+            )
+        ),
         thinking_level=_thinking_level(
             data.get("thinking_level", data.get("thinkingLevel", DEFAULT_THINKING_LEVEL))
         ),
@@ -394,6 +407,17 @@ def _queue_drain_mode(value: object, field_name: str) -> TuiQueueDrainMode:
     if value in {"one-at-a-time", "all"}:
         return cast(TuiQueueDrainMode, value)
     raise TuiConfigError(f"TUI {field_name} must be one of: one-at-a-time, all")
+
+
+def _autocomplete_max_visible(value: object) -> int:
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise TuiConfigError("TUI autocomplete_max_visible must be an integer")
+    if MIN_AUTOCOMPLETE_MAX_VISIBLE <= value <= MAX_AUTOCOMPLETE_MAX_VISIBLE:
+        return value
+    raise TuiConfigError(
+        "TUI autocomplete_max_visible must be between "
+        f"{MIN_AUTOCOMPLETE_MAX_VISIBLE} and {MAX_AUTOCOMPLETE_MAX_VISIBLE}"
+    )
 
 
 def _thinking_level(value: object) -> ThinkingLevel:
