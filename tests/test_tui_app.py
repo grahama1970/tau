@@ -86,6 +86,7 @@ from tau_coding.tui.config import (
     TAU_LIGHT_THEME,
     TuiKeybindings,
     TuiSettings,
+    save_tui_settings,
     tui_settings_path,
 )
 from tau_coding.tui.state import ChatItem, LoopMonitorStatus
@@ -5064,6 +5065,41 @@ async def test_tui_app_reload_appends_command_output_to_transcript() -> None:
             )
         ]
         assert [skill.name for skill in app.state.skills] == ["reloaded"]
+
+
+@pytest.mark.anyio
+async def test_tui_app_reload_refreshes_tui_settings_from_disk(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    save_tui_settings(
+        TuiSettings(
+            keybindings=TuiKeybindings(command_palette="ctrl+j"),
+            editor_padding_x=2,
+            output_padding_x=0,
+        )
+    )
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(
+            keybindings=TuiKeybindings(command_palette="ctrl+k"),
+            editor_padding_x=1,
+            output_padding_x=1,
+        ),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        transcript = app.query_one("#transcript", TranscriptView)
+        prompt.value = "/reload"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert app.tui_settings.keybindings.command_palette == "ctrl+j"
+        assert prompt.tui_keybindings.command_palette == "ctrl+j"
+        assert prompt.styles.padding == Spacing.unpack((0, 2))
+        assert transcript.output_padding_x == 0
 
 
 @pytest.mark.anyio

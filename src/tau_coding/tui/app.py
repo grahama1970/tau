@@ -3420,6 +3420,8 @@ class TauTuiApp(App[None]):
                 await self._set_thinking_level(command.thinking_level)
             if command.theme is not None:
                 self._set_tui_theme(cast(TuiThemeName, command.theme))
+            if _is_reload_command_text(text):
+                self._reload_tui_settings()
             self.state.set_skills(self.session.skills)
             if command.message:
                 if _command_message_uses_notification(text, command.message):
@@ -3548,6 +3550,12 @@ class TauTuiApp(App[None]):
 
     def _set_tui_theme(self, theme: TuiThemeName) -> None:
         self._set_tui_settings(replace(self.tui_settings, theme=theme))
+
+    def _reload_tui_settings(self) -> None:
+        try:
+            self._set_tui_settings(load_tui_settings())
+        except Exception as exc:  # noqa: BLE001 - preserve session reload output and surface TUI failure
+            self._notify(f"Could not reload TUI settings: {exc}", severity="error")
 
     def _set_tui_settings(self, settings: TuiSettings) -> None:
         previous_settings = self.tui_settings
@@ -5863,6 +5871,10 @@ def _command_message_uses_notification(command_text: str, message: str) -> bool:
     """Return whether slash-command output should appear as a notification."""
     command_name = command_text.split(maxsplit=1)[0].casefold()
     return command_name == "/name" and message.startswith("Session renamed: ")
+
+
+def _is_reload_command_text(text: str) -> bool:
+    return text.strip().casefold() == "/reload"
 
 
 def _is_skill_command_text(text: str) -> bool:
