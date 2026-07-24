@@ -5267,6 +5267,35 @@ async def test_tui_model_picker_opens_from_keybinding() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_model_picker_starts_in_scoped_tab_when_scoped_models_exist() -> None:
+    session = FakeSession()
+    session.scoped_model_choices = (
+        ModelChoice(provider_name="local", model="local-model"),
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/model"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ModelPickerScreen)
+        tabs = app.screen.query_one("#model-picker-tabs", Static)
+        model_list = app.screen.query_one("#model-picker-list", ListView)
+        labels = [str(item.query_one(Label).render()) for item in model_list.children]
+
+        assert str(tabs.render()) == "Tabs: ○ All models  ● Scoped models"
+        assert labels == ["  local:local-model [scoped]"]
+
+        await pilot.press("enter")
+        await pilot.pause()
+
+    assert session.provider_name == "local"
+    assert session.model == "local-model"
+
+
+@pytest.mark.anyio
 async def test_tui_model_picker_page_keys_move_by_page() -> None:
     session = FakeSession()
     session.available_model_choices = tuple(

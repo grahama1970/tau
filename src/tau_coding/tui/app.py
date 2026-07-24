@@ -2221,7 +2221,9 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         self.on_toggle_scoped = on_toggle_scoped
         self.on_set_scoped = on_set_scoped
         self.picker_kind = picker_kind
-        self.mode: Literal["all", "scoped"] = "all"
+        self.mode: Literal["all", "scoped"] = (
+            "scoped" if picker_kind == "model" and self.scoped_choices else "all"
+        )
         self.search_value = ""
 
     def compose(self) -> ComposeResult:
