@@ -159,6 +159,7 @@ class SlashCommand:
     aliases: tuple[str, ...] = ()
     search_terms: tuple[str, ...] = ()
     argument_hint: str | None = None
+    hidden: bool = False
 
 
 class CommandRegistry:
@@ -186,9 +187,13 @@ class CommandRegistry:
         command_name = self._aliases.get(normalized, normalized)
         return self._commands.get(command_name)
 
-    def list_commands(self) -> tuple[SlashCommand, ...]:
+    def list_commands(self, *, include_hidden: bool = False) -> tuple[SlashCommand, ...]:
         """Return registered commands sorted by name."""
-        return tuple(self._commands[name] for name in sorted(self._commands))
+        return tuple(
+            self._commands[name]
+            for name in sorted(self._commands)
+            if include_hidden or not self._commands[name].hidden
+        )
 
     def execute(self, session: CommandSession, text: str) -> CommandResult:
         """Execute a slash command, or return unhandled for ordinary prompts."""
@@ -278,6 +283,24 @@ def create_default_command_registry() -> CommandRegistry:
             description="Write an interactive TUI diagnostic log.",
             handler=_debug_command,
             search_terms=("diagnostics", "runtime", "layout", "screen"),
+        )
+    )
+    registry.register(
+        SlashCommand(
+            name="arminsayshi",
+            usage="/arminsayshi",
+            description="Render Pi's Armin easter egg.",
+            handler=_armin_says_hi_command,
+            hidden=True,
+        )
+    )
+    registry.register(
+        SlashCommand(
+            name="dementedelves",
+            usage="/dementedelves",
+            description="Render Pi's Earendil announcement easter egg.",
+            handler=_demented_delves_command,
+            hidden=True,
         )
     )
     registry.register(
@@ -534,6 +557,48 @@ def _debug_command(context: CommandContext) -> CommandResult:
         handled=True,
         message="Use /debug in the interactive TUI to write a runtime diagnostic log.",
     )
+
+
+_ARMIN_SAYS_HI_ART = (
+    "        ▄▄▄▄",
+    "         ▀▄ ▀▄",
+    "           █  ▀▄▄",
+    "     ▄▀▀▀▀▀     █",
+    "     █▄   ▄▄▄▄▀▀▀▀▄",
+    "   ▄▀  ▀▀▀  ▄▄▄▄▀▀ █",
+    "   █              ▄█▄",
+    "   ▀▄   ▄▄▄▀▀▀▀▀▀▀▀▄█  ▄▄▄▄▄",
+    " ▄▄▄▀▀▀▀▄▄▄▄▄▄▄▄▄▄█▄ ▄▀   ▄ ▀▄",
+    " █▄▄▄▄        ▀▀▀▀  █     ▀█ █",
+    "     ██ ▄█      █   █ ▄      █",
+    "     ▀█████▄▄▄▄███▄▄▀▄▀▄▄▄  ▄▀",
+    "       ▀██████▀▀▀▀   ▀▄▄▄▄▄▀",
+    "         ▀████████▀  ▄▄ ▄▄▄",
+    "           ▀█████▀  ██▀ ██▄",
+    "                    ██  ▄▄▄",
+    "                     █  ▀█▀",
+    "                      ▀▀▀",
+)
+
+
+def _armin_says_hi_command(context: CommandContext) -> CommandResult:
+    if context.args:
+        return CommandResult(handled=True, message="Usage: /arminsayshi")
+    return CommandResult(handled=True, message="\n".join((*_ARMIN_SAYS_HI_ART, "ARMIN SAYS HI")))
+
+
+def _demented_delves_command(context: CommandContext) -> CommandResult:
+    if context.args:
+        return CommandResult(handled=True, message="Usage: /dementedelves")
+    lines = [
+        "+----------------------------------------+",
+        "| pi has joined Earendil                 |",
+        "+----------------------------------------+",
+        "",
+        "Read the blog post:",
+        "https://mariozechner.at/posts/2026-04-08-ive-sold-out/",
+    ]
+    return CommandResult(handled=True, message="\n".join(lines))
 
 
 def _export_command(context: CommandContext) -> CommandResult:
