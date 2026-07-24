@@ -62,6 +62,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
           },
           "theme": "high-contrast",
           "autocompleteMaxVisible": 12,
+          "autoResizeImages": false,
           "blockImages": true,
           "editorPaddingX": 2,
           "enableSkillCommands": false,
@@ -107,6 +108,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.keybindings.cancel == "escape"
     assert settings.theme == "high-contrast"
     assert settings.autocomplete_max_visible == 12
+    assert settings.auto_resize_images is False
     assert settings.block_images is True
     assert settings.editor_padding_x == 2
     assert settings.enable_skill_commands is False
@@ -522,9 +524,26 @@ def test_tui_settings_reject_invalid_autocomplete_max_visible() -> None:
 def test_tui_settings_load_block_images_aliases() -> None:
     camel = tui_settings_from_json({"blockImages": True})
     snake = tui_settings_from_json({"block_images": True})
+    nested = tui_settings_from_json({"images": {"blockImages": True}})
 
     assert camel.block_images is True
     assert snake.block_images is True
+    assert nested.block_images is True
+
+
+def test_tui_settings_load_auto_resize_image_aliases() -> None:
+    camel = tui_settings_from_json({"autoResizeImages": False})
+    snake = tui_settings_from_json({"auto_resize_images": False})
+    nested = tui_settings_from_json({"images": {"autoResize": False}})
+
+    assert camel.auto_resize_images is False
+    assert snake.auto_resize_images is False
+    assert nested.auto_resize_images is False
+
+
+def test_tui_settings_reject_invalid_auto_resize_images() -> None:
+    with pytest.raises(TuiConfigError, match="auto_resize_images"):
+        tui_settings_from_json({"auto_resize_images": "false"})
 
 
 def test_tui_settings_reject_invalid_block_images() -> None:
@@ -813,6 +832,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["keybindings"]["copy_message"] == "ctrl+b"
     assert settings.to_json()["keybindings"]["copy_last_message"] == "ctrl+x"
     assert settings.to_json()["autocomplete_max_visible"] == 5
+    assert settings.to_json()["auto_resize_images"] is True
     assert settings.to_json()["block_images"] is False
     assert settings.to_json()["show_images"] is True
     assert settings.to_json()["image_width_cells"] == 60

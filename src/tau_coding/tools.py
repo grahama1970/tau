@@ -8,11 +8,14 @@ filesystem/shell behavior outside the reusable `tau_agent` package.
 """
 
 import asyncio
+import contextlib
 import difflib
 import json
 import mimetypes
 import os
+import shutil
 import signal
+import subprocess
 import tempfile
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
@@ -24,6 +27,9 @@ from tau_agent.types import JSONValue
 
 DEFAULT_MAX_OUTPUT_BYTES = 50 * 1024
 DEFAULT_MAX_OUTPUT_LINES = 2_000
+DEFAULT_IMAGE_MAX_WIDTH_PX = 2000
+DEFAULT_IMAGE_MAX_HEIGHT_PX = 2000
+DEFAULT_INLINE_IMAGE_MAX_BASE64_BYTES = int(4.5 * 1024 * 1024)
 SUPPORTED_IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 UTF8_BOM = "\ufeff"
 
@@ -57,6 +63,37 @@ class TruncationResult:
 
     def to_json(self) -> dict[str, JSONValue]:
         return asdict(self)
+
+
+@dataclass(frozen=True, slots=True)
+class ReadImageResult:
+    """Image payload returned by the read tool after optional provider-size resizing."""
+
+    mime_type: str
+    bytes: int
+    image_base64: str | None
+    message: str
+    omitted: bool = False
+    resized: bool = False
+    original_mime_type: str | None = None
+    original_bytes: int | None = None
+
+    def to_json(self, *, path: Path) -> dict[str, JSONValue]:
+        payload: dict[str, JSONValue] = {
+            "path": str(path),
+            "mime_type": self.mime_type,
+            "bytes": self.bytes,
+            "auto_resized": self.resized,
+        }
+        if self.original_mime_type is not None:
+            payload["original_mime_type"] = self.original_mime_type
+        if self.original_bytes is not None:
+            payload["original_bytes"] = self.original_bytes
+        if self.omitted:
+            payload["image_omitted"] = True
+        elif self.image_base64 is not None:
+            payload["image_base64"] = self.image_base64
+        return payload
 
 
 @dataclass(frozen=True, slots=True)
@@ -94,6 +131,7 @@ def create_coding_tools(
     *,
     cwd: str | Path | None = None,
     shell_path: str | Path | None = None,
+    auto_resize_images: bool = True,
 ) -> list[AgentTool]:
     """Create the default coding-tool set for a local project.
 
@@ -105,14 +143,18 @@ def create_coding_tools(
     """
     root = Path.cwd() if cwd is None else Path(cwd)
     return [
-        create_read_tool(cwd=root),
+        create_read_tool(cwd=root, auto_resize_images=auto_resize_images),
         create_write_tool(cwd=root),
         create_edit_tool(cwd=root),
         create_bash_tool(cwd=root, shell_path=shell_path),
     ]
 
 
-def create_read_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinition:
+def create_read_tool_definition(
+    *,
+    cwd: str | Path | None = None,
+    auto_resize_images: bool = True,
+) -> ToolDefinition:
     """Create a definition for the `read` tool.
 
     The tool reads a file resolved relative to `cwd` unless an absolute path is
@@ -150,18 +192,25 @@ def create_read_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinit
 
         mime_type = _detect_supported_image_mime_type(path)
         if mime_type is not None:
-            data = path.read_bytes()
+            processed_image = _process_image_for_read(
+                path,
+                mime_type,
+                auto_resize_images=auto_resize_images,
+            )
+            if processed_image.omitted:
+                return AgentToolResult(
+                    tool_call_id="",
+                    name="read",
+                    ok=True,
+                    content=processed_image.message,
+                    data=processed_image.to_json(path=path),
+                )
             return AgentToolResult(
                 tool_call_id="",
                 name="read",
                 ok=True,
-                content=f"Read image file [{mime_type}]",
-                data={
-                    "path": str(path),
-                    "mime_type": mime_type,
-                    "bytes": len(data),
-                    "image_base64": _base64_text(data),
-                },
+                content=processed_image.message,
+                data=processed_image.to_json(path=path),
             )
 
         text = path.read_text(encoding="utf-8")
@@ -248,9 +297,16 @@ def create_read_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinit
     )
 
 
-def create_read_tool(*, cwd: str | Path | None = None) -> AgentTool:
+def create_read_tool(
+    *,
+    cwd: str | Path | None = None,
+    auto_resize_images: bool = True,
+) -> AgentTool:
     """Create an `AgentTool` for reading UTF-8 text files and supported images."""
-    return create_read_tool_definition(cwd=cwd).to_agent_tool()
+    return create_read_tool_definition(
+        cwd=cwd,
+        auto_resize_images=auto_resize_images,
+    ).to_agent_tool()
 
 
 def create_write_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinition:
@@ -987,6 +1043,125 @@ def _no_change_error(path: str, total_edits: int) -> str:
 def _detect_supported_image_mime_type(path: Path) -> str | None:
     mime_type, _encoding = mimetypes.guess_type(path)
     return mime_type if mime_type in SUPPORTED_IMAGE_MIME_TYPES else None
+
+
+def _process_image_for_read(
+    path: Path,
+    mime_type: str,
+    *,
+    auto_resize_images: bool,
+) -> ReadImageResult:
+    data = path.read_bytes()
+    if not auto_resize_images or _image_fits_inline(path, data):
+        return ReadImageResult(
+            mime_type=mime_type,
+            bytes=len(data),
+            image_base64=_base64_text(data),
+            message=f"Read image file [{mime_type}]",
+        )
+
+    resized = _resize_image_with_magick(path)
+    if resized is None:
+        return ReadImageResult(
+            mime_type=mime_type,
+            bytes=len(data),
+            image_base64=None,
+            message="[Image omitted: could not be resized below the inline image size limit.]",
+            omitted=True,
+        )
+    resized_mime_type, resized_data = resized
+    return ReadImageResult(
+        mime_type=resized_mime_type,
+        bytes=len(resized_data),
+        image_base64=_base64_text(resized_data),
+        message=f"Read image file [{resized_mime_type}] (auto-resized from {mime_type})",
+        resized=True,
+        original_mime_type=mime_type,
+        original_bytes=len(data),
+    )
+
+
+def _image_fits_inline(path: Path, data: bytes) -> bool:
+    if _base64_encoded_size(data) >= DEFAULT_INLINE_IMAGE_MAX_BASE64_BYTES:
+        return False
+    dimensions = _identify_image_dimensions(path)
+    if dimensions is None:
+        return True
+    width_px, height_px = dimensions
+    return width_px <= DEFAULT_IMAGE_MAX_WIDTH_PX and height_px <= DEFAULT_IMAGE_MAX_HEIGHT_PX
+
+
+def _resize_image_with_magick(path: Path) -> tuple[str, bytes] | None:
+    magick = shutil.which("magick") or shutil.which("convert")
+    if magick is None:
+        return None
+
+    first_frame_path = f"{path}[0]"
+    for scale_percent in (100, 75, 55, 40, 25, 15, 8):
+        for quality in (85, 70, 55, 40):
+            with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as output_file:
+                output_path = Path(output_file.name)
+            try:
+                args = [
+                    magick,
+                    first_frame_path,
+                    "-auto-orient",
+                    "-resize",
+                    f"{DEFAULT_IMAGE_MAX_WIDTH_PX}x{DEFAULT_IMAGE_MAX_HEIGHT_PX}>",
+                    "-resize",
+                    f"{scale_percent}%",
+                    "-strip",
+                    "-quality",
+                    str(quality),
+                    f"jpg:{output_path}",
+                ]
+                result = subprocess.run(
+                    args,
+                    check=False,
+                    capture_output=True,
+                    timeout=10,
+                )
+                if result.returncode != 0 or not output_path.exists():
+                    continue
+                data = output_path.read_bytes()
+                if data and _base64_encoded_size(data) < DEFAULT_INLINE_IMAGE_MAX_BASE64_BYTES:
+                    return "image/jpeg", data
+            except (OSError, subprocess.SubprocessError):
+                return None
+            finally:
+                with contextlib.suppress(OSError):
+                    output_path.unlink()
+    return None
+
+
+def _identify_image_dimensions(path: Path) -> tuple[int, int] | None:
+    magick = shutil.which("magick") or shutil.which("identify")
+    if magick is None:
+        return None
+    if Path(magick).name == "magick":
+        args = [magick, "identify", "-format", "%w %h", f"{path}[0]"]
+    else:
+        args = [magick, "-format", "%w %h", f"{path}[0]"]
+    try:
+        result = subprocess.run(
+            args,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if result.returncode != 0:
+        return None
+    width, separator, height = result.stdout.strip().partition(" ")
+    if not separator or not width.isdigit() or not height.isdigit():
+        return None
+    return int(width), int(height)
+
+
+def _base64_encoded_size(data: bytes) -> int:
+    return ((len(data) + 2) // 3) * 4
 
 
 def _base64_text(data: bytes) -> str:

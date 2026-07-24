@@ -1,4 +1,7 @@
 import asyncio
+import base64
+import shutil
+import subprocess
 from pathlib import Path
 from time import monotonic
 
@@ -24,6 +27,32 @@ class FakeCancellationToken:
 
     def is_cancelled(self) -> bool:
         return self.cancelled
+
+
+def _require_magick() -> str:
+    magick = shutil.which("magick")
+    if magick is None:
+        pytest.skip("ImageMagick magick command is required for image resize proof")
+    return magick
+
+
+def _write_magick_image(path: Path, size: str) -> None:
+    subprocess.run(
+        [_require_magick(), "-size", size, "gradient:#ff0000-#0000ff", str(path)],
+        check=True,
+        capture_output=True,
+    )
+
+
+def _magick_dimensions(path: Path) -> tuple[int, int]:
+    result = subprocess.run(
+        [_require_magick(), "identify", "-format", "%w %h", str(path)],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    width, height = result.stdout.split()
+    return int(width), int(height)
 
 
 @pytest.mark.anyio
@@ -78,6 +107,47 @@ async def test_read_tool_treats_zero_offset_as_start_of_file(tmp_path: Path) -> 
 
     assert result.ok is True
     assert result.content == "one\n\n[3 more lines in file. Use offset=2 to continue.]"
+
+
+@pytest.mark.anyio
+async def test_read_tool_auto_resizes_large_image_with_magick(tmp_path: Path) -> None:
+    path = tmp_path / "large.png"
+    _write_magick_image(path, "2400x1200")
+    tool = create_read_tool(cwd=tmp_path)
+
+    result = await tool.execute({"path": "large.png"})
+
+    assert result.ok is True
+    assert result.content == "Read image file [image/jpeg] (auto-resized from image/png)"
+    assert result.data is not None
+    assert result.data["mime_type"] == "image/jpeg"
+    assert result.data["original_mime_type"] == "image/png"
+    assert result.data["original_bytes"] == path.stat().st_size
+    assert result.data["auto_resized"] is True
+    image_base64 = result.data["image_base64"]
+    assert isinstance(image_base64, str)
+    resized_path = tmp_path / "resized.jpg"
+    resized_path.write_bytes(base64.b64decode(image_base64))
+    width, height = _magick_dimensions(resized_path)
+    assert width <= 2000
+    assert height <= 2000
+
+
+@pytest.mark.anyio
+async def test_read_tool_can_disable_auto_resize_for_large_images(tmp_path: Path) -> None:
+    path = tmp_path / "large.png"
+    _write_magick_image(path, "2400x1200")
+    tool = create_read_tool(cwd=tmp_path, auto_resize_images=False)
+
+    result = await tool.execute({"path": "large.png"})
+
+    assert result.ok is True
+    assert result.content == "Read image file [image/png]"
+    assert result.data is not None
+    assert result.data["mime_type"] == "image/png"
+    assert result.data["bytes"] == path.stat().st_size
+    assert result.data["auto_resized"] is False
+    assert result.data["image_base64"] == base64.b64encode(path.read_bytes()).decode("ascii")
 
 
 @pytest.mark.anyio

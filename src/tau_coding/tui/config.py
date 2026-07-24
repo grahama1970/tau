@@ -838,6 +838,7 @@ class TuiSettings:
     theme: str = "tau-dark"
     auto_compact: bool = True
     auto_copy_selection: bool = False
+    auto_resize_images: bool = True
     show_images: bool = True
     image_width_cells: int = DEFAULT_IMAGE_WIDTH_CELLS
     block_images: bool = False
@@ -867,6 +868,7 @@ class TuiSettings:
             "autocomplete_max_visible": self.autocomplete_max_visible,
             "auto_compact": self.auto_compact,
             "auto_copy_selection": self.auto_copy_selection,
+            "auto_resize_images": self.auto_resize_images,
             "block_images": self.block_images,
             "default_project_trust": self.default_project_trust,
             "double_escape_action": self.double_escape_action,
@@ -927,6 +929,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
     allowed_fields = {
         "auto_compact",
         "auto_copy_selection",
+        "autoResizeImages",
+        "auto_resize_images",
         "autocompleteMaxVisible",
         "autocomplete_max_visible",
         "blockImages",
@@ -945,6 +949,7 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "hide_thinking",
         "imageWidthCells",
         "image_width_cells",
+        "images",
         "keybindings",
         "outputPad",
         "output_padding_x",
@@ -982,6 +987,9 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
     terminal_data = data.get("terminal", {})
     if not isinstance(terminal_data, dict):
         raise TuiConfigError("TUI terminal settings must be a JSON object")
+    images_data = data.get("images", {})
+    if not isinstance(images_data, dict):
+        raise TuiConfigError("TUI images settings must be a JSON object")
     return TuiSettings(
         keybindings=_keybindings_from_json(keybindings_data),
         theme=_theme_name(data.get("theme", "tau-dark")),
@@ -990,8 +998,18 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
             data.get("auto_copy_selection", False),
             "auto_copy_selection",
         ),
+        auto_resize_images=_bool_setting(
+            data.get(
+                "auto_resize_images",
+                data.get("autoResizeImages", images_data.get("autoResize", True)),
+            ),
+            "auto_resize_images",
+        ),
         block_images=_bool_setting(
-            data.get("block_images", data.get("blockImages", False)),
+            data.get(
+                "block_images",
+                data.get("blockImages", images_data.get("blockImages", False)),
+            ),
             "block_images",
         ),
         show_images=_bool_setting(

@@ -196,6 +196,7 @@ class FakeSession:
             tool_count=7,
         )
         self.auto_compact_enabled = True
+        self.auto_resize_images = True
         self.auto_compact_token_threshold = 200000
         self.context_window_tokens = 216384
         self.thinking_level = "medium"
@@ -409,6 +410,11 @@ class FakeSession:
         self.shell_path = path
         state = "configured" if path else "cleared"
         return f"Shell path {state}."
+
+    def set_auto_resize_images(self, enabled: bool) -> str:
+        self.auto_resize_images = enabled
+        state = "enabled" if enabled else "disabled"
+        return f"Auto-resize images {state}."
 
     def set_steering_queue_mode(self, mode: str) -> str:
         self.steering_queue_mode = mode
@@ -5044,6 +5050,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Default project trust: ask",
             "Quiet startup: off",
             "Turn notification: desktop",
+            "Auto-resize images: on",
         ]
 
         await pilot.press("down", "enter")
@@ -5075,6 +5082,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Default project trust: ask",
             "Quiet startup: off",
             "Turn notification: desktop",
+            "Auto-resize images: on",
         ]
 
         await pilot.press("down", "enter")
@@ -5106,6 +5114,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Default project trust: ask",
             "Quiet startup: off",
             "Turn notification: desktop",
+            "Auto-resize images: on",
         ]
 
         await pilot.press("down", "enter")
@@ -5137,6 +5146,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Default project trust: ask",
             "Quiet startup: off",
             "Turn notification: desktop",
+            "Auto-resize images: on",
         ]
 
         await pilot.press("down", "enter")
@@ -5167,6 +5177,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Default project trust: ask",
             "Quiet startup: off",
             "Turn notification: desktop",
+            "Auto-resize images: on",
         ]
 
         await pilot.press("down", "enter")
@@ -5197,6 +5208,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Default project trust: ask",
             "Quiet startup: off",
             "Turn notification: desktop",
+            "Auto-resize images: on",
         ]
 
         await pilot.press("down", "enter")
@@ -5227,6 +5239,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Default project trust: ask",
             "Quiet startup: off",
             "Turn notification: desktop",
+            "Auto-resize images: on",
         ]
 
         await pilot.press("down", "enter")
@@ -5257,6 +5270,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Default project trust: ask",
             "Quiet startup: off",
             "Turn notification: desktop",
+            "Auto-resize images: on",
         ]
 
         await pilot.press("down", "enter")
@@ -5288,6 +5302,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Default project trust: ask",
             "Quiet startup: off",
             "Turn notification: desktop",
+            "Auto-resize images: on",
         ]
 
         await pilot.press("down", "enter")
@@ -5319,6 +5334,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Default project trust: ask",
             "Quiet startup: off",
             "Turn notification: desktop",
+            "Auto-resize images: on",
         ]
 
         await pilot.press("down", "enter")
@@ -5349,6 +5365,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Default project trust: ask",
             "Quiet startup: off",
             "Turn notification: desktop",
+            "Auto-resize images: on",
         ]
 
         await pilot.press("down", "enter")
@@ -5379,6 +5396,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Default project trust: ask",
             "Quiet startup: off",
             "Turn notification: desktop",
+            "Auto-resize images: on",
         ]
 
         await pilot.press("down", "enter")
@@ -5409,6 +5427,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Default project trust: ask",
             "Quiet startup: off",
             "Turn notification: desktop",
+            "Auto-resize images: on",
         ]
 
         await pilot.press("down", "enter")
@@ -5439,6 +5458,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Default project trust: ask",
             "Quiet startup: off",
             "Turn notification: desktop",
+            "Auto-resize images: on",
         ]
 
         await pilot.press("down", "enter")
@@ -5469,6 +5489,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Default project trust: ask",
             "Quiet startup: off",
             "Turn notification: desktop",
+            "Auto-resize images: on",
         ]
 
         await pilot.press("down", "enter")
@@ -5554,6 +5575,12 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         await pilot.pause()
         assert app.tui_settings.turn_notification == "bell"
         assert '"turn_notification": "bell"' in tui_settings_path().read_text(encoding="utf-8")
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.auto_resize_images is False
+        assert app.session.auto_resize_images is False
+        assert '"auto_resize_images": false' in tui_settings_path().read_text(encoding="utf-8")
 
 
 @pytest.mark.anyio

@@ -224,6 +224,7 @@ class CodingSessionConfig:
     loop_receipt: LoopReceiptConfig | None = None
     shell_path: str | None = None
     shell_command_prefix: str | None = None
+    auto_resize_images: bool = True
 
 
 class CodingSession:
@@ -302,7 +303,11 @@ class CodingSession:
         tools = (
             config.tools
             if config.tools is not None
-            else create_coding_tools(cwd=config.cwd, shell_path=config.shell_path)
+            else create_coding_tools(
+                cwd=config.cwd,
+                shell_path=config.shell_path,
+                auto_resize_images=config.auto_resize_images,
+            )
         )
         resource_paths = resource_paths_with_cwd(config.resource_paths, config.cwd)
         resources = _load_session_resources(
@@ -646,6 +651,23 @@ class CodingSession:
         self._config = replace(self._config, shell_path=path)
         state = "configured" if path else "cleared"
         return f"Shell path {state}."
+
+    @property
+    def auto_resize_images(self) -> bool:
+        """Return whether Tau resizes large image reads for provider compatibility."""
+        return self._config.auto_resize_images
+
+    def set_auto_resize_images(self, enabled: bool) -> str:
+        """Set whether future default read-tool calls resize oversized images."""
+        self._config = replace(self._config, auto_resize_images=enabled)
+        if self._config.tools is None:
+            self._harness.config.tools = create_coding_tools(
+                cwd=self.cwd,
+                shell_path=self._shell_path,
+                auto_resize_images=enabled,
+            )
+        state = "enabled" if enabled else "disabled"
+        return f"Auto-resize images {state}."
 
     @property
     def steering_queue_mode(self) -> QueueMode:

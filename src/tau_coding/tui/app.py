@@ -2086,6 +2086,7 @@ class TreePickerResult:
 
 SettingsPickerKey = Literal[
     "autocomplete_max_visible",
+    "auto_resize_images",
     "block_images",
     "clear_on_shrink",
     "editor_padding_x",
@@ -5343,6 +5344,9 @@ class TauTuiApp(App[None]):
         set_shell_command_prefix = getattr(self.session, "set_shell_command_prefix", None)
         if callable(set_shell_command_prefix):
             set_shell_command_prefix(settings.shell_command_prefix)
+        set_auto_resize_images = getattr(self.session, "set_auto_resize_images", None)
+        if callable(set_auto_resize_images):
+            set_auto_resize_images(settings.auto_resize_images)
         self._terminal_notification.mode = settings.turn_notification
         set_steering_mode = getattr(self.session, "set_steering_queue_mode", None)
         if callable(set_steering_mode):
@@ -7776,6 +7780,12 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             value=settings.turn_notification,
             description="Request terminal attention when a Tau turn finishes in the background",
         ),
+        SettingsPickerItem(
+            key="auto_resize_images",
+            label="Auto-resize images",
+            value="on" if settings.auto_resize_images else "off",
+            description="Resize large images before they are sent to providers",
+        ),
     )
 
 
@@ -7876,6 +7886,8 @@ def _next_tui_settings(
                 (current_index + 1) % len(AUTOCOMPLETE_MAX_VISIBLE_CHOICES)
             ],
         )
+    if key == "auto_resize_images":
+        return replace(settings, auto_resize_images=not settings.auto_resize_images)
     if key == "block_images":
         return replace(settings, block_images=not settings.block_images)
     if key == "show_images":
@@ -8972,6 +8984,7 @@ async def run_tui_app(
                 thinking_level=tui_settings.thinking_level,
                 shell_path=tui_settings.shell_path,
                 shell_command_prefix=tui_settings.shell_command_prefix,
+                auto_resize_images=tui_settings.auto_resize_images,
             )
         )
         app = TauTuiApp(

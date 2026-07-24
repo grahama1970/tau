@@ -12761,6 +12761,7 @@ async def run_print_mode(
             default_project_trust=tui_settings.default_project_trust,
             shell_path=tui_settings.shell_path,
             shell_command_prefix=tui_settings.shell_command_prefix,
+            auto_resize_images=tui_settings.auto_resize_images,
             loop_receipt=loop_receipt,
         )
     )
