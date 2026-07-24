@@ -1730,24 +1730,6 @@ class PromptInput(TextArea):
 class SessionPickerScreen(ModalScreen[str | None]):
     """Searchable modal picker for indexed sessions."""
 
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel"),
-        Binding("tab", "toggle_scope", "Scope", priority=True),
-        Binding("f2", "start_rename", "Rename"),
-        Binding("ctrl+r", "start_rename", "Rename", priority=True),
-        Binding("ctrl+e", "start_rename", "Rename", show=False),
-        Binding("ctrl+d", "delete_session", "Delete"),
-        Binding("ctrl+backspace", "delete_session_noninvasive", "Delete", show=False),
-        Binding("ctrl+n", "toggle_named_filter", "Named"),
-        Binding("ctrl+p", "toggle_path", "Path"),
-        Binding("ctrl+s", "toggle_sort", "Sort"),
-        Binding("up", "cursor_up", "Up", show=False),
-        Binding("down", "cursor_down", "Down", show=False),
-        Binding("pageup", "page_up", "Page up", show=False),
-        Binding("pagedown", "page_down", "Page down", show=False),
-        Binding("enter", "select_cursor", "Select", show=False),
-    ]
-
     def __init__(
         self,
         records: Sequence[SessionCompletionRecord],
@@ -2473,15 +2455,6 @@ class TrustPickerScreen(ModalScreen[ProjectTrustOption | None]):
 class UserMessagePickerScreen(ModalScreen[str | None]):
     """Modal picker for forking from a previous user message."""
 
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel"),
-        Binding("up", "cursor_up", "Up", show=False),
-        Binding("down", "cursor_down", "Down", show=False),
-        Binding("pageup", "page_up", "Page up", show=False),
-        Binding("pagedown", "page_down", "Page down", show=False),
-        Binding("enter", "select_cursor", "Fork", show=False),
-    ]
-
     def __init__(
         self,
         choices: Sequence[SessionTreeChoice],
@@ -2504,8 +2477,10 @@ class UserMessagePickerScreen(ModalScreen[str | None]):
                 *self._list_items(),
                 id="user-message-picker-list",
             )
+            select_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+            cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
             yield Static(
-                "Enter forks - Escape cancels",
+                f"{select_key} forks - {cancel_key} cancels",
                 id="user-message-picker-help",
             )
 
@@ -2619,16 +2594,6 @@ class WorkflowPickerResult:
 
 class WorkflowPickerScreen(ModalScreen[WorkflowPickerResult | None]):
     """Modal picker for packaged canonical Tau workflows."""
-
-    BINDINGS: ClassVar[list[BindingEntry]] = [
-        Binding("escape", "cancel", "Cancel"),
-        Binding("up", "cursor_up", "Up", show=False),
-        Binding("down", "cursor_down", "Down", show=False),
-        Binding("pageup", "page_up", "Page up", show=False),
-        Binding("pagedown", "page_down", "Page down", show=False),
-        Binding("enter", "select_cursor", "Details", show=False),
-        Binding("ctrl+r", "insert_run_command", "Run", show=False),
-    ]
 
     def __init__(
         self,
