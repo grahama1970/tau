@@ -130,6 +130,7 @@ from tau_coding.tui.state import (
     format_terminal_command_result_block,
     format_terminal_command_running_block,
 )
+from tau_coding.tui.terminal_title import TerminalTitleController
 from tau_coding.tui.widgets import (
     CompactSessionInfo,
     SessionSidebar,
@@ -4850,6 +4851,7 @@ class TauTuiApp(App[None]):
         self._activity_frame = 0
         self._activity_timer: Timer | None = None
         self._terminal_progress_active = False
+        self._terminal_title = TerminalTitleController()
         self._active_notification_keys: set[tuple[str, str]] = set()
         self._supports_pyperclip: bool | None = None
         self._last_empty_escape_at: float | None = None
@@ -4930,6 +4932,7 @@ class TauTuiApp(App[None]):
         if self._terminal_progress_active:
             self._terminal_progress_active = False
             self._write_terminal_progress(active=False)
+        self._terminal_title.restore()
 
     def on_resize(self, event: Resize) -> None:
         """Update responsive chrome when the terminal changes size."""
@@ -6611,12 +6614,14 @@ class TauTuiApp(App[None]):
             else:
                 self._activity_timer.resume()
             self._apply_activity_indicator()
+            self._sync_terminal_title()
             self._sync_terminal_progress_indicator()
             return
         self._activity_frame = 0
         if self._activity_timer is not None:
             self._activity_timer.pause()
         self._apply_activity_indicator()
+        self._sync_terminal_title()
         self._sync_terminal_progress_indicator()
 
     def _sync_terminal_progress_indicator(self) -> None:
@@ -6642,6 +6647,14 @@ class TauTuiApp(App[None]):
             return
         self._activity_frame += 1
         self._apply_activity_indicator()
+        self._sync_terminal_title()
+
+    def _sync_terminal_title(self) -> None:
+        self._terminal_title.update(
+            getattr(self.session, "session_title", None),
+            running=self.state.running,
+            frame=self._activity_frame,
+        )
 
     def _apply_activity_indicator(self) -> None:
         theme = self.tui_settings.resolved_theme

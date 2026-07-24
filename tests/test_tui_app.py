@@ -5564,6 +5564,38 @@ async def test_tui_app_startup_notification_shows_when_not_quiet(
 
 
 @pytest.mark.anyio
+async def test_tui_app_syncs_terminal_title_on_mount_activity_and_unmount(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    updates: list[tuple[str | None, bool, int] | tuple[str]] = []
+
+    class FakeTerminalTitleController:
+        def update(self, session_title: str | None, *, running: bool, frame: int = 0) -> None:
+            updates.append((session_title, running, frame))
+
+        def restore(self) -> None:
+            updates.append(("restore",))
+
+    monkeypatch.setattr(tui_app, "TerminalTitleController", FakeTerminalTitleController)
+    session = FakeSession()
+    session.session_title = "Release review"
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        app.state.running = True
+        app._sync_activity_indicator()
+        app._tick_activity()
+        app.state.running = False
+        app._sync_activity_indicator()
+
+    assert ("Release review", False, 0) in updates
+    assert ("Release review", True, 0) in updates
+    assert ("Release review", True, 1) in updates
+    assert updates[-1] == ("restore",)
+
+
+@pytest.mark.anyio
 async def test_tui_app_settings_picker_shows_selected_setting_description() -> None:
     app = TauTuiApp(FakeSession())
 
