@@ -8568,27 +8568,37 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         "Keyboard Shortcuts",
         "",
         "Navigation:",
-        "- Up/Down/Left/Right: move cursor or browse prompt history",
+        f"- {_key_hint(keybindings.editor_cursor_up)}/"
+        f"{_key_hint(keybindings.editor_cursor_down)}/"
+        f"{_key_hint(keybindings.editor_cursor_left)}/"
+        f"{_key_hint(keybindings.editor_cursor_right)}: move cursor or browse prompt history",
         f"- {_key_hint(keybindings.completion_previous)}/"
         f"{_key_hint(keybindings.completion_next)}: move through completions",
-        "- Home/End: move to line start/end",
+        f"- {_key_hint(keybindings.editor_cursor_line_start)}/"
+        f"{_key_hint(keybindings.editor_cursor_line_end)}: move to line start/end",
         "",
         "Editing:",
         f"- {_key_hint(keybindings.submit_prompt)}: submit prompt",
         f"- {newline_hint}: insert newline",
         "- Shift+Space: insert a literal space",
-        "- Ctrl+A/Ctrl+E: move to line start/end",
-        "- Ctrl+B/Ctrl+F: move one character left/right",
-        "- Alt+B/Ctrl+Left/Alt+Left: move word left",
-        "- Alt+F/Ctrl+Right/Alt+Right: move word right",
-        "- Ctrl+]/Ctrl+Alt+]: jump to next or previous character",
-        "- Ctrl+U: delete to line start",
-        "- Ctrl+K: delete to line end when not used for commands",
-        "- Delete/Ctrl+D: delete next character; Ctrl+D quits when the editor is empty",
-        "- Ctrl+W/Alt+Backspace: delete previous word",
-        "- Alt+D/Alt+Delete: delete next word",
-        "- Ctrl+Y/Alt+Y: yank or cycle deleted text",
-        "- Ctrl+-: undo previous prompt edit",
+        f"- {_key_hint(keybindings.editor_cursor_line_start)}/"
+        f"{_key_hint(keybindings.editor_cursor_line_end)}: move to line start/end",
+        f"- {_key_hint(keybindings.editor_cursor_left)}/"
+        f"{_key_hint(keybindings.editor_cursor_right)}: move one character left/right",
+        f"- {_key_hint(keybindings.editor_cursor_word_left)}: move word left",
+        f"- {_key_hint(keybindings.editor_cursor_word_right)}: move word right",
+        f"- {_key_hint(keybindings.editor_jump_forward)}/"
+        f"{_key_hint(keybindings.editor_jump_backward)}: jump to next or previous character",
+        f"- {_key_hint(keybindings.editor_delete_to_line_start)}: delete to line start",
+        f"- {_key_hint(keybindings.editor_delete_to_line_end)}: "
+        "delete to line end when not used for commands",
+        f"- {_key_hint(keybindings.editor_delete_char_forward)}: delete next character; "
+        f"{_key_hint(keybindings.quit)} quits when the editor is empty",
+        f"- {_key_hint(keybindings.editor_delete_word_backward)}: delete previous word",
+        f"- {_key_hint(keybindings.editor_delete_word_forward)}: delete next word",
+        f"- {_key_hint(keybindings.editor_yank)}/{_key_hint(keybindings.editor_yank_pop)}: "
+        "yank or cycle deleted text",
+        f"- {_key_hint(keybindings.editor_undo)}: undo previous prompt edit",
         f"- {_key_hint(keybindings.accept_completion)}: accept autocomplete or path completion",
         f"- {_key_hint(keybindings.external_editor)}: edit prompt in external editor",
         f"- {_key_hint(keybindings.paste_clipboard)}: paste clipboard text or image",

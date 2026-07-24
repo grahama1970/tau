@@ -7683,6 +7683,23 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
                 queue_follow_up="f5",
                 copy_last_message="ctrl+y",
                 session_tree="f2",
+                editor_cursor_line_start="f13",
+                editor_cursor_line_end="f14",
+                editor_cursor_left="f15",
+                editor_cursor_right="f16",
+                editor_cursor_word_left="f17",
+                editor_cursor_word_right="f18",
+                editor_jump_forward="f19",
+                editor_jump_backward="f20",
+                editor_delete_to_line_start="f21",
+                editor_delete_to_line_end="f22",
+                editor_delete_char_forward="f23",
+                editor_delete_word_backward="f24",
+                editor_delete_word_forward="f25",
+                editor_yank="f26",
+                editor_yank_pop="f27",
+                editor_undo="f28",
+                quit="f29",
             )
         ),
     )
@@ -7702,22 +7719,22 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "Ctrl+Y: copy last assistant message" in app.screen.message
         assert "F2: open session tree" in app.screen.message
         assert "Shift+Space: insert a literal space" in app.screen.message
-        assert "Ctrl+A/Ctrl+E: move to line start/end" in app.screen.message
-        assert "Ctrl+B/Ctrl+F: move one character left/right" in app.screen.message
-        assert "Alt+B/Ctrl+Left/Alt+Left: move word left" in app.screen.message
-        assert "Alt+F/Ctrl+Right/Alt+Right: move word right" in app.screen.message
-        assert "Ctrl+]/Ctrl+Alt+]: jump to next or previous character" in app.screen.message
+        assert "F13/F14: move to line start/end" in app.screen.message
+        assert "F15/F16: move one character left/right" in app.screen.message
+        assert "F17: move word left" in app.screen.message
+        assert "F18: move word right" in app.screen.message
+        assert "F19/F20: jump to next or previous character" in app.screen.message
         assert "drop files: attach paths to the prompt" in app.screen.message
-        assert "Ctrl+U: delete to line start" in app.screen.message
-        assert "Ctrl+K: delete to line end when not used for commands" in app.screen.message
+        assert "F21: delete to line start" in app.screen.message
+        assert "F22: delete to line end when not used for commands" in app.screen.message
         assert (
-            "Delete/Ctrl+D: delete next character; Ctrl+D quits when the editor is empty"
+            "F23: delete next character; F29 quits when the editor is empty"
             in app.screen.message
         )
-        assert "Ctrl+W/Alt+Backspace: delete previous word" in app.screen.message
-        assert "Alt+D/Alt+Delete: delete next word" in app.screen.message
-        assert "Ctrl+Y/Alt+Y: yank or cycle deleted text" in app.screen.message
-        assert "Ctrl+-: undo previous prompt edit" in app.screen.message
+        assert "F24: delete previous word" in app.screen.message
+        assert "F25: delete next word" in app.screen.message
+        assert "F26/F27: yank or cycle deleted text" in app.screen.message
+        assert "F28: undo previous prompt edit" in app.screen.message
         assert "/resources: show loaded context, skills, prompts, and tools" in app.screen.message
 
 
