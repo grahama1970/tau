@@ -8160,6 +8160,105 @@ async def test_tui_app_runs_terminal_command_without_context() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_summarizes_workflow_terminal_receipt() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+    receipt = {
+        "schema": "tau.workflow_run_receipt.v1",
+        "workflow_id": "repository-readiness",
+        "status": "PASS",
+        "ok": True,
+        "run_dir": "/tmp/tau-run",
+        "run_receipt_path": "/tmp/tau-run/run-receipt.json",
+        "result": {"status": "READY"},
+        "viewer": {
+            "command": ["tau", "dag-view", "--run-dir", "/tmp/tau-run"],
+            "url": "http://127.0.0.1:40103/",
+        },
+    }
+
+    async def fake_run_terminal_command(
+        command: str,
+        *,
+        add_to_context: bool,
+    ) -> TerminalCommandResult:
+        return TerminalCommandResult(
+            command=command,
+            output=tui_app.json.dumps(receipt),
+            exit_code=0,
+            ok=True,
+            added_to_context=add_to_context,
+        )
+
+    session.run_terminal_command = fake_run_terminal_command  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "!! uv run tau workflows run repository-readiness"
+        await pilot.press("enter")
+        await pilot.pause()
+
+    tool_result = app.state.items[-1].tool_result_text
+    assert tool_result is not None
+    assert "Tau workflow receipt" in tool_result
+    assert "workflow: repository-readiness" in tool_result
+    assert "status: PASS" in tool_result
+    assert "result: READY" in tool_result
+    assert "run dir: /tmp/tau-run" in tool_result
+    assert "receipt: /tmp/tau-run/run-receipt.json" in tool_result
+    assert "viewer command: tau dag-view --run-dir /tmp/tau-run" in tool_result
+    assert "viewer url: http://127.0.0.1:40103/" in tool_result
+    assert "Raw output:" in tool_result
+
+
+@pytest.mark.anyio
+async def test_tui_app_summarizes_blocked_workflow_terminal_receipt() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async def fake_run_terminal_command(
+        command: str,
+        *,
+        add_to_context: bool,
+    ) -> TerminalCommandResult:
+        return TerminalCommandResult(
+            command=command,
+            output=tui_app.json.dumps(
+                {
+                    "schema": "tau.workflow_run_receipt.v1",
+                    "workflow_id": "approved-release-bundle",
+                    "status": "BLOCKED",
+                    "ok": False,
+                    "run_dir": "/tmp/blocked-run",
+                    "run_receipt_path": "/tmp/blocked-run/run-receipt.json",
+                    "viewer": {
+                        "command": ["tau", "dag-view", "--run-dir", "/tmp/blocked-run"],
+                        "url": None,
+                    },
+                }
+            ),
+            exit_code=1,
+            ok=False,
+            added_to_context=add_to_context,
+        )
+
+    session.run_terminal_command = fake_run_terminal_command  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "!! uv run tau workflows run approved-release-bundle"
+        await pilot.press("enter")
+        await pilot.pause()
+
+    tool_result = app.state.items[-1].tool_result_text
+    assert tool_result is not None
+    assert "✗ bash · not added to context" in tool_result
+    assert "workflow: approved-release-bundle" in tool_result
+    assert "status: BLOCKED" in tool_result
+    assert "next: inspect the workflow receipt" in tool_result
+
+
+@pytest.mark.anyio
 @pytest.mark.parametrize("add_to_context", [True, False])
 async def test_tui_app_renders_terminal_command_while_running(add_to_context: bool) -> None:
     session = FakeSession()

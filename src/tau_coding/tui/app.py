@@ -1,6 +1,7 @@
 """Minimal Textual app for Tau coding sessions."""
 
 import asyncio
+import json
 import os
 import re
 import shlex
@@ -4644,10 +4645,11 @@ class TauTuiApp(App[None]):
             return
         item = self.state.items[item_index]
         item.text = f"$ {result.command}"
+        formatted_output = _format_workflow_terminal_output(result.output) or result.output
         item.tool_result_text = format_terminal_command_result_block(
             ok=result.ok,
             added_to_context=result.added_to_context,
-            output=result.output,
+            output=formatted_output,
         )
         self._follow_transcript_output()
         self._refresh()
@@ -6771,6 +6773,46 @@ def _workflow_run_terminal_command(workflow: WorkflowDefinition, *, cwd: Path) -
 
 def _workflow_run_directory_name(workflow_id: str) -> str:
     return f"{workflow_id}-{datetime.now().strftime('%Y%m%dT%H%M%S')}"
+
+
+def _format_workflow_terminal_output(output: str) -> str | None:
+    try:
+        payload = json.loads(output.strip())
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    workflow_id = payload.get("workflow_id")
+    schema = payload.get("schema")
+    if not isinstance(workflow_id, str) or schema != "tau.workflow_run_receipt.v1":
+        return None
+    lines = ["Tau workflow receipt", f"workflow: {workflow_id}"]
+    status = payload.get("status")
+    if isinstance(status, str):
+        lines.append(f"status: {status}")
+    result = payload.get("result")
+    if isinstance(result, dict) and isinstance(result.get("status"), str):
+        lines.append(f"result: {result['status']}")
+    run_dir = payload.get("run_dir")
+    if isinstance(run_dir, str):
+        lines.append(f"run dir: {run_dir}")
+    receipt_path = payload.get("run_receipt_path")
+    if isinstance(receipt_path, str):
+        lines.append(f"receipt: {receipt_path}")
+    viewer = payload.get("viewer")
+    if isinstance(viewer, dict):
+        command = viewer.get("command")
+        url = viewer.get("url")
+        if isinstance(command, list) and all(isinstance(part, str) for part in command):
+            lines.append(f"viewer command: {shlex.join(command)}")
+        if isinstance(url, str) and url:
+            lines.append(f"viewer url: {url}")
+    if payload.get("ok") is not True:
+        lines.append(
+            "next: inspect the workflow receipt or run the listed approve/repair/resume command"
+        )
+    lines.extend(["", "Raw output:", output.strip()])
+    return "\n".join(lines)
 
 
 def _active_tree_choice_index(choices: Sequence[SessionTreeChoice]) -> int:
