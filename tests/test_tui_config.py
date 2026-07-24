@@ -60,7 +60,8 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
           "theme": "high-contrast",
           "tree_filter_mode": "user-only",
           "steering_mode": "all",
-          "followUpMode": "all"
+          "followUpMode": "all",
+          "thinkingLevel": "high"
         }
         """,
         encoding="utf-8",
@@ -95,6 +96,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.hide_thinking is True
     assert settings.steering_mode == "all"
     assert settings.follow_up_mode == "all"
+    assert settings.thinking_level == "high"
     assert settings.tree_filter_mode == "user-only"
     assert settings.resolved_theme == HIGH_CONTRAST_THEME
 
@@ -131,6 +133,11 @@ def test_tui_settings_reject_invalid_queue_modes() -> None:
         tui_settings_from_json({"steering_mode": "latest"})
     with pytest.raises(TuiConfigError, match="follow_up_mode"):
         tui_settings_from_json({"follow_up_mode": "latest"})
+
+
+def test_tui_settings_reject_invalid_thinking_level() -> None:
+    with pytest.raises(TuiConfigError, match="thinking_level"):
+        tui_settings_from_json({"thinking_level": "ultra"})
 
 
 def test_tui_keybindings_reject_duplicate_keys() -> None:

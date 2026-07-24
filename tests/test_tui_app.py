@@ -3539,6 +3539,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             tree_filter_mode="default",
             hide_thinking=True,
             steering_mode="one-at-a-time",
+            thinking_level="medium",
         ),
     )
 
@@ -3557,6 +3558,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: one-at-a-time",
             "Auto-copy selection: off",
             "Hide thinking: on",
+            "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
         ]
@@ -3574,6 +3576,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: one-at-a-time",
             "Auto-copy selection: off",
             "Hide thinking: on",
+            "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
         ]
@@ -3591,6 +3594,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: one-at-a-time",
             "Auto-copy selection: off",
             "Hide thinking: on",
+            "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
         ]
@@ -3608,6 +3612,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Auto-copy selection: off",
             "Hide thinking: on",
+            "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
         ]
@@ -3624,6 +3629,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Follow-up mode: all",
             "Auto-copy selection: on",
             "Hide thinking: on",
+            "Thinking level: medium",
             "Double Escape: tree",
             "Tree filter mode: default",
         ]
@@ -3636,16 +3642,22 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
 
         await pilot.press("down", "enter")
         await pilot.pause()
+        assert app.tui_settings.thinking_level == "high"
+        assert app.session.thinking_level == "high"
+        assert '"thinking_level": "high"' in tui_settings_path().read_text(encoding="utf-8")
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
         assert app.tui_settings.double_escape_action == "fork"
         assert '"double_escape_action": "fork"' in tui_settings_path().read_text(encoding="utf-8")
 
-        await pilot.press("up", "up", "up", "up", "up", "up", "enter")
+        await pilot.press("up", "up", "up", "up", "up", "up", "up", "enter")
         await pilot.pause()
         assert app.tui_settings.theme == "tau-light"
         assert '"theme": "tau-light"' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
 
-        await pilot.press("down", "down", "down", "down", "down", "down", "down", "enter")
+        await pilot.press("down", "down", "down", "down", "down", "down", "down", "down", "enter")
         await pilot.pause()
         assert app.tui_settings.tree_filter_mode == "no-tools"
         assert '"tree_filter_mode": "no-tools"' in tui_settings_path().read_text(encoding="utf-8")
@@ -6961,6 +6973,7 @@ async def test_run_tui_app_creates_new_session_by_default(
             assert config.auto_compact_enabled is False  # type: ignore[attr-defined]
             assert config.steering_queue_mode == "all"  # type: ignore[attr-defined]
             assert config.follow_up_queue_mode == "one_at_a_time"  # type: ignore[attr-defined]
+            assert config.thinking_level == "high"  # type: ignore[attr-defined]
             calls.append("load")
             return "session"
 
@@ -6997,7 +7010,11 @@ async def test_run_tui_app_creates_new_session_by_default(
     monkeypatch.setattr(
         tui_app,
         "load_tui_settings",
-        lambda: TuiSettings(auto_compact=False, steering_mode="all"),
+        lambda: TuiSettings(
+            auto_compact=False,
+            steering_mode="all",
+            thinking_level="high",
+        ),
     )
 
     await tui_app.run_tui_app(

@@ -89,7 +89,12 @@ from tau_coding.session import (
 )
 from tau_coding.session_manager import CodingSessionRecord, SessionManager
 from tau_coding.system_prompt import ProjectContextFile
-from tau_coding.thinking import DEFAULT_THINKING_LEVEL
+from tau_coding.thinking import (
+    DEFAULT_THINKING_LEVEL,
+    THINKING_LEVELS,
+    ThinkingLevel,
+    next_thinking_level,
+)
 from tau_coding.tui.adapter import TuiEventAdapter
 from tau_coding.tui.autocomplete import (
     CompletionItem,
@@ -888,6 +893,7 @@ SettingsPickerKey = Literal[
     "follow_up_mode",
     "auto_copy_selection",
     "hide_thinking",
+    "thinking_level",
     "double_escape_action",
     "tree_filter_mode",
 ]
@@ -917,10 +923,12 @@ class SettingsPickerScreen(ModalScreen[None]):
         settings: TuiSettings,
         *,
         apply_settings: Callable[[TuiSettings], None],
+        thinking_levels: Sequence[ThinkingLevel] = THINKING_LEVELS,
     ) -> None:
         super().__init__()
         self.settings = settings
         self.apply_settings = apply_settings
+        self.thinking_levels = tuple(thinking_levels) or THINKING_LEVELS
         self.search_value = ""
         self.filtered_items = _settings_picker_items(settings)
 
@@ -998,7 +1006,11 @@ class SettingsPickerScreen(ModalScreen[None]):
         if index >= len(self.filtered_items):
             return
         selected_key = self.filtered_items[index].key
-        self.settings = _next_tui_settings(self.settings, selected_key)
+        self.settings = _next_tui_settings(
+            self.settings,
+            selected_key,
+            thinking_levels=self.thinking_levels,
+        )
         self.apply_settings(self.settings)
         self._refresh_settings_list(index)
 
@@ -3519,11 +3531,13 @@ class TauTuiApp(App[None]):
                 follow_up_mode=self.tui_settings.follow_up_mode,
                 hide_thinking=self.tui_settings.hide_thinking,
                 steering_mode=self.tui_settings.steering_mode,
+                thinking_level=self.tui_settings.thinking_level,
                 tree_filter_mode=self.tui_settings.tree_filter_mode,
             )
         )
 
     def _set_tui_settings(self, settings: TuiSettings) -> None:
+        previous_settings = self.tui_settings
         self.tui_settings = settings
         self.state.show_thinking = not settings.hide_thinking
         set_auto_compact = getattr(self.session, "set_auto_compact_enabled", None)
@@ -3535,6 +3549,11 @@ class TauTuiApp(App[None]):
         set_follow_up_mode = getattr(self.session, "set_follow_up_queue_mode", None)
         if callable(set_follow_up_mode):
             set_follow_up_mode(_agent_queue_mode_from_tui(settings.follow_up_mode))
+        if settings.thinking_level != previous_settings.thinking_level:
+            self.run_worker(
+                self._set_thinking_level(settings.thinking_level),
+                exclusive=False,
+            )
         save_tui_settings(self.tui_settings)
         self._bindings = BindingsMap(_app_bindings(self.tui_settings.keybindings))
         with suppress(NoMatches):
@@ -3555,6 +3574,8 @@ class TauTuiApp(App[None]):
             SettingsPickerScreen(
                 self.tui_settings,
                 apply_settings=self._settings_picker_settings_changed,
+                thinking_levels=tuple(getattr(self.session, "available_thinking_levels", ()))
+                or THINKING_LEVELS,
             )
         )
 
@@ -5591,6 +5612,11 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             value="on" if settings.hide_thinking else "off",
         ),
         SettingsPickerItem(
+            key="thinking_level",
+            label="Thinking level",
+            value=settings.thinking_level,
+        ),
+        SettingsPickerItem(
             key="double_escape_action",
             label="Double Escape",
             value=settings.double_escape_action,
@@ -5649,7 +5675,12 @@ def _project_trust_option_label(
     return f"{marker}{option.label}"
 
 
-def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSettings:
+def _next_tui_settings(
+    settings: TuiSettings,
+    key: SettingsPickerKey,
+    *,
+    thinking_levels: Sequence[ThinkingLevel] = THINKING_LEVELS,
+) -> TuiSettings:
     if key == "theme":
         try:
             current_index = BUILTIN_TUI_THEME_NAMES.index(settings.theme)
@@ -5665,6 +5696,7 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
             follow_up_mode=settings.follow_up_mode,
             hide_thinking=settings.hide_thinking,
             steering_mode=settings.steering_mode,
+            thinking_level=settings.thinking_level,
             tree_filter_mode=settings.tree_filter_mode,
         )
     if key == "auto_compact":
@@ -5677,6 +5709,7 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
             follow_up_mode=settings.follow_up_mode,
             hide_thinking=settings.hide_thinking,
             steering_mode=settings.steering_mode,
+            thinking_level=settings.thinking_level,
             tree_filter_mode=settings.tree_filter_mode,
         )
     if key == "steering_mode":
@@ -5689,6 +5722,7 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
             follow_up_mode=settings.follow_up_mode,
             hide_thinking=settings.hide_thinking,
             steering_mode=_next_queue_drain_mode(settings.steering_mode),
+            thinking_level=settings.thinking_level,
             tree_filter_mode=settings.tree_filter_mode,
         )
     if key == "follow_up_mode":
@@ -5701,6 +5735,7 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
             follow_up_mode=_next_queue_drain_mode(settings.follow_up_mode),
             hide_thinking=settings.hide_thinking,
             steering_mode=settings.steering_mode,
+            thinking_level=settings.thinking_level,
             tree_filter_mode=settings.tree_filter_mode,
         )
     if key == "auto_copy_selection":
@@ -5713,6 +5748,7 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
             follow_up_mode=settings.follow_up_mode,
             hide_thinking=settings.hide_thinking,
             steering_mode=settings.steering_mode,
+            thinking_level=settings.thinking_level,
             tree_filter_mode=settings.tree_filter_mode,
         )
     if key == "hide_thinking":
@@ -5725,6 +5761,24 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
             follow_up_mode=settings.follow_up_mode,
             hide_thinking=not settings.hide_thinking,
             steering_mode=settings.steering_mode,
+            thinking_level=settings.thinking_level,
+            tree_filter_mode=settings.tree_filter_mode,
+        )
+    if key == "thinking_level":
+        available = tuple(level for level in thinking_levels if level in THINKING_LEVELS)
+        return TuiSettings(
+            keybindings=settings.keybindings,
+            theme=settings.theme,
+            auto_compact=settings.auto_compact,
+            auto_copy_selection=settings.auto_copy_selection,
+            double_escape_action=settings.double_escape_action,
+            follow_up_mode=settings.follow_up_mode,
+            hide_thinking=settings.hide_thinking,
+            steering_mode=settings.steering_mode,
+            thinking_level=next_thinking_level(
+                settings.thinking_level,
+                available=available or THINKING_LEVELS,
+            ),
             tree_filter_mode=settings.tree_filter_mode,
         )
     if key == "double_escape_action":
@@ -5748,6 +5802,7 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
             follow_up_mode=settings.follow_up_mode,
             hide_thinking=settings.hide_thinking,
             steering_mode=settings.steering_mode,
+            thinking_level=settings.thinking_level,
             tree_filter_mode=settings.tree_filter_mode,
         )
     try:
@@ -5763,6 +5818,7 @@ def _next_tui_settings(settings: TuiSettings, key: SettingsPickerKey) -> TuiSett
         follow_up_mode=settings.follow_up_mode,
         hide_thinking=settings.hide_thinking,
         steering_mode=settings.steering_mode,
+        thinking_level=settings.thinking_level,
         tree_filter_mode=TREE_FILTER_MODES[(current_index + 1) % len(TREE_FILTER_MODES)],
     )
 
@@ -6448,6 +6504,7 @@ async def run_tui_app(
                 auto_compact_enabled=tui_settings.auto_compact,
                 steering_queue_mode=_agent_queue_mode_from_tui(tui_settings.steering_mode),
                 follow_up_queue_mode=_agent_queue_mode_from_tui(tui_settings.follow_up_mode),
+                thinking_level=tui_settings.thinking_level,
             )
         )
         app = TauTuiApp(

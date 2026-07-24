@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Literal, cast
 
 from tau_coding.paths import TauPaths
+from tau_coding.thinking import DEFAULT_THINKING_LEVEL, THINKING_LEVELS, ThinkingLevel
 
 
 class TuiConfigError(ValueError):
@@ -269,6 +270,7 @@ class TuiSettings:
     double_escape_action: DoubleEscapeAction = "tree"
     tree_filter_mode: TuiTreeFilterMode = "default"
     hide_thinking: bool = True
+    thinking_level: ThinkingLevel = DEFAULT_THINKING_LEVEL
     steering_mode: TuiQueueDrainMode = "one-at-a-time"
     follow_up_mode: TuiQueueDrainMode = "one-at-a-time"
 
@@ -283,6 +285,7 @@ class TuiSettings:
             "follow_up_mode": self.follow_up_mode,
             "steering_mode": self.steering_mode,
             "theme": self.theme,
+            "thinking_level": self.thinking_level,
             "tree_filter_mode": self.tree_filter_mode,
         }
 
@@ -329,6 +332,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "steeringMode",
         "steering_mode",
         "theme",
+        "thinkingLevel",
+        "thinking_level",
         "tree_filter_mode",
     }
     unknown_fields = set(data) - allowed_fields
@@ -358,6 +363,9 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
             data.get("follow_up_mode", data.get("followUpMode", "one-at-a-time")),
             "follow_up_mode",
         ),
+        thinking_level=_thinking_level(
+            data.get("thinking_level", data.get("thinkingLevel", DEFAULT_THINKING_LEVEL))
+        ),
         tree_filter_mode=_tree_filter_mode(data.get("tree_filter_mode", "default")),
     )
 
@@ -386,6 +394,13 @@ def _queue_drain_mode(value: object, field_name: str) -> TuiQueueDrainMode:
     if value in {"one-at-a-time", "all"}:
         return cast(TuiQueueDrainMode, value)
     raise TuiConfigError(f"TUI {field_name} must be one of: one-at-a-time, all")
+
+
+def _thinking_level(value: object) -> ThinkingLevel:
+    if value in THINKING_LEVELS:
+        return cast(ThinkingLevel, value)
+    allowed = ", ".join(THINKING_LEVELS)
+    raise TuiConfigError(f"TUI thinking_level must be one of: {allowed}")
 
 
 def _keybindings_from_json(data: dict[str, Any]) -> TuiKeybindings:
