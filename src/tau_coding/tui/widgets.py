@@ -21,7 +21,7 @@ from rich.theme import Theme
 from textual.containers import Horizontal, VerticalScroll
 from textual.content import Style as TextualStyle
 from textual.events import Resize
-from textual.geometry import Offset
+from textual.geometry import Offset, Spacing
 from textual.selection import Selection
 from textual.widgets import Markdown as TextualMarkdown
 from textual.widgets import Static
@@ -221,6 +221,7 @@ class TranscriptMessageWidget(Horizontal):
         *,
         theme: TuiTheme,
         show_tool_results: bool,
+        output_padding_x: int = 1,
     ) -> None:
         self.item = item
         self.selection_text = transcript_item_selection_text(
@@ -233,6 +234,7 @@ class TranscriptMessageWidget(Horizontal):
         )
         self._theme = theme
         self._role_style = _chat_item_role_style(item, theme)
+        self._output_padding_x = output_padding_x
         super().__init__(classes="transcript-message")
 
     def compose(self) -> Any:
@@ -267,6 +269,7 @@ class TranscriptMessageWidget(Horizontal):
                 body.styles.color = foreground
             if background:
                 body.styles.background = background
+        body.styles.padding = Spacing.unpack((0, self._output_padding_x))
         return body
 
     def get_selection(self, selection: Selection) -> tuple[str, str] | None:
@@ -293,7 +296,7 @@ class StreamingTranscriptMessageWidget(ThemedMarkdownWidget):
     }
     """
 
-    def __init__(self, item: ChatItem, *, theme: TuiTheme) -> None:
+    def __init__(self, item: ChatItem, *, theme: TuiTheme, output_padding_x: int = 1) -> None:
         if item.role not in {"assistant", "thinking"}:
             raise ValueError("Streaming transcript widgets only support assistant/thinking items")
         self.item = item
@@ -301,6 +304,7 @@ class StreamingTranscriptMessageWidget(ThemedMarkdownWidget):
         self._stream: MarkdownStream | None = None
         super().__init__(item.text, theme=theme)
         self.add_class("transcript-message")
+        self.styles.padding = Spacing.unpack((0, output_padding_x))
 
     @property
     def stream(self) -> MarkdownStream:
@@ -339,6 +343,7 @@ class TranscriptView(VerticalScroll):
         for legacy_option in ("wrap", "highlight", "markup"):
             kwargs.pop(legacy_option, None)
         min_width = kwargs.pop("min_width", None)
+        self.output_padding_x = kwargs.pop("output_padding_x", 1)
         super().__init__(*args, **kwargs)
         self.min_width = min_width
         if min_width is not None:
@@ -368,10 +373,13 @@ class TranscriptView(VerticalScroll):
         state: TuiState,
         *,
         theme: TuiTheme = TAU_DARK_THEME,
+        output_padding_x: int | None = None,
     ) -> None:
         """Redraw the transcript from display state."""
         self._render_state = state
         self._render_theme = theme
+        if output_padding_x is not None:
+            self.output_padding_x = output_padding_x
         self._redraw(scroll_end=self._should_follow_output)
 
     def on_resize(self, event: Resize) -> None:
@@ -414,6 +422,7 @@ class TranscriptView(VerticalScroll):
                             ),
                             theme=theme,
                             show_tool_results=state.show_tool_results,
+                            output_padding_x=self.output_padding_x,
                         )
                     )
                     hidden_thinking_placeholder = True
@@ -424,6 +433,7 @@ class TranscriptView(VerticalScroll):
                     item,
                     theme=theme,
                     show_tool_results=state.show_tool_results or item.always_show_tool_result,
+                    output_padding_x=self.output_padding_x,
                 )
             )
         if state.assistant_buffer:
@@ -432,6 +442,7 @@ class TranscriptView(VerticalScroll):
                     ChatItem(role="assistant", text=state.assistant_buffer),
                     theme=theme,
                     show_tool_results=state.show_tool_results,
+                    output_padding_x=self.output_padding_x,
                 )
             )
         self.refresh(layout=True)
@@ -444,14 +455,18 @@ class TranscriptView(VerticalScroll):
         *,
         theme: TuiTheme = TAU_DARK_THEME,
         show_tool_results: bool = False,
+        output_padding_x: int | None = None,
         scroll_end: bool = False,
     ) -> TranscriptMessageWidget | StreamingTranscriptMessageWidget:
         """Append one transcript item without rebuilding previous blocks."""
         self._render_theme = theme
+        if output_padding_x is not None:
+            self.output_padding_x = output_padding_x
         widget = _transcript_widget(
             item,
             theme=theme,
             show_tool_results=show_tool_results,
+            output_padding_x=self.output_padding_x,
         )
         await self.mount(widget)
         self._active_assistant_widget = None
@@ -467,14 +482,18 @@ class TranscriptView(VerticalScroll):
         self,
         *,
         theme: TuiTheme = TAU_DARK_THEME,
+        output_padding_x: int | None = None,
         scroll_end: bool = False,
     ) -> StreamingTranscriptMessageWidget:
         """Create the active assistant message widget if needed."""
+        if output_padding_x is not None:
+            self.output_padding_x = output_padding_x
         if self._active_assistant_widget is not None:
             return self._active_assistant_widget
         widget = StreamingTranscriptMessageWidget(
             ChatItem(role="assistant", text=""),
             theme=theme,
+            output_padding_x=self.output_padding_x,
         )
         self._render_theme = theme
         await self.mount(widget)
@@ -489,12 +508,17 @@ class TranscriptView(VerticalScroll):
         delta: str,
         *,
         theme: TuiTheme = TAU_DARK_THEME,
+        output_padding_x: int | None = None,
         scroll_end: bool = False,
     ) -> None:
         """Append streamed assistant text to the active message widget."""
         self._active_thinking_widget = None
         self._hidden_thinking_placeholder_visible = False
-        widget = await self.start_assistant_message(theme=theme, scroll_end=scroll_end)
+        widget = await self.start_assistant_message(
+            theme=theme,
+            output_padding_x=output_padding_x,
+            scroll_end=scroll_end,
+        )
         await widget.append_fragment(delta)
         if scroll_end:
             self.scroll_end(animate=False)
@@ -506,9 +530,12 @@ class TranscriptView(VerticalScroll):
         theme: TuiTheme = TAU_DARK_THEME,
         show_thinking: bool,
         placeholder_text: str = DEFAULT_THINKING_PLACEHOLDER_TEXT,
+        output_padding_x: int | None = None,
         scroll_end: bool = False,
     ) -> None:
         """Append streamed thinking text or one hidden-thinking placeholder."""
+        if output_padding_x is not None:
+            self.output_padding_x = output_padding_x
         if not show_thinking:
             if self._hidden_thinking_placeholder_visible:
                 return
@@ -518,6 +545,7 @@ class TranscriptView(VerticalScroll):
                     text=placeholder_text,
                 ),
                 theme=theme,
+                output_padding_x=self.output_padding_x,
                 scroll_end=scroll_end,
             )
             self._hidden_thinking_placeholder_visible = True
@@ -527,6 +555,7 @@ class TranscriptView(VerticalScroll):
             self._active_thinking_widget = StreamingTranscriptMessageWidget(
                 ChatItem(role="thinking", text=""),
                 theme=theme,
+                output_padding_x=self.output_padding_x,
             )
             await self.mount(self._active_thinking_widget)
         await self._active_thinking_widget.append_fragment(delta)
@@ -541,6 +570,7 @@ class TranscriptView(VerticalScroll):
                 await self.append_item(
                     ChatItem(role="assistant", text=text),
                     theme=self._render_theme,
+                    output_padding_x=self.output_padding_x,
                 )
             return
         if text is not None:
@@ -567,13 +597,19 @@ def _transcript_widget(
     *,
     theme: TuiTheme,
     show_tool_results: bool,
+    output_padding_x: int = 1,
 ) -> TranscriptMessageWidget | StreamingTranscriptMessageWidget:
     if item.role in {"assistant", "thinking"}:
-        return StreamingTranscriptMessageWidget(item, theme=theme)
+        return StreamingTranscriptMessageWidget(
+            item,
+            theme=theme,
+            output_padding_x=output_padding_x,
+        )
     return TranscriptMessageWidget(
         item,
         theme=theme,
         show_tool_results=show_tool_results,
+        output_padding_x=output_padding_x,
     )
 
 

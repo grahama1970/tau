@@ -82,6 +82,9 @@ MAX_AUTOCOMPLETE_MAX_VISIBLE = 20
 DEFAULT_EDITOR_PADDING_X = 1
 MIN_EDITOR_PADDING_X = 0
 MAX_EDITOR_PADDING_X = 3
+DEFAULT_OUTPUT_PADDING_X = 1
+MIN_OUTPUT_PADDING_X = 0
+MAX_OUTPUT_PADDING_X = 1
 
 
 @dataclass(frozen=True, slots=True)
@@ -283,6 +286,7 @@ class TuiSettings:
     autocomplete_max_visible: int = DEFAULT_AUTOCOMPLETE_MAX_VISIBLE
     enable_skill_commands: bool = True
     editor_padding_x: int = DEFAULT_EDITOR_PADDING_X
+    output_padding_x: int = DEFAULT_OUTPUT_PADDING_X
 
     def to_json(self) -> dict[str, Any]:
         """Serialize these settings to JSON-compatible data."""
@@ -296,6 +300,7 @@ class TuiSettings:
             "enable_skill_commands": self.enable_skill_commands,
             "hide_thinking": self.hide_thinking,
             "keybindings": self.keybindings.to_json(),
+            "output_padding_x": self.output_padding_x,
             "follow_up_mode": self.follow_up_mode,
             "steering_mode": self.steering_mode,
             "theme": self.theme,
@@ -349,6 +354,8 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         "enable_skill_commands",
         "hide_thinking",
         "keybindings",
+        "outputPad",
+        "output_padding_x",
         "followUpMode",
         "follow_up_mode",
         "steeringMode",
@@ -402,6 +409,9 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         editor_padding_x=_editor_padding_x(
             data.get("editor_padding_x", data.get("editorPaddingX", DEFAULT_EDITOR_PADDING_X))
         ),
+        output_padding_x=_output_padding_x(
+            data.get("output_padding_x", data.get("outputPad", DEFAULT_OUTPUT_PADDING_X))
+        ),
         thinking_level=_thinking_level(
             data.get("thinking_level", data.get("thinkingLevel", DEFAULT_THINKING_LEVEL))
         ),
@@ -453,6 +463,16 @@ def _editor_padding_x(value: object) -> int:
         return value
     raise TuiConfigError(
         f"TUI editor_padding_x must be between {MIN_EDITOR_PADDING_X} and {MAX_EDITOR_PADDING_X}"
+    )
+
+
+def _output_padding_x(value: object) -> int:
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise TuiConfigError("TUI output_padding_x must be an integer")
+    if MIN_OUTPUT_PADDING_X <= value <= MAX_OUTPUT_PADDING_X:
+        return value
+    raise TuiConfigError(
+        f"TUI output_padding_x must be between {MIN_OUTPUT_PADDING_X} and {MAX_OUTPUT_PADDING_X}"
     )
 
 

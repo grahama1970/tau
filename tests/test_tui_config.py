@@ -62,6 +62,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
           "blockImages": true,
           "editorPaddingX": 2,
           "enableSkillCommands": false,
+          "outputPad": 0,
           "tree_filter_mode": "user-only",
           "steering_mode": "all",
           "followUpMode": "all",
@@ -99,6 +100,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.block_images is True
     assert settings.editor_padding_x == 2
     assert settings.enable_skill_commands is False
+    assert settings.output_padding_x == 0
     assert settings.auto_compact is True
     assert settings.double_escape_action == "tree"
     assert settings.hide_thinking is True
@@ -280,6 +282,23 @@ def test_tui_settings_reject_invalid_editor_padding_x() -> None:
         tui_settings_from_json({"editor_padding_x": "1"})
 
 
+def test_tui_settings_load_output_padding_x_aliases() -> None:
+    camel = tui_settings_from_json({"outputPad": 0})
+    snake = tui_settings_from_json({"output_padding_x": 1})
+
+    assert camel.output_padding_x == 0
+    assert snake.output_padding_x == 1
+
+
+def test_tui_settings_reject_invalid_output_padding_x() -> None:
+    with pytest.raises(TuiConfigError, match="output_padding_x"):
+        tui_settings_from_json({"output_padding_x": -1})
+    with pytest.raises(TuiConfigError, match="output_padding_x"):
+        tui_settings_from_json({"output_padding_x": 2})
+    with pytest.raises(TuiConfigError, match="output_padding_x"):
+        tui_settings_from_json({"output_padding_x": "1"})
+
+
 def test_tui_settings_load_enable_skill_commands_aliases() -> None:
     camel = tui_settings_from_json({"enableSkillCommands": False})
     snake = tui_settings_from_json({"enable_skill_commands": False})
@@ -343,6 +362,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["block_images"] is False
     assert settings.to_json()["editor_padding_x"] == 1
     assert settings.to_json()["enable_skill_commands"] is True
+    assert settings.to_json()["output_padding_x"] == 1
     assert settings.to_json()["theme"] == "high-contrast"
     assert settings.to_json()["auto_compact"] is True
     assert settings.to_json()["auto_copy_selection"] is False

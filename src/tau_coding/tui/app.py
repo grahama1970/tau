@@ -135,6 +135,7 @@ ACTIVITY_INDICATOR_HEIGHT = 3
 COMPLETION_MAX_VISIBLE_LINES = DEFAULT_AUTOCOMPLETE_MAX_VISIBLE
 AUTOCOMPLETE_MAX_VISIBLE_CHOICES = (3, 5, 7, 10, 15, 20)
 EDITOR_PADDING_X_CHOICES = (0, 1, 2, 3)
+OUTPUT_PADDING_X_CHOICES = (0, 1)
 NO_STORED_CREDENTIALS_MESSAGE = (
     "No stored credentials to remove. /logout only removes credentials saved by /login; "
     "environment variables and providers.json config are unchanged."
@@ -895,6 +896,7 @@ SettingsPickerKey = Literal[
     "block_images",
     "editor_padding_x",
     "enable_skill_commands",
+    "output_padding_x",
     "theme",
     "auto_compact",
     "steering_mode",
@@ -3197,6 +3199,7 @@ class TauTuiApp(App[None]):
                 yield TranscriptView(
                     id="transcript",
                     min_width=1,
+                    output_padding_x=self.tui_settings.output_padding_x,
                     wrap=True,
                     highlight=True,
                     markup=False,
@@ -3681,7 +3684,11 @@ class TauTuiApp(App[None]):
         if isinstance(event, MessageStartEvent):
             return
         if isinstance(event, MessageDeltaEvent):
-            await transcript.append_assistant_delta(event.delta, theme=theme)
+            await transcript.append_assistant_delta(
+                event.delta,
+                theme=theme,
+                output_padding_x=self.tui_settings.output_padding_x,
+            )
             self._sync_activity_indicator()
             return
         if isinstance(event, ThinkingDeltaEvent):
@@ -3690,6 +3697,7 @@ class TauTuiApp(App[None]):
                 theme=theme,
                 show_thinking=self.state.show_thinking,
                 placeholder_text=self.state.thinking_placeholder_text,
+                output_padding_x=self.tui_settings.output_padding_x,
             )
             self._sync_activity_indicator()
             return
@@ -3708,6 +3716,7 @@ class TauTuiApp(App[None]):
                 self.state.items[-1],
                 theme=theme,
                 show_tool_results=self.state.show_tool_results,
+                output_padding_x=self.tui_settings.output_padding_x,
             )
             self._refresh_chrome()
             return
@@ -3722,6 +3731,7 @@ class TauTuiApp(App[None]):
                     self.state.items[-1],
                     theme=theme,
                     show_tool_results=self.state.show_tool_results,
+                    output_padding_x=self.tui_settings.output_padding_x,
                 )
             self._refresh_chrome()
             return
@@ -4696,7 +4706,11 @@ class TauTuiApp(App[None]):
         theme = self.tui_settings.resolved_theme
         self._refresh_chrome(theme=theme)
         transcript = self.query_one("#transcript", TranscriptView)
-        transcript.update_from_state(self.state, theme=theme)
+        transcript.update_from_state(
+            self.state,
+            theme=theme,
+            output_padding_x=self.tui_settings.output_padding_x,
+        )
 
     def _refresh_chrome(self, *, theme: TuiTheme | None = None) -> None:
         """Refresh non-transcript chrome without remounting transcript blocks."""
@@ -5629,6 +5643,11 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             value=str(settings.editor_padding_x),
         ),
         SettingsPickerItem(
+            key="output_padding_x",
+            label="Output padding",
+            value=str(settings.output_padding_x),
+        ),
+        SettingsPickerItem(
             key="autocomplete_max_visible",
             label="Autocomplete max items",
             value=str(settings.autocomplete_max_visible),
@@ -5752,6 +5771,17 @@ def _next_tui_settings(
             settings,
             editor_padding_x=EDITOR_PADDING_X_CHOICES[
                 (current_index + 1) % len(EDITOR_PADDING_X_CHOICES)
+            ],
+        )
+    if key == "output_padding_x":
+        try:
+            current_index = OUTPUT_PADDING_X_CHOICES.index(settings.output_padding_x)
+        except ValueError:
+            current_index = -1
+        return replace(
+            settings,
+            output_padding_x=OUTPUT_PADDING_X_CHOICES[
+                (current_index + 1) % len(OUTPUT_PADDING_X_CHOICES)
             ],
         )
     if key == "auto_copy_selection":

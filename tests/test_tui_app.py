@@ -1944,6 +1944,38 @@ async def test_tui_app_applies_configured_editor_padding_on_startup() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_applies_configured_output_padding_to_transcript() -> None:
+    app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(output_padding_x=0))
+
+    async with app.run_test() as pilot:
+        app.state.add_item("user", "hello")
+        app._refresh()
+        await pilot.pause()
+
+        message = app.query_one(TranscriptMessageWidget)
+        body = message.query_one(".transcript-message-body")
+
+        assert body.styles.padding == Spacing.unpack((0, 0))
+
+
+@pytest.mark.anyio
+async def test_tui_app_applies_configured_output_padding_to_streaming_transcript() -> None:
+    app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(output_padding_x=0))
+
+    async with app.run_test() as pilot:
+        transcript = app.query_one("#transcript", TranscriptView)
+        await transcript.append_assistant_delta(
+            "streaming",
+            output_padding_x=app.tui_settings.output_padding_x,
+        )
+        await pilot.pause()
+
+        streamed = app.query_one(StreamingTranscriptMessageWidget)
+
+        assert streamed.styles.padding == Spacing.unpack((0, 0))
+
+
+@pytest.mark.anyio
 async def test_tui_app_clears_activity_status_on_error() -> None:
     app = TauTuiApp(FakeSession())
 
@@ -3607,6 +3639,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Block images: off",
             "Skill commands: on",
             "Editor padding: 1",
+            "Output padding: 1",
             "Autocomplete max items: 7",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3629,6 +3662,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Block images: off",
             "Skill commands: on",
             "Editor padding: 1",
+            "Output padding: 1",
             "Autocomplete max items: 7",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3651,6 +3685,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Block images: off",
             "Skill commands: on",
             "Editor padding: 1",
+            "Output padding: 1",
             "Autocomplete max items: 7",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3673,6 +3708,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Block images: off",
             "Skill commands: on",
             "Editor padding: 1",
+            "Output padding: 1",
             "Autocomplete max items: 7",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3694,6 +3730,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Block images: on",
             "Skill commands: on",
             "Editor padding: 1",
+            "Output padding: 1",
             "Autocomplete max items: 7",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3715,6 +3752,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Block images: on",
             "Skill commands: off",
             "Editor padding: 1",
+            "Output padding: 1",
             "Autocomplete max items: 7",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3737,6 +3775,29 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Block images: on",
             "Skill commands: off",
             "Editor padding: 2",
+            "Output padding: 1",
+            "Autocomplete max items: 7",
+            "Auto-copy selection: off",
+            "Hide thinking: on",
+            "Thinking level: medium",
+            "Double Escape: tree",
+            "Tree filter mode: default",
+        ]
+
+        await pilot.press("down", "enter")
+        await pilot.pause()
+        assert app.tui_settings.output_padding_x == 0
+        assert '"output_padding_x": 0' in tui_settings_path().read_text(encoding="utf-8")
+        assert isinstance(app.screen, SettingsPickerScreen)
+        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+            "Theme: tau-dark",
+            "Auto-compact: off",
+            "Steering mode: all",
+            "Follow-up mode: all",
+            "Block images: on",
+            "Skill commands: off",
+            "Editor padding: 2",
+            "Output padding: 0",
             "Autocomplete max items: 7",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3758,6 +3819,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Block images: on",
             "Skill commands: off",
             "Editor padding: 2",
+            "Output padding: 0",
             "Autocomplete max items: 10",
             "Auto-copy selection: off",
             "Hide thinking: on",
@@ -3779,6 +3841,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Block images: on",
             "Skill commands: off",
             "Editor padding: 2",
+            "Output padding: 0",
             "Autocomplete max items: 10",
             "Auto-copy selection: on",
             "Hide thinking: on",
@@ -3804,13 +3867,28 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert app.tui_settings.double_escape_action == "fork"
         assert '"double_escape_action": "fork"' in tui_settings_path().read_text(encoding="utf-8")
 
-        await pilot.press("up", "up", "up", "up", "up", "up", "up", "up", "up", "up", "up", "enter")
+        await pilot.press(
+            "up",
+            "up",
+            "up",
+            "up",
+            "up",
+            "up",
+            "up",
+            "up",
+            "up",
+            "up",
+            "up",
+            "up",
+            "enter",
+        )
         await pilot.pause()
         assert app.tui_settings.theme == "tau-light"
         assert '"theme": "tau-light"' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
 
         await pilot.press(
+            "down",
             "down",
             "down",
             "down",
