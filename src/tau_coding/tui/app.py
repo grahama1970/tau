@@ -17,6 +17,7 @@ from datetime import datetime
 from functools import partial
 from inspect import isawaitable, signature
 from io import StringIO
+from math import ceil
 from pathlib import Path
 from time import monotonic
 from typing import Any, ClassVar, Literal, Protocol, cast
@@ -6819,6 +6820,11 @@ class TauTuiApp(App[None]):
         self._activity_frame = 0
         self._activity_timer: Timer | None = None
         self._activity_timer_interval_seconds: float | None = None
+        self._retry_countdown_timer: Timer | None = None
+        self._retry_countdown_expires_at: float | None = None
+        self._retry_countdown_message: str | None = None
+        self._retry_countdown_attempt: int | None = None
+        self._retry_countdown_max_attempts: int | None = None
         self._terminal_progress_active = False
         self._terminal_title = TerminalTitleController()
         self._extension_terminal_title: str | None = None
@@ -7007,6 +7013,7 @@ class TauTuiApp(App[None]):
         if self._activity_timer is not None:
             self._activity_timer.stop()
             self._activity_timer = None
+        self._clear_retry_countdown()
         if self._terminal_progress_active:
             self._terminal_progress_active = False
             self._write_terminal_progress(active=False)
@@ -8453,6 +8460,7 @@ class TauTuiApp(App[None]):
         finally:
             if active_run_id == self._prompt_run_id:
                 self._prompt_worker = None
+                self._clear_retry_countdown(refresh=False)
 
     async def _queue_messages_after_prompt_start(
         self,
@@ -8488,12 +8496,14 @@ class TauTuiApp(App[None]):
             return
         if isinstance(event, AgentEndEvent):
             await transcript.finish_assistant_message()
+            self._clear_retry_countdown(refresh=False)
             if self._flush_pending_terminal_commands_to_transcript():
                 self._refresh()
                 return
             self._refresh_chrome()
             return
         if isinstance(event, MessageStartEvent):
+            self._clear_retry_countdown(refresh=True)
             return
         if isinstance(event, MessageDeltaEvent):
             await transcript.append_assistant_delta(
@@ -8543,6 +8553,10 @@ class TauTuiApp(App[None]):
             await transcript.finish_assistant_message()
             self._refresh()
             return
+        if isinstance(event, RetryEvent):
+            self._start_retry_countdown(event)
+        if isinstance(event, ErrorEvent):
+            self._clear_retry_countdown(refresh=False)
         if isinstance(event, ToolExecutionUpdateEvent | RetryEvent | ErrorEvent):
             await transcript.finish_assistant_message()
             if self.state.items:
@@ -8689,6 +8703,7 @@ class TauTuiApp(App[None]):
         self._prompt_worker = None
         self.state.running = False
         self.state.assistant_buffer = ""
+        self._clear_retry_countdown(refresh=False)
         self._refresh()
         if notify:
             self._notify("Interrupted current operation.")
@@ -10110,6 +10125,59 @@ class TauTuiApp(App[None]):
         self._sync_terminal_title()
         self._sync_terminal_progress_indicator()
 
+    def _start_retry_countdown(self, event: RetryEvent) -> None:
+        self._retry_countdown_attempt = event.attempt
+        self._retry_countdown_max_attempts = event.max_attempts
+        self._retry_countdown_expires_at = monotonic() + max(0.0, event.delay_seconds)
+        self._update_retry_countdown_message()
+        if self._retry_countdown_timer is None:
+            self._retry_countdown_timer = self.set_interval(
+                1.0,
+                self._tick_retry_countdown,
+                name="retry-countdown",
+            )
+        else:
+            self._retry_countdown_timer.resume()
+        self._sync_activity_indicator()
+
+    def _tick_retry_countdown(self) -> None:
+        if self._retry_countdown_expires_at is None:
+            self._stop_retry_countdown_timer()
+            return
+        remaining_seconds = self._update_retry_countdown_message()
+        if remaining_seconds <= 0:
+            self._stop_retry_countdown_timer()
+        self._apply_activity_indicator()
+
+    def _update_retry_countdown_message(self) -> int:
+        attempt = self._retry_countdown_attempt
+        max_attempts = self._retry_countdown_max_attempts
+        expires_at = self._retry_countdown_expires_at
+        if attempt is None or max_attempts is None or expires_at is None:
+            self._retry_countdown_message = None
+            return 0
+        remaining_seconds = max(0, ceil(expires_at - monotonic()))
+        cancel_key = _key_hint_with_default(self.tui_settings.keybindings.cancel, "escape")
+        self._retry_countdown_message = (
+            f"Retrying ({attempt}/{max_attempts}) in {remaining_seconds}s... "
+            f"({cancel_key} to cancel)"
+        )
+        return remaining_seconds
+
+    def _clear_retry_countdown(self, *, refresh: bool = False) -> None:
+        self._retry_countdown_expires_at = None
+        self._retry_countdown_message = None
+        self._retry_countdown_attempt = None
+        self._retry_countdown_max_attempts = None
+        self._stop_retry_countdown_timer()
+        if refresh:
+            self._apply_activity_indicator()
+
+    def _stop_retry_countdown_timer(self) -> None:
+        if self._retry_countdown_timer is not None:
+            self._retry_countdown_timer.stop()
+            self._retry_countdown_timer = None
+
     def _activity_indicator_interval_seconds(self) -> float:
         if self._extension_working_indicator_frames is not None:
             return self._extension_working_indicator_interval_seconds or ACTIVITY_TICK_SECONDS
@@ -10167,11 +10235,14 @@ class TauTuiApp(App[None]):
                 thinking_level=getattr(self.session, "thinking_level", None),
             ),
         )
-        message = (
-            self._extension_working_message
-            if running and self._extension_working_visible
-            else None
-        )
+        if running and self._retry_countdown_message is not None:
+            message = self._retry_countdown_message
+        else:
+            message = (
+                self._extension_working_message
+                if running and self._extension_working_visible
+                else None
+            )
         working_message.display = bool(message)
         working_message.update(_text_from_ansi(message) if message else "")
         prompt_prefix.update(

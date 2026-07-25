@@ -30,6 +30,7 @@ from tau_agent import (
     MessageStartEvent,
     QueuedMessages,
     QueueUpdateEvent,
+    RetryEvent,
     ToolCall,
     ToolExecutionEndEvent,
     ToolExecutionStartEvent,
@@ -2706,6 +2707,51 @@ async def test_tui_app_shows_activity_indicator_while_running() -> None:
         assert not app.query("#status")
         assert prompt.styles.border.top[1].hex.lower() == expected_border
         assert indicator.render().plain == "τ"
+
+
+@pytest.mark.anyio
+async def test_tui_app_shows_retry_countdown_in_prompt_chrome(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    now = 100.0
+    monkeypatch.setattr(tui_app, "monotonic", lambda: now)
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(keybindings=TuiKeybindings(cancel="ctrl+c")),
+    )
+
+    async with app.run_test() as pilot:
+        app.adapter.apply(AgentStartEvent())
+        await app._apply_streaming_transcript_event(AgentStartEvent())
+
+        retry_event = RetryEvent(
+            attempt=2,
+            max_attempts=3,
+            delay_seconds=2.1,
+            message="Retrying provider request 2/3 after HTTP 503.",
+        )
+        app.adapter.apply(retry_event)
+        await app._apply_streaming_transcript_event(retry_event)
+        await pilot.pause()
+
+        working_message = app.query_one("#prompt-working-message", Static)
+        assert working_message.display is True
+        assert working_message.render().plain == "Retrying (2/3) in 3s... (Ctrl+C to cancel)"
+        assert [(item.role, item.text) for item in app.state.items] == [
+            ("status", "Retrying (2/3) in 3s... (Escape to cancel)")
+        ]
+
+        now = 101.2
+        app._tick_retry_countdown()
+
+        assert working_message.render().plain == "Retrying (2/3) in 1s... (Ctrl+C to cancel)"
+
+        message_start = MessageStartEvent()
+        app.adapter.apply(message_start)
+        await app._apply_streaming_transcript_event(message_start)
+
+        assert working_message.display is False
+        assert app._retry_countdown_timer is None
 
 
 @pytest.mark.anyio

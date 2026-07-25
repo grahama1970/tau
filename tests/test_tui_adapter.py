@@ -384,7 +384,7 @@ def test_tui_adapter_records_retry_status() -> None:
     )
 
     assert [(item.role, item.text) for item in state.items] == [
-        ("status", "… Retrying provider request 2/3 after HTTP 503.")
+        ("status", "Retrying (2/3) in 0s... (Escape to cancel)")
     ]
 
 
