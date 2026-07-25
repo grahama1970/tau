@@ -104,6 +104,9 @@ def test_render_session_html_renders_assistant_markdown_and_local_images(tmp_pat
     assert "<th>Name</th>" in exported
     assert '<div class="export-images">' in exported
     assert 'src="data:image/png;base64,' in exported
+    assert 'href="data:image/png;base64,' in exported
+    assert 'target="_blank"' in exported
+    assert "open full-size" in exported
     assert str(image_path) in exported
     assert "<script>alert" not in exported
     assert "&lt;script&gt;alert('no')&lt;/script&gt;" in exported

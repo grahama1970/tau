@@ -53,7 +53,7 @@ capabilities.
 | Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist, resource rows expose scope/state/action, resource toggles update in-place, and no-match searches show visible empty rows; package/write-scope editing still missing. |
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login; provider picker now shows visible navigation help, empty filter states, and fail-closed empty-row selection. |
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks including simple component-like render objects, summarizes permission/approval receipts, surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data, preserves multiple Pi-style image blocks from one tool result, and now shows input-bar terminal command exit codes; full JS Pi component runtime embedding remains out of scope. |
-| Export/artifact viewing | `/export`, `exportToHtml`, RPC `export_html` | Tau `/export`, `session_export.py`, TUI command output | `PARTIAL` | Tau writes real HTML/JSONL session artifacts, opens a persistent TUI result modal with the artifact path and `file://` URI, and renders assistant Markdown tables plus embedded local image links in HTML exports; browser auto-open/zoomable artifact gallery remains missing. |
+| Export/artifact viewing | `/export`, `exportToHtml`, RPC `export_html` | Tau `/export`, `session_export.py`, TUI command output | `PARTIAL` | Tau writes real HTML/JSONL session artifacts, opens a persistent TUI result modal with the artifact path and `file://` URI, renders assistant Markdown tables plus embedded local image links in HTML exports, and makes embedded figures openable full-size in the browser; browser auto-open/deeper artifact gallery remains missing. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider, prompt chrome, and retry countdown | `PARTIAL` | Footer extensibility exists; compact first-screen readiness exposes auth/memory/DAG/SciLLM/queue when the sidebar is hidden, and prompt chrome now names active compaction/branch/reload/share/terminal operations from real worker state. |
 | Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool/custom-entry renderers in live/restored transcripts | `MUST/PARTIAL` | Selector now advertises Pi-style `J/K` navigation and supports tool-output toggle while open; editor now uses Pi-style Enter submit and Shift+Enter newline; custom entries now re-render on tool-output expansion and accept simple component-like render objects; preserve current Tau extension API; full JS Pi component runtime embedding remains out of scope. |
 | Images | `show-images-selector`, image component | Tau image visibility setting and image payload rendering | `MATCHED` | Tau has terminal-safe image controls, Kitty/iTerm2/fallback rendering, non-PNG-to-PNG conversion for Kitty, multiple image payload rendering for figure/graph tool results, and local Markdown image links in assistant/custom transcript output. |
@@ -113,8 +113,9 @@ Latest slice evidence:
 - Changed: assistant, compaction, and branch-summary text in HTML exports now
   gets a safe rendered Markdown view with tables, while raw Markdown remains in
   a collapsible disclosure. Local Markdown image links for supported image
-  files are embedded as data URI figures with source-path captions. Remote/data
-  image links and missing/oversized/non-image files are not embedded.
+  files are embedded as data URI figures with source-path captions and
+  full-size browser links. Remote/data image links and
+  missing/oversized/non-image files are not embedded.
 - Mocked: no.
 - Live: local HTML export writer with real local image bytes; no provider-live
   call.
@@ -127,8 +128,12 @@ Latest slice evidence:
 - Render proof:
   `/tmp/tau-pi-tui-html-export-rich-proof-1785017738/proof.json` with HTML
   artifact
-  `/tmp/tau-pi-tui-html-export-rich-proof-1785017738/session-rich-export.html`.
-- Remaining gap: browser auto-open and zoom controls for rich artifacts remain
+  `/tmp/tau-pi-tui-html-export-rich-proof-1785017738/session-rich-export.html`;
+  openable-image proof
+  `/tmp/tau-pi-tui-html-export-open-image-proof-1785017850/proof.json` with
+  HTML artifact
+  `/tmp/tau-pi-tui-html-export-open-image-proof-1785017850/session-openable-image-export.html`.
+- Remaining gap: browser auto-open and deeper artifact gallery controls remain
   open; this slice makes the exported browser artifact itself rich enough for
   Markdown tables and linked local figures.
 

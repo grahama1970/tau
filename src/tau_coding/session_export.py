@@ -245,6 +245,15 @@ def render_session_html(
       background: var(--bg);
       border-radius: 6px;
     }}
+    .export-image a {{
+      display: block;
+      color: inherit;
+      text-decoration: none;
+    }}
+    .export-image a:focus-visible {{
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }}
     .export-image figcaption {{
       margin-top: 8px;
       color: var(--muted);
@@ -693,8 +702,12 @@ def _render_markdown_image_gallery(markdown: str) -> str:
         alt = match.group("alt").strip() or path.name
         figures.append(
             '<figure class="export-image">'
+            f'<a href="{_attr(embedded)}" target="_blank" rel="noopener" '
+            f'aria-label="Open full-size image: {_attr(alt)}">'
             f'<img src="{_attr(embedded)}" alt="{_attr(alt)}">'
-            f"<figcaption>{_escape(alt)} - <code>{_escape(str(path))}</code></figcaption>"
+            "</a>"
+            f"<figcaption>{_escape(alt)} - <code>{_escape(str(path))}</code>"
+            " - open full-size</figcaption>"
             "</figure>"
         )
     if not figures:
