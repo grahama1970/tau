@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
+import base64
 import html
 import json
+import re
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
 from datetime import UTC, datetime
+from functools import lru_cache
+from mimetypes import guess_type
 from pathlib import Path
+from urllib.parse import unquote, urlparse
 
 from tau_agent.messages import AssistantMessage, ToolResultMessage, UserMessage
 from tau_agent.session import (
@@ -25,6 +30,18 @@ from tau_agent.session import (
     path_to_entry,
 )
 from tau_agent.types import JSONValue
+
+MARKDOWN_IMAGE_PATTERN = re.compile(
+    r"!\[(?P<alt>[^\]\n]*)\]\((?P<target><[^>\n]+>|[^)\s]+)(?:\s+\"[^\"]*\")?\)"
+)
+EXPORT_IMAGE_MIME_TYPES = {
+    "image/gif",
+    "image/jpeg",
+    "image/png",
+    "image/svg+xml",
+    "image/webp",
+}
+MAX_EMBEDDED_EXPORT_IMAGE_BYTES = 10 * 1024 * 1024
 
 
 class SessionExportError(ValueError):
@@ -176,6 +193,63 @@ def render_session_html(
       border-radius: 6px;
       padding: 12px;
       margin: 10px 0 0;
+    }}
+    table.markdown-table {{
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      overflow-wrap: anywhere;
+    }}
+    table.markdown-table th,
+    table.markdown-table td {{
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      text-align: left;
+      vertical-align: top;
+    }}
+    table.markdown-table th {{
+      background: var(--accent-soft);
+    }}
+    .markdown-rendered {{
+      margin-top: 10px;
+      overflow-wrap: anywhere;
+    }}
+    .markdown-rendered > :first-child {{ margin-top: 0; }}
+    .markdown-rendered code {{
+      background: color-mix(in srgb, var(--accent-soft) 55%, transparent);
+      border-radius: 4px;
+      padding: 1px 4px;
+    }}
+    .markdown-source {{
+      margin-top: 10px;
+      color: var(--muted);
+    }}
+    .export-images {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }}
+    .export-image {{
+      margin: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      background: color-mix(in srgb, var(--bg) 70%, var(--panel));
+    }}
+    .export-image img {{
+      display: block;
+      width: 100%;
+      max-height: 70vh;
+      object-fit: contain;
+      background: var(--bg);
+      border-radius: 6px;
+    }}
+    .export-image figcaption {{
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      overflow-wrap: anywhere;
     }}
     .source, .generated {{
       margin: 8px 0 0;
@@ -494,14 +568,14 @@ def _render_entry_body(entry: SessionEntry) -> str:
     if isinstance(entry, CompactionEntry):
         return (
             "<p>Compaction summary:</p>"
-            f"<pre>{_escape(entry.summary)}</pre>"
+            f"{_render_markdown_with_raw(entry.summary)}"
             f"{_render_list('Replaces entries', entry.replaces_entry_ids)}"
         )
     if isinstance(entry, BranchSummaryEntry):
         branch_root = entry.branch_root_id or "none"
         return (
             f"<p>Branch root: <code>{_escape(branch_root)}</code></p>"
-            f"<pre>{_escape(entry.summary)}</pre>"
+            f"{_render_markdown_with_raw(entry.summary)}"
         )
     if isinstance(entry, LabelEntry):
         return f"<p>Session label: <strong>{_escape(entry.label)}</strong></p>"
@@ -543,7 +617,11 @@ def _render_message_entry(entry: MessageEntry) -> str:
                 + "</ul>"
             )
         content = message.content or "(no assistant text)"
-        return f'<p class="message-role">assistant</p><pre>{_escape(content)}</pre>{tool_calls}'
+        return (
+            '<p class="message-role">assistant</p>'
+            f"{_render_markdown_with_raw(content)}"
+            f"{tool_calls}"
+        )
     if isinstance(message, ToolResultMessage):
         metadata = [
             ("tool", message.name),
@@ -563,6 +641,115 @@ def _render_message_entry(entry: MessageEntry) -> str:
             body += f"<h4>Details</h4><pre>{_escape(_json_dump(message.details))}</pre>"
         return body
     return f"<pre>{_escape(entry.model_dump_json(indent=2))}</pre>"
+
+
+def _render_markdown_with_raw(markdown: str) -> str:
+    """Render safe browser Markdown while preserving the exact raw text."""
+    rendered = _render_markdown_html(markdown)
+    images = _render_markdown_image_gallery(markdown)
+    return (
+        f'<div class="markdown-rendered">{rendered}</div>'
+        f"{images}"
+        '<details class="markdown-source">'
+        "<summary>Raw Markdown</summary>"
+        f"<pre>{_escape(markdown)}</pre>"
+        "</details>"
+    )
+
+
+def _render_markdown_html(markdown: str) -> str:
+    prepared = MARKDOWN_IMAGE_PATTERN.sub(_markdown_image_text_reference, markdown)
+    rendered = _markdown_parser().render(prepared)
+    return rendered.replace("<table>", '<table class="markdown-table">')
+
+
+@lru_cache(maxsize=1)
+def _markdown_parser() -> object:
+    from markdown_it import MarkdownIt
+
+    parser = MarkdownIt("default", {"html": False, "linkify": False})
+    parser.enable("table")
+    return parser
+
+
+def _markdown_image_text_reference(match: re.Match[str]) -> str:
+    alt = match.group("alt").strip() or "image"
+    target = _clean_markdown_image_target(match.group("target"))
+    return f"**Image:** {_escape_markdown_text(alt)} (`{_escape_markdown_text(target)}`)"
+
+
+def _render_markdown_image_gallery(markdown: str) -> str:
+    figures: list[str] = []
+    seen: set[Path] = set()
+    for match in MARKDOWN_IMAGE_PATTERN.finditer(markdown):
+        target = _clean_markdown_image_target(match.group("target"))
+        path = _local_export_image_path(target)
+        if path is None or path in seen:
+            continue
+        embedded = _embedded_export_image(path)
+        if embedded is None:
+            continue
+        seen.add(path)
+        alt = match.group("alt").strip() or path.name
+        figures.append(
+            '<figure class="export-image">'
+            f'<img src="{_attr(embedded)}" alt="{_attr(alt)}">'
+            f"<figcaption>{_escape(alt)} - <code>{_escape(str(path))}</code></figcaption>"
+            "</figure>"
+        )
+    if not figures:
+        return ""
+    return '<div class="export-images">' + "".join(figures) + "</div>"
+
+
+def _clean_markdown_image_target(target: str) -> str:
+    cleaned = target.strip()
+    if cleaned.startswith("<") and cleaned.endswith(">"):
+        cleaned = cleaned[1:-1].strip()
+    return cleaned
+
+
+def _local_export_image_path(target: str) -> Path | None:
+    parsed = urlparse(target)
+    if parsed.scheme in {"http", "https", "data"}:
+        return None
+    if parsed.scheme == "file":
+        raw_path = unquote(parsed.path)
+    elif parsed.scheme:
+        return None
+    else:
+        raw_path = unquote(target.split("#", 1)[0].split("?", 1)[0])
+    if not raw_path:
+        return None
+    path = Path(raw_path).expanduser()
+    if not path.is_absolute():
+        path = Path.cwd() / path
+    return path.resolve()
+
+
+def _embedded_export_image(path: Path) -> str | None:
+    mime_type = guess_type(path.name)[0]
+    if mime_type not in EXPORT_IMAGE_MIME_TYPES:
+        return None
+    try:
+        stat = path.stat()
+    except OSError:
+        return None
+    if not path.is_file() or stat.st_size <= 0 or stat.st_size > MAX_EMBEDDED_EXPORT_IMAGE_BYTES:
+        return None
+    try:
+        data = path.read_bytes()
+    except OSError:
+        return None
+    encoded = base64.b64encode(data).decode("ascii")
+    return f"data:{mime_type};base64,{encoded}"
+
+
+def _escape_markdown_text(text: str) -> str:
+    escaped = text.replace("\\", "\\\\")
+    for character in "`*_{}[]()#+-.!|>":
+        escaped = escaped.replace(character, f"\\{character}")
+    return escaped
 
 
 def _render_metadata(items: Iterable[tuple[str, str]]) -> str:

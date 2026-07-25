@@ -1,3 +1,4 @@
+import base64
 from pathlib import Path
 
 from tau_agent import (
@@ -10,6 +11,10 @@ from tau_agent import (
     UserMessage,
 )
 from tau_coding.session_export import export_session_html, render_session_html
+
+PNG_1X1_BASE64 = (
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII="
+)
 
 
 def test_render_session_html_preserves_branch_tree() -> None:
@@ -71,3 +76,35 @@ def test_export_session_html_writes_file(tmp_path: Path) -> None:
 
     assert result == output_path
     assert output_path.read_text(encoding="utf-8").startswith("<!doctype html>")
+
+
+def test_render_session_html_renders_assistant_markdown_and_local_images(tmp_path: Path) -> None:
+    image_path = tmp_path / "chart.png"
+    image_path.write_bytes(base64.b64decode(PNG_1X1_BASE64))
+    entries = [
+        MessageEntry(
+            id="root",
+            message=AssistantMessage(
+                content=(
+                    "# Figure\n\n"
+                    "| Name | Value |\n"
+                    "| --- | --- |\n"
+                    "| chart | ready |\n\n"
+                    f"![chart]({image_path})\n\n"
+                    "<script>alert('no')</script>"
+                )
+            ),
+        )
+    ]
+
+    exported = render_session_html(entries, title="Session")
+
+    assert '<div class="markdown-rendered">' in exported
+    assert '<table class="markdown-table">' in exported
+    assert "<th>Name</th>" in exported
+    assert '<div class="export-images">' in exported
+    assert 'src="data:image/png;base64,' in exported
+    assert str(image_path) in exported
+    assert "<script>alert" not in exported
+    assert "&lt;script&gt;alert('no')&lt;/script&gt;" in exported
+    assert "<summary>Raw Markdown</summary>" in exported
