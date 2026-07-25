@@ -100,6 +100,16 @@ class ExtensionShortcutContext:
         return getattr(self.session, "cwd", None)
 
     @property
+    def session_manager(self) -> Any:
+        """Return Tau's session manager when this session has one."""
+        return _session_manager(self.session)
+
+    @property
+    def sessionManager(self) -> Any:  # noqa: N802
+        """Pi-compatible camelCase alias for session_manager."""
+        return self.session_manager
+
+    @property
     def model(self) -> str | None:
         """Return the active session model when available."""
         return _session_model(self.session)
@@ -141,6 +151,11 @@ class ExtensionShortcutContext:
     def abort(self) -> None:
         """Request cancellation of the active agent operation, if supported."""
         _session_abort(self.session)
+
+    @property
+    def signal(self) -> Any:
+        """Return the active Tau cancellation signal, or None when idle."""
+        return _session_signal(self.session)
 
     def get_context_usage(self) -> ContextUsageInfo | None:
         """Return Pi-style context usage for the active session."""
@@ -358,6 +373,16 @@ class ExtensionCommandContext:
         return getattr(self.session, "cwd", None)
 
     @property
+    def session_manager(self) -> Any:
+        """Return Tau's session manager when this session has one."""
+        return _session_manager(self.session)
+
+    @property
+    def sessionManager(self) -> Any:  # noqa: N802
+        """Pi-compatible camelCase alias for session_manager."""
+        return self.session_manager
+
+    @property
     def model(self) -> str | None:
         """Return the active session model when available."""
         return _session_model(self.session)
@@ -399,6 +424,11 @@ class ExtensionCommandContext:
     def abort(self) -> None:
         """Request cancellation of the active agent operation, if supported."""
         _session_abort(self.session)
+
+    @property
+    def signal(self) -> Any:
+        """Return the active Tau cancellation signal, or None when idle."""
+        return _session_signal(self.session)
 
     def get_context_usage(self) -> ContextUsageInfo | None:
         """Return Pi-style context usage for the active session."""
@@ -991,6 +1021,10 @@ def _session_model(session: Any) -> str | None:
     return None if model is None else str(model)
 
 
+def _session_manager(session: Any) -> Any:
+    return getattr(session, "session_manager", None)
+
+
 def _session_thinking_level(session: Any) -> str | None:
     thinking_level = getattr(session, "thinking_level", None)
     return None if thinking_level is None else str(thinking_level)
@@ -1025,6 +1059,13 @@ def _session_abort(session: Any) -> None:
     cancel = getattr(session, "cancel", None)
     if callable(cancel):
         cancel()
+
+
+def _session_signal(session: Any) -> Any:
+    if not bool(getattr(session, "is_running", False)):
+        return None
+    harness = getattr(session, "_harness", None)
+    return getattr(harness, "_current_signal", None)
 
 
 def _session_context_usage(session: Any) -> ContextUsageInfo | None:
