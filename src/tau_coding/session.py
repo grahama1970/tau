@@ -74,6 +74,7 @@ from tau_coding.diagnostics import (
 )
 from tau_coding.extensions import (
     ExtensionCommand,
+    ExtensionCommandContext,
     ExtensionShortcutContext,
     LoadedExtension,
     load_extension_tools,
@@ -2905,7 +2906,15 @@ def _extension_slash_command(
     name = invocation_name or command.name
 
     def handler(context: CommandContext) -> CommandResult:
-        result = command.handler(context)
+        extension_context = ExtensionCommandContext(
+            session=context.session,
+            registry=context.registry,
+            text=context.text,
+            name=context.name,
+            args=context.args,
+            extension_name=extension.name,
+        )
+        result = command.handler(extension_context)
         if inspect.isawaitable(result):
             close = getattr(result, "close", None)
             if callable(close):
@@ -2919,6 +2928,15 @@ def _extension_slash_command(
             )
         if isinstance(result, CommandResult):
             return result
+        if extension_context.user_message is not None:
+            return CommandResult(
+                handled=True,
+                user_message=extension_context.user_message,
+                user_message_delivery=cast(
+                    Literal["steer", "follow_up"],
+                    extension_context.user_message_delivery,
+                ),
+            )
         if result is None:
             return CommandResult(handled=True)
         return CommandResult(handled=True, message=str(result))

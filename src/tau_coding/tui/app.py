@@ -6210,6 +6210,13 @@ class TauTuiApp(App[None]):
                 command = self.session.handle_command(text)
                 if command.message:
                     self._append_command_message(text, command.message)
+                if command.user_message is not None:
+                    self._queue_compaction_message(
+                        command.user_message,
+                        streaming_behavior=command.user_message_delivery,
+                    )
+                    self._sync_queue_state()
+                    self._notify("Queued extension message for after compaction.")
                 self._refresh()
             else:
                 self._queue_compaction_message(text, streaming_behavior=streaming_behavior)
@@ -6404,6 +6411,10 @@ class TauTuiApp(App[None]):
                     self._append_command_message(text, command.message)
                 else:
                     self._show_command_message(text, command.message)
+            if command.user_message is not None:
+                await self._deliver_command_user_message(command)
+                self._refresh()
+                return
             self._refresh()
             if command.exit_requested:
                 self.exit()
@@ -6836,6 +6847,18 @@ class TauTuiApp(App[None]):
             self._notify(f"Could not queue message: {exc}", severity="error")
             return
         self._refresh()
+
+    async def _deliver_command_user_message(self, command: CommandResult) -> None:
+        """Deliver a user message requested by a slash-command handler."""
+        if command.user_message is None:
+            return
+        if self.state.running:
+            await self._queue_prompt(
+                command.user_message,
+                streaming_behavior=command.user_message_delivery,
+            )
+            return
+        self._submit_prompt(command.user_message)
 
     async def _run_prompt(
         self,

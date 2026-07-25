@@ -53,6 +53,29 @@ class ExtensionShortcutContext:
     extension_name: str
 
 
+@dataclass(slots=True)
+class ExtensionCommandContext:
+    """Runtime context passed to extension slash-command handlers."""
+
+    session: Any
+    registry: Any
+    text: str
+    name: str
+    args: str
+    extension_name: str
+    user_message: str | None = None
+    user_message_delivery: str = "steer"
+
+    def send_user_message(self, text: str, *, deliver_as: str = "steer") -> None:
+        """Request that Tau send or queue a user message after the command returns."""
+        message = text.strip()
+        if not message:
+            raise ValueError("send_user_message requires non-empty text")
+        delivery = _normalize_user_message_delivery(deliver_as)
+        self.user_message = message
+        self.user_message_delivery = delivery
+
+
 class ExtensionAPI:
     """API object passed to an extension module's `setup(tau)` function."""
 
@@ -180,3 +203,12 @@ def _normalize_argument_completions(
             )
         )
     return tuple(completions)
+
+
+def _normalize_user_message_delivery(value: str) -> str:
+    normalized = value.strip().lower().replace("-", "_")
+    if normalized in {"steer", "follow_up"}:
+        return normalized
+    if normalized == "followup":
+        return "follow_up"
+    raise ValueError("deliver_as must be 'steer' or 'follow_up'")

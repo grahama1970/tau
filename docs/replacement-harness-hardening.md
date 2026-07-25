@@ -559,6 +559,29 @@ Acceptance:
 - This slice does not claim Pi's full `getCommands()` metadata API or
   extension command source-info model.
 
+### Slice 27: Extension Command User Messages
+
+Pi extensions can turn a slash command into a real user message through
+`sendUserMessage`, which lets commands like `/ask`, `/steer`, and `/followup`
+hand work back to the agent loop. Tau extension commands previously could only
+return command output. Add a bounded synchronous command-context helper that
+requests a user message and let the TUI deliver it through Tau's existing prompt
+and queue paths.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Extension command handlers receive an `ExtensionCommandContext` with
+  `send_user_message(text, deliver_as=...)`.
+- Idle TUI delivery submits the requested text as the next user prompt.
+- Running TUI delivery queues requested text through Tau's existing steer or
+  follow-up queue path.
+- Active manual compaction queues requested text for after compaction.
+- The helper accepts `steer`, `follow_up`, and `followup` delivery names.
+- This slice does not claim Pi's structured image content arrays, async
+  command handlers, `nextTurn` delivery mode, or extension UI notifications.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

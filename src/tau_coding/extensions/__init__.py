@@ -4,6 +4,7 @@ from tau_coding.extensions.api import (
     ExtensionAPI,
     ExtensionArgumentCompletion,
     ExtensionCommand,
+    ExtensionCommandContext,
     ExtensionShortcut,
     ExtensionShortcutContext,
 )
@@ -17,6 +18,7 @@ __all__ = [
     "ExtensionAPI",
     "ExtensionArgumentCompletion",
     "ExtensionCommand",
+    "ExtensionCommandContext",
     "ExtensionShortcut",
     "ExtensionShortcutContext",
     "ExtensionLoadResult",

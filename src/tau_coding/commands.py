@@ -7,7 +7,7 @@ import shlex
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Protocol, cast
+from typing import Any, Literal, Protocol, cast
 
 from tau_agent.messages import AgentMessage, AssistantMessage, ToolResultMessage, UserMessage
 from tau_agent.tools import AgentTool
@@ -153,6 +153,8 @@ class CommandResult:
     thinking_level: str | None = None
     show_images: bool | None = None
     theme: str | None = None
+    user_message: str | None = None
+    user_message_delivery: Literal["steer", "follow_up"] = "steer"
     message: str | None = None
 
 
