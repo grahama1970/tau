@@ -807,6 +807,12 @@ def _hotkeys_command(context: CommandContext) -> CommandResult:
         "- Ctrl+X: copy last assistant message",
         "- Ctrl+D: quit",
     ]
+    extension_shortcuts = getattr(context.session, "extension_shortcut_sources", {})
+    if isinstance(extension_shortcuts, dict) and extension_shortcuts:
+        lines.extend(("", "Extension shortcuts:"))
+        for key, value in sorted(extension_shortcuts.items()):
+            extension_name, description = value
+            lines.append(f"- {key}: {description} (extension:{extension_name})")
     return CommandResult(handled=True, message="\n".join(lines))
 
 

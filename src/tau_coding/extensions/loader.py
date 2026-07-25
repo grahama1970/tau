@@ -9,7 +9,7 @@ from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
 from tau_agent.tools import AgentTool
-from tau_coding.extensions.api import ExtensionAPI, ExtensionCommand
+from tau_coding.extensions.api import ExtensionAPI, ExtensionCommand, ExtensionShortcut
 from tau_coding.resources import ResourceDiagnostic, TauResourcePaths
 
 _MODULE_NAME_PREFIX = "tau_extension"
@@ -24,6 +24,7 @@ class LoadedExtension:
     path: Path
     tools: tuple[AgentTool, ...]
     commands: tuple[ExtensionCommand, ...] = ()
+    shortcuts: tuple[ExtensionShortcut, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -42,6 +43,11 @@ class ExtensionLoadResult:
     def commands(self) -> tuple[ExtensionCommand, ...]:
         """Return all registered extension slash commands in load order."""
         return tuple(command for extension in self.extensions for command in extension.commands)
+
+    @property
+    def shortcuts(self) -> tuple[ExtensionShortcut, ...]:
+        """Return all registered extension keyboard shortcuts in load order."""
+        return tuple(shortcut for extension in self.extensions for shortcut in extension.shortcuts)
 
 
 def load_extension_tools(
@@ -167,7 +173,13 @@ def _load_one_extension(
         )
         return None
     name = path.parent.name if path.name == "extension.py" else path.stem
-    return LoadedExtension(name=name, path=path, tools=api.tools, commands=api.commands)
+    return LoadedExtension(
+        name=name,
+        path=path,
+        tools=api.tools,
+        commands=api.commands,
+        shortcuts=api.shortcuts,
+    )
 
 
 def _load_setup(

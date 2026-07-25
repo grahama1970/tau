@@ -489,6 +489,29 @@ Acceptance:
 - This slice does not claim async extension command execution or special
   extension UI actions during compaction.
 
+### Slice 24: Extension Keyboard Shortcuts
+
+Pi extensions can register keyboard shortcuts for operator actions such as
+cycling presets or toggling plan mode. Tau now has extension commands, but not
+an extension-owned shortcut surface. Add a narrow, safe shortcut bridge for the
+prompt TUI: loaded Python extensions can register synchronous shortcuts, Tau
+executes non-conflicting shortcuts from the prompt, and `/hotkeys` shows the
+active extension shortcut section.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Python extensions can call `tau.register_shortcut(...)` during `setup(tau)`.
+- Loaded extension shortcut metadata is retained on `LoadedExtension`.
+- TUI prompt key handling executes non-conflicting extension shortcuts before
+  normal text editing.
+- `/hotkeys` lists extension shortcuts and marks built-in key conflicts as
+  disabled.
+- Built-in TUI keybindings continue to win on conflicts.
+- This slice does not claim Pi's async shortcut handlers, custom UI context,
+  extension flags, or shortcut overrides of built-in Tau controls.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

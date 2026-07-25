@@ -71,7 +71,12 @@ from tau_coding.diagnostics import (
     AgentCallDiagnosticLogger,
     new_agent_call_run_id,
 )
-from tau_coding.extensions import ExtensionCommand, LoadedExtension, load_extension_tools
+from tau_coding.extensions import (
+    ExtensionCommand,
+    ExtensionShortcutContext,
+    LoadedExtension,
+    load_extension_tools,
+)
 from tau_coding.loop_receipt import LoopReceiptConfig, LoopReceiptRecorder
 from tau_coding.paths import TauPaths
 from tau_coding.prompt_templates import (
@@ -716,6 +721,15 @@ class CodingSession:
             tool.name: extension.name
             for extension in self._extensions
             for tool in extension.tools
+        }
+
+    @property
+    def extension_shortcut_sources(self) -> dict[str, tuple[str, str]]:
+        """Return extension shortcut descriptions keyed by normalized key."""
+        return {
+            shortcut.key: (extension.name, shortcut.description)
+            for extension in self._extensions
+            for shortcut in extension.shortcuts
         }
 
     @property
@@ -1562,6 +1576,38 @@ class CodingSession:
         if expand_prompt_template_command(text, self._prompt_templates) is not None:
             return CommandResult(handled=False)
         return self._command_registry.execute(self, text)
+
+    def handle_extension_shortcut(self, key: str) -> CommandResult:
+        """Handle a keyboard shortcut registered by a loaded extension."""
+        normalized = key.strip().lower()
+        for extension in reversed(self._extensions):
+            for shortcut in reversed(extension.shortcuts):
+                if shortcut.key != normalized:
+                    continue
+                result = shortcut.handler(
+                    ExtensionShortcutContext(
+                        session=self,
+                        key=normalized,
+                        extension_name=extension.name,
+                    )
+                )
+                if inspect.isawaitable(result):
+                    close = getattr(result, "close", None)
+                    if callable(close):
+                        close()
+                    return CommandResult(
+                        handled=True,
+                        message=(
+                            f"Extension shortcut {shortcut.key} returned an awaitable; "
+                            "Tau extension shortcuts are synchronous in this release."
+                        ),
+                    )
+                if isinstance(result, CommandResult):
+                    return result
+                if result is None:
+                    return CommandResult(handled=True)
+                return CommandResult(handled=True, message=str(result))
+        return CommandResult(handled=False)
 
     def expand_prompt_text(self, text: str) -> str:
         """Expand prompt text using loaded markdown resources."""

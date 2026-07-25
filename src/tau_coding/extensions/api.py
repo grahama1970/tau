@@ -9,6 +9,7 @@ from typing import Any
 from tau_agent.tools import AgentTool
 
 ExtensionCommandHandler = Callable[[Any], Any]
+ExtensionShortcutHandler = Callable[[Any], Any]
 
 
 @dataclass(frozen=True, slots=True)
@@ -25,12 +26,31 @@ class ExtensionCommand:
     hidden: bool = False
 
 
+@dataclass(frozen=True, slots=True)
+class ExtensionShortcut:
+    """A keyboard shortcut registered by a Tau extension."""
+
+    key: str
+    description: str
+    handler: ExtensionShortcutHandler
+
+
+@dataclass(frozen=True, slots=True)
+class ExtensionShortcutContext:
+    """Runtime context passed to extension shortcut handlers."""
+
+    session: Any
+    key: str
+    extension_name: str
+
+
 class ExtensionAPI:
     """API object passed to an extension module's `setup(tau)` function."""
 
     def __init__(self) -> None:
         self._tools: list[AgentTool] = []
         self._commands: list[ExtensionCommand] = []
+        self._shortcuts: list[ExtensionShortcut] = []
 
     @property
     def tools(self) -> tuple[AgentTool, ...]:
@@ -41,6 +61,11 @@ class ExtensionAPI:
     def commands(self) -> tuple[ExtensionCommand, ...]:
         """Return slash commands registered by this extension."""
         return tuple(self._commands)
+
+    @property
+    def shortcuts(self) -> tuple[ExtensionShortcut, ...]:
+        """Return keyboard shortcuts registered by this extension."""
+        return tuple(self._shortcuts)
 
     def register_tool(self, tool: AgentTool) -> None:
         """Register an `AgentTool` for the current coding session."""
@@ -82,5 +107,28 @@ class ExtensionAPI:
                 search_terms=tuple(term.strip().lower() for term in search_terms),
                 argument_hint=argument_hint,
                 hidden=hidden,
+            )
+        )
+
+    def register_shortcut(
+        self,
+        key: str,
+        *,
+        description: str,
+        handler: ExtensionShortcutHandler,
+    ) -> None:
+        """Register a synchronous TUI keyboard shortcut for the current session."""
+        normalized = key.strip().lower()
+        if not normalized:
+            raise ValueError("register_shortcut requires a key")
+        if not callable(handler):
+            raise TypeError("register_shortcut handler must be callable")
+        if any(existing.key == normalized for existing in self._shortcuts):
+            raise ValueError(f"Extension already registered shortcut: {normalized}")
+        self._shortcuts.append(
+            ExtensionShortcut(
+                key=normalized,
+                description=description,
+                handler=handler,
             )
         )

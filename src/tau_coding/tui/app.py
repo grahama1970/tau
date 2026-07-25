@@ -12,7 +12,7 @@ import sys
 import tempfile
 from collections.abc import AsyncIterator, Callable, Mapping, Sequence
 from contextlib import suppress
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, fields, replace
 from datetime import datetime
 from inspect import isawaitable
 from io import StringIO
@@ -256,6 +256,8 @@ class CompletionActionTarget(Protocol):
     def action_suspend_process(self) -> None: ...
 
     def action_edit_queued_follow_up(self) -> bool: ...
+
+    def action_run_extension_shortcut(self, key: str) -> bool: ...
 
     async def action_submit_prompt(self) -> None: ...
 
@@ -1757,6 +1759,9 @@ class PromptInput(TextArea):
                 self._jump_direction = None
                 return
             self.action_jump_to_character(character)
+        elif self._completion_target().action_run_extension_shortcut(event.key):
+            event.stop()
+            event.prevent_default()
         elif _matches_configured_key(event.key, keybindings.queue_follow_up):
             event.stop()
             event.prevent_default()
@@ -7254,6 +7259,28 @@ class TauTuiApp(App[None]):
         self._refresh()
         return True
 
+    def action_run_extension_shortcut(self, key: str) -> bool:
+        """Run a non-conflicting extension shortcut registered for the prompt surface."""
+        if _extension_shortcut_conflicts_with_builtins(key, self.tui_settings.keybindings):
+            return False
+        shortcut_sources = getattr(self.session, "extension_shortcut_sources", {})
+        if key.strip().lower() not in shortcut_sources:
+            return False
+        handle_shortcut = getattr(self.session, "handle_extension_shortcut", None)
+        if not callable(handle_shortcut):
+            return False
+        try:
+            result = handle_shortcut(key)
+        except Exception as exc:  # noqa: BLE001 - extensions are an isolation boundary
+            self._notify(f"Extension shortcut error: {exc}", severity="error")
+            return True
+        if not result.handled:
+            return False
+        if result.message:
+            self._append_command_message(f"[{key.strip().lower()}]", result.message)
+        self._refresh()
+        return True
+
     def action_open_command_palette(self) -> None:
         """Open the slash-command palette in the prompt."""
         prompt = self.query_one("#prompt", PromptInput)
@@ -10728,7 +10755,7 @@ def _local_tui_command(
     if command == "/hotkeys":
         return CommandResult(
             handled=True,
-            message=_render_tui_hotkeys_message(keybindings),
+            message=_render_tui_hotkeys_message(keybindings, session),
         )
     if command == "/resources":
         return CommandResult(
@@ -10759,7 +10786,10 @@ def _parse_show_images_command_value(value: str) -> bool | None:
     return None
 
 
-def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
+def _render_tui_hotkeys_message(
+    keybindings: TuiKeybindings,
+    session: CodingSession | None = None,
+) -> str:
     newline_hint = _newline_key_hint(keybindings)
     lines = [
         "Keyboard Shortcuts",
@@ -10863,7 +10893,45 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         (keybindings.session_resume, "resume a previous session"),
     ]
     lines.extend(f"- {_key_hint(key)}: {description}" for key, description in optional_lines if key)
+    if session is not None:
+        extension_lines = _extension_shortcut_hotkey_lines(session, keybindings)
+        if extension_lines:
+            lines.extend(("", "Extensions:", *extension_lines))
     return "\n".join(lines)
+
+
+def _extension_shortcut_hotkey_lines(
+    session: CodingSession,
+    keybindings: TuiKeybindings,
+) -> list[str]:
+    lines: list[str] = []
+    shortcut_sources = getattr(session, "extension_shortcut_sources", {})
+    if not isinstance(shortcut_sources, dict):
+        return lines
+    for key, (extension_name, description) in sorted(shortcut_sources.items()):
+        if _extension_shortcut_conflicts_with_builtins(key, keybindings):
+            lines.append(
+                f"- {_key_hint(key)}: {description} "
+                f"(extension:{extension_name}; disabled, conflicts with built-in key)"
+            )
+        else:
+            lines.append(f"- {_key_hint(key)}: {description} (extension:{extension_name})")
+    return lines
+
+
+def _extension_shortcut_conflicts_with_builtins(
+    key: str,
+    keybindings: TuiKeybindings,
+) -> bool:
+    normalized = key.strip().lower()
+    if not normalized:
+        return True
+    for keybinding_field in fields(TuiKeybindings):
+        value = getattr(keybindings, keybinding_field.name)
+        configured = {part.lower() for part in _configured_key_parts(value)}
+        if normalized in configured:
+            return True
+    return False
 
 
 def _render_tui_resources_message(session: CodingSession) -> str:
