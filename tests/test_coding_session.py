@@ -3514,6 +3514,7 @@ async def test_session_ignores_project_resources_until_project_is_trusted(
     assert not [
         diagnostic for diagnostic in session.resource_diagnostics if diagnostic.kind == "trust"
     ]
+    assert session.project_trust_state().project_trusted is True
 
 
 @pytest.mark.anyio
@@ -3579,6 +3580,7 @@ async def test_session_saved_untrusted_decision_overrides_default_project_trust_
             "project-local resources ignored until this project is trusted with /trust",
         )
     ]
+    assert session.project_trust_state().project_trusted is False
 
 
 @pytest.mark.anyio

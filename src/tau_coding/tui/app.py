@@ -3259,6 +3259,11 @@ class TrustPickerScreen(ModalScreen[ProjectTrustOption | None]):
                 id="trust-picker-current",
                 markup=False,
             )
+            yield Static(
+                f"Current session: {_project_trust_session_label(self.trust_state)}",
+                id="trust-picker-session",
+                markup=False,
+            )
             yield ListView(
                 *self._list_items(),
                 id="trust-picker-list",
@@ -12256,6 +12261,10 @@ def _project_trust_decision_label(decision: ProjectTrustStoreEntry | None) -> st
         return "none"
     label = "trusted" if decision.decision else "untrusted"
     return f"{label} ({decision.path})"
+
+
+def _project_trust_session_label(state: ProjectTrustState) -> str:
+    return "trusted" if state.project_trusted else "untrusted"
 
 
 def _project_trust_option_label(

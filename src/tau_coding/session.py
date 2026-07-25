@@ -2273,7 +2273,18 @@ class CodingSession:
     def project_trust_state(self) -> ProjectTrustState:
         """Return project trust state for the active cwd."""
         store = ProjectTrustStore.from_resource_paths(self._resource_paths)
-        return project_trust_state(self.cwd, store)
+        state = project_trust_state(self.cwd, store)
+        if state.saved_decision is not None:
+            project_trusted = state.saved_decision.decision
+        elif self._config.default_project_trust == "always":
+            project_trusted = True
+        else:
+            tau_paths = self._resource_paths.paths or TauPaths(
+                home=self._resource_paths.root,
+                agents_home=self._resource_paths.agents_root or Path.home() / ".agents",
+            )
+            project_trusted = not has_trust_requiring_project_resources(self.cwd, tau_paths)
+        return replace(state, project_trusted=project_trusted)
 
     def save_project_trust(self, option: ProjectTrustOption) -> str:
         """Persist one selected project trust option."""

@@ -57,6 +57,7 @@ class ProjectTrustState:
     cwd: Path
     saved_decision: ProjectTrustStoreEntry | None
     options: tuple[ProjectTrustOption, ...]
+    project_trusted: bool = False
 
 
 class ProjectTrustStore:
@@ -138,6 +139,7 @@ def project_trust_state(cwd: Path, store: ProjectTrustStore) -> ProjectTrustStat
         cwd=resolved,
         saved_decision=store.get_entry(resolved),
         options=get_project_trust_options(resolved),
+        project_trusted=store.get(resolved) is True,
     )
 
 

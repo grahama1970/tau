@@ -6518,6 +6518,9 @@ async def test_tui_app_trust_picker_saves_selected_decision() -> None:
         await pilot.pause()
 
         assert isinstance(app.screen, TrustPickerScreen)
+        assert str(app.screen.query_one("#trust-picker-session", Static).render()) == (
+            "Current session: untrusted"
+        )
         trust_list = app.screen.query_one("#trust-picker-list", ListView)
         assert [str(item.query_one(Label).render()) for item in trust_list.children] == [
             "  Trust",
