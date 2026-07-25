@@ -761,6 +761,30 @@ Acceptance:
 - This slice does not claim Pi's filesystem watcher implementation or full
   custom footer component parity.
 
+### Slice 36: Extension Session Replacement Callbacks
+
+Pi extension session helpers accept `withSession` callbacks so post-replacement
+work uses a fresh context instead of a stale captured command context. Tau's
+extension API already performs in-place session replacement for `newSession`,
+`fork`, and `switchSession`, but rejected `withSession`. Allow that callback
+after successful replacement while keeping unsupported setup hooks and parent
+session cloning fail-closed.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- `ctx.newSession({ withSession })` runs the callback after the active Tau
+  session has been replaced.
+- `ctx.fork(entryId, { withSession })` runs the callback after the forked Tau
+  session is active.
+- `ctx.switchSession(sessionIdOrPath, { withSession })` runs the callback after
+  the resumed Tau session is active.
+- The callback receives a fresh Tau extension command context with the original
+  extension name and the replaced session object.
+- This slice does not claim Pi's `parentSession`, setup callbacks, or native
+  package session manager parity.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

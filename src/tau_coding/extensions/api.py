@@ -214,7 +214,11 @@ class ExtensionShortcutContext:
 
     async def new_session(self, options: Mapping[str, Any] | None = None) -> dict[str, Any]:
         """Replace the active Tau session with a newly indexed session."""
-        return await _session_new_session(self.session, options)
+        return await _session_new_session(
+            self.session,
+            options,
+            extension_name=self.extension_name,
+        )
 
     async def newSession(  # noqa: N802
         self,
@@ -229,7 +233,12 @@ class ExtensionShortcutContext:
         options: Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Fork the active Tau session from a selected tree entry."""
-        return await _session_fork(self.session, entry_id, options)
+        return await _session_fork(
+            self.session,
+            entry_id,
+            options,
+            extension_name=self.extension_name,
+        )
 
     async def navigate_tree(
         self,
@@ -253,7 +262,12 @@ class ExtensionShortcutContext:
         options: Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Switch the active Tau session by id or indexed session path."""
-        return await _session_switch_session(self.session, session_path, options)
+        return await _session_switch_session(
+            self.session,
+            session_path,
+            options,
+            extension_name=self.extension_name,
+        )
 
     async def switchSession(  # noqa: N802
         self,
@@ -744,7 +758,11 @@ class ExtensionCommandContext:
 
     async def new_session(self, options: Mapping[str, Any] | None = None) -> dict[str, Any]:
         """Replace the active Tau session with a newly indexed session."""
-        return await _session_new_session(self.session, options)
+        return await _session_new_session(
+            self.session,
+            options,
+            extension_name=self.extension_name,
+        )
 
     async def newSession(  # noqa: N802
         self,
@@ -759,7 +777,12 @@ class ExtensionCommandContext:
         options: Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Fork the active Tau session from a selected tree entry."""
-        return await _session_fork(self.session, entry_id, options)
+        return await _session_fork(
+            self.session,
+            entry_id,
+            options,
+            extension_name=self.extension_name,
+        )
 
     async def navigate_tree(
         self,
@@ -783,7 +806,12 @@ class ExtensionCommandContext:
         options: Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Switch the active Tau session by id or indexed session path."""
-        return await _session_switch_session(self.session, session_path, options)
+        return await _session_switch_session(
+            self.session,
+            session_path,
+            options,
+            extension_name=self.extension_name,
+        )
 
     async def switchSession(  # noqa: N802
         self,
@@ -2381,6 +2409,8 @@ async def _session_compact(session: Any, options: Mapping[str, Any] | None) -> s
 async def _session_new_session(
     session: Any,
     options: Mapping[str, Any] | None,
+    *,
+    extension_name: str,
 ) -> dict[str, Any]:
     _reject_session_replacement_callbacks(options, action="newSession")
     if options and options.get("parentSession") is not None:
@@ -2391,13 +2421,17 @@ async def _session_new_session(
     result = new_session()
     if hasattr(result, "__await__"):
         result = await result
-    return _session_replacement_result(session, result)
+    payload = _session_replacement_result(session, result)
+    await _run_replaced_session_callback(session, options, extension_name=extension_name)
+    return payload
 
 
 async def _session_fork(
     session: Any,
     entry_id: str,
     options: Mapping[str, Any] | None,
+    *,
+    extension_name: str,
 ) -> dict[str, Any]:
     _reject_session_replacement_callbacks(options, action="fork")
     normalized_entry = str(entry_id).strip()
@@ -2412,7 +2446,9 @@ async def _session_fork(
         result = fork_from_entry(normalized_entry, position=position)
         if hasattr(result, "__await__"):
             result = await result
-        return _session_tree_replacement_result(session, result)
+        payload = _session_tree_replacement_result(session, result)
+        await _run_replaced_session_callback(session, options, extension_name=extension_name)
+        return payload
     if position is not None:
         raise NotImplementedError("fork position requires Tau fork_from_entry support")
     clone_current_session = getattr(session, "clone_current_session", None)
@@ -2424,7 +2460,9 @@ async def _session_fork(
         result = clone_current_session()
         if hasattr(result, "__await__"):
             result = await result
-        return _session_replacement_result(session, result)
+        payload = _session_replacement_result(session, result)
+        await _run_replaced_session_callback(session, options, extension_name=extension_name)
+        return payload
     raise RuntimeError("active session does not support forking from the requested entry")
 
 
@@ -2461,6 +2499,8 @@ async def _session_switch_session(
     session: Any,
     session_path: str,
     options: Mapping[str, Any] | None,
+    *,
+    extension_name: str,
 ) -> dict[str, Any]:
     _reject_session_replacement_callbacks(options, action="switchSession")
     target = str(session_path).strip()
@@ -2473,7 +2513,9 @@ async def _session_switch_session(
     result = resume(session_id)
     if hasattr(result, "__await__"):
         result = await result
-    return _session_replacement_result(session, result)
+    payload = _session_replacement_result(session, result)
+    await _run_replaced_session_callback(session, options, extension_name=extension_name)
+    return payload
 
 
 def _session_replacement_result(session: Any, result: object) -> dict[str, Any]:
@@ -2490,6 +2532,32 @@ def _session_tree_replacement_result(session: Any, result: object) -> dict[str, 
     payload = _session_replacement_result(session, getattr(result, "message", result))
     payload["inputPrefill"] = getattr(result, "input_prefill", None)
     return payload
+
+
+async def _run_replaced_session_callback(
+    session: Any,
+    options: Mapping[str, Any] | None,
+    *,
+    extension_name: str,
+) -> None:
+    if not options:
+        return
+    callback = options.get("withSession", options.get("with_session"))
+    if callback is None:
+        return
+    if not callable(callback):
+        raise TypeError("withSession callback must be callable")
+    context = ExtensionCommandContext(
+        session=session,
+        registry=getattr(session, "command_registry", None),
+        text="",
+        name="withSession",
+        args="",
+        extension_name=extension_name,
+    )
+    result = callback(context)
+    if hasattr(result, "__await__"):
+        await result
 
 
 def _resolve_session_switch_id(session: Any, target: str) -> str:
@@ -2530,8 +2598,6 @@ def _reject_session_replacement_callbacks(
         return
     if options.get("setup") is not None:
         raise NotImplementedError(f"{action} setup callback is not supported by Tau yet")
-    if options.get("withSession") is not None or options.get("with_session") is not None:
-        raise NotImplementedError(f"{action} withSession callback is not supported by Tau yet")
 
 
 def _optional_option_text(options: Mapping[str, Any], *names: str) -> str | None:
