@@ -9965,7 +9965,7 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         "",
         "Slash and shell:",
         "- /: slash commands",
-        "- /resources: show loaded context, skills, prompts, and tools",
+        "- /resources: show loaded context, skills, prompts, tools, and diagnostics",
         "- !: run bash command and add output to context",
         "- !!: run bash command without adding output to context",
     ]
@@ -9999,6 +9999,13 @@ def _render_tui_resources_message(session: CodingSession) -> str:
                 session.tools,
                 cwd=session.cwd,
                 empty="No tools available",
+            ),
+        ),
+        (
+            "Diagnostics",
+            _resource_diagnostic_lines(
+                getattr(session, "resource_diagnostics", ()),
+                cwd=session.cwd,
             ),
         ),
     ]
@@ -10152,6 +10159,29 @@ def _resource_name_path_lines(
             if path is None
             else f"{name} ({_display_resource_path(Path(path), cwd=cwd)})"
         )
+    return lines
+
+
+def _resource_diagnostic_lines(diagnostics: Sequence[Any], *, cwd: Path) -> list[str]:
+    if not diagnostics:
+        return ["No resource diagnostics"]
+    lines: list[str] = []
+    for diagnostic in diagnostics:
+        severity = str(getattr(diagnostic, "severity", "warning"))
+        kind = str(getattr(diagnostic, "kind", "resource"))
+        name = getattr(diagnostic, "name", None)
+        message = str(getattr(diagnostic, "message", diagnostic))
+        label_parts = [severity, kind]
+        if name is not None:
+            label_parts.append(str(name))
+        path = getattr(diagnostic, "path", None)
+        if path is None:
+            lines.append(f"{' '.join(label_parts)}: {message}")
+        else:
+            lines.append(
+                f"{' '.join(label_parts)}: {message} "
+                f"({_display_resource_path(Path(path), cwd=cwd)})"
+            )
     return lines
 
 

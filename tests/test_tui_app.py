@@ -46,6 +46,7 @@ from tau_coding.provider_config import (
     ScopedModelConfig,
     save_provider_settings,
 )
+from tau_coding.resources import ResourceDiagnostic
 from tau_coding.session import (
     ModelChoice,
     SessionTreeBranchResult,
@@ -7814,7 +7815,10 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "F25: delete next word" in app.screen.message
         assert "F26/F27: yank or cycle deleted text" in app.screen.message
         assert "F28: undo previous prompt edit" in app.screen.message
-        assert "/resources: show loaded context, skills, prompts, and tools" in app.screen.message
+        assert (
+            "/resources: show loaded context, skills, prompts, tools, and diagnostics"
+            in app.screen.message
+        )
 
 
 @pytest.mark.anyio
@@ -7868,6 +7872,14 @@ async def test_tui_app_resources_command_uses_command_output_modal() -> None:
             content="Review this.",
         ),
     )
+    session.resource_diagnostics = (
+        ResourceDiagnostic(
+            kind="skill",
+            name="review",
+            message="overrides lower-precedence resource",
+            path=session.cwd / ".agents" / "skills" / "review.md",
+        ),
+    )
     app = TauTuiApp(session)
 
     async with app.run_test() as pilot:
@@ -7887,6 +7899,12 @@ async def test_tui_app_resources_command_uses_command_output_modal() -> None:
         assert "- /review (.agents/prompts/review.md)" in app.screen.message
         assert "Tools:" in app.screen.message
         assert "- read" in app.screen.message
+        assert "Diagnostics:" in app.screen.message
+        assert (
+            "- warning skill review: overrides lower-precedence resource "
+            "(.agents/skills/review.md)"
+            in app.screen.message
+        )
 
 
 @pytest.mark.anyio
