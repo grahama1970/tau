@@ -14,6 +14,7 @@ Tau now provides factory functions for these initial tools:
 
 - `create_read_tool()`
 - `create_ls_tool()`
+- `create_grep_tool()`
 - `create_write_tool()`
 - `create_edit_tool()`
 - `create_bash_tool()`
@@ -32,7 +33,7 @@ tau_agent:
   knows how to execute an AgentTool
 
 tau_coding:
-  provides read/ls/write/edit/bash tools for local coding work
+  provides read/ls/grep/write/edit/bash tools for local coding work
 ```
 
 This keeps the core loop reusable and independent of local machine behavior.
@@ -62,6 +63,23 @@ Arguments:
 
 Entries are sorted alphabetically, dotfiles are included, directories have a
 trailing `/`, and results include truncation and entry-count metadata.
+
+### `grep`
+
+Searches file contents with ripgrep.
+
+Arguments:
+
+- `pattern`: regex pattern, or literal text when `literal` is true
+- `path`: optional file or directory path, defaulting to `.`
+- `glob`: optional file glob filter
+- `ignore_case`: optional case-insensitive matching
+- `literal`: optional fixed-string matching
+- `context`: optional context-line count
+- `limit`: optional maximum number of matches, defaulting to `100`
+
+Results are formatted with file paths and line numbers, respect `.gitignore`,
+and include match-limit, long-line, and output-truncation metadata.
 
 ### `write`
 

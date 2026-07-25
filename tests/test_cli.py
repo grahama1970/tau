@@ -6553,9 +6553,19 @@ async def test_run_print_mode_prints_final_assistant_text(
     assert captured.err == ""
     assert provider.calls[0][0] == "fake"
     assert provider.calls[0][1] == build_system_prompt(
-        BuildSystemPromptOptions(cwd=tmp_path, tools=create_coding_tools(cwd=tmp_path))
+        BuildSystemPromptOptions(
+            cwd=tmp_path,
+            tools=create_coding_tools(cwd=tmp_path, bash_environment={}),
+        )
     )
-    assert [tool.name for tool in provider.calls[0][3]] == ["read", "ls", "write", "edit", "bash"]
+    assert [tool.name for tool in provider.calls[0][3]] == [
+        "read",
+        "ls",
+        "grep",
+        "write",
+        "edit",
+        "bash",
+    ]
 
 
 @pytest.mark.anyio

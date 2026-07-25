@@ -34,10 +34,11 @@ The agent loop executes tool calls and converts results into `ToolResultMessage`
 
 ## Built-in coding tools
 
-`tau_coding` provides five built-in local coding tools:
+`tau_coding` provides six built-in local coding tools:
 
 - `read`
 - `ls`
+- `grep`
 - `write`
 - `edit`
 - `bash`
@@ -56,6 +57,7 @@ Or create individual tools:
 from tau_coding import (
     create_bash_tool,
     create_edit_tool,
+    create_grep_tool,
     create_ls_tool,
     create_read_tool,
     create_write_tool,
@@ -90,6 +92,43 @@ Factory functions:
 Entries are sorted alphabetically, dotfiles are included, and directories are
 shown with a trailing `/`. Output is bounded by entry count and the normal Tau
 text-output byte limit.
+
+## `grep`
+
+Searches file contents with ripgrep.
+
+Factory functions:
+
+- `create_grep_tool_definition()`
+- `create_grep_tool()`
+
+### Arguments
+
+```json
+{
+  "pattern": "needle",
+  "path": "src",
+  "glob": "*.py",
+  "ignore_case": true,
+  "literal": false,
+  "context": 1,
+  "limit": 100
+}
+```
+
+| Argument | Required | Type | Description |
+| --- | --- | --- | --- |
+| `pattern` | yes | string | Regex pattern, or literal text when `literal` is true. |
+| `path` | no | string | Directory or file to search; defaults to `.`. |
+| `glob` | no | string | Optional file glob such as `*.py`. |
+| `ignore_case` | no | boolean | Search case-insensitively. |
+| `literal` | no | boolean | Treat `pattern` as literal text instead of a regex. |
+| `context` | no | integer | Number of lines before and after each match. |
+| `limit` | no | integer | Maximum number of matches to return; defaults to `100`. |
+
+Results are formatted as `path:line: text`. Context lines use
+`path-line- text`. Output is bounded by match count, long-line truncation, and
+the normal Tau text-output byte limit.
 
 ## `read`
 

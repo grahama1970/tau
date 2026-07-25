@@ -413,6 +413,24 @@ Acceptance:
   directories, and records entry-limit/truncation metadata.
 - The tool does not shell out and does not mutate the filesystem.
 
+### Slice 20: Dedicated File Search Tool
+
+Pi exposes a dedicated `grep` discovery tool in its read-only tool set. Tau can
+already run `rg` through `bash`, but agents should not need ad hoc shell text
+for ordinary source search. Add a bounded non-mutating `grep` tool that uses
+ripgrep and returns structured match metadata.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- `create_coding_tools()` includes `grep` in the visible tool surface.
+- The `grep` tool supports `pattern`, `path`, `glob`, `ignore_case`, `literal`,
+  `context`, and `limit`.
+- Results include path/line formatted output plus match-limit, long-line, and
+  truncation metadata.
+- The tool is read-only and fails fast when `rg` is unavailable.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

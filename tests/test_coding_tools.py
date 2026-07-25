@@ -12,6 +12,7 @@ from tau_coding import (
     create_coding_tools,
     create_edit_tool,
     create_edit_tool_definition,
+    create_grep_tool,
     create_ls_tool,
     create_read_tool,
     create_read_tool_definition,
@@ -60,7 +61,7 @@ def _magick_dimensions(path: Path) -> tuple[int, int]:
 async def test_create_coding_tools_returns_initial_tool_set(tmp_path: Path) -> None:
     tools = create_coding_tools(cwd=tmp_path)
 
-    assert [tool.name for tool in tools] == ["read", "ls", "write", "edit", "bash"]
+    assert [tool.name for tool in tools] == ["read", "ls", "grep", "write", "edit", "bash"]
     edit_tool = next(tool for tool in tools if tool.name == "edit")
     assert edit_tool.prompt_snippet is not None
     assert "Use edit for precise changes" in edit_tool.prompt_guidelines[0]
@@ -90,6 +91,40 @@ async def test_ls_tool_lists_directory_entries_with_directory_suffix(tmp_path: P
     ]
     assert limited.data is not None
     assert limited.data["entry_limit_reached"] == 2
+
+
+@pytest.mark.anyio
+async def test_grep_tool_searches_with_glob_context_and_limit(tmp_path: Path) -> None:
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "app.py").write_text("alpha\nneedle one\nbeta\nneedle two\n", encoding="utf-8")
+    (src / "notes.txt").write_text("needle text\n", encoding="utf-8")
+    tool = create_grep_tool(cwd=tmp_path)
+
+    result = await tool.execute(
+        {
+            "pattern": "needle",
+            "path": "src",
+            "glob": "*.py",
+            "context": 1,
+            "limit": 1,
+        }
+    )
+
+    assert result.ok is True
+    assert result.name == "grep"
+    assert result.content.splitlines() == [
+        "app.py-1- alpha",
+        "app.py:2: needle one",
+        "app.py-3- beta",
+        "",
+        "[1 matches limit reached. Use limit=2 for more, or refine pattern]",
+    ]
+    assert result.data is not None
+    assert result.data["match_count"] == 2
+    assert result.data["returned_matches"] == 1
+    assert result.data["match_limit_reached"] == 1
+    assert result.data["context"] == 1
 
 
 def test_tool_definitions_expose_pi_style_prompt_metadata(tmp_path: Path) -> None:

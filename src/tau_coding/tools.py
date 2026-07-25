@@ -35,10 +35,12 @@ from tau_agent.types import JSONValue
 DEFAULT_MAX_OUTPUT_BYTES = 50 * 1024
 DEFAULT_MAX_OUTPUT_LINES = 2_000
 DEFAULT_LS_ENTRY_LIMIT = 500
+DEFAULT_GREP_MATCH_LIMIT = 100
+GREP_MAX_LINE_LENGTH = 500
 DEFAULT_IMAGE_MAX_WIDTH_PX = 2000
 DEFAULT_IMAGE_MAX_HEIGHT_PX = 2000
 DEFAULT_INLINE_IMAGE_MAX_BASE64_BYTES = int(4.5 * 1024 * 1024)
-BUILTIN_CODING_TOOL_NAMES = ("read", "ls", "write", "edit", "bash")
+BUILTIN_CODING_TOOL_NAMES = ("read", "ls", "grep", "write", "edit", "bash")
 MAX_BASH_TIMEOUT_SECONDS = 2_147_483_647 / 1000
 INLINE_IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 SUPPORTED_IMAGE_MIME_TYPES = INLINE_IMAGE_MIME_TYPES | {"image/bmp"}
@@ -148,7 +150,7 @@ def create_coding_tools(
 ) -> list[AgentTool]:
     """Create the default coding-tool set for a local project.
 
-    The returned tools are ordered as `read`, `ls`, `write`, `edit`, and `bash`.
+    The returned tools are ordered as `read`, `ls`, `grep`, `write`, `edit`, and `bash`.
     Relative paths used with those tools are resolved against `cwd`; when `cwd`
     is omitted, the process current working directory at factory-call time is
     used. The tools share per-path write/edit locks within this process so
@@ -158,6 +160,7 @@ def create_coding_tools(
     return [
         create_read_tool(cwd=root, auto_resize_images=auto_resize_images),
         create_ls_tool(cwd=root),
+        create_grep_tool(cwd=root),
         create_write_tool(cwd=root),
         create_edit_tool(cwd=root),
         create_bash_tool(cwd=root, shell_path=shell_path, environment=bash_environment),
@@ -423,6 +426,229 @@ def create_ls_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinitio
 def create_ls_tool(*, cwd: str | Path | None = None) -> AgentTool:
     """Create an `AgentTool` for listing directory entries."""
     return create_ls_tool_definition(cwd=cwd).to_agent_tool()
+
+
+def create_grep_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinition:
+    """Create a definition for the `grep` tool.
+
+    The tool searches text with ripgrep, respecting `.gitignore`, and formats
+    match rows as `path:line: text`. It supports literal matching,
+    case-insensitive matching, glob filters, context lines, and bounded output.
+    """
+    root = Path.cwd() if cwd is None else Path(cwd)
+
+    async def execute(
+        arguments: Mapping[str, JSONValue],
+        signal: ToolCancellationToken | None = None,
+    ) -> AgentToolResult:
+        pattern = _str_arg(arguments, "pattern")
+        raw_path = arguments.get("path", ".")
+        if not isinstance(raw_path, str):
+            raise ToolInputError("path must be a string")
+        search_path = Path(raw_path).expanduser()
+        if not search_path.is_absolute():
+            search_path = root / search_path
+        if not search_path.exists():
+            raise ToolInputError(f"Path not found: {search_path}")
+        glob = arguments.get("glob")
+        if glob is not None and not isinstance(glob, str):
+            raise ToolInputError("glob must be a string")
+        ignore_case = _optional_bool_arg(arguments, "ignore_case")
+        literal = _optional_bool_arg(arguments, "literal")
+        context = _optional_int_arg(arguments, "context")
+        if context is not None and context < 0:
+            raise ToolInputError("context must be at least 0")
+        context_value = context or 0
+        limit = _optional_int_arg(arguments, "limit")
+        effective_limit = DEFAULT_GREP_MATCH_LIMIT if limit is None else limit
+        if effective_limit < 1:
+            raise ToolInputError("limit must be at least 1")
+        rg = shutil.which("rg")
+        if rg is None:
+            raise ToolInputError("ripgrep (rg) is not available")
+
+        args = [rg, "--json", "--line-number", "--color=never", "--hidden"]
+        if ignore_case:
+            args.append("--ignore-case")
+        if literal:
+            args.append("--fixed-strings")
+        if glob:
+            args.extend(["--glob", glob])
+        args.extend(["--", pattern, str(search_path)])
+
+        process = await asyncio.create_subprocess_exec(
+            *args,
+            cwd=root,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr, _timed_out, cancelled = await _communicate_with_cancellation(
+            process,
+            timeout=None,
+            signal=signal,
+        )
+        if cancelled:
+            raise ToolInputError("Search cancelled")
+        if process.returncode not in (0, 1):
+            message = stderr.decode(errors="replace").strip() or (
+                f"ripgrep exited with code {process.returncode}"
+            )
+            raise ToolInputError(message)
+
+        is_directory = search_path.is_dir()
+        matches: list[tuple[Path, int, str]] = []
+        total_matches = 0
+        for raw_line in stdout.decode(errors="replace").splitlines():
+            if not raw_line.strip():
+                continue
+            try:
+                event = json.loads(raw_line)
+            except json.JSONDecodeError:
+                continue
+            if event.get("type") != "match":
+                continue
+            data = event.get("data")
+            if not isinstance(data, dict):
+                continue
+            line_number = data.get("line_number")
+            path_data = data.get("path")
+            line_data = data.get("lines")
+            if not isinstance(line_number, int):
+                continue
+            if not isinstance(path_data, dict) or not isinstance(path_data.get("text"), str):
+                continue
+            if not isinstance(line_data, dict) or not isinstance(line_data.get("text"), str):
+                continue
+            total_matches += 1
+            if len(matches) < effective_limit:
+                line_text = line_data["text"].removesuffix("\n").replace("\r", "")
+                matches.append((Path(path_data["text"]), line_number, line_text))
+
+        if not matches:
+            return AgentToolResult(
+                tool_call_id="",
+                name="grep",
+                ok=True,
+                content="No matches found",
+                data={
+                    "path": str(search_path),
+                    "match_count": 0,
+                    "returned_matches": 0,
+                },
+            )
+
+        output_lines: list[str] = []
+        lines_truncated = False
+        file_line_cache: dict[Path, list[str]] = {}
+        for file_path, line_number, line_text in matches:
+            display_path = _grep_display_path(
+                file_path,
+                search_path=search_path,
+                is_directory=is_directory,
+            )
+            if context_value <= 0:
+                truncated_line, was_truncated = _truncate_grep_line(line_text)
+                lines_truncated = lines_truncated or was_truncated
+                output_lines.append(
+                    f"{display_path}:{line_number}: {truncated_line}"
+                )
+                continue
+            context_lines = await _grep_context_lines(file_path, cache=file_line_cache)
+            start = max(1, line_number - context_value)
+            end = min(len(context_lines), line_number + context_value)
+            for current_line_number in range(start, end + 1):
+                context_line = context_lines[current_line_number - 1] if context_lines else ""
+                truncated_line, was_truncated = _truncate_grep_line(context_line)
+                lines_truncated = lines_truncated or was_truncated
+                separator = ":" if current_line_number == line_number else "-"
+                output_lines.append(
+                    f"{display_path}{separator}{current_line_number}{separator} {truncated_line}"
+                )
+
+        raw_output = "\n".join(output_lines)
+        truncation = truncate_head(raw_output, max_lines=max(len(output_lines), 1))
+        output = truncation.content
+        match_limit_reached = total_matches > len(matches)
+        notices: list[str] = []
+        if match_limit_reached:
+            notices.append(
+                f"{effective_limit} matches limit reached. Use limit={effective_limit * 2} "
+                "for more, or refine pattern"
+            )
+        if truncation.truncated:
+            notices.append(f"{format_size(DEFAULT_MAX_OUTPUT_BYTES)} limit reached")
+        if lines_truncated:
+            notices.append(
+                f"Some lines truncated to {GREP_MAX_LINE_LENGTH} chars. "
+                "Use read tool to see full lines"
+            )
+        if notices:
+            output = append_status_block(output, f"[{'. '.join(notices)}]")
+
+        details: dict[str, JSONValue] = {
+            "path": str(search_path),
+            "match_count": total_matches,
+            "returned_matches": len(matches),
+            "context": context_value,
+            "truncation": truncation.to_json(),
+        }
+        if match_limit_reached:
+            details["match_limit_reached"] = effective_limit
+        if lines_truncated:
+            details["lines_truncated"] = True
+
+        return AgentToolResult(
+            tool_call_id="",
+            name="grep",
+            ok=True,
+            content=output,
+            data=details,
+        )
+
+    return ToolDefinition(
+        name="grep",
+        description=(
+            "Search file contents for a pattern with ripgrep. Returns matching lines with "
+            "file paths and line numbers, respects .gitignore, and truncates output to "
+            f"{DEFAULT_GREP_MATCH_LIMIT} matches or {DEFAULT_MAX_OUTPUT_BYTES // 1024}KB."
+        ),
+        prompt_snippet="Search file contents for patterns",
+        prompt_guidelines=("Use grep to find relevant files before reading or editing them.",),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "pattern": {"type": "string", "description": "Search pattern"},
+                "path": {
+                    "type": "string",
+                    "description": "Directory or file to search; defaults to current directory",
+                },
+                "glob": {"type": "string", "description": "Optional glob filter, such as *.py"},
+                "ignore_case": {
+                    "type": "boolean",
+                    "description": "Case-insensitive search",
+                },
+                "literal": {
+                    "type": "boolean",
+                    "description": "Treat pattern as a literal string instead of a regex",
+                },
+                "context": {
+                    "type": "integer",
+                    "description": "Number of context lines before and after each match",
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "Maximum number of matches to return",
+                },
+            },
+            "required": ["pattern"],
+        },
+        executor=execute,
+    )
+
+
+def create_grep_tool(*, cwd: str | Path | None = None) -> AgentTool:
+    """Create an `AgentTool` for searching file contents with ripgrep."""
+    return create_grep_tool_definition(cwd=cwd).to_agent_tool()
 
 
 def create_write_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinition:
@@ -1165,6 +1391,15 @@ def _optional_int_arg(arguments: Mapping[str, JSONValue], name: str) -> int | No
     return value
 
 
+def _optional_bool_arg(arguments: Mapping[str, JSONValue], name: str) -> bool:
+    value = arguments.get(name)
+    if value is None:
+        return False
+    if not isinstance(value, bool):
+        raise ToolInputError(f"{name} must be a boolean")
+    return value
+
+
 def _optional_float_arg(arguments: Mapping[str, JSONValue], name: str) -> float | None:
     value = arguments.get(name)
     if value is None:
@@ -1172,6 +1407,37 @@ def _optional_float_arg(arguments: Mapping[str, JSONValue], name: str) -> float 
     if not isinstance(value, int | float):
         raise ToolInputError(f"{name} must be a number")
     return float(value)
+
+
+def _grep_display_path(file_path: Path, *, search_path: Path, is_directory: bool) -> str:
+    if is_directory:
+        with contextlib.suppress(ValueError):
+            relative = file_path.relative_to(search_path)
+            return relative.as_posix() or file_path.name
+    return file_path.name
+
+
+async def _grep_context_lines(file_path: Path, *, cache: dict[Path, list[str]]) -> list[str]:
+    cached = cache.get(file_path)
+    if cached is not None:
+        return cached
+
+    def read_lines() -> list[str]:
+        try:
+            content = file_path.read_text(encoding="utf-8", errors="replace")
+            return normalize_to_lf(content).split("\n")
+        except OSError:
+            return []
+
+    lines = await asyncio.to_thread(read_lines)
+    cache[file_path] = lines
+    return lines
+
+
+def _truncate_grep_line(text: str) -> tuple[str, bool]:
+    if len(text) <= GREP_MAX_LINE_LENGTH:
+        return text, False
+    return f"{text[:GREP_MAX_LINE_LENGTH]}...", True
 
 
 def _prepare_edit_arguments(arguments: Mapping[str, JSONValue]) -> Mapping[str, JSONValue]:
