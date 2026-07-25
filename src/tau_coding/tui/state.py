@@ -63,6 +63,32 @@ def _render_custom_entry(
         result = _call_custom_entry_renderer(renderer, entry, expanded=expanded)
     except Exception as exc:  # noqa: BLE001 - extensions are an isolation boundary
         return f"[{entry.namespace}] renderer failed: {exc}"
+    return _normalize_custom_renderer_result(result)
+
+
+def _render_custom_message_entry(
+    renderer: Callable[..., Any],
+    entry: CustomEntry,
+    *,
+    expanded: bool,
+) -> str | None:
+    display = entry.data.get("display", True)
+    if display is False:
+        return None
+    message = {
+        "customType": entry.namespace,
+        "content": entry.data.get("content", []),
+        "display": bool(display),
+        "details": entry.data.get("details"),
+    }
+    try:
+        result = _call_custom_message_renderer(renderer, message, expanded=expanded)
+    except Exception as exc:  # noqa: BLE001 - extensions are an isolation boundary
+        return f"[{entry.namespace}] message renderer failed: {exc}"
+    return _normalize_custom_renderer_result(result)
+
+
+def _normalize_custom_renderer_result(result: Any) -> str | None:
     if result is None:
         return None
     if isinstance(result, str):
@@ -103,6 +129,37 @@ def _call_custom_entry_renderer(
     if len(positional) >= 2:
         return renderer(entry, options)
     return renderer(entry)
+
+
+def _call_custom_message_renderer(
+    renderer: Callable[..., Any],
+    message: Mapping[str, Any],
+    *,
+    expanded: bool,
+) -> Any:
+    options = {"expanded": expanded, "outputPad": 1}
+    try:
+        parameters = inspect.signature(renderer).parameters
+    except (TypeError, ValueError):
+        return renderer(message, options, None)
+    positional = [
+        parameter
+        for parameter in parameters.values()
+        if parameter.kind
+        in {
+            inspect.Parameter.POSITIONAL_ONLY,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        }
+    ]
+    accepts_varargs = any(
+        parameter.kind == inspect.Parameter.VAR_POSITIONAL
+        for parameter in parameters.values()
+    )
+    if accepts_varargs or len(positional) >= 3:
+        return renderer(message, options, None)
+    if len(positional) >= 2:
+        return renderer(message, options)
+    return renderer(message)
 
 
 @dataclass(frozen=True, slots=True)
@@ -242,11 +299,23 @@ class TuiState:
         self,
         entry: CustomEntry,
         entry_renderers: Mapping[str, Callable[..., Any]] | None = None,
+        message_renderers: Mapping[str, Callable[..., Any]] | None = None,
     ) -> None:
         """Append an extension/application-owned session entry to the transcript."""
         renderer = (entry_renderers or {}).get(entry.namespace)
         if renderer is not None:
             rendered = _render_custom_entry(renderer, entry, expanded=self.show_tool_results)
+            if rendered is None:
+                return
+            self.add_item("custom", rendered)
+            return
+        message_renderer = (message_renderers or {}).get(entry.namespace)
+        if message_renderer is not None:
+            rendered = _render_custom_message_entry(
+                message_renderer,
+                entry,
+                expanded=self.show_tool_results,
+            )
             if rendered is None:
                 return
             self.add_item("custom", rendered)
@@ -367,10 +436,15 @@ class TuiState:
         self,
         entries: Iterable[CustomEntry],
         entry_renderers: Mapping[str, Callable[..., Any]] | None = None,
+        message_renderers: Mapping[str, Callable[..., Any]] | None = None,
     ) -> None:
         """Populate extension/application-owned transcript entries."""
         for entry in entries:
-            self.add_custom_entry(entry, entry_renderers=entry_renderers)
+            self.add_custom_entry(
+                entry,
+                entry_renderers=entry_renderers,
+                message_renderers=message_renderers,
+            )
 
     def _read_skill_name(self, tool_call: ToolCall) -> str | None:
         if tool_call.name != "read":
