@@ -109,6 +109,7 @@ from tau_coding.provider_config import (
     save_default_provider_model,
     set_saved_scoped_models,
     toggle_saved_scoped_model,
+    upsert_provider,
 )
 from tau_coding.provider_runtime import ClosableModelProvider, create_model_provider
 from tau_coding.reload import CodingReloadSummary, ReloadCategorySummary
@@ -231,6 +232,7 @@ class SessionResources:
     context_files: tuple[ProjectContextFile, ...]
     extensions: tuple[LoadedExtension, ...]
     extension_tools: tuple[AgentTool, ...]
+    extension_provider_configs: tuple[ProviderConfig, ...]
     diagnostics: tuple[ResourceDiagnostic, ...]
 
 
@@ -394,6 +396,14 @@ class CodingSession:
             discover_context_files=config.discover_context_files,
             default_project_trust=config.default_project_trust,
         )
+        if resources.extension_provider_configs:
+            config = replace(
+                config,
+                provider_settings=_provider_settings_with_extension_providers(
+                    config.provider_settings,
+                    resources.extension_provider_configs,
+                ),
+            )
         bash_environment_provider: dict[str, Callable[[], Mapping[str, str | None]]] = {}
 
         def current_bash_environment() -> Mapping[str, str | None]:
@@ -3169,6 +3179,16 @@ def _merge_prompt_templates_by_name(
     return sorted(templates_by_name.values(), key=lambda item: item.name), diagnostics
 
 
+def _provider_settings_with_extension_providers(
+    settings: ProviderSettings | None,
+    providers: tuple[ProviderConfig, ...],
+) -> ProviderSettings:
+    updated = settings or ProviderSettings()
+    for provider in providers:
+        updated = upsert_provider(updated, provider)
+    return updated
+
+
 def _load_session_resources(
     resource_paths: TauResourcePaths,
     explicit_context_files: tuple[ProjectContextFile, ...],
@@ -3238,6 +3258,7 @@ def _load_session_resources(
         context_files=_merge_context_files(explicit_context_files, discovered_context),
         extensions=extensions.extensions,
         extension_tools=extensions.tools,
+        extension_provider_configs=extensions.provider_configs,
         diagnostics=tuple(
             [
                 *trust_diagnostics,

@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from tau_agent.tools import AgentTool
+from tau_coding.provider_config import OpenAICompatibleProviderConfig, ProviderConfig
 
 ExtensionCommandHandler = Callable[[Any], Any]
 ExtensionShortcutHandler = Callable[[Any], Any]
@@ -1456,6 +1457,7 @@ class ExtensionAPI:
         self._flags: dict[str, ExtensionFlag] = {}
         self._entry_renderers: dict[str, ExtensionEntryRenderer] = {}
         self._message_renderers: dict[str, ExtensionMessageRenderer] = {}
+        self._provider_configs: dict[str, ProviderConfig] = {}
         self.events = event_bus or ExtensionEventBus()
         self._flag_values: dict[str, bool | str] = {
             _normalize_flag_name(name): value for name, value in (flag_values or {}).items()
@@ -1491,6 +1493,11 @@ class ExtensionAPI:
         """Return Pi-style custom-message renderers registered by this extension."""
         return dict(self._message_renderers)
 
+    @property
+    def provider_configs(self) -> tuple[ProviderConfig, ...]:
+        """Return provider configs registered by this extension."""
+        return tuple(self._provider_configs.values())
+
     def register_tool(self, tool: AgentTool) -> None:
         """Register an `AgentTool` for the current coding session."""
         if not isinstance(tool, AgentTool):
@@ -1498,6 +1505,40 @@ class ExtensionAPI:
         if any(existing.name == tool.name for existing in self._tools):
             raise ValueError(f"Extension already registered tool: {tool.name}")
         self._tools.append(tool)
+
+    def register_provider(
+        self,
+        provider_or_name: str | Mapping[str, Any],
+        config: Mapping[str, Any] | None = None,
+    ) -> None:
+        """Register a bounded OpenAI-compatible provider for this session."""
+        if not isinstance(provider_or_name, str):
+            raise NotImplementedError("native provider objects are not supported by Tau yet")
+        name = provider_or_name.strip()
+        if not name:
+            raise ValueError("register_provider requires a provider name")
+        if config is None:
+            raise ValueError("register_provider requires a provider config")
+        self._provider_configs[name] = _openai_compatible_provider_from_extension(
+            name,
+            config,
+        )
+
+    def registerProvider(  # noqa: N802
+        self,
+        provider_or_name: str | Mapping[str, Any],
+        config: Mapping[str, Any] | None = None,
+    ) -> None:
+        """Pi-compatible camelCase alias for register_provider."""
+        self.register_provider(provider_or_name, config)
+
+    def unregister_provider(self, name: str) -> None:
+        """Remove a provider registered earlier in this extension load."""
+        self._provider_configs.pop(str(name).strip(), None)
+
+    def unregisterProvider(self, name: str) -> None:  # noqa: N802
+        """Pi-compatible camelCase alias for unregister_provider."""
+        self.unregister_provider(name)
 
     def register_command(
         self,
@@ -2040,6 +2081,86 @@ def _tool_info(tool: Any, *, extension_sources: Mapping[str, object]) -> ToolInf
     }
 
 
+def _openai_compatible_provider_from_extension(
+    name: str,
+    config: Mapping[str, Any],
+) -> OpenAICompatibleProviderConfig:
+    unsupported_options = (
+        "streamSimple",
+        "stream_simple",
+        "oauth",
+        "refreshModels",
+        "refresh_models",
+    )
+    for unsupported in unsupported_options:
+        if config.get(unsupported) is not None:
+            raise NotImplementedError(
+                f"registerProvider {unsupported} is not supported by Tau yet"
+            )
+    api = str(config.get("api", config.get("type", "openai-compatible"))).strip()
+    if api and api not in {
+        "openai-compatible",
+        "openai-chat-completions",
+        "openai-responses",
+    }:
+        raise NotImplementedError(f"registerProvider api is not supported by Tau: {api}")
+    base_url = str(config.get("baseUrl", config.get("base_url", ""))).strip().rstrip("/")
+    if not base_url:
+        raise ValueError("registerProvider requires baseUrl for Tau provider configs")
+    api_key_env = _provider_api_key_env(config.get("apiKey", config.get("api_key")))
+    models, context_windows = _provider_models_from_extension(config.get("models"))
+    headers = config.get("headers", {})
+    if not isinstance(headers, Mapping):
+        raise TypeError("registerProvider headers must be a mapping")
+    return OpenAICompatibleProviderConfig(
+        name=name,
+        base_url=base_url,
+        api_key_env=api_key_env,
+        credential_name=None,
+        models=models,
+        default_model=models[0],
+        context_windows=context_windows,
+        headers={str(key): str(value) for key, value in headers.items()},
+    )
+
+
+def _provider_api_key_env(value: Any) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError("registerProvider requires apiKey as an environment reference")
+    text = value.strip()
+    if text.startswith("${") and text.endswith("}"):
+        env_name = text[2:-1].strip()
+    elif text.startswith("$"):
+        env_name = text[1:].strip()
+    else:
+        raise ValueError("registerProvider apiKey must reference an environment variable")
+    if not env_name:
+        raise ValueError("registerProvider apiKey environment variable is empty")
+    return env_name
+
+
+def _provider_models_from_extension(value: Any) -> tuple[tuple[str, ...], dict[str, int]]:
+    if not isinstance(value, Sequence) or isinstance(value, str) or not value:
+        raise ValueError("registerProvider requires at least one model")
+    model_ids: list[str] = []
+    context_windows: dict[str, int] = {}
+    for item in value:
+        if isinstance(item, str):
+            model_id = item.strip()
+            context_window = None
+        elif isinstance(item, Mapping):
+            model_id = str(item.get("id", "")).strip()
+            context_window = item.get("contextWindow", item.get("context_window"))
+        else:
+            raise TypeError("registerProvider models must be strings or mappings")
+        if not model_id:
+            raise ValueError("registerProvider model ids must be non-empty")
+        model_ids.append(model_id)
+        if context_window is not None:
+            context_windows[model_id] = int(context_window)
+    return tuple(model_ids), context_windows
+
+
 def _session_model(session: Any) -> str | None:
     model = getattr(session, "model", None)
     return None if model is None else str(model)
@@ -2079,10 +2200,30 @@ async def _session_set_model(session: Any, model: str | Mapping[str, Any]) -> bo
     set_model = getattr(session, "set_model", None)
     if not callable(set_model):
         return False
+    provider_name = _provider_name_from_model_mapping(model)
+    if provider_name is not None:
+        set_provider = getattr(session, "set_provider", None)
+        if not callable(set_provider):
+            return False
+        result = set_provider(provider_name)
+        if hasattr(result, "__await__"):
+            await result
     result = set_model(_model_name(model))
     if hasattr(result, "__await__"):
         await result
     return True
+
+
+def _provider_name_from_model_mapping(model: str | Mapping[str, Any]) -> str | None:
+    if not isinstance(model, Mapping):
+        return None
+    raw_provider = model.get("provider") or model.get("providerName") or model.get("provider_name")
+    if raw_provider is None:
+        return None
+    provider_name = str(raw_provider).strip()
+    if not provider_name:
+        raise ValueError("provider name must be non-empty")
+    return provider_name
 
 
 def _session_manager(session: Any) -> Any:

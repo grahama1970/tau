@@ -19,6 +19,7 @@ from tau_coding.extensions.api import (
     ExtensionMessageRenderer,
     ExtensionShortcut,
 )
+from tau_coding.provider_config import ProviderConfig
 from tau_coding.resources import ResourceDiagnostic, TauResourcePaths
 
 _MODULE_NAME_PREFIX = "tau_extension"
@@ -37,6 +38,7 @@ class LoadedExtension:
     flags: tuple[ExtensionFlag, ...] = ()
     entry_renderers: Mapping[str, ExtensionEntryRenderer] | None = None
     message_renderers: Mapping[str, ExtensionMessageRenderer] | None = None
+    provider_configs: tuple[ProviderConfig, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -81,6 +83,15 @@ class ExtensionLoadResult:
         for extension in self.extensions:
             renderers.update(extension.message_renderers or {})
         return renderers
+
+    @property
+    def provider_configs(self) -> tuple[ProviderConfig, ...]:
+        """Return all registered provider configs in load order."""
+        return tuple(
+            provider
+            for extension in self.extensions
+            for provider in extension.provider_configs
+        )
 
 
 def load_extension_tools(
@@ -238,6 +249,7 @@ def _load_one_extension(
         flags=api.flags,
         entry_renderers=api.entry_renderers,
         message_renderers=api.message_renderers,
+        provider_configs=api.provider_configs,
     )
 
 
