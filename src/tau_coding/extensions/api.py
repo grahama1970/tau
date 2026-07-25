@@ -283,6 +283,23 @@ class ExtensionShortcutContext:
         """Pi-compatible camelCase alias for append_entry."""
         return await self.append_entry(custom_type, data)
 
+    async def send_message(
+        self,
+        message: Mapping[str, Any],
+        options: Mapping[str, Any] | None = None,
+    ) -> str:
+        """Append a Pi-style custom message as a durable Tau custom entry."""
+        custom_type, data = _custom_message_entry_payload(message, options)
+        return await _session_append_entry(self.session, custom_type, data)
+
+    async def sendMessage(  # noqa: N802
+        self,
+        message: Mapping[str, Any],
+        options: Mapping[str, Any] | None = None,
+    ) -> str:
+        """Pi-compatible camelCase alias for send_message."""
+        return await self.send_message(message, options)
+
     async def set_label(self, entry_id: str, label: str | None) -> str:
         """Set or clear a durable label on a branchable session entry."""
         return await _session_set_label(self.session, entry_id, label)
@@ -720,6 +737,23 @@ class ExtensionCommandContext:
     ) -> str:
         """Pi-compatible camelCase alias for append_entry."""
         return await self.append_entry(custom_type, data)
+
+    async def send_message(
+        self,
+        message: Mapping[str, Any],
+        options: Mapping[str, Any] | None = None,
+    ) -> str:
+        """Append a Pi-style custom message as a durable Tau custom entry."""
+        custom_type, data = _custom_message_entry_payload(message, options)
+        return await _session_append_entry(self.session, custom_type, data)
+
+    async def sendMessage(  # noqa: N802
+        self,
+        message: Mapping[str, Any],
+        options: Mapping[str, Any] | None = None,
+    ) -> str:
+        """Pi-compatible camelCase alias for send_message."""
+        return await self.send_message(message, options)
 
     async def set_label(self, entry_id: str, label: str | None) -> str:
         """Set or clear a durable label on a branchable session entry."""
@@ -1924,6 +1958,30 @@ def _normalize_user_message_content_part(part: Any) -> str:
     if text_value is None:
         return ""
     return str(text_value).strip()
+
+
+def _custom_message_entry_payload(
+    message: Mapping[str, Any],
+    options: Mapping[str, Any] | None,
+) -> tuple[str, dict[str, Any]]:
+    if options is not None:
+        if bool(options.get("triggerTurn", options.get("trigger_turn", False))):
+            raise NotImplementedError(
+                "sendMessage triggerTurn requires Tau custom-message agent delivery"
+            )
+        deliver_as = options.get("deliverAs", options.get("deliver_as"))
+        if deliver_as is not None:
+            raise NotImplementedError(
+                "sendMessage deliverAs requires Tau custom-message agent delivery"
+            )
+    custom_type = str(message.get("customType", message.get("custom_type", ""))).strip()
+    if not custom_type:
+        raise ValueError("sendMessage requires a non-empty customType")
+    return custom_type, {
+        "content": message.get("content", []),
+        "display": bool(message.get("display", True)),
+        "details": message.get("details"),
+    }
 
 
 def _user_message_deliver_as_from_options(options: Mapping[str, Any] | None) -> str:
