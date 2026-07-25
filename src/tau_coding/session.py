@@ -302,6 +302,7 @@ class CodingSession:
         self._provider_name = config.provider_name
         self._provider_settings = config.provider_settings
         self._runtime_provider_config = config.runtime_provider_config
+        self._provider_timeout_override_seconds: float | None = None
         self._resource_paths = resource_paths_with_cwd(config.resource_paths, config.cwd)
         self._auto_compact_token_threshold = config.auto_compact_token_threshold
         self._auto_compact_enabled = config.auto_compact_enabled
@@ -780,6 +781,16 @@ class CodingSession:
         self._harness.set_follow_up_queue_mode(mode)
         return f"Follow-up mode: {_display_queue_mode(mode)}."
 
+    def set_provider_timeout_seconds(self, timeout_seconds: float) -> str:
+        """Set the active provider timeout for future model calls."""
+        if timeout_seconds <= 0:
+            raise ProviderConfigError("Provider timeout override must be greater than 0")
+        if self._provider_timeout_override_seconds == timeout_seconds:
+            return f"Provider timeout: {timeout_seconds:g}s."
+        self._provider_timeout_override_seconds = timeout_seconds
+        self._refresh_runtime_provider()
+        return f"Provider timeout: {timeout_seconds:g}s."
+
     @property
     def context_window_tokens(self) -> int:
         """Return the active model's configured context window, or Tau's fallback."""
@@ -1059,6 +1070,11 @@ class CodingSession:
         if self._runtime_provider_config is None:
             return
         provider_config = self._active_provider_config() or self._runtime_provider_config
+        if self._provider_timeout_override_seconds is not None:
+            provider_config = _provider_config_with_timeout(
+                provider_config,
+                timeout_seconds=self._provider_timeout_override_seconds,
+            )
         try:
             provider = create_model_provider(
                 provider_config,
@@ -2767,6 +2783,14 @@ def _project_trusted_resource_paths(
             ),
         ),
     )
+
+
+def _provider_config_with_timeout(
+    provider_config: ProviderConfig,
+    *,
+    timeout_seconds: float,
+) -> ProviderConfig:
+    return replace(provider_config, timeout_seconds=timeout_seconds)
 
 
 def _merge_context_files(

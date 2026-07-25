@@ -200,6 +200,7 @@ type DoubleEscapeAction = Literal["tree", "fork", "none"]
 type TuiTreeFilterMode = Literal["default", "no-tools", "user-only", "labeled-only", "all"]
 type TuiQueueDrainMode = Literal["one-at-a-time", "all"]
 DEFAULT_AUTOCOMPLETE_MAX_VISIBLE = 5
+DEFAULT_HTTP_IDLE_TIMEOUT_MS = 300_000
 MIN_AUTOCOMPLETE_MAX_VISIBLE = 3
 MAX_AUTOCOMPLETE_MAX_VISIBLE = 20
 DEFAULT_EDITOR_PADDING_X = 1
@@ -945,6 +946,7 @@ class TuiSettings:
     thinking_level: ThinkingLevel = DEFAULT_THINKING_LEVEL
     steering_mode: TuiQueueDrainMode = "one-at-a-time"
     follow_up_mode: TuiQueueDrainMode = "one-at-a-time"
+    http_idle_timeout_ms: int = DEFAULT_HTTP_IDLE_TIMEOUT_MS
     default_project_trust: DefaultProjectTrust = "ask"
     autocomplete_max_visible: int = DEFAULT_AUTOCOMPLETE_MAX_VISIBLE
     enable_skill_commands: bool = True
@@ -988,6 +990,7 @@ class TuiSettings:
             "shell_path": self.shell_path,
             "shell_command_prefix": self.shell_command_prefix,
             "follow_up_mode": self.follow_up_mode,
+            "http_idle_timeout_ms": self.http_idle_timeout_ms,
             "steering_mode": self.steering_mode,
             "theme": self.theme,
             "thinking_level": self.thinking_level,
@@ -1096,6 +1099,12 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         follow_up_mode=_queue_drain_mode(
             data.get("follow_up_mode", data.get("followUpMode", "one-at-a-time")),
             "follow_up_mode",
+        ),
+        http_idle_timeout_ms=_http_idle_timeout_ms(
+            data.get(
+                "http_idle_timeout_ms",
+                data.get("httpIdleTimeoutMs", DEFAULT_HTTP_IDLE_TIMEOUT_MS),
+            )
         ),
         default_project_trust=_default_project_trust(
             data.get("default_project_trust", data.get("defaultProjectTrust", "ask"))
@@ -1229,6 +1238,14 @@ def _queue_drain_mode(value: object, field_name: str) -> TuiQueueDrainMode:
     if value in {"one-at-a-time", "all"}:
         return cast(TuiQueueDrainMode, value)
     raise TuiConfigError(f"TUI {field_name} must be one of: one-at-a-time, all")
+
+
+def _http_idle_timeout_ms(value: object) -> int:
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise TuiConfigError("TUI http_idle_timeout_ms must be an integer")
+    if value < 0:
+        raise TuiConfigError("TUI http_idle_timeout_ms must be 0 or greater")
+    return value
 
 
 def _default_project_trust(value: object) -> DefaultProjectTrust:

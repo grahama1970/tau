@@ -232,6 +232,25 @@ Acceptance:
   loaded.
 - `/resources` includes an Extensions section with extension paths.
 
+### Slice 10: HTTP Idle Timeout In TUI Settings
+
+Pi exposes message-delivery timeout controls in `/settings`. Tau already has
+provider HTTP timeouts, so surface the HTTP idle timeout in the TUI and apply it
+to future provider streams without inventing unsupported WebSocket transport
+behavior.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- `/settings` includes an HTTP idle timeout row with Pi-style values.
+- The setting is durable in `~/.tau/tui.json` as `http_idle_timeout_ms` and also
+  accepts Pi-compatible `httpIdleTimeoutMs`.
+- Changing the setting updates the active provider runtime timeout for future
+  model calls.
+- Tau does not claim WebSocket or websocket-cached transport support until a
+  provider adapter implements those transports.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

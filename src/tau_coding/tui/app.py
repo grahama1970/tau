@@ -166,6 +166,7 @@ AUTOCOMPLETE_MAX_VISIBLE_CHOICES = (3, 5, 7, 10, 15, 20)
 EDITOR_PADDING_X_CHOICES = (0, 1, 2, 3)
 OUTPUT_PADDING_X_CHOICES = (0, 1)
 IMAGE_WIDTH_CELL_CHOICES = (60, 80, 120)
+HTTP_IDLE_TIMEOUT_MS_CHOICES = (60_000, 300_000, 600_000, 3_600_000, 0)
 QUEUED_MESSAGE_PREVIEW_CHARS = 120
 NO_STORED_CREDENTIALS_MESSAGE = (
     "No stored credentials to remove. /logout only removes credentials saved by /login; "
@@ -2557,6 +2558,7 @@ SettingsPickerKey = Literal[
     "auto_compact",
     "steering_mode",
     "follow_up_mode",
+    "http_idle_timeout_ms",
     "default_project_trust",
     "auto_copy_selection",
     "hide_thinking",
@@ -6669,6 +6671,13 @@ class TauTuiApp(App[None]):
         set_follow_up_mode = getattr(self.session, "set_follow_up_queue_mode", None)
         if callable(set_follow_up_mode):
             set_follow_up_mode(_agent_queue_mode_from_tui(settings.follow_up_mode))
+        set_provider_timeout = getattr(self.session, "set_provider_timeout_seconds", None)
+        if callable(set_provider_timeout):
+            set_provider_timeout(
+                _provider_timeout_seconds_from_http_idle_timeout_ms(
+                    settings.http_idle_timeout_ms
+                )
+            )
         set_default_project_trust = getattr(self.session, "set_default_project_trust", None)
         if callable(set_default_project_trust):
             set_default_project_trust(settings.default_project_trust)
@@ -9605,6 +9614,12 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             description="How queued follow-up prompts are submitted after a turn",
         ),
         SettingsPickerItem(
+            key="http_idle_timeout_ms",
+            label="HTTP idle timeout",
+            value=_format_http_idle_timeout_ms(settings.http_idle_timeout_ms),
+            description="Provider HTTP stream idle timeout for future model calls",
+        ),
+        SettingsPickerItem(
             key="sidebar_position",
             label="Sidebar",
             value=settings.sidebar_position,
@@ -9770,6 +9785,25 @@ def _next_queue_drain_mode(mode: TuiQueueDrainMode) -> TuiQueueDrainMode:
     return "all" if mode == "one-at-a-time" else "one-at-a-time"
 
 
+def _format_http_idle_timeout_ms(timeout_ms: int) -> str:
+    if timeout_ms == 0:
+        return "disabled"
+    if timeout_ms % 1000 == 0:
+        timeout_s = timeout_ms // 1000
+        if timeout_s % 60 == 0:
+            timeout_minutes = timeout_s // 60
+            return f"{timeout_minutes}m"
+        return f"{timeout_s}s"
+    return f"{timeout_ms}ms"
+
+
+def _provider_timeout_seconds_from_http_idle_timeout_ms(timeout_ms: int) -> float:
+    if timeout_ms == 0:
+        # Match Pi's practical "disabled" transport timeout ceiling for JS timers.
+        return 2_147_483_647 / 1000
+    return timeout_ms / 1000
+
+
 def _agent_queue_mode_from_tui(mode: TuiQueueDrainMode) -> Literal["one_at_a_time", "all"]:
     return "one_at_a_time" if mode == "one-at-a-time" else "all"
 
@@ -9831,6 +9865,17 @@ def _next_tui_settings(
         return replace(settings, steering_mode=_next_queue_drain_mode(settings.steering_mode))
     if key == "follow_up_mode":
         return replace(settings, follow_up_mode=_next_queue_drain_mode(settings.follow_up_mode))
+    if key == "http_idle_timeout_ms":
+        try:
+            current_index = HTTP_IDLE_TIMEOUT_MS_CHOICES.index(settings.http_idle_timeout_ms)
+        except ValueError:
+            current_index = -1
+        return replace(
+            settings,
+            http_idle_timeout_ms=HTTP_IDLE_TIMEOUT_MS_CHOICES[
+                (current_index + 1) % len(HTTP_IDLE_TIMEOUT_MS_CHOICES)
+            ],
+        )
     if key == "sidebar_position":
         sidebar_positions = ("right", "left", "off")
         try:
@@ -11522,6 +11567,11 @@ async def run_tui_app(
                 prompt_template_paths=prompt_template_paths,
                 theme_paths=theme_paths,
                 extension_paths=extension_paths,
+            )
+        )
+        session.set_provider_timeout_seconds(
+            _provider_timeout_seconds_from_http_idle_timeout_ms(
+                tui_settings.http_idle_timeout_ms
             )
         )
         app = TauTuiApp(

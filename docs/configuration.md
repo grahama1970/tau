@@ -264,6 +264,12 @@ also run `/theme tau-light`, `/theme tau-dark`, or `/theme high-contrast` to
 switch directly. The selection is saved to `~/.tau/tui.json` and applies
 immediately.
 
+Run `/settings` to change durable TUI behavior without editing JSON by hand.
+Tau includes Pi-style message-delivery controls for `steering_mode` and
+`follow_up_mode`, plus `http_idle_timeout_ms` for the provider HTTP stream idle
+timeout. `http_idle_timeout_ms` uses milliseconds; `0` maps to the same practical
+"disabled" timeout ceiling Pi uses for long-running provider streams.
+
 The built-in sidebar is responsive: Tau shows it on medium or larger terminal
 windows and hides it automatically when the terminal is narrow or short.
 When visible, it includes the active provider/model, thinking mode, loaded tools,
