@@ -34,9 +34,10 @@ The agent loop executes tool calls and converts results into `ToolResultMessage`
 
 ## Built-in coding tools
 
-`tau_coding` provides four built-in local coding tools:
+`tau_coding` provides five built-in local coding tools:
 
 - `read`
+- `ls`
 - `write`
 - `edit`
 - `bash`
@@ -55,12 +56,40 @@ Or create individual tools:
 from tau_coding import (
     create_bash_tool,
     create_edit_tool,
+    create_ls_tool,
     create_read_tool,
     create_write_tool,
 )
 ```
 
 Relative paths passed to the tools are resolved against `cwd`. If `cwd` is omitted, Tau uses the process current working directory at the time the factory is called.
+
+## `ls`
+
+Lists directory contents.
+
+Factory functions:
+
+- `create_ls_tool_definition()`
+- `create_ls_tool()`
+
+### Arguments
+
+```json
+{
+  "path": ".",
+  "limit": 500
+}
+```
+
+| Argument | Required | Type | Description |
+| --- | --- | --- | --- |
+| `path` | no | string | Directory path to list. Relative paths are resolved against `cwd`; defaults to `.`. |
+| `limit` | no | integer | Maximum number of entries to return; defaults to `500`. |
+
+Entries are sorted alphabetically, dotfiles are included, and directories are
+shown with a trailing `/`. Output is bounded by entry count and the normal Tau
+text-output byte limit.
 
 ## `read`
 

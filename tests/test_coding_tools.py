@@ -12,6 +12,7 @@ from tau_coding import (
     create_coding_tools,
     create_edit_tool,
     create_edit_tool_definition,
+    create_ls_tool,
     create_read_tool,
     create_read_tool_definition,
     create_write_tool,
@@ -59,10 +60,36 @@ def _magick_dimensions(path: Path) -> tuple[int, int]:
 async def test_create_coding_tools_returns_initial_tool_set(tmp_path: Path) -> None:
     tools = create_coding_tools(cwd=tmp_path)
 
-    assert [tool.name for tool in tools] == ["read", "write", "edit", "bash"]
-    edit_tool = tools[2]
+    assert [tool.name for tool in tools] == ["read", "ls", "write", "edit", "bash"]
+    edit_tool = next(tool for tool in tools if tool.name == "edit")
     assert edit_tool.prompt_snippet is not None
     assert "Use edit for precise changes" in edit_tool.prompt_guidelines[0]
+
+
+@pytest.mark.anyio
+async def test_ls_tool_lists_directory_entries_with_directory_suffix(tmp_path: Path) -> None:
+    (tmp_path / ".env").write_text("SECRET=redacted\n", encoding="utf-8")
+    (tmp_path / "src").mkdir()
+    (tmp_path / "README.md").write_text("# Project\n", encoding="utf-8")
+    tool = create_ls_tool(cwd=tmp_path)
+
+    result = await tool.execute({"path": ".", "limit": 3})
+    limited = await tool.execute({"path": ".", "limit": 2})
+
+    assert result.ok is True
+    assert result.name == "ls"
+    assert result.content.splitlines() == [".env", "README.md", "src/"]
+    assert result.data is not None
+    assert result.data["entry_count"] == 3
+    assert result.data["returned_entries"] == 3
+    assert limited.content.splitlines() == [
+        ".env",
+        "README.md",
+        "",
+        "[2 entries limit reached. Use limit=4 for more]",
+    ]
+    assert limited.data is not None
+    assert limited.data["entry_limit_reached"] == 2
 
 
 def test_tool_definitions_expose_pi_style_prompt_metadata(tmp_path: Path) -> None:

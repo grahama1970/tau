@@ -13,6 +13,7 @@ src/tau_coding/tools.py
 Tau now provides factory functions for these initial tools:
 
 - `create_read_tool()`
+- `create_ls_tool()`
 - `create_write_tool()`
 - `create_edit_tool()`
 - `create_bash_tool()`
@@ -31,7 +32,7 @@ tau_agent:
   knows how to execute an AgentTool
 
 tau_coding:
-  provides read/write/edit/bash tools for local coding work
+  provides read/ls/write/edit/bash tools for local coding work
 ```
 
 This keeps the core loop reusable and independent of local machine behavior.
@@ -49,6 +50,18 @@ Arguments:
 - `limit`: optional number of lines to return
 
 Large output is truncated with Pi-style truncation metadata and continuation hints. Supported image files (`jpg`, `png`, `gif`, `webp`) are detected and returned as base64 metadata for later UI/provider integration.
+
+### `ls`
+
+Lists directory entries without requiring a shell command.
+
+Arguments:
+
+- `path`: optional directory path, defaulting to `.`
+- `limit`: optional maximum number of entries, defaulting to `500`
+
+Entries are sorted alphabetically, dotfiles are included, directories have a
+trailing `/`, and results include truncation and entry-count metadata.
 
 ### `write`
 

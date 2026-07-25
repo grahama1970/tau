@@ -397,6 +397,22 @@ Acceptance:
 - Default custom-entry bodies remain plain text/JSON; Tau does not claim custom
   extension renderers until the extension API has a real renderer contract.
 
+### Slice 19: Dedicated Directory Listing Tool
+
+Pi exposes a default `ls` tool so agents can inspect directories without
+round-tripping through shell text. Tau's default tool set only had
+`read`/`write`/`edit`/`bash`; add a non-mutating `ls` tool while leaving Tau's
+DAG and permission surfaces unchanged.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- `create_coding_tools()` returns `read`, `ls`, `write`, `edit`, and `bash`.
+- The `ls` tool lists dotfiles, sorts entries alphabetically, appends `/` to
+  directories, and records entry-limit/truncation metadata.
+- The tool does not shell out and does not mutate the filesystem.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

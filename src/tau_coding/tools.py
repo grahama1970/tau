@@ -34,10 +34,11 @@ from tau_agent.types import JSONValue
 
 DEFAULT_MAX_OUTPUT_BYTES = 50 * 1024
 DEFAULT_MAX_OUTPUT_LINES = 2_000
+DEFAULT_LS_ENTRY_LIMIT = 500
 DEFAULT_IMAGE_MAX_WIDTH_PX = 2000
 DEFAULT_IMAGE_MAX_HEIGHT_PX = 2000
 DEFAULT_INLINE_IMAGE_MAX_BASE64_BYTES = int(4.5 * 1024 * 1024)
-BUILTIN_CODING_TOOL_NAMES = ("read", "write", "edit", "bash")
+BUILTIN_CODING_TOOL_NAMES = ("read", "ls", "write", "edit", "bash")
 MAX_BASH_TIMEOUT_SECONDS = 2_147_483_647 / 1000
 INLINE_IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 SUPPORTED_IMAGE_MIME_TYPES = INLINE_IMAGE_MIME_TYPES | {"image/bmp"}
@@ -147,7 +148,7 @@ def create_coding_tools(
 ) -> list[AgentTool]:
     """Create the default coding-tool set for a local project.
 
-    The returned tools are ordered as `read`, `write`, `edit`, and `bash`.
+    The returned tools are ordered as `read`, `ls`, `write`, `edit`, and `bash`.
     Relative paths used with those tools are resolved against `cwd`; when `cwd`
     is omitted, the process current working directory at factory-call time is
     used. The tools share per-path write/edit locks within this process so
@@ -156,6 +157,7 @@ def create_coding_tools(
     root = Path.cwd() if cwd is None else Path(cwd)
     return [
         create_read_tool(cwd=root, auto_resize_images=auto_resize_images),
+        create_ls_tool(cwd=root),
         create_write_tool(cwd=root),
         create_edit_tool(cwd=root),
         create_bash_tool(cwd=root, shell_path=shell_path, environment=bash_environment),
@@ -319,6 +321,108 @@ def create_read_tool(
         cwd=cwd,
         auto_resize_images=auto_resize_images,
     ).to_agent_tool()
+
+
+def create_ls_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinition:
+    """Create a definition for the `ls` tool.
+
+    The tool lists directory entries resolved relative to `cwd`, includes
+    dotfiles, sorts case-insensitively, appends `/` to directories, and bounds
+    output by entry count and Tau's normal text truncation limit. It performs no
+    mutations and does not shell out.
+    """
+    root = Path.cwd() if cwd is None else Path(cwd)
+
+    async def execute(
+        arguments: Mapping[str, JSONValue],
+        signal: ToolCancellationToken | None = None,
+    ) -> AgentToolResult:
+        del signal
+        raw_path = arguments.get("path", ".")
+        if not isinstance(raw_path, str):
+            raise ToolInputError("path must be a string")
+        path = Path(raw_path).expanduser()
+        if not path.is_absolute():
+            path = root / path
+        limit = _optional_int_arg(arguments, "limit")
+        effective_limit = DEFAULT_LS_ENTRY_LIMIT if limit is None else limit
+        if effective_limit < 1:
+            raise ToolInputError("limit must be at least 1")
+        if not path.exists():
+            raise ToolInputError(f"Path not found: {path}")
+        if not path.is_dir():
+            raise ToolInputError(f"Path is not a directory: {path}")
+
+        entries = sorted(path.iterdir(), key=lambda entry: entry.name.casefold())
+        lines: list[str] = []
+        entry_limit_reached = False
+        for entry in entries:
+            if len(lines) >= effective_limit:
+                entry_limit_reached = True
+                break
+            suffix = "/" if entry.is_dir() else ""
+            lines.append(f"{entry.name}{suffix}")
+
+        content = "\n".join(lines) if lines else "(empty directory)"
+        truncation = truncate_head(content, max_lines=max(effective_limit, 1))
+        output = truncation.content
+        notices: list[str] = []
+        if entry_limit_reached:
+            notices.append(
+                f"{effective_limit} entries limit reached. Use limit={effective_limit * 2} for more"
+            )
+        if truncation.truncated:
+            notices.append(f"{format_size(DEFAULT_MAX_OUTPUT_BYTES)} limit reached")
+        if notices:
+            output = append_status_block(output, f"[{'. '.join(notices)}]")
+
+        details: dict[str, JSONValue] = {
+            "path": str(path),
+            "entry_count": len(entries),
+            "returned_entries": len(lines),
+            "truncation": truncation.to_json(),
+        }
+        if entry_limit_reached:
+            details["entry_limit_reached"] = effective_limit
+
+        return AgentToolResult(
+            tool_call_id="",
+            name="ls",
+            ok=True,
+            content=output,
+            data=details,
+        )
+
+    return ToolDefinition(
+        name="ls",
+        description=(
+            "List directory contents. Returns entries sorted alphabetically, appends '/' "
+            "to directories, includes dotfiles, and truncates large directories by entry "
+            f"limit ({DEFAULT_LS_ENTRY_LIMIT} default) or {DEFAULT_MAX_OUTPUT_BYTES // 1024}KB."
+        ),
+        prompt_snippet="List directory contents",
+        prompt_guidelines=("Use ls to inspect directories before reading files.",),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "path": {
+                    "type": "string",
+                    "description": "Directory path to list; defaults to current directory",
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "Maximum number of entries to return",
+                },
+            },
+            "required": [],
+        },
+        executor=execute,
+    )
+
+
+def create_ls_tool(*, cwd: str | Path | None = None) -> AgentTool:
+    """Create an `AgentTool` for listing directory entries."""
+    return create_ls_tool_definition(cwd=cwd).to_agent_tool()
 
 
 def create_write_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinition:
