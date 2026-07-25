@@ -11045,15 +11045,24 @@ def _create_startup_session_record(
     *,
     cwd: Path,
     selection: ProviderSelection,
+    title: str | None = None,
 ) -> CodingSessionRecord:
     try:
         return manager.create_session(
             cwd=cwd,
             model=selection.model,
             provider_name=selection.provider.name,
+            title=title,
         )
     except TypeError:
-        return manager.create_session(cwd=cwd, model=selection.model)
+        try:
+            return manager.create_session(
+                cwd=cwd,
+                model=selection.model,
+                provider_name=selection.provider.name,
+            )
+        except TypeError:
+            return manager.create_session(cwd=cwd, model=selection.model)
 
 
 def _resolve_tui_startup_selection(
@@ -11148,6 +11157,7 @@ async def run_tui_app(
     provider_name: str | None = None,
     auto_compact_token_threshold: int | None = None,
     initial_prompt: str | None = None,
+    session_name: str | None = None,
     session_manager: SessionManager | None = None,
 ) -> str | None:
     """Create the default provider/session, run the Textual app, and return the session id."""
@@ -11190,6 +11200,7 @@ async def run_tui_app(
                 manager,
                 cwd=cwd,
                 selection=selection,
+                title=session_name,
             )
 
         session = await CodingSession.load(

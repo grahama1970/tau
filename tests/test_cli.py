@@ -6210,7 +6210,9 @@ def test_cli_loop2_sanity_exits_nonzero_on_failed_check(
 def test_cli_without_prompt_invokes_tui_runner(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    calls: list[tuple[str | None, Path, str | None, bool, str | None, int | None, str | None]] = []
+    calls: list[
+        tuple[str | None, Path, str | None, bool, str | None, int | None, str | None, str | None]
+    ] = []
 
     async def fake_run_openai_tui(
         model: str | None,
@@ -6220,6 +6222,7 @@ def test_cli_without_prompt_invokes_tui_runner(
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
         initial_prompt: str | None,
+        session_name: str | None,
     ) -> None:
         calls.append(
             (
@@ -6230,6 +6233,7 @@ def test_cli_without_prompt_invokes_tui_runner(
                 provider_name,
                 auto_compact_token_threshold,
                 initial_prompt,
+                session_name,
             )
         )
 
@@ -6239,13 +6243,15 @@ def test_cli_without_prompt_invokes_tui_runner(
     result = CliRunner().invoke(app, [])
 
     assert result.exit_code == 0
-    assert calls == [(None, tmp_path, None, False, None, None, None)]
+    assert calls == [(None, tmp_path, None, False, None, None, None, None)]
 
 
 def test_cli_positional_prompt_invokes_tui_runner(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    calls: list[tuple[str | None, Path, str | None, bool, str | None, int | None, str | None]] = []
+    calls: list[
+        tuple[str | None, Path, str | None, bool, str | None, int | None, str | None, str | None]
+    ] = []
 
     async def fake_run_openai_tui(
         model: str | None,
@@ -6255,6 +6261,7 @@ def test_cli_positional_prompt_invokes_tui_runner(
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
         initial_prompt: str | None,
+        session_name: str | None,
     ) -> None:
         calls.append(
             (
@@ -6265,6 +6272,7 @@ def test_cli_positional_prompt_invokes_tui_runner(
                 provider_name,
                 auto_compact_token_threshold,
                 initial_prompt,
+                session_name,
             )
         )
 
@@ -6274,7 +6282,7 @@ def test_cli_positional_prompt_invokes_tui_runner(
     result = CliRunner().invoke(app, ["explain this repo"])
 
     assert result.exit_code == 0
-    assert calls == [(None, tmp_path, None, False, None, None, "explain this repo")]
+    assert calls == [(None, tmp_path, None, False, None, None, "explain this repo", None)]
 
 
 @pytest.mark.anyio
@@ -6695,7 +6703,9 @@ def test_cli_exits_nonzero_when_print_mode_fails(monkeypatch: pytest.MonkeyPatch
         output: PrintOutputMode,
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
+        session_name: str | None,
     ) -> bool:
+        del session_name
         return False
 
     monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
@@ -6715,8 +6725,9 @@ def test_mode_flag_alone_triggers_print_mode(monkeypatch: pytest.MonkeyPatch) ->
         output: PrintOutputMode,
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
+        session_name: str | None,
     ) -> bool:
-        del model, cwd, provider_name, loop_receipt
+        del model, cwd, provider_name, loop_receipt, session_name
         calls.append((prompt, output))
         return True
 
@@ -6726,6 +6737,30 @@ def test_mode_flag_alone_triggers_print_mode(monkeypatch: pytest.MonkeyPatch) ->
 
     assert result.exit_code == 0
     assert calls == [("hello", PrintOutputMode.json)]
+
+
+def test_print_mode_passes_startup_session_name(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[str | None] = []
+
+    async def fake_run_openai_print_mode(
+        prompt: str,
+        model: str | None,
+        cwd: Path,
+        output: PrintOutputMode,
+        provider_name: str | None,
+        loop_receipt: LoopReceiptConfig | None,
+        session_name: str | None,
+    ) -> bool:
+        del prompt, model, cwd, output, provider_name, loop_receipt
+        calls.append(session_name)
+        return True
+
+    monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
+
+    result = CliRunner().invoke(app, ["--print", "--name", "Customer bugfix", "hello"])
+
+    assert result.exit_code == 0
+    assert calls == ["Customer bugfix"]
 
 
 def test_print_mode_requires_a_prompt() -> None:
@@ -6745,8 +6780,9 @@ def test_print_mode_merges_piped_stdin_into_prompt(monkeypatch: pytest.MonkeyPat
         output: PrintOutputMode,
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
+        session_name: str | None,
     ) -> bool:
-        del model, cwd, output, provider_name, loop_receipt
+        del model, cwd, output, provider_name, loop_receipt, session_name
         calls.append(prompt)
         return True
 
@@ -6768,8 +6804,9 @@ def test_print_mode_accepts_stdin_only_prompt(monkeypatch: pytest.MonkeyPatch) -
         output: PrintOutputMode,
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
+        session_name: str | None,
     ) -> bool:
-        del model, cwd, output, provider_name, loop_receipt
+        del model, cwd, output, provider_name, loop_receipt, session_name
         calls.append(prompt)
         return True
 
@@ -6839,8 +6876,9 @@ def test_cli_print_mode_passes_loop2_receipt_options(
         output: PrintOutputMode,
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
+        session_name: str | None,
     ) -> bool:
-        del prompt, model, cwd, output, provider_name
+        del prompt, model, cwd, output, provider_name, session_name
         calls.append(loop_receipt)
         return True
 
@@ -6889,8 +6927,9 @@ def test_cli_print_mode_marks_nonfake_loop2_receipt_live(
         output: PrintOutputMode,
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
+        session_name: str | None,
     ) -> bool:
-        del prompt, model, cwd, output, provider_name
+        del prompt, model, cwd, output, provider_name, session_name
         calls.append(loop_receipt)
         return True
 
@@ -6954,7 +6993,9 @@ def test_cli_print_mode_rejects_loop2_required_changed_glob_without_receipt_root
 def test_default_tui_invokes_tui_runner_with_flags(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    calls: list[tuple[str | None, Path, str | None, bool, str | None, int | None, str | None]] = []
+    calls: list[
+        tuple[str | None, Path, str | None, bool, str | None, int | None, str | None, str | None]
+    ] = []
 
     async def fake_run_openai_tui(
         model: str | None,
@@ -6964,6 +7005,7 @@ def test_default_tui_invokes_tui_runner_with_flags(
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
         initial_prompt: str | None,
+        session_name: str | None,
     ) -> None:
         calls.append(
             (
@@ -6974,6 +7016,7 @@ def test_default_tui_invokes_tui_runner_with_flags(
                 provider_name,
                 auto_compact_token_threshold,
                 initial_prompt,
+                session_name,
             )
         )
 
@@ -6996,7 +7039,41 @@ def test_default_tui_invokes_tui_runner_with_flags(
     )
 
     assert result.exit_code == 0
-    assert calls == [("fake", tmp_path, "session-1", False, "local", 1000, None)]
+    assert calls == [("fake", tmp_path, "session-1", False, "local", 1000, None, None)]
+
+
+def test_default_tui_passes_startup_session_name(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[str | None] = []
+
+    async def fake_run_openai_tui(
+        model: str | None,
+        cwd: Path,
+        session_id: str | None,
+        new_session: bool,
+        provider_name: str | None,
+        auto_compact_token_threshold: int | None,
+        initial_prompt: str | None,
+        session_name: str | None,
+    ) -> None:
+        del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
+        del initial_prompt
+        calls.append(session_name)
+
+    monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
+
+    result = CliRunner().invoke(app, ["--cwd", str(tmp_path), "--name", "Customer bugfix"])
+
+    assert result.exit_code == 0
+    assert calls == ["Customer bugfix"]
+
+
+def test_default_tui_rejects_blank_startup_session_name() -> None:
+    result = CliRunner().invoke(app, ["--name", "   "])
+
+    assert result.exit_code != 0
+    assert "--name requires a non-empty value" in result.output
 
 
 def test_default_tui_rejects_session_with_new_session(tmp_path: Path) -> None:

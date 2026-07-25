@@ -814,6 +814,10 @@ def main(
         str | None,
         typer.Option("--session", help="Resume a session id in TUI mode."),
     ] = None,
+    session_name: Annotated[
+        str | None,
+        typer.Option("--name", "-n", help="Set session display name at startup."),
+    ] = None,
     resume: Annotated[
         str | None,
         typer.Option(
@@ -947,6 +951,9 @@ def main(
         raise typer.BadParameter(
             f"--output was renamed to --mode. Use `tau --mode {output.value}` instead."
         )
+
+    if session_name is not None and not session_name.strip():
+        raise typer.BadParameter("--name requires a non-empty value")
 
     print_requested = print_mode or mode is not None
     effective_output = mode or PrintOutputMode.text
@@ -3128,6 +3135,7 @@ def main(
                 provider,
                 auto_compact_threshold,
                 initial_prompt,
+                session_name,
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -3159,6 +3167,7 @@ def main(
             effective_output,
             provider,
             loop_receipt,
+            session_name,
         )
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
@@ -3174,6 +3183,7 @@ async def run_openai_tui(
     provider_name: str | None = None,
     auto_compact_token_threshold: int | None = None,
     initial_prompt: str | None = None,
+    session_name: str | None = None,
 ) -> str | None:
     """Run the Textual TUI and return its resumable session id, if any."""
     return await run_tui_app(
@@ -3184,6 +3194,7 @@ async def run_openai_tui(
         provider_name=provider_name,
         auto_compact_token_threshold=auto_compact_token_threshold,
         initial_prompt=initial_prompt,
+        session_name=session_name,
     )
 
 
@@ -12831,6 +12842,7 @@ async def run_openai_print_mode(
     provider_name: str | None = None,
     loop_receipt: LoopReceiptConfig | None = None,
     session_manager: SessionManager | None = None,
+    session_name: str | None = None,
 ) -> bool:
     """Run print mode with the OpenAI-compatible provider configured from the environment."""
     settings = load_provider_settings()
@@ -12841,7 +12853,10 @@ async def run_openai_print_mode(
         thinking_level=DEFAULT_THINKING_LEVEL,
     )
     manager = session_manager or SessionManager()
-    record = manager.create_session(cwd=cwd, model=selection.model)
+    try:
+        record = manager.create_session(cwd=cwd, model=selection.model, title=session_name)
+    except TypeError:
+        record = manager.create_session(cwd=cwd, model=selection.model)
     try:
         return await run_print_mode(
             prompt=prompt,

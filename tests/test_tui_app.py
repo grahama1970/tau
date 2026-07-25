@@ -11320,8 +11320,9 @@ async def test_run_tui_app_creates_new_session_by_default(
             cwd: Path,
             model: str,
             provider_name: str | None = None,
+            title: str | None = None,
         ) -> CodingSessionRecord:
-            calls.append(f"create:{cwd}:{model}:{provider_name}")
+            calls.append(f"create:{cwd}:{model}:{provider_name}:{title}")
             return record
 
         def get_session(self, session_id: str) -> CodingSessionRecord | None:
@@ -11389,10 +11390,16 @@ async def test_run_tui_app_creates_new_session_by_default(
         provider_name="local",
         auto_compact_token_threshold=1000,
         initial_prompt="explain this repo",
+        session_name="Customer bugfix",
         session_manager=FakeManager(),
     )
 
-    assert calls == [f"create:{tmp_path}:local-model:local", "load", "run", "provider_closed"]
+    assert calls == [
+        f"create:{tmp_path}:local-model:local:Customer bugfix",
+        "load",
+        "run",
+        "provider_closed",
+    ]
 
 
 @pytest.mark.anyio
