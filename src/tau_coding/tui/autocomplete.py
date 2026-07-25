@@ -1,7 +1,8 @@
 """Prompt autocomplete helpers for Tau's Textual TUI."""
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from inspect import isawaitable
 from pathlib import Path
 
 from tau_coding.commands import CommandArgumentCompletion, CommandRegistry, SlashCommand
@@ -134,6 +135,86 @@ def build_completion_state(
         return CompletionState()
 
     argument_completions = _command_argument_completions(
+        text=text_before_cursor,
+        token_end=token_end,
+        command_registry=command_registry,
+        model_names=model_names,
+        provider_names=provider_names,
+        thinking_levels=thinking_levels,
+        theme_names=theme_names,
+        session_ids=session_ids,
+        session_options=session_options,
+    )
+    if argument_completions is not None:
+        return CompletionState(argument_completions)
+
+    if has_argument_text and (
+        _matches_prompt_template_command(token, prompt_templates)
+        or _matches_registered_command(token, command_registry)
+    ):
+        return CompletionState()
+
+    return CompletionState(
+        _command_completions(
+            token=token,
+            token_end=token_end,
+            registry=command_registry,
+            prompt_templates=prompt_templates,
+            enable_skill_commands=enable_skill_commands,
+        )
+    )
+
+
+async def build_completion_state_async(
+    text: str,
+    *,
+    command_registry: CommandRegistry,
+    skills: Sequence[Skill],
+    prompt_templates: Sequence[PromptTemplate],
+    model_names: Sequence[str] = (),
+    provider_names: Sequence[str] = (),
+    thinking_levels: Sequence[str] = (),
+    theme_names: Sequence[str] = (),
+    session_ids: Sequence[str] = (),
+    session_options: Sequence[CompletionOption] = (),
+    cwd: Path | None = None,
+    enable_skill_commands: bool = True,
+    cursor_position: int | None = None,
+) -> CompletionState:
+    """Build autocomplete suggestions, awaiting Pi-style async providers."""
+    cursor = len(text) if cursor_position is None else max(0, min(cursor_position, len(text)))
+    text_before_cursor = text[:cursor]
+    if not text_before_cursor.startswith("/") or text_before_cursor.startswith("//"):
+        return build_completion_state(
+            text,
+            command_registry=command_registry,
+            skills=skills,
+            prompt_templates=prompt_templates,
+            model_names=model_names,
+            provider_names=provider_names,
+            thinking_levels=thinking_levels,
+            theme_names=theme_names,
+            session_ids=session_ids,
+            session_options=session_options,
+            cwd=cwd,
+            enable_skill_commands=enable_skill_commands,
+            cursor_position=cursor_position,
+        )
+
+    token_end = _first_token_end(text_before_cursor)
+    token = text_before_cursor[:token_end]
+    has_argument_text = token_end < len(text_before_cursor)
+    if token.startswith("/skill:"):
+        if not enable_skill_commands:
+            return CompletionState()
+        if has_argument_text and _matches_skill_command(token, skills):
+            return CompletionState()
+        return CompletionState(_skill_completions(token=token, token_end=token_end, skills=skills))
+
+    if ":" in token and not _matches_registered_command(token, command_registry):
+        return CompletionState()
+
+    argument_completions = await _command_argument_completions_async(
         text=text_before_cursor,
         token_end=token_end,
         command_registry=command_registry,
@@ -664,12 +745,108 @@ def _command_argument_completions(
     return None
 
 
+async def _command_argument_completions_async(
+    *,
+    text: str,
+    token_end: int,
+    command_registry: CommandRegistry,
+    model_names: Sequence[str],
+    provider_names: Sequence[str],
+    thinking_levels: Sequence[str],
+    theme_names: Sequence[str],
+    session_ids: Sequence[str],
+    session_options: Sequence[CompletionOption],
+) -> tuple[CompletionItem, ...] | None:
+    if token_end >= len(text):
+        return None
+
+    command_name = text[:token_end].removeprefix("/").lower()
+    if command_name in {"model", "scoped-models"}:
+        return _value_completions(
+            text=text,
+            start=token_end + 1,
+            options=_completion_options(model_names, description="Switch model"),
+            sort=True,
+        )
+    if command_name in {"login", "logout"}:
+        return _value_completions(
+            text=text,
+            start=token_end + 1,
+            options=_completion_options(provider_names, description="Switch provider"),
+            sort=True,
+        )
+    if command_name == "resume":
+        return _value_completions(
+            text=text,
+            start=token_end + 1,
+            options=(
+                session_options
+                if session_options
+                else _completion_options(session_ids, description="Resume session")
+            ),
+            sort=False,
+        )
+    if command_name == "theme":
+        return _value_completions(
+            text=text,
+            start=token_end + 1,
+            options=_completion_options(theme_names, description="Set TUI theme"),
+            sort=False,
+        )
+    if command_name == "thinking":
+        return _value_completions(
+            text=text,
+            start=token_end + 1,
+            options=_completion_options(thinking_levels, description="Set thinking level"),
+            sort=False,
+        )
+    command = command_registry.get(command_name)
+    if command is not None and command.argument_completion_provider is not None:
+        dynamic_options = await _dynamic_argument_completion_options_async(
+            command.argument_completion_provider,
+            prefix=text[token_end + 1 : _argument_token_end(text, token_end + 1)],
+        )
+        if dynamic_options is not None:
+            return _value_completions(
+                text=text,
+                start=token_end + 1,
+                options=dynamic_options,
+                sort=False,
+            )
+    if command is not None and command.argument_completions:
+        return _value_completions(
+            text=text,
+            start=token_end + 1,
+            options=command.argument_completions,
+            sort=False,
+        )
+    return None
+
+
 def _dynamic_argument_completion_options(
     provider: object,
     *,
     prefix: str,
 ) -> tuple[CommandArgumentCompletion, ...] | None:
     values = provider(prefix)  # type: ignore[operator]
+    if isawaitable(values):
+        close = getattr(values, "close", None)
+        if callable(close):
+            close()
+        return None
+    if values is None:
+        return None
+    return _normalize_command_argument_completions(values)
+
+
+async def _dynamic_argument_completion_options_async(
+    provider: object,
+    *,
+    prefix: str,
+) -> tuple[CommandArgumentCompletion, ...] | None:
+    values = provider(prefix)  # type: ignore[operator]
+    if isawaitable(values):
+        values = await values
     if values is None:
         return None
     return _normalize_command_argument_completions(values)
@@ -697,6 +874,15 @@ def _normalize_command_argument_completions(
             and (value[1] is None or isinstance(value[1], str))
         ):
             completion = CommandArgumentCompletion(value=value[0], description=value[1])
+        elif isinstance(value, Mapping):
+            raw_value = value.get("value", value.get("label"))
+            raw_description = value.get("description")
+            if not isinstance(raw_value, str):
+                continue
+            completion = CommandArgumentCompletion(
+                value=raw_value,
+                description=raw_description if isinstance(raw_description, str) else None,
+            )
         else:
             continue
         normalized_value = completion.value.strip()

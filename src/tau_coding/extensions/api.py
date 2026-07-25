@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import subprocess
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Awaitable, Callable, Mapping, Sequence
 from contextlib import suppress
 from dataclasses import dataclass, field, replace
 from pathlib import Path
@@ -17,7 +17,10 @@ ExtensionCommandHandler = Callable[[Any], Any]
 ExtensionShortcutHandler = Callable[[Any], Any]
 ExtensionEntryRenderer = Callable[..., Any]
 ExtensionMessageRenderer = Callable[..., Any]
-ExtensionArgumentCompletionProvider = Callable[[str], Sequence[Any] | None]
+ExtensionArgumentCompletionProvider = Callable[
+    [str],
+    Sequence[Any] | Awaitable[Sequence[Any] | None] | None,
+]
 ExtensionEventHandler = Callable[[Any], Any]
 ExtensionLifecycleHandler = Callable[..., Any]
 ThemeInfo = dict[str, str | None]
@@ -1916,10 +1919,19 @@ def _normalize_argument_completions(
             and (value[1] is None or isinstance(value[1], str))
         ):
             completion = ExtensionArgumentCompletion(value=value[0], description=value[1])
+        elif isinstance(value, Mapping):
+            raw_value = value.get("value", value.get("label"))
+            raw_description = value.get("description")
+            if not isinstance(raw_value, str):
+                raise TypeError("argument completion mapping entries require string value")
+            completion = ExtensionArgumentCompletion(
+                value=raw_value,
+                description=raw_description if isinstance(raw_description, str) else None,
+            )
         else:
             raise TypeError(
                 "argument_completions entries must be strings, "
-                "(value, description) tuples, or ExtensionArgumentCompletion values"
+                "(value, description) tuples, mappings, or ExtensionArgumentCompletion values"
             )
         normalized_value = completion.value.strip()
         if not normalized_value:

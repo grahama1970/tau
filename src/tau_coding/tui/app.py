@@ -125,6 +125,7 @@ from tau_coding.tui.autocomplete import (
     CompletionOption,
     CompletionState,
     build_completion_state,
+    build_completion_state_async,
 )
 from tau_coding.tui.config import (
     DEFAULT_AUTOCOMPLETE_MAX_VISIBLE,
@@ -6345,6 +6346,7 @@ class TauTuiApp(App[None]):
         self._compaction_queued_messages: list[tuple[str, Literal["steer", "follow_up"]]] = []
         self._terminal_worker: Worker[None] | None = None
         self._prompt_run_id = 0
+        self._completion_refresh_run_id = 0
         self._completion_state = CompletionState()
         self._activity_frame = 0
         self._activity_timer: Timer | None = None
@@ -6562,11 +6564,10 @@ class TauTuiApp(App[None]):
             if isinstance(event.text_area, PromptInput)
             else len(event.text_area.text)
         )
-        self._completion_state = self._build_completion_state(
+        self._set_prompt_completion_state(
             event.text_area.text,
             cursor_position=cursor_position,
         )
-        self._refresh_completions()
 
     async def action_submit_prompt(self) -> None:
         """Submit the current prompt text or slash command."""
@@ -6587,8 +6588,7 @@ class TauTuiApp(App[None]):
         if applied_completion is not None and applied_completion != raw_text:
             prompt.text = applied_completion
             prompt.move_cursor(_text_end_location(applied_completion))
-            self._completion_state = self._build_completion_state(applied_completion)
-            self._refresh_completions()
+            self._set_prompt_completion_state(applied_completion)
             return
 
         expanded_text = prompt.expanded_text()
@@ -6987,8 +6987,7 @@ class TauTuiApp(App[None]):
         prompt.move_cursor(_text_end_location(combined_text))
         prompt.focus()
         self._sync_prompt_shell_mode(prompt.text)
-        self._completion_state = self._build_completion_state(prompt.text)
-        self._refresh_completions()
+        self._set_prompt_completion_state(prompt.text)
         self._sync_queue_state()
         self._refresh()
         return len(messages)
@@ -7686,11 +7685,10 @@ class TauTuiApp(App[None]):
             await parent.mount(replacement, before=index)
         replacement.focus()
         self._sync_prompt_shell_mode(replacement.text)
-        self._completion_state = self._build_completion_state(
+        self._set_prompt_completion_state(
             replacement.text,
             cursor_position=replacement.cursor_position,
         )
-        self._refresh_completions()
 
     def _build_extension_prompt_input(self, current: PromptInput) -> PromptInput | None:
         text = current.text
@@ -7745,8 +7743,7 @@ class TauTuiApp(App[None]):
         prompt.move_cursor(_text_end_location(text))
         prompt.focus()
         self._sync_prompt_shell_mode(prompt.text)
-        self._completion_state = self._build_completion_state(prompt.text)
-        self._refresh_completions()
+        self._set_prompt_completion_state(prompt.text)
 
     def _insert_prompt_editor_text(self, text: str) -> None:
         """Insert command-provided text at the current prompt cursor."""
@@ -7754,8 +7751,7 @@ class TauTuiApp(App[None]):
         prompt.insert(text)
         prompt.focus()
         self._sync_prompt_shell_mode(prompt.text)
-        self._completion_state = self._build_completion_state(prompt.text)
-        self._refresh_completions()
+        self._set_prompt_completion_state(prompt.text)
 
     def _paste_prompt_editor_text(self, text: str) -> None:
         """Paste command-provided text using the prompt's large-paste handling."""
@@ -8105,8 +8101,7 @@ class TauTuiApp(App[None]):
             return False
         prompt.text = ""
         self._sync_prompt_shell_mode("")
-        self._completion_state = self._build_completion_state("", cursor_position=0)
-        self._refresh_completions()
+        self._set_prompt_completion_state("", cursor_position=0)
         return True
 
     def _cancel_active_prompt(self, *, notify: bool, interrupt: bool = False) -> bool:
@@ -8188,8 +8183,7 @@ class TauTuiApp(App[None]):
             return
         prompt.text = applied
         prompt.move_cursor(_text_end_location(applied))
-        self._completion_state = self._build_completion_state(prompt.text)
-        self._refresh_completions()
+        self._set_prompt_completion_state(prompt.text)
 
     async def action_quit(self) -> None:
         """Quit the app, or use picker-local quit bindings when a modal owns them."""
@@ -8270,7 +8264,7 @@ class TauTuiApp(App[None]):
         prompt.text = message
         prompt.move_cursor(_text_end_location(message))
         self._sync_queue_state()
-        self._completion_state = self._build_completion_state(prompt.text)
+        self._set_prompt_completion_state(prompt.text)
         self._refresh()
         return True
 
@@ -8335,8 +8329,7 @@ class TauTuiApp(App[None]):
         prompt.focus()
         prompt.text = "/"
         prompt.move_cursor((0, 1))
-        self._completion_state = self._build_completion_state(prompt.text)
-        self._refresh_completions()
+        self._set_prompt_completion_state(prompt.text, cursor_position=prompt.cursor_position)
 
     def action_open_session_picker(self) -> None:
         """Open the indexed session picker."""
@@ -8508,8 +8501,7 @@ class TauTuiApp(App[None]):
         prompt.move_cursor(_text_end_location(result))
         prompt.focus()
         self._sync_prompt_shell_mode(prompt.text)
-        self._completion_state = self._build_completion_state(prompt.text)
-        self._refresh_completions()
+        self._set_prompt_completion_state(prompt.text)
         self._refresh()
 
     async def _paste_clipboard(self) -> None:
@@ -8536,8 +8528,7 @@ class TauTuiApp(App[None]):
             prompt.insert(text)
         prompt.focus()
         self._sync_prompt_shell_mode(prompt.text)
-        self._completion_state = self._build_completion_state(prompt.text)
-        self._refresh_completions()
+        self._set_prompt_completion_state(prompt.text)
         self._refresh()
 
     def _restore_queued_messages_to_prompt(self) -> int:
@@ -8561,8 +8552,7 @@ class TauTuiApp(App[None]):
         prompt.focus()
         self._sync_prompt_shell_mode(prompt.text)
         self._sync_queue_state()
-        self._completion_state = self._build_completion_state(prompt.text)
-        self._refresh_completions()
+        self._set_prompt_completion_state(prompt.text)
         self._refresh()
         return len(messages)
 
@@ -8973,8 +8963,7 @@ class TauTuiApp(App[None]):
         invocation = f"/{name}"
         prompt.text = invocation
         prompt.move_cursor(_text_end_location(invocation))
-        self._completion_state = self._build_completion_state(invocation)
-        self._refresh_completions()
+        self._set_prompt_completion_state(invocation)
 
     def _handle_workflow_picker_result(self, result: WorkflowPickerResult | None) -> None:
         if result is None:
@@ -9004,8 +8993,7 @@ class TauTuiApp(App[None]):
         prompt.move_cursor(_text_end_location(text))
         prompt.focus()
         self._sync_prompt_shell_mode(prompt.text)
-        self._completion_state = self._build_completion_state(prompt.text)
-        self._refresh_completions()
+        self._set_prompt_completion_state(prompt.text)
         self._notify(f"Inserted run command for {workflow.workflow_id}. Press Enter to launch.")
         self._refresh()
 
@@ -9673,6 +9661,26 @@ class TauTuiApp(App[None]):
             notify=self._notify,
         )
 
+    async def _build_completion_state_async(
+        self,
+        text: str,
+        *,
+        cursor_position: int | None = None,
+    ) -> CompletionState:
+        base_state = await self._build_base_completion_state_async(
+            text,
+            cursor_position=cursor_position,
+        )
+        if not self._extension_autocomplete_providers:
+            return base_state
+        return await _extension_autocomplete_completion_state_async(
+            text,
+            cursor_position=cursor_position,
+            base_state=base_state,
+            providers=self._extension_autocomplete_providers.values(),
+            notify=self._notify,
+        )
+
     def _build_base_completion_state(
         self,
         text: str,
@@ -9695,22 +9703,109 @@ class TauTuiApp(App[None]):
             cursor_position=cursor_position,
         )
 
+    async def _build_base_completion_state_async(
+        self,
+        text: str,
+        *,
+        cursor_position: int | None = None,
+    ) -> CompletionState:
+        registry = _session_command_registry(self.session)
+        return await build_completion_state_async(
+            text,
+            command_registry=registry,
+            skills=self.session.skills,
+            prompt_templates=self.session.prompt_templates,
+            model_names=self.session.available_models,
+            provider_names=self.session.available_providers,
+            thinking_levels=getattr(self.session, "available_thinking_levels", ()),
+            theme_names=available_tui_theme_names(),
+            session_options=_session_options(self.session),
+            cwd=self.session.cwd,
+            enable_skill_commands=self.tui_settings.enable_skill_commands,
+            cursor_position=cursor_position,
+        )
+
+    def _set_prompt_completion_state(
+        self,
+        text: str,
+        *,
+        cursor_position: int | None = None,
+    ) -> None:
+        self._completion_state = self._build_completion_state(
+            text,
+            cursor_position=cursor_position,
+        )
+        self._refresh_completions()
+        if self._completion_refresh_may_need_async(text, cursor_position=cursor_position):
+            self._completion_refresh_run_id += 1
+            run_id = self._completion_refresh_run_id
+            self.run_worker(
+                self._set_prompt_completion_state_async(
+                    text,
+                    cursor_position=cursor_position,
+                    run_id=run_id,
+                ),
+                exclusive=False,
+            )
+
+    async def _set_prompt_completion_state_async(
+        self,
+        text: str,
+        *,
+        cursor_position: int | None,
+        run_id: int,
+    ) -> None:
+        state = await self._build_completion_state_async(
+            text,
+            cursor_position=cursor_position,
+        )
+        if run_id != self._completion_refresh_run_id:
+            return
+        with suppress(NoMatches):
+            prompt = self.query_one("#prompt", PromptInput)
+            if prompt.text != text:
+                return
+            expected_cursor = (
+                len(text) if cursor_position is None else max(0, min(cursor_position, len(text)))
+            )
+            if prompt.cursor_position != expected_cursor:
+                return
+        self._completion_state = state
+        self._refresh_completions()
+
+    def _completion_refresh_may_need_async(
+        self,
+        text: str,
+        *,
+        cursor_position: int | None = None,
+    ) -> bool:
+        if self._extension_autocomplete_providers:
+            return True
+        cursor = len(text) if cursor_position is None else max(0, min(cursor_position, len(text)))
+        text_before_cursor = text[:cursor]
+        if not text_before_cursor.startswith("/") or text_before_cursor.startswith("//"):
+            return False
+        token_end = text_before_cursor.find(" ")
+        if token_end < 0:
+            return False
+        command_name = text_before_cursor[:token_end].removeprefix("/").lower()
+        command = _session_command_registry(self.session).get(command_name)
+        return command is not None and command.argument_completion_provider is not None
+
     def _refresh_current_prompt_completions(self) -> None:
         with suppress(NoMatches):
             prompt = self.query_one("#prompt", PromptInput)
-            self._completion_state = self._build_completion_state(
+            self._set_prompt_completion_state(
                 prompt.text,
                 cursor_position=prompt.cursor_position,
             )
-            self._refresh_completions()
 
     def action_refresh_completions_for_cursor(self) -> None:
         prompt = self.query_one("#prompt", PromptInput)
-        self._completion_state = self._build_completion_state(
+        self._set_prompt_completion_state(
             prompt.text,
             cursor_position=prompt.cursor_position,
         )
-        self._refresh_completions()
 
     def _refresh_footer_bindings(self) -> None:
         prompt = self.query_one("#prompt", PromptInput)
@@ -13089,6 +13184,31 @@ def _extension_autocomplete_completion_state(
     return state if state is not None else base_state
 
 
+async def _extension_autocomplete_completion_state_async(
+    text: str,
+    *,
+    cursor_position: int | None,
+    base_state: CompletionState,
+    providers: Sequence[tuple[str, Callable[[object], object]]],
+    notify: Callable[[str], None],
+) -> CompletionState:
+    provider: object = _TauAutocompleteProvider(base_state)
+    for extension_name, factory in providers:
+        try:
+            provider = factory(provider)
+            if isawaitable(provider):
+                provider = await provider
+        except Exception as exc:  # noqa: BLE001 - extension failures should surface, not crash
+            notify(f"Extension autocomplete provider error ({extension_name}): {exc}")
+            continue
+    state = await _extension_autocomplete_provider_state_async(
+        provider,
+        text=text,
+        cursor_position=cursor_position,
+    )
+    return state if state is not None else base_state
+
+
 def _extension_autocomplete_provider_state(
     provider: object,
     *,
@@ -13116,6 +13236,51 @@ def _extension_autocomplete_provider_state(
         )
     if callable(provider):
         result = provider(text, cursor_position)
+        return _extension_autocomplete_result_state(
+            result,
+            text=text,
+            cursor_position=cursor_position,
+        )
+    return _extension_autocomplete_result_state(
+        provider,
+        text=text,
+        cursor_position=cursor_position,
+    )
+
+
+async def _extension_autocomplete_provider_state_async(
+    provider: object,
+    *,
+    text: str,
+    cursor_position: int | None,
+) -> CompletionState | None:
+    get_completions = getattr(provider, "get_completions", None)
+    if callable(get_completions):
+        result = get_completions(text, cursor_position)
+        if isawaitable(result):
+            result = await result
+        return _extension_autocomplete_result_state(
+            result,
+            text=text,
+            cursor_position=cursor_position,
+        )
+    get_suggestions = getattr(provider, "getSuggestions", None)
+    if callable(get_suggestions):
+        cursor = len(text) if cursor_position is None else max(0, min(cursor_position, len(text)))
+        lines = text.splitlines() or [""]
+        cursor_line, cursor_col = _line_col_from_position(text, cursor)
+        result = get_suggestions(lines, cursor_line, cursor_col, {"force": False})
+        if isawaitable(result):
+            result = await result
+        return _extension_autocomplete_result_state(
+            result,
+            text=text,
+            cursor_position=cursor,
+        )
+    if callable(provider):
+        result = provider(text, cursor_position)
+        if isawaitable(result):
+            result = await result
         return _extension_autocomplete_result_state(
             result,
             text=text,
