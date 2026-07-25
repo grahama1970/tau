@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import webbrowser
+from collections.abc import Mapping
 from contextlib import redirect_stdout, suppress
 from dataclasses import replace
 from datetime import UTC, datetime
@@ -1687,7 +1688,9 @@ def main(
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
 
-    positional_args = prompt_args or []
+    positional_args, extension_flag_values = _split_startup_extension_flags(
+        [*ctx.args, *(prompt_args or [])],
+    )
     command = positional_args[0] if positional_args else None
 
     if list_models:
@@ -3963,6 +3966,7 @@ def main(
                     "skill_paths": resolved_skill_paths,
                     "prompt_template_paths": resolved_prompt_template_paths,
                     "theme_paths": resolved_theme_paths,
+                    "extension_flag_values": extension_flag_values,
                 }
                 if no_extensions or resolved_extension_paths:
                     kwargs["no_extensions"] = no_extensions
@@ -4019,6 +4023,7 @@ def main(
                 "skill_paths": resolved_skill_paths,
                 "prompt_template_paths": resolved_prompt_template_paths,
                 "theme_paths": resolved_theme_paths,
+                "extension_flag_values": extension_flag_values,
             }
             if no_extensions or resolved_extension_paths:
                 kwargs["no_extensions"] = no_extensions
@@ -4045,6 +4050,48 @@ def _resolve_cli_resource_paths(paths: list[Path] | None, *, cwd: Path) -> tuple
     if not paths:
         return ()
     return tuple(path.expanduser() if path.is_absolute() else cwd / path for path in paths)
+
+
+def _split_startup_extension_flags(
+    args: list[str],
+) -> tuple[list[str], dict[str, bool | str]]:
+    positional: list[str] = []
+    extension_flag_values: dict[str, bool | str] = {}
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if not arg.startswith("--") or arg == "--":
+            positional.append(arg)
+            index += 1
+            continue
+
+        raw_flag = arg[2:]
+        if not raw_flag:
+            positional.append(arg)
+            index += 1
+            continue
+
+        if "=" in raw_flag:
+            name, value = raw_flag.split("=", 1)
+            extension_flag_values[_normalize_extension_flag_name(name)] = value
+            index += 1
+            continue
+
+        name = _normalize_extension_flag_name(raw_flag)
+        next_arg = args[index + 1] if index + 1 < len(args) else None
+        if next_arg is not None and not next_arg.startswith("-") and not next_arg.startswith("@"):
+            extension_flag_values[name] = next_arg
+            index += 2
+            continue
+
+        extension_flag_values[name] = True
+        index += 1
+
+    return positional, extension_flag_values
+
+
+def _normalize_extension_flag_name(name: str) -> str:
+    return str(name).strip().removeprefix("--").lower()
 
 
 def _parse_startup_thinking_level(value: str | None) -> ThinkingLevel | None:
@@ -4180,6 +4227,7 @@ async def run_openai_tui(
     prompt_template_paths: tuple[Path, ...] = (),
     theme_paths: tuple[Path, ...] = (),
     extension_paths: tuple[Path, ...] = (),
+    extension_flag_values: Mapping[str, bool | str] | None = None,
 ) -> str | None:
     """Run the Textual TUI and return its resumable session id, if any."""
     return await run_tui_app(
@@ -4214,6 +4262,7 @@ async def run_openai_tui(
         prompt_template_paths=prompt_template_paths,
         theme_paths=theme_paths,
         extension_paths=extension_paths,
+        extension_flag_values=extension_flag_values,
     )
 
 
@@ -14214,6 +14263,7 @@ async def run_openai_print_mode(
     prompt_template_paths: tuple[Path, ...] = (),
     theme_paths: tuple[Path, ...] = (),
     extension_paths: tuple[Path, ...] = (),
+    extension_flag_values: Mapping[str, bool | str] | None = None,
 ) -> bool:
     """Run print mode with the OpenAI-compatible provider configured from the environment."""
     settings = load_provider_settings()
@@ -14267,6 +14317,7 @@ async def run_openai_print_mode(
             prompt_template_paths=prompt_template_paths,
             theme_paths=theme_paths,
             extension_paths=extension_paths,
+            extension_flag_values=extension_flag_values,
         )
     finally:
         await provider.aclose()
@@ -14304,6 +14355,7 @@ async def run_print_mode(
     prompt_template_paths: tuple[Path, ...] = (),
     theme_paths: tuple[Path, ...] = (),
     extension_paths: tuple[Path, ...] = (),
+    extension_flag_values: Mapping[str, bool | str] | None = None,
 ) -> bool:
     """Run one non-interactive prompt and print streamed events.
 
@@ -14345,6 +14397,7 @@ async def run_print_mode(
             prompt_template_paths=prompt_template_paths,
             theme_paths=theme_paths,
             extension_paths=extension_paths,
+            extension_flag_values=extension_flag_values or {},
         )
     )
     renderer = create_event_renderer(output)

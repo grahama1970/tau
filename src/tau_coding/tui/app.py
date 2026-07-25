@@ -12836,6 +12836,7 @@ async def run_tui_app(
     prompt_template_paths: tuple[Path, ...] = (),
     theme_paths: tuple[Path, ...] = (),
     extension_paths: tuple[Path, ...] = (),
+    extension_flag_values: Mapping[str, bool | str] | None = None,
 ) -> str | None:
     """Create the default provider/session, run the Textual app, and return the session id."""
     if new_session and session_id is not None:
@@ -12980,6 +12981,7 @@ async def run_tui_app(
                 prompt_template_paths=prompt_template_paths,
                 theme_paths=theme_paths,
                 extension_paths=extension_paths,
+                extension_flag_values=extension_flag_values or {},
             )
         )
         session.set_provider_timeout_seconds(
