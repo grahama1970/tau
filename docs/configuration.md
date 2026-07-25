@@ -318,6 +318,7 @@ tau --no-session
 tau --session-dir ~/.tau-alt/sessions
 tau --fork <session-id-or-jsonl-path>
 tau --name "Customer bugfix"
+tau --list-models [search]
 tau export <session-id>
 tau export <session-id> session.html
 tau export <session-id> --format jsonl
@@ -341,6 +342,9 @@ startup, listing, and export commands.
 into a new indexed session for the current working directory, then starts the
 TUI on that new session. `--name` can be combined with `--fork` to set the
 forked session title.
+
+`--list-models [search]` prints configured provider/model pairs and exits.
+Combine it with `--provider <name>` to list one provider.
 
 `tau export` writes a standalone HTML file with the preserved session tree and
 the storage-order transcript. The source can be an indexed session id or a path

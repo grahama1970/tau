@@ -759,6 +759,10 @@ def main(
         str | None,
         typer.Option("--model", "-m", help="Model name to request from the provider."),
     ] = None,
+    list_models: Annotated[
+        bool,
+        typer.Option("--list-models", help="List configured provider models and exit."),
+    ] = False,
     setup_base_url: Annotated[
         str,
         typer.Option("--base-url", help="OpenAI-compatible base URL for `tau setup`."),
@@ -1016,6 +1020,16 @@ def main(
     positional_args = prompt_args or []
     command = positional_args[0] if positional_args else None
     initial_prompt = " ".join(positional_args) if positional_args else None
+
+    if list_models:
+        if print_requested:
+            raise typer.BadParameter("--list-models cannot be combined with --print/--mode")
+        render_model_list(
+            load_provider_settings(),
+            provider_name=provider,
+            search=" ".join(positional_args) if positional_args else None,
+        )
+        raise typer.Exit()
 
     if export:
         if print_requested:
@@ -3344,6 +3358,28 @@ def render_session_list(records: list[CodingSessionRecord]) -> None:
     for record in records:
         title = record.title or "Untitled"
         typer.echo(f"{record.id}\t{title}\t{record.model}\t{record.cwd}")
+
+
+def render_model_list(
+    settings: ProviderSettings,
+    *,
+    provider_name: str | None = None,
+    search: str | None = None,
+) -> None:
+    """Render configured provider/model pairs for CLI inspection."""
+    needle = search.casefold() if search else None
+    matched = False
+    for provider in settings.providers:
+        if provider_name is not None and provider.name != provider_name:
+            continue
+        for model in provider.models:
+            row = f"{provider.name}\t{model}"
+            if needle is not None and needle not in row.casefold():
+                continue
+            typer.echo(row)
+            matched = True
+    if not matched:
+        typer.echo("No models found.")
 
 
 def update_command() -> None:

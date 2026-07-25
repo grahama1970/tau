@@ -7281,6 +7281,63 @@ def test_default_tui_rejects_session_with_new_session(tmp_path: Path) -> None:
     assert "--session and --new-session cannot be used together" in result.output
 
 
+def test_list_models_prints_configured_models(monkeypatch: pytest.MonkeyPatch) -> None:
+    settings = ProviderSettings(
+        default_provider="local",
+        providers=(
+            OpenAICompatibleProviderConfig(
+                name="local",
+                models=("qwen", "llama"),
+                default_model="qwen",
+            ),
+            OpenAICompatibleProviderConfig(
+                name="openai",
+                models=("gpt-5.5",),
+                default_model="gpt-5.5",
+            ),
+        ),
+    )
+    monkeypatch.setattr(cli, "load_provider_settings", lambda: settings)
+
+    result = CliRunner().invoke(app, ["--list-models"])
+
+    assert result.exit_code == 0
+    assert "local\tqwen" in result.stdout
+    assert "local\tllama" in result.stdout
+    assert "openai\tgpt-5.5" in result.stdout
+
+
+def test_list_models_filters_provider_and_search(monkeypatch: pytest.MonkeyPatch) -> None:
+    settings = ProviderSettings(
+        default_provider="local",
+        providers=(
+            OpenAICompatibleProviderConfig(
+                name="local",
+                models=("qwen", "llama"),
+                default_model="qwen",
+            ),
+            OpenAICompatibleProviderConfig(
+                name="openai",
+                models=("gpt-5.5", "gpt-5-mini"),
+                default_model="gpt-5.5",
+            ),
+        ),
+    )
+    monkeypatch.setattr(cli, "load_provider_settings", lambda: settings)
+
+    result = CliRunner().invoke(app, ["--provider", "openai", "--list-models", "mini"])
+
+    assert result.exit_code == 0
+    assert result.stdout == "openai\tgpt-5-mini\n"
+
+
+def test_list_models_rejects_print_mode() -> None:
+    result = CliRunner().invoke(app, ["--print", "--list-models", "hello"])
+
+    assert result.exit_code != 0
+    assert "--list-models cannot be combined with --print/--mode" in result.output
+
+
 def test_default_tui_forks_session_before_starting_tui(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
