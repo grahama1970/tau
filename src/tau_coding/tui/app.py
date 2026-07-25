@@ -5652,8 +5652,16 @@ class TauTuiApp(App[None]):
         self._refresh_completions()
         if self.startup_message and not self.tui_settings.quiet_startup:
             self._notify(self.startup_message, severity="warning")
+        if not self.tui_settings.quiet_startup and not self.is_headless:
+            self.run_worker(self._warn_about_tmux_keyboard_setup(), exclusive=False)
         if self.initial_prompt and self.initial_prompt.strip():
             self._submit_prompt(self.initial_prompt.strip())
+
+    async def _warn_about_tmux_keyboard_setup(self) -> None:
+        """Warn when tmux is likely to swallow Pi-style modified keys."""
+        warning = await asyncio.to_thread(_tmux_keyboard_setup_warning, os.environ)
+        if warning:
+            self._notify(warning, severity="warning")
 
     def on_unmount(self) -> None:
         """Stop the activity timer when the app is torn down."""
@@ -10257,6 +10265,52 @@ def _prompt_bindings(
         Binding(keybindings.quit, "quit", "Quit", priority=True),
     ]
     return bindings + _hidden_prompt_bindings(keybindings, visible_bindings=bindings)
+
+
+type TmuxShowRunner = Callable[[str], str | None]
+
+
+def _tmux_keyboard_setup_warning(
+    env: Mapping[str, str],
+    *,
+    run_tmux_show: TmuxShowRunner | None = None,
+) -> str | None:
+    """Return a startup warning when tmux extended-key settings are unsuitable."""
+    if not env.get("TMUX"):
+        return None
+    show = run_tmux_show or _run_tmux_show_option
+    extended_keys = show("extended-keys")
+    if extended_keys is None:
+        return None
+    if extended_keys not in {"on", "always"}:
+        return (
+            "tmux extended-keys is off. Modified Enter keys may not work. "
+            "Add `set -g extended-keys on` to ~/.tmux.conf and restart tmux."
+        )
+    extended_keys_format = show("extended-keys-format")
+    if extended_keys_format == "xterm":
+        return (
+            "tmux extended-keys-format is xterm. Tau works best with csi-u. "
+            "Add `set -g extended-keys-format csi-u` to ~/.tmux.conf and restart tmux."
+        )
+    return None
+
+
+def _run_tmux_show_option(option: str) -> str | None:
+    try:
+        completed = subprocess.run(
+            ["tmux", "show", "-gv", option],
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            timeout=2,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if completed.returncode != 0:
+        return None
+    return completed.stdout.strip()
 
 
 def _hidden_prompt_bindings(
