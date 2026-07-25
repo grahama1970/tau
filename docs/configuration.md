@@ -432,8 +432,9 @@ files passed by embedding code.
 `--tools <names>` enables only the comma-separated tool names for the startup
 session. `--exclude-tools <names>` disables named tools after the allowlist or
 default set is chosen. `--no-tools` starts with no tools. `--no-builtin-tools`
-disables Tau's built-in `read`, `write`, `edit`, and `bash` tools while
-preserving explicit non-built-in tools provided by embedding code.
+disables Tau's built-in `read`, `ls`, `grep`, `find`, `write`, `edit`, and
+`bash` tools while preserving explicit non-built-in tools provided by embedding
+code.
 
 `--no-skills`, `--no-prompt-templates`, and `--no-themes` disable discovery of
 those resource classes for the startup run. Context file discovery is controlled
