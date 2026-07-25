@@ -8686,7 +8686,14 @@ def _named_session_title(title: str | None) -> str | None:
 
 def _login_provider_label(provider: ProviderCatalogEntry) -> str:
     status = _login_provider_status_label(provider)
-    return f"{provider.display_name}\n  {provider.name} - {status}"
+    auth_type = _login_provider_auth_type_label(provider)
+    return f"{provider.display_name} [{auth_type}]\n  {provider.name} - {status}"
+
+
+def _login_provider_auth_type_label(provider: ProviderCatalogEntry) -> str:
+    if provider.kind == "openai-codex":
+        return "subscription"
+    return "API key"
 
 
 def _login_provider_status_label(provider: ProviderCatalogEntry) -> str:
