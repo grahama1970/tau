@@ -34,11 +34,12 @@ The agent loop executes tool calls and converts results into `ToolResultMessage`
 
 ## Built-in coding tools
 
-`tau_coding` provides six built-in local coding tools:
+`tau_coding` provides seven built-in local coding tools:
 
 - `read`
 - `ls`
 - `grep`
+- `find`
 - `write`
 - `edit`
 - `bash`
@@ -57,6 +58,7 @@ Or create individual tools:
 from tau_coding import (
     create_bash_tool,
     create_edit_tool,
+    create_find_tool,
     create_grep_tool,
     create_ls_tool,
     create_read_tool,
@@ -129,6 +131,34 @@ Factory functions:
 Results are formatted as `path:line: text`. Context lines use
 `path-line- text`. Output is bounded by match count, long-line truncation, and
 the normal Tau text-output byte limit.
+
+## `find`
+
+Finds files by glob pattern with `fd`.
+
+Factory functions:
+
+- `create_find_tool_definition()`
+- `create_find_tool()`
+
+### Arguments
+
+```json
+{
+  "pattern": "*.py",
+  "path": "src",
+  "limit": 1000
+}
+```
+
+| Argument | Required | Type | Description |
+| --- | --- | --- | --- |
+| `pattern` | yes | string | Glob pattern such as `*.py` or `src/**/*.py`. |
+| `path` | no | string | Directory to search; defaults to `.`. |
+| `limit` | no | integer | Maximum number of results to return; defaults to `1000`. |
+
+Results are relative POSIX paths from the search root. Output is bounded by
+result count and the normal Tau text-output byte limit.
 
 ## `read`
 

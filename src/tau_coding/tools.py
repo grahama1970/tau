@@ -36,11 +36,12 @@ DEFAULT_MAX_OUTPUT_BYTES = 50 * 1024
 DEFAULT_MAX_OUTPUT_LINES = 2_000
 DEFAULT_LS_ENTRY_LIMIT = 500
 DEFAULT_GREP_MATCH_LIMIT = 100
+DEFAULT_FIND_RESULT_LIMIT = 1000
 GREP_MAX_LINE_LENGTH = 500
 DEFAULT_IMAGE_MAX_WIDTH_PX = 2000
 DEFAULT_IMAGE_MAX_HEIGHT_PX = 2000
 DEFAULT_INLINE_IMAGE_MAX_BASE64_BYTES = int(4.5 * 1024 * 1024)
-BUILTIN_CODING_TOOL_NAMES = ("read", "ls", "grep", "write", "edit", "bash")
+BUILTIN_CODING_TOOL_NAMES = ("read", "ls", "grep", "find", "write", "edit", "bash")
 MAX_BASH_TIMEOUT_SECONDS = 2_147_483_647 / 1000
 INLINE_IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 SUPPORTED_IMAGE_MIME_TYPES = INLINE_IMAGE_MIME_TYPES | {"image/bmp"}
@@ -150,7 +151,7 @@ def create_coding_tools(
 ) -> list[AgentTool]:
     """Create the default coding-tool set for a local project.
 
-    The returned tools are ordered as `read`, `ls`, `grep`, `write`, `edit`, and `bash`.
+    The returned tools are ordered as `read`, `ls`, `grep`, `find`, `write`, `edit`, and `bash`.
     Relative paths used with those tools are resolved against `cwd`; when `cwd`
     is omitted, the process current working directory at factory-call time is
     used. The tools share per-path write/edit locks within this process so
@@ -161,6 +162,7 @@ def create_coding_tools(
         create_read_tool(cwd=root, auto_resize_images=auto_resize_images),
         create_ls_tool(cwd=root),
         create_grep_tool(cwd=root),
+        create_find_tool(cwd=root),
         create_write_tool(cwd=root),
         create_edit_tool(cwd=root),
         create_bash_tool(cwd=root, shell_path=shell_path, environment=bash_environment),
@@ -649,6 +651,153 @@ def create_grep_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinit
 def create_grep_tool(*, cwd: str | Path | None = None) -> AgentTool:
     """Create an `AgentTool` for searching file contents with ripgrep."""
     return create_grep_tool_definition(cwd=cwd).to_agent_tool()
+
+
+def create_find_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinition:
+    """Create a definition for the `find` tool.
+
+    The tool searches for files by glob pattern with `fd`, formats results
+    relative to the search root, and bounds output by result count and Tau's
+    normal text truncation limit.
+    """
+    root = Path.cwd() if cwd is None else Path(cwd)
+
+    async def execute(
+        arguments: Mapping[str, JSONValue],
+        signal: ToolCancellationToken | None = None,
+    ) -> AgentToolResult:
+        pattern = _str_arg(arguments, "pattern")
+        raw_path = arguments.get("path", ".")
+        if not isinstance(raw_path, str):
+            raise ToolInputError("path must be a string")
+        search_path = Path(raw_path).expanduser()
+        if not search_path.is_absolute():
+            search_path = root / search_path
+        if not search_path.exists():
+            raise ToolInputError(f"Path not found: {search_path}")
+        limit = _optional_int_arg(arguments, "limit")
+        effective_limit = DEFAULT_FIND_RESULT_LIMIT if limit is None else limit
+        if effective_limit < 1:
+            raise ToolInputError("limit must be at least 1")
+        fd = shutil.which("fd") or shutil.which("fdfind")
+        if fd is None:
+            raise ToolInputError("fd is not available")
+
+        args = [fd, "--glob", "--color=never", "--hidden"]
+        if not _inside_git_repo(search_path):
+            args.append("--no-require-git")
+        args.extend(["--max-results", str(effective_limit)])
+        effective_pattern = pattern
+        if "/" in pattern:
+            args.append("--full-path")
+            if not pattern.startswith("/") and not pattern.startswith("**/") and pattern != "**":
+                effective_pattern = f"**/{pattern}"
+        args.extend(["--", effective_pattern, str(search_path)])
+
+        process = await asyncio.create_subprocess_exec(
+            *args,
+            cwd=root,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr, _timed_out, cancelled = await _communicate_with_cancellation(
+            process,
+            timeout=None,
+            signal=signal,
+        )
+        if cancelled:
+            raise ToolInputError("Search cancelled")
+        output_text = stdout.decode(errors="replace")
+        if process.returncode not in (0, None) and not output_text.strip():
+            message = stderr.decode(errors="replace").strip() or (
+                f"fd exited with code {process.returncode}"
+            )
+            raise ToolInputError(message)
+
+        lines = [
+            _find_display_path(raw_line, search_path=search_path)
+            for raw_line in output_text.splitlines()
+            if raw_line.strip()
+        ]
+        if not lines:
+            return AgentToolResult(
+                tool_call_id="",
+                name="find",
+                ok=True,
+                content="No files found matching pattern",
+                data={
+                    "path": str(search_path),
+                    "result_count": 0,
+                    "returned_results": 0,
+                },
+            )
+
+        raw_output = "\n".join(lines)
+        truncation = truncate_head(raw_output, max_lines=max(len(lines), 1))
+        output = truncation.content
+        result_limit_reached = len(lines) >= effective_limit
+        notices: list[str] = []
+        if result_limit_reached:
+            notices.append(
+                f"{effective_limit} results limit reached. Use limit={effective_limit * 2} "
+                "for more, or refine pattern"
+            )
+        if truncation.truncated:
+            notices.append(f"{format_size(DEFAULT_MAX_OUTPUT_BYTES)} limit reached")
+        if notices:
+            output = append_status_block(output, f"[{'. '.join(notices)}]")
+
+        details: dict[str, JSONValue] = {
+            "path": str(search_path),
+            "result_count": len(lines),
+            "returned_results": len(lines),
+            "truncation": truncation.to_json(),
+        }
+        if result_limit_reached:
+            details["result_limit_reached"] = effective_limit
+
+        return AgentToolResult(
+            tool_call_id="",
+            name="find",
+            ok=True,
+            content=output,
+            data=details,
+        )
+
+    return ToolDefinition(
+        name="find",
+        description=(
+            "Search for files by glob pattern with fd. Returns matching file paths relative "
+            "to the search directory, respects .gitignore, and truncates output to "
+            f"{DEFAULT_FIND_RESULT_LIMIT} results or {DEFAULT_MAX_OUTPUT_BYTES // 1024}KB."
+        ),
+        prompt_snippet="Find files by glob pattern",
+        prompt_guidelines=("Use find to locate files by name before reading or editing them.",),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "pattern": {
+                    "type": "string",
+                    "description": "Glob pattern such as *.py or src/**/*.py",
+                },
+                "path": {
+                    "type": "string",
+                    "description": "Directory to search; defaults to current directory",
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "Maximum number of results to return",
+                },
+            },
+            "required": ["pattern"],
+        },
+        executor=execute,
+    )
+
+
+def create_find_tool(*, cwd: str | Path | None = None) -> AgentTool:
+    """Create an `AgentTool` for finding files by glob pattern."""
+    return create_find_tool_definition(cwd=cwd).to_agent_tool()
 
 
 def create_write_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinition:
@@ -1415,6 +1564,26 @@ def _grep_display_path(file_path: Path, *, search_path: Path, is_directory: bool
             relative = file_path.relative_to(search_path)
             return relative.as_posix() or file_path.name
     return file_path.name
+
+
+def _find_display_path(raw_line: str, *, search_path: Path) -> str:
+    stripped = raw_line.replace("\r", "").strip()
+    had_trailing_slash = stripped.endswith(("/", "\\"))
+    path = Path(stripped)
+    with contextlib.suppress(ValueError):
+        path = path.relative_to(search_path)
+    if path.is_absolute():
+        with contextlib.suppress(ValueError):
+            path = path.relative_to(search_path.resolve())
+    display = path.as_posix()
+    if had_trailing_slash and not display.endswith("/"):
+        display += "/"
+    return display
+
+
+def _inside_git_repo(path: Path) -> bool:
+    current = path if path.is_dir() else path.parent
+    return any((candidate / ".git").exists() for candidate in (current, *current.parents))
 
 
 async def _grep_context_lines(file_path: Path, *, cache: dict[Path, list[str]]) -> list[str]:

@@ -15,6 +15,7 @@ Tau now provides factory functions for these initial tools:
 - `create_read_tool()`
 - `create_ls_tool()`
 - `create_grep_tool()`
+- `create_find_tool()`
 - `create_write_tool()`
 - `create_edit_tool()`
 - `create_bash_tool()`
@@ -33,7 +34,7 @@ tau_agent:
   knows how to execute an AgentTool
 
 tau_coding:
-  provides read/ls/grep/write/edit/bash tools for local coding work
+  provides read/ls/grep/find/write/edit/bash tools for local coding work
 ```
 
 This keeps the core loop reusable and independent of local machine behavior.
@@ -80,6 +81,19 @@ Arguments:
 
 Results are formatted with file paths and line numbers, respect `.gitignore`,
 and include match-limit, long-line, and output-truncation metadata.
+
+### `find`
+
+Finds files by glob pattern with `fd`.
+
+Arguments:
+
+- `pattern`: glob pattern such as `*.py` or `src/**/*.py`
+- `path`: optional directory path, defaulting to `.`
+- `limit`: optional maximum number of results, defaulting to `1000`
+
+Results are formatted as POSIX paths relative to the search root and include
+result-limit and output-truncation metadata.
 
 ### `write`
 

@@ -6562,6 +6562,7 @@ async def test_run_print_mode_prints_final_assistant_text(
         "read",
         "ls",
         "grep",
+        "find",
         "write",
         "edit",
         "bash",

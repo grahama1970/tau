@@ -12,6 +12,7 @@ from tau_coding import (
     create_coding_tools,
     create_edit_tool,
     create_edit_tool_definition,
+    create_find_tool,
     create_grep_tool,
     create_ls_tool,
     create_read_tool,
@@ -61,7 +62,15 @@ def _magick_dimensions(path: Path) -> tuple[int, int]:
 async def test_create_coding_tools_returns_initial_tool_set(tmp_path: Path) -> None:
     tools = create_coding_tools(cwd=tmp_path)
 
-    assert [tool.name for tool in tools] == ["read", "ls", "grep", "write", "edit", "bash"]
+    assert [tool.name for tool in tools] == [
+        "read",
+        "ls",
+        "grep",
+        "find",
+        "write",
+        "edit",
+        "bash",
+    ]
     edit_tool = next(tool for tool in tools if tool.name == "edit")
     assert edit_tool.prompt_snippet is not None
     assert "Use edit for precise changes" in edit_tool.prompt_guidelines[0]
@@ -125,6 +134,30 @@ async def test_grep_tool_searches_with_glob_context_and_limit(tmp_path: Path) ->
     assert result.data["returned_matches"] == 1
     assert result.data["match_limit_reached"] == 1
     assert result.data["context"] == 1
+
+
+@pytest.mark.anyio
+async def test_find_tool_finds_files_with_glob_and_limit(tmp_path: Path) -> None:
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "app.py").write_text("print('hi')\n", encoding="utf-8")
+    (src / "test_app.py").write_text("def test_app(): pass\n", encoding="utf-8")
+    (src / "notes.txt").write_text("notes\n", encoding="utf-8")
+    tool = create_find_tool(cwd=tmp_path)
+
+    result = await tool.execute({"pattern": "*.py", "path": "src", "limit": 1})
+
+    assert result.ok is True
+    assert result.name == "find"
+    assert result.content.splitlines() == [
+        "app.py",
+        "",
+        "[1 results limit reached. Use limit=2 for more, or refine pattern]",
+    ]
+    assert result.data is not None
+    assert result.data["result_count"] == 1
+    assert result.data["returned_results"] == 1
+    assert result.data["result_limit_reached"] == 1
 
 
 def test_tool_definitions_expose_pi_style_prompt_metadata(tmp_path: Path) -> None:

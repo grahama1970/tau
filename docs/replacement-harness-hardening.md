@@ -431,6 +431,21 @@ Acceptance:
   truncation metadata.
 - The tool is read-only and fails fast when `rg` is unavailable.
 
+### Slice 21: Dedicated File Finder Tool
+
+Pi exposes a dedicated `find` discovery tool for locating files by glob pattern.
+Tau can already run `fd` through `bash`, but a structured tool gives agents a
+bounded, inspectable way to discover files before reading or editing.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- `create_coding_tools()` includes `find` in the visible tool surface.
+- The `find` tool supports `pattern`, `path`, and `limit`.
+- Results are relative POSIX paths and include result-limit/truncation metadata.
+- The tool is read-only and fails fast when `fd`/`fdfind` is unavailable.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.
