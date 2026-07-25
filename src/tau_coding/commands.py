@@ -181,8 +181,17 @@ class SlashCommand:
     aliases: tuple[str, ...] = ()
     search_terms: tuple[str, ...] = ()
     argument_hint: str | None = None
+    argument_completions: tuple[CommandArgumentCompletion, ...] = ()
     hidden: bool = False
     source: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class CommandArgumentCompletion:
+    """A static argument completion for a slash command."""
+
+    value: str
+    description: str | None = None
 
 
 class CommandRegistry:

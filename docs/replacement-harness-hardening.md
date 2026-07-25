@@ -512,6 +512,29 @@ Acceptance:
 - This slice does not claim Pi's async shortcut handlers, custom UI context,
   extension flags, or shortcut overrides of built-in Tau controls.
 
+### Slice 25: Extension Command Argument Completions
+
+Pi extension commands can provide completions for command arguments, such as
+`/preset <name>` or `/deploy <env>`. Tau's command autocomplete already
+supports built-in argument lists, but extension commands were limited to a
+single argument hint. Add static extension argument completions and feed them
+through the existing TUI autocomplete engine.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Python extensions can pass `argument_completions` to
+  `tau.register_command(...)`.
+- Completion entries accept strings, `(value, description)` tuples, or
+  `ExtensionArgumentCompletion` values.
+- Registered extension commands expose those completions through
+  `SlashCommand.argument_completions`.
+- TUI autocomplete suggests matching extension command arguments after the
+  command token.
+- This slice does not claim Pi's async `getArgumentCompletions` callbacks or
+  extension-stacked autocomplete providers.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -23,7 +23,16 @@ class ExtensionCommand:
     aliases: tuple[str, ...] = ()
     search_terms: tuple[str, ...] = ()
     argument_hint: str | None = None
+    argument_completions: tuple[ExtensionArgumentCompletion, ...] = ()
     hidden: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class ExtensionArgumentCompletion:
+    """A static argument completion registered by an extension command."""
+
+    value: str
+    description: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -85,6 +94,7 @@ class ExtensionAPI:
         aliases: tuple[str, ...] = (),
         search_terms: tuple[str, ...] = (),
         argument_hint: str | None = None,
+        argument_completions: Sequence[Any] = (),
         hidden: bool = False,
     ) -> None:
         """Register a synchronous slash command for the current coding session."""
@@ -106,6 +116,7 @@ class ExtensionAPI:
                 aliases=tuple(alias.strip().removeprefix("/").lower() for alias in aliases),
                 search_terms=tuple(term.strip().lower() for term in search_terms),
                 argument_hint=argument_hint,
+                argument_completions=_normalize_argument_completions(argument_completions),
                 hidden=hidden,
             )
         )
@@ -132,3 +143,40 @@ class ExtensionAPI:
                 handler=handler,
             )
         )
+
+
+def _normalize_argument_completions(
+    values: Sequence[Any],
+) -> tuple[ExtensionArgumentCompletion, ...]:
+    completions: list[ExtensionArgumentCompletion] = []
+    seen: set[str] = set()
+    for value in values:
+        if isinstance(value, ExtensionArgumentCompletion):
+            completion = value
+        elif isinstance(value, str):
+            completion = ExtensionArgumentCompletion(value=value)
+        elif (
+            isinstance(value, tuple)
+            and len(value) == 2
+            and isinstance(value[0], str)
+            and (value[1] is None or isinstance(value[1], str))
+        ):
+            completion = ExtensionArgumentCompletion(value=value[0], description=value[1])
+        else:
+            raise TypeError(
+                "argument_completions entries must be strings, "
+                "(value, description) tuples, or ExtensionArgumentCompletion values"
+            )
+        normalized_value = completion.value.strip()
+        if not normalized_value:
+            raise ValueError("argument completion values must be non-empty")
+        if normalized_value in seen:
+            continue
+        seen.add(normalized_value)
+        completions.append(
+            ExtensionArgumentCompletion(
+                value=normalized_value,
+                description=completion.description,
+            )
+        )
+    return tuple(completions)

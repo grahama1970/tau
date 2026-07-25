@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
-from tau_coding.commands import CommandRegistry, SlashCommand
+from tau_coding.commands import CommandArgumentCompletion, CommandRegistry, SlashCommand
 from tau_coding.prompt_templates import PromptTemplate
 from tau_coding.skills import Skill
 
@@ -136,6 +136,7 @@ def build_completion_state(
     argument_completions = _command_argument_completions(
         text=text_before_cursor,
         token_end=token_end,
+        command_registry=command_registry,
         model_names=model_names,
         provider_names=provider_names,
         thinking_levels=thinking_levels,
@@ -589,6 +590,7 @@ def _command_argument_completions(
     *,
     text: str,
     token_end: int,
+    command_registry: CommandRegistry,
     model_names: Sequence[str],
     provider_names: Sequence[str],
     thinking_levels: Sequence[str],
@@ -639,6 +641,14 @@ def _command_argument_completions(
             options=_completion_options(thinking_levels, description="Set thinking level"),
             sort=False,
         )
+    command = command_registry.get(command_name)
+    if command is not None and command.argument_completions:
+        return _value_completions(
+            text=text,
+            start=token_end + 1,
+            options=command.argument_completions,
+            sort=False,
+        )
     return None
 
 
@@ -646,7 +656,7 @@ def _value_completions(
     *,
     text: str,
     start: int,
-    options: Sequence[CompletionOption],
+    options: Sequence[CompletionOption | CommandArgumentCompletion],
     sort: bool,
 ) -> tuple[CompletionItem, ...]:
     end = _argument_token_end(text, start)

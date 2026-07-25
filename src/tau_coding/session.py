@@ -47,6 +47,7 @@ from tau_ai import ModelProvider
 from tau_ai.events import ProviderErrorEvent, ProviderResponseEndEvent, ProviderTextDeltaEvent
 from tau_coding.branch_summary import summarize_branch_messages_with_model
 from tau_coding.commands import (
+    CommandArgumentCompletion,
     CommandContext,
     CommandRegistry,
     CommandResult,
@@ -2878,6 +2879,13 @@ def _extension_slash_command(
         aliases=command.aliases,
         search_terms=command.search_terms,
         argument_hint=command.argument_hint,
+        argument_completions=tuple(
+            CommandArgumentCompletion(
+                value=completion.value,
+                description=completion.description,
+            )
+            for completion in command.argument_completions
+        ),
         hidden=command.hidden,
         source=f"extension:{extension.name}",
     )
