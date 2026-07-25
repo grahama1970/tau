@@ -2774,6 +2774,7 @@ class CodingSession:
                         loop_receipt,
                         terminal_error_message=terminal_error_message,
                     )
+                await self._emit_extension_agent_settled()
                 return
             if loop_receipt is not None:
                 await self._finish_loop_receipt(
@@ -2782,6 +2783,7 @@ class CodingSession:
                 )
             await self._flush_pending_terminal_context_messages()
             await self._try_auto_compact(context=context, phase="auto_compact_after_prompt")
+            await self._emit_extension_agent_settled()
         except Exception as exc:
             self._last_diagnostic_log_path = self._diagnostic_logger.log_exception(
                 context=context,
@@ -2811,6 +2813,7 @@ class CodingSession:
             await self._persist_messages_since(persisted_count)
             await self._flush_pending_terminal_context_messages()
             await self._try_auto_compact(context=context, phase="auto_compact_after_continue")
+            await self._emit_extension_agent_settled()
         except Exception as exc:
             self._last_diagnostic_log_path = self._diagnostic_logger.log_exception(
                 context=context,
@@ -2822,6 +2825,9 @@ class CodingSession:
     async def _emit_extension_agent_event(self, event: AgentEvent) -> None:
         for payload in _extension_agent_event_payloads(event, messages=self._harness.messages):
             await self.emit_extension_event(payload)
+
+    async def _emit_extension_agent_settled(self) -> None:
+        await self.emit_extension_event({"type": "agent_settled"})
 
     async def _emit_extension_before_agent_start(
         self,
