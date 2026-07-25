@@ -9565,6 +9565,36 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         f"- {_key_hint(keybindings.suspend)}: suspend to background",
         f"- {_key_hint(keybindings.quit)}: quit when the editor is empty",
         "",
+        "Session Picker:",
+        f"- {_key_hint(keybindings.accept_completion)}: switch current/all sessions",
+        f"- {_key_hint(keybindings.session_toggle_named_filter)}: toggle named-session filter",
+        f"- {_key_hint(keybindings.session_toggle_path)}: toggle path display",
+        f"- {_key_hint(keybindings.session_toggle_sort)}: cycle sort mode",
+        f"- {_key_hint(keybindings.session_rename)}: rename highlighted session",
+        f"- {_key_hint(keybindings.session_delete)}: delete highlighted session",
+        f"- {_key_hint(keybindings.session_delete_noninvasive)}: delete when search is empty",
+        "",
+        "Tree Picker:",
+        f"- {_key_hint(keybindings.tree_fold_or_up)}/"
+        f"{_key_hint(keybindings.tree_unfold_or_down)}: fold or unfold branches",
+        f"- {_key_hint(keybindings.tree_edit_label)}: edit tree label",
+        f"- {_key_hint(keybindings.tree_toggle_label_timestamp)}: toggle label timestamps",
+        f"- {_key_hint(keybindings.tree_filter_default)}/"
+        f"{_key_hint(keybindings.tree_filter_no_tools)}/"
+        f"{_key_hint(keybindings.tree_filter_user_only)}/"
+        f"{_key_hint(keybindings.tree_filter_labeled_only)}/"
+        f"{_key_hint(keybindings.tree_filter_all)}: choose tree filter",
+        f"- {_key_hint(keybindings.tree_filter_cycle)}/"
+        f"{_key_hint(keybindings.tree_filter_cycle_previous)}: cycle tree filters",
+        "",
+        "Scoped Model Picker:",
+        f"- {_key_hint(keybindings.models_enable_all)}: enable all visible models",
+        f"- {_key_hint(keybindings.models_clear_all)}: clear visible models",
+        f"- {_key_hint(keybindings.models_toggle_provider)}: toggle highlighted provider",
+        f"- {_key_hint(keybindings.models_reorder_up)}/"
+        f"{_key_hint(keybindings.models_reorder_down)}: reorder scoped model",
+        f"- {_key_hint(keybindings.models_save)}: save scoped model selection",
+        "",
         "Slash and shell:",
         "- /: slash commands",
         "- /resources: show loaded context, skills, prompts, and tools",
