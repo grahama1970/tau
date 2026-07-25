@@ -2388,6 +2388,13 @@ class CodingSession:
 
         await self._flush_pending_terminal_context_messages()
         await self._try_auto_compact(context=context, phase="auto_compact_before_prompt")
+        base_system_prompt = self._harness.config.system
+        turn_system_prompt, custom_messages = await self._emit_extension_before_agent_start(
+            expanded_content
+        )
+        for custom_type, data in custom_messages:
+            await self.append_custom_entry(custom_type, data)
+        self._harness.config.system = turn_system_prompt
         persisted_count = len(self._harness.messages)
         overflow_event: ErrorEvent | None = None
         terminal_error_message = ""
@@ -2455,6 +2462,8 @@ class CodingSession:
                 exc=exc,
             )
             raise
+        finally:
+            self._harness.config.system = base_system_prompt
 
     async def continue_(self) -> AsyncIterator[AgentEvent]:
         """Continue the agent from restored state and persist new messages."""
@@ -2486,6 +2495,59 @@ class CodingSession:
     async def _emit_extension_agent_event(self, event: AgentEvent) -> None:
         for payload in _extension_agent_event_payloads(event, messages=self._harness.messages):
             await self.emit_extension_event(payload)
+
+    async def _emit_extension_before_agent_start(
+        self,
+        prompt: str,
+    ) -> tuple[str, tuple[tuple[str, Mapping[str, Any]], ...]]:
+        current_system_prompt = self._harness.config.system
+        system_prompt_options = _extension_system_prompt_options(self)
+        custom_messages: list[tuple[str, Mapping[str, Any]]] = []
+        diagnostics: list[ResourceDiagnostic] = []
+        for extension in self._extensions:
+            handlers = tuple((extension.event_handlers or {}).get("before_agent_start", ()))
+            if not handlers:
+                continue
+            context = ExtensionShortcutContext(
+                session=self,
+                key="",
+                extension_name=extension.name,
+            )
+            for handler in handlers:
+                event: dict[str, object] = {
+                    "type": "before_agent_start",
+                    "prompt": prompt,
+                    "images": None,
+                    "systemPrompt": current_system_prompt,
+                    "systemPromptOptions": system_prompt_options,
+                }
+                try:
+                    result = _call_extension_lifecycle_handler(handler, event, context)
+                    if inspect.isawaitable(result):
+                        result = await result
+                except Exception as exc:  # noqa: BLE001 - extensions are isolated plugins
+                    diagnostics.append(
+                        ResourceDiagnostic(
+                            kind="extension",
+                            name=extension.name,
+                            path=extension.path,
+                            message=(
+                                "before_agent_start handler failed: "
+                                f"{type(exc).__name__}: {exc}"
+                            ),
+                            severity="error",
+                        )
+                    )
+                    continue
+                parsed_message = _extension_before_agent_custom_message(result)
+                if parsed_message is not None:
+                    custom_messages.append(parsed_message)
+                parsed_system_prompt = _extension_before_agent_system_prompt(result)
+                if parsed_system_prompt is not None:
+                    current_system_prompt = parsed_system_prompt
+        if diagnostics:
+            self._resource_diagnostics = (*self._resource_diagnostics, *diagnostics)
+        return current_system_prompt, tuple(custom_messages)
 
     def _diagnostic_context(self) -> AgentCallDiagnosticContext:
         return AgentCallDiagnosticContext(
@@ -3262,6 +3324,69 @@ def _extension_input_result(
     return "transform", raw_text
 
 
+def _extension_before_agent_system_prompt(value: object) -> str | None:
+    if not isinstance(value, Mapping):
+        return None
+    raw_system_prompt = value.get("systemPrompt", value.get("system_prompt"))
+    return raw_system_prompt if isinstance(raw_system_prompt, str) else None
+
+
+def _extension_before_agent_custom_message(
+    value: object,
+) -> tuple[str, Mapping[str, Any]] | None:
+    if not isinstance(value, Mapping):
+        return None
+    raw_message = value.get("message")
+    if not isinstance(raw_message, Mapping):
+        return None
+    custom_type = str(raw_message.get("customType", raw_message.get("custom_type", ""))).strip()
+    if not custom_type:
+        return None
+    data: dict[str, Any] = {}
+    for key in ("content", "display", "details"):
+        if key in raw_message:
+            data[key] = _json_compatible_value(raw_message[key])
+    return custom_type, data
+
+
+def _extension_system_prompt_options(session: CodingSession) -> dict[str, object]:
+    tools = tuple(getattr(session._harness.config, "tools", ()))
+    prompt_guidelines: list[str] = []
+    for tool in tools:
+        for guideline in getattr(tool, "prompt_guidelines", ()):
+            text = str(guideline).strip()
+            if text and text not in prompt_guidelines:
+                prompt_guidelines.append(text)
+    return {
+        "customPrompt": session._config.custom_system_prompt,
+        "selectedTools": tuple(str(getattr(tool, "name", "")) for tool in tools),
+        "toolSnippets": {
+            str(getattr(tool, "name", "")): str(snippet)
+            for tool in tools
+            if (snippet := getattr(tool, "prompt_snippet", None))
+        },
+        "promptGuidelines": tuple(prompt_guidelines),
+        "appendSystemPrompt": session._config.append_system_prompt,
+        "cwd": str(session.cwd),
+        "contextFiles": tuple(
+            {
+                "path": str(context_file.path),
+                "content": context_file.content,
+            }
+            for context_file in session.context_files
+        ),
+        "skills": tuple(
+            {
+                "name": skill.name,
+                "path": str(skill.path),
+                "description": skill.description,
+                "content": skill.content,
+            }
+            for skill in session.skills
+        ),
+    }
+
+
 def _extension_agent_event_payloads(
     event: AgentEvent,
     *,
@@ -3359,6 +3484,16 @@ def _empty_message_payload(role: str) -> dict[str, object]:
     if role == "user":
         return {"role": "user", "content": ""}
     return {"role": "assistant", "content": "", "tool_calls": []}
+
+
+def _json_compatible_value(value: object) -> Any:
+    if value is None or isinstance(value, str | int | float | bool):
+        return value
+    if isinstance(value, Mapping):
+        return {str(key): _json_compatible_value(item) for key, item in value.items()}
+    if isinstance(value, Sequence) and not isinstance(value, str | bytes | bytearray):
+        return [_json_compatible_value(item) for item in value]
+    return str(value)
 
 
 def parse_terminal_command(text: str) -> TerminalCommandRequest | None:
