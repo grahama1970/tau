@@ -9167,20 +9167,31 @@ async def test_tui_app_config_map_disables_loaded_resource(monkeypatch: pytest.M
         ]
         assert "Loaded skills: review - review.md [project enabled] [disable]" in labels
 
-        app._handle_config_map_result(
-            tui_app.ConfigMapResult("toggle_resource", "/workspace/project/review.md")
+        config_list = app.screen.query_one("#config-map-list", ListView)
+        config_list.index = labels.index(
+            "Loaded skills: review - review.md [project enabled] [disable]"
         )
+        app.screen.action_select_cursor()
         for _ in range(10):
             await pilot.pause()
             if session.disabled_resource_paths:
                 break
 
+        assert isinstance(app.screen, ConfigMapScreen)
         assert session.disabled_resource_paths == (Path("/workspace/project/review.md"),)
         assert saved_settings
         assert saved_settings[-1].disabled_resource_paths == (
             "/workspace/project/review.md",
         )
         assert session.reload_count == 1
+        updated_labels = [
+            str(item.query_one(Label).render())
+            for item in app.screen.query_one("#config-map-list", ListView).children
+        ]
+        assert "Loaded skills: review - review.md [project enabled] [disable]" not in updated_labels
+        assert (
+            "Disabled resources: review.md - review.md [project disabled] [enable]"
+        ) in updated_labels
 
 
 @pytest.mark.anyio

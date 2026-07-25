@@ -49,7 +49,7 @@ capabilities.
 | Model selector | `model-selector`, `scoped-models-selector` | `ModelPickerScreen` | `MATCHED` | Search, tabs, scoped membership, provider toggles, and reorder are present. |
 | Session selector | `session-selector`, `session-selector-search` | `SessionPickerScreen` | `MATCHED` | Search, current/all, named-only, path toggle, sort, rename, delete are present. |
 | Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `PARTIAL` | Tau backs most daily settings, exposes the external editor command, and now shows visible no-match search rows; do not add dead Pi toggles without backing behavior. |
-| Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist, resource rows expose scope/state/action, and no-match searches show visible empty rows; package/write-scope editing still missing. |
+| Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist, resource rows expose scope/state/action, resource toggles update in-place, and no-match searches show visible empty rows; package/write-scope editing still missing. |
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login; provider picker now shows visible navigation help, empty filter states, and fail-closed empty-row selection. |
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks, summarizes permission/approval receipts, surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data, and now shows input-bar terminal command exit codes; richer interactive component objects remain pending. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider, prompt chrome, and retry countdown | `PARTIAL` | Footer extensibility exists; compact first-screen readiness exposes auth/memory/DAG/SciLLM/queue when the sidebar is hidden, and prompt chrome now names active compaction/branch/reload/share/terminal operations from real worker state. |
@@ -87,14 +87,35 @@ Current candidates:
 
 - `Config write-scope/package overrides`: still partial because Pi can write
   global/project package resource overrides directly from the selector; Tau
-  currently has backed disabled-resource toggles and scope tabs, but not full
-  package override editing.
+  currently has backed disabled-resource toggles, in-place toggle refresh, and
+  scope tabs, but not full package override editing.
 - `Extension custom component objects`: still partial because Pi can mount
   arbitrary custom TUI components; Tau supports extension selection/input/
   editor/custom screens plus expansion-aware string/JSON custom entries.
 - `Cache-miss notices`: defer until Tau assistant/session entries carry the
   provider, model, and timestamp fields needed for Pi's cache-miss algorithm.
   Do not add a fake setting or heuristic notice from aggregate stats.
+
+Latest slice evidence:
+
+- Source inspected: Pi `config-selector.ts` `ResourceList.handleInput()`,
+  `toggleResource()`, `updateItem()`, and `onToggle`; Tau `ConfigMapScreen`,
+  config-map item builders, durable TUI settings, and config-map tests.
+- Destination preserved: Tau's command/path/diagnostic config rows, durable
+  disabled-resource settings, session `set_disabled_resource_paths()` adapter,
+  resource reload worker, scope tabs, and Tau-only resource surfaces.
+- Changed: selecting a loaded resource toggle inside `/config` now updates the
+  open modal in place and keeps the user in the config map, matching Pi's
+  selector affordance while still persisting through Tau's real settings path.
+- Mocked: no.
+- Live: no provider-live or external service call; Textual UI interaction used
+  a `FakeSession` resource/settings adapter.
+- Render proof:
+  `/tmp/tau-pi-tui-config-inplace-toggle-proof-1785014874/proof.json` with
+  screenshot
+  `/tmp/tau-pi-tui-config-inplace-toggle-proof-1785014874/tau-config-inplace-resource-toggle.svg`.
+- Remaining gap: Pi's project/global package write-scope override editor is
+  still not implemented in Tau.
 
 Latest slice evidence:
 

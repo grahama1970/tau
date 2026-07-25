@@ -4599,11 +4599,13 @@ class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
         *,
         theme: TuiTheme,
         keybindings: TuiKeybindings | None = None,
+        on_toggle_resource: Callable[[str], Sequence[ConfigMapItem]] | None = None,
     ) -> None:
         super().__init__()
         self.items = tuple(items)
         self.theme = theme
         self.keybindings = keybindings or TuiKeybindings()
+        self.on_toggle_resource = on_toggle_resource
         self.search_value = ""
         self.filtered_items = self.items
         self.scope: ConfigMapScope = "all"
@@ -4731,6 +4733,12 @@ class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
 
     def _select_item(self, item: ConfigMapItem) -> None:
         if item.action is None or item.action_value is None:
+            return
+        if item.action == "toggle_resource" and self.on_toggle_resource is not None:
+            config_list = self.query_one("#config-map-list", ListView)
+            selected_index = config_list.index if config_list.index is not None else 0
+            self.items = tuple(self.on_toggle_resource(item.action_value))
+            self._refresh_list(selected_index)
             return
         self.dismiss(ConfigMapResult(item.action, item.action_value))
 
@@ -8068,6 +8076,7 @@ class TauTuiApp(App[None]):
                 _config_map_items(self.session, self.tui_settings),
                 theme=self.tui_settings.resolved_theme,
                 keybindings=self.tui_settings.keybindings,
+                on_toggle_resource=self._handle_config_map_toggle_resource,
             ),
             callback=self._handle_config_map_result,
         )
@@ -8089,15 +8098,20 @@ class TauTuiApp(App[None]):
             self._notify(f"Copied path: {result.value}")
             return
         if result.action == "toggle_resource":
-            message = self._toggle_disabled_resource_path(Path(result.value))
-            self._notify(message)
-            if self._reload_worker is None:
-                self._reload_worker = self.run_worker(
-                    self._run_reload_command("/reload"),
-                    exclusive=False,
-                )
-            else:
-                self._notify("Resource setting saved; current reload is still running.")
+            self._handle_config_map_toggle_resource(result.value)
+
+    def _handle_config_map_toggle_resource(self, value: str) -> tuple[ConfigMapItem, ...]:
+        """Toggle a resource and return refreshed config-map rows for an open modal."""
+        message = self._toggle_disabled_resource_path(Path(value))
+        self._notify(message)
+        if self._reload_worker is None:
+            self._reload_worker = self.run_worker(
+                self._run_reload_command("/reload"),
+                exclusive=False,
+            )
+        else:
+            self._notify("Resource setting saved; current reload is still running.")
+        return _config_map_items(self.session, self.tui_settings)
 
     def _toggle_disabled_resource_path(self, path: Path) -> str:
         """Toggle one disabled resource path in durable TUI settings."""
