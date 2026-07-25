@@ -82,11 +82,74 @@ capabilities.
 
 ## Next Slice
 
-Port the next highest-value daily-use gap that is still local and bounded:
+Port the next highest-value daily-use gap that is still local and bounded.
+Current candidates:
 
-`Login provider picker hardening`: keep the visible empty provider row
-fail-closed so a mouse/list selection cannot dismiss or crash the provider
-picker.
+- `Config write-scope/package overrides`: still partial because Pi can write
+  global/project package resource overrides directly from the selector; Tau
+  currently has backed disabled-resource toggles and scope tabs, but not full
+  package override editing.
+- `Extension custom component objects`: still partial because Pi can mount
+  arbitrary custom TUI components; Tau supports extension selection/input/
+  editor/custom screens plus expansion-aware string/JSON custom entries.
+- `Cache-miss notices`: defer until Tau assistant/session entries carry the
+  provider, model, and timestamp fields needed for Pi's cache-miss algorithm.
+  Do not add a fake setting or heuristic notice from aggregate stats.
+
+Latest slice evidence:
+
+- Source inspected: Pi `status-indicator.ts` and `bordered-loader.ts`; Tau
+  prompt chrome, activity worker predicates, compaction, branch summary, reload,
+  share, and terminal command workers.
+- Destination preserved: Tau's existing worker lifecycle, retry countdown,
+  extension working indicator, terminal title/progress indicator, and transcript
+  status rows.
+- Changed: prompt chrome now names active compaction, branch, reload, share,
+  and terminal operations from real worker state. Retry countdown remains the
+  highest-priority prompt-chrome message; extension-provided working messages
+  remain next priority.
+- Mocked: Textual worker/screenshot proof is fixture-backed.
+- Live: no provider-live or external service call.
+- Render proof: `/tmp/tau-pi-tui-operation-status-proof-1785014486/proof.json`
+  with screenshot
+  `/tmp/tau-pi-tui-operation-status-proof-1785014486/tau-operation-status-compaction.svg`.
+- Remaining gap: Pi's exact status component hierarchy is not copied; Tau uses
+  its Textual prompt-chrome surface backed by the same operation state.
+
+Latest slice evidence:
+
+- Source inspected: Pi `skill-invocation-message.ts`; Tau parsed skill
+  invocation state and transcript renderer.
+- Destination preserved: Tau's skill parser, memory/resource-driven skill
+  loading, extension plumbing, and tool-output expansion key.
+- Changed: skill invocations now render collapsed as `[skill] <name>
+  (Ctrl+O to expand)` and expanded as a labeled skill body without repeating
+  the collapsed sentence.
+- Mocked: Rich render proof is fixture-backed.
+- Live: no provider-live or live skill subprocess call.
+- Render proof: `/tmp/tau-pi-tui-skill-block-proof-1785014321/proof.json`
+  with screenshots
+  `/tmp/tau-pi-tui-skill-block-proof-1785014321/tau-skill-block-collapsed.svg`
+  and
+  `/tmp/tau-pi-tui-skill-block-proof-1785014321/tau-skill-block-expanded.svg`.
+- Remaining gap: arbitrary Pi custom component embedding remains partial.
+
+Latest slice evidence:
+
+- Source inspected: Pi `bash-execution.ts` and `tool-execution.ts`; Tau
+  terminal command result formatter and TUI terminal command worker.
+- Destination preserved: Tau input-bar terminal command routing, output
+  streaming, transcript collapse/expand behavior, and workflow receipt summary
+  formatting.
+- Changed: failed input-bar terminal command results now display the concrete
+  exit code in the visible bash status line.
+- Mocked: Rich render proof is fixture-backed.
+- Live: no provider-live or external service call.
+- Render proof: `/tmp/tau-pi-tui-terminal-exit-proof-1785014090/proof.json`
+  with screenshot
+  `/tmp/tau-pi-tui-terminal-exit-proof-1785014090/tau-terminal-command-exit-code.svg`.
+- Remaining gap: richer interactive component object rendering for extension
+  tools is still partial.
 
 Latest slice evidence:
 
