@@ -249,6 +249,14 @@ class ExtensionShortcutContext:
         """Pi-compatible camelCase alias for append_entry."""
         return await self.append_entry(custom_type, data)
 
+    async def set_label(self, entry_id: str, label: str | None) -> str:
+        """Set or clear a durable label on a branchable session entry."""
+        return await _session_set_label(self.session, entry_id, label)
+
+    async def setLabel(self, entry_id: str, label: str | None) -> str:  # noqa: N802
+        """Pi-compatible camelCase alias for set_label."""
+        return await self.set_label(entry_id, label)
+
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the shortcut returns."""
         notification_message = str(message).strip()
@@ -654,6 +662,14 @@ class ExtensionCommandContext:
     ) -> str:
         """Pi-compatible camelCase alias for append_entry."""
         return await self.append_entry(custom_type, data)
+
+    async def set_label(self, entry_id: str, label: str | None) -> str:
+        """Set or clear a durable label on a branchable session entry."""
+        return await _session_set_label(self.session, entry_id, label)
+
+    async def setLabel(self, entry_id: str, label: str | None) -> str:  # noqa: N802
+        """Pi-compatible camelCase alias for set_label."""
+        return await self.set_label(entry_id, label)
 
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the command returns."""
@@ -1520,6 +1536,13 @@ async def _session_append_entry(
     if callable(append):
         return str(await append(custom_type, data))
     raise RuntimeError("active session does not support extension custom entries")
+
+
+async def _session_set_label(session: Any, entry_id: str, label: str | None) -> str:
+    setter = getattr(session, "set_tree_entry_label", None)
+    if callable(setter):
+        return str(await setter(entry_id, label))
+    raise RuntimeError("active session does not support extension labels")
 
 
 def _tool_info(tool: Any, *, extension_sources: Mapping[str, object]) -> ToolInfo:
