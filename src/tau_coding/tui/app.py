@@ -3293,7 +3293,7 @@ class WorkflowPickerScreen(ModalScreen[WorkflowPickerResult | None]):
         with Vertical(id="workflow-picker"):
             yield Static("Canonical Workflows", id="workflow-picker-title")
             yield Static(
-                "Select a packaged Tau DAG to inspect its launch contract.",
+                "Select a packaged Tau DAG; Ctrl+R inserts a bounded viewer run command.",
                 id="workflow-picker-description",
             )
             yield Input(placeholder="Search workflows", id="workflow-picker-search")
@@ -5699,6 +5699,10 @@ class TauTuiApp(App[None]):
         max-height: 16;
         background: $tau-transcript-background;
         border: tall $tau-border;
+    }
+
+    #workflow-picker-list {
+        max-height: 22;
     }
 
     ListView > ListItem.-highlight {
@@ -9354,7 +9358,13 @@ def _user_message_picker_label(choice: SessionTreeChoice, index: int, total: int
 
 
 def _workflow_picker_label(workflow: WorkflowDefinition) -> str:
-    return f"{workflow.workflow_id}: {workflow.title}\n  topology: {workflow.topology}"
+    runtime = _workflow_runtime_label(workflow)
+    return (
+        f"{workflow.workflow_id}: {workflow.title}\n"
+        f"  {workflow.summary}\n"
+        f"  topology: {workflow.topology} - runtime: {runtime}\n"
+        f"  result: {workflow.result_schema} via {workflow.result_node_id}"
+    )
 
 
 def _workflow_run_terminal_command(workflow: WorkflowDefinition, *, cwd: Path) -> str:
@@ -9375,7 +9385,19 @@ def _workflow_run_terminal_command(workflow: WorkflowDefinition, *, cwd: Path) -
     if workflow.workflow_id in {"approved-release-bundle", "durable-repository-qualification"}:
         parts.extend(["--publish-path", str(run_dir / "publish")])
     parts.append("--open-viewer")
+    parts.extend(["--viewer-hold-seconds", "120"])
     return shlex.join(parts)
+
+
+def _workflow_runtime_label(workflow: WorkflowDefinition) -> str:
+    if workflow.runtime == {
+        "local": True,
+        "network_required": False,
+        "provider_required": False,
+        "mutation_allowed": False,
+    }:
+        return "local, no network/provider, read-only inputs"
+    return ", ".join(f"{key}={value}" for key, value in sorted(workflow.runtime.items()))
 
 
 def _workflow_run_directory_name(workflow_id: str) -> str:

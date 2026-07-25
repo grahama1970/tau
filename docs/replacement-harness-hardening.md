@@ -302,6 +302,25 @@ Acceptance:
 - Tau still documents custom extension TUI renderers as unsupported until the
   extension API has a real renderer contract.
 
+### Slice 14: Self-Contained Workflow Picker Runs
+
+Tau's immutable goal requires operators to choose and run five canonical DAGs
+without repository archaeology. The TUI workflow picker already exposed the
+catalog and command insertion, but rows were too terse and inserted viewer
+commands could hold indefinitely after completion.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- The workflow picker row for each canonical DAG includes summary, topology,
+  runtime boundary, result schema, and result node.
+- TUI-inserted workflow commands keep `--open-viewer` for live DAG progress but
+  add a bounded `--viewer-hold-seconds 120` so the Tau prompt is not trapped by
+  an unbounded post-run viewer hold.
+- Shell/CLI workflow usage remains unchanged; operators can still omit
+  `--viewer-hold-seconds` when they intentionally want a long-held viewer.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.
