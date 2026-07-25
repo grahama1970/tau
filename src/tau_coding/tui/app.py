@@ -4879,20 +4879,26 @@ class ExtensionEditorScreen(ModalScreen[str | None]):
         title: str,
         *,
         prefill: str = "",
+        external_editor_command: str | None = None,
         keybindings: TuiKeybindings | None = None,
     ) -> None:
         super().__init__()
         self.title_text = title
         self.prefill = prefill
+        self.external_editor_command = external_editor_command
         self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
         """Compose the extension editor dialog."""
         cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+        external_key = _key_hint_with_default(self.keybindings.external_editor, "ctrl+g")
         with Vertical(id="confirmation"):
             yield Static(self.title_text, id="confirmation-title")
             yield TextArea(id="extension-editor-value")
-            yield Static(f"Ctrl+Enter submits - {cancel_key} cancels", id="confirmation-help")
+            yield Static(
+                f"Ctrl+Enter submits - {cancel_key} cancels - {external_key} external editor",
+                id="confirmation-help",
+            )
 
     def on_mount(self) -> None:
         """Focus the editor."""
@@ -4907,6 +4913,13 @@ class ExtensionEditorScreen(ModalScreen[str | None]):
             self.action_submit()
         elif _matches_configured_or_default_key(
             event.key,
+            self.keybindings.external_editor,
+            "ctrl+g",
+        ):
+            event.stop()
+            self.run_worker(self._open_external_editor(), exclusive=False)
+        elif _matches_configured_or_default_key(
+            event.key,
             self.keybindings.select_cancel,
             "escape",
         ):
@@ -4916,6 +4929,34 @@ class ExtensionEditorScreen(ModalScreen[str | None]):
     def action_submit(self) -> None:
         """Submit edited text."""
         self.dismiss(self.query_one("#extension-editor-value", TextArea).text)
+
+    async def _open_external_editor(self) -> None:
+        editor = self.query_one("#extension-editor-value", TextArea)
+        original_text = editor.text
+        editor_command = _external_editor_command(self.external_editor_command)
+        app = cast(Any, self.app)
+        notify = getattr(app, "_notify", None)
+        if editor_command is None:
+            if callable(notify):
+                notify(
+                    "Set TUI external_editor, VISUAL, or EDITOR to use the external editor.",
+                    severity="warning",
+                )
+            return
+        try:
+            with app.suspend():
+                result = await _edit_text_with_external_editor(editor_command, original_text)
+        except Exception as exc:  # noqa: BLE001 - surface editor launch failures in the TUI
+            if callable(notify):
+                notify(f"External editor failed: {exc}", severity="error")
+            return
+        if result is None:
+            if callable(notify):
+                notify("External editor exited without changes.", severity="warning")
+            return
+        editor.text = result
+        editor.move_cursor(_text_end_location(result))
+        editor.focus()
 
 
 class ExtensionCustomScreen(ModalScreen[object]):
@@ -8351,6 +8392,7 @@ class TauTuiApp(App[None]):
                 ExtensionEditorScreen(
                     str(payload.get("title", f"{extension_name} editor")),
                     prefill=str(payload.get("prefill", "")),
+                    external_editor_command=self.tui_settings.external_editor,
                     keybindings=keybindings,
                 )
             )

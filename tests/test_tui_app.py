@@ -73,6 +73,7 @@ from tau_coding.tui.app import (
     CommandOutputScreen,
     ConfigMapScreen,
     ConfirmationScreen,
+    ExtensionEditorScreen,
     ExtensionInputScreen,
     ExtensionSelectScreen,
     FirstTimeSetupScreen,
@@ -8491,6 +8492,42 @@ async def test_extension_command_ui_input_passes_timeout_to_session() -> None:
             "timeout_seconds": 1.5,
         }
     ]
+
+
+@pytest.mark.anyio
+async def test_extension_editor_screen_opens_external_editor(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    edited_calls: list[tuple[str, str]] = []
+    app = TauTuiApp(FakeSession())
+
+    async def fake_edit(command: str, content: str) -> str:
+        edited_calls.append((command, content))
+        return "edited extension text"
+
+    monkeypatch.setattr(tui_app, "_edit_text_with_external_editor", fake_edit)
+    monkeypatch.setattr(app, "suspend", lambda: nullcontext())
+
+    async with app.run_test(size=(80, 24)) as pilot:
+        app.push_screen(
+            ExtensionEditorScreen(
+                "Edit extension value",
+                prefill="draft extension text",
+                external_editor_command="configured-editor",
+                keybindings=TuiKeybindings(),
+            )
+        )
+        await pilot.pause()
+
+        assert isinstance(app.screen, ExtensionEditorScreen)
+        await pilot.press("ctrl+g")
+        await pilot.pause()
+
+        editor = app.screen.query_one("#extension-editor-value", TextArea)
+        assert editor.text == "edited extension text"
+        assert editor.cursor_location == (0, len("edited extension text"))
+
+    assert edited_calls == [("configured-editor", "draft extension text")]
 
 
 @pytest.mark.anyio
