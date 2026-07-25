@@ -2781,9 +2781,10 @@ async def test_tui_app_theme_picker_selects_pi_style_automatic_theme(
         await pilot.pause()
 
         assert app.tui_settings.theme == "tau-light/tau-dark"
-        assert tui_settings_path().read_text(encoding="utf-8").find(
-            '"theme": "tau-light/tau-dark"'
-        ) != -1
+        assert (
+            tui_settings_path().read_text(encoding="utf-8").find('"theme": "tau-light/tau-dark"')
+            != -1
+        )
         assert app.get_theme_variable_defaults()["tau-screen-background"] == "#ffffff"
 
 
@@ -2857,9 +2858,10 @@ async def test_tui_app_theme_command_argument_accepts_automatic_theme_pair(
         await pilot.press("enter")
 
         assert app.tui_settings.theme == "tau-light/tau-dark"
-        assert tui_settings_path().read_text(encoding="utf-8").find(
-            '"theme": "tau-light/tau-dark"'
-        ) != -1
+        assert (
+            tui_settings_path().read_text(encoding="utf-8").find('"theme": "tau-light/tau-dark"')
+            != -1
+        )
         assert app.get_theme_variable_defaults()["tau-screen-background"] == "#ffffff"
 
 
@@ -5283,9 +5285,7 @@ async def test_tui_app_tree_picker_branches_with_summary() -> None:
             "* assistant: Right",
         ]
         assert str(rendered_labels[0].spans[0].style) == _style_rgb(TAU_DARK_THEME.accent)
-        assert str(rendered_labels[3].spans[0].style) == _style_rgb(
-            TAU_DARK_THEME.highlight_text
-        )
+        assert str(rendered_labels[3].spans[0].style) == _style_rgb(TAU_DARK_THEME.highlight_text)
 
         await pilot.press("up")
         await pilot.pause()
@@ -8218,8 +8218,7 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "F21: delete to line start" in app.screen.message
         assert "F22: delete to line end when not used for commands" in app.screen.message
         assert (
-            "F23: delete next character; F29 quits when the editor is empty"
-            in app.screen.message
+            "F23: delete next character; F29 quits when the editor is empty" in app.screen.message
         )
         assert "F24: delete previous word" in app.screen.message
         assert "F25: delete next word" in app.screen.message
@@ -8242,9 +8241,7 @@ async def test_tui_app_accepts_pi_style_keybinding_lists(
                 AssistantMessage(content="pi-style copy binding"),
             ]
         ),
-        tui_settings=TuiSettings(
-            keybindings=TuiKeybindings(copy_last_message="ctrl+x,f8")
-        ),
+        tui_settings=TuiSettings(keybindings=TuiKeybindings(copy_last_message="ctrl+x,f8")),
     )
     copied: list[str] = []
     notifications: list[str] = []
@@ -8312,8 +8309,7 @@ async def test_tui_app_resources_command_uses_command_output_modal() -> None:
         assert "Diagnostics:" in app.screen.message
         assert (
             "- warning skill review: overrides lower-precedence resource "
-            "(.agents/skills/review.md)"
-            in app.screen.message
+            "(.agents/skills/review.md)" in app.screen.message
         )
 
 
@@ -8439,9 +8435,7 @@ async def test_tui_app_skills_command_opens_searchable_skill_picker() -> None:
         skill_list = app.screen.query_one("#skill-picker-list", ListView)
         assert skill_list.index == 0
         labels = [
-            str(label.render())
-            for item in skill_list.children
-            for label in item.query(Label)
+            str(label.render()) for item in skill_list.children for label in item.query(Label)
         ]
         assert "review" in labels
 
@@ -8476,9 +8470,7 @@ async def test_tui_app_skills_picker_filters_and_inserts_skill_command() -> None
         await pilot.pause()
         skill_list = app.screen.query_one("#skill-picker-list", ListView)
         labels = [
-            str(label.render())
-            for item in skill_list.children
-            for label in item.query(Label)
+            str(label.render()) for item in skill_list.children for label in item.query(Label)
         ]
         assert labels == ["debugger", "Inspect runtime state"]
 
@@ -11077,6 +11069,106 @@ async def test_run_tui_app_falls_back_to_first_credentialed_provider(
         f"create:{tmp_path}:gpt-5.5:openai",
         "load",
         "run",
+        "provider_closed",
+    ]
+
+
+@pytest.mark.anyio
+async def test_run_tui_app_creates_exact_session_id_when_missing(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[str] = []
+    record = CodingSessionRecord(
+        id="exact-session",
+        path=tmp_path / "exact-session.jsonl",
+        cwd=tmp_path,
+        model="gpt-5",
+        title=None,
+        created_at=1.0,
+        updated_at=1.0,
+        provider_name="openai",
+    )
+
+    class FakeProvider:
+        async def aclose(self) -> None:
+            calls.append("provider_closed")
+
+    class FakeManager:
+        def get_session(self, session_id: str) -> CodingSessionRecord | None:
+            calls.append(f"get:{session_id}")
+            return None
+
+        def create_session(
+            self,
+            *,
+            cwd: Path,
+            model: str,
+            provider_name: str | None = None,
+            title: str | None = None,
+            session_id: str | None = None,
+        ) -> CodingSessionRecord:
+            calls.append(f"create:{cwd}:{model}:{provider_name}:{title}:{session_id}")
+            return record
+
+    class FakeCodingSession:
+        session_id = "exact-session"
+
+        @classmethod
+        async def load(cls, config: object) -> FakeCodingSession:
+            assert config.session_id == "exact-session"  # type: ignore[attr-defined]
+            assert config.model == "gpt-5"  # type: ignore[attr-defined]
+            calls.append("load")
+            return cls()
+
+        async def aclose(self) -> None:
+            calls.append("session_closed")
+
+    class FakeApp:
+        def __init__(self, session: FakeCodingSession, **kwargs: object) -> None:
+            del kwargs
+            assert isinstance(session, FakeCodingSession)
+
+        async def run_async(self) -> None:
+            calls.append("run")
+
+    settings = ProviderSettings(
+        default_provider="openai",
+        providers=(
+            OpenAICompatibleProviderConfig(
+                name="openai",
+                models=("gpt-5",),
+                default_model="gpt-5",
+            ),
+        ),
+    )
+    monkeypatch.setenv("OPENAI_API_KEY", "stored-key")
+    monkeypatch.setattr(tui_app, "load_provider_settings", lambda: settings)
+    monkeypatch.setattr(tui_app, "load_tui_settings", lambda: TuiSettings())
+    monkeypatch.setattr(
+        tui_app,
+        "create_model_provider",
+        lambda provider, **kwargs: (
+            calls.append(f"provider:{provider.name}:{kwargs['model']}") or FakeProvider()
+        ),
+    )
+    monkeypatch.setattr(tui_app, "CodingSession", FakeCodingSession)
+    monkeypatch.setattr(tui_app, "TauTuiApp", FakeApp)
+
+    returned = await tui_app.run_tui_app(
+        cwd=tmp_path,
+        model=None,
+        exact_session_id="exact-session",
+        session_manager=FakeManager(),
+    )
+
+    assert returned == "exact-session"
+    assert calls == [
+        "get:exact-session",
+        "provider:openai:gpt-5",
+        f"create:{tmp_path}:gpt-5:openai:None:exact-session",
+        "load",
+        "run",
+        "session_closed",
         "provider_closed",
     ]
 

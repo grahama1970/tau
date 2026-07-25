@@ -249,7 +249,11 @@ from tau_coding.session_export import (
     export_session_artifact,
     normalize_export_format,
 )
-from tau_coding.session_manager import CodingSessionRecord, SessionManager
+from tau_coding.session_manager import (
+    CodingSessionRecord,
+    SessionManager,
+    assert_valid_session_id,
+)
 from tau_coding.skill_capability_registry import (
     write_default_skill_capability_registry,
     write_skill_capability_registry_validation_receipt,
@@ -312,11 +316,7 @@ def workflows_list_command(
         raise RuntimeError("workflow catalog workflows must be a list")
     for workflow in workflows:
         if isinstance(workflow, dict):
-            typer.echo(
-                f"{workflow['workflow_id']}\t"
-                f"{workflow['topology']}\t"
-                f"{workflow['title']}"
-            )
+            typer.echo(f"{workflow['workflow_id']}\t{workflow['topology']}\t{workflow['title']}")
 
 
 @workflows_app.command("describe")
@@ -465,9 +465,7 @@ def workflows_repair_command(
     node_id: Annotated[str, typer.Option("--node")],
 ) -> None:
     try:
-        payload = repair_durable_repository_qualification(
-            run_dir=run_dir, node_id=node_id
-        )
+        payload = repair_durable_repository_qualification(run_dir=run_dir, node_id=node_id)
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
     typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -849,6 +847,13 @@ def main(
         str | None,
         typer.Option("--session", help="Resume a session id in TUI mode."),
     ] = None,
+    exact_session_id: Annotated[
+        str | None,
+        typer.Option(
+            "--session-id",
+            help="Use an exact project session id, creating it if missing.",
+        ),
+    ] = None,
     session_name: Annotated[
         str | None,
         typer.Option("--name", "-n", help="Set session display name at startup."),
@@ -1087,6 +1092,21 @@ def main(
     if session is not None and new_session:
         raise typer.BadParameter("--session and --new-session cannot be used together")
 
+    if exact_session_id is not None:
+        try:
+            assert_valid_session_id(exact_session_id)
+        except ValueError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+
+    if exact_session_id is not None and session is not None:
+        raise typer.BadParameter("--session-id and --session cannot be used together")
+
+    if exact_session_id is not None and continue_session:
+        raise typer.BadParameter("--session-id and --continue cannot be used together")
+
+    if exact_session_id is not None and resume_picker:
+        raise typer.BadParameter("--session-id and --resume cannot be used together")
+
     if resume_picker and session is not None:
         raise typer.BadParameter("--resume and --session cannot be used together")
 
@@ -1243,9 +1263,7 @@ def main(
         elif positional_args[1:2] == ["list"]:
             for workflow in payload["workflows"]:
                 typer.echo(
-                    f"{workflow['workflow_id']}\t"
-                    f"{workflow['topology']}\t"
-                    f"{workflow['title']}"
+                    f"{workflow['workflow_id']}\t{workflow['topology']}\t{workflow['title']}"
                 )
         else:
             typer.echo(f"{payload['title']} ({payload['workflow_id']})")
@@ -1309,9 +1327,7 @@ def main(
                 payload = build_dag_live_snapshot(
                     replay=replay,
                     recent_events=events,
-                    receipt_index=build_receipt_index(
-                        run_dir, replay.transition_receipts
-                    ),
+                    receipt_index=build_receipt_index(run_dir, replay.transition_receipts),
                 )
             else:
                 after = int(options["after_sequence"])
@@ -1329,9 +1345,7 @@ def main(
 
     if not print_requested and command in {"dag-view", "dag-view-serve"}:
         try:
-            options = _parse_dag_view_serve_cli_args(
-                positional_args[1:], command=str(command)
-            )
+            options = _parse_dag_view_serve_cli_args(positional_args[1:], command=str(command))
             viewer_server = create_dag_viewer_server(
                 run_dir=Path(str(options["run_dir"])),
                 run_id=_optional_str(options.get("run_id")),
@@ -3389,6 +3403,7 @@ def main(
                     cwd or Path.cwd(),
                     _session_manager_from_dir(session_dir),
                     session_name,
+                    exact_session_id,
                 )
             except RuntimeError as exc:
                 raise typer.BadParameter(str(exc)) from exc
@@ -3411,6 +3426,7 @@ def main(
                 continue_session,
                 resume_picker,
                 no_session,
+                exact_session_id,
                 session_dir,
                 provider_settings_override,
                 startup_default_project_trust,
@@ -3461,6 +3477,7 @@ def main(
             resolved_append_system_prompt,
             session_name,
             no_session,
+            exact_session_id,
             session_dir,
             startup_default_project_trust,
             no_context_files,
@@ -3612,6 +3629,7 @@ async def run_openai_tui(
     continue_session: bool = False,
     resume_picker: bool = False,
     no_session: bool = False,
+    exact_session_id: str | None = None,
     session_dir: Path | None = None,
     provider_settings: ProviderSettings | None = None,
     default_project_trust: DefaultProjectTrust | None = None,
@@ -3643,6 +3661,7 @@ async def run_openai_tui(
         continue_session=continue_session,
         resume_picker=resume_picker,
         no_session=no_session,
+        exact_session_id=exact_session_id,
         session_manager=_session_manager_from_dir(session_dir),
         provider_settings=provider_settings,
         default_project_trust=default_project_trust,
@@ -3684,8 +3703,7 @@ def scoped_settings_from_model_patterns(
         for model in provider.models:
             row = f"{provider.name}:{model}"
             if not any(
-                _model_pattern_matches(pattern, provider.name, model, row)
-                for pattern in patterns
+                _model_pattern_matches(pattern, provider.name, model, row) for pattern in patterns
             ):
                 continue
             key = (provider.name, model)
@@ -3712,9 +3730,12 @@ async def fork_session_command(
     cwd: Path,
     session_manager: SessionManager | None = None,
     title: str | None = None,
+    session_id: str | None = None,
 ) -> CodingSessionRecord:
     """Copy a source session into a new indexed session for the target cwd."""
     manager = session_manager or SessionManager()
+    if session_id is not None and manager.get_session(session_id) is not None:
+        raise RuntimeError(f"Session already exists with id '{session_id}'")
     source_path, source_record = _resolve_fork_source(source_ref, manager)
     entries = await JsonlSessionStorage(source_path).read_all()
     if not entries:
@@ -3726,6 +3747,7 @@ async def fork_session_command(
         model=state.model or (source_record.model if source_record is not None else "unknown"),
         provider_name=source_record.provider_name if source_record is not None else None,
         title=title or (f"Fork of {source_title}" if source_title else None),
+        session_id=session_id,
         parent_session_id=source_record.id if source_record is not None else None,
     )
     storage = JsonlSessionStorage(record.path)
@@ -3859,11 +3881,11 @@ def _merge_stdin_prompt(prompt: str) -> str:
     try:
         if stdin.isatty():
             return prompt
-    except (AttributeError, ValueError):
+    except AttributeError, ValueError:
         return prompt
     try:
         piped = stdin.read()
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return prompt
     if not piped:
         return prompt
@@ -4833,7 +4855,7 @@ def _parse_zero_trust_doctor_cli_args(args: list[str]) -> dict[str, object]:
 def _dag_run_schema(spec_path: Path) -> str | None:
     try:
         payload = load_dag_contract_payload(spec_path)
-    except (OSError, json.JSONDecodeError, RuntimeError):
+    except OSError, json.JSONDecodeError, RuntimeError:
         return None
     return str(payload.get("schema")) if isinstance(payload.get("schema"), str) else None
 
@@ -10552,7 +10574,7 @@ def _index_tau_sanitization_artifact(run_dir: Path, artifact_path: Path) -> None
         return
     try:
         final_receipt = json.loads(final_receipt_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return
     if not isinstance(final_receipt, dict):
         return
@@ -10575,7 +10597,7 @@ def _redact_delegated_loop2_run_secrets(run_dir: Path) -> dict[str, str]:
         return {}
     try:
         contract = json.loads(contract_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return {}
     if not isinstance(contract, dict):
         return {}
@@ -10604,7 +10626,7 @@ def _filter_delegated_changed_files(run_dir: Path) -> dict[str, int]:
             continue
         try:
             payload = json.loads(artifact_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+        except OSError, json.JSONDecodeError:
             continue
         if not isinstance(payload, dict):
             continue
@@ -10789,7 +10811,7 @@ def _load_delegated_node_result(
     node_result_path = run_dir / "node-result.json"
     try:
         loaded = json.loads(node_result_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return fallback
     return loaded if isinstance(loaded, dict) else fallback
 
@@ -13429,6 +13451,7 @@ async def run_openai_print_mode(
     session_manager: SessionManager | None = None,
     session_name: str | None = None,
     no_session: bool = False,
+    exact_session_id: str | None = None,
     session_dir: Path | None = None,
     default_project_trust: DefaultProjectTrust | None = None,
     no_context_files: bool = False,
@@ -13456,7 +13479,12 @@ async def run_openai_print_mode(
     record: CodingSessionRecord | None = None
     if manager is not None:
         try:
-            record = manager.create_session(cwd=cwd, model=selection.model, title=session_name)
+            record = manager.create_session(
+                cwd=cwd,
+                model=selection.model,
+                title=session_name,
+                session_id=exact_session_id,
+            )
         except TypeError:
             record = manager.create_session(cwd=cwd, model=selection.model)
     try:

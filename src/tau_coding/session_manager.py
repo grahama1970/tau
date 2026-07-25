@@ -125,7 +125,8 @@ class SessionManager:
         """Create and index a new session record."""
         now = time()
         resolved_cwd = cwd.resolve()
-        record_id = session_id or uuid4().hex
+        record_id = session_id if session_id is not None else uuid4().hex
+        assert_valid_session_id(record_id)
         path = self.paths.project_session_dir(resolved_cwd) / f"{record_id}.jsonl"
         path.parent.mkdir(parents=True, exist_ok=True)
         record = CodingSessionRecord(
@@ -278,9 +279,18 @@ def _move_to_trash(path: Path) -> bool:
             text=True,
             timeout=5,
         )
-    except (OSError, subprocess.TimeoutExpired):
+    except OSError, subprocess.TimeoutExpired:
         return False
     return result.returncode == 0 or not path.exists()
+
+
+def assert_valid_session_id(session_id: str) -> None:
+    """Raise when a caller-supplied session id is unsafe for session storage."""
+    if not re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?", session_id):
+        raise ValueError(
+            "Session id must be non-empty, contain only alphanumeric characters, '-', "
+            "'_', and '.', and start and end with an alphanumeric character"
+        )
 
 
 def _sanitize_session_title(title: str | None) -> str | None:

@@ -1465,7 +1465,7 @@ class PromptInput(TextArea):
         self._last_yank_range = None
         if column < len(current_line):
             self._push_undo_snapshot()
-            lines[row] = f"{current_line[:column]}{current_line[column + 1:]}"
+            lines[row] = f"{current_line[:column]}{current_line[column + 1 :]}"
             self.text = "\n".join(lines)
             self.prune_paste_markers()
             self.move_cursor((row, column))
@@ -2120,9 +2120,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         """Rebuild the visible session rows from the current search query."""
         if self.mode == "rename":
             return
-        self.query_one("#session-picker-title", Static).update(
-            _session_picker_title(self.scope)
-        )
+        self.query_one("#session-picker-title", Static).update(_session_picker_title(self.scope))
         records = self.current_records if self.scope == "current" else self.all_records
         self.filtered_records = _filter_session_picker_records(
             records,
@@ -2189,20 +2187,24 @@ class SessionPickerScreen(ModalScreen[str | None]):
         if self.mode == "rename":
             return
         if self.delete_confirm_target_id is not None:
-            if _matches_configured_or_default_key(
-                event.key,
-                self.keybindings.select_confirm,
-                "enter",
-            ) or _matches_configured_or_default_key(
-                event.key,
-                self.keybindings.session_delete,
-                "ctrl+d",
-            ) or (
-                not self.search_value.strip()
-                and _matches_configured_or_default_key(
+            if (
+                _matches_configured_or_default_key(
                     event.key,
-                    self.keybindings.session_delete_noninvasive,
-                    "ctrl+backspace",
+                    self.keybindings.select_confirm,
+                    "enter",
+                )
+                or _matches_configured_or_default_key(
+                    event.key,
+                    self.keybindings.session_delete,
+                    "ctrl+d",
+                )
+                or (
+                    not self.search_value.strip()
+                    and _matches_configured_or_default_key(
+                        event.key,
+                        self.keybindings.session_delete_noninvasive,
+                        "ctrl+backspace",
+                    )
                 )
             ):
                 event.stop()
@@ -2267,11 +2269,14 @@ class SessionPickerScreen(ModalScreen[str | None]):
         ):
             event.stop()
             self.action_start_rename()
-        elif _matches_configured_or_default_key(
-            event.key,
-            self.keybindings.session_delete_noninvasive,
-            "ctrl+backspace",
-        ) and not self.search_value.strip():
+        elif (
+            _matches_configured_or_default_key(
+                event.key,
+                self.keybindings.session_delete_noninvasive,
+                "ctrl+backspace",
+            )
+            and not self.search_value.strip()
+        ):
             event.stop()
             self.action_delete_session_noninvasive()
         elif _matches_configured_or_default_key(
@@ -2402,9 +2407,7 @@ class SessionPickerScreen(ModalScreen[str | None]):
         search = self.query_one("#session-picker-search", Input)
         search.placeholder = "Search sessions"
         search.value = self.search_value
-        self.query_one("#session-picker-title", Static).update(
-            _session_picker_title(self.scope)
-        )
+        self.query_one("#session-picker-title", Static).update(_session_picker_title(self.scope))
         self._refresh_session_list()
 
     def _selected_session_record(self) -> SessionCompletionRecord | None:
@@ -2576,11 +2579,14 @@ class SettingsPickerSearchInput(Input):
             event.stop()
             event.prevent_default()
             self._picker().action_cursor_down()
-        elif _matches_configured_or_default_key(
-            event.key,
-            keybindings.select_confirm,
-            "enter",
-        ) or event.key == "space":
+        elif (
+            _matches_configured_or_default_key(
+                event.key,
+                keybindings.select_confirm,
+                "enter",
+            )
+            or event.key == "space"
+        ):
             event.stop()
             event.prevent_default()
             self._picker().action_select_cursor()
@@ -3382,10 +3388,7 @@ class WorkflowPickerScreen(ModalScreen[WorkflowPickerResult | None]):
     def action_insert_run_command(self) -> None:
         """Insert a runnable shell command for the highlighted workflow."""
         workflow_list = self.query_one("#workflow-picker-list", ListView)
-        if (
-            workflow_list.index is None
-            or workflow_list.index >= len(self.filtered_workflows)
-        ):
+        if workflow_list.index is None or workflow_list.index >= len(self.filtered_workflows):
             return
         self.dismiss(
             WorkflowPickerResult(
@@ -4387,16 +4390,14 @@ class LoginProviderPickerScreen(ModalScreen[str | None]):
             isinstance(self.focused, Input)
             and getattr(self.focused, "id", None) == "login-provider-search"
         )
-        if (
-            _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up")
-            or (event.key == "k" and not search_focused)
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up") or (
+            event.key == "k" and not search_focused
         ):
             event.stop()
             self.action_cursor_up()
-        elif (
-            _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down")
-            or (event.key == "j" and not search_focused)
-        ):
+        elif _matches_configured_or_default_key(
+            event.key, self.keybindings.select_down, "down"
+        ) or (event.key == "j" and not search_focused):
             event.stop()
             self.action_cursor_down()
         elif _matches_configured_or_default_key(
@@ -6500,9 +6501,7 @@ class TauTuiApp(App[None]):
         self.state.add_item(
             "tool",
             f"$ {command.strip()}",
-            tool_result_text=format_terminal_command_running_block(
-                added_to_context=add_to_context
-            ),
+            tool_result_text=format_terminal_command_running_block(added_to_context=add_to_context),
             always_show_tool_result=True,
         )
         self._follow_transcript_output()
@@ -7776,10 +7775,7 @@ class TauTuiApp(App[None]):
             prompt.text = ""
             self.state.add_item(
                 "status",
-                (
-                    f"Skill: {result.skill.name} (not added to context)\n"
-                    f"{result.skill.content}"
-                ),
+                (f"Skill: {result.skill.name} (not added to context)\n{result.skill.content}"),
             )
             self._refresh()
         prompt.move_cursor(_text_end_location(prompt.text))
@@ -8277,19 +8273,11 @@ class TauTuiApp(App[None]):
         if self._compaction_queued_messages:
             steering = (
                 *steering,
-                *(
-                    text
-                    for text, mode in self._compaction_queued_messages
-                    if mode == "steer"
-                ),
+                *(text for text, mode in self._compaction_queued_messages if mode == "steer"),
             )
             follow_up = (
                 *follow_up,
-                *(
-                    text
-                    for text, mode in self._compaction_queued_messages
-                    if mode == "follow_up"
-                ),
+                *(text for text, mode in self._compaction_queued_messages if mode == "follow_up"),
             )
         self.adapter.apply(QueueUpdateEvent(steering=steering, follow_up=follow_up))
 
@@ -9373,13 +9361,9 @@ def _nearest_visible_tree_choice_index(
     if not visible_choices:
         return None
     target_entry_id = entry_id or _active_tree_choice_id(source_choices)
-    visible_index_by_id = {
-        choice.entry_id: index for index, choice in enumerate(visible_choices)
-    }
+    visible_index_by_id = {choice.entry_id: index for index, choice in enumerate(visible_choices)}
     if target_entry_id is not None:
-        source_parent_by_id = {
-            choice.entry_id: choice.parent_entry_id for choice in source_choices
-        }
+        source_parent_by_id = {choice.entry_id: choice.parent_entry_id for choice in source_choices}
         current_id: str | None = target_entry_id
         seen: set[str] = set()
         while current_id is not None and current_id not in seen:
@@ -9694,9 +9678,7 @@ def _image_visibility_picker_label(show_images: bool, *, current_value: bool) ->
     marker = "current" if show_images == current_value else "       "
     label = "Yes" if show_images else "No"
     description = (
-        "Show images inline in terminal"
-        if show_images
-        else "Show text placeholder instead"
+        "Show images inline in terminal" if show_images else "Show text placeholder instead"
     )
     return f"{marker}  {label} - {description}"
 
@@ -9936,11 +9918,7 @@ def _filter_model_choices(choices: Sequence[ModelChoice], query: str) -> tuple[M
     normalized = query.strip().lower()
     if not normalized:
         return tuple(choices)
-    matches = [
-        choice
-        for choice in choices
-        if _model_picker_choice_matches(choice, normalized)
-    ]
+    matches = [choice for choice in choices if _model_picker_choice_matches(choice, normalized)]
     return tuple(sorted(matches, key=lambda choice: _model_picker_search_rank(choice, normalized)))
 
 
@@ -10114,8 +10092,10 @@ def _find_word_delete_start(line: str, cursor_column: int) -> int:
         while index > 0 and (line[index - 1].isalnum() or line[index - 1] == "_"):
             index -= 1
         return index
-    while index > 0 and not line[index - 1].isspace() and not (
-        line[index - 1].isalnum() or line[index - 1] == "_"
+    while (
+        index > 0
+        and not line[index - 1].isspace()
+        and not (line[index - 1].isalnum() or line[index - 1] == "_")
     ):
         index -= 1
     return index
@@ -10133,8 +10113,10 @@ def _find_word_delete_end(line: str, cursor_column: int) -> int:
         while index < len(line) and (line[index].isalnum() or line[index] == "_"):
             index += 1
         return index
-    while index < len(line) and not line[index].isspace() and not (
-        line[index].isalnum() or line[index] == "_"
+    while (
+        index < len(line)
+        and not line[index].isspace()
+        and not (line[index].isalnum() or line[index] == "_")
     ):
         index += 1
     return index
@@ -10546,9 +10528,7 @@ def _render_tui_hotkeys_message(keybindings: TuiKeybindings) -> str:
         (keybindings.session_fork, "fork from a previous message"),
         (keybindings.session_resume, "resume a previous session"),
     ]
-    lines.extend(
-        f"- {_key_hint(key)}: {description}" for key, description in optional_lines if key
-    )
+    lines.extend(f"- {_key_hint(key)}: {description}" for key, description in optional_lines if key)
     return "\n".join(lines)
 
 
@@ -10617,9 +10597,7 @@ def _render_startup_resources_summary(
         ("Skills", _compact_named_resource_labels(session.skills)),
         ("Prompts", _compact_prompt_labels(session.prompt_templates)),
     ]
-    visible_sections = [
-        f"[{title}] {', '.join(labels)}" for title, labels in sections if labels
-    ]
+    visible_sections = [f"[{title}] {', '.join(labels)}" for title, labels in sections if labels]
     if notice:
         visible_sections.insert(0, f"[Notice] {notice}")
     visible_sections.insert(0, startup_help[0])
@@ -10673,8 +10651,7 @@ def _compact_context_labels(
     cwd: Path,
 ) -> list[str]:
     return [
-        _display_resource_path(Path(context_file.path), cwd=cwd)
-        for context_file in context_files
+        _display_resource_path(Path(context_file.path), cwd=cwd) for context_file in context_files
     ]
 
 
@@ -10694,8 +10671,7 @@ def _resource_context_lines(
     if not context_files:
         return ["No context files"]
     return [
-        _display_resource_path(Path(context_file.path), cwd=cwd)
-        for context_file in context_files
+        _display_resource_path(Path(context_file.path), cwd=cwd) for context_file in context_files
     ]
 
 
@@ -10726,9 +10702,7 @@ def _resource_name_path_lines(
         name = getattr(resource, "name", "unknown")
         path = getattr(resource, "path", None)
         lines.append(
-            name
-            if path is None
-            else f"{name} ({_display_resource_path(Path(path), cwd=cwd)})"
+            name if path is None else f"{name} ({_display_resource_path(Path(path), cwd=cwd)})"
         )
     return lines
 
@@ -10766,11 +10740,7 @@ def _display_resource_path(path: Path, *, cwd: Path) -> str:
 
 def _query_tokens(query: str) -> tuple[str, ...]:
     """Return Pi-style whitespace-or-slash search tokens."""
-    return tuple(
-        token
-        for token in re.split(r"[\s/]+", query.casefold().strip())
-        if token
-    )
+    return tuple(token for token in re.split(r"[\s/]+", query.casefold().strip()) if token)
 
 
 def _query_tokens_match(tokens: Sequence[str], text: str) -> bool:
@@ -10963,7 +10933,7 @@ def _run_tmux_show_option(option: str) -> str | None:
             text=True,
             timeout=2,
         )
-    except (OSError, subprocess.TimeoutExpired):
+    except OSError, subprocess.TimeoutExpired:
         return None
     if completed.returncode != 0:
         return None
@@ -11093,7 +11063,16 @@ def _create_startup_session_record(
     cwd: Path,
     selection: ProviderSelection,
     title: str | None = None,
+    session_id: str | None = None,
 ) -> CodingSessionRecord:
+    if session_id is not None:
+        return manager.create_session(
+            cwd=cwd,
+            model=selection.model,
+            provider_name=selection.provider.name,
+            title=title,
+            session_id=session_id,
+        )
     try:
         return manager.create_session(
             cwd=cwd,
@@ -11215,6 +11194,7 @@ async def run_tui_app(
     continue_session: bool = False,
     resume_picker: bool = False,
     no_session: bool = False,
+    exact_session_id: str | None = None,
     session_manager: SessionManager | None = None,
     provider_settings: ProviderSettings | None = None,
     default_project_trust: DefaultProjectTrust | None = None,
@@ -11233,10 +11213,16 @@ async def run_tui_app(
     """Create the default provider/session, run the Textual app, and return the session id."""
     if new_session and session_id is not None:
         raise RuntimeError("--session and --new-session cannot be used together")
+    if exact_session_id is not None and session_id is not None:
+        raise RuntimeError("--session-id and --session cannot be used together")
     if continue_session and session_id is not None:
         raise RuntimeError("--continue and --session cannot be used together")
+    if continue_session and exact_session_id is not None:
+        raise RuntimeError("--session-id and --continue cannot be used together")
     if resume_picker and session_id is not None:
         raise RuntimeError("--resume and --session cannot be used together")
+    if resume_picker and exact_session_id is not None:
+        raise RuntimeError("--session-id and --resume cannot be used together")
     if continue_session and new_session:
         raise RuntimeError("--continue and --new-session cannot be used together")
     if resume_picker and continue_session:
@@ -11249,6 +11235,8 @@ async def run_tui_app(
         raise RuntimeError("--resume and --name cannot be used together")
     if no_session and session_id is not None:
         raise RuntimeError("--no-session and --session cannot be used together")
+    if no_session and exact_session_id is not None:
+        raise RuntimeError("--session-id and --no-session cannot be used together")
     if no_session and resume_picker:
         raise RuntimeError("--no-session and --resume cannot be used together")
     if no_session and continue_session:
@@ -11269,6 +11257,9 @@ async def run_tui_app(
     elif continue_session:
         assert manager is not None
         record = _latest_cwd_session_record(manager, cwd=cwd)
+    elif exact_session_id is not None:
+        assert manager is not None
+        record = manager.get_session(exact_session_id)
     else:
         assert manager is not None
         record = _explicit_resume_record(
@@ -11280,7 +11271,7 @@ async def run_tui_app(
         record=record,
         provider_name=provider_name,
         model=model,
-        explicit_resume=session_id is not None or continue_session,
+        explicit_resume=session_id is not None or continue_session or record is not None,
     )
     startup_message: str | None = None
     runtime_provider_config: ProviderConfig | None = selection.provider
@@ -11313,6 +11304,7 @@ async def run_tui_app(
                     cwd=cwd,
                     selection=selection,
                     title=session_name,
+                    session_id=exact_session_id,
                 )
                 storage = jsonl_session_storage(record.path)
                 startup_session_id = record.id

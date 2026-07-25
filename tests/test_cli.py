@@ -376,6 +376,8 @@ def test_cli_dag_run_and_run_alias_execute_generic_dag(tmp_path: Path, command_n
     assert run_receipt["live"] is True
     assert run_receipt["provider_live"] is False
     assert run_receipt["nodes"][0]["command_results"][0]["returncode"] == 0
+
+
 async def _passing_scillm_auth_preflight(
     contract: dict[str, object],
 ) -> dict[str, object]:
@@ -1692,9 +1694,10 @@ def test_cli_generated_ticket_github_create_apply_requires_dedupe_preflight(
     assert payload["dry_run"] is False
     assert payload["applied"] is False
     assert payload["commands"] == []
-    assert "dedupe preflight projection is required before applying generated tickets" in payload[
-        "errors"
-    ]
+    assert (
+        "dedupe preflight projection is required before applying generated tickets"
+        in payload["errors"]
+    )
     assert receipt == payload
 
 
@@ -6245,6 +6248,7 @@ def test_cli_without_prompt_invokes_tui_runner(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -6323,6 +6327,7 @@ def test_cli_positional_prompt_invokes_tui_runner(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -6402,6 +6407,7 @@ def test_cli_file_arg_expands_into_tui_initial_prompt(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -6419,7 +6425,7 @@ def test_cli_file_arg_expands_into_tui_initial_prompt(
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
         del thinking_level, custom_system_prompt, append_system_prompt
-        del session_name, continue_session, resume_picker, no_session, session_dir
+        del session_name, continue_session, resume_picker, no_session, exact_session_id, session_dir
         del provider_settings, no_context_files, tool_allowlist, tool_denylist
         del no_tools, no_builtin_tools, no_skills, no_prompt_templates, no_themes
         del skill_paths, prompt_template_paths, theme_paths
@@ -6856,6 +6862,7 @@ def test_cli_exits_nonzero_when_print_mode_fails(monkeypatch: pytest.MonkeyPatch
         append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
@@ -6870,7 +6877,7 @@ def test_cli_exits_nonzero_when_print_mode_fails(monkeypatch: pytest.MonkeyPatch
         prompt_template_paths: tuple[Path, ...],
         theme_paths: tuple[Path, ...],
     ) -> bool:
-        del session_name, no_session, session_dir
+        del session_name, no_session, exact_session_id, session_dir
         return False
 
     monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
@@ -6895,6 +6902,7 @@ def test_mode_flag_alone_triggers_print_mode(monkeypatch: pytest.MonkeyPatch) ->
         append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
@@ -6909,7 +6917,16 @@ def test_mode_flag_alone_triggers_print_mode(monkeypatch: pytest.MonkeyPatch) ->
         prompt_template_paths: tuple[Path, ...],
         theme_paths: tuple[Path, ...],
     ) -> bool:
-        del model, cwd, provider_name, loop_receipt, session_name, no_session, session_dir
+        del (
+            model,
+            cwd,
+            provider_name,
+            loop_receipt,
+            session_name,
+            no_session,
+            exact_session_id,
+            session_dir,
+        )
         calls.append((prompt, output))
         return True
 
@@ -6941,6 +6958,7 @@ def test_print_mode_file_arg_expands_into_prompt(
         append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
@@ -6956,7 +6974,14 @@ def test_print_mode_file_arg_expands_into_prompt(
         theme_paths: tuple[Path, ...],
     ) -> bool:
         del model, cwd, output, provider_name, loop_receipt, thinking_level
-        del custom_system_prompt, append_system_prompt, session_name, no_session, session_dir
+        del (
+            custom_system_prompt,
+            append_system_prompt,
+            session_name,
+            no_session,
+            exact_session_id,
+            session_dir,
+        )
         del no_context_files, tool_allowlist, tool_denylist, no_tools, no_builtin_tools
         del no_skills, no_prompt_templates, no_themes
         del skill_paths, prompt_template_paths, theme_paths
@@ -6986,6 +7011,7 @@ def test_print_mode_passes_project_trust_override(monkeypatch: pytest.MonkeyPatc
         append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
@@ -7001,7 +7027,14 @@ def test_print_mode_passes_project_trust_override(monkeypatch: pytest.MonkeyPatc
         theme_paths: tuple[Path, ...],
     ) -> bool:
         del prompt, model, cwd, output, provider_name, loop_receipt, thinking_level
-        del custom_system_prompt, append_system_prompt, session_name, no_session, session_dir
+        del (
+            custom_system_prompt,
+            append_system_prompt,
+            session_name,
+            no_session,
+            exact_session_id,
+            session_dir,
+        )
         del no_context_files, tool_allowlist, tool_denylist, no_tools, no_builtin_tools
         del no_skills, no_prompt_templates, no_themes
         del skill_paths, prompt_template_paths, theme_paths
@@ -7038,6 +7071,7 @@ def test_print_mode_offline_sets_compatible_environment(
         append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
@@ -7053,7 +7087,14 @@ def test_print_mode_offline_sets_compatible_environment(
         theme_paths: tuple[Path, ...],
     ) -> bool:
         del prompt, model, cwd, output, provider_name, loop_receipt, thinking_level
-        del custom_system_prompt, append_system_prompt, session_name, no_session, session_dir
+        del (
+            custom_system_prompt,
+            append_system_prompt,
+            session_name,
+            no_session,
+            exact_session_id,
+            session_dir,
+        )
         del default_project_trust, no_context_files, tool_allowlist, tool_denylist
         del no_tools, no_builtin_tools, no_skills, no_prompt_templates, no_themes
         del skill_paths, prompt_template_paths, theme_paths
@@ -7117,6 +7158,7 @@ def test_print_mode_passes_startup_session_name(monkeypatch: pytest.MonkeyPatch)
         append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
@@ -7131,7 +7173,17 @@ def test_print_mode_passes_startup_session_name(monkeypatch: pytest.MonkeyPatch)
         prompt_template_paths: tuple[Path, ...],
         theme_paths: tuple[Path, ...],
     ) -> bool:
-        del prompt, model, cwd, output, provider_name, loop_receipt, no_session, session_dir
+        del (
+            prompt,
+            model,
+            cwd,
+            output,
+            provider_name,
+            loop_receipt,
+            no_session,
+            exact_session_id,
+            session_dir,
+        )
         calls.append(session_name)
         return True
 
@@ -7158,6 +7210,7 @@ def test_print_mode_passes_no_session_flag(monkeypatch: pytest.MonkeyPatch) -> N
         append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
@@ -7199,6 +7252,7 @@ def test_print_mode_passes_no_context_files_flag(monkeypatch: pytest.MonkeyPatch
         append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
@@ -7241,6 +7295,7 @@ def test_print_mode_passes_startup_thinking_level(monkeypatch: pytest.MonkeyPatc
         append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
@@ -7292,6 +7347,7 @@ def test_print_mode_passes_system_prompt_inputs(
         append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
@@ -7307,7 +7363,7 @@ def test_print_mode_passes_system_prompt_inputs(
         theme_paths: tuple[Path, ...],
     ) -> bool:
         del prompt, model, cwd, output, provider_name, loop_receipt, thinking_level
-        del session_name, no_session, session_dir, no_context_files
+        del session_name, no_session, exact_session_id, session_dir, no_context_files
         del tool_allowlist, tool_denylist, no_tools, no_builtin_tools
         del no_skills, no_prompt_templates, no_themes
         del skill_paths, prompt_template_paths, theme_paths
@@ -7351,6 +7407,7 @@ def test_print_mode_passes_tool_selection_flags(monkeypatch: pytest.MonkeyPatch)
         append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
@@ -7420,6 +7477,7 @@ def test_print_mode_passes_explicit_resource_paths(
         append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
@@ -7490,6 +7548,7 @@ def test_print_mode_merges_piped_stdin_into_prompt(monkeypatch: pytest.MonkeyPat
         append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
@@ -7504,7 +7563,17 @@ def test_print_mode_merges_piped_stdin_into_prompt(monkeypatch: pytest.MonkeyPat
         prompt_template_paths: tuple[Path, ...],
         theme_paths: tuple[Path, ...],
     ) -> bool:
-        del model, cwd, output, provider_name, loop_receipt, session_name, no_session, session_dir
+        del (
+            model,
+            cwd,
+            output,
+            provider_name,
+            loop_receipt,
+            session_name,
+            no_session,
+            exact_session_id,
+            session_dir,
+        )
         calls.append(prompt)
         return True
 
@@ -7531,6 +7600,7 @@ def test_print_mode_accepts_stdin_only_prompt(monkeypatch: pytest.MonkeyPatch) -
         append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
@@ -7545,7 +7615,17 @@ def test_print_mode_accepts_stdin_only_prompt(monkeypatch: pytest.MonkeyPatch) -
         prompt_template_paths: tuple[Path, ...],
         theme_paths: tuple[Path, ...],
     ) -> bool:
-        del model, cwd, output, provider_name, loop_receipt, session_name, no_session, session_dir
+        del (
+            model,
+            cwd,
+            output,
+            provider_name,
+            loop_receipt,
+            session_name,
+            no_session,
+            exact_session_id,
+            session_dir,
+        )
         calls.append(prompt)
         return True
 
@@ -7620,6 +7700,7 @@ def test_cli_print_mode_passes_loop2_receipt_options(
         append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
@@ -7634,7 +7715,17 @@ def test_cli_print_mode_passes_loop2_receipt_options(
         prompt_template_paths: tuple[Path, ...],
         theme_paths: tuple[Path, ...],
     ) -> bool:
-        del prompt, model, cwd, output, provider_name, session_name, no_session, session_dir
+        del (
+            prompt,
+            model,
+            cwd,
+            output,
+            provider_name,
+            session_name,
+            no_session,
+            exact_session_id,
+            session_dir,
+        )
         calls.append(loop_receipt)
         return True
 
@@ -7688,6 +7779,7 @@ def test_cli_print_mode_marks_nonfake_loop2_receipt_live(
         append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
@@ -7702,7 +7794,17 @@ def test_cli_print_mode_marks_nonfake_loop2_receipt_live(
         prompt_template_paths: tuple[Path, ...],
         theme_paths: tuple[Path, ...],
     ) -> bool:
-        del prompt, model, cwd, output, provider_name, session_name, no_session, session_dir
+        del (
+            prompt,
+            model,
+            cwd,
+            output,
+            provider_name,
+            session_name,
+            no_session,
+            exact_session_id,
+            session_dir,
+        )
         calls.append(loop_receipt)
         return True
 
@@ -7798,6 +7900,7 @@ def test_default_tui_invokes_tui_runner_with_flags(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -7874,6 +7977,7 @@ def test_default_tui_passes_startup_session_name(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -7890,7 +7994,14 @@ def test_default_tui_passes_startup_session_name(
         theme_paths: tuple[Path, ...],
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
-        del initial_prompt, continue_session, no_session, session_dir, provider_settings
+        del (
+            initial_prompt,
+            continue_session,
+            no_session,
+            exact_session_id,
+            session_dir,
+            provider_settings,
+        )
         calls.append(session_name)
 
     monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
@@ -7921,6 +8032,7 @@ def test_default_tui_passes_continue_session_flag(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -7937,7 +8049,14 @@ def test_default_tui_passes_continue_session_flag(
         theme_paths: tuple[Path, ...],
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
-        del initial_prompt, session_name, no_session, session_dir, provider_settings
+        del (
+            initial_prompt,
+            session_name,
+            no_session,
+            exact_session_id,
+            session_dir,
+            provider_settings,
+        )
         calls.append(continue_session)
 
     monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
@@ -7968,6 +8087,7 @@ def test_default_tui_passes_resume_picker_flag(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -7984,7 +8104,14 @@ def test_default_tui_passes_resume_picker_flag(
         theme_paths: tuple[Path, ...],
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
-        del initial_prompt, session_name, continue_session, no_session, session_dir
+        del (
+            initial_prompt,
+            session_name,
+            continue_session,
+            no_session,
+            exact_session_id,
+            session_dir,
+        )
         del provider_settings, no_context_files, tool_allowlist, tool_denylist
         del no_tools, no_builtin_tools, no_skills, no_prompt_templates, no_themes
         del skill_paths, prompt_template_paths, theme_paths
@@ -8018,6 +8145,7 @@ def test_default_tui_passes_startup_thinking_alias(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -8034,7 +8162,15 @@ def test_default_tui_passes_startup_thinking_alias(
         theme_paths: tuple[Path, ...],
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
-        del initial_prompt, session_name, continue_session, resume_picker, no_session, session_dir
+        del (
+            initial_prompt,
+            session_name,
+            continue_session,
+            resume_picker,
+            no_session,
+            exact_session_id,
+            session_dir,
+        )
         del provider_settings, no_context_files, tool_allowlist, tool_denylist
         del no_tools, no_builtin_tools, no_skills, no_prompt_templates, no_themes
         del skill_paths, prompt_template_paths, theme_paths
@@ -8068,6 +8204,7 @@ def test_default_tui_passes_system_prompt_inputs(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -8085,7 +8222,7 @@ def test_default_tui_passes_system_prompt_inputs(
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
         del thinking_level, initial_prompt, session_name, continue_session, resume_picker
-        del no_session, session_dir, provider_settings, no_context_files
+        del no_session, exact_session_id, session_dir, provider_settings, no_context_files
         del tool_allowlist, tool_denylist, no_tools, no_builtin_tools
         del no_skills, no_prompt_templates, no_themes
         del skill_paths, prompt_template_paths, theme_paths
@@ -8129,6 +8266,7 @@ def test_default_tui_passes_no_session_flag(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -8176,6 +8314,7 @@ def test_default_tui_passes_no_context_files_flag(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -8192,7 +8331,14 @@ def test_default_tui_passes_no_context_files_flag(
         theme_paths: tuple[Path, ...],
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
-        del initial_prompt, session_name, continue_session, no_session, session_dir
+        del (
+            initial_prompt,
+            session_name,
+            continue_session,
+            no_session,
+            exact_session_id,
+            session_dir,
+        )
         del provider_settings
         calls.append(no_context_files)
 
@@ -8224,6 +8370,7 @@ def test_default_tui_passes_project_trust_override(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -8241,7 +8388,7 @@ def test_default_tui_passes_project_trust_override(
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
         del thinking_level, custom_system_prompt, append_system_prompt, initial_prompt
-        del session_name, continue_session, resume_picker, no_session, session_dir
+        del session_name, continue_session, resume_picker, no_session, exact_session_id, session_dir
         del provider_settings, no_context_files, tool_allowlist, tool_denylist
         del no_tools, no_builtin_tools, no_skills, no_prompt_templates, no_themes
         del skill_paths, prompt_template_paths, theme_paths
@@ -8280,6 +8427,7 @@ def test_default_tui_offline_sets_compatible_environment(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -8297,7 +8445,7 @@ def test_default_tui_offline_sets_compatible_environment(
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
         del thinking_level, custom_system_prompt, append_system_prompt, initial_prompt
-        del session_name, continue_session, resume_picker, no_session, session_dir
+        del session_name, continue_session, resume_picker, no_session, exact_session_id, session_dir
         del provider_settings, default_project_trust, no_context_files
         del tool_allowlist, tool_denylist, no_tools, no_builtin_tools
         del no_skills, no_prompt_templates, no_themes
@@ -8339,6 +8487,7 @@ def test_default_tui_verbose_sets_startup_environment(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -8356,7 +8505,7 @@ def test_default_tui_verbose_sets_startup_environment(
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
         del thinking_level, custom_system_prompt, append_system_prompt, initial_prompt
-        del session_name, continue_session, resume_picker, no_session, session_dir
+        del session_name, continue_session, resume_picker, no_session, exact_session_id, session_dir
         del provider_settings, default_project_trust, no_context_files
         del tool_allowlist, tool_denylist, no_tools, no_builtin_tools
         del no_skills, no_prompt_templates, no_themes
@@ -8392,6 +8541,7 @@ def test_default_tui_api_key_sets_runtime_environment(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -8409,7 +8559,7 @@ def test_default_tui_api_key_sets_runtime_environment(
     ) -> None:
         del cwd, session_id, new_session, provider_name, auto_compact_token_threshold
         del thinking_level, custom_system_prompt, append_system_prompt, initial_prompt
-        del session_name, continue_session, resume_picker, no_session, session_dir
+        del session_name, continue_session, resume_picker, no_session, exact_session_id, session_dir
         del provider_settings, default_project_trust, no_context_files
         del tool_allowlist, tool_denylist, no_tools, no_builtin_tools
         del no_skills, no_prompt_templates, no_themes
@@ -8454,6 +8604,7 @@ def test_default_tui_passes_tool_selection_flags(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -8470,7 +8621,14 @@ def test_default_tui_passes_tool_selection_flags(
         theme_paths: tuple[Path, ...],
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
-        del initial_prompt, session_name, continue_session, no_session, session_dir
+        del (
+            initial_prompt,
+            session_name,
+            continue_session,
+            no_session,
+            exact_session_id,
+            session_dir,
+        )
         del provider_settings, no_context_files
         calls.append(
             (
@@ -8527,6 +8685,7 @@ def test_default_tui_passes_explicit_resource_paths(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -8543,7 +8702,14 @@ def test_default_tui_passes_explicit_resource_paths(
         theme_paths: tuple[Path, ...],
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
-        del initial_prompt, session_name, continue_session, no_session, session_dir
+        del (
+            initial_prompt,
+            session_name,
+            continue_session,
+            no_session,
+            exact_session_id,
+            session_dir,
+        )
         del provider_settings, no_context_files, tool_allowlist, tool_denylist
         del no_tools, no_builtin_tools, no_skills, no_prompt_templates, no_themes
         calls.append((skill_paths, prompt_template_paths, theme_paths))
@@ -8716,6 +8882,7 @@ def test_default_tui_passes_transient_scoped_model_patterns(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -8732,7 +8899,14 @@ def test_default_tui_passes_transient_scoped_model_patterns(
         theme_paths: tuple[Path, ...],
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
-        del initial_prompt, session_name, continue_session, no_session, session_dir
+        del (
+            initial_prompt,
+            session_name,
+            continue_session,
+            no_session,
+            exact_session_id,
+            session_dir,
+        )
         calls.append(provider_settings)
 
     monkeypatch.setattr(cli, "load_provider_settings", lambda: settings)
@@ -8785,6 +8959,7 @@ def test_default_tui_models_pattern_respects_provider_filter(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -8801,7 +8976,14 @@ def test_default_tui_models_pattern_respects_provider_filter(
         theme_paths: tuple[Path, ...],
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
-        del initial_prompt, session_name, continue_session, no_session, session_dir
+        del (
+            initial_prompt,
+            session_name,
+            continue_session,
+            no_session,
+            exact_session_id,
+            session_dir,
+        )
         calls.append(provider_settings)
 
     monkeypatch.setattr(cli, "load_provider_settings", lambda: settings)
@@ -8874,6 +9056,7 @@ def test_default_tui_forks_session_before_starting_tui(
         continue_session: bool,
         resume_picker: bool,
         no_session: bool,
+        exact_session_id: str | None,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         default_project_trust: DefaultProjectTrust | None,
@@ -8890,7 +9073,14 @@ def test_default_tui_forks_session_before_starting_tui(
         theme_paths: tuple[Path, ...],
     ) -> str | None:
         del model, cwd, new_session, provider_name, auto_compact_token_threshold
-        del initial_prompt, session_name, continue_session, no_session, session_dir
+        del (
+            initial_prompt,
+            session_name,
+            continue_session,
+            no_session,
+            exact_session_id,
+            session_dir,
+        )
         del provider_settings
         calls.append(session_id)
         return session_id
@@ -8918,6 +9108,159 @@ def test_default_tui_forks_session_before_starting_tui(
     assert forked.title == "Forked session"
     copied_entries = anyio.run(JsonlSessionStorage(forked.path).read_all)
     assert [entry.id for entry in copied_entries] == ["info", "model", "root"]
+
+
+def test_default_tui_forwards_exact_session_id(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[tuple[str | None, str | None]] = []
+
+    async def fake_run_openai_tui(
+        model: str | None,
+        cwd: Path,
+        session_id: str | None,
+        new_session: bool,
+        provider_name: str | None,
+        auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
+        initial_prompt: str | None,
+        session_name: str | None,
+        continue_session: bool,
+        resume_picker: bool,
+        no_session: bool,
+        exact_session_id: str | None,
+        session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
+        no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
+        no_skills: bool,
+        no_prompt_templates: bool,
+        no_themes: bool,
+        skill_paths: tuple[Path, ...],
+        prompt_template_paths: tuple[Path, ...],
+        theme_paths: tuple[Path, ...],
+    ) -> str | None:
+        del model, cwd, new_session, provider_name, auto_compact_token_threshold
+        del thinking_level, custom_system_prompt, append_system_prompt, initial_prompt
+        del session_name, continue_session, resume_picker, no_session, session_dir
+        del provider_settings, default_project_trust, no_context_files, tool_allowlist
+        del tool_denylist, no_tools, no_builtin_tools, no_skills, no_prompt_templates
+        del no_themes, skill_paths, prompt_template_paths, theme_paths
+        calls.append((session_id, exact_session_id))
+        return exact_session_id
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
+
+    result = CliRunner().invoke(app, ["--session-id", "abc-123_def.456"])
+
+    assert result.exit_code == 0
+    assert calls == [(None, "abc-123_def.456")]
+    assert "tau --session abc-123_def.456" in result.output
+
+
+@pytest.mark.parametrize(
+    ("args", "message"),
+    [
+        (["--session-id", "-bad"], "Session id must be non-empty"),
+        (
+            ["--session-id", "exact", "--session", "other"],
+            "--session-id and --session cannot be used together",
+        ),
+        (
+            ["--session-id", "exact", "--continue"],
+            "--session-id and --continue cannot be used together",
+        ),
+        (
+            ["--session-id", "exact", "--resume"],
+            "--session-id and --resume cannot be used together",
+        ),
+    ],
+)
+def test_default_tui_rejects_invalid_session_id_flags(args: list[str], message: str) -> None:
+    result = CliRunner().invoke(app, args)
+
+    assert result.exit_code != 0
+    assert message in result.output
+
+
+def test_default_tui_fork_uses_exact_session_id(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    session_dir = tmp_path / "sessions"
+    manager = SessionManager(TauPaths(session_root=session_dir))
+    source = manager.create_session(cwd=tmp_path, model="fake", session_id="source-session")
+    anyio.run(
+        JsonlSessionStorage(source.path).append,
+        MessageEntry(id="root", message=UserMessage(content="Source prompt")),
+    )
+    calls: list[str | None] = []
+
+    async def fake_run_openai_tui(
+        model: str | None,
+        cwd: Path,
+        session_id: str | None,
+        new_session: bool,
+        provider_name: str | None,
+        auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
+        initial_prompt: str | None,
+        session_name: str | None,
+        continue_session: bool,
+        resume_picker: bool,
+        no_session: bool,
+        exact_session_id: str | None,
+        session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
+        no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
+        no_skills: bool,
+        no_prompt_templates: bool,
+        no_themes: bool,
+        skill_paths: tuple[Path, ...],
+        prompt_template_paths: tuple[Path, ...],
+        theme_paths: tuple[Path, ...],
+    ) -> str | None:
+        del model, cwd, new_session, provider_name, auto_compact_token_threshold
+        del thinking_level, custom_system_prompt, append_system_prompt, initial_prompt
+        del session_name, continue_session, resume_picker, no_session, exact_session_id
+        del session_dir, provider_settings, default_project_trust, no_context_files
+        del tool_allowlist, tool_denylist, no_tools, no_builtin_tools, no_skills
+        del no_prompt_templates, no_themes, skill_paths, prompt_template_paths, theme_paths
+        calls.append(session_id)
+        return session_id
+
+    monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--session-dir",
+            str(session_dir),
+            "--fork",
+            "source",
+            "--session-id",
+            "fork-target",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert calls == ["fork-target"]
+    forked = manager.get_session("fork-target")
+    assert forked is not None
+    assert forked.parent_session_id == source.id
 
 
 def test_resume_picker_rejects_direct_session_combination(tmp_path: Path) -> None:

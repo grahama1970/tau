@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from tau_coding.paths import TauPaths
 from tau_coding.session_manager import SessionManager
 
@@ -28,6 +30,21 @@ def test_session_manager_creates_and_lists_sessions(tmp_path: Path) -> None:
     assert manager.get_session(record.id) == record
     assert manager.list_sessions() == [record]
     assert manager.list_sessions(cwd) == [record]
+
+
+def test_session_manager_rejects_invalid_custom_session_ids(tmp_path: Path) -> None:
+    manager = SessionManager(TauPaths(home=tmp_path / ".tau", agents_home=tmp_path / ".agents"))
+
+    for session_id in ("", "-bad", "bad-", "_bad", "bad_", ".bad", "bad.", "bad/id"):
+        with pytest.raises(ValueError, match="Session id must be non-empty"):
+            manager.create_session(cwd=tmp_path, model="fake", session_id=session_id)
+
+    record = manager.create_session(
+        cwd=tmp_path,
+        model="fake",
+        session_id="abc-123_def.456",
+    )
+    assert record.id == "abc-123_def.456"
 
 
 def test_session_manager_persists_parent_session_lineage(tmp_path: Path) -> None:
