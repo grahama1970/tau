@@ -2561,6 +2561,7 @@ SettingsPickerKey = Literal[
     "show_images",
     "show_hardware_cursor",
     "show_terminal_progress",
+    "anthropic_extra_usage_warning",
     "theme",
     "turn_notification",
     "auto_compact",
@@ -8054,6 +8055,8 @@ class TauTuiApp(App[None]):
         saved_api_key: str | None = None,
     ) -> None:
         """Warn once when Anthropic subscription-style auth is the active auth path."""
+        if not self.tui_settings.anthropic_extra_usage_warning:
+            return
         if self._anthropic_subscription_warning_shown:
             return
         provider_name = getattr(self.session, "provider_name", None)
@@ -9776,6 +9779,12 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             description="Emit terminal progress indicators while Tau is running",
         ),
         SettingsPickerItem(
+            key="anthropic_extra_usage_warning",
+            label="Anthropic extra usage",
+            value="on" if settings.anthropic_extra_usage_warning else "off",
+            description="Warn when Anthropic subscription auth may use paid extra usage",
+        ),
+        SettingsPickerItem(
             key="auto_copy_selection",
             label="Auto-copy selection",
             value="on" if settings.auto_copy_selection else "off",
@@ -10050,6 +10059,11 @@ def _next_tui_settings(
         )
     if key == "show_terminal_progress":
         return replace(settings, show_terminal_progress=not settings.show_terminal_progress)
+    if key == "anthropic_extra_usage_warning":
+        return replace(
+            settings,
+            anthropic_extra_usage_warning=not settings.anthropic_extra_usage_warning,
+        )
     if key == "clear_on_shrink":
         return replace(settings, clear_on_shrink=not settings.clear_on_shrink)
     if key == "quiet_startup":

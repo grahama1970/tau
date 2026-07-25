@@ -955,6 +955,7 @@ class TuiSettings:
     clear_on_shrink: bool = field(default_factory=_default_clear_on_shrink)
     show_hardware_cursor: bool = True
     show_terminal_progress: bool = False
+    anthropic_extra_usage_warning: bool = True
     quiet_startup: bool = False
     collapse_changelog: bool = False
     turn_notification: TurnNotificationMode = "desktop"
@@ -983,6 +984,7 @@ class TuiSettings:
             "image_width_cells": self.image_width_cells,
             "show_hardware_cursor": self.show_hardware_cursor,
             "show_terminal_progress": self.show_terminal_progress,
+            "anthropic_extra_usage_warning": self.anthropic_extra_usage_warning,
             "quiet_startup": self.quiet_startup,
             "collapse_changelog": self.collapse_changelog,
             "turn_notification": self.turn_notification,
@@ -1154,6 +1156,18 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
                 ),
             ),
             "show_terminal_progress",
+        ),
+        anthropic_extra_usage_warning=_bool_setting(
+            data.get(
+                "anthropic_extra_usage_warning",
+                data.get(
+                    "anthropicExtraUsageWarning",
+                    data.get("warnings", {}).get("anthropicExtraUsage", True)
+                    if isinstance(data.get("warnings", {}), dict)
+                    else True,
+                ),
+            ),
+            "anthropic_extra_usage_warning",
         ),
         quiet_startup=_bool_setting(
             data.get("quiet_startup", data.get("quietStartup", False)),

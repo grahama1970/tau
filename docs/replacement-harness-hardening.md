@@ -356,6 +356,8 @@ Acceptance:
   auth source is subscription-style.
 - `/login anthropic` warns immediately when the saved key starts with
   `sk-ant-oat`.
+- `/settings` exposes `Anthropic extra usage` so the warning can be disabled
+  without disabling all startup notifications.
 - The warning follows Tau's Anthropic auth precedence: `TAU_RUNTIME_API_KEY`,
   stored credential, `ANTHROPIC_AUTH_TOKEN`, then `ANTHROPIC_API_KEY`.
 
