@@ -897,14 +897,15 @@ def _transcript_plain_body_text(
         max_visual_lines=TOOL_RESULT_VISUAL_PREVIEW_LINES,
         style=body_style,
     )
-    if item.tool_image is not None:
+    tool_images = _tool_images_for_item(item)
+    if tool_images:
         return Group(
             invocation_text,
             Text(""),
             rendered_result,
             Text(""),
-            _render_tool_image(
-                item.tool_image,
+            *_render_tool_images(
+                tool_images,
                 show_images=show_images,
                 image_width_cells=image_width_cells,
             ),
@@ -1257,19 +1258,48 @@ def _render_tool_chat_body(
             max_visual_lines=TOOL_RESULT_VISUAL_PREVIEW_LINES,
             style=body_style,
         )
-    if item.tool_image is not None:
+    tool_images = _tool_images_for_item(item)
+    if tool_images:
         return Group(
             text,
             Text(""),
             result_body,
             Text(""),
-            _render_tool_image(
-                item.tool_image,
+            *_render_tool_images(
+                tool_images,
                 show_images=show_images,
                 image_width_cells=image_width_cells,
             ),
         )
     return Group(text, Text(""), result_body)
+
+
+def _tool_images_for_item(item: ChatItem) -> tuple[ToolImagePayload, ...]:
+    if item.tool_images:
+        return item.tool_images
+    if item.tool_image is not None:
+        return (item.tool_image,)
+    return ()
+
+
+def _render_tool_images(
+    payloads: Sequence[ToolImagePayload],
+    *,
+    show_images: bool,
+    image_width_cells: int | None,
+) -> tuple[RenderableType, ...]:
+    renderables: list[RenderableType] = []
+    for index, payload in enumerate(payloads):
+        if index > 0:
+            renderables.append(Text(""))
+        renderables.append(
+            _render_tool_image(
+                payload,
+                show_images=show_images,
+                image_width_cells=image_width_cells,
+            )
+        )
+    return tuple(renderables)
 
 
 def _render_tool_image(

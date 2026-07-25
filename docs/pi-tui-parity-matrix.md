@@ -52,10 +52,10 @@ capabilities.
 | Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `PARTIAL` | Tau backs most daily settings, exposes the external editor command, and now shows visible no-match search rows; do not add dead Pi toggles without backing behavior. |
 | Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist, resource rows expose scope/state/action, resource toggles update in-place, and no-match searches show visible empty rows; package/write-scope editing still missing. |
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login; provider picker now shows visible navigation help, empty filter states, and fail-closed empty-row selection. |
-| Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks including simple component-like render objects, summarizes permission/approval receipts, surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data, and now shows input-bar terminal command exit codes; full JS Pi component runtime embedding remains out of scope. |
+| Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks including simple component-like render objects, summarizes permission/approval receipts, surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data, preserves multiple Pi-style image blocks from one tool result, and now shows input-bar terminal command exit codes; full JS Pi component runtime embedding remains out of scope. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider, prompt chrome, and retry countdown | `PARTIAL` | Footer extensibility exists; compact first-screen readiness exposes auth/memory/DAG/SciLLM/queue when the sidebar is hidden, and prompt chrome now names active compaction/branch/reload/share/terminal operations from real worker state. |
 | Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool/custom-entry renderers in live/restored transcripts | `MUST/PARTIAL` | Selector now advertises Pi-style `J/K` navigation and supports tool-output toggle while open; editor now uses Pi-style Enter submit and Shift+Enter newline; custom entries now re-render on tool-output expansion and accept simple component-like render objects; preserve current Tau extension API; full JS Pi component runtime embedding remains out of scope. |
-| Images | `show-images-selector`, image component | Tau image visibility setting and image payload rendering | `MATCHED` | Retain current terminal-safe image controls. |
+| Images | `show-images-selector`, image component | Tau image visibility setting and image payload rendering | `MATCHED` | Tau has terminal-safe image controls, Kitty/iTerm2/fallback rendering, and multiple image payload rendering for figure/graph tool results. |
 | Workflow/DAG progress | None in Pi | `WorkflowPickerScreen`, DAG/workflow receipts | `TAU-ONLY/MUST` | This is Tau's differentiator and must remain first-class in the TUI. |
 
 ## Tomorrow-Usability Ranking
@@ -97,6 +97,38 @@ Current candidates:
 - `Cache-miss notices`: defer until Tau assistant/session entries carry the
   provider, model, and timestamp fields needed for Pi's cache-miss algorithm.
   Do not add a fake setting or heuristic notice from aggregate stats.
+
+Latest slice evidence:
+
+- Source inspected: Pi `tool-execution.ts` image block handling and
+  `terminal-image.ts`; Tau `ToolImagePayload`, `TuiState.record_tool_result`,
+  `TerminalImage`, and transcript renderers.
+- Destination preserved: existing single-image `ChatItem.tool_image`
+  compatibility, Tau Kitty/iTerm2/fallback terminal image renderer, tool-result
+  expansion gate, and TUI image visibility/width settings.
+- Changed: Tau now stores `ChatItem.tool_images` as a tuple and extracts
+  multiple Pi-style image blocks from `AgentToolResult.data.images` or
+  `AgentToolResult.data.content` using `data`/`image_base64` plus
+  `mimeType`/`mime_type`. Expanded tool results render every image with
+  spacing; collapsed tool rows still hide image payloads.
+- Mocked: no.
+- Live: local Rich/Textual transcript render path only; no provider-live call.
+- Proof:
+  `uv run pytest tests/test_tui_app.py tests/test_tui_terminal_image.py -q -k
+  'image_payload or terminal_image or multiple_pi_style_image_blocks'`
+  reported `19 passed, 447 deselected`; `uv run ruff check
+  src/tau_coding/tui/state.py src/tau_coding/tui/widgets.py
+  tests/test_tui_app.py` reported all checks passed; `uv run python -m
+  py_compile src/tau_coding/tui/state.py src/tau_coding/tui/widgets.py
+  tests/test_tui_app.py` exited with no output.
+- Render proof:
+  `/tmp/tau-pi-tui-multi-image-proof-1785016174/proof.json` with screenshots
+  `/tmp/tau-pi-tui-multi-image-proof-1785016174/tau-tool-multi-image-collapsed.svg`
+  and
+  `/tmp/tau-pi-tui-multi-image-proof-1785016174/tau-tool-multi-image-expanded.svg`.
+- Remaining gap: richer artifact-pane UX for generated graphs/figures remains
+  open; this slice covers multiple terminal transcript images, not a browser or
+  React artifact mirror.
 
 Latest slice evidence:
 

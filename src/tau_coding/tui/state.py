@@ -1,5 +1,7 @@
 """Display state for Tau's Textual TUI."""
 
+import base64
+import binascii
 import inspect
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -259,6 +261,7 @@ class ChatItem:
     tool_result_text: str | None = None
     tool_result_renderer: Callable[..., Any] | None = None
     tool_image: ToolImagePayload | None = None
+    tool_images: tuple[ToolImagePayload, ...] = ()
     always_show_tool_result: bool = False
     custom_entry: CustomEntry | None = None
     custom_entry_renderer: Callable[..., Any] | None = None
@@ -292,6 +295,7 @@ class TuiState:
         tool_result_text: str | None = None,
         tool_result_renderer: Callable[..., Any] | None = None,
         tool_image: ToolImagePayload | None = None,
+        tool_images: Sequence[ToolImagePayload] = (),
         always_show_tool_result: bool = False,
         custom_entry: CustomEntry | None = None,
         custom_entry_renderer: Callable[..., Any] | None = None,
@@ -306,6 +310,7 @@ class TuiState:
                 tool_result_text=tool_result_text,
                 tool_result_renderer=tool_result_renderer,
                 tool_image=tool_image,
+                tool_images=tuple(tool_images),
                 always_show_tool_result=always_show_tool_result,
                 custom_entry=custom_entry,
                 custom_entry_renderer=custom_entry_renderer,
@@ -448,7 +453,8 @@ class TuiState:
         renderer: Any | None = None,
     ) -> None:
         """Attach a tool result, using an optional Pi-style custom renderer."""
-        image = _tool_image_payload(result)
+        images = _tool_image_payloads(result)
+        image = images[0] if images else None
         for item in reversed(self.items):
             if item.role in {"tool", "skill"} and item.tool_call_id == result.tool_call_id:
                 result_text = format_tool_result_block(
@@ -462,6 +468,7 @@ class TuiState:
                 )
                 item.tool_result_text = result_text
                 item.tool_image = image
+                item.tool_images = images
                 return
         result_text = format_tool_result_block(
             name=result.name,
@@ -478,6 +485,7 @@ class TuiState:
             tool_call_id=result.tool_call_id,
             tool_result_text=result_text,
             tool_image=image,
+            tool_images=images,
         )
 
     def toggle_tool_results(self) -> bool:
@@ -1150,15 +1158,56 @@ def _hidden_count_suffix(items: Sequence[object], visible_count: int) -> str:
     return f" (+{hidden} more)" if hidden > 0 else ""
 
 
-def _tool_image_payload(result: AgentToolResult) -> ToolImagePayload | None:
-    """Return image metadata for tool results that carry a supported image."""
+def _tool_image_payloads(result: AgentToolResult) -> tuple[ToolImagePayload, ...]:
+    """Return image metadata for tool results that carry supported images."""
     data = result.data
     if not result.ok or not isinstance(data, dict):
-        return None
+        return ()
+    images: list[ToolImagePayload] = []
+    flat_image = _tool_image_payload_from_mapping(data)
+    if flat_image is not None:
+        images.append(flat_image)
+    for key in ("images", "content"):
+        blocks = data.get(key)
+        if not isinstance(blocks, list):
+            continue
+        for index, block in enumerate(blocks):
+            if not isinstance(block, dict):
+                continue
+            block_type = block.get("type")
+            if block_type not in {None, "image"}:
+                continue
+            image = _tool_image_payload_from_mapping(block, index=index)
+            if image is not None:
+                images.append(image)
+    return tuple(images)
+
+
+def _tool_image_payload(result: AgentToolResult) -> ToolImagePayload | None:
+    """Return the first image payload for compatibility with older callers."""
+    images = _tool_image_payloads(result)
+    return images[0] if images else None
+
+
+def _tool_image_payload_from_mapping(
+    data: Mapping[str, JSONValue],
+    *,
+    index: int | None = None,
+) -> ToolImagePayload | None:
     image_base64 = data.get("image_base64")
+    if not isinstance(image_base64, str):
+        image_base64 = data.get("data")
     mime_type = data.get("mime_type")
+    if not isinstance(mime_type, str):
+        mime_type = data.get("mimeType")
     path = data.get("path")
+    if not isinstance(path, str):
+        path = data.get("filename")
+    if not isinstance(path, str):
+        path = data.get("name")
     size = data.get("bytes")
+    if not isinstance(size, int) and isinstance(image_base64, str):
+        size = _decoded_base64_size(image_base64)
     if (
         isinstance(image_base64, str)
         and isinstance(mime_type, str)
@@ -1171,7 +1220,27 @@ def _tool_image_payload(result: AgentToolResult) -> ToolImagePayload | None:
             bytes=size,
             image_base64=image_base64,
         )
+    if (
+        isinstance(image_base64, str)
+        and isinstance(mime_type, str)
+        and isinstance(size, int)
+        and index is not None
+    ):
+        suffix = mime_type.removeprefix("image/") or "image"
+        return ToolImagePayload(
+            path=f"image-{index + 1}.{suffix}",
+            mime_type=mime_type,
+            bytes=size,
+            image_base64=image_base64,
+        )
     return None
+
+
+def _decoded_base64_size(value: str) -> int | None:
+    try:
+        return len(base64.b64decode(value, validate=True))
+    except (binascii.Error, ValueError):
+        return None
 
 
 def format_terminal_command_result_block(

@@ -1212,6 +1212,66 @@ def test_record_tool_result_preserves_image_payload_for_tui_rendering() -> None:
         bytes=68,
         image_base64=PNG_1X1_BASE64,
     )
+    assert state.items[-1].tool_images == (
+        ToolImagePayload(
+            path="/workspace/image.png",
+            mime_type="image/png",
+            bytes=68,
+            image_base64=PNG_1X1_BASE64,
+        ),
+    )
+
+
+def test_record_tool_result_preserves_multiple_pi_style_image_blocks() -> None:
+    state = TuiState()
+    state.add_tool_call(ToolCall(id="call-1", name="figure", arguments={}))
+
+    state.record_tool_result(
+        AgentToolResult(
+            tool_call_id="call-1",
+            name="figure",
+            ok=True,
+            content="Rendered two figures",
+            data={
+                "content": [
+                    {
+                        "type": "image",
+                        "data": PNG_1X1_BASE64,
+                        "mimeType": "image/png",
+                        "filename": "plot-a.png",
+                    },
+                    {
+                        "type": "image",
+                        "image_base64": PNG_1X1_BASE64,
+                        "mime_type": "image/png",
+                        "path": "/workspace/plot-b.png",
+                        "bytes": 68,
+                    },
+                ],
+            },
+        )
+    )
+
+    assert state.items[-1].tool_image == ToolImagePayload(
+        path="plot-a.png",
+        mime_type="image/png",
+        bytes=68,
+        image_base64=PNG_1X1_BASE64,
+    )
+    assert state.items[-1].tool_images == (
+        ToolImagePayload(
+            path="plot-a.png",
+            mime_type="image/png",
+            bytes=68,
+            image_base64=PNG_1X1_BASE64,
+        ),
+        ToolImagePayload(
+            path="/workspace/plot-b.png",
+            mime_type="image/png",
+            bytes=68,
+            image_base64=PNG_1X1_BASE64,
+        ),
+    )
 
 
 def test_tool_image_payload_is_hidden_until_tool_results_expand() -> None:
@@ -1244,6 +1304,42 @@ def test_tool_image_payload_is_hidden_until_tool_results_expand() -> None:
     assert "[image/png]" in expanded
     assert "image.png" in expanded
     assert "1x1" in expanded
+
+
+def test_tool_image_payload_renders_multiple_images_when_expanded() -> None:
+    reset_capabilities_cache()
+    item = ChatItem(
+        role="tool",
+        text="→ figure",
+        tool_result_text="✓ figure\nRendered two figures",
+        tool_images=(
+            ToolImagePayload(
+                path="/workspace/plot-a.png",
+                mime_type="image/png",
+                bytes=68,
+                image_base64=PNG_1X1_BASE64,
+            ),
+            ToolImagePayload(
+                path="/workspace/plot-b.png",
+                mime_type="image/png",
+                bytes=68,
+                image_base64=PNG_1X1_BASE64,
+            ),
+        ),
+    )
+
+    collapsed_console = Console(record=True, width=80)
+    collapsed_console.print(render_chat_item(item, show_tool_results=False))
+    collapsed = collapsed_console.export_text()
+
+    expanded_console = Console(record=True, width=80)
+    expanded_console.print(render_chat_item(item, show_tool_results=True))
+    expanded = expanded_console.export_text()
+
+    assert "plot-a.png" not in collapsed
+    assert "plot-b.png" not in collapsed
+    assert "plot-a.png" in expanded
+    assert "plot-b.png" in expanded
 
 
 def test_tool_image_payload_uses_kitty_sequence_when_terminal_supports_images() -> None:
