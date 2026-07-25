@@ -5897,6 +5897,15 @@ class TauTuiApp(App[None]):
         worker = self._terminal_worker
         return worker is not None and not worker.is_finished and not worker.is_cancelled
 
+    def _is_tui_activity_active(self) -> bool:
+        """Return whether any visible TUI operation should show active progress."""
+        return (
+            self.state.running
+            or self._is_compaction_active()
+            or self._is_branch_active()
+            or self._is_terminal_command_active()
+        )
+
     def _is_agent_or_queue_active(self, *, include_branch: bool = True) -> bool:
         """Return whether compaction would race an active or queued agent turn."""
         self._sync_queue_state()
@@ -5907,6 +5916,7 @@ class TauTuiApp(App[None]):
             self.state.running
             or is_session_running
             or is_worker_active
+            or self._is_compaction_active()
             or (include_branch and self._is_branch_active())
             or self.state.queued_message_count > 0
         )
@@ -7676,7 +7686,8 @@ class TauTuiApp(App[None]):
         self.adapter.apply(QueueUpdateEvent(steering=steering, follow_up=follow_up))
 
     def _sync_activity_indicator(self) -> None:
-        if self.state.running:
+        active = self._is_tui_activity_active()
+        if active:
             if self._activity_timer is None:
                 self._activity_timer = self.set_interval(
                     ACTIVITY_TICK_SECONDS,
@@ -7697,7 +7708,7 @@ class TauTuiApp(App[None]):
         self._sync_terminal_progress_indicator()
 
     def _sync_terminal_progress_indicator(self) -> None:
-        active = self.state.running and self.tui_settings.show_terminal_progress
+        active = self._is_tui_activity_active() and self.tui_settings.show_terminal_progress
         if active == self._terminal_progress_active:
             return
         self._terminal_progress_active = active
@@ -7715,7 +7726,7 @@ class TauTuiApp(App[None]):
             flush()
 
     def _tick_activity(self) -> None:
-        if not self.state.running:
+        if not self._is_tui_activity_active():
             return
         self._activity_frame += 1
         self._apply_activity_indicator()
@@ -7725,7 +7736,7 @@ class TauTuiApp(App[None]):
         self._terminal_title.update(
             getattr(self.session, "session_title", None),
             cwd=getattr(self.session, "cwd", None),
-            running=self.state.running,
+            running=self._is_tui_activity_active(),
             frame=self._activity_frame,
         )
 
@@ -7741,7 +7752,7 @@ class TauTuiApp(App[None]):
             _activity_prompt_border_color(
                 theme,
                 frame=self._activity_frame,
-                running=self.state.running,
+                running=self._is_tui_activity_active(),
                 shell_mode=_is_terminal_command_prompt(prompt.text),
                 thinking_level=getattr(self.session, "thinking_level", None),
             ),
@@ -7750,7 +7761,7 @@ class TauTuiApp(App[None]):
             _render_activity_indicator(
                 theme,
                 frame=self._activity_frame,
-                running=self.state.running,
+                running=self._is_tui_activity_active(),
                 shell_mode=_is_terminal_command_prompt(prompt.text),
             )
         )
