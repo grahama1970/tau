@@ -2735,12 +2735,12 @@ class SettingsPickerScreen(ModalScreen[None]):
 
     def action_cursor_up(self) -> None:
         """Move to the previous setting."""
-        self.query_one("#settings-picker-list", ListView).action_cursor_up()
+        self._move(-1)
         self._refresh_help_text()
 
     def action_cursor_down(self) -> None:
         """Move to the next setting."""
-        self.query_one("#settings-picker-list", ListView).action_cursor_down()
+        self._move(1)
         self._refresh_help_text()
 
     def action_select_cursor(self) -> None:
@@ -2770,6 +2770,14 @@ class SettingsPickerScreen(ModalScreen[None]):
         )
         self.apply_settings(self.settings)
         self._refresh_settings_list(index)
+
+    def _move(self, direction: Literal[-1, 1]) -> None:
+        settings_list = self.query_one("#settings-picker-list", ListView)
+        if not self.filtered_items:
+            settings_list.index = None
+            return
+        current_index = settings_list.index if settings_list.index is not None else 0
+        settings_list.index = (current_index + direction) % len(self.filtered_items)
 
     def _refresh_settings_list(self, index: int) -> None:
         self.filtered_items = _filter_settings_picker_items(

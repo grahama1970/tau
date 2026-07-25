@@ -6413,6 +6413,29 @@ async def test_tui_app_settings_picker_search_matches_descriptions() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_settings_picker_wraps_navigation_like_pi() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/settings"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, SettingsPickerScreen)
+        settings_list = app.screen.query_one("#settings-picker-list", ListView)
+        assert settings_list.index == 0
+
+        await pilot.press("up")
+        await pilot.pause()
+        assert settings_list.index == len(app.screen.filtered_items) - 1
+
+        await pilot.press("down")
+        await pilot.pause()
+        assert settings_list.index == 0
+
+
+@pytest.mark.anyio
 async def test_tui_app_settings_picker_uses_configured_pi_select_keybindings(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
