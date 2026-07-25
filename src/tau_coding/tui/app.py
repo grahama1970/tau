@@ -10883,7 +10883,8 @@ def _resource_context_lines(
     if not context_files:
         return ["No context files"]
     return [
-        _display_resource_path(Path(context_file.path), cwd=cwd) for context_file in context_files
+        _format_scoped_resource_path(Path(context_file.path), cwd=cwd)
+        for context_file in context_files
     ]
 
 
@@ -10897,7 +10898,7 @@ def _resource_prompt_lines(prompt_templates: Sequence[Any], *, cwd: Path) -> lis
         if path is None:
             lines.append(f"/{name}")
         else:
-            lines.append(f"/{name} ({_display_resource_path(Path(path), cwd=cwd)})")
+            lines.append(f"/{name} ({_format_scoped_resource_path(Path(path), cwd=cwd)})")
     return lines
 
 
@@ -10913,9 +10914,11 @@ def _resource_name_path_lines(
     for resource in resources:
         name = getattr(resource, "name", "unknown")
         path = getattr(resource, "path", None)
-        lines.append(
-            name if path is None else f"{name} ({_display_resource_path(Path(path), cwd=cwd)})"
-        )
+        if path is None:
+            lines.append(name)
+        else:
+            scoped_path = _format_scoped_resource_path(Path(path), cwd=cwd)
+            lines.append(f"{name} ({scoped_path})")
     return lines
 
 
@@ -10937,9 +10940,30 @@ def _resource_diagnostic_lines(diagnostics: Sequence[Any], *, cwd: Path) -> list
         else:
             lines.append(
                 f"{' '.join(label_parts)}: {message} "
-                f"({_display_resource_path(Path(path), cwd=cwd)})"
+                f"({_format_scoped_resource_path(Path(path), cwd=cwd)})"
             )
     return lines
+
+
+def _format_scoped_resource_path(path: Path, *, cwd: Path) -> str:
+    return f"{_resource_scope_label(path, cwd=cwd)} {_display_resource_path(path, cwd=cwd)}"
+
+
+def _resource_scope_label(path: Path, *, cwd: Path) -> str:
+    resolved = path.expanduser()
+    if resolved.is_absolute():
+        with suppress(ValueError):
+            resolved.resolve().relative_to(cwd.resolve())
+            return "[project]"
+        home = Path.home().resolve()
+        with suppress(ValueError):
+            home_relative = resolved.resolve().relative_to(home)
+            if home_relative.parts[:1] == (".agents",):
+                return "[user .agents]"
+            if home_relative.parts[:1] == (".tau",):
+                return "[user]"
+        return "[path]"
+    return "[project]"
 
 
 def _display_resource_path(path: Path, *, cwd: Path) -> str:

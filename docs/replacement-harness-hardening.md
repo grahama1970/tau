@@ -251,6 +251,24 @@ Acceptance:
 - Tau does not claim WebSocket or websocket-cached transport support until a
   provider adapter implements those transports.
 
+### Slice 11: Resource Provenance Labels
+
+Pi's config/resource surfaces distinguish project, user, and explicit path
+resources. Tau already preserves resource paths, so expose derived provenance
+labels in `/resources` instead of requiring operators to infer scope from raw
+paths.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- `/resources` labels context files, skills, prompts, extensions, and resource
+  diagnostics with `[project]`, `[user]`, `[user .agents]`, or `[path]` when a
+  path is available.
+- Resource provenance is derived from existing paths only; Tau does not invent
+  package provenance for resources that were not loaded through a package
+  manager.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.
