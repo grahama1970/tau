@@ -255,8 +255,51 @@ class ExtensionCommandContext:
 class ExtensionCommandUi:
     """Pi-like UI helper facade for extension command handlers."""
 
-    def __init__(self, context: ExtensionCommandContext) -> None:
+    def __init__(self, context: ExtensionCommandContext | ExtensionShortcutContext) -> None:
         self._context = context
+
+    async def select(self, title: str, options: Sequence[Any]) -> str | None:
+        """Ask the interactive UI to select one option, or return None on cancel."""
+        normalized_options = tuple(str(option) for option in options)
+        if not normalized_options:
+            raise ValueError("select requires at least one option")
+        result = await self._request_ui(
+            "select",
+            title=str(title),
+            options=normalized_options,
+        )
+        return None if result is None else str(result)
+
+    async def confirm(self, title: str, message: str = "") -> bool:
+        """Ask the interactive UI for a yes/no confirmation."""
+        result = await self._request_ui(
+            "confirm",
+            title=str(title),
+            message=str(message),
+        )
+        return bool(result)
+
+    async def input(
+        self,
+        title: str,
+        placeholder: str = "",
+        *,
+        prefill: str = "",
+    ) -> str | None:
+        """Ask the interactive UI for one line of text, or return None on cancel."""
+        result = await self._request_ui(
+            "input",
+            title=str(title),
+            placeholder=str(placeholder),
+            prefill=str(prefill),
+        )
+        return None if result is None else str(result)
+
+    async def _request_ui(self, method: str, **payload: Any) -> Any:
+        request = getattr(self._context.session, "request_extension_ui", None)
+        if not callable(request):
+            raise RuntimeError("active session does not support extension UI requests")
+        return await request(method=method, extension_name=self._context.extension_name, **payload)
 
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the command returns."""

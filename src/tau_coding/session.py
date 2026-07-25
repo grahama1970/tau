@@ -13,7 +13,7 @@ from collections.abc import AsyncIterator, Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
 from time import monotonic
-from typing import Final, Literal, cast
+from typing import Any, Final, Literal, cast
 
 from tau_agent import (
     AgentEvent,
@@ -317,6 +317,7 @@ class CodingSession:
         self._context_files = context_files
         self._extensions = extensions
         self._runtime_extension_tool_sources: dict[str, str] = {}
+        self._extension_ui_handler: Callable[..., object] | None = None
         self._resource_diagnostics = resource_diagnostics
         self._base_command_registry = (
             base_command_registry.copy()
@@ -1634,6 +1635,44 @@ class CodingSession:
             text,
             current_editor_text=current_editor_text,
         )
+
+    async def handle_command_async(
+        self,
+        text: str,
+        *,
+        current_editor_text: str | None = None,
+    ) -> CommandResult:
+        """Handle slash commands, awaiting extension handlers that need TUI UI."""
+        if expand_prompt_template_command(text, self._prompt_templates) is not None:
+            return CommandResult(handled=False)
+        return await self._command_registry.execute_async(
+            self,
+            text,
+            current_editor_text=current_editor_text,
+        )
+
+    def set_extension_ui_handler(self, handler: Callable[..., object] | None) -> None:
+        """Install the frontend callback used by Pi-style async extension UI calls."""
+        self._extension_ui_handler = handler
+
+    async def request_extension_ui(
+        self,
+        *,
+        method: str,
+        extension_name: str,
+        **payload: Any,
+    ) -> object:
+        """Dispatch an extension UI request to the active frontend."""
+        if self._extension_ui_handler is None:
+            raise RuntimeError("No extension UI handler is available for this session.")
+        result = self._extension_ui_handler(
+            method=method,
+            extension_name=extension_name,
+            **payload,
+        )
+        if inspect.isawaitable(result):
+            return await result
+        return result
 
     def handle_extension_shortcut(
         self,
@@ -2974,124 +3013,19 @@ def _extension_slash_command(
         )
         result = command.handler(extension_context)
         if inspect.isawaitable(result):
-            close = getattr(result, "close", None)
-            if callable(close):
-                close()
-            return CommandResult(
-                handled=True,
-                message=(
-                    f"Extension command /{command.name} returned an awaitable; "
-                    "Tau extension slash commands are synchronous in this release."
-                ),
-            )
-        notifications = _extension_command_notifications(extension_context)
-        status_updates = _extension_command_status_updates(extension_context)
-        widget_updates = _extension_command_widget_updates(extension_context)
-        if isinstance(result, CommandResult):
-            if extension_context.shutdown_requested and not result.exit_requested:
-                result = replace(result, exit_requested=True)
-            if extension_context.editor_text is not None and result.editor_text is None:
-                result = replace(result, editor_text=extension_context.editor_text)
-            if (
-                extension_context.editor_insert_text is not None
-                and result.editor_insert_text is None
-            ):
-                result = replace(
-                    result,
-                    editor_insert_text=extension_context.editor_insert_text,
-                )
-            if (
-                extension_context.terminal_title_requested
-                and not result.terminal_title_requested
-            ):
-                result = replace(
-                    result,
-                    terminal_title_requested=True,
-                    terminal_title=extension_context.terminal_title,
-                )
-            if notifications:
-                result = replace(result, notifications=(*result.notifications, *notifications))
-            if status_updates:
-                result = replace(result, status_updates=(*result.status_updates, *status_updates))
-            if widget_updates:
-                result = replace(result, widget_updates=(*result.widget_updates, *widget_updates))
-            if extension_context.user_message is not None and result.user_message is None:
-                result = replace(
-                    result,
-                    user_message=extension_context.user_message,
-                    user_message_delivery=cast(
-                        Literal["steer", "follow_up"],
-                        extension_context.user_message_delivery,
+            if not context.async_ui_supported:
+                close = getattr(result, "close", None)
+                if callable(close):
+                    close()
+                return CommandResult(
+                    handled=True,
+                    message=(
+                        f"Extension command /{command.name} requires async UI support; "
+                        "run it from the interactive TUI."
                     ),
                 )
-            return result
-        if extension_context.editor_text is not None:
-            return CommandResult(
-                handled=True,
-                exit_requested=extension_context.shutdown_requested,
-                editor_text=extension_context.editor_text,
-                terminal_title_requested=extension_context.terminal_title_requested,
-                terminal_title=extension_context.terminal_title,
-                notifications=notifications,
-                status_updates=status_updates,
-                widget_updates=widget_updates,
-            )
-        if extension_context.editor_insert_text is not None:
-            return CommandResult(
-                handled=True,
-                exit_requested=extension_context.shutdown_requested,
-                editor_insert_text=extension_context.editor_insert_text,
-                terminal_title_requested=extension_context.terminal_title_requested,
-                terminal_title=extension_context.terminal_title,
-                notifications=notifications,
-                status_updates=status_updates,
-                widget_updates=widget_updates,
-            )
-        if extension_context.terminal_title_requested:
-            return CommandResult(
-                handled=True,
-                exit_requested=extension_context.shutdown_requested,
-                terminal_title_requested=True,
-                terminal_title=extension_context.terminal_title,
-                notifications=notifications,
-                status_updates=status_updates,
-                widget_updates=widget_updates,
-            )
-        if extension_context.user_message is not None:
-            return CommandResult(
-                handled=True,
-                exit_requested=extension_context.shutdown_requested,
-                terminal_title_requested=extension_context.terminal_title_requested,
-                terminal_title=extension_context.terminal_title,
-                notifications=notifications,
-                status_updates=status_updates,
-                widget_updates=widget_updates,
-                user_message=extension_context.user_message,
-                user_message_delivery=cast(
-                    Literal["steer", "follow_up"],
-                    extension_context.user_message_delivery,
-                ),
-            )
-        if result is None:
-            return CommandResult(
-                handled=True,
-                exit_requested=extension_context.shutdown_requested,
-                terminal_title_requested=extension_context.terminal_title_requested,
-                terminal_title=extension_context.terminal_title,
-                notifications=notifications,
-                status_updates=status_updates,
-                widget_updates=widget_updates,
-            )
-        return CommandResult(
-            handled=True,
-            exit_requested=extension_context.shutdown_requested,
-            terminal_title_requested=extension_context.terminal_title_requested,
-            terminal_title=extension_context.terminal_title,
-            message=str(result),
-            notifications=notifications,
-            status_updates=status_updates,
-            widget_updates=widget_updates,
-        )
+            return _await_extension_command_result(result, extension_context)
+        return _extension_command_result(result, extension_context)
 
     return SlashCommand(
         name=name,
@@ -3111,6 +3045,128 @@ def _extension_slash_command(
         argument_completion_provider=command.argument_completion_provider,
         hidden=command.hidden,
         source=f"extension:{extension.name}",
+    )
+
+
+async def _await_extension_command_result(
+    result: object,
+    extension_context: ExtensionCommandContext,
+) -> CommandResult:
+    awaited = await result  # type: ignore[misc]
+    return _extension_command_result(awaited, extension_context)
+
+
+def _extension_command_result(
+    result: object,
+    extension_context: ExtensionCommandContext,
+) -> CommandResult:
+    notifications = _extension_command_notifications(extension_context)
+    status_updates = _extension_command_status_updates(extension_context)
+    widget_updates = _extension_command_widget_updates(extension_context)
+    if isinstance(result, CommandResult):
+        if extension_context.shutdown_requested and not result.exit_requested:
+            result = replace(result, exit_requested=True)
+        if extension_context.editor_text is not None and result.editor_text is None:
+            result = replace(result, editor_text=extension_context.editor_text)
+        if (
+            extension_context.editor_insert_text is not None
+            and result.editor_insert_text is None
+        ):
+            result = replace(
+                result,
+                editor_insert_text=extension_context.editor_insert_text,
+            )
+        if (
+            extension_context.terminal_title_requested
+            and not result.terminal_title_requested
+        ):
+            result = replace(
+                result,
+                terminal_title_requested=True,
+                terminal_title=extension_context.terminal_title,
+            )
+        if notifications:
+            result = replace(result, notifications=(*result.notifications, *notifications))
+        if status_updates:
+            result = replace(result, status_updates=(*result.status_updates, *status_updates))
+        if widget_updates:
+            result = replace(result, widget_updates=(*result.widget_updates, *widget_updates))
+        if extension_context.user_message is not None and result.user_message is None:
+            result = replace(
+                result,
+                user_message=extension_context.user_message,
+                user_message_delivery=cast(
+                    Literal["steer", "follow_up"],
+                    extension_context.user_message_delivery,
+                ),
+            )
+        return result
+    if extension_context.editor_text is not None:
+        return CommandResult(
+            handled=True,
+            exit_requested=extension_context.shutdown_requested,
+            editor_text=extension_context.editor_text,
+            terminal_title_requested=extension_context.terminal_title_requested,
+            terminal_title=extension_context.terminal_title,
+            notifications=notifications,
+            status_updates=status_updates,
+            widget_updates=widget_updates,
+        )
+    if extension_context.editor_insert_text is not None:
+        return CommandResult(
+            handled=True,
+            exit_requested=extension_context.shutdown_requested,
+            editor_insert_text=extension_context.editor_insert_text,
+            terminal_title_requested=extension_context.terminal_title_requested,
+            terminal_title=extension_context.terminal_title,
+            notifications=notifications,
+            status_updates=status_updates,
+            widget_updates=widget_updates,
+        )
+    if extension_context.terminal_title_requested:
+        return CommandResult(
+            handled=True,
+            exit_requested=extension_context.shutdown_requested,
+            terminal_title_requested=True,
+            terminal_title=extension_context.terminal_title,
+            notifications=notifications,
+            status_updates=status_updates,
+            widget_updates=widget_updates,
+        )
+    if extension_context.user_message is not None:
+        return CommandResult(
+            handled=True,
+            exit_requested=extension_context.shutdown_requested,
+            terminal_title_requested=extension_context.terminal_title_requested,
+            terminal_title=extension_context.terminal_title,
+            notifications=notifications,
+            status_updates=status_updates,
+            widget_updates=widget_updates,
+            user_message=extension_context.user_message,
+            user_message_delivery=cast(
+                Literal["steer", "follow_up"],
+                extension_context.user_message_delivery,
+            ),
+        )
+    if result is None:
+        return CommandResult(
+            handled=True,
+            exit_requested=extension_context.shutdown_requested,
+            terminal_title_requested=extension_context.terminal_title_requested,
+            terminal_title=extension_context.terminal_title,
+            notifications=notifications,
+            status_updates=status_updates,
+            widget_updates=widget_updates,
+        )
+    return CommandResult(
+        handled=True,
+        exit_requested=extension_context.shutdown_requested,
+        terminal_title_requested=extension_context.terminal_title_requested,
+        terminal_title=extension_context.terminal_title,
+        message=str(result),
+        notifications=notifications,
+        status_updates=status_updates,
+        widget_updates=widget_updates,
     )
 
 

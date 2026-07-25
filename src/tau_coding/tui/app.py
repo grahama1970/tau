@@ -4330,6 +4330,118 @@ class ConfirmationScreen(ModalScreen[bool]):
             self.dismiss(False)
 
 
+class ExtensionSelectScreen(ModalScreen[str | None]):
+    """Pi-style extension select dialog."""
+
+    def __init__(
+        self,
+        title: str,
+        options: Sequence[str],
+        *,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
+        super().__init__()
+        self.title_text = title
+        self.options = tuple(options)
+        self.keybindings = keybindings or TuiKeybindings()
+
+    def compose(self) -> ComposeResult:
+        """Compose the extension select dialog."""
+        confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+        with Vertical(id="confirmation"):
+            yield Static(self.title_text, id="confirmation-title")
+            yield ListView(
+                *(ListItem(Label(option, markup=False)) for option in self.options),
+                id="extension-select-list",
+            )
+            yield Static(f"{confirm_key} selects - {cancel_key} cancels", id="confirmation-help")
+
+    def on_mount(self) -> None:
+        """Focus the list."""
+        with suppress(NoMatches):
+            self.query_one("#extension-select-list", ListView).focus()
+
+    def on_key(self, event: Key) -> None:
+        """Route configured select keys."""
+        if _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
+            event.stop()
+            self.action_select_cursor()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.dismiss(None)
+
+    def action_select_cursor(self) -> None:
+        """Dismiss with the highlighted option."""
+        selected = self.query_one("#extension-select-list", ListView).index
+        if selected is None or selected < 0 or selected >= len(self.options):
+            self.dismiss(None)
+            return
+        self.dismiss(self.options[selected])
+
+
+class ExtensionInputScreen(ModalScreen[str | None]):
+    """Pi-style extension one-line input dialog."""
+
+    def __init__(
+        self,
+        title: str,
+        *,
+        placeholder: str = "",
+        prefill: str = "",
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
+        super().__init__()
+        self.title_text = title
+        self.placeholder = placeholder
+        self.prefill = prefill
+        self.keybindings = keybindings or TuiKeybindings()
+
+    def compose(self) -> ComposeResult:
+        """Compose the extension input dialog."""
+        confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+        with Vertical(id="confirmation"):
+            yield Static(self.title_text, id="confirmation-title")
+            yield Input(
+                value=self.prefill,
+                placeholder=self.placeholder,
+                id="extension-input-value",
+            )
+            yield Static(f"{confirm_key} submits - {cancel_key} cancels", id="confirmation-help")
+
+    def on_mount(self) -> None:
+        """Focus the input."""
+        input_widget = self.query_one("#extension-input-value", Input)
+        input_widget.cursor_position = len(self.prefill)
+        input_widget.focus()
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Submit typed text."""
+        if event.input.id != "extension-input-value":
+            return
+        event.stop()
+        self.dismiss(event.value)
+
+    def on_key(self, event: Key) -> None:
+        """Route configured input keys."""
+        if _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.dismiss(None)
+
+
 class LoginProviderPickerScreen(ModalScreen[str | None]):
     """Provider picker for the TUI login flow."""
 
@@ -5986,6 +6098,9 @@ class TauTuiApp(App[None]):
         super().__init__()
         self._bindings = BindingsMap(_app_bindings(self.tui_settings.keybindings))
         self.session = session
+        set_extension_ui_handler = getattr(self.session, "set_extension_ui_handler", None)
+        if callable(set_extension_ui_handler):
+            set_extension_ui_handler(self._handle_extension_ui_request)
         self.state = TuiState(
             skills=session.skills,
             show_thinking=not self.tui_settings.hide_thinking,
@@ -6231,7 +6346,7 @@ class TauTuiApp(App[None]):
                 self._completion_state = CompletionState()
                 self._sync_prompt_shell_mode(prompt.text)
                 self._refresh_completions()
-                command = self._handle_session_command(text, current_editor_text=raw_text)
+                command = await self._handle_session_command(text, current_editor_text=raw_text)
                 if command.message:
                     self._append_command_message(text, command.message)
                 self._deliver_command_notifications(command)
@@ -6337,7 +6452,9 @@ class TauTuiApp(App[None]):
             self.tui_settings.keybindings,
             self.session,
             self.tui_settings,
-        ) or self._handle_session_command(text, current_editor_text=raw_text)
+        )
+        if command is None:
+            command = await self._handle_session_command(text, current_editor_text=raw_text)
         if command.handled:
             if command.clear_requested:
                 self.state.clear()
@@ -6969,17 +7086,62 @@ class TauTuiApp(App[None]):
         self._completion_state = self._build_completion_state(prompt.text)
         self._refresh_completions()
 
-    def _handle_session_command(
+    async def _handle_session_command(
         self,
         text: str,
         *,
         current_editor_text: str,
     ) -> CommandResult:
-        """Run a session command, passing editor context when the session supports it."""
+        """Run a session command, awaiting async extension command handlers when available."""
+        handle_command_async = getattr(self.session, "handle_command_async", None)
+        if callable(handle_command_async):
+            if "current_editor_text" in signature(handle_command_async).parameters:
+                return await handle_command_async(text, current_editor_text=current_editor_text)
+            return await handle_command_async(text)
         handle_command = self.session.handle_command
         if "current_editor_text" in signature(handle_command).parameters:
             return handle_command(text, current_editor_text=current_editor_text)
         return handle_command(text)
+
+    async def _handle_extension_ui_request(
+        self,
+        *,
+        method: str,
+        extension_name: str,
+        **payload: object,
+    ) -> object:
+        """Handle Pi-style extension UI requests from async extension commands."""
+        keybindings = self.tui_settings.keybindings
+        if method == "select":
+            options = tuple(str(option) for option in payload.get("options", ()))
+            if not options:
+                return None
+            return await self.push_screen_wait(
+                ExtensionSelectScreen(
+                    str(payload.get("title", f"{extension_name} selection")),
+                    options,
+                    keybindings=keybindings,
+                )
+            )
+        if method == "confirm":
+            return await self.push_screen_wait(
+                ConfirmationScreen(
+                    str(payload.get("title", f"{extension_name} confirmation")),
+                    str(payload.get("message", "")),
+                    theme=self.tui_settings.resolved_theme,
+                    keybindings=keybindings,
+                )
+            )
+        if method == "input":
+            return await self.push_screen_wait(
+                ExtensionInputScreen(
+                    str(payload.get("title", f"{extension_name} input")),
+                    placeholder=str(payload.get("placeholder", "")),
+                    prefill=str(payload.get("prefill", "")),
+                    keybindings=keybindings,
+                )
+            )
+        raise ValueError(f"Unsupported extension UI request: {method}")
 
     async def _run_prompt(
         self,

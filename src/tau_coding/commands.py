@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import os
 import shlex
-from collections.abc import Callable, Sequence
+from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
+from inspect import isawaitable
 from pathlib import Path
 from typing import Any, Literal, Protocol, cast
 
@@ -202,9 +203,10 @@ class CommandContext:
     name: str
     args: str
     current_editor_text: str
+    async_ui_supported: bool = False
 
 
-CommandHandler = Callable[[CommandContext], CommandResult]
+CommandHandler = Callable[[CommandContext], CommandResult | Awaitable[CommandResult]]
 
 
 @dataclass(frozen=True, slots=True)
@@ -299,16 +301,74 @@ class CommandRegistry:
         if command is None:
             return CommandResult(handled=False)
 
-        return command.handler(
+        result = command.handler(
             CommandContext(
                 session=session,
                 registry=self,
                 text=stripped,
                 name=name,
                 args=args,
-                current_editor_text=stripped if current_editor_text is None else current_editor_text,
+                current_editor_text=(
+                    stripped if current_editor_text is None else current_editor_text
+                ),
             )
         )
+        if isawaitable(result):
+            close = getattr(result, "close", None)
+            if callable(close):
+                close()
+            return CommandResult(
+                handled=True,
+                message=(
+                    f"Command /{name} requires async UI support; "
+                    "run it from the interactive TUI."
+                ),
+            )
+        return result
+
+    async def execute_async(
+        self,
+        session: CommandSession,
+        text: str,
+        *,
+        current_editor_text: str | None = None,
+    ) -> CommandResult:
+        """Execute a slash command, awaiting handlers that need interactive UI."""
+        stripped = text.strip()
+        if not stripped.startswith("/"):
+            return CommandResult(handled=False)
+
+        if stripped.startswith("/skill:"):
+            return CommandResult(handled=False)
+
+        name, args = _parse_command(stripped)
+        if not name:
+            return CommandResult(handled=False)
+
+        command = self.get(name)
+        if command is None and name == "scoped" and args.lower() == "models":
+            command = self.get("scoped-models")
+            name = "scoped-models"
+            args = ""
+        if command is None:
+            return CommandResult(handled=False)
+
+        result = command.handler(
+            CommandContext(
+                session=session,
+                registry=self,
+                text=stripped,
+                name=name,
+                args=args,
+                current_editor_text=(
+                    stripped if current_editor_text is None else current_editor_text
+                ),
+                async_ui_supported=True,
+            )
+        )
+        if isawaitable(result):
+            return await result
+        return result
 
 
 def create_default_command_registry() -> CommandRegistry:
