@@ -67,6 +67,10 @@ class ExtensionCommandContext:
     notifications: list[ExtensionNotification] = field(default_factory=list)
     user_message: str | None = None
     user_message_delivery: str = "steer"
+    ui: ExtensionCommandUi = field(init=False)
+
+    def __post_init__(self) -> None:
+        self.ui = ExtensionCommandUi(self)
 
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the command returns."""
@@ -94,6 +98,21 @@ class ExtensionCommandContext:
         delivery = _normalize_user_message_delivery(deliver_as)
         self.user_message = message
         self.user_message_delivery = delivery
+
+
+class ExtensionCommandUi:
+    """Pi-like UI helper facade for extension command handlers."""
+
+    def __init__(self, context: ExtensionCommandContext) -> None:
+        self._context = context
+
+    def notify(self, message: str, severity: str = "info") -> None:
+        """Request that Tau show a TUI notification after the command returns."""
+        self._context.notify(message, severity)
+
+    def set_editor_text(self, text: str) -> None:
+        """Request that Tau replace the prompt editor contents after the command returns."""
+        self._context.set_editor_text(text)
 
 
 class ExtensionAPI:

@@ -630,6 +630,29 @@ Acceptance:
 - This slice does not claim Pi's event-bus notifications, custom dialogs, or
   extension lifecycle hooks.
 
+### Slice 30: Extension Command UI Facade
+
+Pi command handlers group TUI affordances under `ctx.ui`, for example
+`ctx.ui.notify(...)` and `ctx.ui.setEditorText(...)`. Tau's first Python slices
+exposed those actions directly on `ExtensionCommandContext`; keep those helpers
+for compatibility, but add a small `context.ui` facade so extension authors can
+write UI-oriented command code with the same mental model.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Extension command handlers receive `context.ui`.
+- `context.ui.notify(...)` records the same notification side effect as
+  `context.notify(...)`.
+- `context.ui.set_editor_text(...)` records the same editor replacement side
+  effect as `context.set_editor_text(...)`.
+- The facade is synchronous and delegates to the existing command-result
+  bridge; it does not introduce a second UI state path.
+- This slice does not claim Pi's async custom widgets, confirm/select/input
+  dialogs, `setStatus`, `setWidget`, custom footer, or autocomplete-provider
+  stacking.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.
