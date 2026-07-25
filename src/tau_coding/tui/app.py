@@ -141,6 +141,7 @@ from tau_coding.tui.config import (
     available_tui_theme_names,
     load_tui_settings,
     save_tui_settings,
+    tui_settings_path,
 )
 from tau_coding.tui.file_drop import normalize_dropped_paths
 from tau_coding.tui.pty_proof import pty_input_received_line, pty_ready_line
@@ -3059,6 +3060,129 @@ class ImageVisibilityPickerScreen(ModalScreen[bool | None]):
                 )
             ),
         ]
+
+
+@dataclass(frozen=True, slots=True)
+class FirstTimeSetupChoice:
+    """One first-run setup option."""
+
+    label: str
+    value: str | None
+    description: str
+
+
+class FirstTimeSetupScreen(ModalScreen[TuiSettings | None]):
+    """First-run setup screen for choosing Tau's initial TUI theme."""
+
+    BINDINGS: ClassVar[list[Binding]] = [
+        Binding("up", "cursor_up", "Up", priority=True),
+        Binding("down", "cursor_down", "Down", priority=True),
+        Binding("enter", "select_cursor", "Select", priority=True),
+        Binding("escape", "cancel", "Cancel", priority=True),
+    ]
+
+    def __init__(
+        self,
+        settings: TuiSettings,
+        *,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
+        super().__init__()
+        self.settings = settings
+        self.keybindings = keybindings or TuiKeybindings()
+        self.choices = _first_time_setup_choices()
+
+    def compose(self) -> ComposeResult:
+        """Compose the first-run setup screen."""
+        with Vertical(id="first-time-setup"):
+            yield Static("Welcome to Tau", id="first-time-setup-title")
+            yield Static("Choose an initial theme.", id="first-time-setup-description")
+            yield ListView(*self._list_items(), id="first-time-setup-list")
+            yield Static(self._help_text(), id="first-time-setup-help")
+
+    def on_mount(self) -> None:
+        """Focus the setup list and preselect the current theme."""
+        setup_list = self.query_one("#first-time-setup-list", ListView)
+        setup_list.index = _first_time_setup_selected_index(self.choices, self.settings.theme)
+        setup_list.focus()
+        self.call_after_refresh(setup_list.focus)
+
+    def on_key(self, event: Key) -> None:
+        """Route setup keys to the list."""
+        if (
+            _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up")
+            or event.key == "k"
+        ):
+            event.stop()
+            self.action_cursor_up()
+        elif (
+            _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down")
+            or event.key == "j"
+        ):
+            event.stop()
+            self.action_cursor_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
+            event.stop()
+            self.action_select_cursor()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.action_cancel()
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """Apply the selected first-run choice."""
+        event.stop()
+        self.action_select()
+
+    def action_cursor_up(self) -> None:
+        """Move to the previous setup option."""
+        setup_list = self.query_one("#first-time-setup-list", ListView)
+        index = setup_list.index if setup_list.index is not None else 0
+        setup_list.index = (index - 1) % len(self.choices)
+
+    def action_cursor_down(self) -> None:
+        """Move to the next setup option."""
+        setup_list = self.query_one("#first-time-setup-list", ListView)
+        index = setup_list.index if setup_list.index is not None else 0
+        setup_list.index = (index + 1) % len(self.choices)
+
+    def action_select(self) -> None:
+        """Select the highlighted setup option."""
+        setup_list = self.query_one("#first-time-setup-list", ListView)
+        index = setup_list.index
+        if index is None or index >= len(self.choices):
+            return
+        choice = self.choices[index]
+        if choice.value is None:
+            self.dismiss(None)
+            return
+        self.dismiss(replace(self.settings, theme=choice.value))
+
+    def action_select_cursor(self) -> None:
+        """Select the highlighted setup row."""
+        self.query_one("#first-time-setup-list", ListView).action_select_cursor()
+
+    def action_cancel(self) -> None:
+        """Skip first-run setup."""
+        self.dismiss(None)
+
+    def _list_items(self) -> list[ListItem]:
+        return [
+            ListItem(Label(f"{choice.label} - {choice.description}", markup=False))
+            for choice in self.choices
+        ]
+
+    def _help_text(self) -> str:
+        confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+        return f"{confirm_key} selects - {cancel_key} skips setup"
 
 
 class TrustPickerScreen(ModalScreen[ProjectTrustOption | None]):
@@ -6174,6 +6298,7 @@ class TauTuiApp(App[None]):
     PromptTemplatePickerScreen,
     TreeLabelInputScreen,
     ConfigMapScreen,
+    FirstTimeSetupScreen,
     CommandOutputScreen,
     ConfirmationScreen {
         align: center middle;
@@ -6183,6 +6308,7 @@ class TauTuiApp(App[None]):
     #settings-picker,
     #thinking-picker,
     #image-visibility-picker,
+    #first-time-setup,
     #tree-picker,
     #user-message-picker,
     #workflow-picker,
@@ -6205,6 +6331,7 @@ class TauTuiApp(App[None]):
     #settings-picker-title,
     #thinking-picker-title,
     #image-visibility-picker-title,
+    #first-time-setup-title,
     #tree-picker-title,
     #user-message-picker-title,
     #workflow-picker-title,
@@ -6219,6 +6346,7 @@ class TauTuiApp(App[None]):
         margin-bottom: 1;
     }
 
+    #first-time-setup-description,
     #user-message-picker-description,
     #workflow-picker-description {
         height: auto;
@@ -6243,6 +6371,7 @@ class TauTuiApp(App[None]):
     #settings-picker-list,
     #thinking-picker-list,
     #image-visibility-picker-list,
+    #first-time-setup-list,
     #tree-picker-list,
     #user-message-picker-list,
     #workflow-picker-list,
@@ -6274,6 +6403,7 @@ class TauTuiApp(App[None]):
     #settings-picker-help,
     #thinking-picker-help,
     #image-visibility-picker-help,
+    #first-time-setup-help,
     #tree-picker-help,
     #user-message-picker-help,
     #workflow-picker-help,
@@ -6504,11 +6634,13 @@ class TauTuiApp(App[None]):
         startup_message: str | None = None,
         initial_prompt: str | None = None,
         startup_resume_picker: bool = False,
+        show_first_time_setup: bool = False,
     ) -> None:
         self.tui_settings = tui_settings or TuiSettings()
         self.startup_message = startup_message
         self.initial_prompt = initial_prompt
         self.startup_resume_picker = startup_resume_picker
+        self.show_first_time_setup = show_first_time_setup
         super().__init__()
         self._bindings = BindingsMap(_app_bindings(self.tui_settings.keybindings))
         self.session = session
@@ -6719,6 +6851,13 @@ class TauTuiApp(App[None]):
             self._maybe_warn_anthropic_subscription_auth()
         if not self.tui_settings.quiet_startup and not self.is_headless:
             self.run_worker(self._warn_about_tmux_keyboard_setup(), exclusive=False)
+        if self.show_first_time_setup:
+            self.call_after_refresh(self._open_first_time_setup)
+            return
+        self._continue_after_startup_setup()
+
+    def _continue_after_startup_setup(self) -> None:
+        """Continue normal startup actions after any first-run setup screen."""
         if self.startup_resume_picker:
             self.call_after_refresh(self.action_open_session_picker)
             return
@@ -6730,6 +6869,25 @@ class TauTuiApp(App[None]):
         warning = await asyncio.to_thread(_tmux_keyboard_setup_warning, os.environ)
         if warning:
             self._notify(warning, severity="warning")
+
+    def _open_first_time_setup(self) -> None:
+        """Open the first-run setup screen."""
+        self.push_screen(
+            FirstTimeSetupScreen(
+                self.tui_settings,
+                keybindings=self.tui_settings.keybindings,
+            ),
+            callback=self._handle_first_time_setup_result,
+        )
+
+    def _handle_first_time_setup_result(self, settings: TuiSettings | None) -> None:
+        if settings is None:
+            self.show_first_time_setup = False
+            self._continue_after_startup_setup()
+            return
+        self._set_tui_settings(settings)
+        self.show_first_time_setup = False
+        self._continue_after_startup_setup()
 
     def on_unmount(self) -> None:
         """Stop the activity timer when the app is torn down."""
@@ -11450,6 +11608,39 @@ def _image_visibility_picker_label(show_images: bool, *, current_value: bool) ->
     return f"{marker}  {label} - {description}"
 
 
+def _first_time_setup_choices() -> tuple[FirstTimeSetupChoice, ...]:
+    choices = [
+        FirstTimeSetupChoice(
+            label=_theme_setup_label(theme_name),
+            value=theme_name,
+            description="Use this theme",
+        )
+        for theme_name in available_tui_theme_names()
+    ]
+    choices.append(
+        FirstTimeSetupChoice(
+            label="Skip setup",
+            value=None,
+            description="Keep the current default",
+        )
+    )
+    return tuple(choices)
+
+
+def _first_time_setup_selected_index(
+    choices: Sequence[FirstTimeSetupChoice],
+    current_theme: str,
+) -> int:
+    for index, choice in enumerate(choices):
+        if choice.value == current_theme:
+            return index
+    return 0
+
+
+def _theme_setup_label(theme_name: str) -> str:
+    return theme_name.replace("-", " ").title()
+
+
 def _filter_settings_picker_items(
     items: Sequence[SettingsPickerItem],
     query: str,
@@ -13483,6 +13674,7 @@ async def run_tui_app(
         raise RuntimeError("--no-session and --name cannot be used together")
 
     provider_settings = provider_settings or load_provider_settings()
+    first_time_setup = _should_show_first_time_setup()
     tui_settings = load_tui_settings()
     if _truthy_env("TAU_VERBOSE_STARTUP"):
         tui_settings = replace(tui_settings, quiet_startup=False)
@@ -13606,6 +13798,7 @@ async def run_tui_app(
             startup_message=startup_message,
             initial_prompt=initial_prompt,
             startup_resume_picker=resume_picker,
+            show_first_time_setup=first_time_setup,
         )
         await app.run_async()
         return session.session_id
@@ -13615,6 +13808,12 @@ async def run_tui_app(
             if close_session is not None:
                 await close_session()
         await provider.aclose()
+
+
+def _should_show_first_time_setup(settings_path: Path | None = None) -> bool:
+    """Return whether Tau should show Pi-style first-run setup."""
+    path = settings_path or tui_settings_path()
+    return not path.exists()
 
 
 def _extension_terminal_input_result(result: object) -> str | None:

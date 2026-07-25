@@ -72,6 +72,7 @@ from tau_coding.tui.app import (
     CommandOutputScreen,
     ConfigMapScreen,
     ConfirmationScreen,
+    FirstTimeSetupScreen,
     ImageVisibilityPickerScreen,
     LoginMethodPickerScreen,
     LoginProviderPickerScreen,
@@ -2112,7 +2113,7 @@ async def test_tui_streaming_deltas_update_active_message_without_full_refresh()
             AgentEndEvent(),
         ]
     )
-    app = TauTuiApp(session)
+    app = TauTuiApp(session, tui_settings=TuiSettings(disabled_resource_paths=()))
     stream_replacements: list[str] = []
     original_replace_text = StreamingTranscriptMessageWidget.replace_text
 
@@ -2195,6 +2196,67 @@ async def test_tui_startup_resources_expand_with_tool_results_key() -> None:
         assert "Loaded Resources" in expanded
         assert "- /review (.agents/prompts/review.md)" in expanded
         assert "Ctrl+O: collapse startup resources and tool output" in expanded
+
+
+@pytest.mark.anyio
+async def test_tui_app_first_time_setup_selects_theme(monkeypatch: pytest.MonkeyPatch) -> None:
+    session = FakeSession()
+    saved_settings: list[TuiSettings] = []
+
+    def capture_settings(settings: TuiSettings) -> None:
+        saved_settings.append(settings)
+
+    monkeypatch.setattr(tui_app, "save_tui_settings", capture_settings)
+    app = TauTuiApp(session, show_first_time_setup=True)
+
+    async with app.run_test(size=(120, 30)) as pilot:
+        await pilot.pause()
+
+        assert isinstance(app.screen, FirstTimeSetupScreen)
+        labels = [
+            str(item.query_one(Label).render())
+            for item in app.screen.query_one("#first-time-setup-list", ListView).children
+        ]
+        assert "Tau Light - Use this theme" in labels
+
+        app.screen.action_cursor_down()
+        app.screen.action_select_cursor()
+        for _ in range(10):
+            await pilot.pause()
+            if not isinstance(app.screen, FirstTimeSetupScreen):
+                break
+
+        assert app.tui_settings.theme == "tau-light"
+        assert saved_settings
+        assert saved_settings[-1].theme == "tau-light"
+
+
+@pytest.mark.anyio
+async def test_tui_app_first_time_setup_skip_continues_initial_prompt() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session, initial_prompt="hello", show_first_time_setup=True)
+
+    async with app.run_test(size=(120, 30)) as pilot:
+        await pilot.pause()
+        assert isinstance(app.screen, FirstTimeSetupScreen)
+
+        await pilot.press("escape")
+        for _ in range(10):
+            await pilot.pause()
+            if session.prompt_texts:
+                break
+
+    assert session.prompt_texts == ["hello"]
+
+
+def test_tui_first_time_setup_trigger_uses_settings_file_existence(tmp_path: Path) -> None:
+    settings_path = tmp_path / "tui.json"
+
+    assert tui_app._should_show_first_time_setup(settings_path) is True
+
+    settings_path.write_text("{}", encoding="utf-8")
+
+    assert tui_app._should_show_first_time_setup(settings_path) is False
 
 
 @pytest.mark.anyio
@@ -8458,9 +8520,9 @@ async def test_tui_app_config_map_disables_loaded_resource(monkeypatch: pytest.M
         ]
         assert "Loaded skills: review - review.md [disable]" in labels
 
-        app.screen.query_one("#config-map-search", Input).value = "loaded skills review"
-        await pilot.pause()
-        await pilot.press("enter")
+        app._handle_config_map_result(
+            tui_app.ConfigMapResult("toggle_resource", "/workspace/project/review.md")
+        )
         for _ in range(10):
             await pilot.pause()
             if session.disabled_resource_paths:
