@@ -975,6 +975,13 @@ def test_terminal_command_running_block_shows_cancel_hint() -> None:
         format_terminal_command_running_block(added_to_context=False)
         == "… bash · not added to context\nRunning... (Escape to cancel)"
     )
+    assert (
+        format_terminal_command_running_block(
+            added_to_context=True,
+            output="first line\nsecond line",
+        )
+        == "… bash · added to context\nfirst line\nsecond line\nRunning... (Escape to cancel)"
+    )
 
 
 def test_compact_session_info_wraps_to_available_width() -> None:

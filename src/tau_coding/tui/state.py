@@ -736,9 +736,10 @@ def format_terminal_command_running_block(
 ) -> str:
     """Format an input-bar terminal command while it is still running."""
     suffix = " · added to context" if added_to_context else " · not added to context"
-    lines = [f"… bash{suffix}", "Running... (Escape to cancel)"]
+    lines = [f"… bash{suffix}"]
     if output:
         lines.append(_preview_tail_text(output, max_lines=TERMINAL_COMMAND_OUTPUT_PREVIEW_LINES))
+    lines.append("Running... (Escape to cancel)")
     return "\n".join(lines)
 
 
