@@ -9694,6 +9694,8 @@ async def test_tui_app_tools_reference_wraps_navigation_like_pi() -> None:
 
         assert isinstance(app.screen, ToolsReferenceScreen)
         tool_list = app.screen.query_one("#tools-reference-list", ListView)
+        tool_list.focus()
+        await pilot.pause()
         assert tool_list.index == 0
 
         await pilot.press("up")
@@ -9711,6 +9713,27 @@ async def test_tui_app_tools_reference_wraps_navigation_like_pi() -> None:
         await pilot.press("j")
         await pilot.pause()
         assert tool_list.index == 0
+
+
+@pytest.mark.anyio
+async def test_tui_app_tools_reference_search_keeps_printable_jk() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tools"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ToolsReferenceScreen)
+        search = app.screen.query_one("#tools-reference-search", Input)
+        assert app.screen.focused is search
+
+        await pilot.press("j", "k")
+        await pilot.pause()
+
+        assert search.value == "jk"
+        assert app.screen.visible_tools == ()
 
 
 @pytest.mark.anyio

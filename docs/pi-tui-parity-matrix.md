@@ -48,7 +48,7 @@ capabilities.
 | Prompt editor | `custom-editor`, `custom-entry`, `keybinding-hints`, `skill-invocation-message` | `PromptInput`, extension input hooks, skill transcript blocks | `PARTIAL` | Keep Pi-like keybindings; skill invocations now render with Pi-style `[skill] name` collapsed labels and labeled expanded bodies; avoid replacing Tau extension input plumbing. |
 | Model selector | `model-selector`, `scoped-models-selector` | `ModelPickerScreen` | `MATCHED` | Search, tabs, scoped membership, provider toggles, and reorder are present. |
 | Session selector | `session-selector`, `session-selector-search` | `SessionPickerScreen` | `MATCHED` | Search, current/all, named-only, path toggle, sort, rename, delete are present. |
-| Branch/trust/tool selectors | `user-message-selector`, `trust-selector`, selector keybindings | `UserMessagePickerScreen`, `TrustPickerScreen`, `ToolsReferenceScreen` | `MATCHED` | `/fork`, `/trust`, and `/tools` preserve Tau's backing flows and now accept Pi-style `j/k` movement as well as configured selector keys. |
+| Branch/trust/tool selectors | `user-message-selector`, `trust-selector`, selector keybindings | `UserMessagePickerScreen`, `TrustPickerScreen`, `ToolsReferenceScreen` | `MATCHED` | `/fork` and `/trust` preserve Tau's backing flows and accept Pi-style `j/k` movement; `/tools` preserves searchable text input while the list accepts `j/k` movement when focused. |
 | Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `PARTIAL` | Tau backs most daily settings, exposes the external editor command, and now shows visible no-match search rows; do not add dead Pi toggles without backing behavior. |
 | Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist, resource rows expose scope/state/action, resource toggles update in-place, and no-match searches show visible empty rows; package/write-scope editing still missing. |
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login; provider picker now shows visible navigation help, empty filter states, and fail-closed empty-row selection. |
@@ -163,24 +163,32 @@ Latest slice evidence:
 
 Latest slice evidence:
 
-- Source inspected: Pi `user-message-selector.ts` and `trust-selector.ts`;
-  Tau `UserMessagePickerScreen`, `TrustPickerScreen`, `ToolsReferenceScreen`,
-  and `ToolsReferenceSearchInput`.
+- Source inspected: Pi `user-message-selector.ts`, `trust-selector.ts`,
+  `extension-selector.ts`, `config-selector.ts`, and default
+  `tui.select.up/down` keybindings; Tau `UserMessagePickerScreen`,
+  `TrustPickerScreen`, `ToolsReferenceScreen`, and
+  `ToolsReferenceSearchInput`.
 - Destination preserved: Tau `SessionTreeChoice` filtering and `tree_branch`
   flow, project trust store/session trust state, searchable tools reference,
   extension source labels, and configured `TuiKeybindings`.
-- Changed: `/fork`, `/trust`, and `/tools` selectors now accept Pi-style `j/k`
-  movement in addition to configured up/down keys. The `/tools` search input
-  routes `j/k` as movement instead of typing those characters into the filter.
+- Changed: `/fork` and `/trust` accept Pi-style `j/k` movement in addition to
+  configured up/down keys. `/tools` keeps printable `j/k` searchable in the
+  focused search input while preserving `j/k` movement when the list itself is
+  focused.
 - Mocked: no.
 - Live: local Textual UI interaction only; no provider-live call.
 - Proof:
-  `uv run pytest tests/test_tui_app.py -q -k 'fork_picker or trust_picker or tools_reference_wraps_navigation_like_pi'`
-  reported `9 passed, 443 deselected`; `uv run ruff check
+  `uv run pytest tests/test_tui_app.py -q -k 'tools_reference or fork_picker or trust_picker'`
+  reported `13 passed, 442 deselected`; `uv run ruff check
   src/tau_coding/tui/app.py tests/test_tui_app.py` reported all checks passed;
   `uv run python -m py_compile src/tau_coding/tui/app.py
   tests/test_tui_app.py` exited with no output.
 - Render proof:
+  `/tmp/tau-pi-tui-tools-search-jk-proof-1785016868/proof.json` with screenshots
+  `/tmp/tau-pi-tui-tools-search-jk-proof-1785016868/tau-tools-search-keeps-jk.svg`
+  and
+  `/tmp/tau-pi-tui-tools-search-jk-proof-1785016868/tau-tools-list-jk-navigation.svg`;
+  earlier selector screenshots remain at
   `/tmp/tau-pi-tui-selector-jk-proof-1785015922/proof.json` with screenshots
   `/tmp/tau-pi-tui-selector-jk-proof-1785015922/tau-fork-picker-jk.svg`,
   `/tmp/tau-pi-tui-selector-jk-proof-1785015922/tau-trust-picker-jk.svg`, and

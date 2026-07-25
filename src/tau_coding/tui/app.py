@@ -297,17 +297,11 @@ class ToolsReferenceSearchInput(Input):
     def on_key(self, event: Key) -> None:
         """Route navigation without changing the search text."""
         keybindings = self._reference().keybindings
-        if (
-            _matches_configured_or_default_key(event.key, keybindings.select_up, "up")
-            or event.key == "k"
-        ):
+        if _matches_configured_or_default_key(event.key, keybindings.select_up, "up"):
             event.stop()
             event.prevent_default()
             self._reference().action_cursor_up()
-        elif (
-            _matches_configured_or_default_key(event.key, keybindings.select_down, "down")
-            or event.key == "j"
-        ):
+        elif _matches_configured_or_default_key(event.key, keybindings.select_down, "down"):
             event.stop()
             event.prevent_default()
             self._reference().action_cursor_down()
