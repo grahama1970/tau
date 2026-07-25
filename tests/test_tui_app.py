@@ -58,7 +58,12 @@ from tau_coding.session_manager import CodingSessionRecord
 from tau_coding.skills import Skill, format_skill_invocation
 from tau_coding.system_prompt import ProjectContextFile
 from tau_coding.tools import create_coding_tools
-from tau_coding.trust import ProjectTrustOption, ProjectTrustState, ProjectTrustUpdate
+from tau_coding.trust import (
+    ProjectTrustOption,
+    ProjectTrustState,
+    ProjectTrustStoreEntry,
+    ProjectTrustUpdate,
+)
 from tau_coding.tui import app as tui_app
 from tau_coding.tui.app import (
     TERMINAL_PROGRESS_ACTIVE_SEQUENCE,
@@ -6074,6 +6079,27 @@ async def test_tui_app_trust_picker_saves_selected_decision() -> None:
 
         assert [option.label for option in session.trust_options_saved] == ["Do not trust"]
         assert notifications == ["Saved trust decision: untrusted."]
+
+
+@pytest.mark.anyio
+async def test_tui_app_trust_picker_preselects_saved_decision() -> None:
+    session = FakeSession()
+    session.trust_state = ProjectTrustState(
+        cwd=session.cwd,
+        saved_decision=ProjectTrustStoreEntry(path=session.cwd, decision=False),
+        options=session.trust_state.options,
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/trust"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TrustPickerScreen)
+        trust_list = app.screen.query_one("#trust-picker-list", ListView)
+        assert trust_list.index == 1
 
 
 @pytest.mark.anyio

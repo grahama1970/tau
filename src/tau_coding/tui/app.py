@@ -2784,7 +2784,7 @@ class TrustPickerScreen(ModalScreen[ProjectTrustOption | None]):
     def on_mount(self) -> None:
         """Focus the trust list."""
         trust_list = self.query_one("#trust-picker-list", ListView)
-        trust_list.index = 0
+        trust_list.index = _project_trust_saved_option_index(self.trust_state)
         trust_list.focus()
 
     def on_key(self, event: Key) -> None:
@@ -9333,6 +9333,21 @@ def _project_trust_option_label(
         else "  "
     )
     return f"{marker}{option.label}"
+
+
+def _project_trust_saved_option_index(state: ProjectTrustState) -> int:
+    """Return the option index matching the saved project trust decision."""
+    saved_decision = state.saved_decision
+    if saved_decision is None:
+        return 0
+    for index, option in enumerate(state.options):
+        if (
+            option.saved_path is not None
+            and option.saved_path == saved_decision.path
+            and option.trusted == saved_decision.decision
+        ):
+            return index
+    return 0
 
 
 def _next_tui_settings(
