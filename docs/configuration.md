@@ -319,6 +319,7 @@ tau --new-session
 tau --no-session
 tau --approve
 tau --no-approve
+tau --offline
 tau --session-dir ~/.tau-alt/sessions
 tau --fork <session-id-or-jsonl-path>
 tau --name "Customer bugfix"
@@ -366,6 +367,10 @@ creating an indexed session record or writing a session JSONL transcript.
 configured `default_project_trust = "always"` behavior without writing the
 trust store. `--no-approve` ignores project-local resources for this run,
 matching `default_project_trust = "never"`.
+
+`--offline` sets `TAU_OFFLINE=1` plus Pi-compatible `PI_OFFLINE=1` and
+`PI_SKIP_VERSION_CHECK=1` before startup, so startup components that support an
+offline latch skip network refreshes and version checks.
 
 `--session-dir <dir>` uses `<dir>` as the indexed session storage root for
 startup, listing, and export commands.

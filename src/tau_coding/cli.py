@@ -947,6 +947,13 @@ def main(
         bool,
         typer.Option("--no-approve", "-na", help="Ignore project-local resources for this run."),
     ] = False,
+    offline: Annotated[
+        bool,
+        typer.Option(
+            "--offline",
+            help="Disable startup network operations where supported.",
+        ),
+    ] = False,
     auto_compact_threshold: Annotated[
         int | None,
         typer.Option(
@@ -1049,6 +1056,11 @@ def main(
 
     if ctx.invoked_subcommand is not None:
         return
+
+    if offline:
+        environ["TAU_OFFLINE"] = "1"
+        environ["PI_OFFLINE"] = "1"
+        environ["PI_SKIP_VERSION_CHECK"] = "1"
 
     if session is not None and new_session:
         raise typer.BadParameter("--session and --new-session cannot be used together")

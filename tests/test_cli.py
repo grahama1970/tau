@@ -7018,6 +7018,62 @@ def test_print_mode_passes_project_trust_override(monkeypatch: pytest.MonkeyPatc
     assert calls == ["always", "never"]
 
 
+def test_print_mode_offline_sets_compatible_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("TAU_OFFLINE", raising=False)
+    monkeypatch.delenv("PI_OFFLINE", raising=False)
+    monkeypatch.delenv("PI_SKIP_VERSION_CHECK", raising=False)
+    calls: list[tuple[str | None, str | None, str | None]] = []
+
+    async def fake_run_openai_print_mode(
+        prompt: str,
+        model: str | None,
+        cwd: Path,
+        output: PrintOutputMode,
+        provider_name: str | None,
+        loop_receipt: LoopReceiptConfig | None,
+        thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
+        session_name: str | None,
+        no_session: bool,
+        session_dir: Path | None,
+        default_project_trust: DefaultProjectTrust | None,
+        no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
+        no_skills: bool,
+        no_prompt_templates: bool,
+        no_themes: bool,
+        skill_paths: tuple[Path, ...],
+        prompt_template_paths: tuple[Path, ...],
+        theme_paths: tuple[Path, ...],
+    ) -> bool:
+        del prompt, model, cwd, output, provider_name, loop_receipt, thinking_level
+        del custom_system_prompt, append_system_prompt, session_name, no_session, session_dir
+        del default_project_trust, no_context_files, tool_allowlist, tool_denylist
+        del no_tools, no_builtin_tools, no_skills, no_prompt_templates, no_themes
+        del skill_paths, prompt_template_paths, theme_paths
+        calls.append(
+            (
+                cli.environ.get("TAU_OFFLINE"),
+                cli.environ.get("PI_OFFLINE"),
+                cli.environ.get("PI_SKIP_VERSION_CHECK"),
+            )
+        )
+        return True
+
+    monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
+
+    result = CliRunner().invoke(app, ["--print", "--offline", "hello"])
+
+    assert result.exit_code == 0
+    assert calls == [("1", "1", "1")]
+
+
 def test_project_trust_override_rejects_conflicting_flags() -> None:
     result = CliRunner().invoke(app, ["--approve", "--no-approve", "hello"])
 
@@ -8199,6 +8255,67 @@ def test_default_tui_passes_project_trust_override(
     assert approve.exit_code == 0
     assert no_approve.exit_code == 0
     assert calls == ["always", "never"]
+
+
+def test_default_tui_offline_sets_compatible_environment(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.delenv("TAU_OFFLINE", raising=False)
+    monkeypatch.delenv("PI_OFFLINE", raising=False)
+    monkeypatch.delenv("PI_SKIP_VERSION_CHECK", raising=False)
+    calls: list[tuple[str | None, str | None, str | None]] = []
+
+    async def fake_run_openai_tui(
+        model: str | None,
+        cwd: Path,
+        session_id: str | None,
+        new_session: bool,
+        provider_name: str | None,
+        auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
+        initial_prompt: str | None,
+        session_name: str | None,
+        continue_session: bool,
+        resume_picker: bool,
+        no_session: bool,
+        session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
+        no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
+        no_skills: bool,
+        no_prompt_templates: bool,
+        no_themes: bool,
+        skill_paths: tuple[Path, ...],
+        prompt_template_paths: tuple[Path, ...],
+        theme_paths: tuple[Path, ...],
+    ) -> None:
+        del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
+        del thinking_level, custom_system_prompt, append_system_prompt, initial_prompt
+        del session_name, continue_session, resume_picker, no_session, session_dir
+        del provider_settings, default_project_trust, no_context_files
+        del tool_allowlist, tool_denylist, no_tools, no_builtin_tools
+        del no_skills, no_prompt_templates, no_themes
+        del skill_paths, prompt_template_paths, theme_paths
+        calls.append(
+            (
+                cli.environ.get("TAU_OFFLINE"),
+                cli.environ.get("PI_OFFLINE"),
+                cli.environ.get("PI_SKIP_VERSION_CHECK"),
+            )
+        )
+
+    monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
+
+    result = CliRunner().invoke(app, ["--cwd", str(tmp_path), "--offline"])
+
+    assert result.exit_code == 0
+    assert calls == [("1", "1", "1")]
 
 
 def test_default_tui_passes_tool_selection_flags(
