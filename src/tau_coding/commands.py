@@ -122,6 +122,14 @@ class CommandNotification:
 
 
 @dataclass(frozen=True, slots=True)
+class CommandStatusUpdate:
+    """Persistent status update requested by a coding-session slash command."""
+
+    key: str
+    text: str | None
+
+
+@dataclass(frozen=True, slots=True)
 class CommandResult:
     """Result of handling a coding-session slash command."""
 
@@ -165,6 +173,7 @@ class CommandResult:
     terminal_title_requested: bool = False
     terminal_title: str | None = None
     notifications: tuple[CommandNotification, ...] = ()
+    status_updates: tuple[CommandStatusUpdate, ...] = ()
     user_message: str | None = None
     user_message_delivery: Literal["steer", "follow_up"] = "steer"
     message: str | None = None

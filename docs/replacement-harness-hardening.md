@@ -675,6 +675,28 @@ Acceptance:
 - This slice does not claim Pi's custom footer/status/widget APIs or lifecycle
   event-driven title updates.
 
+### Slice 32: Extension Command Status Line
+
+Pi extensions can call `ctx.ui.setStatus(key, text)` to keep a small persistent
+status indicator visible until the extension clears it. Tau now exposes the same
+bounded concept for synchronous extension commands by rendering extension-owned
+key/value statuses above the prompt.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Extension command handlers can call `context.set_status(key, text_or_none)`.
+- The `context.ui` facade exposes `set_status(key, text_or_none)`.
+- `CommandResult` carries status updates through the command registry.
+- The TUI renders active extension statuses in a dedicated prompt-region status
+  strip and hides the strip when all statuses are cleared.
+- Setting a status key to `None` clears that extension status.
+- Status side effects compose with explicit `CommandResult`, notifications,
+  title overrides, editor prefill, and user-message side effects.
+- This slice does not claim Pi's custom footer replacement, arbitrary widgets,
+  working indicator customization, or event-driven status updates.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

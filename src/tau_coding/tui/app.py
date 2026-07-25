@@ -5572,6 +5572,14 @@ class TauTuiApp(App[None]):
         color: $tau-muted-text;
     }
 
+    #extension-status {
+        height: auto;
+        margin: 0 1 1 1;
+        padding: 0 1;
+        background: $tau-screen-background;
+        color: $tau-muted-text;
+    }
+
     #prompt-row {
         height: auto;
         margin: 0 1 1 1;
@@ -5995,6 +6003,7 @@ class TauTuiApp(App[None]):
         self._terminal_notification = TerminalNotificationController(
             self.tui_settings.turn_notification
         )
+        self._extension_statuses: dict[str, str] = {}
         self._app_has_focus = True
         self._active_notification_keys: set[tuple[str, str]] = set()
         self._supports_pyperclip: bool | None = None
@@ -6061,6 +6070,7 @@ class TauTuiApp(App[None]):
                     markup=False,
                 )
                 yield Static("", id="queued-messages")
+                yield Static("", id="extension-status")
                 with Horizontal(id="prompt-row"):
                     yield Static("τ", id="prompt-prefix")
                     yield PromptInput(
@@ -6212,6 +6222,7 @@ class TauTuiApp(App[None]):
                 if command.message:
                     self._append_command_message(text, command.message)
                 self._deliver_command_notifications(command)
+                self._apply_command_status_updates(command)
                 if command.terminal_title_requested:
                     self._set_extension_terminal_title(command.terminal_title)
                 if command.editor_text is not None:
@@ -6418,6 +6429,7 @@ class TauTuiApp(App[None]):
                 else:
                     self._show_command_message(text, command.message)
             self._deliver_command_notifications(command)
+            self._apply_command_status_updates(command)
             if command.terminal_title_requested:
                 self._set_extension_terminal_title(command.terminal_title)
             if command.editor_text is not None:
@@ -6877,6 +6889,14 @@ class TauTuiApp(App[None]):
         """Show notifications requested by a slash-command handler."""
         for notification in command.notifications:
             self._notify(notification.message, severity=notification.severity)
+
+    def _apply_command_status_updates(self, command: CommandResult) -> None:
+        """Apply persistent status updates requested by a slash-command handler."""
+        for update in command.status_updates:
+            if update.text is None:
+                self._extension_statuses.pop(update.key, None)
+            else:
+                self._extension_statuses[update.key] = update.text
 
     def _set_extension_terminal_title(self, title: str | None) -> None:
         """Override or clear the terminal title requested by an extension command."""
@@ -8477,6 +8497,10 @@ class TauTuiApp(App[None]):
                 keybindings=self.tui_settings.keybindings,
             )
         )
+        extension_status = self.query_one("#extension-status", Static)
+        status_text = _render_extension_statuses(self._extension_statuses)
+        extension_status.display = bool(status_text)
+        extension_status.update(status_text)
         self._sync_activity_indicator()
         self._refresh_footer_bindings()
 
@@ -10749,6 +10773,11 @@ def _render_queued_messages(
             )
         )
     return Group(*rows)
+
+
+def _render_extension_statuses(statuses: dict[str, str]) -> str:
+    """Render persistent extension status entries near the prompt."""
+    return "  |  ".join(f"{key}: {value}" for key, value in statuses.items())
 
 
 def _queued_message_preview(message: str) -> str:

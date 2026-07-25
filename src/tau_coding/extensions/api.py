@@ -67,6 +67,7 @@ class ExtensionCommandContext:
     terminal_title_requested: bool = False
     terminal_title: str | None = None
     notifications: list[ExtensionNotification] = field(default_factory=list)
+    status_updates: list[ExtensionStatusUpdate] = field(default_factory=list)
     user_message: str | None = None
     user_message_delivery: str = "steer"
     ui: ExtensionCommandUi = field(init=False)
@@ -99,6 +100,15 @@ class ExtensionCommandContext:
         self.terminal_title_requested = True
         self.terminal_title = title
 
+    def set_status(self, key: str, text: str | None) -> None:
+        """Request that Tau set or clear a persistent extension status line."""
+        status_key = key.strip()
+        if not status_key:
+            raise ValueError("set_status requires a non-empty key")
+        if text is not None and not isinstance(text, str):
+            raise TypeError("set_status text must be text or None")
+        self.status_updates.append(ExtensionStatusUpdate(key=status_key, text=text))
+
     def send_user_message(self, text: str, *, deliver_as: str = "steer") -> None:
         """Request that Tau send or queue a user message after the command returns."""
         message = text.strip()
@@ -126,6 +136,10 @@ class ExtensionCommandUi:
     def set_title(self, title: str | None) -> None:
         """Request that Tau override or clear the terminal title."""
         self._context.set_title(title)
+
+    def set_status(self, key: str, text: str | None) -> None:
+        """Request that Tau set or clear a persistent extension status line."""
+        self._context.set_status(key, text)
 
 
 class ExtensionAPI:
@@ -226,6 +240,14 @@ class ExtensionNotification:
 
     message: str
     severity: str = "information"
+
+
+@dataclass(frozen=True, slots=True)
+class ExtensionStatusUpdate:
+    """Persistent status update requested by an extension command."""
+
+    key: str
+    text: str | None
 
 
 def _normalize_argument_completions(
