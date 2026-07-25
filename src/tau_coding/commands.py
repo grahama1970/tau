@@ -217,6 +217,13 @@ class CommandRegistry:
             if include_hidden or not self._commands[name].hidden
         )
 
+    def copy(self) -> CommandRegistry:
+        """Return an independent copy of this command registry."""
+        copied = CommandRegistry()
+        copied._commands = dict(self._commands)
+        copied._aliases = dict(self._aliases)
+        return copied
+
     def execute(self, session: CommandSession, text: str) -> CommandResult:
         """Execute a slash command, or return unhandled for ordinary prompts."""
         stripped = text.strip()

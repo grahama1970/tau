@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import fnmatch
+import inspect
 import os
 import shutil
 import subprocess
@@ -45,7 +46,13 @@ from tau_agent.tools import AgentTool
 from tau_ai import ModelProvider
 from tau_ai.events import ProviderErrorEvent, ProviderResponseEndEvent, ProviderTextDeltaEvent
 from tau_coding.branch_summary import summarize_branch_messages_with_model
-from tau_coding.commands import CommandRegistry, CommandResult, create_default_command_registry
+from tau_coding.commands import (
+    CommandContext,
+    CommandRegistry,
+    CommandResult,
+    SlashCommand,
+    create_default_command_registry,
+)
 from tau_coding.context import discover_project_context_with_diagnostics
 from tau_coding.context_window import (
     DEFAULT_COMPACTION_KEEP_RECENT_TOKENS,
@@ -64,7 +71,7 @@ from tau_coding.diagnostics import (
     AgentCallDiagnosticLogger,
     new_agent_call_run_id,
 )
-from tau_coding.extensions import LoadedExtension, load_extension_tools
+from tau_coding.extensions import ExtensionCommand, LoadedExtension, load_extension_tools
 from tau_coding.loop_receipt import LoopReceiptConfig, LoopReceiptRecorder
 from tau_coding.paths import TauPaths
 from tau_coding.prompt_templates import (
@@ -286,6 +293,7 @@ class CodingSession:
         extensions: tuple[LoadedExtension, ...] = (),
         resource_diagnostics: tuple[ResourceDiagnostic, ...] = (),
         command_registry: CommandRegistry | None = None,
+        base_command_registry: CommandRegistry | None = None,
         pending_initial_entries: tuple[SessionEntry, ...] = (),
     ) -> None:
         self._config = config
@@ -298,6 +306,11 @@ class CodingSession:
         self._context_files = context_files
         self._extensions = extensions
         self._resource_diagnostics = resource_diagnostics
+        self._base_command_registry = (
+            base_command_registry.copy()
+            if base_command_registry is not None
+            else create_default_command_registry()
+        )
         self._command_registry = command_registry or create_default_command_registry()
         self._provider_name = config.provider_name
         self._provider_settings = config.provider_settings
@@ -400,6 +413,15 @@ class CodingSession:
             ),
             messages=state.messages,
         )
+        base_command_registry = (
+            config.command_registry.copy()
+            if config.command_registry is not None
+            else create_default_command_registry()
+        )
+        command_registry, command_diagnostics = _command_registry_with_extensions(
+            base_command_registry,
+            resources.extensions,
+        )
         session = cls(
             config,
             state=state,
@@ -409,8 +431,9 @@ class CodingSession:
             prompt_templates=resources.prompt_templates,
             context_files=resources.context_files,
             extensions=resources.extensions,
-            resource_diagnostics=resources.diagnostics,
-            command_registry=config.command_registry,
+            resource_diagnostics=(*resources.diagnostics, *command_diagnostics),
+            command_registry=command_registry,
+            base_command_registry=base_command_registry,
             pending_initial_entries=pending_initial_entries,
         )
         session._sync_thinking_level_to_active_model()
@@ -1123,7 +1146,12 @@ class CodingSession:
         after_skills = _skill_signatures(resources.skills)
         after_prompt_templates = _prompt_template_signatures(resources.prompt_templates)
         after_context_files = _context_file_signatures(resources.context_files)
-        after_diagnostics = _diagnostic_signatures(resources.diagnostics)
+        command_registry, command_diagnostics = _command_registry_with_extensions(
+            self._base_command_registry,
+            resources.extensions,
+        )
+        resource_diagnostics = (*resources.diagnostics, *command_diagnostics)
+        after_diagnostics = _diagnostic_signatures(resource_diagnostics)
         after_system_prompt_inputs = _system_prompt_resource_signatures(
             skills=resources.skills,
             context_files=resources.context_files,
@@ -1153,7 +1181,8 @@ class CodingSession:
         self._prompt_templates = resources.prompt_templates
         self._context_files = resources.context_files
         self._extensions = resources.extensions
-        self._resource_diagnostics = resources.diagnostics
+        self._resource_diagnostics = resource_diagnostics
+        self._command_registry = command_registry
         if rebuilt_system_prompt is not None:
             self._harness.config.system = rebuilt_system_prompt
 
@@ -2745,6 +2774,65 @@ def _load_session_resources(
                 *extensions.diagnostics,
             ]
         ),
+    )
+
+
+def _command_registry_with_extensions(
+    base_registry: CommandRegistry,
+    extensions: tuple[LoadedExtension, ...],
+) -> tuple[CommandRegistry, tuple[ResourceDiagnostic, ...]]:
+    registry = base_registry.copy()
+    diagnostics: list[ResourceDiagnostic] = []
+    for extension in extensions:
+        for command in extension.commands:
+            slash_command = _extension_slash_command(extension, command)
+            try:
+                registry.register(slash_command)
+            except ValueError as exc:
+                diagnostics.append(
+                    ResourceDiagnostic(
+                        kind="extension",
+                        name=extension.name,
+                        path=extension.path,
+                        message=f"slash command /{command.name} ignored: {exc}",
+                        severity="error",
+                    )
+                )
+    return registry, tuple(diagnostics)
+
+
+def _extension_slash_command(
+    extension: LoadedExtension,
+    command: ExtensionCommand,
+) -> SlashCommand:
+    def handler(context: CommandContext) -> CommandResult:
+        result = command.handler(context)
+        if inspect.isawaitable(result):
+            close = getattr(result, "close", None)
+            if callable(close):
+                close()
+            return CommandResult(
+                handled=True,
+                message=(
+                    f"Extension command /{command.name} returned an awaitable; "
+                    "Tau extension slash commands are synchronous in this release."
+                ),
+            )
+        if isinstance(result, CommandResult):
+            return result
+        if result is None:
+            return CommandResult(handled=True)
+        return CommandResult(handled=True, message=str(result))
+
+    return SlashCommand(
+        name=command.name,
+        usage=command.usage,
+        description=f"{command.description} (extension: {extension.name})",
+        handler=handler,
+        aliases=command.aliases,
+        search_terms=command.search_terms,
+        argument_hint=command.argument_hint,
+        hidden=command.hidden,
     )
 
 

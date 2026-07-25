@@ -446,6 +446,27 @@ Acceptance:
 - Results are relative POSIX paths and include result-limit/truncation metadata.
 - The tool is read-only and fails fast when `fd`/`fdfind` is unavailable.
 
+### Slice 22: Extension Slash Commands
+
+Pi extensions can register slash commands that appear in the interactive
+command surface. Tau already loaded bounded Python extensions, but those
+extensions could only add tools. Add a narrow command-registration API that
+feeds Tau's existing slash command registry and TUI autocomplete.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Python extensions can call `tau.register_command(...)` during `setup(tau)`.
+- Registered extension commands appear in the active command registry and TUI
+  slash autocomplete.
+- Extension command handlers can return `CommandResult`, text, or `None`.
+- Reload rebuilds the active command registry from the base registry and the
+  newly loaded extensions so stale extension commands do not linger.
+- Built-in command conflicts fail closed through resource diagnostics.
+- This slice does not claim Pi's async extension command handlers, custom
+  extension UI widgets, shortcuts, flags, or lifecycle hooks.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

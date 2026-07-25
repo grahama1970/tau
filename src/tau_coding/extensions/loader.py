@@ -9,7 +9,7 @@ from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
 from tau_agent.tools import AgentTool
-from tau_coding.extensions.api import ExtensionAPI
+from tau_coding.extensions.api import ExtensionAPI, ExtensionCommand
 from tau_coding.resources import ResourceDiagnostic, TauResourcePaths
 
 _MODULE_NAME_PREFIX = "tau_extension"
@@ -18,11 +18,12 @@ _load_counter = 0
 
 @dataclass(frozen=True, slots=True)
 class LoadedExtension:
-    """A loaded extension module and its registered tools."""
+    """A loaded extension module and its registered resources."""
 
     name: str
     path: Path
     tools: tuple[AgentTool, ...]
+    commands: tuple[ExtensionCommand, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,6 +38,11 @@ class ExtensionLoadResult:
         """Return all registered extension tools in load order."""
         return tuple(tool for extension in self.extensions for tool in extension.tools)
 
+    @property
+    def commands(self) -> tuple[ExtensionCommand, ...]:
+        """Return all registered extension slash commands in load order."""
+        return tuple(command for extension in self.extensions for command in extension.commands)
+
 
 def load_extension_tools(
     paths: TauResourcePaths,
@@ -44,12 +50,13 @@ def load_extension_tools(
     explicit_paths: Sequence[Path] = (),
     discover_user_extensions: bool = True,
 ) -> ExtensionLoadResult:
-    """Load Python extensions and return tools they register.
+    """Load Python extensions and return tools/commands they register.
 
-    This is the first bounded Pi-compatible extension slice. It intentionally
-    supports tool registration only; UI hooks, lifecycle hooks, and project-local
-    automatic extension execution are left out until their full contracts exist.
-    Explicit paths always load, even when `discover_user_extensions` is false.
+    This remains a bounded Pi-compatible extension slice. It supports tool
+    registration and synchronous slash-command registration; UI hooks, lifecycle
+    hooks, and project-local automatic extension execution are left out until
+    their full contracts exist. Explicit paths always load, even when
+    `discover_user_extensions` is false.
     """
     diagnostics: list[ResourceDiagnostic] = []
     discovered: list[Path] = []
@@ -160,7 +167,7 @@ def _load_one_extension(
         )
         return None
     name = path.parent.name if path.name == "extension.py" else path.stem
-    return LoadedExtension(name=name, path=path, tools=api.tools)
+    return LoadedExtension(name=name, path=path, tools=api.tools, commands=api.commands)
 
 
 def _load_setup(
