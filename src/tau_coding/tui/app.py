@@ -2888,6 +2888,121 @@ class ThinkingPickerScreen(ModalScreen[str | None]):
         ]
 
 
+class ImageVisibilityPickerScreen(ModalScreen[bool | None]):
+    """Modal picker for inline tool image rendering."""
+
+    BINDINGS: ClassVar[list[Binding]] = [
+        Binding("up", "cursor_up", "Up", priority=True),
+        Binding("down", "cursor_down", "Down", priority=True),
+        Binding("enter", "select_cursor", "Select", priority=True),
+        Binding("escape", "cancel", "Cancel", priority=True),
+    ]
+
+    def __init__(
+        self,
+        current_value: bool,
+        *,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
+        super().__init__()
+        self.current_value = current_value
+        self.keybindings = keybindings or TuiKeybindings()
+
+    def compose(self) -> ComposeResult:
+        """Compose the image visibility picker."""
+        with Vertical(id="image-visibility-picker"):
+            yield Static("Images", id="image-visibility-picker-title")
+            yield ListView(
+                *self._list_items(),
+                id="image-visibility-picker-list",
+            )
+            select_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+            cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+            yield Static(
+                f"{select_key} selects - {cancel_key} cancels",
+                id="image-visibility-picker-help",
+            )
+
+    def on_mount(self) -> None:
+        """Focus the image visibility list and preselect the current setting."""
+        image_list = self.query_one("#image-visibility-picker-list", ListView)
+        image_list.index = 0 if self.current_value else 1
+        image_list.focus()
+
+    def on_key(self, event: Key) -> None:
+        """Route picker keys to the list."""
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
+            event.stop()
+            self.action_cursor_up()
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
+            event.stop()
+            self.action_cursor_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
+            event.stop()
+            self.action_select_cursor()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.action_cancel()
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """Dismiss with the selected image visibility setting."""
+        if event.index == 0:
+            self.dismiss(True)
+        elif event.index == 1:
+            self.dismiss(False)
+
+    def action_cursor_up(self) -> None:
+        """Move to the previous image visibility option."""
+        self._move(-1)
+
+    def action_cursor_down(self) -> None:
+        """Move to the next image visibility option."""
+        self._move(1)
+
+    def action_select_cursor(self) -> None:
+        """Select the highlighted image visibility option."""
+        self.query_one("#image-visibility-picker-list", ListView).action_select_cursor()
+
+    def action_cancel(self) -> None:
+        """Close the picker without changing image visibility."""
+        self.dismiss(None)
+
+    def _move(self, direction: Literal[-1, 1]) -> None:
+        image_list = self.query_one("#image-visibility-picker-list", ListView)
+        current_index = image_list.index if image_list.index is not None else 0
+        image_list.index = (current_index + direction) % 2
+
+    def _list_items(self) -> list[ListItem]:
+        return [
+            ListItem(
+                Label(
+                    _image_visibility_picker_label(
+                        True,
+                        current_value=self.current_value,
+                    ),
+                    markup=False,
+                )
+            ),
+            ListItem(
+                Label(
+                    _image_visibility_picker_label(
+                        False,
+                        current_value=self.current_value,
+                    ),
+                    markup=False,
+                )
+            ),
+        ]
+
+
 class TrustPickerScreen(ModalScreen[ProjectTrustOption | None]):
     """Modal picker for project trust decisions."""
 
@@ -5437,6 +5552,7 @@ class TauTuiApp(App[None]):
     SessionPickerScreen,
     SettingsPickerScreen,
     ThinkingPickerScreen,
+    ImageVisibilityPickerScreen,
     TreePickerScreen,
     UserMessagePickerScreen,
     WorkflowPickerScreen,
@@ -5452,6 +5568,7 @@ class TauTuiApp(App[None]):
     #session-picker,
     #settings-picker,
     #thinking-picker,
+    #image-visibility-picker,
     #tree-picker,
     #user-message-picker,
     #workflow-picker,
@@ -5472,6 +5589,7 @@ class TauTuiApp(App[None]):
     #session-picker-title,
     #settings-picker-title,
     #thinking-picker-title,
+    #image-visibility-picker-title,
     #tree-picker-title,
     #user-message-picker-title,
     #workflow-picker-title,
@@ -5508,6 +5626,7 @@ class TauTuiApp(App[None]):
     #session-picker-list,
     #settings-picker-list,
     #thinking-picker-list,
+    #image-visibility-picker-list,
     #tree-picker-list,
     #user-message-picker-list,
     #workflow-picker-list,
@@ -5533,6 +5652,7 @@ class TauTuiApp(App[None]):
     #session-picker-help,
     #settings-picker-help,
     #thinking-picker-help,
+    #image-visibility-picker-help,
     #tree-picker-help,
     #user-message-picker-help,
     #workflow-picker-help,
@@ -6061,6 +6181,7 @@ class TauTuiApp(App[None]):
             text,
             self.tui_settings.keybindings,
             self.session,
+            self.tui_settings,
         ) or self.session.handle_command(text)
         if command.handled:
             if command.clear_requested:
@@ -6141,6 +6262,8 @@ class TauTuiApp(App[None]):
                 self._open_scoped_models_picker()
             if command.settings_picker_requested:
                 self._open_settings_picker()
+            if command.images_picker_requested:
+                self._open_image_visibility_picker()
             if command.trust_picker_requested:
                 self._open_trust_picker()
             if command.theme_picker_requested:
@@ -6155,6 +6278,8 @@ class TauTuiApp(App[None]):
                 self._open_skill_picker()
             if command.thinking_level is not None:
                 await self._set_thinking_level(command.thinking_level)
+            if command.show_images is not None:
+                self._set_show_images(command.show_images)
             if command.theme is not None:
                 self._set_tui_theme(command.theme)
             if _is_reload_command_text(text):
@@ -6434,6 +6559,10 @@ class TauTuiApp(App[None]):
     def _set_tui_theme(self, theme: str) -> None:
         self._set_tui_settings(replace(self.tui_settings, theme=theme))
 
+    def _set_show_images(self, show_images: bool) -> None:
+        self._set_tui_settings(replace(self.tui_settings, show_images=show_images))
+        self._notify(f"Show images: {'on' if show_images else 'off'}")
+
     def _preview_tui_theme(self, theme: str) -> None:
         self._set_tui_settings(replace(self.tui_settings, theme=theme), persist=False)
 
@@ -6522,6 +6651,20 @@ class TauTuiApp(App[None]):
         if level is None:
             return
         self.run_worker(self._set_thinking_level(level), exclusive=False)
+
+    def _open_image_visibility_picker(self) -> None:
+        self.push_screen(
+            ImageVisibilityPickerScreen(
+                self.tui_settings.show_images,
+                keybindings=self.tui_settings.keybindings,
+            ),
+            callback=self._handle_image_visibility_picker_result,
+        )
+
+    def _handle_image_visibility_picker_result(self, show_images: bool | None) -> None:
+        if show_images is None:
+            return
+        self._set_show_images(show_images)
 
     def _open_trust_picker(self) -> None:
         project_trust_state = getattr(self.session, "project_trust_state", None)
@@ -6897,6 +7040,7 @@ class TauTuiApp(App[None]):
             | UserMessagePickerScreen
             | SettingsPickerScreen
             | ThinkingPickerScreen
+            | ImageVisibilityPickerScreen
             | LoginMethodPickerScreen
             | LoginProviderPickerScreen
             | SkillPickerScreen
@@ -6933,6 +7077,7 @@ class TauTuiApp(App[None]):
             SessionPickerScreen
             | SettingsPickerScreen
             | ThinkingPickerScreen
+            | ImageVisibilityPickerScreen
             | TreePickerScreen
             | UserMessagePickerScreen
             | LoginMethodPickerScreen
@@ -6958,6 +7103,7 @@ class TauTuiApp(App[None]):
             SessionPickerScreen
             | SettingsPickerScreen
             | ThinkingPickerScreen
+            | ImageVisibilityPickerScreen
             | TreePickerScreen
             | UserMessagePickerScreen
             | LoginMethodPickerScreen
@@ -9497,6 +9643,17 @@ def _thinking_picker_label(level: ThinkingLevel, current_level: str) -> str:
     return f"{marker}  {level} - {description}" if description else f"{marker}  {level}"
 
 
+def _image_visibility_picker_label(show_images: bool, *, current_value: bool) -> str:
+    marker = "current" if show_images == current_value else "       "
+    label = "Yes" if show_images else "No"
+    description = (
+        "Show images inline in terminal"
+        if show_images
+        else "Show text placeholder instead"
+    )
+    return f"{marker}  {label} - {description}"
+
+
 def _filter_settings_picker_items(
     items: Sequence[SettingsPickerItem],
     query: str,
@@ -10192,6 +10349,7 @@ def _local_tui_command(
     text: str,
     keybindings: TuiKeybindings,
     session: CodingSession,
+    settings: TuiSettings,
 ) -> CommandResult | None:
     command = text.strip().casefold()
     if command == "/hotkeys":
@@ -10204,6 +10362,27 @@ def _local_tui_command(
             handled=True,
             message=_render_tui_resources_message(session),
         )
+    if command == "/images":
+        return CommandResult(handled=True, images_picker_requested=True)
+    if command.startswith("/images "):
+        image_value = _parse_show_images_command_value(command.removeprefix("/images "))
+        if image_value is None:
+            return CommandResult(handled=True, message="Usage: /images [on|off]")
+        if image_value == settings.show_images:
+            return CommandResult(
+                handled=True,
+                message=f"Show images: {'on' if image_value else 'off'}",
+            )
+        return CommandResult(handled=True, show_images=image_value)
+    return None
+
+
+def _parse_show_images_command_value(value: str) -> bool | None:
+    normalized = value.strip().casefold()
+    if normalized in {"on", "yes", "true", "show", "inline"}:
+        return True
+    if normalized in {"off", "no", "false", "hide", "placeholder"}:
+        return False
     return None
 
 

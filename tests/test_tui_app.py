@@ -71,6 +71,7 @@ from tau_coding.tui.app import (
     TERMINAL_PROGRESS_CLEAR_SEQUENCE,
     CommandOutputScreen,
     ConfirmationScreen,
+    ImageVisibilityPickerScreen,
     LoginMethodPickerScreen,
     LoginProviderPickerScreen,
     LoginScreen,
@@ -2810,6 +2811,63 @@ async def test_tui_app_theme_command_argument_accepts_automatic_theme_pair(
             '"theme": "tau-light/tau-dark"'
         ) != -1
         assert app.get_theme_variable_defaults()["tau-screen-background"] == "#ffffff"
+
+
+@pytest.mark.anyio
+async def test_tui_app_images_command_opens_picker_and_persists_selection(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(show_images=True))
+    notifications: list[str] = []
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        del kwargs
+        notifications.append(message)
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "/images"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ImageVisibilityPickerScreen)
+        image_list = app.screen.query_one("#image-visibility-picker-list", ListView)
+        assert image_list.index == 0
+        assert [str(item.query_one(Label).render()) for item in image_list.children] == [
+            "current  Yes - Show images inline in terminal",
+            "         No - Show text placeholder instead",
+        ]
+
+        await pilot.press("down")
+        await pilot.pause()
+        await pilot.press("enter")
+        await pilot.pause(0.2)
+
+    assert app.tui_settings.show_images is False
+    assert '"show_images": false' in tui_settings_path().read_text(encoding="utf-8")
+    assert notifications == ["Show images: off"]
+
+
+@pytest.mark.anyio
+async def test_tui_app_images_command_argument_updates_setting_and_persists(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(show_images=True))
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "/images off"
+        await pilot.press("enter")
+        await pilot.pause()
+
+    assert app.tui_settings.show_images is False
+    assert '"show_images": false' in tui_settings_path().read_text(encoding="utf-8")
 
 
 def test_tui_settings_theme_cycle_includes_pi_style_automatic_theme() -> None:

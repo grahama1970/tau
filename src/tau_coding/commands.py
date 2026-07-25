@@ -127,12 +127,14 @@ class CommandResult:
     model_picker_query: str | None = None
     scoped_models_picker_requested: bool = False
     settings_picker_requested: bool = False
+    images_picker_requested: bool = False
     trust_picker_requested: bool = False
     theme_picker_requested: bool = False
     workflow_picker_requested: bool = False
     tools_picker_requested: bool = False
     skills_picker_requested: bool = False
     thinking_level: str | None = None
+    show_images: bool | None = None
     theme: str | None = None
     message: str | None = None
 
@@ -277,6 +279,15 @@ def create_default_command_registry() -> CommandRegistry:
             description="Copy the last agent message to the clipboard.",
             handler=_copy_command,
             search_terms=("clipboard", "assistant", "message"),
+        )
+    )
+    registry.register(
+        SlashCommand(
+            name="images",
+            usage="/images [on|off]",
+            description="Choose whether tool images render inline in the TUI.",
+            handler=_images_command,
+            search_terms=("show", "hide", "inline", "terminal"),
         )
     )
     registry.register(
@@ -926,6 +937,14 @@ def _settings_command(context: CommandContext) -> CommandResult:
     if context.args:
         return CommandResult(handled=True, message="Usage: /settings")
     return CommandResult(handled=True, settings_picker_requested=True)
+
+
+def _images_command(context: CommandContext) -> CommandResult:
+    del context
+    return CommandResult(
+        handled=True,
+        message="Image display is an interactive TUI setting. Use /images in the TUI.",
+    )
 
 
 def _share_command(context: CommandContext) -> CommandResult:

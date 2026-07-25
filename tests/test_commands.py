@@ -128,6 +128,7 @@ def test_registered_commands_are_pi_aligned(tmp_path: Path) -> None:
         "export",
         "fork",
         "hotkeys",
+        "images",
         "import",
         "login",
         "logout",
@@ -137,6 +138,7 @@ def test_registered_commands_are_pi_aligned(tmp_path: Path) -> None:
         "prompts",
         "quit",
         "reload",
+        "resources",
         "resume",
         "scoped-models",
         "session",
@@ -268,6 +270,13 @@ def test_settings_command_requests_picker(tmp_path: Path) -> None:
     assert result.handled is True
     assert result.settings_picker_requested is True
     assert with_args.message == "Usage: /settings"
+
+
+def test_images_command_is_interactive_tui_scoped(tmp_path: Path) -> None:
+    result = create_default_command_registry().execute(FakeSession(tmp_path), "/images")
+
+    assert result.handled is True
+    assert result.message == "Image display is an interactive TUI setting. Use /images in the TUI."
 
 
 def test_export_command_requests_default_export(tmp_path: Path) -> None:
