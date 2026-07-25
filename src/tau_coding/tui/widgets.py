@@ -1072,7 +1072,8 @@ def render_compact_session_info(
     right = Text(style=theme.muted_text, overflow="fold", no_wrap=False, justify="right")
     right.append(_context_usage(session), style=theme.completion_description)
     right.append("  ")
-    right.append(f"{session.provider_name}:{session.model}", style=theme.prompt_text)
+    right.append(session.provider_name, style=theme.completion_description)
+    right.append(f":{session.model}", style=theme.prompt_text)
     right.append(" ")
     right.append(f"({_thinking_level(session)})", style=theme.completion_description)
     loop_monitor = _loop_monitor_status(session)
@@ -1757,7 +1758,11 @@ def _context_file_label(path: Path, *, cwd: Path) -> str:
     try:
         return str(expanded_path.resolve().relative_to(cwd.expanduser().resolve()))
     except (OSError, ValueError):
-        return _short_path(expanded_path)
+        try:
+            absolute_path = expanded_path.resolve()
+        except OSError:
+            absolute_path = expanded_path.absolute()
+        return _short_path(absolute_path)
 
 
 def _thinking_level(session: SessionSummarySource) -> str:
