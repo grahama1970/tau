@@ -316,6 +316,7 @@ class CodingSession:
         self._prompt_templates = prompt_templates
         self._context_files = context_files
         self._extensions = extensions
+        self._runtime_extension_tool_sources: dict[str, str] = {}
         self._resource_diagnostics = resource_diagnostics
         self._base_command_registry = (
             base_command_registry.copy()
@@ -723,11 +724,53 @@ class CodingSession:
     @property
     def extension_tool_sources(self) -> dict[str, str]:
         """Return a map from extension tool name to loaded extension name."""
-        return {
+        sources = {
             tool.name: extension.name
             for extension in self._extensions
             for tool in extension.tools
         }
+        sources.update(self._runtime_extension_tool_sources)
+        return sources
+
+    def register_extension_tool(
+        self,
+        tool: AgentTool,
+        *,
+        extension_name: str = "runtime",
+    ) -> str:
+        """Register an extension tool for future agent turns in this session."""
+        if not isinstance(tool, AgentTool):
+            raise TypeError("register_extension_tool expects an AgentTool instance")
+        tool_name = tool.name.strip()
+        if not tool_name:
+            raise ValueError("extension tool name must be non-empty")
+        if self._config.no_tools:
+            raise RuntimeError("Cannot register extension tool while tools are disabled.")
+        if self._config.tool_allowlist is not None and tool_name not in self._config.tool_allowlist:
+            raise RuntimeError(f"Extension tool is not in the active tool allowlist: {tool_name}")
+        if tool_name in self._config.tool_denylist:
+            raise RuntimeError(f"Extension tool is denied by active tool settings: {tool_name}")
+        if any(existing.name == tool_name for existing in self._harness.config.tools):
+            raise ValueError(f"Tool already registered: {tool_name}")
+        self._harness.config.tools.append(tool)
+        source = extension_name.strip() or "runtime"
+        self._runtime_extension_tool_sources[tool_name] = source
+        self._refresh_generated_system_prompt()
+        return f"Registered extension tool: {tool_name}"
+
+    def _refresh_generated_system_prompt(self) -> None:
+        if self._config.system is not None:
+            return
+        self._harness.config.system = build_system_prompt(
+            BuildSystemPromptOptions(
+                cwd=self.cwd,
+                tools=self._harness.config.tools,
+                skills=self._skills,
+                custom_prompt=self._config.custom_system_prompt,
+                append_system_prompt=self._config.append_system_prompt,
+                context_files=self._context_files,
+            )
+        )
 
     @property
     def extension_shortcut_sources(self) -> dict[str, tuple[str, str]]:

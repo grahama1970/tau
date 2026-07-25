@@ -87,6 +87,13 @@ class ExtensionShortcutContext:
         """Request that Tau exit after the shortcut returns."""
         self.shutdown_requested = True
 
+    def register_tool(self, tool: AgentTool) -> str:
+        """Register a tool for future agent turns in this session."""
+        register = getattr(self.session, "register_extension_tool", None)
+        if not callable(register):
+            raise RuntimeError("active session does not support runtime extension tools")
+        return str(register(tool, extension_name=self.extension_name))
+
     def set_editor_text(self, text: str) -> None:
         """Request that Tau replace the prompt editor contents after the shortcut returns."""
         if not isinstance(text, str):
@@ -180,6 +187,13 @@ class ExtensionCommandContext:
     def shutdown(self) -> None:
         """Request that Tau exit after the command returns."""
         self.shutdown_requested = True
+
+    def register_tool(self, tool: AgentTool) -> str:
+        """Register a tool for future agent turns in this session."""
+        register = getattr(self.session, "register_extension_tool", None)
+        if not callable(register):
+            raise RuntimeError("active session does not support runtime extension tools")
+        return str(register(tool, extension_name=self.extension_name))
 
     def set_editor_text(self, text: str) -> None:
         """Request that Tau replace the prompt editor contents after the command returns."""
