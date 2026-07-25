@@ -1299,6 +1299,36 @@ def test_expanded_edit_tool_result_renders_patch_as_colored_diff() -> None:
     assert re.search(r"\x1b\[7;92;[^m]*mnew", styled)
 
 
+def test_expanded_terminal_diff_output_renders_as_colored_diff() -> None:
+    item = ChatItem(
+        role="tool",
+        text="$ git diff (Ctrl+O to expand)",
+        tool_result_text=(
+            "✓ bash · not added to context\n"
+            "diff --git a/README.md b/README.md\n"
+            "--- a/README.md\n"
+            "+++ b/README.md\n"
+            "@@\n"
+            "-old\n"
+            "+new"
+        ),
+    )
+
+    console = Console(record=True, width=100, color_system="truecolor")
+    console.print(render_chat_item(item, show_tool_results=True))
+
+    plain = console.export_text(clear=False)
+    styled = console.export_text(styles=True)
+    assert "✓ bash · not added to context" in plain
+    assert "diff --git a/README.md b/README.md" in plain
+    assert "-old" in plain
+    assert "+new" in plain
+    assert re.search(r"\x1b\[91;[^m]*m-", styled)
+    assert re.search(r"\x1b\[7;91;[^m]*mold", styled)
+    assert re.search(r"\x1b\[92;[^m]*m\+", styled)
+    assert re.search(r"\x1b\[7;92;[^m]*mnew", styled)
+
+
 def test_transcript_plain_tool_body_renders_patch_as_colored_diff() -> None:
     item = ChatItem(
         role="tool",

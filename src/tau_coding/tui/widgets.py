@@ -1384,18 +1384,64 @@ def _render_patch_body(
 ) -> RenderableType | None:
     del syntax_theme
     marker = "\nPatch:\n"
-    if marker not in text:
+    if marker in text:
+        before_patch, patch = text.split(marker, 1)
+        if not patch.strip():
+            return None
+        return Group(
+            _plain_text(f"{before_patch}{marker.rstrip()}", body_style=body_style),
+            _render_diff_text(
+                patch.rstrip("\n"),
+                body_style=body_style,
+                code_block_background=code_block_background,
+            ),
+        )
+
+    embedded_diff = _split_embedded_unified_diff(text)
+    if embedded_diff is None:
         return None
-    before_patch, patch = text.split(marker, 1)
-    if not patch.strip():
-        return None
+    before_patch, patch = embedded_diff
     return Group(
-        _plain_text(f"{before_patch}{marker.rstrip()}", body_style=body_style),
+        _plain_text(before_patch.rstrip("\n"), body_style=body_style),
         _render_diff_text(
             patch.rstrip("\n"),
             body_style=body_style,
             code_block_background=code_block_background,
         ),
+    )
+
+
+def _split_embedded_unified_diff(text: str) -> tuple[str, str] | None:
+    lines = text.splitlines()
+    if len(lines) < 4:
+        return None
+
+    for index, _line in enumerate(lines):
+        if not _looks_like_unified_diff_start(lines, index):
+            continue
+        diff_lines = lines[index:]
+        if not any(candidate.startswith("@@") for candidate in diff_lines):
+            continue
+        if not (
+            any(candidate.startswith("--- ") for candidate in diff_lines)
+            and any(candidate.startswith("+++ ") for candidate in diff_lines)
+        ):
+            continue
+        before = "\n".join(lines[:index])
+        if not before.strip():
+            return None
+        return before, "\n".join(diff_lines)
+    return None
+
+
+def _looks_like_unified_diff_start(lines: Sequence[str], index: int) -> bool:
+    line = lines[index]
+    if line.startswith("diff --git "):
+        return True
+    return (
+        line.startswith("--- ")
+        and index + 1 < len(lines)
+        and lines[index + 1].startswith("+++ ")
     )
 
 
