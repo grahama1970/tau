@@ -10808,6 +10808,10 @@ def _render_startup_resources_summary(
         ("Skills", _compact_named_resource_labels(session.skills)),
         ("Prompts", _compact_prompt_labels(session.prompt_templates)),
         ("Extensions", _compact_named_resource_labels(getattr(session, "extensions", ()))),
+        (
+            "Diagnostics",
+            _compact_diagnostic_labels(getattr(session, "resource_diagnostics", ())),
+        ),
     ]
     visible_sections = [f"[{title}] {', '.join(labels)}" for title, labels in sections if labels]
     if notice:
@@ -10873,6 +10877,16 @@ def _compact_named_resource_labels(resources: Sequence[Any]) -> list[str]:
 
 def _compact_prompt_labels(prompt_templates: Sequence[Any]) -> list[str]:
     return [f"/{getattr(template, 'name', 'unknown')}" for template in prompt_templates]
+
+
+def _compact_diagnostic_labels(diagnostics: Sequence[Any]) -> list[str]:
+    if not diagnostics:
+        return []
+    counts: dict[str, int] = {}
+    for diagnostic in diagnostics:
+        severity = str(getattr(diagnostic, "severity", "warning"))
+        counts[severity] = counts.get(severity, 0) + 1
+    return [f"{severity}: {count}" for severity, count in sorted(counts.items())]
 
 
 def _resource_context_lines(

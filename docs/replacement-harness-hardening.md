@@ -269,6 +269,22 @@ Acceptance:
   package provenance for resources that were not loaded through a package
   manager.
 
+### Slice 12: Startup Resource Diagnostics
+
+Pi surfaces trust and resource-loading problems during startup. Tau already
+records resource diagnostics, but collapsed startup only listed successful
+resources. Add a compact diagnostics count so ignored project resources and
+resource errors are visible immediately.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- The collapsed startup resource summary includes a Diagnostics section when
+  resource diagnostics are present.
+- Diagnostics are summarized by recorded severity and do not claim that missing
+  or ignored resources were loaded.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.
