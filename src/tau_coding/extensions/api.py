@@ -17,6 +17,7 @@ ExtensionShortcutHandler = Callable[[Any], Any]
 ExtensionEntryRenderer = Callable[..., Any]
 ExtensionMessageRenderer = Callable[..., Any]
 ExtensionArgumentCompletionProvider = Callable[[str], Sequence[Any] | None]
+ExtensionEventHandler = Callable[[Any], Any]
 ThemeInfo = dict[str, str | None]
 ContextUsageInfo = dict[str, int | float | None]
 SystemPromptOptionsInfo = dict[str, Any]
@@ -1443,13 +1444,19 @@ class ExtensionCommandUi:
 class ExtensionAPI:
     """API object passed to an extension module's `setup(tau)` function."""
 
-    def __init__(self, flag_values: Mapping[str, bool | str] | None = None) -> None:
+    def __init__(
+        self,
+        flag_values: Mapping[str, bool | str] | None = None,
+        *,
+        event_bus: ExtensionEventBus | None = None,
+    ) -> None:
         self._tools: list[AgentTool] = []
         self._commands: list[ExtensionCommand] = []
         self._shortcuts: list[ExtensionShortcut] = []
         self._flags: dict[str, ExtensionFlag] = {}
         self._entry_renderers: dict[str, ExtensionEntryRenderer] = {}
         self._message_renderers: dict[str, ExtensionMessageRenderer] = {}
+        self.events = event_bus or ExtensionEventBus()
         self._flag_values: dict[str, bool | str] = {
             _normalize_flag_name(name): value for name, value in (flag_values or {}).items()
         }
@@ -1749,6 +1756,55 @@ class ExtensionHeaderUpdate:
     """Header replacement requested by a Tau extension."""
 
     lines: tuple[str, ...] | None
+
+
+class ExtensionEventBus:
+    """Small Pi-compatible event bus shared by loaded extensions."""
+
+    def __init__(self) -> None:
+        self._handlers: dict[str, list[ExtensionEventHandler]] = {}
+
+    def emit(self, channel: str, data: Any = None) -> None:
+        """Emit an event payload to current subscribers."""
+        normalized = str(channel).strip()
+        if not normalized:
+            raise ValueError("event channel must be non-empty")
+        for handler in tuple(self._handlers.get(normalized, ())):
+            try:
+                result = handler(data)
+                if hasattr(result, "__await__"):
+                    _schedule_event_handler_result(result)
+            except Exception:
+                continue
+
+    def on(self, channel: str, handler: ExtensionEventHandler) -> Callable[[], None]:
+        """Subscribe to a channel and return an unsubscribe callback."""
+        normalized = str(channel).strip()
+        if not normalized:
+            raise ValueError("event channel must be non-empty")
+        if not callable(handler):
+            raise TypeError("event handler must be callable")
+        handlers = self._handlers.setdefault(normalized, [])
+        handlers.append(handler)
+
+        def unsubscribe() -> None:
+            with suppress(ValueError):
+                handlers.remove(handler)
+
+        return unsubscribe
+
+    def clear(self) -> None:
+        """Remove every registered event handler."""
+        self._handlers.clear()
+
+
+def _schedule_event_handler_result(result: Any) -> None:
+    with suppress(RuntimeError):
+        asyncio.get_running_loop().create_task(result)
+        return
+    close = getattr(result, "close", None)
+    if callable(close):
+        close()
 
 
 def _normalize_argument_completions(

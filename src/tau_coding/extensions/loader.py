@@ -14,6 +14,7 @@ from tau_coding.extensions.api import (
     ExtensionAPI,
     ExtensionCommand,
     ExtensionEntryRenderer,
+    ExtensionEventBus,
     ExtensionFlag,
     ExtensionMessageRenderer,
     ExtensionShortcut,
@@ -148,8 +149,14 @@ def load_extension_tools(
 
     loaded: list[LoadedExtension] = []
     tool_names: set[str] = set()
+    event_bus = ExtensionEventBus()
     for path in discovered:
-        extension = _load_one_extension(path, diagnostics, flag_values=flag_values)
+        extension = _load_one_extension(
+            path,
+            diagnostics,
+            flag_values=flag_values,
+            event_bus=event_bus,
+        )
         if extension is None:
             continue
         duplicate = next((tool.name for tool in extension.tools if tool.name in tool_names), None)
@@ -202,11 +209,12 @@ def _load_one_extension(
     diagnostics: list[ResourceDiagnostic],
     *,
     flag_values: Mapping[str, bool | str] | None = None,
+    event_bus: ExtensionEventBus | None = None,
 ) -> LoadedExtension | None:
     setup = _load_setup(path, diagnostics)
     if setup is None:
         return None
-    api = ExtensionAPI(flag_values=flag_values)
+    api = ExtensionAPI(flag_values=flag_values, event_bus=event_bus)
     try:
         setup(api)
     except Exception as exc:  # noqa: BLE001 - extensions are an isolation boundary
