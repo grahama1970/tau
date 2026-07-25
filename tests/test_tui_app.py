@@ -105,6 +105,7 @@ from tau_coding.tui.app import (
     _filter_session_picker_records,
     _next_tui_settings,
     _render_activity_indicator,
+    _render_extension_statuses,
     _terminal_command_prefix_span,
     _theme_css_variables,
     _visible_completion_state,
@@ -2414,6 +2415,17 @@ async def test_tui_app_keeps_textual_footer_on_short_windows() -> None:
     async with app.run_test(size=(120, 18)):
         assert app.query_one(Footer).display is True
         assert len(app.query("#shortcut-hints")) == 0
+
+
+def test_extension_statuses_are_sorted_and_single_line() -> None:
+    rendered = _render_extension_statuses(
+        {
+            "zeta": "ready\nwith\tdetails",
+            "alpha": "  first\r\nsecond  ",
+        }
+    )
+
+    assert rendered == "alpha: first second  |  zeta: ready with details"
 
 
 @pytest.mark.anyio

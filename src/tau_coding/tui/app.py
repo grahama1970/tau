@@ -12640,7 +12640,15 @@ def _render_queued_messages(
 
 def _render_extension_statuses(statuses: dict[str, str]) -> str:
     """Render persistent extension status entries near the prompt."""
-    return "  |  ".join(f"{key}: {value}" for key, value in statuses.items())
+    return "  |  ".join(
+        f"{key}: {_sanitize_extension_status_text(value)}"
+        for key, value in sorted(statuses.items())
+    )
+
+
+def _sanitize_extension_status_text(text: str) -> str:
+    normalized = text.replace("\r", " ").replace("\n", " ").replace("\t", " ")
+    return re.sub(r" +", " ", normalized).strip()
 
 
 def _render_extension_widgets(widgets: dict[str, tuple[str, ...]]) -> str:
