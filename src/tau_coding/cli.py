@@ -834,6 +834,10 @@ def main(
         bool,
         typer.Option("--continue", "-c", help="Continue the latest session for this cwd."),
     ] = False,
+    session_dir: Annotated[
+        Path | None,
+        typer.Option("--session-dir", help="Directory for indexed session storage."),
+    ] = None,
     no_session: Annotated[
         bool,
         typer.Option("--no-session", help="Run without saving or indexing a session."),
@@ -997,7 +1001,7 @@ def main(
     if export:
         if print_requested:
             raise typer.BadParameter("--export cannot be combined with --print/--mode.")
-        _run_export_cli(positional_args)
+        _run_export_cli(positional_args, session_manager=_session_manager_from_dir(session_dir))
 
     if not print_requested and not export and command == "update":
         if len(positional_args) != 1:
@@ -1036,7 +1040,7 @@ def main(
         raise typer.Exit()
 
     if not print_requested and not export and command == "sessions" and len(positional_args) == 1:
-        render_session_list(SessionManager().list_sessions())
+        render_session_list(_session_manager_from_dir(session_dir).list_sessions())
         raise typer.Exit()
 
     if not print_requested and not export and command == "export":
@@ -1050,6 +1054,7 @@ def main(
                 session_ref,
                 output_path,
                 export_format,
+                _session_manager_from_dir(session_dir),
             )
         except (RuntimeError, ValueError) as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -3170,6 +3175,7 @@ def main(
                 session_name,
                 continue_session,
                 no_session,
+                session_dir,
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -3203,6 +3209,7 @@ def main(
             loop_receipt,
             session_name,
             no_session,
+            session_dir,
         )
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
@@ -3221,6 +3228,7 @@ async def run_openai_tui(
     session_name: str | None = None,
     continue_session: bool = False,
     no_session: bool = False,
+    session_dir: Path | None = None,
 ) -> str | None:
     """Run the Textual TUI and return its resumable session id, if any."""
     return await run_tui_app(
@@ -3234,7 +3242,14 @@ async def run_openai_tui(
         session_name=session_name,
         continue_session=continue_session,
         no_session=no_session,
+        session_manager=_session_manager_from_dir(session_dir),
     )
+
+
+def _session_manager_from_dir(session_dir: Path | None) -> SessionManager:
+    if session_dir is None:
+        return SessionManager()
+    return SessionManager(TauPaths(session_root=session_dir.expanduser().resolve()))
 
 
 def render_session_list(records: list[CodingSessionRecord]) -> None:
@@ -3289,7 +3304,7 @@ async def export_session_command(
     )
 
 
-def _run_export_cli(args: list[str]) -> None:
+def _run_export_cli(args: list[str], *, session_manager: SessionManager | None = None) -> None:
     """Run `tau export`/`tau --export` and exit."""
     try:
         session_ref, output_path, export_format = _parse_export_cli_args(args)
@@ -3301,6 +3316,7 @@ def _run_export_cli(args: list[str]) -> None:
             session_ref,
             output_path,
             export_format,
+            session_manager,
         )
     except (RuntimeError, ValueError) as exc:
         raise typer.BadParameter(str(exc)) from exc
@@ -12883,6 +12899,7 @@ async def run_openai_print_mode(
     session_manager: SessionManager | None = None,
     session_name: str | None = None,
     no_session: bool = False,
+    session_dir: Path | None = None,
 ) -> bool:
     """Run print mode with the OpenAI-compatible provider configured from the environment."""
     settings = load_provider_settings()
@@ -12892,7 +12909,7 @@ async def run_openai_print_mode(
         model=selection.model,
         thinking_level=DEFAULT_THINKING_LEVEL,
     )
-    manager = None if no_session else session_manager or SessionManager()
+    manager = None if no_session else session_manager or _session_manager_from_dir(session_dir)
     record: CodingSessionRecord | None = None
     if manager is not None:
         try:

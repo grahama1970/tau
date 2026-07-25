@@ -315,6 +315,7 @@ tau --session <session-id>
 tau --continue
 tau --new-session
 tau --no-session
+tau --session-dir ~/.tau-alt/sessions
 tau --name "Customer bugfix"
 tau export <session-id>
 tau export <session-id> session.html
@@ -331,6 +332,9 @@ session exists.
 
 `--no-session` starts an ephemeral interactive or print-mode run without
 creating an indexed session record or writing a session JSONL transcript.
+
+`--session-dir <dir>` uses `<dir>` as the indexed session storage root for
+startup, listing, and export commands.
 
 `tau export` writes a standalone HTML file with the preserved session tree and
 the storage-order transcript. The source can be an indexed session id or a path

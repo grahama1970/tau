@@ -16,11 +16,12 @@ class TauPaths:
 
     home: Path = field(default_factory=lambda: Path.home() / ".tau")
     agents_home: Path = field(default_factory=lambda: Path.home() / ".agents")
+    session_root: Path | None = None
 
     @property
     def sessions_dir(self) -> Path:
         """Return the user-level session directory."""
-        return self.home / "sessions"
+        return self.session_root or self.home / "sessions"
 
     @property
     def logs_dir(self) -> Path:

@@ -13,6 +13,16 @@ def test_tau_paths_user_locations(tmp_path: Path) -> None:
     assert paths.user_agents_prompts_dir == tmp_path / ".agents" / "prompts"
 
 
+def test_tau_paths_can_use_custom_session_root(tmp_path: Path) -> None:
+    paths = TauPaths(
+        home=tmp_path / ".tau",
+        agents_home=tmp_path / ".agents",
+        session_root=tmp_path / "sessions",
+    )
+
+    assert paths.sessions_dir == tmp_path / "sessions"
+
+
 def test_tau_paths_project_locations(tmp_path: Path) -> None:
     paths = TauPaths(home=tmp_path / "home", agents_home=tmp_path / "agents")
     cwd = tmp_path / "project"
