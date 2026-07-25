@@ -2530,6 +2530,7 @@ SettingsPickerKey = Literal[
     "output_padding_x",
     "quiet_startup",
     "collapse_changelog",
+    "sidebar_position",
     "show_images",
     "show_hardware_cursor",
     "show_terminal_progress",
@@ -5465,6 +5466,10 @@ class TauTuiApp(App[None]):
         padding-left: 1;
     }
 
+    TauTuiApp.-sidebar-right #sidebar {
+        dock: right;
+    }
+
     #main-pane {
         width: 1fr;
         padding: 1 1 0 1;
@@ -5985,6 +5990,7 @@ class TauTuiApp(App[None]):
         self._sync_prompt_shell_mode(prompt.text)
         prompt.focus()
         self._update_responsive_layout(self.size.width, self.size.height)
+        self._apply_sidebar_position()
         self._refresh()
         self._refresh_completions()
         if self.startup_message and not self.tui_settings.quiet_startup:
@@ -6606,6 +6612,7 @@ class TauTuiApp(App[None]):
             )
         if persist:
             save_tui_settings(self.tui_settings)
+        self._apply_sidebar_position()
         self._bindings = BindingsMap(_app_bindings(self.tui_settings.keybindings))
         with suppress(NoMatches):
             prompt = self.query_one("#prompt", PromptInput)
@@ -8360,8 +8367,19 @@ class TauTuiApp(App[None]):
         self._refresh_footer_bindings()
 
     def _update_responsive_layout(self, width: int, height: int) -> None:
+        if self.tui_settings.sidebar_position == "off":
+            self.add_class("-hide-sidebar")
+            return
         show_sidebar = width >= SIDEBAR_MIN_WIDTH and height >= SIDEBAR_MIN_HEIGHT
         self.set_class(not show_sidebar, "-hide-sidebar")
+
+    def _apply_sidebar_position(self) -> None:
+        position = self.tui_settings.sidebar_position
+        self.set_class(position == "right", "-sidebar-right")
+        if position == "off":
+            self.add_class("-hide-sidebar")
+        else:
+            self._update_responsive_layout(self.size.width, self.size.height)
 
     def _build_completion_state(
         self,
@@ -9511,6 +9529,12 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             description="How queued follow-up prompts are submitted after a turn",
         ),
         SettingsPickerItem(
+            key="sidebar_position",
+            label="Sidebar",
+            value=settings.sidebar_position,
+            description="Where session context appears in wide terminals",
+        ),
+        SettingsPickerItem(
             key="block_images",
             label="Block images",
             value="on" if settings.block_images else "off",
@@ -9733,6 +9757,16 @@ def _next_tui_settings(
         return replace(settings, steering_mode=_next_queue_drain_mode(settings.steering_mode))
     if key == "follow_up_mode":
         return replace(settings, follow_up_mode=_next_queue_drain_mode(settings.follow_up_mode))
+    if key == "sidebar_position":
+        sidebar_positions = ("right", "left", "off")
+        try:
+            current_index = sidebar_positions.index(settings.sidebar_position)
+        except ValueError:
+            current_index = -1
+        return replace(
+            settings,
+            sidebar_position=sidebar_positions[(current_index + 1) % len(sidebar_positions)],
+        )
     if key == "default_project_trust":
         default_project_trust_choices: tuple[DefaultProjectTrust, ...] = (
             "ask",

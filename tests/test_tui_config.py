@@ -462,6 +462,16 @@ def test_tui_settings_load_auto_copy_selection() -> None:
     assert settings.to_json()["auto_copy_selection"] is True
 
 
+def test_tui_settings_load_sidebar_position_aliases() -> None:
+    camel = tui_settings_from_json({"sidebarPosition": "left"})
+    snake = tui_settings_from_json({"sidebar_position": "off"})
+
+    assert camel.sidebar_position == "left"
+    assert camel.to_json()["sidebar_position"] == "left"
+    assert snake.sidebar_position == "off"
+    assert snake.to_json()["sidebar_position"] == "off"
+
+
 def test_tui_settings_load_auto_compact() -> None:
     settings = tui_settings_from_json({"auto_compact": False})
 
@@ -518,6 +528,11 @@ def test_tui_settings_reject_invalid_hide_thinking() -> None:
 def test_tui_settings_reject_invalid_auto_copy_selection() -> None:
     with pytest.raises(TuiConfigError, match="auto_copy_selection"):
         tui_settings_from_json({"auto_copy_selection": "yes"})
+
+
+def test_tui_settings_reject_invalid_sidebar_position() -> None:
+    with pytest.raises(TuiConfigError, match="sidebar_position"):
+        tui_settings_from_json({"sidebar_position": "bottom"})
 
 
 def test_tui_settings_reject_invalid_auto_compact() -> None:
@@ -886,6 +901,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["theme"] == "high-contrast"
     assert settings.to_json()["auto_compact"] is True
     assert settings.to_json()["auto_copy_selection"] is False
+    assert settings.to_json()["sidebar_position"] == "right"
     assert settings.to_json()["double_escape_action"] == "tree"
     assert settings.to_json()["hide_thinking"] is True
     assert settings.to_json()["tree_filter_mode"] == "default"

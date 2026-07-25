@@ -28,6 +28,7 @@ class TuiThemeError(ValueError):
 
 
 type TurnNotificationMode = Literal["off", "bell", "desktop"]
+type SidebarPosition = Literal["left", "right", "off"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -838,6 +839,7 @@ class TuiSettings:
     theme: str = "tau-dark"
     auto_compact: bool = True
     auto_copy_selection: bool = False
+    sidebar_position: SidebarPosition = "right"
     auto_resize_images: bool = True
     show_images: bool = True
     image_width_cells: int = DEFAULT_IMAGE_WIDTH_CELLS
@@ -869,6 +871,7 @@ class TuiSettings:
             "autocomplete_max_visible": self.autocomplete_max_visible,
             "auto_compact": self.auto_compact,
             "auto_copy_selection": self.auto_copy_selection,
+            "sidebar_position": self.sidebar_position,
             "auto_resize_images": self.auto_resize_images,
             "block_images": self.block_images,
             "default_project_trust": self.default_project_trust,
@@ -947,6 +950,9 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         auto_copy_selection=_bool_setting(
             data.get("auto_copy_selection", False),
             "auto_copy_selection",
+        ),
+        sidebar_position=_sidebar_position(
+            data.get("sidebar_position", data.get("sidebarPosition", "right"))
         ),
         auto_resize_images=_bool_setting(
             data.get(
@@ -1081,6 +1087,12 @@ def _bool_setting(value: object, field_name: str) -> bool:
     if isinstance(value, bool):
         return value
     raise TuiConfigError(f"TUI setting must be a boolean: {field_name}")
+
+
+def _sidebar_position(value: object) -> SidebarPosition:
+    if isinstance(value, str) and value in {"left", "right", "off"}:
+        return cast(SidebarPosition, value)
+    raise TuiConfigError("sidebar_position must be 'left', 'right', or 'off'")
 
 
 def _turn_notification_mode(value: object) -> TurnNotificationMode:

@@ -2321,6 +2321,31 @@ async def test_tui_sidebar_is_visible_on_medium_windows() -> None:
         assert sidebar.display is True
         assert compact_info.display is True
         assert not app.has_class("-hide-sidebar")
+        assert app.has_class("-sidebar-right")
+
+
+@pytest.mark.anyio
+async def test_tui_sidebar_shows_on_left_when_configured() -> None:
+    app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(sidebar_position="left"))
+
+    async with app.run_test(size=(120, 30)):
+        sidebar = app.query_one("#sidebar")
+        assert sidebar.display is True
+        assert not app.has_class("-hide-sidebar")
+        assert not app.has_class("-sidebar-right")
+
+
+@pytest.mark.anyio
+async def test_tui_sidebar_hides_when_configured_off() -> None:
+    app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(sidebar_position="off"))
+
+    async with app.run_test(size=(120, 30)):
+        sidebar = app.query_one("#sidebar")
+        compact_info = app.query_one("#compact-session-info")
+        assert sidebar.display is False
+        assert compact_info.display is True
+        assert app.has_class("-hide-sidebar")
+        assert not app.has_class("-sidebar-right")
 
 
 @pytest.mark.anyio
@@ -2372,6 +2397,29 @@ async def test_tui_sidebar_visibility_updates_on_resize() -> None:
         await pilot.resize_terminal(width=80, height=30)
         await pilot.pause()
         assert sidebar.display is False
+        assert app.has_class("-hide-sidebar")
+        assert compact_info.display is True
+
+        await pilot.resize_terminal(width=120, height=30)
+        await pilot.pause()
+        assert sidebar.display is True
+        assert compact_info.display is True
+
+
+@pytest.mark.anyio
+async def test_tui_sidebar_off_ignores_responsive_resize() -> None:
+    app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(sidebar_position="off"))
+
+    async with app.run_test(size=(120, 30)) as pilot:
+        sidebar = app.query_one("#sidebar")
+        compact_info = app.query_one("#compact-session-info")
+        assert sidebar.display is False
+        assert compact_info.display is True
+        assert app.has_class("-hide-sidebar")
+
+        await pilot.resize_terminal(width=80, height=30)
+        await pilot.pause()
+        assert sidebar.display is False
         assert compact_info.display is True
 
         await pilot.resize_terminal(width=120, height=18)
@@ -2381,7 +2429,7 @@ async def test_tui_sidebar_visibility_updates_on_resize() -> None:
 
         await pilot.resize_terminal(width=120, height=30)
         await pilot.pause()
-        assert sidebar.display is True
+        assert sidebar.display is False
         assert compact_info.display is True
 
 
@@ -5385,6 +5433,33 @@ async def test_tui_app_fork_picker_uses_configured_pi_select_keybindings() -> No
 
 
 @pytest.mark.anyio
+async def test_tui_app_settings_picker_changes_sidebar_position(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(sidebar_position="right"))
+
+    async with app.run_test(size=(120, 30)) as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/settings"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, SettingsPickerScreen)
+        settings_list = app.screen.query_one("#settings-picker-list", ListView)
+        await pilot.press("down", "down", "down", "down", "enter")
+        await pilot.pause()
+
+        assert app.tui_settings.sidebar_position == "left"
+        assert '"sidebar_position": "left"' in tui_settings_path().read_text(encoding="utf-8")
+        assert not app.has_class("-sidebar-right")
+        assert [str(item.query_one(Label).render()) for item in settings_list.children][4] == (
+            "Sidebar: left"
+        )
+
+
+@pytest.mark.anyio
 async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -5419,6 +5494,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: on",
             "Steering mode: one-at-a-time",
             "Follow-up mode: one-at-a-time",
+            "Sidebar: right",
             "Block images: off",
             "Show images: on",
             "Image width: 60",
@@ -5454,6 +5530,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: one-at-a-time",
             "Follow-up mode: one-at-a-time",
+            "Sidebar: right",
             "Block images: off",
             "Show images: on",
             "Image width: 60",
@@ -5487,6 +5564,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: one-at-a-time",
+            "Sidebar: right",
             "Block images: off",
             "Show images: on",
             "Image width: 60",
@@ -5520,6 +5598,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
+            "Sidebar: right",
             "Block images: off",
             "Show images: on",
             "Image width: 60",
@@ -5542,7 +5621,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-resize images: on",
         ]
 
-        await pilot.press("down", "enter")
+        await pilot.press("down", "down", "enter")
         await pilot.pause()
         assert app.tui_settings.block_images is True
         assert '"block_images": true' in tui_settings_path().read_text(encoding="utf-8")
@@ -5552,6 +5631,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
+            "Sidebar: right",
             "Block images: on",
             "Show images: on",
             "Image width: 60",
@@ -5584,6 +5664,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
+            "Sidebar: right",
             "Block images: on",
             "Show images: off",
             "Image width: 60",
@@ -5616,6 +5697,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
+            "Sidebar: right",
             "Block images: on",
             "Show images: off",
             "Image width: 80",
@@ -5648,6 +5730,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
+            "Sidebar: right",
             "Block images: on",
             "Show images: off",
             "Image width: 80",
@@ -5681,6 +5764,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
+            "Sidebar: right",
             "Block images: on",
             "Show images: off",
             "Image width: 80",
@@ -5714,6 +5798,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
+            "Sidebar: right",
             "Block images: on",
             "Show images: off",
             "Image width: 80",
@@ -5746,6 +5831,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
+            "Sidebar: right",
             "Block images: on",
             "Show images: off",
             "Image width: 80",
@@ -5778,6 +5864,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
+            "Sidebar: right",
             "Block images: on",
             "Show images: off",
             "Image width: 80",
@@ -5810,6 +5897,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
+            "Sidebar: right",
             "Block images: on",
             "Show images: off",
             "Image width: 80",
@@ -5842,6 +5930,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
+            "Sidebar: right",
             "Block images: on",
             "Show images: off",
             "Image width: 80",
@@ -5874,6 +5963,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-compact: off",
             "Steering mode: all",
             "Follow-up mode: all",
+            "Sidebar: right",
             "Block images: on",
             "Show images: off",
             "Image width: 80",
@@ -5931,6 +6021,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "up",
             "up",
             "up",
+            "up",
             "enter",
         )
         await pilot.pause()
@@ -5939,6 +6030,7 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert isinstance(app.screen, SettingsPickerScreen)
 
         await pilot.press(
+            "down",
             "down",
             "down",
             "down",
