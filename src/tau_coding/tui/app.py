@@ -7754,6 +7754,8 @@ class TauTuiApp(App[None]):
                 result = await run_terminal_command(command, add_to_context=add_to_context)
         except asyncio.CancelledError:
             if item_index is None or item_index < len(self.state.items):
+                item.text = _terminal_command_transcript_title(command)
+                item.always_show_tool_result = False
                 item.tool_result_text = format_terminal_command_result_block(
                     ok=False,
                     added_to_context=add_to_context,
@@ -7764,6 +7766,8 @@ class TauTuiApp(App[None]):
             return
         except Exception as exc:  # noqa: BLE001 - surface command execution failures in the TUI
             if item_index is None or item_index < len(self.state.items):
+                item.text = _terminal_command_transcript_title(command)
+                item.always_show_tool_result = False
                 item.tool_result_text = format_terminal_command_result_block(
                     ok=False,
                     added_to_context=add_to_context,
@@ -7777,7 +7781,8 @@ class TauTuiApp(App[None]):
         if item_index is not None and item_index >= len(self.state.items):
             self._terminal_worker = None
             return
-        item.text = f"$ {result.command}"
+        item.text = _terminal_command_transcript_title(result.command)
+        item.always_show_tool_result = False
         formatted_output = _format_workflow_terminal_output(result.output) or result.output
         item.tool_result_text = format_terminal_command_result_block(
             ok=result.ok,
@@ -11541,6 +11546,10 @@ def _workflow_run_terminal_command(workflow: WorkflowDefinition, *, cwd: Path) -
     parts.append("--open-viewer")
     parts.extend(["--viewer-hold-seconds", "120"])
     return shlex.join(parts)
+
+
+def _terminal_command_transcript_title(command: str) -> str:
+    return f"$ {command.strip()} (Ctrl+O to expand)"
 
 
 def _workflow_runtime_label(workflow: WorkflowDefinition) -> str:

@@ -10782,7 +10782,7 @@ async def test_tui_app_runs_terminal_command_and_adds_context() -> None:
     assert session.terminal_commands == [("pwd", True)]
     assert session.prompt_texts == []
     assert [(item.role, item.text, item.tool_result_text) for item in app.state.items] == [
-        ("tool", "$ pwd", "✓ bash · added to context\ncommand output")
+        ("tool", "$ pwd (Ctrl+O to expand)", "✓ bash · added to context\ncommand output")
     ]
 
 
@@ -10799,8 +10799,9 @@ async def test_tui_app_runs_terminal_command_without_context() -> None:
 
     assert session.terminal_commands == [("pwd", False)]
     assert session.prompt_texts == []
+    assert app.state.items[-1].text == "$ pwd (Ctrl+O to expand)"
     assert app.state.items[-1].tool_result_text == "✓ bash · not added to context\ncommand output"
-    assert app.state.items[-1].always_show_tool_result is True
+    assert app.state.items[-1].always_show_tool_result is False
 
 
 @pytest.mark.anyio
@@ -10950,6 +10951,8 @@ async def test_tui_app_renders_terminal_command_while_running(add_to_context: bo
         await task
 
     context_label = "added to context" if add_to_context else "not added to context"
+    assert app.state.items[-1].text == "$ sleep 1 (Ctrl+O to expand)"
+    assert app.state.items[-1].always_show_tool_result is False
     assert app.state.items[-1].tool_result_text == f"✓ bash · {context_label}\nfinished"
 
 
@@ -11079,7 +11082,7 @@ async def test_tui_app_marks_failed_terminal_command_as_error() -> None:
         await pilot.pause()
 
     assert session.prompt_texts == []
-    assert app.state.items[-1].text == "$ false"
+    assert app.state.items[-1].text == "$ false (Ctrl+O to expand)"
     assert app.state.items[-1].tool_result_text == "✗ bash · not added to context\nfailed"
 
 
@@ -11104,23 +11107,30 @@ async def test_tui_app_marks_terminal_command_exception_as_failed() -> None:
         await pilot.press("enter")
         await pilot.pause()
 
-    assert app.state.items[-1].text == "$ false"
+    assert app.state.items[-1].text == "$ false (Ctrl+O to expand)"
     assert app.state.items[-1].tool_result_text == "✗ bash · not added to context\nboom"
 
 
 @pytest.mark.anyio
-async def test_tui_app_renders_terminal_command_output_when_tool_results_are_collapsed() -> None:
+async def test_tui_app_collapses_completed_terminal_command_output() -> None:
     item = ChatItem(
         role="tool",
-        text="$ pwd",
+        text="$ pwd (Ctrl+O to expand)",
         tool_result_text="✓ bash · not added to context\ncommand output",
-        always_show_tool_result=True,
     )
 
-    console = Console(record=True, width=80)
-    console.print(render_chat_item(item, show_tool_results=item.always_show_tool_result))
+    collapsed = Console(record=True, width=80)
+    with collapsed.capture() as collapsed_capture:
+        collapsed.print(render_chat_item(item, show_tool_results=False))
+    expanded = Console(record=True, width=80)
+    with expanded.capture() as expanded_capture:
+        expanded.print(render_chat_item(item, show_tool_results=True))
+    collapsed_text = collapsed_capture.get()
+    expanded_text = expanded_capture.get()
 
-    assert "command output" in console.export_text()
+    assert "command output" not in collapsed_text
+    assert "Ctrl+O to expand" in collapsed_text
+    assert "command output" in expanded_text
 
 
 @pytest.mark.anyio
@@ -11153,10 +11163,10 @@ async def test_tui_app_limits_terminal_command_output_preview() -> None:
     result_text = app.state.items[-1].tool_result_text
     assert result_text is not None
     result_lines = result_text.splitlines()
-    assert "line 9" not in result_lines
-    assert "line 10" in result_lines
+    assert "line 109" not in result_lines
+    assert "line 110" in result_lines
     assert "line 129" in result_lines
-    assert "10 earlier lines" in result_text
+    assert "110 earlier lines" in result_text
 
 
 @pytest.mark.anyio

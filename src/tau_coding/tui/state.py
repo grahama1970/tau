@@ -18,7 +18,7 @@ ChatItemRole = TranscriptRole
 TOOL_RESULT_PREVIEW_LINES = 8
 TOOL_PATCH_PREVIEW_LINES = 32
 TOOL_RESULT_PREVIEW_CHARS = 2_000
-TERMINAL_COMMAND_OUTPUT_PREVIEW_LINES = 120
+TERMINAL_COMMAND_OUTPUT_PREVIEW_LINES = 20
 ASSISTANT_LENGTH_STOP_ERROR_TEXT = (
     "Error: Model stopped because it reached the maximum output token limit. "
     "The response may be incomplete."
