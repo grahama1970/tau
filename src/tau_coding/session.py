@@ -35,7 +35,7 @@ from tau_agent import (
     TurnEndEvent,
     TurnStartEvent,
 )
-from tau_agent.messages import AgentMessage, AssistantMessage, UserMessage
+from tau_agent.messages import AgentMessage, AssistantMessage, ToolResultMessage, UserMessage
 from tau_agent.session import (
     BranchSummaryEntry,
     CompactionEntry,
@@ -53,7 +53,7 @@ from tau_agent.session import (
 from tau_agent.session.entries import SessionEntry
 from tau_agent.session.tree import SessionTreeError, path_to_entry
 from tau_agent.tools import AgentTool
-from tau_ai import ModelProvider
+from tau_ai import CancellationToken, ModelProvider, ProviderEvent
 from tau_ai.events import ProviderErrorEvent, ProviderResponseEndEvent, ProviderTextDeltaEvent
 from tau_coding.branch_summary import summarize_branch_messages_with_model
 from tau_coding.commands import (
@@ -369,6 +369,13 @@ class CodingSession:
             credentials_path(self._resource_paths.paths) if self._resource_paths.paths else None
         )
         self._last_diagnostic_log_path: Path | None = None
+        self._install_extension_provider_adapter(harness.config.provider)
+
+    def _install_extension_provider_adapter(self, provider: ModelProvider) -> None:
+        self._harness.config.provider = _ExtensionAwareModelProvider(
+            session=self,
+            provider=_base_model_provider(provider),
+        )
 
     @classmethod
     async def load(cls, config: CodingSessionConfig) -> CodingSession:
@@ -1236,7 +1243,7 @@ class CodingSession:
         except RuntimeError as exc:
             raise ProviderConfigError(str(exc)) from exc
         self._owned_providers.append(provider)
-        self._harness.config.provider = provider
+        self._install_extension_provider_adapter(provider)
         self._provider_name = provider_config.name
         self._runtime_provider_config = provider_config
         self._harness.config.model = model
@@ -1342,7 +1349,7 @@ class CodingSession:
         except RuntimeError as exc:
             raise ProviderConfigError(str(exc)) from exc
         self._owned_providers.append(provider)
-        self._harness.config.provider = provider
+        self._install_extension_provider_adapter(provider)
         self._runtime_provider_config = provider_config
 
     def reload(self) -> CodingReloadSummary:
@@ -2549,6 +2556,48 @@ class CodingSession:
             self._resource_diagnostics = (*self._resource_diagnostics, *diagnostics)
         return current_system_prompt, tuple(custom_messages)
 
+    async def _emit_extension_context_event(
+        self,
+        messages: Sequence[AgentMessage],
+    ) -> list[AgentMessage]:
+        current_messages = list(messages)
+        diagnostics: list[ResourceDiagnostic] = []
+        for extension in self._extensions:
+            handlers = tuple((extension.event_handlers or {}).get("context", ()))
+            if not handlers:
+                continue
+            context = ExtensionShortcutContext(
+                session=self,
+                key="",
+                extension_name=extension.name,
+            )
+            for handler in handlers:
+                event: dict[str, object] = {
+                    "type": "context",
+                    "messages": [_agent_message_payload(message) for message in current_messages],
+                }
+                try:
+                    result = _call_extension_lifecycle_handler(handler, event, context)
+                    if inspect.isawaitable(result):
+                        result = await result
+                except Exception as exc:  # noqa: BLE001 - extensions are isolated plugins
+                    diagnostics.append(
+                        ResourceDiagnostic(
+                            kind="extension",
+                            name=extension.name,
+                            path=extension.path,
+                            message=f"context handler failed: {type(exc).__name__}: {exc}",
+                            severity="error",
+                        )
+                    )
+                    continue
+                parsed_messages = _extension_context_messages(result)
+                if parsed_messages is not None:
+                    current_messages = parsed_messages
+        if diagnostics:
+            self._resource_diagnostics = (*self._resource_diagnostics, *diagnostics)
+        return current_messages
+
     def _diagnostic_context(self) -> AgentCallDiagnosticContext:
         return AgentCallDiagnosticContext(
             provider_name=self._provider_name,
@@ -3331,6 +3380,45 @@ def _extension_before_agent_system_prompt(value: object) -> str | None:
     return raw_system_prompt if isinstance(raw_system_prompt, str) else None
 
 
+class _ExtensionAwareModelProvider:
+    def __init__(self, *, session: CodingSession, provider: ModelProvider) -> None:
+        self._session = session
+        self._provider = provider
+
+    @property
+    def base_provider(self) -> ModelProvider:
+        return self._provider
+
+    def stream_response(
+        self,
+        *,
+        model: str,
+        system: str,
+        messages: list[AgentMessage],
+        tools: list[AgentTool],
+        signal: CancellationToken | None = None,
+    ) -> AsyncIterator[ProviderEvent]:
+        async def iterator() -> AsyncIterator[ProviderEvent]:
+            provider_messages = await self._session._emit_extension_context_event(messages)
+            async for event in self._provider.stream_response(
+                model=model,
+                system=system,
+                messages=provider_messages,
+                tools=tools,
+                signal=signal,
+            ):
+                yield event
+
+        return iterator()
+
+
+def _base_model_provider(provider: ModelProvider) -> ModelProvider:
+    current = provider
+    while isinstance(current, _ExtensionAwareModelProvider):
+        current = current.base_provider
+    return current
+
+
 def _extension_before_agent_custom_message(
     value: object,
 ) -> tuple[str, Mapping[str, Any]] | None:
@@ -3347,6 +3435,39 @@ def _extension_before_agent_custom_message(
         if key in raw_message:
             data[key] = _json_compatible_value(raw_message[key])
     return custom_type, data
+
+
+def _extension_context_messages(value: object) -> list[AgentMessage] | None:
+    if not isinstance(value, Mapping):
+        return None
+    raw_messages = value.get("messages")
+    if not isinstance(raw_messages, Sequence) or isinstance(raw_messages, str | bytes | bytearray):
+        return None
+    messages: list[AgentMessage] = []
+    for raw_message in raw_messages:
+        message = _agent_message_from_extension_value(raw_message)
+        if message is None:
+            return None
+        messages.append(message)
+    return messages
+
+
+def _agent_message_from_extension_value(value: object) -> AgentMessage | None:
+    if isinstance(value, UserMessage | AssistantMessage | ToolResultMessage):
+        return value
+    if not isinstance(value, Mapping):
+        return None
+    role = value.get("role")
+    try:
+        if role == "user":
+            return UserMessage.model_validate(value)
+        if role == "assistant":
+            return AssistantMessage.model_validate(value)
+        if role == "tool":
+            return ToolResultMessage.model_validate(value)
+    except Exception:
+        return None
+    return None
 
 
 def _extension_system_prompt_options(session: CodingSession) -> dict[str, object]:
