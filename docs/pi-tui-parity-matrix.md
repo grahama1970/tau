@@ -36,10 +36,10 @@ capabilities.
 | Provider/model | `/model`, `/scoped-models`, `/login`, `/logout` | Same command family | `MATCHED` | Tau routes through local provider config and credential storage. |
 | Export/import/share | `/export`, `/import`, `/share`, `/copy` | Same command family | `MATCHED` | Useful enough for migration. |
 | Help/config | `/settings`, `/changelog`, `/hotkeys` | Same plus `/config` | `MATCHED` | `/config` is richer in Tau and now has scope tabs. |
-| Tau workflows | None | `/workflows` | `TAU-ONLY` | Canonical Tau DAG launcher; must not be replaced by Pi code. |
-| Tau provider internals | None | `/scillm` | `TAU-ONLY` | SciLLM remains Tau's local LLM proxy surface. |
+| Tau workflows | None | `/workflows` plus sidebar `dag` cue | `TAU-ONLY` | Canonical Tau DAG launcher; must not be replaced by Pi code. |
+| Tau provider internals | None | `/scillm` plus sidebar readiness cue | `TAU-ONLY` | SciLLM remains Tau's local LLM proxy surface. |
 | Tau evidence gates | None | `/permissions`, approval receipts | `TAU-ONLY` | Preserve fail-closed permission and receipt model. |
-| Tau resources/skills | Extension commands only | `/resources`, `/skills`, `/skill`, `/tools`, `/prompts` | `TAU-ONLY` | Required for memory-first and skill-driven operation. |
+| Tau resources/skills | Extension commands only | `/resources`, `/skills`, `/skill`, `/tools`, `/prompts`, sidebar `memory` cue | `TAU-ONLY` | Required for memory-first and skill-driven operation. |
 
 ## Interactive Components
 
@@ -60,8 +60,8 @@ capabilities.
 ## Tomorrow-Usability Ranking
 
 1. `MUST`: Live harness readiness in the TUI. A user should see provider,
-   model, auth/readiness, cwd, context, queued commands, and Tau DAG/workflow
-   entry points without archaeology.
+   model, auth/readiness, cwd, context, queued commands, memory-first, SciLLM,
+   and Tau DAG/workflow entry points without archaeology.
 2. `MUST`: Tool execution readability. Shell, diff, file, permission, and
    custom tool activity must be easy to inspect while a session runs.
 3. `MUST`: Extension behavior gap closure. Keep Tau's current extension hooks

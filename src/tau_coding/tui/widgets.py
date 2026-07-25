@@ -1009,8 +1009,9 @@ def render_session_sidebar(
     metadata.add_row("auth", _provider_readiness_label(session))
     metadata.add_row("thinking", _thinking_level(session))
     metadata.add_row("queue", _queue_status_label(session))
-    metadata.add_row("workflows", "/workflows")
-    metadata.add_row("scillm", "/scillm")
+    metadata.add_row("memory", _memory_first_label(session))
+    metadata.add_row("dag", "canonical: /workflows")
+    metadata.add_row("scillm", _scillm_surface_label(session))
     metadata.add_row("tools", str(len(session.tools)))
     metadata.add_row("skills", str(len(session.skills)))
 
@@ -1873,6 +1874,31 @@ def _queue_status_label(session: SessionSummarySource) -> str:
     if follow_up:
         parts.append(f"{follow_up} follow-up")
     return ", ".join(parts)
+
+
+def _memory_first_label(session: SessionSummarySource) -> str:
+    skill_names = {
+        str(getattr(skill, "name", "")).casefold()
+        for skill in getattr(session, "skills", ())
+        if str(getattr(skill, "name", "")).strip()
+    }
+    if "memory" in skill_names:
+        return "loaded"
+    return "available: /skills memory"
+
+
+def _scillm_surface_label(session: SessionSummarySource) -> str:
+    provider_name = session.provider_name.strip().casefold()
+    available_providers = {
+        str(provider).strip().casefold()
+        for provider in getattr(session, "available_providers", ())
+        if str(provider).strip()
+    }
+    if provider_name == "scillm":
+        return "active: /scillm"
+    if "scillm" in available_providers:
+        return "switch: /model scillm"
+    return "/scillm"
 
 
 def _sequence_len(value: object) -> int:

@@ -688,7 +688,10 @@ def test_session_sidebar_renders_session_metadata() -> None:
     assert "medium" in output
     assert "queue" in output
     assert "idle" in output
-    assert "workflows" in output
+    assert "memory" in output
+    assert "available: /skills memory" in output
+    assert "dag" in output
+    assert "canonical: /workflows" in output
     assert "/workflows" in output
     assert "scillm" in output
     assert "/scillm" in output
@@ -698,6 +701,24 @@ def test_session_sidebar_renders_session_metadata() -> None:
     assert "read" in output
     assert "skills" in output
     assert "review" in output
+
+
+def test_session_sidebar_marks_memory_and_scillm_when_active() -> None:
+    session = FakeSession()
+    session.provider_name = "scillm"
+    session.available_providers = ("openai", "scillm")
+    session.skills = (
+        Skill(name="memory", path=session.cwd / "memory.md", content="Recall first."),
+    )
+    console = Console(record=True, width=100)
+
+    console.print(render_session_sidebar(session))
+
+    output = console.export_text()
+    assert "memory" in output
+    assert "loaded" in output
+    assert "scillm" in output
+    assert "active: /scillm" in output
 
 
 def test_session_sidebar_fails_closed_when_provider_login_is_missing() -> None:
