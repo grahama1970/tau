@@ -13,6 +13,7 @@ ExtensionShortcutHandler = Callable[[Any], Any]
 ExtensionArgumentCompletionProvider = Callable[[str], Sequence[Any] | None]
 ThemeInfo = dict[str, str | None]
 ContextUsageInfo = dict[str, int | float | None]
+CommandInfo = dict[str, Any]
 
 
 @dataclass(frozen=True, slots=True)
@@ -172,6 +173,14 @@ class ExtensionShortcutContext:
     def getSystemPrompt(self) -> str:  # noqa: N802
         """Pi-compatible camelCase alias for get_system_prompt."""
         return self.get_system_prompt()
+
+    def get_commands(self) -> tuple[CommandInfo, ...]:
+        """Return visible slash-command metadata for the active session."""
+        return _command_infos(getattr(self.session, "command_registry", None))
+
+    def getCommands(self) -> tuple[CommandInfo, ...]:  # noqa: N802
+        """Pi-compatible camelCase alias for get_commands."""
+        return self.get_commands()
 
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the shortcut returns."""
@@ -509,6 +518,14 @@ class ExtensionCommandContext:
     def getSystemPrompt(self) -> str:  # noqa: N802
         """Pi-compatible camelCase alias for get_system_prompt."""
         return self.get_system_prompt()
+
+    def get_commands(self) -> tuple[CommandInfo, ...]:
+        """Return visible slash-command metadata for the active session."""
+        return _command_infos(self.registry)
+
+    def getCommands(self) -> tuple[CommandInfo, ...]:  # noqa: N802
+        """Pi-compatible camelCase alias for get_commands."""
+        return self.get_commands()
 
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the command returns."""
@@ -1216,6 +1233,53 @@ def _session_has_extension_ui(session: Any) -> bool:
     if available is not None:
         return bool(available)
     return callable(getattr(session, "request_extension_ui", None))
+
+
+def _command_infos(registry: Any) -> tuple[CommandInfo, ...]:
+    list_commands = getattr(registry, "list_commands", None)
+    if not callable(list_commands):
+        return ()
+    return tuple(_command_info(command) for command in list_commands())
+
+
+def _command_info(command: Any) -> CommandInfo:
+    source_value = getattr(command, "source", None)
+    source = _command_info_source(source_value)
+    source_info = {
+        "source": source_value or source,
+        "path": source_value,
+    }
+    completions = tuple(
+        {
+            "value": str(completion.value),
+            "description": None
+            if getattr(completion, "description", None) is None
+            else str(completion.description),
+        }
+        for completion in getattr(command, "argument_completions", ())
+    )
+    return {
+        "name": str(getattr(command, "name", "")),
+        "description": str(getattr(command, "description", "")),
+        "source": source,
+        "sourceInfo": source_info,
+        "usage": str(getattr(command, "usage", "")),
+        "aliases": tuple(str(alias) for alias in getattr(command, "aliases", ())),
+        "searchTerms": tuple(str(term) for term in getattr(command, "search_terms", ())),
+        "argumentHint": getattr(command, "argument_hint", None),
+        "argumentCompletions": completions,
+    }
+
+
+def _command_info_source(source: object) -> str:
+    if isinstance(source, str):
+        if source.startswith("extension:"):
+            return "extension"
+        if source.startswith("skill:"):
+            return "skill"
+        if source.startswith("prompt:"):
+            return "prompt"
+    return "prompt"
 
 
 def _session_model(session: Any) -> str | None:
