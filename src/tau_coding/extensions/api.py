@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from typing import Any
 
@@ -11,6 +11,7 @@ from tau_agent.tools import AgentTool
 ExtensionCommandHandler = Callable[[Any], Any]
 ExtensionShortcutHandler = Callable[[Any], Any]
 ExtensionArgumentCompletionProvider = Callable[[str], Sequence[Any] | None]
+ThemeInfo = dict[str, str | None]
 
 
 @dataclass(frozen=True, slots=True)
@@ -207,13 +208,21 @@ class ExtensionShortcutContext:
         """Request a static custom header, or restore Tau's built-in header."""
         self.header_update = ExtensionHeaderUpdate(lines=_normalize_header_lines(lines))
 
-    def set_theme(self, theme: str) -> dict[str, str | bool]:
+    def set_theme(self, theme: Any) -> dict[str, str | bool]:
         """Request a TUI theme switch after this shortcut returns."""
-        theme_name = str(theme).strip()
+        theme_name = _theme_name_from_value(theme)
         if not theme_name:
             return {"success": False, "error": "theme name is required"}
         self.theme = theme_name
         return {"success": True, "error": ""}
+
+    def get_all_themes(self) -> tuple[ThemeInfo, ...]:
+        """Return available Tau TUI themes as Pi-style theme info records."""
+        return _available_theme_infos()
+
+    def get_theme(self, name: str) -> ThemeInfo | None:
+        """Return a Pi-style theme info record by name without switching to it."""
+        return _theme_info_by_name(name)
 
     def get_tools_expanded(self) -> bool:
         """Return whether tool results are currently expanded in the TUI."""
@@ -390,13 +399,21 @@ class ExtensionCommandContext:
         """Request a static custom header, or restore Tau's built-in header."""
         self.header_update = ExtensionHeaderUpdate(lines=_normalize_header_lines(lines))
 
-    def set_theme(self, theme: str) -> dict[str, str | bool]:
+    def set_theme(self, theme: Any) -> dict[str, str | bool]:
         """Request a TUI theme switch after this command returns."""
-        theme_name = str(theme).strip()
+        theme_name = _theme_name_from_value(theme)
         if not theme_name:
             return {"success": False, "error": "theme name is required"}
         self.theme = theme_name
         return {"success": True, "error": ""}
+
+    def get_all_themes(self) -> tuple[ThemeInfo, ...]:
+        """Return available Tau TUI themes as Pi-style theme info records."""
+        return _available_theme_infos()
+
+    def get_theme(self, name: str) -> ThemeInfo | None:
+        """Return a Pi-style theme info record by name without switching to it."""
+        return _theme_info_by_name(name)
 
     def get_tools_expanded(self) -> bool:
         """Return whether tool results are currently expanded in the TUI."""
@@ -488,8 +505,16 @@ class ExtensionCommandUi:
         """Pi-compatible alias for replacing or restoring Tau's header."""
         self._context.set_header(lines)
 
-    def setTheme(self, theme: str) -> dict[str, str | bool]:  # noqa: N802
-        """Pi-compatible alias for switching Tau's theme by name."""
+    def getAllThemes(self) -> tuple[ThemeInfo, ...]:  # noqa: N802
+        """Pi-compatible alias for listing available Tau themes."""
+        return self._context.get_all_themes()
+
+    def getTheme(self, name: str) -> ThemeInfo | None:  # noqa: N802
+        """Pi-compatible alias for looking up a Tau theme record by name."""
+        return self._context.get_theme(name)
+
+    def setTheme(self, theme: Any) -> dict[str, str | bool]:  # noqa: N802
+        """Pi-compatible alias for switching Tau's theme by name or record."""
         return self._context.set_theme(theme)
 
     def getToolsExpanded(self) -> bool:  # noqa: N802
@@ -520,8 +545,16 @@ class ExtensionCommandUi:
         """Replace or restore Tau's header."""
         self._context.set_header(lines)
 
-    def set_theme(self, theme: str) -> dict[str, str | bool]:
-        """Switch Tau's theme by name."""
+    def get_all_themes(self) -> tuple[ThemeInfo, ...]:
+        """Return available Tau themes."""
+        return self._context.get_all_themes()
+
+    def get_theme(self, name: str) -> ThemeInfo | None:
+        """Return a Tau theme record by name."""
+        return self._context.get_theme(name)
+
+    def set_theme(self, theme: Any) -> dict[str, str | bool]:
+        """Switch Tau's theme by name or record."""
         return self._context.set_theme(theme)
 
     def get_tools_expanded(self) -> bool:
@@ -784,6 +817,33 @@ def _session_has_extension_ui(session: Any) -> bool:
     if available is not None:
         return bool(available)
     return callable(getattr(session, "request_extension_ui", None))
+
+
+def _theme_name_from_value(theme: Any) -> str | None:
+    if isinstance(theme, str):
+        name = theme.strip()
+        return name or None
+    raw_name = theme.get("name") if isinstance(theme, Mapping) else getattr(theme, "name", None)
+    if raw_name is None:
+        return None
+    name = str(raw_name).strip()
+    return name or None
+
+
+def _available_theme_infos() -> tuple[ThemeInfo, ...]:
+    from tau_coding.tui.config import available_tui_theme_names
+
+    return tuple({"name": name, "path": None} for name in available_tui_theme_names())
+
+
+def _theme_info_by_name(name: str) -> ThemeInfo | None:
+    normalized_name = str(name).strip()
+    if not normalized_name:
+        return None
+    for theme_info in _available_theme_infos():
+        if theme_info["name"] == normalized_name:
+            return theme_info
+    return None
 
 
 def _normalize_user_message_delivery(value: str) -> str:
