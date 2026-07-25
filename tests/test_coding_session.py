@@ -61,6 +61,7 @@ from tau_coding.trust import ProjectTrustStore
 from tau_coding.tui.themes import (
     THEME_COLOR_FIELDS,
     TRANSCRIPT_ROLES,
+    available_tui_theme_names,
     get_tui_theme,
     set_custom_tui_themes,
 )
@@ -1892,6 +1893,43 @@ async def test_session_filters_default_tools_by_name(tmp_path: Path) -> None:
     )
 
     assert [tool.name for tool in session.tools] == ["read"]
+
+
+@pytest.mark.anyio
+async def test_session_can_disable_resource_discovery(tmp_path: Path) -> None:
+    resource_root = tmp_path / "resources"
+    (resource_root / "skills").mkdir(parents=True)
+    (resource_root / "prompts").mkdir()
+    (resource_root / "themes").mkdir()
+    (resource_root / "skills" / "testing.md").write_text("# Testing", encoding="utf-8")
+    (resource_root / "prompts" / "example.md").write_text("Example", encoding="utf-8")
+    theme_data = {
+        "name": "midnight",
+        "colors": {field_name: "#101010" for field_name in THEME_COLOR_FIELDS},
+        "roles": {role: {"border": "#101010", "body": "#e0e0e0"} for role in TRANSCRIPT_ROLES},
+    }
+    (resource_root / "themes" / "midnight.json").write_text(
+        json.dumps(theme_data), encoding="utf-8"
+    )
+    set_custom_tui_themes({})
+
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="fake",
+            system="You are Tau.",
+            storage=JsonlSessionStorage(tmp_path / "session.jsonl"),
+            cwd=tmp_path,
+            resource_paths=TauResourcePaths(root=resource_root, agents_root=None),
+            discover_skills=False,
+            discover_prompt_templates=False,
+            discover_themes=False,
+        )
+    )
+
+    assert session.skills == ()
+    assert session.prompt_templates == ()
+    assert "midnight" not in available_tui_theme_names()
 
 
 @pytest.mark.anyio

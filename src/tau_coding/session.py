@@ -207,6 +207,9 @@ class CodingSessionConfig:
     custom_system_prompt: str | None = None
     append_system_prompt: str | None = None
     context_files: tuple[ProjectContextFile, ...] = ()
+    discover_skills: bool = True
+    discover_prompt_templates: bool = True
+    discover_themes: bool = True
     discover_context_files: bool = True
     tools: list[AgentTool] | None = None
     tool_allowlist: tuple[str, ...] | None = None
@@ -310,6 +313,9 @@ class CodingSession:
         resources = _load_session_resources(
             resource_paths,
             config.context_files,
+            discover_skills=config.discover_skills,
+            discover_prompt_templates=config.discover_prompt_templates,
+            discover_themes=config.discover_themes,
             discover_context_files=config.discover_context_files,
             default_project_trust=config.default_project_trust,
         )
@@ -987,6 +993,9 @@ class CodingSession:
         resources = _load_session_resources(
             self._resource_paths,
             self._config.context_files,
+            discover_skills=self._config.discover_skills,
+            discover_prompt_templates=self._config.discover_prompt_templates,
+            discover_themes=self._config.discover_themes,
             discover_context_files=self._config.discover_context_files,
             default_project_trust=self._config.default_project_trust,
         )
@@ -2441,6 +2450,9 @@ def _load_session_resources(
     resource_paths: TauResourcePaths,
     explicit_context_files: tuple[ProjectContextFile, ...],
     *,
+    discover_skills: bool = True,
+    discover_prompt_templates: bool = True,
+    discover_themes: bool = True,
     discover_context_files: bool = True,
     default_project_trust: DefaultProjectTrust = "ask",
 ) -> SessionResources:
@@ -2448,17 +2460,26 @@ def _load_session_resources(
         resource_paths,
         default_project_trust=default_project_trust,
     )
-    loaded_skills, skill_diagnostics = load_skills_with_diagnostics(effective_paths)
-    loaded_prompt_templates, prompt_diagnostics = load_prompt_templates_with_diagnostics(
-        effective_paths
-    )
+    if discover_skills:
+        loaded_skills, skill_diagnostics = load_skills_with_diagnostics(effective_paths)
+    else:
+        loaded_skills, skill_diagnostics = [], []
+    if discover_prompt_templates:
+        loaded_prompt_templates, prompt_diagnostics = load_prompt_templates_with_diagnostics(
+            effective_paths
+        )
+    else:
+        loaded_prompt_templates, prompt_diagnostics = [], []
     if discover_context_files:
         discovered_context, context_diagnostics = discover_project_context_with_diagnostics(
             effective_paths
         )
     else:
         discovered_context, context_diagnostics = (), ()
-    custom_themes, theme_diagnostics = load_custom_tui_themes(effective_paths.themes_dirs)
+    if discover_themes:
+        custom_themes, theme_diagnostics = load_custom_tui_themes(effective_paths.themes_dirs)
+    else:
+        custom_themes, theme_diagnostics = {}, []
     set_custom_tui_themes(custom_themes)
     return SessionResources(
         skills=tuple(loaded_skills),

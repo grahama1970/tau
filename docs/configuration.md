@@ -325,6 +325,9 @@ tau --tools read,bash
 tau --exclude-tools bash
 tau --no-tools
 tau --no-builtin-tools
+tau --no-skills
+tau --no-prompt-templates
+tau --no-themes
 tau export <session-id>
 tau export <session-id> session.html
 tau export <session-id> --format jsonl
@@ -365,6 +368,10 @@ session. `--exclude-tools <names>` disables named tools after the allowlist or
 default set is chosen. `--no-tools` starts with no tools. `--no-builtin-tools`
 disables Tau's built-in `read`, `write`, `edit`, and `bash` tools while
 preserving explicit non-built-in tools provided by embedding code.
+
+`--no-skills`, `--no-prompt-templates`, and `--no-themes` disable discovery of
+those resource classes for the startup run. Context file discovery is controlled
+separately by `--no-context-files`.
 
 `tau export` writes a standalone HTML file with the preserved session tree and
 the storage-order transcript. The source can be an indexed session id or a path

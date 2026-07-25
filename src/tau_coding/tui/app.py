@@ -11194,6 +11194,9 @@ async def run_tui_app(
     tool_denylist: tuple[str, ...] = (),
     no_tools: bool = False,
     no_builtin_tools: bool = False,
+    no_skills: bool = False,
+    no_prompt_templates: bool = False,
+    no_themes: bool = False,
 ) -> str | None:
     """Create the default provider/session, run the Textual app, and return the session id."""
     if new_session and session_id is not None:
@@ -11303,6 +11306,9 @@ async def run_tui_app(
                 tool_denylist=tool_denylist,
                 no_tools=no_tools,
                 no_builtin_tools=no_builtin_tools,
+                discover_skills=not no_skills,
+                discover_prompt_templates=not no_prompt_templates,
+                discover_themes=not no_themes,
             )
         )
         app = TauTuiApp(

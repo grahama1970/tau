@@ -893,6 +893,22 @@ def main(
             help="Comma-separated denylist of tool names to disable.",
         ),
     ] = None,
+    no_skills: Annotated[
+        bool,
+        typer.Option("--no-skills", "-ns", help="Disable skills discovery and loading."),
+    ] = False,
+    no_prompt_templates: Annotated[
+        bool,
+        typer.Option(
+            "--no-prompt-templates",
+            "-np",
+            help="Disable prompt template discovery and loading.",
+        ),
+    ] = False,
+    no_themes: Annotated[
+        bool,
+        typer.Option("--no-themes", help="Disable custom TUI theme discovery and loading."),
+    ] = False,
     auto_compact_threshold: Annotated[
         int | None,
         typer.Option(
@@ -3288,6 +3304,9 @@ def main(
                 tool_denylist,
                 no_tools,
                 no_builtin_tools,
+                no_skills,
+                no_prompt_templates,
+                no_themes,
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -3327,6 +3346,9 @@ def main(
             tool_denylist,
             no_tools,
             no_builtin_tools,
+            no_skills,
+            no_prompt_templates,
+            no_themes,
         )
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
@@ -3361,6 +3383,9 @@ async def run_openai_tui(
     tool_denylist: tuple[str, ...] = (),
     no_tools: bool = False,
     no_builtin_tools: bool = False,
+    no_skills: bool = False,
+    no_prompt_templates: bool = False,
+    no_themes: bool = False,
 ) -> str | None:
     """Run the Textual TUI and return its resumable session id, if any."""
     return await run_tui_app(
@@ -3381,6 +3406,9 @@ async def run_openai_tui(
         tool_denylist=tool_denylist,
         no_tools=no_tools,
         no_builtin_tools=no_builtin_tools,
+        no_skills=no_skills,
+        no_prompt_templates=no_prompt_templates,
+        no_themes=no_themes,
     )
 
 
@@ -13156,6 +13184,9 @@ async def run_openai_print_mode(
     tool_denylist: tuple[str, ...] = (),
     no_tools: bool = False,
     no_builtin_tools: bool = False,
+    no_skills: bool = False,
+    no_prompt_templates: bool = False,
+    no_themes: bool = False,
 ) -> bool:
     """Run print mode with the OpenAI-compatible provider configured from the environment."""
     settings = load_provider_settings()
@@ -13191,6 +13222,9 @@ async def run_openai_print_mode(
             tool_denylist=tool_denylist,
             no_tools=no_tools,
             no_builtin_tools=no_builtin_tools,
+            discover_skills=not no_skills,
+            discover_prompt_templates=not no_prompt_templates,
+            discover_themes=not no_themes,
         )
     finally:
         await provider.aclose()
@@ -13216,6 +13250,9 @@ async def run_print_mode(
     tool_denylist: tuple[str, ...] = (),
     no_tools: bool = False,
     no_builtin_tools: bool = False,
+    discover_skills: bool = True,
+    discover_prompt_templates: bool = True,
+    discover_themes: bool = True,
 ) -> bool:
     """Run one non-interactive prompt and print streamed events.
 
@@ -13245,6 +13282,9 @@ async def run_print_mode(
             tool_denylist=tool_denylist,
             no_tools=no_tools,
             no_builtin_tools=no_builtin_tools,
+            discover_skills=discover_skills,
+            discover_prompt_templates=discover_prompt_templates,
+            discover_themes=discover_themes,
         )
     )
     renderer = create_event_renderer(output)
