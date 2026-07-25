@@ -7611,6 +7611,14 @@ class TauTuiApp(App[None]):
                         format=command.export_format,
                     )
                     self._notify(f"Exported session to {exported_path}")
+                    self.push_screen(
+                        CommandOutputScreen(
+                            "Session export",
+                            _export_result_message(exported_path, command.export_format),
+                            theme=self.tui_settings.resolved_theme,
+                            keybindings=self.tui_settings.keybindings,
+                        )
+                    )
                 except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
                     self._notify(f"Could not export session: {exc}", severity="error")
             if command.import_requested and command.import_path is not None:
@@ -12755,6 +12763,32 @@ def _is_thinking_cycle_key(key: str, configured_key: str) -> bool:
 
 def _matches_configured_key(key: str, configured_key: str) -> bool:
     return key in _configured_key_parts(configured_key)
+
+
+def _export_result_message(path: Path, export_format: str | None) -> str:
+    """Return durable TUI output for a completed session export."""
+    resolved = path.expanduser()
+    display_path = str(resolved)
+    file_uri = resolved.resolve().as_uri()
+    normalized_format = (resolved.suffix.removeprefix(".") or export_format or "html").lower()
+    if normalized_format == "htm":
+        normalized_format = "html"
+    lines = [
+        "Session exported.",
+        "",
+        f"Format: {normalized_format}",
+        f"Path: {display_path}",
+        f"Open: {file_uri}",
+    ]
+    if normalized_format == "html":
+        lines.extend(
+            (
+                "",
+                "The HTML export is the browser-readable transcript artifact for large "
+                "Markdown, tables, and linked media.",
+            )
+        )
+    return "\n".join(lines)
 
 
 def _matches_configured_or_default_key(

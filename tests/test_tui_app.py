@@ -3808,10 +3808,16 @@ async def test_tui_app_export_command_runs_session_export() -> None:
         prompt = app.query_one("#prompt")
         prompt.value = "/export --format jsonl out.jsonl"
         await pilot.press("enter")
+        await pilot.pause()
 
         assert session.export_calls == [(Path("out.jsonl"), "jsonl")]
         assert notifications == ["Exported session to /workspace/project/session.html"]
         assert session.prompt_texts == []
+        assert isinstance(app.screen, CommandOutputScreen)
+        assert app.screen.title_text == "Session export"
+        assert "Format: html" in app.screen.message
+        assert "Path: /workspace/project/session.html" in app.screen.message
+        assert "Open: file:///workspace/project/session.html" in app.screen.message
 
 
 @pytest.mark.anyio
