@@ -273,7 +273,7 @@ def create_default_command_registry() -> CommandRegistry:
         SlashCommand(
             name="copy",
             usage="/copy",
-            description="Copy the last assistant message to the clipboard.",
+            description="Copy the last agent message to the clipboard.",
             handler=_copy_command,
             search_terms=("clipboard", "assistant", "message"),
         )

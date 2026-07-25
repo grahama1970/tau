@@ -1891,7 +1891,7 @@ async def test_tui_app_copy_last_assistant_message_reports_missing_message(
         await pilot.pause()
 
     assert copied == []
-    assert notifications == [("No assistant messages to copy.", "warning")]
+    assert notifications == [("No agent messages to copy yet.", "warning")]
 
 
 def test_transcript_selection_text_tracks_tool_result_visibility() -> None:

@@ -1265,7 +1265,7 @@ class PromptInput(TextArea):
         self._completion_target().action_dequeue_messages()
 
     def action_copy_last_message(self) -> None:
-        """Copy the last assistant message."""
+        """Copy the last agent/assistant message."""
         self._completion_target().action_copy_last_message()
 
     def action_suspend_process(self) -> None:
@@ -6610,10 +6610,10 @@ class TauTuiApp(App[None]):
             self._notify(f"Restored {restored} queued message{suffix}.")
 
     def action_copy_last_message(self) -> None:
-        """Copy the most recent assistant message to the system clipboard."""
+        """Copy the most recent agent/assistant message to the system clipboard."""
         text = _last_assistant_text(self.state)
         if not text:
-            self._notify("No assistant messages to copy.", severity="warning")
+            self._notify("No agent messages to copy yet.", severity="warning")
             return
         self.copy_to_clipboard(text)
         self._notify("Copied last assistant message to clipboard.")
