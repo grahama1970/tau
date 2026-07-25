@@ -94,6 +94,7 @@ from tau_coding.tui.app import (
     _filter_model_choices,
     _filter_session_picker_records,
     _next_tui_settings,
+    _render_activity_indicator,
     _terminal_command_prefix_span,
     _theme_css_variables,
     _visible_completion_state,
@@ -2116,12 +2117,29 @@ def test_terminal_command_prefix_span_detects_shell_mode_prefix() -> None:
     assert _terminal_command_prefix_span("hello ! pwd") is None
 
 
-def test_activity_prompt_border_uses_theme_accent_color_in_shell_mode() -> None:
+def test_activity_indicator_shows_dollar_sign_in_shell_mode() -> None:
+    theme = TAU_LIGHT_THEME
+
+    rendered = _render_activity_indicator(theme, frame=0, running=False, shell_mode=True)
+
+    assert rendered.plain == "$"
+    assert rendered.style == f"bold {theme.role_styles['tool'].border}"
+
+
+def test_activity_indicator_keeps_running_animation_in_shell_mode() -> None:
+    theme = TAU_LIGHT_THEME
+
+    rendered = _render_activity_indicator(theme, frame=0, running=True, shell_mode=True)
+
+    assert rendered.plain != "$"
+
+
+def test_activity_prompt_border_uses_tool_running_color_in_shell_mode() -> None:
     theme = TAU_LIGHT_THEME
 
     assert (
         _activity_prompt_border_color(theme, frame=0, running=False, shell_mode=True)
-        == theme.accent
+        == theme.role_styles["tool"].border
     )
 
 
@@ -2131,10 +2149,13 @@ async def test_tui_app_highlights_prompt_shell_mode() -> None:
 
     async with app.run_test(size=(120, 30)) as pilot:
         prompt = app.query_one("#prompt", PromptInput)
+        indicator = app.query_one("#prompt-prefix", Static)
         prompt.value = "!! pwd"
         await pilot.pause()
 
         assert prompt.has_class("-shell-mode")
+        assert indicator.render().plain == "$"
+        tool_running_color = app.tui_settings.resolved_theme.role_styles["tool"].border
         assert (
             _activity_prompt_border_color(
                 app.tui_settings.resolved_theme,
@@ -2142,16 +2163,25 @@ async def test_tui_app_highlights_prompt_shell_mode() -> None:
                 running=False,
                 shell_mode=prompt.has_class("-shell-mode"),
             )
-            == app.tui_settings.resolved_theme.accent
+            == tool_running_color
         )
         assert prompt.get_line(0).spans[-1].start == 0
-        assert prompt.get_line(0).spans[-1].end == 2
-        assert str(prompt.get_line(0).spans[-1].style) == app.tui_settings.resolved_theme.accent
+        assert prompt.get_line(0).spans[-1].end == len("!! pwd")
+        assert str(prompt.get_line(0).spans[-1].style) == tool_running_color
+
+        prompt.value = "! pwd\nls -la"
+        await pilot.pause()
+
+        assert prompt.get_line(1).spans[-1].start == 0
+        assert prompt.get_line(1).spans[-1].end == len("ls -la")
+        assert str(prompt.get_line(1).spans[-1].style) == tool_running_color
 
         prompt.value = "ask tau"
         await pilot.pause()
 
         assert not prompt.has_class("-shell-mode")
+        assert prompt.get_line(0).spans == []
+        assert indicator.render().plain == "τ"
 
 
 @pytest.mark.anyio
@@ -2437,10 +2467,11 @@ async def test_tui_app_shows_activity_indicator_while_running() -> None:
     async with app.run_test():
         prompt = app.query_one("#prompt")
         indicator = app.query_one("#prompt-prefix")
+        expected_border = app.tui_settings.resolved_theme.accent
 
         assert not app.query("#status")
         assert not app.query("#activity-status")
-        assert prompt.styles.border.top[1].hex.lower() == "#2d3748"
+        assert prompt.styles.border.top[1].hex.lower() == expected_border
         assert indicator.render().plain == "τ"
 
         app.adapter.apply(AgentStartEvent())
@@ -2448,19 +2479,19 @@ async def test_tui_app_shows_activity_indicator_while_running() -> None:
 
         assert pytest.approx(tui_app.ACTIVITY_TICK_SECONDS) == 0.15
         assert tui_app.ACTIVITY_COLOR_FADE_STEPS == 24
-        assert prompt.styles.border.top[1].hex.lower() == "#2d3748"
+        assert prompt.styles.border.top[1].hex.lower() == expected_border
         assert indicator.render().plain.startswith("■")
 
         app._tick_activity()
 
-        assert prompt.styles.border.top[1].hex.lower() == "#2d3748"
+        assert prompt.styles.border.top[1].hex.lower() == expected_border
         assert indicator.render().plain.splitlines()[1] == "■"
 
         app.adapter.apply(AgentEndEvent())
         app._refresh()
 
         assert not app.query("#status")
-        assert prompt.styles.border.top[1].hex.lower() == "#2d3748"
+        assert prompt.styles.border.top[1].hex.lower() == expected_border
         assert indicator.render().plain == "τ"
 
 
@@ -2564,6 +2595,7 @@ async def test_tui_app_clears_activity_status_on_error() -> None:
     async with app.run_test():
         prompt = app.query_one("#prompt")
         indicator = app.query_one("#prompt-prefix")
+        expected_border = app.tui_settings.resolved_theme.accent
         app.adapter.apply(AgentStartEvent())
         app._refresh()
         app.adapter.apply(ErrorEvent(message="provider failed", recoverable=False))
@@ -2571,7 +2603,7 @@ async def test_tui_app_clears_activity_status_on_error() -> None:
 
         assert not app.query("#status")
         assert not app.query("#activity-status")
-        assert prompt.styles.border.top[1].hex.lower() == "#2d3748"
+        assert prompt.styles.border.top[1].hex.lower() == expected_border
         assert indicator.render().plain == "τ"
 
 
