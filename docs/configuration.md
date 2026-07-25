@@ -270,6 +270,17 @@ Tau includes Pi-style message-delivery controls for `steering_mode` and
 timeout. `http_idle_timeout_ms` uses milliseconds; `0` maps to the same practical
 "disabled" timeout ceiling Pi uses for long-running provider streams.
 
+Project-local TUI resource overrides are stored separately in:
+
+```text
+<cwd>/.tau/tui.json
+```
+
+The project file currently supports `disabled_resource_paths`. In `/config`,
+project resource rows write project overrides to `<cwd>/.tau/tui.json`, while
+user resource rows write user overrides to `~/.tau/tui.json`. Tau merges both
+sets before loading resources.
+
 The built-in sidebar is responsive: Tau shows it on medium or larger terminal
 windows and hides it automatically when the terminal is narrow or short.
 When visible, it includes the active provider/model, thinking mode, loaded tools,

@@ -50,7 +50,7 @@ capabilities.
 | Session selector | `session-selector`, `session-selector-search` | `SessionPickerScreen` | `MATCHED` | Search, current/all, named-only, path toggle, sort, rename, delete are present. |
 | Branch/trust/tool selectors | `user-message-selector`, `trust-selector`, selector keybindings | `UserMessagePickerScreen`, `TrustPickerScreen`, `ToolsReferenceScreen` | `MATCHED` | `/fork` and `/trust` preserve Tau's backing flows and accept Pi-style `j/k` movement; `/tools` preserves searchable text input while the list accepts `j/k` movement when focused. |
 | Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `PARTIAL` | Tau backs most daily settings, exposes the external editor command, and now shows visible no-match search rows; do not add dead Pi toggles without backing behavior. |
-| Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist, resource rows expose scope/state/action, resource toggles update in-place, the backed user TUI settings write target is visible, and no-match searches show visible empty rows; project-local package override editing still missing. |
+| Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist, resource rows expose scope/state/action, resource toggles update in-place, backed user and project TUI settings write targets are visible, project resources can be disabled through `<cwd>/.tau/tui.json`, and no-match searches show visible empty rows; Pi package-source filter editing still missing. |
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login; provider picker now shows visible navigation help, empty filter states, and fail-closed empty-row selection. |
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks including simple component-like render objects, summarizes permission/approval receipts, surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data, preserves multiple Pi-style image blocks from one tool result, and now shows input-bar terminal command exit codes; full JS Pi component runtime embedding remains out of scope. |
 | Export/artifact viewing | `/export`, `exportToHtml`, RPC `export_html` | Tau `/export`, `/artifacts`, `session_export.py`, TUI command output | `MATCHED` | Tau writes real HTML/JSONL session artifacts, opens a persistent TUI result modal with the artifact path and `file://` URI, supports explicit `/export --open`, renders assistant Markdown tables plus embedded local image links and fenced DOT graph artifacts in HTML exports, attempts Mermaid fail-closed when the local CLI/browser runtime works, makes embedded figures/graphs openable full-size in the browser, and now has a real `/artifacts` browser with selected-artifact preview for current-transcript visual outputs. |
@@ -89,9 +89,9 @@ Current candidates:
 
 - `Config write-scope/package overrides`: still partial because Pi can write
   global/project package resource overrides directly from the selector; Tau
-  currently has backed disabled-resource toggles, visible user-settings write
-  target, in-place toggle refresh, and scope tabs, but not full project/package
-  override editing.
+  currently has backed user/project disabled-resource toggles, visible write
+  targets, in-place toggle refresh, and scope tabs, but not full Pi package
+  filter editing.
 - `Extension custom component objects`: still partial because Pi can mount
   arbitrary custom TUI components; Tau supports extension selection/input/
   editor/custom screens plus expansion-aware string/JSON/component-like custom
@@ -101,6 +101,38 @@ Current candidates:
   Do not add a fake setting or heuristic notice from aggregate stats.
 
 Latest slice evidence:
+
+- Source inspected: Pi `config-selector.ts`; Tau `ConfigMapScreen`,
+  `TuiSettings`, CLI/TUI session startup, resource disabled filtering, and
+  config-map tests.
+- Destination preserved: Tau's user settings file, project trust file,
+  resource reload path, Memory/SciLLM/DAG/workflow surfaces, receipt model, and
+  fail-closed resource diagnostics.
+- Changed: Tau now has project-local TUI settings backed by
+  `<cwd>/.tau/tui.json`. `/config` shows both user and project write targets;
+  project-scoped resource rows show `[project disable]` or `[project enable]`
+  and write to the project file, while user-scoped rows continue to write to
+  `~/.tau/tui.json`. TUI and print-mode startup merge user and project
+  disabled-resource paths before resource discovery.
+- Mocked: no.
+- Live: local Textual `/config` modal action with a real temporary project
+  directory and real project `.tau/tui.json` write; no provider-live or
+  SciLLM-live call.
+- Proof: `uv run pytest tests/test_tui_config.py tests/test_tui_app.py -q -k
+  'project_tui_settings or config_map'` reported `9 passed, 533 deselected`;
+  `uv run ruff check src/tau_coding/tui/config.py src/tau_coding/tui/app.py
+  src/tau_coding/tui/__init__.py src/tau_coding/cli.py tests/test_tui_config.py
+  tests/test_tui_app.py` reported all checks passed; `uv run python -m
+  py_compile src/tau_coding/tui/config.py src/tau_coding/tui/app.py
+  src/tau_coding/tui/__init__.py src/tau_coding/cli.py tests/test_tui_config.py
+  tests/test_tui_app.py` produced no errors; render proof
+  `/tmp/tau-pi-tui-project-config-proof-1785021907/proof.json` with screenshot
+  `/tmp/tau-pi-tui-project-config-proof-1785021907/tau-project-config-override.svg`.
+- Remaining gap: Pi can edit package-source include/exclude filters from the
+  selector; Tau now has real project-local resource disables, but not package
+  filter editing.
+
+Earlier slice evidence:
 
 - Source inspected: Pi `custom-message.ts`; Tau `_default_custom_entry_text`,
   `_render_custom_message_entry`, custom-entry renderer normalization, and

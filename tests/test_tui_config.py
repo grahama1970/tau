@@ -5,14 +5,19 @@ import pytest
 from tau_coding.paths import TauPaths
 from tau_coding.tui.config import (
     HIGH_CONTRAST_THEME,
+    ProjectTuiSettings,
     TuiConfigError,
     TuiKeybindings,
     TuiSettings,
     detect_terminal_theme_from_env,
     get_tui_theme,
+    load_project_tui_settings,
     load_tui_settings,
     parse_tui_auto_theme_setting,
+    project_tui_settings_from_json,
+    project_tui_settings_path,
     resolve_tui_theme_name,
+    save_project_tui_settings,
     save_tui_settings,
     tui_settings_from_json,
     tui_settings_path,
@@ -25,11 +30,33 @@ def test_tui_settings_path_uses_tau_home(tmp_path: Path) -> None:
     assert tui_settings_path(paths) == tmp_path / ".tau" / "tui.json"
 
 
+def test_project_tui_settings_path_uses_project_tau_dir(tmp_path: Path) -> None:
+    paths = TauPaths(home=tmp_path / "home" / ".tau", agents_home=tmp_path / ".agents")
+    cwd = tmp_path / "project"
+
+    assert project_tui_settings_path(cwd, paths) == cwd / ".tau" / "tui.json"
+
+
 def test_load_tui_settings_returns_defaults_when_file_is_missing(tmp_path: Path) -> None:
     paths = TauPaths(home=tmp_path / ".tau", agents_home=tmp_path / ".agents")
 
     assert load_tui_settings(paths) == TuiSettings()
     assert load_tui_settings(paths).keybindings.quit == "ctrl+d"
+
+
+def test_load_project_tui_settings_round_trips_disabled_paths(tmp_path: Path) -> None:
+    paths = TauPaths(home=tmp_path / "home" / ".tau", agents_home=tmp_path / ".agents")
+    cwd = tmp_path / "project"
+
+    assert load_project_tui_settings(cwd, paths) == ProjectTuiSettings()
+    path = save_project_tui_settings(
+        ProjectTuiSettings(disabled_resource_paths=("review.md",)),
+        cwd,
+        paths,
+    )
+
+    assert path == cwd / ".tau" / "tui.json"
+    assert load_project_tui_settings(cwd, paths).disabled_resource_paths == ("review.md",)
 
 
 def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
@@ -793,11 +820,28 @@ def test_tui_settings_load_disabled_resource_path_aliases() -> None:
     assert camel.disabled_resource_paths == ("/tmp/ship.md",)
 
 
+def test_project_tui_settings_load_disabled_resource_path_aliases() -> None:
+    snake = project_tui_settings_from_json(
+        {"disabled_resource_paths": [" review.md ", "review.md", ""]}
+    )
+    camel = project_tui_settings_from_json({"disabledResourcePaths": ["ship.md"]})
+
+    assert snake.disabled_resource_paths == ("review.md",)
+    assert camel.disabled_resource_paths == ("ship.md",)
+
+
 def test_tui_settings_reject_invalid_disabled_resource_paths() -> None:
     with pytest.raises(TuiConfigError, match="disabled_resource_paths"):
         tui_settings_from_json({"disabled_resource_paths": "/tmp/review.md"})
     with pytest.raises(TuiConfigError, match="disabled_resource_paths"):
         tui_settings_from_json({"disabled_resource_paths": ["/tmp/review.md", 3]})
+
+
+def test_project_tui_settings_reject_invalid_disabled_resource_paths() -> None:
+    with pytest.raises(TuiConfigError, match="disabled_resource_paths"):
+        project_tui_settings_from_json({"disabled_resource_paths": "review.md"})
+    with pytest.raises(TuiConfigError, match="disabled_resource_paths"):
+        project_tui_settings_from_json({"disabled_resource_paths": ["review.md", 3]})
 
 
 def test_tui_turn_notification_defaults_to_desktop() -> None:

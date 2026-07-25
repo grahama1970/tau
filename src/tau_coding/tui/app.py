@@ -139,12 +139,16 @@ from tau_coding.tui.config import (
     DEFAULT_AUTOCOMPLETE_MAX_VISIBLE,
     DEFAULT_AUTOMATIC_TUI_THEME_SETTING,
     TAU_DARK_THEME,
+    ProjectTuiSettings,
     TuiKeybindings,
     TuiQueueDrainMode,
     TuiSettings,
     TuiTheme,
     available_tui_theme_names,
+    load_project_tui_settings,
     load_tui_settings,
+    project_tui_settings_path,
+    save_project_tui_settings,
     save_tui_settings,
     tui_settings_path,
 )
@@ -5032,9 +5036,11 @@ class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
             )
         if item.action == "toggle_resource":
             scope, state, next_action = _config_map_resource_state(item)
+            write_scope = scope if scope in {"project", "user"} else "user"
             return (
                 f"{item.description} - {scope} resource is {state} - "
-                f"{confirm_key}/Space {next_action}s resource in user TUI settings - "
+                f"{confirm_key}/Space {next_action}s resource in "
+                f"{write_scope} TUI settings - "
                 f"{scope_hint} - {cancel_key} closes"
             )
         return f"{item.description} - {scope_hint} - {cancel_key} closes"
@@ -7269,12 +7275,16 @@ class TauTuiApp(App[None]):
         session: CodingSession,
         *,
         tui_settings: TuiSettings | None = None,
+        project_tui_settings: ProjectTuiSettings | None = None,
         startup_message: str | None = None,
         initial_prompt: str | None = None,
         startup_resume_picker: bool = False,
         show_first_time_setup: bool = False,
     ) -> None:
         self.tui_settings = tui_settings or TuiSettings()
+        self.project_tui_settings = (
+            project_tui_settings or load_project_tui_settings(session.cwd)
+        )
         self.startup_message = startup_message
         self.initial_prompt = initial_prompt
         self.startup_resume_picker = startup_resume_picker
@@ -8286,7 +8296,7 @@ class TauTuiApp(App[None]):
         set_disabled_resource_paths = getattr(self.session, "set_disabled_resource_paths", None)
         if callable(set_disabled_resource_paths):
             set_disabled_resource_paths(
-                tuple(Path(path) for path in settings.disabled_resource_paths)
+                _effective_disabled_resource_paths(settings, self.project_tui_settings)
             )
         self._terminal_notification.mode = settings.turn_notification
         set_steering_mode = getattr(self.session, "set_steering_queue_mode", None)
@@ -8344,7 +8354,11 @@ class TauTuiApp(App[None]):
         """Open a searchable map of Tau config files and resource commands."""
         self.push_screen(
             ConfigMapScreen(
-                _config_map_items(self.session, self.tui_settings),
+                _config_map_items(
+                    self.session,
+                    self.tui_settings,
+                    project_settings=self.project_tui_settings,
+                ),
                 theme=self.tui_settings.resolved_theme,
                 keybindings=self.tui_settings.keybindings,
                 on_toggle_resource=self._handle_config_map_toggle_resource,
@@ -8413,22 +8427,66 @@ class TauTuiApp(App[None]):
             )
         else:
             self._notify("Resource setting saved; current reload is still running.")
-        return _config_map_items(self.session, self.tui_settings)
+        return _config_map_items(
+            self.session,
+            self.tui_settings,
+            project_settings=self.project_tui_settings,
+        )
 
     def _toggle_disabled_resource_path(self, path: Path) -> str:
         """Toggle one disabled resource path in durable TUI settings."""
         target = _normalized_config_resource_path(path)
-        current = tuple(Path(item) for item in self.tui_settings.disabled_resource_paths)
-        disabled = {_normalized_config_resource_path(item): item for item in current}
-        if target in disabled:
-            remaining = tuple(
-                str(item) for normalized, item in disabled.items() if normalized != target
+        scope = _config_map_scope_for_path(target, cwd=self.session.cwd)
+        user_current = tuple(Path(item) for item in self.tui_settings.disabled_resource_paths)
+        project_current = tuple(
+            Path(item) for item in self.project_tui_settings.disabled_resource_paths
+        )
+        user_disabled = {_normalized_config_resource_path(item): item for item in user_current}
+        project_disabled = {
+            _normalized_config_resource_path(item): item for item in project_current
+        }
+        if target in user_disabled or target in project_disabled:
+            if target in project_disabled:
+                project_remaining = tuple(
+                    str(item)
+                    for normalized, item in project_disabled.items()
+                    if normalized != target
+                )
+                self._set_project_tui_settings(
+                    replace(
+                        self.project_tui_settings,
+                        disabled_resource_paths=project_remaining,
+                    )
+                )
+            if target in user_disabled:
+                user_remaining = tuple(
+                    str(item)
+                    for normalized, item in user_disabled.items()
+                    if normalized != target
+                )
+                self._set_tui_settings(
+                    replace(self.tui_settings, disabled_resource_paths=user_remaining)
+                )
+            return f"Enabled {scope} resource: {target}"
+        if scope == "project":
+            updated = (*self.project_tui_settings.disabled_resource_paths, str(target))
+            self._set_project_tui_settings(
+                replace(self.project_tui_settings, disabled_resource_paths=updated)
             )
-            self._set_tui_settings(replace(self.tui_settings, disabled_resource_paths=remaining))
-            return f"Enabled resource: {target}"
-        updated = (*self.tui_settings.disabled_resource_paths, str(target))
-        self._set_tui_settings(replace(self.tui_settings, disabled_resource_paths=updated))
-        return f"Disabled resource: {target}"
+        else:
+            updated = (*self.tui_settings.disabled_resource_paths, str(target))
+            self._set_tui_settings(replace(self.tui_settings, disabled_resource_paths=updated))
+        return f"Disabled {scope} resource: {target}"
+
+    def _set_project_tui_settings(self, settings: ProjectTuiSettings) -> None:
+        """Persist project-local TUI settings and apply effective disabled paths."""
+        self.project_tui_settings = settings
+        save_project_tui_settings(settings, self.session.cwd)
+        set_disabled_resource_paths = getattr(self.session, "set_disabled_resource_paths", None)
+        if callable(set_disabled_resource_paths):
+            set_disabled_resource_paths(
+                _effective_disabled_resource_paths(self.tui_settings, settings)
+            )
 
     def _open_thinking_picker(self) -> None:
         levels = tuple(getattr(self.session, "available_thinking_levels", ()))
@@ -14207,16 +14265,28 @@ def _normalized_config_resource_path(path: Path) -> Path:
     return path.expanduser().resolve(strict=False)
 
 
-def _config_map_items(session: CodingSession, settings: TuiSettings) -> tuple[ConfigMapItem, ...]:
+def _config_map_items(
+    session: CodingSession,
+    settings: TuiSettings,
+    *,
+    project_settings: ProjectTuiSettings | None = None,
+) -> tuple[ConfigMapItem, ...]:
     """Return real Tau config/resource rows for the interactive config map."""
     paths = TauPaths()
     resource_paths = TauResourcePaths(cwd=session.cwd, paths=paths)
     trust_path = ProjectTrustStore.from_resource_paths(resource_paths).trust_path
     loaded_extensions = getattr(session, "extensions", ())
     extension_count = len(loaded_extensions) if isinstance(loaded_extensions, Sequence) else 0
+    project_settings = project_settings or ProjectTuiSettings()
     disabled_paths = {
-        _normalized_config_resource_path(Path(path))
-        for path in settings.disabled_resource_paths
+        *(
+            _normalized_config_resource_path(Path(path))
+            for path in settings.disabled_resource_paths
+        ),
+        *(
+            _normalized_config_resource_path(Path(path))
+            for path in project_settings.disabled_resource_paths
+        ),
     }
 
     items: list[ConfigMapItem] = []
@@ -14303,6 +14373,13 @@ def _config_map_items(session: CodingSession, settings: TuiSettings) -> tuple[Co
         "Project trust",
         trust_path,
         "Project-local resource trust decisions.",
+        scope="project",
+    )
+    add_path(
+        "Config files",
+        "Project TUI settings",
+        project_tui_settings_path(session.cwd, paths),
+        "Project-local TUI resource overrides.",
         scope="project",
     )
 
@@ -14456,13 +14533,30 @@ def _config_map_item_label(item: ConfigMapItem) -> str:
         action = " [copy]"
     elif item.action == "toggle_resource":
         scope, state, next_action = _config_map_resource_state(item)
-        action = f" [{scope} {state}] [user {next_action}]"
+        write_scope = scope if scope in {"project", "user"} else "user"
+        action = f" [{scope} {state}] [{write_scope} {next_action}]"
     return f"{item.section}: {item.label} - {item.value}{action}"
 
 
 def _config_map_write_target_label(cwd: Path) -> str:
-    path = tui_settings_path()
-    return f"Write target: User TUI settings ({_format_scoped_resource_path(path, cwd=cwd)})"
+    user_path = tui_settings_path()
+    project_path = project_tui_settings_path(cwd)
+    return (
+        "Write targets: "
+        f"project resources ({_format_scoped_resource_path(project_path, cwd=cwd)}); "
+        f"user resources ({_format_scoped_resource_path(user_path, cwd=cwd)})"
+    )
+
+
+def _effective_disabled_resource_paths(
+    settings: TuiSettings,
+    project_settings: ProjectTuiSettings,
+) -> tuple[Path, ...]:
+    paths = [
+        *(Path(path) for path in settings.disabled_resource_paths),
+        *(Path(path) for path in project_settings.disabled_resource_paths),
+    ]
+    return tuple(dict.fromkeys(_normalized_config_resource_path(path) for path in paths))
 
 
 def _config_map_empty_label(screen: ConfigMapScreen) -> str:
@@ -15063,6 +15157,7 @@ async def run_tui_app(
             startup_cwd = record.cwd
             startup_model = record.model or selection.model
 
+        project_tui_settings = load_project_tui_settings(startup_cwd)
         session = await CodingSession.load(
             CodingSessionConfig(
                 provider=provider,
@@ -15085,8 +15180,9 @@ async def run_tui_app(
                 shell_path=tui_settings.shell_path,
                 shell_command_prefix=tui_settings.shell_command_prefix,
                 auto_resize_images=tui_settings.auto_resize_images,
-                disabled_resource_paths=tuple(
-                    Path(path) for path in tui_settings.disabled_resource_paths
+                disabled_resource_paths=_effective_disabled_resource_paths(
+                    tui_settings,
+                    project_tui_settings,
                 ),
                 discover_context_files=not no_context_files,
                 tool_allowlist=tool_allowlist,
@@ -15114,6 +15210,7 @@ async def run_tui_app(
         app = TauTuiApp(
             session,
             tui_settings=tui_settings,
+            project_tui_settings=project_tui_settings,
             startup_message=startup_message,
             initial_prompt=initial_prompt,
             startup_resume_picker=resume_picker,

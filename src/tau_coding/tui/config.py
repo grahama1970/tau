@@ -1012,9 +1012,25 @@ class TuiSettings:
         return resolve_tui_theme_setting(self.theme)
 
 
+@dataclass(frozen=True, slots=True)
+class ProjectTuiSettings:
+    """Project-local TUI settings backed by ``<cwd>/.tau/tui.json``."""
+
+    disabled_resource_paths: tuple[str, ...] = ()
+
+    def to_json(self) -> dict[str, Any]:
+        """Serialize these settings to JSON-compatible data."""
+        return {"disabled_resource_paths": list(self.disabled_resource_paths)}
+
+
 def tui_settings_path(paths: TauPaths | None = None) -> Path:
     """Return the durable TUI settings path."""
     return (paths or TauPaths()).home / "tui.json"
+
+
+def project_tui_settings_path(cwd: Path, paths: TauPaths | None = None) -> Path:
+    """Return the project-local TUI settings path."""
+    return (paths or TauPaths()).project_tau_dir(cwd) / "tui.json"
 
 
 def load_tui_settings(paths: TauPaths | None = None) -> TuiSettings:
@@ -1034,6 +1050,42 @@ def save_tui_settings(settings: TuiSettings, paths: TauPaths | None = None) -> P
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(dumps(settings.to_json(), indent=2) + "\n", encoding="utf-8")
     return path
+
+
+def load_project_tui_settings(
+    cwd: Path,
+    paths: TauPaths | None = None,
+) -> ProjectTuiSettings:
+    """Load project-local TUI settings, falling back to built-in defaults."""
+    path = project_tui_settings_path(cwd, paths)
+    if not path.exists():
+        return ProjectTuiSettings()
+    raw = loads(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        raise TuiConfigError("Project TUI settings must be a JSON object")
+    return project_tui_settings_from_json(raw)
+
+
+def save_project_tui_settings(
+    settings: ProjectTuiSettings,
+    cwd: Path,
+    paths: TauPaths | None = None,
+) -> Path:
+    """Persist project-local TUI settings and return the written path."""
+    path = project_tui_settings_path(cwd, paths)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(dumps(settings.to_json(), indent=2) + "\n", encoding="utf-8")
+    return path
+
+
+def project_tui_settings_from_json(data: dict[str, Any]) -> ProjectTuiSettings:
+    """Parse project-local TUI settings from JSON-compatible data."""
+    return ProjectTuiSettings(
+        disabled_resource_paths=_string_tuple_setting(
+            data.get("disabled_resource_paths", data.get("disabledResourcePaths", ())),
+            "disabled_resource_paths",
+        )
+    )
 
 
 def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:

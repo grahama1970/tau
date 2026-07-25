@@ -10,7 +10,7 @@ import subprocess
 import sys
 import tempfile
 import webbrowser
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from contextlib import redirect_stdout, suppress
 from dataclasses import replace
 from datetime import UTC, datetime
@@ -281,7 +281,7 @@ from tau_coding.tools import create_write_tool
 from tau_coding.traycer.cli import parse_traycer_validate_cli_args, traycer_validate_command
 from tau_coding.trust import DefaultProjectTrust
 from tau_coding.tui import run_tui_app
-from tau_coding.tui.config import load_tui_settings
+from tau_coding.tui.config import load_project_tui_settings, load_tui_settings
 from tau_coding.tui.proof import (
     DEFAULT_TUI_PROOF_PROMPT,
     DEFAULT_TUI_PROOF_RUN_ID,
@@ -14403,6 +14403,7 @@ async def run_print_mode(
     can fail non-interactive runs while still rendering the error message.
     """
     tui_settings = load_tui_settings(_tui_settings_paths(resource_paths))
+    project_tui_settings = load_project_tui_settings(cwd, _tui_settings_paths(resource_paths))
     effective_default_project_trust = default_project_trust or tui_settings.default_project_trust
     session = await CodingSession.load(
         CodingSessionConfig(
@@ -14423,8 +14424,9 @@ async def run_print_mode(
             shell_path=tui_settings.shell_path,
             shell_command_prefix=tui_settings.shell_command_prefix,
             auto_resize_images=tui_settings.auto_resize_images,
-            disabled_resource_paths=tuple(
-                Path(path) for path in tui_settings.disabled_resource_paths
+            disabled_resource_paths=_effective_tui_disabled_resource_paths(
+                tui_settings.disabled_resource_paths,
+                project_tui_settings.disabled_resource_paths,
             ),
             loop_receipt=loop_receipt,
             discover_context_files=discover_context_files,
@@ -14482,6 +14484,14 @@ def _tui_settings_paths(resource_paths: TauResourcePaths | None) -> TauPaths | N
         home=resource_paths.root,
         agents_home=resource_paths.agents_root or Path.home() / ".agents",
     )
+
+
+def _effective_tui_disabled_resource_paths(
+    user_paths: Sequence[str],
+    project_paths: Sequence[str],
+) -> tuple[Path, ...]:
+    paths = [*(Path(path) for path in user_paths), *(Path(path) for path in project_paths)]
+    return tuple(dict.fromkeys(path.expanduser().resolve(strict=False) for path in paths))
 
 
 def _format_terminal_command_result(result: TerminalCommandResult) -> str:

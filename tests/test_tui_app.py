@@ -129,6 +129,7 @@ from tau_coding.tui.config import (
     HIGH_CONTRAST_THEME,
     TAU_DARK_THEME,
     TAU_LIGHT_THEME,
+    ProjectTuiSettings,
     TuiKeybindings,
     TuiSettings,
     TuiTheme,
@@ -9481,8 +9482,9 @@ async def test_tui_app_config_command_opens_searchable_config_map() -> None:
 
         assert isinstance(app.screen, ConfigMapScreen)
         write_target = app.screen.query_one("#config-map-write-target", Static)
-        assert "Write target: User TUI settings" in str(write_target.render())
-        assert ".tau/tui.json" in str(write_target.render())
+        assert "Write targets:" in str(write_target.render())
+        assert "project resources ([project] .tau/tui.json)" in str(write_target.render())
+        assert "user resources ([user]" in str(write_target.render())
         labels = [
             str(item.query_one(Label).render())
             for item in app.screen.query_one("#config-map-list", ListView).children
@@ -9555,7 +9557,7 @@ async def test_tui_app_config_map_cycles_pi_scope_tabs() -> None:
 
         assert str(tabs.render()) == "Tabs: ● All  ○ Project  ○ User"
         assert any("Config files: TUI settings -" in label for label in labels())
-        assert "Loaded skills: review - review.md [project enabled] [user disable]" in labels()
+        assert "Loaded skills: review - review.md [project enabled] [project disable]" in labels()
 
         await pilot.press("ctrl+i")
         await pilot.pause()
@@ -9563,8 +9565,9 @@ async def test_tui_app_config_map_cycles_pi_scope_tabs() -> None:
         assert str(tabs.render()) == "Tabs: ○ All  ● Project  ○ User"
         project_labels = labels()
         assert any("Config files: Project trust -" in label for label in project_labels)
+        assert any("Config files: Project TUI settings -" in label for label in project_labels)
         assert (
-            "Loaded skills: review - review.md [project enabled] [user disable]"
+            "Loaded skills: review - review.md [project enabled] [project disable]"
             in project_labels
         )
         assert any(
@@ -9580,7 +9583,7 @@ async def test_tui_app_config_map_cycles_pi_scope_tabs() -> None:
         user_labels = labels()
         assert any("Config files: TUI settings -" in label for label in user_labels)
         assert (
-            "Loaded skills: review - review.md [project enabled] [user disable]"
+            "Loaded skills: review - review.md [project enabled] [project disable]"
             not in user_labels
         )
 
@@ -9620,11 +9623,18 @@ async def test_tui_app_config_map_shows_visible_empty_filter_row() -> None:
 async def test_tui_app_config_map_disables_loaded_resource(monkeypatch: pytest.MonkeyPatch) -> None:
     session = FakeSession()
     saved_settings: list[TuiSettings] = []
+    saved_project_settings: list[ProjectTuiSettings] = []
 
     def capture_settings(settings: TuiSettings) -> None:
         saved_settings.append(settings)
 
+    def capture_project_settings(settings: ProjectTuiSettings, cwd: Path) -> Path:
+        saved_project_settings.append(settings)
+        return cwd / ".tau" / "tui.json"
+
+    monkeypatch.setattr(tui_app, "load_tui_settings", lambda: TuiSettings())
     monkeypatch.setattr(tui_app, "save_tui_settings", capture_settings)
+    monkeypatch.setattr(tui_app, "save_project_tui_settings", capture_project_settings)
     app = TauTuiApp(session)
 
     async with app.run_test() as pilot:
@@ -9638,14 +9648,14 @@ async def test_tui_app_config_map_disables_loaded_resource(monkeypatch: pytest.M
             str(item.query_one(Label).render())
             for item in app.screen.query_one("#config-map-list", ListView).children
         ]
-        assert "Loaded skills: review - review.md [project enabled] [user disable]" in labels
+        assert "Loaded skills: review - review.md [project enabled] [project disable]" in labels
 
         config_list = app.screen.query_one("#config-map-list", ListView)
         config_list.index = labels.index(
-            "Loaded skills: review - review.md [project enabled] [user disable]"
+            "Loaded skills: review - review.md [project enabled] [project disable]"
         )
         app.screen._refresh_help_text()
-        assert "user TUI settings" in str(
+        assert "project TUI settings" in str(
             app.screen.query_one("#config-map-help", Static).render()
         )
         app.screen.action_select_cursor()
@@ -9657,7 +9667,9 @@ async def test_tui_app_config_map_disables_loaded_resource(monkeypatch: pytest.M
         assert isinstance(app.screen, ConfigMapScreen)
         assert session.disabled_resource_paths == (Path("/workspace/project/review.md"),)
         assert saved_settings
-        assert saved_settings[-1].disabled_resource_paths == (
+        assert all(not settings.disabled_resource_paths for settings in saved_settings)
+        assert saved_project_settings
+        assert saved_project_settings[-1].disabled_resource_paths == (
             "/workspace/project/review.md",
         )
         assert session.reload_count == 1
@@ -9666,11 +9678,11 @@ async def test_tui_app_config_map_disables_loaded_resource(monkeypatch: pytest.M
             for item in app.screen.query_one("#config-map-list", ListView).children
         ]
         assert (
-            "Loaded skills: review - review.md [project enabled] [user disable]"
+            "Loaded skills: review - review.md [project enabled] [project disable]"
             not in updated_labels
         )
         assert (
-            "Disabled resources: review.md - review.md [project disabled] [user enable]"
+            "Disabled resources: review.md - review.md [project disabled] [project enable]"
         ) in updated_labels
 
 
