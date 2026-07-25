@@ -642,6 +642,18 @@ def _command_argument_completions(
             sort=False,
         )
     command = command_registry.get(command_name)
+    if command is not None and command.argument_completion_provider is not None:
+        dynamic_options = _dynamic_argument_completion_options(
+            command.argument_completion_provider,
+            prefix=text[token_end + 1 : _argument_token_end(text, token_end + 1)],
+        )
+        if dynamic_options is not None:
+            return _value_completions(
+                text=text,
+                start=token_end + 1,
+                options=dynamic_options,
+                sort=False,
+            )
     if command is not None and command.argument_completions:
         return _value_completions(
             text=text,
@@ -650,6 +662,54 @@ def _command_argument_completions(
             sort=False,
         )
     return None
+
+
+def _dynamic_argument_completion_options(
+    provider: object,
+    *,
+    prefix: str,
+) -> tuple[CommandArgumentCompletion, ...] | None:
+    values = provider(prefix)  # type: ignore[operator]
+    if values is None:
+        return None
+    return _normalize_command_argument_completions(values)
+
+
+def _normalize_command_argument_completions(
+    values: Sequence[object],
+) -> tuple[CommandArgumentCompletion, ...]:
+    completions: list[CommandArgumentCompletion] = []
+    seen: set[str] = set()
+    for value in values:
+        if isinstance(value, CommandArgumentCompletion):
+            completion = value
+        elif isinstance(value, CompletionOption):
+            completion = CommandArgumentCompletion(
+                value=value.value,
+                description=value.description,
+            )
+        elif isinstance(value, str):
+            completion = CommandArgumentCompletion(value=value)
+        elif (
+            isinstance(value, tuple)
+            and len(value) == 2
+            and isinstance(value[0], str)
+            and (value[1] is None or isinstance(value[1], str))
+        ):
+            completion = CommandArgumentCompletion(value=value[0], description=value[1])
+        else:
+            continue
+        normalized_value = completion.value.strip()
+        if not normalized_value or normalized_value in seen:
+            continue
+        seen.add(normalized_value)
+        completions.append(
+            CommandArgumentCompletion(
+                value=normalized_value,
+                description=completion.description,
+            )
+        )
+    return tuple(completions)
 
 
 def _value_completions(

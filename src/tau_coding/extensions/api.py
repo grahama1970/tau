@@ -10,6 +10,7 @@ from tau_agent.tools import AgentTool
 
 ExtensionCommandHandler = Callable[[Any], Any]
 ExtensionShortcutHandler = Callable[[Any], Any]
+ExtensionArgumentCompletionProvider = Callable[[str], Sequence[Any] | None]
 
 
 @dataclass(frozen=True, slots=True)
@@ -24,6 +25,7 @@ class ExtensionCommand:
     search_terms: tuple[str, ...] = ()
     argument_hint: str | None = None
     argument_completions: tuple[ExtensionArgumentCompletion, ...] = ()
+    argument_completion_provider: ExtensionArgumentCompletionProvider | None = None
     hidden: bool = False
 
 
@@ -219,6 +221,7 @@ class ExtensionAPI:
         search_terms: tuple[str, ...] = (),
         argument_hint: str | None = None,
         argument_completions: Sequence[Any] = (),
+        argument_completion_provider: ExtensionArgumentCompletionProvider | None = None,
         hidden: bool = False,
     ) -> None:
         """Register a synchronous slash command for the current coding session."""
@@ -229,6 +232,10 @@ class ExtensionAPI:
             raise ValueError("register_command names must not contain ':' or whitespace")
         if not callable(handler):
             raise TypeError("register_command handler must be callable")
+        if argument_completion_provider is not None and not callable(
+            argument_completion_provider
+        ):
+            raise TypeError("argument_completion_provider must be callable")
         if any(existing.name == normalized for existing in self._commands):
             raise ValueError(f"Extension already registered command: /{normalized}")
         self._commands.append(
@@ -241,6 +248,7 @@ class ExtensionAPI:
                 search_terms=tuple(term.strip().lower() for term in search_terms),
                 argument_hint=argument_hint,
                 argument_completions=_normalize_argument_completions(argument_completions),
+                argument_completion_provider=argument_completion_provider,
                 hidden=hidden,
             )
         )

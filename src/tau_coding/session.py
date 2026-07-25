@@ -3035,6 +3035,7 @@ def _extension_slash_command(
             )
             for completion in command.argument_completions
         ),
+        argument_completion_provider=command.argument_completion_provider,
         hidden=command.hidden,
         source=f"extension:{extension.name}",
     )

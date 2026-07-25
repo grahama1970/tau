@@ -217,6 +217,7 @@ class SlashCommand:
     search_terms: tuple[str, ...] = ()
     argument_hint: str | None = None
     argument_completions: tuple[CommandArgumentCompletion, ...] = ()
+    argument_completion_provider: Callable[[str], Sequence[Any] | None] | None = None
     hidden: bool = False
     source: str | None = None
 
