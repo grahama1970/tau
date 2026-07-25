@@ -6211,7 +6211,17 @@ def test_cli_without_prompt_invokes_tui_runner(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     calls: list[
-        tuple[str | None, Path, str | None, bool, str | None, int | None, str | None, str | None]
+        tuple[
+            str | None,
+            Path,
+            str | None,
+            bool,
+            str | None,
+            int | None,
+            str | None,
+            str | None,
+            bool,
+        ]
     ] = []
 
     async def fake_run_openai_tui(
@@ -6223,6 +6233,7 @@ def test_cli_without_prompt_invokes_tui_runner(
         auto_compact_token_threshold: int | None,
         initial_prompt: str | None,
         session_name: str | None,
+        continue_session: bool,
     ) -> None:
         calls.append(
             (
@@ -6234,6 +6245,7 @@ def test_cli_without_prompt_invokes_tui_runner(
                 auto_compact_token_threshold,
                 initial_prompt,
                 session_name,
+                continue_session,
             )
         )
 
@@ -6243,14 +6255,24 @@ def test_cli_without_prompt_invokes_tui_runner(
     result = CliRunner().invoke(app, [])
 
     assert result.exit_code == 0
-    assert calls == [(None, tmp_path, None, False, None, None, None, None)]
+    assert calls == [(None, tmp_path, None, False, None, None, None, None, False)]
 
 
 def test_cli_positional_prompt_invokes_tui_runner(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     calls: list[
-        tuple[str | None, Path, str | None, bool, str | None, int | None, str | None, str | None]
+        tuple[
+            str | None,
+            Path,
+            str | None,
+            bool,
+            str | None,
+            int | None,
+            str | None,
+            str | None,
+            bool,
+        ]
     ] = []
 
     async def fake_run_openai_tui(
@@ -6262,6 +6284,7 @@ def test_cli_positional_prompt_invokes_tui_runner(
         auto_compact_token_threshold: int | None,
         initial_prompt: str | None,
         session_name: str | None,
+        continue_session: bool,
     ) -> None:
         calls.append(
             (
@@ -6273,6 +6296,7 @@ def test_cli_positional_prompt_invokes_tui_runner(
                 auto_compact_token_threshold,
                 initial_prompt,
                 session_name,
+                continue_session,
             )
         )
 
@@ -6282,7 +6306,7 @@ def test_cli_positional_prompt_invokes_tui_runner(
     result = CliRunner().invoke(app, ["explain this repo"])
 
     assert result.exit_code == 0
-    assert calls == [(None, tmp_path, None, False, None, None, "explain this repo", None)]
+    assert calls == [(None, tmp_path, None, False, None, None, "explain this repo", None, False)]
 
 
 @pytest.mark.anyio
@@ -6994,7 +7018,17 @@ def test_default_tui_invokes_tui_runner_with_flags(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     calls: list[
-        tuple[str | None, Path, str | None, bool, str | None, int | None, str | None, str | None]
+        tuple[
+            str | None,
+            Path,
+            str | None,
+            bool,
+            str | None,
+            int | None,
+            str | None,
+            str | None,
+            bool,
+        ]
     ] = []
 
     async def fake_run_openai_tui(
@@ -7006,6 +7040,7 @@ def test_default_tui_invokes_tui_runner_with_flags(
         auto_compact_token_threshold: int | None,
         initial_prompt: str | None,
         session_name: str | None,
+        continue_session: bool,
     ) -> None:
         calls.append(
             (
@@ -7017,6 +7052,7 @@ def test_default_tui_invokes_tui_runner_with_flags(
                 auto_compact_token_threshold,
                 initial_prompt,
                 session_name,
+                continue_session,
             )
         )
 
@@ -7039,7 +7075,7 @@ def test_default_tui_invokes_tui_runner_with_flags(
     )
 
     assert result.exit_code == 0
-    assert calls == [("fake", tmp_path, "session-1", False, "local", 1000, None, None)]
+    assert calls == [("fake", tmp_path, "session-1", False, "local", 1000, None, None, False)]
 
 
 def test_default_tui_passes_startup_session_name(
@@ -7056,9 +7092,10 @@ def test_default_tui_passes_startup_session_name(
         auto_compact_token_threshold: int | None,
         initial_prompt: str | None,
         session_name: str | None,
+        continue_session: bool,
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
-        del initial_prompt
+        del initial_prompt, continue_session
         calls.append(session_name)
 
     monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
@@ -7069,11 +7106,57 @@ def test_default_tui_passes_startup_session_name(
     assert calls == ["Customer bugfix"]
 
 
+def test_default_tui_passes_continue_session_flag(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[bool] = []
+
+    async def fake_run_openai_tui(
+        model: str | None,
+        cwd: Path,
+        session_id: str | None,
+        new_session: bool,
+        provider_name: str | None,
+        auto_compact_token_threshold: int | None,
+        initial_prompt: str | None,
+        session_name: str | None,
+        continue_session: bool,
+    ) -> None:
+        del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
+        del initial_prompt, session_name
+        calls.append(continue_session)
+
+    monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
+
+    result = CliRunner().invoke(app, ["--cwd", str(tmp_path), "-c"])
+
+    assert result.exit_code == 0
+    assert calls == [True]
+
+
 def test_default_tui_rejects_blank_startup_session_name() -> None:
     result = CliRunner().invoke(app, ["--name", "   "])
 
     assert result.exit_code != 0
     assert "--name requires a non-empty value" in result.output
+
+
+@pytest.mark.parametrize(
+    ("args", "message"),
+    [
+        (["--continue", "--session", "session-1"], "--continue and --session cannot be used"),
+        (["--continue", "--new-session"], "--continue and --new-session cannot be used"),
+        (["--continue", "--name", "Customer bugfix"], "--continue and --name cannot be used"),
+        (["--print", "--continue", "hello"], "--continue is supported for TUI startup only"),
+    ],
+)
+def test_default_tui_rejects_invalid_continue_session_combinations(
+    args: list[str], message: str
+) -> None:
+    result = CliRunner().invoke(app, args)
+
+    assert result.exit_code != 0
+    assert message in result.output
 
 
 def test_default_tui_rejects_session_with_new_session(tmp_path: Path) -> None:

@@ -311,7 +311,8 @@ Useful commands:
 
 ```bash
 tau sessions
-tau --resume <session-id>
+tau --session <session-id>
+tau --continue
 tau --new-session
 tau --name "Customer bugfix"
 tau export <session-id>
@@ -322,6 +323,10 @@ tau export <session-id> --format jsonl
 `--name` sets the display title for a newly started interactive or print-mode
 session. The title is stored in the indexed session metadata used by `/resume`
 and session-id completions.
+
+`--continue` resumes the latest indexed session for the current working
+directory. It fails instead of creating a new session when no previous cwd
+session exists.
 
 `tau export` writes a standalone HTML file with the preserved session tree and
 the storage-order transcript. The source can be an indexed session id or a path

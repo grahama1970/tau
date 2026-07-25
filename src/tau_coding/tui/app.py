@@ -11040,6 +11040,19 @@ def _explicit_resume_record(
     return record
 
 
+def _latest_cwd_session_record(
+    manager: SessionManager,
+    *,
+    cwd: Path,
+) -> CodingSessionRecord:
+    record = manager.latest_session_for_cwd(cwd)
+    if record is None:
+        raise RuntimeError(
+            "No previous session found for this cwd; start one with `tau --new-session`."
+        )
+    return record
+
+
 def _create_startup_session_record(
     manager: SessionManager,
     *,
@@ -11158,25 +11171,35 @@ async def run_tui_app(
     auto_compact_token_threshold: int | None = None,
     initial_prompt: str | None = None,
     session_name: str | None = None,
+    continue_session: bool = False,
     session_manager: SessionManager | None = None,
 ) -> str | None:
     """Create the default provider/session, run the Textual app, and return the session id."""
     if new_session and session_id is not None:
-        raise RuntimeError("--resume and --new-session cannot be used together")
+        raise RuntimeError("--session and --new-session cannot be used together")
+    if continue_session and session_id is not None:
+        raise RuntimeError("--continue and --session cannot be used together")
+    if continue_session and new_session:
+        raise RuntimeError("--continue and --new-session cannot be used together")
+    if continue_session and session_name is not None:
+        raise RuntimeError("--continue and --name cannot be used together")
 
     provider_settings = load_provider_settings()
     tui_settings = load_tui_settings()
     manager = session_manager or SessionManager()
-    record = _explicit_resume_record(
-        manager,
-        session_id=session_id,
-    )
+    if continue_session:
+        record = _latest_cwd_session_record(manager, cwd=cwd)
+    else:
+        record = _explicit_resume_record(
+            manager,
+            session_id=session_id,
+        )
     selection = _resolve_tui_startup_selection(
         provider_settings,
         record=record,
         provider_name=provider_name,
         model=model,
-        explicit_resume=session_id is not None,
+        explicit_resume=session_id is not None or continue_session,
     )
     startup_message: str | None = None
     runtime_provider_config: ProviderConfig | None = selection.provider

@@ -830,6 +830,10 @@ def main(
         bool,
         typer.Option("--new-session", help="Create a new session in TUI mode (default)."),
     ] = False,
+    continue_session: Annotated[
+        bool,
+        typer.Option("--continue", "-c", help="Continue the latest session for this cwd."),
+    ] = False,
     auto_compact_threshold: Annotated[
         int | None,
         typer.Option(
@@ -941,6 +945,15 @@ def main(
     if session is not None and new_session:
         raise typer.BadParameter("--session and --new-session cannot be used together")
 
+    if continue_session and session is not None:
+        raise typer.BadParameter("--continue and --session cannot be used together")
+
+    if continue_session and new_session:
+        raise typer.BadParameter("--continue and --new-session cannot be used together")
+
+    if continue_session and session_name is not None:
+        raise typer.BadParameter("--continue and --name cannot be used together")
+
     if prompt_option is not None:
         raise typer.BadParameter(
             "--prompt was removed. Pass the prompt positionally and use --print, e.g. "
@@ -957,6 +970,9 @@ def main(
 
     print_requested = print_mode or mode is not None
     effective_output = mode or PrintOutputMode.text
+
+    if continue_session and print_requested:
+        raise typer.BadParameter("--continue is supported for TUI startup only")
 
     positional_args = prompt_args or []
     command = positional_args[0] if positional_args else None
@@ -3136,6 +3152,7 @@ def main(
                 auto_compact_threshold,
                 initial_prompt,
                 session_name,
+                continue_session,
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -3184,6 +3201,7 @@ async def run_openai_tui(
     auto_compact_token_threshold: int | None = None,
     initial_prompt: str | None = None,
     session_name: str | None = None,
+    continue_session: bool = False,
 ) -> str | None:
     """Run the Textual TUI and return its resumable session id, if any."""
     return await run_tui_app(
@@ -3195,6 +3213,7 @@ async def run_openai_tui(
         auto_compact_token_threshold=auto_compact_token_threshold,
         initial_prompt=initial_prompt,
         session_name=session_name,
+        continue_session=continue_session,
     )
 
 

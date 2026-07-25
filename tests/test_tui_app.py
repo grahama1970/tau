@@ -11533,6 +11533,123 @@ async def test_run_tui_app_resumes_explicit_session(
     assert calls == ["get:session-1", "load", "run", "provider_closed"]
 
 
+@pytest.mark.anyio
+async def test_run_tui_app_continues_latest_session_for_cwd(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[str] = []
+    record = CodingSessionRecord(
+        id="latest-session",
+        path=tmp_path / "latest-session.jsonl",
+        cwd=tmp_path,
+        model="gpt-5.5",
+        title="Latest",
+        created_at=1.0,
+        updated_at=2.0,
+        provider_name="openai",
+    )
+
+    class FakeProvider:
+        async def aclose(self) -> None:
+            calls.append("provider_closed")
+
+    class FakeManager:
+        def latest_session_for_cwd(self, cwd: Path) -> CodingSessionRecord | None:
+            calls.append(f"latest:{cwd}")
+            return record
+
+        def create_session(
+            self,
+            *,
+            cwd: Path,
+            model: str,
+            provider_name: str | None = None,
+        ) -> CodingSessionRecord:
+            raise AssertionError("continue should not create a new session")
+
+    class FakeCodingSession:
+        @classmethod
+        async def load(cls, config: object) -> str:
+            assert config.session_id == "latest-session"  # type: ignore[attr-defined]
+            assert config.cwd == tmp_path  # type: ignore[attr-defined]
+            assert config.provider_name == "openai"  # type: ignore[attr-defined]
+            calls.append("load")
+            return "session"
+
+    class FakeApp:
+        def __init__(self, session: str, **kwargs: object) -> None:
+            assert session == "session"
+            assert kwargs["initial_prompt"] == "continue work"
+
+        async def run_async(self) -> None:
+            calls.append("run")
+
+    settings = ProviderSettings(
+        default_provider="openai",
+        providers=(
+            OpenAICompatibleProviderConfig(
+                name="openai",
+                models=("gpt-5.5",),
+                default_model="gpt-5.5",
+            ),
+        ),
+    )
+    monkeypatch.setenv("OPENAI_API_KEY", "stored-key")
+    monkeypatch.setattr(tui_app, "load_provider_settings", lambda: settings)
+    monkeypatch.setattr(tui_app, "load_tui_settings", lambda: TuiSettings())
+    monkeypatch.setattr(
+        tui_app,
+        "create_model_provider",
+        lambda provider, **kwargs: (
+            calls.append(f"provider:{provider.name}:{kwargs['model']}") or FakeProvider()
+        ),
+    )
+    monkeypatch.setattr(tui_app, "CodingSession", FakeCodingSession)
+    monkeypatch.setattr(tui_app, "TauTuiApp", FakeApp)
+
+    result = await tui_app.run_tui_app(
+        model=None,
+        cwd=tmp_path,
+        continue_session=True,
+        initial_prompt="continue work",
+        session_manager=FakeManager(),
+    )
+
+    assert result == "latest-session"
+    assert calls == [
+        f"latest:{tmp_path}",
+        "provider:openai:gpt-5.5",
+        "load",
+        "run",
+        "provider_closed",
+    ]
+
+
+@pytest.mark.anyio
+async def test_run_tui_app_continue_errors_when_no_latest_session(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[str] = []
+
+    class FakeManager:
+        def latest_session_for_cwd(self, cwd: Path) -> CodingSessionRecord | None:
+            calls.append(f"latest:{cwd}")
+            return None
+
+    monkeypatch.setattr(tui_app, "load_provider_settings", lambda: ProviderSettings())
+    monkeypatch.setattr(tui_app, "load_tui_settings", lambda: TuiSettings())
+
+    with pytest.raises(RuntimeError, match="No previous session found"):
+        await tui_app.run_tui_app(
+            model=None,
+            cwd=tmp_path,
+            continue_session=True,
+            session_manager=FakeManager(),
+        )
+
+    assert calls == [f"latest:{tmp_path}"]
+
+
 class _FakeSessionManager:
     def __init__(self, records: list[CodingSessionRecord]) -> None:
         self._records = records
