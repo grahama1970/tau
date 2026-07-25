@@ -57,6 +57,7 @@ class ExtensionShortcutContext:
     extension_name: str
     current_editor_text: str = ""
     current_tools_expanded: bool = False
+    current_theme: str | None = None
     shutdown_requested: bool = False
     editor_text: str | None = None
     editor_insert_text: str | None = None
@@ -308,6 +309,7 @@ class ExtensionCommandContext:
     extension_name: str
     current_editor_text: str = ""
     current_tools_expanded: bool = False
+    current_theme: str | None = None
     shutdown_requested: bool = False
     editor_text: str | None = None
     editor_insert_text: str | None = None
@@ -657,6 +659,12 @@ class ExtensionCommandUi:
     def setToolsExpanded(self, expanded: bool) -> None:  # noqa: N802
         """Pi-compatible alias for setting tool-result expansion state."""
         self._context.set_tools_expanded(expanded)
+
+    @property
+    def theme(self) -> ThemeInfo | None:
+        """Return the active Tau theme info when the frontend supplied one."""
+        current_theme = self._context.current_theme
+        return None if current_theme is None else self._context.get_theme(current_theme)
 
     def set_working_message(self, message: str | None = None) -> None:
         """Set the running message."""

@@ -237,6 +237,7 @@ class CommandContext:
     args: str
     current_editor_text: str
     show_tool_results: bool = False
+    current_theme: str | None = None
     async_ui_supported: bool = False
 
 
@@ -315,6 +316,7 @@ class CommandRegistry:
         *,
         current_editor_text: str | None = None,
         show_tool_results: bool = False,
+        current_theme: str | None = None,
     ) -> CommandResult:
         """Execute a slash command, or return unhandled for ordinary prompts."""
         stripped = text.strip()
@@ -347,6 +349,7 @@ class CommandRegistry:
                     stripped if current_editor_text is None else current_editor_text
                 ),
                 show_tool_results=show_tool_results,
+                current_theme=current_theme,
             )
         )
         if isawaitable(result):
@@ -369,6 +372,7 @@ class CommandRegistry:
         *,
         current_editor_text: str | None = None,
         show_tool_results: bool = False,
+        current_theme: str | None = None,
     ) -> CommandResult:
         """Execute a slash command, awaiting handlers that need interactive UI."""
         stripped = text.strip()
@@ -401,6 +405,7 @@ class CommandRegistry:
                     stripped if current_editor_text is None else current_editor_text
                 ),
                 show_tool_results=show_tool_results,
+                current_theme=current_theme,
                 async_ui_supported=True,
             )
         )

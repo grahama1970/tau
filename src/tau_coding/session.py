@@ -1626,6 +1626,7 @@ class CodingSession:
         *,
         current_editor_text: str | None = None,
         show_tool_results: bool = False,
+        current_theme: str | None = None,
     ) -> CommandResult:
         """Handle coding-session slash commands.
 
@@ -1639,6 +1640,7 @@ class CodingSession:
             text,
             current_editor_text=current_editor_text,
             show_tool_results=show_tool_results,
+            current_theme=current_theme,
         )
 
     async def handle_command_async(
@@ -1647,6 +1649,7 @@ class CodingSession:
         *,
         current_editor_text: str | None = None,
         show_tool_results: bool = False,
+        current_theme: str | None = None,
     ) -> CommandResult:
         """Handle slash commands, awaiting extension handlers that need TUI UI."""
         if expand_prompt_template_command(text, self._prompt_templates) is not None:
@@ -1656,6 +1659,7 @@ class CodingSession:
             text,
             current_editor_text=current_editor_text,
             show_tool_results=show_tool_results,
+            current_theme=current_theme,
         )
 
     def set_extension_ui_handler(self, handler: Callable[..., object] | None) -> None:
@@ -1692,6 +1696,7 @@ class CodingSession:
         *,
         current_editor_text: str | None = None,
         show_tool_results: bool = False,
+        current_theme: str | None = None,
     ) -> CommandResult:
         """Handle a keyboard shortcut registered by a loaded extension."""
         normalized = key.strip().lower()
@@ -1705,6 +1710,7 @@ class CodingSession:
                     extension_name=extension.name,
                     current_editor_text=current_editor_text or "",
                     current_tools_expanded=show_tool_results,
+                    current_theme=current_theme,
                 )
                 result = shortcut.handler(extension_context)
                 if inspect.isawaitable(result):
@@ -3025,6 +3031,7 @@ def _extension_slash_command(
             extension_name=extension.name,
             current_editor_text=context.current_editor_text,
             current_tools_expanded=context.show_tool_results,
+            current_theme=context.current_theme,
         )
         result = _call_extension_command_handler(
             command.handler,

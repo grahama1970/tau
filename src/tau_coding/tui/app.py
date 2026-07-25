@@ -7238,6 +7238,8 @@ class TauTuiApp(App[None]):
                 kwargs["current_editor_text"] = current_editor_text
             if "show_tool_results" in parameters:
                 kwargs["show_tool_results"] = self.state.show_tool_results
+            if "current_theme" in parameters:
+                kwargs["current_theme"] = self.tui_settings.resolved_theme.name
             return await handle_command_async(text, **kwargs)
         handle_command = self.session.handle_command
         parameters = signature(handle_command).parameters
@@ -7246,6 +7248,8 @@ class TauTuiApp(App[None]):
             kwargs["current_editor_text"] = current_editor_text
         if "show_tool_results" in parameters:
             kwargs["show_tool_results"] = self.state.show_tool_results
+        if "current_theme" in parameters:
+            kwargs["current_theme"] = self.tui_settings.resolved_theme.name
         return handle_command(text, **kwargs)
 
     async def _handle_extension_ui_request(
@@ -7736,6 +7740,8 @@ class TauTuiApp(App[None]):
                 kwargs["current_editor_text"] = prompt.expanded_text()
             if "show_tool_results" in parameters:
                 kwargs["show_tool_results"] = self.state.show_tool_results
+            if "current_theme" in parameters:
+                kwargs["current_theme"] = self.tui_settings.resolved_theme.name
             result = handle_shortcut(key, **kwargs)
         except Exception as exc:  # noqa: BLE001 - extensions are an isolation boundary
             self._notify(f"Extension shortcut error: {exc}", severity="error")
