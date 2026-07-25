@@ -2835,6 +2835,8 @@ class SettingsPickerScreen(ModalScreen[None]):
         self._refresh_help_text()
 
     def _list_items(self) -> list[ListItem]:
+        if not self.filtered_items:
+            return [ListItem(Label(_settings_picker_empty_label(self), markup=False))]
         return [
             ListItem(Label(_settings_picker_label(item), markup=False))
             for item in self.filtered_items
@@ -4759,6 +4761,8 @@ class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
         self._refresh_help_text()
 
     def _list_items(self) -> list[ListItem]:
+        if not self.filtered_items:
+            return [ListItem(Label(_config_map_empty_label(self), markup=False))]
         return [
             ListItem(Label(_config_map_item_label(item), markup=False))
             for item in self.filtered_items
@@ -12230,6 +12234,12 @@ def _settings_picker_label(item: SettingsPickerItem) -> str:
     return f"{item.label}: {item.value}"
 
 
+def _settings_picker_empty_label(screen: SettingsPickerScreen) -> str:
+    if screen.search_value:
+        return f'No settings match "{screen.search_value}"'
+    return "No settings available"
+
+
 def _thinking_picker_label(level: ThinkingLevel, current_level: str) -> str:
     marker = "current" if level == current_level else "       "
     description = THINKING_LEVEL_DESCRIPTIONS.get(level, "")
@@ -13883,6 +13893,12 @@ def _config_map_item_label(item: ConfigMapItem) -> str:
         scope, state, next_action = _config_map_resource_state(item)
         action = f" [{scope} {state}] [{next_action}]"
     return f"{item.section}: {item.label} - {item.value}{action}"
+
+
+def _config_map_empty_label(screen: ConfigMapScreen) -> str:
+    if screen.search_value:
+        return f'No config rows match "{screen.search_value}"'
+    return "No config rows available"
 
 
 def _config_map_resource_state(item: ConfigMapItem) -> tuple[str, str, str]:

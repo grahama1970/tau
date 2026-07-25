@@ -48,8 +48,8 @@ capabilities.
 | Prompt editor | `custom-editor`, `custom-entry`, `keybinding-hints` | `PromptInput`, extension input hooks | `PARTIAL` | Keep Pi-like keybindings; avoid replacing Tau extension input plumbing. |
 | Model selector | `model-selector`, `scoped-models-selector` | `ModelPickerScreen` | `MATCHED` | Search, tabs, scoped membership, provider toggles, and reorder are present. |
 | Session selector | `session-selector`, `session-selector-search` | `SessionPickerScreen` | `MATCHED` | Search, current/all, named-only, path toggle, sort, rename, delete are present. |
-| Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `PARTIAL` | Tau backs most daily settings and now exposes the external editor command; do not add dead Pi toggles without backing behavior. |
-| Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist and resource rows now expose scope/state/action; package/write-scope editing still missing. |
+| Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `PARTIAL` | Tau backs most daily settings, exposes the external editor command, and now shows visible no-match search rows; do not add dead Pi toggles without backing behavior. |
+| Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist, resource rows expose scope/state/action, and no-match searches show visible empty rows; package/write-scope editing still missing. |
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login; provider picker now shows visible navigation help and empty filter states. |
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks, summarizes permission/approval receipts, and now surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data; richer interactive component objects remain pending. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider and retry countdown | `PARTIAL` | Footer extensibility exists; compact first-screen readiness now exposes auth/memory/DAG/SciLLM/queue when the sidebar is hidden. |
@@ -84,11 +84,32 @@ capabilities.
 
 Port the next highest-value daily-use gap that is still local and bounded:
 
-`Settings/config editing`: close the next daily-use settings/config gap backed
-by real Tau behavior, without adding dead Pi toggles or replacing Tau's
-resource/DAG/SciLLM surfaces.
+`Config selector resource management`: close the next daily-use config gap backed
+by real Tau behavior, without adding dead Pi package/write-scope toggles or
+replacing Tau's resource/DAG/SciLLM surfaces.
 
 Latest slice evidence:
+
+- Source inspected: Pi `config-selector.ts`; Tau `SettingsPickerScreen`,
+  `ConfigMapScreen`, settings/config tests, and resource row helpers.
+- Destination preserved: Tau's durable TUI settings, config map command/path/
+  diagnostic rows, resource toggles, scope tabs, and custom resource surfaces.
+- Changed: settings and config map no-match searches now render explicit visible
+  empty rows in the list, not only footer help text. This mirrors Pi's config
+  selector fail-closed empty feedback without inventing unbacked write-scope
+  behavior.
+- Mocked: Textual render proof is fixture-backed.
+- Live: no provider-live, resource package mutation, or filesystem
+  write-scope operation.
+- Render proof: `/tmp/tau-pi-tui-empty-state-proof-1785013218/proof.json`
+  with screenshots
+  `/tmp/tau-pi-tui-empty-state-proof-1785013218/tau-settings-empty-filter.svg`
+  and
+  `/tmp/tau-pi-tui-empty-state-proof-1785013218/tau-config-empty-filter.svg`.
+- Remaining gap: Pi's project/global package write-scope override editor is
+  still not implemented in Tau.
+
+Previous slice evidence:
 
 - Source inspected: Pi `oauth-selector.ts` and `login-dialog.ts`; Tau
   `LoginProviderPickerScreen`, login picker tests, and provider status helpers.

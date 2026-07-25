@@ -6482,6 +6482,9 @@ async def test_tui_app_settings_picker_uses_configured_pi_select_keybindings(
         assert str(app.screen.query_one("#settings-picker-help", Static).render()) == (
             "No matching settings - F8 closes"
         )
+        assert _list_view_labels(settings_list) == [
+            'No settings match "missing-setting-name"'
+        ]
 
 
 @pytest.mark.anyio
@@ -9071,6 +9074,32 @@ async def test_tui_app_config_map_cycles_pi_scope_tabs() -> None:
         await pilot.pause()
 
         assert str(tabs.render()) == "Tabs: ● All  ○ Project  ○ User"
+
+
+@pytest.mark.anyio
+async def test_tui_app_config_map_shows_visible_empty_filter_row() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "/config"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ConfigMapScreen)
+        config_list = app.screen.query_one("#config-map-list", ListView)
+        search = app.screen.query_one("#config-map-search", Input)
+
+        search.value = "missing-config-row"
+        await pilot.pause()
+
+        assert [str(item.query_one(Label).render()) for item in config_list.children] == [
+            'No config rows match "missing-config-row"'
+        ]
+        assert config_list.index is None
+        assert str(app.screen.query_one("#config-map-help", Static).render()) == (
+            "No matching config rows - Tab switches scope - Escape/Ctrl+C closes"
+        )
 
 
 @pytest.mark.anyio
