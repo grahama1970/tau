@@ -2195,6 +2195,13 @@ class SessionPickerScreen(ModalScreen[str | None]):
                 event.key,
                 self.keybindings.session_delete,
                 "ctrl+d",
+            ) or (
+                not self.search_value.strip()
+                and _matches_configured_or_default_key(
+                    event.key,
+                    self.keybindings.session_delete_noninvasive,
+                    "ctrl+backspace",
+                )
             ):
                 event.stop()
                 self.action_confirm_delete_session()
@@ -2423,9 +2430,11 @@ class SessionPickerScreen(ModalScreen[str | None]):
         if self.delete_confirm_target_id != selected.id:
             self.delete_confirm_target_id = selected.id
             confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+            delete_key = _key_hint_with_default(self.keybindings.session_delete, "ctrl+d")
             cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
             self.query_one("#session-picker-help", Static).update(
-                f"Press {confirm_key} to delete this session - {cancel_key} cancels"
+                f"Press {delete_key} again or {confirm_key} to delete this session - "
+                f"{cancel_key} cancels"
             )
             return
         self.action_confirm_delete_session()
