@@ -241,6 +241,7 @@ class SessionResources:
     skills: tuple[Skill, ...]
     prompt_templates: tuple[PromptTemplate, ...]
     context_files: tuple[ProjectContextFile, ...]
+    custom_themes: Mapping[str, Any]
     extensions: tuple[LoadedExtension, ...]
     extension_tools: tuple[AgentTool, ...]
     extension_provider_configs: tuple[ProviderConfig, ...]
@@ -321,6 +322,7 @@ class CodingSession:
         skills: tuple[Skill, ...] = (),
         prompt_templates: tuple[PromptTemplate, ...] = (),
         context_files: tuple[ProjectContextFile, ...] = (),
+        custom_themes: Mapping[str, Any] | None = None,
         extensions: tuple[LoadedExtension, ...] = (),
         resource_diagnostics: tuple[ResourceDiagnostic, ...] = (),
         command_registry: CommandRegistry | None = None,
@@ -335,6 +337,7 @@ class CodingSession:
         self._skills = skills
         self._prompt_templates = prompt_templates
         self._context_files = context_files
+        self._custom_themes = dict(custom_themes or {})
         self._extensions = extensions
         self._runtime_extension_tool_sources: dict[str, str] = {}
         self._available_tools: list[AgentTool] = list(harness.config.tools)
@@ -487,6 +490,7 @@ class CodingSession:
             skills=resources.skills,
             prompt_templates=resources.prompt_templates,
             context_files=resources.context_files,
+            custom_themes=resources.custom_themes,
             extensions=resources.extensions,
             resource_diagnostics=(*resources.diagnostics, *command_diagnostics),
             command_registry=command_registry,
@@ -502,6 +506,9 @@ class CodingSession:
                 "reason": config.extension_start_reason,
                 "previousSessionFile": config.extension_previous_session_file,
             }
+        )
+        await session._extend_resources_from_extensions(
+            "reload" if config.extension_start_reason == "reload" else "startup"
         )
         return session
 
@@ -1069,6 +1076,100 @@ class CodingSession:
             self._resource_diagnostics = (*self._resource_diagnostics, *diagnostics)
         return tuple(results)
 
+    async def _extend_resources_from_extensions(
+        self,
+        reason: Literal["startup", "reload"],
+    ) -> None:
+        skill_paths: list[Path] = []
+        prompt_paths: list[Path] = []
+        theme_paths: list[Path] = []
+        diagnostics: list[ResourceDiagnostic] = []
+        for extension in self._extensions:
+            handlers = tuple((extension.event_handlers or {}).get("resources_discover", ()))
+            if not handlers:
+                continue
+            context = ExtensionShortcutContext(
+                session=self,
+                key="",
+                extension_name=extension.name,
+            )
+            event: dict[str, object] = {
+                "type": "resources_discover",
+                "cwd": str(self.cwd),
+                "reason": reason,
+            }
+            for handler in handlers:
+                try:
+                    result = _call_extension_lifecycle_handler(handler, event, context)
+                    if inspect.isawaitable(result):
+                        result = await result
+                except Exception as exc:  # noqa: BLE001 - extensions are isolated plugins
+                    diagnostics.append(
+                        ResourceDiagnostic(
+                            kind="extension",
+                            name=extension.name,
+                            path=extension.path,
+                            message=(
+                                f"resources_discover handler failed: "
+                                f"{type(exc).__name__}: {exc}"
+                            ),
+                            severity="error",
+                        )
+                    )
+                    continue
+                if not isinstance(result, Mapping):
+                    continue
+                skill_paths.extend(
+                    _extension_resource_paths(
+                        result.get("skillPaths"),
+                        base_path=extension.path,
+                    )
+                )
+                prompt_paths.extend(
+                    _extension_resource_paths(
+                        result.get("promptPaths"),
+                        base_path=extension.path,
+                    )
+                )
+                theme_paths.extend(
+                    _extension_resource_paths(
+                        result.get("themePaths"),
+                        base_path=extension.path,
+                    )
+                )
+
+        if skill_paths:
+            skills, skill_diagnostics = load_skills_from_paths_with_diagnostics(
+                tuple(skill_paths)
+            )
+            merged_skills, override_diagnostics = _merge_skills_by_name(
+                list(self._skills),
+                skills,
+            )
+            self._skills = tuple(merged_skills)
+            diagnostics.extend((*skill_diagnostics, *override_diagnostics))
+        if prompt_paths:
+            prompt_templates, prompt_diagnostics = (
+                load_prompt_templates_from_paths_with_diagnostics(tuple(prompt_paths))
+            )
+            merged_prompts, override_diagnostics = _merge_prompt_templates_by_name(
+                list(self._prompt_templates),
+                prompt_templates,
+            )
+            self._prompt_templates = tuple(merged_prompts)
+            diagnostics.extend((*prompt_diagnostics, *override_diagnostics))
+        if theme_paths:
+            custom_themes, theme_diagnostics = load_custom_tui_themes_from_paths(
+                tuple(theme_paths)
+            )
+            self._custom_themes.update(custom_themes)
+            set_custom_tui_themes(self._custom_themes)
+            diagnostics.extend(theme_diagnostics)
+        if diagnostics:
+            self._resource_diagnostics = (*self._resource_diagnostics, *diagnostics)
+        if skill_paths and self._config.system is None:
+            self._refresh_generated_system_prompt()
+
     @property
     def session_id(self) -> str | None:
         """Return this session's manager id, if indexed."""
@@ -1601,6 +1702,7 @@ class CodingSession:
         self._skills = replacement._skills
         self._prompt_templates = replacement._prompt_templates
         self._context_files = replacement._context_files
+        self._custom_themes = replacement._custom_themes
         self._extensions = replacement._extensions
         self._available_tools = replacement._available_tools
         self._resource_diagnostics = replacement._resource_diagnostics
@@ -1673,6 +1775,7 @@ class CodingSession:
         self._skills = replacement._skills
         self._prompt_templates = replacement._prompt_templates
         self._context_files = replacement._context_files
+        self._custom_themes = replacement._custom_themes
         self._extensions = replacement._extensions
         self._available_tools = replacement._available_tools
         self._resource_diagnostics = replacement._resource_diagnostics
@@ -1751,6 +1854,7 @@ class CodingSession:
         self._skills = replacement._skills
         self._prompt_templates = replacement._prompt_templates
         self._context_files = replacement._context_files
+        self._custom_themes = replacement._custom_themes
         self._extensions = replacement._extensions
         self._available_tools = replacement._available_tools
         self._resource_diagnostics = replacement._resource_diagnostics
@@ -1853,6 +1957,7 @@ class CodingSession:
         self._skills = replacement._skills
         self._prompt_templates = replacement._prompt_templates
         self._context_files = replacement._context_files
+        self._custom_themes = replacement._custom_themes
         self._extensions = replacement._extensions
         self._available_tools = replacement._available_tools
         self._resource_diagnostics = replacement._resource_diagnostics
@@ -1939,6 +2044,7 @@ class CodingSession:
         self._skills = replacement._skills
         self._prompt_templates = replacement._prompt_templates
         self._context_files = replacement._context_files
+        self._custom_themes = replacement._custom_themes
         self._extensions = replacement._extensions
         self._available_tools = replacement._available_tools
         self._resource_diagnostics = replacement._resource_diagnostics
@@ -3567,6 +3673,22 @@ def _extension_model_payload(choice: ModelChoice) -> dict[str, str]:
     }
 
 
+def _extension_resource_paths(value: object, *, base_path: Path) -> list[Path]:
+    if not isinstance(value, Sequence) or isinstance(value, str):
+        return []
+    base_dir = base_path.parent if base_path.name else base_path
+    paths: list[Path] = []
+    for item in value:
+        if not isinstance(item, str):
+            continue
+        raw_path = item.strip()
+        if not raw_path:
+            continue
+        path = Path(raw_path).expanduser()
+        paths.append(path if path.is_absolute() else base_dir / path)
+    return paths
+
+
 def _state_thinking_level(
     state: SessionState,
     default: ThinkingLevel,
@@ -4203,6 +4325,7 @@ def _load_session_resources(
         skills=tuple(loaded_skills),
         prompt_templates=tuple(loaded_prompt_templates),
         context_files=_merge_context_files(explicit_context_files, discovered_context),
+        custom_themes=custom_themes,
         extensions=extensions.extensions,
         extension_tools=extensions.tools,
         extension_provider_configs=extensions.provider_configs,
