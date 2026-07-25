@@ -1541,6 +1541,11 @@ class CodingSession:
             provider_name = runtime_provider_config.name
 
         previous_session_file = _session_storage_path(self._config.storage)
+        if await self._emit_extension_before_switch(
+            reason="resume",
+            target_session_file=str(record.path),
+        ):
+            return "Session resume cancelled by extension."
         await self.emit_extension_event(
             {
                 "type": "session_shutdown",
@@ -1630,6 +1635,8 @@ class CodingSession:
                 current=self._thinking_level,
             )
 
+        if await self._emit_extension_before_switch(reason="new"):
+            return "New session cancelled by extension."
         record = manager.create_session(
             cwd=self.cwd,
             model=model,
@@ -1696,6 +1703,8 @@ class CodingSession:
         if not any(_is_branchable_tree_entry(entry) for entry in active_path):
             raise ValueError("Nothing to clone yet")
 
+        if await self._emit_extension_before_fork(active_leaf_id, position="at"):
+            return "Session fork cancelled by extension."
         title = self.session_title
         provider_name = self._provider_name
         model = self.model
@@ -1786,6 +1795,10 @@ class CodingSession:
             target_id = selected_entry.parent_id
             if selected_entry.type == "message" and isinstance(selected_entry.message, UserMessage):
                 input_prefill = selected_entry.message.content
+
+        event_position: Literal["before", "at"] = "before" if input_prefill is not None else "at"
+        if await self._emit_extension_before_fork(entry_id, position=event_position):
+            return SessionTreeBranchResult(message="Session fork cancelled by extension.")
 
         if target_id is None:
             active_path: list[SessionEntry] = []
@@ -1880,6 +1893,11 @@ class CodingSession:
 
         state = SessionState.from_entries(_detach_missing_parents(entries))
         model = state.model or self.model
+        if await self._emit_extension_before_switch(
+            reason="resume",
+            target_session_file=str(source_path),
+        ):
+            return "Session import cancelled by extension."
         record = manager.create_session(
             cwd=self.cwd,
             model=model,
@@ -2692,6 +2710,40 @@ class CodingSession:
                 "reason": reason,
                 "willRetry": will_retry,
                 "signal": None,
+            }
+        )
+        return any(
+            isinstance(result, Mapping) and bool(result.get("cancel")) for result in results
+        )
+
+    async def _emit_extension_before_switch(
+        self,
+        *,
+        reason: Literal["new", "resume"],
+        target_session_file: str | None = None,
+    ) -> bool:
+        event: dict[str, object] = {
+            "type": "session_before_switch",
+            "reason": reason,
+        }
+        if target_session_file is not None:
+            event["targetSessionFile"] = target_session_file
+        results = await self.emit_extension_event(event)
+        return any(
+            isinstance(result, Mapping) and bool(result.get("cancel")) for result in results
+        )
+
+    async def _emit_extension_before_fork(
+        self,
+        entry_id: str,
+        *,
+        position: Literal["before", "at"],
+    ) -> bool:
+        results = await self.emit_extension_event(
+            {
+                "type": "session_before_fork",
+                "entryId": entry_id,
+                "position": position,
             }
         )
         return any(
