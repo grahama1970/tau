@@ -2098,6 +2098,9 @@ class SessionPickerScreen(ModalScreen[str | None]):
         """Rebuild the visible session rows from the current search query."""
         if self.mode == "rename":
             return
+        self.query_one("#session-picker-title", Static).update(
+            _session_picker_title(self.scope)
+        )
         records = self.current_records if self.scope == "current" else self.all_records
         self.filtered_records = _filter_session_picker_records(
             records,
@@ -2370,7 +2373,9 @@ class SessionPickerScreen(ModalScreen[str | None]):
         search = self.query_one("#session-picker-search", Input)
         search.placeholder = "Search sessions"
         search.value = self.search_value
-        self.query_one("#session-picker-title", Static).update("Sessions")
+        self.query_one("#session-picker-title", Static).update(
+            _session_picker_title(self.scope)
+        )
         self._refresh_session_list()
 
     def _selected_session_record(self) -> SessionCompletionRecord | None:
@@ -8032,6 +8037,13 @@ def _session_picker_sort_label(sort_mode: SessionPickerSortMode) -> str:
     if sort_mode == "relevance":
         return "fuzzy"
     return sort_mode
+
+
+def _session_picker_title(scope: Literal["current", "all"]) -> str:
+    """Return the Pi-style session picker title for a scope."""
+    if scope == "all":
+        return "Resume Session (All)"
+    return "Resume Session (Current Folder)"
 
 
 def _session_picker_empty_message(
