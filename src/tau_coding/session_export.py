@@ -30,6 +30,7 @@ from tau_agent.session import (
     path_to_entry,
 )
 from tau_agent.types import JSONValue
+from tau_coding.graph_artifacts import render_markdown_graph_artifacts
 
 MARKDOWN_IMAGE_PATTERN = re.compile(
     r"!\[(?P<alt>[^\]\n]*)\]\((?P<target><[^>\n]+>|[^)\s]+)(?:\s+\"[^\"]*\")?\)"
@@ -255,6 +256,42 @@ def render_session_html(
       outline-offset: 3px;
     }}
     .export-image figcaption {{
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      overflow-wrap: anywhere;
+    }}
+    .export-graphs {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }}
+    .export-graph {{
+      margin: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      background: color-mix(in srgb, var(--bg) 70%, var(--panel));
+    }}
+    .export-graph img {{
+      display: block;
+      width: 100%;
+      max-height: 72vh;
+      object-fit: contain;
+      background: var(--bg);
+      border-radius: 6px;
+    }}
+    .export-graph a {{
+      display: block;
+      color: inherit;
+      text-decoration: none;
+    }}
+    .export-graph a:focus-visible {{
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }}
+    .export-graph figcaption {{
       margin-top: 8px;
       color: var(--muted);
       font-size: 0.85rem;
@@ -656,9 +693,11 @@ def _render_markdown_with_raw(markdown: str) -> str:
     """Render safe browser Markdown while preserving the exact raw text."""
     rendered = _render_markdown_html(markdown)
     images = _render_markdown_image_gallery(markdown)
+    graphs = _render_markdown_graph_gallery(markdown)
     return (
         f'<div class="markdown-rendered">{rendered}</div>'
         f"{images}"
+        f"{graphs}"
         '<details class="markdown-source">'
         "<summary>Raw Markdown</summary>"
         f"<pre>{_escape(markdown)}</pre>"
@@ -713,6 +752,26 @@ def _render_markdown_image_gallery(markdown: str) -> str:
     if not figures:
         return ""
     return '<div class="export-images">' + "".join(figures) + "</div>"
+
+
+def _render_markdown_graph_gallery(markdown: str) -> str:
+    figures: list[str] = []
+    for artifact in render_markdown_graph_artifacts(markdown):
+        embedded = f"data:{artifact.mime_type};base64,{artifact.image_base64}"
+        label = f"{artifact.kind} graph {artifact.index}"
+        figures.append(
+            '<figure class="export-graph">'
+            f'<a href="{_attr(embedded)}" target="_blank" rel="noopener" '
+            f'aria-label="Open full-size graph: {_attr(label)}">'
+            f'<img src="{_attr(embedded)}" alt="{_attr(label)}">'
+            "</a>"
+            f"<figcaption>{_escape(label)} - <code>{_escape(artifact.filename)}</code>"
+            f" - rendered by {_escape(artifact.renderer)} - open full-size</figcaption>"
+            "</figure>"
+        )
+    if not figures:
+        return ""
+    return '<div class="export-graphs">' + "".join(figures) + "</div>"
 
 
 def _clean_markdown_image_target(target: str) -> str:

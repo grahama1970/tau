@@ -1,5 +1,8 @@
 import base64
+import shutil
 from pathlib import Path
+
+import pytest
 
 from tau_agent import (
     AssistantMessage,
@@ -111,3 +114,24 @@ def test_render_session_html_renders_assistant_markdown_and_local_images(tmp_pat
     assert "<script>alert" not in exported
     assert "&lt;script&gt;alert('no')&lt;/script&gt;" in exported
     assert "<summary>Raw Markdown</summary>" in exported
+
+
+@pytest.mark.skipif(shutil.which("dot") is None, reason="Graphviz dot is not installed")
+def test_render_session_html_embeds_graphviz_fence_as_openable_graph() -> None:
+    entries = [
+        MessageEntry(
+            id="root",
+            message=AssistantMessage(
+                content="# Graph\n\n```dot\ndigraph G { human -> tau -> evidence }\n```"
+            ),
+        )
+    ]
+
+    exported = render_session_html(entries, title="Session")
+
+    assert '<div class="export-graphs">' in exported
+    assert 'src="data:image/svg+xml;base64,' in exported
+    assert 'href="data:image/svg+xml;base64,' in exported
+    assert "graphviz graph 1" in exported
+    assert "rendered by dot" in exported
+    assert "open full-size" in exported

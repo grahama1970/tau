@@ -2,6 +2,7 @@ import asyncio
 import base64
 import json
 import re
+import shutil
 import subprocess
 from collections.abc import AsyncIterator, Sequence
 from contextlib import nullcontext
@@ -2024,12 +2025,56 @@ def test_assistant_markdown_image_link_renders_terminal_image_fallback(tmp_path:
     assert "1x1" in output
 
 
+@pytest.mark.skipif(shutil.which("dot") is None, reason="Graphviz dot is not installed")
+def test_assistant_markdown_graphviz_fence_renders_terminal_image_fallback() -> None:
+    set_capabilities(TerminalCapabilities(images=None, true_color=True, hyperlinks=True))
+
+    try:
+        console = Console(record=True, width=80, color_system="truecolor")
+        console.print(
+            render_chat_item(
+                ChatItem(
+                    role="assistant",
+                    text="Graph\n\n```dot\ndigraph G { human -> tau }\n```",
+                ),
+                show_images=True,
+            )
+        )
+        output = _strip_ansi(console.export_text(styles=True))
+    finally:
+        reset_capabilities_cache()
+
+    assert "Graph" in output
+    assert "Image: graphviz-1-" in output
+    assert "800x600" in output
+
+
 @pytest.mark.anyio
 async def test_textual_markdown_image_link_mounts_terminal_image_widget(tmp_path: Path) -> None:
     image_path = tmp_path / "chart.png"
     image_path.write_bytes(base64.b64decode(PNG_1X1_BASE64))
     app = TauTuiApp(
         FakeSession([AssistantMessage(content=f"Figure\n\n![chart]({image_path})")]),
+    )
+
+    async with app.run_test(size=(80, 24)) as pilot:
+        await pilot.pause()
+        image_widgets = list(app.query(".transcript-markdown-image"))
+
+    assert len(image_widgets) == 1
+
+
+@pytest.mark.skipif(shutil.which("dot") is None, reason="Graphviz dot is not installed")
+@pytest.mark.anyio
+async def test_textual_markdown_graphviz_fence_mounts_terminal_image_widget() -> None:
+    app = TauTuiApp(
+        FakeSession(
+            [
+                AssistantMessage(
+                    content="Graph\n\n```graphviz\ndigraph G { ask -> tau -> user }\n```"
+                )
+            ]
+        ),
     )
 
     async with app.run_test(size=(80, 24)) as pilot:

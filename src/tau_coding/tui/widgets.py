@@ -33,6 +33,7 @@ from textual.widgets import Static
 from textual.widgets.markdown import MarkdownBlock, MarkdownStream
 
 from tau_agent.tools import AgentTool
+from tau_coding.graph_artifacts import render_markdown_graph_artifacts
 from tau_coding.prompt_templates import PromptTemplate
 from tau_coding.session_stats import SessionStats
 from tau_coding.skills import Skill
@@ -463,7 +464,7 @@ class TranscriptMessageWidget(Horizontal):
                 body.styles.color = foreground
             if background:
                 body.styles.background = background
-            image_payloads = _markdown_image_payloads(self._markdown_text)
+            image_payloads = _markdown_visual_payloads(self._markdown_text)
             if image_payloads:
                 body.styles.padding = Spacing.unpack((0, 0))
                 image_widgets = [
@@ -1220,7 +1221,7 @@ def render_chat_item(
         )
     )
     markdown_images = (
-        _markdown_image_payloads(visible_text)
+        _markdown_visual_payloads(visible_text)
         if item.role
         in {"assistant", "thinking", "custom", "status", "branch_summary", "compaction_summary"}
         else ()
@@ -1360,6 +1361,25 @@ def _markdown_image_payloads(markdown: str) -> tuple[ToolImagePayload, ...]:
             continue
         payloads.append(payload)
         seen.add(path)
+    return tuple(payloads)
+
+
+def _markdown_visual_payloads(markdown: str) -> tuple[ToolImagePayload, ...]:
+    """Return local image links plus rendered graph-source artifacts."""
+    return (*_markdown_image_payloads(markdown), *_markdown_graph_payloads(markdown))
+
+
+def _markdown_graph_payloads(markdown: str) -> tuple[ToolImagePayload, ...]:
+    payloads: list[ToolImagePayload] = []
+    for artifact in render_markdown_graph_artifacts(markdown):
+        payloads.append(
+            ToolImagePayload(
+                path=artifact.filename,
+                mime_type=artifact.mime_type,
+                bytes=artifact.bytes,
+                image_base64=artifact.image_base64,
+            )
+        )
     return tuple(payloads)
 
 
