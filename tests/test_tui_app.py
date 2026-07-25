@@ -8,6 +8,7 @@ from collections.abc import AsyncIterator, Sequence
 from contextlib import nullcontext
 from dataclasses import replace
 from datetime import datetime
+from io import StringIO
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -3912,42 +3913,52 @@ async def test_tui_app_artifacts_command_browses_and_opens_visuals(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    image_path = tmp_path / "chart.png"
-    image_path.write_bytes(base64.b64decode(PNG_1X1_BASE64))
-    session = FakeSession()
-    app = TauTuiApp(session)
-    app.state.add_item(
-        "assistant",
-        f"# Results\n\n| metric | value |\n| --- | --- |\n| win | yes |\n\n"
-        f"![chart]({image_path})\n\n"
-        "```graphviz\ndigraph G { human -> tau -> browser }\n```",
-    )
-    opened: list[str] = []
+    set_capabilities(TerminalCapabilities(images=None, true_color=True, hyperlinks=True))
+    try:
+        image_path = tmp_path / "chart.png"
+        image_path.write_bytes(base64.b64decode(PNG_1X1_BASE64))
+        session = FakeSession()
+        app = TauTuiApp(session)
+        app.state.add_item(
+            "assistant",
+            f"# Results\n\n| metric | value |\n| --- | --- |\n| win | yes |\n\n"
+            f"![chart]({image_path})\n\n"
+            "```graphviz\ndigraph G { human -> tau -> browser }\n```",
+        )
+        opened: list[str] = []
 
-    def fake_open(target: str) -> bool:
-        opened.append(target)
-        return True
+        def fake_open(target: str) -> bool:
+            opened.append(target)
+            return True
 
-    monkeypatch.setattr(tui_app.webbrowser, "open", fake_open)
+        monkeypatch.setattr(tui_app.webbrowser, "open", fake_open)
 
-    async with app.run_test() as pilot:
-        prompt = app.query_one("#prompt")
-        prompt.value = "/artifacts"
-        await pilot.press("enter")
-        await pilot.pause()
+        async with app.run_test() as pilot:
+            prompt = app.query_one("#prompt")
+            prompt.value = "/artifacts"
+            await pilot.press("enter")
+            await pilot.pause()
 
-        assert isinstance(app.screen, ArtifactBrowserScreen)
-        labels = [
-            str(item.query_one(Label).render())
-            for item in app.screen.query_one("#config-map-list", ListView).children
-        ]
-        assert any("chart.png - assistant item" in label for label in labels)
-        assert any("Graphviz graph from assistant" in label for label in labels)
+            assert isinstance(app.screen, ArtifactBrowserScreen)
+            assert str(app.screen.query_one("#config-map-title", Static).render()) == (
+                "Visual Artifacts"
+            )
+            preview_console = Console(file=StringIO(), record=True, width=80)
+            preview_console.print(app.screen._preview_renderable(0))
+            assert "Image: chart.png" in preview_console.export_text()
+            labels = [
+                str(item.query_one(Label).render())
+                for item in app.screen.query_one("#config-map-list", ListView).children
+            ]
+            assert any("chart.png - assistant item" in label for label in labels)
+            assert any("Graphviz graph from assistant" in label for label in labels)
 
-        await pilot.press("enter")
-        await pilot.pause()
+            await pilot.press("enter")
+            await pilot.pause()
 
-        assert opened == [image_path.resolve().as_uri()]
+            assert opened == [image_path.resolve().as_uri()]
+    finally:
+        reset_capabilities_cache()
 
 
 @pytest.mark.anyio

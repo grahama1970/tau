@@ -157,6 +157,7 @@ from tau_coding.tui.state import (
     format_terminal_command_result_block,
     format_terminal_command_running_block,
 )
+from tau_coding.tui.terminal_image import TerminalImage, TerminalImageOptions
 from tau_coding.tui.terminal_notification import TerminalNotificationController
 from tau_coding.tui.terminal_title import TerminalTitleController
 from tau_coding.tui.widgets import (
@@ -4557,11 +4558,15 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
         *,
         theme: TuiTheme,
         keybindings: TuiKeybindings | None = None,
+        show_images: bool = True,
+        image_width_cells: int | None = None,
     ) -> None:
         super().__init__()
         self.artifacts = tuple(artifacts)
         self.theme = theme
         self.keybindings = keybindings or TuiKeybindings()
+        self.show_images = show_images
+        self.image_width_cells = image_width_cells
 
     def compose(self) -> ComposeResult:
         """Compose the artifact browser."""
@@ -4569,6 +4574,11 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
             yield Static("Visual Artifacts", id="config-map-title")
             yield Static(_artifact_browser_summary(self.artifacts), id="config-map-tabs")
             yield ListView(*self._list_items(), id="config-map-list")
+            yield Static(
+                self._preview_renderable(0),
+                id="artifact-browser-preview",
+                markup=False,
+            )
             yield Static(self._help_text(), id="config-map-help")
 
     def on_mount(self) -> None:
@@ -4622,6 +4632,11 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
         if event.index < len(self.artifacts):
             self.dismiss(ArtifactBrowserResult("open", self.artifacts[event.index]))
 
+    def on_list_view_highlighted(self, event: ListView.Highlighted) -> None:
+        """Update the selected artifact preview."""
+        if event.list_view.id == "config-map-list":
+            self._refresh_preview()
+
     def action_copy_selected(self) -> None:
         """Copy the selected artifact path."""
         self._select("copy")
@@ -4639,6 +4654,7 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
             0,
             min(len(self.artifacts) - 1, current_index + (direction * page_size)),
         )
+        self._refresh_preview()
 
     def _select(self, action: ArtifactBrowserAction) -> None:
         artifact_list = self.query_one("#config-map-list", ListView)
@@ -4661,6 +4677,36 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
             ListItem(Label(_artifact_browser_label(index, artifact), markup=False))
             for index, artifact in enumerate(self.artifacts, 1)
         ]
+
+    def _refresh_preview(self) -> None:
+        try:
+            preview = self.query_one("#artifact-browser-preview", Static)
+            artifact_list = self.query_one("#config-map-list", ListView)
+        except NoMatches:
+            return
+        index = artifact_list.index if artifact_list.index is not None else 0
+        preview.update(self._preview_renderable(index))
+
+    def _preview_renderable(self, index: int) -> TerminalImage | str:
+        if not self.artifacts:
+            return "No preview available"
+        artifact = self.artifacts[max(0, min(len(self.artifacts) - 1, index))]
+        try:
+            data = artifact.path.read_bytes()
+        except OSError:
+            return f"Preview unavailable: {artifact.path}"
+        if not data:
+            return f"Preview unavailable: empty file {artifact.path}"
+        return TerminalImage(
+            base64.b64encode(data).decode("ascii"),
+            artifact.mime_type,
+            TerminalImageOptions(
+                filename=artifact.path.name,
+                max_width_cells=self.image_width_cells,
+                max_height_cells=8,
+                show=self.show_images,
+            ),
+        )
 
     def _help_text(self) -> str:
         confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
@@ -6968,6 +7014,15 @@ class TauTuiApp(App[None]):
         border: tall $tau-border;
     }
 
+    #artifact-browser-preview {
+        height: auto;
+        max-height: 10;
+        margin-top: 1;
+        padding: 0 1;
+        background: $tau-transcript-background;
+        border: tall $tau-border;
+    }
+
     #workflow-picker-list {
         max-height: 22;
     }
@@ -8309,6 +8364,8 @@ class TauTuiApp(App[None]):
                 ),
                 theme=self.tui_settings.resolved_theme,
                 keybindings=self.tui_settings.keybindings,
+                show_images=self.tui_settings.show_images,
+                image_width_cells=self.tui_settings.image_width_cells,
             ),
             callback=self._handle_artifact_browser_result,
         )
