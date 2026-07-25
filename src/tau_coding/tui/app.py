@@ -4741,7 +4741,19 @@ class ExtensionSelectScreen(ModalScreen[str | None]):
 
     def on_key(self, event: Key) -> None:
         """Route configured select keys."""
-        if _matches_configured_or_default_key(
+        if (
+            _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up")
+            or event.key == "k"
+        ):
+            event.stop()
+            self.action_cursor_up()
+        elif (
+            _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down")
+            or event.key == "j"
+        ):
+            event.stop()
+            self.action_cursor_down()
+        elif _matches_configured_or_default_key(
             event.key,
             self.keybindings.select_confirm,
             "enter",
@@ -4763,6 +4775,21 @@ class ExtensionSelectScreen(ModalScreen[str | None]):
             self.dismiss(None)
             return
         self.dismiss(self.options[selected])
+
+    def action_cursor_up(self) -> None:
+        """Move to the previous extension option."""
+        self._move(-1)
+
+    def action_cursor_down(self) -> None:
+        """Move to the next extension option."""
+        self._move(1)
+
+    def _move(self, direction: Literal[-1, 1]) -> None:
+        if not self.options:
+            return
+        option_list = self.query_one("#extension-select-list", ListView)
+        current_index = option_list.index if option_list.index is not None else 0
+        option_list.index = max(0, min(len(self.options) - 1, current_index + direction))
 
     def _tick_timeout(self) -> None:
         if self.remaining_seconds is None:

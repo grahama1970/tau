@@ -8392,6 +8392,43 @@ async def test_extension_select_screen_shows_timeout_countdown() -> None:
 
 
 @pytest.mark.anyio
+async def test_extension_select_screen_supports_pi_jk_navigation() -> None:
+    app = TauTuiApp(FakeSession())
+    selected: str | None = None
+
+    def record_selected(value: str | None) -> None:
+        nonlocal selected
+        selected = value
+
+    async with app.run_test(size=(80, 24)) as pilot:
+        app.push_screen(
+            ExtensionSelectScreen(
+                "Choose extension action",
+                ("Alpha", "Beta", "Gamma"),
+                keybindings=TuiKeybindings(),
+            ),
+            record_selected,
+        )
+        await pilot.pause()
+
+        option_list = app.screen.query_one("#extension-select-list", ListView)
+        assert option_list.index == 0
+
+        await pilot.press("j")
+        assert option_list.index == 1
+
+        await pilot.press("k")
+        assert option_list.index == 0
+
+        await pilot.press("j")
+        await pilot.press("j")
+        await pilot.press("enter")
+        await pilot.pause()
+
+    assert selected == "Gamma"
+
+
+@pytest.mark.anyio
 async def test_tui_extension_select_request_shows_timeout_countdown() -> None:
     app = TauTuiApp(FakeSession())
 
