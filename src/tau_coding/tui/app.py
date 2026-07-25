@@ -162,6 +162,7 @@ from tau_coding.tui.terminal_title import TerminalTitleController
 from tau_coding.tui.widgets import (
     CompactSessionInfo,
     SessionSidebar,
+    ThemedMarkdownWidget,
     TranscriptView,
     _git_branch,
     markdown_visual_payloads,
@@ -4432,12 +4433,14 @@ class CommandOutputScreen(ModalScreen[None]):
         *,
         theme: TuiTheme,
         keybindings: TuiKeybindings | None = None,
+        render_markdown: bool = False,
     ) -> None:
         super().__init__()
         self.title_text = title
         self.message = message
         self.theme = theme
         self.keybindings = keybindings or TuiKeybindings()
+        self.render_markdown = render_markdown
 
     def compose(self) -> ComposeResult:
         """Compose command output."""
@@ -4446,7 +4449,14 @@ class CommandOutputScreen(ModalScreen[None]):
         with Vertical(id="command-output"):
             yield Static(self.title_text, id="command-output-title")
             with CommandOutputScroll(id="command-output-scroll"):
-                yield Static(self.message, id="command-output-body", markup=False)
+                if self.render_markdown:
+                    yield ThemedMarkdownWidget(
+                        self.message,
+                        theme=self.theme,
+                        classes="command-output-markdown",
+                    )
+                else:
+                    yield Static(self.message, id="command-output-body", markup=False)
             yield Static(f"{confirm_key} or {cancel_key} closes", id="command-output-help")
 
     def on_mount(self) -> None:
@@ -10087,6 +10097,7 @@ class TauTuiApp(App[None]):
                 message,
                 theme=self.tui_settings.resolved_theme,
                 keybindings=self.tui_settings.keybindings,
+                render_markdown=_command_output_renders_markdown(command_text),
             )
         )
 
@@ -12956,6 +12967,11 @@ def _command_output_title(command_text: str) -> str:
     return f"/{command_name or 'help'}"
 
 
+def _command_output_renders_markdown(command_text: str) -> bool:
+    command_name = command_text.split(maxsplit=1)[0].casefold()
+    return command_name in {"/changelog", "/hotkeys"}
+
+
 def _is_thinking_cycle_key(key: str, configured_key: str) -> bool:
     if _matches_configured_key(key, configured_key):
         return True
@@ -13686,7 +13702,31 @@ def _render_tui_hotkeys_message(
 ) -> str:
     newline_hint = _newline_key_hint(keybindings)
     lines = [
-        "Keyboard Shortcuts",
+        "# Keyboard Shortcuts",
+        "",
+        "| Key | Action |",
+        "| --- | --- |",
+        _markdown_table_row(_key_hint(keybindings.submit_prompt), "submit prompt"),
+        _markdown_table_row(newline_hint, "insert newline"),
+        _markdown_table_row(
+            _key_hint(keybindings.command_palette),
+            "open slash-command completions",
+        ),
+        _markdown_table_row(_key_hint(keybindings.session_picker), "open session picker"),
+        _markdown_table_row(_key_hint(keybindings.model_picker), "open model picker"),
+        _markdown_table_row(
+            _key_hint(keybindings.toggle_tool_results),
+            "collapse or expand tool output",
+        ),
+        _markdown_table_row(
+            _key_hint(keybindings.paste_clipboard),
+            "paste clipboard text or image",
+        ),
+        _markdown_table_row(
+            _key_hint(keybindings.copy_last_message),
+            "copy last assistant message",
+        ),
+        _markdown_table_row("drop files", "attach paths to the prompt"),
         "",
         "Navigation:",
         f"- {_key_hint(keybindings.editor_cursor_up)}/"
@@ -13794,6 +13834,14 @@ def _render_tui_hotkeys_message(
         if extension_lines:
             lines.extend(("", "Extensions:", *extension_lines))
     return "\n".join(lines)
+
+
+def _markdown_table_row(key: str, action: str) -> str:
+    return f"| {_escape_markdown_table_cell(key)} | {_escape_markdown_table_cell(action)} |"
+
+
+def _escape_markdown_table_cell(value: str) -> str:
+    return value.replace("\\", "\\\\").replace("|", "\\|")
 
 
 def _extension_shortcut_hotkey_lines(

@@ -9263,7 +9263,11 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert isinstance(app.screen, CommandOutputScreen)
         assert app.state.items == []
         assert app.screen.title_text == "/hotkeys"
+        assert app.screen.render_markdown is True
+        assert app.screen.query_one(ThemedMarkdownWidget)
         assert "Keyboard Shortcuts" in app.screen.message
+        assert "| Key | Action |" in app.screen.message
+        assert "| Ctrl+J | open slash-command completions |" in app.screen.message
         assert "Ctrl+J: open slash-command completions" in app.screen.message
         assert "F6: open session picker" in app.screen.message
         assert "F5: queue follow-up while running" in app.screen.message
@@ -9328,6 +9332,9 @@ async def test_tui_app_hotkeys_lists_default_ctrl_j_newline() -> None:
         await pilot.press("enter")
 
         assert isinstance(app.screen, CommandOutputScreen)
+        assert app.screen.render_markdown is True
+        assert app.screen.query_one(ThemedMarkdownWidget)
+        assert "| Shift+Enter/Ctrl+J | insert newline |" in app.screen.message
         assert "Shift+Enter/Ctrl+J: insert newline" in app.screen.message
 
 
@@ -9963,6 +9970,8 @@ async def test_tui_app_changelog_uses_command_output_modal() -> None:
         assert app.state.items == []
         assert app.screen.title_text == "/changelog"
         assert str(app.screen.query_one("#command-output-title", Static).render()) == "/changelog"
+        assert app.screen.render_markdown is True
+        assert app.screen.query_one(ThemedMarkdownWidget)
         assert "Tau TUI parity" in app.screen.message
 
 

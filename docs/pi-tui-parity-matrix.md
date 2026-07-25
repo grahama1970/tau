@@ -35,7 +35,7 @@ capabilities.
 | Context control | `/compact`, `/reload` | Same command family | `MATCHED` | Tau preserves local resource reload behavior. |
 | Provider/model | `/model`, `/scoped-models`, `/login`, `/logout` | Same command family | `MATCHED` | Tau routes through local provider config and credential storage. |
 | Export/import/share | `/export`, `/import`, `/share`, `/copy` | Same command family | `MATCHED` | Useful enough for migration. |
-| Help/config | `/settings`, `/changelog`, `/hotkeys` | Same plus `/config` | `MATCHED` | `/config` is richer in Tau and now has scope tabs. |
+| Help/config | `/settings`, `/changelog`, `/hotkeys` | Same plus `/config` | `MATCHED` | `/config` is richer in Tau and now has scope tabs; `/hotkeys` and `/changelog` render through the themed Markdown command-output modal. |
 | Tau workflows | None | `/workflows` plus sidebar `dag` cue | `TAU-ONLY` | Canonical Tau DAG launcher; must not be replaced by Pi code. |
 | Tau provider internals | None | `/scillm` plus sidebar readiness cue | `TAU-ONLY` | SciLLM remains Tau's local LLM proxy surface. |
 | Tau evidence gates | None | `/permissions`, approval receipts | `TAU-ONLY` | Preserve fail-closed permission and receipt model. |
@@ -98,6 +98,33 @@ Current candidates:
 - `Cache-miss notices`: defer until Tau assistant/session entries carry the
   provider, model, and timestamp fields needed for Pi's cache-miss algorithm.
   Do not add a fake setting or heuristic notice from aggregate stats.
+
+Latest slice evidence:
+
+- Source inspected: Pi `interactive-mode.ts` hotkey Markdown output and Tau
+  `CommandOutputScreen`, `_render_tui_hotkeys_message`, and
+  `ThemedMarkdownWidget`.
+- Destination preserved: Tau's literal command-output mode for plain diagnostic
+  screens, configured-key hotkey rendering, existing transcript Markdown
+  renderer, and Tau-specific shortcut details.
+- Changed: `CommandOutputScreen` now has an explicit Markdown-rendering mode for
+  `/hotkeys` and `/changelog`. `/hotkeys` starts with a Pi-style Markdown table
+  for the most important daily-use keys, including paste image/text and drop
+  file attachment, while retaining the detailed Tau shortcut sections below.
+- Mocked: no.
+- Live: local Textual command-output render path; no provider-live call.
+- Proof: `uv run pytest tests/test_tui_app.py -q -k 'hotkeys or changelog or
+  command_modal_renders_literal_markup_text'` reported `4 passed, 457
+  deselected`; `uv run ruff check src/tau_coding/tui/app.py
+  tests/test_tui_app.py` reported all checks passed; `uv run python -m
+  py_compile src/tau_coding/tui/app.py tests/test_tui_app.py` exited with no
+  output. Render proof:
+  `/tmp/tau-pi-tui-command-markdown-proof-1785019770/proof.json` with
+  screenshot
+  `/tmp/tau-pi-tui-command-markdown-proof-1785019770/tau-hotkeys-markdown-table.svg`.
+- Remaining gap: config write-scope/package override parity remains open;
+  arbitrary Pi custom component mounting remains out of scope unless backed by
+  Tau extension primitives.
 
 Latest slice evidence:
 
