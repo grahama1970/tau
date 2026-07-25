@@ -6428,6 +6428,8 @@ class TauTuiApp(App[None]):
                 self._apply_command_header_update(command)
                 if command.theme is not None:
                     self._set_tui_theme(command.theme)
+                if command.show_tool_results is not None:
+                    self._set_tool_results_expanded(command.show_tool_results)
                 if command.terminal_title_requested:
                     self._set_extension_terminal_title(command.terminal_title)
                 if command.editor_text is not None:
@@ -6630,6 +6632,8 @@ class TauTuiApp(App[None]):
                 await self._set_thinking_level(command.thinking_level)
             if command.show_images is not None:
                 self._set_show_images(command.show_images)
+            if command.show_tool_results is not None:
+                self._set_tool_results_expanded(command.show_tool_results)
             if command.theme is not None:
                 self._set_tui_theme(command.theme)
             if _is_reload_command_text(text):
@@ -6935,6 +6939,10 @@ class TauTuiApp(App[None]):
         self._set_tui_settings(replace(self.tui_settings, show_images=show_images))
         self._notify(f"Show images: {'on' if show_images else 'off'}")
 
+    def _set_tool_results_expanded(self, expanded: bool) -> None:
+        self.state.show_tool_results = expanded
+        self._refresh()
+
     def _preview_tui_theme(self, theme: str) -> None:
         self._set_tui_settings(replace(self.tui_settings, theme=theme), persist=False)
 
@@ -7216,13 +7224,21 @@ class TauTuiApp(App[None]):
         """Run a session command, awaiting async extension command handlers when available."""
         handle_command_async = getattr(self.session, "handle_command_async", None)
         if callable(handle_command_async):
-            if "current_editor_text" in signature(handle_command_async).parameters:
-                return await handle_command_async(text, current_editor_text=current_editor_text)
-            return await handle_command_async(text)
+            parameters = signature(handle_command_async).parameters
+            kwargs: dict[str, object] = {}
+            if "current_editor_text" in parameters:
+                kwargs["current_editor_text"] = current_editor_text
+            if "show_tool_results" in parameters:
+                kwargs["show_tool_results"] = self.state.show_tool_results
+            return await handle_command_async(text, **kwargs)
         handle_command = self.session.handle_command
-        if "current_editor_text" in signature(handle_command).parameters:
-            return handle_command(text, current_editor_text=current_editor_text)
-        return handle_command(text)
+        parameters = signature(handle_command).parameters
+        kwargs: dict[str, object] = {}
+        if "current_editor_text" in parameters:
+            kwargs["current_editor_text"] = current_editor_text
+        if "show_tool_results" in parameters:
+            kwargs["show_tool_results"] = self.state.show_tool_results
+        return handle_command(text, **kwargs)
 
     async def _handle_extension_ui_request(
         self,
@@ -7706,10 +7722,13 @@ class TauTuiApp(App[None]):
             return False
         try:
             prompt = self.query_one("#prompt", PromptInput)
-            if "current_editor_text" in signature(handle_shortcut).parameters:
-                result = handle_shortcut(key, current_editor_text=prompt.expanded_text())
-            else:
-                result = handle_shortcut(key)
+            parameters = signature(handle_shortcut).parameters
+            kwargs: dict[str, object] = {}
+            if "current_editor_text" in parameters:
+                kwargs["current_editor_text"] = prompt.expanded_text()
+            if "show_tool_results" in parameters:
+                kwargs["show_tool_results"] = self.state.show_tool_results
+            result = handle_shortcut(key, **kwargs)
         except Exception as exc:  # noqa: BLE001 - extensions are an isolation boundary
             self._notify(f"Extension shortcut error: {exc}", severity="error")
             return True
@@ -7725,6 +7744,8 @@ class TauTuiApp(App[None]):
         self._apply_command_header_update(result)
         if result.theme is not None:
             self._set_tui_theme(result.theme)
+        if result.show_tool_results is not None:
+            self._set_tool_results_expanded(result.show_tool_results)
         if result.terminal_title_requested:
             self._set_extension_terminal_title(result.terminal_title)
         if result.editor_text is not None:

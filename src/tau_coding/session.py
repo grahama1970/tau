@@ -1625,6 +1625,7 @@ class CodingSession:
         text: str,
         *,
         current_editor_text: str | None = None,
+        show_tool_results: bool = False,
     ) -> CommandResult:
         """Handle coding-session slash commands.
 
@@ -1637,6 +1638,7 @@ class CodingSession:
             self,
             text,
             current_editor_text=current_editor_text,
+            show_tool_results=show_tool_results,
         )
 
     async def handle_command_async(
@@ -1644,6 +1646,7 @@ class CodingSession:
         text: str,
         *,
         current_editor_text: str | None = None,
+        show_tool_results: bool = False,
     ) -> CommandResult:
         """Handle slash commands, awaiting extension handlers that need TUI UI."""
         if expand_prompt_template_command(text, self._prompt_templates) is not None:
@@ -1652,6 +1655,7 @@ class CodingSession:
             self,
             text,
             current_editor_text=current_editor_text,
+            show_tool_results=show_tool_results,
         )
 
     def set_extension_ui_handler(self, handler: Callable[..., object] | None) -> None:
@@ -1687,6 +1691,7 @@ class CodingSession:
         key: str,
         *,
         current_editor_text: str | None = None,
+        show_tool_results: bool = False,
     ) -> CommandResult:
         """Handle a keyboard shortcut registered by a loaded extension."""
         normalized = key.strip().lower()
@@ -1699,6 +1704,7 @@ class CodingSession:
                     key=normalized,
                     extension_name=extension.name,
                     current_editor_text=current_editor_text or "",
+                    current_tools_expanded=show_tool_results,
                 )
                 result = shortcut.handler(extension_context)
                 if inspect.isawaitable(result):
@@ -3018,6 +3024,7 @@ def _extension_slash_command(
             args=context.args,
             extension_name=extension.name,
             current_editor_text=context.current_editor_text,
+            current_tools_expanded=context.show_tool_results,
         )
         result = _call_extension_command_handler(
             command.handler,
@@ -3150,6 +3157,11 @@ def _extension_command_result(
             result = replace(result, header_update=header_update)
         if extension_context.theme is not None and result.theme is None:
             result = replace(result, theme=extension_context.theme)
+        if (
+            extension_context.show_tool_results is not None
+            and result.show_tool_results is None
+        ):
+            result = replace(result, show_tool_results=extension_context.show_tool_results)
         if extension_context.user_message is not None and result.user_message is None:
             result = replace(
                 result,
@@ -3174,6 +3186,7 @@ def _extension_command_result(
             footer_update=footer_update,
             header_update=header_update,
             theme=extension_context.theme,
+            show_tool_results=extension_context.show_tool_results,
         )
     if extension_context.editor_insert_text is not None:
         return CommandResult(
@@ -3189,6 +3202,7 @@ def _extension_command_result(
             footer_update=footer_update,
             header_update=header_update,
             theme=extension_context.theme,
+            show_tool_results=extension_context.show_tool_results,
         )
     if extension_context.editor_paste_text is not None:
         return CommandResult(
@@ -3204,6 +3218,7 @@ def _extension_command_result(
             footer_update=footer_update,
             header_update=header_update,
             theme=extension_context.theme,
+            show_tool_results=extension_context.show_tool_results,
         )
     if extension_context.terminal_title_requested:
         return CommandResult(
@@ -3218,6 +3233,7 @@ def _extension_command_result(
             footer_update=footer_update,
             header_update=header_update,
             theme=extension_context.theme,
+            show_tool_results=extension_context.show_tool_results,
         )
     if extension_context.user_message is not None:
         return CommandResult(
@@ -3232,6 +3248,7 @@ def _extension_command_result(
             footer_update=footer_update,
             header_update=header_update,
             theme=extension_context.theme,
+            show_tool_results=extension_context.show_tool_results,
             user_message=extension_context.user_message,
             user_message_delivery=cast(
                 Literal["steer", "follow_up"],
@@ -3251,6 +3268,7 @@ def _extension_command_result(
             footer_update=footer_update,
             header_update=header_update,
             theme=extension_context.theme,
+            show_tool_results=extension_context.show_tool_results,
         )
     return CommandResult(
         handled=True,
@@ -3265,6 +3283,7 @@ def _extension_command_result(
         footer_update=footer_update,
         header_update=header_update,
         theme=extension_context.theme,
+        show_tool_results=extension_context.show_tool_results,
     )
 
 
@@ -3322,6 +3341,11 @@ def _extension_shortcut_result(
             result = replace(result, header_update=header_update)
         if extension_context.theme is not None and result.theme is None:
             result = replace(result, theme=extension_context.theme)
+        if (
+            extension_context.show_tool_results is not None
+            and result.show_tool_results is None
+        ):
+            result = replace(result, show_tool_results=extension_context.show_tool_results)
         return result
     if extension_context.editor_text is not None:
         return CommandResult(
@@ -3337,6 +3361,7 @@ def _extension_shortcut_result(
             footer_update=footer_update,
             header_update=header_update,
             theme=extension_context.theme,
+            show_tool_results=extension_context.show_tool_results,
         )
     if extension_context.editor_insert_text is not None:
         return CommandResult(
@@ -3352,6 +3377,7 @@ def _extension_shortcut_result(
             footer_update=footer_update,
             header_update=header_update,
             theme=extension_context.theme,
+            show_tool_results=extension_context.show_tool_results,
         )
     if extension_context.editor_paste_text is not None:
         return CommandResult(
@@ -3367,6 +3393,7 @@ def _extension_shortcut_result(
             footer_update=footer_update,
             header_update=header_update,
             theme=extension_context.theme,
+            show_tool_results=extension_context.show_tool_results,
         )
     if extension_context.terminal_title_requested:
         return CommandResult(
@@ -3381,6 +3408,7 @@ def _extension_shortcut_result(
             footer_update=footer_update,
             header_update=header_update,
             theme=extension_context.theme,
+            show_tool_results=extension_context.show_tool_results,
         )
     if result is None:
         return CommandResult(
@@ -3395,6 +3423,7 @@ def _extension_shortcut_result(
             footer_update=footer_update,
             header_update=header_update,
             theme=extension_context.theme,
+            show_tool_results=extension_context.show_tool_results,
         )
     return CommandResult(
         handled=True,
@@ -3409,6 +3438,7 @@ def _extension_shortcut_result(
         footer_update=footer_update,
         header_update=header_update,
         theme=extension_context.theme,
+        show_tool_results=extension_context.show_tool_results,
     )
 
 

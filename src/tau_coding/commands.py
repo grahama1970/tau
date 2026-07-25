@@ -206,6 +206,7 @@ class CommandResult:
     skills_picker_requested: bool = False
     thinking_level: str | None = None
     show_images: bool | None = None
+    show_tool_results: bool | None = None
     theme: str | None = None
     editor_text: str | None = None
     editor_insert_text: str | None = None
@@ -233,6 +234,7 @@ class CommandContext:
     name: str
     args: str
     current_editor_text: str
+    show_tool_results: bool = False
     async_ui_supported: bool = False
 
 
@@ -310,6 +312,7 @@ class CommandRegistry:
         text: str,
         *,
         current_editor_text: str | None = None,
+        show_tool_results: bool = False,
     ) -> CommandResult:
         """Execute a slash command, or return unhandled for ordinary prompts."""
         stripped = text.strip()
@@ -341,6 +344,7 @@ class CommandRegistry:
                 current_editor_text=(
                     stripped if current_editor_text is None else current_editor_text
                 ),
+                show_tool_results=show_tool_results,
             )
         )
         if isawaitable(result):
@@ -362,6 +366,7 @@ class CommandRegistry:
         text: str,
         *,
         current_editor_text: str | None = None,
+        show_tool_results: bool = False,
     ) -> CommandResult:
         """Execute a slash command, awaiting handlers that need interactive UI."""
         stripped = text.strip()
@@ -393,6 +398,7 @@ class CommandRegistry:
                 current_editor_text=(
                     stripped if current_editor_text is None else current_editor_text
                 ),
+                show_tool_results=show_tool_results,
                 async_ui_supported=True,
             )
         )

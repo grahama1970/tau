@@ -54,6 +54,7 @@ class ExtensionShortcutContext:
     key: str
     extension_name: str
     current_editor_text: str = ""
+    current_tools_expanded: bool = False
     shutdown_requested: bool = False
     editor_text: str | None = None
     editor_insert_text: str | None = None
@@ -67,6 +68,7 @@ class ExtensionShortcutContext:
     footer_update: ExtensionFooterUpdate | None = None
     header_update: ExtensionHeaderUpdate | None = None
     theme: str | None = None
+    show_tool_results: bool | None = None
     ui: ExtensionCommandUi = field(init=False)
 
     def __post_init__(self) -> None:
@@ -213,6 +215,14 @@ class ExtensionShortcutContext:
         self.theme = theme_name
         return {"success": True, "error": ""}
 
+    def get_tools_expanded(self) -> bool:
+        """Return whether tool results are currently expanded in the TUI."""
+        return self.current_tools_expanded
+
+    def set_tools_expanded(self, expanded: bool) -> None:
+        """Request that Tau expand or collapse tool output after this shortcut returns."""
+        self.show_tool_results = bool(expanded)
+
 
 @dataclass(slots=True)
 class ExtensionCommandContext:
@@ -225,6 +235,7 @@ class ExtensionCommandContext:
     args: str
     extension_name: str
     current_editor_text: str = ""
+    current_tools_expanded: bool = False
     shutdown_requested: bool = False
     editor_text: str | None = None
     editor_insert_text: str | None = None
@@ -238,6 +249,7 @@ class ExtensionCommandContext:
     footer_update: ExtensionFooterUpdate | None = None
     header_update: ExtensionHeaderUpdate | None = None
     theme: str | None = None
+    show_tool_results: bool | None = None
     user_message: str | None = None
     user_message_delivery: str = "steer"
     ui: ExtensionCommandUi = field(init=False)
@@ -386,6 +398,14 @@ class ExtensionCommandContext:
         self.theme = theme_name
         return {"success": True, "error": ""}
 
+    def get_tools_expanded(self) -> bool:
+        """Return whether tool results are currently expanded in the TUI."""
+        return self.current_tools_expanded
+
+    def set_tools_expanded(self, expanded: bool) -> None:
+        """Request that Tau expand or collapse tool output after this command returns."""
+        self.show_tool_results = bool(expanded)
+
     def send_user_message(self, text: str, *, deliver_as: str = "steer") -> None:
         """Request that Tau send or queue a user message after the command returns."""
         message = text.strip()
@@ -472,6 +492,14 @@ class ExtensionCommandUi:
         """Pi-compatible alias for switching Tau's theme by name."""
         return self._context.set_theme(theme)
 
+    def getToolsExpanded(self) -> bool:  # noqa: N802
+        """Pi-compatible alias for reading tool-result expansion state."""
+        return self._context.get_tools_expanded()
+
+    def setToolsExpanded(self, expanded: bool) -> None:  # noqa: N802
+        """Pi-compatible alias for setting tool-result expansion state."""
+        self._context.set_tools_expanded(expanded)
+
     def set_working_message(self, message: str | None = None) -> None:
         """Set the running message."""
         self._context.set_working_message(message)
@@ -495,6 +523,14 @@ class ExtensionCommandUi:
     def set_theme(self, theme: str) -> dict[str, str | bool]:
         """Switch Tau's theme by name."""
         return self._context.set_theme(theme)
+
+    def get_tools_expanded(self) -> bool:
+        """Return whether tool results are currently expanded in the TUI."""
+        return self._context.get_tools_expanded()
+
+    def set_tools_expanded(self, expanded: bool) -> None:
+        """Expand or collapse tool output."""
+        self._context.set_tools_expanded(expanded)
 
     async def _request_ui(self, method: str, **payload: Any) -> Any:
         request = getattr(self._context.session, "request_extension_ui", None)
