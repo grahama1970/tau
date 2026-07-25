@@ -4528,12 +4528,17 @@ class ExtensionCustomScreen(ModalScreen[object]):
         cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
         with Vertical(id="confirmation"):
             yield Static(title, id="confirmation-title")
-            content = self._build_content()
-            if isinstance(content, Widget):
-                yield content
-            else:
-                yield Static(_extension_custom_content_text(content), id="confirmation-message")
+            with Vertical(id="extension-custom-content"):
+                yield Static("Loading...", id="confirmation-message")
             yield Static(f"{cancel_key} closes", id="confirmation-help")
+
+    def on_mount(self) -> None:
+        """Build and mount extension content after the screen is active."""
+        content = self._build_content()
+        if isawaitable(content):
+            self.run_worker(self._mount_awaited_content(content), exclusive=False)
+            return
+        self._mount_content(content)
 
     def _build_content(self) -> object:
         try:
@@ -4545,6 +4550,24 @@ class ExtensionCustomScreen(ModalScreen[object]):
             )
         except TypeError:
             return self.factory(self._done)
+
+    async def _mount_awaited_content(self, content: object) -> None:
+        try:
+            resolved = await content
+        except Exception as exc:  # noqa: BLE001 - extension UI failures should be visible
+            self._mount_content(f"Extension custom UI error: {exc}")
+            return
+        self._mount_content(resolved)
+
+    def _mount_content(self, content: object) -> None:
+        container = self.query_one("#extension-custom-content", Vertical)
+        container.remove_children()
+        if isinstance(content, Widget):
+            container.mount(content)
+            return
+        container.mount(
+            Static(_extension_custom_content_text(content), id="confirmation-message")
+        )
 
     def _done(self, result: object = None) -> None:
         self._done_called = True
