@@ -3599,6 +3599,11 @@ async def test_tui_app_escape_cancels_active_compaction() -> None:
         prompt.value = "/compact Summary of earlier work."
         await pilot.press("enter")
         await asyncio.wait_for(started.wait(), timeout=1)
+        await pilot.pause()
+
+        working_message = app.query_one("#prompt-working-message", Static)
+        assert working_message.display is True
+        assert working_message.render().plain == "Compacting context... (Escape to cancel)"
 
         await pilot.press("escape")
         await pilot.pause()
@@ -6876,10 +6881,14 @@ async def test_tui_app_tree_summary_clears_transcript_while_summarizing() -> Non
         await pilot.press("s")
         await pilot.pause()
         await started.wait()
+        await pilot.pause()
 
         assert [(item.role, item.text) for item in app.state.items] == [
             ("status", "Summarizing branch…"),
         ]
+        working_message = app.query_one("#prompt-working-message", Static)
+        assert working_message.display is True
+        assert working_message.render().plain == "Summarizing branch... (Escape to cancel)"
 
         finish.set()
         await pilot.pause()

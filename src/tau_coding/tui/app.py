@@ -10613,11 +10613,7 @@ class TauTuiApp(App[None]):
         if running and self._retry_countdown_message is not None:
             message = self._retry_countdown_message
         else:
-            message = (
-                self._extension_working_message
-                if running and self._extension_working_visible
-                else None
-            )
+            message = self._operation_working_message(running=running)
         working_message.display = bool(message)
         working_message.update(_text_from_ansi(message) if message else "")
         prompt_prefix.update(
@@ -10630,6 +10626,25 @@ class TauTuiApp(App[None]):
                 custom_frames=self._extension_working_indicator_frames,
             )
         )
+
+    def _operation_working_message(self, *, running: bool) -> str | None:
+        """Return the visible prompt-chrome message for the active operation."""
+        if not running:
+            return None
+        if self._extension_working_visible and self._extension_working_message is not None:
+            return self._extension_working_message
+        cancel_key = _key_hint_with_default(self.tui_settings.keybindings.cancel, "escape")
+        if self._is_compaction_active():
+            return f"Compacting context... ({cancel_key} to cancel)"
+        if self._is_branch_active():
+            return f"Summarizing branch... ({cancel_key} to cancel)"
+        if self._is_reload_active():
+            return "Reloading local coding resources and project context..."
+        if self._is_share_active():
+            return "Sharing current session..."
+        if self._is_terminal_command_active():
+            return f"Running terminal command... ({cancel_key} to cancel)"
+        return None
 
     def _refresh_completions(self) -> None:
         suggestions = self.query_one("#autocomplete", Static)
