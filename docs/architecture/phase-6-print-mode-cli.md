@@ -13,16 +13,17 @@ src/tau_coding/cli.py
 
 ## What was added
 
-The `tau` command can run a single prompt in print mode with `-p`/`--prompt`:
+The `tau` command can run a single prompt in print mode with `-p`/`--print`
+and a positional prompt:
 
 ```bash
 tau -p "write tests for main.py"
-tau --prompt "explain this repo"
+tau --print "explain this repo"
 tau --model gpt-5.5 -p "summarize README.md"
 ```
 
-Without `-p`/`--prompt`, Tau starts the interactive TUI. A positional prompt is
-treated as the initial TUI prompt:
+Without `-p`/`--print` or `--mode`, Tau starts the interactive TUI. A positional
+prompt is treated as the initial TUI prompt:
 
 ```bash
 tau

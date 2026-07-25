@@ -20,9 +20,9 @@ Tau now has event renderers that consume `tau_agent` events outside the portable
 The CLI exposes this with:
 
 ```bash
-tau --output text "summarize this project"
-tau --output json "summarize this project"
-tau --output transcript "summarize this project"
+tau --mode text "summarize this project"
+tau --mode json "summarize this project"
+tau --mode transcript "summarize this project"
 ```
 
 `text` is the default mode.

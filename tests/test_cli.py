@@ -429,6 +429,13 @@ def test_version_command() -> None:
     assert result.stdout.strip() == "tau 0.1.0"
 
 
+def test_version_short_flag_prints_version() -> None:
+    result = CliRunner().invoke(app, ["-v"])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == "tau 0.1.0"
+
+
 def test_doctor_command_reports_read_only_runtime_preflight() -> None:
     result = CliRunner().invoke(app, ["doctor"])
     payload = json.loads(result.output)
@@ -6698,6 +6705,128 @@ def test_cli_exits_nonzero_when_print_mode_fails(monkeypatch: pytest.MonkeyPatch
     assert result.exit_code == 1
 
 
+def test_mode_flag_alone_triggers_print_mode(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[str, PrintOutputMode]] = []
+
+    async def fake_run_openai_print_mode(
+        prompt: str,
+        model: str | None,
+        cwd: Path,
+        output: PrintOutputMode,
+        provider_name: str | None,
+        loop_receipt: LoopReceiptConfig | None,
+    ) -> bool:
+        del model, cwd, provider_name, loop_receipt
+        calls.append((prompt, output))
+        return True
+
+    monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
+
+    result = CliRunner().invoke(app, ["--mode", "json", "hello"])
+
+    assert result.exit_code == 0
+    assert calls == [("hello", PrintOutputMode.json)]
+
+
+def test_print_mode_requires_a_prompt() -> None:
+    result = CliRunner().invoke(app, ["-p"])
+
+    assert result.exit_code != 0
+    assert "Usage: tau --print" in result.output
+
+
+def test_print_mode_merges_piped_stdin_into_prompt(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[str] = []
+
+    async def fake_run_openai_print_mode(
+        prompt: str,
+        model: str | None,
+        cwd: Path,
+        output: PrintOutputMode,
+        provider_name: str | None,
+        loop_receipt: LoopReceiptConfig | None,
+    ) -> bool:
+        del model, cwd, output, provider_name, loop_receipt
+        calls.append(prompt)
+        return True
+
+    monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
+
+    result = CliRunner().invoke(app, ["-p", "Summarize"], input="piped content\n")
+
+    assert result.exit_code == 0
+    assert calls == ["piped content\n\n\nSummarize"]
+
+
+def test_print_mode_accepts_stdin_only_prompt(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[str] = []
+
+    async def fake_run_openai_print_mode(
+        prompt: str,
+        model: str | None,
+        cwd: Path,
+        output: PrintOutputMode,
+        provider_name: str | None,
+        loop_receipt: LoopReceiptConfig | None,
+    ) -> bool:
+        del model, cwd, output, provider_name, loop_receipt
+        calls.append(prompt)
+        return True
+
+    monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
+
+    result = CliRunner().invoke(app, ["-p"], input="piped content\n")
+
+    assert result.exit_code == 0
+    assert calls == ["piped content\n"]
+
+
+def test_legacy_prompt_flag_errors_with_migration_hint() -> None:
+    result = CliRunner().invoke(app, ["--prompt", "hello"])
+
+    assert result.exit_code != 0
+    assert "--prompt was removed" in result.output
+    assert "--print" in result.output
+
+
+def test_legacy_output_flag_errors_with_migration_hint() -> None:
+    result = CliRunner().invoke(app, ["-p", "--output", "json", "hello"])
+
+    assert result.exit_code != 0
+    assert "--output was renamed to --mode" in result.output
+
+
+def test_export_flag_invokes_exporter(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    calls: list[tuple[str, Path | None, str | None]] = []
+    output_path = tmp_path / "out.html"
+
+    async def fake_export_session_command(
+        session_ref: str,
+        requested_output_path: Path | None = None,
+        requested_export_format: str | None = None,
+    ) -> Path:
+        calls.append((session_ref, requested_output_path, requested_export_format))
+        return output_path
+
+    monkeypatch.setattr(cli, "export_session_command", fake_export_session_command)
+
+    result = CliRunner().invoke(app, ["--export", "session-1", str(output_path)])
+
+    assert result.exit_code == 0
+    assert calls == [("session-1", output_path, None)]
+    assert f"Exported session to {output_path}" in result.stdout
+
+
+def test_export_flag_rejects_combination_with_print() -> None:
+    result = CliRunner().invoke(app, ["--export", "-p", "session-1"])
+
+    assert result.exit_code != 0
+    assert "--export cannot be combined with --print/--mode" in result.output
+
+
 def test_cli_print_mode_passes_loop2_receipt_options(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -6723,7 +6852,6 @@ def test_cli_print_mode_passes_loop2_receipt_options(
             "--cwd",
             str(tmp_path),
             "-p",
-            "hello",
             "--loop2-receipt-root",
             str(tmp_path / ".loop2" / "runs"),
             "--loop2-node-id",
@@ -6734,6 +6862,7 @@ def test_cli_print_mode_passes_loop2_receipt_options(
             "src/**/*.py",
             "--loop2-check",
             "python -m pytest",
+            "hello",
         ],
     )
 
@@ -6775,11 +6904,11 @@ def test_cli_print_mode_marks_nonfake_loop2_receipt_live(
             "--provider",
             "chutes",
             "-p",
-            "hello",
             "--loop2-receipt-root",
             str(tmp_path / ".loop2" / "runs"),
             "--loop2-check",
             "python -m pytest",
+            "hello",
         ],
     )
 
@@ -6795,9 +6924,9 @@ def test_cli_print_mode_rejects_loop2_receipt_without_check(tmp_path: Path) -> N
         app,
         [
             "-p",
-            "hello",
             "--loop2-receipt-root",
             str(tmp_path / ".loop2" / "runs"),
+            "hello",
         ],
     )
 
@@ -6812,9 +6941,9 @@ def test_cli_print_mode_rejects_loop2_required_changed_glob_without_receipt_root
         app,
         [
             "-p",
-            "hello",
             "--loop2-required-changed-glob",
             "src/**/*.py",
+            "hello",
         ],
     )
 
@@ -6859,7 +6988,7 @@ def test_default_tui_invokes_tui_runner_with_flags(
             "fake",
             "--provider",
             "local",
-            "--resume",
+            "--session",
             "session-1",
             "--auto-compact-threshold",
             "1000",
@@ -6870,24 +6999,23 @@ def test_default_tui_invokes_tui_runner_with_flags(
     assert calls == [("fake", tmp_path, "session-1", False, "local", 1000, None)]
 
 
-def test_default_tui_rejects_resume_with_new_session(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
-    async def fake_run_openai_tui(
-        model: str | None,
-        cwd: Path,
-        session_id: str | None,
-        new_session: bool,
-        provider_name: str | None,
-        auto_compact_token_threshold: int | None,
-        initial_prompt: str | None,
-    ) -> None:
-        del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
-        del initial_prompt
-        raise RuntimeError("--resume and --new-session cannot be used together")
+def test_default_tui_rejects_session_with_new_session(tmp_path: Path) -> None:
+    result = CliRunner().invoke(
+        app,
+        [
+            "--cwd",
+            str(tmp_path),
+            "--session",
+            "session-1",
+            "--new-session",
+        ],
+    )
 
-    monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
+    assert result.exit_code != 0
+    assert "--session and --new-session cannot be used together" in result.output
 
+
+def test_legacy_resume_flag_errors_with_migration_hint(tmp_path: Path) -> None:
     result = CliRunner().invoke(
         app,
         [
@@ -6895,12 +7023,12 @@ def test_default_tui_rejects_resume_with_new_session(
             str(tmp_path),
             "--resume",
             "session-1",
-            "--new-session",
         ],
     )
 
     assert result.exit_code != 0
-    assert "--resume and --new-session cannot be used together" in result.output
+    assert "--resume was renamed to --session" in result.output
+    assert "session-1" in result.output
 
 
 def test_sessions_command_lists_indexed_sessions(

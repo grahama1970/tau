@@ -735,9 +735,21 @@ def main(
         list[str] | None,
         typer.Argument(help="Initial prompt to run in interactive TUI mode."),
     ] = None,
+    print_mode: Annotated[
+        bool,
+        typer.Option(
+            "--print",
+            "-p",
+            help="Run the positional prompt in non-interactive print mode.",
+        ),
+    ] = False,
     prompt_option: Annotated[
         str | None,
-        typer.Option("--prompt", "-p", help="Prompt to run in non-interactive print mode."),
+        typer.Option(
+            "--prompt",
+            help="Removed; pass the prompt positionally and use --print instead.",
+            hidden=True,
+        ),
     ] = None,
     provider: Annotated[
         str | None,
@@ -781,13 +793,34 @@ def main(
         Path | None,
         typer.Option("--cwd", help="Working directory for built-in coding tools."),
     ] = None,
+    mode: Annotated[
+        PrintOutputMode | None,
+        typer.Option(
+            "--mode",
+            help="Run in non-interactive print mode with this output format "
+            "(text, json, or transcript).",
+        ),
+    ] = None,
     output: Annotated[
-        PrintOutputMode,
-        typer.Option("--output", "-o", help="Output mode for print mode."),
-    ] = PrintOutputMode.text,
+        PrintOutputMode | None,
+        typer.Option(
+            "--output",
+            "-o",
+            help="Removed; use --mode instead.",
+            hidden=True,
+        ),
+    ] = None,
+    session: Annotated[
+        str | None,
+        typer.Option("--session", help="Resume a session id in TUI mode."),
+    ] = None,
     resume: Annotated[
         str | None,
-        typer.Option("--resume", help="Resume a session id in TUI mode."),
+        typer.Option(
+            "--resume",
+            help="Removed; use --session <session-id> instead.",
+            hidden=True,
+        ),
     ] = None,
     new_session: Annotated[
         bool,
@@ -876,9 +909,16 @@ def main(
             help="Passing Scillm doctor receipt required before delegated Scillm loop2 runs.",
         ),
     ] = None,
+    export: Annotated[
+        bool,
+        typer.Option(
+            "--export",
+            help="Export the given session id or JSONL path (mirrors `tau export`).",
+        ),
+    ] = False,
     version: Annotated[
         bool,
-        typer.Option("--version", help="Show Tau's version and exit."),
+        typer.Option("--version", "-v", help="Show Tau's version and exit."),
     ] = False,
 ) -> None:
     """Run the Tau CLI."""
@@ -889,17 +929,44 @@ def main(
     if ctx.invoked_subcommand is not None:
         return
 
+    if resume is not None:
+        raise typer.BadParameter(
+            f"--resume was renamed to --session. Use `tau --session {resume}` instead."
+        )
+
+    if session is not None and new_session:
+        raise typer.BadParameter("--session and --new-session cannot be used together")
+
+    if prompt_option is not None:
+        raise typer.BadParameter(
+            "--prompt was removed. Pass the prompt positionally and use --print, e.g. "
+            f'`tau --print "{prompt_option}"`.'
+        )
+
+    if output is not None:
+        raise typer.BadParameter(
+            f"--output was renamed to --mode. Use `tau --mode {output.value}` instead."
+        )
+
+    print_requested = print_mode or mode is not None
+    effective_output = mode or PrintOutputMode.text
+
     positional_args = prompt_args or []
     command = positional_args[0] if positional_args else None
     initial_prompt = " ".join(positional_args) if positional_args else None
 
-    if prompt_option is None and command == "update":
+    if export:
+        if print_requested:
+            raise typer.BadParameter("--export cannot be combined with --print/--mode.")
+        _run_export_cli(positional_args)
+
+    if not print_requested and not export and command == "update":
         if len(positional_args) != 1:
             raise typer.BadParameter("Usage: tau update")
         update_command()
         raise typer.Exit()
 
-    if prompt_option is None and command == "workflows":
+    if not print_requested and command == "workflows":
         if "--help" in positional_args[1:]:
             workflows_command = typer.main.get_command(workflows_app)
             workflows_command.main(
@@ -929,11 +996,11 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "sessions" and len(positional_args) == 1:
+    if not print_requested and not export and command == "sessions" and len(positional_args) == 1:
         render_session_list(SessionManager().list_sessions())
         raise typer.Exit()
 
-    if prompt_option is None and command == "export":
+    if not print_requested and not export and command == "export":
         try:
             session_ref, output_path, export_format = _parse_export_cli_args(positional_args[1:])
         except RuntimeError as exc:
@@ -950,11 +1017,11 @@ def main(
         typer.echo(f"Exported session to {exported_path}")
         raise typer.Exit()
 
-    if prompt_option is None and command == "providers" and len(positional_args) == 1:
+    if not print_requested and command == "providers" and len(positional_args) == 1:
         providers_command()
         raise typer.Exit()
 
-    if prompt_option is None and command == "doctor":
+    if not print_requested and command == "doctor":
         try:
             _parse_doctor_cli_args(positional_args[1:])
         except RuntimeError as exc:
@@ -965,13 +1032,13 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-view-capabilities":
+    if not print_requested and command == "dag-view-capabilities":
         if positional_args[1:] not in ([], ["--json"]):
             raise typer.BadParameter("Usage: tau dag-view-capabilities [--json]")
         typer.echo(json.dumps(viewer_capabilities(), indent=2, sort_keys=True))
         raise typer.Exit()
 
-    if prompt_option is None and command in {"dag-view-snapshot", "dag-view-events"}:
+    if not print_requested and command in {"dag-view-snapshot", "dag-view-events"}:
         try:
             options = _parse_dag_view_cli_args(positional_args[1:], command=str(command))
             replay, events = load_dag_replay(
@@ -1000,7 +1067,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
 
-    if prompt_option is None and command in {"dag-view", "dag-view-serve"}:
+    if not print_requested and command in {"dag-view", "dag-view-serve"}:
         try:
             options = _parse_dag_view_serve_cli_args(
                 positional_args[1:], command=str(command)
@@ -1021,7 +1088,7 @@ def main(
             viewer_server.serve_forever()
         raise typer.Exit()
 
-    if prompt_option is None and command == "init":
+    if not print_requested and command == "init":
         try:
             options = _parse_init_cli_args(positional_args[1:])
             payload = initialize_tau_project(
@@ -1036,7 +1103,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "project":
+    if not print_requested and command == "project":
         try:
             options = _parse_project_cli_args(positional_args[1:])
             if options["subcommand"] == "check-spine":
@@ -1053,7 +1120,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "demo":
+    if not print_requested and command == "demo":
         try:
             options = _parse_demo_cli_args(positional_args[1:])
             name = str(options.pop("name"))
@@ -1070,7 +1137,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "zero-trust-doctor":
+    if not print_requested and command == "zero-trust-doctor":
         try:
             options = _parse_zero_trust_doctor_cli_args(positional_args[1:])
             payload = write_zero_trust_preflight_receipt(
@@ -1096,7 +1163,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "setup" and len(positional_args) == 1:
+    if not print_requested and command == "setup" and len(positional_args) == 1:
         setup_command(
             provider_name=provider or DEFAULT_PROVIDER_NAME,
             base_url=setup_base_url,
@@ -1109,7 +1176,7 @@ def main(
         )
         raise typer.Exit()
 
-    if prompt_option is None and command == "setup-chutes" and len(positional_args) == 1:
+    if not print_requested and command == "setup-chutes" and len(positional_args) == 1:
         setup_chutes_command(
             model=model,
             timeout_seconds=setup_timeout_seconds,
@@ -1119,7 +1186,7 @@ def main(
         )
         raise typer.Exit()
 
-    if prompt_option is None and command == "traycer":
+    if not print_requested and command == "traycer":
         try:
             if len(positional_args) >= 2 and positional_args[1] == "validate":
                 options = parse_traycer_validate_cli_args(positional_args[2:])
@@ -1139,7 +1206,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "loop2-validate":
+    if not print_requested and command == "loop2-validate":
         try:
             run_dir = _parse_loop2_run_dir_cli_args(positional_args[1:], command="loop2-validate")
             ok = validate_loop_receipt_command(run_dir, loop2_src=loop2_src)
@@ -1149,7 +1216,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "loop2-validate-contract":
+    if not print_requested and command == "loop2-validate-contract":
         try:
             contract_path = _parse_loop2_contract_cli_args(positional_args[1:])
             ok = validate_loop2_contract_command(contract_path, loop2_src=loop2_src)
@@ -1159,7 +1226,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "loop2-validate-native":
+    if not print_requested and command == "loop2-validate-native":
         try:
             run_dir = _parse_loop2_run_dir_cli_args(
                 positional_args[1:],
@@ -1172,7 +1239,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "loop2-run":
+    if not print_requested and command == "loop2-run":
         try:
             contract_path = _parse_loop2_run_contract_cli_args(positional_args[1:])
             ok = anyio.run(
@@ -1190,7 +1257,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "loop2-inspect":
+    if not print_requested and command == "loop2-inspect":
         try:
             run_dir = _parse_loop2_run_dir_cli_args(positional_args[1:], command="loop2-inspect")
             ok = inspect_loop_receipt_command(
@@ -1204,7 +1271,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "loop2-check-monitor":
+    if not print_requested and command == "loop2-check-monitor":
         try:
             run_dir = _parse_loop2_run_dir_cli_args(
                 positional_args[1:],
@@ -1217,7 +1284,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "loop2-emit-peer":
+    if not print_requested and command == "loop2-emit-peer":
         try:
             run_dir = _parse_loop2_run_dir_cli_args(
                 positional_args[1:],
@@ -1235,7 +1302,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "loop2-check-scillm-doctor":
+    if not print_requested and command == "loop2-check-scillm-doctor":
         try:
             receipt_path = _parse_loop2_scillm_doctor_receipt_cli_args(positional_args[1:])
             ok = check_loop2_scillm_doctor_command(receipt_path)
@@ -1245,7 +1312,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "loop2-backfill-artifacts":
+    if not print_requested and command == "loop2-backfill-artifacts":
         try:
             run_dir = _parse_loop2_run_dir_cli_args(
                 positional_args[1:],
@@ -1258,7 +1325,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "loop2-sanity":
+    if not print_requested and command == "loop2-sanity":
         try:
             if len(positional_args) != 1:
                 raise RuntimeError("Usage: tau loop2-sanity")
@@ -1273,7 +1340,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "tui-proof":
+    if not print_requested and command == "tui-proof":
         try:
             options = _parse_tui_proof_cli_args(positional_args[1:])
             ok = tui_proof_command(
@@ -1289,7 +1356,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "browser-cdp-proof":
+    if not print_requested and command == "browser-cdp-proof":
         try:
             options = _parse_browser_cdp_proof_cli_args(positional_args[1:])
             ok = browser_cdp_proof_command(
@@ -1304,7 +1371,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "visible-dag-poc":
+    if not print_requested and command == "visible-dag-poc":
         try:
             options = _parse_visible_dag_poc_cli_args(positional_args[1:])
             payload = run_visible_dag_poc(**options)
@@ -1315,7 +1382,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "visible-dag-inspect":
+    if not print_requested and command == "visible-dag-inspect":
         try:
             run_dir = _parse_visible_dag_inspect_cli_args(positional_args[1:])
             payload = inspect_visible_dag_run(run_dir)
@@ -1326,7 +1393,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "provider-pane-poc":
+    if not print_requested and command == "provider-pane-poc":
         try:
             options = _parse_provider_pane_poc_cli_args(positional_args[1:])
             payload = run_provider_pane_poc(**options)
@@ -1337,7 +1404,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "provider-pane-inspect":
+    if not print_requested and command == "provider-pane-inspect":
         try:
             run_dir = _parse_provider_pane_inspect_cli_args(positional_args[1:])
             payload = inspect_provider_pane_run(run_dir)
@@ -1348,7 +1415,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "provider-readiness-poc":
+    if not print_requested and command == "provider-readiness-poc":
         try:
             options = _parse_provider_readiness_poc_cli_args(positional_args[1:])
             payload = run_provider_readiness_poc(**options)
@@ -1359,7 +1426,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "provider-readiness-inspect":
+    if not print_requested and command == "provider-readiness-inspect":
         try:
             run_dir = _parse_provider_readiness_inspect_cli_args(positional_args[1:])
             payload = inspect_provider_readiness_run(run_dir)
@@ -1370,7 +1437,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "local-provider-readiness":
+    if not print_requested and command == "local-provider-readiness":
         try:
             options = _parse_local_provider_readiness_cli_args(positional_args[1:])
             payload = write_local_provider_readiness_receipt(**options)
@@ -1381,7 +1448,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "airgap-no-egress":
+    if not print_requested and command == "airgap-no-egress":
         try:
             options = _parse_airgap_no_egress_cli_args(positional_args[1:])
             payload = write_airgap_no_egress_receipt(**options)
@@ -1392,7 +1459,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "provider-dag-poc":
+    if not print_requested and command == "provider-dag-poc":
         try:
             options = _parse_provider_dag_poc_cli_args(positional_args[1:])
             payload = run_provider_dag_poc(**options)
@@ -1403,7 +1470,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "provider-dag-plan":
+    if not print_requested and command == "provider-dag-plan":
         try:
             options = _parse_provider_dag_plan_cli_args(positional_args[1:])
             payload = plan_provider_dag_poc(**options)
@@ -1414,7 +1481,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "provider-dag-orchestrate":
+    if not print_requested and command == "provider-dag-orchestrate":
         try:
             options = _parse_provider_dag_orchestrate_cli_args(positional_args[1:])
             payload = run_provider_dag_orchestrator(**options)
@@ -1425,7 +1492,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "provider-dag-inspect":
+    if not print_requested and command == "provider-dag-inspect":
         try:
             run_dir = _parse_provider_dag_inspect_cli_args(positional_args[1:])
             payload = inspect_provider_dag_run(run_dir)
@@ -1436,7 +1503,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "orchestration-evidence":
+    if not print_requested and command == "orchestration-evidence":
         try:
             run_dir = _parse_orchestration_evidence_cli_args(positional_args[1:])
             payload = build_orchestration_evidence(run_dir)
@@ -1447,7 +1514,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command in {"dag-run", "run"}:
+    if not print_requested and command in {"dag-run", "run"}:
         try:
             payload = _run_dag_cli_command(positional_args[1:], command_name=str(command))
         except RuntimeError as exc:
@@ -1457,7 +1524,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-plan":
+    if not print_requested and command == "dag-plan":
         try:
             source_path, output_path = _parse_dag_plan_cli_args(positional_args[1:])
             payload = write_dag_plan(source_path, output_path=output_path)
@@ -1466,7 +1533,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-signals":
+    if not print_requested and command == "dag-signals":
         try:
             options = _parse_dag_signals_cli_args(positional_args[1:])
             payload = write_dag_signal_receipt(
@@ -1480,7 +1547,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "evidence-validate":
+    if not print_requested and command == "evidence-validate":
         try:
             options = _parse_evidence_validate_cli_args(positional_args[1:])
             payload = write_evidence_validation_receipt(
@@ -1494,7 +1561,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-expansion-validate":
+    if not print_requested and command == "dag-expansion-validate":
         try:
             options = _parse_dag_expansion_validate_cli_args(positional_args[1:])
             payload = write_dag_expansion_validation_receipt(
@@ -1510,7 +1577,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-expansion-policy":
+    if not print_requested and command == "dag-expansion-policy":
         try:
             options = _parse_dag_expansion_policy_cli_args(positional_args[1:])
             payload = write_dag_expansion_policy_receipt(
@@ -1526,7 +1593,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-expansion-apply":
+    if not print_requested and command == "dag-expansion-apply":
         try:
             options = _parse_dag_expansion_apply_cli_args(positional_args[1:])
             payload = write_dag_expansion_apply_receipt(
@@ -1542,7 +1609,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-branch-locks-validate":
+    if not print_requested and command == "dag-branch-locks-validate":
         try:
             options = _parse_dag_branch_locks_validate_cli_args(positional_args[1:])
             payload = write_dag_branch_lock_validation_receipt(
@@ -1557,7 +1624,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-motif-validate":
+    if not print_requested and command == "dag-motif-validate":
         try:
             options = _parse_dag_motif_validate_cli_args(positional_args[1:])
             payload = write_dag_motif_validation_receipt(
@@ -1572,7 +1639,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-route-memory-candidates":
+    if not print_requested and command == "dag-route-memory-candidates":
         try:
             options = _parse_dag_route_memory_candidates_cli_args(positional_args[1:])
             payload = write_dag_route_memory_candidate_receipt(
@@ -1587,7 +1654,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-route-memory-sync":
+    if not print_requested and command == "dag-route-memory-sync":
         try:
             options = _parse_dag_route_memory_sync_cli_args(positional_args[1:])
             payload = write_dag_route_memory_sync_receipt(
@@ -1609,7 +1676,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "memory-intent":
+    if not print_requested and command == "memory-intent":
         try:
             options = _parse_memory_intent_cli_args(positional_args[1:])
             payload = write_memory_intent_acquisition_receipt(
@@ -1630,7 +1697,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "evidence-case-create":
+    if not print_requested and command == "evidence-case-create":
         try:
             options = _parse_evidence_case_create_cli_args(positional_args[1:])
             payload = write_evidence_case_acquisition_receipt(
@@ -1651,7 +1718,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-inspect":
+    if not print_requested and command == "dag-inspect":
         try:
             run_dir = _parse_generic_dag_inspect_cli_args(positional_args[1:])
             payload = inspect_generic_dag_run(run_dir)
@@ -1662,7 +1729,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-resume":
+    if not print_requested and command == "dag-resume":
         try:
             run_dir = _parse_generic_dag_resume_cli_args(positional_args[1:])
             payload = resume_generic_dag_from_run(run_dir)
@@ -1673,7 +1740,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "generic-provider-dag-node":
+    if not print_requested and command == "generic-provider-dag-node":
         try:
             options = _parse_generic_provider_dag_node_cli_args(positional_args[1:])
             payload = run_generic_provider_dag_node(**options)
@@ -1684,7 +1751,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-stress-poc":
+    if not print_requested and command == "dag-stress-poc":
         try:
             options = _parse_dag_stress_poc_cli_args(positional_args[1:])
             payload = run_dag_stress_poc(**options)
@@ -1695,7 +1762,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-stress-inspect":
+    if not print_requested and command == "dag-stress-inspect":
         try:
             run_dir = _parse_dag_stress_inspect_cli_args(positional_args[1:])
             payload = inspect_dag_stress_run(run_dir)
@@ -1706,7 +1773,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-stress-campaign":
+    if not print_requested and command == "dag-stress-campaign":
         try:
             options = _parse_dag_stress_campaign_cli_args(positional_args[1:])
             payload = run_dag_stress_campaign(**options)
@@ -1717,7 +1784,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-stress-campaign-inspect":
+    if not print_requested and command == "dag-stress-campaign-inspect":
         try:
             run_dir = _parse_dag_stress_campaign_inspect_cli_args(positional_args[1:])
             payload = inspect_dag_stress_campaign(run_dir)
@@ -1728,7 +1795,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "media-explainer-smoke":
+    if not print_requested and command == "media-explainer-smoke":
         try:
             options = _parse_media_explainer_smoke_cli_args(positional_args[1:])
             payload = run_media_explainer_smoke(**options)
@@ -1739,7 +1806,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "media-explainer-inspect":
+    if not print_requested and command == "media-explainer-inspect":
         try:
             run_dir = _parse_media_explainer_inspect_cli_args(positional_args[1:])
             payload = inspect_media_explainer_run(run_dir)
@@ -1750,7 +1817,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "herdr-cleanup":
+    if not print_requested and command == "herdr-cleanup":
         try:
             options = _parse_herdr_cleanup_cli_args(positional_args[1:])
             if options.pop("gc"):
@@ -1769,7 +1836,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "approval-gate-check":
+    if not print_requested and command == "approval-gate-check":
         try:
             options = _parse_approval_gate_check_cli_args(positional_args[1:])
             payload = evaluate_approval_gate(**options)
@@ -1780,7 +1847,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "run-status":
+    if not print_requested and command == "run-status":
         try:
             run_dir = _parse_run_status_cli_args(positional_args[1:])
             payload = build_run_status(run_dir)
@@ -1791,7 +1858,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-viewer-link":
+    if not print_requested and command == "dag-viewer-link":
         try:
             run_dir = _parse_dag_viewer_link_cli_args(positional_args[1:])
             payload = build_dag_viewer_link(run_dir)
@@ -1802,7 +1869,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "compliance-package":
+    if not print_requested and command == "compliance-package":
         try:
             options = _parse_compliance_package_cli_args(positional_args[1:])
             payload = build_compliance_evidence_package(
@@ -1817,7 +1884,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "actor-manifest":
+    if not print_requested and command == "actor-manifest":
         try:
             options = _parse_actor_manifest_cli_args(positional_args[1:])
             payload = build_actor_manifest(
@@ -1832,7 +1899,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "environment-manifest":
+    if not print_requested and command == "environment-manifest":
         try:
             options = _parse_environment_manifest_cli_args(positional_args[1:])
             payload = build_environment_manifest(
@@ -1861,7 +1928,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "sign-receipt":
+    if not print_requested and command == "sign-receipt":
         try:
             options = _parse_sign_receipt_cli_args(positional_args[1:])
             payload = sign_receipt(
@@ -1886,7 +1953,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "proof-index":
+    if not print_requested and command == "proof-index":
         try:
             options = _parse_proof_index_cli_args(positional_args[1:])
             payload = build_proof_index(
@@ -1905,7 +1972,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "verify-signed-receipt":
+    if not print_requested and command == "verify-signed-receipt":
         try:
             options = _parse_verify_signed_receipt_cli_args(positional_args[1:])
             payload = verify_signed_receipt(
@@ -1920,7 +1987,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "sandbox-run":
+    if not print_requested and command == "sandbox-run":
         try:
             options = _parse_sandbox_run_cli_args(positional_args[1:])
             payload = run_sandboxed_command(
@@ -1949,7 +2016,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "report":
+    if not print_requested and command == "report":
         try:
             options = _parse_report_cli_args(positional_args[1:])
             payload = write_run_report(
@@ -1964,7 +2031,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "serve":
+    if not print_requested and command == "serve":
         try:
             options = _parse_serve_cli_args(positional_args[1:])
         except RuntimeError as exc:
@@ -2000,7 +2067,7 @@ def main(
         )
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-fail-closed-registry":
+    if not print_requested and command == "dag-fail-closed-registry":
         try:
             output_path = _parse_dag_fail_closed_registry_args(positional_args[1:])
             payload = write_fail_closed_registry_receipt(output_path=output_path)
@@ -2011,7 +2078,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "course-correction":
+    if not print_requested and command == "course-correction":
         try:
             options = _parse_course_correction_cli_args(positional_args[1:])
             payload = write_course_correction_receipt(
@@ -2045,7 +2112,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(1 if payload.get("next_allowed") is False else 0)
 
-    if prompt_option is None and command == "code-patch":
+    if not print_requested and command == "code-patch":
         try:
             options = _parse_code_patch_cli_args(positional_args[1:])
             payload = apply_code_patch_receipt(
@@ -2068,7 +2135,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(0 if payload.get("ok") is True else 1)
 
-    if prompt_option is None and command == "review-findings":
+    if not print_requested and command == "review-findings":
         try:
             options = _parse_review_findings_cli_args(positional_args[1:])
             payload = write_review_findings_receipt(
@@ -2084,7 +2151,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(0 if payload.get("ok") is True else 1)
 
-    if prompt_option is None and command == "lsp-diagnostics":
+    if not print_requested and command == "lsp-diagnostics":
         try:
             options = _parse_lsp_diagnostics_cli_args(positional_args[1:])
             payload = write_lsp_diagnostics_receipt(
@@ -2106,7 +2173,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(0 if payload.get("ok") is True else 1)
 
-    if prompt_option is None and command == "lsp-symbols":
+    if not print_requested and command == "lsp-symbols":
         try:
             options = _parse_lsp_symbols_cli_args(positional_args[1:])
             payload = write_lsp_symbol_receipt(
@@ -2123,7 +2190,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(0 if payload.get("ok") is True else 1)
 
-    if prompt_option is None and command == "lsp-rename-plan":
+    if not print_requested and command == "lsp-rename-plan":
         try:
             options = _parse_lsp_rename_plan_cli_args(positional_args[1:])
             payload = write_lsp_rename_plan_receipt(
@@ -2141,7 +2208,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(0 if payload.get("ok") is True else 1)
 
-    if prompt_option is None and command == "test-run":
+    if not print_requested and command == "test-run":
         try:
             options = _parse_test_run_cli_args(positional_args[1:])
             payload = write_test_run_receipt(
@@ -2160,7 +2227,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(0 if payload.get("ok") is True else 1)
 
-    if prompt_option is None and command == "commit-plan":
+    if not print_requested and command == "commit-plan":
         try:
             options = _parse_commit_plan_cli_args(positional_args[1:])
             payload = write_commit_plan_receipt(
@@ -2183,7 +2250,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(0 if payload.get("ok") is True else 1)
 
-    if prompt_option is None and command == "orchestration-reliability":
+    if not print_requested and command == "orchestration-reliability":
         try:
             options = _parse_orchestration_reliability_cli_args(positional_args[1:])
             payload = write_orchestration_reliability_receipt(
@@ -2203,7 +2270,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(0 if payload.get("ok") is True else 1)
 
-    if prompt_option is None and command == "omp-worker-validate":
+    if not print_requested and command == "omp-worker-validate":
         try:
             options = _parse_worker_validate_cli_args(
                 positional_args[1:],
@@ -2219,7 +2286,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(0 if payload.get("ok") is True else 1)
 
-    if prompt_option is None and command == "scillm-worker-validate":
+    if not print_requested and command == "scillm-worker-validate":
         try:
             options = _parse_worker_validate_cli_args(
                 positional_args[1:],
@@ -2240,7 +2307,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(0 if payload.get("ok") is True else 1)
 
-    if prompt_option is None and command == "omp-worker-launch":
+    if not print_requested and command == "omp-worker-launch":
         try:
             options = _parse_omp_worker_launch_cli_args(positional_args[1:])
             payload = write_omp_worker_launch_receipt(
@@ -2256,7 +2323,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(0 if payload.get("ok") is True else 1)
 
-    if prompt_option is None and command == "omp-worker-doctor":
+    if not print_requested and command == "omp-worker-doctor":
         try:
             options = _parse_omp_worker_doctor_cli_args(positional_args[1:])
             payload = write_omp_worker_doctor_receipt(
@@ -2269,7 +2336,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(0 if payload.get("ok") is True else 1)
 
-    if prompt_option is None and command == "scillm-worker-launch":
+    if not print_requested and command == "scillm-worker-launch":
         try:
             options = _parse_scillm_worker_launch_cli_args(positional_args[1:])
             payload = write_scillm_worker_launch_receipt(
@@ -2286,7 +2353,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(0 if payload.get("ok") is True else 1)
 
-    if prompt_option is None and command == "scillm-chat-review":
+    if not print_requested and command == "scillm-chat-review":
         try:
             options = _parse_scillm_chat_review_cli_args(positional_args[1:])
             payload = write_scillm_chat_review_receipt(
@@ -2310,7 +2377,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(0 if payload.get("ok") is True else 1)
 
-    if prompt_option is None and command == "debug-session-receipt":
+    if not print_requested and command == "debug-session-receipt":
         try:
             options = _parse_debug_session_receipt_cli_args(positional_args[1:])
             payload = write_debug_session_receipt(
@@ -2327,7 +2394,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(0 if payload.get("ok") is True else 1)
 
-    if prompt_option is None and command == "github-read":
+    if not print_requested and command == "github-read":
         try:
             options = _parse_github_read_cli_args(positional_args[1:])
             payload = write_github_read_receipt(
@@ -2346,7 +2413,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(0 if payload.get("ok") is True else 1)
 
-    if prompt_option is None and command == "herdr-observation-gate":
+    if not print_requested and command == "herdr-observation-gate":
         try:
             options = _parse_herdr_observation_gate_cli_args(positional_args[1:])
             payload = write_herdr_observation_gate_receipt(
@@ -2381,7 +2448,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(1 if payload.get("ok") is not True else 0)
 
-    if prompt_option is None and command == "project-profile-validate":
+    if not print_requested and command == "project-profile-validate":
         try:
             options = _parse_project_profile_validate_cli_args(positional_args[1:])
             payload = write_project_profile_validation_receipt(
@@ -2396,7 +2463,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(1 if payload.get("ok") is not True else 0)
 
-    if prompt_option is None and command == "skill-capability-registry-validate":
+    if not print_requested and command == "skill-capability-registry-validate":
         try:
             options = _parse_skill_capability_registry_validate_cli_args(positional_args[1:])
             payload = write_skill_capability_registry_validation_receipt(
@@ -2413,7 +2480,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(1 if payload.get("ok") is not True else 0)
 
-    if prompt_option is None and command == "skill-capability-registry-default":
+    if not print_requested and command == "skill-capability-registry-default":
         try:
             options = _parse_skill_capability_registry_default_cli_args(positional_args[1:])
             payload = write_default_skill_capability_registry(
@@ -2424,7 +2491,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
 
-    if prompt_option is None and command == "skill-invocation":
+    if not print_requested and command == "skill-invocation":
         try:
             options = _parse_skill_invocation_cli_args(positional_args[1:])
             payload = write_skill_invocation_receipt(
@@ -2441,7 +2508,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(1 if payload.get("ok") is not True else 0)
 
-    if prompt_option is None and command == "debugger-skill-adapter":
+    if not print_requested and command == "debugger-skill-adapter":
         try:
             options = _parse_debugger_skill_adapter_cli_args(positional_args[1:])
             payload = write_debugger_skill_adapter_receipt(
@@ -2463,7 +2530,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(1 if payload.get("ok") is not True else 0)
 
-    if prompt_option is None and command == "code-runner-skill-adapter":
+    if not print_requested and command == "code-runner-skill-adapter":
         try:
             options = _parse_code_runner_skill_adapter_cli_args(positional_args[1:])
             payload = write_code_runner_skill_adapter_receipt(
@@ -2477,7 +2544,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(1 if payload.get("ok") is not True else 0)
 
-    if prompt_option is None and command == "review-code-skill-adapter":
+    if not print_requested and command == "review-code-skill-adapter":
         try:
             options = _parse_review_code_skill_adapter_cli_args(positional_args[1:])
             payload = write_review_code_skill_adapter_receipt(
@@ -2491,7 +2558,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(1 if payload.get("ok") is not True else 0)
 
-    if prompt_option is None and command == "evidence-case-skill-adapter":
+    if not print_requested and command == "evidence-case-skill-adapter":
         try:
             options = _parse_evidence_case_skill_adapter_cli_args(positional_args[1:])
             payload = write_evidence_case_skill_adapter_receipt(
@@ -2507,7 +2574,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(1 if payload.get("ok") is not True else 0)
 
-    if prompt_option is None and command == "research-skill-adapter":
+    if not print_requested and command == "research-skill-adapter":
         try:
             options = _parse_research_skill_adapter_cli_args(positional_args[1:])
             payload = write_research_skill_adapter_receipt(
@@ -2524,7 +2591,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(1 if payload.get("ok") is not True else 0)
 
-    if prompt_option is None and command == "loop2-serve":
+    if not print_requested and command == "loop2-serve":
         try:
             run_dir = _parse_loop2_run_dir_cli_args(positional_args[1:], command="loop2-serve")
             serve_loop_receipt_command(
@@ -2536,7 +2603,7 @@ def main(
             raise typer.BadParameter(str(exc)) from exc
         raise typer.Exit()
 
-    if prompt_option is None and command == "human-goal-change-bridge":
+    if not print_requested and command == "human-goal-change-bridge":
         try:
             bridge_args = _parse_human_goal_change_bridge_cli_args(positional_args[1:])
             (
@@ -2561,7 +2628,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "handoff-project":
+    if not print_requested and command == "handoff-project":
         try:
             handoff_path, active_goal_hash, receipt_path, agents_root = (
                 _parse_handoff_project_cli_args(positional_args[1:])
@@ -2578,7 +2645,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "handoff-github-transport":
+    if not print_requested and command == "handoff-github-transport":
         try:
             (
                 handoff_path,
@@ -2602,7 +2669,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "github-redact-projection":
+    if not print_requested and command == "github-redact-projection":
         try:
             projection_path, output_path, receipt_path = _parse_github_redact_projection_args(
                 positional_args[1:]
@@ -2619,7 +2686,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "github-apply-policy-check":
+    if not print_requested and command == "github-apply-policy-check":
         try:
             options = _parse_github_apply_policy_check_args(positional_args[1:])
             payload = write_github_apply_policy_receipt(**options)
@@ -2630,7 +2697,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "research-source-receipt":
+    if not print_requested and command == "research-source-receipt":
         try:
             source_path, receipt_path = _parse_research_source_receipt_args(positional_args[1:])
             payload = write_research_source_receipt(
@@ -2644,7 +2711,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "research-query-gate":
+    if not print_requested and command == "research-query-gate":
         try:
             options = _parse_research_query_gate_args(positional_args[1:])
             payload = write_research_query_safety_receipt(**options)
@@ -2655,7 +2722,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "itar-access-preflight":
+    if not print_requested and command == "itar-access-preflight":
         try:
             options = _parse_itar_access_preflight_args(positional_args[1:])
             payload = write_itar_access_preflight_receipt(**options)
@@ -2666,7 +2733,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "itar-contract-review":
+    if not print_requested and command == "itar-contract-review":
         try:
             options = _parse_itar_contract_review_args(positional_args[1:])
             payload = write_itar_contract_receipt(**options)
@@ -2677,7 +2744,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "sparta-posture-export":
+    if not print_requested and command == "sparta-posture-export":
         try:
             options = _parse_sparta_posture_export_args(positional_args[1:])
             payload = write_sparta_posture_contract(**options)
@@ -2688,7 +2755,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "compliance-package-validate":
+    if not print_requested and command == "compliance-package-validate":
         try:
             options = _parse_compliance_package_validate_args(positional_args[1:])
             payload = write_compliance_package_validation_receipt(**options)
@@ -2699,7 +2766,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "zero-trust-redteam":
+    if not print_requested and command == "zero-trust-redteam":
         try:
             run_dir = _parse_zero_trust_redteam_args(positional_args[1:])
             payload = run_zero_trust_redteam(run_dir=run_dir)
@@ -2710,7 +2777,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "orchestration-redteam":
+    if not print_requested and command == "orchestration-redteam":
         try:
             run_dir = _parse_orchestration_redteam_args(positional_args[1:])
             payload = run_orchestration_redteam(run_dir=run_dir)
@@ -2721,7 +2788,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "skill-composition-redteam":
+    if not print_requested and command == "skill-composition-redteam":
         try:
             run_dir = _parse_skill_composition_redteam_args(positional_args[1:])
             payload = run_skill_composition_redteam(run_dir=run_dir)
@@ -2732,7 +2799,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command in {"docker-sandbox-check", "docker-sandbox-run"}:
+    if not print_requested and command in {"docker-sandbox-check", "docker-sandbox-run"}:
         try:
             options = _parse_docker_sandbox_check_args(positional_args[1:])
             if command == "docker-sandbox-run":
@@ -2745,7 +2812,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "generated-ticket-github-create":
+    if not print_requested and command == "generated-ticket-github-create":
         try:
             (
                 ticket_path,
@@ -2769,7 +2836,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "handoff-command-loop-github-transport":
+    if not print_requested and command == "handoff-command-loop-github-transport":
         try:
             loop_receipt_path, receipt_path, apply_github = (
                 _parse_handoff_command_loop_github_transport_args(positional_args[1:])
@@ -2785,7 +2852,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "goal-guardian-reconciliation-github-transport":
+    if not print_requested and command == "goal-guardian-reconciliation-github-transport":
         try:
             reconciliation_receipt_path, receipt_path, apply_github = (
                 _parse_goal_guardian_reconciliation_github_transport_args(positional_args[1:])
@@ -2801,7 +2868,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "handoff-command-loop-reconciliation-github-transport":
+    if not print_requested and command == "handoff-command-loop-reconciliation-github-transport":
         try:
             loop_receipt_path, receipt_path, apply_github = (
                 _parse_handoff_command_loop_reconciliation_github_transport_args(
@@ -2819,7 +2886,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "goal-guardian-ticket-source-github-fetch":
+    if not print_requested and command == "goal-guardian-ticket-source-github-fetch":
         try:
             repo_name, output_path, receipt_path, execute, state, limit = (
                 _parse_goal_guardian_ticket_source_github_fetch_args(positional_args[1:])
@@ -2838,7 +2905,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "handoff-chain-dry-run":
+    if not print_requested and command == "handoff-chain-dry-run":
         try:
             handoff_paths, active_goal_hash, receipt_dir, agents_root = (
                 _parse_handoff_chain_cli_args(positional_args[1:])
@@ -2855,7 +2922,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "handoff-loop-dry-run":
+    if not print_requested and command == "handoff-loop-dry-run":
         try:
             start_path, responses_dir, active_goal_hash, receipt_dir, max_steps, agents_root = (
                 _parse_handoff_loop_cli_args(positional_args[1:])
@@ -2874,7 +2941,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "handoff-dispatch-once":
+    if not print_requested and command == "handoff-dispatch-once":
         try:
             start_path, responses_dir, active_goal_hash, receipt_dir, agents_root = (
                 _parse_handoff_dispatch_cli_args(positional_args[1:])
@@ -2892,7 +2959,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "handoff-dispatch-command":
+    if not print_requested and command == "handoff-dispatch-command":
         try:
             start_path, command_spec, active_goal_hash, receipt_dir, agents_root = (
                 _parse_handoff_dispatch_command_cli_args(positional_args[1:])
@@ -2910,7 +2977,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "handoff-dispatch-agent-command":
+    if not print_requested and command == "handoff-dispatch-agent-command":
         try:
             start_path, active_goal_hash, receipt_dir, agents_root, command_spec_root = (
                 _parse_handoff_dispatch_agent_command_cli_args(positional_args[1:])
@@ -2928,7 +2995,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "handoff-command-loop":
+    if not print_requested and command == "handoff-command-loop":
         try:
             (
                 start_path,
@@ -2956,7 +3023,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "goal":
+    if not print_requested and command == "goal":
         try:
             options = _parse_goal_cli_args(positional_args[1:])
             payload = run_goal_until_complete(**options)
@@ -2967,7 +3034,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "self-fix":
+    if not print_requested and command == "self-fix":
         try:
             if len(positional_args) > 1 and positional_args[1] == "coder-reviewer-loop":
                 options = _parse_self_fix_coder_reviewer_loop_cli_args(positional_args[2:])
@@ -2986,7 +3053,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "scillm-subagent-gate":
+    if not print_requested and command == "scillm-subagent-gate":
         try:
             summary_path = _parse_scillm_subagent_gate_cli_args(positional_args[1:])
             ok = project_agent_scillm_subagent_gate_command(summary_path)
@@ -2996,7 +3063,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "persona-dream-panel-proof":
+    if not print_requested and command == "persona-dream-panel-proof":
         try:
             options = _parse_persona_dream_panel_proof_cli_args(positional_args[1:])
             ok = project_agent_persona_dream_panel_proof_command(**options)
@@ -3006,7 +3073,7 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "handoff-agent-adapter":
+    if not print_requested and command == "handoff-agent-adapter":
         try:
             options = _parse_handoff_agent_adapter_cli_args(positional_args[1:])
             payload = project_agent_handoff_adapter_command(**options)
@@ -3015,7 +3082,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
 
-    if prompt_option is None and command == "handoff-goal-guardian-adapter":
+    if not print_requested and command == "handoff-goal-guardian-adapter":
         try:
             options = _parse_handoff_goal_guardian_adapter_cli_args(positional_args[1:])
             payload = project_agent_handoff_goal_guardian_adapter_command(**options)
@@ -3024,7 +3091,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
 
-    if prompt_option is None and command == "handoff-research-auditor-adapter":
+    if not print_requested and command == "handoff-research-auditor-adapter":
         try:
             payload = project_agent_handoff_research_auditor_adapter_command()
         except RuntimeError as exc:
@@ -3032,7 +3099,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
 
-    if prompt_option is None and command == "external-research-receipt":
+    if not print_requested and command == "external-research-receipt":
         try:
             options = _parse_external_research_receipt_cli_args(positional_args[1:])
             payload = project_agent_external_research_receipt_command(**options)
@@ -3041,7 +3108,7 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
 
-    if prompt_option is None and command == "subagent-receipt-from-handoff":
+    if not print_requested and command == "subagent-receipt-from-handoff":
         try:
             options = _parse_subagent_receipt_from_handoff_cli_args(positional_args[1:])
             payload = project_agent_subagent_receipt_from_handoff_command(**options)
@@ -3050,13 +3117,13 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
 
-    if prompt_option is None:
+    if not print_requested:
         try:
             resumable_session_id = anyio.run(
                 run_openai_tui,
                 model,
                 cwd or Path.cwd(),
-                resume,
+                session,
                 new_session,
                 provider,
                 auto_compact_threshold,
@@ -3065,12 +3132,15 @@ def main(
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         if resumable_session_id is not None:
-            typer.echo(f"To resume this session: tau --resume {resumable_session_id}")
+            typer.echo(f"To resume this session: tau --session {resumable_session_id}")
         raise typer.Exit()
 
-    prompt = prompt_option
-    if prompt is None:
-        raise AssertionError("prompt option should be set outside TUI mode")
+    prompt = _merge_stdin_prompt(initial_prompt or "")
+    if not prompt:
+        raise typer.BadParameter(
+            'Usage: tau --print "<prompt>" (or --mode text|json|transcript "<prompt>"); '
+            "a prompt can also be piped in via stdin"
+        )
 
     try:
         loop_receipt = _loop_receipt_config_from_cli(
@@ -3086,7 +3156,7 @@ def main(
             prompt,
             model,
             cwd or Path.cwd(),
-            output,
+            effective_output,
             provider,
             loop_receipt,
         )
@@ -3167,6 +3237,46 @@ async def export_session_command(
         source=str(session_path),
         format=normalized_format,
     )
+
+
+def _run_export_cli(args: list[str]) -> None:
+    """Run `tau export`/`tau --export` and exit."""
+    try:
+        session_ref, output_path, export_format = _parse_export_cli_args(args)
+    except RuntimeError as exc:
+        raise typer.BadParameter(str(exc)) from exc
+    try:
+        exported_path = anyio.run(
+            export_session_command,
+            session_ref,
+            output_path,
+            export_format,
+        )
+    except (RuntimeError, ValueError) as exc:
+        raise typer.BadParameter(str(exc)) from exc
+    typer.echo(f"Exported session to {exported_path}")
+    raise typer.Exit()
+
+
+def _merge_stdin_prompt(prompt: str) -> str:
+    """Merge piped stdin content into a print-mode prompt, mirroring Pi."""
+    stdin = sys.stdin
+    if stdin is None:
+        return prompt
+    try:
+        if stdin.isatty():
+            return prompt
+    except (AttributeError, ValueError):
+        return prompt
+    try:
+        piped = stdin.read()
+    except (OSError, ValueError):
+        return prompt
+    if not piped:
+        return prompt
+    if not prompt:
+        return piped
+    return f"{piped}\n\n{prompt}"
 
 
 def _parse_export_cli_args(args: list[str]) -> tuple[str, Path | None, str | None]:
