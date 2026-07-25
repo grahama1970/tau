@@ -7363,6 +7363,7 @@ class TauTuiApp(App[None]):
         if daxnuts_message is not None:
             self.state.add_item("status", daxnuts_message)
         self._refresh()
+        self._notify(f"Switched to {choice.provider_name}:{choice.model}.")
 
     def _open_theme_picker(self) -> None:
         self.push_screen(
@@ -7412,33 +7413,21 @@ class TauTuiApp(App[None]):
         *,
         direction: Literal["next", "previous"] = "next",
     ) -> None:
-        if direction == "previous":
-            self._cycle_scoped_model_previous()
-            return
-        cycler = getattr(self.session, "cycle_scoped_model", None)
-        if cycler is None:
-            self._notify("Scoped model controls are not available.", severity="warning")
-            return
-        try:
-            result = cycler()
-            if isawaitable(result):
-                result = await result
-        except Exception as exc:  # noqa: BLE001 - surface session state failures in the TUI
-            self._notify(f"Could not switch scoped model: {exc}", severity="error")
-            return
-        self._refresh()
-
-    def _cycle_scoped_model_previous(self) -> None:
-        choices = tuple(getattr(self.session, "scoped_model_choices", ()))
-        if not choices:
-            self._notify("No scoped models configured.", severity="warning")
+        scoped_choices = tuple(getattr(self.session, "scoped_model_choices", ()))
+        choices = scoped_choices or self._available_model_choices()
+        if len(choices) <= 1:
+            self._notify(
+                "Only one model in scope." if scoped_choices else "Only one model available.",
+                severity="warning",
+            )
             return
         current = ModelChoice(provider_name=self.session.provider_name, model=self.session.model)
         try:
-            index = choices.index(current)
+            current_index = choices.index(current)
         except ValueError:
-            index = 0
-        self._handle_model_picker_result(choices[(index - 1) % len(choices)])
+            current_index = 0 if direction == "previous" else -1
+        delta = -1 if direction == "previous" else 1
+        self._handle_model_picker_result(choices[(current_index + delta) % len(choices)])
 
     def _notify(
         self,
