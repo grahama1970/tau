@@ -51,7 +51,7 @@ capabilities.
 | Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `PARTIAL` | Tau backs most daily settings, exposes the external editor command, and now shows visible no-match search rows; do not add dead Pi toggles without backing behavior. |
 | Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist, resource rows expose scope/state/action, resource toggles update in-place, and no-match searches show visible empty rows; package/write-scope editing still missing. |
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login; provider picker now shows visible navigation help, empty filter states, and fail-closed empty-row selection. |
-| Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks, summarizes permission/approval receipts, surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data, and now shows input-bar terminal command exit codes; richer interactive component objects remain pending. |
+| Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks including simple component-like render objects, summarizes permission/approval receipts, surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data, and now shows input-bar terminal command exit codes; full JS Pi component runtime embedding remains out of scope. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider, prompt chrome, and retry countdown | `PARTIAL` | Footer extensibility exists; compact first-screen readiness exposes auth/memory/DAG/SciLLM/queue when the sidebar is hidden, and prompt chrome now names active compaction/branch/reload/share/terminal operations from real worker state. |
 | Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool/custom-entry renderers in live/restored transcripts | `MUST/PARTIAL` | Selector now advertises Pi-style `J/K` navigation and supports tool-output toggle while open; editor now uses Pi-style Enter submit and Shift+Enter newline; custom entries now re-render on tool-output expansion and accept simple component-like render objects; preserve current Tau extension API; full JS Pi component runtime embedding remains out of scope. |
 | Images | `show-images-selector`, image component | Tau image visibility setting and image payload rendering | `MATCHED` | Retain current terminal-safe image controls. |
@@ -96,6 +96,28 @@ Current candidates:
 - `Cache-miss notices`: defer until Tau assistant/session entries carry the
   provider, model, and timestamp fields needed for Pi's cache-miss algorithm.
   Do not add a fake setting or heuristic notice from aggregate stats.
+
+Latest slice evidence:
+
+- Source inspected: Pi `tool-execution.ts`, `custom-entry.ts`, Tau
+  `TuiEventAdapter`, extension tool renderer wiring, and shared custom-renderer
+  normalization in `src/tau_coding/tui/state.py`.
+- Destination preserved: Tau's extension tool source labels, call/result
+  renderer maps, transcript collapse/expand behavior, and existing tool result
+  summary metadata.
+- Changed: no additional code after the custom-entry component slice; the shared
+  renderer normalizer now also covers extension tool call/result renderers that
+  return simple Pi-style `render(width)` objects.
+- Mocked: no.
+- Live: no provider-live or live tool subprocess call; Textual UI interaction
+  used a local `FakeSession` plus adapter-applied tool start/end events.
+- Render proof: `/tmp/tau-pi-tui-tool-component-proof-1785015240/proof.json`
+  with screenshots
+  `/tmp/tau-pi-tui-tool-component-proof-1785015240/tau-tool-component-collapsed.svg`
+  and
+  `/tmp/tau-pi-tui-tool-component-proof-1785015240/tau-tool-component-expanded.svg`.
+- Remaining gap: full JavaScript Pi component runtime embedding is not ported;
+  Tau supports transcript text projection of simple component-like renderables.
 
 Latest slice evidence:
 
