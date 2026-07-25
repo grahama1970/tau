@@ -2830,9 +2830,25 @@ def _command_registry_with_extensions(
 ) -> tuple[CommandRegistry, tuple[ResourceDiagnostic, ...]]:
     registry = base_registry.copy()
     diagnostics: list[ResourceDiagnostic] = []
+    command_counts: dict[str, int] = {}
     for extension in extensions:
         for command in extension.commands:
-            slash_command = _extension_slash_command(extension, command)
+            command_counts[command.name] = command_counts.get(command.name, 0) + 1
+    seen_counts: dict[str, int] = {}
+    for extension in extensions:
+        for command in extension.commands:
+            seen_counts[command.name] = seen_counts.get(command.name, 0) + 1
+            invocation_name = _extension_command_invocation_name(
+                registry,
+                command.name,
+                occurrence=seen_counts[command.name],
+                duplicate_count=command_counts[command.name],
+            )
+            slash_command = _extension_slash_command(
+                extension,
+                command,
+                invocation_name=invocation_name,
+            )
             try:
                 registry.register(slash_command)
             except ValueError as exc:
@@ -2845,13 +2861,49 @@ def _command_registry_with_extensions(
                         severity="error",
                     )
                 )
+                continue
+            if invocation_name != command.name:
+                diagnostics.append(
+                    ResourceDiagnostic(
+                        kind="extension",
+                        name=extension.name,
+                        path=extension.path,
+                        message=(
+                            f"slash command /{command.name} registered as /{invocation_name} "
+                            "because the original name was already taken"
+                        ),
+                        severity="warning",
+                    )
+                )
     return registry, tuple(diagnostics)
+
+
+def _extension_command_invocation_name(
+    registry: CommandRegistry,
+    name: str,
+    *,
+    occurrence: int,
+    duplicate_count: int,
+) -> str:
+    candidate = f"{name}:{occurrence}" if duplicate_count > 1 else name
+    if registry.get(candidate) is None:
+        return candidate
+    suffix = occurrence if duplicate_count > 1 else 1
+    while True:
+        candidate = f"{name}:{suffix}"
+        if registry.get(candidate) is None:
+            return candidate
+        suffix += 1
 
 
 def _extension_slash_command(
     extension: LoadedExtension,
     command: ExtensionCommand,
+    *,
+    invocation_name: str | None = None,
 ) -> SlashCommand:
+    name = invocation_name or command.name
+
     def handler(context: CommandContext) -> CommandResult:
         result = command.handler(context)
         if inspect.isawaitable(result):
@@ -2872,11 +2924,11 @@ def _extension_slash_command(
         return CommandResult(handled=True, message=str(result))
 
     return SlashCommand(
-        name=command.name,
-        usage=command.usage,
+        name=name,
+        usage=_extension_command_usage(command.usage, command.name, name),
         description=f"{command.description} (extension: {extension.name})",
         handler=handler,
-        aliases=command.aliases,
+        aliases=command.aliases if name == command.name else (),
         search_terms=command.search_terms,
         argument_hint=command.argument_hint,
         argument_completions=tuple(
@@ -2889,6 +2941,16 @@ def _extension_slash_command(
         hidden=command.hidden,
         source=f"extension:{extension.name}",
     )
+
+
+def _extension_command_usage(usage: str, original_name: str, invocation_name: str) -> str:
+    if invocation_name == original_name:
+        return usage
+    original = f"/{original_name}"
+    replacement = f"/{invocation_name}"
+    if usage.startswith(original):
+        return f"{replacement}{usage[len(original) :]}"
+    return replacement
 
 
 def _project_trusted_resource_paths(

@@ -130,7 +130,7 @@ def build_completion_state(
             return CompletionState()
         return CompletionState(_skill_completions(token=token, token_end=token_end, skills=skills))
 
-    if ":" in token:
+    if ":" in token and not _matches_registered_command(token, command_registry):
         return CompletionState()
 
     argument_completions = _command_argument_completions(

@@ -535,6 +535,30 @@ Acceptance:
 - This slice does not claim Pi's async `getArgumentCompletions` callbacks or
   extension-stacked autocomplete providers.
 
+### Slice 26: Extension Command Conflict Suffixes
+
+Pi keeps extension commands invokable when multiple extensions choose the same
+name, or when an extension chooses a built-in command name, by assigning
+numeric invocation suffixes such as `/review:1`. Tau previously treated those
+conflicts as registration errors, which made valid loaded extension behavior
+disappear from the TUI. Preserve built-ins and existing extension commands, but
+register conflicting extension commands under suffixed names.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Duplicate extension command names are registered as `/name:1`, `/name:2`,
+  and so on in load order.
+- Extension commands that collide with built-in slash commands are registered
+  as `/name:1` while the built-in command keeps `/name`.
+- Conflict suffixes emit resource diagnostics with warning severity.
+- TUI autocomplete recognizes suffixed command names and can complete their
+  arguments.
+- Aliases remain enabled only for unsuffixed extension commands.
+- This slice does not claim Pi's full `getCommands()` metadata API or
+  extension command source-info model.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.
