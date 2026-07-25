@@ -320,6 +320,7 @@ tau --fork <session-id-or-jsonl-path>
 tau --name "Customer bugfix"
 tau --list-models [search]
 tau --models "gpt-5*,local:qwen"
+tau --no-context-files
 tau export <session-id>
 tau export <session-id> session.html
 tau export <session-id> --format jsonl
@@ -350,6 +351,10 @@ Combine it with `--provider <name>` to list one provider.
 `--models <patterns>` sets a transient scoped model list for the TUI run. The
 value is a comma-separated list of model or provider/model glob patterns used
 by Ctrl+P cycling; it does not rewrite `providers.json`.
+
+`--no-context-files` disables `AGENTS.md` and `CLAUDE.md` discovery for the
+startup run. It does not disable skills, prompt templates, or explicit context
+files passed by embedding code.
 
 `tau export` writes a standalone HTML file with the preserved session tree and
 the storage-order transcript. The source can be an indexed session id or a path

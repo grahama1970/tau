@@ -207,6 +207,7 @@ class CodingSessionConfig:
     custom_system_prompt: str | None = None
     append_system_prompt: str | None = None
     context_files: tuple[ProjectContextFile, ...] = ()
+    discover_context_files: bool = True
     tools: list[AgentTool] | None = None
     resource_paths: TauResourcePaths | None = None
     session_id: str | None = None
@@ -313,6 +314,7 @@ class CodingSession:
         resources = _load_session_resources(
             resource_paths,
             config.context_files,
+            discover_context_files=config.discover_context_files,
             default_project_trust=config.default_project_trust,
         )
         system = (
@@ -993,6 +995,7 @@ class CodingSession:
         resources = _load_session_resources(
             self._resource_paths,
             self._config.context_files,
+            discover_context_files=self._config.discover_context_files,
             default_project_trust=self._config.default_project_trust,
         )
 
@@ -2399,6 +2402,7 @@ def _load_session_resources(
     resource_paths: TauResourcePaths,
     explicit_context_files: tuple[ProjectContextFile, ...],
     *,
+    discover_context_files: bool = True,
     default_project_trust: DefaultProjectTrust = "ask",
 ) -> SessionResources:
     effective_paths, trust_diagnostics = _project_trusted_resource_paths(
@@ -2409,9 +2413,12 @@ def _load_session_resources(
     loaded_prompt_templates, prompt_diagnostics = load_prompt_templates_with_diagnostics(
         effective_paths
     )
-    discovered_context, context_diagnostics = discover_project_context_with_diagnostics(
-        effective_paths
-    )
+    if discover_context_files:
+        discovered_context, context_diagnostics = discover_project_context_with_diagnostics(
+            effective_paths
+        )
+    else:
+        discovered_context, context_diagnostics = (), ()
     custom_themes, theme_diagnostics = load_custom_tui_themes(effective_paths.themes_dirs)
     set_custom_tui_themes(custom_themes)
     return SessionResources(

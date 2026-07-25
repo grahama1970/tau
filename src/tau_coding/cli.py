@@ -857,6 +857,14 @@ def main(
         bool,
         typer.Option("--no-session", help="Run without saving or indexing a session."),
     ] = False,
+    no_context_files: Annotated[
+        bool,
+        typer.Option(
+            "--no-context-files",
+            "-nc",
+            help="Disable AGENTS.md and CLAUDE.md context discovery.",
+        ),
+    ] = False,
     auto_compact_threshold: Annotated[
         int | None,
         typer.Option(
@@ -3244,6 +3252,7 @@ def main(
                 no_session,
                 session_dir,
                 provider_settings_override,
+                no_context_files,
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -3278,6 +3287,7 @@ def main(
             session_name,
             no_session,
             session_dir,
+            no_context_files,
         )
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
@@ -3298,6 +3308,7 @@ async def run_openai_tui(
     no_session: bool = False,
     session_dir: Path | None = None,
     provider_settings: ProviderSettings | None = None,
+    no_context_files: bool = False,
 ) -> str | None:
     """Run the Textual TUI and return its resumable session id, if any."""
     return await run_tui_app(
@@ -3313,6 +3324,7 @@ async def run_openai_tui(
         no_session=no_session,
         session_manager=_session_manager_from_dir(session_dir),
         provider_settings=provider_settings,
+        no_context_files=no_context_files,
     )
 
 
@@ -13083,6 +13095,7 @@ async def run_openai_print_mode(
     session_name: str | None = None,
     no_session: bool = False,
     session_dir: Path | None = None,
+    no_context_files: bool = False,
 ) -> bool:
     """Run print mode with the OpenAI-compatible provider configured from the environment."""
     settings = load_provider_settings()
@@ -13113,6 +13126,7 @@ async def run_openai_print_mode(
             provider_settings=settings,
             runtime_provider_config=selection.provider,
             loop_receipt=loop_receipt,
+            discover_context_files=not no_context_files,
         )
     finally:
         await provider.aclose()
@@ -13133,6 +13147,7 @@ async def run_print_mode(
     provider_settings: ProviderSettings | None = None,
     runtime_provider_config: ProviderConfig | None = None,
     loop_receipt: LoopReceiptConfig | None = None,
+    discover_context_files: bool = True,
 ) -> bool:
     """Run one non-interactive prompt and print streamed events.
 
@@ -13157,6 +13172,7 @@ async def run_print_mode(
             shell_command_prefix=tui_settings.shell_command_prefix,
             auto_resize_images=tui_settings.auto_resize_images,
             loop_receipt=loop_receipt,
+            discover_context_files=discover_context_files,
         )
     )
     renderer = create_event_renderer(output)

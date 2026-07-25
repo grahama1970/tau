@@ -6241,6 +6241,7 @@ def test_cli_without_prompt_invokes_tui_runner(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        no_context_files: bool,
     ) -> None:
         calls.append(
             (
@@ -6303,6 +6304,7 @@ def test_cli_positional_prompt_invokes_tui_runner(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        no_context_files: bool,
     ) -> None:
         calls.append(
             (
@@ -6766,6 +6768,7 @@ def test_cli_exits_nonzero_when_print_mode_fails(monkeypatch: pytest.MonkeyPatch
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        no_context_files: bool,
     ) -> bool:
         del session_name, no_session, session_dir
         return False
@@ -6790,6 +6793,7 @@ def test_mode_flag_alone_triggers_print_mode(monkeypatch: pytest.MonkeyPatch) ->
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        no_context_files: bool,
     ) -> bool:
         del model, cwd, provider_name, loop_receipt, session_name, no_session, session_dir
         calls.append((prompt, output))
@@ -6816,6 +6820,7 @@ def test_print_mode_passes_startup_session_name(monkeypatch: pytest.MonkeyPatch)
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        no_context_files: bool,
     ) -> bool:
         del prompt, model, cwd, output, provider_name, loop_receipt, no_session, session_dir
         calls.append(session_name)
@@ -6842,6 +6847,7 @@ def test_print_mode_passes_no_session_flag(monkeypatch: pytest.MonkeyPatch) -> N
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        no_context_files: bool,
     ) -> bool:
         del prompt, model, cwd, output, provider_name, loop_receipt, session_name, session_dir
         calls.append(no_session)
@@ -6850,6 +6856,34 @@ def test_print_mode_passes_no_session_flag(monkeypatch: pytest.MonkeyPatch) -> N
     monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
 
     result = CliRunner().invoke(app, ["--print", "--no-session", "hello"])
+
+    assert result.exit_code == 0
+    assert calls == [True]
+
+
+def test_print_mode_passes_no_context_files_flag(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[bool] = []
+
+    async def fake_run_openai_print_mode(
+        prompt: str,
+        model: str | None,
+        cwd: Path,
+        output: PrintOutputMode,
+        provider_name: str | None,
+        loop_receipt: LoopReceiptConfig | None,
+        session_name: str | None,
+        no_session: bool,
+        session_dir: Path | None,
+        no_context_files: bool,
+    ) -> bool:
+        del prompt, model, cwd, output, provider_name, loop_receipt, session_name, no_session
+        del session_dir
+        calls.append(no_context_files)
+        return True
+
+    monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
+
+    result = CliRunner().invoke(app, ["--print", "--no-context-files", "hello"])
 
     assert result.exit_code == 0
     assert calls == [True]
@@ -6875,6 +6909,7 @@ def test_print_mode_merges_piped_stdin_into_prompt(monkeypatch: pytest.MonkeyPat
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        no_context_files: bool,
     ) -> bool:
         del model, cwd, output, provider_name, loop_receipt, session_name, no_session, session_dir
         calls.append(prompt)
@@ -6901,6 +6936,7 @@ def test_print_mode_accepts_stdin_only_prompt(monkeypatch: pytest.MonkeyPatch) -
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        no_context_files: bool,
     ) -> bool:
         del model, cwd, output, provider_name, loop_receipt, session_name, no_session, session_dir
         calls.append(prompt)
@@ -6975,6 +7011,7 @@ def test_cli_print_mode_passes_loop2_receipt_options(
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        no_context_files: bool,
     ) -> bool:
         del prompt, model, cwd, output, provider_name, session_name, no_session, session_dir
         calls.append(loop_receipt)
@@ -7028,6 +7065,7 @@ def test_cli_print_mode_marks_nonfake_loop2_receipt_live(
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        no_context_files: bool,
     ) -> bool:
         del prompt, model, cwd, output, provider_name, session_name, no_session, session_dir
         calls.append(loop_receipt)
@@ -7123,6 +7161,7 @@ def test_default_tui_invokes_tui_runner_with_flags(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        no_context_files: bool,
     ) -> None:
         calls.append(
             (
@@ -7183,6 +7222,7 @@ def test_default_tui_passes_startup_session_name(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        no_context_files: bool,
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
         del initial_prompt, continue_session, no_session, session_dir, provider_settings
@@ -7214,6 +7254,7 @@ def test_default_tui_passes_continue_session_flag(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        no_context_files: bool,
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
         del initial_prompt, session_name, no_session, session_dir, provider_settings
@@ -7245,6 +7286,7 @@ def test_default_tui_passes_no_session_flag(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        no_context_files: bool,
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
         del initial_prompt, session_name, continue_session, session_dir, provider_settings
@@ -7253,6 +7295,39 @@ def test_default_tui_passes_no_session_flag(
     monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
 
     result = CliRunner().invoke(app, ["--cwd", str(tmp_path), "--no-session"])
+
+    assert result.exit_code == 0
+    assert calls == [True]
+
+
+def test_default_tui_passes_no_context_files_flag(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[bool] = []
+
+    async def fake_run_openai_tui(
+        model: str | None,
+        cwd: Path,
+        session_id: str | None,
+        new_session: bool,
+        provider_name: str | None,
+        auto_compact_token_threshold: int | None,
+        initial_prompt: str | None,
+        session_name: str | None,
+        continue_session: bool,
+        no_session: bool,
+        session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
+        no_context_files: bool,
+    ) -> None:
+        del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
+        del initial_prompt, session_name, continue_session, no_session, session_dir
+        del provider_settings
+        calls.append(no_context_files)
+
+    monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
+
+    result = CliRunner().invoke(app, ["--cwd", str(tmp_path), "--no-context-files"])
 
     assert result.exit_code == 0
     assert calls == [True]
@@ -7398,6 +7473,7 @@ def test_default_tui_passes_transient_scoped_model_patterns(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        no_context_files: bool,
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
         del initial_prompt, session_name, continue_session, no_session, session_dir
@@ -7451,6 +7527,7 @@ def test_default_tui_models_pattern_respects_provider_filter(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        no_context_files: bool,
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
         del initial_prompt, session_name, continue_session, no_session, session_dir
@@ -7524,6 +7601,7 @@ def test_default_tui_forks_session_before_starting_tui(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        no_context_files: bool,
     ) -> str | None:
         del model, cwd, new_session, provider_name, auto_compact_token_threshold
         del initial_prompt, session_name, continue_session, no_session, session_dir

@@ -46,6 +46,7 @@ from tau_coding import (
     ModelChoice,
     OpenAICodexProviderConfig,
     OpenAICompatibleProviderConfig,
+    ProjectContextFile,
     ProviderSettings,
     ScopedModelConfig,
     SessionManager,
@@ -1836,6 +1837,28 @@ async def test_session_builds_system_prompt_when_system_is_omitted(tmp_path: Pat
     assert "<available_skills>" in provider.calls[0][1]
     assert "<name>testing</name>" in provider.calls[0][1]
     assert [Path(context_file.path).name for context_file in session.context_files] == ["AGENTS.md"]
+
+
+@pytest.mark.anyio
+async def test_session_can_disable_context_file_discovery(tmp_path: Path) -> None:
+    resource_root = tmp_path / "resources"
+    (tmp_path / "AGENTS.md").write_text("Discovered project rules.", encoding="utf-8")
+    explicit_context = ProjectContextFile(path=str(tmp_path / "EXPLICIT.md"), content="Explicit")
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    config = CodingSessionConfig(
+        provider=FakeProvider([]),
+        model="fake",
+        system="You are Tau.",
+        storage=storage,
+        cwd=tmp_path,
+        context_files=(explicit_context,),
+        discover_context_files=False,
+        resource_paths=TauResourcePaths(root=resource_root, agents_root=None),
+    )
+
+    session = await CodingSession.load(config)
+
+    assert session.context_files == (explicit_context,)
 
 
 @pytest.mark.anyio
