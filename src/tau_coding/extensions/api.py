@@ -1247,12 +1247,14 @@ class ExtensionCommandUi:
 class ExtensionAPI:
     """API object passed to an extension module's `setup(tau)` function."""
 
-    def __init__(self) -> None:
+    def __init__(self, flag_values: Mapping[str, bool | str] | None = None) -> None:
         self._tools: list[AgentTool] = []
         self._commands: list[ExtensionCommand] = []
         self._shortcuts: list[ExtensionShortcut] = []
         self._flags: dict[str, ExtensionFlag] = {}
-        self._flag_values: dict[str, bool | str] = {}
+        self._flag_values: dict[str, bool | str] = {
+            _normalize_flag_name(name): value for name, value in (flag_values or {}).items()
+        }
 
     @property
     def tools(self) -> tuple[AgentTool, ...]:
@@ -1394,7 +1396,7 @@ class ExtensionAPI:
         default: bool | str | None = None,
     ) -> None:
         """Register a Pi-style extension flag and its optional default value."""
-        normalized = name.strip().removeprefix("--").lower()
+        normalized = _normalize_flag_name(name)
         if not normalized:
             raise ValueError("register_flag requires a flag name")
         if ":" in normalized or any(char.isspace() for char in normalized):
@@ -1414,7 +1416,13 @@ class ExtensionAPI:
             type=type,
             default=default,
         )
-        if default is not None and normalized not in self._flag_values:
+        if normalized in self._flag_values:
+            self._flag_values[normalized] = _coerce_flag_value(
+                normalized,
+                self._flag_values[normalized],
+                type=type,
+            )
+        elif default is not None:
             self._flag_values[normalized] = default
 
     def registerFlag(  # noqa: N802
@@ -1432,7 +1440,7 @@ class ExtensionAPI:
 
     def get_flag(self, name: str) -> bool | str | None:
         """Return the current value for a registered extension flag."""
-        normalized = name.strip().removeprefix("--").lower()
+        normalized = _normalize_flag_name(name)
         if normalized not in self._flags:
             return None
         return self._flag_values.get(normalized)
@@ -1740,6 +1748,25 @@ def _model_name(model: str | Mapping[str, Any]) -> str:
     if not model_name:
         raise ValueError("model must be a non-empty string or object with id/model")
     return model_name
+
+
+def _normalize_flag_name(name: str) -> str:
+    return str(name).strip().removeprefix("--").lower()
+
+
+def _coerce_flag_value(
+    name: str,
+    value: bool | str,
+    *,
+    type: str,
+) -> bool | str:
+    if type == "boolean":
+        return True if isinstance(value, str) else value
+    if type == "string":
+        if isinstance(value, str):
+            return value
+        raise ValueError(f"Extension flag --{name} requires a value")
+    raise ValueError("extension flag type must be 'boolean' or 'string'")
 
 
 async def _session_set_model(session: Any, model: str | Mapping[str, Any]) -> bool:

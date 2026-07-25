@@ -10,7 +10,7 @@ import shutil
 import subprocess
 import tempfile
 from collections.abc import AsyncIterator, Callable, Mapping, Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from time import monotonic
 from typing import Any, Final, Literal, cast
@@ -258,6 +258,7 @@ class CodingSessionConfig:
     prompt_template_paths: tuple[Path, ...] = ()
     theme_paths: tuple[Path, ...] = ()
     extension_paths: tuple[Path, ...] = ()
+    extension_flag_values: Mapping[str, bool | str] = field(default_factory=dict)
     discover_skills: bool = True
     discover_prompt_templates: bool = True
     discover_themes: bool = True
@@ -385,6 +386,7 @@ class CodingSession:
             prompt_template_paths=config.prompt_template_paths,
             theme_paths=config.theme_paths,
             extension_paths=config.extension_paths,
+            extension_flag_values=config.extension_flag_values,
             discover_skills=config.discover_skills,
             discover_prompt_templates=config.discover_prompt_templates,
             discover_themes=config.discover_themes,
@@ -3067,6 +3069,7 @@ def _load_session_resources(
     prompt_template_paths: tuple[Path, ...] = (),
     theme_paths: tuple[Path, ...] = (),
     extension_paths: tuple[Path, ...] = (),
+    extension_flag_values: Mapping[str, bool | str] | None = None,
     discover_skills: bool = True,
     discover_prompt_templates: bool = True,
     discover_themes: bool = True,
@@ -3119,6 +3122,7 @@ def _load_session_resources(
         effective_paths,
         explicit_paths=extension_paths,
         discover_user_extensions=discover_extensions,
+        flag_values=extension_flag_values,
     )
     return SessionResources(
         skills=tuple(loaded_skills),
