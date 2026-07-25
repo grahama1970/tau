@@ -262,7 +262,7 @@ class CompletionActionTarget(Protocol):
 
     def action_edit_queued_follow_up(self) -> bool: ...
 
-    def action_run_extension_shortcut(self, key: str) -> bool: ...
+    async def action_run_extension_shortcut(self, key: str) -> bool: ...
 
     async def action_submit_prompt(self) -> None: ...
 
@@ -1774,7 +1774,7 @@ class PromptInput(TextArea):
                 self._jump_direction = None
                 return
             self.action_jump_to_character(character)
-        elif self._completion_target().action_run_extension_shortcut(event.key):
+        elif await self._completion_target().action_run_extension_shortcut(event.key):
             event.stop()
             event.prevent_default()
         elif _matches_configured_key(event.key, keybindings.queue_follow_up):
@@ -8274,7 +8274,7 @@ class TauTuiApp(App[None]):
         self._refresh()
         return True
 
-    def action_run_extension_shortcut(self, key: str) -> bool:
+    async def action_run_extension_shortcut(self, key: str) -> bool:
         """Run a non-conflicting extension shortcut registered for the prompt surface."""
         if _extension_shortcut_conflicts_with_builtins(key, self.tui_settings.keybindings):
             return False
@@ -8295,6 +8295,8 @@ class TauTuiApp(App[None]):
             if "current_theme" in parameters:
                 kwargs["current_theme"] = self.tui_settings.resolved_theme.name
             result = handle_shortcut(key, **kwargs)
+            if isawaitable(result):
+                result = await result
         except Exception as exc:  # noqa: BLE001 - extensions are an isolation boundary
             self._notify(f"Extension shortcut error: {exc}", severity="error")
             return True

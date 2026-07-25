@@ -2122,7 +2122,7 @@ class CodingSession:
             return await result
         return result
 
-    def handle_extension_shortcut(
+    async def handle_extension_shortcut(
         self,
         key: str,
         *,
@@ -2146,16 +2146,7 @@ class CodingSession:
                 )
                 result = shortcut.handler(extension_context)
                 if inspect.isawaitable(result):
-                    close = getattr(result, "close", None)
-                    if callable(close):
-                        close()
-                    return CommandResult(
-                        handled=True,
-                        message=(
-                            f"Extension shortcut {shortcut.key} returned an awaitable; "
-                            "Tau extension shortcuts are synchronous in this release."
-                        ),
-                    )
+                    return await _await_extension_shortcut_result(result, extension_context)
                 return _extension_shortcut_result(result, extension_context)
         return CommandResult(handled=False)
 
@@ -3581,6 +3572,14 @@ async def _await_extension_command_result(
 ) -> CommandResult:
     awaited = await result  # type: ignore[misc]
     return _extension_command_result(awaited, extension_context)
+
+
+async def _await_extension_shortcut_result(
+    result: object,
+    extension_context: ExtensionShortcutContext,
+) -> CommandResult:
+    awaited = await result  # type: ignore[misc]
+    return _extension_shortcut_result(awaited, extension_context)
 
 
 def _extension_command_result(
