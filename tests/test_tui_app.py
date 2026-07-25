@@ -6007,6 +6007,53 @@ async def test_tui_app_fork_picker_uses_configured_pi_select_keybindings() -> No
 
 
 @pytest.mark.anyio
+async def test_tui_app_fork_picker_accepts_pi_jk_navigation() -> None:
+    class ForkSession(FakeSession):
+        async def tree_choices(self) -> tuple[SessionTreeChoice, ...]:
+            return (
+                SessionTreeChoice(
+                    entry_id="first",
+                    label="user: First prompt",
+                    copy_text="First prompt",
+                ),
+                SessionTreeChoice(
+                    entry_id="assistant",
+                    label="assistant: Prior answer",
+                    parent_entry_id="first",
+                    copy_text="Prior answer",
+                ),
+                SessionTreeChoice(
+                    entry_id="second",
+                    label="user: Second prompt",
+                    parent_entry_id="assistant",
+                    copy_text="Second prompt",
+                ),
+            )
+
+    session = ForkSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/fork"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, UserMessagePickerScreen)
+        message_list = app.screen.query_one("#user-message-picker-list", ListView)
+        assert message_list.index == 1
+
+        await pilot.press("j")
+        await pilot.pause()
+        assert message_list.index == 0
+
+        await pilot.press("k", "enter")
+        await pilot.pause()
+
+        assert session.tree_branch_requests == [("second", False, None)]
+
+
+@pytest.mark.anyio
 async def test_tui_app_settings_picker_changes_sidebar_position(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -6692,6 +6739,31 @@ async def test_tui_app_trust_picker_uses_configured_pi_select_keybindings() -> N
 
         assert trust_list.index == 1
         assert [option.label for option in session.trust_options_saved] == ["Do not trust"]
+
+
+@pytest.mark.anyio
+async def test_tui_app_trust_picker_accepts_pi_jk_navigation() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/trust"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TrustPickerScreen)
+        trust_list = app.screen.query_one("#trust-picker-list", ListView)
+        assert trust_list.index == 0
+
+        await pilot.press("j")
+        await pilot.pause()
+        assert trust_list.index == 1
+
+        await pilot.press("k", "enter")
+        await pilot.pause()
+
+        assert [option.label for option in session.trust_options_saved] == ["Trust"]
 
 
 @pytest.mark.anyio
@@ -9533,6 +9605,14 @@ async def test_tui_app_tools_reference_wraps_navigation_like_pi() -> None:
         assert tool_list.index == len(app.screen.visible_tools) - 1
 
         await pilot.press("down")
+        await pilot.pause()
+        assert tool_list.index == 0
+
+        await pilot.press("k")
+        await pilot.pause()
+        assert tool_list.index == len(app.screen.visible_tools) - 1
+
+        await pilot.press("j")
         await pilot.pause()
         assert tool_list.index == 0
 

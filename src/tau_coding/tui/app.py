@@ -297,11 +297,17 @@ class ToolsReferenceSearchInput(Input):
     def on_key(self, event: Key) -> None:
         """Route navigation without changing the search text."""
         keybindings = self._reference().keybindings
-        if _matches_configured_or_default_key(event.key, keybindings.select_up, "up"):
+        if (
+            _matches_configured_or_default_key(event.key, keybindings.select_up, "up")
+            or event.key == "k"
+        ):
             event.stop()
             event.prevent_default()
             self._reference().action_cursor_up()
-        elif _matches_configured_or_default_key(event.key, keybindings.select_down, "down"):
+        elif (
+            _matches_configured_or_default_key(event.key, keybindings.select_down, "down")
+            or event.key == "j"
+        ):
             event.stop()
             event.prevent_default()
             self._reference().action_cursor_down()
@@ -370,10 +376,16 @@ class ToolsReferenceScreen(ModalScreen[None]):
 
     def on_key(self, event: Key) -> None:
         """Route configured picker keys when the list is focused."""
-        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
+        if (
+            _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up")
+            or event.key == "k"
+        ):
             event.stop()
             self.action_cursor_up()
-        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
+        elif (
+            _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down")
+            or event.key == "j"
+        ):
             event.stop()
             self.action_cursor_down()
         elif _matches_configured_or_default_key(
@@ -3241,6 +3253,11 @@ class FirstTimeSetupScreen(ModalScreen[TuiSettings | None]):
 class TrustPickerScreen(ModalScreen[ProjectTrustOption | None]):
     """Modal picker for project trust decisions."""
 
+    BINDINGS: ClassVar[list[Binding]] = [
+        Binding("k", "cursor_up", "Up", priority=True),
+        Binding("j", "cursor_down", "Down", priority=True),
+    ]
+
     def __init__(
         self,
         state: ProjectTrustState,
@@ -3350,6 +3367,11 @@ class TrustPickerScreen(ModalScreen[ProjectTrustOption | None]):
 
 class UserMessagePickerScreen(ModalScreen[str | None]):
     """Modal picker for forking from a previous user message."""
+
+    BINDINGS: ClassVar[list[Binding]] = [
+        Binding("k", "cursor_up", "Up", priority=True),
+        Binding("j", "cursor_down", "Down", priority=True),
+    ]
 
     def __init__(
         self,
