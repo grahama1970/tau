@@ -53,7 +53,7 @@ capabilities.
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login, but daily auth readiness should be more visible. |
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output and now colorizes embedded unified diffs; Pi-style custom tool render hooks still remain. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider and retry countdown | `PARTIAL` | Footer extensibility exists; first-screen run/auth readiness needs stronger visibility. |
-| Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens and chrome hooks | `MUST/PARTIAL` | Preserve current Tau extension API; add missing Pi-compatible behavior incrementally. |
+| Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, and extension tool provenance in live/restored transcripts | `MUST/PARTIAL` | Preserve current Tau extension API; full Pi-style custom tool render components remain pending. |
 | Images | `show-images-selector`, image component | Tau image visibility setting and image payload rendering | `MATCHED` | Retain current terminal-safe image controls. |
 | Workflow/DAG progress | None in Pi | `WorkflowPickerScreen`, DAG/workflow receipts | `TAU-ONLY/MUST` | This is Tau's differentiator and must remain first-class in the TUI. |
 

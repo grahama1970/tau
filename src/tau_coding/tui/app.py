@@ -7048,7 +7048,10 @@ class TauTuiApp(App[None]):
 
     def _load_session_transcript(self) -> None:
         """Load provider messages plus durable extension/application entries."""
-        self.state.load_messages(self.session.messages)
+        self.state.load_messages(
+            self.session.messages,
+            extension_tool_sources=getattr(self.session, "extension_tool_sources", {}),
+        )
         session_state = getattr(self.session, "state", None)
         custom_entries = getattr(session_state, "custom_entries", ())
         entry_renderers = getattr(self.session, "extension_entry_renderers", {})

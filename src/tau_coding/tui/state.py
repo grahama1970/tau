@@ -413,8 +413,14 @@ class TuiState:
         """Replace loaded skill metadata used for presentation-only path matching."""
         self.skills = tuple(skills)
 
-    def load_messages(self, messages: Iterable[AgentMessage]) -> None:
+    def load_messages(
+        self,
+        messages: Iterable[AgentMessage],
+        *,
+        extension_tool_sources: Mapping[str, str] | None = None,
+    ) -> None:
         """Populate the transcript from restored session messages."""
+        tool_sources = dict(extension_tool_sources or {})
         for message in messages:
             if message.role == "user":
                 self.add_user_message(message.content)
@@ -424,7 +430,10 @@ class TuiState:
                 if message.finish_reason == "length":
                     self.add_item("error", ASSISTANT_LENGTH_STOP_ERROR_TEXT)
                 for tool_call in message.tool_calls:
-                    self.add_tool_call(tool_call)
+                    self.add_tool_call(
+                        tool_call,
+                        source=_extension_tool_source_label(tool_sources.get(tool_call.name)),
+                    )
             elif message.role == "tool":
                 self.record_tool_result(
                     AgentToolResult(
@@ -538,6 +547,12 @@ def format_tool_call_block(tool_call: ToolCall, *, source: str | None = None) ->
     if tool_call.name == "bash":
         return f"{invocation}{source_suffix}"
     return f"→ {invocation}{source_suffix}"
+
+
+def _extension_tool_source_label(extension_name: str | None) -> str | None:
+    if extension_name is None:
+        return None
+    return f"extension:{extension_name}"
 
 
 def format_tool_call_invocation(tool_call: ToolCall) -> str:

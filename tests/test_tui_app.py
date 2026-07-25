@@ -1676,6 +1676,41 @@ def test_tui_state_renders_restored_skill_file_reads_with_skill_style() -> None:
     ]
 
 
+def test_tui_state_labels_restored_extension_tool_calls() -> None:
+    state = tui_app.TuiState()
+
+    state.load_messages(
+        [
+            AssistantMessage(
+                content="Calling extension.",
+                tool_calls=[
+                    ToolCall(
+                        id="call-1",
+                        name="analyze_fixture",
+                        arguments={"path": "fixture.json"},
+                    )
+                ],
+            ),
+            ToolResultMessage(
+                tool_call_id="call-1",
+                name="analyze_fixture",
+                ok=True,
+                content="analysis complete",
+            ),
+        ],
+        extension_tool_sources={"analyze_fixture": "quality-lab"},
+    )
+
+    assert [(item.role, item.text, item.tool_result_text) for item in state.items] == [
+        ("assistant", "Calling extension.", None),
+        (
+            "tool",
+            "→ analyze_fixture {'path': 'fixture.json'} [extension:quality-lab]",
+            "✓ analyze_fixture\nanalysis complete",
+        ),
+    ]
+
+
 def test_light_theme_tool_success_uses_dark_text_without_background() -> None:
     console = Console(record=True, width=80)
     console.print(
