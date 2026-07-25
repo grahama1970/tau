@@ -230,6 +230,28 @@ async def test_bash_tool_captures_stdout_and_exit_code(tmp_path: Path) -> None:
 
 
 @pytest.mark.anyio
+async def test_bash_tool_applies_environment_provider_and_unsets_stale_values(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("TAU_SESSION_ID", "stale-parent")
+    tool = create_bash_tool(
+        cwd=tmp_path,
+        environment=lambda: {
+            "TAU_SESSION_ID": None,
+            "TAU_PROVIDER": "openai",
+        },
+    )
+
+    result = await tool.execute(
+        {"command": 'printf "%s/%s" "${TAU_SESSION_ID-unset}" "$TAU_PROVIDER"'}
+    )
+
+    assert result.ok is True
+    assert result.content == "unset/openai"
+
+
+@pytest.mark.anyio
 async def test_bash_tool_emits_live_output_updates_before_process_exits(tmp_path: Path) -> None:
     tool = create_bash_tool(cwd=tmp_path)
     updates: list[tuple[str, dict[str, object] | None]] = []

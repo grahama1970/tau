@@ -42,6 +42,7 @@ MAX_BASH_TIMEOUT_SECONDS = 2_147_483_647 / 1000
 INLINE_IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 SUPPORTED_IMAGE_MIME_TYPES = INLINE_IMAGE_MIME_TYPES | {"image/bmp"}
 UTF8_BOM = "\ufeff"
+type BashEnvironment = Mapping[str, str | None] | Callable[[], Mapping[str, str | None]]
 
 
 class ToolInputError(ValueError):
@@ -141,6 +142,7 @@ def create_coding_tools(
     *,
     cwd: str | Path | None = None,
     shell_path: str | Path | None = None,
+    bash_environment: BashEnvironment | None = None,
     auto_resize_images: bool = True,
 ) -> list[AgentTool]:
     """Create the default coding-tool set for a local project.
@@ -156,7 +158,7 @@ def create_coding_tools(
         create_read_tool(cwd=root, auto_resize_images=auto_resize_images),
         create_write_tool(cwd=root),
         create_edit_tool(cwd=root),
-        create_bash_tool(cwd=root, shell_path=shell_path),
+        create_bash_tool(cwd=root, shell_path=shell_path, environment=bash_environment),
     ]
 
 
@@ -496,6 +498,7 @@ def create_bash_tool_definition(
     *,
     cwd: str | Path | None = None,
     shell_path: str | Path | None = None,
+    environment: BashEnvironment | None = None,
     on_output_chunk: Callable[[str], None] | None = None,
 ) -> ToolDefinition:
     """Create a definition for the `bash` tool.
@@ -542,10 +545,12 @@ def create_bash_tool_definition(
                 )
 
         start = monotonic()
+        process_env = _resolve_bash_process_environment(environment)
         if os.name == "posix":
             process = await asyncio.create_subprocess_shell(
                 command,
                 cwd=root,
+                env=process_env,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT,
                 executable=shell_executable,
@@ -555,6 +560,7 @@ def create_bash_tool_definition(
             process = await asyncio.create_subprocess_shell(
                 command,
                 cwd=root,
+                env=process_env,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT,
                 executable=shell_executable,
@@ -633,7 +639,11 @@ def create_bash_tool_definition(
             "full output is saved to a temp file. Optionally provide a timeout in seconds."
         ),
         prompt_snippet="Execute bash commands (ls, grep, find, etc.)",
-        prompt_guidelines=(),
+        prompt_guidelines=(
+            ("Inspect TAU_* environment variables for current model and session details.",)
+            if environment is not None
+            else ()
+        ),
         input_schema={
             "type": "object",
             "properties": {
@@ -653,12 +663,14 @@ def create_bash_tool(
     *,
     cwd: str | Path | None = None,
     shell_path: str | Path | None = None,
+    environment: BashEnvironment | None = None,
     on_output_chunk: Callable[[str], None] | None = None,
 ) -> AgentTool:
     """Create an `AgentTool` for executing shell commands with captured output."""
     return create_bash_tool_definition(
         cwd=cwd,
         shell_path=shell_path,
+        environment=environment,
         on_output_chunk=on_output_chunk,
     ).to_agent_tool()
 
@@ -686,6 +698,19 @@ def _validate_bash_timeout(timeout: float | None) -> float | None:
     if timeout > MAX_BASH_TIMEOUT_SECONDS:
         raise ToolInputError(f"timeout must be at most {MAX_BASH_TIMEOUT_SECONDS:g} seconds")
     return timeout
+
+
+def _resolve_bash_process_environment(environment: BashEnvironment | None) -> dict[str, str] | None:
+    if environment is None:
+        return None
+    overrides = environment() if callable(environment) else environment
+    process_env = os.environ.copy()
+    for key, value in overrides.items():
+        if value is None:
+            process_env.pop(key, None)
+        else:
+            process_env[key] = value
+    return process_env
 
 
 async def _communicate_with_cancellation(

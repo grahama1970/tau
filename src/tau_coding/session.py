@@ -8,7 +8,7 @@ import os
 import shutil
 import subprocess
 import tempfile
-from collections.abc import AsyncIterator, Callable, Sequence
+from collections.abc import AsyncIterator, Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
 from time import monotonic
@@ -120,7 +120,12 @@ from tau_coding.thinking import (
     next_thinking_level,
     normalize_thinking_level,
 )
-from tau_coding.tools import BUILTIN_CODING_TOOL_NAMES, create_bash_tool, create_coding_tools
+from tau_coding.tools import (
+    BUILTIN_CODING_TOOL_NAMES,
+    BashEnvironment,
+    create_bash_tool,
+    create_coding_tools,
+)
 from tau_coding.trust import (
     DefaultProjectTrust,
     ProjectTrustOption,
@@ -137,6 +142,13 @@ from tau_coding.tui.config import (
 
 StreamingBehavior = Literal["steer", "follow_up"]
 _UNSET_LEAF_ID: Final[object] = object()
+_BASH_SESSION_ENV_KEYS: Final[tuple[str, ...]] = (
+    "TAU_SESSION_ID",
+    "TAU_SESSION_FILE",
+    "TAU_PROVIDER",
+    "TAU_MODEL",
+    "TAU_REASONING_LEVEL",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -340,7 +352,25 @@ class CodingSession:
             discover_context_files=config.discover_context_files,
             default_project_trust=config.default_project_trust,
         )
-        tools = _build_session_tools(config, extension_tools=resources.extension_tools)
+        bash_environment_provider: dict[str, Callable[[], Mapping[str, str | None]]] = {}
+
+        def current_bash_environment() -> Mapping[str, str | None]:
+            provider = bash_environment_provider.get("provider")
+            if provider is not None:
+                return provider()
+            return _bash_session_environment(
+                session_id=config.session_id,
+                storage=config.storage,
+                provider_name=config.provider_name,
+                model=state.model or config.model,
+                thinking_level=_state_thinking_level(state, config.thinking_level),
+            )
+
+        tools = _build_session_tools(
+            config,
+            extension_tools=resources.extension_tools,
+            bash_environment=current_bash_environment,
+        )
         system = (
             config.system
             if config.system is not None
@@ -380,6 +410,7 @@ class CodingSession:
         )
         session._sync_thinking_level_to_active_model()
         session._refresh_runtime_provider()
+        bash_environment_provider["provider"] = session._bash_session_environment
         return session
 
     @property
@@ -692,7 +723,10 @@ class CodingSession:
         """Set whether future default read-tool calls resize oversized images."""
         self._config = replace(self._config, auto_resize_images=enabled)
         if self._config.tools is None:
-            self._harness.config.tools = _build_session_tools(self._config)
+            self._harness.config.tools = _build_session_tools(
+                self._config,
+                bash_environment=self._bash_session_environment,
+            )
         state = "enabled" if enabled else "disabled"
         return f"Auto-resize images {state}."
 
@@ -780,6 +814,15 @@ class CodingSession:
     def last_diagnostic_log_path(self) -> Path | None:
         """Return the last diagnostic log path written by this session."""
         return self._last_diagnostic_log_path
+
+    def _bash_session_environment(self) -> Mapping[str, str | None]:
+        return _bash_session_environment(
+            session_id=self.session_id,
+            storage=self._config.storage,
+            provider_name=self.provider_name,
+            model=self.model,
+            thinking_level=self.thinking_level,
+        )
 
     def cancel(self) -> None:
         """Cancel the currently running agent turn, if any."""
@@ -1027,7 +1070,11 @@ class CodingSession:
             discover_context_files=self._config.discover_context_files,
             default_project_trust=self._config.default_project_trust,
         )
-        tools = _build_session_tools(self._config, extension_tools=resources.extension_tools)
+        tools = _build_session_tools(
+            self._config,
+            extension_tools=resources.extension_tools,
+            bash_environment=self._bash_session_environment,
+        )
 
         after_skills = _skill_signatures(resources.skills)
         after_prompt_templates = _prompt_template_signatures(resources.prompt_templates)
@@ -2447,10 +2494,38 @@ def _system_prompt_resource_signatures(
     return (prompt_skills, _context_file_signatures(context_files), prompt_tools)
 
 
+def _bash_session_environment(
+    *,
+    session_id: str | None,
+    storage: SessionStorage,
+    provider_name: str,
+    model: str,
+    thinking_level: ThinkingLevel,
+) -> dict[str, str | None]:
+    environment: dict[str, str | None] = {key: None for key in _BASH_SESSION_ENV_KEYS}
+    if session_id:
+        environment["TAU_SESSION_ID"] = session_id
+    session_file = _session_storage_path(storage)
+    if session_file is not None:
+        environment["TAU_SESSION_FILE"] = str(session_file)
+    environment["TAU_PROVIDER"] = provider_name
+    environment["TAU_MODEL"] = model
+    environment["TAU_REASONING_LEVEL"] = thinking_level
+    return environment
+
+
+def _session_storage_path(storage: SessionStorage) -> Path | None:
+    path = getattr(storage, "path", None)
+    if path is None:
+        return None
+    return Path(path).expanduser().resolve()
+
+
 def _build_session_tools(
     config: CodingSessionConfig,
     *,
     extension_tools: tuple[AgentTool, ...] = (),
+    bash_environment: BashEnvironment | None = None,
 ) -> list[AgentTool]:
     tools = (
         list(config.tools)
@@ -2458,6 +2533,7 @@ def _build_session_tools(
         else create_coding_tools(
             cwd=config.cwd,
             shell_path=config.shell_path,
+            bash_environment=bash_environment,
             auto_resize_images=config.auto_resize_images,
         )
     )

@@ -409,6 +409,46 @@ async def test_session_bash_tool_uses_shell_path(tmp_path: Path) -> None:
 
 
 @pytest.mark.anyio
+async def test_session_bash_tool_exposes_current_session_metadata(tmp_path: Path) -> None:
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    session = await CodingSession.load(
+        replace(
+            _config(tmp_path, FakeProvider([]), storage),
+            session_id="session-1",
+            provider_name="openai",
+        )
+    )
+    bash = next(tool for tool in session.tools if tool.name == "bash")
+
+    result = await bash.execute(
+        {
+            "command": (
+                'printf "%s\\n%s\\n%s\\n%s\\n%s" '
+                '"$TAU_SESSION_ID" "$TAU_SESSION_FILE" "$TAU_PROVIDER" '
+                '"$TAU_MODEL" "$TAU_REASONING_LEVEL"'
+            )
+        }
+    )
+
+    assert result.ok is True
+    assert result.content.splitlines() == [
+        "session-1",
+        str(storage.path.resolve()),
+        "openai",
+        "fake",
+        "medium",
+    ]
+    assert "TAU_* environment variables" in bash.prompt_guidelines[0]
+
+    session.set_model("next-model")
+
+    updated = await bash.execute({"command": 'printf "%s" "$TAU_MODEL"'})
+
+    assert updated.ok is True
+    assert updated.content == "next-model"
+
+
+@pytest.mark.anyio
 async def test_session_export_defaults_to_cwd(tmp_path: Path) -> None:
     storage = JsonlSessionStorage(tmp_path / ".tau" / "sessions" / "session-1.jsonl")
     session = await CodingSession.load(_config(tmp_path, FakeProvider([]), storage))
@@ -662,6 +702,26 @@ async def test_terminal_command_applies_shell_command_prefix(tmp_path: Path) -> 
     assert isinstance(messages[0], UserMessage)
     assert 'printf "$TAU_PREFIXED"' in messages[0].content
     assert "export TAU_PREFIXED" not in messages[0].content
+
+
+@pytest.mark.anyio
+async def test_terminal_command_does_not_inject_session_metadata(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("TAU_SESSION_ID", raising=False)
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    session = await CodingSession.load(
+        replace(_config(tmp_path, FakeProvider([]), storage), session_id="session-1")
+    )
+
+    result = await session.run_terminal_command(
+        'printf "%s" "${TAU_SESSION_ID-unset}"',
+        add_to_context=False,
+    )
+
+    assert result.ok is True
+    assert result.output == "unset"
 
 
 @pytest.mark.anyio

@@ -290,6 +290,24 @@ There is no default timeout. Callers should provide one when they need bounded e
 
 On POSIX systems, commands are started in a new session. If a timeout occurs, Tau kills the whole process group so child processes from pipelines or compound commands are stopped too. On non-POSIX systems, Tau kills the direct subprocess.
 
+### Session environment
+
+When the LLM-callable `bash` tool is created by a `CodingSession`, Tau injects
+current session metadata into each command:
+
+| Variable | Description |
+| --- | --- |
+| `TAU_SESSION_ID` | Current indexed session ID, when available. |
+| `TAU_SESSION_FILE` | Absolute JSONL session path, when backed by local session storage. |
+| `TAU_PROVIDER` | Current provider name. |
+| `TAU_MODEL` | Current model ID. |
+| `TAU_REASONING_LEVEL` | Current effective thinking/reasoning level. |
+
+Values are resolved when each command starts, so model or thinking changes apply
+to the next tool call. Inherited stale values for these keys are removed before
+fresh values are set. User-entered input-bar terminal commands do not receive
+this session metadata.
+
 ### Output truncation
 
 `bash` returns the tail of large output. Output is truncated to at most 2,000 lines or 50 KB, whichever limit is reached first.
