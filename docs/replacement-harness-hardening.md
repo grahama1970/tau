@@ -110,7 +110,23 @@ Acceptance:
 - Doctor receipt contains `modes.<mode>.permission_default`.
 - Tests prove `plan` and `review` are read-only by default.
 
-### Slice 3: Pending Permission Receipt
+### Slice 3: Non-Interactive Status Receipt
+
+Add `tau status --json` so operators and supervisors can inspect the latest
+indexed session without opening the TUI. Process-local fields such as active
+tool and queued prompts must be reported as unavailable unless a live process
+contract exists.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Status receipt contains current indexed session id, path, cwd, provider, and model.
+- Status receipt summarizes JSONL transcript counts.
+- Status receipt fails closed for unreadable or missing session files.
+- Status receipt explicitly marks process-local active tool and queue state as unavailable.
+
+### Slice 4: Pending Permission Receipt
 
 Add a durable permission request/response receipt model before adding new UI.
 
@@ -120,7 +136,7 @@ Acceptance:
 - A pending command approval records request id, action, resources, source node, and allowed replies.
 - Reply receipts support `once`, `always`, and `reject`.
 
-### Slice 4: Replacement-Harness Sanity Script
+### Slice 5: Replacement-Harness Sanity Script
 
 Create one command that exercises the minimum replacement loop:
 

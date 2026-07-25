@@ -9,7 +9,13 @@ import pytest
 from typer.testing import CliRunner
 
 from tau_agent import AssistantMessage, UserMessage
-from tau_agent.session import JsonlSessionStorage, MessageEntry, ModelChangeEntry, SessionInfoEntry
+from tau_agent.session import (
+    JsonlSessionStorage,
+    LeafEntry,
+    MessageEntry,
+    ModelChangeEntry,
+    SessionInfoEntry,
+)
 from tau_ai import (
     FakeProvider,
     ProviderErrorEvent,
@@ -483,6 +489,79 @@ def test_doctor_rejects_unknown_options() -> None:
 
     assert result.exit_code != 0
     assert "unknown doctor option: --bogus" in result.output
+
+
+def test_status_json_reports_latest_indexed_session(tmp_path: Path) -> None:
+    session_dir = tmp_path / "sessions"
+    cwd = tmp_path / "project"
+    cwd.mkdir()
+    manager = SessionManager(TauPaths(session_root=session_dir))
+    record = manager.create_session(
+        cwd=cwd,
+        model="fake-model",
+        provider_name="openai",
+        title="Status target",
+        session_id="status-session",
+    )
+
+    async def write_session() -> None:
+        storage = JsonlSessionStorage(record.path)
+        await storage.append(SessionInfoEntry(id="info", cwd=str(cwd), title="Status target"))
+        await storage.append(
+            ModelChangeEntry(id="model", parent_id="info", model="fake-model-v2")
+        )
+        await storage.append(
+            MessageEntry(
+                id="user",
+                parent_id="model",
+                message=UserMessage(content="Check status"),
+            )
+        )
+        await storage.append(
+            MessageEntry(
+                id="assistant",
+                parent_id="user",
+                message=AssistantMessage(content="Status response"),
+            )
+        )
+        await storage.append(LeafEntry(id="leaf", parent_id="assistant", entry_id="assistant"))
+
+    anyio.run(write_session)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--cwd",
+            str(cwd),
+            "--session-dir",
+            str(session_dir),
+            "status",
+            "--json",
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.status.v1"
+    assert payload["mocked"] is False
+    assert payload["live"] is True
+    assert payload["provider_live"] is False
+    assert payload["session"]["id"] == "status-session"
+    assert payload["session"]["transcript"]["entry_count"] == 5
+    assert payload["session"]["transcript"]["active_entry_count"] == 4
+    assert payload["session"]["transcript"]["message_count"] == 2
+    assert payload["session"]["transcript"]["user_message_count"] == 1
+    assert payload["session"]["transcript"]["assistant_message_count"] == 1
+    assert payload["session"]["transcript"]["model"] == "fake-model-v2"
+    assert payload["runtime"]["queues"]["available"] is False
+    assert payload["runtime"]["active_tool"]["available"] is False
+
+
+def test_status_rejects_unknown_options() -> None:
+    result = CliRunner().invoke(app, ["status", "--bogus"])
+
+    assert result.exit_code != 0
+    assert "unknown status option: --bogus" in result.output
 
 
 def test_cli_init_zero_trust_creates_starter_files(tmp_path: Path) -> None:

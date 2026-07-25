@@ -311,6 +311,7 @@ Useful commands:
 
 ```bash
 tau sessions
+tau status --json
 tau @prompt.md "Use this context"
 tau --session <session-id>
 tau --continue
@@ -350,6 +351,12 @@ tau export <session-id> --format jsonl
 `--name` sets the display title for a newly started interactive or print-mode
 session. The title is stored in the indexed session metadata used by `/resume`
 and session-id completions.
+
+`tau status --json` emits a non-interactive `tau.status.v1` receipt for the
+latest indexed session in the current working directory. It reports durable
+session metadata, transcript counts, provider credential configuration, and
+explicitly marks live TUI process fields such as active tool and queued prompts
+as unavailable when no running process can be inspected.
 
 `@file` startup arguments read text files into the initial prompt as Pi-style
 `<file name="...">` blocks before the remaining prompt text. Empty files are

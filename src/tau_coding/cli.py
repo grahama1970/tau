@@ -22,7 +22,7 @@ import anyio
 import httpx
 import typer
 
-from tau_agent import AssistantMessage
+from tau_agent import AssistantMessage, ToolResultMessage, UserMessage
 from tau_agent.session import JsonlSessionStorage, SessionEntry, SessionState, SessionStorage
 from tau_ai import (
     DEFAULT_OPENAI_COMPATIBLE_MAX_RETRIES,
@@ -648,6 +648,202 @@ def _doctor_mode_manifest() -> dict[str, dict[str, object]]:
             "description": "Bounded helper mode; mutation requires promotion or approval.",
         },
     }
+
+
+async def status_command(
+    cwd: Path,
+    session_manager: SessionManager,
+    session_id: str | None = None,
+) -> dict[str, object]:
+    """Return a non-interactive Tau operator status receipt."""
+    resolved_cwd = cwd.expanduser().resolve()
+    errors: list[str] = []
+    warnings: list[str] = []
+    if session_id is None:
+        record = session_manager.latest_session_for_cwd(resolved_cwd)
+        selection = "latest_for_cwd"
+    else:
+        record = session_manager.get_session(session_id)
+        selection = "explicit_session_id"
+        if record is None:
+            errors.append(f"session not found: {session_id}")
+
+    session_payload: dict[str, object] = {
+        "available": record is not None,
+        "selection": selection,
+        "requested_session_id": session_id,
+    }
+    if record is None:
+        if session_id is None:
+            warnings.append(f"no indexed session found for cwd: {resolved_cwd}")
+    else:
+        session_payload.update(
+            await _status_session_payload(record, warnings=warnings, errors=errors)
+        )
+
+    provider_payload = _status_provider_payload(record.provider_name if record else None)
+    ok = not errors
+    return {
+        "schema": "tau.status.v1",
+        "ok": ok,
+        "status": "PASS" if ok else "BLOCKED",
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "checked_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+        "cwd": str(resolved_cwd),
+        "session": session_payload,
+        "provider": provider_payload,
+        "runtime": {
+            "active_tool": {
+                "available": False,
+                "reason": "active tool state is process-local and unavailable to this CLI receipt",
+            },
+            "queues": {
+                "available": False,
+                "steering": None,
+                "follow_up": None,
+                "reason": "queued prompts are process-local until injected into the session",
+            },
+            "last_error": errors[-1] if errors else None,
+        },
+        "errors": errors,
+        "warnings": warnings,
+        "proof_boundary": {
+            "proves": [
+                "Tau CLI can inspect indexed session metadata without opening the TUI.",
+                "Tau CLI can read and summarize the current session JSONL when it is available.",
+                "Provider credential configuration was inspected without making "
+                "provider/model calls.",
+            ],
+            "does_not_prove": [
+                "A TUI process is currently running.",
+                "Live active tool state or queued prompts from another Tau process.",
+                "Provider/model semantic quality.",
+                "Remote service availability.",
+            ],
+        },
+    }
+
+
+async def _status_session_payload(
+    record: CodingSessionRecord,
+    *,
+    warnings: list[str],
+    errors: list[str],
+) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "id": record.id,
+        "path": str(record.path),
+        "cwd": str(record.cwd),
+        "title": record.title,
+        "model": record.model,
+        "provider_name": record.provider_name,
+        "parent_session_id": record.parent_session_id,
+        "created_at": record.created_at,
+        "updated_at": record.updated_at,
+        "file": {
+            "exists": record.path.exists(),
+            "bytes": record.path.stat().st_size if record.path.exists() else None,
+        },
+    }
+    if not record.path.exists():
+        errors.append(f"session file does not exist: {record.path}")
+        payload["transcript"] = {"available": False}
+        return payload
+
+    try:
+        entries = await JsonlSessionStorage(record.path).read_all()
+    except Exception as exc:  # noqa: BLE001 - receipt should preserve exact read failure
+        errors.append(f"session file is unreadable: {record.path}: {exc}")
+        payload["transcript"] = {"available": False}
+        return payload
+
+    linear_state = SessionState.from_entries(entries)
+    active_state = linear_state
+    if linear_state.active_leaf_id is not None:
+        try:
+            active_state = SessionState.from_entries(entries, leaf_id=linear_state.active_leaf_id)
+        except Exception as exc:  # noqa: BLE001 - stale leaf should be visible, not fatal to counts
+            warnings.append(f"active leaf replay failed; using linear replay: {exc}")
+            active_state = linear_state
+
+    payload["transcript"] = {
+        "available": True,
+        "entry_count": len(entries),
+        "active_entry_count": len(active_state.entries),
+        "active_leaf_id": linear_state.active_leaf_id,
+        "message_count": len(active_state.messages),
+        "user_message_count": sum(
+            isinstance(message, UserMessage) for message in active_state.messages
+        ),
+        "assistant_message_count": sum(
+            isinstance(message, AssistantMessage) for message in active_state.messages
+        ),
+        "tool_result_count": sum(
+            isinstance(message, ToolResultMessage) for message in active_state.messages
+        ),
+        "tool_call_count": sum(
+            len(message.tool_calls)
+            for message in active_state.messages
+            if isinstance(message, AssistantMessage)
+        ),
+        "compaction_count": len(active_state.compaction_entries),
+        "thinking_level": active_state.thinking_level,
+        "model": active_state.model or record.model,
+    }
+    return payload
+
+
+def _status_provider_payload(provider_name: str | None) -> dict[str, object]:
+    try:
+        settings = load_provider_settings()
+        credential_reader = FileCredentialStore()
+    except Exception as exc:  # pragma: no cover - defensive status fallback
+        return {
+            "available": False,
+            "current": provider_name,
+            "credential": "unknown",
+            "error": str(exc),
+        }
+    current = settings.get_provider(provider_name) if provider_name else None
+    return {
+        "available": current is not None,
+        "current": provider_name,
+        "default_provider": settings.default_provider,
+        "provider_count": len(settings.providers),
+        "credential": _provider_credential_status(current, credential_reader=credential_reader)
+        if current is not None
+        else "provider_not_configured",
+    }
+
+
+def render_status_payload(payload: dict[str, object]) -> None:
+    """Render a compact human status view."""
+    typer.echo(f"Status: {payload['status']}")
+    typer.echo(f"CWD: {payload['cwd']}")
+    session = payload.get("session")
+    if isinstance(session, dict) and session.get("available"):
+        typer.echo(f"Session: {session.get('id')} ({session.get('title') or 'untitled'})")
+        typer.echo(f"File: {session.get('path')}")
+        typer.echo(f"Model: {session.get('provider_name') or 'unknown'}/{session.get('model')}")
+        transcript = session.get("transcript")
+        if isinstance(transcript, dict) and transcript.get("available"):
+            typer.echo(
+                "Transcript: "
+                f"{transcript.get('message_count')} messages, "
+                f"{transcript.get('tool_call_count')} tool calls"
+            )
+    else:
+        typer.echo("Session: unavailable")
+    warnings = payload.get("warnings")
+    if isinstance(warnings, list):
+        for warning in warnings:
+            typer.echo(f"Warning: {warning}")
+    errors = payload.get("errors")
+    if isinstance(errors, list):
+        for error in errors:
+            typer.echo(f"Error: {error}")
 
 
 def providers_command() -> None:
@@ -1323,6 +1519,25 @@ def main(
 
     if not print_requested and not export and command == "sessions" and len(positional_args) == 1:
         render_session_list(_session_manager_from_dir(session_dir).list_sessions())
+        raise typer.Exit()
+
+    if not print_requested and not export and command == "status":
+        try:
+            status_options = _parse_status_cli_args(positional_args[1:])
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        status_payload = anyio.run(
+            status_command,
+            startup_cwd,
+            _session_manager_from_dir(session_dir),
+            status_options["session_id"],
+        )
+        if status_options["json_output"]:
+            typer.echo(json.dumps(status_payload, indent=2, sort_keys=True))
+        else:
+            render_status_payload(status_payload)
+        if not status_payload.get("ok"):
+            raise typer.Exit(1)
         raise typer.Exit()
 
     if not print_requested and not export and command == "export":
@@ -4017,6 +4232,26 @@ def _parse_doctor_cli_args(args: list[str]) -> None:
     unknown = [arg for arg in args if arg not in allowed]
     if unknown:
         raise RuntimeError(f"unknown doctor option: {unknown[0]}")
+
+
+def _parse_status_cli_args(args: list[str]) -> dict[str, object]:
+    json_output = False
+    session_id: str | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--json":
+            json_output = True
+            index += 1
+            continue
+        if arg == "--session":
+            if index + 1 >= len(args):
+                raise RuntimeError("Usage: tau status [--json] [--session <session-id>]")
+            session_id = args[index + 1]
+            index += 2
+            continue
+        raise RuntimeError(f"unknown status option: {arg}")
+    return {"json_output": json_output, "session_id": session_id}
 
 
 def _parse_visible_dag_poc_cli_args(args: list[str]) -> dict[str, object]:
