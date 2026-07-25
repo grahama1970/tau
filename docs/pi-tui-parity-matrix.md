@@ -48,7 +48,7 @@ capabilities.
 | Prompt editor | `custom-editor`, `custom-entry`, `keybinding-hints` | `PromptInput`, extension input hooks | `PARTIAL` | Keep Pi-like keybindings; avoid replacing Tau extension input plumbing. |
 | Model selector | `model-selector`, `scoped-models-selector` | `ModelPickerScreen` | `MATCHED` | Search, tabs, scoped membership, provider toggles, and reorder are present. |
 | Session selector | `session-selector`, `session-selector-search` | `SessionPickerScreen` | `MATCHED` | Search, current/all, named-only, path toggle, sort, rename, delete are present. |
-| Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `PARTIAL` | Tau backs most daily settings; do not add dead Pi toggles without backing behavior. |
+| Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `PARTIAL` | Tau backs most daily settings and now exposes the external editor command; do not add dead Pi toggles without backing behavior. |
 | Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist; package/write-scope editing still missing. |
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login, but daily auth readiness should be more visible. |
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output and now colorizes embedded unified diffs; Pi-style custom tool render hooks still remain. |
@@ -82,10 +82,9 @@ capabilities.
 
 ## Next Slice
 
-Port the highest-value daily-use gap that is still local and bounded:
+Port the next highest-value daily-use gap that is still local and bounded:
 
-`TUI readiness panel`: expose the active provider, model, credential/readiness
-state, cwd, context budget, queued messages, and Tau DAG workflow entry point
-together in the existing session sidebar/footer area. This moves Tau toward
-tomorrow use without touching SciLLM internals or replacing Tau-only DAG
-features.
+`Tool execution readability`: keep improving shell/tool/diff readability in the
+existing transcript surface, especially custom tool render hooks and permission
+evidence. This moves Tau toward tomorrow use without touching SciLLM internals
+or replacing Tau-only DAG features.

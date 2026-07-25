@@ -196,6 +196,10 @@ def _style_rgb(color: str) -> str:
     return f"rgb({red},{green},{blue})"
 
 
+def _list_view_labels(list_view: ListView) -> list[str]:
+    return [str(item.query_one(Label).render()) for item in list_view.children]
+
+
 class FakeSessionState:
     thinking_level = "medium"
     loop_monitor_status = None
@@ -5911,15 +5915,19 @@ async def test_tui_app_settings_picker_changes_sidebar_position(
 
         assert isinstance(app.screen, SettingsPickerScreen)
         settings_list = app.screen.query_one("#settings-picker-list", ListView)
-        await pilot.press("down", "down", "down", "down", "enter")
+        search = app.screen.query_one("#settings-picker-search", Input)
+        search.value = "sidebar"
+        await pilot.pause()
+
+        assert _list_view_labels(settings_list) == ["Sidebar: right"]
+
+        await pilot.press("enter")
         await pilot.pause()
 
         assert app.tui_settings.sidebar_position == "left"
         assert '"sidebar_position": "left"' in tui_settings_path().read_text(encoding="utf-8")
         assert not app.has_class("-sidebar-right")
-        assert [str(item.query_one(Label).render()) for item in settings_list.children][4] == (
-            "Sidebar: left"
-        )
+        assert _list_view_labels(settings_list) == ["Sidebar: left"]
 
 
 @pytest.mark.anyio
@@ -5952,11 +5960,12 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
 
         assert isinstance(app.screen, SettingsPickerScreen)
         settings_list = app.screen.query_one("#settings-picker-list", ListView)
-        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
+        assert _list_view_labels(settings_list) == [
             "Theme: tau-dark",
             "Auto-compact: on",
             "Steering mode: one-at-a-time",
             "Follow-up mode: one-at-a-time",
+            "HTTP idle timeout: 5m",
             "Sidebar: right",
             "Block images: off",
             "Show images: on",
@@ -5968,7 +5977,9 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Autocomplete max items: 7",
             "Clear on shrink: off",
             "Terminal progress: off",
+            "Anthropic extra usage: on",
             "Auto-copy selection: off",
+            "External editor: VISUAL/EDITOR",
             "Hide thinking: on",
             "Thinking level: medium",
             "Double Escape: tree",
@@ -5988,559 +5999,230 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
         assert app.session.auto_compact_enabled is False
         assert '"auto_compact": false' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
-        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
-            "Theme: tau-dark",
-            "Auto-compact: off",
-            "Steering mode: one-at-a-time",
-            "Follow-up mode: one-at-a-time",
-            "Sidebar: right",
-            "Block images: off",
-            "Show images: on",
-            "Image width: 60",
-            "Skill commands: on",
-            "Show hardware cursor: on",
-            "Editor padding: 1",
-            "Output padding: 1",
-            "Autocomplete max items: 7",
-            "Clear on shrink: off",
-            "Terminal progress: off",
-            "Auto-copy selection: off",
-            "Hide thinking: on",
-            "Thinking level: medium",
-            "Double Escape: tree",
-            "Tree filter mode: default",
-            "Default project trust: ask",
-            "Quiet startup: off",
-            "Collapse changelog: off",
-            "Turn notification: desktop",
-            "Auto-resize images: on",
-        ]
+        assert "Auto-compact: off" in _list_view_labels(settings_list)
 
-        await pilot.press("down", "enter")
+        search = app.screen.query_one("#settings-picker-search", Input)
+        search.value = "steering"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Steering mode: one-at-a-time"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.steering_mode == "all"
         assert app.session.steering_queue_mode == "all"
         assert '"steering_mode": "all"' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
-        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
-            "Theme: tau-dark",
-            "Auto-compact: off",
-            "Steering mode: all",
-            "Follow-up mode: one-at-a-time",
-            "Sidebar: right",
-            "Block images: off",
-            "Show images: on",
-            "Image width: 60",
-            "Skill commands: on",
-            "Show hardware cursor: on",
-            "Editor padding: 1",
-            "Output padding: 1",
-            "Autocomplete max items: 7",
-            "Clear on shrink: off",
-            "Terminal progress: off",
-            "Auto-copy selection: off",
-            "Hide thinking: on",
-            "Thinking level: medium",
-            "Double Escape: tree",
-            "Tree filter mode: default",
-            "Default project trust: ask",
-            "Quiet startup: off",
-            "Collapse changelog: off",
-            "Turn notification: desktop",
-            "Auto-resize images: on",
-        ]
 
-        await pilot.press("down", "enter")
+        search.value = "follow up"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Follow-up mode: one-at-a-time"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.follow_up_mode == "all"
         assert app.session.follow_up_queue_mode == "all"
         assert '"follow_up_mode": "all"' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
-        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
-            "Theme: tau-dark",
-            "Auto-compact: off",
-            "Steering mode: all",
-            "Follow-up mode: all",
-            "Sidebar: right",
-            "Block images: off",
-            "Show images: on",
-            "Image width: 60",
-            "Skill commands: on",
-            "Show hardware cursor: on",
-            "Editor padding: 1",
-            "Output padding: 1",
-            "Autocomplete max items: 7",
-            "Clear on shrink: off",
-            "Terminal progress: off",
-            "Auto-copy selection: off",
-            "Hide thinking: on",
-            "Thinking level: medium",
-            "Double Escape: tree",
-            "Tree filter mode: default",
-            "Default project trust: ask",
-            "Quiet startup: off",
-            "Collapse changelog: off",
-            "Turn notification: desktop",
-            "Auto-resize images: on",
-        ]
 
-        await pilot.press("down", "down", "enter")
+        search.value = "block images"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Block images: off"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.block_images is True
         assert '"block_images": true' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
-        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
-            "Theme: tau-dark",
-            "Auto-compact: off",
-            "Steering mode: all",
-            "Follow-up mode: all",
-            "Sidebar: right",
-            "Block images: on",
-            "Show images: on",
-            "Image width: 60",
-            "Skill commands: on",
-            "Show hardware cursor: on",
-            "Editor padding: 1",
-            "Output padding: 1",
-            "Autocomplete max items: 7",
-            "Clear on shrink: off",
-            "Terminal progress: off",
-            "Auto-copy selection: off",
-            "Hide thinking: on",
-            "Thinking level: medium",
-            "Double Escape: tree",
-            "Tree filter mode: default",
-            "Default project trust: ask",
-            "Quiet startup: off",
-            "Collapse changelog: off",
-            "Turn notification: desktop",
-            "Auto-resize images: on",
-        ]
 
-        await pilot.press("down", "enter")
+        search.value = "show images"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Show images: on"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.show_images is False
         assert '"show_images": false' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
-        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
-            "Theme: tau-dark",
-            "Auto-compact: off",
-            "Steering mode: all",
-            "Follow-up mode: all",
-            "Sidebar: right",
-            "Block images: on",
-            "Show images: off",
-            "Image width: 60",
-            "Skill commands: on",
-            "Show hardware cursor: on",
-            "Editor padding: 1",
-            "Output padding: 1",
-            "Autocomplete max items: 7",
-            "Clear on shrink: off",
-            "Terminal progress: off",
-            "Auto-copy selection: off",
-            "Hide thinking: on",
-            "Thinking level: medium",
-            "Double Escape: tree",
-            "Tree filter mode: default",
-            "Default project trust: ask",
-            "Quiet startup: off",
-            "Collapse changelog: off",
-            "Turn notification: desktop",
-            "Auto-resize images: on",
-        ]
 
-        await pilot.press("down", "enter")
+        search.value = "image width"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Image width: 60"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.image_width_cells == 80
         assert '"image_width_cells": 80' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
-        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
-            "Theme: tau-dark",
-            "Auto-compact: off",
-            "Steering mode: all",
-            "Follow-up mode: all",
-            "Sidebar: right",
-            "Block images: on",
-            "Show images: off",
-            "Image width: 80",
-            "Skill commands: on",
-            "Show hardware cursor: on",
-            "Editor padding: 1",
-            "Output padding: 1",
-            "Autocomplete max items: 7",
-            "Clear on shrink: off",
-            "Terminal progress: off",
-            "Auto-copy selection: off",
-            "Hide thinking: on",
-            "Thinking level: medium",
-            "Double Escape: tree",
-            "Tree filter mode: default",
-            "Default project trust: ask",
-            "Quiet startup: off",
-            "Collapse changelog: off",
-            "Turn notification: desktop",
-            "Auto-resize images: on",
-        ]
 
-        await pilot.press("down", "enter")
+        search.value = "skill commands"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Skill commands: on"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.enable_skill_commands is False
         assert '"enable_skill_commands": false' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
-        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
-            "Theme: tau-dark",
-            "Auto-compact: off",
-            "Steering mode: all",
-            "Follow-up mode: all",
-            "Sidebar: right",
-            "Block images: on",
-            "Show images: off",
-            "Image width: 80",
-            "Skill commands: off",
-            "Show hardware cursor: on",
-            "Editor padding: 1",
-            "Output padding: 1",
-            "Autocomplete max items: 7",
-            "Clear on shrink: off",
-            "Terminal progress: off",
-            "Auto-copy selection: off",
-            "Hide thinking: on",
-            "Thinking level: medium",
-            "Double Escape: tree",
-            "Tree filter mode: default",
-            "Default project trust: ask",
-            "Quiet startup: off",
-            "Collapse changelog: off",
-            "Turn notification: desktop",
-            "Auto-resize images: on",
-        ]
 
-        await pilot.press("down", "enter")
+        search.value = "hardware cursor"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Show hardware cursor: on"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.show_hardware_cursor is False
         assert app.query_one("#prompt", PromptInput).show_cursor is False
         assert '"show_hardware_cursor": false' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
-        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
-            "Theme: tau-dark",
-            "Auto-compact: off",
-            "Steering mode: all",
-            "Follow-up mode: all",
-            "Sidebar: right",
-            "Block images: on",
-            "Show images: off",
-            "Image width: 80",
-            "Skill commands: off",
-            "Show hardware cursor: off",
-            "Editor padding: 1",
-            "Output padding: 1",
-            "Autocomplete max items: 7",
-            "Clear on shrink: off",
-            "Terminal progress: off",
-            "Auto-copy selection: off",
-            "Hide thinking: on",
-            "Thinking level: medium",
-            "Double Escape: tree",
-            "Tree filter mode: default",
-            "Default project trust: ask",
-            "Quiet startup: off",
-            "Collapse changelog: off",
-            "Turn notification: desktop",
-            "Auto-resize images: on",
-        ]
 
-        await pilot.press("down", "enter")
+        search.value = "editor padding"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Editor padding: 1"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.editor_padding_x == 2
         assert '"editor_padding_x": 2' in tui_settings_path().read_text(encoding="utf-8")
         assert app.query_one("#prompt", PromptInput).styles.padding == Spacing.unpack((0, 2))
         assert isinstance(app.screen, SettingsPickerScreen)
-        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
-            "Theme: tau-dark",
-            "Auto-compact: off",
-            "Steering mode: all",
-            "Follow-up mode: all",
-            "Sidebar: right",
-            "Block images: on",
-            "Show images: off",
-            "Image width: 80",
-            "Skill commands: off",
-            "Show hardware cursor: off",
-            "Editor padding: 2",
-            "Output padding: 1",
-            "Autocomplete max items: 7",
-            "Clear on shrink: off",
-            "Terminal progress: off",
-            "Auto-copy selection: off",
-            "Hide thinking: on",
-            "Thinking level: medium",
-            "Double Escape: tree",
-            "Tree filter mode: default",
-            "Default project trust: ask",
-            "Quiet startup: off",
-            "Collapse changelog: off",
-            "Turn notification: desktop",
-            "Auto-resize images: on",
-        ]
 
-        await pilot.press("down", "enter")
+        search.value = "output padding"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Output padding: 1"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.output_padding_x == 0
         assert '"output_padding_x": 0' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
-        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
-            "Theme: tau-dark",
-            "Auto-compact: off",
-            "Steering mode: all",
-            "Follow-up mode: all",
-            "Sidebar: right",
-            "Block images: on",
-            "Show images: off",
-            "Image width: 80",
-            "Skill commands: off",
-            "Show hardware cursor: off",
-            "Editor padding: 2",
-            "Output padding: 0",
-            "Autocomplete max items: 7",
-            "Clear on shrink: off",
-            "Terminal progress: off",
-            "Auto-copy selection: off",
-            "Hide thinking: on",
-            "Thinking level: medium",
-            "Double Escape: tree",
-            "Tree filter mode: default",
-            "Default project trust: ask",
-            "Quiet startup: off",
-            "Collapse changelog: off",
-            "Turn notification: desktop",
-            "Auto-resize images: on",
-        ]
 
-        await pilot.press("down", "enter")
+        search.value = "autocomplete max"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Autocomplete max items: 7"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.autocomplete_max_visible == 10
         assert '"autocomplete_max_visible": 10' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
-        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
-            "Theme: tau-dark",
-            "Auto-compact: off",
-            "Steering mode: all",
-            "Follow-up mode: all",
-            "Sidebar: right",
-            "Block images: on",
-            "Show images: off",
-            "Image width: 80",
-            "Skill commands: off",
-            "Show hardware cursor: off",
-            "Editor padding: 2",
-            "Output padding: 0",
-            "Autocomplete max items: 10",
-            "Clear on shrink: off",
-            "Terminal progress: off",
-            "Auto-copy selection: off",
-            "Hide thinking: on",
-            "Thinking level: medium",
-            "Double Escape: tree",
-            "Tree filter mode: default",
-            "Default project trust: ask",
-            "Quiet startup: off",
-            "Collapse changelog: off",
-            "Turn notification: desktop",
-            "Auto-resize images: on",
-        ]
 
-        await pilot.press("down", "enter")
+        search.value = "clear on shrink"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Clear on shrink: off"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.clear_on_shrink is True
         assert '"clear_on_shrink": true' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
-        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
-            "Theme: tau-dark",
-            "Auto-compact: off",
-            "Steering mode: all",
-            "Follow-up mode: all",
-            "Sidebar: right",
-            "Block images: on",
-            "Show images: off",
-            "Image width: 80",
-            "Skill commands: off",
-            "Show hardware cursor: off",
-            "Editor padding: 2",
-            "Output padding: 0",
-            "Autocomplete max items: 10",
-            "Clear on shrink: on",
-            "Terminal progress: off",
-            "Auto-copy selection: off",
-            "Hide thinking: on",
-            "Thinking level: medium",
-            "Double Escape: tree",
-            "Tree filter mode: default",
-            "Default project trust: ask",
-            "Quiet startup: off",
-            "Collapse changelog: off",
-            "Turn notification: desktop",
-            "Auto-resize images: on",
-        ]
 
-        await pilot.press("down", "enter")
+        search.value = "terminal progress"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Terminal progress: off"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.show_terminal_progress is True
         assert '"show_terminal_progress": true' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
-        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
-            "Theme: tau-dark",
-            "Auto-compact: off",
-            "Steering mode: all",
-            "Follow-up mode: all",
-            "Sidebar: right",
-            "Block images: on",
-            "Show images: off",
-            "Image width: 80",
-            "Skill commands: off",
-            "Show hardware cursor: off",
-            "Editor padding: 2",
-            "Output padding: 0",
-            "Autocomplete max items: 10",
-            "Clear on shrink: on",
-            "Terminal progress: on",
-            "Auto-copy selection: off",
-            "Hide thinking: on",
-            "Thinking level: medium",
-            "Double Escape: tree",
-            "Tree filter mode: default",
-            "Default project trust: ask",
-            "Quiet startup: off",
-            "Collapse changelog: off",
-            "Turn notification: desktop",
-            "Auto-resize images: on",
-        ]
 
-        await pilot.press("down", "enter")
+        search.value = "auto copy"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Auto-copy selection: off"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.auto_copy_selection is True
         assert '"auto_copy_selection": true' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
-        assert [str(item.query_one(Label).render()) for item in settings_list.children] == [
-            "Theme: tau-dark",
-            "Auto-compact: off",
-            "Steering mode: all",
-            "Follow-up mode: all",
-            "Sidebar: right",
-            "Block images: on",
-            "Show images: off",
-            "Image width: 80",
-            "Skill commands: off",
-            "Show hardware cursor: off",
-            "Editor padding: 2",
-            "Output padding: 0",
-            "Autocomplete max items: 10",
-            "Clear on shrink: on",
-            "Terminal progress: on",
-            "Auto-copy selection: on",
-            "Hide thinking: on",
-            "Thinking level: medium",
-            "Double Escape: tree",
-            "Tree filter mode: default",
-            "Default project trust: ask",
-            "Quiet startup: off",
-            "Collapse changelog: off",
-            "Turn notification: desktop",
-            "Auto-resize images: on",
-        ]
 
-        await pilot.press("down", "enter")
+        search.value = "external editor"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["External editor: VISUAL/EDITOR"]
+        await pilot.press("enter")
+        await pilot.pause()
+        assert isinstance(app.screen, ExtensionInputScreen)
+        editor_input = app.screen.query_one("#extension-input-value", Input)
+        editor_input.value = "code --wait"
+        await pilot.press("enter")
+        await pilot.pause()
+        assert app.tui_settings.external_editor == "code --wait"
+        assert '"external_editor": "code --wait"' in tui_settings_path().read_text(
+            encoding="utf-8"
+        )
+        assert isinstance(app.screen, SettingsPickerScreen)
+        settings_list = app.screen.query_one("#settings-picker-list", ListView)
+        assert _list_view_labels(settings_list) == ["External editor: code --wait"]
+
+        search = app.screen.query_one("#settings-picker-search", Input)
+        search.value = "hide thinking"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Hide thinking: on"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.hide_thinking is False
         assert app.state.show_thinking is True
         assert '"hide_thinking": false' in tui_settings_path().read_text(encoding="utf-8")
 
-        await pilot.press("down", "enter")
+        search.value = "thinking level"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Thinking level: medium"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.thinking_level == "high"
         assert app.session.thinking_level == "high"
         assert '"thinking_level": "high"' in tui_settings_path().read_text(encoding="utf-8")
 
-        await pilot.press("down", "enter")
+        search.value = "double escape"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Double Escape: tree"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.double_escape_action == "fork"
         assert '"double_escape_action": "fork"' in tui_settings_path().read_text(encoding="utf-8")
 
-        await pilot.press(
-            "up",
-            "up",
-            "up",
-            "up",
-            "up",
-            "up",
-            "up",
-            "up",
-            "up",
-            "up",
-            "up",
-            "up",
-            "up",
-            "up",
-            "up",
-            "up",
-            "up",
-            "up",
-            "enter",
-        )
+        search.value = "theme"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Theme: tau-dark"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.theme == "tau-light"
         assert '"theme": "tau-light"' in tui_settings_path().read_text(encoding="utf-8")
         assert isinstance(app.screen, SettingsPickerScreen)
 
-        await pilot.press(
-            "down",
-            "down",
-            "down",
-            "down",
-            "down",
-            "down",
-            "down",
-            "down",
-            "down",
-            "down",
-            "down",
-            "down",
-            "down",
-            "down",
-            "down",
-            "down",
-            "down",
-            "down",
-            "down",
-            "enter",
-        )
+        search.value = "tree filter"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Tree filter mode: default"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.tree_filter_mode == "no-tools"
         assert '"tree_filter_mode": "no-tools"' in tui_settings_path().read_text(encoding="utf-8")
 
-        await pilot.press("down", "enter")
+        search.value = "project trust"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Default project trust: ask"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.default_project_trust == "always"
         assert '"default_project_trust": "always"' in tui_settings_path().read_text(
             encoding="utf-8"
         )
 
-        await pilot.press("down", "enter")
+        search.value = "quiet startup"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Quiet startup: off"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.quiet_startup is True
         assert '"quiet_startup": true' in tui_settings_path().read_text(encoding="utf-8")
 
-        await pilot.press("down", "enter")
+        search.value = "collapse changelog"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Collapse changelog: off"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.collapse_changelog is True
         assert '"collapse_changelog": true' in tui_settings_path().read_text(encoding="utf-8")
 
-        await pilot.press("down", "enter")
+        search.value = "turn notification"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Turn notification: desktop"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.turn_notification == "bell"
         assert '"turn_notification": "bell"' in tui_settings_path().read_text(encoding="utf-8")
 
-        await pilot.press("down", "enter")
+        search.value = "auto resize"
+        await pilot.pause()
+        assert _list_view_labels(settings_list) == ["Auto-resize images: on"]
+        await pilot.press("enter")
         await pilot.pause()
         assert app.tui_settings.auto_resize_images is False
         assert app.session.auto_resize_images is False

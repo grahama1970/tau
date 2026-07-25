@@ -2618,6 +2618,7 @@ SettingsPickerKey = Literal[
     "http_idle_timeout_ms",
     "default_project_trust",
     "auto_copy_selection",
+    "external_editor",
     "hide_thinking",
     "thinking_level",
     "double_escape_action",
@@ -2784,12 +2785,32 @@ class SettingsPickerScreen(ModalScreen[None]):
         if index >= len(self.filtered_items):
             return
         selected_key = self.filtered_items[index].key
+        if selected_key == "external_editor":
+            self.app.push_screen(
+                ExtensionInputScreen(
+                    "External editor",
+                    placeholder="Command, e.g. code --wait or vim",
+                    prefill=self.settings.external_editor or "",
+                    keybindings=self.keybindings,
+                ),
+                self._handle_external_editor_result,
+            )
+            return
         self.settings = _next_tui_settings(
             self.settings,
             selected_key,
             thinking_levels=self.thinking_levels,
         )
         self.apply_settings(self.settings)
+        self._refresh_settings_list(index)
+
+    def _handle_external_editor_result(self, command: str | None) -> None:
+        if command is None:
+            return
+        self.settings = replace(self.settings, external_editor=command.strip() or None)
+        self.apply_settings(self.settings)
+        settings_list = self.query_one("#settings-picker-list", ListView)
+        index = settings_list.index if settings_list.index is not None else 0
         self._refresh_settings_list(index)
 
     def _move(self, direction: Literal[-1, 1]) -> None:
@@ -12059,6 +12080,14 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
             description="Copy selected transcript text to the clipboard automatically",
         ),
         SettingsPickerItem(
+            key="external_editor",
+            label="External editor",
+            value=settings.external_editor or "VISUAL/EDITOR",
+            description=(
+                "Command used by the prompt editor action; blank falls back to VISUAL or EDITOR"
+            ),
+        ),
+        SettingsPickerItem(
             key="hide_thinking",
             label="Hide thinking",
             value="on" if settings.hide_thinking else "off",
@@ -12850,7 +12879,7 @@ async def _run_clipboard_command(args: tuple[str, ...], *, timeout_s: float) -> 
             stderr=subprocess.DEVNULL,
         )
         stdout, _ = await asyncio.wait_for(process.communicate(), timeout=timeout_s)
-    except OSError, TimeoutError:
+    except (OSError, TimeoutError):
         if process is not None and process.returncode is None:
             process.kill()
             with suppress(ProcessLookupError):
@@ -12892,7 +12921,7 @@ def _external_editor_command(configured_command: str | None = None) -> str | Non
     command = os.environ.get("VISUAL") or os.environ.get("EDITOR")
     if command is not None and command.strip():
         return command.strip()
-    return "notepad" if sys.platform == "win32" else "nano"
+    return None
 
 
 async def _edit_text_with_external_editor(command: str, content: str) -> str | None:
@@ -13964,7 +13993,7 @@ def _run_tmux_show_option(option: str) -> str | None:
             text=True,
             timeout=2,
         )
-    except OSError, subprocess.TimeoutExpired:
+    except (OSError, subprocess.TimeoutExpired):
         return None
     if completed.returncode != 0:
         return None
