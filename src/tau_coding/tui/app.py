@@ -5937,7 +5937,8 @@ class TauTuiApp(App[None]):
         self.state.load_custom_entries(custom_entries)
 
     def copy_to_clipboard(self, text: str) -> None:
-        """Copy text using pyperclip when available, then Textual's fallback."""
+        """Copy text using native clipboard helpers, then Textual's fallback."""
+        copied = False
         if self._supports_pyperclip is None:
             try:
                 import pyperclip  # type: ignore[import-untyped]
@@ -5950,7 +5951,15 @@ class TauTuiApp(App[None]):
 
             with suppress(Exception):
                 pyperclip.copy(text)
-        super().copy_to_clipboard(text)
+                copied = True
+        if not copied:
+            with suppress(Exception):
+                copied = _copy_text_with_platform_command(text)
+        try:
+            super().copy_to_clipboard(text)
+        except Exception:
+            if not copied:
+                raise
 
     def get_theme_variable_defaults(self) -> dict[str, str]:
         """Return Tau-specific CSS variables for the selected TUI theme."""
@@ -10049,6 +10058,8 @@ _CLIPBOARD_TEXT_COMMANDS: tuple[tuple[str, ...], ...] = (
     ("xclip", "-selection", "clipboard", "-o"),
     ("xsel", "--clipboard", "--output"),
 )
+type _ClipboardCommandRunner = Callable[[tuple[str, ...], str, float], bool]
+type _ClipboardCommandExists = Callable[[str], str | None]
 _SUPPORTED_CLIPBOARD_IMAGE_MIME_TYPES: tuple[str, ...] = (
     "image/png",
     "image/jpeg",
@@ -10061,6 +10072,87 @@ _CLIPBOARD_IMAGE_EXTENSIONS: dict[str, str] = {
     "image/webp": "webp",
     "image/gif": "gif",
 }
+
+
+def _copy_text_with_platform_command(
+    text: str,
+    *,
+    platform_name: str | None = None,
+    env: Mapping[str, str] | None = None,
+    command_exists: _ClipboardCommandExists | None = None,
+    runner: _ClipboardCommandRunner | None = None,
+    timeout_s: float = 5.0,
+) -> bool:
+    """Copy text with platform tools that retain clipboard ownership."""
+    platform = sys.platform if platform_name is None else platform_name
+    environment = os.environ if env is None else env
+    exists = shutil.which if command_exists is None else command_exists
+    run_command = _run_clipboard_write_command if runner is None else runner
+
+    if platform == "darwin":
+        return exists("pbcopy") is not None and run_command(("pbcopy",), text, timeout_s)
+    if platform == "win32":
+        return exists("clip") is not None and run_command(("clip",), text, timeout_s)
+
+    if (
+        environment.get("TERMUX_VERSION")
+        and exists("termux-clipboard-set") is not None
+        and run_command(("termux-clipboard-set",), text, timeout_s)
+    ):
+        return True
+
+    has_x11_display = bool(environment.get("DISPLAY"))
+    if environment.get("WAYLAND_DISPLAY") and exists("wl-copy") is not None:
+        if run_command(("wl-copy",), text, timeout_s):
+            return True
+        if has_x11_display and _copy_text_with_x11_command(
+            text,
+            command_exists=exists,
+            runner=run_command,
+            timeout_s=timeout_s,
+        ):
+            return True
+
+    return has_x11_display and _copy_text_with_x11_command(
+        text,
+        command_exists=exists,
+        runner=run_command,
+        timeout_s=timeout_s,
+    )
+
+
+def _copy_text_with_x11_command(
+    text: str,
+    *,
+    command_exists: _ClipboardCommandExists,
+    runner: _ClipboardCommandRunner,
+    timeout_s: float,
+) -> bool:
+    x11_commands = (
+        ("xclip", "-selection", "clipboard"),
+        ("xsel", "--clipboard", "--input"),
+    )
+    for command in x11_commands:
+        if command_exists(command[0]) is None:
+            continue
+        if runner(command, text, timeout_s):
+            return True
+    return False
+
+
+def _run_clipboard_write_command(args: tuple[str, ...], text: str, timeout_s: float) -> bool:
+    try:
+        completed = subprocess.run(
+            args,
+            input=text.encode("utf-8"),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=timeout_s,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return completed.returncode == 0
 
 
 @dataclass(frozen=True, slots=True)

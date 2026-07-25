@@ -1998,6 +1998,55 @@ async def test_tui_app_copy_last_assistant_message_reports_missing_message(
     assert notifications == [("No agent messages to copy yet.", "warning")]
 
 
+def test_clipboard_copy_falls_back_from_failed_wl_copy_to_x11() -> None:
+    calls: list[tuple[tuple[str, ...], str, float]] = []
+
+    def command_exists(command: str) -> str | None:
+        return f"/usr/bin/{command}" if command in {"wl-copy", "xclip"} else None
+
+    def runner(args: tuple[str, ...], text: str, timeout_s: float) -> bool:
+        calls.append((args, text, timeout_s))
+        return args[0] != "wl-copy"
+
+    copied = tui_app._copy_text_with_platform_command(
+        "copy me",
+        platform_name="linux",
+        env={"WAYLAND_DISPLAY": "wayland-1", "DISPLAY": ":0"},
+        command_exists=command_exists,
+        runner=runner,
+        timeout_s=0.25,
+    )
+
+    assert copied is True
+    assert calls == [
+        (("wl-copy",), "copy me", 0.25),
+        (("xclip", "-selection", "clipboard"), "copy me", 0.25),
+    ]
+
+
+def test_clipboard_copy_does_not_claim_failed_wl_copy_without_fallback() -> None:
+    calls: list[tuple[str, ...]] = []
+
+    def command_exists(command: str) -> str | None:
+        return f"/usr/bin/{command}" if command == "wl-copy" else None
+
+    def runner(args: tuple[str, ...], text: str, timeout_s: float) -> bool:
+        del text, timeout_s
+        calls.append(args)
+        return False
+
+    copied = tui_app._copy_text_with_platform_command(
+        "copy me",
+        platform_name="linux",
+        env={"WAYLAND_DISPLAY": "wayland-1"},
+        command_exists=command_exists,
+        runner=runner,
+    )
+
+    assert copied is False
+    assert calls == [("wl-copy",)]
+
+
 def test_transcript_selection_text_tracks_tool_result_visibility() -> None:
     item = ChatItem(
         role="tool",
