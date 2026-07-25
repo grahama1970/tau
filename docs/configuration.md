@@ -328,6 +328,9 @@ tau --no-builtin-tools
 tau --no-skills
 tau --no-prompt-templates
 tau --no-themes
+tau --skill .tau/skills/review.md
+tau --prompt-template .tau/prompts/review.md
+tau --theme .tau/themes/custom.json
 tau export <session-id>
 tau export <session-id> session.html
 tau export <session-id> --format jsonl
@@ -372,6 +375,11 @@ preserving explicit non-built-in tools provided by embedding code.
 `--no-skills`, `--no-prompt-templates`, and `--no-themes` disable discovery of
 those resource classes for the startup run. Context file discovery is controlled
 separately by `--no-context-files`.
+
+`--skill`, `--prompt-template`, and `--theme` load explicit resource files or
+directories for the startup run. Explicit paths are still loaded when the
+matching discovery class is disabled, so a run can start from only the resources
+named on the command line.
 
 `tau export` writes a standalone HTML file with the preserved session tree and
 the storage-order transcript. The source can be an indexed session id or a path

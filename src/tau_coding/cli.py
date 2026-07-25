@@ -909,6 +909,21 @@ def main(
         bool,
         typer.Option("--no-themes", help="Disable custom TUI theme discovery and loading."),
     ] = False,
+    skill_paths: Annotated[
+        list[Path] | None,
+        typer.Option("--skill", help="Load a skill markdown file or directory; repeatable."),
+    ] = None,
+    prompt_template_paths: Annotated[
+        list[Path] | None,
+        typer.Option(
+            "--prompt-template",
+            help="Load a prompt template markdown file or directory; repeatable.",
+        ),
+    ] = None,
+    theme_paths: Annotated[
+        list[Path] | None,
+        typer.Option("--theme", help="Load a custom theme JSON file or directory; repeatable."),
+    ] = None,
     auto_compact_threshold: Annotated[
         int | None,
         typer.Option(
@@ -1078,6 +1093,13 @@ def main(
 
     tool_allowlist = _parse_csv_option(tools, flag_name="--tools")
     tool_denylist = _parse_csv_option(exclude_tools, flag_name="--exclude-tools") or ()
+    startup_cwd = cwd or Path.cwd()
+    resolved_skill_paths = _resolve_cli_resource_paths(skill_paths, cwd=startup_cwd)
+    resolved_prompt_template_paths = _resolve_cli_resource_paths(
+        prompt_template_paths,
+        cwd=startup_cwd,
+    )
+    resolved_theme_paths = _resolve_cli_resource_paths(theme_paths, cwd=startup_cwd)
 
     provider_settings_override = None
     if model_patterns is not None:
@@ -3288,7 +3310,7 @@ def main(
             resumable_session_id = anyio.run(
                 run_openai_tui,
                 model,
-                cwd or Path.cwd(),
+                startup_cwd,
                 startup_session_id,
                 new_session,
                 provider,
@@ -3307,6 +3329,9 @@ def main(
                 no_skills,
                 no_prompt_templates,
                 no_themes,
+                resolved_skill_paths,
+                resolved_prompt_template_paths,
+                resolved_theme_paths,
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -3334,7 +3359,7 @@ def main(
             run_openai_print_mode,
             prompt,
             model,
-            cwd or Path.cwd(),
+            startup_cwd,
             effective_output,
             provider,
             loop_receipt,
@@ -3349,6 +3374,9 @@ def main(
             no_skills,
             no_prompt_templates,
             no_themes,
+            resolved_skill_paths,
+            resolved_prompt_template_paths,
+            resolved_theme_paths,
         )
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
@@ -3363,6 +3391,12 @@ def _parse_csv_option(value: str | None, *, flag_name: str) -> tuple[str, ...] |
     if not names:
         raise typer.BadParameter(f"{flag_name} requires at least one non-empty value")
     return names
+
+
+def _resolve_cli_resource_paths(paths: list[Path] | None, *, cwd: Path) -> tuple[Path, ...]:
+    if not paths:
+        return ()
+    return tuple(path.expanduser() if path.is_absolute() else cwd / path for path in paths)
 
 
 async def run_openai_tui(
@@ -3386,6 +3420,9 @@ async def run_openai_tui(
     no_skills: bool = False,
     no_prompt_templates: bool = False,
     no_themes: bool = False,
+    skill_paths: tuple[Path, ...] = (),
+    prompt_template_paths: tuple[Path, ...] = (),
+    theme_paths: tuple[Path, ...] = (),
 ) -> str | None:
     """Run the Textual TUI and return its resumable session id, if any."""
     return await run_tui_app(
@@ -3409,6 +3446,9 @@ async def run_openai_tui(
         no_skills=no_skills,
         no_prompt_templates=no_prompt_templates,
         no_themes=no_themes,
+        skill_paths=skill_paths,
+        prompt_template_paths=prompt_template_paths,
+        theme_paths=theme_paths,
     )
 
 
@@ -13187,6 +13227,9 @@ async def run_openai_print_mode(
     no_skills: bool = False,
     no_prompt_templates: bool = False,
     no_themes: bool = False,
+    skill_paths: tuple[Path, ...] = (),
+    prompt_template_paths: tuple[Path, ...] = (),
+    theme_paths: tuple[Path, ...] = (),
 ) -> bool:
     """Run print mode with the OpenAI-compatible provider configured from the environment."""
     settings = load_provider_settings()
@@ -13225,6 +13268,9 @@ async def run_openai_print_mode(
             discover_skills=not no_skills,
             discover_prompt_templates=not no_prompt_templates,
             discover_themes=not no_themes,
+            skill_paths=skill_paths,
+            prompt_template_paths=prompt_template_paths,
+            theme_paths=theme_paths,
         )
     finally:
         await provider.aclose()
@@ -13253,6 +13299,9 @@ async def run_print_mode(
     discover_skills: bool = True,
     discover_prompt_templates: bool = True,
     discover_themes: bool = True,
+    skill_paths: tuple[Path, ...] = (),
+    prompt_template_paths: tuple[Path, ...] = (),
+    theme_paths: tuple[Path, ...] = (),
 ) -> bool:
     """Run one non-interactive prompt and print streamed events.
 
@@ -13285,6 +13334,9 @@ async def run_print_mode(
             discover_skills=discover_skills,
             discover_prompt_templates=discover_prompt_templates,
             discover_themes=discover_themes,
+            skill_paths=skill_paths,
+            prompt_template_paths=prompt_template_paths,
+            theme_paths=theme_paths,
         )
     )
     renderer = create_event_renderer(output)

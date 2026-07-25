@@ -595,6 +595,101 @@ def load_custom_tui_themes(
     return themes, diagnostics
 
 
+def load_custom_tui_themes_from_paths(
+    theme_paths: Sequence[Path],
+) -> tuple[dict[str, TuiTheme], list[ResourceDiagnostic]]:
+    """Load explicit theme JSON files or directories in increasing precedence order."""
+    themes: dict[str, TuiTheme] = {}
+    diagnostics: list[ResourceDiagnostic] = []
+    for raw_path in theme_paths:
+        path = raw_path.expanduser()
+        if not path.exists():
+            diagnostics.append(
+                ResourceDiagnostic(
+                    kind="theme",
+                    path=path,
+                    message="Theme path does not exist",
+                    severity="error",
+                )
+            )
+            continue
+        if path.is_dir():
+            loaded, path_diagnostics = load_custom_tui_themes((path,))
+            diagnostics.extend(path_diagnostics)
+            for name, theme in loaded.items():
+                if name in themes:
+                    diagnostics.append(
+                        ResourceDiagnostic(
+                            kind="theme",
+                            name=name,
+                            path=path,
+                            message=f"theme {name!r} overrides an earlier explicit theme",
+                        )
+                    )
+                themes[name] = theme
+            continue
+        if path.is_file() and path.suffix.lower() == ".json":
+            theme = _load_explicit_theme_file(path, diagnostics)
+            if theme is not None:
+                if theme.name in _BUILTIN_THEMES:
+                    diagnostics.append(
+                        ResourceDiagnostic(
+                            kind="theme",
+                            message=(
+                                f"theme {theme.name!r} shadows a built-in theme and was ignored"
+                            ),
+                            path=path,
+                            name=theme.name,
+                        )
+                    )
+                    continue
+                if theme.name in themes:
+                    diagnostics.append(
+                        ResourceDiagnostic(
+                            kind="theme",
+                            name=theme.name,
+                            path=path,
+                            message=f"theme {theme.name!r} overrides an earlier explicit theme",
+                        )
+                    )
+                themes[theme.name] = theme
+            continue
+        diagnostics.append(
+            ResourceDiagnostic(
+                kind="theme",
+                path=path,
+                message="Theme path must be a JSON file or directory",
+                severity="error",
+            )
+        )
+    return themes, diagnostics
+
+
+def _load_explicit_theme_file(
+    path: Path,
+    diagnostics: list[ResourceDiagnostic],
+) -> TuiTheme | None:
+    try:
+        data = loads(path.read_text(encoding="utf-8"))
+    except (OSError, JSONDecodeError, UnicodeDecodeError) as error:
+        diagnostics.append(
+            ResourceDiagnostic(
+                kind="theme",
+                message=f"could not parse theme JSON: {error}",
+                path=path,
+                severity="error",
+            )
+        )
+        return None
+    try:
+        return parse_tui_theme_json(data)
+    except TuiThemeError as error:
+        diagnostics.append(
+            ResourceDiagnostic(kind="theme", message=str(error), path=path, severity="error")
+        )
+        return None
+
+
 def _parse_theme_definition_name(value: object, problems: list[str]) -> str:
     if not isinstance(value, str) or not value.strip():
         problems.append("name must be a non-empty string")

@@ -69,6 +69,7 @@ from tau_coding.paths import TauPaths
 from tau_coding.prompt_templates import (
     PromptTemplate,
     expand_prompt_template_command,
+    load_prompt_templates_from_paths_with_diagnostics,
     load_prompt_templates_with_diagnostics,
 )
 from tau_coding.provider_config import (
@@ -100,7 +101,12 @@ from tau_coding.session_export import (
     normalize_export_format,
 )
 from tau_coding.session_manager import SessionManager
-from tau_coding.skills import Skill, expand_skill_command, load_skills_with_diagnostics
+from tau_coding.skills import (
+    Skill,
+    expand_skill_command,
+    load_skills_from_paths_with_diagnostics,
+    load_skills_with_diagnostics,
+)
 from tau_coding.system_prompt import (
     BuildSystemPromptOptions,
     ProjectContextFile,
@@ -122,7 +128,11 @@ from tau_coding.trust import (
     has_trust_requiring_project_resources,
     project_trust_state,
 )
-from tau_coding.tui.config import load_custom_tui_themes, set_custom_tui_themes
+from tau_coding.tui.config import (
+    load_custom_tui_themes,
+    load_custom_tui_themes_from_paths,
+    set_custom_tui_themes,
+)
 
 StreamingBehavior = Literal["steer", "follow_up"]
 _UNSET_LEAF_ID: Final[object] = object()
@@ -207,6 +217,9 @@ class CodingSessionConfig:
     custom_system_prompt: str | None = None
     append_system_prompt: str | None = None
     context_files: tuple[ProjectContextFile, ...] = ()
+    skill_paths: tuple[Path, ...] = ()
+    prompt_template_paths: tuple[Path, ...] = ()
+    theme_paths: tuple[Path, ...] = ()
     discover_skills: bool = True
     discover_prompt_templates: bool = True
     discover_themes: bool = True
@@ -313,6 +326,9 @@ class CodingSession:
         resources = _load_session_resources(
             resource_paths,
             config.context_files,
+            skill_paths=config.skill_paths,
+            prompt_template_paths=config.prompt_template_paths,
+            theme_paths=config.theme_paths,
             discover_skills=config.discover_skills,
             discover_prompt_templates=config.discover_prompt_templates,
             discover_themes=config.discover_themes,
@@ -993,6 +1009,9 @@ class CodingSession:
         resources = _load_session_resources(
             self._resource_paths,
             self._config.context_files,
+            skill_paths=self._config.skill_paths,
+            prompt_template_paths=self._config.prompt_template_paths,
+            theme_paths=self._config.theme_paths,
             discover_skills=self._config.discover_skills,
             discover_prompt_templates=self._config.discover_prompt_templates,
             discover_themes=self._config.discover_themes,
@@ -2446,10 +2465,55 @@ def _select_session_tools(
     return [tool for tool in tools if tool.name in selected_names]
 
 
+def _merge_skills_by_name(
+    discovered: list[Skill],
+    explicit: list[Skill],
+) -> tuple[list[Skill], list[ResourceDiagnostic]]:
+    skills_by_name = {skill.name: skill for skill in discovered}
+    diagnostics: list[ResourceDiagnostic] = []
+    for skill in explicit:
+        previous = skills_by_name.get(skill.name)
+        if previous is not None:
+            diagnostics.append(
+                ResourceDiagnostic(
+                    kind="skill",
+                    name=skill.name,
+                    path=skill.path,
+                    message=f"overrides lower-precedence resource at {previous.path}",
+                )
+            )
+        skills_by_name[skill.name] = skill
+    return sorted(skills_by_name.values(), key=lambda item: item.name), diagnostics
+
+
+def _merge_prompt_templates_by_name(
+    discovered: list[PromptTemplate],
+    explicit: list[PromptTemplate],
+) -> tuple[list[PromptTemplate], list[ResourceDiagnostic]]:
+    templates_by_name = {template.name: template for template in discovered}
+    diagnostics: list[ResourceDiagnostic] = []
+    for template in explicit:
+        previous = templates_by_name.get(template.name)
+        if previous is not None:
+            diagnostics.append(
+                ResourceDiagnostic(
+                    kind="prompt",
+                    name=template.name,
+                    path=template.path,
+                    message=f"overrides lower-precedence resource at {previous.path}",
+                )
+            )
+        templates_by_name[template.name] = template
+    return sorted(templates_by_name.values(), key=lambda item: item.name), diagnostics
+
+
 def _load_session_resources(
     resource_paths: TauResourcePaths,
     explicit_context_files: tuple[ProjectContextFile, ...],
     *,
+    skill_paths: tuple[Path, ...] = (),
+    prompt_template_paths: tuple[Path, ...] = (),
+    theme_paths: tuple[Path, ...] = (),
     discover_skills: bool = True,
     discover_prompt_templates: bool = True,
     discover_themes: bool = True,
@@ -2464,12 +2528,26 @@ def _load_session_resources(
         loaded_skills, skill_diagnostics = load_skills_with_diagnostics(effective_paths)
     else:
         loaded_skills, skill_diagnostics = [], []
+    explicit_skills, explicit_skill_diagnostics = load_skills_from_paths_with_diagnostics(
+        skill_paths
+    )
+    loaded_skills, explicit_skill_override_diagnostics = _merge_skills_by_name(
+        loaded_skills,
+        explicit_skills,
+    )
     if discover_prompt_templates:
         loaded_prompt_templates, prompt_diagnostics = load_prompt_templates_with_diagnostics(
             effective_paths
         )
     else:
         loaded_prompt_templates, prompt_diagnostics = [], []
+    explicit_prompt_templates, explicit_prompt_diagnostics = (
+        load_prompt_templates_from_paths_with_diagnostics(prompt_template_paths)
+    )
+    loaded_prompt_templates, explicit_prompt_override_diagnostics = _merge_prompt_templates_by_name(
+        loaded_prompt_templates,
+        explicit_prompt_templates,
+    )
     if discover_context_files:
         discovered_context, context_diagnostics = discover_project_context_with_diagnostics(
             effective_paths
@@ -2480,6 +2558,8 @@ def _load_session_resources(
         custom_themes, theme_diagnostics = load_custom_tui_themes(effective_paths.themes_dirs)
     else:
         custom_themes, theme_diagnostics = {}, []
+    explicit_themes, explicit_theme_diagnostics = load_custom_tui_themes_from_paths(theme_paths)
+    custom_themes = {**custom_themes, **explicit_themes}
     set_custom_tui_themes(custom_themes)
     return SessionResources(
         skills=tuple(loaded_skills),
@@ -2489,9 +2569,14 @@ def _load_session_resources(
             [
                 *trust_diagnostics,
                 *skill_diagnostics,
+                *explicit_skill_diagnostics,
+                *explicit_skill_override_diagnostics,
                 *prompt_diagnostics,
+                *explicit_prompt_diagnostics,
+                *explicit_prompt_override_diagnostics,
                 *context_diagnostics,
                 *theme_diagnostics,
+                *explicit_theme_diagnostics,
             ]
         ),
     )

@@ -68,6 +68,64 @@ def load_prompt_templates_with_diagnostics(
     return sorted(templates_by_name.values(), key=lambda template: template.name), diagnostics
 
 
+def load_prompt_templates_from_paths_with_diagnostics(
+    paths: Sequence[Path],
+) -> tuple[list[PromptTemplate], list[ResourceDiagnostic]]:
+    """Load explicit prompt template files or directories in increasing precedence order."""
+    templates_by_name: dict[str, PromptTemplate] = {}
+    diagnostics: list[ResourceDiagnostic] = []
+    for raw_path in paths:
+        path = raw_path.expanduser()
+        if not path.exists():
+            diagnostics.append(
+                ResourceDiagnostic(
+                    kind="prompt",
+                    path=path,
+                    message="Prompt template path does not exist",
+                    severity="error",
+                )
+            )
+            continue
+        if path.is_dir():
+            loaded_templates, path_diagnostics = _load_prompt_templates_from_dir_with_diagnostics(
+                path
+            )
+            diagnostics.extend(path_diagnostics)
+            for template in loaded_templates:
+                previous = templates_by_name.get(template.name)
+                if previous is not None:
+                    diagnostics.append(
+                        _override_diagnostic("prompt", template.name, template.path, previous.path)
+                    )
+                templates_by_name[template.name] = template
+            continue
+        if path.is_file() and path.suffix.lower() == ".md":
+            loaded, path_diagnostics = _load_explicit_prompt_template_file(path.stem, path)
+            diagnostics.extend(path_diagnostics)
+            if loaded is not None:
+                previous = templates_by_name.get(loaded.name)
+                if previous is not None:
+                    diagnostics.append(
+                        _override_diagnostic(
+                            "prompt",
+                            loaded.name,
+                            loaded.path,
+                            previous.path,
+                        )
+                    )
+                templates_by_name[loaded.name] = loaded
+            continue
+        diagnostics.append(
+            ResourceDiagnostic(
+                kind="prompt",
+                path=path,
+                message="Prompt template path must be a markdown file or directory",
+                severity="error",
+            )
+        )
+    return sorted(templates_by_name.values(), key=lambda template: template.name), diagnostics
+
+
 def render_prompt_template(
     template: PromptTemplate,
     variables: Mapping[str, str],
@@ -273,4 +331,33 @@ def _load_prompt_template(name: str, path: Path) -> PromptTemplate:
         content=content,
         description=description,
         argument_hint=argument_hint,
+    )
+
+
+def _load_explicit_prompt_template_file(
+    name: str,
+    path: Path,
+) -> tuple[PromptTemplate | None, list[ResourceDiagnostic]]:
+    try:
+        return _load_prompt_template(name, path), []
+    except (OSError, UnicodeDecodeError) as exc:
+        return None, [
+            ResourceDiagnostic(
+                kind="prompt",
+                name=name,
+                path=path,
+                message=f"could not read prompt template: {exc}",
+                severity="error",
+            )
+        ]
+
+
+def _override_diagnostic(
+    kind: str, name: str, path: Path, previous_path: Path
+) -> ResourceDiagnostic:
+    return ResourceDiagnostic(
+        kind=kind,
+        name=name,
+        path=path,
+        message=f"overrides lower-precedence resource at {previous_path}",
     )

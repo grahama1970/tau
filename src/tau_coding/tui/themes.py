@@ -15,6 +15,7 @@ from tau_coding.tui.config import (
     available_tui_theme_names,
     get_tui_theme,
     load_custom_tui_themes,
+    load_custom_tui_themes_from_paths,
     parse_tui_theme_json,
     set_custom_tui_themes,
 )
@@ -34,6 +35,7 @@ __all__ = [
     "available_tui_theme_names",
     "get_tui_theme",
     "load_custom_tui_themes",
+    "load_custom_tui_themes_from_paths",
     "parse_tui_theme_json",
     "set_custom_tui_themes",
 ]

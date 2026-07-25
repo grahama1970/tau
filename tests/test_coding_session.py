@@ -1933,6 +1933,48 @@ async def test_session_can_disable_resource_discovery(tmp_path: Path) -> None:
 
 
 @pytest.mark.anyio
+async def test_session_loads_explicit_resource_paths_when_discovery_is_disabled(
+    tmp_path: Path,
+) -> None:
+    skill_path = tmp_path / "explicit-skill.md"
+    prompt_path = tmp_path / "explicit-prompt.md"
+    theme_path = tmp_path / "explicit-theme.json"
+    skill_path.write_text("# Explicit skill", encoding="utf-8")
+    prompt_path.write_text("Explicit prompt", encoding="utf-8")
+    theme_data = {
+        "name": "explicit-midnight",
+        "colors": {field_name: "#101010" for field_name in THEME_COLOR_FIELDS},
+        "roles": {role: {"border": "#101010", "body": "#e0e0e0"} for role in TRANSCRIPT_ROLES},
+    }
+    theme_path.write_text(json.dumps(theme_data), encoding="utf-8")
+    set_custom_tui_themes({})
+
+    try:
+        session = await CodingSession.load(
+            CodingSessionConfig(
+                provider=FakeProvider([]),
+                model="fake",
+                system="You are Tau.",
+                storage=JsonlSessionStorage(tmp_path / "session.jsonl"),
+                cwd=tmp_path,
+                resource_paths=TauResourcePaths(root=tmp_path / "resources", agents_root=None),
+                discover_skills=False,
+                discover_prompt_templates=False,
+                discover_themes=False,
+                skill_paths=(skill_path,),
+                prompt_template_paths=(prompt_path,),
+                theme_paths=(theme_path,),
+            )
+        )
+
+        assert [skill.name for skill in session.skills] == ["explicit-skill"]
+        assert [template.name for template in session.prompt_templates] == ["explicit-prompt"]
+        assert "explicit-midnight" in available_tui_theme_names()
+    finally:
+        set_custom_tui_themes({})
+
+
+@pytest.mark.anyio
 async def test_session_touches_session_manager_after_persisting_messages(tmp_path: Path) -> None:
     storage = JsonlSessionStorage(tmp_path / "session.jsonl")
     manager = SessionManager(TauPaths(home=tmp_path / ".tau", agents_home=tmp_path / ".agents"))

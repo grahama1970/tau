@@ -83,6 +83,73 @@ def load_skills_with_diagnostics(
     return sorted(skills_by_name.values(), key=lambda skill: skill.name), diagnostics
 
 
+def load_skills_from_paths_with_diagnostics(
+    paths: Sequence[Path],
+) -> tuple[list[Skill], list[ResourceDiagnostic]]:
+    """Load explicit skill files or directories in increasing precedence order."""
+    skills_by_name: dict[str, Skill] = {}
+    diagnostics: list[ResourceDiagnostic] = []
+    for raw_path in paths:
+        path = raw_path.expanduser()
+        if not path.exists():
+            diagnostics.append(
+                ResourceDiagnostic(
+                    kind="skill",
+                    path=path,
+                    message="Skill path does not exist",
+                    severity="error",
+                )
+            )
+            continue
+        if path.is_dir():
+            if (path / "SKILL.md").is_file():
+                loaded, path_diagnostics = _load_explicit_skill_file(path.name, path / "SKILL.md")
+                diagnostics.extend(path_diagnostics)
+                if loaded is not None:
+                    previous = skills_by_name.get(loaded.name)
+                    if previous is not None:
+                        diagnostics.append(
+                            _override_diagnostic(
+                                "skill",
+                                loaded.name,
+                                loaded.path,
+                                previous.path,
+                            )
+                        )
+                    skills_by_name[loaded.name] = loaded
+                continue
+            loaded_skills, path_diagnostics = _load_skills_from_dir_with_diagnostics(path)
+            diagnostics.extend(path_diagnostics)
+            for skill in loaded_skills:
+                previous = skills_by_name.get(skill.name)
+                if previous is not None:
+                    diagnostics.append(
+                        _override_diagnostic("skill", skill.name, skill.path, previous.path)
+                    )
+                skills_by_name[skill.name] = skill
+            continue
+        if path.is_file() and path.suffix.lower() == ".md":
+            loaded, path_diagnostics = _load_explicit_skill_file(path.stem, path)
+            diagnostics.extend(path_diagnostics)
+            if loaded is not None:
+                previous = skills_by_name.get(loaded.name)
+                if previous is not None:
+                    diagnostics.append(
+                        _override_diagnostic("skill", loaded.name, loaded.path, previous.path)
+                    )
+                skills_by_name[loaded.name] = loaded
+            continue
+        diagnostics.append(
+            ResourceDiagnostic(
+                kind="skill",
+                path=path,
+                message="Skill path must be a markdown file or directory",
+                severity="error",
+            )
+        )
+    return sorted(skills_by_name.values(), key=lambda skill: skill.name), diagnostics
+
+
 def expand_skill_command(text: str, skills: Sequence[Skill]) -> str | None:
     """Expand `/skill:name` prompt text, or return None for non-skill text."""
     stripped = text.strip()
@@ -210,3 +277,32 @@ def _load_skill(name: str, path: Path) -> Skill:
     metadata, content = parse_markdown_resource(raw)
     description = metadata.get("description") or derive_description(content)
     return Skill(name=name, path=path, content=content, description=description)
+
+
+def _load_explicit_skill_file(
+    name: str,
+    path: Path,
+) -> tuple[Skill | None, list[ResourceDiagnostic]]:
+    try:
+        return _load_skill(name, path), []
+    except (OSError, UnicodeDecodeError) as exc:
+        return None, [
+            ResourceDiagnostic(
+                kind="skill",
+                name=name,
+                path=path,
+                message=f"could not read skill: {exc}",
+                severity="error",
+            )
+        ]
+
+
+def _override_diagnostic(
+    kind: str, name: str, path: Path, previous_path: Path
+) -> ResourceDiagnostic:
+    return ResourceDiagnostic(
+        kind=kind,
+        name=name,
+        path=path,
+        message=f"overrides lower-precedence resource at {previous_path}",
+    )
