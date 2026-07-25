@@ -103,6 +103,7 @@ from tau_coding.skills import Skill
 from tau_coding.system_prompt import ProjectContextFile
 from tau_coding.thinking import (
     DEFAULT_THINKING_LEVEL,
+    THINKING_LEVEL_DESCRIPTIONS,
     THINKING_LEVELS,
     ThinkingLevel,
     next_thinking_level,
@@ -2750,6 +2751,143 @@ class SettingsPickerScreen(ModalScreen[None]):
         self.query_one("#settings-picker-help", Static).update(self._help_text())
 
 
+class ThinkingPickerListView(ListView):
+    """List view that keeps thinking-picker navigation local."""
+
+    BINDINGS: ClassVar[list[Binding]] = [
+        Binding("up", "thinking_cursor_up", "Up", priority=True),
+        Binding("down", "thinking_cursor_down", "Down", priority=True),
+        Binding("enter", "thinking_select_cursor", "Select", priority=True),
+        Binding("escape", "thinking_cancel", "Cancel", priority=True),
+    ]
+
+    def _picker(self) -> ThinkingPickerScreen:
+        return cast(ThinkingPickerScreen, self.screen)
+
+    def action_thinking_cursor_up(self) -> None:
+        """Move to the previous thinking level."""
+        self._picker().action_cursor_up()
+
+    def action_thinking_cursor_down(self) -> None:
+        """Move to the next thinking level."""
+        self._picker().action_cursor_down()
+
+    def action_thinking_select_cursor(self) -> None:
+        """Select the highlighted thinking level."""
+        self._picker().action_select_cursor()
+
+    def action_thinking_cancel(self) -> None:
+        """Close the picker without changing thinking level."""
+        self._picker().action_cancel()
+
+
+class ThinkingPickerScreen(ModalScreen[str | None]):
+    """Modal picker for the active model's thinking levels."""
+
+    BINDINGS: ClassVar[list[Binding]] = [
+        Binding("up", "cursor_up", "Up", priority=True),
+        Binding("down", "cursor_down", "Down", priority=True),
+        Binding("enter", "select_cursor", "Select", priority=True),
+        Binding("escape", "cancel", "Cancel", priority=True),
+    ]
+
+    def __init__(
+        self,
+        current_level: str,
+        thinking_levels: Sequence[ThinkingLevel],
+        *,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
+        super().__init__()
+        self.current_level = current_level
+        self.thinking_levels = tuple(thinking_levels)
+        self.keybindings = keybindings or TuiKeybindings()
+
+    def compose(self) -> ComposeResult:
+        """Compose the thinking-level picker."""
+        with Vertical(id="thinking-picker"):
+            yield Static("Thinking", id="thinking-picker-title")
+            yield ThinkingPickerListView(
+                *self._list_items(),
+                id="thinking-picker-list",
+            )
+            select_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+            cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+            yield Static(
+                f"{select_key} selects - {cancel_key} cancels",
+                id="thinking-picker-help",
+            )
+
+    def on_mount(self) -> None:
+        """Focus the thinking-level list and preselect the current level."""
+        thinking_list = self.query_one("#thinking-picker-list", ListView)
+        try:
+            thinking_list.index = self.thinking_levels.index(
+                cast(ThinkingLevel, self.current_level)
+            )
+        except ValueError:
+            thinking_list.index = 0 if self.thinking_levels else None
+        thinking_list.focus()
+
+    def on_key(self, event: Key) -> None:
+        """Route picker keys to the list."""
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
+            event.stop()
+            self.action_cursor_up()
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
+            event.stop()
+            self.action_cursor_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
+            event.stop()
+            self.action_select_cursor()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.action_cancel()
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """Dismiss with the selected thinking level."""
+        if event.index >= len(self.thinking_levels):
+            return
+        self.dismiss(self.thinking_levels[event.index])
+
+    def action_cursor_up(self) -> None:
+        """Move to the previous thinking level."""
+        self._move(-1)
+
+    def action_cursor_down(self) -> None:
+        """Move to the next thinking level."""
+        self._move(1)
+
+    def action_select_cursor(self) -> None:
+        """Select the highlighted thinking level."""
+        self.query_one("#thinking-picker-list", ListView).action_select_cursor()
+
+    def action_cancel(self) -> None:
+        """Close the picker without changing thinking level."""
+        self.dismiss(None)
+
+    def _move(self, direction: Literal[-1, 1]) -> None:
+        if not self.thinking_levels:
+            return
+        thinking_list = self.query_one("#thinking-picker-list", ListView)
+        current_index = thinking_list.index if thinking_list.index is not None else 0
+        thinking_list.index = (current_index + direction) % len(self.thinking_levels)
+
+    def _list_items(self) -> list[ListItem]:
+        return [
+            ListItem(Label(_thinking_picker_label(level, self.current_level), markup=False))
+            for level in self.thinking_levels
+        ]
+
+
 class TrustPickerScreen(ModalScreen[ProjectTrustOption | None]):
     """Modal picker for project trust decisions."""
 
@@ -5298,6 +5436,7 @@ class TauTuiApp(App[None]):
 
     SessionPickerScreen,
     SettingsPickerScreen,
+    ThinkingPickerScreen,
     TreePickerScreen,
     UserMessagePickerScreen,
     WorkflowPickerScreen,
@@ -5312,6 +5451,7 @@ class TauTuiApp(App[None]):
 
     #session-picker,
     #settings-picker,
+    #thinking-picker,
     #tree-picker,
     #user-message-picker,
     #workflow-picker,
@@ -5331,6 +5471,7 @@ class TauTuiApp(App[None]):
 
     #session-picker-title,
     #settings-picker-title,
+    #thinking-picker-title,
     #tree-picker-title,
     #user-message-picker-title,
     #workflow-picker-title,
@@ -5366,6 +5507,7 @@ class TauTuiApp(App[None]):
 
     #session-picker-list,
     #settings-picker-list,
+    #thinking-picker-list,
     #tree-picker-list,
     #user-message-picker-list,
     #workflow-picker-list,
@@ -5390,6 +5532,7 @@ class TauTuiApp(App[None]):
 
     #session-picker-help,
     #settings-picker-help,
+    #thinking-picker-help,
     #tree-picker-help,
     #user-message-picker-help,
     #workflow-picker-help,
@@ -5907,6 +6050,13 @@ class TauTuiApp(App[None]):
             )
             return
 
+        if text.casefold() == "/thinking" and tuple(
+            getattr(self.session, "available_thinking_levels", ())
+        ):
+            self._open_thinking_picker()
+            self._refresh()
+            return
+
         command = _local_tui_command(
             text,
             self.tui_settings.keybindings,
@@ -6354,6 +6504,25 @@ class TauTuiApp(App[None]):
             )
         )
 
+    def _open_thinking_picker(self) -> None:
+        levels = tuple(getattr(self.session, "available_thinking_levels", ()))
+        if not levels:
+            self._notify("Thinking controls are not available.", severity="warning")
+            return
+        self.push_screen(
+            ThinkingPickerScreen(
+                str(getattr(self.session, "thinking_level", DEFAULT_THINKING_LEVEL)),
+                cast(tuple[ThinkingLevel, ...], levels),
+                keybindings=self.tui_settings.keybindings,
+            ),
+            callback=self._handle_thinking_picker_result,
+        )
+
+    def _handle_thinking_picker_result(self, level: str | None) -> None:
+        if level is None:
+            return
+        self.run_worker(self._set_thinking_level(level), exclusive=False)
+
     def _open_trust_picker(self) -> None:
         project_trust_state = getattr(self.session, "project_trust_state", None)
         if project_trust_state is None:
@@ -6727,6 +6896,7 @@ class TauTuiApp(App[None]):
             TreePickerScreen
             | UserMessagePickerScreen
             | SettingsPickerScreen
+            | ThinkingPickerScreen
             | LoginMethodPickerScreen
             | LoginProviderPickerScreen
             | SkillPickerScreen
@@ -6762,6 +6932,7 @@ class TauTuiApp(App[None]):
             self.screen,
             SessionPickerScreen
             | SettingsPickerScreen
+            | ThinkingPickerScreen
             | TreePickerScreen
             | UserMessagePickerScreen
             | LoginMethodPickerScreen
@@ -6786,6 +6957,7 @@ class TauTuiApp(App[None]):
             self.screen,
             SessionPickerScreen
             | SettingsPickerScreen
+            | ThinkingPickerScreen
             | TreePickerScreen
             | UserMessagePickerScreen
             | LoginMethodPickerScreen
@@ -9317,6 +9489,12 @@ def _settings_picker_items(settings: TuiSettings) -> tuple[SettingsPickerItem, .
 
 def _settings_picker_label(item: SettingsPickerItem) -> str:
     return f"{item.label}: {item.value}"
+
+
+def _thinking_picker_label(level: ThinkingLevel, current_level: str) -> str:
+    marker = "current" if level == current_level else "       "
+    description = THINKING_LEVEL_DESCRIPTIONS.get(level, "")
+    return f"{marker}  {level} - {description}" if description else f"{marker}  {level}"
 
 
 def _filter_settings_picker_items(

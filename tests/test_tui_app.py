@@ -83,6 +83,7 @@ from tau_coding.tui.app import (
     SkillPickerScreen,
     TauTuiApp,
     ThemePickerScreen,
+    ThinkingPickerScreen,
     ToolsReferenceScreen,
     TreeLabelInputScreen,
     TreePickerScreen,
@@ -2676,8 +2677,10 @@ async def test_tui_app_theme_command_opens_picker_and_persists_selection(
         await pilot.press("up")
         await pilot.pause()
         assert theme_list.index == 0
-        await pilot.press("down", "enter")
+        await pilot.press("down")
         await pilot.pause()
+        await pilot.press("enter")
+        await pilot.pause(0.2)
 
         assert app.tui_settings.theme == "tau-light"
         assert tui_settings_path().read_text(encoding="utf-8").find('"theme": "tau-light"') != -1
@@ -5380,8 +5383,10 @@ async def test_tui_app_settings_picker_changes_and_persists_existing_settings(
             "Auto-resize images: on",
         ]
 
-        await pilot.press("down", "enter")
+        await pilot.press("down")
         await pilot.pause()
+        await pilot.press("enter")
+        await pilot.pause(0.2)
         assert app.tui_settings.auto_compact is False
         assert app.session.auto_compact_enabled is False
         assert '"auto_compact": false' in tui_settings_path().read_text(encoding="utf-8")
@@ -10544,6 +10549,53 @@ async def test_tui_app_cycles_thinking_from_keybinding_while_running() -> None:
 
     assert session.thinking_level == "high"
     assert notifications == []
+
+
+@pytest.mark.anyio
+async def test_tui_app_thinking_command_opens_picker_and_selects_level() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+    notifications: list[str] = []
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        del kwargs
+        notifications.append(message)
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "/thinking"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ThinkingPickerScreen)
+        thinking_list = app.screen.query_one("#thinking-picker-list", ListView)
+        assert thinking_list.index == 3
+        labels = [str(item.query_one(Label).render()) for item in thinking_list.children]
+        assert labels[3] == "current  medium - Moderate reasoning"
+
+        await pilot.press("down")
+        await pilot.pause()
+        await pilot.press("enter")
+        await pilot.pause(0.2)
+
+    assert session.thinking_level == "high"
+    assert notifications == ["Thinking mode: high"]
+
+
+@pytest.mark.anyio
+async def test_tui_app_thinking_command_with_argument_sets_level_directly() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "/thinking high"
+        await pilot.press("enter")
+        await pilot.pause()
+
+    assert session.thinking_level == "high"
 
 
 @pytest.mark.anyio
