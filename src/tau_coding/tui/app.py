@@ -6274,6 +6274,13 @@ class TauTuiApp(App[None]):
             set_autocomplete_provider_handler(
                 self._register_extension_autocomplete_provider
             )
+        set_editor_component_handler = getattr(
+            self.session,
+            "set_extension_editor_component_handler",
+            None,
+        )
+        if callable(set_editor_component_handler):
+            set_editor_component_handler(self._handle_extension_editor_component)
         self.state = TuiState(
             skills=session.skills,
             show_thinking=not self.tui_settings.hide_thinking,
@@ -6320,6 +6327,8 @@ class TauTuiApp(App[None]):
             int,
             tuple[str, Callable[[object], object]],
         ] = {}
+        self._extension_editor_component_factory: Callable[..., object] | None = None
+        self._extension_editor_component_name: str | None = None
         self._app_has_focus = True
         self._active_notification_keys: set[tuple[str, str]] = set()
         self._supports_pyperclip: bool | None = None
@@ -7362,6 +7371,100 @@ class TauTuiApp(App[None]):
             self._refresh_current_prompt_completions()
 
         return unsubscribe
+
+    def _handle_extension_editor_component(
+        self,
+        *,
+        action: str,
+        extension_name: str | None = None,
+        factory: Callable[..., object] | None = None,
+    ) -> object:
+        """Set, clear, or return the active PromptInput-compatible editor factory."""
+        if action == "get":
+            return self._extension_editor_component_factory
+        if action != "set":
+            raise ValueError(f"Unsupported editor component action: {action}")
+        self._extension_editor_component_factory = factory
+        self._extension_editor_component_name = extension_name if factory is not None else None
+        self._apply_extension_editor_component()
+        return factory
+
+    def _apply_extension_editor_component(self) -> None:
+        with suppress(NoMatches):
+            current = self.query_one("#prompt", PromptInput)
+            replacement = self._build_extension_prompt_input(current)
+            if replacement is None:
+                return
+            parent = current.parent
+            if parent is None:
+                return
+            try:
+                index = list(parent.children).index(current)
+            except ValueError:
+                index = None
+            self.run_worker(
+                self._swap_prompt_input(parent, current, replacement, index=index),
+                exclusive=False,
+            )
+
+    async def _swap_prompt_input(
+        self,
+        parent: Widget,
+        current: PromptInput,
+        replacement: PromptInput,
+        *,
+        index: int | None,
+    ) -> None:
+        await current.remove()
+        if index is None:
+            await parent.mount(replacement)
+        else:
+            await parent.mount(replacement, before=index)
+        replacement.focus()
+        self._sync_prompt_shell_mode(replacement.text)
+        self._completion_state = self._build_completion_state(
+            replacement.text,
+            cursor_position=replacement.cursor_position,
+        )
+        self._refresh_completions()
+
+    def _build_extension_prompt_input(self, current: PromptInput) -> PromptInput | None:
+        text = current.text
+        cursor_position = current.cursor_position
+        factory = self._extension_editor_component_factory
+        if factory is None:
+            replacement = PromptInput(
+                id="prompt",
+                tui_keybindings=self.tui_settings.keybindings,
+            )
+        else:
+            try:
+                result = factory(
+                    self,
+                    self.tui_settings.resolved_theme,
+                    self.tui_settings.keybindings,
+                )
+            except TypeError:
+                result = factory()
+            if not isinstance(result, PromptInput):
+                self._notify(
+                    (
+                        "Extension editor component ignored "
+                        f"({self._extension_editor_component_name}): "
+                        "factory must return PromptInput"
+                    ),
+                    severity="error",
+                )
+                return None
+            replacement = result
+            replacement.id = "prompt"
+            replacement.tui_keybindings = self.tui_settings.keybindings
+            replacement._apply_prompt_bindings()
+        replacement.text = text
+        replacement.shell_mode_style = self.tui_settings.resolved_theme.role_styles["tool"].border
+        _apply_prompt_padding(replacement, self.tui_settings.editor_padding_x)
+        replacement.cursor_position = cursor_position
+        return replacement
 
     def _set_extension_terminal_title(self, title: str | None) -> None:
         """Override or clear the terminal title requested by an extension command."""

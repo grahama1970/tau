@@ -323,6 +323,7 @@ class CodingSession:
         self._extension_ui_handler: Callable[..., object] | None = None
         self._extension_terminal_input_handler: Callable[..., object] | None = None
         self._extension_autocomplete_provider_handler: Callable[..., object] | None = None
+        self._extension_editor_component_handler: Callable[..., object] | None = None
         self._resource_diagnostics = resource_diagnostics
         self._base_command_registry = (
             base_command_registry.copy()
@@ -1715,6 +1716,34 @@ class CodingSession:
         if not callable(result):
             return lambda: None
         return cast(Callable[[], None], result)
+
+    def set_extension_editor_component_handler(
+        self,
+        handler: Callable[..., object] | None,
+    ) -> None:
+        """Install the frontend callback used by Pi-style editor component overrides."""
+        self._extension_editor_component_handler = handler
+
+    def set_extension_editor_component(
+        self,
+        factory: Callable[..., object] | None,
+        *,
+        extension_name: str,
+    ) -> object:
+        """Set or clear a TUI prompt editor component factory."""
+        if self._extension_editor_component_handler is None:
+            return None
+        return self._extension_editor_component_handler(
+            action="set",
+            extension_name=extension_name,
+            factory=factory,
+        )
+
+    def get_extension_editor_component(self) -> object:
+        """Return the active TUI prompt editor component factory, when available."""
+        if self._extension_editor_component_handler is None:
+            return None
+        return self._extension_editor_component_handler(action="get")
 
     @property
     def extension_ui_available(self) -> bool:

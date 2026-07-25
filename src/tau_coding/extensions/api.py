@@ -636,6 +636,22 @@ class ExtensionCommandContext:
         """Request that Tau expand or collapse tool output after this command returns."""
         self.show_tool_results = bool(expanded)
 
+    def set_editor_component(self, factory: Callable[..., Any] | None) -> object:
+        """Request a PromptInput-compatible editor component override."""
+        if factory is not None and not callable(factory):
+            raise TypeError("editor component factory must be callable or None")
+        setter = getattr(self.session, "set_extension_editor_component", None)
+        if not callable(setter):
+            return None
+        return setter(factory, extension_name=self.extension_name)
+
+    def get_editor_component(self) -> object:
+        """Return the active editor component factory, when the TUI supports it."""
+        getter = getattr(self.session, "get_extension_editor_component", None)
+        if not callable(getter):
+            return None
+        return getter()
+
     def send_user_message(self, text: str, *, deliver_as: str = "steer") -> None:
         """Request that Tau send or queue a user message after the command returns."""
         message = text.strip()
@@ -790,6 +806,14 @@ class ExtensionCommandUi:
         """Pi-compatible alias for setting tool-result expansion state."""
         self._context.set_tools_expanded(expanded)
 
+    def setEditorComponent(self, factory: Callable[..., Any] | None) -> object:  # noqa: N802
+        """Pi-compatible alias for installing a PromptInput-compatible editor."""
+        return self._context.set_editor_component(factory)
+
+    def getEditorComponent(self) -> object:  # noqa: N802
+        """Pi-compatible alias for returning the active editor factory."""
+        return self._context.get_editor_component()
+
     @property
     def theme(self) -> ThemeInfo | None:
         """Return the active Tau theme info when the frontend supplied one."""
@@ -839,6 +863,14 @@ class ExtensionCommandUi:
     def set_tools_expanded(self, expanded: bool) -> None:
         """Expand or collapse tool output."""
         self._context.set_tools_expanded(expanded)
+
+    def set_editor_component(self, factory: Callable[..., Any] | None) -> object:
+        """Install a PromptInput-compatible editor component."""
+        return self._context.set_editor_component(factory)
+
+    def get_editor_component(self) -> object:
+        """Return the active editor component factory."""
+        return self._context.get_editor_component()
 
     async def _request_ui(self, method: str, **payload: Any) -> Any:
         request = getattr(self._context.session, "request_extension_ui", None)
