@@ -3940,6 +3940,50 @@ class CommandOutputScreen(ModalScreen[None]):
         scroll.scroll_y = min(scroll.max_scroll_y, scroll.scroll_y + max(1, scroll.size.height - 1))
 
 
+class ConfirmationScreen(ModalScreen[bool]):
+    """Small yes/no confirmation modal for commands with session impact."""
+
+    def __init__(
+        self,
+        title: str,
+        message: str,
+        *,
+        theme: TuiTheme,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
+        super().__init__()
+        self.title_text = title
+        self.message = message
+        self.theme = theme
+        self.keybindings = keybindings or TuiKeybindings()
+
+    def compose(self) -> ComposeResult:
+        """Compose confirmation prompt."""
+        confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+        with Vertical(id="confirmation"):
+            yield Static(self.title_text, id="confirmation-title")
+            yield Static(self.message, id="confirmation-body", markup=False)
+            yield Static(f"{confirm_key} confirms - {cancel_key} cancels", id="confirmation-help")
+
+    def on_key(self, event: Key) -> None:
+        """Route configured confirmation keys."""
+        if _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
+            event.stop()
+            self.dismiss(True)
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.dismiss(False)
+
+
 class LoginProviderPickerScreen(ModalScreen[str | None]):
     """Provider picker for the TUI login flow."""
 
@@ -5203,7 +5247,8 @@ class TauTuiApp(App[None]):
     SkillPickerScreen,
     PromptTemplatePickerScreen,
     TreeLabelInputScreen,
-    CommandOutputScreen {
+    CommandOutputScreen,
+    ConfirmationScreen {
         align: center middle;
     }
 
@@ -5215,7 +5260,8 @@ class TauTuiApp(App[None]):
     #tools-reference,
     #skill-picker,
     #prompt-template-picker,
-    #tree-label-input {
+    #tree-label-input,
+    #confirmation {
         width: 76;
         max-width: 90%;
         height: auto;
@@ -6917,6 +6963,28 @@ class TauTuiApp(App[None]):
         self._refresh()
 
     async def _import_session(self, path: Path) -> None:
+        import_session = getattr(self.session, "import_session", None)
+        if import_session is None:
+            self._notify("Session import is not available.", severity="warning")
+            return
+        self.push_screen(
+            ConfirmationScreen(
+                "Import session",
+                f"Import and resume session from {path}?",
+                theme=self.tui_settings.resolved_theme,
+                keybindings=self.tui_settings.keybindings,
+            ),
+            callback=lambda confirmed: self._handle_import_confirmation(path, confirmed),
+        )
+
+    def _handle_import_confirmation(self, path: Path, confirmed: bool) -> None:
+        if not confirmed:
+            self._notify("Import cancelled.")
+            self._refresh()
+            return
+        self.run_worker(self._run_import_session(path), exclusive=False)
+
+    async def _run_import_session(self, path: Path) -> None:
         import_session = getattr(self.session, "import_session", None)
         if import_session is None:
             self._notify("Session import is not available.", severity="warning")

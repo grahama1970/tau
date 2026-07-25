@@ -62,6 +62,7 @@ from tau_coding.tui.app import (
     TERMINAL_PROGRESS_ACTIVE_SEQUENCE,
     TERMINAL_PROGRESS_CLEAR_SEQUENCE,
     CommandOutputScreen,
+    ConfirmationScreen,
     LoginMethodPickerScreen,
     LoginProviderPickerScreen,
     LoginScreen,
@@ -2928,6 +2929,11 @@ async def test_tui_app_import_command_reloads_visible_state() -> None:
         prompt = app.query_one("#prompt")
         prompt.value = "/import exports/session.jsonl"
         await pilot.press("enter")
+
+        assert isinstance(app.screen, ConfirmationScreen)
+        assert session.import_calls == []
+        await pilot.press("enter")
+        await pilot.pause()
 
         assert session.import_calls == [Path("exports/session.jsonl")]
         assert [(item.role, item.text) for item in app.state.items] == [
