@@ -9407,7 +9407,9 @@ def _model_picker_choice_matches(choice: ModelChoice, normalized_query: str) -> 
 def _model_picker_search_text(choice: ModelChoice) -> str:
     provider = choice.provider_name.lower()
     model = choice.model.lower()
-    return f"{model} {provider} {provider}/{model} {provider} {model} {model} {provider}"
+    # Match Pi's model selector behavior: provider-prefixed references should
+    # rank ahead of proxy-provider model IDs such as openrouter/openai/gpt-5.
+    return f"{provider} {provider}/{model} {provider} {model}"
 
 
 def _model_picker_search_rank(choice: ModelChoice, normalized_query: str) -> tuple[int, str, str]:
