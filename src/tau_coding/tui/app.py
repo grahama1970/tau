@@ -5442,6 +5442,8 @@ class LoginProviderPickerScreen(ModalScreen[str | None]):
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected provider name."""
+        if event.index < 0 or event.index >= len(self.visible_providers):
+            return
         self.dismiss(self.visible_providers[event.index].name)
 
     def action_cursor_up(self) -> None:

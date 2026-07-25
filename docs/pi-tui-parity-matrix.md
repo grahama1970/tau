@@ -50,7 +50,7 @@ capabilities.
 | Session selector | `session-selector`, `session-selector-search` | `SessionPickerScreen` | `MATCHED` | Search, current/all, named-only, path toggle, sort, rename, delete are present. |
 | Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `PARTIAL` | Tau backs most daily settings, exposes the external editor command, and now shows visible no-match search rows; do not add dead Pi toggles without backing behavior. |
 | Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist, resource rows expose scope/state/action, and no-match searches show visible empty rows; package/write-scope editing still missing. |
-| Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login; provider picker now shows visible navigation help and empty filter states. |
+| Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login; provider picker now shows visible navigation help, empty filter states, and fail-closed empty-row selection. |
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks, summarizes permission/approval receipts, and now surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data; richer interactive component objects remain pending. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider and retry countdown | `PARTIAL` | Footer extensibility exists; compact first-screen readiness now exposes auth/memory/DAG/SciLLM/queue when the sidebar is hidden. |
 | Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool/custom-entry renderers in live/restored transcripts | `MUST/PARTIAL` | Selector now advertises Pi-style `J/K` navigation and supports tool-output toggle while open; editor now uses Pi-style Enter submit and Shift+Enter newline; custom entries now re-render on tool-output expansion; preserve current Tau extension API; full Pi-style custom component objects remain pending beyond string/JSON transcript rendering. |
@@ -84,11 +84,29 @@ capabilities.
 
 Port the next highest-value daily-use gap that is still local and bounded:
 
-`Extension custom component parity`: close the next daily-use extension UI gap
-backed by real Tau extension state, without replacing Tau's Python/Textual
-extension API or pretending JavaScript component embedding exists.
+`Login provider picker hardening`: keep the visible empty provider row
+fail-closed so a mouse/list selection cannot dismiss or crash the provider
+picker.
 
 Latest slice evidence:
+
+- Source inspected: Pi `oauth-selector.ts`; Tau `LoginProviderPickerScreen`,
+  provider empty-state test, and previous provider empty-state proof.
+- Destination preserved: Tau's provider catalog, API-key/subscription method
+  routing, credential store boundaries, and visible empty-row state.
+- Changed: selecting the synthetic no-match provider row now returns without
+  dismissing the provider picker or indexing into an empty provider list.
+- Mocked: Textual render/interaction proof is fixture-backed.
+- Live: no OAuth callback, API-key credential write, or provider-live
+  authentication.
+- Render proof:
+  `/tmp/tau-pi-tui-login-empty-select-proof-1785013814/proof.json` with
+  screenshot
+  `/tmp/tau-pi-tui-login-empty-select-proof-1785013814/tau-login-provider-empty-row-safe-select.svg`.
+- Remaining gap: full Pi login dialog progress/callback display parity remains
+  partial.
+
+Previous slice evidence:
 
 - Source inspected: Pi `custom-entry.ts` and `interactive-mode.ts`
   `addCustomEntryToChat`; Tau `TuiState.add_custom_entry`,

@@ -8,6 +8,7 @@ from contextlib import nullcontext
 from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from rich.console import Console
@@ -10318,6 +10319,34 @@ async def test_tui_login_provider_picker_shows_empty_filter_row() -> None:
         assert str(app.screen.query_one("#login-provider-help", Static).render()) == (
             'filter "no-such-provider" - Up/Down navigate - Enter selects - Escape/Ctrl+C closes'
         )
+
+
+@pytest.mark.anyio
+async def test_tui_login_provider_picker_ignores_empty_filter_row_selection() -> None:
+    app = TauTuiApp(FakeSession())
+    dismissals: list[str | None] = []
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/login"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, LoginMethodPickerScreen)
+        app.screen.action_cursor_down()
+        app.screen.action_select_cursor()
+        await pilot.pause()
+
+        assert isinstance(app.screen, LoginProviderPickerScreen)
+        screen = app.screen
+        screen.dismiss = dismissals.append  # type: ignore[method-assign]
+        search = screen.query_one("#login-provider-search", Input)
+        search.value = "no-such-provider"
+        await pilot.pause()
+
+        screen.on_list_view_selected(SimpleNamespace(index=0))
+
+    assert dismissals == []
 
 
 @pytest.mark.anyio
