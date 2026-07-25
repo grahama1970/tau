@@ -352,6 +352,7 @@ class CodingSession:
         self._shell_command_prefix = config.shell_command_prefix
         self._terminal_signal: SimpleCancellationToken | None = None
         self._owned_providers: list[ClosableModelProvider] = []
+        self._quit_shutdown_emitted = False
         self._diagnostic_logger = AgentCallDiagnosticLogger.from_paths(self._resource_paths.paths)
         self._credential_store = FileCredentialStore(
             credentials_path(self._resource_paths.paths) if self._resource_paths.paths else None
@@ -1924,6 +1925,15 @@ class CodingSession:
 
     async def aclose(self) -> None:
         """Close runtime providers created by this coding session."""
+        if not self._quit_shutdown_emitted:
+            self._quit_shutdown_emitted = True
+            await self.emit_extension_event(
+                {
+                    "type": "session_shutdown",
+                    "reason": "quit",
+                    "targetSessionFile": _session_storage_path(self._config.storage),
+                }
+            )
         for provider in self._owned_providers:
             await provider.aclose()
         self._owned_providers.clear()
