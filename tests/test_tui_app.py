@@ -1836,7 +1836,7 @@ async def test_tui_app_copies_last_assistant_message_from_keybinding(
         await pilot.pause()
 
     assert copied == ["latest answer"]
-    assert notifications == ["Copied last assistant message to clipboard."]
+    assert notifications == ["Copied last agent message to clipboard."]
 
 
 @pytest.mark.anyio
@@ -1869,7 +1869,7 @@ async def test_tui_app_copies_last_assistant_message_from_slash_command(
         await pilot.pause()
 
     assert copied == ["copy from slash command"]
-    assert notifications == ["Copied last assistant message to clipboard."]
+    assert notifications == ["Copied last agent message to clipboard."]
 
 
 @pytest.mark.anyio
@@ -7835,7 +7835,7 @@ async def test_tui_app_accepts_pi_style_keybinding_lists(
         await pilot.pause()
 
     assert copied == ["pi-style copy binding"]
-    assert notifications == ["Copied last assistant message to clipboard."]
+    assert notifications == ["Copied last agent message to clipboard."]
 
 
 @pytest.mark.anyio

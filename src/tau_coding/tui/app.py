@@ -6616,7 +6616,7 @@ class TauTuiApp(App[None]):
             self._notify("No agent messages to copy yet.", severity="warning")
             return
         self.copy_to_clipboard(text)
-        self._notify("Copied last assistant message to clipboard.")
+        self._notify("Copied last agent message to clipboard.")
 
     def action_suspend_process(self) -> None:
         """Suspend Tau to the background and restore the TUI after foregrounding."""
