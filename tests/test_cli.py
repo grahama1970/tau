@@ -7081,7 +7081,7 @@ def test_project_trust_override_rejects_conflicting_flags() -> None:
     assert "--approve and --no-approve cannot be used together" in result.output
 
 
-def test_file_arg_expansion_does_not_intercept_list_model_search(
+def test_file_arg_expansion_does_not_feed_list_model_search(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[str | None] = []
@@ -7099,7 +7099,7 @@ def test_file_arg_expansion_does_not_intercept_list_model_search(
     result = CliRunner().invoke(app, ["--list-models", "@/tmp/missing-tau-model-query"])
 
     assert result.exit_code == 0
-    assert calls == ["@/tmp/missing-tau-model-query"]
+    assert calls == [None]
 
 
 def test_print_mode_passes_startup_session_name(monkeypatch: pytest.MonkeyPatch) -> None:

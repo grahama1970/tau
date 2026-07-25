@@ -1210,7 +1210,7 @@ def main(
         render_model_list(
             load_provider_settings(),
             provider_name=provider,
-            search=" ".join(positional_args) if positional_args else None,
+            search=_list_models_search_from_args(positional_args),
         )
         raise typer.Exit()
 
@@ -3558,6 +3558,11 @@ def _build_initial_prompt_from_args(args: list[str], *, cwd: Path) -> str | None
     if messages:
         parts.append(" ".join(messages))
     return "".join(parts) if parts else None
+
+
+def _list_models_search_from_args(args: list[str]) -> str | None:
+    terms = [arg for arg in args if not arg.startswith("@")]
+    return " ".join(terms) if terms else None
 
 
 def _read_startup_file_arg(value: str, *, cwd: Path) -> str:
