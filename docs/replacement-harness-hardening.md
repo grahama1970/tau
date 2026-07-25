@@ -805,6 +805,28 @@ Acceptance:
 - This slice does not claim full Pi custom-renderer parity, live provider
   behavior, or global replacement-harness readiness.
 
+### Slice 38: Config Map Scope Tabs
+
+Pi's config selector makes the user/global versus project-local resource scope
+visible and switchable from the TUI. Tau's `/config` map already exposed real
+commands, config files, resource directories, diagnostics, and resource toggles,
+but flattened user and project rows into one list. Add visible scope tabs that
+cycle between All, Project, and User views without removing Tau-specific config
+actions or workflow entries.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- `/config` shows visible All, Project, and User scope tabs.
+- The terminal Tab control code cycles the config map through those scopes.
+- Project scope includes project trust, project-local loaded resources, and
+  project diagnostics while excluding user config rows.
+- User scope includes user/global config rows while excluding project-local
+  loaded resources.
+- This slice does not claim Pi package-manager write-scope parity, package
+  source editing, or global replacement-harness readiness.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

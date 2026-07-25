@@ -4461,6 +4461,7 @@ class CommandOutputScreen(ModalScreen[None]):
 
 
 type ConfigMapAction = Literal["insert_command", "copy_path", "toggle_resource"]
+type ConfigMapScope = Literal["all", "project", "user"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -4473,6 +4474,7 @@ class ConfigMapItem:
     description: str
     action: ConfigMapAction | None = None
     action_value: str | None = None
+    scope: ConfigMapScope = "all"
 
 
 @dataclass(frozen=True, slots=True)
@@ -4486,8 +4488,21 @@ class ConfigMapResult:
 class ConfigMapSearchInput(Input):
     """Search input that keeps config-map control keys local to the screen."""
 
+    BINDINGS: ClassVar[list[Binding]] = [
+        Binding("tab", "cycle_scope", "Scope", priority=True),
+        Binding("ctrl+i", "cycle_scope", "Scope", priority=True),
+    ]
+
     def _screen(self) -> ConfigMapScreen:
         return cast(ConfigMapScreen, self.screen)
+
+    def action_cycle_scope(self) -> None:
+        """Cycle the config map scope while search has focus."""
+        self._screen().action_cycle_scope()
+
+    def action_focus_next(self) -> None:
+        """Treat Tab as Pi-style config scope switching instead of focus traversal."""
+        self._screen().action_cycle_scope()
 
     def on_key(self, event: Key) -> None:
         """Route configured keys before the input edits its text."""
@@ -4536,10 +4551,19 @@ class ConfigMapSearchInput(Input):
             event.stop()
             event.prevent_default()
             screen.action_cancel()
+        elif event.key in {"tab", "ctrl+i"}:
+            event.stop()
+            event.prevent_default()
+            screen.action_cycle_scope()
 
 
 class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
     """Searchable TUI map of Tau config files, resources, and related commands."""
+
+    BINDINGS: ClassVar[list[Binding]] = [
+        Binding("tab", "cycle_scope", "Scope", priority=True),
+        Binding("ctrl+i", "cycle_scope", "Scope", priority=True),
+    ]
 
     def __init__(
         self,
@@ -4554,11 +4578,13 @@ class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
         self.keybindings = keybindings or TuiKeybindings()
         self.search_value = ""
         self.filtered_items = self.items
+        self.scope: ConfigMapScope = "all"
 
     def compose(self) -> ComposeResult:
         """Compose the config map screen."""
         with Vertical(id="config-map"):
             yield Static("Config Map", id="config-map-title")
+            yield Static("", id="config-map-tabs")
             yield ConfigMapSearchInput(
                 placeholder="Search config, resources, commands",
                 id="config-map-search",
@@ -4621,6 +4647,9 @@ class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
         ):
             event.stop()
             self.action_cancel()
+        elif event.key in {"tab", "ctrl+i"}:
+            event.stop()
+            self.action_cycle_scope()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Run the selected row action."""
@@ -4649,6 +4678,16 @@ class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
     def action_page_down(self) -> None:
         """Move down by one page of config rows."""
         self._move_page(1)
+
+    def action_cycle_scope(self) -> None:
+        """Cycle Pi-style config scope tabs."""
+        order: tuple[ConfigMapScope, ...] = ("all", "project", "user")
+        self.scope = order[(order.index(self.scope) + 1) % len(order)]
+        self._refresh_list(0)
+
+    def action_focus_next(self) -> None:
+        """Treat Tab as Pi-style scope switching inside the config modal."""
+        self.action_cycle_scope()
 
     def action_select_cursor(self) -> None:
         """Run the highlighted row action."""
@@ -4680,7 +4719,11 @@ class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
         self._refresh_help_text()
 
     def _refresh_list(self, index: int) -> None:
-        self.filtered_items = _filter_config_map_items(self.items, self.search_value)
+        self.filtered_items = _filter_config_map_items(
+            self.items,
+            self.search_value,
+            scope=self.scope,
+        )
         config_list = self.query_one("#config-map-list", ListView)
         config_list.clear()
         config_list.extend(self._list_items())
@@ -4698,28 +4741,36 @@ class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
     def _help_text(self) -> str:
         confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
         cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+        scope_hint = "Tab switches scope"
         if not self.filtered_items:
-            return f"No matching config rows - {cancel_key} closes"
+            return f"No matching config rows - {scope_hint} - {cancel_key} closes"
         try:
             config_list = self.query_one("#config-map-list", ListView)
         except NoMatches:
-            return f"Type to search - {confirm_key}/Space acts - {cancel_key} closes"
+            return f"Type to search - {confirm_key}/Space acts - {scope_hint} - {cancel_key} closes"
         index = config_list.index
         if index is None or index >= len(self.filtered_items):
-            return f"Type to search - {confirm_key}/Space acts - {cancel_key} closes"
+            return f"Type to search - {confirm_key}/Space acts - {scope_hint} - {cancel_key} closes"
         item = self.filtered_items[index]
         if item.action == "insert_command":
-            return f"{item.description} - {confirm_key}/Space inserts command - {cancel_key} closes"
+            return (
+                f"{item.description} - {confirm_key}/Space inserts command - "
+                f"{scope_hint} - {cancel_key} closes"
+            )
         if item.action == "copy_path":
-            return f"{item.description} - {confirm_key}/Space copies path - {cancel_key} closes"
+            return (
+                f"{item.description} - {confirm_key}/Space copies path - "
+                f"{scope_hint} - {cancel_key} closes"
+            )
         if item.action == "toggle_resource":
             return (
                 f"{item.description} - {confirm_key}/Space toggles resource - "
-                f"{cancel_key} closes"
+                f"{scope_hint} - {cancel_key} closes"
             )
-        return f"{item.description} - {cancel_key} closes"
+        return f"{item.description} - {scope_hint} - {cancel_key} closes"
 
     def _refresh_help_text(self) -> None:
+        self.query_one("#config-map-tabs", Static).update(_config_map_scope_tabs(self.scope))
         self.query_one("#config-map-help", Static).update(self._help_text())
 
 
@@ -6572,6 +6623,12 @@ class TauTuiApp(App[None]):
         height: 1;
         color: $tau-chrome-text;
         text-style: bold;
+        margin-bottom: 1;
+    }
+
+    #config-map-tabs {
+        height: 1;
+        color: $tau-muted-text;
         margin-bottom: 1;
     }
 
@@ -13483,7 +13540,14 @@ def _config_map_items(session: CodingSession, settings: TuiSettings) -> tuple[Co
             )
         )
 
-    def add_path(section: str, label: str, path: Path, description: str) -> None:
+    def add_path(
+        section: str,
+        label: str,
+        path: Path,
+        description: str,
+        *,
+        scope: ConfigMapScope | None = None,
+    ) -> None:
         items.append(
             ConfigMapItem(
                 section=section,
@@ -13492,6 +13556,7 @@ def _config_map_items(session: CodingSession, settings: TuiSettings) -> tuple[Co
                 description=description,
                 action="copy_path",
                 action_value=str(path),
+                scope=scope or _config_map_scope_for_path(path, cwd=session.cwd),
             )
         )
 
@@ -13505,6 +13570,7 @@ def _config_map_items(session: CodingSession, settings: TuiSettings) -> tuple[Co
                 description=f"{action.capitalize()} this resource path and reload resources.",
                 action="toggle_resource",
                 action_value=str(path),
+                scope=_config_map_scope_for_path(path, cwd=session.cwd),
             )
         )
 
@@ -13518,20 +13584,34 @@ def _config_map_items(session: CodingSession, settings: TuiSettings) -> tuple[Co
     add_command("/scoped-models", "Configure the Ctrl+P model rotation scope.")
     add_command("/workflows", "Choose packaged canonical Tau DAG workflows.")
 
-    add_path("Config files", "TUI settings", paths.home / "tui.json", "Durable TUI settings file.")
+    add_path(
+        "Config files",
+        "TUI settings",
+        paths.home / "tui.json",
+        "Durable TUI settings file.",
+        scope="user",
+    )
     add_path(
         "Config files",
         "Provider settings",
         provider_settings_path(paths),
         "Saved provider and model configuration.",
+        scope="user",
     )
     add_path(
         "Config files",
         "Provider credentials",
         credentials_path(paths),
         "Credentials saved by /login.",
+        scope="user",
     )
-    add_path("Config files", "Project trust", trust_path, "Project-local resource trust decisions.")
+    add_path(
+        "Config files",
+        "Project trust",
+        trust_path,
+        "Project-local resource trust decisions.",
+        scope="project",
+    )
 
     for path in resource_paths.skills_dirs:
         add_path("Resource dirs", "Skills", path, "Loaded in increasing precedence order.")
@@ -13620,22 +13700,54 @@ def _config_map_items(session: CodingSession, settings: TuiSettings) -> tuple[Co
                 description=diagnostic.format(),
                 action="copy_path" if isinstance(path, Path) else None,
                 action_value=str(path) if isinstance(path, Path) else None,
+                scope=(
+                    _config_map_scope_for_path(path, cwd=session.cwd)
+                    if isinstance(path, Path)
+                    else "all"
+                ),
             )
         )
 
     return tuple(items)
 
 
+def _config_map_scope_for_path(path: Path, *, cwd: Path) -> ConfigMapScope:
+    """Classify config-map rows for Pi-style user/project scope tabs."""
+    normalized_path = _normalized_config_resource_path(path)
+    normalized_cwd = _normalized_config_resource_path(cwd)
+    try:
+        normalized_path.relative_to(normalized_cwd)
+    except ValueError:
+        return "user"
+    return "project"
+
+
+def _config_map_scope_tabs(scope: ConfigMapScope) -> str:
+    labels: tuple[tuple[ConfigMapScope, str], ...] = (
+        ("all", "All"),
+        ("project", "Project"),
+        ("user", "User"),
+    )
+    return "Tabs: " + "  ".join(
+        f"{'●' if key == scope else '○'} {label}" for key, label in labels
+    )
+
+
 def _filter_config_map_items(
     items: Sequence[ConfigMapItem],
     query: str,
+    *,
+    scope: ConfigMapScope = "all",
 ) -> tuple[ConfigMapItem, ...]:
     tokens = _query_tokens(query)
+    scoped_items = tuple(
+        item for item in items if scope == "all" or item.scope in {"all", scope}
+    )
     if not tokens:
-        return tuple(items)
+        return scoped_items
     return tuple(
         item
-        for item in items
+        for item in scoped_items
         if _query_tokens_match(
             tokens,
             f"{item.section} {item.label} {item.value} {item.description} {item.action or ''}",

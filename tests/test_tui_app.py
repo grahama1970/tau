@@ -9127,6 +9127,63 @@ async def test_tui_app_config_map_supports_pi_page_navigation() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_config_map_cycles_pi_scope_tabs() -> None:
+    session = FakeSession()
+    session.resource_diagnostics = (
+        ResourceDiagnostic(
+            kind="skill",
+            name="review",
+            message="overrides lower-precedence resource",
+            path=session.cwd / ".agents" / "skills" / "review.md",
+        ),
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "/config"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ConfigMapScreen)
+        tabs = app.screen.query_one("#config-map-tabs", Static)
+        config_list = app.screen.query_one("#config-map-list", ListView)
+
+        def labels() -> list[str]:
+            return [str(item.query_one(Label).render()) for item in config_list.children]
+
+        assert str(tabs.render()) == "Tabs: ● All  ○ Project  ○ User"
+        assert any("Config files: TUI settings -" in label for label in labels())
+        assert "Loaded skills: review - review.md [disable]" in labels()
+
+        await pilot.press("ctrl+i")
+        await pilot.pause()
+
+        assert str(tabs.render()) == "Tabs: ○ All  ● Project  ○ User"
+        project_labels = labels()
+        assert any("Config files: Project trust -" in label for label in project_labels)
+        assert "Loaded skills: review - review.md [disable]" in project_labels
+        assert any(
+            "Diagnostics: review - overrides lower-precedence resource" in label
+            for label in project_labels
+        )
+        assert not any("Config files: TUI settings -" in label for label in project_labels)
+
+        await pilot.press("ctrl+i")
+        await pilot.pause()
+
+        assert str(tabs.render()) == "Tabs: ○ All  ○ Project  ● User"
+        user_labels = labels()
+        assert any("Config files: TUI settings -" in label for label in user_labels)
+        assert "Loaded skills: review - review.md [disable]" not in user_labels
+
+        await pilot.press("ctrl+i")
+        await pilot.pause()
+
+        assert str(tabs.render()) == "Tabs: ● All  ○ Project  ○ User"
+
+
+@pytest.mark.anyio
 async def test_tui_app_config_map_disables_loaded_resource(monkeypatch: pytest.MonkeyPatch) -> None:
     session = FakeSession()
     saved_settings: list[TuiSettings] = []
