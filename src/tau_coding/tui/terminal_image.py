@@ -1,11 +1,15 @@
 """Terminal graphics helpers for Pi-style inline image support."""
 
 import base64
+import contextlib
 import os
 import random
+import shutil
 import subprocess
+import tempfile
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Literal
 
 ImageProtocol = Literal["kitty", "iterm2"] | None
@@ -90,6 +94,8 @@ class TerminalImage:
         self.image_id = self.options.image_id
         self._cached_width: int | None = None
         self._cached_lines: tuple[str, ...] | None = None
+        self._kitty_png_payload: tuple[str, ImageDimensions] | None = None
+        self._kitty_png_conversion_attempted = False
 
     def invalidate(self) -> None:
         """Clear cached render lines."""
@@ -118,14 +124,27 @@ class TerminalImage:
             self._cached_lines = lines
             return lines
 
+        render_base64 = self.base64_data
+        render_dimensions = self.dimensions
+        if capabilities.images == "kitty" and self.mime_type != "image/png":
+            converted = self._converted_kitty_png_payload()
+            if converted is None:
+                lines = (
+                    image_fallback(self.mime_type, self.dimensions, self.options.filename),
+                )
+                self._cached_width = width
+                self._cached_lines = lines
+                return lines
+            render_base64, render_dimensions = converted
+
         image_id = self.image_id
         if capabilities.images == "kitty" and image_id is None:
             image_id = allocate_image_id()
             self.image_id = image_id
 
         result = render_image(
-            self.base64_data,
-            self.dimensions,
+            render_base64,
+            render_dimensions,
             max_width_cells=max_width,
             max_height_cells=max_height,
             image_id=image_id,
@@ -155,6 +174,17 @@ class TerminalImage:
     def get_image_id(self) -> int | None:
         """Return the Kitty image id allocated for this image, if any."""
         return self.image_id
+
+    def _converted_kitty_png_payload(self) -> tuple[str, ImageDimensions] | None:
+        if self._kitty_png_conversion_attempted:
+            return self._kitty_png_payload
+        self._kitty_png_conversion_attempted = True
+        converted_base64 = convert_base64_image_to_png(self.base64_data, self.mime_type)
+        if converted_base64 is None:
+            return None
+        dimensions = get_image_dimensions(converted_base64, "image/png") or self.dimensions
+        self._kitty_png_payload = (converted_base64, dimensions)
+        return self._kitty_png_payload
 
 
 _cached_capabilities: TerminalCapabilities | None = None
@@ -446,6 +476,59 @@ def render_image(
         return ImageRenderResult(sequence=sequence, rows=size.rows)
 
     return None
+
+
+def convert_base64_image_to_png(base64_data: str, mime_type: str) -> str | None:
+    """Convert a base64 image to PNG for Kitty's `f=100` graphics protocol."""
+    if mime_type == "image/png":
+        return base64_data
+    magick = shutil.which("magick") or shutil.which("convert")
+    if magick is None:
+        return None
+    try:
+        image_bytes = base64.b64decode(base64_data, validate=True)
+    except ValueError:
+        return None
+    suffix = _image_suffix(mime_type)
+    input_path: Path | None = None
+    output_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as input_file:
+            input_file.write(image_bytes)
+            input_path = Path(input_file.name)
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as output_file:
+            output_path = Path(output_file.name)
+        input_spec = f"{input_path}[0]"
+        output_spec = f"png:{output_path}"
+        result = subprocess.run(
+            [magick, input_spec, "-auto-orient", "-strip", output_spec],
+            check=False,
+            capture_output=True,
+            timeout=10,
+        )
+        if result.returncode != 0 or not output_path.exists():
+            return None
+        data = output_path.read_bytes()
+        if not data:
+            return None
+        return base64.b64encode(data).decode("ascii")
+    except (OSError, subprocess.SubprocessError):
+        return None
+    finally:
+        for path in (input_path, output_path):
+            if path is not None:
+                with contextlib.suppress(OSError):
+                    path.unlink()
+
+
+def _image_suffix(mime_type: str) -> str:
+    if mime_type == "image/jpeg":
+        return ".jpg"
+    if mime_type == "image/gif":
+        return ".gif"
+    if mime_type == "image/webp":
+        return ".webp"
+    return ".img"
 
 
 def hyperlink(text: str, url: str) -> str:

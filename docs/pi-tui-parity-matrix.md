@@ -55,7 +55,7 @@ capabilities.
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks including simple component-like render objects, summarizes permission/approval receipts, surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data, preserves multiple Pi-style image blocks from one tool result, and now shows input-bar terminal command exit codes; full JS Pi component runtime embedding remains out of scope. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider, prompt chrome, and retry countdown | `PARTIAL` | Footer extensibility exists; compact first-screen readiness exposes auth/memory/DAG/SciLLM/queue when the sidebar is hidden, and prompt chrome now names active compaction/branch/reload/share/terminal operations from real worker state. |
 | Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool/custom-entry renderers in live/restored transcripts | `MUST/PARTIAL` | Selector now advertises Pi-style `J/K` navigation and supports tool-output toggle while open; editor now uses Pi-style Enter submit and Shift+Enter newline; custom entries now re-render on tool-output expansion and accept simple component-like render objects; preserve current Tau extension API; full JS Pi component runtime embedding remains out of scope. |
-| Images | `show-images-selector`, image component | Tau image visibility setting and image payload rendering | `MATCHED` | Tau has terminal-safe image controls, Kitty/iTerm2/fallback rendering, and multiple image payload rendering for figure/graph tool results. |
+| Images | `show-images-selector`, image component | Tau image visibility setting and image payload rendering | `MATCHED` | Tau has terminal-safe image controls, Kitty/iTerm2/fallback rendering, non-PNG-to-PNG conversion for Kitty, and multiple image payload rendering for figure/graph tool results. |
 | Workflow/DAG progress | None in Pi | `WorkflowPickerScreen`, DAG/workflow receipts | `TAU-ONLY/MUST` | This is Tau's differentiator and must remain first-class in the TUI. |
 
 ## Tomorrow-Usability Ranking
@@ -97,6 +97,37 @@ Current candidates:
 - `Cache-miss notices`: defer until Tau assistant/session entries carry the
   provider, model, and timestamp fields needed for Pi's cache-miss algorithm.
   Do not add a fake setting or heuristic notice from aggregate stats.
+
+Latest slice evidence:
+
+- Source inspected: Pi `utils/image-convert.ts`,
+  `tool-execution.ts::maybeConvertImagesForKitty()`, and
+  `@earendil-works/pi-tui` `components/image.ts`; Tau `TerminalImage` and
+  `terminal_image.py`.
+- Destination preserved: Tau `TerminalImage` cache, Kitty image id allocation,
+  iTerm2 rendering path, visible fallback when conversion is unavailable, and
+  read-tool image preprocessing as a separate layer.
+- Changed: when Kitty graphics are active and a `TerminalImage` payload is not
+  `image/png`, Tau converts the base64 image to PNG with ImageMagick before
+  emitting Kitty `f=100`. If conversion cannot run, Tau shows the visible image
+  fallback instead of sending mismatched bytes through a PNG-only Kitty escape.
+- Mocked: no.
+- Live: local ImageMagick conversion and Tau terminal-image render path; no
+  provider-live call.
+- Proof: `uv run pytest tests/test_tui_terminal_image.py -q` reported
+  `13 passed`; `uv run ruff check src/tau_coding/tui/terminal_image.py
+  tests/test_tui_terminal_image.py` reported all checks passed; `uv run python
+  -m py_compile src/tau_coding/tui/terminal_image.py
+  tests/test_tui_terminal_image.py` exited with no output.
+- Render/protocol proof:
+  `/tmp/tau-pi-tui-kitty-jpeg-conversion-proof-1785016494/proof.json` with
+  generated JPEG
+  `/tmp/tau-pi-tui-kitty-jpeg-conversion-proof-1785016494/source-figure.jpg`
+  and decoded emitted Kitty payload
+  `/tmp/tau-pi-tui-kitty-jpeg-conversion-proof-1785016494/converted-kitty-payload.png`.
+- Remaining gap: this proves the encoded Kitty payload contract, not actual
+  terminal pixel display in every terminal emulator or a browser artifact
+  mirror.
 
 Latest slice evidence:
 

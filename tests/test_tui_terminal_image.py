@@ -1,4 +1,9 @@
 import base64
+import shutil
+import subprocess
+from pathlib import Path
+
+import pytest
 
 from tau_coding.tui.terminal_image import (
     CellDimensions,
@@ -203,6 +208,38 @@ def test_terminal_image_places_kitty_sequence_on_first_line_with_padding_rows() 
         assert image.render(4) is lines
         image.invalidate()
         assert image.render(4) is not lines
+    finally:
+        reset_capabilities_cache()
+        set_cell_dimensions(CellDimensions(width_px=9, height_px=18))
+
+
+def test_terminal_image_converts_jpeg_to_png_for_kitty(tmp_path: Path) -> None:
+    magick = shutil.which("magick")
+    if magick is None:
+        pytest.skip("ImageMagick magick command is required for JPEG conversion proof")
+    image_path = tmp_path / "figure.jpg"
+    subprocess.run(
+        [magick, "-size", "20x10", "gradient:#ff0000-#0000ff", str(image_path)],
+        check=True,
+        capture_output=True,
+    )
+    image_base64 = base64.b64encode(image_path.read_bytes()).decode("ascii")
+    set_capabilities(TerminalCapabilities(images="kitty", true_color=True, hyperlinks=True))
+    set_cell_dimensions(CellDimensions(width_px=10, height_px=10))
+    try:
+        image = TerminalImage(
+            image_base64,
+            "image/jpeg",
+            TerminalImageOptions(max_width_cells=4, filename="figure.jpg"),
+        )
+
+        lines = image.render(10)
+        sequence_payload = lines[0].split(";", maxsplit=1)[1].split("\x1b\\", maxsplit=1)[0]
+        decoded_payload = base64.b64decode(sequence_payload)
+
+        assert lines[0].startswith("\x1b_Ga=T,f=100,q=2,C=1,c=4,")
+        assert decoded_payload.startswith(b"\x89PNG\r\n\x1a\n")
+        assert image.get_image_id() is not None
     finally:
         reset_capabilities_cache()
         set_cell_dimensions(CellDimensions(width_px=9, height_px=18))
