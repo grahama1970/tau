@@ -11,8 +11,18 @@ from typing import Any, Protocol, cast
 
 from tau_agent.messages import AgentMessage, AssistantMessage, ToolResultMessage, UserMessage
 from tau_agent.tools import AgentTool
+from tau_coding.approval_gate import (
+    ALLOWED_ACTIONS,
+    APPROVAL_GATE_RECEIPT_SCHEMA,
+    APPROVAL_PACKET_SCHEMA,
+)
 from tau_coding.credentials import credentials_path
 from tau_coding.paths import TauPaths
+from tau_coding.permission_receipts import (
+    ALLOWED_PERMISSION_REPLIES,
+    PERMISSION_REPLY_RECEIPT_SCHEMA,
+    PERMISSION_REQUEST_RECEIPT_SCHEMA,
+)
 from tau_coding.prompt_templates import PromptTemplate
 from tau_coding.provider_catalog import BUILTIN_PROVIDER_CATALOG, builtin_provider_entry
 from tau_coding.provider_config import provider_settings_path
@@ -357,6 +367,16 @@ def create_default_command_registry() -> CommandRegistry:
             description="Choose a loaded prompt template.",
             handler=_prompts_command,
             search_terms=("templates", "picker"),
+        )
+    )
+    registry.register(
+        SlashCommand(
+            name="permissions",
+            usage="/permissions",
+            description="Show Tau permission and approval receipt commands.",
+            handler=_permissions_command,
+            aliases=("approvals",),
+            search_terms=("approval", "approve", "reject", "gate", "human"),
         )
     )
     registry.register(
@@ -778,6 +798,44 @@ def _hotkeys_command(context: CommandContext) -> CommandResult:
         "- Ctrl+C: clear prompt input",
         "- Ctrl+X: copy last assistant message",
         "- Ctrl+D: quit",
+    ]
+    return CommandResult(handled=True, message="\n".join(lines))
+
+
+def _permissions_command(context: CommandContext) -> CommandResult:
+    actions = "\n".join(f"- {action}" for action in sorted(ALLOWED_ACTIONS))
+    replies = "|".join(ALLOWED_PERMISSION_REPLIES)
+    lines = [
+        "Tau permission receipts:",
+        "",
+        "Create pending request:",
+        (
+            "uv run tau permission-request --action <action> --resource <resource> "
+            "--source-node <node-id> --run-dir <run-dir>"
+        ),
+        "",
+        "Record human reply:",
+        (
+            "uv run tau permission-reply --request <permission-request.json> "
+            f"--reply <{replies}> --actor human:<id>"
+        ),
+        "",
+        "Check approval packet:",
+        (
+            "uv run tau approval-gate-check --approval-packet <approval.json> "
+            "--requested-action <action> --run-dir <run-dir>"
+        ),
+        "",
+        "Allowed actions:",
+        actions,
+        "",
+        "Schemas:",
+        f"- {PERMISSION_REQUEST_RECEIPT_SCHEMA}",
+        f"- {PERMISSION_REPLY_RECEIPT_SCHEMA}",
+        f"- {APPROVAL_PACKET_SCHEMA}",
+        f"- {APPROVAL_GATE_RECEIPT_SCHEMA}",
+        "",
+        "These commands write receipts only; they do not execute mutations.",
     ]
     return CommandResult(handled=True, message="\n".join(lines))
 

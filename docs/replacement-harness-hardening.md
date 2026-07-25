@@ -361,6 +361,26 @@ Acceptance:
 - The warning follows Tau's Anthropic auth precedence: `TAU_RUNTIME_API_KEY`,
   stored credential, `ANTHROPIC_AUTH_TOKEN`, then `ANTHROPIC_API_KEY`.
 
+### Slice 17: Permission Receipt Command Surface
+
+Pi makes gated permissions part of the operator loop. Tau does not yet have a
+live pending-permission queue in the TUI, but it already has durable
+`permission-request`, `permission-reply`, and `approval-gate-check` receipt
+commands. Expose those commands in the interactive command surface without
+claiming live queue behavior.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- `/permissions` is visible in slash-command help and autocomplete.
+- `/approvals` resolves to the same command for operators looking for approval
+  gates.
+- The command lists the existing receipt entry points, allowed replies, allowed
+  gated actions, and receipt schemas.
+- The output states that these commands write receipts only and do not execute
+  mutations.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.
