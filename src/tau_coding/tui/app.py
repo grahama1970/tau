@@ -4790,12 +4790,19 @@ class ExtensionInputScreen(ModalScreen[str | None]):
         *,
         placeholder: str = "",
         prefill: str = "",
+        timeout_seconds: float | None = None,
         keybindings: TuiKeybindings | None = None,
     ) -> None:
         super().__init__()
         self.title_text = title
         self.placeholder = placeholder
         self.prefill = prefill
+        self.timeout_seconds = timeout_seconds
+        self.remaining_seconds = (
+            max(1, int(timeout_seconds + 0.999)) if timeout_seconds is not None else None
+        )
+        self._countdown_timer: Timer | None = None
+        self._expiration_timer: Timer | None = None
         self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
@@ -4803,7 +4810,7 @@ class ExtensionInputScreen(ModalScreen[str | None]):
         confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
         cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
         with Vertical(id="confirmation"):
-            yield Static(self.title_text, id="confirmation-title")
+            yield Static(self._title_label(), id="confirmation-title")
             yield Input(
                 value=self.prefill,
                 placeholder=self.placeholder,
@@ -4816,6 +4823,18 @@ class ExtensionInputScreen(ModalScreen[str | None]):
         input_widget = self.query_one("#extension-input-value", Input)
         input_widget.cursor_position = len(self.prefill)
         input_widget.focus()
+        if self.remaining_seconds is not None:
+            self._expiration_timer = self.set_timer(self.timeout_seconds or 0, self._expire_timeout)
+            self._countdown_timer = self.set_interval(1.0, self._tick_timeout)
+
+    def on_unmount(self) -> None:
+        """Stop the timeout timer when the dialog closes."""
+        if self._countdown_timer is not None:
+            self._countdown_timer.stop()
+            self._countdown_timer = None
+        if self._expiration_timer is not None:
+            self._expiration_timer.stop()
+            self._expiration_timer = None
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         """Submit typed text."""
@@ -4833,6 +4852,23 @@ class ExtensionInputScreen(ModalScreen[str | None]):
         ):
             event.stop()
             self.dismiss(None)
+
+    def _tick_timeout(self) -> None:
+        if self.remaining_seconds is None:
+            return
+        self.remaining_seconds -= 1
+        if self.remaining_seconds <= 0:
+            self._expire_timeout()
+            return
+        self.query_one("#confirmation-title", Static).update(self._title_label())
+
+    def _expire_timeout(self) -> None:
+        self.dismiss(None)
+
+    def _title_label(self) -> str:
+        if self.remaining_seconds is None:
+            return self.title_text
+        return f"{self.title_text} ({self.remaining_seconds}s)"
 
 
 class ExtensionEditorScreen(ModalScreen[str | None]):
@@ -8304,6 +8340,9 @@ class TauTuiApp(App[None]):
                     str(payload.get("title", f"{extension_name} input")),
                     placeholder=str(payload.get("placeholder", "")),
                     prefill=str(payload.get("prefill", "")),
+                    timeout_seconds=_extension_ui_timeout_seconds(
+                        payload.get("timeout_seconds")
+                    ),
                     keybindings=keybindings,
                 )
             )

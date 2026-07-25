@@ -73,6 +73,7 @@ from tau_coding.tui.app import (
     CommandOutputScreen,
     ConfigMapScreen,
     ConfirmationScreen,
+    ExtensionInputScreen,
     ExtensionSelectScreen,
     FirstTimeSetupScreen,
     ImageVisibilityPickerScreen,
@@ -8404,6 +8405,89 @@ async def test_extension_command_ui_select_passes_timeout_to_session() -> None:
             "extension_name": "demo",
             "title": "Pick",
             "options": ("Alpha", "Beta"),
+            "timeout_seconds": 1.5,
+        }
+    ]
+
+
+@pytest.mark.anyio
+async def test_extension_input_screen_shows_timeout_countdown() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test(size=(80, 24)) as pilot:
+        app.push_screen(
+            ExtensionInputScreen(
+                "Enter extension value",
+                prefill="draft",
+                timeout_seconds=5,
+                keybindings=TuiKeybindings(),
+            )
+        )
+        await pilot.pause()
+
+        assert isinstance(app.screen, ExtensionInputScreen)
+        assert (
+            str(app.screen.query_one("#confirmation-title", Static).render())
+            == "Enter extension value (5s)"
+        )
+        app.screen.dismiss("draft")
+
+
+@pytest.mark.anyio
+async def test_tui_extension_input_request_short_timeout_expires() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test(size=(80, 24)) as pilot:
+        worker = app.run_worker(
+            app._handle_extension_ui_request(
+                method="input",
+                extension_name="demo",
+                title="Enter value",
+                prefill="draft",
+                timeout_seconds=0.05,
+            )
+        )
+        await pilot.pause()
+
+        await asyncio.wait_for(worker.wait(), timeout=1)
+        assert worker.result is None
+
+
+@pytest.mark.anyio
+async def test_extension_command_ui_input_passes_timeout_to_session() -> None:
+    class RecordingUiSession:
+        def __init__(self) -> None:
+            self.requests: list[dict[str, object]] = []
+
+        async def request_extension_ui(self, **payload: object) -> str:
+            self.requests.append(payload)
+            return "typed"
+
+    session = RecordingUiSession()
+    context = ExtensionCommandContext(
+        session=session,
+        registry=None,
+        text="/demo",
+        name="demo",
+        args="",
+        extension_name="demo",
+    )
+
+    result = await context.ui.input(
+        "Enter value",
+        "placeholder",
+        {"timeout": 1500},
+        prefill="draft",
+    )
+
+    assert result == "typed"
+    assert session.requests == [
+        {
+            "method": "input",
+            "extension_name": "demo",
+            "title": "Enter value",
+            "placeholder": "placeholder",
+            "prefill": "draft",
             "timeout_seconds": 1.5,
         }
     ]
