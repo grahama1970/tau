@@ -324,6 +324,7 @@ class CodingSession:
         self._extension_terminal_input_handler: Callable[..., object] | None = None
         self._extension_autocomplete_provider_handler: Callable[..., object] | None = None
         self._extension_editor_component_handler: Callable[..., object] | None = None
+        self._extension_widget_component_handler: Callable[..., object] | None = None
         self._extension_chrome_component_handler: Callable[..., object] | None = None
         self._resource_diagnostics = resource_diagnostics
         self._base_command_registry = (
@@ -1745,6 +1746,31 @@ class CodingSession:
         if self._extension_editor_component_handler is None:
             return None
         return self._extension_editor_component_handler(action="get")
+
+    def set_extension_widget_component_handler(
+        self,
+        handler: Callable[..., object] | None,
+    ) -> None:
+        """Install the frontend callback used by Pi-style widget factories."""
+        self._extension_widget_component_handler = handler
+
+    def set_extension_widget_component(
+        self,
+        key: str,
+        factory: Callable[..., object] | None,
+        *,
+        extension_name: str,
+        placement: str,
+    ) -> object:
+        """Set or clear a prompt-region widget component factory."""
+        if self._extension_widget_component_handler is None:
+            return None
+        return self._extension_widget_component_handler(
+            key=key,
+            extension_name=extension_name,
+            factory=factory,
+            placement=placement,
+        )
 
     def set_extension_chrome_component_handler(
         self,

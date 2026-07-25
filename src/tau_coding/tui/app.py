@@ -14,6 +14,7 @@ from collections.abc import AsyncIterator, Callable, Mapping, Sequence
 from contextlib import suppress
 from dataclasses import dataclass, fields, replace
 from datetime import datetime
+from functools import partial
 from inspect import isawaitable, signature
 from io import StringIO
 from pathlib import Path
@@ -5872,7 +5873,9 @@ class TauTuiApp(App[None]):
     }
 
     #extension-widgets-above,
-    #extension-widgets-below {
+    #extension-widgets-below,
+    #extension-widget-components-above,
+    #extension-widget-components-below {
         height: auto;
         margin: 0 1 1 1;
         padding: 0 1;
@@ -6311,6 +6314,13 @@ class TauTuiApp(App[None]):
         )
         if callable(set_editor_component_handler):
             set_editor_component_handler(self._handle_extension_editor_component)
+        set_widget_component_handler = getattr(
+            self.session,
+            "set_extension_widget_component_handler",
+            None,
+        )
+        if callable(set_widget_component_handler):
+            set_widget_component_handler(self._handle_extension_widget_component)
         set_chrome_component_handler = getattr(
             self.session,
             "set_extension_chrome_component_handler",
@@ -6348,6 +6358,10 @@ class TauTuiApp(App[None]):
         self._extension_header_component_name: str | None = None
         self._extension_footer_component_factory: Callable[..., object] | None = None
         self._extension_footer_component_name: str | None = None
+        self._extension_widget_components_above: dict[str, Callable[..., object]] = {}
+        self._extension_widget_component_names_above: dict[str, str] = {}
+        self._extension_widget_components_below: dict[str, Callable[..., object]] = {}
+        self._extension_widget_component_names_below: dict[str, str] = {}
         self._extension_working_visible = True
         self._extension_working_message: str | None = None
         self._extension_working_indicator_frames: tuple[str, ...] | None = None
@@ -6439,6 +6453,7 @@ class TauTuiApp(App[None]):
                 yield Static("", id="queued-messages")
                 yield Static("", id="extension-status")
                 yield Static("", id="extension-widgets-above")
+                yield Vertical(id="extension-widget-components-above")
                 with Horizontal(id="prompt-row"):
                     yield Static("τ", id="prompt-prefix")
                     yield Static("", id="prompt-working-message")
@@ -6449,6 +6464,7 @@ class TauTuiApp(App[None]):
                         show_cursor=self.tui_settings.show_hardware_cursor,
                     )
                 yield Static("", id="extension-widgets-below")
+                yield Vertical(id="extension-widget-components-below")
                 yield CompactSessionInfo(id="compact-session-info")
                 yield Static("", id="autocomplete")
         yield Static("", id="extension-footer")
@@ -7326,12 +7342,16 @@ class TauTuiApp(App[None]):
                 if update.placement == "below_editor"
                 else self._extension_widgets_below
             )
+            self._clear_extension_widget_component(update.key)
             if update.lines is None:
                 target.pop(update.key, None)
                 other.pop(update.key, None)
             else:
                 other.pop(update.key, None)
                 target[update.key] = update.lines
+        if command.widget_updates:
+            self._apply_extension_widget_components("above_editor")
+            self._apply_extension_widget_components("below_editor")
 
     def _apply_command_working_indicator_update(self, command: CommandResult) -> None:
         """Apply extension-requested custom activity indicator state."""
@@ -7402,6 +7422,103 @@ class TauTuiApp(App[None]):
             if replacement is not None:
                 return replacement
         return None
+
+    def _handle_extension_widget_component(
+        self,
+        *,
+        key: str,
+        extension_name: str,
+        factory: Callable[..., object] | None,
+        placement: str,
+    ) -> object:
+        """Set or clear an extension-provided prompt-region widget component."""
+        placement_key: Literal["above_editor", "below_editor"] = (
+            "below_editor" if placement == "below_editor" else "above_editor"
+        )
+        target = (
+            self._extension_widget_components_below
+            if placement_key == "below_editor"
+            else self._extension_widget_components_above
+        )
+        target_names = (
+            self._extension_widget_component_names_below
+            if placement_key == "below_editor"
+            else self._extension_widget_component_names_above
+        )
+        other = (
+            self._extension_widget_components_above
+            if placement_key == "below_editor"
+            else self._extension_widget_components_below
+        )
+        other_names = (
+            self._extension_widget_component_names_above
+            if placement_key == "below_editor"
+            else self._extension_widget_component_names_below
+        )
+        other.pop(key, None)
+        other_names.pop(key, None)
+        if factory is None:
+            target.pop(key, None)
+            target_names.pop(key, None)
+        else:
+            target[key] = factory
+            target_names[key] = extension_name
+            self._extension_widgets_above.pop(key, None)
+            self._extension_widgets_below.pop(key, None)
+        self._apply_extension_widget_components("above_editor")
+        self._apply_extension_widget_components("below_editor")
+        return factory
+
+    def _apply_extension_widget_components(
+        self,
+        placement: Literal["above_editor", "below_editor"],
+    ) -> None:
+        suffix = "below" if placement == "below_editor" else "above"
+        self.run_worker(
+            partial(self._mount_extension_widget_components, placement),
+            group=f"extension-widget-components-{suffix}",
+            exclusive=True,
+        )
+
+    async def _mount_extension_widget_components(
+        self,
+        placement: Literal["above_editor", "below_editor"],
+    ) -> None:
+        suffix = "below" if placement == "below_editor" else "above"
+        factories = (
+            self._extension_widget_components_below
+            if placement == "below_editor"
+            else self._extension_widget_components_above
+        )
+        names = (
+            self._extension_widget_component_names_below
+            if placement == "below_editor"
+            else self._extension_widget_component_names_above
+        )
+        container = self.query_one(f"#extension-widget-components-{suffix}", Vertical)
+        await container.remove_children()
+        for key, factory in factories.items():
+            try:
+                content = self._build_extension_widget_component(factory)
+                if isawaitable(content):
+                    content = await content
+            except Exception as exc:  # noqa: BLE001 - extension UI failures should be visible
+                name = names.get(key)
+                content = f"Extension widget component error ({name}:{key}): {exc}"
+            await container.mount(_extension_component_widget(content))
+        container.display = bool(factories)
+
+    def _build_extension_widget_component(self, factory: Callable[..., object]) -> object:
+        try:
+            return factory(self, self.tui_settings.resolved_theme)
+        except TypeError:
+            return factory()
+
+    def _clear_extension_widget_component(self, key: str) -> None:
+        self._extension_widget_components_above.pop(key, None)
+        self._extension_widget_component_names_above.pop(key, None)
+        self._extension_widget_components_below.pop(key, None)
+        self._extension_widget_component_names_below.pop(key, None)
 
     def _handle_extension_chrome_component(
         self,
@@ -9358,10 +9475,14 @@ class TauTuiApp(App[None]):
         widgets_above_text = _render_extension_widgets(self._extension_widgets_above)
         widgets_above.display = bool(widgets_above_text)
         widgets_above.update(widgets_above_text)
+        widget_components_above = self.query_one("#extension-widget-components-above", Vertical)
+        widget_components_above.display = bool(self._extension_widget_components_above)
         widgets_below = self.query_one("#extension-widgets-below", Static)
         widgets_below_text = _render_extension_widgets(self._extension_widgets_below)
         widgets_below.display = bool(widgets_below_text)
         widgets_below.update(widgets_below_text)
+        widget_components_below = self.query_one("#extension-widget-components-below", Vertical)
+        widget_components_below.display = bool(self._extension_widget_components_below)
         self._sync_activity_indicator()
         self._refresh_footer_bindings()
 

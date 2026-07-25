@@ -261,7 +261,7 @@ class ExtensionShortcutContext:
     def set_widget(
         self,
         key: str,
-        lines: str | Sequence[str] | None,
+        lines: str | Sequence[str] | Callable[..., Any] | None,
         *,
         placement: str = "above_editor",
     ) -> None:
@@ -269,12 +269,34 @@ class ExtensionShortcutContext:
         widget_key = key.strip()
         if not widget_key:
             raise ValueError("set_widget requires a non-empty key")
+        normalized_placement = _normalize_widget_placement(placement)
+        if callable(lines):
+            self._set_widget_component(widget_key, lines, placement=normalized_placement)
+            return
+        self._set_widget_component(widget_key, None, placement=normalized_placement)
         self.widget_updates.append(
             ExtensionWidgetUpdate(
                 key=widget_key,
                 lines=_normalize_widget_lines(lines),
-                placement=_normalize_widget_placement(placement),
+                placement=normalized_placement,
             )
+        )
+
+    def _set_widget_component(
+        self,
+        key: str,
+        factory: Callable[..., Any] | None,
+        *,
+        placement: str,
+    ) -> object:
+        setter = getattr(self.session, "set_extension_widget_component", None)
+        if not callable(setter):
+            return None
+        return setter(
+            key,
+            factory,
+            extension_name=self.extension_name,
+            placement=placement,
         )
 
     def set_working_message(self, message: str | None = None) -> None:
@@ -576,7 +598,7 @@ class ExtensionCommandContext:
     def set_widget(
         self,
         key: str,
-        lines: str | Sequence[str] | None,
+        lines: str | Sequence[str] | Callable[..., Any] | None,
         *,
         placement: str = "above_editor",
     ) -> None:
@@ -584,12 +606,34 @@ class ExtensionCommandContext:
         widget_key = key.strip()
         if not widget_key:
             raise ValueError("set_widget requires a non-empty key")
+        normalized_placement = _normalize_widget_placement(placement)
+        if callable(lines):
+            self._set_widget_component(widget_key, lines, placement=normalized_placement)
+            return
+        self._set_widget_component(widget_key, None, placement=normalized_placement)
         self.widget_updates.append(
             ExtensionWidgetUpdate(
                 key=widget_key,
                 lines=_normalize_widget_lines(lines),
-                placement=_normalize_widget_placement(placement),
+                placement=normalized_placement,
             )
+        )
+
+    def _set_widget_component(
+        self,
+        key: str,
+        factory: Callable[..., Any] | None,
+        *,
+        placement: str,
+    ) -> object:
+        setter = getattr(self.session, "set_extension_widget_component", None)
+        if not callable(setter):
+            return None
+        return setter(
+            key,
+            factory,
+            extension_name=self.extension_name,
+            placement=placement,
         )
 
     def set_working_message(self, message: str | None = None) -> None:
@@ -821,7 +865,7 @@ class ExtensionCommandUi:
     def setWidget(
         self,
         key: str,
-        lines: str | Sequence[str] | None,
+        lines: str | Sequence[str] | Callable[..., Any] | None,
         *,
         placement: str = "above_editor",
     ) -> None:  # noqa: N802
@@ -973,7 +1017,7 @@ class ExtensionCommandUi:
     def set_widget(
         self,
         key: str,
-        lines: str | Sequence[str] | None,
+        lines: str | Sequence[str] | Callable[..., Any] | None,
         *,
         placement: str = "above_editor",
     ) -> None:
