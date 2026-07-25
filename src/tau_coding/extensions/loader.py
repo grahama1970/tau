@@ -16,6 +16,7 @@ from tau_coding.extensions.api import (
     ExtensionEntryRenderer,
     ExtensionEventBus,
     ExtensionFlag,
+    ExtensionLifecycleHandler,
     ExtensionMessageRenderer,
     ExtensionShortcut,
 )
@@ -39,6 +40,7 @@ class LoadedExtension:
     entry_renderers: Mapping[str, ExtensionEntryRenderer] | None = None
     message_renderers: Mapping[str, ExtensionMessageRenderer] | None = None
     provider_configs: tuple[ProviderConfig, ...] = ()
+    event_handlers: Mapping[str, tuple[ExtensionLifecycleHandler, ...]] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -103,11 +105,7 @@ def load_extension_tools(
 ) -> ExtensionLoadResult:
     """Load Python extensions and return tools/commands they register.
 
-    This remains a bounded Pi-compatible extension slice. It supports tool
-    registration and synchronous slash-command registration; UI hooks, lifecycle
-    hooks, and project-local automatic extension execution are left out until
-    their full contracts exist. Explicit paths always load, even when
-    `discover_user_extensions` is false.
+    Explicit paths always load, even when `discover_user_extensions` is false.
     """
     diagnostics: list[ResourceDiagnostic] = []
     discovered: list[Path] = []
@@ -250,6 +248,7 @@ def _load_one_extension(
         entry_renderers=api.entry_renderers,
         message_renderers=api.message_renderers,
         provider_configs=api.provider_configs,
+        event_handlers=api.event_handlers,
     )
 
 

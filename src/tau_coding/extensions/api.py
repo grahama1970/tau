@@ -19,6 +19,7 @@ ExtensionEntryRenderer = Callable[..., Any]
 ExtensionMessageRenderer = Callable[..., Any]
 ExtensionArgumentCompletionProvider = Callable[[str], Sequence[Any] | None]
 ExtensionEventHandler = Callable[[Any], Any]
+ExtensionLifecycleHandler = Callable[..., Any]
 ThemeInfo = dict[str, str | None]
 ContextUsageInfo = dict[str, int | float | None]
 SystemPromptOptionsInfo = dict[str, Any]
@@ -1493,6 +1494,7 @@ class ExtensionAPI:
         self._entry_renderers: dict[str, ExtensionEntryRenderer] = {}
         self._message_renderers: dict[str, ExtensionMessageRenderer] = {}
         self._provider_configs: dict[str, ProviderConfig] = {}
+        self._event_handlers: dict[str, list[ExtensionLifecycleHandler]] = {}
         self.events = event_bus or ExtensionEventBus()
         self._flag_values: dict[str, bool | str] = {
             _normalize_flag_name(name): value for name, value in (flag_values or {}).items()
@@ -1532,6 +1534,20 @@ class ExtensionAPI:
     def provider_configs(self) -> tuple[ProviderConfig, ...]:
         """Return provider configs registered by this extension."""
         return tuple(self._provider_configs.values())
+
+    @property
+    def event_handlers(self) -> Mapping[str, tuple[ExtensionLifecycleHandler, ...]]:
+        """Return Pi-style lifecycle handlers registered by this extension."""
+        return {event: tuple(handlers) for event, handlers in self._event_handlers.items()}
+
+    def on(self, event: str, handler: ExtensionLifecycleHandler) -> None:
+        """Register a Pi-style lifecycle handler for Tau-emitted extension events."""
+        normalized = str(event).strip()
+        if not normalized:
+            raise ValueError("extension event name must be non-empty")
+        if not callable(handler):
+            raise TypeError("extension event handler must be callable")
+        self._event_handlers.setdefault(normalized, []).append(handler)
 
     def register_tool(self, tool: AgentTool) -> None:
         """Register an `AgentTool` for the current coding session."""

@@ -474,6 +474,13 @@ class CodingSession:
         session._sync_thinking_level_to_active_model()
         session._refresh_runtime_provider()
         bash_environment_provider["provider"] = session._bash_session_environment
+        await session.emit_extension_event(
+            {
+                "type": "session_start",
+                "reason": "startup",
+                "previousSessionFile": None,
+            }
+        )
         return session
 
     @property
@@ -985,6 +992,46 @@ class CodingSession:
     def resource_diagnostics(self) -> tuple[ResourceDiagnostic, ...]:
         """Return non-fatal resource discovery diagnostics."""
         return self._resource_diagnostics
+
+    async def emit_extension_event(self, event: Mapping[str, object]) -> tuple[object, ...]:
+        """Emit a bounded Pi-style extension lifecycle event to registered handlers."""
+        event_type = str(event.get("type") or "").strip()
+        if not event_type:
+            raise ValueError("extension event requires a non-empty type")
+        results: list[object] = []
+        diagnostics: list[ResourceDiagnostic] = []
+        for extension in self._extensions:
+            handlers = tuple((extension.event_handlers or {}).get(event_type, ()))
+            if not handlers:
+                continue
+            context = ExtensionShortcutContext(
+                session=self,
+                key="",
+                extension_name=extension.name,
+            )
+            for handler in handlers:
+                try:
+                    result = _call_extension_lifecycle_handler(handler, event, context)
+                    if inspect.isawaitable(result):
+                        result = await result
+                    if result is not None:
+                        results.append(result)
+                except Exception as exc:  # noqa: BLE001 - extensions are isolated plugins
+                    diagnostics.append(
+                        ResourceDiagnostic(
+                            kind="extension",
+                            name=extension.name,
+                            path=extension.path,
+                            message=(
+                                f"{event_type} handler failed: "
+                                f"{type(exc).__name__}: {exc}"
+                            ),
+                            severity="error",
+                        )
+                    )
+        if diagnostics:
+            self._resource_diagnostics = (*self._resource_diagnostics, *diagnostics)
+        return tuple(results)
 
     @property
     def session_id(self) -> str | None:
@@ -3436,6 +3483,34 @@ def _call_extension_command_handler(
     if accepts_varargs or len(positional) >= 2:
         return handler(args, extension_context)
     return handler(extension_context)
+
+
+def _call_extension_lifecycle_handler(
+    handler: Callable[..., object],
+    event: Mapping[str, object],
+    extension_context: ExtensionShortcutContext,
+) -> object:
+    """Call Pi-style ``(event, ctx)`` or compact ``(event)`` lifecycle handlers."""
+    try:
+        parameters = inspect.signature(handler).parameters
+    except (TypeError, ValueError):
+        return handler(event, extension_context)
+    positional = [
+        parameter
+        for parameter in parameters.values()
+        if parameter.kind
+        in {
+            inspect.Parameter.POSITIONAL_ONLY,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        }
+    ]
+    accepts_varargs = any(
+        parameter.kind == inspect.Parameter.VAR_POSITIONAL
+        for parameter in parameters.values()
+    )
+    if accepts_varargs or len(positional) >= 2:
+        return handler(event, extension_context)
+    return handler(event)
 
 
 async def _await_extension_command_result(
