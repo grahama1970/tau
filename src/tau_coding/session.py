@@ -288,6 +288,8 @@ class CodingSessionConfig:
     shell_path: str | None = None
     shell_command_prefix: str | None = None
     auto_resize_images: bool = True
+    extension_start_reason: str = "startup"
+    extension_previous_session_file: str | None = None
 
 
 class CodingSession:
@@ -477,8 +479,8 @@ class CodingSession:
         await session.emit_extension_event(
             {
                 "type": "session_start",
-                "reason": "startup",
-                "previousSessionFile": None,
+                "reason": config.extension_start_reason,
+                "previousSessionFile": config.extension_previous_session_file,
             }
         )
         return session
@@ -1458,6 +1460,14 @@ class CodingSession:
                 ) from exc
             provider_name = runtime_provider_config.name
 
+        previous_session_file = _session_storage_path(self._config.storage)
+        await self.emit_extension_event(
+            {
+                "type": "session_shutdown",
+                "reason": "resume",
+                "targetSessionFile": str(record.path),
+            }
+        )
         replacement = await type(self).load(
             CodingSessionConfig(
                 provider=self._harness.config.provider,
@@ -1487,6 +1497,8 @@ class CodingSession:
                 shell_path=self._shell_path,
                 shell_command_prefix=self._shell_command_prefix,
                 auto_resize_images=self._config.auto_resize_images,
+                extension_start_reason="resume",
+                extension_previous_session_file=previous_session_file,
                 discover_skills=self._config.discover_skills,
                 discover_prompt_templates=self._config.discover_prompt_templates,
                 discover_themes=self._config.discover_themes,
@@ -1504,6 +1516,8 @@ class CodingSession:
         self._skills = replacement._skills
         self._prompt_templates = replacement._prompt_templates
         self._context_files = replacement._context_files
+        self._extensions = replacement._extensions
+        self._available_tools = replacement._available_tools
         self._resource_diagnostics = replacement._resource_diagnostics
         self._command_registry = replacement._command_registry
         self._provider_name = replacement._provider_name
@@ -1541,6 +1555,14 @@ class CodingSession:
             model=model,
             provider_name=provider_name,
         )
+        previous_session_file = _session_storage_path(self._config.storage)
+        await self.emit_extension_event(
+            {
+                "type": "session_shutdown",
+                "reason": "new",
+                "targetSessionFile": str(record.path),
+            }
+        )
         replacement = await type(self).load(
             replace(
                 self._config,
@@ -1553,6 +1575,8 @@ class CodingSession:
                 provider_settings=self._provider_settings,
                 runtime_provider_config=runtime_provider_config,
                 thinking_level=thinking_level,
+                extension_start_reason="new",
+                extension_previous_session_file=previous_session_file,
             )
         )
         self._config = replacement._config
@@ -1562,6 +1586,8 @@ class CodingSession:
         self._skills = replacement._skills
         self._prompt_templates = replacement._prompt_templates
         self._context_files = replacement._context_files
+        self._extensions = replacement._extensions
+        self._available_tools = replacement._available_tools
         self._resource_diagnostics = replacement._resource_diagnostics
         self._command_registry = replacement._command_registry
         self._provider_name = replacement._provider_name
@@ -1605,6 +1631,14 @@ class CodingSession:
             await storage.append(entry)
         await storage.append(LeafEntry(parent_id=active_leaf_id, entry_id=active_leaf_id))
 
+        previous_session_file = _session_storage_path(self._config.storage)
+        await self.emit_extension_event(
+            {
+                "type": "session_shutdown",
+                "reason": "fork",
+                "targetSessionFile": str(record.path),
+            }
+        )
         replacement = await type(self).load(
             replace(
                 self._config,
@@ -1617,6 +1651,8 @@ class CodingSession:
                 provider_settings=self._provider_settings,
                 runtime_provider_config=self._runtime_provider_config,
                 thinking_level=self._thinking_level,
+                extension_start_reason="fork",
+                extension_previous_session_file=previous_session_file,
             )
         )
         self._config = replacement._config
@@ -1626,6 +1662,8 @@ class CodingSession:
         self._skills = replacement._skills
         self._prompt_templates = replacement._prompt_templates
         self._context_files = replacement._context_files
+        self._extensions = replacement._extensions
+        self._available_tools = replacement._available_tools
         self._resource_diagnostics = replacement._resource_diagnostics
         self._command_registry = replacement._command_registry
         self._provider_name = replacement._provider_name
@@ -1691,6 +1729,14 @@ class CodingSession:
         if target_id is not None:
             await storage.append(LeafEntry(parent_id=target_id, entry_id=target_id))
 
+        previous_session_file = _session_storage_path(self._config.storage)
+        await self.emit_extension_event(
+            {
+                "type": "session_shutdown",
+                "reason": "fork",
+                "targetSessionFile": str(record.path),
+            }
+        )
         replacement = await type(self).load(
             replace(
                 self._config,
@@ -1703,6 +1749,8 @@ class CodingSession:
                 provider_settings=self._provider_settings,
                 runtime_provider_config=self._runtime_provider_config,
                 thinking_level=self._thinking_level,
+                extension_start_reason="fork",
+                extension_previous_session_file=previous_session_file,
             )
         )
         self._config = replacement._config
@@ -1712,6 +1760,8 @@ class CodingSession:
         self._skills = replacement._skills
         self._prompt_templates = replacement._prompt_templates
         self._context_files = replacement._context_files
+        self._extensions = replacement._extensions
+        self._available_tools = replacement._available_tools
         self._resource_diagnostics = replacement._resource_diagnostics
         self._command_registry = replacement._command_registry
         self._provider_name = replacement._provider_name
@@ -1760,6 +1810,14 @@ class CodingSession:
         for entry in entries:
             await storage.append(entry)
 
+        previous_session_file = _session_storage_path(self._config.storage)
+        await self.emit_extension_event(
+            {
+                "type": "session_shutdown",
+                "reason": "resume",
+                "targetSessionFile": str(record.path),
+            }
+        )
         replacement = await type(self).load(
             replace(
                 self._config,
@@ -1772,6 +1830,8 @@ class CodingSession:
                 provider_settings=self._provider_settings,
                 runtime_provider_config=self._runtime_provider_config,
                 thinking_level=self._thinking_level,
+                extension_start_reason="resume",
+                extension_previous_session_file=previous_session_file,
             )
         )
         self._config = replacement._config
@@ -1781,6 +1841,8 @@ class CodingSession:
         self._skills = replacement._skills
         self._prompt_templates = replacement._prompt_templates
         self._context_files = replacement._context_files
+        self._extensions = replacement._extensions
+        self._available_tools = replacement._available_tools
         self._resource_diagnostics = replacement._resource_diagnostics
         self._command_registry = replacement._command_registry
         self._provider_name = replacement._provider_name
@@ -4052,3 +4114,8 @@ def default_session_path(cwd: Path) -> Path:
 def jsonl_session_storage(path: str | Path) -> JsonlSessionStorage:
     """Convenience factory for local JSONL coding-session storage."""
     return JsonlSessionStorage(path)
+
+
+def _session_storage_path(storage: SessionStorage) -> str | None:
+    path = getattr(storage, "path", None)
+    return None if path is None else str(path)
