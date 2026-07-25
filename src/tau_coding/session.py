@@ -700,6 +700,15 @@ class CodingSession:
         selected_entry = by_id[entry_id]
         if not _is_branchable_tree_entry(selected_entry):
             raise ValueError(f"Session entry cannot be branched from: {entry_id}")
+        old_leaf_id = self._state.active_leaf_id
+        if await self._emit_extension_before_tree(
+            entries,
+            target_entry_id=entry_id,
+            summarize=summarize,
+        ):
+            return SessionTreeBranchResult(
+                message="Session tree navigation cancelled by extension."
+            )
 
         target_id: str | None = entry_id
         input_prefill: str | None = None
@@ -737,6 +746,11 @@ class CodingSession:
         self._thinking_level = _state_thinking_level(self._state, self._config.thinking_level)
         self._sync_thinking_level_to_active_model()
         self._refresh_runtime_provider()
+        await self._emit_extension_tree(
+            old_leaf_id=old_leaf_id,
+            new_leaf_id=target_id,
+            summary_entry=summary_entry,
+        )
         suffix = " with branch summary" if summary_entry is not None else ""
         if input_prefill is not None:
             return SessionTreeBranchResult(
@@ -2651,6 +2665,53 @@ class CodingSession:
                 "fromExtension": False,
                 "reason": reason,
                 "willRetry": will_retry,
+            }
+        )
+
+    async def _emit_extension_before_tree(
+        self,
+        entries: Sequence[SessionEntry],
+        *,
+        target_entry_id: str,
+        summarize: bool,
+    ) -> bool:
+        target_index = next(
+            (index for index, entry in enumerate(entries) if entry.id == target_entry_id),
+            None,
+        )
+        results = await self.emit_extension_event(
+            {
+                "type": "session_before_tree",
+                "preparation": {
+                    "targetEntryId": target_entry_id,
+                    "targetIndex": target_index,
+                    "summarize": summarize,
+                    "oldLeafId": self._state.active_leaf_id,
+                    "branchEntries": [entry.model_dump(mode="json") for entry in entries],
+                },
+                "signal": None,
+            }
+        )
+        return any(
+            isinstance(result, Mapping) and bool(result.get("cancel")) for result in results
+        )
+
+    async def _emit_extension_tree(
+        self,
+        *,
+        old_leaf_id: str | None,
+        new_leaf_id: str | None,
+        summary_entry: BranchSummaryEntry | None,
+    ) -> None:
+        await self.emit_extension_event(
+            {
+                "type": "session_tree",
+                "newLeafId": new_leaf_id,
+                "oldLeafId": old_leaf_id,
+                "summaryEntry": (
+                    summary_entry.model_dump(mode="json") if summary_entry is not None else None
+                ),
+                "fromExtension": False if summary_entry is not None else None,
             }
         )
 
