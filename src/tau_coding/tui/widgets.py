@@ -1325,9 +1325,26 @@ def _visible_chat_text(
         if show_tool_results and item.tool_result_text:
             return f"**Compaction Summary**\n\n{item.tool_result_text}"
         return _with_tool_results_key_hint(item.text, tool_results_key_hint)
+    if item.role == "skill":
+        if show_tool_results and item.tool_result_text:
+            return f"[skill]\n\n{item.tool_result_text}"
+        return _with_tool_results_key_hint(
+            _compact_skill_item_text(item.text),
+            tool_results_key_hint,
+        )
     if item.role not in {"tool", "skill"} or not show_tool_results or not item.tool_result_text:
         return _with_tool_results_key_hint(item.text, tool_results_key_hint)
     return f"{item.text}\n\n{item.tool_result_text}"
+
+
+def _compact_skill_item_text(text: str) -> str:
+    """Return Pi-style compact text for recognized Tau skill transcript rows."""
+    prefix = "Loading skill: "
+    if text.startswith(prefix):
+        name = text.removeprefix(prefix).strip()
+        if name:
+            return f"[skill] {name} (Ctrl+O to expand)"
+    return text
 
 
 def _with_tool_results_key_hint(text: str, key_hint: str) -> str:

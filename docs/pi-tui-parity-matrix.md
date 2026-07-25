@@ -45,7 +45,7 @@ capabilities.
 
 | Area | Pi component(s) | Tau surface | Status | Next action |
 | --- | --- | --- | --- | --- |
-| Prompt editor | `custom-editor`, `custom-entry`, `keybinding-hints` | `PromptInput`, extension input hooks | `PARTIAL` | Keep Pi-like keybindings; avoid replacing Tau extension input plumbing. |
+| Prompt editor | `custom-editor`, `custom-entry`, `keybinding-hints`, `skill-invocation-message` | `PromptInput`, extension input hooks, skill transcript blocks | `PARTIAL` | Keep Pi-like keybindings; skill invocations now render with Pi-style `[skill] name` collapsed labels and labeled expanded bodies; avoid replacing Tau extension input plumbing. |
 | Model selector | `model-selector`, `scoped-models-selector` | `ModelPickerScreen` | `MATCHED` | Search, tabs, scoped membership, provider toggles, and reorder are present. |
 | Session selector | `session-selector`, `session-selector-search` | `SessionPickerScreen` | `MATCHED` | Search, current/all, named-only, path toggle, sort, rename, delete are present. |
 | Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `PARTIAL` | Tau backs most daily settings, exposes the external editor command, and now shows visible no-match search rows; do not add dead Pi toggles without backing behavior. |

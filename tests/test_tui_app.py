@@ -1440,10 +1440,10 @@ def test_thinking_chat_items_use_distinct_style_and_markdown() -> None:
 def test_skill_chat_items_use_distinct_compact_style() -> None:
     console = Console(record=True, width=80)
 
-    console.print(render_chat_item(ChatItem(role="skill", text="Using skill: review")))
+    console.print(render_chat_item(ChatItem(role="skill", text="[skill] review")))
 
     output = console.export_text(styles=True)
-    assert "Using skill: review" in output
+    assert "[skill] review" in output
     assert "38;2;229;212;239" in output
 
 
@@ -1460,9 +1460,10 @@ def test_skill_chat_items_expand_with_tool_results_toggle() -> None:
     expanded_console.print(render_chat_item(item, show_tool_results=True))
     expanded = expanded_console.export_text()
 
-    assert "Loading skill: review" in collapsed
+    assert "[skill] review (Ctrl+O to expand)" in collapsed
     assert "Full noisy instructions" not in collapsed
-    assert "Loading skill: review" in expanded
+    assert "[skill]" in expanded
+    assert "Loading skill: review" not in expanded
     assert "Full noisy instructions" in expanded
 
 
@@ -1616,7 +1617,7 @@ def test_tui_state_compacts_expanded_skill_messages() -> None:
     assert [(item.role, item.text, item.tool_result_text) for item in state.items] == [
         (
             "skill",
-            "Using skill: review (Ctrl+O to expand)",
+            "[skill] review (Ctrl+O to expand)",
             "**review**\n\n"
             "References are relative to /workspace/.tau/skills.\n\n"
             "# Review\nFull noisy instructions.",
