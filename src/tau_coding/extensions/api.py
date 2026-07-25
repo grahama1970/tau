@@ -640,6 +640,20 @@ class ExtensionCommandUi:
         """Pi-compatible alias for setting the terminal title."""
         self._context.set_title(title)
 
+    def setStatus(self, key: str, text: str | None) -> None:  # noqa: N802
+        """Pi-compatible alias for setting extension status text."""
+        self._context.set_status(key, text)
+
+    def setWidget(
+        self,
+        key: str,
+        lines: str | Sequence[str] | None,
+        *,
+        placement: str = "above_editor",
+    ) -> None:  # noqa: N802
+        """Pi-compatible alias for setting prompt-region extension widget text."""
+        self._context.set_widget(key, lines, placement=placement)
+
     def getAllThemes(self) -> tuple[ThemeInfo, ...]:  # noqa: N802
         """Pi-compatible alias for listing available Tau themes."""
         return self._context.get_all_themes()
