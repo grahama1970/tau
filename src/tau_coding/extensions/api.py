@@ -74,6 +74,12 @@ class ExtensionFlag:
     default: bool | str | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class _ModelChoiceLike:
+    provider_name: str
+    model: str
+
+
 @dataclass(slots=True)
 class ExtensionShortcutContext:
     """Runtime context passed to extension shortcut handlers."""
@@ -2265,10 +2271,21 @@ async def _session_set_model(session: Any, model: str | Mapping[str, Any]) -> bo
         return False
     provider_name = _provider_name_from_model_mapping(model)
     if provider_name is not None:
+        set_model_choice = getattr(session, "set_model_choice", None)
+        if callable(set_model_choice):
+            result = set_model_choice(
+                _ModelChoiceLike(provider_name=provider_name, model=_model_name(model))
+            )
+            if hasattr(result, "__await__"):
+                await result
+            return True
         set_provider = getattr(session, "set_provider", None)
         if not callable(set_provider):
             return False
-        result = set_provider(provider_name)
+        try:
+            result = set_provider(provider_name, emit_model_select=False)
+        except TypeError:
+            result = set_provider(provider_name)
         if hasattr(result, "__await__"):
             await result
     result = set_model(_model_name(model))

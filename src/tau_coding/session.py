@@ -174,6 +174,7 @@ from tau_coding.tui.config import (
 
 StreamingBehavior = Literal["steer", "follow_up"]
 InputSource = Literal["interactive", "rpc", "extension"]
+ModelSelectSource = Literal["set", "cycle", "restore"]
 _UNSET_LEAF_ID: Final[object] = object()
 _BASH_SESSION_ENV_KEYS: Final[tuple[str, ...]] = (
     "TAU_SESSION_ID",
@@ -1163,8 +1164,21 @@ class CodingSession:
         message = self._harness.pop_latest_follow_up()
         return None if message is None else message.content
 
-    def set_model(self, model: str) -> None:
+    def set_model(self, model: str) -> object | None:
         """Switch the active model for future turns and make it the default."""
+        return self._set_model(model, source="set")
+
+    def _set_model(
+        self,
+        model: str,
+        *,
+        source: ModelSelectSource,
+        previous_choice: ModelChoice | None = None,
+    ) -> object | None:
+        previous = previous_choice or ModelChoice(
+            provider_name=self.provider_name,
+            model=self.model,
+        )
         self._harness.config.model = model
         self._sync_thinking_level_to_active_model()
         self._refresh_runtime_provider()
@@ -1175,12 +1189,23 @@ class CodingSession:
                 model=model,
                 provider_name=self.provider_name,
             )
+        return self._emit_extension_model_select(
+            ModelChoice(provider_name=self.provider_name, model=model),
+            previous_choice=previous,
+            source=source,
+        )
 
-    def set_model_choice(self, choice: ModelChoice) -> None:
+    def set_model_choice(
+        self,
+        choice: ModelChoice,
+        *,
+        source: ModelSelectSource = "set",
+    ) -> object | None:
         """Switch provider/model as one operation."""
+        previous = ModelChoice(provider_name=self.provider_name, model=self.model)
         if choice.provider_name != self.provider_name:
-            self.set_provider(choice.provider_name)
-        self.set_model(choice.model)
+            self.set_provider(choice.provider_name, emit_model_select=False)
+        return self._set_model(choice.model, previous_choice=previous, source=source)
 
     def is_scoped_model(self, choice: ModelChoice) -> bool:
         """Return whether a provider/model pair is in the scoped model list."""
@@ -1232,14 +1257,22 @@ class CodingSession:
             current_index = -1 if not reverse else 0
         delta = -1 if reverse else 1
         choice = scoped[(current_index + delta) % len(scoped)]
-        self.set_model_choice(choice)
+        self.set_model_choice(choice, source="cycle")
         return choice
 
-    def set_provider(self, provider_name: str, *, persist_default: bool = True) -> None:
+    def set_provider(
+        self,
+        provider_name: str,
+        *,
+        persist_default: bool = True,
+        emit_model_select: bool = True,
+        source: ModelSelectSource = "set",
+    ) -> object | None:
         """Switch the active provider and reset to that provider's default model."""
         if self._provider_settings is None:
             raise ProviderConfigError("Provider settings are not available for this session")
 
+        previous = ModelChoice(provider_name=self.provider_name, model=self.model)
         provider_config = self._provider_settings.get_provider(provider_name)
         model = provider_config.default_model
         thinking_level = _coerced_thinking_level(
@@ -1270,6 +1303,13 @@ class CodingSession:
                 model=model,
                 provider_name=self.provider_name,
             )
+        if emit_model_select:
+            return self._emit_extension_model_select(
+                ModelChoice(provider_name=self.provider_name, model=model),
+                previous_choice=previous,
+                source=source,
+            )
+        return None
 
     async def set_thinking_level(self, level: str) -> str:
         """Persist and activate a thinking mode for future turns."""
@@ -1304,6 +1344,13 @@ class CodingSession:
         self._last_parent_id = entry.id
 
         await self._refresh_persisted_state(leaf_id=entry.id)
+        await self.emit_extension_event(
+            {
+                "type": "thinking_level_select",
+                "level": normalized,
+                "previousLevel": previous,
+            }
+        )
         return f"Thinking mode: {normalized}"
 
     async def cycle_thinking_level(self) -> str:
@@ -2715,6 +2762,47 @@ class CodingSession:
             }
         )
 
+    def _emit_extension_model_select(
+        self,
+        choice: ModelChoice,
+        *,
+        previous_choice: ModelChoice | None,
+        source: ModelSelectSource,
+    ) -> object | None:
+        if previous_choice == choice:
+            return None
+        return self._dispatch_extension_event_from_sync(
+            {
+                "type": "model_select",
+                "model": _extension_model_payload(choice),
+                "previousModel": (
+                    _extension_model_payload(previous_choice)
+                    if previous_choice is not None
+                    else None
+                ),
+                "source": source,
+            }
+        )
+
+    def _dispatch_extension_event_from_sync(
+        self,
+        event: Mapping[str, object],
+    ) -> object | None:
+        event_type = str(event.get("type") or "").strip()
+        if not event_type:
+            raise ValueError("extension event requires a non-empty type")
+        if not any(
+            (extension.event_handlers or {}).get(event_type)
+            for extension in self._extensions
+        ):
+            return None
+        coroutine = self.emit_extension_event(event)
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            return asyncio.run(coroutine)
+        return loop.create_task(coroutine)
+
     def _diagnostic_context(self) -> AgentCallDiagnosticContext:
         return AgentCallDiagnosticContext(
             provider_name=self._provider_name,
@@ -3417,6 +3505,14 @@ def _session_export_title(session: CodingSession) -> str:
         if record is not None and record.title:
             return record.title
     return f"Tau session {session_id}" if session_id is not None else "Tau Session Export"
+
+
+def _extension_model_payload(choice: ModelChoice) -> dict[str, str]:
+    return {
+        "provider": choice.provider_name,
+        "id": choice.model,
+        "model": choice.model,
+    }
 
 
 def _state_thinking_level(
