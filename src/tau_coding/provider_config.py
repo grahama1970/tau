@@ -35,6 +35,14 @@ from tau_coding.thinking import (
 DEFAULT_PROVIDER_NAME = "openai"
 ANTHROPIC_AUTH_TOKEN_ENV = "ANTHROPIC_AUTH_TOKEN"
 DEFAULT_MODEL = "gpt-5.5"
+ANTHROPIC_ADAPTIVE_THINKING_MODELS = frozenset({"claude-opus-5"})
+ANTHROPIC_ADAPTIVE_THINKING_LEVELS: tuple[ThinkingLevel, ...] = (
+    "off",
+    "low",
+    "medium",
+    "high",
+    "xhigh",
+)
 
 
 class ProviderConfigError(ValueError):
@@ -701,6 +709,15 @@ def provider_thinking_levels(
     selected_model = model or provider.default_model
     if provider.thinking_models and selected_model not in provider.thinking_models:
         return ()
+    if (
+        isinstance(provider, AnthropicProviderConfig)
+        and selected_model in ANTHROPIC_ADAPTIVE_THINKING_MODELS
+    ):
+        return tuple(
+            level
+            for level in ANTHROPIC_ADAPTIVE_THINKING_LEVELS
+            if level in provider.thinking_levels
+        )
     return provider.thinking_levels
 
 
@@ -773,6 +790,7 @@ def anthropic_config_from_provider(
     provider: AnthropicProviderConfig,
     *,
     credential_reader: CredentialReader | None = None,
+    model: str | None = None,
     thinking_level: ThinkingLevel | None = None,
 ) -> AnthropicConfig:
     """Build Anthropic runtime config from durable settings."""
@@ -782,6 +800,12 @@ def anthropic_config_from_provider(
     )
     thinking_budget_tokens = _anthropic_thinking_budget_from_provider(
         provider,
+        model=model,
+        thinking_level=thinking_level,
+    )
+    thinking_mode, thinking_effort = _anthropic_thinking_mode_from_provider(
+        provider,
+        model=model,
         thinking_level=thinking_level,
     )
     return AnthropicConfig(
@@ -793,6 +817,8 @@ def anthropic_config_from_provider(
         max_retries=provider.max_retries,
         max_retry_delay_seconds=provider.max_retry_delay_seconds,
         thinking_budget_tokens=thinking_budget_tokens,
+        thinking_mode=thinking_mode,
+        thinking_effort=thinking_effort,
     )
 
 
@@ -853,12 +879,17 @@ def _reasoning_effort_from_provider(
 def _anthropic_thinking_budget_from_provider(
     provider: AnthropicProviderConfig,
     *,
+    model: str | None,
     thinking_level: ThinkingLevel | None,
 ) -> int | None:
     if thinking_level is None or provider.thinking_parameter != "anthropic.thinking":
         return None
 
-    levels = provider_thinking_levels(provider)
+    selected_model = model or provider.default_model
+    if selected_model in ANTHROPIC_ADAPTIVE_THINKING_MODELS:
+        return None
+
+    levels = provider_thinking_levels(provider, model=selected_model)
     if not levels:
         return None
 
@@ -867,9 +898,38 @@ def _anthropic_thinking_budget_from_provider(
         available = ", ".join(levels)
         raise ProviderConfigError(
             f"Thinking mode {normalized} is not available for "
-            f"{provider.name}:{provider.default_model}. Available modes: {available}"
+            f"{provider.name}:{selected_model}. Available modes: {available}"
         )
     return anthropic_thinking_budget_for_level(normalized)
+
+
+def _anthropic_thinking_mode_from_provider(
+    provider: AnthropicProviderConfig,
+    *,
+    model: str | None,
+    thinking_level: ThinkingLevel | None,
+) -> tuple[str, str | None]:
+    selected_model = model or provider.default_model
+    if selected_model not in ANTHROPIC_ADAPTIVE_THINKING_MODELS:
+        return "budget", None
+    if thinking_level is None or provider.thinking_parameter != "anthropic.thinking":
+        return "budget", None
+
+    levels = provider_thinking_levels(provider, model=selected_model)
+    if not levels:
+        return "budget", None
+
+    normalized = normalize_thinking_level(thinking_level)
+    if normalized not in levels:
+        available = ", ".join(levels)
+        raise ProviderConfigError(
+            f"Thinking mode {normalized} is not available for "
+            f"{provider.name}:{selected_model}. Available modes: {available}"
+        )
+    if normalized == "off":
+        return "disabled", None
+    effort = "max" if normalized == "xhigh" else normalized
+    return "adaptive", effort
 
 
 def _provider_from_json(data: object) -> ProviderConfig:

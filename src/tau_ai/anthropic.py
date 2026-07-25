@@ -64,6 +64,8 @@ class AnthropicProvider:
                 messages=messages,
                 tools=tools,
                 thinking_budget_tokens=self._config.thinking_budget_tokens,
+                thinking_mode=self._config.thinking_mode,
+                thinking_effort=self._config.thinking_effort,
             )
             headers = {
                 **(dict(self._config.headers or {})),
@@ -265,6 +267,8 @@ def _build_messages_payload(
     messages: list[AgentMessage],
     tools: list[AgentTool],
     thinking_budget_tokens: int | None = None,
+    thinking_mode: str = "budget",
+    thinking_effort: str | None = None,
 ) -> dict[str, JSONValue]:
     max_tokens = DEFAULT_MAX_TOKENS
     if thinking_budget_tokens is not None:
@@ -276,7 +280,12 @@ def _build_messages_payload(
         "system": system,
         "messages": [_anthropic_message(message) for message in messages],
     }
-    if thinking_budget_tokens is not None:
+    if thinking_mode == "disabled":
+        payload["thinking"] = {"type": "disabled"}
+    elif thinking_mode == "adaptive" and thinking_effort is not None:
+        payload["thinking"] = {"type": "adaptive", "display": "summarized"}
+        payload["output_config"] = {"effort": thinking_effort}
+    elif thinking_budget_tokens is not None:
         payload["thinking"] = {
             "type": "enabled",
             "budget_tokens": thinking_budget_tokens,

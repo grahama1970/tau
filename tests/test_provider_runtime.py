@@ -1,9 +1,9 @@
 import pytest
 
-from tau_ai import OpenAICodexProvider
+from tau_ai import AnthropicProvider, OpenAICodexProvider
 from tau_coding import provider_runtime
 from tau_coding.credentials import FileCredentialStore, OAuthCredential
-from tau_coding.provider_config import OpenAICodexProviderConfig
+from tau_coding.provider_config import AnthropicProviderConfig, OpenAICodexProviderConfig
 from tau_coding.provider_runtime import OpenAICodexCredentialResolver, create_model_provider
 
 
@@ -51,6 +51,33 @@ def test_create_model_provider_maps_codex_reasoning_effort_like_pi(tmp_path) -> 
     assert off_provider._config.reasoning_effort is None
     assert minimal_provider._config.reasoning_effort == "low"
     assert xhigh_provider._config.reasoning_effort == "xhigh"
+
+
+def test_create_model_provider_maps_anthropic_opus_5_adaptive_thinking(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    store = FileCredentialStore(tmp_path / "credentials.json")
+    provider_config = AnthropicProviderConfig(
+        models=("claude-opus-5",),
+        default_model="claude-opus-5",
+        thinking_levels=("off", "minimal", "low", "medium", "high", "xhigh"),
+        thinking_models=("claude-opus-5",),
+        thinking_parameter="anthropic.thinking",
+    )
+
+    provider = create_model_provider(
+        provider_config,
+        credential_store=store,
+        model="claude-opus-5",
+        thinking_level="xhigh",
+    )
+
+    assert isinstance(provider, AnthropicProvider)
+    assert provider._config.thinking_mode == "adaptive"
+    assert provider._config.thinking_effort == "max"
+    assert provider._config.thinking_budget_tokens is None
 
 
 @pytest.mark.anyio

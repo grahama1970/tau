@@ -992,6 +992,55 @@ async def test_anthropic_provider_includes_configured_thinking_budget() -> None:
 
 
 @pytest.mark.anyio
+async def test_anthropic_provider_includes_disabled_and_adaptive_thinking() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(
+            200,
+            text='data: {"type":"message_stop"}\n\n',
+            headers={"content-type": "text/event-stream"},
+        )
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        disabled_provider = AnthropicProvider(
+            AnthropicConfig(
+                api_key="test-key",
+                base_url="https://api.anthropic.test/v1",
+                thinking_mode="disabled",
+            ),
+            client=client,
+        )
+        adaptive_provider = AnthropicProvider(
+            AnthropicConfig(
+                api_key="test-key",
+                base_url="https://api.anthropic.test/v1",
+                thinking_mode="adaptive",
+                thinking_effort="max",
+            ),
+            client=client,
+        )
+
+        for provider in (disabled_provider, adaptive_provider):
+            await _collect(
+                provider.stream_response(
+                    model="claude-opus-5",
+                    system="You are Tau.",
+                    messages=[UserMessage(content="Say hello")],
+                    tools=[],
+                )
+            )
+
+    disabled_payload = loads(requests[0].content)
+    adaptive_payload = loads(requests[1].content)
+    assert disabled_payload["thinking"] == {"type": "disabled"}
+    assert "output_config" not in disabled_payload
+    assert adaptive_payload["thinking"] == {"type": "adaptive", "display": "summarized"}
+    assert adaptive_payload["output_config"] == {"effort": "max"}
+
+
+@pytest.mark.anyio
 async def test_anthropic_provider_streams_thinking_deltas() -> None:
     def handler(_request: httpx.Request) -> httpx.Response:
         return httpx.Response(

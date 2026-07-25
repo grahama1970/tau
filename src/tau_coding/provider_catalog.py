@@ -137,6 +137,7 @@ BUILTIN_PROVIDER_CATALOG: tuple[ProviderCatalogEntry, ...] = (
         credential_name="anthropic",
         models=(
             "claude-sonnet-4-6",
+            "claude-opus-5",
             "claude-opus-4-8",
             "claude-haiku-4-5",
         ),
@@ -144,12 +145,14 @@ BUILTIN_PROVIDER_CATALOG: tuple[ProviderCatalogEntry, ...] = (
         docs_url="https://docs.anthropic.com",
         context_windows={
             "claude-sonnet-4-6": 1_000_000,
+            "claude-opus-5": 1_000_000,
             "claude-opus-4-8": 200_000,
             "claude-haiku-4-5": 200_000,
         },
         thinking_levels=("off", "minimal", "low", "medium", "high", "xhigh"),
         thinking_models=(
             "claude-sonnet-4-6",
+            "claude-opus-5",
             "claude-opus-4-8",
         ),
         thinking_default="medium",

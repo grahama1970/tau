@@ -51,6 +51,7 @@ def create_model_provider(
             anthropic_config_from_provider(
                 provider,
                 credential_reader=credentials,
+                model=model,
                 thinking_level=thinking_level,
             )
         )

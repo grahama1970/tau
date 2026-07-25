@@ -113,6 +113,14 @@ def test_builtin_openai_declares_model_scoped_thinking_capabilities() -> None:
         "high",
         "xhigh",
     )
+    assert anthropic.context_windows["claude-opus-5"] == 1_000_000
+    assert provider_thinking_levels(anthropic, model="claude-opus-5") == (
+        "off",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+    )
     assert provider_thinking_unavailable_reason(anthropic, model="claude-sonnet-4-6") is None
     assert provider_thinking_levels(anthropic, model="claude-haiku-4-5") == ()
 
@@ -524,6 +532,46 @@ def test_anthropic_config_from_provider_sets_thinking_budget(
 
     assert off_config.thinking_budget_tokens is None
     assert high_config.thinking_budget_tokens == 8192
+
+
+def test_anthropic_config_from_provider_maps_opus_5_adaptive_thinking(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    provider = ProviderSettings().get_provider("anthropic")
+    assert isinstance(provider, AnthropicProviderConfig)
+
+    off_config = anthropic_config_from_provider(
+        provider,
+        model="claude-opus-5",
+        thinking_level="off",
+    )
+    medium_config = anthropic_config_from_provider(
+        provider,
+        model="claude-opus-5",
+        thinking_level="medium",
+    )
+    xhigh_config = anthropic_config_from_provider(
+        provider,
+        model="claude-opus-5",
+        thinking_level="xhigh",
+    )
+
+    assert off_config.thinking_mode == "disabled"
+    assert off_config.thinking_budget_tokens is None
+    assert off_config.thinking_effort is None
+    assert medium_config.thinking_mode == "adaptive"
+    assert medium_config.thinking_effort == "medium"
+    assert medium_config.thinking_budget_tokens is None
+    assert xhigh_config.thinking_mode == "adaptive"
+    assert xhigh_config.thinking_effort == "max"
+
+    with pytest.raises(ProviderConfigError, match="Thinking mode minimal is not available"):
+        anthropic_config_from_provider(
+            provider,
+            model="claude-opus-5",
+            thinking_level="minimal",
+        )
 
 
 @pytest.mark.parametrize(
