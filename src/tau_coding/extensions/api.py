@@ -67,6 +67,7 @@ class ExtensionCommandContext:
     extension_name: str
     shutdown_requested: bool = False
     editor_text: str | None = None
+    editor_insert_text: str | None = None
     terminal_title_requested: bool = False
     terminal_title: str | None = None
     notifications: list[ExtensionNotification] = field(default_factory=list)
@@ -100,6 +101,12 @@ class ExtensionCommandContext:
         if not isinstance(text, str):
             raise TypeError("set_editor_text requires text")
         self.editor_text = text
+
+    def insert_editor_text(self, text: str) -> None:
+        """Request that Tau insert text into the prompt editor after the command returns."""
+        if not isinstance(text, str):
+            raise TypeError("insert_editor_text requires text")
+        self.editor_insert_text = text
 
     def set_title(self, title: str | None) -> None:
         """Request that Tau override or clear the terminal title."""
@@ -159,6 +166,10 @@ class ExtensionCommandUi:
     def set_editor_text(self, text: str) -> None:
         """Request that Tau replace the prompt editor contents after the command returns."""
         self._context.set_editor_text(text)
+
+    def insert_editor_text(self, text: str) -> None:
+        """Request that Tau insert text into the prompt editor after the command returns."""
+        self._context.insert_editor_text(text)
 
     def set_title(self, title: str | None) -> None:
         """Request that Tau override or clear the terminal title."""

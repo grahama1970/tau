@@ -6241,6 +6241,8 @@ class TauTuiApp(App[None]):
                     self._set_extension_terminal_title(command.terminal_title)
                 if command.editor_text is not None:
                     self._set_prompt_editor_text(command.editor_text)
+                elif command.editor_insert_text is not None:
+                    self._insert_prompt_editor_text(command.editor_insert_text)
                 if command.user_message is not None:
                     self._queue_compaction_message(
                         command.user_message,
@@ -6452,6 +6454,10 @@ class TauTuiApp(App[None]):
                 self._set_extension_terminal_title(command.terminal_title)
             if command.editor_text is not None:
                 self._set_prompt_editor_text(command.editor_text)
+                self._refresh()
+                return
+            if command.editor_insert_text is not None:
+                self._insert_prompt_editor_text(command.editor_insert_text)
                 self._refresh()
                 return
             if command.user_message is not None:
@@ -6954,6 +6960,15 @@ class TauTuiApp(App[None]):
         self._completion_state = self._build_completion_state(prompt.text)
         self._refresh_completions()
 
+    def _insert_prompt_editor_text(self, text: str) -> None:
+        """Insert command-provided text at the current prompt cursor."""
+        prompt = self.query_one("#prompt", PromptInput)
+        prompt.insert(text)
+        prompt.focus()
+        self._sync_prompt_shell_mode(prompt.text)
+        self._completion_state = self._build_completion_state(prompt.text)
+        self._refresh_completions()
+
     async def _run_prompt(
         self,
         text: str,
@@ -7395,7 +7410,18 @@ class TauTuiApp(App[None]):
             return False
         if result.message:
             self._append_command_message(f"[{key.strip().lower()}]", result.message)
+        self._deliver_command_notifications(result)
+        self._apply_command_status_updates(result)
+        self._apply_command_widget_updates(result)
+        if result.terminal_title_requested:
+            self._set_extension_terminal_title(result.terminal_title)
+        if result.editor_text is not None:
+            self._set_prompt_editor_text(result.editor_text)
+        elif result.editor_insert_text is not None:
+            self._insert_prompt_editor_text(result.editor_insert_text)
         self._refresh()
+        if result.exit_requested:
+            self.exit()
         return True
 
     def action_open_command_palette(self) -> None:

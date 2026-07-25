@@ -2939,6 +2939,14 @@ def _extension_slash_command(
             if extension_context.editor_text is not None and result.editor_text is None:
                 result = replace(result, editor_text=extension_context.editor_text)
             if (
+                extension_context.editor_insert_text is not None
+                and result.editor_insert_text is None
+            ):
+                result = replace(
+                    result,
+                    editor_insert_text=extension_context.editor_insert_text,
+                )
+            if (
                 extension_context.terminal_title_requested
                 and not result.terminal_title_requested
             ):
@@ -2968,6 +2976,17 @@ def _extension_slash_command(
                 handled=True,
                 exit_requested=extension_context.shutdown_requested,
                 editor_text=extension_context.editor_text,
+                terminal_title_requested=extension_context.terminal_title_requested,
+                terminal_title=extension_context.terminal_title,
+                notifications=notifications,
+                status_updates=status_updates,
+                widget_updates=widget_updates,
+            )
+        if extension_context.editor_insert_text is not None:
+            return CommandResult(
+                handled=True,
+                exit_requested=extension_context.shutdown_requested,
+                editor_insert_text=extension_context.editor_insert_text,
                 terminal_title_requested=extension_context.terminal_title_requested,
                 terminal_title=extension_context.terminal_title,
                 notifications=notifications,

@@ -3,6 +3,7 @@
 from tau_coding.extensions.api import (
     ExtensionAPI,
     ExtensionArgumentCompletion,
+    ExtensionArgumentCompletionProvider,
     ExtensionCommand,
     ExtensionCommandContext,
     ExtensionCommandUi,
@@ -21,6 +22,7 @@ from tau_coding.extensions.loader import (
 __all__ = [
     "ExtensionAPI",
     "ExtensionArgumentCompletion",
+    "ExtensionArgumentCompletionProvider",
     "ExtensionCommand",
     "ExtensionCommandContext",
     "ExtensionCommandUi",
