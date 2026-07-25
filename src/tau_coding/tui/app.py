@@ -6262,6 +6262,9 @@ class TauTuiApp(App[None]):
         if self._cancel_active_prompt(notify=True):
             self._last_empty_escape_at = None
             return
+        if self._clear_terminal_command_prompt():
+            self._last_empty_escape_at = None
+            return
         self._handle_empty_prompt_escape()
 
     def _cancel_active_compaction(self, *, notify: bool) -> bool:
@@ -6298,6 +6301,20 @@ class TauTuiApp(App[None]):
         self._refresh()
         if notify:
             self._notify("Cancelled terminal command.")
+        return True
+
+    def _clear_terminal_command_prompt(self) -> bool:
+        """Clear a drafted terminal command when Escape exits shell mode."""
+        try:
+            prompt = self.query_one("#prompt", PromptInput)
+        except NoMatches:
+            return False
+        if not _is_terminal_command_prompt(prompt.text):
+            return False
+        prompt.text = ""
+        self._sync_prompt_shell_mode("")
+        self._completion_state = self._build_completion_state("", cursor_position=0)
+        self._refresh_completions()
         return True
 
     def _cancel_active_prompt(self, *, notify: bool, interrupt: bool = False) -> bool:
