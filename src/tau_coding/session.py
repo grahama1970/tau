@@ -55,6 +55,7 @@ from tau_coding.commands import (
     CommandStatusUpdate,
     CommandWidgetPlacement,
     CommandWidgetUpdate,
+    CommandWorkingIndicatorUpdate,
     SlashCommand,
     create_default_command_registry,
 )
@@ -3100,6 +3101,7 @@ def _extension_command_result(
     notifications = _extension_command_notifications(extension_context)
     status_updates = _extension_command_status_updates(extension_context)
     widget_updates = _extension_command_widget_updates(extension_context)
+    working_indicator_update = _extension_command_working_indicator_update(extension_context)
     if isinstance(result, CommandResult):
         if extension_context.shutdown_requested and not result.exit_requested:
             result = replace(result, exit_requested=True)
@@ -3128,6 +3130,8 @@ def _extension_command_result(
             result = replace(result, status_updates=(*result.status_updates, *status_updates))
         if widget_updates:
             result = replace(result, widget_updates=(*result.widget_updates, *widget_updates))
+        if working_indicator_update is not None and result.working_indicator_update is None:
+            result = replace(result, working_indicator_update=working_indicator_update)
         if extension_context.user_message is not None and result.user_message is None:
             result = replace(
                 result,
@@ -3148,6 +3152,7 @@ def _extension_command_result(
             notifications=notifications,
             status_updates=status_updates,
             widget_updates=widget_updates,
+            working_indicator_update=working_indicator_update,
         )
     if extension_context.editor_insert_text is not None:
         return CommandResult(
@@ -3159,6 +3164,7 @@ def _extension_command_result(
             notifications=notifications,
             status_updates=status_updates,
             widget_updates=widget_updates,
+            working_indicator_update=working_indicator_update,
         )
     if extension_context.terminal_title_requested:
         return CommandResult(
@@ -3169,6 +3175,7 @@ def _extension_command_result(
             notifications=notifications,
             status_updates=status_updates,
             widget_updates=widget_updates,
+            working_indicator_update=working_indicator_update,
         )
     if extension_context.user_message is not None:
         return CommandResult(
@@ -3179,6 +3186,7 @@ def _extension_command_result(
             notifications=notifications,
             status_updates=status_updates,
             widget_updates=widget_updates,
+            working_indicator_update=working_indicator_update,
             user_message=extension_context.user_message,
             user_message_delivery=cast(
                 Literal["steer", "follow_up"],
@@ -3194,6 +3202,7 @@ def _extension_command_result(
             notifications=notifications,
             status_updates=status_updates,
             widget_updates=widget_updates,
+            working_indicator_update=working_indicator_update,
         )
     return CommandResult(
         handled=True,
@@ -3204,6 +3213,7 @@ def _extension_command_result(
         notifications=notifications,
         status_updates=status_updates,
         widget_updates=widget_updates,
+        working_indicator_update=working_indicator_update,
     )
 
 
@@ -3214,6 +3224,7 @@ def _extension_shortcut_result(
     notifications = _extension_command_notifications(extension_context)
     status_updates = _extension_command_status_updates(extension_context)
     widget_updates = _extension_command_widget_updates(extension_context)
+    working_indicator_update = _extension_command_working_indicator_update(extension_context)
     if isinstance(result, CommandResult):
         if extension_context.shutdown_requested and not result.exit_requested:
             result = replace(result, exit_requested=True)
@@ -3242,6 +3253,8 @@ def _extension_shortcut_result(
             result = replace(result, status_updates=(*result.status_updates, *status_updates))
         if widget_updates:
             result = replace(result, widget_updates=(*result.widget_updates, *widget_updates))
+        if working_indicator_update is not None and result.working_indicator_update is None:
+            result = replace(result, working_indicator_update=working_indicator_update)
         return result
     if extension_context.editor_text is not None:
         return CommandResult(
@@ -3253,6 +3266,7 @@ def _extension_shortcut_result(
             notifications=notifications,
             status_updates=status_updates,
             widget_updates=widget_updates,
+            working_indicator_update=working_indicator_update,
         )
     if extension_context.editor_insert_text is not None:
         return CommandResult(
@@ -3264,6 +3278,7 @@ def _extension_shortcut_result(
             notifications=notifications,
             status_updates=status_updates,
             widget_updates=widget_updates,
+            working_indicator_update=working_indicator_update,
         )
     if extension_context.terminal_title_requested:
         return CommandResult(
@@ -3274,6 +3289,7 @@ def _extension_shortcut_result(
             notifications=notifications,
             status_updates=status_updates,
             widget_updates=widget_updates,
+            working_indicator_update=working_indicator_update,
         )
     if result is None:
         return CommandResult(
@@ -3284,6 +3300,7 @@ def _extension_shortcut_result(
             notifications=notifications,
             status_updates=status_updates,
             widget_updates=widget_updates,
+            working_indicator_update=working_indicator_update,
         )
     return CommandResult(
         handled=True,
@@ -3294,6 +3311,7 @@ def _extension_shortcut_result(
         notifications=notifications,
         status_updates=status_updates,
         widget_updates=widget_updates,
+        working_indicator_update=working_indicator_update,
     )
 
 
@@ -3331,6 +3349,22 @@ def _extension_command_widget_updates(
             placement=cast(CommandWidgetPlacement, update.placement),
         )
         for update in context.widget_updates
+    )
+
+
+def _extension_command_working_indicator_update(
+    context: ExtensionCommandContext | ExtensionShortcutContext,
+) -> CommandWorkingIndicatorUpdate | None:
+    update = context.working_indicator_update
+    if update is None:
+        return None
+    return CommandWorkingIndicatorUpdate(
+        visible=update.visible,
+        message_requested=update.message_requested,
+        message=update.message,
+        indicator_requested=update.indicator_requested,
+        frames=update.frames,
+        interval_ms=update.interval_ms,
     )
 
 

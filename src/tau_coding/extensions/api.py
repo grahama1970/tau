@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from tau_agent.tools import AgentTool
@@ -62,6 +62,7 @@ class ExtensionShortcutContext:
     notifications: list[ExtensionNotification] = field(default_factory=list)
     status_updates: list[ExtensionStatusUpdate] = field(default_factory=list)
     widget_updates: list[ExtensionWidgetUpdate] = field(default_factory=list)
+    working_indicator_update: ExtensionWorkingIndicatorUpdate | None = None
     ui: ExtensionCommandUi = field(init=False)
 
     def __post_init__(self) -> None:
@@ -161,6 +162,31 @@ class ExtensionShortcutContext:
             )
         )
 
+    def set_working_message(self, message: str | None = None) -> None:
+        """Request a custom running message, or restore Tau's default."""
+        update = self.working_indicator_update or ExtensionWorkingIndicatorUpdate()
+        self.working_indicator_update = replace(
+            update,
+            message_requested=True,
+            message=None if message is None else str(message),
+        )
+
+    def set_working_visible(self, visible: bool) -> None:
+        """Request whether Tau's built-in working indicator is visible."""
+        update = self.working_indicator_update or ExtensionWorkingIndicatorUpdate()
+        self.working_indicator_update = replace(update, visible=bool(visible))
+
+    def set_working_indicator(self, options: Any = None) -> None:
+        """Request custom working indicator frames, or restore Tau's default."""
+        update = self.working_indicator_update or ExtensionWorkingIndicatorUpdate()
+        frames, interval_ms = _normalize_working_indicator_options(options)
+        self.working_indicator_update = replace(
+            update,
+            indicator_requested=True,
+            frames=frames,
+            interval_ms=interval_ms,
+        )
+
 
 @dataclass(slots=True)
 class ExtensionCommandContext:
@@ -181,6 +207,7 @@ class ExtensionCommandContext:
     notifications: list[ExtensionNotification] = field(default_factory=list)
     status_updates: list[ExtensionStatusUpdate] = field(default_factory=list)
     widget_updates: list[ExtensionWidgetUpdate] = field(default_factory=list)
+    working_indicator_update: ExtensionWorkingIndicatorUpdate | None = None
     user_message: str | None = None
     user_message_delivery: str = "steer"
     ui: ExtensionCommandUi = field(init=False)
@@ -282,6 +309,31 @@ class ExtensionCommandContext:
             )
         )
 
+    def set_working_message(self, message: str | None = None) -> None:
+        """Request a custom running message, or restore Tau's default."""
+        update = self.working_indicator_update or ExtensionWorkingIndicatorUpdate()
+        self.working_indicator_update = replace(
+            update,
+            message_requested=True,
+            message=None if message is None else str(message),
+        )
+
+    def set_working_visible(self, visible: bool) -> None:
+        """Request whether Tau's built-in working indicator is visible."""
+        update = self.working_indicator_update or ExtensionWorkingIndicatorUpdate()
+        self.working_indicator_update = replace(update, visible=bool(visible))
+
+    def set_working_indicator(self, options: Any = None) -> None:
+        """Request custom working indicator frames, or restore Tau's default."""
+        update = self.working_indicator_update or ExtensionWorkingIndicatorUpdate()
+        frames, interval_ms = _normalize_working_indicator_options(options)
+        self.working_indicator_update = replace(
+            update,
+            indicator_requested=True,
+            frames=frames,
+            interval_ms=interval_ms,
+        )
+
     def send_user_message(self, text: str, *, deliver_as: str = "steer") -> None:
         """Request that Tau send or queue a user message after the command returns."""
         message = text.strip()
@@ -343,6 +395,30 @@ class ExtensionCommandUi:
             prefill=str(prefill),
         )
         return None if result is None else str(result)
+
+    def setWorkingMessage(self, message: str | None = None) -> None:  # noqa: N802
+        """Pi-compatible alias for setting the running message."""
+        self._context.set_working_message(message)
+
+    def setWorkingVisible(self, visible: bool) -> None:  # noqa: N802
+        """Pi-compatible alias for showing or hiding the running indicator."""
+        self._context.set_working_visible(visible)
+
+    def setWorkingIndicator(self, options: Any = None) -> None:  # noqa: N802
+        """Pi-compatible alias for setting custom running indicator frames."""
+        self._context.set_working_indicator(options)
+
+    def set_working_message(self, message: str | None = None) -> None:
+        """Set the running message."""
+        self._context.set_working_message(message)
+
+    def set_working_visible(self, visible: bool) -> None:
+        """Show or hide the running indicator."""
+        self._context.set_working_visible(visible)
+
+    def set_working_indicator(self, options: Any = None) -> None:
+        """Set custom running indicator frames."""
+        self._context.set_working_indicator(options)
 
     async def _request_ui(self, method: str, **payload: Any) -> Any:
         request = getattr(self._context.session, "request_extension_ui", None)
@@ -508,6 +584,18 @@ class ExtensionWidgetUpdate:
     placement: str = "above_editor"
 
 
+@dataclass(frozen=True, slots=True)
+class ExtensionWorkingIndicatorUpdate:
+    """Working indicator update requested by a Tau extension."""
+
+    visible: bool | None = None
+    message_requested: bool = False
+    message: str | None = None
+    indicator_requested: bool = False
+    frames: tuple[str, ...] | None = None
+    interval_ms: int | None = None
+
+
 def _normalize_argument_completions(
     values: Sequence[Any],
 ) -> tuple[ExtensionArgumentCompletion, ...]:
@@ -587,3 +675,27 @@ def _normalize_widget_placement(value: str) -> str:
     if normalized in {"below", "below_editor", "beloweditor"}:
         return "below_editor"
     raise ValueError("widget placement must be 'above_editor' or 'below_editor'")
+
+
+def _normalize_working_indicator_options(
+    options: Any,
+) -> tuple[tuple[str, ...] | None, int | None]:
+    if options is None:
+        return None, None
+    if isinstance(options, str):
+        return (options,), None
+    if isinstance(options, dict):
+        raw_frames = options.get("frames")
+        raw_interval = options.get("intervalMs", options.get("interval_ms"))
+        interval_ms = None
+        if raw_interval is not None:
+            interval_ms = int(raw_interval)
+            if interval_ms <= 0:
+                raise ValueError("working indicator intervalMs must be positive")
+        if raw_frames is None:
+            return None, interval_ms
+        if isinstance(raw_frames, str):
+            return (raw_frames,), interval_ms
+        return tuple(str(frame) for frame in raw_frames), interval_ms
+    frames = tuple(str(frame) for frame in options)
+    return frames, None

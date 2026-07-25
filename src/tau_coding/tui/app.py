@@ -5763,6 +5763,14 @@ class TauTuiApp(App[None]):
         text-style: bold;
     }
 
+    #prompt-working-message {
+        width: auto;
+        max-width: 32;
+        height: 1;
+        margin: 1 1 0 0;
+        color: $tau-muted-text;
+    }
+
     #prompt {
         width: 1fr;
         height: auto;
@@ -6168,9 +6176,14 @@ class TauTuiApp(App[None]):
         self._completion_state = CompletionState()
         self._activity_frame = 0
         self._activity_timer: Timer | None = None
+        self._activity_timer_interval_seconds: float | None = None
         self._terminal_progress_active = False
         self._terminal_title = TerminalTitleController()
         self._extension_terminal_title: str | None = None
+        self._extension_working_visible = True
+        self._extension_working_message: str | None = None
+        self._extension_working_indicator_frames: tuple[str, ...] | None = None
+        self._extension_working_indicator_interval_seconds: float | None = None
         self._terminal_notification = TerminalNotificationController(
             self.tui_settings.turn_notification
         )
@@ -6247,6 +6260,7 @@ class TauTuiApp(App[None]):
                 yield Static("", id="extension-widgets-above")
                 with Horizontal(id="prompt-row"):
                     yield Static("τ", id="prompt-prefix")
+                    yield Static("", id="prompt-working-message")
                     yield PromptInput(
                         placeholder=_prompt_placeholder(self.tui_settings.keybindings),
                         id="prompt",
@@ -6399,6 +6413,7 @@ class TauTuiApp(App[None]):
                 self._deliver_command_notifications(command)
                 self._apply_command_status_updates(command)
                 self._apply_command_widget_updates(command)
+                self._apply_command_working_indicator_update(command)
                 if command.terminal_title_requested:
                     self._set_extension_terminal_title(command.terminal_title)
                 if command.editor_text is not None:
@@ -6614,6 +6629,7 @@ class TauTuiApp(App[None]):
             self._deliver_command_notifications(command)
             self._apply_command_status_updates(command)
             self._apply_command_widget_updates(command)
+            self._apply_command_working_indicator_update(command)
             if command.terminal_title_requested:
                 self._set_extension_terminal_title(command.terminal_title)
             if command.editor_text is not None:
@@ -7105,6 +7121,22 @@ class TauTuiApp(App[None]):
             else:
                 other.pop(update.key, None)
                 target[update.key] = update.lines
+
+    def _apply_command_working_indicator_update(self, command: CommandResult) -> None:
+        """Apply extension-requested custom activity indicator state."""
+        update = command.working_indicator_update
+        if update is None:
+            return
+        if update.visible is not None:
+            self._extension_working_visible = update.visible
+        if update.message_requested:
+            self._extension_working_message = update.message
+        if update.indicator_requested:
+            self._extension_working_indicator_frames = update.frames
+            self._extension_working_indicator_interval_seconds = (
+                update.interval_ms / 1000 if update.interval_ms is not None else None
+            )
+        self._sync_activity_indicator()
 
     def _set_extension_terminal_title(self, title: str | None) -> None:
         """Override or clear the terminal title requested by an extension command."""
@@ -7646,6 +7678,7 @@ class TauTuiApp(App[None]):
         self._deliver_command_notifications(result)
         self._apply_command_status_updates(result)
         self._apply_command_widget_updates(result)
+        self._apply_command_working_indicator_update(result)
         if result.terminal_title_requested:
             self._set_extension_terminal_title(result.terminal_title)
         if result.editor_text is not None:
@@ -8832,12 +8865,21 @@ class TauTuiApp(App[None]):
     def _sync_activity_indicator(self) -> None:
         active = self._is_tui_activity_active()
         if active:
+            interval_seconds = self._activity_indicator_interval_seconds()
+            if (
+                self._activity_timer is not None
+                and self._activity_timer_interval_seconds != interval_seconds
+            ):
+                self._activity_timer.stop()
+                self._activity_timer = None
+                self._activity_timer_interval_seconds = None
             if self._activity_timer is None:
                 self._activity_timer = self.set_interval(
-                    ACTIVITY_TICK_SECONDS,
+                    interval_seconds,
                     self._tick_activity,
                     name="activity-indicator",
                 )
+                self._activity_timer_interval_seconds = interval_seconds
             else:
                 self._activity_timer.resume()
             self._apply_activity_indicator()
@@ -8850,6 +8892,11 @@ class TauTuiApp(App[None]):
         self._apply_activity_indicator()
         self._sync_terminal_title()
         self._sync_terminal_progress_indicator()
+
+    def _activity_indicator_interval_seconds(self) -> float:
+        if self._extension_working_indicator_frames is not None:
+            return self._extension_working_indicator_interval_seconds or ACTIVITY_TICK_SECONDS
+        return ACTIVITY_TICK_SECONDS
 
     def _sync_terminal_progress_indicator(self) -> None:
         active = self._is_tui_activity_active() and self.tui_settings.show_terminal_progress
@@ -8889,24 +8936,35 @@ class TauTuiApp(App[None]):
         try:
             prompt = self.query_one("#prompt", PromptInput)
             prompt_prefix = self.query_one("#prompt-prefix", Static)
+            working_message = self.query_one("#prompt-working-message", Static)
         except NoMatches:
             return
+        running = self._is_tui_activity_active()
         prompt.styles.border = (
             "tall",
             _activity_prompt_border_color(
                 theme,
                 frame=self._activity_frame,
-                running=self._is_tui_activity_active(),
+                running=running,
                 shell_mode=_is_terminal_command_prompt(prompt.text),
                 thinking_level=getattr(self.session, "thinking_level", None),
             ),
         )
+        message = (
+            self._extension_working_message
+            if running and self._extension_working_visible
+            else None
+        )
+        working_message.display = bool(message)
+        working_message.update(_text_from_ansi(message) if message else "")
         prompt_prefix.update(
             _render_activity_indicator(
                 theme,
                 frame=self._activity_frame,
-                running=self._is_tui_activity_active(),
+                running=running,
                 shell_mode=_is_terminal_command_prompt(prompt.text),
+                visible=self._extension_working_visible,
+                custom_frames=self._extension_working_indicator_frames,
             )
         )
 
@@ -9021,12 +9079,21 @@ def _render_activity_indicator(
     frame: int,
     running: bool,
     shell_mode: bool = False,
+    visible: bool = True,
+    custom_frames: tuple[str, ...] | None = None,
 ) -> Text:
     """Render the prompt prefix: a moving square while running, ``$`` in shell mode."""
     if shell_mode and not running:
         return Text("$", style=f"bold {theme.role_styles['tool'].border}")
     if not running:
         return Text("τ", style=f"bold {theme.accent}")
+    if not visible:
+        return Text(" ")
+    if custom_frames is not None:
+        if not custom_frames:
+            return Text(" ")
+        custom_frame = custom_frames[frame % len(custom_frames)]
+        return _text_from_ansi(custom_frame, style=f"bold {theme.accent}")
 
     cycle_length = (ACTIVITY_INDICATOR_HEIGHT - 1) * 2
     cycle_position = frame % cycle_length
@@ -9060,6 +9127,12 @@ def _render_activity_indicator(
         if row < ACTIVITY_INDICATOR_HEIGHT - 1:
             rendered.append("\n")
     return rendered
+
+
+def _text_from_ansi(text: str, *, style: str | None = None) -> Text:
+    if "\x1b[" in text:
+        return Text.from_ansi(text)
+    return Text(text, style=style)
 
 
 def _is_terminal_command_prompt(text: str) -> bool:

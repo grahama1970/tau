@@ -142,6 +142,18 @@ class CommandWidgetUpdate:
 
 
 @dataclass(frozen=True, slots=True)
+class CommandWorkingIndicatorUpdate:
+    """Working indicator update requested by an extension command."""
+
+    visible: bool | None = None
+    message_requested: bool = False
+    message: str | None = None
+    indicator_requested: bool = False
+    frames: tuple[str, ...] | None = None
+    interval_ms: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class CommandResult:
     """Result of handling a coding-session slash command."""
 
@@ -188,6 +200,7 @@ class CommandResult:
     notifications: tuple[CommandNotification, ...] = ()
     status_updates: tuple[CommandStatusUpdate, ...] = ()
     widget_updates: tuple[CommandWidgetUpdate, ...] = ()
+    working_indicator_update: CommandWorkingIndicatorUpdate | None = None
     user_message: str | None = None
     user_message_delivery: Literal["steer", "follow_up"] = "steer"
     message: str | None = None
