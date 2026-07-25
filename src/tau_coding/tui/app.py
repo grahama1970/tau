@@ -5456,6 +5456,8 @@ class TauTuiApp(App[None]):
         padding: 1 1 0 0;
         background: $tau-sidebar-background;
         border-right: tall $tau-border;
+        overflow-y: auto;
+        scrollbar-size-vertical: 1;
     }
 
     TauTuiApp.-hide-sidebar #sidebar {

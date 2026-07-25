@@ -2322,6 +2322,8 @@ async def test_tui_sidebar_is_visible_on_medium_windows() -> None:
         assert compact_info.display is True
         assert not app.has_class("-hide-sidebar")
         assert app.has_class("-sidebar-right")
+        assert sidebar.styles.overflow_y == "auto"
+        assert sidebar.styles.scrollbar_size_vertical == 1
 
 
 @pytest.mark.anyio
