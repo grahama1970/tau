@@ -653,6 +653,28 @@ Acceptance:
   dialogs, `setStatus`, `setWidget`, custom footer, or autocomplete-provider
   stacking.
 
+### Slice 31: Extension Command Terminal Title
+
+Pi extensions can call `ctx.ui.setTitle(...)` to make the terminal/window title
+reflect extension-specific mode or project state. Tau already owned a terminal
+title controller for session/running state; extension commands can now request a
+bounded title override through the same controller.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Extension command handlers can call `context.set_title(title_or_none)`.
+- The `context.ui` facade exposes `set_title(title_or_none)`.
+- `CommandResult` carries an explicit title-request flag so commands can clear
+  an override by passing `None`.
+- The TUI applies title overrides through the existing `TerminalTitleController`
+  and falls back to the session-derived title when cleared.
+- Title side effects compose with explicit `CommandResult`, notifications,
+  editor prefill, and user-message side effects.
+- This slice does not claim Pi's custom footer/status/widget APIs or lifecycle
+  event-driven title updates.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

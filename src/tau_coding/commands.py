@@ -162,6 +162,8 @@ class CommandResult:
     show_images: bool | None = None
     theme: str | None = None
     editor_text: str | None = None
+    terminal_title_requested: bool = False
+    terminal_title: str | None = None
     notifications: tuple[CommandNotification, ...] = ()
     user_message: str | None = None
     user_message_delivery: Literal["steer", "follow_up"] = "steer"

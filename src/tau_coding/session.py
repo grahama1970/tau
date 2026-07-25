@@ -2931,6 +2931,15 @@ def _extension_slash_command(
         if isinstance(result, CommandResult):
             if extension_context.editor_text is not None and result.editor_text is None:
                 result = replace(result, editor_text=extension_context.editor_text)
+            if (
+                extension_context.terminal_title_requested
+                and not result.terminal_title_requested
+            ):
+                result = replace(
+                    result,
+                    terminal_title_requested=True,
+                    terminal_title=extension_context.terminal_title,
+                )
             if notifications:
                 result = replace(result, notifications=(*result.notifications, *notifications))
             if extension_context.user_message is not None and result.user_message is None:
@@ -2947,11 +2956,22 @@ def _extension_slash_command(
             return CommandResult(
                 handled=True,
                 editor_text=extension_context.editor_text,
+                terminal_title_requested=extension_context.terminal_title_requested,
+                terminal_title=extension_context.terminal_title,
+                notifications=notifications,
+            )
+        if extension_context.terminal_title_requested:
+            return CommandResult(
+                handled=True,
+                terminal_title_requested=True,
+                terminal_title=extension_context.terminal_title,
                 notifications=notifications,
             )
         if extension_context.user_message is not None:
             return CommandResult(
                 handled=True,
+                terminal_title_requested=extension_context.terminal_title_requested,
+                terminal_title=extension_context.terminal_title,
                 notifications=notifications,
                 user_message=extension_context.user_message,
                 user_message_delivery=cast(
@@ -2960,8 +2980,19 @@ def _extension_slash_command(
                 ),
             )
         if result is None:
-            return CommandResult(handled=True, notifications=notifications)
-        return CommandResult(handled=True, message=str(result), notifications=notifications)
+            return CommandResult(
+                handled=True,
+                terminal_title_requested=extension_context.terminal_title_requested,
+                terminal_title=extension_context.terminal_title,
+                notifications=notifications,
+            )
+        return CommandResult(
+            handled=True,
+            terminal_title_requested=extension_context.terminal_title_requested,
+            terminal_title=extension_context.terminal_title,
+            message=str(result),
+            notifications=notifications,
+        )
 
     return SlashCommand(
         name=name,

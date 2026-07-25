@@ -64,6 +64,8 @@ class ExtensionCommandContext:
     args: str
     extension_name: str
     editor_text: str | None = None
+    terminal_title_requested: bool = False
+    terminal_title: str | None = None
     notifications: list[ExtensionNotification] = field(default_factory=list)
     user_message: str | None = None
     user_message_delivery: str = "steer"
@@ -90,6 +92,13 @@ class ExtensionCommandContext:
             raise TypeError("set_editor_text requires text")
         self.editor_text = text
 
+    def set_title(self, title: str | None) -> None:
+        """Request that Tau override or clear the terminal title."""
+        if title is not None and not isinstance(title, str):
+            raise TypeError("set_title requires text or None")
+        self.terminal_title_requested = True
+        self.terminal_title = title
+
     def send_user_message(self, text: str, *, deliver_as: str = "steer") -> None:
         """Request that Tau send or queue a user message after the command returns."""
         message = text.strip()
@@ -113,6 +122,10 @@ class ExtensionCommandUi:
     def set_editor_text(self, text: str) -> None:
         """Request that Tau replace the prompt editor contents after the command returns."""
         self._context.set_editor_text(text)
+
+    def set_title(self, title: str | None) -> None:
+        """Request that Tau override or clear the terminal title."""
+        self._context.set_title(title)
 
 
 class ExtensionAPI:

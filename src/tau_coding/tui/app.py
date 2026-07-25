@@ -5991,6 +5991,7 @@ class TauTuiApp(App[None]):
         self._activity_timer: Timer | None = None
         self._terminal_progress_active = False
         self._terminal_title = TerminalTitleController()
+        self._extension_terminal_title: str | None = None
         self._terminal_notification = TerminalNotificationController(
             self.tui_settings.turn_notification
         )
@@ -6211,6 +6212,8 @@ class TauTuiApp(App[None]):
                 if command.message:
                     self._append_command_message(text, command.message)
                 self._deliver_command_notifications(command)
+                if command.terminal_title_requested:
+                    self._set_extension_terminal_title(command.terminal_title)
                 if command.editor_text is not None:
                     self._set_prompt_editor_text(command.editor_text)
                 if command.user_message is not None:
@@ -6415,6 +6418,8 @@ class TauTuiApp(App[None]):
                 else:
                     self._show_command_message(text, command.message)
             self._deliver_command_notifications(command)
+            if command.terminal_title_requested:
+                self._set_extension_terminal_title(command.terminal_title)
             if command.editor_text is not None:
                 self._set_prompt_editor_text(command.editor_text)
                 self._refresh()
@@ -6872,6 +6877,13 @@ class TauTuiApp(App[None]):
         """Show notifications requested by a slash-command handler."""
         for notification in command.notifications:
             self._notify(notification.message, severity=notification.severity)
+
+    def _set_extension_terminal_title(self, title: str | None) -> None:
+        """Override or clear the terminal title requested by an extension command."""
+        self._extension_terminal_title = title.strip() if title is not None else None
+        if self._extension_terminal_title == "":
+            self._extension_terminal_title = None
+        self._sync_terminal_title()
 
     def _set_prompt_editor_text(self, text: str) -> None:
         """Replace the prompt editor contents with text from a command handler."""
@@ -8537,7 +8549,7 @@ class TauTuiApp(App[None]):
 
     def _sync_terminal_title(self) -> None:
         self._terminal_title.update(
-            getattr(self.session, "session_title", None),
+            self._extension_terminal_title or getattr(self.session, "session_title", None),
             cwd=getattr(self.session, "cwd", None),
             running=self._is_tui_activity_active(),
             frame=self._activity_frame,
