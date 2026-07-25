@@ -163,6 +163,10 @@ from tau_coding.orchestration_redteam import run_orchestration_redteam
 from tau_coding.orchestration_reliability import write_orchestration_reliability_receipt
 from tau_coding.package_validate import write_compliance_package_validation_receipt
 from tau_coding.paths import TauPaths
+from tau_coding.permission_receipts import (
+    write_permission_reply_receipt,
+    write_permission_request_receipt,
+)
 from tau_coding.persona_dream_panel_proof import (
     DEFAULT_AGENT_REGISTRY_ROOT as DEFAULT_PERSONA_DREAM_PANEL_AGENT_ROOT,
 )
@@ -2377,6 +2381,28 @@ def main(
         try:
             options = _parse_approval_gate_check_cli_args(positional_args[1:])
             payload = evaluate_approval_gate(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "permission-request":
+        try:
+            options = _parse_permission_request_cli_args(positional_args[1:])
+            payload = write_permission_request_receipt(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "permission-reply":
+        try:
+            options = _parse_permission_reply_cli_args(positional_args[1:])
+            payload = write_permission_reply_receipt(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -5952,6 +5978,177 @@ def _parse_approval_gate_check_cli_args(args: list[str]) -> dict[str, object]:
         "requested_action": requested_action,
         "run_dir": run_dir,
         "output": output,
+    }
+
+
+def _parse_permission_request_cli_args(args: list[str]) -> dict[str, object]:
+    action = ""
+    resources: list[str] = []
+    source_node = ""
+    run_dir = Path("experiments/goal-locked-subagents/proofs/permissions")
+    output: Path | None = None
+    session_id: str | None = None
+    request_id: str | None = None
+    mode: str | None = None
+    proposed_save_rule: str | None = None
+    denied = False
+    reason: str | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--action":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--action requires a value")
+            action = args[index]
+        elif arg.startswith("--action="):
+            action = arg.partition("=")[2]
+        elif arg == "--resource":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--resource requires a value")
+            resources.append(args[index])
+        elif arg.startswith("--resource="):
+            resources.append(arg.partition("=")[2])
+        elif arg == "--source-node":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--source-node requires a value")
+            source_node = args[index]
+        elif arg.startswith("--source-node="):
+            source_node = arg.partition("=")[2]
+        elif arg == "--run-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--run-dir requires a value")
+            run_dir = Path(args[index])
+        elif arg.startswith("--run-dir="):
+            run_dir = Path(arg.partition("=")[2])
+        elif arg == "--output":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--output requires a value")
+            output = Path(args[index])
+        elif arg.startswith("--output="):
+            output = Path(arg.partition("=")[2])
+        elif arg == "--session":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--session requires a value")
+            session_id = args[index]
+        elif arg.startswith("--session="):
+            session_id = arg.partition("=")[2]
+        elif arg == "--request-id":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--request-id requires a value")
+            request_id = args[index]
+        elif arg.startswith("--request-id="):
+            request_id = arg.partition("=")[2]
+        elif arg == "--mode":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--mode requires a value")
+            mode = args[index]
+        elif arg.startswith("--mode="):
+            mode = arg.partition("=")[2]
+        elif arg == "--save-rule":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--save-rule requires a value")
+            proposed_save_rule = args[index]
+        elif arg.startswith("--save-rule="):
+            proposed_save_rule = arg.partition("=")[2]
+        elif arg == "--deny":
+            denied = True
+        elif arg == "--reason":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--reason requires a value")
+            reason = args[index]
+        elif arg.startswith("--reason="):
+            reason = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown permission-request option: {arg}")
+        index += 1
+    if not action:
+        raise RuntimeError("--action is required")
+    if not resources:
+        raise RuntimeError("--resource is required")
+    if not source_node:
+        raise RuntimeError("--source-node is required")
+    return {
+        "action": action,
+        "resources": resources,
+        "source_node": source_node,
+        "run_dir": run_dir,
+        "output": output,
+        "session_id": session_id,
+        "request_id": request_id,
+        "mode": mode,
+        "proposed_save_rule": proposed_save_rule,
+        "denied": denied,
+        "reason": reason,
+    }
+
+
+def _parse_permission_reply_cli_args(args: list[str]) -> dict[str, object]:
+    request_receipt: Path | None = None
+    reply = ""
+    output: Path | None = None
+    actor_id: str | None = None
+    scope: str | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--request":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--request requires a value")
+            request_receipt = Path(args[index])
+        elif arg.startswith("--request="):
+            request_receipt = Path(arg.partition("=")[2])
+        elif arg == "--reply":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--reply requires a value")
+            reply = args[index]
+        elif arg.startswith("--reply="):
+            reply = arg.partition("=")[2]
+        elif arg == "--output":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--output requires a value")
+            output = Path(args[index])
+        elif arg.startswith("--output="):
+            output = Path(arg.partition("=")[2])
+        elif arg == "--actor":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--actor requires a value")
+            actor_id = args[index]
+        elif arg.startswith("--actor="):
+            actor_id = arg.partition("=")[2]
+        elif arg == "--scope":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--scope requires a value")
+            scope = args[index]
+        elif arg.startswith("--scope="):
+            scope = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown permission-reply option: {arg}")
+        index += 1
+    if request_receipt is None:
+        raise RuntimeError("--request is required")
+    if not reply:
+        raise RuntimeError("--reply is required")
+    return {
+        "request_receipt": request_receipt,
+        "reply": reply,
+        "output": output,
+        "actor_id": actor_id,
+        "scope": scope,
     }
 
 

@@ -130,6 +130,15 @@ Acceptance:
 
 Add a durable permission request/response receipt model before adding new UI.
 
+Status: implemented in this branch.
+
+Proof:
+
+- `tau permission-request` writes `tau.permission_request_receipt.v1` artifacts.
+- `tau permission-request --deny` records a fail-closed blocked permission receipt.
+- `tau permission-reply` writes `tau.permission_reply_receipt.v1` artifacts for
+  `once`, `always`, and `reject`, linked to the request receipt SHA-256.
+
 Acceptance:
 
 - A denied write attempt records a fail-closed permission receipt.
