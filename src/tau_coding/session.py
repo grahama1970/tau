@@ -53,7 +53,7 @@ from tau_agent.session import (
 from tau_agent.session.entries import SessionEntry
 from tau_agent.session.tree import SessionTreeError, path_to_entry
 from tau_agent.tools import AgentTool
-from tau_ai import CancellationToken, ModelProvider, ProviderEvent
+from tau_ai import CancellationToken, ModelProvider, ProviderEvent, ProviderHttpHooks
 from tau_ai.events import ProviderErrorEvent, ProviderResponseEndEvent, ProviderTextDeltaEvent
 from tau_coding.branch_summary import summarize_branch_messages_with_model
 from tau_coding.commands import (
@@ -1486,9 +1486,8 @@ class CodingSession:
             current=self._thinking_level,
         )
         try:
-            provider = create_model_provider(
+            provider = self._create_runtime_model_provider(
                 provider_config,
-                credential_store=self._credential_store,
                 model=model,
                 thinking_level=thinking_level,
             )
@@ -1606,9 +1605,8 @@ class CodingSession:
                 timeout_seconds=self._provider_timeout_override_seconds,
             )
         try:
-            provider = create_model_provider(
+            provider = self._create_runtime_model_provider(
                 provider_config,
-                credential_store=self._credential_store,
                 model=self.model,
                 thinking_level=self._thinking_level,
             )
@@ -1617,6 +1615,31 @@ class CodingSession:
         self._owned_providers.append(provider)
         self._install_extension_provider_adapter(provider)
         self._runtime_provider_config = provider_config
+
+    def _create_runtime_model_provider(
+        self,
+        provider_config: ProviderConfig,
+        *,
+        model: str | None,
+        thinking_level: ThinkingLevel | None,
+    ) -> ClosableModelProvider:
+        try:
+            parameters = inspect.signature(create_model_provider).parameters
+        except (TypeError, ValueError):
+            supports_hooks = True
+        else:
+            supports_hooks = "hooks" in parameters or any(
+                parameter.kind == inspect.Parameter.VAR_KEYWORD
+                for parameter in parameters.values()
+            )
+        kwargs: dict[str, object] = {
+            "credential_store": self._credential_store,
+            "model": model,
+            "thinking_level": thinking_level,
+        }
+        if supports_hooks:
+            kwargs["hooks"] = self._provider_http_hooks()
+        return create_model_provider(provider_config, **kwargs)
 
     def reload(self) -> CodingReloadSummary:
         """Reload local coding resources and project context for future turns."""
@@ -2894,6 +2917,107 @@ class CodingSession:
         if diagnostics:
             self._resource_diagnostics = (*self._resource_diagnostics, *diagnostics)
         return current_messages
+
+    def _provider_http_hooks(self) -> ProviderHttpHooks:
+        return ProviderHttpHooks(
+            before_request=self._emit_extension_before_provider_request,
+            before_headers=self._emit_extension_before_provider_headers,
+            after_response=self._emit_extension_after_provider_response,
+        )
+
+    async def _emit_extension_before_provider_request(self, payload: object) -> object:
+        current_payload = payload
+        diagnostics: list[ResourceDiagnostic] = []
+        for extension in self._extensions:
+            handlers = tuple((extension.event_handlers or {}).get("before_provider_request", ()))
+            if not handlers:
+                continue
+            context = ExtensionShortcutContext(
+                session=self,
+                key="",
+                extension_name=extension.name,
+            )
+            for handler in handlers:
+                event: dict[str, object] = {
+                    "type": "before_provider_request",
+                    "payload": current_payload,
+                }
+                try:
+                    result = _call_extension_lifecycle_handler(handler, event, context)
+                    if inspect.isawaitable(result):
+                        result = await result
+                except Exception as exc:  # noqa: BLE001 - extensions are isolated plugins
+                    diagnostics.append(
+                        ResourceDiagnostic(
+                            kind="extension",
+                            name=extension.name,
+                            path=extension.path,
+                            message=(
+                                f"before_provider_request handler failed: "
+                                f"{type(exc).__name__}: {exc}"
+                            ),
+                            severity="error",
+                        )
+                    )
+                    continue
+                if result is not None:
+                    current_payload = result
+        if diagnostics:
+            self._resource_diagnostics = (*self._resource_diagnostics, *diagnostics)
+        return current_payload
+
+    async def _emit_extension_before_provider_headers(
+        self,
+        headers: dict[str, str],
+    ) -> Mapping[str, str | None]:
+        diagnostics: list[ResourceDiagnostic] = []
+        for extension in self._extensions:
+            handlers = tuple((extension.event_handlers or {}).get("before_provider_headers", ()))
+            if not handlers:
+                continue
+            context = ExtensionShortcutContext(
+                session=self,
+                key="",
+                extension_name=extension.name,
+            )
+            for handler in handlers:
+                event: dict[str, object] = {
+                    "type": "before_provider_headers",
+                    "headers": headers,
+                }
+                try:
+                    result = _call_extension_lifecycle_handler(handler, event, context)
+                    if inspect.isawaitable(result):
+                        await result
+                except Exception as exc:  # noqa: BLE001 - extensions are isolated plugins
+                    diagnostics.append(
+                        ResourceDiagnostic(
+                            kind="extension",
+                            name=extension.name,
+                            path=extension.path,
+                            message=(
+                                f"before_provider_headers handler failed: "
+                                f"{type(exc).__name__}: {exc}"
+                            ),
+                            severity="error",
+                        )
+                    )
+        if diagnostics:
+            self._resource_diagnostics = (*self._resource_diagnostics, *diagnostics)
+        return headers
+
+    async def _emit_extension_after_provider_response(
+        self,
+        status: int,
+        headers: Mapping[str, str],
+    ) -> None:
+        await self.emit_extension_event(
+            {
+                "type": "after_provider_response",
+                "status": status,
+                "headers": dict(headers),
+            }
+        )
 
     async def _emit_extension_before_compact(
         self,

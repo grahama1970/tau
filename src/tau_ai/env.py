@@ -1,6 +1,6 @@
 """Environment-based provider configuration helpers."""
 
-from collections.abc import Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass
 from os import environ
 from typing import Literal
@@ -10,6 +10,22 @@ DEFAULT_ANTHROPIC_BASE_URL = "https://api.anthropic.com/v1"
 DEFAULT_OPENAI_COMPATIBLE_TIMEOUT_SECONDS = 60.0
 DEFAULT_OPENAI_COMPATIBLE_MAX_RETRIES = 2
 DEFAULT_OPENAI_COMPATIBLE_MAX_RETRY_DELAY_SECONDS = 1.0
+
+ProviderPayloadHook = Callable[[object], object | Awaitable[object]]
+ProviderHeadersHook = Callable[
+    [dict[str, str]],
+    Mapping[str, str | None] | None | Awaitable[Mapping[str, str | None] | None],
+]
+ProviderResponseHook = Callable[[int, Mapping[str, str]], object | Awaitable[object]]
+
+
+@dataclass(frozen=True, slots=True)
+class ProviderHttpHooks:
+    """Optional provider HTTP hooks used by host runtimes."""
+
+    before_request: ProviderPayloadHook | None = None
+    before_headers: ProviderHeadersHook | None = None
+    after_response: ProviderResponseHook | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -24,6 +40,7 @@ class OpenAICompatibleConfig:
     max_retry_delay_seconds: float = DEFAULT_OPENAI_COMPATIBLE_MAX_RETRY_DELAY_SECONDS
     reasoning_effort: str | None = None
     reasoning_effort_parameter: str = "reasoning_effort"
+    hooks: ProviderHttpHooks | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -40,6 +57,7 @@ class AnthropicConfig:
     thinking_budget_tokens: int | None = None
     thinking_mode: Literal["budget", "adaptive", "disabled"] = "budget"
     thinking_effort: str | None = None
+    hooks: ProviderHttpHooks | None = None
 
 
 def openai_compatible_config_from_env(

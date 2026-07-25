@@ -10,6 +10,7 @@ from tau_ai import (
     OpenAICodexCredentials,
     OpenAICodexProvider,
     OpenAICompatibleProvider,
+    ProviderHttpHooks,
 )
 from tau_coding.credentials import FileCredentialStore, OAuthCredential
 from tau_coding.oauth import (
@@ -44,6 +45,7 @@ def create_model_provider(
     credential_store: FileCredentialStore | None = None,
     model: str | None = None,
     thinking_level: ThinkingLevel | None = None,
+    hooks: ProviderHttpHooks | None = None,
 ) -> ClosableModelProvider:
     """Create a runtime model provider from durable provider settings."""
     credentials = credential_store or FileCredentialStore()
@@ -54,6 +56,7 @@ def create_model_provider(
                 credential_reader=credentials,
                 model=model,
                 thinking_level=thinking_level,
+                hooks=hooks,
             )
         )
     if isinstance(provider, OpenAICodexProviderConfig):
@@ -81,6 +84,7 @@ def create_model_provider(
             credential_reader=credentials,
             model=model,
             thinking_level=thinking_level,
+            hooks=hooks,
         )
     )
 

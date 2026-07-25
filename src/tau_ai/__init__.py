@@ -8,6 +8,7 @@ from tau_ai.env import (
     DEFAULT_OPENAI_COMPATIBLE_TIMEOUT_SECONDS,
     AnthropicConfig,
     OpenAICompatibleConfig,
+    ProviderHttpHooks,
     openai_compatible_config_from_env,
 )
 from tau_ai.events import (
@@ -46,6 +47,7 @@ __all__ = [
     "OpenAICodexProvider",
     "OpenAICompatibleConfig",
     "OpenAICompatibleProvider",
+    "ProviderHttpHooks",
     "ProviderErrorEvent",
     "ProviderEvent",
     "ProviderResponseEndEvent",

@@ -17,6 +17,7 @@ from tau_ai import (
     DEFAULT_OPENAI_COMPATIBLE_TIMEOUT_SECONDS,
     AnthropicConfig,
     OpenAICompatibleConfig,
+    ProviderHttpHooks,
 )
 from tau_ai.env import DEFAULT_OPENAI_COMPATIBLE_BASE_URL
 from tau_coding.credentials import FileCredentialStore, credentials_path
@@ -792,6 +793,7 @@ def openai_compatible_config_from_provider(
     credential_reader: CredentialReader | None = None,
     model: str | None = None,
     thinking_level: ThinkingLevel | None = None,
+    hooks: ProviderHttpHooks | None = None,
 ) -> OpenAICompatibleConfig:
     """Build OpenAI-compatible runtime config from durable settings."""
     api_key = _api_key_from_provider(provider, credential_reader=credential_reader)
@@ -812,6 +814,7 @@ def openai_compatible_config_from_provider(
         max_retry_delay_seconds=provider.max_retry_delay_seconds,
         reasoning_effort=reasoning_effort,
         reasoning_effort_parameter=provider.thinking_parameter or "reasoning_effort",
+        hooks=hooks,
     )
 
 
@@ -821,6 +824,7 @@ def anthropic_config_from_provider(
     credential_reader: CredentialReader | None = None,
     model: str | None = None,
     thinking_level: ThinkingLevel | None = None,
+    hooks: ProviderHttpHooks | None = None,
 ) -> AnthropicConfig:
     """Build Anthropic runtime config from durable settings."""
     api_key, use_bearer_auth = _anthropic_auth_from_provider(
@@ -848,6 +852,7 @@ def anthropic_config_from_provider(
         thinking_budget_tokens=thinking_budget_tokens,
         thinking_mode=thinking_mode,
         thinking_effort=thinking_effort,
+        hooks=hooks,
     )
 
 

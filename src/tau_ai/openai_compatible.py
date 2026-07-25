@@ -63,10 +63,12 @@ class OpenAICompatibleProvider:
                 reasoning_effort=self._config.reasoning_effort,
                 reasoning_effort_parameter=self._config.reasoning_effort_parameter,
             )
+            payload = await _apply_before_provider_request(self._config.hooks, payload)
             headers = {
                 **(dict(self._config.headers or {})),
                 "Authorization": f"Bearer {self._config.api_key}",
             }
+            headers = await _apply_before_provider_headers(self._config.hooks, headers)
             url = f"{self._config.base_url.rstrip('/')}/chat/completions"
 
             attempt = 0
@@ -76,6 +78,7 @@ class OpenAICompatibleProvider:
                     async with client.stream(
                         "POST", url, json=payload, headers=headers
                     ) as response:
+                        await _emit_after_provider_response(self._config.hooks, response)
                         if response.status_code >= 400:
                             body = await response.aread()
                             if self._should_retry(attempt, status_code=response.status_code):
@@ -367,3 +370,39 @@ def _thinking_delta_text(delta: Mapping[str, Any]) -> str:
 
 def _is_transient_status(status_code: int) -> bool:
     return status_code in {408, 409, 425, 429} or status_code >= 500
+
+
+async def _apply_before_provider_request(hooks: object, payload: object) -> object:
+    before_request = getattr(hooks, "before_request", None)
+    if not callable(before_request):
+        return payload
+    result = before_request(payload)
+    if hasattr(result, "__await__"):
+        result = await result
+    return payload if result is None else result
+
+
+async def _apply_before_provider_headers(
+    hooks: object,
+    headers: dict[str, str],
+) -> dict[str, str]:
+    before_headers = getattr(hooks, "before_headers", None)
+    if not callable(before_headers):
+        return headers
+    result = before_headers(headers)
+    if hasattr(result, "__await__"):
+        result = await result
+    if isinstance(result, Mapping):
+        headers = {str(key): str(value) for key, value in result.items() if value is not None}
+    else:
+        headers = {key: value for key, value in headers.items() if value is not None}
+    return headers
+
+
+async def _emit_after_provider_response(hooks: object, response: httpx.Response) -> None:
+    after_response = getattr(hooks, "after_response", None)
+    if not callable(after_response):
+        return
+    result = after_response(response.status_code, dict(response.headers))
+    if hasattr(result, "__await__"):
+        await result
