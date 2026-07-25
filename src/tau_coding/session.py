@@ -3016,7 +3016,11 @@ def _extension_slash_command(
             extension_name=extension.name,
             current_editor_text=context.current_editor_text,
         )
-        result = command.handler(extension_context)
+        result = _call_extension_command_handler(
+            command.handler,
+            context.args,
+            extension_context,
+        )
         if inspect.isawaitable(result):
             if not context.async_ui_supported:
                 close = getattr(result, "close", None)
@@ -3051,6 +3055,34 @@ def _extension_slash_command(
         hidden=command.hidden,
         source=f"extension:{extension.name}",
     )
+
+
+def _call_extension_command_handler(
+    handler: Callable[..., object],
+    args: str,
+    extension_context: ExtensionCommandContext,
+) -> object:
+    """Call Tau `(ctx)` or Pi-style `(args, ctx)` extension command handlers."""
+    try:
+        parameters = inspect.signature(handler).parameters
+    except (TypeError, ValueError):
+        return handler(extension_context)
+    positional = [
+        parameter
+        for parameter in parameters.values()
+        if parameter.kind
+        in {
+            inspect.Parameter.POSITIONAL_ONLY,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        }
+    ]
+    accepts_varargs = any(
+        parameter.kind == inspect.Parameter.VAR_POSITIONAL
+        for parameter in parameters.values()
+    )
+    if accepts_varargs or len(positional) >= 2:
+        return handler(args, extension_context)
+    return handler(extension_context)
 
 
 async def _await_extension_command_result(
