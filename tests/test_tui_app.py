@@ -1150,8 +1150,10 @@ def test_expanded_edit_tool_result_renders_patch_as_colored_diff() -> None:
     assert "Patch:" in plain
     assert "-old" in plain
     assert "+new" in plain
-    assert re.search(r"\x1b\[91;[^m]*m-old", styled)
-    assert re.search(r"\x1b\[92;[^m]*m\+new", styled)
+    assert re.search(r"\x1b\[91;[^m]*m-", styled)
+    assert re.search(r"\x1b\[7;91;[^m]*mold", styled)
+    assert re.search(r"\x1b\[92;[^m]*m\+", styled)
+    assert re.search(r"\x1b\[7;92;[^m]*mnew", styled)
 
 
 def test_transcript_plain_tool_body_renders_patch_as_colored_diff() -> None:
@@ -1175,8 +1177,10 @@ def test_transcript_plain_tool_body_renders_patch_as_colored_diff() -> None:
     assert "Patch:" in plain
     assert "-old" in plain
     assert "+new" in plain
-    assert re.search(r"\x1b\[91;[^m]*m-old", styled)
-    assert re.search(r"\x1b\[92;[^m]*m\+new", styled)
+    assert re.search(r"\x1b\[91;[^m]*m-", styled)
+    assert re.search(r"\x1b\[7;91;[^m]*mold", styled)
+    assert re.search(r"\x1b\[92;[^m]*m\+", styled)
+    assert re.search(r"\x1b\[7;92;[^m]*mnew", styled)
 
 
 def test_status_chat_item_renders_slash_command_text_literally() -> None:

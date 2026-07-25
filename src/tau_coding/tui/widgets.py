@@ -1,10 +1,12 @@
 """Small Textual widgets for Tau's interactive TUI."""
 
+import re
 from collections.abc import Sequence
 from dataclasses import dataclass
+from difflib import SequenceMatcher
 from pathlib import Path
 from subprocess import TimeoutExpired, run
-from typing import Any, ClassVar, Protocol
+from typing import Any, ClassVar, Literal, Protocol
 
 from pygments.lexers import get_lexer_by_name  # type: ignore[import-untyped]
 from pygments.util import ClassNotFound  # type: ignore[import-untyped]
@@ -1345,6 +1347,7 @@ def _render_patch_body(
     syntax_theme: str,
     code_block_background: str,
 ) -> RenderableType | None:
+    del syntax_theme
     marker = "\nPatch:\n"
     if marker not in text:
         return None
@@ -1353,14 +1356,132 @@ def _render_patch_body(
         return None
     return Group(
         _plain_text(f"{before_patch}{marker.rstrip()}", body_style=body_style),
-        Syntax(
+        _render_diff_text(
             patch.rstrip("\n"),
-            "diff",
-            theme=syntax_theme,
-            word_wrap=True,
-            background_color=code_block_background,
+            body_style=body_style,
+            code_block_background=code_block_background,
         ),
     )
+
+
+def _render_diff_text(
+    patch: str,
+    *,
+    body_style: str,
+    code_block_background: str,
+) -> Text:
+    rendered = Text(style=body_style, overflow="fold", no_wrap=False)
+    lines = patch.splitlines()
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        if _is_removed_diff_line(line):
+            removed_lines: list[str] = []
+            while index < len(lines) and _is_removed_diff_line(lines[index]):
+                removed_lines.append(lines[index][1:])
+                index += 1
+            added_lines: list[str] = []
+            while index < len(lines) and _is_added_diff_line(lines[index]):
+                added_lines.append(lines[index][1:])
+                index += 1
+            if len(removed_lines) == 1 and len(added_lines) == 1:
+                _append_intraline_diff_pair(
+                    rendered,
+                    removed_lines[0],
+                    added_lines[0],
+                    code_block_background=code_block_background,
+                )
+            else:
+                for removed in removed_lines:
+                    _append_diff_line(
+                        rendered,
+                        f"-{removed}",
+                        style=f"bright_red on {code_block_background}",
+                    )
+                for added in added_lines:
+                    _append_diff_line(
+                        rendered,
+                        f"+{added}",
+                        style=f"bright_green on {code_block_background}",
+                    )
+            continue
+        if _is_added_diff_line(line):
+            _append_diff_line(rendered, line, style=f"bright_green on {code_block_background}")
+        else:
+            _append_diff_line(rendered, line, style=f"bright_black on {code_block_background}")
+        index += 1
+    return rendered
+
+
+def _is_removed_diff_line(line: str) -> bool:
+    return line.startswith("-") and not line.startswith("---")
+
+
+def _is_added_diff_line(line: str) -> bool:
+    return line.startswith("+") and not line.startswith("+++")
+
+
+def _append_intraline_diff_pair(
+    rendered: Text,
+    removed: str,
+    added: str,
+    *,
+    code_block_background: str,
+) -> None:
+    removed_style = f"bright_red on {code_block_background}"
+    added_style = f"bright_green on {code_block_background}"
+    removed_changed = _changed_token_indexes(removed, added, side="removed")
+    added_changed = _changed_token_indexes(removed, added, side="added")
+    rendered.append("-", style=removed_style)
+    _append_diff_tokens(rendered, removed, removed_changed, base_style=removed_style)
+    rendered.append("\n")
+    rendered.append("+", style=added_style)
+    _append_diff_tokens(rendered, added, added_changed, base_style=added_style)
+    rendered.append("\n")
+
+
+def _changed_token_indexes(
+    removed: str,
+    added: str,
+    *,
+    side: Literal["removed", "added"],
+) -> set[int]:
+    removed_tokens = _diff_tokens(removed)
+    added_tokens = _diff_tokens(added)
+    changed: set[int] = set()
+    matcher = SequenceMatcher(a=removed_tokens, b=added_tokens, autojunk=False)
+    for tag, removed_start, removed_end, added_start, added_end in matcher.get_opcodes():
+        if tag == "equal":
+            continue
+        if side == "removed":
+            changed.update(range(removed_start, removed_end))
+        else:
+            changed.update(range(added_start, added_end))
+    return changed
+
+
+def _diff_tokens(text: str) -> list[str]:
+    return re.findall(r"\s+|\w+|[^\w\s]+", text.replace("\t", VISIBLE_TAB_REPLACEMENT))
+
+
+def _append_diff_tokens(
+    rendered: Text,
+    text: str,
+    changed_indexes: set[int],
+    *,
+    base_style: str,
+) -> None:
+    base = Style.parse(base_style)
+    for index, token in enumerate(_diff_tokens(text)):
+        style = base
+        if index in changed_indexes and token.strip():
+            style += Style(reverse=True)
+        rendered.append(token, style=style)
+
+
+def _append_diff_line(rendered: Text, line: str, *, style: str) -> None:
+    rendered.append(line.replace("\t", VISIBLE_TAB_REPLACEMENT), style=style)
+    rendered.append("\n")
 
 
 class ThemedCodeBlock(CodeBlock):
