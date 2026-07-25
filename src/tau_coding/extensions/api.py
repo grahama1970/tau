@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import asyncio
+import subprocess
 from collections.abc import Callable, Mapping, Sequence
+from contextlib import suppress
 from dataclasses import dataclass, field, replace
+from pathlib import Path
 from typing import Any
 
 from tau_agent.tools import AgentTool
@@ -15,6 +19,7 @@ ThemeInfo = dict[str, str | None]
 ContextUsageInfo = dict[str, int | float | None]
 CommandInfo = dict[str, Any]
 ToolInfo = dict[str, Any]
+ExecResultInfo = dict[str, str | int | bool]
 
 
 @dataclass(frozen=True, slots=True)
@@ -222,6 +227,15 @@ class ExtensionShortcutContext:
     def setSessionName(self, name: str) -> str:  # noqa: N802
         """Pi-compatible camelCase alias for set_session_name."""
         return self.set_session_name(name)
+
+    async def exec(
+        self,
+        command: str,
+        args: Sequence[str] = (),
+        options: Mapping[str, Any] | None = None,
+    ) -> ExecResultInfo:
+        """Execute a command without a shell and return Pi-style output metadata."""
+        return await _session_exec(self.session, command, args, options)
 
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the shortcut returns."""
@@ -607,6 +621,15 @@ class ExtensionCommandContext:
     def setSessionName(self, name: str) -> str:  # noqa: N802
         """Pi-compatible camelCase alias for set_session_name."""
         return self.set_session_name(name)
+
+    async def exec(
+        self,
+        command: str,
+        args: Sequence[str] = (),
+        options: Mapping[str, Any] | None = None,
+    ) -> ExecResultInfo:
+        """Execute a command without a shell and return Pi-style output metadata."""
+        return await _session_exec(self.session, command, args, options)
 
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the command returns."""
@@ -1396,6 +1419,72 @@ def _session_set_name(session: Any, name: str) -> str:
     if callable(setter):
         return str(setter(name))
     raise RuntimeError("active session does not support extension session naming")
+
+
+async def _session_exec(
+    session: Any,
+    command: str,
+    args: Sequence[str],
+    options: Mapping[str, Any] | None,
+) -> ExecResultInfo:
+    command_name = str(command).strip()
+    if not command_name:
+        raise ValueError("exec command must be non-empty")
+    argv = [command_name, *(str(arg) for arg in args)]
+    options = {} if options is None else options
+    cwd = _exec_cwd(session, options.get("cwd"))
+    timeout_s = _exec_timeout_seconds(options.get("timeout"))
+    signal = options.get("signal")
+    if bool(getattr(signal, "aborted", False)):
+        return {"stdout": "", "stderr": "", "code": 1, "killed": True}
+
+    process: asyncio.subprocess.Process | None = None
+    killed = False
+    try:
+        process = await asyncio.create_subprocess_exec(
+            *argv,
+            cwd=str(cwd),
+            stdin=subprocess.DEVNULL,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        try:
+            stdout_bytes, stderr_bytes = await asyncio.wait_for(
+                process.communicate(),
+                timeout=timeout_s,
+            )
+        except TimeoutError:
+            killed = True
+            process.kill()
+            with suppress(ProcessLookupError):
+                await process.wait()
+            stdout_bytes, stderr_bytes = await process.communicate()
+    except OSError as exc:
+        return {
+            "stdout": "",
+            "stderr": str(exc),
+            "code": 127,
+            "killed": killed,
+        }
+
+    return {
+        "stdout": stdout_bytes.decode("utf-8", errors="replace"),
+        "stderr": stderr_bytes.decode("utf-8", errors="replace"),
+        "code": int(process.returncode or 0),
+        "killed": killed,
+    }
+
+
+def _exec_cwd(session: Any, value: Any) -> Path:
+    cwd = getattr(session, "cwd", Path.cwd()) if value is None else value
+    return Path(str(cwd)).expanduser().resolve()
+
+
+def _exec_timeout_seconds(value: Any) -> float | None:
+    if value is None:
+        return None
+    timeout_ms = float(value)
+    return timeout_ms / 1000 if timeout_ms > 0 else None
 
 
 def _tool_info(tool: Any, *, extension_sources: Mapping[str, object]) -> ToolInfo:
