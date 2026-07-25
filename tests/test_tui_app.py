@@ -2002,6 +2002,43 @@ def test_markdown_tables_use_highlight_color_for_headers() -> None:
     assert "\x1b[36" not in output
 
 
+def test_assistant_markdown_image_link_renders_terminal_image_fallback(tmp_path: Path) -> None:
+    image_path = tmp_path / "chart.png"
+    image_path.write_bytes(base64.b64decode(PNG_1X1_BASE64))
+    set_capabilities(TerminalCapabilities(images=None, true_color=True, hyperlinks=True))
+
+    try:
+        console = Console(record=True, width=80, color_system="truecolor")
+        console.print(
+            render_chat_item(
+                ChatItem(role="assistant", text=f"Figure\n\n![chart]({image_path})"),
+                show_images=True,
+            )
+        )
+        output = _strip_ansi(console.export_text(styles=True))
+    finally:
+        reset_capabilities_cache()
+
+    assert "Figure" in output
+    assert "Image: chart.png" in output
+    assert "1x1" in output
+
+
+@pytest.mark.anyio
+async def test_textual_markdown_image_link_mounts_terminal_image_widget(tmp_path: Path) -> None:
+    image_path = tmp_path / "chart.png"
+    image_path.write_bytes(base64.b64decode(PNG_1X1_BASE64))
+    app = TauTuiApp(
+        FakeSession([AssistantMessage(content=f"Figure\n\n![chart]({image_path})")]),
+    )
+
+    async with app.run_test(size=(80, 24)) as pilot:
+        await pilot.pause()
+        image_widgets = list(app.query(".transcript-markdown-image"))
+
+    assert len(image_widgets) == 1
+
+
 @pytest.mark.anyio
 async def test_textual_markdown_widget_uses_theme_link_style() -> None:
     app = TauTuiApp(

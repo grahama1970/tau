@@ -55,7 +55,7 @@ capabilities.
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks including simple component-like render objects, summarizes permission/approval receipts, surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data, preserves multiple Pi-style image blocks from one tool result, and now shows input-bar terminal command exit codes; full JS Pi component runtime embedding remains out of scope. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider, prompt chrome, and retry countdown | `PARTIAL` | Footer extensibility exists; compact first-screen readiness exposes auth/memory/DAG/SciLLM/queue when the sidebar is hidden, and prompt chrome now names active compaction/branch/reload/share/terminal operations from real worker state. |
 | Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool/custom-entry renderers in live/restored transcripts | `MUST/PARTIAL` | Selector now advertises Pi-style `J/K` navigation and supports tool-output toggle while open; editor now uses Pi-style Enter submit and Shift+Enter newline; custom entries now re-render on tool-output expansion and accept simple component-like render objects; preserve current Tau extension API; full JS Pi component runtime embedding remains out of scope. |
-| Images | `show-images-selector`, image component | Tau image visibility setting and image payload rendering | `MATCHED` | Tau has terminal-safe image controls, Kitty/iTerm2/fallback rendering, non-PNG-to-PNG conversion for Kitty, and multiple image payload rendering for figure/graph tool results. |
+| Images | `show-images-selector`, image component | Tau image visibility setting and image payload rendering | `MATCHED` | Tau has terminal-safe image controls, Kitty/iTerm2/fallback rendering, non-PNG-to-PNG conversion for Kitty, multiple image payload rendering for figure/graph tool results, and local Markdown image links in assistant/custom transcript output. |
 | Workflow/DAG progress | None in Pi | `WorkflowPickerScreen`, DAG/workflow receipts | `TAU-ONLY/MUST` | This is Tau's differentiator and must remain first-class in the TUI. |
 
 ## Tomorrow-Usability Ranking
@@ -86,6 +86,9 @@ capabilities.
 Port the next highest-value daily-use gap that is still local and bounded.
 Current candidates:
 
+- `Artifact/browser sidecar for figures`: terminal rendering now covers image
+  payloads and local Markdown image links, but large generated figures still
+  need a zoomable/openable artifact pane or browser mirror backed by real files.
 - `Config write-scope/package overrides`: still partial because Pi can write
   global/project package resource overrides directly from the selector; Tau
   currently has backed disabled-resource toggles, in-place toggle refresh, and
@@ -97,6 +100,35 @@ Current candidates:
 - `Cache-miss notices`: defer until Tau assistant/session entries carry the
   provider, model, and timestamp fields needed for Pi's cache-miss algorithm.
   Do not add a fake setting or heuristic notice from aggregate stats.
+
+Latest slice evidence:
+
+- Source inspected: Pi `components/markdown.ts`, `components/image.ts`,
+  `tool-execution.ts`, Tau `TranscriptMessageWidget`, `ThemedMarkdownWidget`,
+  and `TerminalImage`.
+- Destination preserved: Tau Textual transcript layout, Rich fallback renderer,
+  Markdown/table styling, terminal image capability settings, and Tau's
+  tool-result image payload path.
+- Changed: assistant/custom/status Markdown that links to a local
+  `png`, `jpg`, `gif`, `webp`, or `svg` file now mounts Tau `TerminalImage`
+  renderables below the Markdown body. Remote/data URLs and missing/non-image
+  files are ignored fail-closed. Normal Markdown tables still render through
+  Textual/Rich Markdown.
+- Mocked: no.
+- Live: local Textual/Rich render paths with real image bytes read from disk;
+  no provider-live call.
+- Proof: `uv run pytest tests/test_tui_app.py -q -k
+  'markdown_image or markdown_tables or textual_markdown_widget'` reported
+  `5 passed, 452 deselected`; `uv run ruff check
+  src/tau_coding/tui/widgets.py tests/test_tui_app.py` reported all checks
+  passed; `uv run python -m py_compile src/tau_coding/tui/widgets.py
+  tests/test_tui_app.py` exited with no output.
+- Render proof:
+  `/tmp/tau-pi-tui-markdown-image-proof-1785017225/proof.json` with screenshot
+  `/tmp/tau-pi-tui-markdown-image-proof-1785017225/tau-markdown-table-image.svg`.
+- Remaining gap: a browser/artifact sidecar is still needed for large,
+  zoomable, or non-terminal-native figures; this slice covers local Markdown
+  image links inside the terminal transcript.
 
 Latest slice evidence:
 

@@ -1,5 +1,6 @@
 """Small Textual widgets for Tau's interactive TUI."""
 
+import base64
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -7,6 +8,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 from subprocess import TimeoutExpired, run
 from typing import Any, ClassVar, Literal, Protocol
+from urllib.parse import unquote, urlparse
 
 from pygments.lexers import get_lexer_by_name  # type: ignore[import-untyped]
 from pygments.util import ClassNotFound  # type: ignore[import-untyped]
@@ -21,7 +23,7 @@ from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
-from textual.containers import Horizontal, VerticalScroll
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.content import Style as TextualStyle
 from textual.events import Resize
 from textual.geometry import Offset, Spacing
@@ -54,6 +56,18 @@ VISIBLE_TAB_REPLACEMENT = "   "
 OSC133_ZONE_START = "\x1b]133;A\x07"
 OSC133_ZONE_END = "\x1b]133;B\x07"
 OSC133_ZONE_FINAL = "\x1b]133;C\x07"
+MARKDOWN_IMAGE_PATTERN = re.compile(
+    r"!\[[^\]\n]*\]\((?P<target><[^>\n]+>|[^)\s]+)(?:\s+\"[^\"]*\")?\)"
+)
+MARKDOWN_IMAGE_MIME_TYPES = {
+    ".gif": "image/gif",
+    ".jpeg": "image/jpeg",
+    ".jpg": "image/jpeg",
+    ".png": "image/png",
+    ".svg": "image/svg+xml",
+    ".webp": "image/webp",
+}
+MAX_MARKDOWN_IMAGE_BYTES = 10 * 1024 * 1024
 
 
 @dataclass(frozen=True, slots=True)
@@ -369,8 +383,19 @@ class TranscriptMessageWidget(Horizontal):
         padding: 0 1 0 1;
     }
 
-    TranscriptMessageWidget > .transcript-markdown-body > MarkdownParagraph {
+    TranscriptMessageWidget > .transcript-message-body-stack {
+        width: 1fr;
+        height: auto;
+    }
+
+    TranscriptMessageWidget .transcript-markdown-body > MarkdownParagraph {
         margin: 0 0 1 0;
+    }
+
+    TranscriptMessageWidget .transcript-markdown-image {
+        width: 1fr;
+        height: auto;
+        margin: 1 0 0 0;
     }
 
     """
@@ -411,7 +436,7 @@ class TranscriptMessageWidget(Horizontal):
         yield gutter
         yield body
 
-    def _body_widget(self) -> Static | ThemedMarkdownWidget:
+    def _body_widget(self) -> Static | ThemedMarkdownWidget | Vertical:
         if _use_plain_transcript_body(self.item):
             body = Static(
                 _transcript_plain_body_text(
@@ -438,6 +463,30 @@ class TranscriptMessageWidget(Horizontal):
                 body.styles.color = foreground
             if background:
                 body.styles.background = background
+            image_payloads = _markdown_image_payloads(self._markdown_text)
+            if image_payloads:
+                body.styles.padding = Spacing.unpack((0, 0))
+                image_widgets = [
+                    Static(
+                        _render_tool_image(
+                            payload,
+                            show_images=self._show_images,
+                            image_width_cells=self._image_width_cells,
+                        ),
+                        expand=True,
+                        shrink=True,
+                        markup=False,
+                        classes="transcript-markdown-image",
+                    )
+                    for payload in image_payloads
+                ]
+                stack = Vertical(
+                    body,
+                    *image_widgets,
+                    classes="transcript-message-body transcript-message-body-stack",
+                )
+                stack.styles.padding = Spacing.unpack((0, self._output_padding_x))
+                return stack
         body.styles.padding = Spacing.unpack((0, self._output_padding_x))
         return body
 
@@ -1144,6 +1193,11 @@ def render_chat_item(
 ) -> RenderableType:
     """Render a chat item as a standalone Toad-inspired transcript block."""
     role_style = _chat_item_role_style(item, theme)
+    visible_text = _visible_chat_text(
+        item,
+        show_tool_results=show_tool_results,
+        tool_results_key_hint=tool_results_key_hint,
+    )
     body = (
         _render_tool_chat_body(
             item,
@@ -1158,17 +1212,29 @@ def render_chat_item(
         )
         if item.role == "tool"
         else _render_chat_body(
-            _visible_chat_text(
-                item,
-                show_tool_results=show_tool_results,
-                tool_results_key_hint=tool_results_key_hint,
-            ),
+            visible_text,
             role=item.role,
             body_style=role_style.body,
             syntax_theme=theme.syntax_theme,
             theme=theme,
         )
     )
+    markdown_images = (
+        _markdown_image_payloads(visible_text)
+        if item.role
+        in {"assistant", "thinking", "custom", "status", "branch_summary", "compaction_summary"}
+        else ()
+    )
+    if markdown_images:
+        body = Group(
+            body,
+            Text(""),
+            *_render_tool_images(
+                markdown_images,
+                show_images=show_images,
+                image_width_cells=image_width_cells,
+            ),
+        )
     table = Table.grid(expand=True)
     table.add_column(width=1, style=role_style.border)
     table.add_column(ratio=1, style=role_style.body)
@@ -1280,6 +1346,64 @@ def _tool_images_for_item(item: ChatItem) -> tuple[ToolImagePayload, ...]:
     if item.tool_image is not None:
         return (item.tool_image,)
     return ()
+
+
+def _markdown_image_payloads(markdown: str) -> tuple[ToolImagePayload, ...]:
+    payloads: list[ToolImagePayload] = []
+    seen: set[Path] = set()
+    for match in MARKDOWN_IMAGE_PATTERN.finditer(markdown):
+        path = _markdown_image_path(match.group("target"))
+        if path is None or path in seen:
+            continue
+        payload = _tool_image_payload_from_file(path)
+        if payload is None:
+            continue
+        payloads.append(payload)
+        seen.add(path)
+    return tuple(payloads)
+
+
+def _markdown_image_path(target: str) -> Path | None:
+    cleaned = target.strip()
+    if cleaned.startswith("<") and cleaned.endswith(">"):
+        cleaned = cleaned[1:-1].strip()
+    parsed = urlparse(cleaned)
+    if parsed.scheme in {"http", "https", "data"}:
+        return None
+    if parsed.scheme == "file":
+        raw_path = unquote(parsed.path)
+    elif parsed.scheme:
+        return None
+    else:
+        raw_path = unquote(cleaned.split("#", 1)[0].split("?", 1)[0])
+    if not raw_path:
+        return None
+    path = Path(raw_path).expanduser()
+    if not path.is_absolute():
+        path = Path.cwd() / path
+    return path.resolve()
+
+
+def _tool_image_payload_from_file(path: Path) -> ToolImagePayload | None:
+    mime_type = MARKDOWN_IMAGE_MIME_TYPES.get(path.suffix.lower())
+    if mime_type is None:
+        return None
+    try:
+        stat = path.stat()
+    except OSError:
+        return None
+    if not path.is_file() or stat.st_size <= 0 or stat.st_size > MAX_MARKDOWN_IMAGE_BYTES:
+        return None
+    try:
+        data = path.read_bytes()
+    except OSError:
+        return None
+    return ToolImagePayload(
+        path=str(path),
+        mime_type=mime_type,
+        bytes=len(data),
+        image_base64=base64.b64encode(data).decode("ascii"),
+    )
 
 
 def _render_tool_images(
