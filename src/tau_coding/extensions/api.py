@@ -131,6 +131,30 @@ class ExtensionShortcutContext:
         """Pi-compatible camelCase alias for thinking_level."""
         return self.thinking_level
 
+    async def set_model(self, model: str | Mapping[str, Any]) -> bool:
+        """Set the active model for future turns when the session supports it."""
+        return await _session_set_model(self.session, model)
+
+    async def setModel(self, model: str | Mapping[str, Any]) -> bool:  # noqa: N802
+        """Pi-compatible camelCase alias for set_model."""
+        return await self.set_model(model)
+
+    def get_thinking_level(self) -> str | None:
+        """Return the active Tau thinking level when available."""
+        return self.thinking_level
+
+    def getThinkingLevel(self) -> str | None:  # noqa: N802
+        """Pi-compatible camelCase alias for get_thinking_level."""
+        return self.get_thinking_level()
+
+    async def set_thinking_level(self, level: str) -> str:
+        """Set the active Tau thinking level for future turns."""
+        return await _session_set_thinking_level(self.session, level)
+
+    async def setThinkingLevel(self, level: str) -> str:  # noqa: N802
+        """Pi-compatible camelCase alias for set_thinking_level."""
+        return await self.set_thinking_level(level)
+
     def is_idle(self) -> bool:
         """Return whether the session is not currently streaming."""
         return _session_is_idle(self.session)
@@ -544,6 +568,30 @@ class ExtensionCommandContext:
     def thinkingLevel(self) -> str | None:  # noqa: N802
         """Pi-compatible camelCase alias for thinking_level."""
         return self.thinking_level
+
+    async def set_model(self, model: str | Mapping[str, Any]) -> bool:
+        """Set the active model for future turns when the session supports it."""
+        return await _session_set_model(self.session, model)
+
+    async def setModel(self, model: str | Mapping[str, Any]) -> bool:  # noqa: N802
+        """Pi-compatible camelCase alias for set_model."""
+        return await self.set_model(model)
+
+    def get_thinking_level(self) -> str | None:
+        """Return the active Tau thinking level when available."""
+        return self.thinking_level
+
+    def getThinkingLevel(self) -> str | None:  # noqa: N802
+        """Pi-compatible camelCase alias for get_thinking_level."""
+        return self.get_thinking_level()
+
+    async def set_thinking_level(self, level: str) -> str:
+        """Set the active Tau thinking level for future turns."""
+        return await _session_set_thinking_level(self.session, level)
+
+    async def setThinkingLevel(self, level: str) -> str:  # noqa: N802
+        """Pi-compatible camelCase alias for set_thinking_level."""
+        return await self.set_thinking_level(level)
 
     def is_idle(self) -> bool:
         """Return whether the session is not currently streaming."""
@@ -1573,6 +1621,27 @@ def _session_model(session: Any) -> str | None:
     return None if model is None else str(model)
 
 
+def _model_name(model: str | Mapping[str, Any]) -> str:
+    if isinstance(model, Mapping):
+        candidate = model.get("id") or model.get("model")
+        model_name = "" if candidate is None else str(candidate).strip()
+    else:
+        model_name = str(model).strip()
+    if not model_name:
+        raise ValueError("model must be a non-empty string or object with id/model")
+    return model_name
+
+
+async def _session_set_model(session: Any, model: str | Mapping[str, Any]) -> bool:
+    set_model = getattr(session, "set_model", None)
+    if not callable(set_model):
+        return False
+    result = set_model(_model_name(model))
+    if hasattr(result, "__await__"):
+        await result
+    return True
+
+
 def _session_manager(session: Any) -> Any:
     return getattr(session, "session_manager", None)
 
@@ -1580,6 +1649,16 @@ def _session_manager(session: Any) -> Any:
 def _session_thinking_level(session: Any) -> str | None:
     thinking_level = getattr(session, "thinking_level", None)
     return None if thinking_level is None else str(thinking_level)
+
+
+async def _session_set_thinking_level(session: Any, level: str) -> str:
+    set_thinking_level = getattr(session, "set_thinking_level", None)
+    if not callable(set_thinking_level):
+        raise RuntimeError("active session does not support thinking-level changes")
+    result = set_thinking_level(level)
+    if hasattr(result, "__await__"):
+        result = await result
+    return str(result)
 
 
 def _session_is_idle(session: Any) -> bool:
