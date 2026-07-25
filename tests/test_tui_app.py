@@ -1626,6 +1626,25 @@ def test_textual_markdown_uses_theme_highlight_and_aqua_inline_code() -> None:
     assert variables["tau-markdown-bullet"] == TAU_LIGHT_THEME.markdown_bullet
 
 
+@pytest.mark.parametrize(
+    "theme",
+    [TAU_DARK_THEME, TAU_LIGHT_THEME, HIGH_CONTRAST_THEME],
+    ids=lambda theme: theme.name,
+)
+@pytest.mark.anyio
+async def test_transcript_code_fence_uses_theme_background(theme: TuiTheme) -> None:
+    app = TauTuiApp(
+        FakeSession([AssistantMessage(content="```python\nx = 1\n```")]),
+        tui_settings=TuiSettings(theme=theme.name),
+    )
+
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        fence = app.query_one("MarkdownFence")
+
+    assert fence.styles.background == Color.parse(theme.markdown_code_block_background)
+
+
 def test_light_theme_markdown_code_uses_aqua_without_background() -> None:
     console = Console(record=True, width=80)
     console.print(

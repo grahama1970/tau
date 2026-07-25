@@ -307,6 +307,10 @@ class ThemedMarkdownWidget(TextualMarkdown):
         background: $tau-markdown-code-block-background;
     }
 
+    ThemedMarkdownWidget MarkdownFence:light {
+        background: $tau-markdown-code-block-background;
+    }
+
     ThemedMarkdownWidget MarkdownTableContent {
         keyline: thin $tau-markdown-table-border;
     }
