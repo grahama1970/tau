@@ -19,6 +19,7 @@ ExtensionMessageRenderer = Callable[..., Any]
 ExtensionArgumentCompletionProvider = Callable[[str], Sequence[Any] | None]
 ThemeInfo = dict[str, str | None]
 ContextUsageInfo = dict[str, int | float | None]
+SystemPromptOptionsInfo = dict[str, Any]
 CommandInfo = dict[str, Any]
 ToolInfo = dict[str, Any]
 ExecResultInfo = dict[str, str | int | bool]
@@ -282,6 +283,14 @@ class ExtensionShortcutContext:
     def getSystemPrompt(self) -> str:  # noqa: N802
         """Pi-compatible camelCase alias for get_system_prompt."""
         return self.get_system_prompt()
+
+    def get_system_prompt_options(self) -> SystemPromptOptionsInfo:
+        """Return the current Tau system-prompt construction inputs."""
+        return _session_system_prompt_options(self.session)
+
+    def getSystemPromptOptions(self) -> SystemPromptOptionsInfo:  # noqa: N802
+        """Pi-compatible camelCase alias for get_system_prompt_options."""
+        return self.get_system_prompt_options()
 
     def get_commands(self) -> tuple[CommandInfo, ...]:
         """Return visible slash-command metadata for the active session."""
@@ -804,6 +813,14 @@ class ExtensionCommandContext:
     def getSystemPrompt(self) -> str:  # noqa: N802
         """Pi-compatible camelCase alias for get_system_prompt."""
         return self.get_system_prompt()
+
+    def get_system_prompt_options(self) -> SystemPromptOptionsInfo:
+        """Return the current Tau system-prompt construction inputs."""
+        return _session_system_prompt_options(self.session)
+
+    def getSystemPromptOptions(self) -> SystemPromptOptionsInfo:  # noqa: N802
+        """Pi-compatible camelCase alias for get_system_prompt_options."""
+        return self.get_system_prompt_options()
 
     def get_commands(self) -> tuple[CommandInfo, ...]:
         """Return visible slash-command metadata for the active session."""
@@ -2294,6 +2311,50 @@ def _session_context_usage(session: Any) -> ContextUsageInfo | None:
 def _session_system_prompt(session: Any) -> str:
     system_prompt = getattr(session, "system_prompt", "")
     return str(system_prompt)
+
+
+def _session_system_prompt_options(session: Any) -> SystemPromptOptionsInfo:
+    config = getattr(session, "_config", None)
+    harness = getattr(session, "_harness", None)
+    harness_config = getattr(harness, "config", None)
+    tools = tuple(getattr(harness_config, "tools", ()))
+    context_files = tuple(getattr(session, "context_files", ()))
+    skills = tuple(getattr(session, "skills", ()))
+    prompt_guidelines: list[str] = []
+    for tool in tools:
+        for guideline in getattr(tool, "prompt_guidelines", ()):
+            text = str(guideline).strip()
+            if text and text not in prompt_guidelines:
+                prompt_guidelines.append(text)
+
+    return {
+        "customPrompt": getattr(config, "custom_system_prompt", None),
+        "selectedTools": tuple(str(getattr(tool, "name", "")) for tool in tools),
+        "toolSnippets": {
+            str(getattr(tool, "name", "")): str(snippet)
+            for tool in tools
+            if (snippet := getattr(tool, "prompt_snippet", None))
+        },
+        "promptGuidelines": tuple(prompt_guidelines),
+        "appendSystemPrompt": getattr(config, "append_system_prompt", None),
+        "cwd": str(getattr(session, "cwd", "")),
+        "contextFiles": tuple(
+            {
+                "path": str(getattr(context_file, "path", "")),
+                "content": str(getattr(context_file, "content", "")),
+            }
+            for context_file in context_files
+        ),
+        "skills": tuple(
+            {
+                "name": str(getattr(skill, "name", "")),
+                "path": str(getattr(skill, "path", "")),
+                "description": getattr(skill, "description", None),
+                "content": str(getattr(skill, "content", "")),
+            }
+            for skill in skills
+        ),
+    }
 
 
 def _theme_name_from_value(theme: Any) -> str | None:
