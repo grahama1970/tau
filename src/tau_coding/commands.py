@@ -114,6 +114,14 @@ class CommandSession(Protocol):
 
 
 @dataclass(frozen=True, slots=True)
+class CommandNotification:
+    """Notification requested by a coding-session slash command."""
+
+    message: str
+    severity: Literal["information", "warning", "error"] = "information"
+
+
+@dataclass(frozen=True, slots=True)
 class CommandResult:
     """Result of handling a coding-session slash command."""
 
@@ -154,6 +162,7 @@ class CommandResult:
     show_images: bool | None = None
     theme: str | None = None
     editor_text: str | None = None
+    notifications: tuple[CommandNotification, ...] = ()
     user_message: str | None = None
     user_message_delivery: Literal["steer", "follow_up"] = "steer"
     message: str | None = None

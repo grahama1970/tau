@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from tau_agent.tools import AgentTool
@@ -64,8 +64,21 @@ class ExtensionCommandContext:
     args: str
     extension_name: str
     editor_text: str | None = None
+    notifications: list[ExtensionNotification] = field(default_factory=list)
     user_message: str | None = None
     user_message_delivery: str = "steer"
+
+    def notify(self, message: str, severity: str = "info") -> None:
+        """Request that Tau show a TUI notification after the command returns."""
+        notification_message = str(message).strip()
+        if not notification_message:
+            raise ValueError("notify requires a non-empty message")
+        self.notifications.append(
+            ExtensionNotification(
+                message=notification_message,
+                severity=_normalize_notification_severity(severity),
+            )
+        )
 
     def set_editor_text(self, text: str) -> None:
         """Request that Tau replace the prompt editor contents after the command returns."""
@@ -175,6 +188,14 @@ class ExtensionAPI:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class ExtensionNotification:
+    """Notification requested by an extension command."""
+
+    message: str
+    severity: str = "information"
+
+
 def _normalize_argument_completions(
     values: Sequence[Any],
 ) -> tuple[ExtensionArgumentCompletion, ...]:
@@ -219,3 +240,14 @@ def _normalize_user_message_delivery(value: str) -> str:
     if normalized == "followup":
         return "follow_up"
     raise ValueError("deliver_as must be 'steer' or 'follow_up'")
+
+
+def _normalize_notification_severity(value: str) -> str:
+    normalized = value.strip().lower().replace("-", "_").replace(" ", "_")
+    if normalized in {"", "info", "information"}:
+        return "information"
+    if normalized == "warning":
+        return "warning"
+    if normalized == "error":
+        return "error"
+    raise ValueError("notification severity must be 'info', 'warning', or 'error'")

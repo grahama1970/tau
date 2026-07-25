@@ -6210,6 +6210,7 @@ class TauTuiApp(App[None]):
                 command = self.session.handle_command(text)
                 if command.message:
                     self._append_command_message(text, command.message)
+                self._deliver_command_notifications(command)
                 if command.editor_text is not None:
                     self._set_prompt_editor_text(command.editor_text)
                 if command.user_message is not None:
@@ -6413,6 +6414,7 @@ class TauTuiApp(App[None]):
                     self._append_command_message(text, command.message)
                 else:
                     self._show_command_message(text, command.message)
+            self._deliver_command_notifications(command)
             if command.editor_text is not None:
                 self._set_prompt_editor_text(command.editor_text)
                 self._refresh()
@@ -6865,6 +6867,11 @@ class TauTuiApp(App[None]):
             )
             return
         self._submit_prompt(command.user_message)
+
+    def _deliver_command_notifications(self, command: CommandResult) -> None:
+        """Show notifications requested by a slash-command handler."""
+        for notification in command.notifications:
+            self._notify(notification.message, severity=notification.severity)
 
     def _set_prompt_editor_text(self, text: str) -> None:
         """Replace the prompt editor contents with text from a command handler."""

@@ -606,6 +606,30 @@ Acceptance:
 - This slice does not claim Pi's async command loaders, model-backed Q&A
   extraction UI, custom widgets, or paste-collapse API.
 
+### Slice 29: Extension Command Notifications
+
+Pi extension examples commonly call `ctx.ui.notify(...)` from command handlers
+to surface usage errors, busy-state guidance, and successful command side
+effects without adding transcript noise. Tau extension commands can now request
+TUI notifications as a bounded command-result side effect.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Extension command handlers receive `notify(message, severity="info")` on
+  `ExtensionCommandContext`.
+- Notification severity accepts Pi's `info`, `warning`, and `error` vocabulary
+  and maps `info` to Tau's internal `information` severity.
+- `CommandResult` carries zero or more command notifications through the command
+  registry.
+- The TUI delivers command notifications through Tau's existing `_notify(...)`
+  path in normal command handling and active manual compaction.
+- Notification side effects compose with explicit `CommandResult`, editor
+  prefill, and user-message side effects.
+- This slice does not claim Pi's event-bus notifications, custom dialogs, or
+  extension lifecycle hooks.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

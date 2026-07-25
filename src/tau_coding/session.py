@@ -49,6 +49,7 @@ from tau_coding.branch_summary import summarize_branch_messages_with_model
 from tau_coding.commands import (
     CommandArgumentCompletion,
     CommandContext,
+    CommandNotification,
     CommandRegistry,
     CommandResult,
     SlashCommand,
@@ -2926,9 +2927,12 @@ def _extension_slash_command(
                     "Tau extension slash commands are synchronous in this release."
                 ),
             )
+        notifications = _extension_command_notifications(extension_context)
         if isinstance(result, CommandResult):
             if extension_context.editor_text is not None and result.editor_text is None:
                 result = replace(result, editor_text=extension_context.editor_text)
+            if notifications:
+                result = replace(result, notifications=(*result.notifications, *notifications))
             if extension_context.user_message is not None and result.user_message is None:
                 result = replace(
                     result,
@@ -2940,10 +2944,15 @@ def _extension_slash_command(
                 )
             return result
         if extension_context.editor_text is not None:
-            return CommandResult(handled=True, editor_text=extension_context.editor_text)
+            return CommandResult(
+                handled=True,
+                editor_text=extension_context.editor_text,
+                notifications=notifications,
+            )
         if extension_context.user_message is not None:
             return CommandResult(
                 handled=True,
+                notifications=notifications,
                 user_message=extension_context.user_message,
                 user_message_delivery=cast(
                     Literal["steer", "follow_up"],
@@ -2951,8 +2960,8 @@ def _extension_slash_command(
                 ),
             )
         if result is None:
-            return CommandResult(handled=True)
-        return CommandResult(handled=True, message=str(result))
+            return CommandResult(handled=True, notifications=notifications)
+        return CommandResult(handled=True, message=str(result), notifications=notifications)
 
     return SlashCommand(
         name=name,
@@ -2971,6 +2980,21 @@ def _extension_slash_command(
         ),
         hidden=command.hidden,
         source=f"extension:{extension.name}",
+    )
+
+
+def _extension_command_notifications(
+    context: ExtensionCommandContext,
+) -> tuple[CommandNotification, ...]:
+    return tuple(
+        CommandNotification(
+            message=notification.message,
+            severity=cast(
+                Literal["information", "warning", "error"],
+                notification.severity,
+            ),
+        )
+        for notification in context.notifications
     )
 
 
