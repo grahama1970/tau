@@ -11190,6 +11190,10 @@ async def run_tui_app(
     session_manager: SessionManager | None = None,
     provider_settings: ProviderSettings | None = None,
     no_context_files: bool = False,
+    tool_allowlist: tuple[str, ...] | None = None,
+    tool_denylist: tuple[str, ...] = (),
+    no_tools: bool = False,
+    no_builtin_tools: bool = False,
 ) -> str | None:
     """Create the default provider/session, run the Textual app, and return the session id."""
     if new_session and session_id is not None:
@@ -11295,6 +11299,10 @@ async def run_tui_app(
                 shell_command_prefix=tui_settings.shell_command_prefix,
                 auto_resize_images=tui_settings.auto_resize_images,
                 discover_context_files=not no_context_files,
+                tool_allowlist=tool_allowlist,
+                tool_denylist=tool_denylist,
+                no_tools=no_tools,
+                no_builtin_tools=no_builtin_tools,
             )
         )
         app = TauTuiApp(

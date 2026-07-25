@@ -1862,6 +1862,39 @@ async def test_session_can_disable_context_file_discovery(tmp_path: Path) -> Non
 
 
 @pytest.mark.anyio
+async def test_session_can_disable_default_tools(tmp_path: Path) -> None:
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="fake",
+            system="You are Tau.",
+            storage=JsonlSessionStorage(tmp_path / "session.jsonl"),
+            cwd=tmp_path,
+            no_tools=True,
+        )
+    )
+
+    assert session.tools == ()
+
+
+@pytest.mark.anyio
+async def test_session_filters_default_tools_by_name(tmp_path: Path) -> None:
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="fake",
+            system="You are Tau.",
+            storage=JsonlSessionStorage(tmp_path / "session.jsonl"),
+            cwd=tmp_path,
+            tool_allowlist=("read", "bash"),
+            tool_denylist=("bash",),
+        )
+    )
+
+    assert [tool.name for tool in session.tools] == ["read"]
+
+
+@pytest.mark.anyio
 async def test_session_touches_session_manager_after_persisting_messages(tmp_path: Path) -> None:
     storage = JsonlSessionStorage(tmp_path / "session.jsonl")
     manager = SessionManager(TauPaths(home=tmp_path / ".tau", agents_home=tmp_path / ".agents"))

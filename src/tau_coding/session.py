@@ -113,7 +113,7 @@ from tau_coding.thinking import (
     next_thinking_level,
     normalize_thinking_level,
 )
-from tau_coding.tools import create_bash_tool, create_coding_tools
+from tau_coding.tools import BUILTIN_CODING_TOOL_NAMES, create_bash_tool, create_coding_tools
 from tau_coding.trust import (
     DefaultProjectTrust,
     ProjectTrustOption,
@@ -209,6 +209,10 @@ class CodingSessionConfig:
     context_files: tuple[ProjectContextFile, ...] = ()
     discover_context_files: bool = True
     tools: list[AgentTool] | None = None
+    tool_allowlist: tuple[str, ...] | None = None
+    tool_denylist: tuple[str, ...] = ()
+    no_tools: bool = False
+    no_builtin_tools: bool = False
     resource_paths: TauResourcePaths | None = None
     session_id: str | None = None
     session_manager: SessionManager | None = None
@@ -301,15 +305,7 @@ class CodingSession:
             if latest_leaf is not None
             else linear_state
         )
-        tools = (
-            config.tools
-            if config.tools is not None
-            else create_coding_tools(
-                cwd=config.cwd,
-                shell_path=config.shell_path,
-                auto_resize_images=config.auto_resize_images,
-            )
-        )
+        tools = _build_session_tools(config)
         resource_paths = resource_paths_with_cwd(config.resource_paths, config.cwd)
         resources = _load_session_resources(
             resource_paths,
@@ -668,11 +664,7 @@ class CodingSession:
         """Set whether future default read-tool calls resize oversized images."""
         self._config = replace(self._config, auto_resize_images=enabled)
         if self._config.tools is None:
-            self._harness.config.tools = create_coding_tools(
-                cwd=self.cwd,
-                shell_path=self._shell_path,
-                auto_resize_images=enabled,
-            )
+            self._harness.config.tools = _build_session_tools(self._config)
         state = "enabled" if enabled else "disabled"
         return f"Auto-resize images {state}."
 
@@ -2396,6 +2388,53 @@ def _system_prompt_resource_signatures(
         for skill in sorted(skills, key=lambda item: item.name)
     )
     return (prompt_skills, _context_file_signatures(context_files))
+
+
+def _build_session_tools(config: CodingSessionConfig) -> list[AgentTool]:
+    tools = (
+        list(config.tools)
+        if config.tools is not None
+        else create_coding_tools(
+            cwd=config.cwd,
+            shell_path=config.shell_path,
+            auto_resize_images=config.auto_resize_images,
+        )
+    )
+    return _select_session_tools(
+        tools,
+        allowlist=config.tool_allowlist,
+        denylist=config.tool_denylist,
+        no_tools=config.no_tools,
+        no_builtin_tools=config.no_builtin_tools,
+    )
+
+
+def _select_session_tools(
+    tools: list[AgentTool],
+    *,
+    allowlist: tuple[str, ...] | None = None,
+    denylist: tuple[str, ...] = (),
+    no_tools: bool = False,
+    no_builtin_tools: bool = False,
+) -> list[AgentTool]:
+    available = {tool.name for tool in tools}
+    requested = set(allowlist or ()) | set(denylist)
+    missing = sorted(requested - available)
+    if missing:
+        names = ", ".join(missing)
+        available_names = ", ".join(sorted(available)) or "none"
+        raise RuntimeError(f"Unknown tool name(s): {names}. Available tools: {available_names}")
+
+    if allowlist is not None:
+        selected_names = set(allowlist)
+    elif no_tools:
+        selected_names = set()
+    elif no_builtin_tools:
+        selected_names = available - set(BUILTIN_CODING_TOOL_NAMES)
+    else:
+        selected_names = available
+    selected_names -= set(denylist)
+    return [tool for tool in tools if tool.name in selected_names]
 
 
 def _load_session_resources(

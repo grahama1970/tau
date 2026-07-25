@@ -6242,6 +6242,10 @@ def test_cli_without_prompt_invokes_tui_runner(
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> None:
         calls.append(
             (
@@ -6305,6 +6309,10 @@ def test_cli_positional_prompt_invokes_tui_runner(
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> None:
         calls.append(
             (
@@ -6769,6 +6777,10 @@ def test_cli_exits_nonzero_when_print_mode_fails(monkeypatch: pytest.MonkeyPatch
         no_session: bool,
         session_dir: Path | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> bool:
         del session_name, no_session, session_dir
         return False
@@ -6794,6 +6806,10 @@ def test_mode_flag_alone_triggers_print_mode(monkeypatch: pytest.MonkeyPatch) ->
         no_session: bool,
         session_dir: Path | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> bool:
         del model, cwd, provider_name, loop_receipt, session_name, no_session, session_dir
         calls.append((prompt, output))
@@ -6821,6 +6837,10 @@ def test_print_mode_passes_startup_session_name(monkeypatch: pytest.MonkeyPatch)
         no_session: bool,
         session_dir: Path | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> bool:
         del prompt, model, cwd, output, provider_name, loop_receipt, no_session, session_dir
         calls.append(session_name)
@@ -6848,6 +6868,10 @@ def test_print_mode_passes_no_session_flag(monkeypatch: pytest.MonkeyPatch) -> N
         no_session: bool,
         session_dir: Path | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> bool:
         del prompt, model, cwd, output, provider_name, loop_receipt, session_name, session_dir
         calls.append(no_session)
@@ -6875,6 +6899,10 @@ def test_print_mode_passes_no_context_files_flag(monkeypatch: pytest.MonkeyPatch
         no_session: bool,
         session_dir: Path | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> bool:
         del prompt, model, cwd, output, provider_name, loop_receipt, session_name, no_session
         del session_dir
@@ -6887,6 +6915,50 @@ def test_print_mode_passes_no_context_files_flag(monkeypatch: pytest.MonkeyPatch
 
     assert result.exit_code == 0
     assert calls == [True]
+
+
+def test_print_mode_passes_tool_selection_flags(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[tuple[str, ...] | None, tuple[str, ...], bool, bool]] = []
+
+    async def fake_run_openai_print_mode(
+        prompt: str,
+        model: str | None,
+        cwd: Path,
+        output: PrintOutputMode,
+        provider_name: str | None,
+        loop_receipt: LoopReceiptConfig | None,
+        session_name: str | None,
+        no_session: bool,
+        session_dir: Path | None,
+        no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
+    ) -> bool:
+        del prompt, model, cwd, output, provider_name, loop_receipt, session_name, no_session
+        del session_dir, no_context_files
+        calls.append((tool_allowlist, tool_denylist, no_tools, no_builtin_tools))
+        return True
+
+    monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--print",
+            "--tools",
+            "read,bash",
+            "--exclude-tools",
+            "bash",
+            "--no-tools",
+            "--no-builtin-tools",
+            "hello",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert calls == [(("read", "bash"), ("bash",), True, True)]
 
 
 def test_print_mode_requires_a_prompt() -> None:
@@ -6910,6 +6982,10 @@ def test_print_mode_merges_piped_stdin_into_prompt(monkeypatch: pytest.MonkeyPat
         no_session: bool,
         session_dir: Path | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> bool:
         del model, cwd, output, provider_name, loop_receipt, session_name, no_session, session_dir
         calls.append(prompt)
@@ -6937,6 +7013,10 @@ def test_print_mode_accepts_stdin_only_prompt(monkeypatch: pytest.MonkeyPatch) -
         no_session: bool,
         session_dir: Path | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> bool:
         del model, cwd, output, provider_name, loop_receipt, session_name, no_session, session_dir
         calls.append(prompt)
@@ -7012,6 +7092,10 @@ def test_cli_print_mode_passes_loop2_receipt_options(
         no_session: bool,
         session_dir: Path | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> bool:
         del prompt, model, cwd, output, provider_name, session_name, no_session, session_dir
         calls.append(loop_receipt)
@@ -7066,6 +7150,10 @@ def test_cli_print_mode_marks_nonfake_loop2_receipt_live(
         no_session: bool,
         session_dir: Path | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> bool:
         del prompt, model, cwd, output, provider_name, session_name, no_session, session_dir
         calls.append(loop_receipt)
@@ -7162,6 +7250,10 @@ def test_default_tui_invokes_tui_runner_with_flags(
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> None:
         calls.append(
             (
@@ -7223,6 +7315,10 @@ def test_default_tui_passes_startup_session_name(
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
         del initial_prompt, continue_session, no_session, session_dir, provider_settings
@@ -7255,6 +7351,10 @@ def test_default_tui_passes_continue_session_flag(
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
         del initial_prompt, session_name, no_session, session_dir, provider_settings
@@ -7287,6 +7387,10 @@ def test_default_tui_passes_no_session_flag(
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
         del initial_prompt, session_name, continue_session, session_dir, provider_settings
@@ -7319,6 +7423,10 @@ def test_default_tui_passes_no_context_files_flag(
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
         del initial_prompt, session_name, continue_session, no_session, session_dir
@@ -7331,6 +7439,55 @@ def test_default_tui_passes_no_context_files_flag(
 
     assert result.exit_code == 0
     assert calls == [True]
+
+
+def test_default_tui_passes_tool_selection_flags(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[tuple[tuple[str, ...] | None, tuple[str, ...], bool, bool]] = []
+
+    async def fake_run_openai_tui(
+        model: str | None,
+        cwd: Path,
+        session_id: str | None,
+        new_session: bool,
+        provider_name: str | None,
+        auto_compact_token_threshold: int | None,
+        initial_prompt: str | None,
+        session_name: str | None,
+        continue_session: bool,
+        no_session: bool,
+        session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
+        no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
+    ) -> None:
+        del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
+        del initial_prompt, session_name, continue_session, no_session, session_dir
+        del provider_settings, no_context_files
+        calls.append((tool_allowlist, tool_denylist, no_tools, no_builtin_tools))
+
+    monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--cwd",
+            str(tmp_path),
+            "-t",
+            "read,bash",
+            "-xt",
+            "bash",
+            "-nt",
+            "-nbt",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert calls == [(("read", "bash"), ("bash",), True, True)]
 
 
 def test_default_tui_rejects_blank_startup_session_name() -> None:
@@ -7474,6 +7631,10 @@ def test_default_tui_passes_transient_scoped_model_patterns(
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
         del initial_prompt, session_name, continue_session, no_session, session_dir
@@ -7528,6 +7689,10 @@ def test_default_tui_models_pattern_respects_provider_filter(
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
         del initial_prompt, session_name, continue_session, no_session, session_dir
@@ -7602,6 +7767,10 @@ def test_default_tui_forks_session_before_starting_tui(
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
         no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
     ) -> str | None:
         del model, cwd, new_session, provider_name, auto_compact_token_threshold
         del initial_prompt, session_name, continue_session, no_session, session_dir

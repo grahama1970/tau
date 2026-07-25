@@ -865,6 +865,34 @@ def main(
             help="Disable AGENTS.md and CLAUDE.md context discovery.",
         ),
     ] = False,
+    no_tools: Annotated[
+        bool,
+        typer.Option("--no-tools", "-nt", help="Disable all tools for the startup session."),
+    ] = False,
+    no_builtin_tools: Annotated[
+        bool,
+        typer.Option(
+            "--no-builtin-tools",
+            "-nbt",
+            help="Disable built-in tools while keeping explicit custom tools available.",
+        ),
+    ] = False,
+    tools: Annotated[
+        str | None,
+        typer.Option(
+            "--tools",
+            "-t",
+            help="Comma-separated allowlist of tool names to enable.",
+        ),
+    ] = None,
+    exclude_tools: Annotated[
+        str | None,
+        typer.Option(
+            "--exclude-tools",
+            "-xt",
+            help="Comma-separated denylist of tool names to disable.",
+        ),
+    ] = None,
     auto_compact_threshold: Annotated[
         int | None,
         typer.Option(
@@ -1031,6 +1059,9 @@ def main(
 
     if fork_session_ref is not None and print_requested:
         raise typer.BadParameter("--fork is supported for TUI startup only")
+
+    tool_allowlist = _parse_csv_option(tools, flag_name="--tools")
+    tool_denylist = _parse_csv_option(exclude_tools, flag_name="--exclude-tools") or ()
 
     provider_settings_override = None
     if model_patterns is not None:
@@ -3253,6 +3284,10 @@ def main(
                 session_dir,
                 provider_settings_override,
                 no_context_files,
+                tool_allowlist,
+                tool_denylist,
+                no_tools,
+                no_builtin_tools,
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -3288,11 +3323,24 @@ def main(
             no_session,
             session_dir,
             no_context_files,
+            tool_allowlist,
+            tool_denylist,
+            no_tools,
+            no_builtin_tools,
         )
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
     if not ok:
         raise typer.Exit(1)
+
+
+def _parse_csv_option(value: str | None, *, flag_name: str) -> tuple[str, ...] | None:
+    if value is None:
+        return None
+    names = tuple(name.strip() for name in value.split(",") if name.strip())
+    if not names:
+        raise typer.BadParameter(f"{flag_name} requires at least one non-empty value")
+    return names
 
 
 async def run_openai_tui(
@@ -3309,6 +3357,10 @@ async def run_openai_tui(
     session_dir: Path | None = None,
     provider_settings: ProviderSettings | None = None,
     no_context_files: bool = False,
+    tool_allowlist: tuple[str, ...] | None = None,
+    tool_denylist: tuple[str, ...] = (),
+    no_tools: bool = False,
+    no_builtin_tools: bool = False,
 ) -> str | None:
     """Run the Textual TUI and return its resumable session id, if any."""
     return await run_tui_app(
@@ -3325,6 +3377,10 @@ async def run_openai_tui(
         session_manager=_session_manager_from_dir(session_dir),
         provider_settings=provider_settings,
         no_context_files=no_context_files,
+        tool_allowlist=tool_allowlist,
+        tool_denylist=tool_denylist,
+        no_tools=no_tools,
+        no_builtin_tools=no_builtin_tools,
     )
 
 
@@ -13096,6 +13152,10 @@ async def run_openai_print_mode(
     no_session: bool = False,
     session_dir: Path | None = None,
     no_context_files: bool = False,
+    tool_allowlist: tuple[str, ...] | None = None,
+    tool_denylist: tuple[str, ...] = (),
+    no_tools: bool = False,
+    no_builtin_tools: bool = False,
 ) -> bool:
     """Run print mode with the OpenAI-compatible provider configured from the environment."""
     settings = load_provider_settings()
@@ -13127,6 +13187,10 @@ async def run_openai_print_mode(
             runtime_provider_config=selection.provider,
             loop_receipt=loop_receipt,
             discover_context_files=not no_context_files,
+            tool_allowlist=tool_allowlist,
+            tool_denylist=tool_denylist,
+            no_tools=no_tools,
+            no_builtin_tools=no_builtin_tools,
         )
     finally:
         await provider.aclose()
@@ -13148,6 +13212,10 @@ async def run_print_mode(
     runtime_provider_config: ProviderConfig | None = None,
     loop_receipt: LoopReceiptConfig | None = None,
     discover_context_files: bool = True,
+    tool_allowlist: tuple[str, ...] | None = None,
+    tool_denylist: tuple[str, ...] = (),
+    no_tools: bool = False,
+    no_builtin_tools: bool = False,
 ) -> bool:
     """Run one non-interactive prompt and print streamed events.
 
@@ -13173,6 +13241,10 @@ async def run_print_mode(
             auto_resize_images=tui_settings.auto_resize_images,
             loop_receipt=loop_receipt,
             discover_context_files=discover_context_files,
+            tool_allowlist=tool_allowlist,
+            tool_denylist=tool_denylist,
+            no_tools=no_tools,
+            no_builtin_tools=no_builtin_tools,
         )
     )
     renderer = create_event_renderer(output)
