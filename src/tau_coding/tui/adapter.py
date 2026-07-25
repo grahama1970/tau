@@ -23,8 +23,14 @@ from tau_coding.tui.state import ASSISTANT_LENGTH_STOP_ERROR_TEXT, TuiState
 class TuiEventAdapter:
     """Apply portable agent events to mutable TUI display state."""
 
-    def __init__(self, state: TuiState) -> None:
+    def __init__(
+        self,
+        state: TuiState,
+        *,
+        extension_tool_sources: dict[str, str] | None = None,
+    ) -> None:
         self.state = state
+        self.extension_tool_sources = dict(extension_tool_sources or {})
 
     def apply(self, event: AgentEvent) -> None:
         """Apply one agent event to the display state."""
@@ -71,7 +77,12 @@ class TuiEventAdapter:
 
         if isinstance(event, ToolExecutionStartEvent):
             self._flush_assistant_buffer()
-            self.state.add_tool_call(event.tool_call)
+            self.state.add_tool_call(
+                event.tool_call,
+                source=_extension_tool_source_label(
+                    self.extension_tool_sources.get(event.tool_call.name)
+                ),
+            )
             return
 
         if isinstance(event, ToolExecutionUpdateEvent):
@@ -126,3 +137,9 @@ class TuiEventAdapter:
 def _retry_status_message(event: RetryEvent) -> str:
     seconds = max(0, ceil(event.delay_seconds))
     return f"Retrying ({event.attempt}/{event.max_attempts}) in {seconds}s... (Escape to cancel)"
+
+
+def _extension_tool_source_label(extension_name: str | None) -> str | None:
+    if extension_name is None:
+        return None
+    return f"extension:{extension_name}"

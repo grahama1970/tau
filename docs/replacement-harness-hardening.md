@@ -285,6 +285,23 @@ Acceptance:
 - Diagnostics are summarized by recorded severity and do not claim that missing
   or ignored resources were loaded.
 
+### Slice 13: Extension-Owned Tool Call Labels
+
+Pi lets extensions customize tool rendering. Tau's Python extension contract is
+currently bounded to tool registration, so do not invent custom render hooks.
+Instead, use the extension inventory already recorded by `CodingSession` to show
+which extension owns a tool call in the TUI transcript.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Tool calls registered by extensions render with an `extension:<name>` source
+  label in the collapsed tool-call row.
+- Built-in and ordinary tools keep their existing rendering.
+- Tau still documents custom extension TUI renderers as unsupported until the
+  extension API has a real renderer contract.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

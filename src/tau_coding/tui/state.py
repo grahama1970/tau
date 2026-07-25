@@ -123,7 +123,7 @@ class TuiState:
             )
         )
 
-    def add_tool_call(self, tool_call: ToolCall) -> None:
+    def add_tool_call(self, tool_call: ToolCall, *, source: str | None = None) -> None:
         """Append a collapsed tool-call item."""
         skill_name = self._read_skill_name(tool_call)
         if skill_name is not None:
@@ -135,7 +135,7 @@ class TuiState:
             return
         self.add_item(
             "tool",
-            format_tool_call_block(tool_call),
+            format_tool_call_block(tool_call, source=source),
             tool_call_id=tool_call.id,
         )
 
@@ -372,12 +372,13 @@ def _parse_compaction_summary_message(content: str) -> str | None:
     return None
 
 
-def format_tool_call_block(tool_call: ToolCall) -> str:
+def format_tool_call_block(tool_call: ToolCall, *, source: str | None = None) -> str:
     """Format a collapsed tool call for live and restored transcript blocks."""
     invocation = format_tool_call_invocation(tool_call)
+    source_suffix = f" [{source}]" if source else ""
     if tool_call.name == "bash":
-        return invocation
-    return f"→ {invocation}"
+        return f"{invocation}{source_suffix}"
+    return f"→ {invocation}{source_suffix}"
 
 
 def format_tool_call_invocation(tool_call: ToolCall) -> str:

@@ -5956,7 +5956,10 @@ class TauTuiApp(App[None]):
             show_thinking=not self.tui_settings.hide_thinking,
         )
         self._load_session_transcript()
-        self.adapter = TuiEventAdapter(self.state)
+        self.adapter = TuiEventAdapter(
+            self.state,
+            extension_tool_sources=getattr(session, "extension_tool_sources", {}),
+        )
         self._prompt_worker: Worker[None] | None = None
         self._compaction_worker: Worker[None] | None = None
         self._branch_worker: Worker[None] | None = None
