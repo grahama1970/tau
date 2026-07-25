@@ -12,19 +12,28 @@ import tempfile
 from collections.abc import AsyncIterator, Callable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from pathlib import Path
-from time import monotonic
+from time import monotonic, time
 from typing import Any, Final, Literal, cast
 
 from tau_agent import (
+    AgentEndEvent,
     AgentEvent,
     AgentHarness,
     AgentHarnessConfig,
+    AgentStartEvent,
     ErrorEvent,
+    MessageDeltaEvent,
     MessageEndEvent,
+    MessageStartEvent,
     QueuedMessages,
     QueueMode,
     QueueUpdateEvent,
     SimpleCancellationToken,
+    ToolExecutionEndEvent,
+    ToolExecutionStartEvent,
+    ToolExecutionUpdateEvent,
+    TurnEndEvent,
+    TurnStartEvent,
 )
 from tau_agent.messages import AgentMessage, AssistantMessage, UserMessage
 from tau_agent.session import (
@@ -2387,6 +2396,7 @@ class CodingSession:
             async for event in self._harness.prompt(expanded_content):
                 if loop_receipt is not None:
                     loop_receipt.record(event)
+                await self._emit_extension_agent_event(event)
                 if isinstance(event, MessageEndEvent):
                     persisted_count = await self._persist_messages_since(persisted_count)
                 if isinstance(event, ErrorEvent) and not event.recoverable:
@@ -2408,6 +2418,7 @@ class CodingSession:
                     async for retry_event in self._harness.continue_():
                         if loop_receipt is not None:
                             loop_receipt.record(retry_event)
+                        await self._emit_extension_agent_event(retry_event)
                         if isinstance(retry_event, MessageEndEvent):
                             retry_persisted_count = await self._persist_messages_since(
                                 retry_persisted_count
@@ -2451,6 +2462,7 @@ class CodingSession:
         persisted_count = len(self._harness.messages)
         try:
             async for event in self._harness.continue_():
+                await self._emit_extension_agent_event(event)
                 if isinstance(event, MessageEndEvent):
                     persisted_count = await self._persist_messages_since(persisted_count)
                 if isinstance(event, ErrorEvent) and not event.recoverable:
@@ -2470,6 +2482,10 @@ class CodingSession:
                 exc=exc,
             )
             raise
+
+    async def _emit_extension_agent_event(self, event: AgentEvent) -> None:
+        for payload in _extension_agent_event_payloads(event, messages=self._harness.messages):
+            await self.emit_extension_event(payload)
 
     def _diagnostic_context(self) -> AgentCallDiagnosticContext:
         return AgentCallDiagnosticContext(
@@ -3244,6 +3260,105 @@ def _extension_input_result(
     if not isinstance(raw_text, str):
         return None
     return "transform", raw_text
+
+
+def _extension_agent_event_payloads(
+    event: AgentEvent,
+    *,
+    messages: Sequence[AgentMessage],
+) -> tuple[dict[str, object], ...]:
+    if isinstance(event, AgentStartEvent):
+        return ({"type": "agent_start"},)
+    if isinstance(event, AgentEndEvent):
+        return (
+            {
+                "type": "agent_end",
+                "messages": [_agent_message_payload(message) for message in messages],
+            },
+        )
+    if isinstance(event, TurnStartEvent):
+        return ({"type": "turn_start", "turnIndex": event.turn, "timestamp": time()},)
+    if isinstance(event, TurnEndEvent):
+        return ({"type": "turn_end", "turnIndex": event.turn},)
+    if isinstance(event, MessageStartEvent):
+        return (
+            {
+                "type": "message_start",
+                "message": _empty_message_payload(event.message_role),
+                "messageRole": event.message_role,
+            },
+        )
+    if isinstance(event, MessageDeltaEvent):
+        return (
+            {
+                "type": "message_update",
+                "message": {"role": "assistant", "content": event.delta},
+                "assistantMessageEvent": {"type": event.type, "delta": event.delta},
+            },
+        )
+    if isinstance(event, MessageEndEvent):
+        return ({"type": "message_end", "message": _agent_message_payload(event.message)},)
+    if isinstance(event, ToolExecutionStartEvent):
+        return (
+            {
+                "type": "tool_call",
+                "toolCallId": event.tool_call.id,
+                "toolName": event.tool_call.name,
+                "input": event.tool_call.arguments,
+            },
+            {
+                "type": "tool_execution_start",
+                "toolCallId": event.tool_call.id,
+                "toolName": event.tool_call.name,
+                "args": event.tool_call.arguments,
+            },
+        )
+    if isinstance(event, ToolExecutionUpdateEvent):
+        return (
+            {
+                "type": "tool_execution_update",
+                "toolCallId": event.tool_call_id,
+                "toolName": "",
+                "args": {},
+                "partialResult": {
+                    "message": event.message,
+                    "data": event.data,
+                },
+            },
+        )
+    if isinstance(event, ToolExecutionEndEvent):
+        content = ({"type": "text", "text": event.result.content},)
+        return (
+            {
+                "type": "tool_result",
+                "toolCallId": event.result.tool_call_id,
+                "toolName": event.result.name,
+                "input": {},
+                "content": content,
+                "details": event.result.details,
+                "isError": not event.result.ok,
+            },
+            {
+                "type": "tool_execution_end",
+                "toolCallId": event.result.tool_call_id,
+                "toolName": event.result.name,
+                "result": event.result.model_dump(mode="json"),
+                "isError": not event.result.ok,
+            },
+        )
+    return ()
+
+
+def _agent_message_payload(message: AgentMessage) -> dict[str, object]:
+    return cast(dict[str, object], message.model_dump(mode="json"))
+
+
+def _empty_message_payload(role: str) -> dict[str, object]:
+    if role == "tool":
+        return {"role": "tool", "tool_call_id": "", "name": "", "content": ""}
+    if role == "user":
+        return {"role": "user", "content": ""}
+    return {"role": "assistant", "content": "", "tool_calls": []}
 
 
 def parse_terminal_command(text: str) -> TerminalCommandRequest | None:
