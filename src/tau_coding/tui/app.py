@@ -12907,6 +12907,8 @@ def _render_tui_hotkeys_message(
         f"{_key_hint(keybindings.completion_next)}: move through completions",
         f"- {_key_hint(keybindings.editor_cursor_line_start)}/"
         f"{_key_hint(keybindings.editor_cursor_line_end)}: move to line start/end",
+        f"- {_key_hint(keybindings.editor_page_up)}/"
+        f"{_key_hint(keybindings.editor_page_down)}: scroll transcript by page",
         "",
         "Editing:",
         f"- {_key_hint(keybindings.submit_prompt)}: submit prompt",

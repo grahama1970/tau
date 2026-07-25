@@ -8779,6 +8779,7 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "F17: move word left" in app.screen.message
         assert "F18: move word right" in app.screen.message
         assert "F19/F20: jump to next or previous character" in app.screen.message
+        assert "Pageup/Pagedown: scroll transcript by page" in app.screen.message
         assert "drop files: attach paths to the prompt" in app.screen.message
         assert "F21: delete to line start" in app.screen.message
         assert "F22: delete to line end when not used for commands" in app.screen.message
