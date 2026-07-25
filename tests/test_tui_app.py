@@ -676,19 +676,55 @@ def test_session_sidebar_renders_session_metadata() -> None:
     assert "session" in output
     assert "name" not in output
     assert "context" in output
+    assert "/workspace/project" in output
     assert "AGENTS.md" in output
-    assert "12k" not in output
+    assert "12k/200k context (auto)" in output
     assert "provider" in output
     assert "openai" in output
     assert "fake-model" in output
+    assert "auth" in output
+    assert "ready (1 provider)" in output
     assert "thinking" in output
     assert "medium" in output
+    assert "queue" in output
+    assert "idle" in output
+    assert "workflows" in output
+    assert "/workflows" in output
+    assert "scillm" in output
+    assert "/scillm" in output
     assert "location" not in output
     assert "branch" not in output
     assert "tools" in output
     assert "read" in output
     assert "skills" in output
     assert "review" in output
+
+
+def test_session_sidebar_fails_closed_when_provider_login_is_missing() -> None:
+    session = FakeSession()
+    session.available_models = ()
+    session.available_providers = ()
+    console = Console(record=True, width=100)
+
+    console.print(render_session_sidebar(session))
+
+    output = console.export_text()
+    assert "auth" in output
+    assert "login required: /login openai" in output
+    assert "ready (" not in output
+
+
+def test_session_sidebar_renders_queued_message_status() -> None:
+    session = FakeSession()
+    session.queued_steering_messages = ("steer now",)
+    session.queued_follow_up_messages = ("then follow", "and verify")
+    console = Console(record=True, width=100)
+
+    console.print(render_session_sidebar(session))
+
+    output = console.export_text()
+    assert "queue" in output
+    assert "1 steering, 2 follow-up" in output
 
 
 def test_session_sidebar_uses_accented_aligned_headers_without_section_borders() -> None:
@@ -8455,7 +8491,7 @@ async def test_tui_app_workflows_picker_inserts_runnable_command() -> None:
             "--publish-path /workspace/project/.tau/workflow-runs/approved-release-bundle-"
             in prompt.value
         )
-        assert prompt.value.endswith("/publish --open-viewer")
+        assert prompt.value.endswith("/publish --open-viewer --viewer-hold-seconds 120")
         assert prompt.has_class("-shell-mode")
 
 

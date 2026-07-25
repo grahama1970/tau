@@ -1,5 +1,6 @@
-from pathlib import Path
 from collections.abc import AsyncIterator
+from pathlib import Path
+from typing import cast
 
 import pytest
 from textual.widgets import Static
@@ -14,7 +15,6 @@ from tau_coding.tui.pty_proof import (
     pty_input_received_line,
     pty_ready_line,
 )
-from typing import cast
 
 
 class _ProofSessionState:
@@ -28,7 +28,9 @@ class _ProofSession:
         self.provider_name = "pty-proof"
         self.model = "real-tui-app"
         self.available_models = ("real-tui-app",)
-        self.available_model_choices = (ModelChoice(provider_name="pty-proof", model="real-tui-app"),)
+        self.available_model_choices = (
+            ModelChoice(provider_name="pty-proof", model="real-tui-app"),
+        )
         self.scoped_model_choices: tuple[ModelChoice, ...] = ()
         self.available_providers = ("pty-proof",)
         self.tools: tuple[AgentTool, ...] = ()
@@ -94,5 +96,6 @@ async def test_real_tui_app_pty_proof_marker_updates_from_prompt(
 
         assert (
             marker.render().plain
-            == "TAU_TUI_PTY_INPUT_RECEIVED run_id=real-app-run input=TAU_TUI_PTY_BROWSER_INPUT from real app"
+            == "TAU_TUI_PTY_INPUT_RECEIVED run_id=real-app-run "
+            "input=TAU_TUI_PTY_BROWSER_INPUT from real app"
         )

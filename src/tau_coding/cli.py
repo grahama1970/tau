@@ -318,6 +318,35 @@ workflows_app = typer.Typer(
 app.add_typer(workflows_app, name="workflows")
 
 
+@app.command("tui-proof")
+def tui_proof_cli_command(
+    output_dir: Annotated[Path, typer.Option("--out-dir")] = Path(".tmp/tui-proof"),
+    prompt: Annotated[str, typer.Option("--prompt")] = DEFAULT_TUI_PROOF_PROMPT,
+    run_id: Annotated[str, typer.Option("--run-id")] = DEFAULT_TUI_PROOF_RUN_ID,
+    route: Annotated[str, typer.Option("--route")] = "COMPLIANCE",
+    next_agent: Annotated[str, typer.Option("--next-agent")] = "reviewer",
+) -> None:
+    """Render a fixture-backed Textual TUI proof receipt."""
+
+    if not prompt.strip():
+        raise typer.BadParameter("--prompt must not be empty")
+    if not run_id.strip():
+        raise typer.BadParameter("--run-id must not be empty")
+    if not route.strip():
+        raise typer.BadParameter("--route must not be empty")
+    if not next_agent.strip():
+        raise typer.BadParameter("--next-agent must not be empty")
+    ok = tui_proof_command(
+        output_dir=output_dir,
+        prompt=prompt,
+        run_id=run_id,
+        route=route,
+        next_agent=next_agent,
+    )
+    if not ok:
+        raise typer.Exit(1)
+
+
 @workflows_app.command("list")
 def workflows_list_command(
     json_output: Annotated[bool, typer.Option("--json")] = False,
@@ -1688,9 +1717,14 @@ def main(
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
 
-    positional_args, extension_flag_values = _split_startup_extension_flags(
-        [*ctx.args, *(prompt_args or [])],
-    )
+    raw_positional_args = [*(prompt_args or []), *ctx.args]
+    if raw_positional_args[:1] in (["tui-proof"], ["browser-cdp-proof"]):
+        positional_args = raw_positional_args
+        extension_flag_values = {}
+    else:
+        positional_args, extension_flag_values = _split_startup_extension_flags(
+            raw_positional_args,
+        )
     command = positional_args[0] if positional_args else None
 
     if list_models:
@@ -2118,6 +2152,12 @@ def main(
         raise typer.Exit()
 
     if not print_requested and command == "tui-proof":
+        if any(arg in {"--help", "-h"} for arg in positional_args[1:]):
+            typer.echo(
+                "Usage: tau tui-proof [--out-dir DIR] [--prompt TEXT] "
+                "[--run-id RUN_ID] [--route ROUTE] [--next-agent AGENT]"
+            )
+            raise typer.Exit()
         try:
             options = _parse_tui_proof_cli_args(positional_args[1:])
             ok = tui_proof_command(

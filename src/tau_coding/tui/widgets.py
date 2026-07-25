@@ -198,6 +198,12 @@ class SessionSummarySource(Protocol):
     def provider_name(self) -> str: ...
 
     @property
+    def available_models(self) -> Sequence[str]: ...
+
+    @property
+    def available_providers(self) -> Sequence[str]: ...
+
+    @property
     def tools(self) -> Sequence[AgentTool]: ...
 
     @property
@@ -993,12 +999,18 @@ def render_session_sidebar(
     metadata = Table.grid(padding=(0, 1))
     metadata.add_column(style=theme.completion_description, no_wrap=True)
     metadata.add_column(style=theme.prompt_text)
-    title = _named_session_title(session.session_title)
+    title = _named_session_title(getattr(session, "session_title", None))
+    metadata.add_row("cwd", _short_path(session.cwd))
     if title is not None:
         metadata.add_row("name", title)
+    metadata.add_row("context", _context_usage(session))
     metadata.add_row("provider", session.provider_name)
     metadata.add_row("model", session.model)
+    metadata.add_row("auth", _provider_readiness_label(session))
     metadata.add_row("thinking", _thinking_level(session))
+    metadata.add_row("queue", _queue_status_label(session))
+    metadata.add_row("workflows", "/workflows")
+    metadata.add_row("scillm", "/scillm")
     metadata.add_row("tools", str(len(session.tools)))
     metadata.add_row("skills", str(len(session.skills)))
 
@@ -1078,7 +1090,7 @@ def render_compact_session_info(
     git_branch = _git_branch(session.cwd)
     if git_branch:
         path_label = f"{path_label} ({git_branch})"
-    title = _named_session_title(session.session_title)
+    title = _named_session_title(getattr(session, "session_title", None))
     if title is not None:
         path_label = f"{path_label} • {title}"
     left = Text(
@@ -1778,6 +1790,47 @@ def _message_session_stats(messages: object) -> SessionStats:
         if isinstance(tool_calls, Sequence):
             tool_call_count += len(tool_calls)
     return SessionStats(turn_count=turn_count, tool_call_count=tool_call_count)
+
+
+def _provider_readiness_label(session: SessionSummarySource) -> str:
+    provider_name = session.provider_name.strip()
+    available_providers = tuple(
+        provider
+        for provider in (str(item).strip() for item in getattr(session, "available_providers", ()))
+        if provider
+    )
+    available_models = tuple(
+        model
+        for model in (str(item).strip() for item in getattr(session, "available_models", ()))
+        if model
+    )
+    if provider_name and provider_name in available_providers and available_models:
+        count = len(available_providers)
+        return f"ready ({count} {_plural(count, 'provider')})"
+    if available_providers:
+        count = len(available_providers)
+        return f"switch with /model ({count} usable {_plural(count, 'provider')})"
+    if provider_name:
+        return f"login required: /login {provider_name}"
+    return "login required: /login"
+
+
+def _queue_status_label(session: SessionSummarySource) -> str:
+    steering = _sequence_len(getattr(session, "queued_steering_messages", ()))
+    follow_up = _sequence_len(getattr(session, "queued_follow_up_messages", ()))
+    total = steering + follow_up
+    if total <= 0:
+        return "idle"
+    parts = []
+    if steering:
+        parts.append(f"{steering} steering")
+    if follow_up:
+        parts.append(f"{follow_up} follow-up")
+    return ", ".join(parts)
+
+
+def _sequence_len(value: object) -> int:
+    return len(value) if isinstance(value, Sequence) else 0
 
 
 def _plural(count: int, singular: str) -> str:
