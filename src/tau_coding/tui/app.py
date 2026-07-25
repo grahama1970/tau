@@ -811,7 +811,7 @@ class PromptInput(TextArea):
     LARGE_PASTE_CHAR_THRESHOLD: ClassVar[int] = 1000
     LARGE_PASTE_LINE_THRESHOLD: ClassVar[int] = 10
     PASTE_MARKER_PATTERN: ClassVar[re.Pattern[str]] = re.compile(
-        r"\[paste #\d+(?: (?:\+\d+ lines|\d+ chars))?\]"
+        r"\[paste #(?P<id>\d+)(?P<suffix>(?: (?:\+\d+ lines|\d+ chars))?)\]"
     )
     shell_mode_style: str = ""
 
@@ -891,12 +891,27 @@ class PromptInput(TextArea):
         self._paste_markers.clear()
 
     def prune_paste_markers(self) -> None:
-        """Drop compacted paste payloads whose visible marker was removed."""
-        stale_markers = [marker for marker in self._paste_markers if marker not in self.text]
-        for marker in stale_markers:
-            del self._paste_markers[marker]
+        """Drop removed paste payloads and keep visible marker IDs contiguous."""
         if not self._paste_markers:
             self._paste_counter = 0
+            return
+        next_markers: dict[str, str] = {}
+
+        def replace_marker(match: re.Match[str]) -> str:
+            marker = match.group(0)
+            content = self._paste_markers.get(marker)
+            if content is None:
+                return marker
+            next_id = len(next_markers) + 1
+            next_marker = f"[paste #{next_id}{match.group('suffix') or ''}]"
+            next_markers[next_marker] = content
+            return next_marker
+
+        next_text = self.PASTE_MARKER_PATTERN.sub(replace_marker, self.text)
+        if next_text != self.text:
+            self.text = next_text
+        self._paste_markers = next_markers
+        self._paste_counter = len(next_markers)
 
     def _valid_paste_marker_spans(self) -> list[tuple[int, int, str]]:
         if not self._paste_markers:
@@ -952,8 +967,7 @@ class PromptInput(TextArea):
         text = self.text
         self.text = f"{text[:start]}{text[end:]}"
         self._paste_markers.pop(marker, None)
-        if not self._paste_markers:
-            self._paste_counter = 0
+        self.prune_paste_markers()
         self.cursor_position = start
 
     def expanded_text(self) -> str:

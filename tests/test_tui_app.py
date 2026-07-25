@@ -7812,6 +7812,32 @@ async def test_tui_app_prunes_removed_large_paste_markers(
 
 
 @pytest.mark.anyio
+async def test_prompt_renumbers_remaining_large_paste_markers_after_deletion() -> None:
+    first_paste = "\n".join(f"first {index}" for index in range(11))
+    second_paste = "\n".join(f"second {index}" for index in range(11))
+    first_marker = "[paste #1 +11 lines]"
+    second_marker = "[paste #2 +11 lines]"
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.insert_paste_text(first_paste)
+        prompt.insert(" ")
+        prompt.insert_paste_text(second_paste)
+        await pilot.pause()
+
+        assert prompt.value == f"{first_marker} {second_marker}"
+        assert prompt.expanded_text() == f"{first_paste} {second_paste}"
+
+        prompt.cursor_position = len(first_marker)
+        prompt.action_delete_character_backward()
+        await pilot.pause()
+
+        assert prompt.value == f" {first_marker}"
+        assert prompt.expanded_text() == f" {second_paste}"
+
+
+@pytest.mark.anyio
 async def test_tui_app_clipboard_paste_ignores_unavailable_clipboard(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
