@@ -322,6 +322,8 @@ tau --name "Customer bugfix"
 tau --list-models [search]
 tau --models "gpt-5*,local:qwen"
 tau --thinking xhigh
+tau --system-prompt ./system.md
+tau --append-system-prompt "Extra local rule"
 tau --no-context-files
 tau --tools read,bash
 tau --exclude-tools bash
@@ -371,6 +373,10 @@ by Ctrl+P cycling; it does not rewrite `providers.json`.
 `--thinking <level>` sets the startup reasoning depth for the run. Valid values
 are `off`, `minimal`, `low`, `medium`, `high`, `xhigh`, and the Pi-compatible
 alias `max`, which maps to `xhigh`.
+
+`--system-prompt` replaces the generated base system prompt with literal text
+or the contents of a file path. `--append-system-prompt` appends literal text or
+file contents to the generated or custom system prompt and can be repeated.
 
 `--no-context-files` disables `AGENTS.md` and `CLAUDE.md` discovery for the
 startup run. It does not disable skills, prompt templates, or explicit context

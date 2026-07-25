@@ -769,6 +769,17 @@ def main(
             help="Set startup thinking level: off, minimal, low, medium, high, xhigh, or max.",
         ),
     ] = None,
+    system_prompt: Annotated[
+        str | None,
+        typer.Option("--system-prompt", help="Use this text or file as the base system prompt."),
+    ] = None,
+    append_system_prompt: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--append-system-prompt",
+            help="Append this text or file to the system prompt; repeatable.",
+        ),
+    ] = None,
     model_patterns: Annotated[
         str | None,
         typer.Option("--models", help="Comma-separated model patterns for scoped cycling."),
@@ -1114,6 +1125,15 @@ def main(
     tool_denylist = _parse_csv_option(exclude_tools, flag_name="--exclude-tools") or ()
     startup_thinking_level = _parse_startup_thinking_level(thinking)
     startup_cwd = cwd or Path.cwd()
+    resolved_system_prompt = _resolve_prompt_input_option(
+        system_prompt,
+        cwd=startup_cwd,
+        flag_name="--system-prompt",
+    )
+    resolved_append_system_prompt = _resolve_append_system_prompt_option(
+        append_system_prompt,
+        cwd=startup_cwd,
+    )
     resolved_skill_paths = _resolve_cli_resource_paths(skill_paths, cwd=startup_cwd)
     resolved_prompt_template_paths = _resolve_cli_resource_paths(
         prompt_template_paths,
@@ -3336,6 +3356,8 @@ def main(
                 provider,
                 auto_compact_threshold,
                 startup_thinking_level,
+                resolved_system_prompt,
+                resolved_append_system_prompt,
                 initial_prompt,
                 session_name,
                 continue_session,
@@ -3386,6 +3408,8 @@ def main(
             provider,
             loop_receipt,
             startup_thinking_level,
+            resolved_system_prompt,
+            resolved_append_system_prompt,
             session_name,
             no_session,
             session_dir,
@@ -3433,6 +3457,43 @@ def _parse_startup_thinking_level(value: str | None) -> ThinkingLevel | None:
         raise typer.BadParameter(str(exc)) from exc
 
 
+def _resolve_prompt_input_option(
+    value: str | None,
+    *,
+    cwd: Path,
+    flag_name: str,
+) -> str | None:
+    if value is None:
+        return None
+    candidate = Path(value).expanduser()
+    if not candidate.is_absolute():
+        candidate = cwd / candidate
+    if candidate.exists():
+        if not candidate.is_file():
+            raise typer.BadParameter(f"{flag_name} path is not a file: {candidate}")
+        try:
+            return candidate.read_text(encoding="utf-8")
+        except OSError as exc:
+            raise typer.BadParameter(
+                f"Could not read {flag_name} file: {candidate}: {exc}"
+            ) from exc
+    return value
+
+
+def _resolve_append_system_prompt_option(
+    values: list[str] | None,
+    *,
+    cwd: Path,
+) -> str | None:
+    if not values:
+        return None
+    resolved = [
+        _resolve_prompt_input_option(value, cwd=cwd, flag_name="--append-system-prompt")
+        for value in values
+    ]
+    return "\n\n".join(part for part in resolved if part is not None)
+
+
 async def run_openai_tui(
     model: str | None,
     cwd: Path,
@@ -3441,6 +3502,8 @@ async def run_openai_tui(
     provider_name: str | None = None,
     auto_compact_token_threshold: int | None = None,
     thinking_level: ThinkingLevel | None = None,
+    custom_system_prompt: str | None = None,
+    append_system_prompt: str | None = None,
     initial_prompt: str | None = None,
     session_name: str | None = None,
     continue_session: bool = False,
@@ -3469,6 +3532,8 @@ async def run_openai_tui(
         provider_name=provider_name,
         auto_compact_token_threshold=auto_compact_token_threshold,
         thinking_level=thinking_level,
+        custom_system_prompt=custom_system_prompt,
+        append_system_prompt=append_system_prompt,
         initial_prompt=initial_prompt,
         session_name=session_name,
         continue_session=continue_session,
@@ -13254,6 +13319,8 @@ async def run_openai_print_mode(
     provider_name: str | None = None,
     loop_receipt: LoopReceiptConfig | None = None,
     thinking_level: ThinkingLevel | None = None,
+    custom_system_prompt: str | None = None,
+    append_system_prompt: str | None = None,
     session_manager: SessionManager | None = None,
     session_name: str | None = None,
     no_session: bool = False,
@@ -13301,6 +13368,8 @@ async def run_openai_print_mode(
             runtime_provider_config=selection.provider,
             loop_receipt=loop_receipt,
             thinking_level=startup_thinking_level,
+            custom_system_prompt=custom_system_prompt,
+            append_system_prompt=append_system_prompt,
             discover_context_files=not no_context_files,
             tool_allowlist=tool_allowlist,
             tool_denylist=tool_denylist,
@@ -13333,6 +13402,8 @@ async def run_print_mode(
     runtime_provider_config: ProviderConfig | None = None,
     loop_receipt: LoopReceiptConfig | None = None,
     thinking_level: ThinkingLevel = DEFAULT_THINKING_LEVEL,
+    custom_system_prompt: str | None = None,
+    append_system_prompt: str | None = None,
     discover_context_files: bool = True,
     tool_allowlist: tuple[str, ...] | None = None,
     tool_denylist: tuple[str, ...] = (),
@@ -13364,6 +13435,8 @@ async def run_print_mode(
             provider_settings=provider_settings,
             runtime_provider_config=runtime_provider_config,
             thinking_level=thinking_level,
+            custom_system_prompt=custom_system_prompt,
+            append_system_prompt=append_system_prompt,
             default_project_trust=tui_settings.default_project_trust,
             shell_path=tui_settings.shell_path,
             shell_command_prefix=tui_settings.shell_command_prefix,

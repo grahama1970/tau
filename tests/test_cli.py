@@ -6237,6 +6237,8 @@ def test_cli_without_prompt_invokes_tui_runner(
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -6312,6 +6314,8 @@ def test_cli_positional_prompt_invokes_tui_runner(
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -6791,6 +6795,8 @@ def test_cli_exits_nonzero_when_print_mode_fails(monkeypatch: pytest.MonkeyPatch
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -6827,6 +6833,8 @@ def test_mode_flag_alone_triggers_print_mode(monkeypatch: pytest.MonkeyPatch) ->
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -6865,6 +6873,8 @@ def test_print_mode_passes_startup_session_name(monkeypatch: pytest.MonkeyPatch)
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -6903,6 +6913,8 @@ def test_print_mode_passes_no_session_flag(monkeypatch: pytest.MonkeyPatch) -> N
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -6941,6 +6953,8 @@ def test_print_mode_passes_no_context_files_flag(monkeypatch: pytest.MonkeyPatch
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -6980,6 +6994,8 @@ def test_print_mode_passes_startup_thinking_level(monkeypatch: pytest.MonkeyPatc
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -7010,6 +7026,71 @@ def test_print_mode_passes_startup_thinking_level(monkeypatch: pytest.MonkeyPatc
     assert calls == ["xhigh"]
 
 
+def test_print_mode_passes_system_prompt_inputs(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    system_path = tmp_path / "system.md"
+    append_path = tmp_path / "append.md"
+    system_path.write_text("Custom system from file.", encoding="utf-8")
+    append_path.write_text("Append from file.", encoding="utf-8")
+    calls: list[tuple[str | None, str | None]] = []
+
+    async def fake_run_openai_print_mode(
+        prompt: str,
+        model: str | None,
+        cwd: Path,
+        output: PrintOutputMode,
+        provider_name: str | None,
+        loop_receipt: LoopReceiptConfig | None,
+        thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
+        session_name: str | None,
+        no_session: bool,
+        session_dir: Path | None,
+        no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
+        no_skills: bool,
+        no_prompt_templates: bool,
+        no_themes: bool,
+        skill_paths: tuple[Path, ...],
+        prompt_template_paths: tuple[Path, ...],
+        theme_paths: tuple[Path, ...],
+    ) -> bool:
+        del prompt, model, cwd, output, provider_name, loop_receipt, thinking_level
+        del session_name, no_session, session_dir, no_context_files
+        del tool_allowlist, tool_denylist, no_tools, no_builtin_tools
+        del no_skills, no_prompt_templates, no_themes
+        del skill_paths, prompt_template_paths, theme_paths
+        calls.append((custom_system_prompt, append_system_prompt))
+        return True
+
+    monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--cwd",
+            str(tmp_path),
+            "--print",
+            "--system-prompt",
+            "system.md",
+            "--append-system-prompt",
+            "literal append",
+            "--append-system-prompt",
+            "append.md",
+            "hello",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert calls == [("Custom system from file.", "literal append\n\nAppend from file.")]
+
+
 def test_print_mode_passes_tool_selection_flags(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[tuple[tuple[str, ...] | None, tuple[str, ...], bool, bool, bool, bool, bool]] = []
 
@@ -7021,6 +7102,8 @@ def test_print_mode_passes_tool_selection_flags(monkeypatch: pytest.MonkeyPatch)
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -7087,6 +7170,8 @@ def test_print_mode_passes_explicit_resource_paths(
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -7154,6 +7239,8 @@ def test_print_mode_merges_piped_stdin_into_prompt(monkeypatch: pytest.MonkeyPat
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -7192,6 +7279,8 @@ def test_print_mode_accepts_stdin_only_prompt(monkeypatch: pytest.MonkeyPatch) -
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -7278,6 +7367,8 @@ def test_cli_print_mode_passes_loop2_receipt_options(
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -7343,6 +7434,8 @@ def test_cli_print_mode_marks_nonfake_loop2_receipt_live(
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -7447,6 +7540,8 @@ def test_default_tui_invokes_tui_runner_with_flags(
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -7520,6 +7615,8 @@ def test_default_tui_passes_startup_session_name(
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -7564,6 +7661,8 @@ def test_default_tui_passes_continue_session_flag(
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -7608,6 +7707,8 @@ def test_default_tui_passes_resume_picker_flag(
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -7655,6 +7756,8 @@ def test_default_tui_passes_startup_thinking_alias(
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -7689,6 +7792,66 @@ def test_default_tui_passes_startup_thinking_alias(
     assert calls == ["xhigh"]
 
 
+def test_default_tui_passes_system_prompt_inputs(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[tuple[str | None, str | None]] = []
+
+    async def fake_run_openai_tui(
+        model: str | None,
+        cwd: Path,
+        session_id: str | None,
+        new_session: bool,
+        provider_name: str | None,
+        auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
+        initial_prompt: str | None,
+        session_name: str | None,
+        continue_session: bool,
+        resume_picker: bool,
+        no_session: bool,
+        session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
+        no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
+        no_skills: bool,
+        no_prompt_templates: bool,
+        no_themes: bool,
+        skill_paths: tuple[Path, ...],
+        prompt_template_paths: tuple[Path, ...],
+        theme_paths: tuple[Path, ...],
+    ) -> None:
+        del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
+        del thinking_level, initial_prompt, session_name, continue_session, resume_picker
+        del no_session, session_dir, provider_settings, no_context_files
+        del tool_allowlist, tool_denylist, no_tools, no_builtin_tools
+        del no_skills, no_prompt_templates, no_themes
+        del skill_paths, prompt_template_paths, theme_paths
+        calls.append((custom_system_prompt, append_system_prompt))
+
+    monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--cwd",
+            str(tmp_path),
+            "--system-prompt",
+            "Custom system.",
+            "--append-system-prompt",
+            "Extra rule.",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert calls == [("Custom system.", "Extra rule.")]
+
+
 def test_default_tui_passes_no_session_flag(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -7702,6 +7865,8 @@ def test_default_tui_passes_no_session_flag(
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -7746,6 +7911,8 @@ def test_default_tui_passes_no_context_files_flag(
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -7791,6 +7958,8 @@ def test_default_tui_passes_tool_selection_flags(
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -7861,6 +8030,8 @@ def test_default_tui_passes_explicit_resource_paths(
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -8047,6 +8218,8 @@ def test_default_tui_passes_transient_scoped_model_patterns(
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -8113,6 +8286,8 @@ def test_default_tui_models_pattern_respects_provider_filter(
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -8199,6 +8374,8 @@ def test_default_tui_forks_session_before_starting_tui(
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
         thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
