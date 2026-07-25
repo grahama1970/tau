@@ -138,6 +138,10 @@ class ExtensionShortcutContext:
         """Pi-compatible camelCase alias for is_project_trusted."""
         return self.is_project_trusted()
 
+    def abort(self) -> None:
+        """Request cancellation of the active agent operation, if supported."""
+        _session_abort(self.session)
+
     def get_context_usage(self) -> ContextUsageInfo | None:
         """Return Pi-style context usage for the active session."""
         return _session_context_usage(self.session)
@@ -391,6 +395,10 @@ class ExtensionCommandContext:
     def isProjectTrusted(self) -> bool:  # noqa: N802
         """Pi-compatible camelCase alias for is_project_trusted."""
         return self.is_project_trusted()
+
+    def abort(self) -> None:
+        """Request cancellation of the active agent operation, if supported."""
+        _session_abort(self.session)
 
     def get_context_usage(self) -> ContextUsageInfo | None:
         """Return Pi-style context usage for the active session."""
@@ -1011,6 +1019,12 @@ def _session_project_trusted(session: Any) -> bool:
             return bool(getattr(saved_decision, "decision", False))
     config = getattr(session, "_config", None)
     return getattr(config, "default_project_trust", None) == "always"
+
+
+def _session_abort(session: Any) -> None:
+    cancel = getattr(session, "cancel", None)
+    if callable(cancel):
+        cancel()
 
 
 def _session_context_usage(session: Any) -> ContextUsageInfo | None:
