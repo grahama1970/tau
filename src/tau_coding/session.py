@@ -320,6 +320,7 @@ class CodingSession:
         self._context_files = context_files
         self._extensions = extensions
         self._runtime_extension_tool_sources: dict[str, str] = {}
+        self._available_tools: list[AgentTool] = list(harness.config.tools)
         self._extension_ui_handler: Callable[..., object] | None = None
         self._extension_terminal_input_handler: Callable[..., object] | None = None
         self._extension_autocomplete_provider_handler: Callable[..., object] | None = None
@@ -537,6 +538,37 @@ class CodingSession:
     def tools(self) -> tuple[AgentTool, ...]:
         """Return the tools available to the agent."""
         return tuple(self._harness.config.tools)
+
+    @property
+    def all_tools(self) -> tuple[AgentTool, ...]:
+        """Return the full session tool universe extensions can activate."""
+        return tuple(self._available_tools)
+
+    @property
+    def active_tool_names(self) -> tuple[str, ...]:
+        """Return the active tool names in provider prompt order."""
+        return tuple(tool.name for tool in self._harness.config.tools)
+
+    def set_active_tools(self, tool_names: Sequence[str]) -> tuple[str, ...]:
+        """Replace the active tool set from the session's available tools."""
+        normalized = tuple(str(name).strip() for name in tool_names)
+        if any(not name for name in normalized):
+            raise ValueError("active tool names must be non-empty")
+        duplicate_names = sorted({name for name in normalized if normalized.count(name) > 1})
+        if duplicate_names:
+            names = ", ".join(duplicate_names)
+            raise ValueError(f"Duplicate active tool name(s): {names}")
+        available_by_name = {tool.name: tool for tool in self._available_tools}
+        missing = [name for name in normalized if name not in available_by_name]
+        if missing:
+            names = ", ".join(missing)
+            available_names = ", ".join(sorted(available_by_name)) or "none"
+            raise ValueError(
+                f"Unknown active tool name(s): {names}. Available tools: {available_names}"
+            )
+        self._harness.config.tools = [available_by_name[name] for name in normalized]
+        self._refresh_generated_system_prompt()
+        return self.active_tool_names
 
     @property
     def messages(self) -> tuple[AgentMessage, ...]:
@@ -761,6 +793,9 @@ class CodingSession:
             raise RuntimeError(f"Extension tool is denied by active tool settings: {tool_name}")
         if any(existing.name == tool_name for existing in self._harness.config.tools):
             raise ValueError(f"Tool already registered: {tool_name}")
+        if any(existing.name == tool_name for existing in self._available_tools):
+            raise ValueError(f"Tool already registered: {tool_name}")
+        self._available_tools.append(tool)
         self._harness.config.tools.append(tool)
         source = extension_name.strip() or "runtime"
         self._runtime_extension_tool_sources[tool_name] = source
@@ -1248,6 +1283,7 @@ class CodingSession:
             )
             system_prompt_rebuilt = True
 
+        self._available_tools = list(tools)
         self._harness.config.tools = tools
         self._skills = resources.skills
         self._prompt_templates = resources.prompt_templates

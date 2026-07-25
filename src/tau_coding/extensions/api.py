@@ -14,6 +14,7 @@ ExtensionArgumentCompletionProvider = Callable[[str], Sequence[Any] | None]
 ThemeInfo = dict[str, str | None]
 ContextUsageInfo = dict[str, int | float | None]
 CommandInfo = dict[str, Any]
+ToolInfo = dict[str, Any]
 
 
 @dataclass(frozen=True, slots=True)
@@ -181,6 +182,30 @@ class ExtensionShortcutContext:
     def getCommands(self) -> tuple[CommandInfo, ...]:  # noqa: N802
         """Pi-compatible camelCase alias for get_commands."""
         return self.get_commands()
+
+    def get_active_tools(self) -> tuple[str, ...]:
+        """Return active tool names for future agent turns."""
+        return _session_active_tools(self.session)
+
+    def getActiveTools(self) -> tuple[str, ...]:  # noqa: N802
+        """Pi-compatible camelCase alias for get_active_tools."""
+        return self.get_active_tools()
+
+    def get_all_tools(self) -> tuple[ToolInfo, ...]:
+        """Return metadata for all session tools that can be activated."""
+        return _session_all_tools(self.session)
+
+    def getAllTools(self) -> tuple[ToolInfo, ...]:  # noqa: N802
+        """Pi-compatible camelCase alias for get_all_tools."""
+        return self.get_all_tools()
+
+    def set_active_tools(self, tool_names: Sequence[str]) -> tuple[str, ...]:
+        """Replace the active tool set for future agent turns."""
+        return _session_set_active_tools(self.session, tool_names)
+
+    def setActiveTools(self, tool_names: Sequence[str]) -> tuple[str, ...]:  # noqa: N802
+        """Pi-compatible camelCase alias for set_active_tools."""
+        return self.set_active_tools(tool_names)
 
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the shortcut returns."""
@@ -526,6 +551,30 @@ class ExtensionCommandContext:
     def getCommands(self) -> tuple[CommandInfo, ...]:  # noqa: N802
         """Pi-compatible camelCase alias for get_commands."""
         return self.get_commands()
+
+    def get_active_tools(self) -> tuple[str, ...]:
+        """Return active tool names for future agent turns."""
+        return _session_active_tools(self.session)
+
+    def getActiveTools(self) -> tuple[str, ...]:  # noqa: N802
+        """Pi-compatible camelCase alias for get_active_tools."""
+        return self.get_active_tools()
+
+    def get_all_tools(self) -> tuple[ToolInfo, ...]:
+        """Return metadata for all session tools that can be activated."""
+        return _session_all_tools(self.session)
+
+    def getAllTools(self) -> tuple[ToolInfo, ...]:  # noqa: N802
+        """Pi-compatible camelCase alias for get_all_tools."""
+        return self.get_all_tools()
+
+    def set_active_tools(self, tool_names: Sequence[str]) -> tuple[str, ...]:
+        """Replace the active tool set for future agent turns."""
+        return _session_set_active_tools(self.session, tool_names)
+
+    def setActiveTools(self, tool_names: Sequence[str]) -> tuple[str, ...]:  # noqa: N802
+        """Pi-compatible camelCase alias for set_active_tools."""
+        return self.set_active_tools(tool_names)
 
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the command returns."""
@@ -1280,6 +1329,52 @@ def _command_info_source(source: object) -> str:
         if source.startswith("prompt:"):
             return "prompt"
     return "prompt"
+
+
+def _session_active_tools(session: Any) -> tuple[str, ...]:
+    active_names = getattr(session, "active_tool_names", None)
+    if active_names is not None:
+        return tuple(str(name) for name in active_names)
+    return tuple(str(getattr(tool, "name", "")) for tool in getattr(session, "tools", ()))
+
+
+def _session_all_tools(session: Any) -> tuple[ToolInfo, ...]:
+    all_tools = getattr(session, "all_tools", None)
+    tools = all_tools if all_tools is not None else getattr(session, "tools", ())
+    extension_sources = getattr(session, "extension_tool_sources", {})
+    if not isinstance(extension_sources, Mapping):
+        extension_sources = {}
+    return tuple(_tool_info(tool, extension_sources=extension_sources) for tool in tools)
+
+
+def _session_set_active_tools(session: Any, tool_names: Sequence[str]) -> tuple[str, ...]:
+    setter = getattr(session, "set_active_tools", None)
+    if callable(setter):
+        return tuple(str(name) for name in setter(tuple(tool_names)))
+    raise RuntimeError("active session does not support extension active tool controls")
+
+
+def _tool_info(tool: Any, *, extension_sources: Mapping[str, object]) -> ToolInfo:
+    name = str(getattr(tool, "name", ""))
+    extension_source = extension_sources.get(name)
+    if extension_source is None:
+        source = "builtin"
+        source_path = None
+    else:
+        source = "extension"
+        source_path = f"extension:{extension_source}"
+    return {
+        "name": name,
+        "description": str(getattr(tool, "description", "")),
+        "parameters": getattr(tool, "input_schema", {}),
+        "promptGuidelines": tuple(str(item) for item in getattr(tool, "prompt_guidelines", ())),
+        "promptSnippet": getattr(tool, "prompt_snippet", None),
+        "source": source,
+        "sourceInfo": {
+            "source": source,
+            "path": source_path,
+        },
+    }
 
 
 def _session_model(session: Any) -> str | None:
