@@ -1082,6 +1082,7 @@ def render_chat_item(
             image_width_cells=image_width_cells,
             syntax_theme=theme.syntax_theme,
             theme=theme,
+            tool_results_key_hint=tool_results_key_hint,
         )
         if item.role == "tool"
         else _render_chat_body(
@@ -1153,8 +1154,14 @@ def _render_tool_chat_body(
     image_width_cells: int | None,
     syntax_theme: str,
     theme: TuiTheme,
+    tool_results_key_hint: str,
 ) -> RenderableType:
-    text = _render_tool_invocation(item.text, body_style=body_style, accent_style=accent_style)
+    invocation_text = _with_tool_results_key_hint(item.text, tool_results_key_hint)
+    text = _render_tool_invocation(
+        invocation_text,
+        body_style=body_style,
+        accent_style=accent_style,
+    )
     if not show_tool_results or not item.tool_result_text:
         return text
 
