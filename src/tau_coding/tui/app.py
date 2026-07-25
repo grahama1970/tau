@@ -2147,8 +2147,13 @@ class SessionPickerScreen(ModalScreen[str | None]):
                 f"{select_key} selects - {cancel_key} closes"
             )
         else:
+            empty_message = _session_picker_empty_message(
+                scope=self.scope,
+                named_only=self.named_only,
+                named_key=named_key,
+            )
             help_text = (
-                f'No matching sessions - re:<pattern> regex, "phrase" exact - '
+                f'{empty_message} - re:<pattern> regex, "phrase" exact - '
                 f"Tab {scope_state} - {named_key} {named_state} - {path_key} {path_state} - "
                 f"{sort_key} {sort_state} - {cancel_key} closes"
             )
@@ -7988,6 +7993,25 @@ def _session_picker_sort_label(sort_mode: SessionPickerSortMode) -> str:
     if sort_mode == "relevance":
         return "fuzzy"
     return sort_mode
+
+
+def _session_picker_empty_message(
+    *,
+    scope: Literal["current", "all"],
+    named_only: bool,
+    named_key: str,
+) -> str:
+    """Return Pi-style empty-state guidance for the session picker."""
+    if named_only:
+        if scope == "all":
+            return f"No named sessions found. Press {named_key} to show all."
+        return (
+            f"No named sessions in current folder. Press {named_key} to show all, "
+            "or Tab to view all."
+        )
+    if scope == "all":
+        return "No sessions found."
+    return "No sessions in current folder. Press Tab to view all."
 
 
 def _filter_session_picker_records(
