@@ -321,6 +321,7 @@ class CodingSession:
         self._extensions = extensions
         self._runtime_extension_tool_sources: dict[str, str] = {}
         self._extension_ui_handler: Callable[..., object] | None = None
+        self._extension_terminal_input_handler: Callable[..., object] | None = None
         self._resource_diagnostics = resource_diagnostics
         self._base_command_registry = (
             base_command_registry.copy()
@@ -1665,6 +1666,30 @@ class CodingSession:
     def set_extension_ui_handler(self, handler: Callable[..., object] | None) -> None:
         """Install the frontend callback used by Pi-style async extension UI calls."""
         self._extension_ui_handler = handler
+
+    def set_extension_terminal_input_handler(
+        self,
+        handler: Callable[..., object] | None,
+    ) -> None:
+        """Install the frontend callback used by Pi-style terminal input listeners."""
+        self._extension_terminal_input_handler = handler
+
+    def register_extension_terminal_input_listener(
+        self,
+        handler: Callable[[str], object],
+        *,
+        extension_name: str,
+    ) -> Callable[[], None]:
+        """Register a TUI terminal-input listener and return its unsubscribe hook."""
+        if self._extension_terminal_input_handler is None:
+            return lambda: None
+        result = self._extension_terminal_input_handler(
+            extension_name=extension_name,
+            handler=handler,
+        )
+        if not callable(result):
+            return lambda: None
+        return cast(Callable[[], None], result)
 
     @property
     def extension_ui_available(self) -> bool:

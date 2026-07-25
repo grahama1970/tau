@@ -233,6 +233,8 @@ class CompletionActionTarget(Protocol):
 
     def action_open_fork_picker(self) -> None: ...
 
+    def action_handle_extension_terminal_input(self, data: str) -> str | None: ...
+
     def action_cycle_thinking(self) -> None: ...
 
     def action_cycle_model(self) -> None: ...
@@ -1748,6 +1750,16 @@ class PromptInput(TextArea):
     async def on_key(self, event: Key) -> None:
         """Route completion and submission keys before default input handling."""
         keybindings = self.tui_keybindings
+        listener_replacement = self._completion_target().action_handle_extension_terminal_input(
+            _terminal_input_event_data(event)
+        )
+        if listener_replacement is not None:
+            event.stop()
+            event.prevent_default()
+            if listener_replacement:
+                self._push_undo_snapshot()
+                self.insert(listener_replacement)
+            return
         if self._jump_direction is not None:
             event.stop()
             event.prevent_default()
@@ -6163,6 +6175,13 @@ class TauTuiApp(App[None]):
         set_extension_ui_handler = getattr(self.session, "set_extension_ui_handler", None)
         if callable(set_extension_ui_handler):
             set_extension_ui_handler(self._handle_extension_ui_request)
+        set_terminal_input_handler = getattr(
+            self.session,
+            "set_extension_terminal_input_handler",
+            None,
+        )
+        if callable(set_terminal_input_handler):
+            set_terminal_input_handler(self._register_extension_terminal_input_listener)
         self.state = TuiState(
             skills=session.skills,
             show_thinking=not self.tui_settings.hide_thinking,
@@ -6199,6 +6218,11 @@ class TauTuiApp(App[None]):
         self._extension_statuses: dict[str, str] = {}
         self._extension_widgets_above: dict[str, tuple[str, ...]] = {}
         self._extension_widgets_below: dict[str, tuple[str, ...]] = {}
+        self._extension_terminal_input_listener_id = 0
+        self._extension_terminal_input_listeners: dict[
+            int,
+            tuple[str, Callable[[str], object]],
+        ] = {}
         self._app_has_focus = True
         self._active_notification_keys: set[tuple[str, str]] = set()
         self._supports_pyperclip: bool | None = None
@@ -7191,6 +7215,38 @@ class TauTuiApp(App[None]):
             return
         self._extension_header_lines = update.lines
         self._refresh_chrome()
+
+    def _register_extension_terminal_input_listener(
+        self,
+        *,
+        extension_name: str,
+        handler: Callable[[str], object],
+    ) -> Callable[[], None]:
+        """Register an extension listener for prompt terminal input."""
+        self._extension_terminal_input_listener_id += 1
+        listener_id = self._extension_terminal_input_listener_id
+        self._extension_terminal_input_listeners[listener_id] = (extension_name, handler)
+
+        def unsubscribe() -> None:
+            self._extension_terminal_input_listeners.pop(listener_id, None)
+
+        return unsubscribe
+
+    def action_handle_extension_terminal_input(self, data: str) -> str | None:
+        """Let extension listeners consume or rewrite prompt terminal input."""
+        for extension_name, handler in tuple(self._extension_terminal_input_listeners.values()):
+            try:
+                result = handler(data)
+            except Exception as exc:  # noqa: BLE001 - extension failures should surface, not crash
+                self._notify(
+                    f"Extension terminal input listener error ({extension_name}): {exc}",
+                    severity="error",
+                )
+                continue
+            replacement = _extension_terminal_input_result(result)
+            if replacement is not None:
+                return replacement
+        return None
 
     def _set_extension_terminal_title(self, title: str | None) -> None:
         """Override or clear the terminal title requested by an extension command."""
@@ -12414,6 +12470,29 @@ async def run_tui_app(
             if close_session is not None:
                 await close_session()
         await provider.aclose()
+
+
+def _extension_terminal_input_result(result: object) -> str | None:
+    """Normalize Pi-style terminal input listener results."""
+    if result is None:
+        return None
+    if isinstance(result, str):
+        return result
+    if isinstance(result, Mapping):
+        data = result.get("data")
+        if data is not None:
+            return str(data)
+        if bool(result.get("consume", False)):
+            return ""
+    return None
+
+
+def _terminal_input_event_data(event: Key) -> str:
+    """Return the terminal input payload seen by extension listeners."""
+    character = getattr(event, "character", None)
+    if character is not None:
+        return str(character)
+    return event.key
 
 
 class _PtyProofRealAppSessionState:

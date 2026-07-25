@@ -200,6 +200,18 @@ class ExtensionShortcutContext:
             raise RuntimeError("active session does not support runtime extension tools")
         return str(register(tool, extension_name=self.extension_name))
 
+    def register_terminal_input_listener(
+        self,
+        handler: Callable[[str], Any],
+    ) -> Callable[[], None]:
+        """Register a terminal-input listener for the active TUI frontend."""
+        if not callable(handler):
+            raise TypeError("terminal input listener must be callable")
+        register = getattr(self.session, "register_extension_terminal_input_listener", None)
+        if not callable(register):
+            return lambda: None
+        return register(handler, extension_name=self.extension_name)
+
     def set_editor_text(self, text: str) -> None:
         """Request that Tau replace the prompt editor contents after the shortcut returns."""
         if not isinstance(text, str):
@@ -473,6 +485,18 @@ class ExtensionCommandContext:
             raise RuntimeError("active session does not support runtime extension tools")
         return str(register(tool, extension_name=self.extension_name))
 
+    def register_terminal_input_listener(
+        self,
+        handler: Callable[[str], Any],
+    ) -> Callable[[], None]:
+        """Register a terminal-input listener for the active TUI frontend."""
+        if not callable(handler):
+            raise TypeError("terminal input listener must be callable")
+        register = getattr(self.session, "register_extension_terminal_input_listener", None)
+        if not callable(register):
+            return lambda: None
+        return register(handler, extension_name=self.extension_name)
+
     def set_editor_text(self, text: str) -> None:
         """Request that Tau replace the prompt editor contents after the command returns."""
         if not isinstance(text, str):
@@ -649,6 +673,14 @@ class ExtensionCommandUi:
             prefill=str(prefill),
         )
         return None if result is None else str(result)
+
+    def onTerminalInput(self, handler: Callable[[str], Any]) -> Callable[[], None]:  # noqa: N802
+        """Pi-compatible alias for listening to prompt terminal input."""
+        return self._context.register_terminal_input_listener(handler)
+
+    def on_terminal_input(self, handler: Callable[[str], Any]) -> Callable[[], None]:
+        """Listen to prompt terminal input."""
+        return self._context.register_terminal_input_listener(handler)
 
     def setWorkingMessage(self, message: str | None = None) -> None:  # noqa: N802
         """Pi-compatible alias for setting the running message."""
