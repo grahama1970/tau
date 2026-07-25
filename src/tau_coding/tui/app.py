@@ -5621,6 +5621,8 @@ class TauTuiApp(App[None]):
         if self._is_compaction_active():
             if text.startswith("/compact"):
                 self._notify("A compaction is already running.", severity="warning")
+            elif _is_reload_command_text(text):
+                self._notify("Wait for compaction to finish before reloading.", severity="warning")
             else:
                 self._queue_compaction_message(text, streaming_behavior=streaming_behavior)
                 prompt.add_to_history(text)
@@ -5649,6 +5651,13 @@ class TauTuiApp(App[None]):
             self._completion_state = CompletionState()
             self._refresh_completions()
             self._notify("Skill commands are disabled in TUI settings.", severity="warning")
+            return
+
+        if _is_reload_command_text(text) and self._is_agent_or_queue_active():
+            self._notify(
+                "Wait for the current response to finish before reloading.",
+                severity="warning",
+            )
             return
 
         prompt.add_to_history(text)
