@@ -90,7 +90,7 @@ class TuiKeybindings:
     select_page_up: str = "pageup"
     select_page_down: str = "pagedown"
     select_confirm: str = "enter"
-    select_cancel: str = "escape"
+    select_cancel: str = "escape,ctrl+c"
     toggle_thinking: str = "ctrl+t"
     toggle_tool_results: str = "ctrl+o"
     copy_message: str = "ctrl+c"
