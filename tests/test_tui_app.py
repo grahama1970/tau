@@ -779,6 +779,29 @@ def test_compact_session_info_renders_sidebar_facts() -> None:
     assert "(medium)" in output
 
 
+def test_compact_session_info_includes_active_session_activity() -> None:
+    session = FakeSession(
+        messages=(
+            UserMessage(content="fix this"),
+            AssistantMessage(
+                content="I'll inspect it.",
+                tool_calls=[
+                    ToolCall(id="call-1", name="read", arguments={}),
+                    ToolCall(id="call-2", name="edit", arguments={}),
+                ],
+            ),
+            UserMessage(content="continue"),
+        )
+    )
+    console = Console(record=True, width=120)
+
+    console.print(render_compact_session_info(session))
+
+    output = console.export_text()
+    assert "2 turns, 2 tool calls" in output
+    assert "12k/200k context (auto)" in output
+
+
 def test_compact_session_info_styles_provider_as_metadata() -> None:
     console = Console(record=True, width=120, color_system="truecolor")
 

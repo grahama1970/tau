@@ -209,6 +209,9 @@ class SessionSummarySource(Protocol):
     def context_files(self) -> Sequence[ProjectContextFile]: ...
 
     @property
+    def messages(self) -> Sequence[Any]: ...
+
+    @property
     def context_token_estimate(self) -> int: ...
 
     @property
@@ -1081,6 +1084,10 @@ def render_compact_session_info(
         no_wrap=False,
     )
     right = Text(style=theme.muted_text, overflow="fold", no_wrap=False, justify="right")
+    activity = _session_activity(session)
+    if activity is not None:
+        right.append(activity, style=theme.completion_description)
+        right.append("  ")
     right.append(_context_usage(session), style=theme.completion_description)
     right.append("  ")
     right.append(session.provider_name, style=theme.completion_description)
@@ -1712,6 +1719,30 @@ def _context_usage(session: SessionSummarySource) -> str:
     breakdown = _context_breakdown(getattr(session, "context_usage", None))
     details = [detail for detail in (percent, breakdown) if detail]
     return f"{label} {' '.join(details)}" if details else label
+
+
+def _session_activity(session: SessionSummarySource) -> str | None:
+    messages = getattr(session, "messages", ())
+    if not isinstance(messages, Sequence):
+        return None
+    turn_count = 0
+    tool_call_count = 0
+    for message in messages:
+        if getattr(message, "role", None) == "user":
+            turn_count += 1
+        tool_calls = getattr(message, "tool_calls", ())
+        if isinstance(tool_calls, Sequence):
+            tool_call_count += len(tool_calls)
+    if turn_count == 0 and tool_call_count == 0:
+        return None
+    return (
+        f"{turn_count} {_plural(turn_count, 'turn')}, "
+        f"{tool_call_count} tool {_plural(tool_call_count, 'call')}"
+    )
+
+
+def _plural(count: int, singular: str) -> str:
+    return singular if count == 1 else f"{singular}s"
 
 
 def _context_percent(used_tokens: int, budget_tokens: int) -> str | None:
