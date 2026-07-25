@@ -10221,7 +10221,7 @@ async def test_tui_login_pickers_use_configured_pi_select_keybindings() -> None:
         assert isinstance(app.screen, LoginProviderPickerScreen)
         provider_list = app.screen.query_one("#login-provider-list", ListView)
         assert str(app.screen.query_one("#login-provider-help", Static).render()) == (
-            "F7 selects - F8 closes"
+            "Up/Down navigate - F7 selects - F8 closes"
         )
 
         await pilot.press("f6", "f7")
@@ -10230,6 +10230,35 @@ async def test_tui_login_pickers_use_configured_pi_select_keybindings() -> None:
         assert provider_list.index == 1
         assert isinstance(app.screen, LoginScreen)
         assert app.screen.provider.name == "anthropic"
+
+
+@pytest.mark.anyio
+async def test_tui_login_provider_picker_shows_empty_filter_row() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/login"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, LoginMethodPickerScreen)
+        app.screen.action_cursor_down()
+        app.screen.action_select_cursor()
+        await pilot.pause()
+
+        assert isinstance(app.screen, LoginProviderPickerScreen)
+        search = app.screen.query_one("#login-provider-search", Input)
+        search.value = "no-such-provider"
+        await pilot.pause()
+
+        provider_list = app.screen.query_one("#login-provider-list", ListView)
+        labels = [str(item.query_one(Label).render()) for item in provider_list.children]
+        assert labels == ['No providers match "no-such-provider"']
+        assert provider_list.index is None
+        assert str(app.screen.query_one("#login-provider-help", Static).render()) == (
+            'filter "no-such-provider" - Up/Down navigate - Enter selects - Escape/Ctrl+C closes'
+        )
 
 
 @pytest.mark.anyio
@@ -10249,7 +10278,9 @@ async def test_tui_login_subscription_opens_oauth_provider_picker() -> None:
         assert isinstance(app.screen, LoginProviderPickerScreen)
         provider_list = app.screen.query_one("#login-provider-list", ListView)
         labels = [str(item.query_one(Label).render()) for item in provider_list.children]
-        assert labels == ["OpenAI Codex subscription\n  openai-codex - unconfigured"]
+        assert labels == [
+            "OpenAI Codex subscription [subscription]\n  openai-codex - unconfigured"
+        ]
         assert "gpt-5.5" not in "\n".join(labels)
 
 
@@ -10271,8 +10302,11 @@ async def test_tui_login_api_key_opens_api_provider_picker() -> None:
         assert isinstance(app.screen, LoginProviderPickerScreen)
         provider_list = app.screen.query_one("#login-provider-list", ListView)
         labels = [str(item.query_one(Label).render()) for item in provider_list.children]
-        assert labels[0] == "OpenAI\n  openai - unconfigured"
-        assert "OpenAI Codex subscription\n  openai-codex - unconfigured" not in labels
+        assert labels[0] == "OpenAI [API key]\n  openai - unconfigured"
+        assert (
+            "OpenAI Codex subscription [subscription]\n  openai-codex - unconfigured"
+            not in labels
+        )
 
         await pilot.press("down")
         await pilot.press("enter")

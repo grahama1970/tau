@@ -50,7 +50,7 @@ capabilities.
 | Session selector | `session-selector`, `session-selector-search` | `SessionPickerScreen` | `MATCHED` | Search, current/all, named-only, path toggle, sort, rename, delete are present. |
 | Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `PARTIAL` | Tau backs most daily settings and now exposes the external editor command; do not add dead Pi toggles without backing behavior. |
 | Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist and resource rows now expose scope/state/action; package/write-scope editing still missing. |
-| Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login, but daily auth readiness should be more visible. |
+| Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login; provider picker now shows visible navigation help and empty filter states. |
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks, summarizes permission/approval receipts, and now surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data; richer interactive component objects remain pending. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider and retry countdown | `PARTIAL` | Footer extensibility exists; compact first-screen readiness now exposes auth/memory/DAG/SciLLM/queue when the sidebar is hidden. |
 | Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool renderers in live/restored transcripts | `MUST/PARTIAL` | Selector now advertises Pi-style `J/K` navigation and supports tool-output toggle while open; editor now uses Pi-style Enter submit and Shift+Enter newline; preserve current Tau extension API; full Pi-style custom component objects remain pending beyond plain transcript rendering. |
@@ -84,11 +84,28 @@ capabilities.
 
 Port the next highest-value daily-use gap that is still local and bounded:
 
-`Extension UI`: continue closing daily-use extension-owned TUI behavior without
-replacing Tau's current extension API or custom DAG/resource surfaces. Prefer
-small render/adapter gaps over full Pi custom component parity.
+`Settings/config editing`: close the next daily-use settings/config gap backed
+by real Tau behavior, without adding dead Pi toggles or replacing Tau's
+resource/DAG/SciLLM surfaces.
 
 Latest slice evidence:
+
+- Source inspected: Pi `oauth-selector.ts` and `login-dialog.ts`; Tau
+  `LoginProviderPickerScreen`, login picker tests, and provider status helpers.
+- Destination preserved: Tau credential storage, OAuth/API-key routing,
+  provider catalog, login method picker, and provider status/source labels.
+- Changed: login provider picker now renders an explicit empty-state row when a
+  filter has no matches, and its help line advertises navigation plus
+  select/cancel keys.
+- Mocked: Textual render proof is fixture-backed.
+- Live: no OAuth callback, provider authentication, or credential write.
+- Render proof: `/tmp/tau-pi-tui-login-provider-proof-1785012834/proof.json`
+  with screenshot
+  `/tmp/tau-pi-tui-login-provider-proof-1785012834/tau-login-provider-empty-filter.svg`.
+- Remaining gap: full Pi login dialog progress/callback display parity remains
+  partial, but the daily provider-selection state is visible and fail-closed.
+
+Previous slice evidence:
 
 - Source inspected: Pi `extension-editor.ts`; Tau `ExtensionEditorScreen`.
 - Destination preserved: Tau's extension editor modal, external editor path,
@@ -104,7 +121,7 @@ Latest slice evidence:
 - Remaining gap: full Pi-style extension custom component parity remains
   partial.
 
-Previous slice evidence:
+Earlier slice evidence:
 
 - Source inspected: Pi `extension-selector.ts`; Tau `ExtensionSelectScreen`.
 - Destination preserved: Tau's extension UI request handler, extension chrome,

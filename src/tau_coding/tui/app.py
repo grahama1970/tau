@@ -5383,17 +5383,24 @@ class LoginProviderPickerScreen(ModalScreen[str | None]):
         self.visible_providers = _filter_login_providers(self.providers, self.search_value)
         provider_list = self.query_one("#login-provider-list", ListView)
         provider_list.clear()
-        provider_list.extend(
-            ListItem(Label(_login_provider_label(provider), markup=False))
-            for provider in self.visible_providers
-        )
+        if self.visible_providers:
+            provider_list.extend(
+                ListItem(Label(_login_provider_label(provider), markup=False))
+                for provider in self.visible_providers
+            )
+        else:
+            provider_list.append(ListItem(Label(_login_provider_empty_label(self), markup=False)))
         provider_list.index = 0 if self.visible_providers else None
         select_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
         cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+        nav_hint = "Up/Down navigate"
         if self.search_value:
-            help_text = f'filter "{self.search_value}" - {select_key} selects - {cancel_key} closes'
+            help_text = (
+                f'filter "{self.search_value}" - {nav_hint} - '
+                f"{select_key} selects - {cancel_key} closes"
+            )
         elif self.visible_providers:
-            help_text = f"{select_key} selects - {cancel_key} closes"
+            help_text = f"{nav_hint} - {select_key} selects - {cancel_key} closes"
         else:
             help_text = f"No matching providers - {cancel_key} closes"
         self.query_one("#login-provider-help", Static).update(help_text)
@@ -11900,6 +11907,14 @@ def _login_provider_label(provider: ProviderCatalogEntry) -> str:
     status = _login_provider_status_label(provider)
     auth_type = _login_provider_auth_type_label(provider)
     return f"{provider.display_name} [{auth_type}]\n  {provider.name} - {status}"
+
+
+def _login_provider_empty_label(screen: LoginProviderPickerScreen) -> str:
+    if not screen.providers:
+        return "No login providers available"
+    if screen.search_value:
+        return f'No providers match "{screen.search_value}"'
+    return "No matching providers"
 
 
 def _login_provider_auth_type_label(provider: ProviderCatalogEntry) -> str:
