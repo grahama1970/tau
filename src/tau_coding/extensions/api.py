@@ -46,7 +46,7 @@ class ExtensionShortcut:
     handler: ExtensionShortcutHandler
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(slots=True)
 class ExtensionShortcutContext:
     """Runtime context passed to extension shortcut handlers."""
 
@@ -54,6 +54,85 @@ class ExtensionShortcutContext:
     key: str
     extension_name: str
     current_editor_text: str = ""
+    shutdown_requested: bool = False
+    editor_text: str | None = None
+    editor_insert_text: str | None = None
+    terminal_title_requested: bool = False
+    terminal_title: str | None = None
+    notifications: list[ExtensionNotification] = field(default_factory=list)
+    status_updates: list[ExtensionStatusUpdate] = field(default_factory=list)
+    widget_updates: list[ExtensionWidgetUpdate] = field(default_factory=list)
+    ui: ExtensionCommandUi = field(init=False)
+
+    def __post_init__(self) -> None:
+        self.ui = ExtensionCommandUi(self)
+
+    def notify(self, message: str, severity: str = "info") -> None:
+        """Request that Tau show a TUI notification after the shortcut returns."""
+        notification_message = str(message).strip()
+        if not notification_message:
+            raise ValueError("notify requires a non-empty message")
+        self.notifications.append(
+            ExtensionNotification(
+                message=notification_message,
+                severity=_normalize_notification_severity(severity),
+            )
+        )
+
+    def get_editor_text(self) -> str:
+        """Return the prompt editor text captured before this shortcut ran."""
+        return self.current_editor_text
+
+    def shutdown(self) -> None:
+        """Request that Tau exit after the shortcut returns."""
+        self.shutdown_requested = True
+
+    def set_editor_text(self, text: str) -> None:
+        """Request that Tau replace the prompt editor contents after the shortcut returns."""
+        if not isinstance(text, str):
+            raise TypeError("set_editor_text requires text")
+        self.editor_text = text
+
+    def insert_editor_text(self, text: str) -> None:
+        """Request that Tau insert text into the prompt editor after the shortcut returns."""
+        if not isinstance(text, str):
+            raise TypeError("insert_editor_text requires text")
+        self.editor_insert_text = text
+
+    def set_title(self, title: str | None) -> None:
+        """Request that Tau override or clear the terminal title."""
+        if title is not None and not isinstance(title, str):
+            raise TypeError("set_title requires text or None")
+        self.terminal_title_requested = True
+        self.terminal_title = title
+
+    def set_status(self, key: str, text: str | None) -> None:
+        """Request that Tau set or clear a persistent extension status line."""
+        status_key = key.strip()
+        if not status_key:
+            raise ValueError("set_status requires a non-empty key")
+        if text is not None and not isinstance(text, str):
+            raise TypeError("set_status text must be text or None")
+        self.status_updates.append(ExtensionStatusUpdate(key=status_key, text=text))
+
+    def set_widget(
+        self,
+        key: str,
+        lines: str | Sequence[str] | None,
+        *,
+        placement: str = "above_editor",
+    ) -> None:
+        """Request that Tau set or clear a prompt-region extension widget."""
+        widget_key = key.strip()
+        if not widget_key:
+            raise ValueError("set_widget requires a non-empty key")
+        self.widget_updates.append(
+            ExtensionWidgetUpdate(
+                key=widget_key,
+                lines=_normalize_widget_lines(lines),
+                placement=_normalize_widget_placement(placement),
+            )
+        )
 
 
 @dataclass(slots=True)

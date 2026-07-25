@@ -1604,14 +1604,13 @@ class CodingSession:
             for shortcut in reversed(extension.shortcuts):
                 if shortcut.key != normalized:
                     continue
-                result = shortcut.handler(
-                    ExtensionShortcutContext(
-                        session=self,
-                        key=normalized,
-                        extension_name=extension.name,
-                        current_editor_text=current_editor_text or "",
-                    )
+                extension_context = ExtensionShortcutContext(
+                    session=self,
+                    key=normalized,
+                    extension_name=extension.name,
+                    current_editor_text=current_editor_text or "",
                 )
+                result = shortcut.handler(extension_context)
                 if inspect.isawaitable(result):
                     close = getattr(result, "close", None)
                     if callable(close):
@@ -1623,11 +1622,7 @@ class CodingSession:
                             "Tau extension shortcuts are synchronous in this release."
                         ),
                     )
-                if isinstance(result, CommandResult):
-                    return result
-                if result is None:
-                    return CommandResult(handled=True)
-                return CommandResult(handled=True, message=str(result))
+                return _extension_shortcut_result(result, extension_context)
         return CommandResult(handled=False)
 
     def expand_prompt_text(self, text: str) -> str:
@@ -3076,8 +3071,98 @@ def _extension_slash_command(
     )
 
 
+def _extension_shortcut_result(
+    result: object,
+    extension_context: ExtensionShortcutContext,
+) -> CommandResult:
+    notifications = _extension_command_notifications(extension_context)
+    status_updates = _extension_command_status_updates(extension_context)
+    widget_updates = _extension_command_widget_updates(extension_context)
+    if isinstance(result, CommandResult):
+        if extension_context.shutdown_requested and not result.exit_requested:
+            result = replace(result, exit_requested=True)
+        if extension_context.editor_text is not None and result.editor_text is None:
+            result = replace(result, editor_text=extension_context.editor_text)
+        if (
+            extension_context.editor_insert_text is not None
+            and result.editor_insert_text is None
+        ):
+            result = replace(
+                result,
+                editor_insert_text=extension_context.editor_insert_text,
+            )
+        if (
+            extension_context.terminal_title_requested
+            and not result.terminal_title_requested
+        ):
+            result = replace(
+                result,
+                terminal_title_requested=True,
+                terminal_title=extension_context.terminal_title,
+            )
+        if notifications:
+            result = replace(result, notifications=(*result.notifications, *notifications))
+        if status_updates:
+            result = replace(result, status_updates=(*result.status_updates, *status_updates))
+        if widget_updates:
+            result = replace(result, widget_updates=(*result.widget_updates, *widget_updates))
+        return result
+    if extension_context.editor_text is not None:
+        return CommandResult(
+            handled=True,
+            exit_requested=extension_context.shutdown_requested,
+            editor_text=extension_context.editor_text,
+            terminal_title_requested=extension_context.terminal_title_requested,
+            terminal_title=extension_context.terminal_title,
+            notifications=notifications,
+            status_updates=status_updates,
+            widget_updates=widget_updates,
+        )
+    if extension_context.editor_insert_text is not None:
+        return CommandResult(
+            handled=True,
+            exit_requested=extension_context.shutdown_requested,
+            editor_insert_text=extension_context.editor_insert_text,
+            terminal_title_requested=extension_context.terminal_title_requested,
+            terminal_title=extension_context.terminal_title,
+            notifications=notifications,
+            status_updates=status_updates,
+            widget_updates=widget_updates,
+        )
+    if extension_context.terminal_title_requested:
+        return CommandResult(
+            handled=True,
+            exit_requested=extension_context.shutdown_requested,
+            terminal_title_requested=True,
+            terminal_title=extension_context.terminal_title,
+            notifications=notifications,
+            status_updates=status_updates,
+            widget_updates=widget_updates,
+        )
+    if result is None:
+        return CommandResult(
+            handled=True,
+            exit_requested=extension_context.shutdown_requested,
+            terminal_title_requested=extension_context.terminal_title_requested,
+            terminal_title=extension_context.terminal_title,
+            notifications=notifications,
+            status_updates=status_updates,
+            widget_updates=widget_updates,
+        )
+    return CommandResult(
+        handled=True,
+        exit_requested=extension_context.shutdown_requested,
+        terminal_title_requested=extension_context.terminal_title_requested,
+        terminal_title=extension_context.terminal_title,
+        message=str(result),
+        notifications=notifications,
+        status_updates=status_updates,
+        widget_updates=widget_updates,
+    )
+
+
 def _extension_command_notifications(
-    context: ExtensionCommandContext,
+    context: ExtensionCommandContext | ExtensionShortcutContext,
 ) -> tuple[CommandNotification, ...]:
     return tuple(
         CommandNotification(
@@ -3092,7 +3177,7 @@ def _extension_command_notifications(
 
 
 def _extension_command_status_updates(
-    context: ExtensionCommandContext,
+    context: ExtensionCommandContext | ExtensionShortcutContext,
 ) -> tuple[CommandStatusUpdate, ...]:
     return tuple(
         CommandStatusUpdate(key=update.key, text=update.text)
@@ -3101,7 +3186,7 @@ def _extension_command_status_updates(
 
 
 def _extension_command_widget_updates(
-    context: ExtensionCommandContext,
+    context: ExtensionCommandContext | ExtensionShortcutContext,
 ) -> tuple[CommandWidgetUpdate, ...]:
     return tuple(
         CommandWidgetUpdate(
