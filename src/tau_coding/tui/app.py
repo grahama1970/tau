@@ -4534,11 +4534,17 @@ class ExtensionCustomScreen(ModalScreen[object]):
 
     def on_mount(self) -> None:
         """Build and mount extension content after the screen is active."""
+        self._notify_handle()
         content = self._build_content()
         if isawaitable(content):
             self.run_worker(self._mount_awaited_content(content), exclusive=False)
             return
         self._mount_content(content)
+
+    def _notify_handle(self) -> None:
+        callback = self.options.get("onHandle", self.options.get("on_handle"))
+        if callable(callback):
+            callback(_ExtensionCustomOverlayHandle(self))
 
     def _build_content(self) -> object:
         try:
@@ -4582,6 +4588,29 @@ class ExtensionCustomScreen(ModalScreen[object]):
         ):
             event.stop()
             self.dismiss(None)
+
+
+class _ExtensionCustomOverlayHandle:
+    """Small runtime handle for extension custom modal control."""
+
+    def __init__(self, screen: ExtensionCustomScreen) -> None:
+        self._screen = screen
+
+    def close(self, result: object = None) -> None:
+        """Dismiss the custom UI with an optional result."""
+        self._screen.dismiss(result)
+
+    def dismiss(self, result: object = None) -> None:
+        """Alias for close."""
+        self.close(result)
+
+    def hide(self) -> None:
+        """Hide the custom UI without dismissing it."""
+        self._screen.display = False
+
+    def show(self) -> None:
+        """Show a previously hidden custom UI."""
+        self._screen.display = True
 
 
 class LoginProviderPickerScreen(ModalScreen[str | None]):
