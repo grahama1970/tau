@@ -120,6 +120,7 @@ def test_registered_commands_are_pi_aligned(tmp_path: Path) -> None:
     commands = create_default_command_registry().list_commands()
 
     assert [command.name for command in commands] == [
+        "artifacts",
         "changelog",
         "clone",
         "compact",
@@ -287,6 +288,16 @@ def test_export_command_requests_default_export(tmp_path: Path) -> None:
     assert result.export_destination is None
     assert result.export_format is None
     assert result.export_open_requested is False
+
+
+def test_artifacts_command_requests_visual_artifact_browser(tmp_path: Path) -> None:
+    result = create_default_command_registry().execute(FakeSession(tmp_path), "/artifacts")
+
+    assert result.handled is True
+    assert result.artifacts_requested is True
+    assert create_default_command_registry().execute(
+        FakeSession(tmp_path), "/artifacts extra"
+    ).message == "Usage: /artifacts"
 
 
 def test_export_command_parses_format_and_destination(tmp_path: Path) -> None:

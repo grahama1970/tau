@@ -53,7 +53,7 @@ capabilities.
 | Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist, resource rows expose scope/state/action, resource toggles update in-place, and no-match searches show visible empty rows; package/write-scope editing still missing. |
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login; provider picker now shows visible navigation help, empty filter states, and fail-closed empty-row selection. |
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks including simple component-like render objects, summarizes permission/approval receipts, surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data, preserves multiple Pi-style image blocks from one tool result, and now shows input-bar terminal command exit codes; full JS Pi component runtime embedding remains out of scope. |
-| Export/artifact viewing | `/export`, `exportToHtml`, RPC `export_html` | Tau `/export`, `session_export.py`, TUI command output | `PARTIAL` | Tau writes real HTML/JSONL session artifacts, opens a persistent TUI result modal with the artifact path and `file://` URI, supports explicit `/export --open`, renders assistant Markdown tables plus embedded local image links and fenced DOT graph artifacts in HTML exports, attempts Mermaid fail-closed when the local CLI/browser runtime works, and makes embedded figures/graphs openable full-size in the browser; deeper artifact gallery remains missing. |
+| Export/artifact viewing | `/export`, `exportToHtml`, RPC `export_html` | Tau `/export`, `/artifacts`, `session_export.py`, TUI command output | `MATCHED` | Tau writes real HTML/JSONL session artifacts, opens a persistent TUI result modal with the artifact path and `file://` URI, supports explicit `/export --open`, renders assistant Markdown tables plus embedded local image links and fenced DOT graph artifacts in HTML exports, attempts Mermaid fail-closed when the local CLI/browser runtime works, makes embedded figures/graphs openable full-size in the browser, and now has a real `/artifacts` browser for current-transcript visual outputs. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider, prompt chrome, and retry countdown | `PARTIAL` | Footer extensibility exists; compact first-screen readiness exposes auth/memory/DAG/SciLLM/queue when the sidebar is hidden, and prompt chrome now names active compaction/branch/reload/share/terminal operations from real worker state. |
 | Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool/custom-entry renderers in live/restored transcripts | `MUST/PARTIAL` | Selector now advertises Pi-style `J/K` navigation and supports tool-output toggle while open; editor now uses Pi-style Enter submit and Shift+Enter newline; custom entries now re-render on tool-output expansion and accept simple component-like render objects; preserve current Tau extension API; full JS Pi component runtime embedding remains out of scope. |
 | Images, figures, and graphs | `show-images-selector`, image component | Tau image visibility setting and image payload rendering | `MATCHED` | Tau has terminal-safe image controls, Kitty/iTerm2/fallback rendering, non-PNG-to-PNG conversion for Kitty, multiple image payload rendering for figure/graph tool results, local Markdown image links in assistant/custom transcript output, proven local-tool rendering for fenced DOT graph source, and fail-closed Mermaid rendering when the local CLI/browser runtime is unavailable. |
@@ -87,11 +87,6 @@ capabilities.
 Port the next highest-value daily-use gap that is still local and bounded.
 Current candidates:
 
-- `Artifact/browser sidecar for figures`: terminal rendering now covers image
-  payloads, local Markdown image links, fenced DOT graph source, and explicit
-  `/export --open`, but large generated figures still need a zoomable artifact
-  gallery backed by real files. Mermaid remains best-effort until the local
-  Chromium sandbox issue is handled deliberately.
 - `Config write-scope/package overrides`: still partial because Pi can write
   global/project package resource overrides directly from the selector; Tau
   currently has backed disabled-resource toggles, in-place toggle refresh, and
@@ -103,6 +98,38 @@ Current candidates:
 - `Cache-miss notices`: defer until Tau assistant/session entries carry the
   provider, model, and timestamp fields needed for Pi's cache-miss algorithm.
   Do not add a fake setting or heuristic notice from aggregate stats.
+
+Latest slice evidence:
+
+- Source inspected: Pi `core/export-html/index.ts`,
+  `core/export-html/tool-renderer.ts`, `components/image.ts`, and Tau
+  `state.py`, `widgets.py`, `session_export.py`, and `/export` TUI handling.
+- Destination preserved: Tau's Textual transcript state, terminal image
+  renderer, rich HTML export, Memory/SciLLM/DAG surfaces, and fail-closed
+  artifact handling.
+- Changed: `/artifacts` opens a TUI visual artifact browser backed by the
+  current transcript. It lists real local Markdown image links, rendered
+  DOT/Graphviz/Mermaid artifacts when local renderers succeed, and tool-result
+  image payloads. Enter opens the selected artifact through the OS/browser
+  handler; `c` copies the artifact path. In-memory graph/tool images are
+  materialized under `/tmp/tau-tui-artifacts`; absent artifacts render an empty
+  state instead of sample data.
+- Mocked: no.
+- Live: local Textual command path with real local image bytes and Graphviz
+  rendering when `dot` is installed; no provider-live call.
+- Proof: `uv run pytest tests/test_commands.py tests/test_tui_app.py -q -k
+  'artifacts or export_open or export_command'` reported `6 passed, 512
+  deselected`; `uv run ruff check src/tau_coding/commands.py
+  src/tau_coding/tui/widgets.py src/tau_coding/tui/app.py tests/test_commands.py
+  tests/test_tui_app.py` reported all checks passed; `uv run python -m
+  py_compile src/tau_coding/commands.py src/tau_coding/tui/widgets.py
+  src/tau_coding/tui/app.py tests/test_commands.py tests/test_tui_app.py`
+  exited with no output. Render proof:
+  `/tmp/tau-pi-tui-artifacts-browser-proof-1785019349/proof.json` with
+  screenshot
+  `/tmp/tau-pi-tui-artifacts-browser-proof-1785019349/tau-artifacts-browser.svg`.
+- Remaining gap: config write-scope/package override parity remains open; rich
+  artifact inspection is now backed enough for tomorrow migration.
 
 Latest slice evidence:
 

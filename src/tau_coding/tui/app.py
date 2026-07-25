@@ -1,6 +1,9 @@
 """Minimal Textual app for Tau coding sessions."""
 
 import asyncio
+import base64
+import binascii
+import hashlib
 import json
 import os
 import re
@@ -149,6 +152,7 @@ from tau_coding.tui.file_drop import normalize_dropped_paths
 from tau_coding.tui.pty_proof import pty_input_received_line, pty_ready_line
 from tau_coding.tui.state import (
     ChatItem,
+    ToolImagePayload,
     TuiState,
     format_terminal_command_result_block,
     format_terminal_command_running_block,
@@ -160,6 +164,7 @@ from tau_coding.tui.widgets import (
     SessionSidebar,
     TranscriptView,
     _git_branch,
+    markdown_visual_payloads,
     render_completion_suggestions,
 )
 from tau_coding.workflows.catalog import get_workflow, list_workflows
@@ -4507,6 +4512,155 @@ class CommandOutputScreen(ModalScreen[None]):
 
 type ConfigMapAction = Literal["insert_command", "copy_path", "toggle_resource"]
 type ConfigMapScope = Literal["all", "project", "user"]
+type ArtifactBrowserAction = Literal["open", "copy"]
+
+
+@dataclass(frozen=True, slots=True)
+class VisualArtifact:
+    """One visual artifact discovered from the visible transcript."""
+
+    title: str
+    path: Path
+    mime_type: str
+    bytes: int
+    source: str
+
+
+@dataclass(frozen=True, slots=True)
+class ArtifactBrowserResult:
+    """Action selected from the visual artifact browser."""
+
+    action: ArtifactBrowserAction
+    artifact: VisualArtifact
+
+
+class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
+    """Open or copy visual artifacts found in the current transcript."""
+
+    BINDINGS: ClassVar[list[Binding]] = [
+        Binding("c", "copy_selected", "Copy"),
+    ]
+
+    def __init__(
+        self,
+        artifacts: Sequence[VisualArtifact],
+        *,
+        theme: TuiTheme,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
+        super().__init__()
+        self.artifacts = tuple(artifacts)
+        self.theme = theme
+        self.keybindings = keybindings or TuiKeybindings()
+
+    def compose(self) -> ComposeResult:
+        """Compose the artifact browser."""
+        with Vertical(id="config-map"):
+            yield Static("Visual Artifacts", id="config-map-title")
+            yield Static(_artifact_browser_summary(self.artifacts), id="config-map-tabs")
+            yield ListView(*self._list_items(), id="config-map-list")
+            yield Static(self._help_text(), id="config-map-help")
+
+    def on_mount(self) -> None:
+        """Focus the artifact list."""
+        if self.artifacts:
+            self.query_one("#config-map-list", ListView).index = 0
+        self.query_one("#config-map-list", ListView).focus()
+
+    def on_key(self, event: Key) -> None:
+        """Route configured artifact-browser keys."""
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
+            event.stop()
+            self.query_one("#config-map-list", ListView).action_cursor_up()
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
+            event.stop()
+            self.query_one("#config-map-list", ListView).action_cursor_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_page_up,
+            "pageup",
+        ):
+            event.stop()
+            self.action_page(-1)
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_page_down,
+            "pagedown",
+        ):
+            event.stop()
+            self.action_page(1)
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
+            event.stop()
+            self._select("open")
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.dismiss(None)
+        elif event.key == "c":
+            event.stop()
+            self._select("copy")
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """Open the selected artifact."""
+        if event.index < len(self.artifacts):
+            self.dismiss(ArtifactBrowserResult("open", self.artifacts[event.index]))
+
+    def action_copy_selected(self) -> None:
+        """Copy the selected artifact path."""
+        self._select("copy")
+
+    def action_page(self, direction: Literal[-1, 1]) -> None:
+        """Move by one visible artifact page."""
+        if not self.artifacts:
+            return
+        artifact_list = self.query_one("#config-map-list", ListView)
+        current_index = artifact_list.index if artifact_list.index is not None else 0
+        page_size = max(1, artifact_list.size.height - 1)
+        if page_size <= 1:
+            page_size = 10
+        artifact_list.index = max(
+            0,
+            min(len(self.artifacts) - 1, current_index + (direction * page_size)),
+        )
+
+    def _select(self, action: ArtifactBrowserAction) -> None:
+        artifact_list = self.query_one("#config-map-list", ListView)
+        index = artifact_list.index
+        if index is None or index >= len(self.artifacts):
+            return
+        self.dismiss(ArtifactBrowserResult(action, self.artifacts[index]))
+
+    def _list_items(self) -> list[ListItem]:
+        if not self.artifacts:
+            return [
+                ListItem(
+                    Label(
+                        "No visual artifacts in the current transcript.",
+                        markup=False,
+                    )
+                )
+            ]
+        return [
+            ListItem(Label(_artifact_browser_label(index, artifact), markup=False))
+            for index, artifact in enumerate(self.artifacts, 1)
+        ]
+
+    def _help_text(self) -> str:
+        confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+        if not self.artifacts:
+            return f"No artifacts to open - {cancel_key} closes"
+        return (
+            f"Up/Down navigates - {confirm_key} opens - c copies path - "
+            f"{cancel_key} closes"
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -7605,6 +7759,8 @@ class TauTuiApp(App[None]):
                     )
             if command.copy_last_message_requested:
                 self.action_copy_last_message()
+            if command.artifacts_requested:
+                self._open_artifact_browser()
             if command.export_requested:
                 try:
                     exported_path = await self.session.export(
@@ -8121,6 +8277,34 @@ class TauTuiApp(App[None]):
             ),
             callback=self._handle_config_map_result,
         )
+
+    def _open_artifact_browser(self) -> None:
+        """Open a browser for visual artifacts found in the current transcript."""
+        self.push_screen(
+            ArtifactBrowserScreen(
+                _visual_artifacts_from_state(
+                    self.state,
+                    cwd=self.session.cwd,
+                    session_id=getattr(self.session, "session_id", None),
+                ),
+                theme=self.tui_settings.resolved_theme,
+                keybindings=self.tui_settings.keybindings,
+            ),
+            callback=self._handle_artifact_browser_result,
+        )
+
+    def _handle_artifact_browser_result(self, result: ArtifactBrowserResult | None) -> None:
+        if result is None:
+            return
+        path = result.artifact.path
+        if result.action == "copy":
+            self.copy_to_clipboard(str(path))
+            self._notify(f"Copied artifact path: {path}")
+            return
+        if _open_export_artifact(path):
+            self._notify(f"Opened artifact: {path}")
+        else:
+            self._notify(f"Could not open artifact automatically: {path}", severity="warning")
 
     def _handle_config_map_result(self, result: ConfigMapResult | None) -> None:
         if result is None:
@@ -12825,6 +13009,147 @@ def _open_export_artifact(path: Path) -> bool:
         return bool(webbrowser.open(path.expanduser().resolve().as_uri()))
     except (OSError, ValueError):
         return False
+
+
+def _visual_artifacts_from_state(
+    state: TuiState,
+    *,
+    cwd: Path,
+    session_id: str | None,
+) -> tuple[VisualArtifact, ...]:
+    """Collect local visual artifacts from the visible transcript state."""
+    artifacts: list[VisualArtifact] = []
+    seen: set[tuple[str, str]] = set()
+    for item_index, item in enumerate(state.items, 1):
+        for payload_index, payload in enumerate(
+            _visual_payloads_for_chat_item(item, cwd=cwd),
+            1,
+        ):
+            key = _visual_artifact_key(payload)
+            if key in seen:
+                continue
+            path = _visual_artifact_path(
+                payload,
+                session_id=session_id,
+                item_index=item_index,
+                payload_index=payload_index,
+            )
+            if path is None:
+                continue
+            seen.add(key)
+            artifacts.append(
+                VisualArtifact(
+                    title=_visual_artifact_title(item, payload),
+                    path=path,
+                    mime_type=payload.mime_type,
+                    bytes=payload.bytes,
+                    source=f"{item.role} item {item_index}",
+                )
+            )
+    return tuple(artifacts)
+
+
+def _visual_payloads_for_chat_item(item: ChatItem, *, cwd: Path) -> tuple[ToolImagePayload, ...]:
+    payloads: list[ToolImagePayload] = []
+    if item.tool_images:
+        payloads.extend(item.tool_images)
+    elif item.tool_image is not None:
+        payloads.append(item.tool_image)
+    if item.role != "tool":
+        payloads.extend(markdown_visual_payloads(item.text, base_path=cwd))
+        if item.tool_result_text:
+            payloads.extend(markdown_visual_payloads(item.tool_result_text, base_path=cwd))
+    return tuple(payloads)
+
+
+def _visual_artifact_key(payload: ToolImagePayload) -> tuple[str, str]:
+    if payload.path:
+        path = Path(payload.path).expanduser()
+        if path.is_absolute():
+            return ("path", str(path))
+    digest = hashlib.sha256(payload.image_base64.encode("ascii", errors="ignore")).hexdigest()
+    return ("payload", digest)
+
+
+def _visual_artifact_path(
+    payload: ToolImagePayload,
+    *,
+    session_id: str | None,
+    item_index: int,
+    payload_index: int,
+) -> Path | None:
+    source_path = Path(payload.path).expanduser()
+    if source_path.is_absolute() and source_path.exists() and source_path.is_file():
+        return source_path
+    try:
+        data = base64.b64decode(payload.image_base64, validate=True)
+    except (binascii.Error, ValueError):
+        return None
+    if not data:
+        return None
+    cache_dir = Path(tempfile.gettempdir()) / "tau-tui-artifacts"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    digest = hashlib.sha256(data).hexdigest()[:12]
+    safe_session = _safe_artifact_name(session_id or "session")
+    safe_name = _safe_artifact_name(Path(payload.path).stem or "artifact")
+    suffix = _artifact_suffix(payload.mime_type, Path(payload.path).suffix)
+    path = cache_dir / (
+        f"{safe_session}-{item_index:03d}-{payload_index:02d}-{safe_name}-{digest}{suffix}"
+    )
+    try:
+        path.write_bytes(data)
+    except OSError:
+        return None
+    return path
+
+
+def _visual_artifact_title(item: ChatItem, payload: ToolImagePayload) -> str:
+    filename = Path(payload.path).name or "visual artifact"
+    if filename.startswith("graphviz-"):
+        return f"Graphviz graph from {item.role}"
+    if filename.startswith("mermaid-"):
+        return f"Mermaid graph from {item.role}"
+    return filename
+
+
+def _artifact_suffix(mime_type: str, existing_suffix: str) -> str:
+    if existing_suffix:
+        return existing_suffix
+    return {
+        "image/gif": ".gif",
+        "image/jpeg": ".jpg",
+        "image/png": ".png",
+        "image/svg+xml": ".svg",
+        "image/webp": ".webp",
+    }.get(mime_type, ".bin")
+
+
+def _safe_artifact_name(value: str) -> str:
+    normalized = re.sub(r"[^a-zA-Z0-9._-]+", "-", value).strip(".-_").lower()
+    return normalized[:48] or "artifact"
+
+
+def _artifact_browser_summary(artifacts: Sequence[VisualArtifact]) -> str:
+    if not artifacts:
+        return "Found 0 visual artifacts"
+    image_count = sum(1 for artifact in artifacts if artifact.mime_type.startswith("image/"))
+    return f"Found {len(artifacts)} visual artifact(s), {image_count} image-backed"
+
+
+def _artifact_browser_label(index: int, artifact: VisualArtifact) -> str:
+    size = _format_artifact_size(artifact.bytes)
+    return (
+        f"{index:02d}. {artifact.title} - {artifact.source} - "
+        f"{artifact.mime_type}, {size} - {artifact.path}"
+    )
+
+
+def _format_artifact_size(byte_count: int) -> str:
+    if byte_count < 1024:
+        return f"{byte_count} B"
+    if byte_count < 1024 * 1024:
+        return f"{byte_count / 1024:.1f} KiB"
+    return f"{byte_count / (1024 * 1024):.1f} MiB"
 
 
 def _matches_configured_or_default_key(

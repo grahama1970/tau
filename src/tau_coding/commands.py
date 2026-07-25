@@ -182,6 +182,7 @@ class CommandResult:
     export_destination: Path | None = None
     export_format: str | None = None
     export_open_requested: bool = False
+    artifacts_requested: bool = False
     import_requested: bool = False
     import_path: Path | None = None
     share_requested: bool = False
@@ -516,6 +517,15 @@ def create_default_command_registry() -> CommandRegistry:
             description="Render Pi's Earendil announcement easter egg.",
             handler=_demented_delves_command,
             hidden=True,
+        )
+    )
+    registry.register(
+        SlashCommand(
+            name="artifacts",
+            usage="/artifacts",
+            description="Browse visual artifacts from the current transcript.",
+            handler=_artifacts_command,
+            search_terms=("figures", "graphs", "images", "media"),
         )
     )
     registry.register(
@@ -863,6 +873,12 @@ def _demented_delves_command(context: CommandContext) -> CommandResult:
         "https://mariozechner.at/posts/2026-04-08-ive-sold-out/",
     ]
     return CommandResult(handled=True, message="\n".join(lines))
+
+
+def _artifacts_command(context: CommandContext) -> CommandResult:
+    if context.args.strip():
+        return CommandResult(handled=True, message="Usage: /artifacts")
+    return CommandResult(handled=True, artifacts_requested=True)
 
 
 def _export_command(context: CommandContext) -> CommandResult:

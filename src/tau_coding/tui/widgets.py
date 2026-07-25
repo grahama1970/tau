@@ -1349,11 +1349,27 @@ def _tool_images_for_item(item: ChatItem) -> tuple[ToolImagePayload, ...]:
     return ()
 
 
-def _markdown_image_payloads(markdown: str) -> tuple[ToolImagePayload, ...]:
+def markdown_visual_payloads(
+    markdown: str,
+    *,
+    base_path: Path | None = None,
+) -> tuple[ToolImagePayload, ...]:
+    """Return renderable visual payloads referenced by Markdown text."""
+    return (
+        *_markdown_image_payloads(markdown, base_path=base_path),
+        *_markdown_graph_payloads(markdown),
+    )
+
+
+def _markdown_image_payloads(
+    markdown: str,
+    *,
+    base_path: Path | None = None,
+) -> tuple[ToolImagePayload, ...]:
     payloads: list[ToolImagePayload] = []
     seen: set[Path] = set()
     for match in MARKDOWN_IMAGE_PATTERN.finditer(markdown):
-        path = _markdown_image_path(match.group("target"))
+        path = _markdown_image_path(match.group("target"), base_path=base_path)
         if path is None or path in seen:
             continue
         payload = _tool_image_payload_from_file(path)
@@ -1366,7 +1382,7 @@ def _markdown_image_payloads(markdown: str) -> tuple[ToolImagePayload, ...]:
 
 def _markdown_visual_payloads(markdown: str) -> tuple[ToolImagePayload, ...]:
     """Return local image links plus rendered graph-source artifacts."""
-    return (*_markdown_image_payloads(markdown), *_markdown_graph_payloads(markdown))
+    return markdown_visual_payloads(markdown)
 
 
 def _markdown_graph_payloads(markdown: str) -> tuple[ToolImagePayload, ...]:
@@ -1383,7 +1399,7 @@ def _markdown_graph_payloads(markdown: str) -> tuple[ToolImagePayload, ...]:
     return tuple(payloads)
 
 
-def _markdown_image_path(target: str) -> Path | None:
+def _markdown_image_path(target: str, *, base_path: Path | None = None) -> Path | None:
     cleaned = target.strip()
     if cleaned.startswith("<") and cleaned.endswith(">"):
         cleaned = cleaned[1:-1].strip()
@@ -1400,7 +1416,7 @@ def _markdown_image_path(target: str) -> Path | None:
         return None
     path = Path(raw_path).expanduser()
     if not path.is_absolute():
-        path = Path.cwd() / path
+        path = (base_path or Path.cwd()) / path
     return path.resolve()
 
 

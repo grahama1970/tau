@@ -83,6 +83,7 @@ from tau_coding.tui import app as tui_app
 from tau_coding.tui.app import (
     TERMINAL_PROGRESS_ACTIVE_SEQUENCE,
     TERMINAL_PROGRESS_CLEAR_SEQUENCE,
+    ArtifactBrowserScreen,
     CommandOutputScreen,
     ConfigMapScreen,
     ConfirmationScreen,
@@ -334,6 +335,8 @@ class FakeSession:
             return CommandResult(handled=True, compact_summary=text.removeprefix("/compact "))
         if text == "/copy":
             return CommandResult(handled=True, copy_last_message_requested=True)
+        if text == "/artifacts":
+            return CommandResult(handled=True, artifacts_requested=True)
         if text == "/export":
             return CommandResult(handled=True, export_requested=True)
         if text == "/export --open":
@@ -3902,6 +3905,49 @@ async def test_tui_app_export_open_launches_export_artifact(
         assert isinstance(app.screen, CommandOutputScreen)
         assert app.screen.title_text == "Session export: open requested"
         assert "Open requested: yes" in app.screen.message
+
+
+@pytest.mark.anyio
+async def test_tui_app_artifacts_command_browses_and_opens_visuals(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    image_path = tmp_path / "chart.png"
+    image_path.write_bytes(base64.b64decode(PNG_1X1_BASE64))
+    session = FakeSession()
+    app = TauTuiApp(session)
+    app.state.add_item(
+        "assistant",
+        f"# Results\n\n| metric | value |\n| --- | --- |\n| win | yes |\n\n"
+        f"![chart]({image_path})\n\n"
+        "```graphviz\ndigraph G { human -> tau -> browser }\n```",
+    )
+    opened: list[str] = []
+
+    def fake_open(target: str) -> bool:
+        opened.append(target)
+        return True
+
+    monkeypatch.setattr(tui_app.webbrowser, "open", fake_open)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/artifacts"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ArtifactBrowserScreen)
+        labels = [
+            str(item.query_one(Label).render())
+            for item in app.screen.query_one("#config-map-list", ListView).children
+        ]
+        assert any("chart.png - assistant item" in label for label in labels)
+        assert any("Graphviz graph from assistant" in label for label in labels)
+
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert opened == [image_path.resolve().as_uri()]
 
 
 @pytest.mark.anyio
