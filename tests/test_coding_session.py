@@ -163,6 +163,68 @@ def setup(tau):
 
 
 @pytest.mark.anyio
+async def test_session_load_registers_extension_tool_renderers(tmp_path: Path) -> None:
+    extension_path = tmp_path / "extension.py"
+    extension_path.write_text(
+        """
+from tau_agent import AgentTool, AgentToolResult
+
+
+async def execute(arguments, signal=None):
+    del arguments, signal
+    return AgentToolResult(tool_call_id="", name="rendered_ext", ok=True, content="hello")
+
+
+def render_call(arguments):
+    return f"rendered call {arguments['target']}"
+
+
+def render_result(result, options):
+    return f"rendered result {result.content} expanded={options['expanded']}"
+
+
+def setup(tau):
+    tau.register_tool(
+        AgentTool(
+            name="rendered_ext",
+            description="Say hello from an extension.",
+            input_schema={"type": "object"},
+            executor=execute,
+            prompt_snippet="Say hello from an extension",
+        ),
+        render_call=render_call,
+        render_result=render_result,
+    )
+""".lstrip(),
+        encoding="utf-8",
+    )
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="fake",
+            system="You are Tau.",
+            storage=JsonlSessionStorage(tmp_path / "session.jsonl"),
+            cwd=tmp_path,
+            extension_paths=(extension_path,),
+            discover_extensions=False,
+        )
+    )
+
+    renderers = session.extension_tool_renderers["rendered_ext"]
+
+    assert renderers.call is not None
+    assert renderers.call({"target": "fixture"}) == "rendered call fixture"
+    assert renderers.result is not None
+    assert (
+        renderers.result(
+            AgentToolResult(tool_call_id="", name="rendered_ext", ok=True, content="hello"),
+            {"expanded": True},
+        )
+        == "rendered result hello expanded=True"
+    )
+
+
+@pytest.mark.anyio
 async def test_session_extension_tool_participates_in_tool_selection(tmp_path: Path) -> None:
     extension_path = tmp_path / "extension.py"
     extension_path.write_text(

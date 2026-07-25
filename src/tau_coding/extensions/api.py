@@ -17,6 +17,7 @@ ExtensionCommandHandler = Callable[[Any], Any]
 ExtensionShortcutHandler = Callable[[Any], Any]
 ExtensionEntryRenderer = Callable[..., Any]
 ExtensionMessageRenderer = Callable[..., Any]
+ExtensionToolRenderer = Callable[..., Any]
 ExtensionArgumentCompletionProvider = Callable[
     [str],
     Sequence[Any] | Awaitable[Sequence[Any] | None] | None,
@@ -72,6 +73,14 @@ class ExtensionFlag:
     description: str | None
     type: str
     default: bool | str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ExtensionToolRenderers:
+    """Optional Pi-style TUI renderers for an extension tool."""
+
+    call: ExtensionToolRenderer | None = None
+    result: ExtensionToolRenderer | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -432,12 +441,25 @@ class ExtensionShortcutContext:
         """Request that Tau exit after the shortcut returns."""
         self.shutdown_requested = True
 
-    def register_tool(self, tool: AgentTool) -> str:
+    def register_tool(
+        self,
+        tool: AgentTool,
+        *,
+        render_call: ExtensionToolRenderer | None = None,
+        render_result: ExtensionToolRenderer | None = None,
+    ) -> str:
         """Register a tool for future agent turns in this session."""
         register = getattr(self.session, "register_extension_tool", None)
         if not callable(register):
             raise RuntimeError("active session does not support runtime extension tools")
-        return str(register(tool, extension_name=self.extension_name))
+        return str(
+            register(
+                tool,
+                extension_name=self.extension_name,
+                render_call=render_call,
+                render_result=render_result,
+            )
+        )
 
     def register_terminal_input_listener(
         self,
@@ -976,12 +998,25 @@ class ExtensionCommandContext:
         """Request that Tau exit after the command returns."""
         self.shutdown_requested = True
 
-    def register_tool(self, tool: AgentTool) -> str:
+    def register_tool(
+        self,
+        tool: AgentTool,
+        *,
+        render_call: ExtensionToolRenderer | None = None,
+        render_result: ExtensionToolRenderer | None = None,
+    ) -> str:
         """Register a tool for future agent turns in this session."""
         register = getattr(self.session, "register_extension_tool", None)
         if not callable(register):
             raise RuntimeError("active session does not support runtime extension tools")
-        return str(register(tool, extension_name=self.extension_name))
+        return str(
+            register(
+                tool,
+                extension_name=self.extension_name,
+                render_call=render_call,
+                render_result=render_result,
+            )
+        )
 
     def register_terminal_input_listener(
         self,
@@ -1530,6 +1565,7 @@ class ExtensionAPI:
         self._flags: dict[str, ExtensionFlag] = {}
         self._entry_renderers: dict[str, ExtensionEntryRenderer] = {}
         self._message_renderers: dict[str, ExtensionMessageRenderer] = {}
+        self._tool_renderers: dict[str, ExtensionToolRenderers] = {}
         self._provider_configs: dict[str, ProviderConfig] = {}
         self._event_handlers: dict[str, list[ExtensionLifecycleHandler]] = {}
         self.events = event_bus or ExtensionEventBus()
@@ -1568,6 +1604,11 @@ class ExtensionAPI:
         return dict(self._message_renderers)
 
     @property
+    def tool_renderers(self) -> Mapping[str, ExtensionToolRenderers]:
+        """Return Pi-style custom tool-call/result renderers registered by this extension."""
+        return dict(self._tool_renderers)
+
+    @property
     def provider_configs(self) -> tuple[ProviderConfig, ...]:
         """Return provider configs registered by this extension."""
         return tuple(self._provider_configs.values())
@@ -1586,13 +1627,41 @@ class ExtensionAPI:
             raise TypeError("extension event handler must be callable")
         self._event_handlers.setdefault(normalized, []).append(handler)
 
-    def register_tool(self, tool: AgentTool) -> None:
+    def register_tool(
+        self,
+        tool: AgentTool,
+        *,
+        render_call: ExtensionToolRenderer | None = None,
+        render_result: ExtensionToolRenderer | None = None,
+    ) -> None:
         """Register an `AgentTool` for the current coding session."""
         if not isinstance(tool, AgentTool):
             raise TypeError("register_tool expects an AgentTool instance")
         if any(existing.name == tool.name for existing in self._tools):
             raise ValueError(f"Extension already registered tool: {tool.name}")
+        if render_call is not None and not callable(render_call):
+            raise TypeError("render_call must be callable")
+        if render_result is not None and not callable(render_result):
+            raise TypeError("render_result must be callable")
         self._tools.append(tool)
+        if render_call is not None or render_result is not None:
+            self._tool_renderers[tool.name] = ExtensionToolRenderers(
+                call=render_call,
+                result=render_result,
+            )
+
+    def registerTool(  # noqa: N802
+        self,
+        tool: AgentTool,
+        options: Mapping[str, Any] | None = None,
+    ) -> None:
+        """Pi-compatible camelCase alias for register_tool."""
+        render_call = None
+        render_result = None
+        if options is not None:
+            render_call = options.get("renderCall", options.get("render_call"))
+            render_result = options.get("renderResult", options.get("render_result"))
+        self.register_tool(tool, render_call=render_call, render_result=render_result)
 
     def register_provider(
         self,

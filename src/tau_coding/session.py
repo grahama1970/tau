@@ -93,6 +93,7 @@ from tau_coding.extensions import (
     ExtensionCommand,
     ExtensionCommandContext,
     ExtensionShortcutContext,
+    ExtensionToolRenderers,
     LoadedExtension,
     load_extension_tools,
 )
@@ -342,6 +343,7 @@ class CodingSession:
         self._custom_themes = dict(custom_themes or {})
         self._extensions = extensions
         self._runtime_extension_tool_sources: dict[str, str] = {}
+        self._runtime_extension_tool_renderers: dict[str, ExtensionToolRenderers] = {}
         self._available_tools: list[AgentTool] = list(harness.config.tools)
         self._extension_ui_handler: Callable[..., object] | None = None
         self._extension_terminal_input_handler: Callable[..., object] | None = None
@@ -868,6 +870,8 @@ class CodingSession:
         tool: AgentTool,
         *,
         extension_name: str = "runtime",
+        render_call: Callable[..., object] | None = None,
+        render_result: Callable[..., object] | None = None,
     ) -> str:
         """Register an extension tool for future agent turns in this session."""
         if not isinstance(tool, AgentTool):
@@ -875,6 +879,10 @@ class CodingSession:
         tool_name = tool.name.strip()
         if not tool_name:
             raise ValueError("extension tool name must be non-empty")
+        if render_call is not None and not callable(render_call):
+            raise TypeError("render_call must be callable")
+        if render_result is not None and not callable(render_result):
+            raise TypeError("render_result must be callable")
         if self._config.no_tools:
             raise RuntimeError("Cannot register extension tool while tools are disabled.")
         if self._config.tool_allowlist is not None and tool_name not in self._config.tool_allowlist:
@@ -889,6 +897,11 @@ class CodingSession:
         self._harness.config.tools.append(tool)
         source = extension_name.strip() or "runtime"
         self._runtime_extension_tool_sources[tool_name] = source
+        if render_call is not None or render_result is not None:
+            self._runtime_extension_tool_renderers[tool_name] = ExtensionToolRenderers(
+                call=render_call,
+                result=render_result,
+            )
         self._refresh_generated_system_prompt()
         return f"Registered extension tool: {tool_name}"
 
@@ -929,6 +942,15 @@ class CodingSession:
         renderers: dict[str, Callable[..., object]] = {}
         for extension in self._extensions:
             renderers.update(extension.message_renderers or {})
+        return renderers
+
+    @property
+    def extension_tool_renderers(self) -> Mapping[str, ExtensionToolRenderers]:
+        """Return Pi-style custom tool renderers keyed by tool name."""
+        renderers: dict[str, ExtensionToolRenderers] = {}
+        for extension in self._extensions:
+            renderers.update(extension.tool_renderers or {})
+        renderers.update(self._runtime_extension_tool_renderers)
         return renderers
 
     @property

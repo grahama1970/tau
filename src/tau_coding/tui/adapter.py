@@ -28,9 +28,11 @@ class TuiEventAdapter:
         state: TuiState,
         *,
         extension_tool_sources: dict[str, str] | None = None,
+        extension_tool_renderers: dict[str, object] | None = None,
     ) -> None:
         self.state = state
         self.extension_tool_sources = dict(extension_tool_sources or {})
+        self.extension_tool_renderers = dict(extension_tool_renderers or {})
 
     def apply(self, event: AgentEvent) -> None:
         """Apply one agent event to the display state."""
@@ -82,6 +84,7 @@ class TuiEventAdapter:
                 source=_extension_tool_source_label(
                     self.extension_tool_sources.get(event.tool_call.name)
                 ),
+                renderer=self.extension_tool_renderers.get(event.tool_call.name),
             )
             return
 
@@ -96,7 +99,10 @@ class TuiEventAdapter:
             return
 
         if isinstance(event, ToolExecutionEndEvent):
-            self.state.record_tool_result(event.result)
+            self.state.record_tool_result_with_renderer(
+                event.result,
+                renderer=self.extension_tool_renderers.get(event.result.name),
+            )
             return
 
         if isinstance(event, ErrorEvent):

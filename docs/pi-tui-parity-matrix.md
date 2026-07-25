@@ -51,9 +51,9 @@ capabilities.
 | Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `PARTIAL` | Tau backs most daily settings and now exposes the external editor command; do not add dead Pi toggles without backing behavior. |
 | Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist; package/write-scope editing still missing. |
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login, but daily auth readiness should be more visible. |
-| Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output and now colorizes embedded unified diffs; Pi-style custom tool render hooks still remain. |
+| Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, and accepts Pi-style extension tool call/result render hooks; permission evidence remains the next readability gap. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider and retry countdown | `PARTIAL` | Footer extensibility exists; first-screen run/auth readiness needs stronger visibility. |
-| Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, and extension tool provenance in live/restored transcripts | `MUST/PARTIAL` | Preserve current Tau extension API; full Pi-style custom tool render components remain pending. |
+| Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool renderers in live/restored transcripts | `MUST/PARTIAL` | Preserve current Tau extension API; full Pi-style custom component objects remain pending beyond plain transcript rendering. |
 | Images | `show-images-selector`, image component | Tau image visibility setting and image payload rendering | `MATCHED` | Retain current terminal-safe image controls. |
 | Workflow/DAG progress | None in Pi | `WorkflowPickerScreen`, DAG/workflow receipts | `TAU-ONLY/MUST` | This is Tau's differentiator and must remain first-class in the TUI. |
 
@@ -85,6 +85,7 @@ capabilities.
 Port the next highest-value daily-use gap that is still local and bounded:
 
 `Tool execution readability`: keep improving shell/tool/diff readability in the
-existing transcript surface, especially custom tool render hooks and permission
-evidence. This moves Tau toward tomorrow use without touching SciLLM internals
-or replacing Tau-only DAG features.
+existing transcript surface, especially permission evidence and any custom tool
+rendering cases that require richer component objects rather than plain transcript
+text. This moves Tau toward tomorrow use without touching SciLLM internals or
+replacing Tau-only DAG features.

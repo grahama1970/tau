@@ -18,6 +18,7 @@ from tau_agent import (
     ToolExecutionUpdateEvent,
     UserMessage,
 )
+from tau_coding.extensions import ExtensionToolRenderers
 from tau_coding.skills import Skill, format_skill_invocation
 from tau_coding.tui import TuiEventAdapter, TuiState
 from tau_coding.tui.state import format_tool_call_block, format_tool_result_block
@@ -86,6 +87,65 @@ def test_tui_adapter_compacts_streamed_skill_invocations() -> None:
             "# Review\nFull noisy instructions.",
         ),
         ("user", "check the auth flow", None),
+    ]
+
+
+def test_tui_adapter_uses_extension_tool_renderers() -> None:
+    state = TuiState()
+
+    def render_call(arguments: dict[str, object], _theme: object, context: object) -> str:
+        assert isinstance(context, dict)
+        return f"Analyze {arguments['path']} as {context['toolName']}"
+
+    def render_result(
+        result: AgentToolResult,
+        options: dict[str, object],
+        _theme: object,
+        context: object,
+    ) -> str:
+        assert isinstance(context, dict)
+        return (
+            f"Analysis {result.content} expanded={options['expanded']} "
+            f"error={context['isError']}"
+        )
+
+    adapter = TuiEventAdapter(
+        state,
+        extension_tool_sources={"analyze_fixture": "quality-lab"},
+        extension_tool_renderers={
+            "analyze_fixture": ExtensionToolRenderers(
+                call=render_call,
+                result=render_result,
+            )
+        },
+    )
+
+    adapter.apply(
+        ToolExecutionStartEvent(
+            tool_call=ToolCall(
+                id="call-1",
+                name="analyze_fixture",
+                arguments={"path": "fixture.json"},
+            )
+        )
+    )
+    adapter.apply(
+        ToolExecutionEndEvent(
+            result=AgentToolResult(
+                tool_call_id="call-1",
+                name="analyze_fixture",
+                ok=True,
+                content="complete",
+            )
+        )
+    )
+
+    assert [(item.role, item.text, item.tool_result_text) for item in state.items] == [
+        (
+            "tool",
+            "Analyze fixture.json as analyze_fixture [extension:quality-lab]",
+            "Analysis complete expanded=False error=False",
+        )
     ]
 
 

@@ -197,6 +197,7 @@ class ChatItem:
     text: str
     tool_call_id: str | None = None
     tool_result_text: str | None = None
+    tool_result_renderer: Callable[..., Any] | None = None
     tool_image: ToolImagePayload | None = None
     always_show_tool_result: bool = False
 
@@ -226,6 +227,7 @@ class TuiState:
         *,
         tool_call_id: str | None = None,
         tool_result_text: str | None = None,
+        tool_result_renderer: Callable[..., Any] | None = None,
         tool_image: ToolImagePayload | None = None,
         always_show_tool_result: bool = False,
     ) -> None:
@@ -236,12 +238,19 @@ class TuiState:
                 text=text,
                 tool_call_id=tool_call_id,
                 tool_result_text=tool_result_text,
+                tool_result_renderer=tool_result_renderer,
                 tool_image=tool_image,
                 always_show_tool_result=always_show_tool_result,
             )
         )
 
-    def add_tool_call(self, tool_call: ToolCall, *, source: str | None = None) -> None:
+    def add_tool_call(
+        self,
+        tool_call: ToolCall,
+        *,
+        source: str | None = None,
+        renderer: Any | None = None,
+    ) -> None:
         """Append a collapsed tool-call item."""
         skill_name = self._read_skill_name(tool_call)
         if skill_name is not None:
@@ -251,10 +260,13 @@ class TuiState:
                 tool_call_id=tool_call.id,
             )
             return
+        call_renderer = _tool_call_renderer(renderer)
+        result_renderer = _tool_result_renderer(renderer)
         self.add_item(
             "tool",
-            format_tool_call_block(tool_call, source=source),
+            format_tool_call_block(tool_call, source=source, renderer=call_renderer),
             tool_call_id=tool_call.id,
+            tool_result_renderer=result_renderer,
         )
 
     def add_user_message(self, content: str) -> None:
@@ -325,18 +337,39 @@ class TuiState:
 
     def record_tool_result(self, result: AgentToolResult) -> None:
         """Attach a tool result to its matching call, or append an orphan result."""
+        self.record_tool_result_with_renderer(result)
+
+    def record_tool_result_with_renderer(
+        self,
+        result: AgentToolResult,
+        *,
+        renderer: Any | None = None,
+    ) -> None:
+        """Attach a tool result, using an optional Pi-style custom renderer."""
+        image = _tool_image_payload(result)
+        for item in reversed(self.items):
+            if item.role in {"tool", "skill"} and item.tool_call_id == result.tool_call_id:
+                result_text = format_tool_result_block(
+                    name=result.name,
+                    ok=result.ok,
+                    content=result.content,
+                    data=result.data,
+                    renderer=item.tool_result_renderer or _tool_result_renderer(renderer),
+                    expanded=self.show_tool_results,
+                    result=result,
+                )
+                item.tool_result_text = result_text
+                item.tool_image = image
+                return
         result_text = format_tool_result_block(
             name=result.name,
             ok=result.ok,
             content=result.content,
             data=result.data,
+            renderer=_tool_result_renderer(renderer),
+            expanded=self.show_tool_results,
+            result=result,
         )
-        image = _tool_image_payload(result)
-        for item in reversed(self.items):
-            if item.role in {"tool", "skill"} and item.tool_call_id == result.tool_call_id:
-                item.tool_result_text = result_text
-                item.tool_image = image
-                return
         self.add_item(
             "tool",
             format_tool_result_summary(name=result.name, ok=result.ok),
@@ -418,9 +451,11 @@ class TuiState:
         messages: Iterable[AgentMessage],
         *,
         extension_tool_sources: Mapping[str, str] | None = None,
+        extension_tool_renderers: Mapping[str, Any] | None = None,
     ) -> None:
         """Populate the transcript from restored session messages."""
         tool_sources = dict(extension_tool_sources or {})
+        tool_renderers = dict(extension_tool_renderers or {})
         for message in messages:
             if message.role == "user":
                 self.add_user_message(message.content)
@@ -433,9 +468,10 @@ class TuiState:
                     self.add_tool_call(
                         tool_call,
                         source=_extension_tool_source_label(tool_sources.get(tool_call.name)),
+                        renderer=tool_renderers.get(tool_call.name),
                     )
             elif message.role == "tool":
-                self.record_tool_result(
+                self.record_tool_result_with_renderer(
                     AgentToolResult(
                         tool_call_id=message.tool_call_id,
                         name=message.name,
@@ -444,7 +480,8 @@ class TuiState:
                         data=message.data,
                         details=message.details,
                         error=message.error,
-                    )
+                    ),
+                    renderer=tool_renderers.get(message.name),
                 )
 
     def load_custom_entries(
@@ -540,10 +577,19 @@ def _parse_compaction_summary_message(content: str) -> str | None:
     return None
 
 
-def format_tool_call_block(tool_call: ToolCall, *, source: str | None = None) -> str:
+def format_tool_call_block(
+    tool_call: ToolCall,
+    *,
+    source: str | None = None,
+    renderer: Callable[..., Any] | None = None,
+) -> str:
     """Format a collapsed tool call for live and restored transcript blocks."""
-    invocation = format_tool_call_invocation(tool_call)
     source_suffix = f" [{source}]" if source else ""
+    if renderer is not None:
+        rendered = _render_tool_call(renderer, tool_call, source=source)
+        if rendered is not None:
+            return f"{rendered}{source_suffix}"
+    invocation = format_tool_call_invocation(tool_call)
     if tool_call.name == "bash":
         return f"{invocation}{source_suffix}"
     return f"→ {invocation}{source_suffix}"
@@ -553,6 +599,141 @@ def _extension_tool_source_label(extension_name: str | None) -> str | None:
     if extension_name is None:
         return None
     return f"extension:{extension_name}"
+
+
+def _tool_call_renderer(renderer: Any | None) -> Callable[..., Any] | None:
+    return _renderer_field(renderer, "call", "renderCall", "render_call")
+
+
+def _tool_result_renderer(renderer: Any | None) -> Callable[..., Any] | None:
+    return _renderer_field(renderer, "result", "renderResult", "render_result")
+
+
+def _renderer_field(renderer: Any | None, *names: str) -> Callable[..., Any] | None:
+    if renderer is None:
+        return None
+    for name in names:
+        value = (
+            renderer.get(name)
+            if isinstance(renderer, Mapping)
+            else getattr(renderer, name, None)
+        )
+        if value is not None:
+            return value if callable(value) else None
+    return None
+
+
+def _render_tool_call(
+    renderer: Callable[..., Any],
+    tool_call: ToolCall,
+    *,
+    source: str | None,
+) -> str | None:
+    context = {
+        "toolCallId": tool_call.id,
+        "tool_call_id": tool_call.id,
+        "toolName": tool_call.name,
+        "tool_name": tool_call.name,
+        "source": source,
+        "args": tool_call.arguments,
+        "arguments": tool_call.arguments,
+    }
+    try:
+        result = _call_tool_call_renderer(renderer, tool_call.arguments, context)
+    except Exception as exc:  # noqa: BLE001 - extensions are an isolation boundary
+        result = f"[{tool_call.name}] renderCall failed: {exc}"
+    return _normalize_custom_renderer_result(result)
+
+
+def _render_tool_result(
+    renderer: Callable[..., Any],
+    result: AgentToolResult,
+    *,
+    expanded: bool,
+) -> str | None:
+    context = {
+        "toolCallId": result.tool_call_id,
+        "tool_call_id": result.tool_call_id,
+        "toolName": result.name,
+        "tool_name": result.name,
+        "isError": not result.ok,
+        "is_error": not result.ok,
+        "details": result.details,
+        "data": result.data,
+    }
+    options = {
+        "expanded": expanded,
+        "isPartial": False,
+        "is_partial": False,
+        "isError": not result.ok,
+        "is_error": not result.ok,
+    }
+    try:
+        rendered = _call_tool_result_renderer(renderer, result, options, context)
+    except Exception as exc:  # noqa: BLE001 - extensions are an isolation boundary
+        rendered = f"[{result.name}] renderResult failed: {exc}"
+    return _normalize_custom_renderer_result(rendered)
+
+
+def _call_tool_call_renderer(
+    renderer: Callable[..., Any],
+    arguments: Mapping[str, JSONValue],
+    context: Mapping[str, Any],
+) -> Any:
+    try:
+        parameters = inspect.signature(renderer).parameters
+    except (TypeError, ValueError):
+        return renderer(arguments, None, context)
+    positional = [
+        parameter
+        for parameter in parameters.values()
+        if parameter.kind
+        in {
+            inspect.Parameter.POSITIONAL_ONLY,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        }
+    ]
+    accepts_varargs = any(
+        parameter.kind == inspect.Parameter.VAR_POSITIONAL
+        for parameter in parameters.values()
+    )
+    if accepts_varargs or len(positional) >= 3:
+        return renderer(arguments, None, context)
+    if len(positional) >= 2:
+        return renderer(arguments, None)
+    return renderer(arguments)
+
+
+def _call_tool_result_renderer(
+    renderer: Callable[..., Any],
+    result: AgentToolResult,
+    options: Mapping[str, Any],
+    context: Mapping[str, Any],
+) -> Any:
+    try:
+        parameters = inspect.signature(renderer).parameters
+    except (TypeError, ValueError):
+        return renderer(result, options, None, context)
+    positional = [
+        parameter
+        for parameter in parameters.values()
+        if parameter.kind
+        in {
+            inspect.Parameter.POSITIONAL_ONLY,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        }
+    ]
+    accepts_varargs = any(
+        parameter.kind == inspect.Parameter.VAR_POSITIONAL
+        for parameter in parameters.values()
+    )
+    if accepts_varargs or len(positional) >= 4:
+        return renderer(result, options, None, context)
+    if len(positional) >= 3:
+        return renderer(result, options, None)
+    if len(positional) >= 2:
+        return renderer(result, options)
+    return renderer(result)
 
 
 def format_tool_call_invocation(tool_call: ToolCall) -> str:
@@ -678,8 +859,15 @@ def format_tool_result_block(
     ok: bool,
     content: str,
     data: dict[str, JSONValue] | None = None,
+    renderer: Callable[..., Any] | None = None,
+    expanded: bool = False,
+    result: AgentToolResult | None = None,
 ) -> str:
     """Format a tool result for live and restored transcript blocks."""
+    if renderer is not None and result is not None:
+        rendered = _render_tool_result(renderer, result, expanded=expanded)
+        if rendered is not None:
+            return rendered
     status = "✓" if ok else "✗"
     lines = [f"{status} {name}"]
     if content:

@@ -19,6 +19,7 @@ from tau_coding.extensions.api import (
     ExtensionLifecycleHandler,
     ExtensionMessageRenderer,
     ExtensionShortcut,
+    ExtensionToolRenderers,
 )
 from tau_coding.provider_config import ProviderConfig
 from tau_coding.resources import ResourceDiagnostic, TauResourcePaths
@@ -39,6 +40,7 @@ class LoadedExtension:
     flags: tuple[ExtensionFlag, ...] = ()
     entry_renderers: Mapping[str, ExtensionEntryRenderer] | None = None
     message_renderers: Mapping[str, ExtensionMessageRenderer] | None = None
+    tool_renderers: Mapping[str, ExtensionToolRenderers] | None = None
     provider_configs: tuple[ProviderConfig, ...] = ()
     event_handlers: Mapping[str, tuple[ExtensionLifecycleHandler, ...]] | None = None
 
@@ -84,6 +86,14 @@ class ExtensionLoadResult:
         renderers: dict[str, ExtensionMessageRenderer] = {}
         for extension in self.extensions:
             renderers.update(extension.message_renderers or {})
+        return renderers
+
+    @property
+    def tool_renderers(self) -> Mapping[str, ExtensionToolRenderers]:
+        """Return all registered custom tool renderers in load order."""
+        renderers: dict[str, ExtensionToolRenderers] = {}
+        for extension in self.extensions:
+            renderers.update(extension.tool_renderers or {})
         return renderers
 
     @property
@@ -247,6 +257,7 @@ def _load_one_extension(
         flags=api.flags,
         entry_renderers=api.entry_renderers,
         message_renderers=api.message_renderers,
+        tool_renderers=api.tool_renderers,
         provider_configs=api.provider_configs,
         event_handlers=api.event_handlers,
     )

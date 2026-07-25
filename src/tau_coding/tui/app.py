@@ -6999,6 +6999,7 @@ class TauTuiApp(App[None]):
         self.adapter = TuiEventAdapter(
             self.state,
             extension_tool_sources=getattr(session, "extension_tool_sources", {}),
+            extension_tool_renderers=getattr(session, "extension_tool_renderers", {}),
         )
         self._prompt_worker: Worker[None] | None = None
         self._compaction_worker: Worker[None] | None = None
@@ -7072,6 +7073,7 @@ class TauTuiApp(App[None]):
         self.state.load_messages(
             self.session.messages,
             extension_tool_sources=getattr(self.session, "extension_tool_sources", {}),
+            extension_tool_renderers=getattr(self.session, "extension_tool_renderers", {}),
         )
         session_state = getattr(self.session, "state", None)
         custom_entries = getattr(session_state, "custom_entries", ())
