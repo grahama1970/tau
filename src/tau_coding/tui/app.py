@@ -2163,6 +2163,30 @@ class SessionPickerScreen(ModalScreen[str | None]):
         """Route session picker keys to the list."""
         if self.mode == "rename":
             return
+        if self.delete_confirm_target_id is not None:
+            if _matches_configured_or_default_key(
+                event.key,
+                self.keybindings.select_confirm,
+                "enter",
+            ) or _matches_configured_or_default_key(
+                event.key,
+                self.keybindings.session_delete,
+                "ctrl+d",
+            ):
+                event.stop()
+                self.action_confirm_delete_session()
+                return
+            if _matches_configured_or_default_key(
+                event.key,
+                self.keybindings.select_cancel,
+                "escape",
+            ):
+                event.stop()
+                self.delete_confirm_target_id = None
+                self._refresh_session_list()
+                return
+            event.stop()
+            return
         if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
             event.stop()
             self.delete_confirm_target_id = None
@@ -2373,20 +2397,35 @@ class SessionPickerScreen(ModalScreen[str | None]):
             return
         if self.delete_confirm_target_id != selected.id:
             self.delete_confirm_target_id = selected.id
-            delete_key = _key_hint_with_default(self.keybindings.session_delete, "ctrl+d")
+            confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
             cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
             self.query_one("#session-picker-help", Static).update(
-                f"Press {delete_key} again to delete this session - {cancel_key} cancels"
+                f"Press {confirm_key} to delete this session - {cancel_key} cancels"
             )
+            return
+        self.action_confirm_delete_session()
+
+    def action_confirm_delete_session(self) -> None:
+        """Delete the pending session delete target."""
+        target_id = self.delete_confirm_target_id
+        if target_id is None or self.delete_session is None:
+            return
+        selected = next(
+            (record for record in self.filtered_records if record.id == target_id),
+            None,
+        )
+        if selected is None:
+            self.delete_confirm_target_id = None
+            self._refresh_session_list()
             return
         self.delete_confirm_target_id = None
-        if not self.delete_session(selected.id):
+        if not self.delete_session(target_id):
             self.query_one("#session-picker-help", Static).update(
-                f"Failed to delete session: {selected.id}"
+                f"Failed to delete session: {target_id}"
             )
             return
-        self.current_records = _remove_session_picker_record(self.current_records, selected.id)
-        self.all_records = _remove_session_picker_record(self.all_records, selected.id)
+        self.current_records = _remove_session_picker_record(self.current_records, target_id)
+        self.all_records = _remove_session_picker_record(self.all_records, target_id)
         self._refresh_session_list()
 
     def action_delete_session_noninvasive(self) -> None:
