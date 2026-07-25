@@ -2969,6 +2969,29 @@ async def test_tui_app_theme_picker_selects_pi_style_automatic_theme(
 
 
 @pytest.mark.anyio
+async def test_tui_app_theme_picker_wraps_navigation_like_pi() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/theme"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ThemePickerScreen)
+        theme_list = app.screen.query_one("#theme-picker-list", ListView)
+        assert theme_list.index == 0
+
+        await pilot.press("up")
+        await pilot.pause()
+        assert theme_list.index == len(tui_app._theme_picker_choices()) - 1
+
+        await pilot.press("down")
+        await pilot.pause()
+        assert theme_list.index == 0
+
+
+@pytest.mark.anyio
 async def test_tui_app_theme_picker_uses_configured_pi_select_keybindings(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

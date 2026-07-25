@@ -5466,11 +5466,11 @@ class ThemePickerScreen(ModalScreen[str | None]):
 
     def action_cursor_up(self) -> None:
         """Move to the previous theme."""
-        self.query_one("#theme-picker-list", ListView).action_cursor_up()
+        self._move(-1)
 
     def action_cursor_down(self) -> None:
         """Move to the next theme."""
-        self.query_one("#theme-picker-list", ListView).action_cursor_down()
+        self._move(1)
 
     def action_select_cursor(self) -> None:
         """Select the highlighted theme."""
@@ -5479,6 +5479,15 @@ class ThemePickerScreen(ModalScreen[str | None]):
     def action_cancel(self) -> None:
         """Close without selecting a theme."""
         self.dismiss(None)
+
+    def _move(self, direction: Literal[-1, 1]) -> None:
+        theme_list = self.query_one("#theme-picker-list", ListView)
+        choices = _theme_picker_choices()
+        if not choices:
+            theme_list.index = None
+            return
+        current_index = theme_list.index if theme_list.index is not None else 0
+        theme_list.index = (current_index + direction) % len(choices)
 
 
 class ModelPickerSearchInput(Input):
