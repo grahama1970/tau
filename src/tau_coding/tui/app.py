@@ -8659,8 +8659,6 @@ def _session_picker_search_text(record: SessionCompletionRecord) -> str:
         record.id,
         record.title or "",
         record.model,
-        str(record.cwd),
-        _short_path(record.cwd),
         _session_picker_label(record),
     ]
     return " ".join(" ".join(field.casefold().split()) for field in fields)

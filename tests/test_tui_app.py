@@ -4279,6 +4279,28 @@ def test_session_picker_filter_supports_pi_regex_and_exact_phrase_search() -> No
     assert invalid_regex_matches == ()
 
 
+def test_session_picker_filter_does_not_match_workspace_path() -> None:
+    records = (
+        CodingSessionRecord(
+            id="session-1",
+            path=Path("/tmp/session-1.jsonl"),
+            cwd=Path("/workspace/path-query"),
+            model="model-query",
+            title="Named session",
+            created_at=1.0,
+            updated_at=2.0,
+        ),
+    )
+
+    path_matches = _filter_session_picker_records(records, "path-query")
+    model_matches = _filter_session_picker_records(records, "model-query")
+    name_matches = _filter_session_picker_records(records, "named")
+
+    assert path_matches == ()
+    assert [record.id for record in model_matches] == ["session-1"]
+    assert [record.id for record in name_matches] == ["session-1"]
+
+
 def test_session_picker_filter_relevance_sort_orders_best_match_before_recency() -> None:
     records = (
         CodingSessionRecord(
