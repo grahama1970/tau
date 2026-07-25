@@ -226,6 +226,7 @@ class FakeSession:
         self.follow_up_queue_mode = "one_at_a_time"
         self.shell_path: str | None = None
         self.shell_command_prefix: str | None = None
+        self.disabled_resource_paths: tuple[Path, ...] = ()
         self.system_prompt = "You are Tau."
         self.state = FakeSessionState()
         self.resource_diagnostics = ()
@@ -436,6 +437,10 @@ class FakeSession:
         self.auto_resize_images = enabled
         state = "enabled" if enabled else "disabled"
         return f"Auto-resize images {state}."
+
+    def set_disabled_resource_paths(self, paths: Sequence[Path]) -> str:
+        self.disabled_resource_paths = tuple(paths)
+        return f"{len(paths)} resources disabled."
 
     def set_steering_queue_mode(self, mode: str) -> str:
         self.steering_queue_mode = mode
@@ -8427,6 +8432,46 @@ async def test_tui_app_config_command_opens_searchable_config_map() -> None:
         await pilot.pause()
 
         assert prompt.value == "/reload"
+
+
+@pytest.mark.anyio
+async def test_tui_app_config_map_disables_loaded_resource(monkeypatch: pytest.MonkeyPatch) -> None:
+    session = FakeSession()
+    saved_settings: list[TuiSettings] = []
+
+    def capture_settings(settings: TuiSettings) -> None:
+        saved_settings.append(settings)
+
+    monkeypatch.setattr(tui_app, "save_tui_settings", capture_settings)
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "/config"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ConfigMapScreen)
+        labels = [
+            str(item.query_one(Label).render())
+            for item in app.screen.query_one("#config-map-list", ListView).children
+        ]
+        assert "Loaded skills: review - review.md [disable]" in labels
+
+        app.screen.query_one("#config-map-search", Input).value = "loaded skills review"
+        await pilot.pause()
+        await pilot.press("enter")
+        for _ in range(10):
+            await pilot.pause()
+            if session.disabled_resource_paths:
+                break
+
+        assert session.disabled_resource_paths == (Path("/workspace/project/review.md"),)
+        assert saved_settings
+        assert saved_settings[-1].disabled_resource_paths == (
+            "/workspace/project/review.md",
+        )
+        assert session.reload_count == 1
 
 
 @pytest.mark.anyio

@@ -4306,7 +4306,7 @@ class CommandOutputScreen(ModalScreen[None]):
         scroll.scroll_y = min(scroll.max_scroll_y, scroll.scroll_y + max(1, scroll.size.height - 1))
 
 
-type ConfigMapAction = Literal["insert_command", "copy_path"]
+type ConfigMapAction = Literal["insert_command", "copy_path", "toggle_resource"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -4508,6 +4508,11 @@ class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
             return f"{item.description} - {confirm_key}/Space inserts command - {cancel_key} closes"
         if item.action == "copy_path":
             return f"{item.description} - {confirm_key}/Space copies path - {cancel_key} closes"
+        if item.action == "toggle_resource":
+            return (
+                f"{item.description} - {confirm_key}/Space toggles resource - "
+                f"{cancel_key} closes"
+            )
         return f"{item.description} - {cancel_key} closes"
 
     def _refresh_help_text(self) -> None:
@@ -7395,6 +7400,11 @@ class TauTuiApp(App[None]):
         set_auto_resize_images = getattr(self.session, "set_auto_resize_images", None)
         if callable(set_auto_resize_images):
             set_auto_resize_images(settings.auto_resize_images)
+        set_disabled_resource_paths = getattr(self.session, "set_disabled_resource_paths", None)
+        if callable(set_disabled_resource_paths):
+            set_disabled_resource_paths(
+                tuple(Path(path) for path in settings.disabled_resource_paths)
+            )
         self._terminal_notification.mode = settings.turn_notification
         set_steering_mode = getattr(self.session, "set_steering_queue_mode", None)
         if callable(set_steering_mode):
@@ -7451,7 +7461,7 @@ class TauTuiApp(App[None]):
         """Open a searchable map of Tau config files and resource commands."""
         self.push_screen(
             ConfigMapScreen(
-                _config_map_items(self.session),
+                _config_map_items(self.session, self.tui_settings),
                 theme=self.tui_settings.resolved_theme,
                 keybindings=self.tui_settings.keybindings,
             ),
@@ -7473,6 +7483,32 @@ class TauTuiApp(App[None]):
         if result.action == "copy_path":
             self.copy_to_clipboard(result.value)
             self._notify(f"Copied path: {result.value}")
+            return
+        if result.action == "toggle_resource":
+            message = self._toggle_disabled_resource_path(Path(result.value))
+            self._notify(message)
+            if self._reload_worker is None:
+                self._reload_worker = self.run_worker(
+                    self._run_reload_command("/reload"),
+                    exclusive=False,
+                )
+            else:
+                self._notify("Resource setting saved; current reload is still running.")
+
+    def _toggle_disabled_resource_path(self, path: Path) -> str:
+        """Toggle one disabled resource path in durable TUI settings."""
+        target = _normalized_config_resource_path(path)
+        current = tuple(Path(item) for item in self.tui_settings.disabled_resource_paths)
+        disabled = {_normalized_config_resource_path(item): item for item in current}
+        if target in disabled:
+            remaining = tuple(
+                str(item) for normalized, item in disabled.items() if normalized != target
+            )
+            self._set_tui_settings(replace(self.tui_settings, disabled_resource_paths=remaining))
+            return f"Enabled resource: {target}"
+        updated = (*self.tui_settings.disabled_resource_paths, str(target))
+        self._set_tui_settings(replace(self.tui_settings, disabled_resource_paths=updated))
+        return f"Disabled resource: {target}"
 
     def _open_thinking_picker(self) -> None:
         levels = tuple(getattr(self.session, "available_thinking_levels", ()))
@@ -12734,13 +12770,21 @@ def _display_resource_path(path: Path, *, cwd: Path) -> str:
     return str(path)
 
 
-def _config_map_items(session: CodingSession) -> tuple[ConfigMapItem, ...]:
+def _normalized_config_resource_path(path: Path) -> Path:
+    return path.expanduser().resolve(strict=False)
+
+
+def _config_map_items(session: CodingSession, settings: TuiSettings) -> tuple[ConfigMapItem, ...]:
     """Return real Tau config/resource rows for the interactive config map."""
     paths = TauPaths()
     resource_paths = TauResourcePaths(cwd=session.cwd, paths=paths)
     trust_path = ProjectTrustStore.from_resource_paths(resource_paths).trust_path
     loaded_extensions = getattr(session, "extensions", ())
     extension_count = len(loaded_extensions) if isinstance(loaded_extensions, Sequence) else 0
+    disabled_paths = {
+        _normalized_config_resource_path(Path(path))
+        for path in settings.disabled_resource_paths
+    }
 
     items: list[ConfigMapItem] = []
 
@@ -12764,6 +12808,19 @@ def _config_map_items(session: CodingSession) -> tuple[ConfigMapItem, ...]:
                 value=str(path),
                 description=description,
                 action="copy_path",
+                action_value=str(path),
+            )
+        )
+
+    def add_resource_toggle(section: str, label: str, path: Path, *, enabled: bool) -> None:
+        action = "disable" if enabled else "enable"
+        items.append(
+            ConfigMapItem(
+                section=section,
+                label=label,
+                value=_display_resource_path(path, cwd=session.cwd),
+                description=f"{action.capitalize()} this resource path and reload resources.",
+                action="toggle_resource",
                 action_value=str(path),
             )
         )
@@ -12844,14 +12901,30 @@ def _config_map_items(session: CodingSession) -> tuple[ConfigMapItem, ...]:
                 str(len(session.resource_diagnostics)),
                 "Non-fatal resource discovery diagnostics.",
             ),
-            ConfigMapItem(
-                "Boundary",
-                "Package selector",
-                "not implemented",
-                "Tau still uses file edits plus /reload for resource enablement.",
-            ),
         )
     )
+
+    for skill in session.skills:
+        if _normalized_config_resource_path(skill.path) not in disabled_paths:
+            add_resource_toggle("Loaded skills", skill.name, skill.path, enabled=True)
+    for template in session.prompt_templates:
+        if _normalized_config_resource_path(template.path) not in disabled_paths:
+            add_resource_toggle(
+                "Loaded prompts",
+                template.name,
+                template.path,
+                enabled=True,
+            )
+    if isinstance(loaded_extensions, Sequence):
+        for extension in loaded_extensions:
+            add_resource_toggle(
+                "Loaded extensions",
+                extension.name,
+                extension.path,
+                enabled=True,
+            )
+    for disabled_path in sorted(disabled_paths, key=lambda item: str(item)):
+        add_resource_toggle("Disabled resources", disabled_path.name, disabled_path, enabled=False)
 
     for diagnostic in session.resource_diagnostics:
         path = getattr(diagnostic, "path", None)
@@ -12893,6 +12966,8 @@ def _config_map_item_label(item: ConfigMapItem) -> str:
         action = " [insert]"
     elif item.action == "copy_path":
         action = " [copy]"
+    elif item.action == "toggle_resource":
+        action = " [enable]" if item.section == "Disabled resources" else " [disable]"
     return f"{item.section}: {item.label} - {item.value}{action}"
 
 
@@ -13501,6 +13576,9 @@ async def run_tui_app(
                 shell_path=tui_settings.shell_path,
                 shell_command_prefix=tui_settings.shell_command_prefix,
                 auto_resize_images=tui_settings.auto_resize_images,
+                disabled_resource_paths=tuple(
+                    Path(path) for path in tui_settings.disabled_resource_paths
+                ),
                 discover_context_files=not no_context_files,
                 tool_allowlist=tool_allowlist,
                 tool_denylist=tool_denylist,

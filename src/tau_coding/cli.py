@@ -14383,6 +14383,9 @@ async def run_print_mode(
             shell_path=tui_settings.shell_path,
             shell_command_prefix=tui_settings.shell_command_prefix,
             auto_resize_images=tui_settings.auto_resize_images,
+            disabled_resource_paths=tuple(
+                Path(path) for path in tui_settings.disabled_resource_paths
+            ),
             loop_receipt=loop_receipt,
             discover_context_files=discover_context_files,
             tool_allowlist=tool_allowlist,

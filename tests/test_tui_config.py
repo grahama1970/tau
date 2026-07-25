@@ -783,6 +783,23 @@ def test_tui_settings_reject_invalid_shell_command_prefix() -> None:
         tui_settings_from_json({"shell_command_prefix": ["source ~/.bashrc"]})
 
 
+def test_tui_settings_load_disabled_resource_path_aliases() -> None:
+    snake = tui_settings_from_json(
+        {"disabled_resource_paths": [" /tmp/review.md ", "/tmp/review.md", ""]}
+    )
+    camel = tui_settings_from_json({"disabledResourcePaths": ["/tmp/ship.md"]})
+
+    assert snake.disabled_resource_paths == ("/tmp/review.md",)
+    assert camel.disabled_resource_paths == ("/tmp/ship.md",)
+
+
+def test_tui_settings_reject_invalid_disabled_resource_paths() -> None:
+    with pytest.raises(TuiConfigError, match="disabled_resource_paths"):
+        tui_settings_from_json({"disabled_resource_paths": "/tmp/review.md"})
+    with pytest.raises(TuiConfigError, match="disabled_resource_paths"):
+        tui_settings_from_json({"disabled_resource_paths": ["/tmp/review.md", 3]})
+
+
 def test_tui_turn_notification_defaults_to_desktop() -> None:
     assert TuiSettings().turn_notification == "desktop"
     assert tui_settings_from_json({}).turn_notification == "desktop"

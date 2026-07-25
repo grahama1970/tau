@@ -206,6 +206,72 @@ def setup(tau):
 
 
 @pytest.mark.anyio
+async def test_session_filters_disabled_skill_prompt_and_extension_paths(tmp_path: Path) -> None:
+    skill_path = tmp_path / "review.md"
+    prompt_path = tmp_path / "ship.md"
+    extension_path = tmp_path / "extension.py"
+    skill_path.write_text("# Review\n\nReview code.", encoding="utf-8")
+    prompt_path.write_text("Ship it", encoding="utf-8")
+    extension_path.write_text(
+        """
+from tau_agent import AgentTool, AgentToolResult
+
+
+async def execute(arguments, signal=None):
+    del arguments, signal
+    return AgentToolResult(tool_call_id="", name="hidden_ext", ok=True, content="hidden")
+
+
+def setup(tau):
+    tau.register_tool(
+        AgentTool(
+            name="hidden_ext",
+            description="Hidden extension tool.",
+            input_schema={"type": "object"},
+            executor=execute,
+            prompt_snippet="Hidden extension tool",
+        )
+    )
+""".lstrip(),
+        encoding="utf-8",
+    )
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="fake",
+            storage=JsonlSessionStorage(tmp_path / "session.jsonl"),
+            cwd=tmp_path,
+            resource_paths=TauResourcePaths(root=tmp_path / "resources", agents_root=None),
+            discover_skills=False,
+            discover_prompt_templates=False,
+            discover_extensions=False,
+            no_builtin_tools=True,
+            skill_paths=(skill_path,),
+            prompt_template_paths=(prompt_path,),
+            extension_paths=(extension_path,),
+            disabled_resource_paths=(skill_path, prompt_path, extension_path),
+        )
+    )
+
+    assert session.skills == ()
+    assert session.prompt_templates == ()
+    assert session.extensions == ()
+    assert session.tools == ()
+    diagnostics = {
+        (diagnostic.kind, diagnostic.name, diagnostic.path, diagnostic.message)
+        for diagnostic in session.resource_diagnostics
+    }
+    assert ("skill", "review", skill_path, "resource disabled by TUI config") in diagnostics
+    assert ("prompt", "ship", prompt_path, "resource disabled by TUI config") in diagnostics
+    assert any(
+        kind == "extension"
+        and path == extension_path
+        and message == "resource disabled by TUI config"
+        for kind, _name, path, message in diagnostics
+    )
+
+
+@pytest.mark.anyio
 async def test_session_reload_refreshes_discovered_extension_tools(tmp_path: Path) -> None:
     root = tmp_path / "home" / ".tau"
     extensions_dir = root / "extensions"

@@ -300,6 +300,7 @@ class CodingSessionConfig:
     shell_path: str | None = None
     shell_command_prefix: str | None = None
     auto_resize_images: bool = True
+    disabled_resource_paths: tuple[Path, ...] = ()
     extension_start_reason: str = "startup"
     extension_previous_session_file: str | None = None
 
@@ -420,6 +421,7 @@ class CodingSession:
             discover_extensions=config.discover_extensions,
             discover_context_files=config.discover_context_files,
             default_project_trust=config.default_project_trust,
+            disabled_resource_paths=config.disabled_resource_paths,
         )
         if resources.extension_provider_configs:
             config = replace(
@@ -988,6 +990,20 @@ class CodingSession:
         return f"Auto-resize images {state}."
 
     @property
+    def disabled_resource_paths(self) -> tuple[Path, ...]:
+        """Return resource paths disabled for this running session."""
+        return self._config.disabled_resource_paths
+
+    def set_disabled_resource_paths(self, paths: Sequence[Path]) -> str:
+        """Set resource paths omitted by future resource reloads."""
+        normalized = tuple(dict.fromkeys(_normalized_resource_path(path) for path in paths))
+        self._config = replace(self._config, disabled_resource_paths=normalized)
+        count = len(normalized)
+        if count == 1:
+            return "1 resource disabled for future reloads."
+        return f"{count} resources disabled for future reloads."
+
+    @property
     def steering_queue_mode(self) -> QueueMode:
         """Return how queued steering messages drain into the agent loop."""
         return self._harness.steering_queue_mode
@@ -1155,6 +1171,7 @@ class CodingSession:
             discover_extensions=self._config.discover_extensions,
             discover_context_files=self._config.discover_context_files,
             default_project_trust=default_project_trust,
+            disabled_resource_paths=self._config.disabled_resource_paths,
         )
         tools = _build_session_tools(
             self._config,
@@ -1666,6 +1683,7 @@ class CodingSession:
             discover_extensions=self._config.discover_extensions,
             discover_context_files=self._config.discover_context_files,
             default_project_trust=self._config.default_project_trust,
+            disabled_resource_paths=self._config.disabled_resource_paths,
         )
         tools = _build_session_tools(
             self._config,
@@ -4503,6 +4521,49 @@ def _provider_settings_with_extension_providers(
     return updated
 
 
+def _normalized_resource_path(path: Path) -> Path:
+    return path.expanduser().resolve(strict=False)
+
+
+def _normalized_disabled_resource_paths(paths: Sequence[Path]) -> frozenset[Path]:
+    return frozenset(_normalized_resource_path(path) for path in paths)
+
+
+def _resource_disabled(path: Path, disabled_paths: frozenset[Path]) -> bool:
+    normalized = _normalized_resource_path(path)
+    return normalized in disabled_paths or any(
+        parent in disabled_paths for parent in normalized.parents
+    )
+
+
+def _filter_disabled_resources[T](
+    resources: Sequence[T],
+    disabled_paths: frozenset[Path],
+    *,
+    kind: str,
+) -> tuple[list[T], list[ResourceDiagnostic]]:
+    if not disabled_paths:
+        return list(resources), []
+    kept: list[T] = []
+    diagnostics: list[ResourceDiagnostic] = []
+    for resource in resources:
+        path = getattr(resource, "path", None)
+        if isinstance(path, Path) and _resource_disabled(path, disabled_paths):
+            name = getattr(resource, "name", None)
+            diagnostics.append(
+                ResourceDiagnostic(
+                    kind=kind,
+                    name=str(name) if name is not None else None,
+                    path=path,
+                    message="resource disabled by TUI config",
+                    severity="info",
+                )
+            )
+            continue
+        kept.append(resource)
+    return kept, diagnostics
+
+
 def _load_session_resources(
     resource_paths: TauResourcePaths,
     explicit_context_files: tuple[ProjectContextFile, ...],
@@ -4518,7 +4579,9 @@ def _load_session_resources(
     discover_extensions: bool = True,
     discover_context_files: bool = True,
     default_project_trust: DefaultProjectTrust = "ask",
+    disabled_resource_paths: tuple[Path, ...] = (),
 ) -> SessionResources:
+    disabled_paths = _normalized_disabled_resource_paths(disabled_resource_paths)
     effective_paths, trust_diagnostics = _project_trusted_resource_paths(
         resource_paths,
         default_project_trust=default_project_trust,
@@ -4534,6 +4597,11 @@ def _load_session_resources(
         loaded_skills,
         explicit_skills,
     )
+    loaded_skills, disabled_skill_diagnostics = _filter_disabled_resources(
+        loaded_skills,
+        disabled_paths,
+        kind="skill",
+    )
     if discover_prompt_templates:
         loaded_prompt_templates, prompt_diagnostics = load_prompt_templates_with_diagnostics(
             effective_paths
@@ -4546,6 +4614,11 @@ def _load_session_resources(
     loaded_prompt_templates, explicit_prompt_override_diagnostics = _merge_prompt_templates_by_name(
         loaded_prompt_templates,
         explicit_prompt_templates,
+    )
+    loaded_prompt_templates, disabled_prompt_diagnostics = _filter_disabled_resources(
+        loaded_prompt_templates,
+        disabled_paths,
+        kind="prompt",
     )
     if discover_context_files:
         discovered_context, context_diagnostics = discover_project_context_with_diagnostics(
@@ -4566,27 +4639,39 @@ def _load_session_resources(
         discover_user_extensions=discover_extensions,
         flag_values=extension_flag_values,
     )
+    loaded_extensions, disabled_extension_diagnostics = _filter_disabled_resources(
+        extensions.extensions,
+        disabled_paths,
+        kind="extension",
+    )
     return SessionResources(
         skills=tuple(loaded_skills),
         prompt_templates=tuple(loaded_prompt_templates),
         context_files=_merge_context_files(explicit_context_files, discovered_context),
         custom_themes=custom_themes,
-        extensions=extensions.extensions,
-        extension_tools=extensions.tools,
-        extension_provider_configs=extensions.provider_configs,
+        extensions=tuple(loaded_extensions),
+        extension_tools=tuple(tool for extension in loaded_extensions for tool in extension.tools),
+        extension_provider_configs=tuple(
+            provider
+            for extension in loaded_extensions
+            for provider in extension.provider_configs
+        ),
         diagnostics=tuple(
             [
                 *trust_diagnostics,
                 *skill_diagnostics,
                 *explicit_skill_diagnostics,
                 *explicit_skill_override_diagnostics,
+                *disabled_skill_diagnostics,
                 *prompt_diagnostics,
                 *explicit_prompt_diagnostics,
                 *explicit_prompt_override_diagnostics,
+                *disabled_prompt_diagnostics,
                 *context_diagnostics,
                 *theme_diagnostics,
                 *explicit_theme_diagnostics,
                 *extensions.diagnostics,
+                *disabled_extension_diagnostics,
             ]
         ),
     )

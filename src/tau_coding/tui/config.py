@@ -967,6 +967,7 @@ class TuiSettings:
     external_editor: str | None = None
     shell_path: str | None = None
     shell_command_prefix: str | None = None
+    disabled_resource_paths: tuple[str, ...] = ()
 
     def to_json(self) -> dict[str, Any]:
         """Serialize these settings to JSON-compatible data."""
@@ -996,6 +997,7 @@ class TuiSettings:
             "external_editor": self.external_editor,
             "shell_path": self.shell_path,
             "shell_command_prefix": self.shell_command_prefix,
+            "disabled_resource_paths": list(self.disabled_resource_paths),
             "follow_up_mode": self.follow_up_mode,
             "http_idle_timeout_ms": self.http_idle_timeout_ms,
             "steering_mode": self.steering_mode,
@@ -1199,6 +1201,10 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
             data.get("shell_command_prefix", data.get("shellCommandPrefix")),
             "shell_command_prefix",
         ),
+        disabled_resource_paths=_string_tuple_setting(
+            data.get("disabled_resource_paths", data.get("disabledResourcePaths", ())),
+            "disabled_resource_paths",
+        ),
         thinking_level=_thinking_level(
             data.get("thinking_level", data.get("thinkingLevel", DEFAULT_THINKING_LEVEL))
         ),
@@ -1231,6 +1237,21 @@ def _optional_string_setting(value: object, field_name: str) -> str | None:
         raise TuiConfigError(f"TUI setting must be a string or null: {field_name}")
     stripped = value.strip()
     return stripped or None
+
+
+def _string_tuple_setting(value: object, field_name: str) -> tuple[str, ...]:
+    if value is None:
+        return ()
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
+        raise TuiConfigError(f"TUI setting must be a list of strings: {field_name}")
+    values: list[str] = []
+    for item in value:
+        if not isinstance(item, str):
+            raise TuiConfigError(f"TUI setting must be a list of strings: {field_name}")
+        stripped = item.strip()
+        if stripped:
+            values.append(stripped)
+    return tuple(dict.fromkeys(values))
 
 
 def _expand_optional_user_path(value: str | None) -> str | None:
