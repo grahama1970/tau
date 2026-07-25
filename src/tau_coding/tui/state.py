@@ -96,6 +96,7 @@ class TuiState:
     show_tool_results: bool = False
     show_thinking: bool = False
     thinking_status: str | None = None
+    hidden_thinking_label: str | None = None
     loop_monitor_status: LoopMonitorStatus | None = None
     queued_steering: tuple[str, ...] = ()
     queued_follow_up: tuple[str, ...] = ()
@@ -218,7 +219,11 @@ class TuiState:
     @property
     def thinking_placeholder_text(self) -> str:
         """Return the visible hidden-thinking label for the current run stage."""
-        return self.thinking_status or DEFAULT_THINKING_PLACEHOLDER_TEXT
+        return (
+            self.thinking_status
+            or self.hidden_thinking_label
+            or DEFAULT_THINKING_PLACEHOLDER_TEXT
+        )
 
     def set_thinking_status(self, stage: str | None) -> None:
         """Set the hidden-thinking label from a structured pipeline stage."""
@@ -257,6 +262,7 @@ class TuiState:
         self.assistant_buffer = ""
         self.error = None
         self.thinking_status = None
+        self.hidden_thinking_label = None
         self.loop_monitor_status = None
 
     def set_skills(self, skills: Iterable[Skill]) -> None:

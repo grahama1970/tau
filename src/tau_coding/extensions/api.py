@@ -70,6 +70,8 @@ class ExtensionShortcutContext:
     header_update: ExtensionHeaderUpdate | None = None
     theme: str | None = None
     show_tool_results: bool | None = None
+    hidden_thinking_label_requested: bool = False
+    hidden_thinking_label: str | None = None
     ui: ExtensionCommandUi = field(init=False)
 
     def __post_init__(self) -> None:
@@ -216,6 +218,11 @@ class ExtensionShortcutContext:
         self.theme = theme_name
         return {"success": True, "error": ""}
 
+    def set_hidden_thinking_label(self, label: str | None = None) -> None:
+        """Request a custom hidden-thinking label, or restore Tau's default."""
+        self.hidden_thinking_label_requested = True
+        self.hidden_thinking_label = _normalize_optional_text(label)
+
     def get_all_themes(self) -> tuple[ThemeInfo, ...]:
         """Return available Tau TUI themes as Pi-style theme info records."""
         return _available_theme_infos()
@@ -259,6 +266,8 @@ class ExtensionCommandContext:
     header_update: ExtensionHeaderUpdate | None = None
     theme: str | None = None
     show_tool_results: bool | None = None
+    hidden_thinking_label_requested: bool = False
+    hidden_thinking_label: str | None = None
     user_message: str | None = None
     user_message_delivery: str = "steer"
     ui: ExtensionCommandUi = field(init=False)
@@ -407,6 +416,11 @@ class ExtensionCommandContext:
         self.theme = theme_name
         return {"success": True, "error": ""}
 
+    def set_hidden_thinking_label(self, label: str | None = None) -> None:
+        """Request a custom hidden-thinking label, or restore Tau's default."""
+        self.hidden_thinking_label_requested = True
+        self.hidden_thinking_label = _normalize_optional_text(label)
+
     def get_all_themes(self) -> tuple[ThemeInfo, ...]:
         """Return available Tau TUI themes as Pi-style theme info records."""
         return _available_theme_infos()
@@ -497,6 +511,10 @@ class ExtensionCommandUi:
         """Pi-compatible alias for setting custom running indicator frames."""
         self._context.set_working_indicator(options)
 
+    def setHiddenThinkingLabel(self, label: str | None = None) -> None:  # noqa: N802
+        """Pi-compatible alias for setting the hidden thinking label."""
+        self._context.set_hidden_thinking_label(label)
+
     def setFooter(self, lines: str | Sequence[str] | None = None) -> None:  # noqa: N802
         """Pi-compatible alias for replacing or restoring Tau's footer."""
         self._context.set_footer(lines)
@@ -536,6 +554,10 @@ class ExtensionCommandUi:
     def set_working_indicator(self, options: Any = None) -> None:
         """Set custom running indicator frames."""
         self._context.set_working_indicator(options)
+
+    def set_hidden_thinking_label(self, label: str | None = None) -> None:
+        """Set the hidden thinking label, or restore Tau's default."""
+        self._context.set_hidden_thinking_label(label)
 
     def set_footer(self, lines: str | Sequence[str] | None = None) -> None:
         """Replace or restore Tau's footer."""
@@ -872,6 +894,13 @@ def _normalize_widget_lines(lines: str | Sequence[str] | None) -> tuple[str, ...
     if isinstance(lines, str):
         return tuple(lines.splitlines() or (lines,))
     return tuple(str(line) for line in lines)
+
+
+def _normalize_optional_text(value: str | None) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
 
 
 def _normalize_widget_placement(value: str) -> str:

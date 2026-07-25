@@ -207,6 +207,8 @@ class CommandResult:
     thinking_level: str | None = None
     show_images: bool | None = None
     show_tool_results: bool | None = None
+    hidden_thinking_label_requested: bool = False
+    hidden_thinking_label: str | None = None
     theme: str | None = None
     editor_text: str | None = None
     editor_insert_text: str | None = None

@@ -3162,6 +3162,15 @@ def _extension_command_result(
             and result.show_tool_results is None
         ):
             result = replace(result, show_tool_results=extension_context.show_tool_results)
+        if (
+            extension_context.hidden_thinking_label_requested
+            and not result.hidden_thinking_label_requested
+        ):
+            result = replace(
+                result,
+                hidden_thinking_label_requested=True,
+                hidden_thinking_label=extension_context.hidden_thinking_label,
+            )
         if extension_context.user_message is not None and result.user_message is None:
             result = replace(
                 result,
@@ -3187,6 +3196,8 @@ def _extension_command_result(
             header_update=header_update,
             theme=extension_context.theme,
             show_tool_results=extension_context.show_tool_results,
+            hidden_thinking_label_requested=extension_context.hidden_thinking_label_requested,
+            hidden_thinking_label=extension_context.hidden_thinking_label,
         )
     if extension_context.editor_insert_text is not None:
         return CommandResult(
@@ -3203,6 +3214,8 @@ def _extension_command_result(
             header_update=header_update,
             theme=extension_context.theme,
             show_tool_results=extension_context.show_tool_results,
+            hidden_thinking_label_requested=extension_context.hidden_thinking_label_requested,
+            hidden_thinking_label=extension_context.hidden_thinking_label,
         )
     if extension_context.editor_paste_text is not None:
         return CommandResult(
@@ -3219,6 +3232,8 @@ def _extension_command_result(
             header_update=header_update,
             theme=extension_context.theme,
             show_tool_results=extension_context.show_tool_results,
+            hidden_thinking_label_requested=extension_context.hidden_thinking_label_requested,
+            hidden_thinking_label=extension_context.hidden_thinking_label,
         )
     if extension_context.terminal_title_requested:
         return CommandResult(
@@ -3234,6 +3249,8 @@ def _extension_command_result(
             header_update=header_update,
             theme=extension_context.theme,
             show_tool_results=extension_context.show_tool_results,
+            hidden_thinking_label_requested=extension_context.hidden_thinking_label_requested,
+            hidden_thinking_label=extension_context.hidden_thinking_label,
         )
     if extension_context.user_message is not None:
         return CommandResult(
@@ -3249,6 +3266,8 @@ def _extension_command_result(
             header_update=header_update,
             theme=extension_context.theme,
             show_tool_results=extension_context.show_tool_results,
+            hidden_thinking_label_requested=extension_context.hidden_thinking_label_requested,
+            hidden_thinking_label=extension_context.hidden_thinking_label,
             user_message=extension_context.user_message,
             user_message_delivery=cast(
                 Literal["steer", "follow_up"],
@@ -3269,6 +3288,8 @@ def _extension_command_result(
             header_update=header_update,
             theme=extension_context.theme,
             show_tool_results=extension_context.show_tool_results,
+            hidden_thinking_label_requested=extension_context.hidden_thinking_label_requested,
+            hidden_thinking_label=extension_context.hidden_thinking_label,
         )
     return CommandResult(
         handled=True,
@@ -3284,6 +3305,8 @@ def _extension_command_result(
         header_update=header_update,
         theme=extension_context.theme,
         show_tool_results=extension_context.show_tool_results,
+        hidden_thinking_label_requested=extension_context.hidden_thinking_label_requested,
+        hidden_thinking_label=extension_context.hidden_thinking_label,
     )
 
 
@@ -3346,6 +3369,15 @@ def _extension_shortcut_result(
             and result.show_tool_results is None
         ):
             result = replace(result, show_tool_results=extension_context.show_tool_results)
+        if (
+            extension_context.hidden_thinking_label_requested
+            and not result.hidden_thinking_label_requested
+        ):
+            result = replace(
+                result,
+                hidden_thinking_label_requested=True,
+                hidden_thinking_label=extension_context.hidden_thinking_label,
+            )
         return result
     if extension_context.editor_text is not None:
         return CommandResult(
@@ -3362,6 +3394,8 @@ def _extension_shortcut_result(
             header_update=header_update,
             theme=extension_context.theme,
             show_tool_results=extension_context.show_tool_results,
+            hidden_thinking_label_requested=extension_context.hidden_thinking_label_requested,
+            hidden_thinking_label=extension_context.hidden_thinking_label,
         )
     if extension_context.editor_insert_text is not None:
         return CommandResult(
@@ -3378,6 +3412,8 @@ def _extension_shortcut_result(
             header_update=header_update,
             theme=extension_context.theme,
             show_tool_results=extension_context.show_tool_results,
+            hidden_thinking_label_requested=extension_context.hidden_thinking_label_requested,
+            hidden_thinking_label=extension_context.hidden_thinking_label,
         )
     if extension_context.editor_paste_text is not None:
         return CommandResult(
@@ -3394,6 +3430,8 @@ def _extension_shortcut_result(
             header_update=header_update,
             theme=extension_context.theme,
             show_tool_results=extension_context.show_tool_results,
+            hidden_thinking_label_requested=extension_context.hidden_thinking_label_requested,
+            hidden_thinking_label=extension_context.hidden_thinking_label,
         )
     if extension_context.terminal_title_requested:
         return CommandResult(
@@ -3409,6 +3447,8 @@ def _extension_shortcut_result(
             header_update=header_update,
             theme=extension_context.theme,
             show_tool_results=extension_context.show_tool_results,
+            hidden_thinking_label_requested=extension_context.hidden_thinking_label_requested,
+            hidden_thinking_label=extension_context.hidden_thinking_label,
         )
     if result is None:
         return CommandResult(
@@ -3424,6 +3464,8 @@ def _extension_shortcut_result(
             header_update=header_update,
             theme=extension_context.theme,
             show_tool_results=extension_context.show_tool_results,
+            hidden_thinking_label_requested=extension_context.hidden_thinking_label_requested,
+            hidden_thinking_label=extension_context.hidden_thinking_label,
         )
     return CommandResult(
         handled=True,
@@ -3439,6 +3481,8 @@ def _extension_shortcut_result(
         header_update=header_update,
         theme=extension_context.theme,
         show_tool_results=extension_context.show_tool_results,
+        hidden_thinking_label_requested=extension_context.hidden_thinking_label_requested,
+        hidden_thinking_label=extension_context.hidden_thinking_label,
     )
 
 

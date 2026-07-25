@@ -6430,6 +6430,8 @@ class TauTuiApp(App[None]):
                     self._set_tui_theme(command.theme)
                 if command.show_tool_results is not None:
                     self._set_tool_results_expanded(command.show_tool_results)
+                if command.hidden_thinking_label_requested:
+                    self._set_hidden_thinking_label(command.hidden_thinking_label)
                 if command.terminal_title_requested:
                     self._set_extension_terminal_title(command.terminal_title)
                 if command.editor_text is not None:
@@ -6634,6 +6636,8 @@ class TauTuiApp(App[None]):
                 self._set_show_images(command.show_images)
             if command.show_tool_results is not None:
                 self._set_tool_results_expanded(command.show_tool_results)
+            if command.hidden_thinking_label_requested:
+                self._set_hidden_thinking_label(command.hidden_thinking_label)
             if command.theme is not None:
                 self._set_tui_theme(command.theme)
             if _is_reload_command_text(text):
@@ -6941,6 +6945,10 @@ class TauTuiApp(App[None]):
 
     def _set_tool_results_expanded(self, expanded: bool) -> None:
         self.state.show_tool_results = expanded
+        self._refresh()
+
+    def _set_hidden_thinking_label(self, label: str | None) -> None:
+        self.state.hidden_thinking_label = label
         self._refresh()
 
     def _preview_tui_theme(self, theme: str) -> None:
@@ -7746,6 +7754,8 @@ class TauTuiApp(App[None]):
             self._set_tui_theme(result.theme)
         if result.show_tool_results is not None:
             self._set_tool_results_expanded(result.show_tool_results)
+        if result.hidden_thinking_label_requested:
+            self._set_hidden_thinking_label(result.hidden_thinking_label)
         if result.terminal_title_requested:
             self._set_extension_terminal_title(result.terminal_title)
         if result.editor_text is not None:
