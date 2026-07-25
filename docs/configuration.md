@@ -316,6 +316,7 @@ tau --continue
 tau --new-session
 tau --no-session
 tau --session-dir ~/.tau-alt/sessions
+tau --fork <session-id-or-jsonl-path>
 tau --name "Customer bugfix"
 tau export <session-id>
 tau export <session-id> session.html
@@ -335,6 +336,11 @@ creating an indexed session record or writing a session JSONL transcript.
 
 `--session-dir <dir>` uses `<dir>` as the indexed session storage root for
 startup, listing, and export commands.
+
+`--fork <session-id-or-jsonl-path>` copies an existing session JSONL transcript
+into a new indexed session for the current working directory, then starts the
+TUI on that new session. `--name` can be combined with `--fork` to set the
+forked session title.
 
 `tau export` writes a standalone HTML file with the preserved session tree and
 the storage-order transcript. The source can be an indexed session id or a path

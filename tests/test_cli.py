@@ -4,11 +4,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+import anyio
 import pytest
 from typer.testing import CliRunner
 
 from tau_agent import AssistantMessage, UserMessage
-from tau_agent.session import JsonlSessionStorage, MessageEntry
+from tau_agent.session import JsonlSessionStorage, MessageEntry, ModelChangeEntry, SessionInfoEntry
 from tau_ai import (
     FakeProvider,
     ProviderErrorEvent,
@@ -7248,6 +7249,11 @@ def test_default_tui_rejects_blank_startup_session_name() -> None:
         (["--no-session", "--continue"], "--no-session and --continue cannot be used"),
         (["--no-session", "--new-session"], "--no-session and --new-session cannot be used"),
         (["--no-session", "--name", "Customer bugfix"], "--no-session and --name cannot be used"),
+        (["--fork", "session-1", "--session", "session-2"], "--fork and --session cannot be used"),
+        (["--fork", "session-1", "--continue"], "--fork and --continue cannot be used"),
+        (["--fork", "session-1", "--new-session"], "--fork and --new-session cannot be used"),
+        (["--fork", "session-1", "--no-session"], "--fork and --no-session cannot be used"),
+        (["--print", "--fork", "session-1", "hello"], "--fork is supported for TUI startup only"),
     ],
 )
 def test_default_tui_rejects_invalid_continue_session_combinations(
@@ -7273,6 +7279,76 @@ def test_default_tui_rejects_session_with_new_session(tmp_path: Path) -> None:
 
     assert result.exit_code != 0
     assert "--session and --new-session cannot be used together" in result.output
+
+
+def test_default_tui_forks_session_before_starting_tui(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    session_dir = tmp_path / "sessions"
+    manager = SessionManager(TauPaths(session_root=session_dir))
+    source = manager.create_session(
+        cwd=tmp_path,
+        model="fake",
+        title="Source session",
+        session_id="source-session",
+    )
+    source_storage = JsonlSessionStorage(source.path)
+
+    async def write_source() -> None:
+        await source_storage.append(SessionInfoEntry(id="info", cwd=str(tmp_path)))
+        await source_storage.append(ModelChangeEntry(id="model", parent_id="info", model="fake"))
+        await source_storage.append(
+            MessageEntry(
+                id="root",
+                parent_id="model",
+                message=UserMessage(content="Source prompt"),
+            )
+        )
+
+    anyio.run(write_source)
+    calls: list[str | None] = []
+
+    async def fake_run_openai_tui(
+        model: str | None,
+        cwd: Path,
+        session_id: str | None,
+        new_session: bool,
+        provider_name: str | None,
+        auto_compact_token_threshold: int | None,
+        initial_prompt: str | None,
+        session_name: str | None,
+        continue_session: bool,
+        no_session: bool,
+        session_dir: Path | None,
+    ) -> str | None:
+        del model, cwd, new_session, provider_name, auto_compact_token_threshold
+        del initial_prompt, session_name, continue_session, no_session, session_dir
+        calls.append(session_id)
+        return session_id
+
+    monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--session-dir",
+            str(session_dir),
+            "--fork",
+            "source",
+            "--name",
+            "Forked session",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert calls and calls[0] is not None
+    assert calls[0] != source.id
+    forked = manager.get_session(calls[0])
+    assert forked is not None
+    assert forked.parent_session_id == source.id
+    assert forked.title == "Forked session"
+    copied_entries = anyio.run(JsonlSessionStorage(forked.path).read_all)
+    assert [entry.id for entry in copied_entries] == ["info", "model", "root"]
 
 
 def test_legacy_resume_flag_errors_with_migration_hint(tmp_path: Path) -> None:

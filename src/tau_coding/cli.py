@@ -21,7 +21,7 @@ import httpx
 import typer
 
 from tau_agent import AssistantMessage
-from tau_agent.session import JsonlSessionStorage, SessionEntry, SessionStorage
+from tau_agent.session import JsonlSessionStorage, SessionEntry, SessionState, SessionStorage
 from tau_ai import (
     DEFAULT_OPENAI_COMPATIBLE_MAX_RETRIES,
     DEFAULT_OPENAI_COMPATIBLE_MAX_RETRY_DELAY_SECONDS,
@@ -818,6 +818,10 @@ def main(
         str | None,
         typer.Option("--name", "-n", help="Set session display name at startup."),
     ] = None,
+    fork_session_ref: Annotated[
+        str | None,
+        typer.Option("--fork", help="Fork a session id or JSONL path into a new session."),
+    ] = None,
     resume: Annotated[
         str | None,
         typer.Option(
@@ -953,6 +957,18 @@ def main(
     if session is not None and new_session:
         raise typer.BadParameter("--session and --new-session cannot be used together")
 
+    if fork_session_ref is not None and session is not None:
+        raise typer.BadParameter("--fork and --session cannot be used together")
+
+    if fork_session_ref is not None and continue_session:
+        raise typer.BadParameter("--fork and --continue cannot be used together")
+
+    if fork_session_ref is not None and new_session:
+        raise typer.BadParameter("--fork and --new-session cannot be used together")
+
+    if fork_session_ref is not None and no_session:
+        raise typer.BadParameter("--fork and --no-session cannot be used together")
+
     if continue_session and session is not None:
         raise typer.BadParameter("--continue and --session cannot be used together")
 
@@ -993,6 +1009,9 @@ def main(
 
     if continue_session and print_requested:
         raise typer.BadParameter("--continue is supported for TUI startup only")
+
+    if fork_session_ref is not None and print_requested:
+        raise typer.BadParameter("--fork is supported for TUI startup only")
 
     positional_args = prompt_args or []
     command = positional_args[0] if positional_args else None
@@ -3162,12 +3181,26 @@ def main(
         raise typer.Exit()
 
     if not print_requested:
+        startup_session_id = session
+        if fork_session_ref is not None:
+            try:
+                forked = anyio.run(
+                    fork_session_command,
+                    fork_session_ref,
+                    cwd or Path.cwd(),
+                    _session_manager_from_dir(session_dir),
+                    session_name,
+                )
+            except RuntimeError as exc:
+                raise typer.BadParameter(str(exc)) from exc
+            startup_session_id = forked.id
+            session_name = None
         try:
             resumable_session_id = anyio.run(
                 run_openai_tui,
                 model,
                 cwd or Path.cwd(),
-                session,
+                startup_session_id,
                 new_session,
                 provider,
                 auto_compact_threshold,
@@ -3250,6 +3283,56 @@ def _session_manager_from_dir(session_dir: Path | None) -> SessionManager:
     if session_dir is None:
         return SessionManager()
     return SessionManager(TauPaths(session_root=session_dir.expanduser().resolve()))
+
+
+async def fork_session_command(
+    source_ref: str,
+    cwd: Path,
+    session_manager: SessionManager | None = None,
+    title: str | None = None,
+) -> CodingSessionRecord:
+    """Copy a source session into a new indexed session for the target cwd."""
+    manager = session_manager or SessionManager()
+    source_path, source_record = _resolve_fork_source(source_ref, manager)
+    entries = await JsonlSessionStorage(source_path).read_all()
+    if not entries:
+        raise RuntimeError(f"Fork source has no session entries: {source_ref}")
+    state = SessionState.from_entries(entries)
+    source_title = source_record.title if source_record is not None else source_path.stem
+    record = manager.create_session(
+        cwd=cwd,
+        model=state.model or (source_record.model if source_record is not None else "unknown"),
+        provider_name=source_record.provider_name if source_record is not None else None,
+        title=title or (f"Fork of {source_title}" if source_title else None),
+        parent_session_id=source_record.id if source_record is not None else None,
+    )
+    storage = JsonlSessionStorage(record.path)
+    for entry in entries:
+        await storage.append(entry)
+    return record
+
+
+def _resolve_fork_source(
+    source_ref: str,
+    manager: SessionManager,
+) -> tuple[Path, CodingSessionRecord | None]:
+    candidate_path = Path(source_ref).expanduser()
+    if candidate_path.exists():
+        if candidate_path.is_dir():
+            raise RuntimeError(f"Fork source is a directory: {candidate_path}")
+        return candidate_path, None
+
+    record = manager.get_session(source_ref)
+    if record is not None:
+        return record.path, record
+
+    matches = [record for record in manager.list_sessions() if record.id.startswith(source_ref)]
+    if len(matches) == 1:
+        match = matches[0]
+        return match.path, match
+    if len(matches) > 1:
+        raise RuntimeError(f"Ambiguous session id prefix: {source_ref}")
+    raise RuntimeError(f"Unknown session or file: {source_ref}")
 
 
 def render_session_list(records: list[CodingSessionRecord]) -> None:
