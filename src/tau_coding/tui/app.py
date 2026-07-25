@@ -2806,7 +2806,8 @@ class UserMessagePickerScreen(ModalScreen[str | None]):
         with Vertical(id="user-message-picker"):
             yield Static("Fork from Message", id="user-message-picker-title")
             yield Static(
-                "Select a user message to copy the active path up to that point.",
+                "Select a user message to copy the active path up to that point "
+                "into a new session.",
                 id="user-message-picker-description",
             )
             yield ListView(
