@@ -2960,6 +2960,7 @@ async def test_tui_app_share_command_runs_session_share() -> None:
         prompt = app.query_one("#prompt")
         prompt.value = "/share"
         await pilot.press("enter")
+        await pilot.pause()
 
         assert session.share_count == 1
         assert notifications == [

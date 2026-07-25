@@ -5568,6 +5568,7 @@ class TauTuiApp(App[None]):
         self._compaction_worker: Worker[None] | None = None
         self._branch_worker: Worker[None] | None = None
         self._reload_worker: Worker[None] | None = None
+        self._share_worker: Worker[None] | None = None
         self._compaction_queued_messages: list[tuple[str, Literal["steer", "follow_up"]]] = []
         self._terminal_worker: Worker[None] | None = None
         self._prompt_run_id = 0
@@ -5878,7 +5879,13 @@ class TauTuiApp(App[None]):
             if command.import_requested and command.import_path is not None:
                 await self._import_session(command.import_path)
             if command.share_requested:
-                await self._share_session()
+                if self._is_share_active():
+                    self._notify("A share is already running.", severity="warning")
+                else:
+                    self._share_worker = self.run_worker(
+                        self._run_share_session(),
+                        exclusive=False,
+                    )
             if command.resume_session_id is not None:
                 await self._resume_session(command.resume_session_id)
             if command.resume_picker_requested:
@@ -5968,6 +5975,11 @@ class TauTuiApp(App[None]):
         worker = self._reload_worker
         return worker is not None and not worker.is_finished and not worker.is_cancelled
 
+    def _is_share_active(self) -> bool:
+        """Return whether a TUI share worker is still running."""
+        worker = self._share_worker
+        return worker is not None and not worker.is_finished and not worker.is_cancelled
+
     def _is_tui_activity_active(self) -> bool:
         """Return whether any visible TUI operation should show active progress."""
         return (
@@ -5976,6 +5988,7 @@ class TauTuiApp(App[None]):
             or self._is_branch_active()
             or self._is_terminal_command_active()
             or self._is_reload_active()
+            or self._is_share_active()
         )
 
     def _is_agent_or_queue_active(self, *, include_branch: bool = True) -> bool:
@@ -6481,6 +6494,9 @@ class TauTuiApp(App[None]):
         if self._cancel_active_terminal_command(notify=True):
             self._last_empty_escape_at = None
             return
+        if self._cancel_active_share(notify=True):
+            self._last_empty_escape_at = None
+            return
         if self._cancel_active_branch(notify=True):
             self._last_empty_escape_at = None
             return
@@ -6526,6 +6542,23 @@ class TauTuiApp(App[None]):
         self._refresh()
         if notify:
             self._notify("Cancelled terminal command.")
+        return True
+
+    def _cancel_active_share(self, *, notify: bool) -> bool:
+        """Cancel the active share worker and restore visible session state."""
+        worker = self._share_worker
+        if worker is None or worker.is_finished or worker.is_cancelled:
+            return False
+
+        worker.cancel()
+        self._share_worker = None
+        self.state.items = [
+            item for item in self.state.items if item.text != "Sharing current session..."
+        ]
+        self._sync_activity_indicator()
+        self._refresh()
+        if notify:
+            self._notify("Cancelled share.", severity="warning")
         return True
 
     def _cancel_active_branch(self, *, notify: bool) -> bool:
@@ -7007,16 +7040,39 @@ class TauTuiApp(App[None]):
             self._notify(f"Error: {exc}", severity="error")
         self._refresh()
 
-    async def _share_session(self) -> None:
+    async def _run_share_session(self) -> None:
         share = getattr(self.session, "share", None)
         if share is None:
             self._notify("Session sharing is not available.", severity="warning")
+            self._share_worker = None
             return
+        self.state.add_item("status", "Sharing current session...")
+        self._sync_activity_indicator()
+        self._refresh()
         try:
             message = await share()
-            self._notify(message)
+        except asyncio.CancelledError:
+            self.state.items = [
+                item for item in self.state.items if item.text != "Sharing current session..."
+            ]
+            self._sync_activity_indicator()
+            self._refresh()
+            return
         except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
+            self.state.items = [
+                item for item in self.state.items if item.text != "Sharing current session..."
+            ]
+            self._sync_activity_indicator()
             self._notify(f"Error: {exc}", severity="error")
+            self._refresh()
+            return
+        finally:
+            self._share_worker = None
+        self.state.items = [
+            item for item in self.state.items if item.text != "Sharing current session..."
+        ]
+        self._sync_activity_indicator()
+        self._notify(message)
         self._refresh()
 
     async def _open_tree_picker(self) -> None:
