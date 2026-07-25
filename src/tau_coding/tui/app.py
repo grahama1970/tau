@@ -32,6 +32,7 @@ from textual.events import Key, Resize
 from textual.geometry import Spacing
 from textual.screen import ModalScreen
 from textual.timer import Timer
+from textual.widget import Widget
 from textual.widgets import (
     Button,
     Footer,
@@ -4501,6 +4502,65 @@ class ExtensionEditorScreen(ModalScreen[str | None]):
         self.dismiss(self.query_one("#extension-editor-value", TextArea).text)
 
 
+class ExtensionCustomScreen(ModalScreen[object]):
+    """Pi-style extension custom modal backed by Textual widgets."""
+
+    def __init__(
+        self,
+        extension_name: str,
+        factory: Callable[..., object],
+        *,
+        options: Mapping[str, object] | None = None,
+        theme: TuiTheme,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
+        super().__init__()
+        self.extension_name = extension_name
+        self.factory = factory
+        self.options = options or {}
+        self.theme = theme
+        self.keybindings = keybindings or TuiKeybindings()
+        self._done_called = False
+
+    def compose(self) -> ComposeResult:
+        """Compose the extension custom screen."""
+        title = str(self.options.get("title", f"{self.extension_name} custom UI"))
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+        with Vertical(id="confirmation"):
+            yield Static(title, id="confirmation-title")
+            content = self._build_content()
+            if isinstance(content, Widget):
+                yield content
+            else:
+                yield Static(_extension_custom_content_text(content), id="confirmation-message")
+            yield Static(f"{cancel_key} closes", id="confirmation-help")
+
+    def _build_content(self) -> object:
+        try:
+            return self.factory(
+                self.app,
+                self.theme,
+                self.keybindings,
+                self._done,
+            )
+        except TypeError:
+            return self.factory(self._done)
+
+    def _done(self, result: object = None) -> None:
+        self._done_called = True
+        self.dismiss(result)
+
+    def on_key(self, event: Key) -> None:
+        """Route the configured cancel key."""
+        if _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.dismiss(None)
+
+
 class LoginProviderPickerScreen(ModalScreen[str | None]):
     """Provider picker for the TUI login flow."""
 
@@ -7383,6 +7443,20 @@ class TauTuiApp(App[None]):
                 ExtensionEditorScreen(
                     str(payload.get("title", f"{extension_name} editor")),
                     prefill=str(payload.get("prefill", "")),
+                    keybindings=keybindings,
+                )
+            )
+        if method == "custom":
+            factory = payload.get("factory")
+            if not callable(factory):
+                raise TypeError("custom extension UI requires a callable factory")
+            options = payload.get("options")
+            return await self.push_screen_wait(
+                ExtensionCustomScreen(
+                    extension_name,
+                    factory,
+                    options=options if isinstance(options, Mapping) else None,
+                    theme=self.tui_settings.resolved_theme,
                     keybindings=keybindings,
                 )
             )
@@ -12759,6 +12833,16 @@ def _terminal_input_event_data(event: Key) -> str:
     if character is not None:
         return str(character)
     return event.key
+
+
+def _extension_custom_content_text(content: object) -> str:
+    if content is None:
+        return ""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, Sequence) and not isinstance(content, str):
+        return "\n".join(str(line) for line in content)
+    return str(content)
 
 
 class _PtyProofRealAppSessionState:

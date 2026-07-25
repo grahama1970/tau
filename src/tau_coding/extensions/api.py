@@ -698,6 +698,20 @@ class ExtensionCommandUi:
         )
         return None if result is None else str(result)
 
+    async def custom(
+        self,
+        factory: Callable[..., Any],
+        options: Mapping[str, Any] | None = None,
+    ) -> Any:
+        """Show a custom Textual-backed extension UI and return its result."""
+        if not callable(factory):
+            raise TypeError("custom UI factory must be callable")
+        return await self._request_ui(
+            "custom",
+            factory=factory,
+            options={} if options is None else dict(options),
+        )
+
     def onTerminalInput(self, handler: Callable[[str], Any]) -> Callable[[], None]:  # noqa: N802
         """Pi-compatible alias for listening to prompt terminal input."""
         return self._context.register_terminal_input_listener(handler)
