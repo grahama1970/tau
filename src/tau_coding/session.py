@@ -53,6 +53,8 @@ from tau_coding.commands import (
     CommandRegistry,
     CommandResult,
     CommandStatusUpdate,
+    CommandWidgetPlacement,
+    CommandWidgetUpdate,
     SlashCommand,
     create_default_command_registry,
 )
@@ -2930,6 +2932,7 @@ def _extension_slash_command(
             )
         notifications = _extension_command_notifications(extension_context)
         status_updates = _extension_command_status_updates(extension_context)
+        widget_updates = _extension_command_widget_updates(extension_context)
         if isinstance(result, CommandResult):
             if extension_context.editor_text is not None and result.editor_text is None:
                 result = replace(result, editor_text=extension_context.editor_text)
@@ -2946,6 +2949,8 @@ def _extension_slash_command(
                 result = replace(result, notifications=(*result.notifications, *notifications))
             if status_updates:
                 result = replace(result, status_updates=(*result.status_updates, *status_updates))
+            if widget_updates:
+                result = replace(result, widget_updates=(*result.widget_updates, *widget_updates))
             if extension_context.user_message is not None and result.user_message is None:
                 result = replace(
                     result,
@@ -2964,6 +2969,7 @@ def _extension_slash_command(
                 terminal_title=extension_context.terminal_title,
                 notifications=notifications,
                 status_updates=status_updates,
+                widget_updates=widget_updates,
             )
         if extension_context.terminal_title_requested:
             return CommandResult(
@@ -2972,6 +2978,7 @@ def _extension_slash_command(
                 terminal_title=extension_context.terminal_title,
                 notifications=notifications,
                 status_updates=status_updates,
+                widget_updates=widget_updates,
             )
         if extension_context.user_message is not None:
             return CommandResult(
@@ -2980,6 +2987,7 @@ def _extension_slash_command(
                 terminal_title=extension_context.terminal_title,
                 notifications=notifications,
                 status_updates=status_updates,
+                widget_updates=widget_updates,
                 user_message=extension_context.user_message,
                 user_message_delivery=cast(
                     Literal["steer", "follow_up"],
@@ -2993,6 +3001,7 @@ def _extension_slash_command(
                 terminal_title=extension_context.terminal_title,
                 notifications=notifications,
                 status_updates=status_updates,
+                widget_updates=widget_updates,
             )
         return CommandResult(
             handled=True,
@@ -3001,6 +3010,7 @@ def _extension_slash_command(
             message=str(result),
             notifications=notifications,
             status_updates=status_updates,
+            widget_updates=widget_updates,
         )
 
     return SlashCommand(
@@ -3044,6 +3054,19 @@ def _extension_command_status_updates(
     return tuple(
         CommandStatusUpdate(key=update.key, text=update.text)
         for update in context.status_updates
+    )
+
+
+def _extension_command_widget_updates(
+    context: ExtensionCommandContext,
+) -> tuple[CommandWidgetUpdate, ...]:
+    return tuple(
+        CommandWidgetUpdate(
+            key=update.key,
+            lines=update.lines,
+            placement=cast(CommandWidgetPlacement, update.placement),
+        )
+        for update in context.widget_updates
     )
 
 

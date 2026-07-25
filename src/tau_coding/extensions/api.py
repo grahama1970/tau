@@ -68,6 +68,7 @@ class ExtensionCommandContext:
     terminal_title: str | None = None
     notifications: list[ExtensionNotification] = field(default_factory=list)
     status_updates: list[ExtensionStatusUpdate] = field(default_factory=list)
+    widget_updates: list[ExtensionWidgetUpdate] = field(default_factory=list)
     user_message: str | None = None
     user_message_delivery: str = "steer"
     ui: ExtensionCommandUi = field(init=False)
@@ -109,6 +110,25 @@ class ExtensionCommandContext:
             raise TypeError("set_status text must be text or None")
         self.status_updates.append(ExtensionStatusUpdate(key=status_key, text=text))
 
+    def set_widget(
+        self,
+        key: str,
+        lines: str | Sequence[str] | None,
+        *,
+        placement: str = "above_editor",
+    ) -> None:
+        """Request that Tau set or clear a prompt-region extension widget."""
+        widget_key = key.strip()
+        if not widget_key:
+            raise ValueError("set_widget requires a non-empty key")
+        self.widget_updates.append(
+            ExtensionWidgetUpdate(
+                key=widget_key,
+                lines=_normalize_widget_lines(lines),
+                placement=_normalize_widget_placement(placement),
+            )
+        )
+
     def send_user_message(self, text: str, *, deliver_as: str = "steer") -> None:
         """Request that Tau send or queue a user message after the command returns."""
         message = text.strip()
@@ -140,6 +160,16 @@ class ExtensionCommandUi:
     def set_status(self, key: str, text: str | None) -> None:
         """Request that Tau set or clear a persistent extension status line."""
         self._context.set_status(key, text)
+
+    def set_widget(
+        self,
+        key: str,
+        lines: str | Sequence[str] | None,
+        *,
+        placement: str = "above_editor",
+    ) -> None:
+        """Request that Tau set or clear a prompt-region extension widget."""
+        self._context.set_widget(key, lines, placement=placement)
 
 
 class ExtensionAPI:
@@ -250,6 +280,15 @@ class ExtensionStatusUpdate:
     text: str | None
 
 
+@dataclass(frozen=True, slots=True)
+class ExtensionWidgetUpdate:
+    """Prompt-region widget update requested by an extension command."""
+
+    key: str
+    lines: tuple[str, ...] | None
+    placement: str = "above_editor"
+
+
 def _normalize_argument_completions(
     values: Sequence[Any],
 ) -> tuple[ExtensionArgumentCompletion, ...]:
@@ -305,3 +344,20 @@ def _normalize_notification_severity(value: str) -> str:
     if normalized == "error":
         return "error"
     raise ValueError("notification severity must be 'info', 'warning', or 'error'")
+
+
+def _normalize_widget_lines(lines: str | Sequence[str] | None) -> tuple[str, ...] | None:
+    if lines is None:
+        return None
+    if isinstance(lines, str):
+        return tuple(lines.splitlines() or (lines,))
+    return tuple(str(line) for line in lines)
+
+
+def _normalize_widget_placement(value: str) -> str:
+    normalized = value.strip().lower().replace("-", "_")
+    if normalized in {"", "above", "above_editor", "aboveeditor"}:
+        return "above_editor"
+    if normalized in {"below", "below_editor", "beloweditor"}:
+        return "below_editor"
+    raise ValueError("widget placement must be 'above_editor' or 'below_editor'")

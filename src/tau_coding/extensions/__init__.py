@@ -10,6 +10,7 @@ from tau_coding.extensions.api import (
     ExtensionShortcut,
     ExtensionShortcutContext,
     ExtensionStatusUpdate,
+    ExtensionWidgetUpdate,
 )
 from tau_coding.extensions.loader import (
     ExtensionLoadResult,
@@ -27,6 +28,7 @@ __all__ = [
     "ExtensionShortcut",
     "ExtensionShortcutContext",
     "ExtensionStatusUpdate",
+    "ExtensionWidgetUpdate",
     "ExtensionLoadResult",
     "LoadedExtension",
     "load_extension_tools",

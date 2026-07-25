@@ -697,6 +697,31 @@ Acceptance:
 - This slice does not claim Pi's custom footer replacement, arbitrary widgets,
   working indicator customization, or event-driven status updates.
 
+### Slice 33: Extension Command Prompt Widgets
+
+Pi extensions can call `ctx.ui.setWidget(key, ...)` to show extension-owned
+content above or below the editor. Tau now supports a bounded text-widget form
+for synchronous extension commands, rendered in dedicated prompt-region slots.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Extension command handlers can call `context.set_widget(key, lines_or_none,
+  placement=...)`.
+- The `context.ui` facade exposes `set_widget(...)`.
+- Widget content accepts a string, a sequence of strings, or `None` to clear.
+- Placement accepts above-editor or below-editor variants.
+- `CommandResult` carries widget updates through the command registry.
+- The TUI renders extension widgets above or below the prompt and hides empty
+  widget slots.
+- Moving a widget key to another placement removes it from the previous
+  placement.
+- Widget side effects compose with explicit `CommandResult`, notifications,
+  status lines, title overrides, editor prefill, and user-message side effects.
+- This slice does not claim Pi's arbitrary custom render callbacks, theme object
+  access, keyboard-driven widgets, games, overlays, or dialogs.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

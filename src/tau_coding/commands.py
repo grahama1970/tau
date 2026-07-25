@@ -39,6 +39,8 @@ BUILTIN_TUI_THEME_NAMES = ("tau-dark", "tau-light", "high-contrast")
 SCILLM_DEFAULT_BASE_URL = "http://localhost:4001"
 SCILLM_AUTH_ENV_NAMES = ("SCILLM_API_KEY", "SCILLM_PROXY_KEY", "LITELLM_MASTER_KEY")
 
+type CommandWidgetPlacement = Literal["above_editor", "below_editor"]
+
 
 class CommandSession(Protocol):
     """Session attributes available to slash-command handlers."""
@@ -130,6 +132,15 @@ class CommandStatusUpdate:
 
 
 @dataclass(frozen=True, slots=True)
+class CommandWidgetUpdate:
+    """Prompt-region widget update requested by a coding-session slash command."""
+
+    key: str
+    lines: tuple[str, ...] | None
+    placement: CommandWidgetPlacement = "above_editor"
+
+
+@dataclass(frozen=True, slots=True)
 class CommandResult:
     """Result of handling a coding-session slash command."""
 
@@ -174,6 +185,7 @@ class CommandResult:
     terminal_title: str | None = None
     notifications: tuple[CommandNotification, ...] = ()
     status_updates: tuple[CommandStatusUpdate, ...] = ()
+    widget_updates: tuple[CommandWidgetUpdate, ...] = ()
     user_message: str | None = None
     user_message_delivery: Literal["steer", "follow_up"] = "steer"
     message: str | None = None

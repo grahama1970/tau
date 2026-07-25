@@ -5580,6 +5580,15 @@ class TauTuiApp(App[None]):
         color: $tau-muted-text;
     }
 
+    #extension-widgets-above,
+    #extension-widgets-below {
+        height: auto;
+        margin: 0 1 1 1;
+        padding: 0 1;
+        background: $tau-screen-background;
+        color: $tau-screen-text;
+    }
+
     #prompt-row {
         height: auto;
         margin: 0 1 1 1;
@@ -6004,6 +6013,8 @@ class TauTuiApp(App[None]):
             self.tui_settings.turn_notification
         )
         self._extension_statuses: dict[str, str] = {}
+        self._extension_widgets_above: dict[str, tuple[str, ...]] = {}
+        self._extension_widgets_below: dict[str, tuple[str, ...]] = {}
         self._app_has_focus = True
         self._active_notification_keys: set[tuple[str, str]] = set()
         self._supports_pyperclip: bool | None = None
@@ -6071,6 +6082,7 @@ class TauTuiApp(App[None]):
                 )
                 yield Static("", id="queued-messages")
                 yield Static("", id="extension-status")
+                yield Static("", id="extension-widgets-above")
                 with Horizontal(id="prompt-row"):
                     yield Static("τ", id="prompt-prefix")
                     yield PromptInput(
@@ -6079,6 +6091,7 @@ class TauTuiApp(App[None]):
                         tui_keybindings=self.tui_settings.keybindings,
                         show_cursor=self.tui_settings.show_hardware_cursor,
                     )
+                yield Static("", id="extension-widgets-below")
                 yield CompactSessionInfo(id="compact-session-info")
                 yield Static("", id="autocomplete")
         yield Footer()
@@ -6223,6 +6236,7 @@ class TauTuiApp(App[None]):
                     self._append_command_message(text, command.message)
                 self._deliver_command_notifications(command)
                 self._apply_command_status_updates(command)
+                self._apply_command_widget_updates(command)
                 if command.terminal_title_requested:
                     self._set_extension_terminal_title(command.terminal_title)
                 if command.editor_text is not None:
@@ -6430,6 +6444,7 @@ class TauTuiApp(App[None]):
                     self._show_command_message(text, command.message)
             self._deliver_command_notifications(command)
             self._apply_command_status_updates(command)
+            self._apply_command_widget_updates(command)
             if command.terminal_title_requested:
                 self._set_extension_terminal_title(command.terminal_title)
             if command.editor_text is not None:
@@ -6897,6 +6912,26 @@ class TauTuiApp(App[None]):
                 self._extension_statuses.pop(update.key, None)
             else:
                 self._extension_statuses[update.key] = update.text
+
+    def _apply_command_widget_updates(self, command: CommandResult) -> None:
+        """Apply prompt-region widget updates requested by a slash-command handler."""
+        for update in command.widget_updates:
+            target = (
+                self._extension_widgets_below
+                if update.placement == "below_editor"
+                else self._extension_widgets_above
+            )
+            other = (
+                self._extension_widgets_above
+                if update.placement == "below_editor"
+                else self._extension_widgets_below
+            )
+            if update.lines is None:
+                target.pop(update.key, None)
+                other.pop(update.key, None)
+            else:
+                other.pop(update.key, None)
+                target[update.key] = update.lines
 
     def _set_extension_terminal_title(self, title: str | None) -> None:
         """Override or clear the terminal title requested by an extension command."""
@@ -8501,6 +8536,14 @@ class TauTuiApp(App[None]):
         status_text = _render_extension_statuses(self._extension_statuses)
         extension_status.display = bool(status_text)
         extension_status.update(status_text)
+        widgets_above = self.query_one("#extension-widgets-above", Static)
+        widgets_above_text = _render_extension_widgets(self._extension_widgets_above)
+        widgets_above.display = bool(widgets_above_text)
+        widgets_above.update(widgets_above_text)
+        widgets_below = self.query_one("#extension-widgets-below", Static)
+        widgets_below_text = _render_extension_widgets(self._extension_widgets_below)
+        widgets_below.display = bool(widgets_below_text)
+        widgets_below.update(widgets_below_text)
         self._sync_activity_indicator()
         self._refresh_footer_bindings()
 
@@ -10778,6 +10821,17 @@ def _render_queued_messages(
 def _render_extension_statuses(statuses: dict[str, str]) -> str:
     """Render persistent extension status entries near the prompt."""
     return "  |  ".join(f"{key}: {value}" for key, value in statuses.items())
+
+
+def _render_extension_widgets(widgets: dict[str, tuple[str, ...]]) -> str:
+    """Render extension-owned prompt-region widgets."""
+    rendered: list[str] = []
+    for key, lines in widgets.items():
+        if len(lines) == 1:
+            rendered.append(f"{key}: {lines[0]}")
+        else:
+            rendered.append("\n".join((f"{key}:", *(f"  {line}" for line in lines))))
+    return "\n\n".join(rendered)
 
 
 def _queued_message_preview(message: str) -> str:
