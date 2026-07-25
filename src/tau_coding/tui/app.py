@@ -5520,6 +5520,7 @@ class TauTuiApp(App[None]):
         self.adapter = TuiEventAdapter(self.state)
         self._prompt_worker: Worker[None] | None = None
         self._compaction_worker: Worker[None] | None = None
+        self._branch_worker: Worker[None] | None = None
         self._compaction_queued_messages: list[tuple[str, Literal["steer", "follow_up"]]] = []
         self._terminal_worker: Worker[None] | None = None
         self._prompt_run_id = 0
@@ -5886,12 +5887,17 @@ class TauTuiApp(App[None]):
         worker = self._compaction_worker
         return worker is not None and not worker.is_finished and not worker.is_cancelled
 
+    def _is_branch_active(self) -> bool:
+        """Return whether a branch/fork worker is still running."""
+        worker = self._branch_worker
+        return worker is not None and not worker.is_finished and not worker.is_cancelled
+
     def _is_terminal_command_active(self) -> bool:
         """Return whether an input-bar terminal command is still running."""
         worker = self._terminal_worker
         return worker is not None and not worker.is_finished and not worker.is_cancelled
 
-    def _is_agent_or_queue_active(self) -> bool:
+    def _is_agent_or_queue_active(self, *, include_branch: bool = True) -> bool:
         """Return whether compaction would race an active or queued agent turn."""
         self._sync_queue_state()
         worker = self._prompt_worker
@@ -5901,6 +5907,7 @@ class TauTuiApp(App[None]):
             self.state.running
             or is_session_running
             or is_worker_active
+            or (include_branch and self._is_branch_active())
             or self.state.queued_message_count > 0
         )
 
@@ -6355,6 +6362,9 @@ class TauTuiApp(App[None]):
         if self._cancel_active_terminal_command(notify=True):
             self._last_empty_escape_at = None
             return
+        if self._cancel_active_branch(notify=True):
+            self._last_empty_escape_at = None
+            return
         if self._cancel_active_prompt(notify=True):
             self._last_empty_escape_at = None
             return
@@ -6397,6 +6407,22 @@ class TauTuiApp(App[None]):
         self._refresh()
         if notify:
             self._notify("Cancelled terminal command.")
+        return True
+
+    def _cancel_active_branch(self, *, notify: bool) -> bool:
+        """Cancel the active branch/fork worker and restore visible session state."""
+        worker = self._branch_worker
+        if worker is None or worker.is_finished or worker.is_cancelled:
+            return False
+
+        worker.cancel()
+        self._branch_worker = None
+        self.state.clear()
+        self.state.set_skills(self.session.skills)
+        self.state.load_messages(self.session.messages)
+        self._refresh()
+        if notify:
+            self._notify("Cancelled branch operation.")
         return True
 
     def _clear_terminal_command_prompt(self) -> bool:
@@ -6911,7 +6937,7 @@ class TauTuiApp(App[None]):
     def _handle_fork_picker_result(self, entry_id: str | None) -> None:
         if entry_id is None:
             return
-        self.run_worker(
+        self._branch_worker = self.run_worker(
             self._branch_to_tree_entry(entry_id, summarize=False),
             exclusive=False,
         )
@@ -6935,7 +6961,7 @@ class TauTuiApp(App[None]):
     def _handle_tree_picker_result(self, result: TreePickerResult | None) -> None:
         if result is None:
             return
-        self.run_worker(
+        self._branch_worker = self.run_worker(
             self._branch_to_tree_entry(
                 result.entry_id,
                 summarize=result.summarize,
@@ -6951,7 +6977,7 @@ class TauTuiApp(App[None]):
         summarize: bool,
         custom_instructions: str | None = None,
     ) -> None:
-        if self._is_agent_or_queue_active():
+        if self._is_agent_or_queue_active(include_branch=False):
             self._notify(TREE_RUNNING_MESSAGE, severity="warning")
             return
         branch_to_entry = getattr(self.session, "branch_to_entry", None)
@@ -6983,8 +7009,16 @@ class TauTuiApp(App[None]):
                 self._notify(result.message)
             elif isinstance(result, str):
                 self._notify(result)
+        except asyncio.CancelledError:
+            self.state.clear()
+            self.state.set_skills(self.session.skills)
+            self.state.load_messages(self.session.messages)
+            self._refresh()
+            return
         except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
             self._notify(f"Error: {exc}", severity="error")
+        finally:
+            self._branch_worker = None
         self._refresh()
 
     async def _new_session(self) -> None:
