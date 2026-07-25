@@ -927,7 +927,14 @@ def _transcript_item_markdown(
         show_tool_results=show_tool_results,
         tool_results_key_hint=tool_results_key_hint,
     )
-    if item.role in {"assistant", "thinking", "status", "branch_summary", "compaction_summary"}:
+    if item.role in {
+        "assistant",
+        "thinking",
+        "status",
+        "custom",
+        "branch_summary",
+        "compaction_summary",
+    }:
         return visible_text
     return _plain_markdown(visible_text)
 
@@ -1315,7 +1322,7 @@ def _render_chat_body(
     )
     if patch_body is not None:
         return patch_body
-    if role == "status":
+    if role in {"status", "custom"}:
         return _plain_text(display_text, body_style=body_style)
     if role in {"assistant", "thinking"}:
         if _has_unclosed_fence(display_text):

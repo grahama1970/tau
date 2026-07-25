@@ -381,6 +381,22 @@ Acceptance:
 - The output states that these commands write receipts only and do not execute
   mutations.
 
+### Slice 18: Distinct Custom Entry Rendering
+
+Pi renders extension-owned custom messages separately from ordinary status
+messages. Tau does not yet expose custom extension renderer hooks, but it
+already restores durable `CustomEntry` session records. Render those records
+with a dedicated transcript role instead of folding them into generic status.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Restored `CustomEntry` records use the `custom` transcript role.
+- Built-in themes define a `custom` role style.
+- Default custom-entry bodies remain plain text/JSON; Tau does not claim custom
+  extension renderers until the extension API has a real renderer contract.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

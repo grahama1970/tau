@@ -181,7 +181,7 @@ class TuiState:
     def add_custom_entry(self, entry: CustomEntry) -> None:
         """Append an extension/application-owned session entry to the transcript."""
         payload = dumps(entry.data, indent=2, sort_keys=True)
-        self.add_item("status", f"Custom entry: {entry.namespace}\n{payload}")
+        self.add_item("custom", f"Custom entry: {entry.namespace}\n{payload}")
 
     def record_tool_result(self, result: AgentToolResult) -> None:
         """Attach a tool result to its matching call, or append an orphan result."""
