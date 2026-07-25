@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import shlex
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
@@ -21,6 +22,8 @@ from tau_coding.thinking import normalize_thinking_level
 from tau_coding.workflows.catalog import get_workflow, list_workflows
 
 BUILTIN_TUI_THEME_NAMES = ("tau-dark", "tau-light", "high-contrast")
+SCILLM_DEFAULT_BASE_URL = "http://localhost:4001"
+SCILLM_AUTH_ENV_NAMES = ("SCILLM_API_KEY", "SCILLM_PROXY_KEY", "LITELLM_MASTER_KEY")
 
 
 class CommandSession(Protocol):
@@ -466,6 +469,16 @@ def create_default_command_registry() -> CommandRegistry:
             description="Choose models available to quick-cycle with Ctrl+P.",
             handler=_scoped_models_command,
             search_terms=("scope", "quick", "cycle", "ctrl+p"),
+        )
+    )
+    registry.register(
+        SlashCommand(
+            name="scillm",
+            usage="/scillm [base-url]",
+            description="Show Tau's SciLLM proxy surface and receipt commands.",
+            handler=_scillm_command,
+            search_terms=("local", "provider", "proxy", "oauth", "opencode", "llm"),
+            argument_hint="<base-url>",
         )
     )
     registry.register(
@@ -1050,6 +1063,50 @@ def _scoped_models_command(context: CommandContext) -> CommandResult:
     if context.args:
         return CommandResult(handled=True, message="Usage: /scoped-models")
     return CommandResult(handled=True, scoped_models_picker_requested=True)
+
+
+def _scillm_command(context: CommandContext) -> CommandResult:
+    try:
+        args = shlex.split(context.args)
+    except ValueError as exc:
+        return CommandResult(handled=True, message=f"Could not parse /scillm arguments: {exc}")
+    if len(args) > 1 or args in (["-h"], ["--help"]):
+        return CommandResult(handled=True, message="Usage: /scillm [base-url]")
+
+    configured_base_url = os.environ.get("SCILLM_BASE_URL", "").strip()
+    base_url = args[0].rstrip("/") if args else (configured_base_url or SCILLM_DEFAULT_BASE_URL)
+    if not base_url.startswith(("http://", "https://")):
+        return CommandResult(handled=True, message="Usage: /scillm [base-url]")
+
+    auth_lines = [
+        f"- {name}: {'set' if os.environ.get(name) else 'missing'}"
+        for name in SCILLM_AUTH_ENV_NAMES
+    ]
+    lines = [
+        "SciLLM Proxy",
+        "",
+        f"Base URL: {base_url}",
+        f"Current Tau model: {context.session.provider_name}:{context.session.model}",
+        "",
+        "Auth environment:",
+        *auth_lines,
+        "",
+        "Operator checks:",
+        f"- curl -s {base_url}/health/liveliness -H 'Authorization: Bearer <proxy-key>'",
+        f"- curl -s {base_url}/v1/scillm/auth -H 'Authorization: Bearer <proxy-key>'",
+        f"- curl -s {base_url}/v1/scillm/health -H 'Authorization: Bearer <proxy-key>'",
+        "",
+        "Tau receipt commands:",
+        "- uv run tau scillm-worker-launch --work-order <json> --out <receipt>",
+        "- uv run tau scillm-chat-review --request <json> --out <receipt>",
+        "- uv run tau loop2-check-scillm-doctor <receipt.json>",
+        "",
+        "Notes:",
+        "- /scillm is read-only; it does not call providers or mutate state.",
+        "- SciLLM worker DAG nodes use /v1/scillm/opencode/runs, not direct provider APIs.",
+        "- Use /model for model switching inside Tau.",
+    ]
+    return CommandResult(handled=True, message="\n".join(lines))
 
 
 def _thinking_command(context: CommandContext) -> CommandResult:

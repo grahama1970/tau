@@ -165,6 +165,24 @@ Acceptance:
 
 - One command emits a receipt bundle with `mocked: no` where live runtime is used and explicit `does_not_prove` boundaries where not.
 
+### Slice 6: SciLLM Slash Surface
+
+Pi exposes a `/llama` command for local model management. Tau's equivalent
+surface is SciLLM, not a separate llama.cpp router. Add a read-only `/scillm`
+slash command so TUI users can discover the active SciLLM base URL, auth
+environment status, health/auth endpoints, and Tau receipt commands without
+repository archaeology.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- `/scillm` is listed in slash-command autocomplete through the default command
+  registry.
+- `/scillm` reports the configured `SCILLM_BASE_URL`, redacted auth-env
+  presence, and existing Tau SciLLM receipt commands.
+- `/scillm` does not make provider calls or mutate state.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.
