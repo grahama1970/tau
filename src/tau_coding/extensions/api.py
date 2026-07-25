@@ -199,6 +199,22 @@ class ExtensionShortcutContext:
         """Run Tau's manual compaction path when the session supports it."""
         return await _session_compact(self.session, options)
 
+    async def navigate_tree(
+        self,
+        target_id: str,
+        options: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Navigate the active Tau session tree to a prior entry."""
+        return await _session_navigate_tree(self.session, target_id, options)
+
+    async def navigateTree(  # noqa: N802
+        self,
+        target_id: str,
+        options: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Pi-compatible camelCase alias for navigate_tree."""
+        return await self.navigate_tree(target_id, options)
+
     def is_project_trusted(self) -> bool:
         """Return whether project-local trust is active for this session."""
         return _session_project_trusted(self.session)
@@ -669,6 +685,22 @@ class ExtensionCommandContext:
     async def compact(self, options: Mapping[str, Any] | None = None) -> str:
         """Run Tau's manual compaction path when the session supports it."""
         return await _session_compact(self.session, options)
+
+    async def navigate_tree(
+        self,
+        target_id: str,
+        options: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Navigate the active Tau session tree to a prior entry."""
+        return await _session_navigate_tree(self.session, target_id, options)
+
+    async def navigateTree(  # noqa: N802
+        self,
+        target_id: str,
+        options: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Pi-compatible camelCase alias for navigate_tree."""
+        return await self.navigate_tree(target_id, options)
 
     def is_project_trusted(self) -> bool:
         """Return whether project-local trust is active for this session."""
@@ -1980,6 +2012,44 @@ async def _session_compact(session: Any, options: Mapping[str, Any] | None) -> s
     if hasattr(result, "__await__"):
         result = await result
     return str(result)
+
+
+async def _session_navigate_tree(
+    session: Any,
+    target_id: str,
+    options: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    branch_to_entry = getattr(session, "branch_to_entry", None)
+    if not callable(branch_to_entry):
+        raise RuntimeError("active session does not support tree navigation")
+    normalized_target = str(target_id).strip()
+    if not normalized_target:
+        raise ValueError("navigateTree requires a target entry id")
+    options = options or {}
+    result = branch_to_entry(
+        normalized_target,
+        summarize=bool(options.get("summarize", False)),
+        custom_instructions=_optional_option_text(options, "customInstructions"),
+        replace_instructions=bool(
+            options.get("replaceInstructions", options.get("replace_instructions", False))
+        ),
+    )
+    if hasattr(result, "__await__"):
+        result = await result
+    return {
+        "cancelled": False,
+        "message": str(getattr(result, "message", result)),
+        "inputPrefill": getattr(result, "input_prefill", None),
+    }
+
+
+def _optional_option_text(options: Mapping[str, Any], *names: str) -> str | None:
+    for name in names:
+        value = options.get(name)
+        if value is not None:
+            text = str(value).strip()
+            return text or None
+    return None
 
 
 def _session_project_trusted(session: Any) -> bool:
