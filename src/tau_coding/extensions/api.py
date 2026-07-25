@@ -951,14 +951,23 @@ class ExtensionCommandContext:
             return None
         return getter()
 
-    def send_user_message(self, text: str, *, deliver_as: str = "steer") -> None:
+    def send_user_message(self, content: Any, *, deliver_as: str = "steer") -> None:
         """Request that Tau send or queue a user message after the command returns."""
-        message = text.strip()
+        message = _normalize_user_message_content(content)
         if not message:
             raise ValueError("send_user_message requires non-empty text")
         delivery = _normalize_user_message_delivery(deliver_as)
         self.user_message = message
         self.user_message_delivery = delivery
+
+    async def sendUserMessage(  # noqa: N802 - Pi compatibility spelling.
+        self,
+        content: Any,
+        options: Mapping[str, Any] | None = None,
+    ) -> None:
+        """Pi-compatible alias for sending a user message from an extension command."""
+        deliver_as = _user_message_deliver_as_from_options(options)
+        self.send_user_message(content, deliver_as=deliver_as)
 
 
 class ExtensionCommandUi:
@@ -1884,6 +1893,44 @@ def _theme_info_by_name(name: str) -> ThemeInfo | None:
         if theme_info["name"] == normalized_name:
             return theme_info
     return None
+
+
+def _normalize_user_message_content(content: Any) -> str:
+    if isinstance(content, str):
+        return content.strip()
+    if isinstance(content, Mapping):
+        return _normalize_user_message_content_part(content)
+    if isinstance(content, Sequence) and not isinstance(content, (bytes, bytearray)):
+        text_parts = [
+            part_text
+            for part in content
+            if (part_text := _normalize_user_message_content_part(part))
+        ]
+        return "\n".join(text_parts).strip()
+    return str(content).strip()
+
+
+def _normalize_user_message_content_part(part: Any) -> str:
+    part_type = ""
+    text_value: Any = None
+    if isinstance(part, Mapping):
+        part_type = str(part.get("type", "")).strip().lower()
+        text_value = part.get("text")
+    else:
+        part_type = str(getattr(part, "type", "")).strip().lower()
+        text_value = getattr(part, "text", None)
+    if part_type and part_type != "text":
+        return ""
+    if text_value is None:
+        return ""
+    return str(text_value).strip()
+
+
+def _user_message_deliver_as_from_options(options: Mapping[str, Any] | None) -> str:
+    if options is None:
+        return "steer"
+    value = options.get("deliverAs", options.get("deliver_as", "steer"))
+    return str(value)
 
 
 def _normalize_user_message_delivery(value: str) -> str:
