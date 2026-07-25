@@ -4789,8 +4789,10 @@ class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
                 f"{scope_hint} - {cancel_key} closes"
             )
         if item.action == "toggle_resource":
+            scope, state, next_action = _config_map_resource_state(item)
             return (
-                f"{item.description} - {confirm_key}/Space toggles resource - "
+                f"{item.description} - {scope} resource is {state} - "
+                f"{confirm_key}/Space {next_action}s resource - "
                 f"{scope_hint} - {cancel_key} closes"
             )
         return f"{item.description} - {scope_hint} - {cancel_key} closes"
@@ -13805,8 +13807,17 @@ def _config_map_item_label(item: ConfigMapItem) -> str:
     elif item.action == "copy_path":
         action = " [copy]"
     elif item.action == "toggle_resource":
-        action = " [enable]" if item.section == "Disabled resources" else " [disable]"
+        scope, state, next_action = _config_map_resource_state(item)
+        action = f" [{scope} {state}] [{next_action}]"
     return f"{item.section}: {item.label} - {item.value}{action}"
+
+
+def _config_map_resource_state(item: ConfigMapItem) -> tuple[str, str, str]:
+    """Return human-facing scope/state/action labels for a resource row."""
+    scope = item.scope if item.scope != "all" else "resource"
+    if item.section == "Disabled resources":
+        return scope, "disabled", "enable"
+    return scope, "enabled", "disable"
 
 
 def _query_tokens(query: str) -> tuple[str, ...]:

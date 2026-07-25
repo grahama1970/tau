@@ -8968,7 +8968,7 @@ async def test_tui_app_config_map_cycles_pi_scope_tabs() -> None:
 
         assert str(tabs.render()) == "Tabs: ● All  ○ Project  ○ User"
         assert any("Config files: TUI settings -" in label for label in labels())
-        assert "Loaded skills: review - review.md [disable]" in labels()
+        assert "Loaded skills: review - review.md [project enabled] [disable]" in labels()
 
         await pilot.press("ctrl+i")
         await pilot.pause()
@@ -8976,7 +8976,7 @@ async def test_tui_app_config_map_cycles_pi_scope_tabs() -> None:
         assert str(tabs.render()) == "Tabs: ○ All  ● Project  ○ User"
         project_labels = labels()
         assert any("Config files: Project trust -" in label for label in project_labels)
-        assert "Loaded skills: review - review.md [disable]" in project_labels
+        assert "Loaded skills: review - review.md [project enabled] [disable]" in project_labels
         assert any(
             "Diagnostics: review - overrides lower-precedence resource" in label
             for label in project_labels
@@ -8989,7 +8989,7 @@ async def test_tui_app_config_map_cycles_pi_scope_tabs() -> None:
         assert str(tabs.render()) == "Tabs: ○ All  ○ Project  ● User"
         user_labels = labels()
         assert any("Config files: TUI settings -" in label for label in user_labels)
-        assert "Loaded skills: review - review.md [disable]" not in user_labels
+        assert "Loaded skills: review - review.md [project enabled] [disable]" not in user_labels
 
         await pilot.press("ctrl+i")
         await pilot.pause()
@@ -9019,7 +9019,7 @@ async def test_tui_app_config_map_disables_loaded_resource(monkeypatch: pytest.M
             str(item.query_one(Label).render())
             for item in app.screen.query_one("#config-map-list", ListView).children
         ]
-        assert "Loaded skills: review - review.md [disable]" in labels
+        assert "Loaded skills: review - review.md [project enabled] [disable]" in labels
 
         app._handle_config_map_result(
             tui_app.ConfigMapResult("toggle_resource", "/workspace/project/review.md")

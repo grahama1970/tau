@@ -49,7 +49,7 @@ capabilities.
 | Model selector | `model-selector`, `scoped-models-selector` | `ModelPickerScreen` | `MATCHED` | Search, tabs, scoped membership, provider toggles, and reorder are present. |
 | Session selector | `session-selector`, `session-selector-search` | `SessionPickerScreen` | `MATCHED` | Search, current/all, named-only, path toggle, sort, rename, delete are present. |
 | Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `PARTIAL` | Tau backs most daily settings and now exposes the external editor command; do not add dead Pi toggles without backing behavior. |
-| Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist; package/write-scope editing still missing. |
+| Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist and resource rows now expose scope/state/action; package/write-scope editing still missing. |
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login, but daily auth readiness should be more visible. |
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks, summarizes permission/approval receipts, and now surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data; richer interactive component objects remain pending. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider and retry countdown | `PARTIAL` | Footer extensibility exists; first-screen run/auth readiness needs stronger visibility. |
@@ -84,12 +84,29 @@ capabilities.
 
 Port the next highest-value daily-use gap that is still local and bounded:
 
-`Tool execution readability`: keep improving shell/tool/diff readability in the
-existing transcript surface, especially custom tool rendering cases that require
-richer component objects rather than plain transcript text. This moves Tau toward
-tomorrow use without touching SciLLM internals or replacing Tau-only DAG features.
+`Status/footer readiness`: make the first-screen/footer readiness line stronger
+for daily use, especially provider/model/auth/cwd/context/state cues already
+backed by Tau data. This moves Tau toward tomorrow use without touching SciLLM
+internals or replacing Tau-only DAG features.
 
 Latest slice evidence:
+
+- Source inspected: Pi `config-selector.ts`; Tau `ConfigMapScreen` and
+  config-map tests.
+- Destination preserved: Tau's existing config map command/path/diagnostic
+  rows, durable TUI `disabled_resource_paths`, and resource reload behavior.
+- Changed: resource toggle rows now show visible scope/state/action labels such
+  as `[project enabled] [disable]`, and the help line names the current state
+  plus next action.
+- Mocked: Textual render proof is fixture-backed.
+- Live: no provider-live or resource-package write-scope call.
+- Render proof: `/tmp/tau-pi-tui-config-map-proof-1785011920/proof.json`
+  with screenshot
+  `/tmp/tau-pi-tui-config-map-proof-1785011920/tau-config-map-scope-state-filtered.svg`.
+- Remaining gap: Pi's project/global package write-scope override editor is
+  still not implemented in Tau.
+
+Previous slice evidence:
 
 - Source inspected: Pi `tool-execution.ts`, `bash-execution.ts`, and `diff.ts`.
 - Destination preserved: Tau `state.py`/`widgets.py` transcript renderer,
