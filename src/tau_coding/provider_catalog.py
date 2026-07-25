@@ -37,6 +37,10 @@ BUILTIN_PROVIDER_CATALOG: tuple[ProviderCatalogEntry, ...] = (
         api_key_env="OPENAI_API_KEY",
         credential_name="openai",
         models=(
+            "gpt-5.6",
+            "gpt-5.6-sol",
+            "gpt-5.6-terra",
+            "gpt-5.6-luna",
             "gpt-5.5",
             "gpt-5.5-pro",
             "gpt-5.4",
@@ -52,6 +56,10 @@ BUILTIN_PROVIDER_CATALOG: tuple[ProviderCatalogEntry, ...] = (
         default_model="gpt-5.5",
         docs_url="https://platform.openai.com/docs",
         context_windows={
+            "gpt-5.6": 1_050_000,
+            "gpt-5.6-sol": 1_050_000,
+            "gpt-5.6-terra": 1_050_000,
+            "gpt-5.6-luna": 1_050_000,
             "gpt-5.5": 272_000,
             "gpt-5.5-pro": 1_050_000,
             "gpt-5.4": 272_000,
@@ -66,6 +74,10 @@ BUILTIN_PROVIDER_CATALOG: tuple[ProviderCatalogEntry, ...] = (
         },
         thinking_levels=("off", "low", "medium", "high", "xhigh"),
         thinking_models=(
+            "gpt-5.6",
+            "gpt-5.6-sol",
+            "gpt-5.6-terra",
+            "gpt-5.6-luna",
             "gpt-5.5",
             "gpt-5.5-pro",
             "gpt-5.4",
