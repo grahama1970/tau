@@ -1573,7 +1573,12 @@ class CodingSession:
             await provider.aclose()
         self._owned_providers.clear()
 
-    def handle_command(self, text: str) -> CommandResult:
+    def handle_command(
+        self,
+        text: str,
+        *,
+        current_editor_text: str | None = None,
+    ) -> CommandResult:
         """Handle coding-session slash commands.
 
         Prompt-template slash commands are expansion directives, so they remain
@@ -1581,9 +1586,18 @@ class CodingSession:
         """
         if expand_prompt_template_command(text, self._prompt_templates) is not None:
             return CommandResult(handled=False)
-        return self._command_registry.execute(self, text)
+        return self._command_registry.execute(
+            self,
+            text,
+            current_editor_text=current_editor_text,
+        )
 
-    def handle_extension_shortcut(self, key: str) -> CommandResult:
+    def handle_extension_shortcut(
+        self,
+        key: str,
+        *,
+        current_editor_text: str | None = None,
+    ) -> CommandResult:
         """Handle a keyboard shortcut registered by a loaded extension."""
         normalized = key.strip().lower()
         for extension in reversed(self._extensions):
@@ -1595,6 +1609,7 @@ class CodingSession:
                         session=self,
                         key=normalized,
                         extension_name=extension.name,
+                        current_editor_text=current_editor_text or "",
                     )
                 )
                 if inspect.isawaitable(result):
@@ -2917,6 +2932,7 @@ def _extension_slash_command(
             name=context.name,
             args=context.args,
             extension_name=extension.name,
+            current_editor_text=context.current_editor_text,
         )
         result = command.handler(extension_context)
         if inspect.isawaitable(result):

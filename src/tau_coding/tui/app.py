@@ -14,7 +14,7 @@ from collections.abc import AsyncIterator, Callable, Mapping, Sequence
 from contextlib import suppress
 from dataclasses import dataclass, fields, replace
 from datetime import datetime
-from inspect import isawaitable
+from inspect import isawaitable, signature
 from io import StringIO
 from pathlib import Path
 from time import monotonic
@@ -6231,7 +6231,7 @@ class TauTuiApp(App[None]):
                 self._completion_state = CompletionState()
                 self._sync_prompt_shell_mode(prompt.text)
                 self._refresh_completions()
-                command = self.session.handle_command(text)
+                command = self._handle_session_command(text, current_editor_text=raw_text)
                 if command.message:
                     self._append_command_message(text, command.message)
                 self._deliver_command_notifications(command)
@@ -6337,7 +6337,7 @@ class TauTuiApp(App[None]):
             self.tui_settings.keybindings,
             self.session,
             self.tui_settings,
-        ) or self.session.handle_command(text)
+        ) or self._handle_session_command(text, current_editor_text=raw_text)
         if command.handled:
             if command.clear_requested:
                 self.state.clear()
@@ -6969,6 +6969,18 @@ class TauTuiApp(App[None]):
         self._completion_state = self._build_completion_state(prompt.text)
         self._refresh_completions()
 
+    def _handle_session_command(
+        self,
+        text: str,
+        *,
+        current_editor_text: str,
+    ) -> CommandResult:
+        """Run a session command, passing editor context when the session supports it."""
+        handle_command = self.session.handle_command
+        if "current_editor_text" in signature(handle_command).parameters:
+            return handle_command(text, current_editor_text=current_editor_text)
+        return handle_command(text)
+
     async def _run_prompt(
         self,
         text: str,
@@ -7402,7 +7414,11 @@ class TauTuiApp(App[None]):
         if not callable(handle_shortcut):
             return False
         try:
-            result = handle_shortcut(key)
+            prompt = self.query_one("#prompt", PromptInput)
+            if "current_editor_text" in signature(handle_shortcut).parameters:
+                result = handle_shortcut(key, current_editor_text=prompt.expanded_text())
+            else:
+                result = handle_shortcut(key)
         except Exception as exc:  # noqa: BLE001 - extensions are an isolation boundary
             self._notify(f"Extension shortcut error: {exc}", severity="error")
             return True

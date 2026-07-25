@@ -53,6 +53,7 @@ class ExtensionShortcutContext:
     session: Any
     key: str
     extension_name: str
+    current_editor_text: str = ""
 
 
 @dataclass(slots=True)
@@ -65,6 +66,7 @@ class ExtensionCommandContext:
     name: str
     args: str
     extension_name: str
+    current_editor_text: str = ""
     shutdown_requested: bool = False
     editor_text: str | None = None
     editor_insert_text: str | None = None
@@ -91,6 +93,10 @@ class ExtensionCommandContext:
                 severity=_normalize_notification_severity(severity),
             )
         )
+
+    def get_editor_text(self) -> str:
+        """Return the prompt editor text captured before this handler ran."""
+        return self.current_editor_text
 
     def shutdown(self) -> None:
         """Request that Tau exit after the command returns."""
@@ -162,6 +168,10 @@ class ExtensionCommandUi:
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the command returns."""
         self._context.notify(message, severity)
+
+    def get_editor_text(self) -> str:
+        """Return the prompt editor text captured before this handler ran."""
+        return self._context.get_editor_text()
 
     def set_editor_text(self, text: str) -> None:
         """Request that Tau replace the prompt editor contents after the command returns."""

@@ -201,6 +201,7 @@ class CommandContext:
     text: str
     name: str
     args: str
+    current_editor_text: str
 
 
 CommandHandler = Callable[[CommandContext], CommandResult]
@@ -271,7 +272,13 @@ class CommandRegistry:
         copied._aliases = dict(self._aliases)
         return copied
 
-    def execute(self, session: CommandSession, text: str) -> CommandResult:
+    def execute(
+        self,
+        session: CommandSession,
+        text: str,
+        *,
+        current_editor_text: str | None = None,
+    ) -> CommandResult:
         """Execute a slash command, or return unhandled for ordinary prompts."""
         stripped = text.strip()
         if not stripped.startswith("/"):
@@ -293,7 +300,14 @@ class CommandRegistry:
             return CommandResult(handled=False)
 
         return command.handler(
-            CommandContext(session=session, registry=self, text=stripped, name=name, args=args)
+            CommandContext(
+                session=session,
+                registry=self,
+                text=stripped,
+                name=name,
+                args=args,
+                current_editor_text=stripped if current_editor_text is None else current_editor_text,
+            )
         )
 
 
