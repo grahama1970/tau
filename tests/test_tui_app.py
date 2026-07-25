@@ -2070,6 +2070,35 @@ async def test_textual_markdown_image_link_mounts_terminal_image_widget(tmp_path
     assert len(image_widgets) == 1
 
 
+@pytest.mark.anyio
+async def test_textual_user_markdown_table_and_image_render_as_visuals(tmp_path: Path) -> None:
+    image_path = tmp_path / "input-chart.png"
+    image_path.write_bytes(base64.b64decode(PNG_1X1_BASE64))
+    app = TauTuiApp(
+        FakeSession(
+            [
+                UserMessage(
+                    content=(
+                        "Please inspect this table.\n\n"
+                        "| metric | value |\n| --- | --- |\n| win | yes |\n\n"
+                        f"![input chart]({image_path})"
+                    )
+                )
+            ]
+        ),
+    )
+
+    async with app.run_test(size=(80, 24)) as pilot:
+        await pilot.pause()
+        image_widgets = list(app.query(".transcript-markdown-image"))
+        markdown_bodies = list(app.query(".transcript-markdown-body"))
+        markdown_tables = list(app.query("MarkdownTable"))
+
+    assert len(image_widgets) == 1
+    assert len(markdown_bodies) == 1
+    assert len(markdown_tables) == 1
+
+
 @pytest.mark.skipif(shutil.which("dot") is None, reason="Graphviz dot is not installed")
 @pytest.mark.anyio
 async def test_textual_markdown_graphviz_fence_mounts_terminal_image_widget() -> None:

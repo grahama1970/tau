@@ -903,7 +903,7 @@ def _split_rich_style_colors(style: str) -> tuple[str | None, str | None]:
 
 def _use_plain_transcript_body(item: ChatItem) -> bool:
     """Return whether a transcript item can use fast selectable plain text."""
-    return item.role in {"user", "tool", "skill", "error"}
+    return item.role in {"tool", "skill", "error"}
 
 
 def _transcript_plain_body_text(
@@ -992,6 +992,7 @@ def _transcript_item_markdown(
         tool_results_key_hint=tool_results_key_hint,
     )
     if item.role in {
+        "user",
         "assistant",
         "thinking",
         "status",
@@ -1223,7 +1224,15 @@ def render_chat_item(
     markdown_images = (
         _markdown_visual_payloads(visible_text)
         if item.role
-        in {"assistant", "thinking", "custom", "status", "branch_summary", "compaction_summary"}
+        in {
+            "user",
+            "assistant",
+            "thinking",
+            "custom",
+            "status",
+            "branch_summary",
+            "compaction_summary",
+        }
         else ()
     )
     if markdown_images:
@@ -1563,7 +1572,7 @@ def _render_chat_body(
         return patch_body
     if role in {"status", "custom"}:
         return _plain_text(display_text, body_style=body_style)
-    if role in {"assistant", "thinking"}:
+    if role in {"user", "assistant", "thinking"}:
         if _has_unclosed_fence(display_text):
             return _plain_text(display_text, body_style=body_style)
         return ThemedMarkdown(

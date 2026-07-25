@@ -45,7 +45,7 @@ capabilities.
 
 | Area | Pi component(s) | Tau surface | Status | Next action |
 | --- | --- | --- | --- | --- |
-| Prompt editor | `custom-editor`, `custom-entry`, `keybinding-hints`, `skill-invocation-message` | `PromptInput`, extension input hooks, skill transcript blocks | `PARTIAL` | Keep Pi-like keybindings; skill invocations now render with Pi-style `[skill] name` collapsed labels and labeled expanded bodies; avoid replacing Tau extension input plumbing. |
+| Prompt editor | `custom-editor`, `custom-entry`, `keybinding-hints`, `skill-invocation-message` | `PromptInput`, extension input hooks, skill transcript blocks | `PARTIAL` | Keep Pi-like keybindings; user transcript rows now render Markdown tables and local image links like Pi instead of escaping them as plain text; skill invocations now render with Pi-style `[skill] name` collapsed labels and labeled expanded bodies; avoid replacing Tau extension input plumbing. |
 | Model selector | `model-selector`, `scoped-models-selector` | `ModelPickerScreen` | `MATCHED` | Search, tabs, scoped membership, provider toggles, and reorder are present. |
 | Session selector | `session-selector`, `session-selector-search` | `SessionPickerScreen` | `MATCHED` | Search, current/all, named-only, path toggle, sort, rename, delete are present. |
 | Branch/trust/tool selectors | `user-message-selector`, `trust-selector`, selector keybindings | `UserMessagePickerScreen`, `TrustPickerScreen`, `ToolsReferenceScreen` | `MATCHED` | `/fork` and `/trust` preserve Tau's backing flows and accept Pi-style `j/k` movement; `/tools` preserves searchable text input while the list accepts `j/k` movement when focused. |
@@ -56,7 +56,7 @@ capabilities.
 | Export/artifact viewing | `/export`, `exportToHtml`, RPC `export_html` | Tau `/export`, `/artifacts`, `session_export.py`, TUI command output | `MATCHED` | Tau writes real HTML/JSONL session artifacts, opens a persistent TUI result modal with the artifact path and `file://` URI, supports explicit `/export --open`, renders assistant Markdown tables plus embedded local image links and fenced DOT graph artifacts in HTML exports, attempts Mermaid fail-closed when the local CLI/browser runtime works, makes embedded figures/graphs openable full-size in the browser, and now has a real `/artifacts` browser with selected-artifact preview for current-transcript visual outputs. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider, prompt chrome, and retry countdown | `PARTIAL` | Footer extensibility exists; compact first-screen readiness exposes auth/memory/DAG/SciLLM/queue when the sidebar is hidden, and prompt chrome now names active compaction/branch/reload/share/terminal operations from real worker state. |
 | Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool/custom-entry renderers in live/restored transcripts | `MUST/PARTIAL` | Selector now advertises Pi-style `J/K` navigation and supports tool-output toggle while open; editor now uses Pi-style Enter submit and Shift+Enter newline; custom entries now re-render on tool-output expansion and accept simple component-like render objects; preserve current Tau extension API; full JS Pi component runtime embedding remains out of scope. |
-| Images, figures, and graphs | `show-images-selector`, image component | Tau image visibility setting and image payload rendering | `MATCHED` | Tau has terminal-safe image controls, Kitty/iTerm2/fallback rendering, non-PNG-to-PNG conversion for Kitty, multiple image payload rendering for figure/graph tool results, local Markdown image links in assistant/custom transcript output, proven local-tool rendering for fenced DOT graph source, `/artifacts` selected-preview rendering, and fail-closed Mermaid rendering when the local CLI/browser runtime is unavailable. |
+| Images, figures, and graphs | `show-images-selector`, image component | Tau image visibility setting and image payload rendering | `MATCHED` | Tau has terminal-safe image controls, Kitty/iTerm2/fallback rendering, non-PNG-to-PNG conversion for Kitty, multiple image payload rendering for figure/graph tool results, local Markdown image links in user/assistant/custom transcript output, proven local-tool rendering for fenced DOT graph source, `/artifacts` selected-preview rendering, and fail-closed Mermaid rendering when the local CLI/browser runtime is unavailable. |
 | Workflow/DAG progress | None in Pi | `WorkflowPickerScreen`, DAG/workflow receipts | `TAU-ONLY/MUST` | This is Tau's differentiator and must remain first-class in the TUI. |
 
 ## Tomorrow-Usability Ranking
@@ -101,6 +101,33 @@ Current candidates:
   Do not add a fake setting or heuristic notice from aggregate stats.
 
 Latest slice evidence:
+
+- Source inspected: Pi `user-message.ts` and `assistant-message.ts`; Tau
+  `TranscriptMessageWidget`, `_use_plain_transcript_body`,
+  `_transcript_item_markdown`, `_render_chat_body`, and Markdown image tests.
+- Destination preserved: Tau's selectable tool/skill/error transcript paths,
+  assistant/custom/status Markdown rendering, terminal image settings,
+  artifact discovery, Memory/SciLLM/DAG/workflow surfaces, and receipt model.
+- Changed: user transcript rows now use the Markdown render path instead of
+  escaped plain text. User-authored Markdown tables render as tables, and local
+  image links mount the same terminal-image preview widgets as assistant
+  messages.
+- Mocked: no.
+- Live: local Textual transcript render path with a real PNG file linked from
+  a user message; no provider-live or SciLLM-live call.
+- Proof: `uv run pytest tests/test_tui_app.py -q -k 'textual_markdown or
+  user_markdown or tool_image_payload'` reported `10 passed, 452 deselected`;
+  `uv run ruff check src/tau_coding/tui/widgets.py tests/test_tui_app.py`
+  reported all checks passed; `uv run python -m py_compile
+  src/tau_coding/tui/widgets.py tests/test_tui_app.py` produced no errors;
+  render proof `/tmp/tau-pi-tui-user-markdown-proof-1785020902/proof.json`
+  with screenshot
+  `/tmp/tau-pi-tui-user-markdown-proof-1785020902/tau-user-markdown-visuals.svg`.
+- Remaining gap: exact pixel inline display still depends on terminal image
+  protocol support; user-message selection behavior should be watched during
+  daily use because Markdown widgets replace the previous plain-row renderer.
+
+Earlier slice evidence:
 
 - Source inspected: Pi `tool-execution.ts`, `assistant-message.ts`, and
   Markdown/image settings references; Tau `ArtifactBrowserScreen`,
