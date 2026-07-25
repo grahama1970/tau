@@ -257,7 +257,7 @@ from tau_coding.skill_composition_redteam import run_skill_composition_redteam
 from tau_coding.skill_invocation import write_skill_invocation_receipt
 from tau_coding.sparta_posture import write_sparta_posture_contract
 from tau_coding.test_run_receipt import write_test_run_receipt
-from tau_coding.thinking import DEFAULT_THINKING_LEVEL
+from tau_coding.thinking import DEFAULT_THINKING_LEVEL, ThinkingLevel, normalize_thinking_level
 from tau_coding.traycer.cli import parse_traycer_validate_cli_args, traycer_validate_command
 from tau_coding.tui import run_tui_app
 from tau_coding.tui.config import load_tui_settings
@@ -762,6 +762,13 @@ def main(
         str | None,
         typer.Option("--model", "-m", help="Model name to request from the provider."),
     ] = None,
+    thinking: Annotated[
+        str | None,
+        typer.Option(
+            "--thinking",
+            help="Set startup thinking level: off, minimal, low, medium, high, xhigh, or max.",
+        ),
+    ] = None,
     model_patterns: Annotated[
         str | None,
         typer.Option("--models", help="Comma-separated model patterns for scoped cycling."),
@@ -1105,6 +1112,7 @@ def main(
 
     tool_allowlist = _parse_csv_option(tools, flag_name="--tools")
     tool_denylist = _parse_csv_option(exclude_tools, flag_name="--exclude-tools") or ()
+    startup_thinking_level = _parse_startup_thinking_level(thinking)
     startup_cwd = cwd or Path.cwd()
     resolved_skill_paths = _resolve_cli_resource_paths(skill_paths, cwd=startup_cwd)
     resolved_prompt_template_paths = _resolve_cli_resource_paths(
@@ -3327,6 +3335,7 @@ def main(
                 new_session,
                 provider,
                 auto_compact_threshold,
+                startup_thinking_level,
                 initial_prompt,
                 session_name,
                 continue_session,
@@ -3376,6 +3385,7 @@ def main(
             effective_output,
             provider,
             loop_receipt,
+            startup_thinking_level,
             session_name,
             no_session,
             session_dir,
@@ -3412,6 +3422,17 @@ def _resolve_cli_resource_paths(paths: list[Path] | None, *, cwd: Path) -> tuple
     return tuple(path.expanduser() if path.is_absolute() else cwd / path for path in paths)
 
 
+def _parse_startup_thinking_level(value: str | None) -> ThinkingLevel | None:
+    if value is None:
+        return None
+    if value.strip().lower() == "max":
+        return "xhigh"
+    try:
+        return normalize_thinking_level(value)
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc)) from exc
+
+
 async def run_openai_tui(
     model: str | None,
     cwd: Path,
@@ -3419,6 +3440,7 @@ async def run_openai_tui(
     new_session: bool = False,
     provider_name: str | None = None,
     auto_compact_token_threshold: int | None = None,
+    thinking_level: ThinkingLevel | None = None,
     initial_prompt: str | None = None,
     session_name: str | None = None,
     continue_session: bool = False,
@@ -3446,6 +3468,7 @@ async def run_openai_tui(
         new_session=new_session,
         provider_name=provider_name,
         auto_compact_token_threshold=auto_compact_token_threshold,
+        thinking_level=thinking_level,
         initial_prompt=initial_prompt,
         session_name=session_name,
         continue_session=continue_session,
@@ -13230,6 +13253,7 @@ async def run_openai_print_mode(
     output: PrintOutputMode = PrintOutputMode.text,
     provider_name: str | None = None,
     loop_receipt: LoopReceiptConfig | None = None,
+    thinking_level: ThinkingLevel | None = None,
     session_manager: SessionManager | None = None,
     session_name: str | None = None,
     no_session: bool = False,
@@ -13249,10 +13273,11 @@ async def run_openai_print_mode(
     """Run print mode with the OpenAI-compatible provider configured from the environment."""
     settings = load_provider_settings()
     selection = resolve_provider_selection(settings, provider_name=provider_name, model=model)
+    startup_thinking_level = thinking_level or DEFAULT_THINKING_LEVEL
     provider = create_model_provider(
         selection.provider,
         model=selection.model,
-        thinking_level=DEFAULT_THINKING_LEVEL,
+        thinking_level=startup_thinking_level,
     )
     manager = None if no_session else session_manager or _session_manager_from_dir(session_dir)
     record: CodingSessionRecord | None = None
@@ -13275,6 +13300,7 @@ async def run_openai_print_mode(
             provider_settings=settings,
             runtime_provider_config=selection.provider,
             loop_receipt=loop_receipt,
+            thinking_level=startup_thinking_level,
             discover_context_files=not no_context_files,
             tool_allowlist=tool_allowlist,
             tool_denylist=tool_denylist,
@@ -13306,6 +13332,7 @@ async def run_print_mode(
     provider_settings: ProviderSettings | None = None,
     runtime_provider_config: ProviderConfig | None = None,
     loop_receipt: LoopReceiptConfig | None = None,
+    thinking_level: ThinkingLevel = DEFAULT_THINKING_LEVEL,
     discover_context_files: bool = True,
     tool_allowlist: tuple[str, ...] | None = None,
     tool_denylist: tuple[str, ...] = (),
@@ -13336,6 +13363,7 @@ async def run_print_mode(
             provider_name=provider_name,
             provider_settings=provider_settings,
             runtime_provider_config=runtime_provider_config,
+            thinking_level=thinking_level,
             default_project_trust=tui_settings.default_project_trust,
             shell_path=tui_settings.shell_path,
             shell_command_prefix=tui_settings.shell_command_prefix,

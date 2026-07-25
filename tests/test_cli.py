@@ -23,6 +23,7 @@ from tau_coding import (
     LoopReceiptMonitorCheckResult,
     LoopReceiptValidationResult,
     SessionManager,
+    ThinkingLevel,
     cli,
     github_handoff,
 )
@@ -6235,6 +6236,7 @@ def test_cli_without_prompt_invokes_tui_runner(
         new_session: bool,
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -6309,6 +6311,7 @@ def test_cli_positional_prompt_invokes_tui_runner(
         new_session: bool,
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -6787,6 +6790,7 @@ def test_cli_exits_nonzero_when_print_mode_fails(monkeypatch: pytest.MonkeyPatch
         output: PrintOutputMode,
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
+        thinking_level: ThinkingLevel | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -6822,6 +6826,7 @@ def test_mode_flag_alone_triggers_print_mode(monkeypatch: pytest.MonkeyPatch) ->
         output: PrintOutputMode,
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
+        thinking_level: ThinkingLevel | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -6859,6 +6864,7 @@ def test_print_mode_passes_startup_session_name(monkeypatch: pytest.MonkeyPatch)
         output: PrintOutputMode,
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
+        thinking_level: ThinkingLevel | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -6896,6 +6902,7 @@ def test_print_mode_passes_no_session_flag(monkeypatch: pytest.MonkeyPatch) -> N
         output: PrintOutputMode,
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
+        thinking_level: ThinkingLevel | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -6933,6 +6940,7 @@ def test_print_mode_passes_no_context_files_flag(monkeypatch: pytest.MonkeyPatch
         output: PrintOutputMode,
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
+        thinking_level: ThinkingLevel | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -6961,6 +6969,47 @@ def test_print_mode_passes_no_context_files_flag(monkeypatch: pytest.MonkeyPatch
     assert calls == [True]
 
 
+def test_print_mode_passes_startup_thinking_level(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[ThinkingLevel | None] = []
+
+    async def fake_run_openai_print_mode(
+        prompt: str,
+        model: str | None,
+        cwd: Path,
+        output: PrintOutputMode,
+        provider_name: str | None,
+        loop_receipt: LoopReceiptConfig | None,
+        thinking_level: ThinkingLevel | None,
+        session_name: str | None,
+        no_session: bool,
+        session_dir: Path | None,
+        no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
+        no_skills: bool,
+        no_prompt_templates: bool,
+        no_themes: bool,
+        skill_paths: tuple[Path, ...],
+        prompt_template_paths: tuple[Path, ...],
+        theme_paths: tuple[Path, ...],
+    ) -> bool:
+        del prompt, model, cwd, output, provider_name, loop_receipt, session_name, no_session
+        del session_dir, no_context_files, tool_allowlist, tool_denylist, no_tools
+        del no_builtin_tools, no_skills, no_prompt_templates, no_themes
+        del skill_paths, prompt_template_paths, theme_paths
+        calls.append(thinking_level)
+        return True
+
+    monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
+
+    result = CliRunner().invoke(app, ["--print", "--thinking", "xhigh", "hello"])
+
+    assert result.exit_code == 0
+    assert calls == ["xhigh"]
+
+
 def test_print_mode_passes_tool_selection_flags(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[tuple[tuple[str, ...] | None, tuple[str, ...], bool, bool, bool, bool, bool]] = []
 
@@ -6971,6 +7020,7 @@ def test_print_mode_passes_tool_selection_flags(monkeypatch: pytest.MonkeyPatch)
         output: PrintOutputMode,
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
+        thinking_level: ThinkingLevel | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -7036,6 +7086,7 @@ def test_print_mode_passes_explicit_resource_paths(
         output: PrintOutputMode,
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
+        thinking_level: ThinkingLevel | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -7102,6 +7153,7 @@ def test_print_mode_merges_piped_stdin_into_prompt(monkeypatch: pytest.MonkeyPat
         output: PrintOutputMode,
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
+        thinking_level: ThinkingLevel | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -7139,6 +7191,7 @@ def test_print_mode_accepts_stdin_only_prompt(monkeypatch: pytest.MonkeyPatch) -
         output: PrintOutputMode,
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
+        thinking_level: ThinkingLevel | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -7224,6 +7277,7 @@ def test_cli_print_mode_passes_loop2_receipt_options(
         output: PrintOutputMode,
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
+        thinking_level: ThinkingLevel | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -7288,6 +7342,7 @@ def test_cli_print_mode_marks_nonfake_loop2_receipt_live(
         output: PrintOutputMode,
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
+        thinking_level: ThinkingLevel | None,
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
@@ -7391,6 +7446,7 @@ def test_default_tui_invokes_tui_runner_with_flags(
         new_session: bool,
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -7463,6 +7519,7 @@ def test_default_tui_passes_startup_session_name(
         new_session: bool,
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -7506,6 +7563,7 @@ def test_default_tui_passes_continue_session_flag(
         new_session: bool,
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -7549,6 +7607,7 @@ def test_default_tui_passes_resume_picker_flag(
         new_session: bool,
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -7583,6 +7642,53 @@ def test_default_tui_passes_resume_picker_flag(
     assert calls == [True]
 
 
+def test_default_tui_passes_startup_thinking_alias(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[ThinkingLevel | None] = []
+
+    async def fake_run_openai_tui(
+        model: str | None,
+        cwd: Path,
+        session_id: str | None,
+        new_session: bool,
+        provider_name: str | None,
+        auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
+        initial_prompt: str | None,
+        session_name: str | None,
+        continue_session: bool,
+        resume_picker: bool,
+        no_session: bool,
+        session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
+        no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
+        no_skills: bool,
+        no_prompt_templates: bool,
+        no_themes: bool,
+        skill_paths: tuple[Path, ...],
+        prompt_template_paths: tuple[Path, ...],
+        theme_paths: tuple[Path, ...],
+    ) -> None:
+        del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
+        del initial_prompt, session_name, continue_session, resume_picker, no_session, session_dir
+        del provider_settings, no_context_files, tool_allowlist, tool_denylist
+        del no_tools, no_builtin_tools, no_skills, no_prompt_templates, no_themes
+        del skill_paths, prompt_template_paths, theme_paths
+        calls.append(thinking_level)
+
+    monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
+
+    result = CliRunner().invoke(app, ["--cwd", str(tmp_path), "--thinking", "max"])
+
+    assert result.exit_code == 0
+    assert calls == ["xhigh"]
+
+
 def test_default_tui_passes_no_session_flag(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -7595,6 +7701,7 @@ def test_default_tui_passes_no_session_flag(
         new_session: bool,
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -7638,6 +7745,7 @@ def test_default_tui_passes_no_context_files_flag(
         new_session: bool,
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -7682,6 +7790,7 @@ def test_default_tui_passes_tool_selection_flags(
         new_session: bool,
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -7751,6 +7860,7 @@ def test_default_tui_passes_explicit_resource_paths(
         new_session: bool,
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -7936,6 +8046,7 @@ def test_default_tui_passes_transient_scoped_model_patterns(
         new_session: bool,
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -8001,6 +8112,7 @@ def test_default_tui_models_pattern_respects_provider_filter(
         new_session: bool,
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
@@ -8086,6 +8198,7 @@ def test_default_tui_forks_session_before_starting_tui(
         new_session: bool,
         provider_name: str | None,
         auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,

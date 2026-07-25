@@ -11203,6 +11203,7 @@ async def run_tui_app(
     new_session: bool = False,
     provider_name: str | None = None,
     auto_compact_token_threshold: int | None = None,
+    thinking_level: ThinkingLevel | None = None,
     initial_prompt: str | None = None,
     session_name: str | None = None,
     continue_session: bool = False,
@@ -11252,6 +11253,7 @@ async def run_tui_app(
 
     provider_settings = provider_settings or load_provider_settings()
     tui_settings = load_tui_settings()
+    startup_thinking_level = thinking_level or tui_settings.thinking_level
     manager = None if no_session else session_manager or SessionManager()
     if no_session or resume_picker:
         record = None
@@ -11277,7 +11279,7 @@ async def run_tui_app(
         provider = create_model_provider(
             selection.provider,
             model=selection.model,
-            thinking_level=DEFAULT_THINKING_LEVEL,
+            thinking_level=startup_thinking_level,
         )
     except RuntimeError:
         startup_message = (
@@ -11331,7 +11333,7 @@ async def run_tui_app(
                 steering_queue_mode=_agent_queue_mode_from_tui(tui_settings.steering_mode),
                 follow_up_queue_mode=_agent_queue_mode_from_tui(tui_settings.follow_up_mode),
                 default_project_trust=tui_settings.default_project_trust,
-                thinking_level=tui_settings.thinking_level,
+                thinking_level=startup_thinking_level,
                 shell_path=tui_settings.shell_path,
                 shell_command_prefix=tui_settings.shell_command_prefix,
                 auto_resize_images=tui_settings.auto_resize_images,
