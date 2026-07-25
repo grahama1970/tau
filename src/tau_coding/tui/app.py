@@ -7968,6 +7968,7 @@ class TauTuiApp(App[None]):
 
     def _set_tool_results_expanded(self, expanded: bool) -> None:
         self.state.show_tool_results = expanded
+        self.state.rerender_custom_entries()
         self._refresh()
 
     def _set_hidden_thinking_label(self, label: str | None) -> None:
@@ -9362,6 +9363,7 @@ class TauTuiApp(App[None]):
     def action_toggle_tool_results(self) -> None:
         """Toggle inline tool result details in the transcript."""
         expanded = self.state.toggle_tool_results()
+        self.state.rerender_custom_entries()
         self._refresh()
         self._notify("Tool results expanded." if expanded else "Tool results collapsed.")
 

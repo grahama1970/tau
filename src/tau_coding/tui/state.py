@@ -207,6 +207,9 @@ class ChatItem:
     tool_result_renderer: Callable[..., Any] | None = None
     tool_image: ToolImagePayload | None = None
     always_show_tool_result: bool = False
+    custom_entry: CustomEntry | None = None
+    custom_entry_renderer: Callable[..., Any] | None = None
+    custom_message_renderer: Callable[..., Any] | None = None
 
 
 @dataclass(slots=True)
@@ -237,6 +240,9 @@ class TuiState:
         tool_result_renderer: Callable[..., Any] | None = None,
         tool_image: ToolImagePayload | None = None,
         always_show_tool_result: bool = False,
+        custom_entry: CustomEntry | None = None,
+        custom_entry_renderer: Callable[..., Any] | None = None,
+        custom_message_renderer: Callable[..., Any] | None = None,
     ) -> None:
         """Append a transcript item."""
         self.items.append(
@@ -248,6 +254,9 @@ class TuiState:
                 tool_result_renderer=tool_result_renderer,
                 tool_image=tool_image,
                 always_show_tool_result=always_show_tool_result,
+                custom_entry=custom_entry,
+                custom_entry_renderer=custom_entry_renderer,
+                custom_message_renderer=custom_message_renderer,
             )
         )
 
@@ -327,7 +336,12 @@ class TuiState:
             rendered = _render_custom_entry(renderer, entry, expanded=self.show_tool_results)
             if rendered is None:
                 return
-            self.add_item("custom", rendered)
+            self.add_item(
+                "custom",
+                rendered,
+                custom_entry=entry,
+                custom_entry_renderer=renderer,
+            )
             return
         message_renderer = (message_renderers or {}).get(entry.namespace)
         if message_renderer is not None:
@@ -338,9 +352,37 @@ class TuiState:
             )
             if rendered is None:
                 return
-            self.add_item("custom", rendered)
+            self.add_item(
+                "custom",
+                rendered,
+                custom_entry=entry,
+                custom_message_renderer=message_renderer,
+            )
             return
         self.add_item("custom", _default_custom_entry_text(entry))
+
+    def rerender_custom_entries(self) -> None:
+        """Refresh visible extension custom entries after expansion changes."""
+        for item in self.items:
+            entry = item.custom_entry
+            if entry is None:
+                continue
+            if item.custom_entry_renderer is not None:
+                rendered = _render_custom_entry(
+                    item.custom_entry_renderer,
+                    entry,
+                    expanded=self.show_tool_results,
+                )
+            elif item.custom_message_renderer is not None:
+                rendered = _render_custom_message_entry(
+                    item.custom_message_renderer,
+                    entry,
+                    expanded=self.show_tool_results,
+                )
+            else:
+                rendered = None
+            if rendered is not None:
+                item.text = rendered
 
     def record_tool_result(self, result: AgentToolResult) -> None:
         """Attach a tool result to its matching call, or append an orphan result."""

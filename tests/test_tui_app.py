@@ -1643,6 +1643,36 @@ async def test_tui_app_renders_session_custom_entries() -> None:
     assert '  "result": "ok"' in rendered_lines
 
 
+@pytest.mark.anyio
+async def test_tui_app_rerenders_custom_entries_when_tool_output_expands() -> None:
+    session = FakeSession(messages=[UserMessage(content="Before custom entry")])
+    session.state.custom_entries = (
+        CustomEntry(namespace="extension.audit", data={"result": "ok", "count": 2}),
+    )
+
+    def render_entry(entry: CustomEntry, options: dict[str, bool]) -> str:
+        state = "expanded" if options["expanded"] else "collapsed"
+        return f"{entry.namespace} {state}"
+
+    session.extension_entry_renderers = {"extension.audit": render_entry}
+    app = TauTuiApp(session)
+
+    async with app.run_test(size=(120, 30)) as pilot:
+        await pilot.pause()
+        transcript = app.query_one("#transcript", TranscriptView)
+        collapsed_lines = [line.text for line in transcript.lines]
+
+        await pilot.press("ctrl+o")
+        await pilot.pause()
+
+        expanded_lines = [line.text for line in transcript.lines]
+
+    assert "extension.audit collapsed" in collapsed_lines
+    assert "extension.audit expanded" not in collapsed_lines
+    assert "extension.audit expanded" in expanded_lines
+    assert "extension.audit collapsed" not in expanded_lines
+
+
 def test_expanded_skill_invocation_messages_show_skill_body() -> None:
     skill = Skill(
         name="review",

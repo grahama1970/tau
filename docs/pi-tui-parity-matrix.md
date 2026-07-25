@@ -53,7 +53,7 @@ capabilities.
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login; provider picker now shows visible navigation help and empty filter states. |
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks, summarizes permission/approval receipts, and now surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data; richer interactive component objects remain pending. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider and retry countdown | `PARTIAL` | Footer extensibility exists; compact first-screen readiness now exposes auth/memory/DAG/SciLLM/queue when the sidebar is hidden. |
-| Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool renderers in live/restored transcripts | `MUST/PARTIAL` | Selector now advertises Pi-style `J/K` navigation and supports tool-output toggle while open; editor now uses Pi-style Enter submit and Shift+Enter newline; preserve current Tau extension API; full Pi-style custom component objects remain pending beyond plain transcript rendering. |
+| Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool/custom-entry renderers in live/restored transcripts | `MUST/PARTIAL` | Selector now advertises Pi-style `J/K` navigation and supports tool-output toggle while open; editor now uses Pi-style Enter submit and Shift+Enter newline; custom entries now re-render on tool-output expansion; preserve current Tau extension API; full Pi-style custom component objects remain pending beyond string/JSON transcript rendering. |
 | Images | `show-images-selector`, image component | Tau image visibility setting and image payload rendering | `MATCHED` | Retain current terminal-safe image controls. |
 | Workflow/DAG progress | None in Pi | `WorkflowPickerScreen`, DAG/workflow receipts | `TAU-ONLY/MUST` | This is Tau's differentiator and must remain first-class in the TUI. |
 
@@ -84,11 +84,35 @@ capabilities.
 
 Port the next highest-value daily-use gap that is still local and bounded:
 
-`Config selector resource management`: close the next daily-use config gap backed
-by real Tau behavior, without adding dead Pi package/write-scope toggles or
-replacing Tau's resource/DAG/SciLLM surfaces.
+`Extension custom component parity`: close the next daily-use extension UI gap
+backed by real Tau extension state, without replacing Tau's Python/Textual
+extension API or pretending JavaScript component embedding exists.
 
 Latest slice evidence:
+
+- Source inspected: Pi `custom-entry.ts` and `interactive-mode.ts`
+  `addCustomEntryToChat`; Tau `TuiState.add_custom_entry`,
+  `TauTuiApp.action_toggle_tool_results`, custom-entry tests, and transcript
+  renderer state.
+- Destination preserved: Tau's Python extension entry/message renderers,
+  string/JSON transcript rendering, tool-output expansion key, and restored
+  durable custom entries.
+- Changed: custom entry transcript items now retain their source entry and
+  renderer metadata, and they re-render when tool-output expansion changes.
+  This ports Pi's `CustomEntryComponent.setExpanded()` behavior through Tau's
+  existing `Ctrl+O` expansion model.
+- Mocked: Textual render proof is fixture-backed.
+- Live: no live extension subprocess or JavaScript custom component embedding.
+- Render proof: `/tmp/tau-pi-tui-custom-entry-proof-1785013546/proof.json`
+  with screenshots
+  `/tmp/tau-pi-tui-custom-entry-proof-1785013546/tau-custom-entry-collapsed.svg`
+  and
+  `/tmp/tau-pi-tui-custom-entry-proof-1785013546/tau-custom-entry-expanded.svg`.
+- Remaining gap: Pi can mount arbitrary custom component objects; Tau now
+  supports expansion-aware string/JSON custom entry renderers but not arbitrary
+  component embedding.
+
+Previous slice evidence:
 
 - Source inspected: Pi `config-selector.ts`; Tau `SettingsPickerScreen`,
   `ConfigMapScreen`, settings/config tests, and resource row helpers.
