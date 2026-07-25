@@ -181,6 +181,7 @@ class CommandResult:
     export_requested: bool = False
     export_destination: Path | None = None
     export_format: str | None = None
+    export_open_requested: bool = False
     import_requested: bool = False
     import_path: Path | None = None
     share_requested: bool = False
@@ -520,7 +521,7 @@ def create_default_command_registry() -> CommandRegistry:
     registry.register(
         SlashCommand(
             name="export",
-            usage="/export [--format html|jsonl] [destination]",
+            usage="/export [--open] [--format html|jsonl] [destination]",
             description="Export the current session.",
             handler=_export_command,
         )
@@ -866,7 +867,7 @@ def _demented_delves_command(context: CommandContext) -> CommandResult:
 
 def _export_command(context: CommandContext) -> CommandResult:
     try:
-        export_format, destination = _parse_export_args(context.args)
+        export_format, destination, open_requested = _parse_export_args(context.args)
     except ValueError as exc:
         return CommandResult(handled=True, message=str(exc))
     return CommandResult(
@@ -874,6 +875,7 @@ def _export_command(context: CommandContext) -> CommandResult:
         export_requested=True,
         export_destination=destination,
         export_format=export_format,
+        export_open_requested=open_requested,
     )
 
 
@@ -1602,20 +1604,23 @@ def _parse_command(text: str) -> tuple[str, str]:
     return _normalize_name(command), args.strip() if separator else ""
 
 
-def _parse_export_args(args: str) -> tuple[str | None, Path | None]:
+def _parse_export_args(args: str) -> tuple[str | None, Path | None, bool]:
     try:
         parts = shlex.split(args)
     except ValueError as exc:
-        raise ValueError("Usage: /export [--format html|jsonl] [destination]") from exc
+        raise ValueError("Usage: /export [--open] [--format html|jsonl] [destination]") from exc
     export_format: str | None = None
     destination: Path | None = None
+    open_requested = False
     index = 0
     while index < len(parts):
         part = parts[index]
-        if part == "--format":
+        if part == "--open":
+            open_requested = True
+        elif part == "--format":
             index += 1
             if index >= len(parts):
-                raise ValueError("Usage: /export [--format html|jsonl] [destination]")
+                raise ValueError("Usage: /export [--open] [--format html|jsonl] [destination]")
             export_format = parts[index]
         elif part.startswith("--format="):
             export_format = part.partition("=")[2]
@@ -1624,9 +1629,9 @@ def _parse_export_args(args: str) -> tuple[str | None, Path | None]:
         elif destination is None:
             destination = Path(part).expanduser()
         else:
-            raise ValueError("Usage: /export [--format html|jsonl] [destination]")
+            raise ValueError("Usage: /export [--open] [--format html|jsonl] [destination]")
         index += 1
-    return export_format, destination
+    return export_format, destination, open_requested
 
 
 def _parse_import_args(args: str) -> Path:

@@ -336,6 +336,8 @@ class FakeSession:
             return CommandResult(handled=True, copy_last_message_requested=True)
         if text == "/export":
             return CommandResult(handled=True, export_requested=True)
+        if text == "/export --open":
+            return CommandResult(handled=True, export_requested=True, export_open_requested=True)
         if text.startswith("/export "):
             return CommandResult(
                 handled=True,
@@ -3863,6 +3865,43 @@ async def test_tui_app_export_command_runs_session_export() -> None:
         assert "Format: html" in app.screen.message
         assert "Path: /workspace/project/session.html" in app.screen.message
         assert "Open: file:///workspace/project/session.html" in app.screen.message
+
+
+@pytest.mark.anyio
+async def test_tui_app_export_open_launches_export_artifact(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+    notifications: list[str] = []
+    opened: list[str] = []
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        del kwargs
+        notifications.append(message)
+
+    def fake_open(target: str) -> bool:
+        opened.append(target)
+        return True
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+    monkeypatch.setattr(tui_app.webbrowser, "open", fake_open)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/export --open"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert session.export_calls == [(None, None)]
+        assert opened == ["file:///workspace/project/session.html"]
+        assert notifications == [
+            "Exported session to /workspace/project/session.html",
+            "Opened export: /workspace/project/session.html",
+        ]
+        assert isinstance(app.screen, CommandOutputScreen)
+        assert app.screen.title_text == "Session export: open requested"
+        assert "Open requested: yes" in app.screen.message
 
 
 @pytest.mark.anyio

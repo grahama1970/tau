@@ -10,6 +10,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import webbrowser
 from collections.abc import AsyncIterator, Callable, Mapping, Sequence
 from contextlib import suppress
 from dataclasses import dataclass, fields, replace
@@ -7611,10 +7612,26 @@ class TauTuiApp(App[None]):
                         format=command.export_format,
                     )
                     self._notify(f"Exported session to {exported_path}")
+                    if command.export_open_requested:
+                        if _open_export_artifact(exported_path):
+                            self._notify(f"Opened export: {exported_path}")
+                        else:
+                            self._notify(
+                                f"Could not open export automatically: {exported_path}",
+                                severity="warning",
+                            )
                     self.push_screen(
                         CommandOutputScreen(
-                            "Session export",
-                            _export_result_message(exported_path, command.export_format),
+                            (
+                                "Session export: open requested"
+                                if command.export_open_requested
+                                else "Session export"
+                            ),
+                            _export_result_message(
+                                exported_path,
+                                command.export_format,
+                                open_requested=command.export_open_requested,
+                            ),
                             theme=self.tui_settings.resolved_theme,
                             keybindings=self.tui_settings.keybindings,
                         )
@@ -12765,7 +12782,12 @@ def _matches_configured_key(key: str, configured_key: str) -> bool:
     return key in _configured_key_parts(configured_key)
 
 
-def _export_result_message(path: Path, export_format: str | None) -> str:
+def _export_result_message(
+    path: Path,
+    export_format: str | None,
+    *,
+    open_requested: bool = False,
+) -> str:
     """Return durable TUI output for a completed session export."""
     resolved = path.expanduser()
     display_path = str(resolved)
@@ -12776,10 +12798,16 @@ def _export_result_message(path: Path, export_format: str | None) -> str:
     lines = [
         "Session exported.",
         "",
-        f"Format: {normalized_format}",
-        f"Path: {display_path}",
-        f"Open: {file_uri}",
     ]
+    if open_requested:
+        lines.append("Open requested: yes")
+    lines.extend(
+        (
+            f"Format: {normalized_format}",
+            f"Path: {display_path}",
+            f"Open: {file_uri}",
+        )
+    )
     if normalized_format == "html":
         lines.extend(
             (
@@ -12789,6 +12817,14 @@ def _export_result_message(path: Path, export_format: str | None) -> str:
             )
         )
     return "\n".join(lines)
+
+
+def _open_export_artifact(path: Path) -> bool:
+    """Open an exported artifact through the default browser/default handler."""
+    try:
+        return bool(webbrowser.open(path.expanduser().resolve().as_uri()))
+    except (OSError, ValueError):
+        return False
 
 
 def _matches_configured_or_default_key(
