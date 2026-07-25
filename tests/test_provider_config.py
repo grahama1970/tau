@@ -295,6 +295,48 @@ def test_resolve_provider_selection_rejects_unknown_provider() -> None:
         resolve_provider_selection(ProviderSettings(), provider_name="missing")
 
 
+def test_resolve_provider_selection_accepts_provider_model_shorthand() -> None:
+    settings = ProviderSettings(
+        default_provider="openai",
+        providers=(
+            OpenAICompatibleProviderConfig(
+                name="openai",
+                models=("gpt-5.5",),
+                default_model="gpt-5.5",
+            ),
+            OpenAICompatibleProviderConfig(
+                name="local",
+                models=("qwen",),
+                default_model="qwen",
+            ),
+        ),
+    )
+
+    slash = resolve_provider_selection(settings, model="local/qwen")
+    colon = resolve_provider_selection(settings, model="local:qwen")
+
+    assert (slash.provider.name, slash.model) == ("local", "qwen")
+    assert (colon.provider.name, colon.model) == ("local", "qwen")
+
+
+def test_resolve_provider_selection_preserves_slash_model_without_provider_prefix() -> None:
+    settings = ProviderSettings(
+        default_provider="openai",
+        providers=(
+            OpenAICompatibleProviderConfig(
+                name="openai",
+                models=("Qwen/Qwen3-32B",),
+                default_model="Qwen/Qwen3-32B",
+            ),
+        ),
+    )
+
+    selection = resolve_provider_selection(settings, model="Qwen/Qwen3-32B")
+
+    assert selection.provider.name == "openai"
+    assert selection.model == "Qwen/Qwen3-32B"
+
+
 def test_openai_compatible_config_from_provider_uses_configured_env_var(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

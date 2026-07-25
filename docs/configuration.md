@@ -326,6 +326,7 @@ tau --fork <session-id-or-jsonl-path>
 tau --name "Customer bugfix"
 tau --list-models [search]
 tau --models "gpt-5*,local:qwen"
+tau --model local/qwen
 tau --model gpt-5.5 --api-key "$OPENAI_API_KEY"
 tau --thinking xhigh
 tau --system-prompt ./system.md
@@ -391,6 +392,10 @@ Combine it with `--provider <name>` to list one provider.
 `--models <patterns>` sets a transient scoped model list for the TUI run. The
 value is a comma-separated list of model or provider/model glob patterns used
 by Ctrl+P cycling; it does not rewrite `providers.json`.
+
+`--model <model>` also accepts Pi-style `provider/model` and `provider:model`
+selectors when the prefix matches a configured provider. Slash-containing model
+ids are preserved when the prefix is not a Tau provider name.
 
 `--api-key <key>` supplies a non-persistent runtime API key for the explicit
 startup model selected by `--model` or `--models`. It does not modify provider

@@ -692,11 +692,29 @@ def resolve_provider_selection(
     model: str | None = None,
 ) -> ProviderSelection:
     """Resolve the provider and model for a run."""
+    if provider_name is None and model is not None:
+        parsed = _provider_model_from_model_arg(settings, model)
+        if parsed is not None:
+            provider_name, model = parsed
     provider = settings.get_provider(provider_name)
     selected_model = model or provider.default_model
     if not selected_model:
         raise ProviderConfigError(f"Provider {provider.name} does not define a default model")
     return ProviderSelection(provider=provider, model=selected_model)
+
+
+def _provider_model_from_model_arg(
+    settings: ProviderSettings,
+    model: str,
+) -> tuple[str, str] | None:
+    for separator in ("/", ":"):
+        provider_prefix, found, model_name = model.partition(separator)
+        if not found or not provider_prefix or not model_name:
+            continue
+        with suppress(ProviderConfigError):
+            settings.get_provider(provider_prefix)
+            return provider_prefix, model_name
+    return None
 
 
 def provider_thinking_levels(
