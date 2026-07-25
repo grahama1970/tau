@@ -3120,6 +3120,14 @@ def _extension_command_result(
                 editor_insert_text=extension_context.editor_insert_text,
             )
         if (
+            extension_context.editor_paste_text is not None
+            and result.editor_paste_text is None
+        ):
+            result = replace(
+                result,
+                editor_paste_text=extension_context.editor_paste_text,
+            )
+        if (
             extension_context.terminal_title_requested
             and not result.terminal_title_requested
         ):
@@ -3172,6 +3180,21 @@ def _extension_command_result(
             handled=True,
             exit_requested=extension_context.shutdown_requested,
             editor_insert_text=extension_context.editor_insert_text,
+            terminal_title_requested=extension_context.terminal_title_requested,
+            terminal_title=extension_context.terminal_title,
+            notifications=notifications,
+            status_updates=status_updates,
+            widget_updates=widget_updates,
+            working_indicator_update=working_indicator_update,
+            footer_update=footer_update,
+            header_update=header_update,
+            theme=extension_context.theme,
+        )
+    if extension_context.editor_paste_text is not None:
+        return CommandResult(
+            handled=True,
+            exit_requested=extension_context.shutdown_requested,
+            editor_paste_text=extension_context.editor_paste_text,
             terminal_title_requested=extension_context.terminal_title_requested,
             terminal_title=extension_context.terminal_title,
             notifications=notifications,
@@ -3269,6 +3292,14 @@ def _extension_shortcut_result(
                 editor_insert_text=extension_context.editor_insert_text,
             )
         if (
+            extension_context.editor_paste_text is not None
+            and result.editor_paste_text is None
+        ):
+            result = replace(
+                result,
+                editor_paste_text=extension_context.editor_paste_text,
+            )
+        if (
             extension_context.terminal_title_requested
             and not result.terminal_title_requested
         ):
@@ -3312,6 +3343,21 @@ def _extension_shortcut_result(
             handled=True,
             exit_requested=extension_context.shutdown_requested,
             editor_insert_text=extension_context.editor_insert_text,
+            terminal_title_requested=extension_context.terminal_title_requested,
+            terminal_title=extension_context.terminal_title,
+            notifications=notifications,
+            status_updates=status_updates,
+            widget_updates=widget_updates,
+            working_indicator_update=working_indicator_update,
+            footer_update=footer_update,
+            header_update=header_update,
+            theme=extension_context.theme,
+        )
+    if extension_context.editor_paste_text is not None:
+        return CommandResult(
+            handled=True,
+            exit_requested=extension_context.shutdown_requested,
+            editor_paste_text=extension_context.editor_paste_text,
             terminal_title_requested=extension_context.terminal_title_requested,
             terminal_title=extension_context.terminal_title,
             notifications=notifications,

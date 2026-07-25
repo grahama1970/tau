@@ -6434,6 +6434,8 @@ class TauTuiApp(App[None]):
                     self._set_prompt_editor_text(command.editor_text)
                 elif command.editor_insert_text is not None:
                     self._insert_prompt_editor_text(command.editor_insert_text)
+                elif command.editor_paste_text is not None:
+                    self._paste_prompt_editor_text(command.editor_paste_text)
                 if command.user_message is not None:
                     self._queue_compaction_message(
                         command.user_message,
@@ -6654,6 +6656,10 @@ class TauTuiApp(App[None]):
                 return
             if command.editor_insert_text is not None:
                 self._insert_prompt_editor_text(command.editor_insert_text)
+                self._refresh()
+                return
+            if command.editor_paste_text is not None:
+                self._paste_prompt_editor_text(command.editor_paste_text)
                 self._refresh()
                 return
             if command.user_message is not None:
@@ -7197,6 +7203,10 @@ class TauTuiApp(App[None]):
         self._completion_state = self._build_completion_state(prompt.text)
         self._refresh_completions()
 
+    def _paste_prompt_editor_text(self, text: str) -> None:
+        """Paste command-provided text using the prompt's large-paste handling."""
+        self._insert_prompt_text(text, compact_large_paste=True)
+
     async def _handle_session_command(
         self,
         text: str,
@@ -7721,6 +7731,8 @@ class TauTuiApp(App[None]):
             self._set_prompt_editor_text(result.editor_text)
         elif result.editor_insert_text is not None:
             self._insert_prompt_editor_text(result.editor_insert_text)
+        elif result.editor_paste_text is not None:
+            self._paste_prompt_editor_text(result.editor_paste_text)
         self._refresh()
         if result.exit_requested:
             self.exit()

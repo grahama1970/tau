@@ -57,6 +57,7 @@ class ExtensionShortcutContext:
     shutdown_requested: bool = False
     editor_text: str | None = None
     editor_insert_text: str | None = None
+    editor_paste_text: str | None = None
     terminal_title_requested: bool = False
     terminal_title: str | None = None
     notifications: list[ExtensionNotification] = field(default_factory=list)
@@ -129,6 +130,12 @@ class ExtensionShortcutContext:
         if not isinstance(text, str):
             raise TypeError("insert_editor_text requires text")
         self.editor_insert_text = text
+
+    def paste_to_editor(self, text: str) -> None:
+        """Request that Tau paste text into the prompt editor after the shortcut returns."""
+        if not isinstance(text, str):
+            raise TypeError("paste_to_editor requires text")
+        self.editor_paste_text = text
 
     def set_title(self, title: str | None) -> None:
         """Request that Tau override or clear the terminal title."""
@@ -221,6 +228,7 @@ class ExtensionCommandContext:
     shutdown_requested: bool = False
     editor_text: str | None = None
     editor_insert_text: str | None = None
+    editor_paste_text: str | None = None
     terminal_title_requested: bool = False
     terminal_title: str | None = None
     notifications: list[ExtensionNotification] = field(default_factory=list)
@@ -295,6 +303,12 @@ class ExtensionCommandContext:
         if not isinstance(text, str):
             raise TypeError("insert_editor_text requires text")
         self.editor_insert_text = text
+
+    def paste_to_editor(self, text: str) -> None:
+        """Request that Tau paste text into the prompt editor after the command returns."""
+        if not isinstance(text, str):
+            raise TypeError("paste_to_editor requires text")
+        self.editor_paste_text = text
 
     def set_title(self, title: str | None) -> None:
         """Request that Tau override or clear the terminal title."""
@@ -496,6 +510,22 @@ class ExtensionCommandUi:
         """Return the prompt editor text captured before this handler ran."""
         return self._context.get_editor_text()
 
+    def getEditorText(self) -> str:  # noqa: N802
+        """Pi-compatible alias for returning captured editor text."""
+        return self._context.get_editor_text()
+
+    def setEditorText(self, text: str) -> None:  # noqa: N802
+        """Pi-compatible alias for replacing editor text."""
+        self._context.set_editor_text(text)
+
+    def insertEditorText(self, text: str) -> None:  # noqa: N802
+        """Pi-compatible alias for inserting editor text."""
+        self._context.insert_editor_text(text)
+
+    def pasteToEditor(self, text: str) -> None:  # noqa: N802
+        """Pi-compatible alias for paste-style editor insertion."""
+        self._context.paste_to_editor(text)
+
     def set_editor_text(self, text: str) -> None:
         """Request that Tau replace the prompt editor contents after the command returns."""
         self._context.set_editor_text(text)
@@ -503,6 +533,10 @@ class ExtensionCommandUi:
     def insert_editor_text(self, text: str) -> None:
         """Request that Tau insert text into the prompt editor after the command returns."""
         self._context.insert_editor_text(text)
+
+    def paste_to_editor(self, text: str) -> None:
+        """Paste text into the editor using Tau's large-paste handling."""
+        self._context.paste_to_editor(text)
 
     def set_title(self, title: str | None) -> None:
         """Request that Tau override or clear the terminal title."""

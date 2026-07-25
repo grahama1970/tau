@@ -209,6 +209,7 @@ class CommandResult:
     theme: str | None = None
     editor_text: str | None = None
     editor_insert_text: str | None = None
+    editor_paste_text: str | None = None
     terminal_title_requested: bool = False
     terminal_title: str | None = None
     notifications: tuple[CommandNotification, ...] = ()
