@@ -216,6 +216,7 @@ class TuiState:
     loop_monitor_status: LoopMonitorStatus | None = None
     queued_steering: tuple[str, ...] = ()
     queued_follow_up: tuple[str, ...] = ()
+    pending_terminal_commands: list[ChatItem] = field(default_factory=list)
     skills: tuple[Skill, ...] = ()
 
     def add_item(
@@ -392,11 +393,16 @@ class TuiState:
     @property
     def queued_message_count(self) -> int:
         """Return the total number of pending queued messages."""
-        return len(self.queued_steering) + len(self.queued_follow_up)
+        return (
+            len(self.queued_steering)
+            + len(self.queued_follow_up)
+            + len(self.pending_terminal_commands)
+        )
 
     def clear(self) -> None:
         """Clear visible transcript state without modifying durable session history."""
         self.items.clear()
+        self.pending_terminal_commands.clear()
         self.assistant_buffer = ""
         self.error = None
         self.thinking_status = None

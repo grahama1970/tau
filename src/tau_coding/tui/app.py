@@ -142,6 +142,7 @@ from tau_coding.tui.config import (
 from tau_coding.tui.file_drop import normalize_dropped_paths
 from tau_coding.tui.pty_proof import pty_input_received_line, pty_ready_line
 from tau_coding.tui.state import (
+    ChatItem,
     TuiState,
     format_terminal_command_result_block,
     format_terminal_command_running_block,
@@ -7059,22 +7060,26 @@ class TauTuiApp(App[None]):
             self._terminal_worker = None
             return
 
-        item_index = len(self.state.items)
-        self.state.add_item(
-            "tool",
-            f"$ {command.strip()}",
+        defer_display = self.state.running
+        item = ChatItem(
+            role="tool",
+            text=f"$ {command.strip()}",
             tool_result_text=format_terminal_command_running_block(added_to_context=add_to_context),
             always_show_tool_result=True,
         )
+        if defer_display:
+            self.state.pending_terminal_commands.append(item)
+        else:
+            self.state.items.append(item)
+        item_index = len(self.state.items) - 1 if not defer_display else None
         self._follow_transcript_output()
         self._refresh()
         streamed_output_parts: list[str] = []
 
         def update_terminal_output(delta: str) -> None:
             streamed_output_parts.append(delta)
-            if item_index >= len(self.state.items):
+            if item_index is not None and item_index >= len(self.state.items):
                 return
-            item = self.state.items[item_index]
             item.tool_result_text = format_terminal_command_running_block(
                 added_to_context=add_to_context,
                 output="".join(streamed_output_parts),
@@ -7093,8 +7098,7 @@ class TauTuiApp(App[None]):
                     raise
                 result = await run_terminal_command(command, add_to_context=add_to_context)
         except asyncio.CancelledError:
-            if item_index < len(self.state.items):
-                item = self.state.items[item_index]
+            if item_index is None or item_index < len(self.state.items):
                 item.tool_result_text = format_terminal_command_result_block(
                     ok=False,
                     added_to_context=add_to_context,
@@ -7104,8 +7108,7 @@ class TauTuiApp(App[None]):
             self._refresh()
             return
         except Exception as exc:  # noqa: BLE001 - surface command execution failures in the TUI
-            if item_index < len(self.state.items):
-                item = self.state.items[item_index]
+            if item_index is None or item_index < len(self.state.items):
                 item.tool_result_text = format_terminal_command_result_block(
                     ok=False,
                     added_to_context=add_to_context,
@@ -7116,10 +7119,9 @@ class TauTuiApp(App[None]):
             self._terminal_worker = None
             return
 
-        if item_index >= len(self.state.items):
+        if item_index is not None and item_index >= len(self.state.items):
             self._terminal_worker = None
             return
-        item = self.state.items[item_index]
         item.text = f"$ {result.command}"
         formatted_output = _format_workflow_terminal_output(result.output) or result.output
         item.tool_result_text = format_terminal_command_result_block(
@@ -7925,6 +7927,9 @@ class TauTuiApp(App[None]):
             return
         if isinstance(event, AgentEndEvent):
             await transcript.finish_assistant_message()
+            if self._flush_pending_terminal_commands_to_transcript():
+                self._refresh()
+                return
             self._refresh_chrome()
             return
         if isinstance(event, MessageStartEvent):
@@ -9505,6 +9510,13 @@ class TauTuiApp(App[None]):
                 *(text for text, mode in self._compaction_queued_messages if mode == "follow_up"),
             )
         self.adapter.apply(QueueUpdateEvent(steering=steering, follow_up=follow_up))
+
+    def _flush_pending_terminal_commands_to_transcript(self) -> bool:
+        if not self.state.pending_terminal_commands:
+            return False
+        self.state.items.extend(self.state.pending_terminal_commands)
+        self.state.pending_terminal_commands.clear()
+        return True
 
     def _sync_activity_indicator(self) -> None:
         active = self._is_tui_activity_active()
@@ -11932,7 +11944,14 @@ def _render_queued_messages(
         row = Text("↳ follow-up · queued: ", style=theme.muted_text)
         row.append(_queued_message_preview(message), style=theme.prompt_text)
         rows.append(row)
-    if rows:
+    for item in state.pending_terminal_commands:
+        row = Text("↯ terminal · pending: ", style=theme.muted_text)
+        row.append(_queued_message_preview(item.text), style=theme.prompt_text)
+        if item.tool_result_text:
+            first_line = item.tool_result_text.splitlines()[0]
+            row.append(f" · {first_line}", style=theme.muted_text)
+        rows.append(row)
+    if state.queued_steering or state.queued_follow_up:
         rows.append(
             Text(
                 f"↳ {_key_hint(keybindings.dequeue_messages)} to edit all queued messages",
