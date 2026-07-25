@@ -6426,6 +6426,8 @@ class TauTuiApp(App[None]):
                 self._apply_command_working_indicator_update(command)
                 self._apply_command_footer_update(command)
                 self._apply_command_header_update(command)
+                if command.theme is not None:
+                    self._set_tui_theme(command.theme)
                 if command.terminal_title_requested:
                     self._set_extension_terminal_title(command.terminal_title)
                 if command.editor_text is not None:
@@ -7711,6 +7713,8 @@ class TauTuiApp(App[None]):
         self._apply_command_working_indicator_update(result)
         self._apply_command_footer_update(result)
         self._apply_command_header_update(result)
+        if result.theme is not None:
+            self._set_tui_theme(result.theme)
         if result.terminal_title_requested:
             self._set_extension_terminal_title(result.terminal_title)
         if result.editor_text is not None:

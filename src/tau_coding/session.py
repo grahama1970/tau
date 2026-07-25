@@ -3140,6 +3140,8 @@ def _extension_command_result(
             result = replace(result, footer_update=footer_update)
         if header_update is not None and result.header_update is None:
             result = replace(result, header_update=header_update)
+        if extension_context.theme is not None and result.theme is None:
+            result = replace(result, theme=extension_context.theme)
         if extension_context.user_message is not None and result.user_message is None:
             result = replace(
                 result,
@@ -3163,6 +3165,7 @@ def _extension_command_result(
             working_indicator_update=working_indicator_update,
             footer_update=footer_update,
             header_update=header_update,
+            theme=extension_context.theme,
         )
     if extension_context.editor_insert_text is not None:
         return CommandResult(
@@ -3177,6 +3180,7 @@ def _extension_command_result(
             working_indicator_update=working_indicator_update,
             footer_update=footer_update,
             header_update=header_update,
+            theme=extension_context.theme,
         )
     if extension_context.terminal_title_requested:
         return CommandResult(
@@ -3190,6 +3194,7 @@ def _extension_command_result(
             working_indicator_update=working_indicator_update,
             footer_update=footer_update,
             header_update=header_update,
+            theme=extension_context.theme,
         )
     if extension_context.user_message is not None:
         return CommandResult(
@@ -3203,6 +3208,7 @@ def _extension_command_result(
             working_indicator_update=working_indicator_update,
             footer_update=footer_update,
             header_update=header_update,
+            theme=extension_context.theme,
             user_message=extension_context.user_message,
             user_message_delivery=cast(
                 Literal["steer", "follow_up"],
@@ -3221,6 +3227,7 @@ def _extension_command_result(
             working_indicator_update=working_indicator_update,
             footer_update=footer_update,
             header_update=header_update,
+            theme=extension_context.theme,
         )
     return CommandResult(
         handled=True,
@@ -3234,6 +3241,7 @@ def _extension_command_result(
         working_indicator_update=working_indicator_update,
         footer_update=footer_update,
         header_update=header_update,
+        theme=extension_context.theme,
     )
 
 
@@ -3281,6 +3289,8 @@ def _extension_shortcut_result(
             result = replace(result, footer_update=footer_update)
         if header_update is not None and result.header_update is None:
             result = replace(result, header_update=header_update)
+        if extension_context.theme is not None and result.theme is None:
+            result = replace(result, theme=extension_context.theme)
         return result
     if extension_context.editor_text is not None:
         return CommandResult(
@@ -3295,6 +3305,7 @@ def _extension_shortcut_result(
             working_indicator_update=working_indicator_update,
             footer_update=footer_update,
             header_update=header_update,
+            theme=extension_context.theme,
         )
     if extension_context.editor_insert_text is not None:
         return CommandResult(
@@ -3309,6 +3320,7 @@ def _extension_shortcut_result(
             working_indicator_update=working_indicator_update,
             footer_update=footer_update,
             header_update=header_update,
+            theme=extension_context.theme,
         )
     if extension_context.terminal_title_requested:
         return CommandResult(
@@ -3322,6 +3334,7 @@ def _extension_shortcut_result(
             working_indicator_update=working_indicator_update,
             footer_update=footer_update,
             header_update=header_update,
+            theme=extension_context.theme,
         )
     if result is None:
         return CommandResult(
@@ -3335,6 +3348,7 @@ def _extension_shortcut_result(
             working_indicator_update=working_indicator_update,
             footer_update=footer_update,
             header_update=header_update,
+            theme=extension_context.theme,
         )
     return CommandResult(
         handled=True,
@@ -3348,6 +3362,7 @@ def _extension_shortcut_result(
         working_indicator_update=working_indicator_update,
         footer_update=footer_update,
         header_update=header_update,
+        theme=extension_context.theme,
     )
 
 

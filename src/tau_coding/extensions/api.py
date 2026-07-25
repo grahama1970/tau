@@ -65,6 +65,7 @@ class ExtensionShortcutContext:
     working_indicator_update: ExtensionWorkingIndicatorUpdate | None = None
     footer_update: ExtensionFooterUpdate | None = None
     header_update: ExtensionHeaderUpdate | None = None
+    theme: str | None = None
     ui: ExtensionCommandUi = field(init=False)
 
     def __post_init__(self) -> None:
@@ -197,6 +198,14 @@ class ExtensionShortcutContext:
         """Request a static custom header, or restore Tau's built-in header."""
         self.header_update = ExtensionHeaderUpdate(lines=_normalize_header_lines(lines))
 
+    def set_theme(self, theme: str) -> dict[str, str | bool]:
+        """Request a TUI theme switch after this shortcut returns."""
+        theme_name = str(theme).strip()
+        if not theme_name:
+            return {"success": False, "error": "theme name is required"}
+        self.theme = theme_name
+        return {"success": True, "error": ""}
+
 
 @dataclass(slots=True)
 class ExtensionCommandContext:
@@ -220,6 +229,7 @@ class ExtensionCommandContext:
     working_indicator_update: ExtensionWorkingIndicatorUpdate | None = None
     footer_update: ExtensionFooterUpdate | None = None
     header_update: ExtensionHeaderUpdate | None = None
+    theme: str | None = None
     user_message: str | None = None
     user_message_delivery: str = "steer"
     ui: ExtensionCommandUi = field(init=False)
@@ -354,6 +364,14 @@ class ExtensionCommandContext:
         """Request a static custom header, or restore Tau's built-in header."""
         self.header_update = ExtensionHeaderUpdate(lines=_normalize_header_lines(lines))
 
+    def set_theme(self, theme: str) -> dict[str, str | bool]:
+        """Request a TUI theme switch after this command returns."""
+        theme_name = str(theme).strip()
+        if not theme_name:
+            return {"success": False, "error": "theme name is required"}
+        self.theme = theme_name
+        return {"success": True, "error": ""}
+
     def send_user_message(self, text: str, *, deliver_as: str = "steer") -> None:
         """Request that Tau send or queue a user message after the command returns."""
         message = text.strip()
@@ -436,6 +454,10 @@ class ExtensionCommandUi:
         """Pi-compatible alias for replacing or restoring Tau's header."""
         self._context.set_header(lines)
 
+    def setTheme(self, theme: str) -> dict[str, str | bool]:  # noqa: N802
+        """Pi-compatible alias for switching Tau's theme by name."""
+        return self._context.set_theme(theme)
+
     def set_working_message(self, message: str | None = None) -> None:
         """Set the running message."""
         self._context.set_working_message(message)
@@ -455,6 +477,10 @@ class ExtensionCommandUi:
     def set_header(self, lines: str | Sequence[str] | None = None) -> None:
         """Replace or restore Tau's header."""
         self._context.set_header(lines)
+
+    def set_theme(self, theme: str) -> dict[str, str | bool]:
+        """Switch Tau's theme by name."""
+        return self._context.set_theme(theme)
 
     async def _request_ui(self, method: str, **payload: Any) -> Any:
         request = getattr(self._context.session, "request_extension_ui", None)
