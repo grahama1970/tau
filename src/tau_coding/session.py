@@ -64,6 +64,7 @@ from tau_coding.diagnostics import (
     AgentCallDiagnosticLogger,
     new_agent_call_run_id,
 )
+from tau_coding.extensions import load_extension_tools
 from tau_coding.loop_receipt import LoopReceiptConfig, LoopReceiptRecorder
 from tau_coding.paths import TauPaths
 from tau_coding.prompt_templates import (
@@ -194,6 +195,7 @@ class SessionResources:
     skills: tuple[Skill, ...]
     prompt_templates: tuple[PromptTemplate, ...]
     context_files: tuple[ProjectContextFile, ...]
+    extension_tools: tuple[AgentTool, ...]
     diagnostics: tuple[ResourceDiagnostic, ...]
 
 
@@ -220,9 +222,11 @@ class CodingSessionConfig:
     skill_paths: tuple[Path, ...] = ()
     prompt_template_paths: tuple[Path, ...] = ()
     theme_paths: tuple[Path, ...] = ()
+    extension_paths: tuple[Path, ...] = ()
     discover_skills: bool = True
     discover_prompt_templates: bool = True
     discover_themes: bool = True
+    discover_extensions: bool = True
     discover_context_files: bool = True
     tools: list[AgentTool] | None = None
     tool_allowlist: tuple[str, ...] | None = None
@@ -321,7 +325,6 @@ class CodingSession:
             if latest_leaf is not None
             else linear_state
         )
-        tools = _build_session_tools(config)
         resource_paths = resource_paths_with_cwd(config.resource_paths, config.cwd)
         resources = _load_session_resources(
             resource_paths,
@@ -329,12 +332,15 @@ class CodingSession:
             skill_paths=config.skill_paths,
             prompt_template_paths=config.prompt_template_paths,
             theme_paths=config.theme_paths,
+            extension_paths=config.extension_paths,
             discover_skills=config.discover_skills,
             discover_prompt_templates=config.discover_prompt_templates,
             discover_themes=config.discover_themes,
+            discover_extensions=config.discover_extensions,
             discover_context_files=config.discover_context_files,
             default_project_trust=config.default_project_trust,
         )
+        tools = _build_session_tools(config, extension_tools=resources.extension_tools)
         system = (
             config.system
             if config.system is not None
@@ -1004,6 +1010,7 @@ class CodingSession:
         before_system_prompt_inputs = _system_prompt_resource_signatures(
             skills=self._skills,
             context_files=self._context_files,
+            tools=self._harness.config.tools,
         )
 
         resources = _load_session_resources(
@@ -1012,12 +1019,15 @@ class CodingSession:
             skill_paths=self._config.skill_paths,
             prompt_template_paths=self._config.prompt_template_paths,
             theme_paths=self._config.theme_paths,
+            extension_paths=self._config.extension_paths,
             discover_skills=self._config.discover_skills,
             discover_prompt_templates=self._config.discover_prompt_templates,
             discover_themes=self._config.discover_themes,
+            discover_extensions=self._config.discover_extensions,
             discover_context_files=self._config.discover_context_files,
             default_project_trust=self._config.default_project_trust,
         )
+        tools = _build_session_tools(self._config, extension_tools=resources.extension_tools)
 
         after_skills = _skill_signatures(resources.skills)
         after_prompt_templates = _prompt_template_signatures(resources.prompt_templates)
@@ -1026,6 +1036,7 @@ class CodingSession:
         after_system_prompt_inputs = _system_prompt_resource_signatures(
             skills=resources.skills,
             context_files=resources.context_files,
+            tools=tools,
         )
 
         rebuilt_system_prompt: str | None = None
@@ -1037,7 +1048,7 @@ class CodingSession:
             rebuilt_system_prompt = build_system_prompt(
                 BuildSystemPromptOptions(
                     cwd=self._config.cwd,
-                    tools=self._harness.config.tools,
+                    tools=tools,
                     skills=resources.skills,
                     custom_prompt=self._config.custom_system_prompt,
                     append_system_prompt=self._config.append_system_prompt,
@@ -1046,6 +1057,7 @@ class CodingSession:
             )
             system_prompt_rebuilt = True
 
+        self._harness.config.tools = tools
         self._skills = resources.skills
         self._prompt_templates = resources.prompt_templates
         self._context_files = resources.context_files
@@ -2422,15 +2434,24 @@ def _system_prompt_resource_signatures(
     *,
     skills: tuple[Skill, ...],
     context_files: tuple[ProjectContextFile, ...],
-) -> tuple[tuple[object, ...], tuple[object, ...]]:
+    tools: Sequence[AgentTool],
+) -> tuple[tuple[object, ...], tuple[object, ...], tuple[object, ...]]:
     prompt_skills = tuple(
         (skill.name, str(skill.path), skill.description)
         for skill in sorted(skills, key=lambda item: item.name)
     )
-    return (prompt_skills, _context_file_signatures(context_files))
+    prompt_tools = tuple(
+        (tool.name, tool.description, tool.prompt_snippet)
+        for tool in sorted(tools, key=lambda item: item.name)
+    )
+    return (prompt_skills, _context_file_signatures(context_files), prompt_tools)
 
 
-def _build_session_tools(config: CodingSessionConfig) -> list[AgentTool]:
+def _build_session_tools(
+    config: CodingSessionConfig,
+    *,
+    extension_tools: tuple[AgentTool, ...] = (),
+) -> list[AgentTool]:
     tools = (
         list(config.tools)
         if config.tools is not None
@@ -2440,6 +2461,8 @@ def _build_session_tools(config: CodingSessionConfig) -> list[AgentTool]:
             auto_resize_images=config.auto_resize_images,
         )
     )
+    if config.tools is None:
+        tools.extend(extension_tools)
     return _select_session_tools(
         tools,
         allowlist=config.tool_allowlist,
@@ -2526,9 +2549,11 @@ def _load_session_resources(
     skill_paths: tuple[Path, ...] = (),
     prompt_template_paths: tuple[Path, ...] = (),
     theme_paths: tuple[Path, ...] = (),
+    extension_paths: tuple[Path, ...] = (),
     discover_skills: bool = True,
     discover_prompt_templates: bool = True,
     discover_themes: bool = True,
+    discover_extensions: bool = True,
     discover_context_files: bool = True,
     default_project_trust: DefaultProjectTrust = "ask",
 ) -> SessionResources:
@@ -2573,10 +2598,16 @@ def _load_session_resources(
     explicit_themes, explicit_theme_diagnostics = load_custom_tui_themes_from_paths(theme_paths)
     custom_themes = {**custom_themes, **explicit_themes}
     set_custom_tui_themes(custom_themes)
+    extensions = load_extension_tools(
+        effective_paths,
+        explicit_paths=extension_paths,
+        discover_user_extensions=discover_extensions,
+    )
     return SessionResources(
         skills=tuple(loaded_skills),
         prompt_templates=tuple(loaded_prompt_templates),
         context_files=_merge_context_files(explicit_context_files, discovered_context),
+        extension_tools=extensions.tools,
         diagnostics=tuple(
             [
                 *trust_diagnostics,
@@ -2589,6 +2620,7 @@ def _load_session_resources(
                 *context_diagnostics,
                 *theme_diagnostics,
                 *explicit_theme_diagnostics,
+                *extensions.diagnostics,
             ]
         ),
     )

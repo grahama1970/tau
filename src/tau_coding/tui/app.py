@@ -11206,9 +11206,11 @@ async def run_tui_app(
     no_skills: bool = False,
     no_prompt_templates: bool = False,
     no_themes: bool = False,
+    no_extensions: bool = False,
     skill_paths: tuple[Path, ...] = (),
     prompt_template_paths: tuple[Path, ...] = (),
     theme_paths: tuple[Path, ...] = (),
+    extension_paths: tuple[Path, ...] = (),
 ) -> str | None:
     """Create the default provider/session, run the Textual app, and return the session id."""
     if new_session and session_id is not None:
@@ -11348,9 +11350,11 @@ async def run_tui_app(
                 discover_skills=not no_skills,
                 discover_prompt_templates=not no_prompt_templates,
                 discover_themes=not no_themes,
+                discover_extensions=not no_extensions,
                 skill_paths=skill_paths,
                 prompt_template_paths=prompt_template_paths,
                 theme_paths=theme_paths,
+                extension_paths=extension_paths,
             )
         )
         app = TauTuiApp(

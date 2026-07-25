@@ -934,6 +934,14 @@ def main(
         bool,
         typer.Option("--no-themes", help="Disable custom TUI theme discovery and loading."),
     ] = False,
+    no_extensions: Annotated[
+        bool,
+        typer.Option(
+            "--no-extensions",
+            "-ne",
+            help="Disable user extension discovery while keeping explicit --extension paths.",
+        ),
+    ] = False,
     skill_paths: Annotated[
         list[Path] | None,
         typer.Option("--skill", help="Load a skill markdown file or directory; repeatable."),
@@ -948,6 +956,14 @@ def main(
     theme_paths: Annotated[
         list[Path] | None,
         typer.Option("--theme", help="Load a custom theme JSON file or directory; repeatable."),
+    ] = None,
+    extension_paths: Annotated[
+        list[Path] | None,
+        typer.Option(
+            "--extension",
+            "-e",
+            help="Load a Python extension file or directory; repeatable.",
+        ),
     ] = None,
     approve_project: Annotated[
         bool,
@@ -1207,6 +1223,7 @@ def main(
         cwd=startup_cwd,
     )
     resolved_theme_paths = _resolve_cli_resource_paths(theme_paths, cwd=startup_cwd)
+    resolved_extension_paths = _resolve_cli_resource_paths(extension_paths, cwd=startup_cwd)
 
     provider_settings_override = None
     if model_patterns is not None:
@@ -3410,38 +3427,44 @@ def main(
             startup_session_id = forked.id
             session_name = None
         try:
-            resumable_session_id = anyio.run(
-                run_openai_tui,
-                model,
-                startup_cwd,
-                startup_session_id,
-                new_session,
-                provider,
-                auto_compact_threshold,
-                startup_thinking_level,
-                resolved_system_prompt,
-                resolved_append_system_prompt,
-                initial_prompt,
-                session_name,
-                continue_session,
-                resume_picker,
-                no_session,
-                exact_session_id,
-                session_dir,
-                provider_settings_override,
-                startup_default_project_trust,
-                no_context_files,
-                tool_allowlist,
-                tool_denylist,
-                no_tools,
-                no_builtin_tools,
-                no_skills,
-                no_prompt_templates,
-                no_themes,
-                resolved_skill_paths,
-                resolved_prompt_template_paths,
-                resolved_theme_paths,
-            )
+            async def run_startup_tui() -> str | None:
+                kwargs: dict[str, object] = {
+                    "model": model,
+                    "cwd": startup_cwd,
+                    "session_id": startup_session_id,
+                    "new_session": new_session,
+                    "provider_name": provider,
+                    "auto_compact_token_threshold": auto_compact_threshold,
+                    "thinking_level": startup_thinking_level,
+                    "custom_system_prompt": resolved_system_prompt,
+                    "append_system_prompt": resolved_append_system_prompt,
+                    "initial_prompt": initial_prompt,
+                    "session_name": session_name,
+                    "continue_session": continue_session,
+                    "resume_picker": resume_picker,
+                    "no_session": no_session,
+                    "exact_session_id": exact_session_id,
+                    "session_dir": session_dir,
+                    "provider_settings": provider_settings_override,
+                    "default_project_trust": startup_default_project_trust,
+                    "no_context_files": no_context_files,
+                    "tool_allowlist": tool_allowlist,
+                    "tool_denylist": tool_denylist,
+                    "no_tools": no_tools,
+                    "no_builtin_tools": no_builtin_tools,
+                    "no_skills": no_skills,
+                    "no_prompt_templates": no_prompt_templates,
+                    "no_themes": no_themes,
+                    "skill_paths": resolved_skill_paths,
+                    "prompt_template_paths": resolved_prompt_template_paths,
+                    "theme_paths": resolved_theme_paths,
+                }
+                if no_extensions or resolved_extension_paths:
+                    kwargs["no_extensions"] = no_extensions
+                    kwargs["extension_paths"] = resolved_extension_paths
+                return await run_openai_tui(**kwargs)  # type: ignore[arg-type]
+
+            resumable_session_id = anyio.run(run_startup_tui)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         if resumable_session_id is not None:
@@ -3464,34 +3487,40 @@ def main(
             checks=loop2_checks,
             provider_name=provider,
         )
-        ok = anyio.run(
-            run_openai_print_mode,
-            prompt,
-            model,
-            startup_cwd,
-            effective_output,
-            provider,
-            loop_receipt,
-            startup_thinking_level,
-            resolved_system_prompt,
-            resolved_append_system_prompt,
-            session_name,
-            no_session,
-            exact_session_id,
-            session_dir,
-            startup_default_project_trust,
-            no_context_files,
-            tool_allowlist,
-            tool_denylist,
-            no_tools,
-            no_builtin_tools,
-            no_skills,
-            no_prompt_templates,
-            no_themes,
-            resolved_skill_paths,
-            resolved_prompt_template_paths,
-            resolved_theme_paths,
-        )
+        async def run_startup_print_mode() -> bool:
+            kwargs: dict[str, object] = {
+                "prompt": prompt,
+                "model": model,
+                "cwd": startup_cwd,
+                "output": effective_output,
+                "provider_name": provider,
+                "loop_receipt": loop_receipt,
+                "thinking_level": startup_thinking_level,
+                "custom_system_prompt": resolved_system_prompt,
+                "append_system_prompt": resolved_append_system_prompt,
+                "session_name": session_name,
+                "no_session": no_session,
+                "exact_session_id": exact_session_id,
+                "session_dir": session_dir,
+                "default_project_trust": startup_default_project_trust,
+                "no_context_files": no_context_files,
+                "tool_allowlist": tool_allowlist,
+                "tool_denylist": tool_denylist,
+                "no_tools": no_tools,
+                "no_builtin_tools": no_builtin_tools,
+                "no_skills": no_skills,
+                "no_prompt_templates": no_prompt_templates,
+                "no_themes": no_themes,
+                "skill_paths": resolved_skill_paths,
+                "prompt_template_paths": resolved_prompt_template_paths,
+                "theme_paths": resolved_theme_paths,
+            }
+            if no_extensions or resolved_extension_paths:
+                kwargs["no_extensions"] = no_extensions
+                kwargs["extension_paths"] = resolved_extension_paths
+            return await run_openai_print_mode(**kwargs)  # type: ignore[arg-type]
+
+        ok = anyio.run(run_startup_print_mode)
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
     if not ok:
@@ -3641,9 +3670,11 @@ async def run_openai_tui(
     no_skills: bool = False,
     no_prompt_templates: bool = False,
     no_themes: bool = False,
+    no_extensions: bool = False,
     skill_paths: tuple[Path, ...] = (),
     prompt_template_paths: tuple[Path, ...] = (),
     theme_paths: tuple[Path, ...] = (),
+    extension_paths: tuple[Path, ...] = (),
 ) -> str | None:
     """Run the Textual TUI and return its resumable session id, if any."""
     return await run_tui_app(
@@ -3673,9 +3704,11 @@ async def run_openai_tui(
         no_skills=no_skills,
         no_prompt_templates=no_prompt_templates,
         no_themes=no_themes,
+        no_extensions=no_extensions,
         skill_paths=skill_paths,
         prompt_template_paths=prompt_template_paths,
         theme_paths=theme_paths,
+        extension_paths=extension_paths,
     )
 
 
@@ -13462,9 +13495,11 @@ async def run_openai_print_mode(
     no_skills: bool = False,
     no_prompt_templates: bool = False,
     no_themes: bool = False,
+    no_extensions: bool = False,
     skill_paths: tuple[Path, ...] = (),
     prompt_template_paths: tuple[Path, ...] = (),
     theme_paths: tuple[Path, ...] = (),
+    extension_paths: tuple[Path, ...] = (),
 ) -> bool:
     """Run print mode with the OpenAI-compatible provider configured from the environment."""
     settings = load_provider_settings()
@@ -13513,9 +13548,11 @@ async def run_openai_print_mode(
             discover_skills=not no_skills,
             discover_prompt_templates=not no_prompt_templates,
             discover_themes=not no_themes,
+            discover_extensions=not no_extensions,
             skill_paths=skill_paths,
             prompt_template_paths=prompt_template_paths,
             theme_paths=theme_paths,
+            extension_paths=extension_paths,
         )
     finally:
         await provider.aclose()
@@ -13548,9 +13585,11 @@ async def run_print_mode(
     discover_skills: bool = True,
     discover_prompt_templates: bool = True,
     discover_themes: bool = True,
+    discover_extensions: bool = True,
     skill_paths: tuple[Path, ...] = (),
     prompt_template_paths: tuple[Path, ...] = (),
     theme_paths: tuple[Path, ...] = (),
+    extension_paths: tuple[Path, ...] = (),
 ) -> bool:
     """Run one non-interactive prompt and print streamed events.
 
@@ -13587,9 +13626,11 @@ async def run_print_mode(
             discover_skills=discover_skills,
             discover_prompt_templates=discover_prompt_templates,
             discover_themes=discover_themes,
+            discover_extensions=discover_extensions,
             skill_paths=skill_paths,
             prompt_template_paths=prompt_template_paths,
             theme_paths=theme_paths,
+            extension_paths=extension_paths,
         )
     )
     renderer = create_event_renderer(output)

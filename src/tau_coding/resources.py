@@ -62,6 +62,11 @@ class TauResourcePaths:
         return self.root / "themes"
 
     @property
+    def extensions_dir(self) -> Path:
+        """Return the primary Tau extension directory."""
+        return self.root / "extensions"
+
+    @property
     def skills_dirs(self) -> tuple[Path, ...]:
         """Return skill directories in increasing precedence order."""
         paths = self._paths()

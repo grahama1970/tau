@@ -7526,6 +7526,36 @@ def test_print_mode_passes_explicit_resource_paths(
     ]
 
 
+def test_print_mode_passes_explicit_extension_paths(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[tuple[bool, tuple[Path, ...]]] = []
+
+    async def fake_run_openai_print_mode(**kwargs: object) -> bool:
+        extension_paths = kwargs["extension_paths"]
+        assert isinstance(extension_paths, tuple)
+        calls.append((kwargs["no_extensions"] is True, extension_paths))
+        return True
+
+    monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--cwd",
+            str(tmp_path),
+            "--print",
+            "--extension",
+            "extensions/one.py",
+            "--no-extensions",
+            "hello",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert calls == [(True, (tmp_path / "extensions" / "one.py",))]
+
+
 def test_print_mode_requires_a_prompt() -> None:
     result = CliRunner().invoke(app, ["-p"])
 
@@ -7663,7 +7693,9 @@ def test_export_flag_invokes_exporter(
         session_ref: str,
         requested_output_path: Path | None = None,
         requested_export_format: str | None = None,
+        session_manager: SessionManager | None = None,
     ) -> Path:
+        del session_manager
         calls.append((session_ref, requested_output_path, requested_export_format))
         return output_path
 
@@ -8740,6 +8772,33 @@ def test_default_tui_passes_explicit_resource_paths(
     ]
 
 
+def test_default_tui_passes_explicit_extension_paths(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[tuple[bool, tuple[Path, ...]]] = []
+
+    async def fake_run_openai_tui(**kwargs: object) -> None:
+        extension_paths = kwargs["extension_paths"]
+        assert isinstance(extension_paths, tuple)
+        calls.append((kwargs["no_extensions"] is True, extension_paths))
+
+    monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--cwd",
+            str(tmp_path),
+            "--extension",
+            "extensions/one.py",
+            "-ne",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert calls == [(True, (tmp_path / "extensions" / "one.py",))]
+
+
 def test_default_tui_rejects_blank_startup_session_name() -> None:
     result = CliRunner().invoke(app, ["--name", "   "])
 
@@ -9430,7 +9489,9 @@ def test_export_command_invokes_exporter(
         session_ref: str,
         requested_output_path: Path | None = None,
         requested_export_format: str | None = None,
+        session_manager: SessionManager | None = None,
     ) -> Path:
+        del session_manager
         calls.append((session_ref, requested_output_path, requested_export_format))
         return output_path
 
@@ -9454,7 +9515,9 @@ def test_export_command_accepts_format_option(
         session_ref: str,
         requested_output_path: Path | None = None,
         requested_export_format: str | None = None,
+        session_manager: SessionManager | None = None,
     ) -> Path:
+        del session_manager
         calls.append((session_ref, requested_output_path, requested_export_format))
         return output_path
 

@@ -12,6 +12,7 @@ import pytest
 from tau_agent import (
     AgentMessage,
     AgentTool,
+    AgentToolResult,
     AssistantMessage,
     QueueUpdateEvent,
     ToolCall,
@@ -115,6 +116,164 @@ async def test_session_load_registers_project_tui_themes(tmp_path: Path) -> None
         assert any(diagnostic.kind == "theme" for diagnostic in session.resource_diagnostics)
     finally:
         set_custom_tui_themes({})
+
+
+@pytest.mark.anyio
+async def test_session_load_registers_explicit_extension_tool(tmp_path: Path) -> None:
+    extension_path = tmp_path / "extension.py"
+    extension_path.write_text(
+        """
+from tau_agent import AgentTool, AgentToolResult
+
+
+async def execute(arguments, signal=None):
+    del arguments, signal
+    return AgentToolResult(tool_call_id="", name="hello_ext", ok=True, content="hello")
+
+
+def setup(tau):
+    tau.register_tool(
+        AgentTool(
+            name="hello_ext",
+            description="Say hello from an extension.",
+            input_schema={"type": "object"},
+            executor=execute,
+            prompt_snippet="Say hello from an extension",
+        )
+    )
+""".lstrip(),
+        encoding="utf-8",
+    )
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="fake",
+            system="You are Tau.",
+            storage=JsonlSessionStorage(tmp_path / "session.jsonl"),
+            cwd=tmp_path,
+            extension_paths=(extension_path,),
+            discover_extensions=False,
+        )
+    )
+
+    tool = next(tool for tool in session.tools if tool.name == "hello_ext")
+    result = await tool.execute({})
+
+    assert result == AgentToolResult(tool_call_id="", name="hello_ext", ok=True, content="hello")
+
+
+@pytest.mark.anyio
+async def test_session_extension_tool_participates_in_tool_selection(tmp_path: Path) -> None:
+    extension_path = tmp_path / "extension.py"
+    extension_path.write_text(
+        """
+from tau_agent import AgentTool, AgentToolResult
+
+
+async def execute(arguments, signal=None):
+    del arguments, signal
+    return AgentToolResult(tool_call_id="", name="only_ext", ok=True, content="only")
+
+
+def setup(tau):
+    tau.register_tool(
+        AgentTool(
+            name="only_ext",
+            description="Only extension tool.",
+            input_schema={"type": "object"},
+            executor=execute,
+            prompt_snippet="Only extension tool",
+        )
+    )
+""".lstrip(),
+        encoding="utf-8",
+    )
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="fake",
+            storage=JsonlSessionStorage(tmp_path / "session.jsonl"),
+            cwd=tmp_path,
+            extension_paths=(extension_path,),
+            discover_extensions=False,
+            no_builtin_tools=True,
+        )
+    )
+
+    assert [tool.name for tool in session.tools] == ["only_ext"]
+    assert "only_ext" in session.system_prompt
+    assert "Only extension tool" in session.system_prompt
+
+
+@pytest.mark.anyio
+async def test_session_reload_refreshes_discovered_extension_tools(tmp_path: Path) -> None:
+    root = tmp_path / "home" / ".tau"
+    extensions_dir = root / "extensions"
+    extensions_dir.mkdir(parents=True)
+    (extensions_dir / "one.py").write_text(
+        """
+from tau_agent import AgentTool, AgentToolResult
+
+
+async def execute(arguments, signal=None):
+    del arguments, signal
+    return AgentToolResult(tool_call_id="", name="first_ext", ok=True, content="first")
+
+
+def setup(tau):
+    tau.register_tool(
+        AgentTool(
+            name="first_ext",
+            description="First extension tool.",
+            input_schema={"type": "object"},
+            executor=execute,
+            prompt_snippet="First extension tool",
+        )
+    )
+""".lstrip(),
+        encoding="utf-8",
+    )
+    resource_paths = TauResourcePaths(root=root, cwd=tmp_path, agents_root=None)
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="fake",
+            storage=JsonlSessionStorage(tmp_path / "session.jsonl"),
+            cwd=tmp_path,
+            resource_paths=resource_paths,
+            no_builtin_tools=True,
+        )
+    )
+    assert [tool.name for tool in session.tools] == ["first_ext"]
+
+    (extensions_dir / "two.py").write_text(
+        """
+from tau_agent import AgentTool, AgentToolResult
+
+
+async def execute(arguments, signal=None):
+    del arguments, signal
+    return AgentToolResult(tool_call_id="", name="second_ext", ok=True, content="second")
+
+
+def setup(tau):
+    tau.register_tool(
+        AgentTool(
+            name="second_ext",
+            description="Second extension tool.",
+            input_schema={"type": "object"},
+            executor=execute,
+            prompt_snippet="Second extension tool",
+        )
+    )
+""".lstrip(),
+        encoding="utf-8",
+    )
+    summary = session.reload()
+
+    assert [tool.name for tool in session.tools] == ["first_ext", "second_ext"]
+    assert summary.system_prompt_rebuilt is True
+    assert "second_ext" in session.system_prompt
 
 
 class SwitchableFakeProvider:
@@ -2152,7 +2311,7 @@ async def test_session_loads_with_resource_diagnostics_instead_of_failing(
     assert [skill.name for skill in session.skills] == ["dup"]
     assert len(session.resource_diagnostics) == 1
     assert "Duplicate skill name" in session.resource_diagnostics[0].message
-    assert "Resource diagnostics: 1" in (session.handle_command("/session").message or "")
+    assert "Diagnostics: 1" in (session.handle_command("/session").message or "")
 
 
 @pytest.mark.anyio
@@ -3686,7 +3845,7 @@ def test_minimal_commands_are_handled(tmp_path: Path) -> None:
 
     assert session.handle_command("hello").handled is False
     assert session.handle_command("/new").new_session_requested is True
-    assert session.handle_command("/clear").message == "Unknown command: /clear"
+    assert session.handle_command("/clear").handled is False
     assert session.handle_command("/quit").exit_requested is True
-    assert session.handle_command("/exit").message == "Unknown command: /exit"
-    assert session.handle_command("/unknown").message == "Unknown command: /unknown"
+    assert session.handle_command("/exit").handled is False
+    assert session.handle_command("/unknown").handled is False
