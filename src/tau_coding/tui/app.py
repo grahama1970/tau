@@ -72,7 +72,7 @@ from tau_coding.commands import (
     create_default_command_registry,
     daxnuts_easter_message,
 )
-from tau_coding.credentials import FileCredentialStore, OAuthCredential
+from tau_coding.credentials import FileCredentialStore, OAuthCredential, credentials_path
 from tau_coding.oauth import OAuthAuthInfo, OAuthPrompt, login_openai_codex
 from tau_coding.paths import TauPaths
 from tau_coding.prompt_templates import PromptTemplate
@@ -90,10 +90,12 @@ from tau_coding.provider_config import (
     load_provider_settings,
     provider_config_from_catalog_entry,
     provider_has_usable_credentials,
+    provider_settings_path,
     resolve_provider_selection,
     upsert_saved_provider,
 )
 from tau_coding.provider_runtime import create_model_provider
+from tau_coding.resources import TauResourcePaths
 from tau_coding.session import (
     CodingSession,
     CodingSessionConfig,
@@ -117,6 +119,7 @@ from tau_coding.trust import (
     DefaultProjectTrust,
     ProjectTrustOption,
     ProjectTrustState,
+    ProjectTrustStore,
     ProjectTrustStoreEntry,
 )
 from tau_coding.tui.adapter import TuiEventAdapter
@@ -4303,6 +4306,214 @@ class CommandOutputScreen(ModalScreen[None]):
         scroll.scroll_y = min(scroll.max_scroll_y, scroll.scroll_y + max(1, scroll.size.height - 1))
 
 
+type ConfigMapAction = Literal["insert_command", "copy_path"]
+
+
+@dataclass(frozen=True, slots=True)
+class ConfigMapItem:
+    """One actionable row in the TUI config map."""
+
+    section: str
+    label: str
+    value: str
+    description: str
+    action: ConfigMapAction | None = None
+    action_value: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ConfigMapResult:
+    """Action selected from the config map."""
+
+    action: ConfigMapAction
+    value: str
+
+
+class ConfigMapSearchInput(Input):
+    """Search input that keeps config-map control keys local to the screen."""
+
+    def _screen(self) -> ConfigMapScreen:
+        return cast(ConfigMapScreen, self.screen)
+
+    def on_key(self, event: Key) -> None:
+        """Route configured keys before the input edits its text."""
+        screen = self._screen()
+        keybindings = screen.keybindings
+        if _matches_configured_or_default_key(event.key, keybindings.select_up, "up"):
+            event.stop()
+            event.prevent_default()
+            screen.action_cursor_up()
+        elif _matches_configured_or_default_key(event.key, keybindings.select_down, "down"):
+            event.stop()
+            event.prevent_default()
+            screen.action_cursor_down()
+        elif (
+            _matches_configured_or_default_key(
+                event.key,
+                keybindings.select_confirm,
+                "enter",
+            )
+            or event.key == "space"
+        ):
+            event.stop()
+            event.prevent_default()
+            screen.action_select_cursor()
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            event.prevent_default()
+            screen.action_cancel()
+
+
+class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
+    """Searchable TUI map of Tau config files, resources, and related commands."""
+
+    def __init__(
+        self,
+        items: Sequence[ConfigMapItem],
+        *,
+        theme: TuiTheme,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
+        super().__init__()
+        self.items = tuple(items)
+        self.theme = theme
+        self.keybindings = keybindings or TuiKeybindings()
+        self.search_value = ""
+        self.filtered_items = self.items
+
+    def compose(self) -> ComposeResult:
+        """Compose the config map screen."""
+        with Vertical(id="config-map"):
+            yield Static("Config Map", id="config-map-title")
+            yield ConfigMapSearchInput(
+                placeholder="Search config, resources, commands",
+                id="config-map-search",
+            )
+            yield ListView(*self._list_items(), id="config-map-list")
+            yield Static(self._help_text(), id="config-map-help")
+
+    def on_mount(self) -> None:
+        """Focus the search input."""
+        self._refresh_list(0)
+        self.query_one("#config-map-search", Input).focus()
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """Filter config rows as the search value changes."""
+        if event.input.id != "config-map-search":
+            return
+        self.search_value = event.value
+        self._refresh_list(0)
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Run the selected row action from the search input."""
+        if event.input.id != "config-map-search":
+            return
+        event.stop()
+        self.action_select_cursor()
+
+    def on_key(self, event: Key) -> None:
+        """Route configured selection keys to the list."""
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
+            event.stop()
+            self.action_cursor_up()
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
+            event.stop()
+            self.action_cursor_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
+            event.stop()
+            self.action_select_cursor()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.action_cancel()
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """Run the selected row action."""
+        if event.index < len(self.filtered_items):
+            self._select_item(self.filtered_items[event.index])
+
+    def on_list_view_highlighted(self, event: ListView.Highlighted) -> None:
+        """Refresh help for the highlighted config row."""
+        if event.list_view.id == "config-map-list":
+            self._refresh_help_text()
+
+    def action_cursor_up(self) -> None:
+        """Move to the previous config row."""
+        self.query_one("#config-map-list", ListView).action_cursor_up()
+        self._refresh_help_text()
+
+    def action_cursor_down(self) -> None:
+        """Move to the next config row."""
+        self.query_one("#config-map-list", ListView).action_cursor_down()
+        self._refresh_help_text()
+
+    def action_select_cursor(self) -> None:
+        """Run the highlighted row action."""
+        config_list = self.query_one("#config-map-list", ListView)
+        index = config_list.index
+        if index is None or index >= len(self.filtered_items):
+            return
+        self._select_item(self.filtered_items[index])
+
+    def action_cancel(self) -> None:
+        """Close the config map."""
+        self.dismiss(None)
+
+    def _select_item(self, item: ConfigMapItem) -> None:
+        if item.action is None or item.action_value is None:
+            return
+        self.dismiss(ConfigMapResult(item.action, item.action_value))
+
+    def _refresh_list(self, index: int) -> None:
+        self.filtered_items = _filter_config_map_items(self.items, self.search_value)
+        config_list = self.query_one("#config-map-list", ListView)
+        config_list.clear()
+        config_list.extend(self._list_items())
+        config_list.index = (
+            min(index, len(config_list.children) - 1) if self.filtered_items else None
+        )
+        self._refresh_help_text()
+
+    def _list_items(self) -> list[ListItem]:
+        return [
+            ListItem(Label(_config_map_item_label(item), markup=False))
+            for item in self.filtered_items
+        ]
+
+    def _help_text(self) -> str:
+        confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+        if not self.filtered_items:
+            return f"No matching config rows - {cancel_key} closes"
+        try:
+            config_list = self.query_one("#config-map-list", ListView)
+        except NoMatches:
+            return f"Type to search - {confirm_key}/Space acts - {cancel_key} closes"
+        index = config_list.index
+        if index is None or index >= len(self.filtered_items):
+            return f"Type to search - {confirm_key}/Space acts - {cancel_key} closes"
+        item = self.filtered_items[index]
+        if item.action == "insert_command":
+            return f"{item.description} - {confirm_key}/Space inserts command - {cancel_key} closes"
+        if item.action == "copy_path":
+            return f"{item.description} - {confirm_key}/Space copies path - {cancel_key} closes"
+        return f"{item.description} - {cancel_key} closes"
+
+    def _refresh_help_text(self) -> None:
+        self.query_one("#config-map-help", Static).update(self._help_text())
+
+
 class ConfirmationScreen(ModalScreen[bool]):
     """Small yes/no confirmation modal for commands with session impact."""
 
@@ -5957,6 +6168,7 @@ class TauTuiApp(App[None]):
     SkillPickerScreen,
     PromptTemplatePickerScreen,
     TreeLabelInputScreen,
+    ConfigMapScreen,
     CommandOutputScreen,
     ConfirmationScreen {
         align: center middle;
@@ -5973,6 +6185,7 @@ class TauTuiApp(App[None]):
     #skill-picker,
     #prompt-template-picker,
     #tree-label-input,
+    #config-map,
     #confirmation {
         width: 76;
         max-width: 90%;
@@ -5993,6 +6206,7 @@ class TauTuiApp(App[None]):
     #tools-reference-title,
     #skill-picker-title,
     #prompt-template-picker-title,
+    #config-map-title,
     #tree-label-title {
         height: 1;
         color: $tau-chrome-text;
@@ -6029,7 +6243,8 @@ class TauTuiApp(App[None]):
     #workflow-picker-list,
     #tools-reference-list,
     #skill-picker-list,
-    #prompt-template-picker-list {
+    #prompt-template-picker-list,
+    #config-map-list {
         height: auto;
         max-height: 16;
         background: $tau-transcript-background;
@@ -6060,6 +6275,7 @@ class TauTuiApp(App[None]):
     #tools-reference-help,
     #skill-picker-help,
     #prompt-template-picker-help,
+    #config-map-help,
     #tree-label-help {
         height: 1;
         margin-top: 1;
@@ -6076,6 +6292,7 @@ class TauTuiApp(App[None]):
     #tools-reference-search,
     #skill-picker-search,
     #prompt-template-picker-search,
+    #config-map-search,
     #tree-label-value {
         height: 3;
         margin-bottom: 1;
@@ -6813,6 +7030,8 @@ class TauTuiApp(App[None]):
                 self._open_scoped_models_picker()
             if command.settings_picker_requested:
                 self._open_settings_picker()
+            if command.config_picker_requested:
+                self._open_config_map()
             if command.images_picker_requested:
                 self._open_image_visibility_picker()
             if command.trust_picker_requested:
@@ -6840,7 +7059,9 @@ class TauTuiApp(App[None]):
             if _is_reload_command_text(text):
                 self._reload_tui_settings()
             self.state.set_skills(self.session.skills)
-            if command.message and not command.workflow_picker_requested:
+            if command.message and not (
+                command.workflow_picker_requested or command.config_picker_requested
+            ):
                 if _command_message_uses_notification(text, command.message):
                     self._notify(command.message)
                 elif _command_message_uses_transcript(text):
@@ -7225,6 +7446,33 @@ class TauTuiApp(App[None]):
                 keybindings=self.tui_settings.keybindings,
             )
         )
+
+    def _open_config_map(self) -> None:
+        """Open a searchable map of Tau config files and resource commands."""
+        self.push_screen(
+            ConfigMapScreen(
+                _config_map_items(self.session),
+                theme=self.tui_settings.resolved_theme,
+                keybindings=self.tui_settings.keybindings,
+            ),
+            callback=self._handle_config_map_result,
+        )
+
+    def _handle_config_map_result(self, result: ConfigMapResult | None) -> None:
+        if result is None:
+            return
+        if result.action == "insert_command":
+            prompt = self.query_one("#prompt", PromptInput)
+            prompt.text = result.value
+            prompt.move_cursor(_text_end_location(result.value))
+            prompt.focus()
+            self._sync_prompt_shell_mode(prompt.text)
+            self._set_prompt_completion_state(prompt.text)
+            self._refresh()
+            return
+        if result.action == "copy_path":
+            self.copy_to_clipboard(result.value)
+            self._notify(f"Copied path: {result.value}")
 
     def _open_thinking_picker(self) -> None:
         levels = tuple(getattr(self.session, "available_thinking_levels", ()))
@@ -12484,6 +12732,168 @@ def _display_resource_path(path: Path, *, cwd: Path) -> str:
     with suppress(ValueError):
         return str(path.resolve().relative_to(cwd.resolve()))
     return str(path)
+
+
+def _config_map_items(session: CodingSession) -> tuple[ConfigMapItem, ...]:
+    """Return real Tau config/resource rows for the interactive config map."""
+    paths = TauPaths()
+    resource_paths = TauResourcePaths(cwd=session.cwd, paths=paths)
+    trust_path = ProjectTrustStore.from_resource_paths(resource_paths).trust_path
+    loaded_extensions = getattr(session, "extensions", ())
+    extension_count = len(loaded_extensions) if isinstance(loaded_extensions, Sequence) else 0
+
+    items: list[ConfigMapItem] = []
+
+    def add_command(command: str, description: str) -> None:
+        items.append(
+            ConfigMapItem(
+                section="Commands",
+                label=command,
+                value=description,
+                description=description,
+                action="insert_command",
+                action_value=command,
+            )
+        )
+
+    def add_path(section: str, label: str, path: Path, description: str) -> None:
+        items.append(
+            ConfigMapItem(
+                section=section,
+                label=label,
+                value=str(path),
+                description=description,
+                action="copy_path",
+                action_value=str(path),
+            )
+        )
+
+    add_command("/settings", "Edit durable TUI settings.")
+    add_command("/resources", "Inspect loaded context, skills, prompts, tools, and diagnostics.")
+    add_command("/reload", "Reload local resources and project context.")
+    add_command("/trust", "Save project-local resource trust.")
+    add_command("/login", "Manage saved provider credentials.")
+    add_command("/logout", "Remove credentials saved by /login.")
+    add_command("/model", "Choose the active provider model.")
+    add_command("/scoped-models", "Configure the Ctrl+P model rotation scope.")
+    add_command("/workflows", "Choose packaged canonical Tau DAG workflows.")
+
+    add_path("Config files", "TUI settings", paths.home / "tui.json", "Durable TUI settings file.")
+    add_path(
+        "Config files",
+        "Provider settings",
+        provider_settings_path(paths),
+        "Saved provider and model configuration.",
+    )
+    add_path(
+        "Config files",
+        "Provider credentials",
+        credentials_path(paths),
+        "Credentials saved by /login.",
+    )
+    add_path("Config files", "Project trust", trust_path, "Project-local resource trust decisions.")
+
+    for path in resource_paths.skills_dirs:
+        add_path("Resource dirs", "Skills", path, "Loaded in increasing precedence order.")
+    for path in resource_paths.prompts_dirs:
+        add_path("Resource dirs", "Prompts", path, "Prompt templates loaded from this directory.")
+    for path in resource_paths.themes_dirs:
+        add_path("Resource dirs", "Themes", path, "Custom TUI themes loaded from this directory.")
+    add_path(
+        "Resource dirs",
+        "Extensions",
+        resource_paths.extensions_dir,
+        "User extension directory.",
+    )
+    add_path(
+        "Resource dirs",
+        "Project extensions",
+        paths.project_tau_dir(session.cwd) / "extensions",
+        "Project-local extension directory.",
+    )
+
+    items.extend(
+        (
+            ConfigMapItem(
+                "Loaded resources",
+                "Context files",
+                str(len(session.context_files)),
+                "Active context files loaded into the session.",
+            ),
+            ConfigMapItem(
+                "Loaded resources",
+                "Skills",
+                str(len(session.skills)),
+                "Loaded Tau and .agents skills.",
+            ),
+            ConfigMapItem(
+                "Loaded resources",
+                "Prompt templates",
+                str(len(session.prompt_templates)),
+                "Loaded slash prompt templates.",
+            ),
+            ConfigMapItem(
+                "Loaded resources",
+                "Extensions",
+                str(extension_count),
+                "Loaded Tau extensions.",
+            ),
+            ConfigMapItem(
+                "Loaded resources",
+                "Diagnostics",
+                str(len(session.resource_diagnostics)),
+                "Non-fatal resource discovery diagnostics.",
+            ),
+            ConfigMapItem(
+                "Boundary",
+                "Package selector",
+                "not implemented",
+                "Tau still uses file edits plus /reload for resource enablement.",
+            ),
+        )
+    )
+
+    for diagnostic in session.resource_diagnostics:
+        path = getattr(diagnostic, "path", None)
+        label = str(getattr(diagnostic, "name", None) or getattr(diagnostic, "kind", "resource"))
+        items.append(
+            ConfigMapItem(
+                section="Diagnostics",
+                label=label,
+                value=str(getattr(diagnostic, "message", "")),
+                description=diagnostic.format(),
+                action="copy_path" if isinstance(path, Path) else None,
+                action_value=str(path) if isinstance(path, Path) else None,
+            )
+        )
+
+    return tuple(items)
+
+
+def _filter_config_map_items(
+    items: Sequence[ConfigMapItem],
+    query: str,
+) -> tuple[ConfigMapItem, ...]:
+    tokens = _query_tokens(query)
+    if not tokens:
+        return tuple(items)
+    return tuple(
+        item
+        for item in items
+        if _query_tokens_match(
+            tokens,
+            f"{item.section} {item.label} {item.value} {item.description} {item.action or ''}",
+        )
+    )
+
+
+def _config_map_item_label(item: ConfigMapItem) -> str:
+    action = ""
+    if item.action == "insert_command":
+        action = " [insert]"
+    elif item.action == "copy_path":
+        action = " [copy]"
+    return f"{item.section}: {item.label} - {item.value}{action}"
 
 
 def _query_tokens(query: str) -> tuple[str, ...]:

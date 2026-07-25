@@ -645,6 +645,16 @@ def test_resources_command_lists_loaded_counts(tmp_path: Path) -> None:
     assert "Tools: 4" in result.message
 
 
+def test_config_command_requests_picker_and_keeps_printable_map(tmp_path: Path) -> None:
+    result = create_default_command_registry().execute(FakeSession(tmp_path), "/config")
+
+    assert result.handled is True
+    assert result.config_picker_requested is True
+    assert result.message is not None
+    assert "Tau Config Map" in result.message
+    assert "TUI settings:" in result.message
+
+
 def test_login_command_requests_provider_picker(tmp_path: Path) -> None:
     result = create_default_command_registry().execute(FakeSession(tmp_path), "/login")
 

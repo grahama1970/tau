@@ -70,6 +70,7 @@ from tau_coding.tui.app import (
     TERMINAL_PROGRESS_ACTIVE_SEQUENCE,
     TERMINAL_PROGRESS_CLEAR_SEQUENCE,
     CommandOutputScreen,
+    ConfigMapScreen,
     ConfirmationScreen,
     ImageVisibilityPickerScreen,
     LoginMethodPickerScreen,
@@ -353,6 +354,7 @@ class FakeSession:
         if (
             text == "/workflows"
             or text.startswith("/workflows ")
+            or text == "/config"
             or text.startswith("/tools")
             or text.startswith("/skills")
             or text.startswith("/prompts")
@@ -8374,18 +8376,57 @@ async def test_tui_app_resources_command_uses_command_output_modal() -> None:
         assert app.screen.title_text == "/resources"
         assert "Loaded Resources" in app.screen.message
         assert "Context:" in app.screen.message
-        assert "- AGENTS.md" in app.screen.message
+        assert "- [project] AGENTS.md" in app.screen.message
         assert "Skills:" in app.screen.message
-        assert "- review (review.md)" in app.screen.message
+        assert "- review ([project] review.md)" in app.screen.message
         assert "Prompts:" in app.screen.message
-        assert "- /review (.agents/prompts/review.md)" in app.screen.message
+        assert "- /review ([project] .agents/prompts/review.md)" in app.screen.message
         assert "Tools:" in app.screen.message
         assert "- read" in app.screen.message
         assert "Diagnostics:" in app.screen.message
         assert (
             "- warning skill review: overrides lower-precedence resource "
-            "(.agents/skills/review.md)" in app.screen.message
+            "([project] .agents/skills/review.md)" in app.screen.message
         )
+
+
+@pytest.mark.anyio
+async def test_tui_app_config_command_opens_searchable_config_map() -> None:
+    session = FakeSession()
+    session.resource_diagnostics = (
+        ResourceDiagnostic(
+            kind="skill",
+            name="review",
+            message="overrides lower-precedence resource",
+            path=session.cwd / ".agents" / "skills" / "review.md",
+        ),
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "/config"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ConfigMapScreen)
+        labels = [
+            str(item.query_one(Label).render())
+            for item in app.screen.query_one("#config-map-list", ListView).children
+        ]
+        assert "Commands: /reload - Reload local resources and project context. [insert]" in labels
+        assert any("Config files: TUI settings -" in label for label in labels)
+        assert any(
+            "Diagnostics: review - overrides lower-precedence resource [copy]" in label
+            for label in labels
+        )
+
+        app.screen.query_one("#config-map-search", Input).value = "reload"
+        await pilot.pause()
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert prompt.value == "/reload"
 
 
 @pytest.mark.anyio
