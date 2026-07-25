@@ -6187,6 +6187,7 @@ class TauTuiApp(App[None]):
         self._terminal_progress_active = False
         self._terminal_title = TerminalTitleController()
         self._extension_terminal_title: str | None = None
+        self._extension_header_lines: tuple[str, ...] | None = None
         self._extension_footer_lines: tuple[str, ...] | None = None
         self._extension_working_visible = True
         self._extension_working_message: str | None = None
@@ -6424,6 +6425,7 @@ class TauTuiApp(App[None]):
                 self._apply_command_widget_updates(command)
                 self._apply_command_working_indicator_update(command)
                 self._apply_command_footer_update(command)
+                self._apply_command_header_update(command)
                 if command.terminal_title_requested:
                     self._set_extension_terminal_title(command.terminal_title)
                 if command.editor_text is not None:
@@ -6641,6 +6643,7 @@ class TauTuiApp(App[None]):
             self._apply_command_widget_updates(command)
             self._apply_command_working_indicator_update(command)
             self._apply_command_footer_update(command)
+            self._apply_command_header_update(command)
             if command.terminal_title_requested:
                 self._set_extension_terminal_title(command.terminal_title)
             if command.editor_text is not None:
@@ -7156,6 +7159,14 @@ class TauTuiApp(App[None]):
             return
         self._extension_footer_lines = update.lines
         self._refresh_footer_bindings()
+
+    def _apply_command_header_update(self, command: CommandResult) -> None:
+        """Apply extension-requested static header replacement."""
+        update = command.header_update
+        if update is None:
+            return
+        self._extension_header_lines = update.lines
+        self._refresh_chrome()
 
     def _set_extension_terminal_title(self, title: str | None) -> None:
         """Override or clear the terminal title requested by an extension command."""
@@ -7699,6 +7710,7 @@ class TauTuiApp(App[None]):
         self._apply_command_widget_updates(result)
         self._apply_command_working_indicator_update(result)
         self._apply_command_footer_update(result)
+        self._apply_command_header_update(result)
         if result.terminal_title_requested:
             self._set_extension_terminal_title(result.terminal_title)
         if result.editor_text is not None:
@@ -8830,13 +8842,19 @@ class TauTuiApp(App[None]):
         compact_info = self.query_one("#compact-session-info", CompactSessionInfo)
         compact_info.update_from_session(self.session, theme=theme)
         startup_resources = self.query_one("#startup-resources", Static)
-        startup_text = _render_startup_resources_summary(
-            self.session,
-            keybindings=self.tui_settings.keybindings,
-            expanded=self.state.show_tool_results,
-            startup_notice=self.startup_message,
-        )
-        startup_resources.display = bool(startup_text) and not self.tui_settings.quiet_startup
+        if self._extension_header_lines is None:
+            startup_text = _render_startup_resources_summary(
+                self.session,
+                keybindings=self.tui_settings.keybindings,
+                expanded=self.state.show_tool_results,
+                startup_notice=self.startup_message,
+            )
+            startup_resources.display = (
+                bool(startup_text) and not self.tui_settings.quiet_startup
+            )
+        else:
+            startup_text = _render_extension_header(self._extension_header_lines)
+            startup_resources.display = bool(startup_text)
         startup_resources.update(startup_text)
         queued_messages = self.query_one("#queued-messages", Static)
         queued_messages.display = self.state.queued_message_count > 0
@@ -11197,6 +11215,13 @@ def _render_extension_widgets(widgets: dict[str, tuple[str, ...]]) -> str:
 
 def _render_extension_footer(lines: tuple[str, ...] | None) -> str:
     """Render an extension-owned footer replacement."""
+    if lines is None:
+        return ""
+    return "\n".join(lines)
+
+
+def _render_extension_header(lines: tuple[str, ...] | None) -> str:
+    """Render an extension-owned startup header replacement."""
     if lines is None:
         return ""
     return "\n".join(lines)

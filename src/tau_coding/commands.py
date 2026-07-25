@@ -161,6 +161,13 @@ class CommandFooterUpdate:
 
 
 @dataclass(frozen=True, slots=True)
+class CommandHeaderUpdate:
+    """Header replacement requested by an extension command."""
+
+    lines: tuple[str, ...] | None
+
+
+@dataclass(frozen=True, slots=True)
 class CommandResult:
     """Result of handling a coding-session slash command."""
 
@@ -209,6 +216,7 @@ class CommandResult:
     widget_updates: tuple[CommandWidgetUpdate, ...] = ()
     working_indicator_update: CommandWorkingIndicatorUpdate | None = None
     footer_update: CommandFooterUpdate | None = None
+    header_update: CommandHeaderUpdate | None = None
     user_message: str | None = None
     user_message_delivery: Literal["steer", "follow_up"] = "steer"
     message: str | None = None

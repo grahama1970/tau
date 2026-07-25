@@ -64,6 +64,7 @@ class ExtensionShortcutContext:
     widget_updates: list[ExtensionWidgetUpdate] = field(default_factory=list)
     working_indicator_update: ExtensionWorkingIndicatorUpdate | None = None
     footer_update: ExtensionFooterUpdate | None = None
+    header_update: ExtensionHeaderUpdate | None = None
     ui: ExtensionCommandUi = field(init=False)
 
     def __post_init__(self) -> None:
@@ -192,6 +193,10 @@ class ExtensionShortcutContext:
         """Request a static custom footer, or restore Tau's built-in footer."""
         self.footer_update = ExtensionFooterUpdate(lines=_normalize_footer_lines(lines))
 
+    def set_header(self, lines: str | Sequence[str] | None = None) -> None:
+        """Request a static custom header, or restore Tau's built-in header."""
+        self.header_update = ExtensionHeaderUpdate(lines=_normalize_header_lines(lines))
+
 
 @dataclass(slots=True)
 class ExtensionCommandContext:
@@ -214,6 +219,7 @@ class ExtensionCommandContext:
     widget_updates: list[ExtensionWidgetUpdate] = field(default_factory=list)
     working_indicator_update: ExtensionWorkingIndicatorUpdate | None = None
     footer_update: ExtensionFooterUpdate | None = None
+    header_update: ExtensionHeaderUpdate | None = None
     user_message: str | None = None
     user_message_delivery: str = "steer"
     ui: ExtensionCommandUi = field(init=False)
@@ -344,6 +350,10 @@ class ExtensionCommandContext:
         """Request a static custom footer, or restore Tau's built-in footer."""
         self.footer_update = ExtensionFooterUpdate(lines=_normalize_footer_lines(lines))
 
+    def set_header(self, lines: str | Sequence[str] | None = None) -> None:
+        """Request a static custom header, or restore Tau's built-in header."""
+        self.header_update = ExtensionHeaderUpdate(lines=_normalize_header_lines(lines))
+
     def send_user_message(self, text: str, *, deliver_as: str = "steer") -> None:
         """Request that Tau send or queue a user message after the command returns."""
         message = text.strip()
@@ -422,6 +432,10 @@ class ExtensionCommandUi:
         """Pi-compatible alias for replacing or restoring Tau's footer."""
         self._context.set_footer(lines)
 
+    def setHeader(self, lines: str | Sequence[str] | None = None) -> None:  # noqa: N802
+        """Pi-compatible alias for replacing or restoring Tau's header."""
+        self._context.set_header(lines)
+
     def set_working_message(self, message: str | None = None) -> None:
         """Set the running message."""
         self._context.set_working_message(message)
@@ -437,6 +451,10 @@ class ExtensionCommandUi:
     def set_footer(self, lines: str | Sequence[str] | None = None) -> None:
         """Replace or restore Tau's footer."""
         self._context.set_footer(lines)
+
+    def set_header(self, lines: str | Sequence[str] | None = None) -> None:
+        """Replace or restore Tau's header."""
+        self._context.set_header(lines)
 
     async def _request_ui(self, method: str, **payload: Any) -> Any:
         request = getattr(self._context.session, "request_extension_ui", None)
@@ -621,6 +639,13 @@ class ExtensionFooterUpdate:
     lines: tuple[str, ...] | None
 
 
+@dataclass(frozen=True, slots=True)
+class ExtensionHeaderUpdate:
+    """Header replacement requested by a Tau extension."""
+
+    lines: tuple[str, ...] | None
+
+
 def _normalize_argument_completions(
     values: Sequence[Any],
 ) -> tuple[ExtensionArgumentCompletion, ...]:
@@ -727,6 +752,14 @@ def _normalize_working_indicator_options(
 
 
 def _normalize_footer_lines(lines: str | Sequence[str] | None) -> tuple[str, ...] | None:
+    if lines is None:
+        return None
+    if isinstance(lines, str):
+        return tuple(lines.splitlines() or (lines,))
+    return tuple(str(line) for line in lines)
+
+
+def _normalize_header_lines(lines: str | Sequence[str] | None) -> tuple[str, ...] | None:
     if lines is None:
         return None
     if isinstance(lines, str):
