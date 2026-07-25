@@ -2556,6 +2556,41 @@ class SettingsPickerItem:
     description: str = ""
 
 
+class SettingsPickerSearchInput(Input):
+    """Search input that keeps settings-picker control keys local to the picker."""
+
+    def _picker(self) -> SettingsPickerScreen:
+        return cast(SettingsPickerScreen, self.screen)
+
+    def on_key(self, event: Key) -> None:
+        """Route picker control keys before the input edits its text."""
+        keybindings = self._picker().keybindings
+        if _matches_configured_or_default_key(event.key, keybindings.select_up, "up"):
+            event.stop()
+            event.prevent_default()
+            self._picker().action_cursor_up()
+        elif _matches_configured_or_default_key(event.key, keybindings.select_down, "down"):
+            event.stop()
+            event.prevent_default()
+            self._picker().action_cursor_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.select_confirm,
+            "enter",
+        ) or event.key == "space":
+            event.stop()
+            event.prevent_default()
+            self._picker().action_select_cursor()
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            event.prevent_default()
+            self._picker().action_cancel()
+
+
 class SettingsPickerScreen(ModalScreen[None]):
     """Modal picker for durable TUI settings."""
 
@@ -2579,7 +2614,10 @@ class SettingsPickerScreen(ModalScreen[None]):
         """Compose the settings picker."""
         with Vertical(id="settings-picker"):
             yield Static("Settings", id="settings-picker-title")
-            yield Input(placeholder="Search settings", id="settings-picker-search")
+            yield SettingsPickerSearchInput(
+                placeholder="Search settings",
+                id="settings-picker-search",
+            )
             yield ListView(
                 *self._list_items(),
                 id="settings-picker-list",
@@ -2699,14 +2737,14 @@ class SettingsPickerScreen(ModalScreen[None]):
         try:
             settings_list = self.query_one("#settings-picker-list", ListView)
         except NoMatches:
-            return f"Type to search - {change_key} changes - {cancel_key} closes"
+            return f"Type to search - {change_key}/Space changes - {cancel_key} closes"
         index = settings_list.index
         if index is None or index >= len(self.filtered_items):
-            return f"Type to search - {change_key} changes - {cancel_key} closes"
+            return f"Type to search - {change_key}/Space changes - {cancel_key} closes"
         description = self.filtered_items[index].description.strip()
         if description:
-            return f"{description} - {change_key} changes - {cancel_key} closes"
-        return f"Type to search - {change_key} changes - {cancel_key} closes"
+            return f"{description} - {change_key}/Space changes - {cancel_key} closes"
+        return f"Type to search - {change_key}/Space changes - {cancel_key} closes"
 
     def _refresh_help_text(self) -> None:
         self.query_one("#settings-picker-help", Static).update(self._help_text())

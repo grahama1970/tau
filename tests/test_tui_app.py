@@ -5921,7 +5921,7 @@ async def test_tui_app_settings_picker_uses_configured_pi_select_keybindings(
         settings_list = app.screen.query_one("#settings-picker-list", ListView)
         assert settings_list.index == 0
         help_text = str(app.screen.query_one("#settings-picker-help", Static).render())
-        assert "F7 changes" in help_text
+        assert "F7/Space changes" in help_text
         assert "F8 closes" in help_text
 
         await pilot.press("f6", "f7")
@@ -5930,6 +5930,13 @@ async def test_tui_app_settings_picker_uses_configured_pi_select_keybindings(
         assert settings_list.index == 1
         assert app.tui_settings.auto_compact is False
         assert '"auto_compact": false' in tui_settings_path().read_text(encoding="utf-8")
+
+        await pilot.press("space")
+        await pilot.pause()
+
+        assert settings_list.index == 1
+        assert app.tui_settings.auto_compact is True
+        assert '"auto_compact": true' in tui_settings_path().read_text(encoding="utf-8")
 
         search = app.screen.query_one("#settings-picker-search", Input)
         search.value = "missing-setting-name"
