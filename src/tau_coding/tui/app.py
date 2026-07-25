@@ -4197,11 +4197,13 @@ class ThemePickerScreen(ModalScreen[str | None]):
         current_theme: str,
         theme: TuiTheme,
         keybindings: TuiKeybindings | None = None,
+        on_preview: Callable[[str], None] | None = None,
     ) -> None:
         super().__init__()
         self.current_theme = current_theme
         self.theme = theme
         self.keybindings = keybindings or TuiKeybindings()
+        self.on_preview = on_preview
 
     def compose(self) -> ComposeResult:
         """Compose the theme picker."""
@@ -4267,6 +4269,16 @@ class ThemePickerScreen(ModalScreen[str | None]):
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected theme name."""
         self.dismiss(_theme_picker_choices()[event.index])
+
+    def on_list_view_highlighted(self, event: ListView.Highlighted) -> None:
+        """Preview the highlighted theme without closing the picker."""
+        if self.on_preview is None or event.list_view.id != "theme-picker-list":
+            return
+        index = event.list_view.index
+        choices = _theme_picker_choices()
+        if index is None or index < 0 or index >= len(choices):
+            return
+        self.on_preview(choices[index])
 
     def action_cursor_up(self) -> None:
         """Move to the previous theme."""
@@ -5503,6 +5515,7 @@ class TauTuiApp(App[None]):
         self._active_notification_keys: set[tuple[str, str]] = set()
         self._supports_pyperclip: bool | None = None
         self._last_clear_prompt_at: float | None = None
+        self._theme_picker_original_theme: str | None = None
         self._last_empty_escape_at: float | None = None
         self._pty_proof_enabled = os.environ.get("TAU_TUI_PTY_PROOF") == "1"
         self._pty_proof_run_id = os.environ.get("TAU_TUI_PTY_RUN_ID", "tau-real-tui")
@@ -6039,13 +6052,16 @@ class TauTuiApp(App[None]):
     def _set_tui_theme(self, theme: str) -> None:
         self._set_tui_settings(replace(self.tui_settings, theme=theme))
 
+    def _preview_tui_theme(self, theme: str) -> None:
+        self._set_tui_settings(replace(self.tui_settings, theme=theme), persist=False)
+
     def _reload_tui_settings(self) -> None:
         try:
             self._set_tui_settings(load_tui_settings())
         except Exception as exc:  # noqa: BLE001 - preserve session reload output and surface TUI failure
             self._notify(f"Could not reload TUI settings: {exc}", severity="error")
 
-    def _set_tui_settings(self, settings: TuiSettings) -> None:
+    def _set_tui_settings(self, settings: TuiSettings, *, persist: bool = True) -> None:
         previous_settings = self.tui_settings
         self.tui_settings = settings
         self.state.show_thinking = not settings.hide_thinking
@@ -6077,7 +6093,8 @@ class TauTuiApp(App[None]):
                 self._set_thinking_level(settings.thinking_level),
                 exclusive=False,
             )
-        save_tui_settings(self.tui_settings)
+        if persist:
+            save_tui_settings(self.tui_settings)
         self._bindings = BindingsMap(_app_bindings(self.tui_settings.keybindings))
         with suppress(NoMatches):
             prompt = self.query_one("#prompt", PromptInput)
@@ -7443,18 +7460,24 @@ class TauTuiApp(App[None]):
         self._notify(f"Switched to {choice.provider_name}:{choice.model}.")
 
     def _open_theme_picker(self) -> None:
+        self._theme_picker_original_theme = self.tui_settings.theme
         self.push_screen(
             ThemePickerScreen(
                 current_theme=self.tui_settings.theme,
                 theme=self.tui_settings.resolved_theme,
                 keybindings=self.tui_settings.keybindings,
+                on_preview=self._preview_tui_theme,
             ),
             callback=self._handle_theme_picker_result,
         )
 
     def _handle_theme_picker_result(self, theme: str | None) -> None:
         if theme is None:
+            if self._theme_picker_original_theme is not None:
+                self._preview_tui_theme(self._theme_picker_original_theme)
+            self._theme_picker_original_theme = None
             return
+        self._theme_picker_original_theme = None
         self._set_tui_theme(theme)
 
     async def _set_thinking_level(self, level: str) -> None:
