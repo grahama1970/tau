@@ -58,6 +58,7 @@ from tau_coding.session import (
     TerminalCommandResult,
 )
 from tau_coding.session_manager import CodingSessionRecord
+from tau_coding.session_stats import SessionStats
 from tau_coding.skills import Skill, format_skill_invocation
 from tau_coding.system_prompt import ProjectContextFile
 from tau_coding.tools import create_coding_tools
@@ -221,6 +222,12 @@ class FakeSession:
             tool_tokens=9906,
             message_count=3,
             tool_count=7,
+        )
+        self.session_stats = SessionStats(
+            turn_count=sum(1 for message in self.messages if message.role == "user"),
+            tool_call_count=sum(
+                len(getattr(message, "tool_calls", ())) for message in self.messages
+            ),
         )
         self.auto_compact_enabled = True
         self.auto_resize_images = True
@@ -771,7 +778,7 @@ def test_compact_session_info_renders_sidebar_facts() -> None:
     console.print(render_compact_session_info(FakeSession()))
 
     output = console.export_text()
-    assert "/workspace/project (--)" in output
+    assert "/workspace/project" in output
     assert "12k/200k context (auto)" in output
     assert "6%" in output
     assert "(sys <1k msg 2k tools 10k)" in output
@@ -802,6 +809,32 @@ def test_compact_session_info_includes_active_session_activity() -> None:
     assert "12k/200k context (auto)" in output
 
 
+def test_compact_session_info_includes_provider_usage_totals() -> None:
+    session = FakeSession()
+    session.session_stats = SessionStats(
+        turn_count=14,
+        tool_call_count=23,
+        input_tokens=1_200_000,
+        output_tokens=48_000,
+        cache_read_tokens=320_000,
+        cache_write_tokens=8_000,
+        estimated_cost=1.24,
+        latest_cache_hit_rate=20.9,
+    )
+    console = Console(record=True, width=160)
+
+    console.print(render_compact_session_info(session))
+
+    output = console.export_text()
+    assert "14 turns, 23 tool calls" in output
+    assert "↑1.2M" in output
+    assert "↓48k" in output
+    assert "R320k" in output
+    assert "W8.0k" in output
+    assert "CH20.9%" in output
+    assert "$1.240" in output
+
+
 def test_compact_session_info_styles_provider_as_metadata() -> None:
     console = Console(record=True, width=120, color_system="truecolor")
 
@@ -820,7 +853,7 @@ def test_compact_session_info_includes_named_session_title() -> None:
     console.print(render_compact_session_info(session))
 
     output = console.export_text()
-    assert "/workspace/project (--) • Release review" in output
+    assert "/workspace/project • Release review" in output
     assert "12k/200k context (auto)" in output
 
 
@@ -845,7 +878,7 @@ def test_compact_session_info_omits_untitled_session_title() -> None:
 
     output = console.export_text()
     assert "Untitled session" not in output
-    assert "/workspace/project (--)" in output
+    assert "/workspace/project" in output
 
 
 def test_compact_session_info_includes_loop_monitor_status() -> None:

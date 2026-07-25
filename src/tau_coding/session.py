@@ -134,6 +134,7 @@ from tau_coding.session_export import (
     normalize_export_format,
 )
 from tau_coding.session_manager import SessionManager
+from tau_coding.session_stats import SessionStats, calculate_session_stats
 from tau_coding.skills import (
     Skill,
     expand_skill_command,
@@ -626,6 +627,11 @@ class CodingSession:
     def messages(self) -> tuple[AgentMessage, ...]:
         """Return the restored/current transcript."""
         return self._harness.messages
+
+    @property
+    def session_stats(self) -> SessionStats:
+        """Return cumulative activity and provider usage for the active branch."""
+        return calculate_session_stats(self._state.entries)
 
     @property
     def session_path(self) -> Path | None:

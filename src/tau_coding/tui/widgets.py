@@ -32,6 +32,7 @@ from textual.widgets.markdown import MarkdownBlock, MarkdownStream
 
 from tau_agent.tools import AgentTool
 from tau_coding.prompt_templates import PromptTemplate
+from tau_coding.session_stats import SessionStats
 from tau_coding.skills import Skill
 from tau_coding.system_prompt import ProjectContextFile
 from tau_coding.tui.autocomplete import CompletionState
@@ -210,6 +211,9 @@ class SessionSummarySource(Protocol):
 
     @property
     def messages(self) -> Sequence[Any]: ...
+
+    @property
+    def session_stats(self) -> SessionStats: ...
 
     @property
     def context_token_estimate(self) -> int: ...
@@ -1084,9 +1088,9 @@ def render_compact_session_info(
         no_wrap=False,
     )
     right = Text(style=theme.muted_text, overflow="fold", no_wrap=False, justify="right")
-    activity = _session_activity(session)
-    if activity is not None:
-        right.append(activity, style=theme.completion_description)
+    stats = _session_stats_summary(session)
+    if stats is not None:
+        right.append(stats, style=theme.completion_description)
         right.append("  ")
     right.append(_context_usage(session), style=theme.completion_description)
     right.append("  ")
@@ -1721,10 +1725,50 @@ def _context_usage(session: SessionSummarySource) -> str:
     return f"{label} {' '.join(details)}" if details else label
 
 
-def _session_activity(session: SessionSummarySource) -> str | None:
-    messages = getattr(session, "messages", ())
-    if not isinstance(messages, Sequence):
+def _session_stats_summary(session: SessionSummarySource) -> str | None:
+    stats = _session_stats(session)
+    if (
+        stats.turn_count == 0
+        and stats.tool_call_count == 0
+        and stats.input_tokens == 0
+        and stats.output_tokens == 0
+        and stats.cache_read_tokens == 0
+        and stats.cache_write_tokens == 0
+        and stats.estimated_cost is None
+    ):
         return None
+    parts = [
+        f"{stats.turn_count} {_plural(stats.turn_count, 'turn')}, "
+        f"{stats.tool_call_count} tool {_plural(stats.tool_call_count, 'call')}",
+    ]
+    if stats.input_tokens:
+        parts.append(f"↑{_compact_usage_count(stats.input_tokens)}")
+    if stats.output_tokens:
+        parts.append(f"↓{_compact_usage_count(stats.output_tokens)}")
+    if stats.cache_read_tokens:
+        parts.append(f"R{_compact_usage_count(stats.cache_read_tokens)}")
+    if stats.cache_write_tokens:
+        parts.append(f"W{_compact_usage_count(stats.cache_write_tokens)}")
+    if (
+        (stats.cache_read_tokens or stats.cache_write_tokens)
+        and stats.latest_cache_hit_rate is not None
+    ):
+        parts.append(f"CH{stats.latest_cache_hit_rate:.1f}%")
+    if stats.estimated_cost is not None:
+        parts.append(f"${stats.estimated_cost:.3f}")
+    return " ".join(parts)
+
+
+def _session_stats(session: SessionSummarySource) -> SessionStats:
+    stats = getattr(session, "session_stats", None)
+    if isinstance(stats, SessionStats):
+        return stats
+    return _message_session_stats(getattr(session, "messages", ()))
+
+
+def _message_session_stats(messages: object) -> SessionStats:
+    if not isinstance(messages, Sequence):
+        return SessionStats()
     turn_count = 0
     tool_call_count = 0
     for message in messages:
@@ -1733,16 +1777,23 @@ def _session_activity(session: SessionSummarySource) -> str | None:
         tool_calls = getattr(message, "tool_calls", ())
         if isinstance(tool_calls, Sequence):
             tool_call_count += len(tool_calls)
-    if turn_count == 0 and tool_call_count == 0:
-        return None
-    return (
-        f"{turn_count} {_plural(turn_count, 'turn')}, "
-        f"{tool_call_count} tool {_plural(tool_call_count, 'call')}"
-    )
+    return SessionStats(turn_count=turn_count, tool_call_count=tool_call_count)
 
 
 def _plural(count: int, singular: str) -> str:
     return singular if count == 1 else f"{singular}s"
+
+
+def _compact_usage_count(value: int) -> str:
+    if value < 1000:
+        return str(value)
+    if value < 10_000:
+        return f"{value / 1000:.1f}k"
+    if value < 1_000_000:
+        return f"{round(value / 1000)}k"
+    if value < 10_000_000:
+        return f"{value / 1_000_000:.1f}M"
+    return f"{round(value / 1_000_000)}M"
 
 
 def _context_percent(used_tokens: int, budget_tokens: int) -> str | None:

@@ -8,7 +8,7 @@ from typing import Any
 
 import httpx
 
-from tau_agent.messages import AgentMessage, AssistantMessage, ToolResultMessage, UserMessage
+from tau_agent.messages import AgentMessage, AssistantMessage, ToolResultMessage, Usage, UserMessage
 from tau_agent.tools import AgentTool, ToolCall
 from tau_agent.types import JSONValue
 from tau_ai.env import (
@@ -352,6 +352,7 @@ async def _codex_provider_events(
 ) -> AsyncIterator[ProviderEvent]:
     content_parts: list[str] = []
     tool_calls: list[ToolCall] = []
+    usage: Usage | None = None
     active_tools: list[_ToolCallBuilder] = []
     tools_by_item_id: dict[str, _ToolCallBuilder] = {}
     tools_by_call_id: dict[str, _ToolCallBuilder] = {}
@@ -480,10 +481,15 @@ async def _codex_provider_events(
             "response.incomplete",
         }:
             finish_reason = _finish_reason_from_response(event)
+            usage = _usage_from_response(event) or usage
             break
 
     yield ProviderResponseEndEvent(
-        message=AssistantMessage(content="".join(content_parts), tool_calls=tool_calls),
+        message=AssistantMessage(
+            content="".join(content_parts),
+            tool_calls=tool_calls,
+            usage=usage or Usage(),
+        ),
         finish_reason=finish_reason,
     )
 
@@ -643,6 +649,39 @@ def _finish_reason_from_response(event: Mapping[str, Any]) -> str | None:
     if isinstance(status, str):
         return status
     return None
+
+
+def _usage_from_response(event: Mapping[str, Any]) -> Usage | None:
+    response = event.get("response")
+    if not isinstance(response, Mapping):
+        return None
+    raw = response.get("usage")
+    if not isinstance(raw, Mapping):
+        return None
+    input_details = raw.get("input_tokens_details")
+    cache_read = (
+        _int_or_zero(input_details.get("cached_tokens"))
+        if isinstance(input_details, Mapping)
+        else 0
+    )
+    output_details = raw.get("output_tokens_details")
+    reasoning = (
+        _int_or_zero(output_details.get("reasoning_tokens"))
+        if isinstance(output_details, Mapping)
+        else None
+    )
+    return Usage(
+        input=max(0, _int_or_zero(raw.get("input_tokens")) - cache_read),
+        output=_int_or_zero(raw.get("output_tokens")),
+        cache_read=cache_read,
+        cache_write=0,
+        reasoning=reasoning,
+        total_tokens=_int_or_zero(raw.get("total_tokens")),
+    )
+
+
+def _int_or_zero(value: object) -> int:
+    return value if isinstance(value, int) and not isinstance(value, bool) else 0
 
 
 def _codex_http_error_message(*, status_code: int, body: str) -> str:

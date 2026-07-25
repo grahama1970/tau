@@ -6,7 +6,7 @@ from typing import Any
 
 import httpx
 
-from tau_agent.messages import AgentMessage, AssistantMessage, ToolResultMessage, UserMessage
+from tau_agent.messages import AgentMessage, AssistantMessage, ToolResultMessage, Usage, UserMessage
 from tau_agent.tools import AgentTool, ToolCall
 from tau_agent.types import JSONValue
 from tau_ai.env import OpenAICompatibleConfig
@@ -116,6 +116,7 @@ class OpenAICompatibleProvider:
                         content_parts: list[str] = []
                         tool_call_builders: dict[int, _ToolCallBuilder] = {}
                         finish_reason: str | None = None
+                        usage: Usage | None = None
 
                         async for line in response.aiter_lines():
                             if signal is not None and signal.is_cancelled():
@@ -134,9 +135,18 @@ class OpenAICompatibleProvider:
                                 )
                                 return
 
+                            chunk_usage = chunk.get("usage")
+                            if isinstance(chunk_usage, Mapping):
+                                usage = _parse_chunk_usage(chunk_usage)
+
                             choice = _first_choice(chunk)
                             if choice is None:
                                 continue
+
+                            if not isinstance(chunk_usage, Mapping):
+                                choice_usage = choice.get("usage")
+                                if isinstance(choice_usage, Mapping):
+                                    usage = _parse_chunk_usage(choice_usage)
 
                             finish_reason = choice.get("finish_reason") or finish_reason
                             delta = choice.get("delta")
@@ -172,6 +182,7 @@ class OpenAICompatibleProvider:
                         message = AssistantMessage(
                             content="".join(content_parts),
                             tool_calls=tool_calls,
+                            usage=usage or Usage(),
                         )
                         yield ProviderResponseEndEvent(
                             message=message, finish_reason=finish_reason
@@ -366,6 +377,41 @@ def _thinking_delta_text(delta: Mapping[str, Any]) -> str:
         if isinstance(value, str) and value:
             return value
     return ""
+
+
+def _parse_chunk_usage(raw: Mapping[str, Any]) -> Usage:
+    prompt_tokens = _int_or_zero(raw.get("prompt_tokens"))
+    prompt_details = raw.get("prompt_tokens_details")
+    cached_tokens: int | None = None
+    cache_write = 0
+    if isinstance(prompt_details, Mapping):
+        cached_tokens = _int_or_none(prompt_details.get("cached_tokens"))
+        cache_write = _int_or_zero(prompt_details.get("cache_write_tokens"))
+    if cached_tokens is None:
+        cached_tokens = _int_or_none(raw.get("prompt_cache_hit_tokens"))
+    cache_read = cached_tokens or 0
+    fresh_input = max(0, prompt_tokens - cache_read - cache_write)
+    output = _int_or_zero(raw.get("completion_tokens"))
+    reasoning = None
+    completion_details = raw.get("completion_tokens_details")
+    if isinstance(completion_details, Mapping):
+        reasoning = _int_or_zero(completion_details.get("reasoning_tokens"))
+    return Usage(
+        input=fresh_input,
+        output=output,
+        cache_read=cache_read,
+        cache_write=cache_write,
+        reasoning=reasoning,
+        total_tokens=fresh_input + output + cache_read + cache_write,
+    )
+
+
+def _int_or_none(value: object) -> int | None:
+    return value if isinstance(value, int) and not isinstance(value, bool) else None
+
+
+def _int_or_zero(value: object) -> int:
+    return _int_or_none(value) or 0
 
 
 def _is_transient_status(status_code: int) -> bool:

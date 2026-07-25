@@ -118,6 +118,10 @@ async def test_openai_compatible_provider_formats_request_and_streams_text() -> 
             text=(
                 'data: {"choices":[{"delta":{"content":"Hel"}}]}\n\n'
                 'data: {"choices":[{"delta":{"content":"lo"},"finish_reason":"stop"}]}\n\n'
+                'data: {"choices":[],"usage":{"prompt_tokens":1000,'
+                '"completion_tokens":40,"prompt_tokens_details":{"cached_tokens":200,'
+                '"cache_write_tokens":50},"completion_tokens_details":'
+                '{"reasoning_tokens":11}}}\n\n'
                 "data: [DONE]\n\n"
             ),
             headers={"content-type": "text/event-stream"},
@@ -151,6 +155,11 @@ async def test_openai_compatible_provider_formats_request_and_streams_text() -> 
     assert isinstance(events[-1], ProviderResponseEndEvent)
     assert events[-1].message.content == "Hello"
     assert events[-1].finish_reason == "stop"
+    assert events[-1].message.usage.input == 750
+    assert events[-1].message.usage.output == 40
+    assert events[-1].message.usage.cache_read == 200
+    assert events[-1].message.usage.cache_write == 50
+    assert events[-1].message.usage.reasoning == 11
 
     request = requests[0]
     assert request.url == "https://example.test/v1/chat/completions"
@@ -579,7 +588,10 @@ async def test_openai_codex_provider_formats_request_and_streams_text() -> None:
             text=(
                 'data: {"type":"response.output_text.delta","delta":"Hel"}\n\n'
                 'data: {"type":"response.output_text.delta","delta":"lo"}\n\n'
-                'data: {"type":"response.completed","response":{"status":"completed"}}\n\n'
+                'data: {"type":"response.completed","response":{"status":"completed",'
+                '"usage":{"input_tokens":1000,"output_tokens":40,"total_tokens":1040,'
+                '"input_tokens_details":{"cached_tokens":250},'
+                '"output_tokens_details":{"reasoning_tokens":12}}}}\n\n'
             ),
             headers={"content-type": "text/event-stream"},
         )
@@ -612,6 +624,10 @@ async def test_openai_codex_provider_formats_request_and_streams_text() -> None:
     assert isinstance(events[-1], ProviderResponseEndEvent)
     assert events[-1].message.content == "Hello"
     assert events[-1].finish_reason == "completed"
+    assert events[-1].message.usage.input == 750
+    assert events[-1].message.usage.output == 40
+    assert events[-1].message.usage.cache_read == 250
+    assert events[-1].message.usage.reasoning == 12
 
     request = requests[0]
     assert request.url == "https://chatgpt.test/backend-api/codex/responses"
@@ -902,12 +918,17 @@ async def test_anthropic_provider_formats_request_and_streams_text() -> None:
         return httpx.Response(
             200,
             text=(
-                'data: {"type":"message_start","message":{"content":[]}}\n\n'
+                'data: {"type":"message_start","message":{"content":[],'
+                '"usage":{"input_tokens":1000,"cache_read_input_tokens":200,'
+                '"cache_creation_input_tokens":50,"cache_creation":'
+                '{"ephemeral_1h_input_tokens":30}}}}\n\n'
                 'data: {"type":"content_block_delta","index":0,'
                 '"delta":{"type":"text_delta","text":"Hel"}}\n\n'
                 'data: {"type":"content_block_delta","index":0,'
                 '"delta":{"type":"text_delta","text":"lo"}}\n\n'
-                'data: {"type":"message_delta","delta":{"stop_reason":"end_turn"}}\n\n'
+                'data: {"type":"message_delta","delta":{"stop_reason":"end_turn"},'
+                '"usage":{"output_tokens":40,"output_tokens_details":'
+                '{"thinking_tokens":12}}}\n\n'
                 'data: {"type":"message_stop"}\n\n'
             ),
             headers={"content-type": "text/event-stream"},
@@ -941,6 +962,12 @@ async def test_anthropic_provider_formats_request_and_streams_text() -> None:
     assert isinstance(events[-1], ProviderResponseEndEvent)
     assert events[-1].message.content == "Hello"
     assert events[-1].finish_reason == "end_turn"
+    assert events[-1].message.usage.input == 1000
+    assert events[-1].message.usage.output == 40
+    assert events[-1].message.usage.cache_read == 200
+    assert events[-1].message.usage.cache_write == 50
+    assert events[-1].message.usage.cache_write_1h == 30
+    assert events[-1].message.usage.reasoning == 12
 
     request = requests[0]
     assert request.url == "https://api.anthropic.test/v1/messages"
