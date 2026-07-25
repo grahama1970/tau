@@ -8056,11 +8056,25 @@ class TauTuiApp(App[None]):
 
     def _apply_command_status_updates(self, command: CommandResult) -> None:
         """Apply persistent status updates requested by a slash-command handler."""
+        changed = False
         for update in command.status_updates:
             if update.text is None:
-                self._extension_statuses.pop(update.key, None)
+                if update.key in self._extension_statuses:
+                    self._extension_statuses.pop(update.key, None)
+                    changed = True
             else:
-                self._extension_statuses[update.key] = update.text
+                if self._extension_statuses.get(update.key) != update.text:
+                    self._extension_statuses[update.key] = update.text
+                    changed = True
+        if changed:
+            self._refresh_extension_footer_component_for_statuses()
+
+    def _refresh_extension_footer_component_for_statuses(self) -> None:
+        """Rebuild a footer component that reads status data from its provider."""
+        if self._extension_footer_component_factory is None:
+            return
+        self._clear_extension_footer_branch_listeners()
+        self._apply_extension_chrome_component("footer")
 
     def _apply_command_widget_updates(self, command: CommandResult) -> None:
         """Apply prompt-region widget updates requested by a slash-command handler."""

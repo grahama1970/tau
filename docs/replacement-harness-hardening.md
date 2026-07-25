@@ -785,6 +785,26 @@ Acceptance:
 - This slice does not claim Pi's `parentSession`, setup callbacks, or native
   package session manager parity.
 
+### Slice 37: Extension Footer Status Refresh
+
+Pi footer components receive a `FooterDataProvider` that exposes extension
+statuses set through `ctx.ui.setStatus()`. Tau exposed the status map but did
+not rebuild an already-mounted footer component after the map changed, leaving
+custom footer content stale until the extension reset the footer. Rebuild only
+the active custom footer component when the status map actually changes.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- A footer component created from `footerData.getExtensionStatuses()` updates
+  after an extension status is set.
+- The same footer component updates after an extension status is cleared.
+- Rebuilding the footer for status changes does not accumulate duplicate git
+  branch subscriptions registered by the footer factory.
+- This slice does not claim full Pi custom-renderer parity, live provider
+  behavior, or global replacement-harness readiness.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

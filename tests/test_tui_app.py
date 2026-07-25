@@ -8703,6 +8703,63 @@ async def test_extension_footer_data_provider_notifies_git_branch_changes(
 
 
 @pytest.mark.anyio
+async def test_extension_footer_component_refreshes_after_status_updates() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    def footer_factory(
+        tui: TauTuiApp,
+        _theme: TuiTheme,
+        footer_data: tui_app._TauFooterDataProvider,
+    ) -> Static:
+        footer_data.onBranchChange(lambda: None)
+        statuses = footer_data.getExtensionStatuses()
+        if not statuses:
+            return Static("statuses: none", id="status-footer-component")
+        rendered = ", ".join(f"{key}={value}" for key, value in sorted(statuses.items()))
+        return Static(f"statuses: {rendered}", id="status-footer-component")
+
+    async with app.run_test(size=(80, 24)) as pilot:
+        app._handle_extension_chrome_component(
+            target="footer",
+            extension_name="demo",
+            factory=footer_factory,
+        )
+        await pilot.pause()
+
+        assert str(app.query_one("#status-footer-component", Static).render()) == (
+            "statuses: none"
+        )
+        assert len(app._extension_footer_branch_callbacks) == 1
+
+        app._apply_command_status_updates(
+            CommandResult(
+                handled=True,
+                status_updates=(CommandStatusUpdate(key="worker", text="busy"),),
+            )
+        )
+        await pilot.pause()
+
+        assert str(app.query_one("#status-footer-component", Static).render()) == (
+            "statuses: worker=busy"
+        )
+        assert len(app._extension_footer_branch_callbacks) == 1
+
+        app._apply_command_status_updates(
+            CommandResult(
+                handled=True,
+                status_updates=(CommandStatusUpdate(key="worker", text=None),),
+            )
+        )
+        await pilot.pause()
+
+        assert str(app.query_one("#status-footer-component", Static).render()) == (
+            "statuses: none"
+        )
+        assert len(app._extension_footer_branch_callbacks) == 1
+
+
+@pytest.mark.anyio
 async def test_extension_command_ui_select_passes_timeout_to_session() -> None:
     class RecordingUiSession:
         def __init__(self) -> None:
