@@ -1740,13 +1740,21 @@ class PromptInput(TextArea):
             event.stop()
             event.prevent_default()
             self._completion_target().action_dequeue_messages()
-        elif event.key == "enter":
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.submit_prompt,
+            "enter",
+        ):
             event.stop()
             event.prevent_default()
             if self._insert_newline_from_backslash_enter():
                 return
             await self._completion_target().action_submit_prompt()
-        elif event.key == "shift+enter" or (
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.insert_newline,
+            "shift+enter",
+        ) or (
             event.key == "ctrl+j"
             and not _matches_configured_key(event.key, keybindings.command_palette)
         ):
