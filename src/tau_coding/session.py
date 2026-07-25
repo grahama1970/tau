@@ -324,6 +324,7 @@ class CodingSession:
         self._extension_terminal_input_handler: Callable[..., object] | None = None
         self._extension_autocomplete_provider_handler: Callable[..., object] | None = None
         self._extension_editor_component_handler: Callable[..., object] | None = None
+        self._extension_chrome_component_handler: Callable[..., object] | None = None
         self._resource_diagnostics = resource_diagnostics
         self._base_command_registry = (
             base_command_registry.copy()
@@ -1744,6 +1745,29 @@ class CodingSession:
         if self._extension_editor_component_handler is None:
             return None
         return self._extension_editor_component_handler(action="get")
+
+    def set_extension_chrome_component_handler(
+        self,
+        handler: Callable[..., object] | None,
+    ) -> None:
+        """Install the frontend callback used by Pi-style header/footer factories."""
+        self._extension_chrome_component_handler = handler
+
+    def set_extension_chrome_component(
+        self,
+        target: str,
+        factory: Callable[..., object] | None,
+        *,
+        extension_name: str,
+    ) -> object:
+        """Set or clear a TUI chrome component factory."""
+        if self._extension_chrome_component_handler is None:
+            return None
+        return self._extension_chrome_component_handler(
+            target=target,
+            extension_name=extension_name,
+            factory=factory,
+        )
 
     @property
     def extension_ui_available(self) -> bool:

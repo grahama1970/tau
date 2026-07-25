@@ -150,6 +150,7 @@ from tau_coding.tui.widgets import (
     CompactSessionInfo,
     SessionSidebar,
     TranscriptView,
+    _git_branch,
     render_completion_suggestions,
 )
 from tau_coding.workflows.catalog import get_workflow, list_workflows
@@ -6310,6 +6311,13 @@ class TauTuiApp(App[None]):
         )
         if callable(set_editor_component_handler):
             set_editor_component_handler(self._handle_extension_editor_component)
+        set_chrome_component_handler = getattr(
+            self.session,
+            "set_extension_chrome_component_handler",
+            None,
+        )
+        if callable(set_chrome_component_handler):
+            set_chrome_component_handler(self._handle_extension_chrome_component)
         self.state = TuiState(
             skills=session.skills,
             show_thinking=not self.tui_settings.hide_thinking,
@@ -6336,6 +6344,10 @@ class TauTuiApp(App[None]):
         self._extension_terminal_title: str | None = None
         self._extension_header_lines: tuple[str, ...] | None = None
         self._extension_footer_lines: tuple[str, ...] | None = None
+        self._extension_header_component_factory: Callable[..., object] | None = None
+        self._extension_header_component_name: str | None = None
+        self._extension_footer_component_factory: Callable[..., object] | None = None
+        self._extension_footer_component_name: str | None = None
         self._extension_working_visible = True
         self._extension_working_message: str | None = None
         self._extension_working_indicator_frames: tuple[str, ...] | None = None
@@ -6414,6 +6426,7 @@ class TauTuiApp(App[None]):
                 if self._pty_proof_enabled:
                     yield Static(pty_ready_line(self._pty_proof_run_id), id="pty-proof-ready")
                 yield Static("", id="startup-resources")
+                yield Vertical(id="extension-header-component")
                 yield TranscriptView(
                     id="transcript",
                     min_width=1,
@@ -6439,6 +6452,7 @@ class TauTuiApp(App[None]):
                 yield CompactSessionInfo(id="compact-session-info")
                 yield Static("", id="autocomplete")
         yield Static("", id="extension-footer")
+        yield Vertical(id="extension-footer-component")
         yield Footer()
 
     async def on_mount(self) -> None:
@@ -7340,6 +7354,9 @@ class TauTuiApp(App[None]):
         update = command.footer_update
         if update is None:
             return
+        self._extension_footer_component_factory = None
+        self._extension_footer_component_name = None
+        self._clear_extension_chrome_component("footer")
         self._extension_footer_lines = update.lines
         self._refresh_footer_bindings()
 
@@ -7348,6 +7365,9 @@ class TauTuiApp(App[None]):
         update = command.header_update
         if update is None:
             return
+        self._extension_header_component_factory = None
+        self._extension_header_component_name = None
+        self._clear_extension_chrome_component("header")
         self._extension_header_lines = update.lines
         self._refresh_chrome()
 
@@ -7382,6 +7402,95 @@ class TauTuiApp(App[None]):
             if replacement is not None:
                 return replacement
         return None
+
+    def _handle_extension_chrome_component(
+        self,
+        *,
+        target: str,
+        extension_name: str,
+        factory: Callable[..., object] | None,
+    ) -> object:
+        """Set or clear an extension-provided header/footer component."""
+        if target == "footer":
+            self._extension_footer_component_factory = factory
+            self._extension_footer_component_name = extension_name if factory is not None else None
+            if factory is not None:
+                self._extension_footer_lines = None
+            self._apply_extension_chrome_component("footer")
+            return factory
+        if target == "header":
+            self._extension_header_component_factory = factory
+            self._extension_header_component_name = extension_name if factory is not None else None
+            if factory is not None:
+                self._extension_header_lines = None
+            self._apply_extension_chrome_component("header")
+            return factory
+        raise ValueError(f"Unsupported extension chrome component target: {target}")
+
+    def _apply_extension_chrome_component(self, target: Literal["footer", "header"]) -> None:
+        factory = (
+            self._extension_footer_component_factory
+            if target == "footer"
+            else self._extension_header_component_factory
+        )
+        if factory is None:
+            self._clear_extension_chrome_component(target)
+            if target == "footer":
+                self._refresh_footer_bindings()
+            else:
+                self._refresh_chrome()
+            return
+        self.run_worker(
+            self._mount_extension_chrome_component(target, factory),
+            exclusive=False,
+        )
+
+    async def _mount_extension_chrome_component(
+        self,
+        target: Literal["footer", "header"],
+        factory: Callable[..., object],
+    ) -> None:
+        try:
+            content = self._build_extension_chrome_component(target, factory)
+            if isawaitable(content):
+                content = await content
+        except Exception as exc:  # noqa: BLE001 - extension UI failures should be visible
+            name = (
+                self._extension_footer_component_name
+                if target == "footer"
+                else self._extension_header_component_name
+            )
+            content = f"Extension {target} component error ({name}): {exc}"
+        container = self.query_one(f"#extension-{target}-component", Vertical)
+        await container.remove_children()
+        await container.mount(_extension_component_widget(content))
+        container.display = True
+        if target == "footer":
+            self._refresh_footer_bindings()
+        else:
+            self._refresh_chrome()
+
+    def _build_extension_chrome_component(
+        self,
+        target: Literal["footer", "header"],
+        factory: Callable[..., object],
+    ) -> object:
+        if target == "footer":
+            footer_data = _TauFooterDataProvider(self)
+            try:
+                return factory(self, self.tui_settings.resolved_theme, footer_data)
+            except TypeError:
+                return factory(self, self.tui_settings.resolved_theme)
+        try:
+            return factory(self, self.tui_settings.resolved_theme)
+        except TypeError:
+            return factory()
+
+    def _clear_extension_chrome_component(self, target: Literal["footer", "header"]) -> None:
+        with suppress(NoMatches):
+            container = self.query_one(f"#extension-{target}-component", Vertical)
+            container.remove_children()
+            container.display = False
 
     def _register_extension_autocomplete_provider(
         self,
@@ -9212,7 +9321,13 @@ class TauTuiApp(App[None]):
         compact_info = self.query_one("#compact-session-info", CompactSessionInfo)
         compact_info.update_from_session(self.session, theme=theme)
         startup_resources = self.query_one("#startup-resources", Static)
-        if self._extension_header_lines is None:
+        header_component = self.query_one("#extension-header-component", Vertical)
+        header_component_active = self._extension_header_component_factory is not None
+        header_component.display = header_component_active
+        if header_component_active:
+            startup_resources.display = False
+            startup_text = ""
+        elif self._extension_header_lines is None:
             startup_text = _render_startup_resources_summary(
                 self.session,
                 keybindings=self.tui_settings.keybindings,
@@ -9469,11 +9584,14 @@ class TauTuiApp(App[None]):
         prompt = self.query_one("#prompt", PromptInput)
         prompt.set_footer_mode(_prompt_footer_mode(self.state, self._completion_state))
         custom_footer = self.query_one("#extension-footer", Static)
+        component_footer = self.query_one("#extension-footer-component", Vertical)
         built_in_footer = self.query_one(Footer)
         custom_footer_text = _render_extension_footer(self._extension_footer_lines)
-        custom_footer.display = bool(custom_footer_text)
+        footer_component_active = self._extension_footer_component_factory is not None
+        component_footer.display = footer_component_active
+        custom_footer.display = bool(custom_footer_text) and not footer_component_active
         custom_footer.update(custom_footer_text)
-        built_in_footer.display = not bool(custom_footer_text)
+        built_in_footer.display = not (bool(custom_footer_text) or footer_component_active)
 
     def _sync_prompt_shell_mode(self, text: str) -> None:
         prompt = self.query_one("#prompt", PromptInput)
@@ -12998,6 +13116,40 @@ def _extension_custom_content_text(content: object) -> str:
     if isinstance(content, Sequence) and not isinstance(content, str):
         return "\n".join(str(line) for line in content)
     return str(content)
+
+
+def _extension_component_widget(content: object) -> Widget:
+    if isinstance(content, Widget):
+        return content
+    return Static(_extension_custom_content_text(content))
+
+
+class _TauFooterDataProvider:
+    """Readonly footer data exposed to Pi-style extension footer factories."""
+
+    def __init__(self, app: TauTuiApp) -> None:
+        self._app = app
+
+    def getGitBranch(self) -> str | None:  # noqa: N802
+        """Return the current git branch for the session cwd."""
+        return _git_branch(self._app.session.cwd)
+
+    def getExtensionStatuses(self) -> Mapping[str, str]:  # noqa: N802
+        """Return extension status texts set through ctx.ui.setStatus."""
+        return dict(self._app._extension_statuses)
+
+    def getAvailableProviderCount(self) -> int:  # noqa: N802
+        """Return how many providers the active session exposes."""
+        return len(getattr(self._app.session, "available_providers", ()))
+
+    def onBranchChange(self, callback: Callable[[], object]) -> Callable[[], None]:  # noqa: N802
+        """Return an unsubscribe hook for branch notifications.
+
+        Tau does not run a git watcher yet, so this method preserves the Pi
+        footer-data shape without inventing a background monitor.
+        """
+        del callback
+        return lambda: None
 
 
 class _PtyProofRealAppSessionState:

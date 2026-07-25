@@ -302,13 +302,31 @@ class ExtensionShortcutContext:
             interval_ms=interval_ms,
         )
 
-    def set_footer(self, lines: str | Sequence[str] | None = None) -> None:
-        """Request a static custom footer, or restore Tau's built-in footer."""
+    def set_footer(self, lines: str | Sequence[str] | Callable[..., Any] | None = None) -> None:
+        """Request a custom footer, or restore Tau's built-in footer."""
+        if callable(lines):
+            self._set_chrome_component("footer", lines)
+            return
+        self._set_chrome_component("footer", None)
         self.footer_update = ExtensionFooterUpdate(lines=_normalize_footer_lines(lines))
 
-    def set_header(self, lines: str | Sequence[str] | None = None) -> None:
-        """Request a static custom header, or restore Tau's built-in header."""
+    def set_header(self, lines: str | Sequence[str] | Callable[..., Any] | None = None) -> None:
+        """Request a custom header, or restore Tau's built-in header."""
+        if callable(lines):
+            self._set_chrome_component("header", lines)
+            return
+        self._set_chrome_component("header", None)
         self.header_update = ExtensionHeaderUpdate(lines=_normalize_header_lines(lines))
+
+    def _set_chrome_component(
+        self,
+        target: str,
+        factory: Callable[..., Any] | None,
+    ) -> object:
+        setter = getattr(self.session, "set_extension_chrome_component", None)
+        if not callable(setter):
+            return None
+        return setter(target, factory, extension_name=self.extension_name)
 
     def set_theme(self, theme: Any) -> dict[str, str | bool]:
         """Request a TUI theme switch after this shortcut returns."""
@@ -599,13 +617,31 @@ class ExtensionCommandContext:
             interval_ms=interval_ms,
         )
 
-    def set_footer(self, lines: str | Sequence[str] | None = None) -> None:
-        """Request a static custom footer, or restore Tau's built-in footer."""
+    def set_footer(self, lines: str | Sequence[str] | Callable[..., Any] | None = None) -> None:
+        """Request a custom footer, or restore Tau's built-in footer."""
+        if callable(lines):
+            self._set_chrome_component("footer", lines)
+            return
+        self._set_chrome_component("footer", None)
         self.footer_update = ExtensionFooterUpdate(lines=_normalize_footer_lines(lines))
 
-    def set_header(self, lines: str | Sequence[str] | None = None) -> None:
-        """Request a static custom header, or restore Tau's built-in header."""
+    def set_header(self, lines: str | Sequence[str] | Callable[..., Any] | None = None) -> None:
+        """Request a custom header, or restore Tau's built-in header."""
+        if callable(lines):
+            self._set_chrome_component("header", lines)
+            return
+        self._set_chrome_component("header", None)
         self.header_update = ExtensionHeaderUpdate(lines=_normalize_header_lines(lines))
+
+    def _set_chrome_component(
+        self,
+        target: str,
+        factory: Callable[..., Any] | None,
+    ) -> object:
+        setter = getattr(self.session, "set_extension_chrome_component", None)
+        if not callable(setter):
+            return None
+        return setter(target, factory, extension_name=self.extension_name)
 
     def set_theme(self, theme: Any) -> dict[str, str | bool]:
         """Request a TUI theme switch after this command returns."""
@@ -760,11 +796,17 @@ class ExtensionCommandUi:
         """Pi-compatible alias for setting the hidden thinking label."""
         self._context.set_hidden_thinking_label(label)
 
-    def setFooter(self, lines: str | Sequence[str] | None = None) -> None:  # noqa: N802
+    def setFooter(  # noqa: N802
+        self,
+        lines: str | Sequence[str] | Callable[..., Any] | None = None,
+    ) -> None:
         """Pi-compatible alias for replacing or restoring Tau's footer."""
         self._context.set_footer(lines)
 
-    def setHeader(self, lines: str | Sequence[str] | None = None) -> None:  # noqa: N802
+    def setHeader(  # noqa: N802
+        self,
+        lines: str | Sequence[str] | Callable[..., Any] | None = None,
+    ) -> None:
         """Pi-compatible alias for replacing or restoring Tau's header."""
         self._context.set_header(lines)
 
@@ -836,11 +878,17 @@ class ExtensionCommandUi:
         """Set the hidden thinking label, or restore Tau's default."""
         self._context.set_hidden_thinking_label(label)
 
-    def set_footer(self, lines: str | Sequence[str] | None = None) -> None:
+    def set_footer(
+        self,
+        lines: str | Sequence[str] | Callable[..., Any] | None = None,
+    ) -> None:
         """Replace or restore Tau's footer."""
         self._context.set_footer(lines)
 
-    def set_header(self, lines: str | Sequence[str] | None = None) -> None:
+    def set_header(
+        self,
+        lines: str | Sequence[str] | Callable[..., Any] | None = None,
+    ) -> None:
         """Replace or restore Tau's header."""
         self._context.set_header(lines)
 
