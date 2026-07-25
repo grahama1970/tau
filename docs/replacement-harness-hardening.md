@@ -102,6 +102,8 @@ Acceptance:
 
 Add a `modes` object to `tau.doctor.v1` with `build`, `plan`, `review`, and `general` readiness. This is a low-risk bridge from OpenCode's mode clarity into Tau without changing execution behavior yet.
 
+Status: implemented in this branch.
+
 Acceptance:
 
 - Doctor receipt contains `modes.<mode>.mutating_default`.

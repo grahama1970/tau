@@ -596,6 +596,7 @@ def doctor_command(*, repo_root: Path | None = None) -> dict[str, object]:
             "chat_contract": {"path": str(chat_contract), "exists": chat_contract.exists()},
         },
         "lanes": lanes,
+        "modes": _doctor_mode_manifest(),
         "provider_settings": provider_payload,
         "errors": errors,
         "warnings": warnings,
@@ -615,6 +616,36 @@ def doctor_command(*, repo_root: Path | None = None) -> dict[str, object]:
                 "Browser/CDP UI proof; run tau browser-cdp-proof for screenshot artifacts.",
                 "Full hardening roadmap completion.",
             ],
+        },
+    }
+
+
+def _doctor_mode_manifest() -> dict[str, dict[str, object]]:
+    """Return Tau's operator-facing execution mode defaults."""
+    return {
+        "build": {
+            "ready": True,
+            "mutating_default": True,
+            "permission_default": "ask_for_sensitive_actions",
+            "description": "Editing and approved local command execution.",
+        },
+        "plan": {
+            "ready": True,
+            "mutating_default": False,
+            "permission_default": "deny_mutations_without_approval",
+            "description": "Read-only planning; edits and writes require approval.",
+        },
+        "review": {
+            "ready": True,
+            "mutating_default": False,
+            "permission_default": "deny_mutations_without_approval",
+            "description": "Read-only review with evidence and verdict constraints.",
+        },
+        "general": {
+            "ready": True,
+            "mutating_default": False,
+            "permission_default": "ask_before_mutation",
+            "description": "Bounded helper mode; mutation requires promotion or approval.",
         },
     }
 

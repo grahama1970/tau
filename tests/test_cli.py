@@ -456,6 +456,12 @@ def test_doctor_command_reports_read_only_runtime_preflight() -> None:
     assert payload["paths"]["cli"]["exists"] is True
     assert payload["lanes"]["local_cli"]["ready"] is True
     assert payload["lanes"]["provider_live"]["ready"] is False
+    assert payload["modes"]["build"]["mutating_default"] is True
+    assert payload["modes"]["build"]["permission_default"] == "ask_for_sensitive_actions"
+    assert payload["modes"]["plan"]["mutating_default"] is False
+    assert payload["modes"]["plan"]["permission_default"] == "deny_mutations_without_approval"
+    assert payload["modes"]["review"]["mutating_default"] is False
+    assert payload["modes"]["general"]["permission_default"] == "ask_before_mutation"
     assert isinstance(payload["provider_settings"]["provider_count"], int)
     assert "providers" in payload["provider_settings"]
     assert "Herdr pane readiness." in payload["proof_boundary"]["does_not_prove"]
