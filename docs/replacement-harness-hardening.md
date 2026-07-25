@@ -741,6 +741,26 @@ Acceptance:
 - This slice does not claim Pi's `session_shutdown` lifecycle event, tool
   context shutdown, print-mode behavior, or deferred shutdown after queued work.
 
+### Slice 35: Extension Footer Branch Notifications
+
+Pi's `FooterDataProvider` lets extension footer components subscribe to git
+branch changes so footer content can stay current after checkout/switch
+operations. Tau's provider had the same method shape but returned a no-op
+unsubscribe hook. Add a bounded TUI-side subscription bridge that polls only
+while an extension footer has subscribed.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- `_TauFooterDataProvider.onBranchChange(callback)` registers a real callback
+  and returns an unsubscribe hook.
+- The branch poller starts only while callbacks are active and stops after the
+  final unsubscribe or extension UI reset.
+- A real local git branch switch triggers the subscribed callback.
+- This slice does not claim Pi's filesystem watcher implementation or full
+  custom footer component parity.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

@@ -171,6 +171,7 @@ SIDEBAR_MIN_HEIGHT = 24
 ACTIVITY_TICK_SECONDS = 0.15
 ACTIVITY_COLOR_FADE_STEPS = 24
 ACTIVITY_INDICATOR_HEIGHT = 3
+EXTENSION_BRANCH_WATCH_INTERVAL_SECONDS = 0.5
 TERMINAL_PROGRESS_ACTIVE_SEQUENCE = "\x1b]9;4;3\x07"
 TERMINAL_PROGRESS_CLEAR_SEQUENCE = "\x1b]9;4;0;\x07"
 COMPLETION_MAX_VISIBLE_LINES = DEFAULT_AUTOCOMPLETE_MAX_VISIBLE
@@ -6960,6 +6961,10 @@ class TauTuiApp(App[None]):
             self.tui_settings.turn_notification
         )
         self._extension_statuses: dict[str, str] = {}
+        self._extension_footer_branch_callback_id = 0
+        self._extension_footer_branch_callbacks: dict[int, Callable[[], object]] = {}
+        self._extension_footer_branch_last: str | None = None
+        self._extension_footer_branch_timer: Timer | None = None
         self._extension_widgets_above: dict[str, tuple[str, ...]] = {}
         self._extension_widgets_below: dict[str, tuple[str, ...]] = {}
         self._extension_terminal_input_listener_id = 0
@@ -7015,6 +7020,7 @@ class TauTuiApp(App[None]):
         self._extension_widget_components_below.clear()
         self._extension_widget_component_names_below.clear()
         self._extension_statuses.clear()
+        self._clear_extension_footer_branch_listeners()
         self._extension_working_visible = True
         self._extension_working_message = None
         self._extension_working_indicator_frames = None
@@ -7163,6 +7169,7 @@ class TauTuiApp(App[None]):
         if self._activity_timer is not None:
             self._activity_timer.stop()
             self._activity_timer = None
+        self._stop_extension_footer_branch_timer()
         self._clear_retry_countdown()
         if self._terminal_progress_active:
             self._terminal_progress_active = False
@@ -10654,6 +10661,67 @@ class TauTuiApp(App[None]):
         custom_footer.display = bool(custom_footer_text) and not footer_component_active
         custom_footer.update(custom_footer_text)
         built_in_footer.display = not (bool(custom_footer_text) or footer_component_active)
+
+    def _register_extension_footer_branch_listener(
+        self,
+        callback: Callable[[], object],
+    ) -> Callable[[], None]:
+        """Subscribe an extension footer component to git branch changes."""
+        if not callable(callback):
+            raise TypeError("branch change callback must be callable")
+        self._extension_footer_branch_callback_id += 1
+        callback_id = self._extension_footer_branch_callback_id
+        self._extension_footer_branch_callbacks[callback_id] = callback
+        self._start_extension_footer_branch_timer()
+
+        def unsubscribe() -> None:
+            self._extension_footer_branch_callbacks.pop(callback_id, None)
+            if not self._extension_footer_branch_callbacks:
+                self._stop_extension_footer_branch_timer()
+
+        return unsubscribe
+
+    def _start_extension_footer_branch_timer(self) -> None:
+        if (
+            self._extension_footer_branch_timer is not None
+            or not self._extension_footer_branch_callbacks
+        ):
+            return
+        self._extension_footer_branch_last = _git_branch(self.session.cwd)
+        self._extension_footer_branch_timer = self.set_interval(
+            EXTENSION_BRANCH_WATCH_INTERVAL_SECONDS,
+            self._tick_extension_footer_branch_change,
+            name="extension-footer-branch-watch",
+        )
+
+    def _stop_extension_footer_branch_timer(self) -> None:
+        if self._extension_footer_branch_timer is not None:
+            self._extension_footer_branch_timer.stop()
+            self._extension_footer_branch_timer = None
+        self._extension_footer_branch_last = None
+
+    def _clear_extension_footer_branch_listeners(self) -> None:
+        self._extension_footer_branch_callbacks.clear()
+        self._stop_extension_footer_branch_timer()
+
+    def _tick_extension_footer_branch_change(self) -> None:
+        if not self._extension_footer_branch_callbacks:
+            self._stop_extension_footer_branch_timer()
+            return
+        current_branch = _git_branch(self.session.cwd)
+        if current_branch == self._extension_footer_branch_last:
+            return
+        self._extension_footer_branch_last = current_branch
+        for callback in tuple(self._extension_footer_branch_callbacks.values()):
+            try:
+                result = callback()
+                if isawaitable(result):
+                    asyncio.create_task(result)
+            except Exception as exc:  # noqa: BLE001 - extension callback failures are non-fatal
+                self._notify(
+                    f"Extension footer branch callback failed: {exc}",
+                    severity="error",
+                )
 
     def _sync_prompt_shell_mode(self, text: str) -> None:
         prompt = self.query_one("#prompt", PromptInput)
@@ -14571,13 +14639,8 @@ class _TauFooterDataProvider:
         return len(getattr(self._app.session, "available_providers", ()))
 
     def onBranchChange(self, callback: Callable[[], object]) -> Callable[[], None]:  # noqa: N802
-        """Return an unsubscribe hook for branch notifications.
-
-        Tau does not run a git watcher yet, so this method preserves the Pi
-        footer-data shape without inventing a background monitor.
-        """
-        del callback
-        return lambda: None
+        """Subscribe to git branch notifications and return an unsubscribe hook."""
+        return self._app._register_extension_footer_branch_listener(callback)
 
 
 class _PtyProofRealAppSessionState:

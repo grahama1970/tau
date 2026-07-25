@@ -2,6 +2,7 @@ import asyncio
 import base64
 import json
 import re
+import subprocess
 from collections.abc import AsyncIterator, Sequence
 from contextlib import nullcontext
 from dataclasses import replace
@@ -8653,6 +8654,52 @@ async def test_tui_extension_select_request_short_timeout_expires() -> None:
 
         await asyncio.wait_for(worker.wait(), timeout=1)
         assert worker.result is None
+
+
+@pytest.mark.anyio
+async def test_extension_footer_data_provider_notifies_git_branch_changes(
+    tmp_path: Path,
+) -> None:
+    def run_git(*args: str) -> None:
+        subprocess.run(
+            ["git", *args],
+            cwd=tmp_path,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+    run_git("init", "-b", "main")
+    run_git("config", "user.email", "tau@example.test")
+    run_git("config", "user.name", "Tau Test")
+    (tmp_path / "README.md").write_text("tau\n", encoding="utf-8")
+    run_git("add", "README.md")
+    run_git("commit", "-m", "initial")
+
+    session = FakeSession()
+    session.cwd = tmp_path
+    app = TauTuiApp(session)
+    seen_branches: list[str | None] = []
+
+    async with app.run_test(size=(80, 24)):
+        footer_data = tui_app._TauFooterDataProvider(app)
+        unsubscribe = footer_data.onBranchChange(
+            lambda: seen_branches.append(footer_data.getGitBranch())
+        )
+        assert app._extension_footer_branch_timer is not None
+        assert footer_data.getGitBranch() == "main"
+
+        run_git("switch", "-c", "feature/footer")
+        app._tick_extension_footer_branch_change()
+
+        assert seen_branches == ["feature/footer"]
+
+        unsubscribe()
+        assert app._extension_footer_branch_timer is None
+        run_git("switch", "-c", "feature/ignored")
+        app._tick_extension_footer_branch_change()
+
+    assert seen_branches == ["feature/footer"]
 
 
 @pytest.mark.anyio
