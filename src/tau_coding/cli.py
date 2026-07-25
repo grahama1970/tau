@@ -954,6 +954,13 @@ def main(
             help="Disable startup network operations where supported.",
         ),
     ] = False,
+    verbose_startup: Annotated[
+        bool,
+        typer.Option(
+            "--verbose",
+            help="Force verbose startup output, overriding quiet startup settings.",
+        ),
+    ] = False,
     auto_compact_threshold: Annotated[
         int | None,
         typer.Option(
@@ -1061,6 +1068,9 @@ def main(
         environ["TAU_OFFLINE"] = "1"
         environ["PI_OFFLINE"] = "1"
         environ["PI_SKIP_VERSION_CHECK"] = "1"
+
+    if verbose_startup:
+        environ["TAU_VERBOSE_STARTUP"] = "1"
 
     if session is not None and new_session:
         raise typer.BadParameter("--session and --new-session cannot be used together")

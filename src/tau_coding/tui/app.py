@@ -11112,6 +11112,10 @@ def _create_startup_session_record(
             return manager.create_session(cwd=cwd, model=selection.model)
 
 
+def _truthy_env(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
 def _resolve_tui_startup_selection(
     settings: Any,
     *,
@@ -11256,6 +11260,8 @@ async def run_tui_app(
 
     provider_settings = provider_settings or load_provider_settings()
     tui_settings = load_tui_settings()
+    if _truthy_env("TAU_VERBOSE_STARTUP"):
+        tui_settings = replace(tui_settings, quiet_startup=False)
     startup_thinking_level = thinking_level or tui_settings.thinking_level
     manager = None if no_session else session_manager or SessionManager()
     if no_session or resume_picker:
