@@ -8831,6 +8831,7 @@ def _tree_picker_label(
     *,
     theme: TuiTheme,
     show_label_timestamps: bool = False,
+    highlighted: bool = False,
 ) -> Text:
     marker = "* " if choice.active else "  "
     label = choice.label
@@ -8839,12 +8840,13 @@ def _tree_picker_label(
     body = label[indent_width:]
     author, separator, rest = body.partition(":")
     text = Text(f"{marker}{indent}")
+    accent = theme.highlight_text if highlighted else theme.accent
     if choice.tree_label:
-        text.append(f"[{choice.tree_label}] ", style=theme.accent)
+        text.append(f"[{choice.tree_label}] ", style=accent)
         if show_label_timestamps and choice.tree_label_timestamp is not None:
             text.append(f"{_session_updated_at_label(choice.tree_label_timestamp)} ")
     if separator:
-        text.append(author, style=theme.accent)
+        text.append(author, style=accent)
         text.append(f"{separator}{rest}")
     else:
         text.append(body)
@@ -8863,6 +8865,7 @@ def _tree_picker_viewport_label(
         choice,
         theme=theme,
         show_label_timestamps=show_label_timestamps,
+        highlighted=selected,
     )
     if not selected or viewport_width <= 0 or label.cell_len <= viewport_width:
         return label
