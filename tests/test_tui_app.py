@@ -116,6 +116,9 @@ from tau_coding.tui.terminal_image import (
 )
 from tau_coding.tui.terminal_notification import TerminalNotificationController
 from tau_coding.tui.widgets import (
+    OSC133_ZONE_END,
+    OSC133_ZONE_FINAL,
+    OSC133_ZONE_START,
     LeftAlignedMarkdownHeading,
     StreamingTranscriptMessageWidget,
     ThemedMarkdownWidget,
@@ -825,6 +828,33 @@ def test_chat_items_render_as_unlabeled_blocks() -> None:
     assert "assistant:" not in output
     assert "tool:" not in output
     assert "▌ Read the file" in output
+
+
+def test_user_and_assistant_chat_items_emit_pi_osc133_zones() -> None:
+    for role in ("user", "assistant"):
+        console = Console(record=True, width=40)
+
+        console.print(render_chat_item(ChatItem(role=role, text="Read the file")))
+        output = console.export_text()
+
+        assert OSC133_ZONE_START in output
+        assert OSC133_ZONE_END in output
+        assert OSC133_ZONE_FINAL in output
+
+
+def test_tool_chat_items_do_not_emit_osc133_zones() -> None:
+    console = Console(record=True, width=40)
+
+    console.print(
+        render_chat_item(
+            ChatItem(role="tool", text="→ read README.md", tool_result_text="✓ read\ncontents")
+        )
+    )
+    output = console.export_text()
+
+    assert OSC133_ZONE_START not in output
+    assert OSC133_ZONE_END not in output
+    assert OSC133_ZONE_FINAL not in output
 
 
 def test_chat_items_use_left_accent_instead_of_box_border() -> None:

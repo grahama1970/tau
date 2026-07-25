@@ -13,6 +13,7 @@ from rich.console import Console, ConsoleOptions, Group, RenderableType, RenderR
 from rich.markdown import CodeBlock, Heading, Markdown
 from rich.padding import Padding
 from rich.rule import Rule
+from rich.segment import Segment
 from rich.style import Style
 from rich.syntax import Syntax
 from rich.table import Table
@@ -47,6 +48,9 @@ TAU_SIDEBAR_LOGO = "τ = 2π"
 TOOL_RESULT_VISUAL_PREVIEW_LINES = TOOL_RESULT_PREVIEW_LINES + 1
 SIDEBAR_BULLET_LIST_LIMIT = 5
 VISIBLE_TAB_REPLACEMENT = "   "
+OSC133_ZONE_START = "\x1b]133;A\x07"
+OSC133_ZONE_END = "\x1b]133;B\x07"
+OSC133_ZONE_FINAL = "\x1b]133;C\x07"
 
 
 @dataclass(frozen=True, slots=True)
@@ -108,6 +112,27 @@ class VisualPreviewText:
                 ),
             ]
         yield Text("\n").join(parts)
+
+
+@dataclass(frozen=True, slots=True)
+class Osc133Zone:
+    """Wrap a renderable in shell-integration prompt/response zone markers."""
+
+    renderable: RenderableType
+
+    def __rich_console__(
+        self,
+        console: Console,
+        options: ConsoleOptions,
+    ) -> RenderResult:
+        lines = console.render_lines(self.renderable, options, pad=False)
+        if not lines:
+            return
+        lines[0].insert(0, Segment(OSC133_ZONE_START))
+        lines[-1].insert(0, Segment(OSC133_ZONE_END + OSC133_ZONE_FINAL))
+        for line in lines:
+            yield from line
+            yield Segment.line()
 
 
 def _normalize_terminal_display_text(text: str) -> str:
@@ -1104,7 +1129,10 @@ def render_chat_item(
         Align.left(Text("▌", style=role_style.border)),
         Padding(body, (0, 1, 0, 1), style=role_style.body),
     )
-    return Padding(table, (1, 1, 1, 0), style=role_style.body)
+    renderable: RenderableType = table
+    if item.role in {"user", "assistant"}:
+        renderable = Osc133Zone(renderable)
+    return Padding(renderable, (1, 1, 1, 0), style=role_style.body)
 
 
 def _chat_item_role_style(item: ChatItem, theme: TuiTheme) -> TuiRoleStyle:
