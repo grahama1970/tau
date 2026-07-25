@@ -5888,10 +5888,12 @@ class TauTuiApp(App[None]):
         tui_settings: TuiSettings | None = None,
         startup_message: str | None = None,
         initial_prompt: str | None = None,
+        startup_resume_picker: bool = False,
     ) -> None:
         self.tui_settings = tui_settings or TuiSettings()
         self.startup_message = startup_message
         self.initial_prompt = initial_prompt
+        self.startup_resume_picker = startup_resume_picker
         super().__init__()
         self._bindings = BindingsMap(_app_bindings(self.tui_settings.keybindings))
         self.session = session
@@ -6000,6 +6002,9 @@ class TauTuiApp(App[None]):
             self._notify(self.startup_message, severity="warning")
         if not self.tui_settings.quiet_startup and not self.is_headless:
             self.run_worker(self._warn_about_tmux_keyboard_setup(), exclusive=False)
+        if self.startup_resume_picker:
+            self.call_after_refresh(self.action_open_session_picker)
+            return
         if self.initial_prompt and self.initial_prompt.strip():
             self._submit_prompt(self.initial_prompt.strip())
 
@@ -7391,9 +7396,21 @@ class TauTuiApp(App[None]):
     def _handle_session_picker_result(self, session_id: str | None) -> None:
         if session_id is None:
             return
-        self.run_worker(self._resume_session(session_id), exclusive=False)
+        initial_prompt = None
+        if self.startup_resume_picker and self.initial_prompt and self.initial_prompt.strip():
+            initial_prompt = self.initial_prompt.strip()
+            self.initial_prompt = None
+        self.run_worker(
+            self._resume_session(session_id, submit_after_resume=initial_prompt),
+            exclusive=False,
+        )
 
-    async def _resume_session(self, session_id: str) -> None:
+    async def _resume_session(
+        self,
+        session_id: str,
+        *,
+        submit_after_resume: str | None = None,
+    ) -> None:
         try:
             resume_message = await self.session.resume(session_id)
             self.state.clear()
@@ -7402,7 +7419,10 @@ class TauTuiApp(App[None]):
             self._notify(resume_message)
         except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
             self._notify(f"Error: {exc}", severity="error")
+            submit_after_resume = None
         self._refresh()
+        if submit_after_resume:
+            self._submit_prompt(submit_after_resume)
 
     async def _import_session(self, path: Path) -> None:
         import_session = getattr(self.session, "import_session", None)
@@ -11186,6 +11206,7 @@ async def run_tui_app(
     initial_prompt: str | None = None,
     session_name: str | None = None,
     continue_session: bool = False,
+    resume_picker: bool = False,
     no_session: bool = False,
     session_manager: SessionManager | None = None,
     provider_settings: ProviderSettings | None = None,
@@ -11206,12 +11227,22 @@ async def run_tui_app(
         raise RuntimeError("--session and --new-session cannot be used together")
     if continue_session and session_id is not None:
         raise RuntimeError("--continue and --session cannot be used together")
+    if resume_picker and session_id is not None:
+        raise RuntimeError("--resume and --session cannot be used together")
     if continue_session and new_session:
         raise RuntimeError("--continue and --new-session cannot be used together")
+    if resume_picker and continue_session:
+        raise RuntimeError("--resume and --continue cannot be used together")
+    if resume_picker and new_session:
+        raise RuntimeError("--resume and --new-session cannot be used together")
     if continue_session and session_name is not None:
         raise RuntimeError("--continue and --name cannot be used together")
+    if resume_picker and session_name is not None:
+        raise RuntimeError("--resume and --name cannot be used together")
     if no_session and session_id is not None:
         raise RuntimeError("--no-session and --session cannot be used together")
+    if no_session and resume_picker:
+        raise RuntimeError("--no-session and --resume cannot be used together")
     if no_session and continue_session:
         raise RuntimeError("--no-session and --continue cannot be used together")
     if no_session and new_session:
@@ -11222,7 +11253,7 @@ async def run_tui_app(
     provider_settings = provider_settings or load_provider_settings()
     tui_settings = load_tui_settings()
     manager = None if no_session else session_manager or SessionManager()
-    if no_session:
+    if no_session or resume_picker:
         record = None
     elif continue_session:
         assert manager is not None
@@ -11258,10 +11289,10 @@ async def run_tui_app(
     session: CodingSession | None = None
     try:
         if record is None:
-            if no_session:
+            if no_session or resume_picker:
                 storage = _EphemeralSessionStorage()
                 startup_session_id = None
-                startup_session_manager = None
+                startup_session_manager = manager if resume_picker else None
                 startup_cwd = cwd
                 startup_model = selection.model
             else:
@@ -11322,9 +11353,10 @@ async def run_tui_app(
             tui_settings=tui_settings,
             startup_message=startup_message,
             initial_prompt=initial_prompt,
+            startup_resume_picker=resume_picker,
         )
         await app.run_async()
-        return None if record is None else record.id
+        return session.session_id
     finally:
         if session is not None:
             close_session = getattr(session, "aclose", None)

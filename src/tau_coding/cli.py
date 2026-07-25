@@ -833,14 +833,10 @@ def main(
         str | None,
         typer.Option("--fork", help="Fork a session id or JSONL path into a new session."),
     ] = None,
-    resume: Annotated[
-        str | None,
-        typer.Option(
-            "--resume",
-            help="Removed; use --session <session-id> instead.",
-            hidden=True,
-        ),
-    ] = None,
+    resume_picker: Annotated[
+        bool,
+        typer.Option("--resume", "-r", help="Select a session to resume in TUI mode."),
+    ] = False,
     new_session: Annotated[
         bool,
         typer.Option("--new-session", help="Create a new session in TUI mode (default)."),
@@ -1027,16 +1023,17 @@ def main(
     if ctx.invoked_subcommand is not None:
         return
 
-    if resume is not None:
-        raise typer.BadParameter(
-            f"--resume was renamed to --session. Use `tau --session {resume}` instead."
-        )
-
     if session is not None and new_session:
         raise typer.BadParameter("--session and --new-session cannot be used together")
 
+    if resume_picker and session is not None:
+        raise typer.BadParameter("--resume and --session cannot be used together")
+
     if fork_session_ref is not None and session is not None:
         raise typer.BadParameter("--fork and --session cannot be used together")
+
+    if fork_session_ref is not None and resume_picker:
+        raise typer.BadParameter("--fork and --resume cannot be used together")
 
     if fork_session_ref is not None and continue_session:
         raise typer.BadParameter("--fork and --continue cannot be used together")
@@ -1050,14 +1047,26 @@ def main(
     if continue_session and session is not None:
         raise typer.BadParameter("--continue and --session cannot be used together")
 
+    if continue_session and resume_picker:
+        raise typer.BadParameter("--continue and --resume cannot be used together")
+
     if continue_session and new_session:
         raise typer.BadParameter("--continue and --new-session cannot be used together")
 
     if continue_session and session_name is not None:
         raise typer.BadParameter("--continue and --name cannot be used together")
 
+    if resume_picker and new_session:
+        raise typer.BadParameter("--resume and --new-session cannot be used together")
+
+    if resume_picker and session_name is not None:
+        raise typer.BadParameter("--resume and --name cannot be used together")
+
     if no_session and session is not None:
         raise typer.BadParameter("--no-session and --session cannot be used together")
+
+    if no_session and resume_picker:
+        raise typer.BadParameter("--no-session and --resume cannot be used together")
 
     if no_session and continue_session:
         raise typer.BadParameter("--no-session and --continue cannot be used together")
@@ -1087,6 +1096,9 @@ def main(
 
     if continue_session and print_requested:
         raise typer.BadParameter("--continue is supported for TUI startup only")
+
+    if resume_picker and print_requested:
+        raise typer.BadParameter("--resume is supported for TUI startup only")
 
     if fork_session_ref is not None and print_requested:
         raise typer.BadParameter("--fork is supported for TUI startup only")
@@ -3318,6 +3330,7 @@ def main(
                 initial_prompt,
                 session_name,
                 continue_session,
+                resume_picker,
                 no_session,
                 session_dir,
                 provider_settings_override,
@@ -3409,6 +3422,7 @@ async def run_openai_tui(
     initial_prompt: str | None = None,
     session_name: str | None = None,
     continue_session: bool = False,
+    resume_picker: bool = False,
     no_session: bool = False,
     session_dir: Path | None = None,
     provider_settings: ProviderSettings | None = None,
@@ -3435,6 +3449,7 @@ async def run_openai_tui(
         initial_prompt=initial_prompt,
         session_name=session_name,
         continue_session=continue_session,
+        resume_picker=resume_picker,
         no_session=no_session,
         session_manager=_session_manager_from_dir(session_dir),
         provider_settings=provider_settings,

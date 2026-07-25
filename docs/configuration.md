@@ -313,6 +313,7 @@ Useful commands:
 tau sessions
 tau --session <session-id>
 tau --continue
+tau --resume
 tau --new-session
 tau --no-session
 tau --session-dir ~/.tau-alt/sessions
@@ -343,6 +344,10 @@ and session-id completions.
 `--continue` resumes the latest indexed session for the current working
 directory. It fails instead of creating a new session when no previous cwd
 session exists.
+
+`--resume` or `-r` starts the TUI with the indexed session picker open. Select a
+session to resume it, or use `--session <id>` when the session id is already
+known.
 
 `--no-session` starts an ephemeral interactive or print-mode run without
 creating an indexed session record or writing a session JSONL transcript.

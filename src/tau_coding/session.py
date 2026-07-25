@@ -1114,6 +1114,9 @@ class CodingSession:
                 custom_system_prompt=self._config.custom_system_prompt,
                 append_system_prompt=self._config.append_system_prompt,
                 context_files=self._config.context_files,
+                skill_paths=self._config.skill_paths,
+                prompt_template_paths=self._config.prompt_template_paths,
+                theme_paths=self._config.theme_paths,
                 resource_paths=self._config.resource_paths,
                 session_id=record.id,
                 session_manager=manager,
@@ -1129,6 +1132,15 @@ class CodingSession:
                 thinking_level=self._thinking_level,
                 shell_path=self._shell_path,
                 shell_command_prefix=self._shell_command_prefix,
+                auto_resize_images=self._config.auto_resize_images,
+                discover_skills=self._config.discover_skills,
+                discover_prompt_templates=self._config.discover_prompt_templates,
+                discover_themes=self._config.discover_themes,
+                discover_context_files=self._config.discover_context_files,
+                tool_allowlist=self._config.tool_allowlist,
+                tool_denylist=self._config.tool_denylist,
+                no_tools=self._config.no_tools,
+                no_builtin_tools=self._config.no_builtin_tools,
             )
         )
         self._config = replacement._config
