@@ -340,6 +340,16 @@ def test_tool_call_blocks_use_human_readable_invocations() -> None:
         )
         == "$ git log --oneline --decorate --graph --max-count=8 (timeout 30s)"
     )
+    assert (
+        format_tool_call_block(
+            ToolCall(
+                id="call-4",
+                name="analyze_fixture",
+                arguments={"path": "fixture.json", "strict": True},
+            )
+        )
+        == '→ analyze_fixture {"path": "fixture.json", "strict": true}'
+    )
 
 
 def test_tui_adapter_records_tool_updates_and_results() -> None:

@@ -1709,7 +1709,7 @@ def test_tui_state_labels_restored_extension_tool_calls() -> None:
         ("assistant", "Calling extension.", None),
         (
             "tool",
-            "→ analyze_fixture {'path': 'fixture.json'} [extension:quality-lab]",
+            '→ analyze_fixture {"path": "fixture.json"} [extension:quality-lab]',
             "✓ analyze_fixture\nanalysis complete",
         ),
     ]

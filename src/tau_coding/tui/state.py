@@ -600,7 +600,8 @@ def _read_line_suffix(arguments: dict[str, JSONValue]) -> str:
 
 def _fallback_tool_call_invocation(tool_call: ToolCall) -> str:
     if tool_call.arguments:
-        return f"{tool_call.name} {tool_call.arguments}"
+        arguments = dumps(tool_call.arguments, sort_keys=True)
+        return f"{tool_call.name} {arguments}"
     return tool_call.name
 
 
