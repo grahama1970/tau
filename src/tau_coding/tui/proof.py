@@ -21,6 +21,7 @@ from tau_coding.skills import Skill
 from tau_coding.system_prompt import ProjectContextFile
 from tau_coding.tools import create_coding_tools
 from tau_coding.tui.app import TauTuiApp
+from tau_coding.tui.config import TuiSettings
 from tau_coding.tui.state import LoopMonitorStatus
 from tau_coding.tui.widgets import TranscriptView
 
@@ -130,13 +131,17 @@ async def _render_textual_tui_memory_stage_proof(
         route=route,
         next_agent=next_agent,
     )
-    app = TauTuiApp(cast(CodingSession, session))
+    app = TauTuiApp(cast(CodingSession, session), tui_settings=TuiSettings(quiet_startup=True))
     async with app.run_test(size=(130, 24)) as pilot:
         app.state.show_tool_results = True
         app.state.add_thinking_delta("internal memory routing hidden from transcript")
         app._refresh()
         await pilot.pause()
-        for event in (*_memory_stage_events(run_id=run_id), _permission_receipt_event()):
+        for event in (
+            *_memory_stage_events(run_id=run_id),
+            _permission_receipt_event(),
+            _bash_metadata_event(),
+        ):
             app.adapter.apply(event)
             await app._apply_streaming_transcript_event(event)
             app._refresh()
@@ -155,6 +160,8 @@ async def _render_textual_tui_memory_stage_proof(
         "run_id": run_id in text,
         "permission_receipt": "tau.permission_request_receipt.v1" in text,
         "permission_not_mutated": "the requested mutation was executed" in text,
+        "bash_execution_metadata": "Status: exit=124" in text
+        and "Full output: /tmp/tau-tui-proof/bash-output.log" in text,
         "hidden_reasoning_absent": "internal memory routing hidden from transcript" not in text,
     }
     receipt: dict[str, object] = {
@@ -230,5 +237,32 @@ def _permission_receipt_event() -> ToolExecutionEndEvent:
                 },
                 sort_keys=True,
             ),
+        )
+    )
+
+
+def _bash_metadata_event() -> ToolExecutionEndEvent:
+    return ToolExecutionEndEvent(
+        result=AgentToolResult(
+            tool_call_id="bash-proof",
+            name="bash",
+            ok=False,
+            content="stderr: command timed out\n\n[Command timed out after 1 seconds]",
+            data={
+                "command": "sleep 5",
+                "exit_code": 124,
+                "timed_out": True,
+                "cancelled": False,
+                "duration_seconds": 1.0,
+                "truncation": {
+                    "truncated": True,
+                    "truncated_by": "lines",
+                    "total_lines": 44,
+                    "output_lines": 20,
+                    "total_bytes": 4096,
+                    "output_bytes": 1024,
+                },
+                "full_output_path": "/tmp/tau-tui-proof/bash-output.log",
+            },
         )
     )

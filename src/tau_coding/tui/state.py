@@ -556,6 +556,12 @@ def _int_value(value: JSONValue | None) -> int | None:
     return value if isinstance(value, int) else None
 
 
+def _number_value(value: JSONValue | None) -> int | float | None:
+    if isinstance(value, bool):
+        return None
+    return value if isinstance(value, int | float) else None
+
+
 def _bool_value(value: JSONValue | None) -> bool | None:
     return value if isinstance(value, bool) else None
 
@@ -882,10 +888,60 @@ def format_tool_result_block(
     lines = [f"{status} {name}"]
     if content:
         lines.append(_preview_text(content, max_lines=TOOL_RESULT_PREVIEW_LINES))
+    bash_metadata = _format_bash_result_metadata(name=name, data=data)
+    if bash_metadata:
+        lines.extend(["", *bash_metadata])
     patch = _result_patch(name=name, ok=ok, data=data)
     if patch:
         lines.extend(["", "Patch:", _preview_text(patch, max_lines=TOOL_PATCH_PREVIEW_LINES)])
     return "\n".join(lines)
+
+
+def _format_bash_result_metadata(
+    *,
+    name: str,
+    data: dict[str, JSONValue] | None,
+) -> list[str]:
+    if name != "bash" or data is None:
+        return []
+
+    exit_code = _int_value(data.get("exit_code"))
+    duration_seconds = _number_value(data.get("duration_seconds"))
+    timed_out = _bool_value(data.get("timed_out"))
+    cancelled = _bool_value(data.get("cancelled"))
+    full_output_path = _string_value(data.get("full_output_path"))
+    truncation = data.get("truncation")
+
+    lines: list[str] = []
+    status_parts: list[str] = []
+    if exit_code is not None:
+        status_parts.append(f"exit={exit_code}")
+    if duration_seconds is not None:
+        status_parts.append(f"duration={duration_seconds:g}s")
+    if timed_out is True:
+        status_parts.append("timed_out=true")
+    if cancelled is True:
+        status_parts.append("cancelled=true")
+    if status_parts:
+        lines.append(f"Status: {' · '.join(status_parts)}")
+
+    if isinstance(truncation, Mapping) and _bool_value(truncation.get("truncated")) is True:
+        truncated_by = _string_value(truncation.get("truncated_by")) or "output"
+        output_lines = _int_value(truncation.get("output_lines"))
+        total_lines = _int_value(truncation.get("total_lines"))
+        output_bytes = _int_value(truncation.get("output_bytes"))
+        total_bytes = _int_value(truncation.get("total_bytes"))
+        visible_parts = [f"by {truncated_by}"]
+        if output_lines is not None and total_lines is not None:
+            visible_parts.append(f"lines {output_lines}/{total_lines}")
+        if output_bytes is not None and total_bytes is not None:
+            visible_parts.append(f"bytes {output_bytes}/{total_bytes}")
+        lines.append(f"Truncated: {' · '.join(visible_parts)}")
+
+    if full_output_path:
+        lines.append(f"Full output: {full_output_path}")
+
+    return lines
 
 
 def _permission_or_approval_receipt(

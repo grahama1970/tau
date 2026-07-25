@@ -480,6 +480,37 @@ def test_tool_result_blocks_preview_long_content() -> None:
     assert "3 more lines" in block
 
 
+def test_bash_tool_result_block_surfaces_execution_metadata() -> None:
+    block = format_tool_result_block(
+        name="bash",
+        ok=False,
+        content="last visible line",
+        data={
+            "exit_code": 124,
+            "timed_out": True,
+            "cancelled": False,
+            "duration_seconds": 1.25,
+            "truncation": {
+                "truncated": True,
+                "truncated_by": "lines",
+                "total_lines": 42,
+                "output_lines": 20,
+                "total_bytes": 4096,
+                "output_bytes": 1024,
+            },
+            "full_output_path": "/tmp/tau-bash-output.log",
+        },
+    )
+
+    assert block == (
+        "✗ bash\n"
+        "last visible line\n\n"
+        "Status: exit=124 · duration=1.25s · timed_out=true\n"
+        "Truncated: by lines · lines 20/42 · bytes 1024/4096\n"
+        "Full output: /tmp/tau-bash-output.log"
+    )
+
+
 def test_tool_result_formats_permission_receipt_data_for_operator_readability() -> None:
     block = format_tool_result_block(
         name="permission-request",

@@ -51,7 +51,7 @@ capabilities.
 | Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `PARTIAL` | Tau backs most daily settings and now exposes the external editor command; do not add dead Pi toggles without backing behavior. |
 | Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist; package/write-scope editing still missing. |
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login, but daily auth readiness should be more visible. |
-| Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks, and summarizes permission/approval receipts into operator-readable transcript blocks; richer interactive component objects remain pending. |
+| Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks, summarizes permission/approval receipts, and now surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data; richer interactive component objects remain pending. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider and retry countdown | `PARTIAL` | Footer extensibility exists; first-screen run/auth readiness needs stronger visibility. |
 | Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool renderers in live/restored transcripts | `MUST/PARTIAL` | Preserve current Tau extension API; full Pi-style custom component objects remain pending beyond plain transcript rendering. |
 | Images | `show-images-selector`, image component | Tau image visibility setting and image payload rendering | `MATCHED` | Retain current terminal-safe image controls. |
@@ -88,3 +88,15 @@ Port the next highest-value daily-use gap that is still local and bounded:
 existing transcript surface, especially custom tool rendering cases that require
 richer component objects rather than plain transcript text. This moves Tau toward
 tomorrow use without touching SciLLM internals or replacing Tau-only DAG features.
+
+Latest slice evidence:
+
+- Source inspected: Pi `tool-execution.ts`, `bash-execution.ts`, and `diff.ts`.
+- Destination preserved: Tau `state.py`/`widgets.py` transcript renderer,
+  Memory/SciLLM/DAG/approval/receipt surfaces, and Textual architecture.
+- Changed: bash result transcript blocks now expose existing execution metadata:
+  exit code, duration, timeout, cancellation, truncation, and full-output path.
+- Mocked: no provider mocking. Fixture-backed Textual proof only.
+- Live: local render/proof only; no provider-live or SciLLM-live call.
+- Remaining gap: richer interactive component object rendering for extension
+  tools is still partial.
