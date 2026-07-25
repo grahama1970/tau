@@ -954,6 +954,25 @@ class CodingSession:
             return None
         return record.title
 
+    def set_session_title(self, title: str) -> str:
+        """Set the indexed human-friendly title for this session."""
+        if self._config.session_id is None or self._config.session_manager is None:
+            raise RuntimeError("Session naming requires an indexed session.")
+        normalized = str(title).strip()
+        if not normalized:
+            raise ValueError("Session name must be non-empty.")
+        if any(char in normalized for char in "\r\n\t"):
+            raise ValueError("Session name must be a single line.")
+        updated = self._config.session_manager.touch_session(
+            self._config.session_id,
+            model=self.model,
+            provider_name=self.provider_name,
+            title=normalized,
+        )
+        if updated is None:
+            raise RuntimeError(f"Unknown current session: {self._config.session_id}")
+        return updated.title or normalized
+
     @property
     def session_manager(self) -> SessionManager | None:
         """Return the session manager, if available."""

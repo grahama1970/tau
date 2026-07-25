@@ -207,6 +207,22 @@ class ExtensionShortcutContext:
         """Pi-compatible camelCase alias for set_active_tools."""
         return self.set_active_tools(tool_names)
 
+    def get_session_name(self) -> str | None:
+        """Return the indexed display name for the active session."""
+        return _session_name(self.session)
+
+    def getSessionName(self) -> str | None:  # noqa: N802
+        """Pi-compatible camelCase alias for get_session_name."""
+        return self.get_session_name()
+
+    def set_session_name(self, name: str) -> str:
+        """Set the indexed display name for the active session."""
+        return _session_set_name(self.session, name)
+
+    def setSessionName(self, name: str) -> str:  # noqa: N802
+        """Pi-compatible camelCase alias for set_session_name."""
+        return self.set_session_name(name)
+
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the shortcut returns."""
         notification_message = str(message).strip()
@@ -575,6 +591,22 @@ class ExtensionCommandContext:
     def setActiveTools(self, tool_names: Sequence[str]) -> tuple[str, ...]:  # noqa: N802
         """Pi-compatible camelCase alias for set_active_tools."""
         return self.set_active_tools(tool_names)
+
+    def get_session_name(self) -> str | None:
+        """Return the indexed display name for the active session."""
+        return _session_name(self.session)
+
+    def getSessionName(self) -> str | None:  # noqa: N802
+        """Pi-compatible camelCase alias for get_session_name."""
+        return self.get_session_name()
+
+    def set_session_name(self, name: str) -> str:
+        """Set the indexed display name for the active session."""
+        return _session_set_name(self.session, name)
+
+    def setSessionName(self, name: str) -> str:  # noqa: N802
+        """Pi-compatible camelCase alias for set_session_name."""
+        return self.set_session_name(name)
 
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the command returns."""
@@ -1352,6 +1384,18 @@ def _session_set_active_tools(session: Any, tool_names: Sequence[str]) -> tuple[
     if callable(setter):
         return tuple(str(name) for name in setter(tuple(tool_names)))
     raise RuntimeError("active session does not support extension active tool controls")
+
+
+def _session_name(session: Any) -> str | None:
+    name = getattr(session, "session_title", None)
+    return None if name is None else str(name)
+
+
+def _session_set_name(session: Any, name: str) -> str:
+    setter = getattr(session, "set_session_title", None)
+    if callable(setter):
+        return str(setter(name))
+    raise RuntimeError("active session does not support extension session naming")
 
 
 def _tool_info(tool: Any, *, extension_sources: Mapping[str, object]) -> ToolInfo:
