@@ -326,6 +326,7 @@ tau --fork <session-id-or-jsonl-path>
 tau --name "Customer bugfix"
 tau --list-models [search]
 tau --models "gpt-5*,local:qwen"
+tau --model gpt-5.5 --api-key "$OPENAI_API_KEY"
 tau --thinking xhigh
 tau --system-prompt ./system.md
 tau --append-system-prompt "Extra local rule"
@@ -390,6 +391,10 @@ Combine it with `--provider <name>` to list one provider.
 `--models <patterns>` sets a transient scoped model list for the TUI run. The
 value is a comma-separated list of model or provider/model glob patterns used
 by Ctrl+P cycling; it does not rewrite `providers.json`.
+
+`--api-key <key>` supplies a non-persistent runtime API key for the explicit
+startup model selected by `--model` or `--models`. It does not modify provider
+settings or saved credentials.
 
 `--thinking <level>` sets the startup reasoning depth for the run. Valid values
 are `off`, `minimal`, `low`, `medium`, `high`, `xhigh`, and the Pi-compatible

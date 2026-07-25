@@ -195,6 +195,7 @@ from tau_coding.provider_config import (
     ANTHROPIC_AUTH_TOKEN_ENV,
     DEFAULT_MODEL,
     DEFAULT_PROVIDER_NAME,
+    RUNTIME_API_KEY_ENV,
     CredentialReader,
     OpenAICompatibleProviderConfig,
     ProviderConfig,
@@ -763,6 +764,10 @@ def main(
         str | None,
         typer.Option("--model", "-m", help="Model name to request from the provider."),
     ] = None,
+    runtime_api_key: Annotated[
+        str | None,
+        typer.Option("--api-key", help="Runtime API key for the selected explicit model."),
+    ] = None,
     thinking: Annotated[
         str | None,
         typer.Option(
@@ -1071,6 +1076,13 @@ def main(
 
     if verbose_startup:
         environ["TAU_VERBOSE_STARTUP"] = "1"
+
+    if runtime_api_key is not None:
+        if not runtime_api_key.strip():
+            raise typer.BadParameter("--api-key requires a non-empty value")
+        if model is None and model_patterns is None:
+            raise typer.BadParameter("--api-key requires --model or --models")
+        environ[RUNTIME_API_KEY_ENV] = runtime_api_key
 
     if session is not None and new_session:
         raise typer.BadParameter("--session and --new-session cannot be used together")

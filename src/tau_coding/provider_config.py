@@ -34,6 +34,7 @@ from tau_coding.thinking import (
 
 DEFAULT_PROVIDER_NAME = "openai"
 ANTHROPIC_AUTH_TOKEN_ENV = "ANTHROPIC_AUTH_TOKEN"
+RUNTIME_API_KEY_ENV = "TAU_RUNTIME_API_KEY"
 DEFAULT_MODEL = "gpt-5.5"
 ANTHROPIC_ADAPTIVE_THINKING_MODELS = frozenset({"claude-opus-5"})
 ANTHROPIC_ADAPTIVE_THINKING_LEVELS: tuple[ThinkingLevel, ...] = (
@@ -1039,6 +1040,10 @@ def _api_key_from_provider(
     *,
     credential_reader: CredentialReader | None,
 ) -> str:
+    runtime_api_key = environ.get(RUNTIME_API_KEY_ENV)
+    if runtime_api_key:
+        return runtime_api_key
+
     if provider.credential_name and credential_reader is not None:
         credential = credential_reader.get(provider.credential_name)
         if credential:
@@ -1056,6 +1061,10 @@ def _anthropic_auth_from_provider(
     *,
     credential_reader: CredentialReader | None,
 ) -> tuple[str, bool]:
+    runtime_api_key = environ.get(RUNTIME_API_KEY_ENV)
+    if runtime_api_key:
+        return runtime_api_key, False
+
     if provider.credential_name and credential_reader is not None:
         credential = credential_reader.get(provider.credential_name)
         if credential:

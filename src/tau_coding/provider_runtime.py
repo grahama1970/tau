@@ -18,6 +18,7 @@ from tau_coding.oauth import (
     refresh_openai_codex_token,
 )
 from tau_coding.provider_config import (
+    RUNTIME_API_KEY_ENV,
     AnthropicProviderConfig,
     OpenAICodexProviderConfig,
     ProviderConfig,
@@ -124,6 +125,10 @@ class OpenAICodexCredentialResolver:
 
     async def __call__(self) -> OpenAICodexCredentials:
         """Return a valid Codex access token and account id."""
+        runtime_api_key = environ.get(RUNTIME_API_KEY_ENV)
+        if runtime_api_key:
+            return OpenAICodexCredentials(access_token=runtime_api_key, account_id=None)
+
         credential_name = self._provider.credential_name
         if credential_name:
             credential = self._credential_store.get_oauth(credential_name)

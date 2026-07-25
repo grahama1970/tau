@@ -1,9 +1,13 @@
 import pytest
 
-from tau_ai import AnthropicProvider, OpenAICodexProvider
+from tau_ai import AnthropicProvider, OpenAICodexProvider, OpenAICompatibleProvider
 from tau_coding import provider_runtime
 from tau_coding.credentials import FileCredentialStore, OAuthCredential
-from tau_coding.provider_config import AnthropicProviderConfig, OpenAICodexProviderConfig
+from tau_coding.provider_config import (
+    AnthropicProviderConfig,
+    OpenAICodexProviderConfig,
+    OpenAICompatibleProviderConfig,
+)
 from tau_coding.provider_runtime import OpenAICodexCredentialResolver, create_model_provider
 
 
@@ -16,6 +20,54 @@ def test_create_model_provider_returns_openai_codex_provider(tmp_path) -> None:
     )
 
     assert isinstance(provider, OpenAICodexProvider)
+
+
+def test_create_model_provider_uses_runtime_api_key_override(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+) -> None:
+    monkeypatch.setenv("TAU_RUNTIME_API_KEY", "runtime-key")
+    store = FileCredentialStore(tmp_path / "credentials.json")
+    store.set("stored", "stored-key")
+
+    provider = create_model_provider(
+        OpenAICompatibleProviderConfig(
+            name="openai",
+            credential_name="stored",
+            api_key_env="MISSING_API_KEY",
+        ),
+        credential_store=store,
+    )
+
+    assert isinstance(provider, OpenAICompatibleProvider)
+    assert provider._config.api_key == "runtime-key"
+
+
+@pytest.mark.anyio
+async def test_codex_credential_resolver_uses_runtime_api_key_override(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+) -> None:
+    monkeypatch.setenv("TAU_RUNTIME_API_KEY", "runtime-codex-token")
+    store = FileCredentialStore(tmp_path / "credentials.json")
+    store.set_oauth(
+        "openai-codex",
+        OAuthCredential(
+            access="stored-access",
+            refresh="stored-refresh",
+            account_id="stored-account",
+            expires=9999999999,
+        ),
+    )
+    resolver = OpenAICodexCredentialResolver(
+        OpenAICodexProviderConfig(),
+        credential_store=store,
+    )
+
+    credentials = await resolver()
+
+    assert credentials.access_token == "runtime-codex-token"
+    assert credentials.account_id is None
 
 
 def test_create_model_provider_maps_codex_reasoning_effort_like_pi(tmp_path) -> None:
