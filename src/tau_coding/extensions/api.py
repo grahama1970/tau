@@ -55,6 +55,16 @@ class ExtensionShortcut:
     handler: ExtensionShortcutHandler
 
 
+@dataclass(frozen=True, slots=True)
+class ExtensionFlag:
+    """A CLI-style flag registered by a Tau extension."""
+
+    name: str
+    description: str | None
+    type: str
+    default: bool | str | None = None
+
+
 @dataclass(slots=True)
 class ExtensionShortcutContext:
     """Runtime context passed to extension shortcut handlers."""
@@ -1241,6 +1251,8 @@ class ExtensionAPI:
         self._tools: list[AgentTool] = []
         self._commands: list[ExtensionCommand] = []
         self._shortcuts: list[ExtensionShortcut] = []
+        self._flags: dict[str, ExtensionFlag] = {}
+        self._flag_values: dict[str, bool | str] = {}
 
     @property
     def tools(self) -> tuple[AgentTool, ...]:
@@ -1256,6 +1268,11 @@ class ExtensionAPI:
     def shortcuts(self) -> tuple[ExtensionShortcut, ...]:
         """Return keyboard shortcuts registered by this extension."""
         return tuple(self._shortcuts)
+
+    @property
+    def flags(self) -> tuple[ExtensionFlag, ...]:
+        """Return CLI-style flags registered by this extension."""
+        return tuple(self._flags.values())
 
     def register_tool(self, tool: AgentTool) -> None:
         """Register an `AgentTool` for the current coding session."""
@@ -1308,6 +1325,31 @@ class ExtensionAPI:
             )
         )
 
+    def registerCommand(  # noqa: N802
+        self,
+        name: str,
+        options: Mapping[str, Any],
+    ) -> None:
+        """Pi-compatible camelCase alias for register_command."""
+        self.register_command(
+            name,
+            description=str(options.get("description", "")),
+            handler=options["handler"],
+            usage=options.get("usage"),
+            aliases=tuple(options.get("aliases", ())),
+            search_terms=tuple(options.get("searchTerms", options.get("search_terms", ()))),
+            argument_hint=options.get("argumentHint", options.get("argument_hint")),
+            argument_completions=options.get(
+                "argumentCompletions",
+                options.get("argument_completions", ()),
+            ),
+            argument_completion_provider=options.get(
+                "argumentCompletionProvider",
+                options.get("argument_completion_provider"),
+            ),
+            hidden=bool(options.get("hidden", False)),
+        )
+
     def register_shortcut(
         self,
         key: str,
@@ -1330,6 +1372,74 @@ class ExtensionAPI:
                 handler=handler,
             )
         )
+
+    def registerShortcut(  # noqa: N802
+        self,
+        shortcut: str,
+        options: Mapping[str, Any],
+    ) -> None:
+        """Pi-compatible camelCase alias for register_shortcut."""
+        self.register_shortcut(
+            shortcut,
+            description=str(options.get("description", "")),
+            handler=options["handler"],
+        )
+
+    def register_flag(
+        self,
+        name: str,
+        *,
+        description: str | None = None,
+        type: str,
+        default: bool | str | None = None,
+    ) -> None:
+        """Register a Pi-style extension flag and its optional default value."""
+        normalized = name.strip().removeprefix("--").lower()
+        if not normalized:
+            raise ValueError("register_flag requires a flag name")
+        if ":" in normalized or any(char.isspace() for char in normalized):
+            raise ValueError("register_flag names must not contain ':' or whitespace")
+        if type not in {"boolean", "string"}:
+            raise ValueError("register_flag type must be 'boolean' or 'string'")
+        if default is not None:
+            if type == "boolean" and not isinstance(default, bool):
+                raise TypeError("boolean extension flag default must be bool")
+            if type == "string" and not isinstance(default, str):
+                raise TypeError("string extension flag default must be str")
+        if normalized in self._flags:
+            raise ValueError(f"Extension already registered flag: --{normalized}")
+        self._flags[normalized] = ExtensionFlag(
+            name=normalized,
+            description=description,
+            type=type,
+            default=default,
+        )
+        if default is not None and normalized not in self._flag_values:
+            self._flag_values[normalized] = default
+
+    def registerFlag(  # noqa: N802
+        self,
+        name: str,
+        options: Mapping[str, Any],
+    ) -> None:
+        """Pi-compatible camelCase alias for register_flag."""
+        self.register_flag(
+            name,
+            description=options.get("description"),
+            type=str(options["type"]),
+            default=options.get("default"),
+        )
+
+    def get_flag(self, name: str) -> bool | str | None:
+        """Return the current value for a registered extension flag."""
+        normalized = name.strip().removeprefix("--").lower()
+        if normalized not in self._flags:
+            return None
+        return self._flag_values.get(normalized)
+
+    def getFlag(self, name: str) -> bool | str | None:  # noqa: N802
+        """Pi-compatible camelCase alias for get_flag."""
+        return self.get_flag(name)
 
 
 @dataclass(frozen=True, slots=True)
