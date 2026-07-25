@@ -164,6 +164,7 @@ from tau_coding.tui.config import (
 )
 
 StreamingBehavior = Literal["steer", "follow_up"]
+InputSource = Literal["interactive", "rpc", "extension"]
 _UNSET_LEAF_ID: Final[object] = object()
 _BASH_SESSION_ENV_KEYS: Final[tuple[str, ...]] = (
     "TAU_SESSION_ID",
@@ -2275,16 +2276,86 @@ class CodingSession:
             self._harness.append_message(message)
         await self._persist_messages_since(before_count)
 
+    async def _emit_extension_input_event(
+        self,
+        text: str,
+        *,
+        source: InputSource,
+        streaming_behavior: StreamingBehavior | None,
+    ) -> tuple[Literal["continue", "transform", "handled"], str]:
+        """Emit Pi-style input handlers before skill/template expansion."""
+        current_text = text
+        action: Literal["continue", "transform", "handled"] = "continue"
+        diagnostics: list[ResourceDiagnostic] = []
+        event_streaming_behavior = (
+            "followUp" if streaming_behavior == "follow_up" else streaming_behavior
+        )
+        for extension in self._extensions:
+            handlers = tuple((extension.event_handlers or {}).get("input", ()))
+            if not handlers:
+                continue
+            context = ExtensionShortcutContext(
+                session=self,
+                key="",
+                extension_name=extension.name,
+            )
+            for handler in handlers:
+                event: dict[str, object] = {
+                    "type": "input",
+                    "text": current_text,
+                    "images": None,
+                    "source": source,
+                }
+                if event_streaming_behavior is not None:
+                    event["streamingBehavior"] = event_streaming_behavior
+                try:
+                    result = _call_extension_lifecycle_handler(handler, event, context)
+                    if inspect.isawaitable(result):
+                        result = await result
+                except Exception as exc:  # noqa: BLE001 - extensions are isolated plugins
+                    diagnostics.append(
+                        ResourceDiagnostic(
+                            kind="extension",
+                            name=extension.name,
+                            path=extension.path,
+                            message=f"input handler failed: {type(exc).__name__}: {exc}",
+                            severity="error",
+                        )
+                    )
+                    continue
+                parsed = _extension_input_result(result)
+                if parsed is None:
+                    continue
+                parsed_action, parsed_text = parsed
+                if parsed_action == "handled":
+                    if diagnostics:
+                        self._resource_diagnostics = (*self._resource_diagnostics, *diagnostics)
+                    return "handled", current_text
+                if parsed_action == "transform":
+                    current_text = parsed_text
+                    action = "transform"
+        if diagnostics:
+            self._resource_diagnostics = (*self._resource_diagnostics, *diagnostics)
+        return action, current_text
+
     async def prompt(
         self,
         content: str,
         *,
         streaming_behavior: StreamingBehavior | None = None,
+        source: InputSource = "interactive",
     ) -> AsyncIterator[AgentEvent]:
         """Append a user prompt, run the agent, and persist new messages."""
         context = self._diagnostic_context()
+        input_action, prompt_content = await self._emit_extension_input_event(
+            content,
+            source=source,
+            streaming_behavior=streaming_behavior if self._harness.is_running else None,
+        )
+        if input_action == "handled":
+            return
         try:
-            expanded_content = self.expand_prompt_text(content)
+            expanded_content = self.expand_prompt_text(prompt_content)
         except ResourceError:
             raise
         except Exception as exc:
@@ -3155,6 +3226,24 @@ def _extension_user_bash_result(
         ok=ok,
         added_to_context=add_to_context,
     )
+
+
+def _extension_input_result(
+    value: object,
+) -> tuple[Literal["continue", "transform", "handled"], str] | None:
+    if not isinstance(value, Mapping):
+        return None
+    raw_action = value.get("action")
+    if raw_action == "continue":
+        return "continue", ""
+    if raw_action == "handled":
+        return "handled", ""
+    if raw_action != "transform":
+        return None
+    raw_text = value.get("text")
+    if not isinstance(raw_text, str):
+        return None
+    return "transform", raw_text
 
 
 def parse_terminal_command(text: str) -> TerminalCommandRequest | None:
