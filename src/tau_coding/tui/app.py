@@ -11053,6 +11053,19 @@ def _latest_cwd_session_record(
     return record
 
 
+class _EphemeralSessionStorage:
+    """Append-only in-memory storage for --no-session TUI runs."""
+
+    def __init__(self) -> None:
+        self.entries: list[Any] = []
+
+    async def append(self, entry: Any) -> None:
+        self.entries.append(entry)
+
+    async def read_all(self) -> list[Any]:
+        return list(self.entries)
+
+
 def _create_startup_session_record(
     manager: SessionManager,
     *,
@@ -11172,6 +11185,7 @@ async def run_tui_app(
     initial_prompt: str | None = None,
     session_name: str | None = None,
     continue_session: bool = False,
+    no_session: bool = False,
     session_manager: SessionManager | None = None,
 ) -> str | None:
     """Create the default provider/session, run the Textual app, and return the session id."""
@@ -11183,13 +11197,25 @@ async def run_tui_app(
         raise RuntimeError("--continue and --new-session cannot be used together")
     if continue_session and session_name is not None:
         raise RuntimeError("--continue and --name cannot be used together")
+    if no_session and session_id is not None:
+        raise RuntimeError("--no-session and --session cannot be used together")
+    if no_session and continue_session:
+        raise RuntimeError("--no-session and --continue cannot be used together")
+    if no_session and new_session:
+        raise RuntimeError("--no-session and --new-session cannot be used together")
+    if no_session and session_name is not None:
+        raise RuntimeError("--no-session and --name cannot be used together")
 
     provider_settings = load_provider_settings()
     tui_settings = load_tui_settings()
-    manager = session_manager or SessionManager()
-    if continue_session:
+    manager = None if no_session else session_manager or SessionManager()
+    if no_session:
+        record = None
+    elif continue_session:
+        assert manager is not None
         record = _latest_cwd_session_record(manager, cwd=cwd)
     else:
+        assert manager is not None
         record = _explicit_resume_record(
             manager,
             session_id=session_id,
@@ -11219,21 +11245,40 @@ async def run_tui_app(
     session: CodingSession | None = None
     try:
         if record is None:
-            record = _create_startup_session_record(
-                manager,
-                cwd=cwd,
-                selection=selection,
-                title=session_name,
-            )
+            if no_session:
+                storage = _EphemeralSessionStorage()
+                startup_session_id = None
+                startup_session_manager = None
+                startup_cwd = cwd
+                startup_model = selection.model
+            else:
+                assert manager is not None
+                record = _create_startup_session_record(
+                    manager,
+                    cwd=cwd,
+                    selection=selection,
+                    title=session_name,
+                )
+                storage = jsonl_session_storage(record.path)
+                startup_session_id = record.id
+                startup_session_manager = manager
+                startup_cwd = record.cwd
+                startup_model = record.model or selection.model
+        else:
+            storage = jsonl_session_storage(record.path)
+            startup_session_id = record.id
+            startup_session_manager = manager
+            startup_cwd = record.cwd
+            startup_model = record.model or selection.model
 
         session = await CodingSession.load(
             CodingSessionConfig(
                 provider=provider,
-                model=record.model or selection.model,
-                cwd=record.cwd,
-                storage=jsonl_session_storage(record.path),
-                session_id=record.id,
-                session_manager=manager,
+                model=startup_model,
+                cwd=startup_cwd,
+                storage=storage,
+                session_id=startup_session_id,
+                session_manager=startup_session_manager,
                 provider_name=selection.provider.name,
                 provider_settings=provider_settings,
                 runtime_provider_config=runtime_provider_config,
@@ -11255,7 +11300,7 @@ async def run_tui_app(
             initial_prompt=initial_prompt,
         )
         await app.run_async()
-        return record.id
+        return None if record is None else record.id
     finally:
         if session is not None:
             close_session = getattr(session, "aclose", None)

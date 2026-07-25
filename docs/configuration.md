@@ -314,6 +314,7 @@ tau sessions
 tau --session <session-id>
 tau --continue
 tau --new-session
+tau --no-session
 tau --name "Customer bugfix"
 tau export <session-id>
 tau export <session-id> session.html
@@ -327,6 +328,9 @@ and session-id completions.
 `--continue` resumes the latest indexed session for the current working
 directory. It fails instead of creating a new session when no previous cwd
 session exists.
+
+`--no-session` starts an ephemeral interactive or print-mode run without
+creating an indexed session record or writing a session JSONL transcript.
 
 `tau export` writes a standalone HTML file with the preserved session tree and
 the storage-order transcript. The source can be an indexed session id or a path

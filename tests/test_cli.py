@@ -6221,6 +6221,7 @@ def test_cli_without_prompt_invokes_tui_runner(
             str | None,
             str | None,
             bool,
+            bool,
         ]
     ] = []
 
@@ -6234,6 +6235,7 @@ def test_cli_without_prompt_invokes_tui_runner(
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
+        no_session: bool,
     ) -> None:
         calls.append(
             (
@@ -6246,6 +6248,7 @@ def test_cli_without_prompt_invokes_tui_runner(
                 initial_prompt,
                 session_name,
                 continue_session,
+                no_session,
             )
         )
 
@@ -6255,7 +6258,7 @@ def test_cli_without_prompt_invokes_tui_runner(
     result = CliRunner().invoke(app, [])
 
     assert result.exit_code == 0
-    assert calls == [(None, tmp_path, None, False, None, None, None, None, False)]
+    assert calls == [(None, tmp_path, None, False, None, None, None, None, False, False)]
 
 
 def test_cli_positional_prompt_invokes_tui_runner(
@@ -6272,6 +6275,7 @@ def test_cli_positional_prompt_invokes_tui_runner(
             str | None,
             str | None,
             bool,
+            bool,
         ]
     ] = []
 
@@ -6285,6 +6289,7 @@ def test_cli_positional_prompt_invokes_tui_runner(
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
+        no_session: bool,
     ) -> None:
         calls.append(
             (
@@ -6297,6 +6302,7 @@ def test_cli_positional_prompt_invokes_tui_runner(
                 initial_prompt,
                 session_name,
                 continue_session,
+                no_session,
             )
         )
 
@@ -6306,7 +6312,9 @@ def test_cli_positional_prompt_invokes_tui_runner(
     result = CliRunner().invoke(app, ["explain this repo"])
 
     assert result.exit_code == 0
-    assert calls == [(None, tmp_path, None, False, None, None, "explain this repo", None, False)]
+    assert calls == [
+        (None, tmp_path, None, False, None, None, "explain this repo", None, False, False)
+    ]
 
 
 @pytest.mark.anyio
@@ -6728,8 +6736,9 @@ def test_cli_exits_nonzero_when_print_mode_fails(monkeypatch: pytest.MonkeyPatch
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         session_name: str | None,
+        no_session: bool,
     ) -> bool:
-        del session_name
+        del session_name, no_session
         return False
 
     monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
@@ -6750,8 +6759,9 @@ def test_mode_flag_alone_triggers_print_mode(monkeypatch: pytest.MonkeyPatch) ->
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         session_name: str | None,
+        no_session: bool,
     ) -> bool:
-        del model, cwd, provider_name, loop_receipt, session_name
+        del model, cwd, provider_name, loop_receipt, session_name, no_session
         calls.append((prompt, output))
         return True
 
@@ -6774,8 +6784,9 @@ def test_print_mode_passes_startup_session_name(monkeypatch: pytest.MonkeyPatch)
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         session_name: str | None,
+        no_session: bool,
     ) -> bool:
-        del prompt, model, cwd, output, provider_name, loop_receipt
+        del prompt, model, cwd, output, provider_name, loop_receipt, no_session
         calls.append(session_name)
         return True
 
@@ -6785,6 +6796,31 @@ def test_print_mode_passes_startup_session_name(monkeypatch: pytest.MonkeyPatch)
 
     assert result.exit_code == 0
     assert calls == ["Customer bugfix"]
+
+
+def test_print_mode_passes_no_session_flag(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[bool] = []
+
+    async def fake_run_openai_print_mode(
+        prompt: str,
+        model: str | None,
+        cwd: Path,
+        output: PrintOutputMode,
+        provider_name: str | None,
+        loop_receipt: LoopReceiptConfig | None,
+        session_name: str | None,
+        no_session: bool,
+    ) -> bool:
+        del prompt, model, cwd, output, provider_name, loop_receipt, session_name
+        calls.append(no_session)
+        return True
+
+    monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
+
+    result = CliRunner().invoke(app, ["--print", "--no-session", "hello"])
+
+    assert result.exit_code == 0
+    assert calls == [True]
 
 
 def test_print_mode_requires_a_prompt() -> None:
@@ -6805,8 +6841,9 @@ def test_print_mode_merges_piped_stdin_into_prompt(monkeypatch: pytest.MonkeyPat
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         session_name: str | None,
+        no_session: bool,
     ) -> bool:
-        del model, cwd, output, provider_name, loop_receipt, session_name
+        del model, cwd, output, provider_name, loop_receipt, session_name, no_session
         calls.append(prompt)
         return True
 
@@ -6829,8 +6866,9 @@ def test_print_mode_accepts_stdin_only_prompt(monkeypatch: pytest.MonkeyPatch) -
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         session_name: str | None,
+        no_session: bool,
     ) -> bool:
-        del model, cwd, output, provider_name, loop_receipt, session_name
+        del model, cwd, output, provider_name, loop_receipt, session_name, no_session
         calls.append(prompt)
         return True
 
@@ -6901,8 +6939,9 @@ def test_cli_print_mode_passes_loop2_receipt_options(
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         session_name: str | None,
+        no_session: bool,
     ) -> bool:
-        del prompt, model, cwd, output, provider_name, session_name
+        del prompt, model, cwd, output, provider_name, session_name, no_session
         calls.append(loop_receipt)
         return True
 
@@ -6952,8 +6991,9 @@ def test_cli_print_mode_marks_nonfake_loop2_receipt_live(
         provider_name: str | None,
         loop_receipt: LoopReceiptConfig | None,
         session_name: str | None,
+        no_session: bool,
     ) -> bool:
-        del prompt, model, cwd, output, provider_name, session_name
+        del prompt, model, cwd, output, provider_name, session_name, no_session
         calls.append(loop_receipt)
         return True
 
@@ -7028,6 +7068,7 @@ def test_default_tui_invokes_tui_runner_with_flags(
             str | None,
             str | None,
             bool,
+            bool,
         ]
     ] = []
 
@@ -7041,6 +7082,7 @@ def test_default_tui_invokes_tui_runner_with_flags(
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
+        no_session: bool,
     ) -> None:
         calls.append(
             (
@@ -7053,6 +7095,7 @@ def test_default_tui_invokes_tui_runner_with_flags(
                 initial_prompt,
                 session_name,
                 continue_session,
+                no_session,
             )
         )
 
@@ -7075,7 +7118,9 @@ def test_default_tui_invokes_tui_runner_with_flags(
     )
 
     assert result.exit_code == 0
-    assert calls == [("fake", tmp_path, "session-1", False, "local", 1000, None, None, False)]
+    assert calls == [
+        ("fake", tmp_path, "session-1", False, "local", 1000, None, None, False, False)
+    ]
 
 
 def test_default_tui_passes_startup_session_name(
@@ -7093,9 +7138,10 @@ def test_default_tui_passes_startup_session_name(
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
+        no_session: bool,
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
-        del initial_prompt, continue_session
+        del initial_prompt, continue_session, no_session
         calls.append(session_name)
 
     monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
@@ -7121,14 +7167,44 @@ def test_default_tui_passes_continue_session_flag(
         initial_prompt: str | None,
         session_name: str | None,
         continue_session: bool,
+        no_session: bool,
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
-        del initial_prompt, session_name
+        del initial_prompt, session_name, no_session
         calls.append(continue_session)
 
     monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
 
     result = CliRunner().invoke(app, ["--cwd", str(tmp_path), "-c"])
+
+    assert result.exit_code == 0
+    assert calls == [True]
+
+
+def test_default_tui_passes_no_session_flag(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[bool] = []
+
+    async def fake_run_openai_tui(
+        model: str | None,
+        cwd: Path,
+        session_id: str | None,
+        new_session: bool,
+        provider_name: str | None,
+        auto_compact_token_threshold: int | None,
+        initial_prompt: str | None,
+        session_name: str | None,
+        continue_session: bool,
+        no_session: bool,
+    ) -> None:
+        del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
+        del initial_prompt, session_name, continue_session
+        calls.append(no_session)
+
+    monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
+
+    result = CliRunner().invoke(app, ["--cwd", str(tmp_path), "--no-session"])
 
     assert result.exit_code == 0
     assert calls == [True]
@@ -7148,6 +7224,10 @@ def test_default_tui_rejects_blank_startup_session_name() -> None:
         (["--continue", "--new-session"], "--continue and --new-session cannot be used"),
         (["--continue", "--name", "Customer bugfix"], "--continue and --name cannot be used"),
         (["--print", "--continue", "hello"], "--continue is supported for TUI startup only"),
+        (["--no-session", "--session", "session-1"], "--no-session and --session cannot be used"),
+        (["--no-session", "--continue"], "--no-session and --continue cannot be used"),
+        (["--no-session", "--new-session"], "--no-session and --new-session cannot be used"),
+        (["--no-session", "--name", "Customer bugfix"], "--no-session and --name cannot be used"),
     ],
 )
 def test_default_tui_rejects_invalid_continue_session_combinations(

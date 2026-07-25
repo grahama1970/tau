@@ -834,6 +834,10 @@ def main(
         bool,
         typer.Option("--continue", "-c", help="Continue the latest session for this cwd."),
     ] = False,
+    no_session: Annotated[
+        bool,
+        typer.Option("--no-session", help="Run without saving or indexing a session."),
+    ] = False,
     auto_compact_threshold: Annotated[
         int | None,
         typer.Option(
@@ -953,6 +957,18 @@ def main(
 
     if continue_session and session_name is not None:
         raise typer.BadParameter("--continue and --name cannot be used together")
+
+    if no_session and session is not None:
+        raise typer.BadParameter("--no-session and --session cannot be used together")
+
+    if no_session and continue_session:
+        raise typer.BadParameter("--no-session and --continue cannot be used together")
+
+    if no_session and new_session:
+        raise typer.BadParameter("--no-session and --new-session cannot be used together")
+
+    if no_session and session_name is not None:
+        raise typer.BadParameter("--no-session and --name cannot be used together")
 
     if prompt_option is not None:
         raise typer.BadParameter(
@@ -3153,6 +3169,7 @@ def main(
                 initial_prompt,
                 session_name,
                 continue_session,
+                no_session,
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -3185,6 +3202,7 @@ def main(
             provider,
             loop_receipt,
             session_name,
+            no_session,
         )
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
@@ -3202,6 +3220,7 @@ async def run_openai_tui(
     initial_prompt: str | None = None,
     session_name: str | None = None,
     continue_session: bool = False,
+    no_session: bool = False,
 ) -> str | None:
     """Run the Textual TUI and return its resumable session id, if any."""
     return await run_tui_app(
@@ -3214,6 +3233,7 @@ async def run_openai_tui(
         initial_prompt=initial_prompt,
         session_name=session_name,
         continue_session=continue_session,
+        no_session=no_session,
     )
 
 
@@ -12862,6 +12882,7 @@ async def run_openai_print_mode(
     loop_receipt: LoopReceiptConfig | None = None,
     session_manager: SessionManager | None = None,
     session_name: str | None = None,
+    no_session: bool = False,
 ) -> bool:
     """Run print mode with the OpenAI-compatible provider configured from the environment."""
     settings = load_provider_settings()
@@ -12871,20 +12892,22 @@ async def run_openai_print_mode(
         model=selection.model,
         thinking_level=DEFAULT_THINKING_LEVEL,
     )
-    manager = session_manager or SessionManager()
-    try:
-        record = manager.create_session(cwd=cwd, model=selection.model, title=session_name)
-    except TypeError:
-        record = manager.create_session(cwd=cwd, model=selection.model)
+    manager = None if no_session else session_manager or SessionManager()
+    record: CodingSessionRecord | None = None
+    if manager is not None:
+        try:
+            record = manager.create_session(cwd=cwd, model=selection.model, title=session_name)
+        except TypeError:
+            record = manager.create_session(cwd=cwd, model=selection.model)
     try:
         return await run_print_mode(
             prompt=prompt,
             model=selection.model,
-            cwd=record.cwd,
+            cwd=record.cwd if record is not None else cwd,
             provider=provider,
             output=output,
-            storage=jsonl_session_storage(record.path),
-            session_id=record.id,
+            storage=jsonl_session_storage(record.path) if record is not None else None,
+            session_id=record.id if record is not None else None,
             session_manager=manager,
             provider_name=selection.provider.name,
             provider_settings=settings,

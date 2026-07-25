@@ -11650,6 +11650,80 @@ async def test_run_tui_app_continue_errors_when_no_latest_session(
     assert calls == [f"latest:{tmp_path}"]
 
 
+@pytest.mark.anyio
+async def test_run_tui_app_no_session_uses_ephemeral_storage(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[str] = []
+
+    class FakeProvider:
+        async def aclose(self) -> None:
+            calls.append("provider_closed")
+
+    class FakeManager:
+        def create_session(
+            self,
+            *,
+            cwd: Path,
+            model: str,
+            provider_name: str | None = None,
+        ) -> CodingSessionRecord:
+            raise AssertionError("--no-session should not create an indexed session")
+
+    class FakeCodingSession:
+        @classmethod
+        async def load(cls, config: object) -> str:
+            assert config.session_id is None  # type: ignore[attr-defined]
+            assert config.session_manager is None  # type: ignore[attr-defined]
+            assert config.cwd == tmp_path  # type: ignore[attr-defined]
+            assert await config.storage.read_all() == []  # type: ignore[attr-defined]
+            calls.append("load")
+            return "session"
+
+    class FakeApp:
+        def __init__(self, session: str, **kwargs: object) -> None:
+            assert session == "session"
+            assert kwargs["initial_prompt"] == "ephemeral work"
+
+        async def run_async(self) -> None:
+            calls.append("run")
+
+    settings = ProviderSettings(
+        default_provider="local",
+        providers=(
+            OpenAICompatibleProviderConfig(
+                name="local",
+                base_url="http://localhost:11434/v1",
+                api_key_env="LOCAL_API_KEY",
+                models=("local-model",),
+                default_model="local-model",
+            ),
+        ),
+    )
+    monkeypatch.setattr(tui_app, "load_provider_settings", lambda: settings)
+    monkeypatch.setattr(tui_app, "load_tui_settings", lambda: TuiSettings())
+    monkeypatch.setattr(
+        tui_app,
+        "create_model_provider",
+        lambda provider, **kwargs: (
+            calls.append(f"provider:{provider.name}:{kwargs['model']}") or FakeProvider()
+        ),
+    )
+    monkeypatch.setattr(tui_app, "CodingSession", FakeCodingSession)
+    monkeypatch.setattr(tui_app, "TauTuiApp", FakeApp)
+
+    result = await tui_app.run_tui_app(
+        model=None,
+        cwd=tmp_path,
+        no_session=True,
+        initial_prompt="ephemeral work",
+        session_manager=FakeManager(),
+    )
+
+    assert result is None
+    assert calls == ["provider:local:local-model", "load", "run", "provider_closed"]
+
+
 class _FakeSessionManager:
     def __init__(self, records: list[CodingSessionRecord]) -> None:
         self._records = records
