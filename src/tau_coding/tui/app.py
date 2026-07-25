@@ -10703,6 +10703,14 @@ def _render_tui_resources_message(session: CodingSession) -> str:
         ),
         ("Prompts", _resource_prompt_lines(session.prompt_templates, cwd=session.cwd)),
         (
+            "Extensions",
+            _resource_name_path_lines(
+                getattr(session, "extensions", ()),
+                cwd=session.cwd,
+                empty="No extensions loaded",
+            ),
+        ),
+        (
             "Tools",
             _resource_name_path_lines(
                 session.tools,
@@ -10754,6 +10762,7 @@ def _render_startup_resources_summary(
         ("Context", _compact_context_labels(session.context_files, cwd=session.cwd)),
         ("Skills", _compact_named_resource_labels(session.skills)),
         ("Prompts", _compact_prompt_labels(session.prompt_templates)),
+        ("Extensions", _compact_named_resource_labels(getattr(session, "extensions", ()))),
     ]
     visible_sections = [f"[{title}] {', '.join(labels)}" for title, labels in sections if labels]
     if notice:

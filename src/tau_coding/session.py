@@ -64,7 +64,7 @@ from tau_coding.diagnostics import (
     AgentCallDiagnosticLogger,
     new_agent_call_run_id,
 )
-from tau_coding.extensions import load_extension_tools
+from tau_coding.extensions import LoadedExtension, load_extension_tools
 from tau_coding.loop_receipt import LoopReceiptConfig, LoopReceiptRecorder
 from tau_coding.paths import TauPaths
 from tau_coding.prompt_templates import (
@@ -207,6 +207,7 @@ class SessionResources:
     skills: tuple[Skill, ...]
     prompt_templates: tuple[PromptTemplate, ...]
     context_files: tuple[ProjectContextFile, ...]
+    extensions: tuple[LoadedExtension, ...]
     extension_tools: tuple[AgentTool, ...]
     diagnostics: tuple[ResourceDiagnostic, ...]
 
@@ -282,6 +283,7 @@ class CodingSession:
         skills: tuple[Skill, ...] = (),
         prompt_templates: tuple[PromptTemplate, ...] = (),
         context_files: tuple[ProjectContextFile, ...] = (),
+        extensions: tuple[LoadedExtension, ...] = (),
         resource_diagnostics: tuple[ResourceDiagnostic, ...] = (),
         command_registry: CommandRegistry | None = None,
         pending_initial_entries: tuple[SessionEntry, ...] = (),
@@ -294,6 +296,7 @@ class CodingSession:
         self._skills = skills
         self._prompt_templates = prompt_templates
         self._context_files = context_files
+        self._extensions = extensions
         self._resource_diagnostics = resource_diagnostics
         self._command_registry = command_registry or create_default_command_registry()
         self._provider_name = config.provider_name
@@ -404,6 +407,7 @@ class CodingSession:
             skills=resources.skills,
             prompt_templates=resources.prompt_templates,
             context_files=resources.context_files,
+            extensions=resources.extensions,
             resource_diagnostics=resources.diagnostics,
             command_registry=config.command_registry,
             pending_initial_entries=pending_initial_entries,
@@ -675,6 +679,20 @@ class CodingSession:
     def context_files(self) -> tuple[ProjectContextFile, ...]:
         """Return active project context files."""
         return self._context_files
+
+    @property
+    def extensions(self) -> tuple[LoadedExtension, ...]:
+        """Return loaded Tau extensions."""
+        return self._extensions
+
+    @property
+    def extension_tool_sources(self) -> dict[str, str]:
+        """Return a map from extension tool name to loaded extension name."""
+        return {
+            tool.name: extension.name
+            for extension in self._extensions
+            for tool in extension.tools
+        }
 
     @property
     def system_prompt(self) -> str:
@@ -1118,6 +1136,7 @@ class CodingSession:
         self._skills = resources.skills
         self._prompt_templates = resources.prompt_templates
         self._context_files = resources.context_files
+        self._extensions = resources.extensions
         self._resource_diagnostics = resources.diagnostics
         if rebuilt_system_prompt is not None:
             self._harness.config.system = rebuilt_system_prompt
@@ -2693,6 +2712,7 @@ def _load_session_resources(
         skills=tuple(loaded_skills),
         prompt_templates=tuple(loaded_prompt_templates),
         context_files=_merge_context_files(explicit_context_files, discovered_context),
+        extensions=extensions.extensions,
         extension_tools=extensions.tools,
         diagnostics=tuple(
             [

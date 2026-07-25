@@ -216,6 +216,22 @@ Acceptance:
 - The configuration example includes `model_picker`, reverse scoped cycling,
   and `copy_last_message` bindings.
 
+### Slice 9: Extension Inventory In Startup Resources
+
+Pi's startup header lists loaded extensions beside context files, prompt
+templates, and skills. Tau already loads bounded Python extension tools, but
+the TUI resource surfaces did not expose loaded extension names directly.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- `CodingSession` exposes loaded extension metadata and extension-tool source
+  mapping.
+- Startup resources include an Extensions compact section when extensions are
+  loaded.
+- `/resources` includes an Extensions section with extension paths.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.
