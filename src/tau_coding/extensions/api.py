@@ -634,6 +634,10 @@ class ExtensionCommandUi:
         """Pi-compatible alias for replacing or restoring Tau's header."""
         self._context.set_header(lines)
 
+    def setTitle(self, title: str | None) -> None:  # noqa: N802
+        """Pi-compatible alias for setting the terminal title."""
+        self._context.set_title(title)
+
     def getAllThemes(self) -> tuple[ThemeInfo, ...]:  # noqa: N802
         """Pi-compatible alias for listing available Tau themes."""
         return self._context.get_all_themes()
