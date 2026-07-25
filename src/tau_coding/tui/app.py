@@ -7388,11 +7388,13 @@ class TauTuiApp(App[None]):
         try:
             result = setter(level)
             if isawaitable(result):
-                await result
+                result = await result
         except Exception as exc:  # noqa: BLE001 - surface session state failures in the TUI
             self._notify(f"Could not change thinking mode: {exc}", severity="error")
             return
         self._refresh()
+        if isinstance(result, str) and result:
+            self._notify(result)
 
     async def _cycle_thinking_level(self) -> None:
         cycler = getattr(self.session, "cycle_thinking_level", None)
@@ -7402,11 +7404,13 @@ class TauTuiApp(App[None]):
         try:
             result = cycler()
             if isawaitable(result):
-                await result
+                result = await result
         except Exception as exc:  # noqa: BLE001 - surface session state failures in the TUI
             self._notify(f"Could not change thinking mode: {exc}", severity="error")
             return
         self._refresh()
+        if isinstance(result, str) and result:
+            self._notify(result)
 
     async def _cycle_scoped_model(
         self,
