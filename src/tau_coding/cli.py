@@ -23,7 +23,16 @@ import httpx
 import typer
 
 from tau_agent import AssistantMessage, ToolResultMessage, UserMessage
-from tau_agent.session import JsonlSessionStorage, SessionEntry, SessionState, SessionStorage
+from tau_agent.session import (
+    JsonlSessionStorage,
+    LeafEntry,
+    MessageEntry,
+    ModelChangeEntry,
+    SessionEntry,
+    SessionInfoEntry,
+    SessionState,
+    SessionStorage,
+)
 from tau_ai import (
     DEFAULT_OPENAI_COMPATIBLE_MAX_RETRIES,
     DEFAULT_OPENAI_COMPATIBLE_MAX_RETRY_DELAY_SECONDS,
@@ -267,6 +276,7 @@ from tau_coding.skill_invocation import write_skill_invocation_receipt
 from tau_coding.sparta_posture import write_sparta_posture_contract
 from tau_coding.test_run_receipt import write_test_run_receipt
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL, ThinkingLevel, normalize_thinking_level
+from tau_coding.tools import create_write_tool
 from tau_coding.traycer.cli import parse_traycer_validate_cli_args, traycer_validate_command
 from tau_coding.trust import DefaultProjectTrust
 from tau_coding.tui import run_tui_app
@@ -820,6 +830,214 @@ def _status_provider_payload(provider_name: str | None) -> dict[str, object]:
         if current is not None
         else "provider_not_configured",
     }
+
+
+async def replacement_harness_sanity_command(
+    startup_cwd: Path,
+    run_dir: Path,
+    session_manager: SessionManager | None = None,
+) -> dict[str, object]:
+    """Exercise Tau's minimum local replacement-harness loop and write receipts."""
+
+    resolved_run_dir = run_dir.expanduser().resolve()
+    receipts_dir = resolved_run_dir / "receipts"
+    artifacts_dir = resolved_run_dir / "artifacts"
+    temp_repo = resolved_run_dir / "temp-repo"
+    receipts_dir.mkdir(parents=True, exist_ok=True)
+    artifacts_dir.mkdir(parents=True, exist_ok=True)
+    temp_repo.mkdir(parents=True, exist_ok=True)
+    (temp_repo / "README.md").write_text("# Tau replacement sanity\n", encoding="utf-8")
+    run_token = hashlib.sha256(
+        f"{resolved_run_dir}:{_receipt_utc_stamp()}".encode()
+    ).hexdigest()[:12]
+    session_id = f"replacement-sanity-{run_token}"
+
+    doctor_payload = doctor_command(repo_root=Path(__file__).resolve().parents[2])
+    doctor_path = receipts_dir / "doctor.json"
+    _write_receipt_json(doctor_path, doctor_payload)
+
+    plan_target = temp_repo / "plan-mode-mutation.txt"
+    plan_permission = write_permission_request_receipt(
+        action="working_tree_mutation",
+        resources=[str(plan_target)],
+        source_node="plan-mode-write-attempt",
+        run_dir=resolved_run_dir,
+        output=receipts_dir / "plan-mode-denied-permission.json",
+        session_id=session_id,
+        request_id=f"{session_id}-plan-denied",
+        mode="plan",
+        denied=True,
+        reason="plan mode is read-only; write attempt stopped before mutation",
+    )
+
+    build_tool = create_write_tool(cwd=temp_repo)
+    build_result = await build_tool.execute(
+        {
+            "path": "build-mode-output.txt",
+            "content": "Tau build-mode local write smoke.\n",
+        }
+    )
+    build_result_path = receipts_dir / "build-mode-write-result.json"
+    _write_receipt_json(
+        build_result_path,
+        {
+            "schema": "tau.replacement_harness_build_write_result.v1",
+            "ok": build_result.ok,
+            "status": "PASS" if build_result.ok else "BLOCKED",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "tool_result": build_result.model_dump(mode="json"),
+            "timestamp": _receipt_utc_stamp(),
+        },
+    )
+
+    approval_packet_path = artifacts_dir / "approval-packet.json"
+    _write_receipt_json(
+        approval_packet_path,
+        {
+            "schema": "tau.human_approval_packet.v1",
+            "approved": True,
+            "action": "working_tree_mutation",
+            "actor": {"id": "human:local-sanity", "auth_method": "manual"},
+            "target": {"id": "replacement-harness-sanity"},
+            "reason": "Approve bounded local sanity side effect.",
+            "evidence": [str(build_result_path)],
+            "nonce": "replacement-harness-sanity-nonce",
+            "signature": "local-sanity-receipt",
+        },
+    )
+    approval_receipt_path = receipts_dir / "approval-gate-receipt.json"
+    approval_receipt = evaluate_approval_gate(
+        approval_packet=approval_packet_path,
+        requested_action="working_tree_mutation",
+        run_dir=resolved_run_dir,
+        output=approval_receipt_path,
+        expected_target={"id": "replacement-harness-sanity"},
+    )
+
+    manager = session_manager or SessionManager(
+        TauPaths(session_root=resolved_run_dir / "sessions")
+    )
+    record = manager.create_session(
+        cwd=temp_repo,
+        model="local-sanity-model",
+        provider_name=None,
+        title="Replacement harness sanity",
+        session_id=session_id,
+    )
+    storage = JsonlSessionStorage(record.path)
+    info = SessionInfoEntry(id="sanity-info", cwd=str(temp_repo), title=record.title)
+    model = ModelChangeEntry(id="sanity-model", parent_id=info.id, model=record.model)
+    user = MessageEntry(
+        id="sanity-user",
+        parent_id=model.id,
+        message=UserMessage(content="Run the local replacement-harness sanity check."),
+    )
+    assistant = MessageEntry(
+        id="sanity-assistant",
+        parent_id=user.id,
+        message=AssistantMessage(content="Local sanity artifacts were produced."),
+    )
+    leaf = LeafEntry(id="sanity-leaf", parent_id=assistant.id, entry_id=assistant.id)
+    for entry in (info, model, user, assistant, leaf):
+        await storage.append(entry)
+
+    entries = await storage.read_all()
+    export_path = export_session_artifact(
+        entries,
+        artifacts_dir / "replacement-sanity-session.html",
+        title="Tau Replacement Harness Sanity",
+        source=str(record.path),
+    )
+    status_payload = await status_command(temp_repo, manager, record.id)
+    status_path = receipts_dir / "status.json"
+    _write_receipt_json(status_path, status_payload)
+
+    artifacts = [
+        _artifact_record(doctor_path, kind="doctor_receipt"),
+        _artifact_record(plan_permission["receipt_path"], kind="permission_request_receipt"),
+        _artifact_record(build_result_path, kind="build_write_result"),
+        _artifact_record(approval_packet_path, kind="approval_packet"),
+        _artifact_record(approval_receipt_path, kind="approval_gate_receipt"),
+        _artifact_record(record.path, kind="session_jsonl"),
+        _artifact_record(export_path, kind="session_export"),
+        _artifact_record(status_path, kind="status_receipt"),
+    ]
+    build_output = temp_repo / "build-mode-output.txt"
+    gates = {
+        "doctor": doctor_payload.get("ok") is True,
+        "plan_mode_denied_without_mutation": (
+            plan_permission.get("status") == "BLOCKED" and not plan_target.exists()
+        ),
+        "build_mode_local_write": build_result.ok
+        and build_output.read_text(encoding="utf-8") == "Tau build-mode local write smoke.\n",
+        "approval_gate": approval_receipt.get("ok") is True,
+        "session_export": export_path.exists(),
+        "status_receipt": status_payload.get("ok") is True,
+    }
+    ok = all(gates.values())
+    payload: dict[str, object] = {
+        "schema": "tau.replacement_harness_sanity.v1",
+        "ok": ok,
+        "status": "PASS" if ok else "BLOCKED",
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "startup_cwd": str(startup_cwd.resolve()),
+        "run_dir": str(resolved_run_dir),
+        "temp_repo": str(temp_repo),
+        "session_id": record.id,
+        "gates": gates,
+        "artifacts": artifacts,
+        "proof_scope": {
+            "proves": [
+                "Tau can emit one local replacement-harness sanity receipt bundle",
+                "Tau can record read-only plan-mode mutation denial without creating the file",
+                "Tau can perform a local build-mode write through the real Tau write tool",
+                "Tau can export and report a local indexed session without opening the TUI",
+            ],
+            "does_not_prove": [
+                "interactive TUI usability",
+                "live provider/model semantic behavior",
+                "approval replies applied to a running process",
+                "complete Pi feature parity",
+            ],
+        },
+        "timestamp": _receipt_utc_stamp(),
+    }
+    summary_path = resolved_run_dir / "replacement-harness-sanity-receipt.json"
+    payload["receipt_path"] = str(summary_path)
+    _write_receipt_json(summary_path, payload)
+    return payload
+
+
+def _artifact_record(path_like: object, *, kind: str) -> dict[str, object]:
+    path = Path(str(path_like)).expanduser().resolve()
+    return {
+        "kind": kind,
+        "path": str(path),
+        "exists": path.exists(),
+        "sha256": _receipt_file_sha256(path),
+        "bytes": path.stat().st_size if path.exists() else None,
+    }
+
+
+def _write_receipt_json(path: Path, payload: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _receipt_file_sha256(path: Path) -> str | None:
+    try:
+        data = path.read_bytes()
+    except OSError:
+        return None
+    return hashlib.sha256(data).hexdigest()
+
+
+def _receipt_utc_stamp() -> str:
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def render_status_payload(payload: dict[str, object]) -> None:
@@ -1541,6 +1759,21 @@ def main(
         else:
             render_status_payload(status_payload)
         if not status_payload.get("ok"):
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and not export and command == "replacement-harness-sanity":
+        try:
+            sanity_options = _parse_replacement_harness_sanity_cli_args(positional_args[1:])
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        payload = anyio.run(
+            replacement_harness_sanity_command,
+            startup_cwd,
+            sanity_options["run_dir"],
+        )
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
             raise typer.Exit(1)
         raise typer.Exit()
 
@@ -4278,6 +4511,24 @@ def _parse_status_cli_args(args: list[str]) -> dict[str, object]:
             continue
         raise RuntimeError(f"unknown status option: {arg}")
     return {"json_output": json_output, "session_id": session_id}
+
+
+def _parse_replacement_harness_sanity_cli_args(args: list[str]) -> dict[str, Path]:
+    run_dir = Path("experiments/replacement-harness-sanity")
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--run-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--run-dir requires a value")
+            run_dir = Path(args[index])
+        elif arg.startswith("--run-dir="):
+            run_dir = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown replacement-harness-sanity option: {arg}")
+        index += 1
+    return {"run_dir": run_dir}
 
 
 def _parse_visible_dag_poc_cli_args(args: list[str]) -> dict[str, object]:

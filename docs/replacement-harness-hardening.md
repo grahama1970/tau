@@ -155,6 +155,12 @@ Create one command that exercises the minimum replacement loop:
 4. approval-gated side effect
 5. resume/export/status receipt
 
+Status: implemented in this branch.
+
+Command:
+
+- `tau replacement-harness-sanity --run-dir <run-dir>`
+
 Acceptance:
 
 - One command emits a receipt bundle with `mocked: no` where live runtime is used and explicit `does_not_prove` boundaries where not.
