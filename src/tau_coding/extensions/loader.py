@@ -12,7 +12,9 @@ from tau_agent.tools import AgentTool
 from tau_coding.extensions.api import (
     ExtensionAPI,
     ExtensionCommand,
+    ExtensionEntryRenderer,
     ExtensionFlag,
+    ExtensionMessageRenderer,
     ExtensionShortcut,
 )
 from tau_coding.resources import ResourceDiagnostic, TauResourcePaths
@@ -31,6 +33,8 @@ class LoadedExtension:
     commands: tuple[ExtensionCommand, ...] = ()
     shortcuts: tuple[ExtensionShortcut, ...] = ()
     flags: tuple[ExtensionFlag, ...] = ()
+    entry_renderers: Mapping[str, ExtensionEntryRenderer] | None = None
+    message_renderers: Mapping[str, ExtensionMessageRenderer] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,6 +63,22 @@ class ExtensionLoadResult:
     def flags(self) -> tuple[ExtensionFlag, ...]:
         """Return all registered extension flags in load order."""
         return tuple(flag for extension in self.extensions for flag in extension.flags)
+
+    @property
+    def entry_renderers(self) -> Mapping[str, ExtensionEntryRenderer]:
+        """Return all registered custom-entry renderers in load order."""
+        renderers: dict[str, ExtensionEntryRenderer] = {}
+        for extension in self.extensions:
+            renderers.update(extension.entry_renderers or {})
+        return renderers
+
+    @property
+    def message_renderers(self) -> Mapping[str, ExtensionMessageRenderer]:
+        """Return all registered custom-message renderers in load order."""
+        renderers: dict[str, ExtensionMessageRenderer] = {}
+        for extension in self.extensions:
+            renderers.update(extension.message_renderers or {})
+        return renderers
 
 
 def load_extension_tools(
@@ -207,6 +227,8 @@ def _load_one_extension(
         commands=api.commands,
         shortcuts=api.shortcuts,
         flags=api.flags,
+        entry_renderers=api.entry_renderers,
+        message_renderers=api.message_renderers,
     )
 
 

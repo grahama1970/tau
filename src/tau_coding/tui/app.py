@@ -6399,7 +6399,8 @@ class TauTuiApp(App[None]):
         self.state.load_messages(self.session.messages)
         session_state = getattr(self.session, "state", None)
         custom_entries = getattr(session_state, "custom_entries", ())
-        self.state.load_custom_entries(custom_entries)
+        entry_renderers = getattr(self.session, "extension_entry_renderers", {})
+        self.state.load_custom_entries(custom_entries, entry_renderers=entry_renderers)
 
     def copy_to_clipboard(self, text: str) -> None:
         """Copy text using native clipboard helpers, then Textual's fallback."""

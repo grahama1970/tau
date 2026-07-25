@@ -1,9 +1,11 @@
 """Display state for Tau's Textual TUI."""
 
-from collections.abc import Iterable, Mapping
+import inspect
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from json import dumps
 from pathlib import Path
+from typing import Any
 
 from tau_agent.messages import AgentMessage
 from tau_agent.session.entries import CustomEntry
@@ -44,6 +46,63 @@ MEMORY_PIPELINE_STAGE_LABELS = {
     "clarify": "Clarifying...",
     "deflect": "Deflecting...",
 }
+
+
+def _default_custom_entry_text(entry: CustomEntry) -> str:
+    payload = dumps(entry.data, indent=2, sort_keys=True)
+    return f"Custom entry: {entry.namespace}\n{payload}"
+
+
+def _render_custom_entry(
+    renderer: Callable[..., Any],
+    entry: CustomEntry,
+    *,
+    expanded: bool,
+) -> str | None:
+    try:
+        result = _call_custom_entry_renderer(renderer, entry, expanded=expanded)
+    except Exception as exc:  # noqa: BLE001 - extensions are an isolation boundary
+        return f"[{entry.namespace}] renderer failed: {exc}"
+    if result is None:
+        return None
+    if isinstance(result, str):
+        return result
+    if isinstance(result, Mapping):
+        return dumps(dict(result), indent=2, sort_keys=True)
+    if isinstance(result, Sequence) and not isinstance(result, (bytes, bytearray)):
+        return "\n".join(str(line) for line in result)
+    return str(result)
+
+
+def _call_custom_entry_renderer(
+    renderer: Callable[..., Any],
+    entry: CustomEntry,
+    *,
+    expanded: bool,
+) -> Any:
+    options = {"expanded": expanded}
+    try:
+        parameters = inspect.signature(renderer).parameters
+    except (TypeError, ValueError):
+        return renderer(entry, options, None)
+    positional = [
+        parameter
+        for parameter in parameters.values()
+        if parameter.kind
+        in {
+            inspect.Parameter.POSITIONAL_ONLY,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        }
+    ]
+    accepts_varargs = any(
+        parameter.kind == inspect.Parameter.VAR_POSITIONAL
+        for parameter in parameters.values()
+    )
+    if accepts_varargs or len(positional) >= 3:
+        return renderer(entry, options, None)
+    if len(positional) >= 2:
+        return renderer(entry, options)
+    return renderer(entry)
 
 
 @dataclass(frozen=True, slots=True)
@@ -179,10 +238,20 @@ class TuiState:
             return
         self.add_item("thinking", delta)
 
-    def add_custom_entry(self, entry: CustomEntry) -> None:
+    def add_custom_entry(
+        self,
+        entry: CustomEntry,
+        entry_renderers: Mapping[str, Callable[..., Any]] | None = None,
+    ) -> None:
         """Append an extension/application-owned session entry to the transcript."""
-        payload = dumps(entry.data, indent=2, sort_keys=True)
-        self.add_item("custom", f"Custom entry: {entry.namespace}\n{payload}")
+        renderer = (entry_renderers or {}).get(entry.namespace)
+        if renderer is not None:
+            rendered = _render_custom_entry(renderer, entry, expanded=self.show_tool_results)
+            if rendered is None:
+                return
+            self.add_item("custom", rendered)
+            return
+        self.add_item("custom", _default_custom_entry_text(entry))
 
     def record_tool_result(self, result: AgentToolResult) -> None:
         """Attach a tool result to its matching call, or append an orphan result."""
@@ -294,10 +363,14 @@ class TuiState:
                     )
                 )
 
-    def load_custom_entries(self, entries: Iterable[CustomEntry]) -> None:
+    def load_custom_entries(
+        self,
+        entries: Iterable[CustomEntry],
+        entry_renderers: Mapping[str, Callable[..., Any]] | None = None,
+    ) -> None:
         """Populate extension/application-owned transcript entries."""
         for entry in entries:
-            self.add_custom_entry(entry)
+            self.add_custom_entry(entry, entry_renderers=entry_renderers)
 
     def _read_skill_name(self, tool_call: ToolCall) -> str | None:
         if tool_call.name != "read":

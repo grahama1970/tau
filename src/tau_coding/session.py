@@ -847,6 +847,22 @@ class CodingSession:
         }
 
     @property
+    def extension_entry_renderers(self) -> Mapping[str, Callable[..., object]]:
+        """Return Pi-style custom-entry renderers keyed by custom type."""
+        renderers: dict[str, Callable[..., object]] = {}
+        for extension in self._extensions:
+            renderers.update(extension.entry_renderers or {})
+        return renderers
+
+    @property
+    def extension_message_renderers(self) -> Mapping[str, Callable[..., object]]:
+        """Return Pi-style custom-message renderers keyed by custom type."""
+        renderers: dict[str, Callable[..., object]] = {}
+        for extension in self._extensions:
+            renderers.update(extension.message_renderers or {})
+        return renderers
+
+    @property
     def system_prompt(self) -> str:
         """Return the active system prompt."""
         return self._harness.config.system

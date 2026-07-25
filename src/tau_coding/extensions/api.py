@@ -14,6 +14,8 @@ from tau_agent.tools import AgentTool
 
 ExtensionCommandHandler = Callable[[Any], Any]
 ExtensionShortcutHandler = Callable[[Any], Any]
+ExtensionEntryRenderer = Callable[..., Any]
+ExtensionMessageRenderer = Callable[..., Any]
 ExtensionArgumentCompletionProvider = Callable[[str], Sequence[Any] | None]
 ThemeInfo = dict[str, str | None]
 ContextUsageInfo = dict[str, int | float | None]
@@ -1295,6 +1297,8 @@ class ExtensionAPI:
         self._commands: list[ExtensionCommand] = []
         self._shortcuts: list[ExtensionShortcut] = []
         self._flags: dict[str, ExtensionFlag] = {}
+        self._entry_renderers: dict[str, ExtensionEntryRenderer] = {}
+        self._message_renderers: dict[str, ExtensionMessageRenderer] = {}
         self._flag_values: dict[str, bool | str] = {
             _normalize_flag_name(name): value for name, value in (flag_values or {}).items()
         }
@@ -1318,6 +1322,16 @@ class ExtensionAPI:
     def flags(self) -> tuple[ExtensionFlag, ...]:
         """Return CLI-style flags registered by this extension."""
         return tuple(self._flags.values())
+
+    @property
+    def entry_renderers(self) -> Mapping[str, ExtensionEntryRenderer]:
+        """Return Pi-style custom-entry renderers registered by this extension."""
+        return dict(self._entry_renderers)
+
+    @property
+    def message_renderers(self) -> Mapping[str, ExtensionMessageRenderer]:
+        """Return Pi-style custom-message renderers registered by this extension."""
+        return dict(self._message_renderers)
 
     def register_tool(self, tool: AgentTool) -> None:
         """Register an `AgentTool` for the current coding session."""
@@ -1480,6 +1494,48 @@ class ExtensionAPI:
             type=str(options["type"]),
             default=options.get("default"),
         )
+
+    def register_entry_renderer(
+        self,
+        custom_type: str,
+        renderer: ExtensionEntryRenderer,
+    ) -> None:
+        """Register a renderer for durable extension custom entries."""
+        normalized = str(custom_type).strip()
+        if not normalized:
+            raise ValueError("register_entry_renderer requires a custom type")
+        if not callable(renderer):
+            raise TypeError("entry renderer must be callable")
+        self._entry_renderers[normalized] = renderer
+
+    def registerEntryRenderer(  # noqa: N802
+        self,
+        custom_type: str,
+        renderer: ExtensionEntryRenderer,
+    ) -> None:
+        """Pi-compatible camelCase alias for register_entry_renderer."""
+        self.register_entry_renderer(custom_type, renderer)
+
+    def register_message_renderer(
+        self,
+        custom_type: str,
+        renderer: ExtensionMessageRenderer,
+    ) -> None:
+        """Register a renderer for Pi-style custom messages."""
+        normalized = str(custom_type).strip()
+        if not normalized:
+            raise ValueError("register_message_renderer requires a custom type")
+        if not callable(renderer):
+            raise TypeError("message renderer must be callable")
+        self._message_renderers[normalized] = renderer
+
+    def registerMessageRenderer(  # noqa: N802
+        self,
+        custom_type: str,
+        renderer: ExtensionMessageRenderer,
+    ) -> None:
+        """Pi-compatible camelCase alias for register_message_renderer."""
+        self.register_message_renderer(custom_type, renderer)
 
     def get_flag(self, name: str) -> bool | str | None:
         """Return the current value for a registered extension flag."""
