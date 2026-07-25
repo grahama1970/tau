@@ -2927,7 +2927,20 @@ def _extension_slash_command(
                 ),
             )
         if isinstance(result, CommandResult):
+            if extension_context.editor_text is not None and result.editor_text is None:
+                result = replace(result, editor_text=extension_context.editor_text)
+            if extension_context.user_message is not None and result.user_message is None:
+                result = replace(
+                    result,
+                    user_message=extension_context.user_message,
+                    user_message_delivery=cast(
+                        Literal["steer", "follow_up"],
+                        extension_context.user_message_delivery,
+                    ),
+                )
             return result
+        if extension_context.editor_text is not None:
+            return CommandResult(handled=True, editor_text=extension_context.editor_text)
         if extension_context.user_message is not None:
             return CommandResult(
                 handled=True,

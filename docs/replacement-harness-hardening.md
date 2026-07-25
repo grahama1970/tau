@@ -582,6 +582,30 @@ Acceptance:
 - This slice does not claim Pi's structured image content arrays, async
   command handlers, `nextTurn` delivery mode, or extension UI notifications.
 
+### Slice 28: Extension Command Editor Prefill
+
+Pi extensions can write generated text back into the prompt editor with
+`ctx.ui.setEditorText(...)`; the bundled `qna` example uses this to extract
+questions from the last assistant message and let the human edit before
+submitting. Tau extension commands can now request editor replacement through
+their synchronous command context while preserving the existing slash-command
+and prompt-widget boundaries.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Extension command handlers receive `set_editor_text(text)` on
+  `ExtensionCommandContext`.
+- `CommandResult` can carry `editor_text` through the command registry.
+- The TUI replaces the prompt editor contents, clears paste markers, moves the
+  cursor to the end, and refreshes completions after an editor-prefill command.
+- Extension context side effects compose with explicit `CommandResult` returns.
+- Active manual compaction executes extension editor-prefill commands
+  immediately instead of queueing them as user prompts.
+- This slice does not claim Pi's async command loaders, model-backed Q&A
+  extraction UI, custom widgets, or paste-collapse API.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

@@ -6210,6 +6210,8 @@ class TauTuiApp(App[None]):
                 command = self.session.handle_command(text)
                 if command.message:
                     self._append_command_message(text, command.message)
+                if command.editor_text is not None:
+                    self._set_prompt_editor_text(command.editor_text)
                 if command.user_message is not None:
                     self._queue_compaction_message(
                         command.user_message,
@@ -6411,6 +6413,10 @@ class TauTuiApp(App[None]):
                     self._append_command_message(text, command.message)
                 else:
                     self._show_command_message(text, command.message)
+            if command.editor_text is not None:
+                self._set_prompt_editor_text(command.editor_text)
+                self._refresh()
+                return
             if command.user_message is not None:
                 await self._deliver_command_user_message(command)
                 self._refresh()
@@ -6859,6 +6865,17 @@ class TauTuiApp(App[None]):
             )
             return
         self._submit_prompt(command.user_message)
+
+    def _set_prompt_editor_text(self, text: str) -> None:
+        """Replace the prompt editor contents with text from a command handler."""
+        prompt = self.query_one("#prompt", PromptInput)
+        prompt.text = text
+        prompt.clear_paste_markers()
+        prompt.move_cursor(_text_end_location(text))
+        prompt.focus()
+        self._sync_prompt_shell_mode(prompt.text)
+        self._completion_state = self._build_completion_state(prompt.text)
+        self._refresh_completions()
 
     async def _run_prompt(
         self,

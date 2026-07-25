@@ -153,6 +153,7 @@ class CommandResult:
     thinking_level: str | None = None
     show_images: bool | None = None
     theme: str | None = None
+    editor_text: str | None = None
     user_message: str | None = None
     user_message_delivery: Literal["steer", "follow_up"] = "steer"
     message: str | None = None

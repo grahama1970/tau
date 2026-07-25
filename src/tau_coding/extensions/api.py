@@ -63,8 +63,15 @@ class ExtensionCommandContext:
     name: str
     args: str
     extension_name: str
+    editor_text: str | None = None
     user_message: str | None = None
     user_message_delivery: str = "steer"
+
+    def set_editor_text(self, text: str) -> None:
+        """Request that Tau replace the prompt editor contents after the command returns."""
+        if not isinstance(text, str):
+            raise TypeError("set_editor_text requires text")
+        self.editor_text = text
 
     def send_user_message(self, text: str, *, deliver_as: str = "steer") -> None:
         """Request that Tau send or queue a user message after the command returns."""
