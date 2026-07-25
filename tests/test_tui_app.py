@@ -9010,6 +9010,34 @@ async def test_tui_app_prompt_template_picker_filters_and_inserts_prompt_command
 
 
 @pytest.mark.anyio
+async def test_tui_app_prompt_template_picker_wraps_navigation_like_pi() -> None:
+    session = FakeSession()
+    session.prompt_templates = (
+        PromptTemplate(name="alpha", path=session.cwd / "alpha.md", content="Alpha."),
+        PromptTemplate(name="beta", path=session.cwd / "beta.md", content="Beta."),
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/prompts"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, PromptTemplatePickerScreen)
+        picker_list = app.screen.query_one("#prompt-template-picker-list", ListView)
+        assert picker_list.index == 0
+
+        await pilot.press("up")
+        await pilot.pause()
+        assert picker_list.index == len(app.screen.visible_templates) - 1
+
+        await pilot.press("down")
+        await pilot.pause()
+        assert picker_list.index == 0
+
+
+@pytest.mark.anyio
 async def test_tui_app_prompt_template_picker_cancel_keeps_prompt_text() -> None:
     session = FakeSession()
     session.prompt_templates = (
@@ -9095,6 +9123,34 @@ async def test_tui_app_skills_picker_filters_and_inserts_skill_command() -> None
 
 
 @pytest.mark.anyio
+async def test_tui_app_skills_picker_wraps_navigation_like_pi() -> None:
+    session = FakeSession()
+    session.skills = (
+        Skill(name="alpha", path=session.cwd / "alpha.md", content="Alpha."),
+        Skill(name="beta", path=session.cwd / "beta.md", content="Beta."),
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/skills"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, SkillPickerScreen)
+        skill_list = app.screen.query_one("#skill-picker-list", ListView)
+        assert skill_list.index == 0
+
+        await pilot.press("up")
+        await pilot.pause()
+        assert skill_list.index == len(app.screen.visible_skills) - 1
+
+        await pilot.press("down")
+        await pilot.pause()
+        assert skill_list.index == 0
+
+
+@pytest.mark.anyio
 async def test_tui_app_skills_picker_previews_description_and_transcript_content() -> None:
     session = FakeSession()
     session.skills = (
@@ -9150,6 +9206,29 @@ async def test_tui_app_tools_command_opens_searchable_tools_reference() -> None:
         assert tool_list.index == 0
         labels = [str(item.query_one(Label).render()) for item in tool_list.children]
         assert any(label.startswith("read ") for label in labels)
+
+
+@pytest.mark.anyio
+async def test_tui_app_tools_reference_wraps_navigation_like_pi() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tools"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ToolsReferenceScreen)
+        tool_list = app.screen.query_one("#tools-reference-list", ListView)
+        assert tool_list.index == 0
+
+        await pilot.press("up")
+        await pilot.pause()
+        assert tool_list.index == len(app.screen.visible_tools) - 1
+
+        await pilot.press("down")
+        await pilot.pause()
+        assert tool_list.index == 0
 
 
 @pytest.mark.anyio

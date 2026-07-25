@@ -391,10 +391,10 @@ class ToolsReferenceScreen(ModalScreen[None]):
             self.action_cancel()
 
     def action_cursor_up(self) -> None:
-        self.query_one("#tools-reference-list", ListView).action_cursor_up()
+        self._move_tool_cursor(-1)
 
     def action_cursor_down(self) -> None:
-        self.query_one("#tools-reference-list", ListView).action_cursor_down()
+        self._move_tool_cursor(1)
 
     def action_open_selected(self) -> None:
         tool_list = self.query_one("#tools-reference-list", ListView)
@@ -403,6 +403,14 @@ class ToolsReferenceScreen(ModalScreen[None]):
 
     def action_cancel(self) -> None:
         self.dismiss(None)
+
+    def _move_tool_cursor(self, direction: Literal[-1, 1]) -> None:
+        tool_list = self.query_one("#tools-reference-list", ListView)
+        if not self.visible_tools:
+            tool_list.index = None
+            return
+        current_index = tool_list.index if tool_list.index is not None else 0
+        tool_list.index = (current_index + direction) % len(self.visible_tools)
 
     def _open_tool(self, index: int) -> None:
         if index >= len(self.visible_tools):
@@ -610,14 +618,10 @@ class SkillPickerScreen(ModalScreen[SkillPickerResult | None]):
             self.action_show_in_transcript()
 
     def action_cursor_up(self) -> None:
-        skill_list = self.query_one("#skill-picker-list", ListView)
-        if skill_list.index is not None:
-            skill_list.index = max(0, skill_list.index - 1)
+        self._move_skill_cursor(-1)
 
     def action_cursor_down(self) -> None:
-        skill_list = self.query_one("#skill-picker-list", ListView)
-        if skill_list.index is not None:
-            skill_list.index = min(len(self.visible_skills) - 1, skill_list.index + 1)
+        self._move_skill_cursor(1)
 
     def action_select_cursor(self) -> None:
         skill = self._selected_skill()
@@ -643,6 +647,14 @@ class SkillPickerScreen(ModalScreen[SkillPickerResult | None]):
 
     def action_cancel(self) -> None:
         self.dismiss(None)
+
+    def _move_skill_cursor(self, direction: Literal[-1, 1]) -> None:
+        skill_list = self.query_one("#skill-picker-list", ListView)
+        if not self.visible_skills:
+            skill_list.index = None
+            return
+        current_index = skill_list.index if skill_list.index is not None else 0
+        skill_list.index = (current_index + direction) % len(self.visible_skills)
 
     def _selected_skill(self) -> Skill | None:
         index = self.query_one("#skill-picker-list", ListView).index
@@ -784,10 +796,10 @@ class PromptTemplatePickerScreen(ModalScreen[str | None]):
             self.action_cancel()
 
     def action_cursor_up(self) -> None:
-        self.query_one("#prompt-template-picker-list", ListView).action_cursor_up()
+        self._move_template_cursor(-1)
 
     def action_cursor_down(self) -> None:
-        self.query_one("#prompt-template-picker-list", ListView).action_cursor_down()
+        self._move_template_cursor(1)
 
     def action_select_cursor(self) -> None:
         picker_list = self.query_one("#prompt-template-picker-list", ListView)
@@ -796,6 +808,14 @@ class PromptTemplatePickerScreen(ModalScreen[str | None]):
 
     def action_cancel(self) -> None:
         self.dismiss(None)
+
+    def _move_template_cursor(self, direction: Literal[-1, 1]) -> None:
+        picker_list = self.query_one("#prompt-template-picker-list", ListView)
+        if not self.visible_templates:
+            picker_list.index = None
+            return
+        current_index = picker_list.index if picker_list.index is not None else 0
+        picker_list.index = (current_index + direction) % len(self.visible_templates)
 
     def _refresh_list(self, search: str) -> None:
         tokens = _query_tokens(search)
@@ -8878,6 +8898,9 @@ class TauTuiApp(App[None]):
         if isinstance(
             self.screen,
             SessionPickerScreen
+            | ToolsReferenceScreen
+            | SkillPickerScreen
+            | PromptTemplatePickerScreen
             | SettingsPickerScreen
             | ThinkingPickerScreen
             | ImageVisibilityPickerScreen
@@ -8904,6 +8927,9 @@ class TauTuiApp(App[None]):
         if isinstance(
             self.screen,
             SessionPickerScreen
+            | ToolsReferenceScreen
+            | SkillPickerScreen
+            | PromptTemplatePickerScreen
             | SettingsPickerScreen
             | ThinkingPickerScreen
             | ImageVisibilityPickerScreen
