@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shlex
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -1212,7 +1213,10 @@ def _parse_command(text: str) -> tuple[str, str]:
 
 
 def _parse_export_args(args: str) -> tuple[str | None, Path | None]:
-    parts = args.split()
+    try:
+        parts = shlex.split(args)
+    except ValueError as exc:
+        raise ValueError("Usage: /export [--format html|jsonl] [destination]") from exc
     export_format: str | None = None
     destination: Path | None = None
     index = 0
@@ -1236,7 +1240,10 @@ def _parse_export_args(args: str) -> tuple[str | None, Path | None]:
 
 
 def _parse_import_args(args: str) -> Path:
-    parts = args.split()
+    try:
+        parts = shlex.split(args)
+    except ValueError as exc:
+        raise ValueError("Usage: /import <path.jsonl>") from exc
     if len(parts) != 1:
         raise ValueError("Usage: /import <path.jsonl>")
     return Path(parts[0]).expanduser()
