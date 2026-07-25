@@ -9650,10 +9650,12 @@ def _render_startup_resources_summary(
     startup_notice: str | None = None,
 ) -> str:
     notice = startup_notice.strip() if startup_notice else ""
+    startup_help = _render_startup_help_lines(keybindings, expanded=expanded)
     if expanded:
         lines: list[str] = []
         if notice:
             lines.extend(("Startup Notice", f"- {notice}", ""))
+        lines.extend(("Startup Help", *startup_help, ""))
         lines.extend(
             (
                 _render_tui_resources_message(session),
@@ -9674,13 +9676,49 @@ def _render_startup_resources_summary(
     ]
     if notice:
         visible_sections.insert(0, f"[Notice] {notice}")
-    if not visible_sections:
-        return ""
+    visible_sections.insert(0, startup_help[0])
     visible_sections.append(
         f"{_key_hint(keybindings.toggle_tool_results)} expands startup resources; "
-        "/resources opens details"
+        "/resources opens details; /hotkeys opens all shortcuts"
     )
     return "\n".join(visible_sections)
+
+
+def _render_startup_help_lines(
+    keybindings: TuiKeybindings,
+    *,
+    expanded: bool,
+) -> list[str]:
+    """Return Pi-style startup operating hints from the active keybindings."""
+    interrupt = _key_hint(keybindings.cancel)
+    clear = _key_hint(keybindings.copy_message)
+    quit_key = _key_hint(keybindings.quit)
+    tools = _key_hint(keybindings.toggle_tool_results)
+    if not expanded:
+        return [
+            f"{interrupt} interrupt | {clear}/{quit_key} clear/exit | "
+            f"/ commands | ! bash | {tools} more"
+        ]
+    return [
+        f"- {interrupt}: interrupt active work",
+        f"- {clear}: clear input; press twice to quit",
+        f"- {quit_key}: quit when the editor is empty",
+        f"- {_key_hint(keybindings.suspend)}: suspend to background",
+        f"- {_key_hint(keybindings.thinking_cycle)}: cycle thinking level",
+        f"- {_key_hint(keybindings.model_cycle)}/"
+        f"{_key_hint(keybindings.model_cycle_previous)}: cycle models",
+        f"- {_key_hint(keybindings.model_picker)}: select model",
+        f"- {tools}: expand startup resources and tool output",
+        f"- {_key_hint(keybindings.toggle_thinking)}: toggle thinking tokens",
+        f"- {_key_hint(keybindings.external_editor)}: open external editor",
+        f"- {_key_hint(keybindings.queue_follow_up)}: queue follow-up while running",
+        f"- {_key_hint(keybindings.dequeue_messages)}: edit all queued messages",
+        f"- {_key_hint(keybindings.paste_clipboard)}: paste clipboard text or image",
+        "- /: slash commands",
+        "- !: run bash command and add output to context",
+        "- !!: run bash command without adding output to context",
+        "- drop files: attach paths to the prompt",
+    ]
 
 
 def _compact_context_labels(
