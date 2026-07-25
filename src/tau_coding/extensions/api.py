@@ -1165,7 +1165,12 @@ class ExtensionCommandUi:
     def __init__(self, context: ExtensionCommandContext | ExtensionShortcutContext) -> None:
         self._context = context
 
-    async def select(self, title: str, options: Sequence[Any]) -> str | None:
+    async def select(
+        self,
+        title: str,
+        options: Sequence[Any],
+        opts: Mapping[str, Any] | None = None,
+    ) -> str | None:
         """Ask the interactive UI to select one option, or return None on cancel."""
         normalized_options = tuple(str(option) for option in options)
         if not normalized_options:
@@ -1174,15 +1179,22 @@ class ExtensionCommandUi:
             "select",
             title=str(title),
             options=normalized_options,
+            **_dialog_options_payload(opts),
         )
         return None if result is None else str(result)
 
-    async def confirm(self, title: str, message: str = "") -> bool:
+    async def confirm(
+        self,
+        title: str,
+        message: str = "",
+        opts: Mapping[str, Any] | None = None,
+    ) -> bool:
         """Ask the interactive UI for a yes/no confirmation."""
         result = await self._request_ui(
             "confirm",
             title=str(title),
             message=str(message),
+            **_dialog_options_payload(opts),
         )
         return bool(result)
 
@@ -1190,6 +1202,7 @@ class ExtensionCommandUi:
         self,
         title: str,
         placeholder: str = "",
+        opts: Mapping[str, Any] | None = None,
         *,
         prefill: str = "",
     ) -> str | None:
@@ -1199,6 +1212,7 @@ class ExtensionCommandUi:
             title=str(title),
             placeholder=str(placeholder),
             prefill=str(prefill),
+            **_dialog_options_payload(opts),
         )
         return None if result is None else str(result)
 
@@ -1283,11 +1297,16 @@ class ExtensionCommandUi:
         self,
         key: str,
         lines: str | Sequence[str] | Callable[..., Any] | None,
+        options: Mapping[str, Any] | None = None,
         *,
         placement: str = "above_editor",
     ) -> None:  # noqa: N802
         """Pi-compatible alias for setting prompt-region extension widget text."""
-        self._context.set_widget(key, lines, placement=placement)
+        self._context.set_widget(
+            key,
+            lines,
+            placement=_widget_placement_from_options(options, placement),
+        )
 
     def getAllThemes(self) -> tuple[ThemeInfo, ...]:  # noqa: N802
         """Pi-compatible alias for listing available Tau themes."""
@@ -1385,7 +1404,18 @@ class ExtensionCommandUi:
         request = getattr(self._context.session, "request_extension_ui", None)
         if not callable(request):
             raise RuntimeError("active session does not support extension UI requests")
-        return await request(method=method, extension_name=self._context.extension_name, **payload)
+        timeout_seconds = payload.pop("timeout_seconds", None)
+        request_result = request(
+            method=method,
+            extension_name=self._context.extension_name,
+            **payload,
+        )
+        if timeout_seconds is None:
+            return await request_result
+        try:
+            return await asyncio.wait_for(request_result, timeout=float(timeout_seconds))
+        except TimeoutError:
+            return None
 
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the command returns."""
@@ -1435,11 +1465,16 @@ class ExtensionCommandUi:
         self,
         key: str,
         lines: str | Sequence[str] | Callable[..., Any] | None,
+        options: Mapping[str, Any] | None = None,
         *,
         placement: str = "above_editor",
     ) -> None:
         """Request that Tau set or clear a prompt-region extension widget."""
-        self._context.set_widget(key, lines, placement=placement)
+        self._context.set_widget(
+            key,
+            lines,
+            placement=_widget_placement_from_options(options, placement),
+        )
 
 
 class ExtensionAPI:
@@ -2685,6 +2720,40 @@ def _normalize_widget_placement(value: str) -> str:
     if normalized in {"below", "below_editor", "beloweditor"}:
         return "below_editor"
     raise ValueError("widget placement must be 'above_editor' or 'below_editor'")
+
+
+def _dialog_options_payload(options: Mapping[str, Any] | None) -> dict[str, float]:
+    if options is None:
+        return {}
+    if not isinstance(options, Mapping):
+        raise TypeError("dialog options must be a mapping")
+    signal = options.get("signal")
+    if signal is not None:
+        raise NotImplementedError("AbortSignal-style dialog dismissal is not supported")
+    if "timeout" not in options:
+        return {}
+    timeout_ms = options.get("timeout")
+    if timeout_ms is None:
+        return {}
+    try:
+        timeout_seconds = float(timeout_ms) / 1000.0
+    except (TypeError, ValueError) as exc:
+        raise TypeError("dialog timeout must be a number of milliseconds") from exc
+    if timeout_seconds <= 0:
+        raise ValueError("dialog timeout must be greater than zero")
+    return {"timeout_seconds": timeout_seconds}
+
+
+def _widget_placement_from_options(
+    options: Mapping[str, Any] | None,
+    fallback: str,
+) -> str:
+    if options is None:
+        return fallback
+    if not isinstance(options, Mapping):
+        raise TypeError("widget options must be a mapping")
+    placement = options.get("placement", fallback)
+    return str(placement)
 
 
 def _normalize_working_indicator_options(
