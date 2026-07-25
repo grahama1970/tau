@@ -619,10 +619,21 @@ def test_non_pi_commands_are_not_registered(tmp_path: Path) -> None:
     registry = create_default_command_registry()
     session = FakeSession(tmp_path)
 
-    for command in ("/provider", "/resources", "/context", "/help"):
+    for command in ("/provider", "/context", "/help"):
         result = registry.execute(session, command)
         assert result.handled is False
         assert result.message is None
+
+
+def test_resources_command_lists_loaded_counts(tmp_path: Path) -> None:
+    result = create_default_command_registry().execute(FakeSession(tmp_path), "/resources")
+
+    assert result.handled is True
+    assert result.message is not None
+    assert "Skills: 1" in result.message
+    assert "Prompt templates: 0" in result.message
+    assert "Context files: 1" in result.message
+    assert "Tools: 4" in result.message
 
 
 def test_login_command_requests_provider_picker(tmp_path: Path) -> None:

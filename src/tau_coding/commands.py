@@ -378,6 +378,15 @@ def create_default_command_registry() -> CommandRegistry:
     )
     registry.register(
         SlashCommand(
+            name="resources",
+            usage="/resources",
+            description="Show loaded context, skills, prompts, and tools.",
+            handler=_resources_command,
+            search_terms=("context", "skills", "prompts", "tools"),
+        )
+    )
+    registry.register(
+        SlashCommand(
             name="workflows",
             usage="/workflows",
             description="List packaged canonical Tau workflows and launch commands.",
@@ -821,6 +830,7 @@ def _resources_command(context: CommandContext) -> CommandResult:
         f"Skills: {len(session.skills)}",
         f"Prompt templates: {len(session.prompt_templates)}",
         f"Context files: {len(session.context_files)}",
+        f"Tools: {len(session.tools)}",
     ]
     if session.resource_diagnostics:
         lines.append("")
