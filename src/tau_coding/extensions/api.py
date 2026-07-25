@@ -199,6 +199,25 @@ class ExtensionShortcutContext:
         """Run Tau's manual compaction path when the session supports it."""
         return await _session_compact(self.session, options)
 
+    async def new_session(self, options: Mapping[str, Any] | None = None) -> dict[str, Any]:
+        """Replace the active Tau session with a newly indexed session."""
+        return await _session_new_session(self.session, options)
+
+    async def newSession(  # noqa: N802
+        self,
+        options: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Pi-compatible camelCase alias for new_session."""
+        return await self.new_session(options)
+
+    async def fork(
+        self,
+        entry_id: str,
+        options: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Fork the active Tau session from a selected tree entry."""
+        return await _session_fork(self.session, entry_id, options)
+
     async def navigate_tree(
         self,
         target_id: str,
@@ -214,6 +233,22 @@ class ExtensionShortcutContext:
     ) -> dict[str, Any]:
         """Pi-compatible camelCase alias for navigate_tree."""
         return await self.navigate_tree(target_id, options)
+
+    async def switch_session(
+        self,
+        session_path: str,
+        options: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Switch the active Tau session by id or indexed session path."""
+        return await _session_switch_session(self.session, session_path, options)
+
+    async def switchSession(  # noqa: N802
+        self,
+        session_path: str,
+        options: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Pi-compatible camelCase alias for switch_session."""
+        return await self.switch_session(session_path, options)
 
     def is_project_trusted(self) -> bool:
         """Return whether project-local trust is active for this session."""
@@ -686,6 +721,25 @@ class ExtensionCommandContext:
         """Run Tau's manual compaction path when the session supports it."""
         return await _session_compact(self.session, options)
 
+    async def new_session(self, options: Mapping[str, Any] | None = None) -> dict[str, Any]:
+        """Replace the active Tau session with a newly indexed session."""
+        return await _session_new_session(self.session, options)
+
+    async def newSession(  # noqa: N802
+        self,
+        options: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Pi-compatible camelCase alias for new_session."""
+        return await self.new_session(options)
+
+    async def fork(
+        self,
+        entry_id: str,
+        options: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Fork the active Tau session from a selected tree entry."""
+        return await _session_fork(self.session, entry_id, options)
+
     async def navigate_tree(
         self,
         target_id: str,
@@ -701,6 +755,22 @@ class ExtensionCommandContext:
     ) -> dict[str, Any]:
         """Pi-compatible camelCase alias for navigate_tree."""
         return await self.navigate_tree(target_id, options)
+
+    async def switch_session(
+        self,
+        session_path: str,
+        options: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Switch the active Tau session by id or indexed session path."""
+        return await _session_switch_session(self.session, session_path, options)
+
+    async def switchSession(  # noqa: N802
+        self,
+        session_path: str,
+        options: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Pi-compatible camelCase alias for switch_session."""
+        return await self.switch_session(session_path, options)
 
     def is_project_trusted(self) -> bool:
         """Return whether project-local trust is active for this session."""
@@ -2014,6 +2084,56 @@ async def _session_compact(session: Any, options: Mapping[str, Any] | None) -> s
     return str(result)
 
 
+async def _session_new_session(
+    session: Any,
+    options: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    _reject_session_replacement_callbacks(options, action="newSession")
+    if options and options.get("parentSession") is not None:
+        raise NotImplementedError("newSession parentSession is not supported by Tau yet")
+    new_session = getattr(session, "new_session", None)
+    if not callable(new_session):
+        raise RuntimeError("active session does not support new sessions")
+    result = new_session()
+    if hasattr(result, "__await__"):
+        result = await result
+    return _session_replacement_result(session, result)
+
+
+async def _session_fork(
+    session: Any,
+    entry_id: str,
+    options: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    _reject_session_replacement_callbacks(options, action="fork")
+    normalized_entry = str(entry_id).strip()
+    if not normalized_entry:
+        raise ValueError("fork requires a target entry id")
+    options = options or {}
+    position = options.get("position")
+    if position is not None:
+        position = str(position).strip().lower()
+    fork_from_entry = getattr(session, "fork_from_entry", None)
+    if callable(fork_from_entry):
+        result = fork_from_entry(normalized_entry, position=position)
+        if hasattr(result, "__await__"):
+            result = await result
+        return _session_tree_replacement_result(session, result)
+    if position is not None:
+        raise NotImplementedError("fork position requires Tau fork_from_entry support")
+    clone_current_session = getattr(session, "clone_current_session", None)
+    state = getattr(session, "state", None)
+    if (
+        callable(clone_current_session)
+        and getattr(state, "active_leaf_id", None) == normalized_entry
+    ):
+        result = clone_current_session()
+        if hasattr(result, "__await__"):
+            result = await result
+        return _session_replacement_result(session, result)
+    raise RuntimeError("active session does not support forking from the requested entry")
+
+
 async def _session_navigate_tree(
     session: Any,
     target_id: str,
@@ -2041,6 +2161,83 @@ async def _session_navigate_tree(
         "message": str(getattr(result, "message", result)),
         "inputPrefill": getattr(result, "input_prefill", None),
     }
+
+
+async def _session_switch_session(
+    session: Any,
+    session_path: str,
+    options: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    _reject_session_replacement_callbacks(options, action="switchSession")
+    target = str(session_path).strip()
+    if not target:
+        raise ValueError("switchSession requires a session id or indexed session path")
+    resume = getattr(session, "resume", None)
+    if not callable(resume):
+        raise RuntimeError("active session does not support session switching")
+    session_id = _resolve_session_switch_id(session, target)
+    result = resume(session_id)
+    if hasattr(result, "__await__"):
+        result = await result
+    return _session_replacement_result(session, result)
+
+
+def _session_replacement_result(session: Any, result: object) -> dict[str, Any]:
+    path = getattr(session, "session_path", None)
+    return {
+        "cancelled": False,
+        "message": str(result),
+        "sessionId": getattr(session, "session_id", None),
+        "sessionPath": str(path) if path else None,
+    }
+
+
+def _session_tree_replacement_result(session: Any, result: object) -> dict[str, Any]:
+    payload = _session_replacement_result(session, getattr(result, "message", result))
+    payload["inputPrefill"] = getattr(result, "input_prefill", None)
+    return payload
+
+
+def _resolve_session_switch_id(session: Any, target: str) -> str:
+    manager = _session_manager(session)
+    if manager is None:
+        return target
+    get_session = getattr(manager, "get_session", None)
+    if callable(get_session) and get_session(target) is not None:
+        return target
+    list_sessions = getattr(manager, "list_sessions", None)
+    if not callable(list_sessions):
+        return target
+
+    target_path = Path(target).expanduser()
+    target_resolved: Path | None = None
+    with suppress(OSError):
+        target_resolved = target_path.resolve()
+    for record in tuple(list_sessions()):
+        record_path = getattr(record, "path", None)
+        if record_path is None:
+            continue
+        record_path = Path(record_path)
+        if str(record_path) == target:
+            return str(record.id)
+        if target_resolved is not None:
+            with suppress(OSError):
+                if record_path.resolve() == target_resolved:
+                    return str(record.id)
+    return target
+
+
+def _reject_session_replacement_callbacks(
+    options: Mapping[str, Any] | None,
+    *,
+    action: str,
+) -> None:
+    if not options:
+        return
+    if options.get("setup") is not None:
+        raise NotImplementedError(f"{action} setup callback is not supported by Tau yet")
+    if options.get("withSession") is not None or options.get("with_session") is not None:
+        raise NotImplementedError(f"{action} withSession callback is not supported by Tau yet")
 
 
 def _optional_option_text(options: Mapping[str, Any], *names: str) -> str | None:

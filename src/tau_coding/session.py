@@ -1580,6 +1580,98 @@ class CodingSession:
         self._thinking_level = replacement._thinking_level
         return f"Cloned to new session: {record.id}"
 
+    async def fork_from_entry(
+        self,
+        entry_id: str,
+        *,
+        position: Literal["before", "at"] | None = None,
+    ) -> SessionTreeBranchResult:
+        """Fork a newly indexed session from a selected tree entry and resume it."""
+        manager = self._config.session_manager
+        if manager is None:
+            raise ValueError("Session manager is not available")
+        if position not in {None, "before", "at"}:
+            raise ValueError("fork position must be 'before' or 'at'")
+
+        entries = await self._read_session_entries()
+        by_id = {entry.id: entry for entry in entries}
+        selected_entry = by_id.get(entry_id)
+        if selected_entry is None:
+            raise ValueError(f"Unknown session entry: {entry_id}")
+        if not _is_branchable_tree_entry(selected_entry):
+            raise ValueError(f"Session entry cannot be forked from: {entry_id}")
+
+        target_id: str | None = entry_id
+        input_prefill: str | None = None
+        if position == "before" or (
+            position is None
+            and selected_entry.type == "message"
+            and isinstance(selected_entry.message, UserMessage)
+        ):
+            target_id = selected_entry.parent_id
+            if selected_entry.type == "message" and isinstance(selected_entry.message, UserMessage):
+                input_prefill = selected_entry.message.content
+
+        if target_id is None:
+            active_path: list[SessionEntry] = []
+        else:
+            try:
+                active_path = path_to_entry(entries, target_id)
+            except SessionTreeError as exc:
+                raise ValueError(f"Cannot fork session: {exc}") from exc
+
+        title = self.session_title
+        record = manager.create_session(
+            cwd=self.cwd,
+            model=self.model,
+            provider_name=self._provider_name,
+            title=f"Fork of {title}" if title else None,
+            parent_session_id=self._config.session_id,
+        )
+        storage = jsonl_session_storage(record.path)
+        for entry in active_path:
+            await storage.append(entry)
+        if target_id is not None:
+            await storage.append(LeafEntry(parent_id=target_id, entry_id=target_id))
+
+        replacement = await type(self).load(
+            replace(
+                self._config,
+                provider=self._harness.config.provider,
+                model=record.model or self.model,
+                cwd=record.cwd,
+                storage=storage,
+                session_id=record.id,
+                provider_name=self._provider_name,
+                provider_settings=self._provider_settings,
+                runtime_provider_config=self._runtime_provider_config,
+                thinking_level=self._thinking_level,
+            )
+        )
+        self._config = replacement._config
+        self._state = replacement._state
+        self._harness = replacement._harness
+        self._last_parent_id = replacement._last_parent_id
+        self._skills = replacement._skills
+        self._prompt_templates = replacement._prompt_templates
+        self._context_files = replacement._context_files
+        self._resource_diagnostics = replacement._resource_diagnostics
+        self._command_registry = replacement._command_registry
+        self._provider_name = replacement._provider_name
+        self._provider_settings = replacement._provider_settings
+        self._runtime_provider_config = replacement._runtime_provider_config
+        self._resource_paths = replacement._resource_paths
+        self._auto_compact_token_threshold = replacement._auto_compact_token_threshold
+        self._auto_compact_enabled = replacement._auto_compact_enabled
+        self._thinking_level = replacement._thinking_level
+
+        if input_prefill is not None:
+            return SessionTreeBranchResult(
+                message=f"Forked session before {entry_id}: {record.id}.",
+                input_prefill=input_prefill,
+            )
+        return SessionTreeBranchResult(message=f"Forked session at {target_id}: {record.id}.")
+
     async def import_session(self, path: Path) -> str:
         """Import a JSONL session artifact into a newly indexed session and resume it."""
         manager = self._config.session_manager
