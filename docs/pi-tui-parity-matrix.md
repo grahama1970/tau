@@ -50,7 +50,7 @@ capabilities.
 | Session selector | `session-selector`, `session-selector-search` | `SessionPickerScreen` | `MATCHED` | Search, current/all, named-only, path toggle, sort, rename, delete are present. |
 | Branch/trust/tool selectors | `user-message-selector`, `trust-selector`, selector keybindings | `UserMessagePickerScreen`, `TrustPickerScreen`, `ToolsReferenceScreen` | `MATCHED` | `/fork` and `/trust` preserve Tau's backing flows and accept Pi-style `j/k` movement; `/tools` preserves searchable text input while the list accepts `j/k` movement when focused. |
 | Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `PARTIAL` | Tau backs most daily settings, exposes the external editor command, and now shows visible no-match search rows; do not add dead Pi toggles without backing behavior. |
-| Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist, resource rows expose scope/state/action, resource toggles update in-place, and no-match searches show visible empty rows; package/write-scope editing still missing. |
+| Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist, resource rows expose scope/state/action, resource toggles update in-place, the backed user TUI settings write target is visible, and no-match searches show visible empty rows; project-local package override editing still missing. |
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login; provider picker now shows visible navigation help, empty filter states, and fail-closed empty-row selection. |
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks including simple component-like render objects, summarizes permission/approval receipts, surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data, preserves multiple Pi-style image blocks from one tool result, and now shows input-bar terminal command exit codes; full JS Pi component runtime embedding remains out of scope. |
 | Export/artifact viewing | `/export`, `exportToHtml`, RPC `export_html` | Tau `/export`, `/artifacts`, `session_export.py`, TUI command output | `MATCHED` | Tau writes real HTML/JSONL session artifacts, opens a persistent TUI result modal with the artifact path and `file://` URI, supports explicit `/export --open`, renders assistant Markdown tables plus embedded local image links and fenced DOT graph artifacts in HTML exports, attempts Mermaid fail-closed when the local CLI/browser runtime works, makes embedded figures/graphs openable full-size in the browser, and now has a real `/artifacts` browser for current-transcript visual outputs. |
@@ -89,8 +89,9 @@ Current candidates:
 
 - `Config write-scope/package overrides`: still partial because Pi can write
   global/project package resource overrides directly from the selector; Tau
-  currently has backed disabled-resource toggles, in-place toggle refresh, and
-  scope tabs, but not full package override editing.
+  currently has backed disabled-resource toggles, visible user-settings write
+  target, in-place toggle refresh, and scope tabs, but not full project/package
+  override editing.
 - `Extension custom component objects`: still partial because Pi can mount
   arbitrary custom TUI components; Tau supports extension selection/input/
   editor/custom screens plus expansion-aware string/JSON/component-like custom
@@ -100,6 +101,32 @@ Current candidates:
   Do not add a fake setting or heuristic notice from aggregate stats.
 
 Latest slice evidence:
+
+- Source inspected: Pi `config-selector.ts`; Tau `ConfigMapScreen`,
+  `_config_map_item_label`, `_config_map_resource_state`, and config-map tests.
+- Destination preserved: Tau's config rows, command/path/diagnostic actions,
+  durable user `disabled_resource_paths`, session reload after toggles, Memory,
+  SciLLM, DAG/workflow, receipt, and approval surfaces.
+- Changed: `/config` now shows the real backed write target as
+  `Write target: User TUI settings ([user] ...)`; resource toggle rows now
+  show `[user disable]` or `[user enable]`, and the selected-row help says
+  toggles write to user TUI settings.
+- Mocked: no.
+- Live: local Textual config-map render path and real Tau user-settings toggle
+  backend in focused tests; no provider-live, SciLLM-live, or project-package
+  write-scope call.
+- Proof: `uv run pytest tests/test_tui_app.py -q -k 'config_map'` reported
+  `5 passed, 456 deselected`; `uv run ruff check src/tau_coding/tui/app.py
+  tests/test_tui_app.py` reported all checks passed; `uv run python -m
+  py_compile src/tau_coding/tui/app.py tests/test_tui_app.py` produced no
+  errors; render proof
+  `/tmp/tau-pi-tui-config-write-target-proof-1785020353/proof.json` with
+  screenshot
+  `/tmp/tau-pi-tui-config-write-target-proof-1785020353/tau-config-write-target.svg`.
+- Remaining gap: Pi's project-local package override editor is still not
+  implemented in Tau.
+
+Earlier slice evidence:
 
 - Source inspected: Pi `interactive-mode.ts` hotkey Markdown output and Tau
   `CommandOutputScreen`, `_render_tui_hotkeys_message`, and

@@ -4781,12 +4781,14 @@ class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
         theme: TuiTheme,
         keybindings: TuiKeybindings | None = None,
         on_toggle_resource: Callable[[str], Sequence[ConfigMapItem]] | None = None,
+        write_target_label: str = "Write target: User TUI settings",
     ) -> None:
         super().__init__()
         self.items = tuple(items)
         self.theme = theme
         self.keybindings = keybindings or TuiKeybindings()
         self.on_toggle_resource = on_toggle_resource
+        self.write_target_label = write_target_label
         self.search_value = ""
         self.filtered_items = self.items
         self.scope: ConfigMapScope = "all"
@@ -4796,6 +4798,7 @@ class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
         with Vertical(id="config-map"):
             yield Static("Config Map", id="config-map-title")
             yield Static("", id="config-map-tabs")
+            yield Static(self.write_target_label, id="config-map-write-target", markup=False)
             yield ConfigMapSearchInput(
                 placeholder="Search config, resources, commands",
                 id="config-map-search",
@@ -4985,7 +4988,7 @@ class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
             scope, state, next_action = _config_map_resource_state(item)
             return (
                 f"{item.description} - {scope} resource is {state} - "
-                f"{confirm_key}/Space {next_action}s resource - "
+                f"{confirm_key}/Space {next_action}s resource in user TUI settings - "
                 f"{scope_hint} - {cancel_key} closes"
             )
         return f"{item.description} - {scope_hint} - {cancel_key} closes"
@@ -6920,6 +6923,12 @@ class TauTuiApp(App[None]):
         margin-bottom: 1;
     }
 
+    #config-map-write-target {
+        height: 1;
+        color: $tau-muted-text;
+        margin-bottom: 1;
+    }
+
     #first-time-setup-description,
     #user-message-picker-description,
     #workflow-picker-description {
@@ -8284,6 +8293,7 @@ class TauTuiApp(App[None]):
                 theme=self.tui_settings.resolved_theme,
                 keybindings=self.tui_settings.keybindings,
                 on_toggle_resource=self._handle_config_map_toggle_resource,
+                write_target_label=_config_map_write_target_label(self.session.cwd),
             ),
             callback=self._handle_config_map_result,
         )
@@ -14389,8 +14399,13 @@ def _config_map_item_label(item: ConfigMapItem) -> str:
         action = " [copy]"
     elif item.action == "toggle_resource":
         scope, state, next_action = _config_map_resource_state(item)
-        action = f" [{scope} {state}] [{next_action}]"
+        action = f" [{scope} {state}] [user {next_action}]"
     return f"{item.section}: {item.label} - {item.value}{action}"
+
+
+def _config_map_write_target_label(cwd: Path) -> str:
+    path = tui_settings_path()
+    return f"Write target: User TUI settings ({_format_scoped_resource_path(path, cwd=cwd)})"
 
 
 def _config_map_empty_label(screen: ConfigMapScreen) -> str:
