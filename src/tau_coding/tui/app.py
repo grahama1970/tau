@@ -5620,7 +5620,7 @@ class TauTuiApp(App[None]):
             skills=session.skills,
             show_thinking=not self.tui_settings.hide_thinking,
         )
-        self.state.load_messages(session.messages)
+        self._load_session_transcript()
         self.adapter = TuiEventAdapter(self.state)
         self._prompt_worker: Worker[None] | None = None
         self._compaction_worker: Worker[None] | None = None
@@ -5646,6 +5646,13 @@ class TauTuiApp(App[None]):
         self._last_empty_escape_at: float | None = None
         self._pty_proof_enabled = os.environ.get("TAU_TUI_PTY_PROOF") == "1"
         self._pty_proof_run_id = os.environ.get("TAU_TUI_PTY_RUN_ID", "tau-real-tui")
+
+    def _load_session_transcript(self) -> None:
+        """Load provider messages plus durable extension/application entries."""
+        self.state.load_messages(self.session.messages)
+        session_state = getattr(self.session, "state", None)
+        custom_entries = getattr(session_state, "custom_entries", ())
+        self.state.load_custom_entries(custom_entries)
 
     def copy_to_clipboard(self, text: str) -> None:
         """Copy text using pyperclip when available, then Textual's fallback."""
@@ -6096,7 +6103,7 @@ class TauTuiApp(App[None]):
             self._compaction_queued_messages.clear()
         self.state.clear()
         self.state.set_skills(self.session.skills)
-        self.state.load_messages(self.session.messages)
+        self._load_session_transcript()
         self._notify(compact_message)
         self._refresh()
         if queued_after_compaction:
@@ -6576,7 +6583,7 @@ class TauTuiApp(App[None]):
         self._compaction_worker = None
         self.state.clear()
         self.state.set_skills(self.session.skills)
-        self.state.load_messages(self.session.messages)
+        self._load_session_transcript()
         restored = self._restore_compaction_queue_to_prompt()
         self._refresh()
         if notify:
@@ -6629,7 +6636,7 @@ class TauTuiApp(App[None]):
         self._branch_worker = None
         self.state.clear()
         self.state.set_skills(self.session.skills)
-        self.state.load_messages(self.session.messages)
+        self._load_session_transcript()
         self._refresh()
         if notify:
             self._notify("Cancelled branch operation.")
@@ -7055,7 +7062,7 @@ class TauTuiApp(App[None]):
             resume_message = await self.session.resume(session_id)
             self.state.clear()
             self.state.set_skills(self.session.skills)
-            self.state.load_messages(self.session.messages)
+            self._load_session_transcript()
             self._notify(resume_message)
         except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
             self._notify(f"Error: {exc}", severity="error")
@@ -7092,7 +7099,7 @@ class TauTuiApp(App[None]):
             message = await import_session(path)
             self.state.clear()
             self.state.set_skills(self.session.skills)
-            self.state.load_messages(self.session.messages)
+            self._load_session_transcript()
             self._notify(message)
         except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
             self._notify(f"Error: {exc}", severity="error")
@@ -7254,7 +7261,7 @@ class TauTuiApp(App[None]):
                 result = await result
             self.state.clear()
             self.state.set_skills(self.session.skills)
-            self.state.load_messages(self.session.messages)
+            self._load_session_transcript()
             if isinstance(result, SessionTreeBranchResult):
                 if result.input_prefill is not None:
                     prompt = self.query_one("#prompt", PromptInput)
@@ -7267,7 +7274,7 @@ class TauTuiApp(App[None]):
         except asyncio.CancelledError:
             self.state.clear()
             self.state.set_skills(self.session.skills)
-            self.state.load_messages(self.session.messages)
+            self._load_session_transcript()
             self._refresh()
             return
         except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
@@ -7286,7 +7293,7 @@ class TauTuiApp(App[None]):
             message = await new_session()
             self.state.clear()
             self.state.set_skills(self.session.skills)
-            self.state.load_messages(self.session.messages)
+            self._load_session_transcript()
             self._notify(message or "New session started.")
         except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
             self._notify(f"Error: {exc}", severity="error")
@@ -7301,7 +7308,7 @@ class TauTuiApp(App[None]):
             message = await clone_current_session()
             self.state.clear()
             self.state.set_skills(self.session.skills)
-            self.state.load_messages(self.session.messages)
+            self._load_session_transcript()
             self._notify(message)
         except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
             self._notify(f"Error: {exc}", severity="error")

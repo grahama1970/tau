@@ -2,9 +2,11 @@
 
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
+from json import dumps
 from pathlib import Path
 
 from tau_agent.messages import AgentMessage
+from tau_agent.session.entries import CustomEntry
 from tau_agent.tools import AgentToolResult, ToolCall
 from tau_agent.types import JSONValue
 from tau_coding.skills import Skill, parse_skill_invocation
@@ -176,6 +178,11 @@ class TuiState:
             return
         self.add_item("thinking", delta)
 
+    def add_custom_entry(self, entry: CustomEntry) -> None:
+        """Append an extension/application-owned session entry to the transcript."""
+        payload = dumps(entry.data, indent=2, sort_keys=True)
+        self.add_item("status", f"Custom entry: {entry.namespace}\n{payload}")
+
     def record_tool_result(self, result: AgentToolResult) -> None:
         """Attach a tool result to its matching call, or append an orphan result."""
         result_text = format_tool_result_block(
@@ -280,6 +287,11 @@ class TuiState:
                         error=message.error,
                     )
                 )
+
+    def load_custom_entries(self, entries: Iterable[CustomEntry]) -> None:
+        """Populate extension/application-owned transcript entries."""
+        for entry in entries:
+            self.add_custom_entry(entry)
 
     def _read_skill_name(self, tool_call: ToolCall) -> str | None:
         if tool_call.name != "read":

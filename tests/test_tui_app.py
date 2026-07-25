@@ -22,6 +22,7 @@ from tau_agent import (
     AgentStartEvent,
     AgentToolResult,
     AssistantMessage,
+    CustomEntry,
     ErrorEvent,
     MessageDeltaEvent,
     MessageEndEvent,
@@ -170,6 +171,7 @@ def _style_rgb(color: str) -> str:
 class FakeSessionState:
     thinking_level = "medium"
     loop_monitor_status = None
+    custom_entries = ()
 
 
 class FakeSession:
@@ -1386,6 +1388,25 @@ def test_tui_state_compacts_expanded_skill_messages() -> None:
         ),
         ("user", "check the auth flow", None),
     ]
+
+
+@pytest.mark.anyio
+async def test_tui_app_renders_session_custom_entries() -> None:
+    session = FakeSession(messages=[UserMessage(content="Before custom entry")])
+    session.state.custom_entries = (
+        CustomEntry(namespace="extension.audit", data={"result": "ok", "count": 2}),
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test(size=(120, 30)) as pilot:
+        await pilot.pause()
+        transcript = app.query_one("#transcript", TranscriptView)
+        rendered_lines = [line.text for line in transcript.lines]
+
+    assert "Before custom entry" in rendered_lines
+    assert "Custom entry: extension.audit" in rendered_lines
+    assert '  "count": 2,' in rendered_lines
+    assert '  "result": "ok"' in rendered_lines
 
 
 def test_expanded_skill_invocation_messages_show_skill_body() -> None:
