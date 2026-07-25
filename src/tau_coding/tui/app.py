@@ -19,6 +19,8 @@ from contextlib import suppress
 from dataclasses import dataclass, fields, replace
 from datetime import datetime
 from functools import partial
+from html import unescape as html_unescape
+from html.parser import HTMLParser
 from inspect import isawaitable, signature
 from io import StringIO
 from math import ceil
@@ -4533,7 +4535,7 @@ class CommandOutputScreen(ModalScreen[None]):
 type ConfigMapAction = Literal["insert_command", "copy_path", "toggle_resource"]
 type ConfigMapScope = Literal["all", "project", "user"]
 type ArtifactBrowserAction = Literal["open", "copy"]
-type ArtifactPreviewKind = Literal["image", "markdown", "json"]
+type ArtifactPreviewKind = Literal["image", "markdown", "json", "html"]
 MARKDOWN_ARTIFACT_LINK_PATTERN = re.compile(
     r"(?<!!)\[[^\]\n]+\]\((?P<target><[^>\n]+>|[^)\s]+)(?:\s+\"[^\"]*\")?\)"
 )
@@ -4544,8 +4546,13 @@ MARKDOWN_ARTIFACT_MIME_TYPES = {
 JSON_ARTIFACT_MIME_TYPES = {
     ".json": "application/json",
 }
+HTML_ARTIFACT_MIME_TYPES = {
+    ".html": "text/html",
+    ".htm": "text/html",
+}
 MAX_MARKDOWN_ARTIFACT_BYTES = 512 * 1024
 MAX_JSON_ARTIFACT_BYTES = 512 * 1024
+MAX_HTML_ARTIFACT_BYTES = 512 * 1024
 
 
 @dataclass(frozen=True, slots=True)
@@ -4724,6 +4731,8 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
             return self._markdown_preview_renderable(artifact, data)
         if artifact.preview_kind == "json":
             return self._json_preview_renderable(artifact, data)
+        if artifact.preview_kind == "html":
+            return self._html_preview_renderable(artifact, data)
         return TerminalImage(
             base64.b64encode(data).decode("ascii"),
             artifact.mime_type,
@@ -4784,6 +4793,23 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
         summary = _json_artifact_summary_table(artifact, payload)
         syntax = Syntax(pretty, "json", word_wrap=True)
         return Group(summary, Text(""), syntax)
+
+    def _html_preview_renderable(self, artifact: VisualArtifact, data: bytes) -> RenderableType:
+        if len(data) > MAX_HTML_ARTIFACT_BYTES:
+            return (
+                f"Preview unavailable: {artifact.path} is larger than "
+                f"{_format_artifact_size(MAX_HTML_ARTIFACT_BYTES)}"
+            )
+        try:
+            text = data.decode("utf-8")
+        except UnicodeDecodeError:
+            return f"Preview unavailable: {artifact.path} is not UTF-8 text"
+        preview = _html_artifact_preview_markdown(text, fallback_title=artifact.path.name)
+        return Group(
+            _html_artifact_summary_table(artifact, preview.title),
+            Text(""),
+            Markdown(preview.markdown),
+        )
 
     def _help_text(self) -> str:
         confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
@@ -13298,6 +13324,25 @@ def _visual_artifacts_from_state(
                     preview_kind="json",
                 )
             )
+        for path in _html_artifact_paths_for_chat_item(item, cwd=cwd):
+            key = ("path", str(path))
+            if key in seen:
+                continue
+            try:
+                byte_count = path.stat().st_size
+            except OSError:
+                continue
+            seen.add(key)
+            artifacts.append(
+                VisualArtifact(
+                    title=path.name,
+                    path=path,
+                    mime_type=HTML_ARTIFACT_MIME_TYPES[path.suffix.lower()],
+                    bytes=byte_count,
+                    source=f"{item.role} item {item_index}",
+                    preview_kind="html",
+                )
+            )
     return tuple(artifacts)
 
 
@@ -13329,6 +13374,15 @@ def _json_artifact_paths_for_chat_item(item: ChatItem, *, cwd: Path) -> tuple[Pa
         cwd=cwd,
         mime_types=JSON_ARTIFACT_MIME_TYPES,
         max_bytes=MAX_JSON_ARTIFACT_BYTES,
+    )
+
+
+def _html_artifact_paths_for_chat_item(item: ChatItem, *, cwd: Path) -> tuple[Path, ...]:
+    return _linked_artifact_paths_for_chat_item(
+        item,
+        cwd=cwd,
+        mime_types=HTML_ARTIFACT_MIME_TYPES,
+        max_bytes=MAX_HTML_ARTIFACT_BYTES,
     )
 
 
@@ -13433,6 +13487,168 @@ def _json_summary_value(value: object) -> str:
     return json.dumps(value, sort_keys=True)
 
 
+@dataclass(frozen=True, slots=True)
+class HtmlArtifactPreview:
+    """Terminal-readable preview extracted from a local HTML artifact."""
+
+    title: str
+    markdown: str
+
+
+class HtmlArtifactPreviewParser(HTMLParser):
+    """Extract visible text, headings, and table rows from a local HTML artifact."""
+
+    _BLOCK_TAGS: ClassVar[set[str]] = {
+        "caption",
+        "dd",
+        "dt",
+        "figcaption",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "li",
+        "p",
+        "pre",
+        "summary",
+    }
+    _SKIP_TAGS: ClassVar[set[str]] = {"script", "style", "svg"}
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.title_parts: list[str] = []
+        self.blocks: list[str] = []
+        self._in_title = False
+        self._skip_depth = 0
+        self._block_tag: str | None = None
+        self._block_parts: list[str] = []
+        self._row: list[str] | None = None
+        self._cell_parts: list[str] | None = None
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        del attrs
+        normalized = tag.lower()
+        if normalized in self._SKIP_TAGS:
+            self._skip_depth += 1
+            return
+        if self._skip_depth:
+            return
+        if normalized == "title":
+            self._in_title = True
+        elif normalized == "tr":
+            self._flush_block()
+            self._row = []
+        elif normalized in {"td", "th"} and self._row is not None:
+            self._cell_parts = []
+        elif normalized in self._BLOCK_TAGS:
+            self._flush_block()
+            self._block_tag = normalized
+            self._block_parts = []
+        elif normalized == "br":
+            self._append_text("\n")
+
+    def handle_endtag(self, tag: str) -> None:
+        normalized = tag.lower()
+        if normalized in self._SKIP_TAGS and self._skip_depth:
+            self._skip_depth -= 1
+            return
+        if self._skip_depth:
+            return
+        if normalized == "title":
+            self._in_title = False
+        elif normalized in {"td", "th"} and self._cell_parts is not None:
+            if self._row is not None:
+                self._row.append(_compact_html_text("".join(self._cell_parts)))
+            self._cell_parts = None
+        elif normalized == "tr":
+            if self._row:
+                cells = [cell for cell in self._row if cell]
+                if cells:
+                    row = " | ".join(_escape_markdown_table_cell(cell) for cell in cells)
+                    self.blocks.append(f"| {row} |")
+            self._row = None
+        elif normalized == self._block_tag:
+            self._flush_block()
+
+    def handle_data(self, data: str) -> None:
+        if self._skip_depth:
+            return
+        text = html_unescape(data)
+        if self._in_title:
+            self.title_parts.append(text)
+        elif self._cell_parts is not None:
+            self._cell_parts.append(text)
+        else:
+            self._append_text(text)
+
+    def _append_text(self, text: str) -> None:
+        if self._block_tag is not None:
+            self._block_parts.append(text)
+
+    def _flush_block(self) -> None:
+        if self._block_tag is None:
+            return
+        text = _compact_html_text("".join(self._block_parts))
+        if text:
+            self.blocks.append(_html_block_markdown(self._block_tag, text))
+        self._block_tag = None
+        self._block_parts = []
+
+    def preview(self, *, fallback_title: str) -> HtmlArtifactPreview:
+        self._flush_block()
+        title = _compact_html_text("".join(self.title_parts)) or fallback_title
+        blocks = [block for block in self.blocks if block]
+        if not blocks:
+            blocks = ["No visible HTML body text was extracted. Open the artifact in a browser."]
+        markdown = "\n\n".join(blocks[:80])
+        if len(markdown) > 8_000:
+            markdown = markdown[:8_000].rstrip() + "\n\n[Preview truncated.]"
+        return HtmlArtifactPreview(title=title, markdown=markdown)
+
+
+def _html_artifact_preview_markdown(html_text: str, *, fallback_title: str) -> HtmlArtifactPreview:
+    parser = HtmlArtifactPreviewParser()
+    parser.feed(html_text)
+    parser.close()
+    return parser.preview(fallback_title=fallback_title)
+
+
+def _html_artifact_summary_table(artifact: VisualArtifact, title: str) -> Table:
+    table = Table.grid(padding=(0, 2))
+    table.add_column(style="bold")
+    table.add_column()
+    table.add_row("file", artifact.path.name)
+    table.add_row("type", artifact.mime_type)
+    table.add_row("size", _format_artifact_size(artifact.bytes))
+    table.add_row("title", title)
+    return table
+
+
+def _html_block_markdown(tag: str, text: str) -> str:
+    if tag.startswith("h") and len(tag) == 2 and tag[1].isdigit():
+        level = max(1, min(6, int(tag[1])))
+        return f"{'#' * level} {text}"
+    if tag == "li":
+        return f"- {text}"
+    if tag == "pre":
+        return f"```text\n{text}\n```"
+    if tag == "dt":
+        return f"**{text}**"
+    if tag == "dd":
+        return f": {text}"
+    return text
+
+
+def _compact_html_text(value: str) -> str:
+    return " ".join(value.split())
+
+
+def _escape_markdown_table_cell(value: str) -> str:
+    return value.replace("|", "\\|")
+
+
 def _visual_artifact_key(payload: ToolImagePayload) -> tuple[str, str]:
     if payload.path:
         path = Path(payload.path).expanduser()
@@ -13506,9 +13722,11 @@ def _artifact_browser_summary(artifacts: Sequence[VisualArtifact]) -> str:
     image_count = sum(1 for artifact in artifacts if artifact.mime_type.startswith("image/"))
     markdown_count = sum(1 for artifact in artifacts if artifact.preview_kind == "markdown")
     json_count = sum(1 for artifact in artifacts if artifact.preview_kind == "json")
+    html_count = sum(1 for artifact in artifacts if artifact.preview_kind == "html")
     return (
         f"Found {len(artifacts)} artifact(s), {image_count} image-backed, "
-        f"{markdown_count} Markdown report(s), {json_count} JSON receipt(s)"
+        f"{markdown_count} Markdown report(s), {json_count} JSON receipt(s), "
+        f"{html_count} HTML export(s)"
     )
 
 
@@ -14088,7 +14306,7 @@ def _render_tui_hotkeys_message(
         ),
         _markdown_table_row(
             "/artifacts",
-            "browse image, graph, Markdown, and JSON receipt artifacts",
+            "browse image, graph, Markdown, JSON, and HTML artifacts",
         ),
         _markdown_table_row("drop files", "attach paths to the prompt"),
         "",
@@ -14183,7 +14401,7 @@ def _render_tui_hotkeys_message(
         "Slash and shell:",
         "- /: slash commands",
         "- /resources: show loaded context, skills, prompts, tools, and diagnostics",
-        "- /artifacts: browse image, graph, Markdown, and JSON receipt artifacts",
+        "- /artifacts: browse image, graph, Markdown, JSON, and HTML artifacts",
         "- !: run bash command and add output to context",
         "- !!: run bash command without adding output to context",
     ]

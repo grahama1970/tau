@@ -31,6 +31,7 @@ from tau_agent import (
     ErrorEvent,
     MessageDeltaEvent,
     MessageEndEvent,
+    MessageEntry,
     MessageStartEvent,
     QueuedMessages,
     QueueUpdateEvent,
@@ -69,6 +70,7 @@ from tau_coding.session import (
     SessionTreeChoice,
     TerminalCommandResult,
 )
+from tau_coding.session_export import render_session_html
 from tau_coding.session_manager import CodingSessionRecord
 from tau_coding.session_stats import SessionStats
 from tau_coding.skills import Skill, format_skill_invocation
@@ -4115,6 +4117,59 @@ async def test_tui_app_artifacts_command_previews_json_receipts(
         assert "canonical-review" in preview
         assert '"run_id": "run-123"' in preview
         assert '"status": "PASS"' in preview
+
+
+@pytest.mark.anyio
+async def test_tui_app_artifacts_command_previews_html_exports(
+    tmp_path: Path,
+) -> None:
+    export_path = tmp_path / "session.html"
+    export_path.write_text(
+        render_session_html(
+            [
+                MessageEntry(id="user-1", message=UserMessage(content="Audit this report")),
+                MessageEntry(
+                    id="assistant-1",
+                    parent_id="user-1",
+                    message=AssistantMessage(
+                        content=(
+                            "# Review\n\n"
+                            "| criterion | verdict |\n"
+                            "| --- | --- |\n"
+                            "| visual table | pass |"
+                        )
+                    ),
+                ),
+            ],
+            title="Tau Session Export",
+            source="/tmp/session.jsonl",
+        ),
+        encoding="utf-8",
+    )
+    session = FakeSession()
+    app = TauTuiApp(session)
+    app.state.add_item("assistant", f"Export: [session html]({export_path}).")
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/artifacts"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ArtifactBrowserScreen)
+        labels = [
+            str(item.query_one(Label).render())
+            for item in app.screen.query_one("#config-map-list", ListView).children
+        ]
+        assert any("session.html" in label and "text/html" in label for label in labels)
+
+        preview_console = Console(file=StringIO(), record=True, width=100)
+        preview_console.print(app.screen._preview_renderable(0))
+        preview = preview_console.export_text()
+        assert "Tau Session Export" in preview
+        assert "Transcript Entries" in preview
+        assert "Audit this report" in preview
+        assert "visual table" in preview
 
 
 @pytest.mark.anyio
@@ -9436,7 +9491,7 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "| Key | Action |" in app.screen.message
         assert "| Ctrl+J | open slash-command completions |" in app.screen.message
         artifacts_help = (
-            "| /artifacts | browse image, graph, Markdown, and JSON receipt artifacts |"
+            "| /artifacts | browse image, graph, Markdown, JSON, and HTML artifacts |"
         )
         assert artifacts_help in app.screen.message
         assert "Ctrl+J: open slash-command completions" in app.screen.message
