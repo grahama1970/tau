@@ -322,6 +322,7 @@ class CodingSession:
         self._runtime_extension_tool_sources: dict[str, str] = {}
         self._extension_ui_handler: Callable[..., object] | None = None
         self._extension_terminal_input_handler: Callable[..., object] | None = None
+        self._extension_autocomplete_provider_handler: Callable[..., object] | None = None
         self._resource_diagnostics = resource_diagnostics
         self._base_command_registry = (
             base_command_registry.copy()
@@ -1686,6 +1687,30 @@ class CodingSession:
         result = self._extension_terminal_input_handler(
             extension_name=extension_name,
             handler=handler,
+        )
+        if not callable(result):
+            return lambda: None
+        return cast(Callable[[], None], result)
+
+    def set_extension_autocomplete_provider_handler(
+        self,
+        handler: Callable[..., object] | None,
+    ) -> None:
+        """Install the frontend callback used by Pi-style autocomplete providers."""
+        self._extension_autocomplete_provider_handler = handler
+
+    def register_extension_autocomplete_provider(
+        self,
+        factory: Callable[[object], object],
+        *,
+        extension_name: str,
+    ) -> Callable[[], None]:
+        """Register a TUI autocomplete provider factory and return its unsubscribe hook."""
+        if self._extension_autocomplete_provider_handler is None:
+            return lambda: None
+        result = self._extension_autocomplete_provider_handler(
+            extension_name=extension_name,
+            factory=factory,
         )
         if not callable(result):
             return lambda: None

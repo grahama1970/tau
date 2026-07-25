@@ -6182,6 +6182,15 @@ class TauTuiApp(App[None]):
         )
         if callable(set_terminal_input_handler):
             set_terminal_input_handler(self._register_extension_terminal_input_listener)
+        set_autocomplete_provider_handler = getattr(
+            self.session,
+            "set_extension_autocomplete_provider_handler",
+            None,
+        )
+        if callable(set_autocomplete_provider_handler):
+            set_autocomplete_provider_handler(
+                self._register_extension_autocomplete_provider
+            )
         self.state = TuiState(
             skills=session.skills,
             show_thinking=not self.tui_settings.hide_thinking,
@@ -6222,6 +6231,11 @@ class TauTuiApp(App[None]):
         self._extension_terminal_input_listeners: dict[
             int,
             tuple[str, Callable[[str], object]],
+        ] = {}
+        self._extension_autocomplete_provider_id = 0
+        self._extension_autocomplete_providers: dict[
+            int,
+            tuple[str, Callable[[object], object]],
         ] = {}
         self._app_has_focus = True
         self._active_notification_keys: set[tuple[str, str]] = set()
@@ -7247,6 +7261,24 @@ class TauTuiApp(App[None]):
             if replacement is not None:
                 return replacement
         return None
+
+    def _register_extension_autocomplete_provider(
+        self,
+        *,
+        extension_name: str,
+        factory: Callable[[object], object],
+    ) -> Callable[[], None]:
+        """Register an extension autocomplete provider factory."""
+        self._extension_autocomplete_provider_id += 1
+        provider_id = self._extension_autocomplete_provider_id
+        self._extension_autocomplete_providers[provider_id] = (extension_name, factory)
+        self._refresh_current_prompt_completions()
+
+        def unsubscribe() -> None:
+            self._extension_autocomplete_providers.pop(provider_id, None)
+            self._refresh_current_prompt_completions()
+
+        return unsubscribe
 
     def _set_extension_terminal_title(self, title: str | None) -> None:
         """Override or clear the terminal title requested by an extension command."""
@@ -9151,6 +9183,26 @@ class TauTuiApp(App[None]):
         *,
         cursor_position: int | None = None,
     ) -> CompletionState:
+        base_state = self._build_base_completion_state(
+            text,
+            cursor_position=cursor_position,
+        )
+        if not self._extension_autocomplete_providers:
+            return base_state
+        return _extension_autocomplete_completion_state(
+            text,
+            cursor_position=cursor_position,
+            base_state=base_state,
+            providers=self._extension_autocomplete_providers.values(),
+            notify=self._notify,
+        )
+
+    def _build_base_completion_state(
+        self,
+        text: str,
+        *,
+        cursor_position: int | None = None,
+    ) -> CompletionState:
         registry = _session_command_registry(self.session)
         return build_completion_state(
             text,
@@ -9166,6 +9218,15 @@ class TauTuiApp(App[None]):
             enable_skill_commands=self.tui_settings.enable_skill_commands,
             cursor_position=cursor_position,
         )
+
+    def _refresh_current_prompt_completions(self) -> None:
+        with suppress(NoMatches):
+            prompt = self.query_one("#prompt", PromptInput)
+            self._completion_state = self._build_completion_state(
+                prompt.text,
+                cursor_position=prompt.cursor_position,
+            )
+            self._refresh_completions()
 
     def action_refresh_completions_for_cursor(self) -> None:
         prompt = self.query_one("#prompt", PromptInput)
@@ -12485,6 +12546,211 @@ def _extension_terminal_input_result(result: object) -> str | None:
         if bool(result.get("consume", False)):
             return ""
     return None
+
+
+class _TauAutocompleteProvider:
+    """Small provider object passed through Pi-style autocomplete factories."""
+
+    def __init__(self, state: CompletionState) -> None:
+        self._state = state
+
+    def get_completions(
+        self,
+        text: str,
+        cursor_position: int | None = None,
+    ) -> CompletionState:
+        del text, cursor_position
+        return self._state
+
+    def getSuggestions(  # noqa: N802 - Pi-compatible method name
+        self,
+        lines: Sequence[str],
+        cursor_line: int,
+        cursor_col: int,
+        options: object | None = None,
+    ) -> dict[str, object] | None:
+        del lines, cursor_line, cursor_col, options
+        if not self._state.items:
+            return None
+        return {
+            "items": [
+                {
+                    "value": item.replacement,
+                    "label": item.display,
+                    "description": item.description,
+                }
+                for item in self._state.items
+            ],
+            "prefix": "",
+        }
+
+
+def _extension_autocomplete_completion_state(
+    text: str,
+    *,
+    cursor_position: int | None,
+    base_state: CompletionState,
+    providers: Sequence[tuple[str, Callable[[object], object]]],
+    notify: Callable[[str], None],
+) -> CompletionState:
+    provider: object = _TauAutocompleteProvider(base_state)
+    for extension_name, factory in providers:
+        try:
+            provider = factory(provider)
+        except Exception as exc:  # noqa: BLE001 - extension failures should surface, not crash
+            notify(f"Extension autocomplete provider error ({extension_name}): {exc}")
+            continue
+    state = _extension_autocomplete_provider_state(
+        provider,
+        text=text,
+        cursor_position=cursor_position,
+    )
+    return state if state is not None else base_state
+
+
+def _extension_autocomplete_provider_state(
+    provider: object,
+    *,
+    text: str,
+    cursor_position: int | None,
+) -> CompletionState | None:
+    get_completions = getattr(provider, "get_completions", None)
+    if callable(get_completions):
+        result = get_completions(text, cursor_position)
+        return _extension_autocomplete_result_state(
+            result,
+            text=text,
+            cursor_position=cursor_position,
+        )
+    get_suggestions = getattr(provider, "getSuggestions", None)
+    if callable(get_suggestions):
+        cursor = len(text) if cursor_position is None else max(0, min(cursor_position, len(text)))
+        lines = text.splitlines() or [""]
+        cursor_line, cursor_col = _line_col_from_position(text, cursor)
+        result = get_suggestions(lines, cursor_line, cursor_col, {"force": False})
+        return _extension_autocomplete_result_state(
+            result,
+            text=text,
+            cursor_position=cursor,
+        )
+    if callable(provider):
+        result = provider(text, cursor_position)
+        return _extension_autocomplete_result_state(
+            result,
+            text=text,
+            cursor_position=cursor_position,
+        )
+    return _extension_autocomplete_result_state(
+        provider,
+        text=text,
+        cursor_position=cursor_position,
+    )
+
+
+def _extension_autocomplete_result_state(
+    result: object,
+    *,
+    text: str,
+    cursor_position: int | None,
+) -> CompletionState | None:
+    cursor = len(text) if cursor_position is None else max(0, min(cursor_position, len(text)))
+    if result is None:
+        return None
+    if isinstance(result, CompletionState):
+        return result
+    if isinstance(result, CompletionItem):
+        return CompletionState((result,))
+    if isinstance(result, Mapping):
+        items = result.get("items")
+        if items is None:
+            item = _extension_autocomplete_item(result, cursor=cursor)
+            return CompletionState((item,)) if item is not None else None
+        prefix = str(result.get("prefix", ""))
+        start = max(0, cursor - len(prefix))
+        completions = tuple(
+            item
+            for raw in _extension_autocomplete_iter_items(items)
+            if (item := _extension_autocomplete_item(raw, cursor=cursor, start=start)) is not None
+        )
+        return CompletionState(completions)
+    if isinstance(result, str):
+        return CompletionState(
+            (
+                CompletionItem(
+                    display=result,
+                    replacement=result,
+                    start=cursor,
+                    end=cursor,
+                    category="extension",
+                ),
+            )
+        )
+    if isinstance(result, Sequence):
+        completions = tuple(
+            item
+            for raw in result
+            if (item := _extension_autocomplete_item(raw, cursor=cursor)) is not None
+        )
+        return CompletionState(completions)
+    return None
+
+
+def _extension_autocomplete_iter_items(items: object) -> tuple[object, ...]:
+    if isinstance(items, Sequence) and not isinstance(items, str):
+        return tuple(items)
+    return ()
+
+
+def _extension_autocomplete_item(
+    raw: object,
+    *,
+    cursor: int,
+    start: int | None = None,
+) -> CompletionItem | None:
+    resolved_start = cursor if start is None else start
+    if isinstance(raw, CompletionItem):
+        return raw
+    if isinstance(raw, str):
+        return CompletionItem(
+            display=raw,
+            replacement=raw,
+            start=resolved_start,
+            end=cursor,
+            category="extension",
+        )
+    if not isinstance(raw, Mapping):
+        return None
+    value = raw.get("replacement", raw.get("value", raw.get("label")))
+    if value is None:
+        return None
+    display = str(raw.get("display", raw.get("label", value)))
+    item_start = raw.get("start", resolved_start)
+    item_end = raw.get("end", cursor)
+    try:
+        normalized_start = int(item_start)
+        normalized_end = int(item_end)
+    except (TypeError, ValueError):
+        normalized_start = resolved_start
+        normalized_end = cursor
+    return CompletionItem(
+        display=display,
+        replacement=str(value),
+        start=max(0, normalized_start),
+        end=max(0, normalized_end),
+        description=(
+            None if raw.get("description") is None else str(raw.get("description"))
+        ),
+        category=None if raw.get("category") is None else str(raw.get("category")),
+        argument_hint=None if raw.get("argument_hint") is None else str(raw.get("argument_hint")),
+    )
+
+
+def _line_col_from_position(text: str, position: int) -> tuple[int, int]:
+    before = text[:position]
+    line = before.count("\n")
+    last_newline = before.rfind("\n")
+    col = position if last_newline == -1 else position - last_newline - 1
+    return line, col
 
 
 def _terminal_input_event_data(event: Key) -> str:

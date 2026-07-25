@@ -212,6 +212,18 @@ class ExtensionShortcutContext:
             return lambda: None
         return register(handler, extension_name=self.extension_name)
 
+    def register_autocomplete_provider(
+        self,
+        factory: Callable[[Any], Any],
+    ) -> Callable[[], None]:
+        """Register an autocomplete provider factory for the active TUI frontend."""
+        if not callable(factory):
+            raise TypeError("autocomplete provider factory must be callable")
+        register = getattr(self.session, "register_extension_autocomplete_provider", None)
+        if not callable(register):
+            return lambda: None
+        return register(factory, extension_name=self.extension_name)
+
     def set_editor_text(self, text: str) -> None:
         """Request that Tau replace the prompt editor contents after the shortcut returns."""
         if not isinstance(text, str):
@@ -497,6 +509,18 @@ class ExtensionCommandContext:
             return lambda: None
         return register(handler, extension_name=self.extension_name)
 
+    def register_autocomplete_provider(
+        self,
+        factory: Callable[[Any], Any],
+    ) -> Callable[[], None]:
+        """Register an autocomplete provider factory for the active TUI frontend."""
+        if not callable(factory):
+            raise TypeError("autocomplete provider factory must be callable")
+        register = getattr(self.session, "register_extension_autocomplete_provider", None)
+        if not callable(register):
+            return lambda: None
+        return register(factory, extension_name=self.extension_name)
+
     def set_editor_text(self, text: str) -> None:
         """Request that Tau replace the prompt editor contents after the command returns."""
         if not isinstance(text, str):
@@ -681,6 +705,14 @@ class ExtensionCommandUi:
     def on_terminal_input(self, handler: Callable[[str], Any]) -> Callable[[], None]:
         """Listen to prompt terminal input."""
         return self._context.register_terminal_input_listener(handler)
+
+    def addAutocompleteProvider(self, factory: Callable[[Any], Any]) -> Callable[[], None]:  # noqa: N802
+        """Pi-compatible alias for stacking prompt autocomplete behavior."""
+        return self._context.register_autocomplete_provider(factory)
+
+    def add_autocomplete_provider(self, factory: Callable[[Any], Any]) -> Callable[[], None]:
+        """Stack prompt autocomplete behavior."""
+        return self._context.register_autocomplete_provider(factory)
 
     def setWorkingMessage(self, message: str | None = None) -> None:  # noqa: N802
         """Pi-compatible alias for setting the running message."""
