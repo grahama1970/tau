@@ -295,6 +295,15 @@ class ExtensionCommandUi:
         )
         return None if result is None else str(result)
 
+    async def editor(self, title: str, prefill: str = "") -> str | None:
+        """Ask the interactive UI for multi-line text, or return None on cancel."""
+        result = await self._request_ui(
+            "editor",
+            title=str(title),
+            prefill=str(prefill),
+        )
+        return None if result is None else str(result)
+
     async def _request_ui(self, method: str, **payload: Any) -> Any:
         request = getattr(self._context.session, "request_extension_ui", None)
         if not callable(request):

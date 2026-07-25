@@ -4442,6 +4442,53 @@ class ExtensionInputScreen(ModalScreen[str | None]):
             self.dismiss(None)
 
 
+class ExtensionEditorScreen(ModalScreen[str | None]):
+    """Pi-style extension multi-line editor dialog."""
+
+    def __init__(
+        self,
+        title: str,
+        *,
+        prefill: str = "",
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
+        super().__init__()
+        self.title_text = title
+        self.prefill = prefill
+        self.keybindings = keybindings or TuiKeybindings()
+
+    def compose(self) -> ComposeResult:
+        """Compose the extension editor dialog."""
+        cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+        with Vertical(id="confirmation"):
+            yield Static(self.title_text, id="confirmation-title")
+            yield TextArea(id="extension-editor-value")
+            yield Static(f"Ctrl+Enter submits - {cancel_key} cancels", id="confirmation-help")
+
+    def on_mount(self) -> None:
+        """Focus the editor."""
+        editor = self.query_one("#extension-editor-value", TextArea)
+        editor.text = self.prefill
+        editor.focus()
+
+    def on_key(self, event: Key) -> None:
+        """Submit or cancel the editor."""
+        if event.key == "ctrl+enter":
+            event.stop()
+            self.action_submit()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.dismiss(None)
+
+    def action_submit(self) -> None:
+        """Submit edited text."""
+        self.dismiss(self.query_one("#extension-editor-value", TextArea).text)
+
+
 class LoginProviderPickerScreen(ModalScreen[str | None]):
     """Provider picker for the TUI login flow."""
 
@@ -7137,6 +7184,14 @@ class TauTuiApp(App[None]):
                 ExtensionInputScreen(
                     str(payload.get("title", f"{extension_name} input")),
                     placeholder=str(payload.get("placeholder", "")),
+                    prefill=str(payload.get("prefill", "")),
+                    keybindings=keybindings,
+                )
+            )
+        if method == "editor":
+            return await self.push_screen_wait(
+                ExtensionEditorScreen(
+                    str(payload.get("title", f"{extension_name} editor")),
                     prefill=str(payload.get("prefill", "")),
                     keybindings=keybindings,
                 )
