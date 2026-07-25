@@ -63,6 +63,7 @@ class ExtensionCommandContext:
     name: str
     args: str
     extension_name: str
+    shutdown_requested: bool = False
     editor_text: str | None = None
     terminal_title_requested: bool = False
     terminal_title: str | None = None
@@ -87,6 +88,10 @@ class ExtensionCommandContext:
                 severity=_normalize_notification_severity(severity),
             )
         )
+
+    def shutdown(self) -> None:
+        """Request that Tau exit after the command returns."""
+        self.shutdown_requested = True
 
     def set_editor_text(self, text: str) -> None:
         """Request that Tau replace the prompt editor contents after the command returns."""

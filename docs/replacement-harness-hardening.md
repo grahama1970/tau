@@ -722,6 +722,25 @@ Acceptance:
 - This slice does not claim Pi's arbitrary custom render callbacks, theme object
   access, keyboard-driven widgets, games, overlays, or dialogs.
 
+### Slice 34: Extension Command Shutdown Request
+
+Pi extension command handlers can call `ctx.shutdown()` to ask the harness to
+exit cleanly. Tau already had a built-in command-result exit path; extension
+commands can now request that same path directly from their command context.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Extension command handlers can call `context.shutdown()`.
+- The session command adapter maps a shutdown request to
+  `CommandResult.exit_requested`.
+- Shutdown requests compose with explicit `CommandResult` returns.
+- The TUI honors extension shutdown requests in normal command handling and the
+  active manual-compaction extension-command path.
+- This slice does not claim Pi's `session_shutdown` lifecycle event, tool
+  context shutdown, print-mode behavior, or deferred shutdown after queued work.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

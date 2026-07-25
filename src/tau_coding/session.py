@@ -2934,6 +2934,8 @@ def _extension_slash_command(
         status_updates = _extension_command_status_updates(extension_context)
         widget_updates = _extension_command_widget_updates(extension_context)
         if isinstance(result, CommandResult):
+            if extension_context.shutdown_requested and not result.exit_requested:
+                result = replace(result, exit_requested=True)
             if extension_context.editor_text is not None and result.editor_text is None:
                 result = replace(result, editor_text=extension_context.editor_text)
             if (
@@ -2964,6 +2966,7 @@ def _extension_slash_command(
         if extension_context.editor_text is not None:
             return CommandResult(
                 handled=True,
+                exit_requested=extension_context.shutdown_requested,
                 editor_text=extension_context.editor_text,
                 terminal_title_requested=extension_context.terminal_title_requested,
                 terminal_title=extension_context.terminal_title,
@@ -2974,6 +2977,7 @@ def _extension_slash_command(
         if extension_context.terminal_title_requested:
             return CommandResult(
                 handled=True,
+                exit_requested=extension_context.shutdown_requested,
                 terminal_title_requested=True,
                 terminal_title=extension_context.terminal_title,
                 notifications=notifications,
@@ -2983,6 +2987,7 @@ def _extension_slash_command(
         if extension_context.user_message is not None:
             return CommandResult(
                 handled=True,
+                exit_requested=extension_context.shutdown_requested,
                 terminal_title_requested=extension_context.terminal_title_requested,
                 terminal_title=extension_context.terminal_title,
                 notifications=notifications,
@@ -2997,6 +3002,7 @@ def _extension_slash_command(
         if result is None:
             return CommandResult(
                 handled=True,
+                exit_requested=extension_context.shutdown_requested,
                 terminal_title_requested=extension_context.terminal_title_requested,
                 terminal_title=extension_context.terminal_title,
                 notifications=notifications,
@@ -3005,6 +3011,7 @@ def _extension_slash_command(
             )
         return CommandResult(
             handled=True,
+            exit_requested=extension_context.shutdown_requested,
             terminal_title_requested=extension_context.terminal_title_requested,
             terminal_title=extension_context.terminal_title,
             message=str(result),

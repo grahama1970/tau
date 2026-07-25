@@ -6248,6 +6248,9 @@ class TauTuiApp(App[None]):
                     )
                     self._sync_queue_state()
                     self._notify("Queued extension message for after compaction.")
+                if command.exit_requested:
+                    self.exit()
+                    return
                 self._refresh()
             else:
                 self._queue_compaction_message(text, streaming_behavior=streaming_behavior)
