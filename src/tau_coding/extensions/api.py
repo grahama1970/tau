@@ -67,6 +67,26 @@ class ExtensionShortcutContext:
     def __post_init__(self) -> None:
         self.ui = ExtensionCommandUi(self)
 
+    @property
+    def has_ui(self) -> bool:
+        """Return whether this shortcut has an interactive UI backend."""
+        return _session_has_extension_ui(self.session)
+
+    @property
+    def hasUI(self) -> bool:  # noqa: N802 - Pi compatibility spelling.
+        """Pi-compatible camelCase alias for has_ui."""
+        return self.has_ui
+
+    @property
+    def mode(self) -> str:
+        """Return the active extension mode."""
+        return "tui" if self.has_ui else "print"
+
+    @property
+    def cwd(self) -> Any:
+        """Return the active session working directory when available."""
+        return getattr(self.session, "cwd", None)
+
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the shortcut returns."""
         notification_message = str(message).strip()
@@ -167,6 +187,26 @@ class ExtensionCommandContext:
 
     def __post_init__(self) -> None:
         self.ui = ExtensionCommandUi(self)
+
+    @property
+    def has_ui(self) -> bool:
+        """Return whether this command has an interactive UI backend."""
+        return _session_has_extension_ui(self.session)
+
+    @property
+    def hasUI(self) -> bool:  # noqa: N802 - Pi compatibility spelling.
+        """Pi-compatible camelCase alias for has_ui."""
+        return self.has_ui
+
+    @property
+    def mode(self) -> str:
+        """Return the active extension mode."""
+        return "tui" if self.has_ui else "print"
+
+    @property
+    def cwd(self) -> Any:
+        """Return the active session working directory when available."""
+        return getattr(self.session, "cwd", None)
 
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the command returns."""
@@ -503,6 +543,13 @@ def _normalize_argument_completions(
             )
         )
     return tuple(completions)
+
+
+def _session_has_extension_ui(session: Any) -> bool:
+    available = getattr(session, "extension_ui_available", None)
+    if available is not None:
+        return bool(available)
+    return callable(getattr(session, "request_extension_ui", None))
 
 
 def _normalize_user_message_delivery(value: str) -> str:

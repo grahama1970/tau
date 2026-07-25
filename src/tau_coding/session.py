@@ -1655,6 +1655,11 @@ class CodingSession:
         """Install the frontend callback used by Pi-style async extension UI calls."""
         self._extension_ui_handler = handler
 
+    @property
+    def extension_ui_available(self) -> bool:
+        """Return whether an interactive frontend can answer extension UI requests."""
+        return self._extension_ui_handler is not None
+
     async def request_extension_ui(
         self,
         *,
