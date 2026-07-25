@@ -1100,28 +1100,36 @@ def render_compact_session_info(
         overflow="fold",
         no_wrap=False,
     )
-    right = Text(style=theme.muted_text, overflow="fold", no_wrap=False, justify="right")
+    identity = Text(style=theme.muted_text, overflow="fold", no_wrap=False, justify="right")
+    identity.append(session.provider_name, style=theme.completion_description)
+    identity.append(f":{session.model}", style=theme.prompt_text)
+    identity.append(" ")
+    identity.append(f"({_thinking_level(session)})", style=theme.completion_description)
+
+    readiness = Text(style=theme.muted_text, overflow="fold", no_wrap=False)
+    for index, (label, value) in enumerate(_compact_readiness_segments(session)):
+        if index:
+            readiness.append("  ")
+        readiness.append(f"{label}:", style=theme.completion_description)
+        readiness.append(value, style=theme.prompt_text)
+
+    metrics = Text(style=theme.muted_text, overflow="fold", no_wrap=False, justify="right")
     stats = _session_stats_summary(session)
     if stats is not None:
-        right.append(stats, style=theme.completion_description)
-        right.append("  ")
-    right.append(_context_usage(session), style=theme.completion_description)
-    right.append("  ")
-    right.append(session.provider_name, style=theme.completion_description)
-    right.append(f":{session.model}", style=theme.prompt_text)
-    right.append(" ")
-    right.append(f"({_thinking_level(session)})", style=theme.completion_description)
+        metrics.append(stats, style=theme.completion_description)
+        metrics.append("  ")
+    metrics.append(_context_usage(session), style=theme.completion_description)
     loop_monitor = _loop_monitor_status(session)
     if loop_monitor is not None:
-        right.append("  ")
-        right.append("loop2:", style=theme.completion_description)
-        right.append(loop_monitor.label, style=theme.accent)
+        metrics.append("  ")
+        metrics.append("loop2:", style=theme.completion_description)
+        metrics.append(loop_monitor.label, style=theme.accent)
 
     table = Table.grid(expand=True)
     table.add_column(ratio=1)
     table.add_column(ratio=1, justify="right")
-    table.add_row(left, right)
-    return table
+    table.add_row(left, identity)
+    return Group(table, readiness, metrics)
 
 
 def render_chat_item(
@@ -1823,6 +1831,51 @@ def _session_stats(session: SessionSummarySource) -> SessionStats:
     if isinstance(stats, SessionStats):
         return stats
     return _message_session_stats(getattr(session, "messages", ()))
+
+
+def _compact_readiness_segments(session: SessionSummarySource) -> tuple[tuple[str, str], ...]:
+    """Return first-screen readiness facts for narrow or sidebar-hidden layouts."""
+    return (
+        ("auth", _compact_provider_readiness_label(session)),
+        ("mem", _compact_memory_first_label(session)),
+        ("dag", "/workflows"),
+        ("llm", _compact_scillm_surface_label(session)),
+        ("q", _queue_status_label(session)),
+    )
+
+
+def _compact_provider_readiness_label(session: SessionSummarySource) -> str:
+    provider_name = session.provider_name.strip()
+    available_providers = tuple(
+        provider
+        for provider in (str(item).strip() for item in getattr(session, "available_providers", ()))
+        if provider
+    )
+    available_models = tuple(
+        model
+        for model in (str(item).strip() for item in getattr(session, "available_models", ()))
+        if model
+    )
+    if provider_name and provider_name in available_providers and available_models:
+        return f"ready({len(available_providers)})"
+    if available_providers:
+        return f"/model({len(available_providers)})"
+    if provider_name:
+        return f"/login {provider_name}"
+    return "/login"
+
+
+def _compact_memory_first_label(session: SessionSummarySource) -> str:
+    return "loaded" if _memory_first_label(session) == "loaded" else "/skills memory"
+
+
+def _compact_scillm_surface_label(session: SessionSummarySource) -> str:
+    label = _scillm_surface_label(session)
+    if label.startswith("active"):
+        return "active"
+    if label.startswith("switch"):
+        return "/model scillm"
+    return "/scillm"
 
 
 def _message_session_stats(messages: object) -> SessionStats:

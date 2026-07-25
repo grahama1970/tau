@@ -854,6 +854,11 @@ def test_compact_session_info_renders_sidebar_facts() -> None:
     assert "(sys <1k msg 2k tools 10k)" in output
     assert "openai:fake-model" in output
     assert "(medium)" in output
+    assert "auth:ready(1)" in output
+    assert "mem:/skills memory" in output
+    assert "dag:/workflows" in output
+    assert "llm:/scillm" in output
+    assert "q:idle" in output
 
 
 def test_compact_session_info_includes_active_session_activity() -> None:
@@ -961,6 +966,26 @@ def test_compact_session_info_includes_loop_monitor_status() -> None:
     output = console.export_text()
     assert "loop2:STREAM" in output
     assert "READY" in output
+
+
+def test_compact_session_info_exposes_queue_and_scillm_readiness() -> None:
+    session = FakeSession()
+    session.provider_name = "scillm"
+    session.available_providers = ("openai", "scillm")
+    session.skills = (
+        Skill(name="memory", path=session.cwd / "memory.md", content="Recall first."),
+    )
+    session.queued_steering_messages = ("steer now",)
+    session.queued_follow_up_messages = ("then follow",)
+    console = Console(record=True, width=160)
+
+    console.print(render_compact_session_info(session))
+
+    output = console.export_text()
+    assert "auth:ready(2)" in output
+    assert "mem:loaded" in output
+    assert "llm:active" in output
+    assert "q:1 steering, 1 follow-up" in output
 
 
 def test_compact_token_count_uses_thousands_suffix() -> None:
