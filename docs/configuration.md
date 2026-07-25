@@ -311,6 +311,7 @@ Useful commands:
 
 ```bash
 tau sessions
+tau @prompt.md "Use this context"
 tau --session <session-id>
 tau --continue
 tau --resume
@@ -343,6 +344,10 @@ tau export <session-id> --format jsonl
 `--name` sets the display title for a newly started interactive or print-mode
 session. The title is stored in the indexed session metadata used by `/resume`
 and session-id completions.
+
+`@file` startup arguments read text files into the initial prompt as Pi-style
+`<file name="...">` blocks before the remaining prompt text. Empty files are
+ignored; missing or unreadable files fail before the run starts.
 
 `--continue` resumes the latest indexed session for the current working
 directory. It fails instead of creating a new session when no previous cwd

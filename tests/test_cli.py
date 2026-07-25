@@ -6376,6 +6376,59 @@ def test_cli_positional_prompt_invokes_tui_runner(
     ]
 
 
+def test_cli_file_arg_expands_into_tui_initial_prompt(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    prompt_file = tmp_path / "prompt.md"
+    prompt_file.write_text("File prompt body.", encoding="utf-8")
+    calls: list[str | None] = []
+
+    async def fake_run_openai_tui(
+        model: str | None,
+        cwd: Path,
+        session_id: str | None,
+        new_session: bool,
+        provider_name: str | None,
+        auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
+        initial_prompt: str | None,
+        session_name: str | None,
+        continue_session: bool,
+        resume_picker: bool,
+        no_session: bool,
+        session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
+        no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
+        no_skills: bool,
+        no_prompt_templates: bool,
+        no_themes: bool,
+        skill_paths: tuple[Path, ...],
+        prompt_template_paths: tuple[Path, ...],
+        theme_paths: tuple[Path, ...],
+    ) -> None:
+        del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
+        del thinking_level, custom_system_prompt, append_system_prompt
+        del session_name, continue_session, resume_picker, no_session, session_dir
+        del provider_settings, no_context_files, tool_allowlist, tool_denylist
+        del no_tools, no_builtin_tools, no_skills, no_prompt_templates, no_themes
+        del skill_paths, prompt_template_paths, theme_paths
+        calls.append(initial_prompt)
+
+    monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
+
+    result = CliRunner().invoke(app, ["--cwd", str(tmp_path), "@prompt.md", "Summarize."])
+
+    assert result.exit_code == 0
+    assert calls == [f'<file name="{prompt_file}">\nFile prompt body.\n</file>\nSummarize.']
+
+
 @pytest.mark.anyio
 async def test_run_print_mode_prints_final_assistant_text(
     capsys: pytest.CaptureFixture[str], tmp_path: Path
@@ -6860,6 +6913,76 @@ def test_mode_flag_alone_triggers_print_mode(monkeypatch: pytest.MonkeyPatch) ->
 
     assert result.exit_code == 0
     assert calls == [("hello", PrintOutputMode.json)]
+
+
+def test_print_mode_file_arg_expands_into_prompt(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    prompt_file = tmp_path / "prompt.md"
+    prompt_file.write_text("File prompt body.", encoding="utf-8")
+    calls: list[str] = []
+
+    async def fake_run_openai_print_mode(
+        prompt: str,
+        model: str | None,
+        cwd: Path,
+        output: PrintOutputMode,
+        provider_name: str | None,
+        loop_receipt: LoopReceiptConfig | None,
+        thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
+        session_name: str | None,
+        no_session: bool,
+        session_dir: Path | None,
+        no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
+        no_skills: bool,
+        no_prompt_templates: bool,
+        no_themes: bool,
+        skill_paths: tuple[Path, ...],
+        prompt_template_paths: tuple[Path, ...],
+        theme_paths: tuple[Path, ...],
+    ) -> bool:
+        del model, cwd, output, provider_name, loop_receipt, thinking_level
+        del custom_system_prompt, append_system_prompt, session_name, no_session, session_dir
+        del no_context_files, tool_allowlist, tool_denylist, no_tools, no_builtin_tools
+        del no_skills, no_prompt_templates, no_themes
+        del skill_paths, prompt_template_paths, theme_paths
+        calls.append(prompt)
+        return True
+
+    monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
+
+    result = CliRunner().invoke(app, ["--cwd", str(tmp_path), "--print", "@prompt.md", "Use it."])
+
+    assert result.exit_code == 0
+    assert calls == [f'<file name="{prompt_file}">\nFile prompt body.\n</file>\nUse it.']
+
+
+def test_file_arg_expansion_does_not_intercept_list_model_search(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str | None] = []
+
+    def fake_render_model_list(
+        settings: ProviderSettings,
+        provider_name: str | None,
+        search: str | None,
+    ) -> None:
+        del settings, provider_name
+        calls.append(search)
+
+    monkeypatch.setattr(cli, "render_model_list", fake_render_model_list)
+
+    result = CliRunner().invoke(app, ["--list-models", "@/tmp/missing-tau-model-query"])
+
+    assert result.exit_code == 0
+    assert calls == ["@/tmp/missing-tau-model-query"]
 
 
 def test_print_mode_passes_startup_session_name(monkeypatch: pytest.MonkeyPatch) -> None:

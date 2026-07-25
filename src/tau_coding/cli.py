@@ -1156,7 +1156,6 @@ def main(
 
     positional_args = prompt_args or []
     command = positional_args[0] if positional_args else None
-    initial_prompt = " ".join(positional_args) if positional_args else None
 
     if list_models:
         if print_requested:
@@ -3331,6 +3330,8 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
 
+    initial_prompt = _build_initial_prompt_from_args(positional_args, cwd=startup_cwd)
+
     if not print_requested:
         startup_session_id = session
         if fork_session_ref is not None:
@@ -3492,6 +3493,40 @@ def _resolve_append_system_prompt_option(
         for value in values
     ]
     return "\n\n".join(part for part in resolved if part is not None)
+
+
+def _build_initial_prompt_from_args(args: list[str], *, cwd: Path) -> str | None:
+    if not args:
+        return None
+    messages: list[str] = []
+    file_blocks: list[str] = []
+    for arg in args:
+        if arg.startswith("@") and len(arg) > 1:
+            file_blocks.append(_read_startup_file_arg(arg[1:], cwd=cwd))
+        else:
+            messages.append(arg)
+    parts = [block for block in file_blocks if block]
+    if messages:
+        parts.append(" ".join(messages))
+    return "".join(parts) if parts else None
+
+
+def _read_startup_file_arg(value: str, *, cwd: Path) -> str:
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = cwd / path
+    path = path.resolve()
+    if not path.exists():
+        raise typer.BadParameter(f"File not found: {path}")
+    if not path.is_file():
+        raise typer.BadParameter(f"File argument is not a file: {path}")
+    if path.stat().st_size == 0:
+        return ""
+    try:
+        content = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise typer.BadParameter(f"Could not read file {path}: {exc}") from exc
+    return f'<file name="{path}">\n{content}\n</file>\n'
 
 
 async def run_openai_tui(
