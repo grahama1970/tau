@@ -7496,6 +7496,7 @@ class TauTuiApp(App[None]):
             else self._extension_widget_component_names_above
         )
         container = self.query_one(f"#extension-widget-components-{suffix}", Vertical)
+        _dispose_extension_component_children(container)
         await container.remove_children()
         for key, factory in factories.items():
             try:
@@ -7579,6 +7580,7 @@ class TauTuiApp(App[None]):
             )
             content = f"Extension {target} component error ({name}): {exc}"
         container = self.query_one(f"#extension-{target}-component", Vertical)
+        _dispose_extension_component_children(container)
         await container.remove_children()
         await container.mount(_extension_component_widget(content))
         container.display = True
@@ -7606,6 +7608,7 @@ class TauTuiApp(App[None]):
     def _clear_extension_chrome_component(self, target: Literal["footer", "header"]) -> None:
         with suppress(NoMatches):
             container = self.query_one(f"#extension-{target}-component", Vertical)
+            _dispose_extension_component_children(container)
             container.remove_children()
             container.display = False
 
@@ -13243,6 +13246,16 @@ def _extension_component_widget(content: object) -> Widget:
     if isinstance(content, Widget):
         return content
     return Static(_extension_custom_content_text(content))
+
+
+def _dispose_extension_component_children(container: Widget) -> None:
+    for child in tuple(container.children):
+        if getattr(child, "_tau_extension_disposed", False):
+            continue
+        dispose = getattr(child, "dispose", None)
+        if callable(dispose):
+            child._tau_extension_disposed = True
+            dispose()
 
 
 class _TauFooterDataProvider:
