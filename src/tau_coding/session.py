@@ -30,6 +30,7 @@ from tau_agent.messages import AgentMessage, AssistantMessage, UserMessage
 from tau_agent.session import (
     BranchSummaryEntry,
     CompactionEntry,
+    CustomEntry,
     JsonlSessionStorage,
     LabelEntry,
     LeafEntry,
@@ -624,6 +625,24 @@ class CodingSession:
         await self._append_session_entry(entry)
         action = "Cleared label for" if not normalized else "Labeled"
         return f"{action} tree entry: {entry_id}"
+
+    async def append_custom_entry(
+        self,
+        namespace: str,
+        data: Mapping[str, Any] | None = None,
+    ) -> str:
+        """Append an extension/application-owned entry to the durable session."""
+        normalized = str(namespace).strip()
+        if not normalized:
+            raise ValueError("custom entry namespace must be non-empty")
+        entry_data = dict(data or {})
+        entry = CustomEntry(
+            parent_id=self._last_parent_id,
+            namespace=normalized,
+            data=entry_data,
+        )
+        await self._append_session_entry(entry)
+        return entry.id
 
     async def branch_to_entry(
         self,

@@ -237,6 +237,18 @@ class ExtensionShortcutContext:
         """Execute a command without a shell and return Pi-style output metadata."""
         return await _session_exec(self.session, command, args, options)
 
+    async def append_entry(self, custom_type: str, data: Mapping[str, Any] | None = None) -> str:
+        """Append an extension-owned durable session entry."""
+        return await _session_append_entry(self.session, custom_type, data)
+
+    async def appendEntry(  # noqa: N802
+        self,
+        custom_type: str,
+        data: Mapping[str, Any] | None = None,
+    ) -> str:
+        """Pi-compatible camelCase alias for append_entry."""
+        return await self.append_entry(custom_type, data)
+
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the shortcut returns."""
         notification_message = str(message).strip()
@@ -630,6 +642,18 @@ class ExtensionCommandContext:
     ) -> ExecResultInfo:
         """Execute a command without a shell and return Pi-style output metadata."""
         return await _session_exec(self.session, command, args, options)
+
+    async def append_entry(self, custom_type: str, data: Mapping[str, Any] | None = None) -> str:
+        """Append an extension-owned durable session entry."""
+        return await _session_append_entry(self.session, custom_type, data)
+
+    async def appendEntry(  # noqa: N802
+        self,
+        custom_type: str,
+        data: Mapping[str, Any] | None = None,
+    ) -> str:
+        """Pi-compatible camelCase alias for append_entry."""
+        return await self.append_entry(custom_type, data)
 
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the command returns."""
@@ -1485,6 +1509,17 @@ def _exec_timeout_seconds(value: Any) -> float | None:
         return None
     timeout_ms = float(value)
     return timeout_ms / 1000 if timeout_ms > 0 else None
+
+
+async def _session_append_entry(
+    session: Any,
+    custom_type: str,
+    data: Mapping[str, Any] | None,
+) -> str:
+    append = getattr(session, "append_custom_entry", None)
+    if callable(append):
+        return str(await append(custom_type, data))
+    raise RuntimeError("active session does not support extension custom entries")
 
 
 def _tool_info(tool: Any, *, extension_sources: Mapping[str, object]) -> ToolInfo:
