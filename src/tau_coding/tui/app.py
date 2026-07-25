@@ -7589,6 +7589,7 @@ class TauTuiApp(App[None]):
                 frame=self._activity_frame,
                 running=self.state.running,
                 shell_mode=_is_terminal_command_prompt(prompt.text),
+                thinking_level=getattr(self.session, "thinking_level", None),
             ),
         )
         prompt_prefix.update(
@@ -7667,11 +7668,30 @@ def _activity_prompt_border_color(
     frame: int,
     running: bool,
     shell_mode: bool,
+    thinking_level: str | None = None,
 ) -> str:
     """Return the prompt border color for the current activity animation frame."""
     del frame, running
     if shell_mode:
         return theme.role_styles["tool"].border
+    return _thinking_prompt_border_color(theme, thinking_level)
+
+
+def _thinking_prompt_border_color(theme: TuiTheme, thinking_level: str | None) -> str:
+    """Return a Pi-style prompt border color for the active thinking depth."""
+    level = str(thinking_level or "off").casefold()
+    if level == "off":
+        return theme.prompt_border
+    if level == "minimal":
+        return theme.role_styles["thinking"].border
+    if level == "low":
+        return theme.role_styles["assistant"].border
+    if level == "medium":
+        return theme.accent
+    if level == "high":
+        return theme.success
+    if level == "xhigh":
+        return theme.error
     return theme.prompt_border
 
 
