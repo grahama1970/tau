@@ -2181,6 +2181,22 @@ class CodingSession:
         if not normalized_command:
             raise ValueError("Terminal command cannot be empty")
 
+        extension_result = await self._extension_terminal_command_result(
+            normalized_command,
+            add_to_context=add_to_context,
+        )
+        if extension_result is not None:
+            if add_to_context:
+                await self._append_or_defer_terminal_context_message(
+                    UserMessage(
+                        content=_terminal_command_context_message(
+                            normalized_command,
+                            extension_result.output,
+                        )
+                    )
+                )
+            return extension_result
+
         shell_command = _apply_shell_command_prefix(
             normalized_command,
             self._shell_command_prefix,
@@ -2216,6 +2232,30 @@ class CodingSession:
             ok=result.ok,
             added_to_context=add_to_context,
         )
+
+    async def _extension_terminal_command_result(
+        self,
+        command: str,
+        *,
+        add_to_context: bool,
+    ) -> TerminalCommandResult | None:
+        results = await self.emit_extension_event(
+            {
+                "type": "user_bash",
+                "command": command,
+                "excludeFromContext": not add_to_context,
+                "cwd": str(self.cwd),
+            }
+        )
+        for result in results:
+            terminal_result = _extension_user_bash_result(
+                result,
+                command=command,
+                add_to_context=add_to_context,
+            )
+            if terminal_result is not None:
+                return terminal_result
+        return None
 
     async def _append_or_defer_terminal_context_message(self, message: UserMessage) -> None:
         if self._harness.is_running:
@@ -3082,6 +3122,38 @@ def _terminal_command_context_message(command: str, output: str) -> str:
         "Terminal command executed by the user.\n\n"
         f"Command:\n```bash\n{command}\n```\n\n"
         f"Output:\n```text\n{output}\n```"
+    )
+
+
+def _extension_user_bash_result(
+    value: object,
+    *,
+    command: str,
+    add_to_context: bool,
+) -> TerminalCommandResult | None:
+    if not isinstance(value, Mapping):
+        return None
+    raw_result = value.get("result", value)
+    if not isinstance(raw_result, Mapping):
+        return None
+    raw_output = raw_result.get("output", raw_result.get("content"))
+    if not isinstance(raw_output, str):
+        return None
+    raw_command = raw_result.get("command", command)
+    raw_exit_code = raw_result.get("exitCode", raw_result.get("exit_code"))
+    exit_code = raw_exit_code if isinstance(raw_exit_code, int) else None
+    raw_ok = raw_result.get("ok")
+    ok = (
+        raw_ok
+        if isinstance(raw_ok, bool)
+        else (exit_code == 0 if exit_code is not None else True)
+    )
+    return TerminalCommandResult(
+        command=raw_command if isinstance(raw_command, str) else command,
+        output=raw_output,
+        exit_code=exit_code,
+        ok=ok,
+        added_to_context=add_to_context,
     )
 
 
