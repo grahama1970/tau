@@ -48,6 +48,7 @@ from tau_coding.rendering import PrintOutputMode
 from tau_coding.resources import TauResourcePaths
 from tau_coding.system_prompt import BuildSystemPromptOptions, build_system_prompt
 from tau_coding.tools import create_coding_tools
+from tau_coding.trust import DefaultProjectTrust
 from tau_coding.tui.config import TuiSettings, save_tui_settings
 from tau_coding.updater import UpdateResult
 
@@ -6246,6 +6247,7 @@ def test_cli_without_prompt_invokes_tui_runner(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -6323,6 +6325,7 @@ def test_cli_positional_prompt_invokes_tui_runner(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -6401,6 +6404,7 @@ def test_cli_file_arg_expands_into_tui_initial_prompt(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -6853,6 +6857,7 @@ def test_cli_exits_nonzero_when_print_mode_fails(monkeypatch: pytest.MonkeyPatch
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -6891,6 +6896,7 @@ def test_mode_flag_alone_triggers_print_mode(monkeypatch: pytest.MonkeyPatch) ->
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -6936,6 +6942,7 @@ def test_print_mode_file_arg_expands_into_prompt(
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -6962,6 +6969,60 @@ def test_print_mode_file_arg_expands_into_prompt(
 
     assert result.exit_code == 0
     assert calls == [f'<file name="{prompt_file}">\nFile prompt body.\n</file>\nUse it.']
+
+
+def test_print_mode_passes_project_trust_override(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[DefaultProjectTrust | None] = []
+
+    async def fake_run_openai_print_mode(
+        prompt: str,
+        model: str | None,
+        cwd: Path,
+        output: PrintOutputMode,
+        provider_name: str | None,
+        loop_receipt: LoopReceiptConfig | None,
+        thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
+        session_name: str | None,
+        no_session: bool,
+        session_dir: Path | None,
+        default_project_trust: DefaultProjectTrust | None,
+        no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
+        no_skills: bool,
+        no_prompt_templates: bool,
+        no_themes: bool,
+        skill_paths: tuple[Path, ...],
+        prompt_template_paths: tuple[Path, ...],
+        theme_paths: tuple[Path, ...],
+    ) -> bool:
+        del prompt, model, cwd, output, provider_name, loop_receipt, thinking_level
+        del custom_system_prompt, append_system_prompt, session_name, no_session, session_dir
+        del no_context_files, tool_allowlist, tool_denylist, no_tools, no_builtin_tools
+        del no_skills, no_prompt_templates, no_themes
+        del skill_paths, prompt_template_paths, theme_paths
+        calls.append(default_project_trust)
+        return True
+
+    monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
+
+    approve = CliRunner().invoke(app, ["--print", "--approve", "hello"])
+    no_approve = CliRunner().invoke(app, ["--print", "--no-approve", "hello"])
+
+    assert approve.exit_code == 0
+    assert no_approve.exit_code == 0
+    assert calls == ["always", "never"]
+
+
+def test_project_trust_override_rejects_conflicting_flags() -> None:
+    result = CliRunner().invoke(app, ["--approve", "--no-approve", "hello"])
+
+    assert result.exit_code != 0
+    assert "--approve and --no-approve cannot be used together" in result.output
 
 
 def test_file_arg_expansion_does_not_intercept_list_model_search(
@@ -7001,6 +7062,7 @@ def test_print_mode_passes_startup_session_name(monkeypatch: pytest.MonkeyPatch)
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -7041,6 +7103,7 @@ def test_print_mode_passes_no_session_flag(monkeypatch: pytest.MonkeyPatch) -> N
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -7081,6 +7144,7 @@ def test_print_mode_passes_no_context_files_flag(monkeypatch: pytest.MonkeyPatch
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -7122,6 +7186,7 @@ def test_print_mode_passes_startup_thinking_level(monkeypatch: pytest.MonkeyPatc
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -7172,6 +7237,7 @@ def test_print_mode_passes_system_prompt_inputs(
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -7230,6 +7296,7 @@ def test_print_mode_passes_tool_selection_flags(monkeypatch: pytest.MonkeyPatch)
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -7298,6 +7365,7 @@ def test_print_mode_passes_explicit_resource_paths(
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -7367,6 +7435,7 @@ def test_print_mode_merges_piped_stdin_into_prompt(monkeypatch: pytest.MonkeyPat
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -7407,6 +7476,7 @@ def test_print_mode_accepts_stdin_only_prompt(monkeypatch: pytest.MonkeyPatch) -
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -7495,6 +7565,7 @@ def test_cli_print_mode_passes_loop2_receipt_options(
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -7562,6 +7633,7 @@ def test_cli_print_mode_marks_nonfake_loop2_receipt_live(
         session_name: str | None,
         no_session: bool,
         session_dir: Path | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -7672,6 +7744,7 @@ def test_default_tui_invokes_tui_runner_with_flags(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -7747,6 +7820,7 @@ def test_default_tui_passes_startup_session_name(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -7793,6 +7867,7 @@ def test_default_tui_passes_continue_session_flag(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -7839,6 +7914,7 @@ def test_default_tui_passes_resume_picker_flag(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -7888,6 +7964,7 @@ def test_default_tui_passes_startup_thinking_alias(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -7937,6 +8014,7 @@ def test_default_tui_passes_system_prompt_inputs(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -7997,6 +8075,7 @@ def test_default_tui_passes_no_session_flag(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -8043,6 +8122,7 @@ def test_default_tui_passes_no_context_files_flag(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -8068,6 +8148,59 @@ def test_default_tui_passes_no_context_files_flag(
     assert calls == [True]
 
 
+def test_default_tui_passes_project_trust_override(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[DefaultProjectTrust | None] = []
+
+    async def fake_run_openai_tui(
+        model: str | None,
+        cwd: Path,
+        session_id: str | None,
+        new_session: bool,
+        provider_name: str | None,
+        auto_compact_token_threshold: int | None,
+        thinking_level: ThinkingLevel | None,
+        custom_system_prompt: str | None,
+        append_system_prompt: str | None,
+        initial_prompt: str | None,
+        session_name: str | None,
+        continue_session: bool,
+        resume_picker: bool,
+        no_session: bool,
+        session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
+        no_context_files: bool,
+        tool_allowlist: tuple[str, ...] | None,
+        tool_denylist: tuple[str, ...],
+        no_tools: bool,
+        no_builtin_tools: bool,
+        no_skills: bool,
+        no_prompt_templates: bool,
+        no_themes: bool,
+        skill_paths: tuple[Path, ...],
+        prompt_template_paths: tuple[Path, ...],
+        theme_paths: tuple[Path, ...],
+    ) -> None:
+        del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
+        del thinking_level, custom_system_prompt, append_system_prompt, initial_prompt
+        del session_name, continue_session, resume_picker, no_session, session_dir
+        del provider_settings, no_context_files, tool_allowlist, tool_denylist
+        del no_tools, no_builtin_tools, no_skills, no_prompt_templates, no_themes
+        del skill_paths, prompt_template_paths, theme_paths
+        calls.append(default_project_trust)
+
+    monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
+
+    approve = CliRunner().invoke(app, ["--cwd", str(tmp_path), "--approve"])
+    no_approve = CliRunner().invoke(app, ["--cwd", str(tmp_path), "--no-approve"])
+
+    assert approve.exit_code == 0
+    assert no_approve.exit_code == 0
+    assert calls == ["always", "never"]
+
+
 def test_default_tui_passes_tool_selection_flags(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -8090,6 +8223,7 @@ def test_default_tui_passes_tool_selection_flags(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -8162,6 +8296,7 @@ def test_default_tui_passes_explicit_resource_paths(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -8350,6 +8485,7 @@ def test_default_tui_passes_transient_scoped_model_patterns(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -8418,6 +8554,7 @@ def test_default_tui_models_pattern_respects_provider_filter(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],
@@ -8506,6 +8643,7 @@ def test_default_tui_forks_session_before_starting_tui(
         no_session: bool,
         session_dir: Path | None,
         provider_settings: ProviderSettings | None,
+        default_project_trust: DefaultProjectTrust | None,
         no_context_files: bool,
         tool_allowlist: tuple[str, ...] | None,
         tool_denylist: tuple[str, ...],

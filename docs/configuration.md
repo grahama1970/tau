@@ -317,6 +317,8 @@ tau --continue
 tau --resume
 tau --new-session
 tau --no-session
+tau --approve
+tau --no-approve
 tau --session-dir ~/.tau-alt/sessions
 tau --fork <session-id-or-jsonl-path>
 tau --name "Customer bugfix"
@@ -359,6 +361,11 @@ known.
 
 `--no-session` starts an ephemeral interactive or print-mode run without
 creating an indexed session record or writing a session JSONL transcript.
+
+`--approve` trusts project-local resources for this run, matching the
+configured `default_project_trust = "always"` behavior without writing the
+trust store. `--no-approve` ignores project-local resources for this run,
+matching `default_project_trust = "never"`.
 
 `--session-dir <dir>` uses `<dir>` as the indexed session storage root for
 startup, listing, and export commands.

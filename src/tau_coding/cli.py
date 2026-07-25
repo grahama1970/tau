@@ -259,6 +259,7 @@ from tau_coding.sparta_posture import write_sparta_posture_contract
 from tau_coding.test_run_receipt import write_test_run_receipt
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL, ThinkingLevel, normalize_thinking_level
 from tau_coding.traycer.cli import parse_traycer_validate_cli_args, traycer_validate_command
+from tau_coding.trust import DefaultProjectTrust
 from tau_coding.tui import run_tui_app
 from tau_coding.tui.config import load_tui_settings
 from tau_coding.tui.proof import (
@@ -938,6 +939,14 @@ def main(
         list[Path] | None,
         typer.Option("--theme", help="Load a custom theme JSON file or directory; repeatable."),
     ] = None,
+    approve_project: Annotated[
+        bool,
+        typer.Option("--approve", "-a", help="Trust project-local resources for this run."),
+    ] = False,
+    no_approve_project: Annotated[
+        bool,
+        typer.Option("--no-approve", "-na", help="Ignore project-local resources for this run."),
+    ] = False,
     auto_compact_threshold: Annotated[
         int | None,
         typer.Option(
@@ -1109,6 +1118,10 @@ def main(
     if session_name is not None and not session_name.strip():
         raise typer.BadParameter("--name requires a non-empty value")
 
+    startup_default_project_trust = _resolve_startup_project_trust_override(
+        approve_project=approve_project,
+        no_approve_project=no_approve_project,
+    )
     print_requested = print_mode or mode is not None
     effective_output = mode or PrintOutputMode.text
 
@@ -3366,6 +3379,7 @@ def main(
                 no_session,
                 session_dir,
                 provider_settings_override,
+                startup_default_project_trust,
                 no_context_files,
                 tool_allowlist,
                 tool_denylist,
@@ -3414,6 +3428,7 @@ def main(
             session_name,
             no_session,
             session_dir,
+            startup_default_project_trust,
             no_context_files,
             tool_allowlist,
             tool_denylist,
@@ -3529,6 +3544,20 @@ def _read_startup_file_arg(value: str, *, cwd: Path) -> str:
     return f'<file name="{path}">\n{content}\n</file>\n'
 
 
+def _resolve_startup_project_trust_override(
+    *,
+    approve_project: bool,
+    no_approve_project: bool,
+) -> DefaultProjectTrust | None:
+    if approve_project and no_approve_project:
+        raise typer.BadParameter("--approve and --no-approve cannot be used together")
+    if approve_project:
+        return "always"
+    if no_approve_project:
+        return "never"
+    return None
+
+
 async def run_openai_tui(
     model: str | None,
     cwd: Path,
@@ -3546,6 +3575,7 @@ async def run_openai_tui(
     no_session: bool = False,
     session_dir: Path | None = None,
     provider_settings: ProviderSettings | None = None,
+    default_project_trust: DefaultProjectTrust | None = None,
     no_context_files: bool = False,
     tool_allowlist: tuple[str, ...] | None = None,
     tool_denylist: tuple[str, ...] = (),
@@ -3576,6 +3606,7 @@ async def run_openai_tui(
         no_session=no_session,
         session_manager=_session_manager_from_dir(session_dir),
         provider_settings=provider_settings,
+        default_project_trust=default_project_trust,
         no_context_files=no_context_files,
         tool_allowlist=tool_allowlist,
         tool_denylist=tool_denylist,
@@ -13360,6 +13391,7 @@ async def run_openai_print_mode(
     session_name: str | None = None,
     no_session: bool = False,
     session_dir: Path | None = None,
+    default_project_trust: DefaultProjectTrust | None = None,
     no_context_files: bool = False,
     tool_allowlist: tuple[str, ...] | None = None,
     tool_denylist: tuple[str, ...] = (),
@@ -13405,6 +13437,7 @@ async def run_openai_print_mode(
             thinking_level=startup_thinking_level,
             custom_system_prompt=custom_system_prompt,
             append_system_prompt=append_system_prompt,
+            default_project_trust=default_project_trust,
             discover_context_files=not no_context_files,
             tool_allowlist=tool_allowlist,
             tool_denylist=tool_denylist,
@@ -13439,6 +13472,7 @@ async def run_print_mode(
     thinking_level: ThinkingLevel = DEFAULT_THINKING_LEVEL,
     custom_system_prompt: str | None = None,
     append_system_prompt: str | None = None,
+    default_project_trust: DefaultProjectTrust | None = None,
     discover_context_files: bool = True,
     tool_allowlist: tuple[str, ...] | None = None,
     tool_denylist: tuple[str, ...] = (),
@@ -13457,6 +13491,7 @@ async def run_print_mode(
     can fail non-interactive runs while still rendering the error message.
     """
     tui_settings = load_tui_settings(_tui_settings_paths(resource_paths))
+    effective_default_project_trust = default_project_trust or tui_settings.default_project_trust
     session = await CodingSession.load(
         CodingSessionConfig(
             provider=provider,
@@ -13472,7 +13507,7 @@ async def run_print_mode(
             thinking_level=thinking_level,
             custom_system_prompt=custom_system_prompt,
             append_system_prompt=append_system_prompt,
-            default_project_trust=tui_settings.default_project_trust,
+            default_project_trust=effective_default_project_trust,
             shell_path=tui_settings.shell_path,
             shell_command_prefix=tui_settings.shell_command_prefix,
             auto_resize_images=tui_settings.auto_resize_images,
