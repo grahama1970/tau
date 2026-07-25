@@ -3186,7 +3186,11 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
     def on_mount(self) -> None:
         """Focus the tree list for keyboard navigation."""
         tree_list = self.query_one("#tree-picker-list", ListView)
-        tree_list.index = _active_tree_choice_index(self.choices)
+        tree_list.index = _nearest_visible_tree_choice_index(
+            self._visible_choices(),
+            self.choices,
+            _active_tree_choice_id(self.choices),
+        )
         self._refresh_tree_item_labels()
         self.call_after_refresh(self._refresh_tree_item_labels)
         tree_list.focus()
@@ -3264,7 +3268,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         elif _matches_configured_or_default_key(
             event.key,
             self.keybindings.tree_filter_cycle,
-            "ctrl+o,ctrl+f",
+            "ctrl+o",
         ):
             event.stop()
             self.action_cycle_tree_filter()
@@ -3445,7 +3449,11 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         filtered_choices = self._filtered_choices()
         if choice is None:
             return
-        if not _tree_choice_is_branch_foldable(choice, filtered_choices):
+        if not _tree_choice_is_branch_foldable(
+            choice,
+            filtered_choices,
+            source_choices=self.choices,
+        ):
             self._move_tree_branch_segment("up")
             return
         if choice.entry_id in self.folded_entry_ids:
@@ -3480,6 +3488,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
             visible_choices,
             selected_index,
             direction=direction,
+            source_choices=self.choices,
         )
         self._refresh_tree_item_labels()
 
@@ -3582,8 +3591,10 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         await tree_list.clear()
         await tree_list.extend(self._list_items())
         visible_choices = self._visible_choices()
-        tree_list.index = (
-            _tree_choice_index(visible_choices, selected_entry_id) if visible_choices else None
+        tree_list.index = _nearest_visible_tree_choice_index(
+            visible_choices,
+            self.choices,
+            selected_entry_id,
         )
         self._refresh_tree_item_labels()
         self.query_one("#tree-picker-search", Static).update(self._search_text())
@@ -3714,7 +3725,7 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
             f"Type to filter | {branch_key} branch | S summarize | C custom | "
             f"{copy_key} copy | {label_key} label | "
             f"{label_time_key} label time {label_time_state} | "
-            f"{page_left_key}/{page_right_key} page | {fold_key}/{unfold_key} fold | "
+            f"{page_left_key}/{page_right_key} page | {fold_key}/{unfold_key} branch | "
             f"{no_tools_key} no-tools {tool_call_state} | "
             f"{filter_next_key}/{filter_previous_key} filter {filter_label} | "
             f"{cancel_key} clear/close"
@@ -8665,8 +8676,13 @@ def _tree_choice_has_children(
 def _tree_choice_is_branch_foldable(
     choice: SessionTreeChoice,
     choices: Sequence[SessionTreeChoice],
+    *,
+    source_choices: Sequence[SessionTreeChoice] | None = None,
 ) -> bool:
-    children_by_parent, parent_by_id = _visible_tree_relationships(choices)
+    children_by_parent, parent_by_id = _visible_tree_relationships(
+        choices,
+        source_choices=source_choices,
+    )
     if not children_by_parent.get(choice.entry_id):
         return False
     parent_id = parent_by_id.get(choice.entry_id)
@@ -8680,10 +8696,14 @@ def _tree_branch_segment_index(
     selected_index: int,
     *,
     direction: Literal["up", "down"],
+    source_choices: Sequence[SessionTreeChoice] | None = None,
 ) -> int:
     if selected_index < 0 or selected_index >= len(choices):
         return 0
-    children_by_parent, parent_by_id = _visible_tree_relationships(choices)
+    children_by_parent, parent_by_id = _visible_tree_relationships(
+        choices,
+        source_choices=source_choices,
+    )
     index_by_id = {choice.entry_id: index for index, choice in enumerate(choices)}
     current_id = choices[selected_index].entry_id
 
@@ -8709,9 +8729,13 @@ def _tree_branch_segment_index(
 
 def _visible_tree_relationships(
     choices: Sequence[SessionTreeChoice],
+    *,
+    source_choices: Sequence[SessionTreeChoice] | None = None,
 ) -> tuple[dict[str | None, tuple[str, ...]], dict[str, str | None]]:
     visible_ids = {choice.entry_id for choice in choices}
-    source_parent_by_id = {choice.entry_id: choice.parent_entry_id for choice in choices}
+    source_parent_by_id = {
+        choice.entry_id: choice.parent_entry_id for choice in (source_choices or choices)
+    }
     children_by_parent_lists: dict[str | None, list[str]] = {None: []}
     parent_by_id: dict[str, str | None] = {}
 
@@ -8919,6 +8943,40 @@ def _format_workflow_terminal_output(output: str) -> str | None:
 
 def _active_tree_choice_index(choices: Sequence[SessionTreeChoice]) -> int:
     return _tree_choice_index(choices, None)
+
+
+def _active_tree_choice_id(choices: Sequence[SessionTreeChoice]) -> str | None:
+    for choice in choices:
+        if choice.active:
+            return choice.entry_id
+    return None
+
+
+def _nearest_visible_tree_choice_index(
+    visible_choices: Sequence[SessionTreeChoice],
+    source_choices: Sequence[SessionTreeChoice],
+    entry_id: str | None,
+) -> int | None:
+    if not visible_choices:
+        return None
+    target_entry_id = entry_id or _active_tree_choice_id(source_choices)
+    visible_index_by_id = {
+        choice.entry_id: index for index, choice in enumerate(visible_choices)
+    }
+    if target_entry_id is not None:
+        source_parent_by_id = {
+            choice.entry_id: choice.parent_entry_id for choice in source_choices
+        }
+        current_id: str | None = target_entry_id
+        seen: set[str] = set()
+        while current_id is not None and current_id not in seen:
+            visible_index = visible_index_by_id.get(current_id)
+            if visible_index is not None:
+                return visible_index
+            seen.add(current_id)
+            current_id = source_parent_by_id.get(current_id)
+        return len(visible_choices) - 1
+    return _tree_choice_index(visible_choices, None)
 
 
 def _tree_choice_index(choices: Sequence[SessionTreeChoice], entry_id: str | None) -> int:

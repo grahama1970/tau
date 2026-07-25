@@ -6368,7 +6368,7 @@ async def test_tui_app_tree_picker_cycles_filter_modes() -> None:
         assert isinstance(app.screen, TreePickerScreen)
         tree_list = app.screen.query_one("#tree-picker-list", ListView)
 
-        await pilot.press("ctrl+f")
+        await pilot.press("ctrl+o")
         await pilot.pause()
 
         labels = [str(item.query_one(Label).render()) for item in tree_list.children]
@@ -6380,7 +6380,7 @@ async def test_tui_app_tree_picker_cycles_filter_modes() -> None:
         assert tree_list.index == 2
         assert "filter no-tools" in str(app.screen.query_one("#tree-picker-help", Static).render())
 
-        await pilot.press("ctrl+f")
+        await pilot.press("ctrl+o")
         await pilot.pause()
 
         labels = [str(item.query_one(Label).render()) for item in tree_list.children]
@@ -6388,7 +6388,7 @@ async def test_tui_app_tree_picker_cycles_filter_modes() -> None:
         assert tree_list.index == 0
         assert "filter user-only" in str(app.screen.query_one("#tree-picker-help", Static).render())
 
-        await pilot.press("ctrl+f")
+        await pilot.press("ctrl+o")
         await pilot.pause()
 
         labels = [str(item.query_one(Label).render()) for item in tree_list.children]
@@ -6398,7 +6398,7 @@ async def test_tui_app_tree_picker_cycles_filter_modes() -> None:
             app.screen.query_one("#tree-picker-help", Static).render()
         )
 
-        await pilot.press("ctrl+f")
+        await pilot.press("ctrl+o")
         await pilot.pause()
 
         labels = [str(item.query_one(Label).render()) for item in tree_list.children]
@@ -6550,7 +6550,7 @@ async def test_tui_app_tree_picker_help_uses_configured_tree_keybindings() -> No
 
     assert "F6 label" in help_text
     assert "F7 label time" in help_text
-    assert "F8/F9 fold" in help_text
+    assert "F8/F9 branch" in help_text
     assert "F10 no-tools" in help_text
     assert "F11/F12 filter default" in help_text
 
@@ -6715,9 +6715,10 @@ async def test_tui_app_tree_picker_folds_and_unfolds_selected_branch() -> None:
             "  user: Root"
         ]
         assert tree_list.index == 0
-        assert "Ctrl+Left/Ctrl+Right fold" in str(
-            app.screen.query_one("#tree-picker-help", Static).render()
-        )
+        help_text = str(app.screen.query_one("#tree-picker-help", Static).render())
+        assert "Ctrl+Left" in help_text
+        assert "Ctrl+Right" in help_text
+        assert "branch" in help_text
 
         await pilot.press("ctrl+right")
         await pilot.pause()
@@ -6755,6 +6756,48 @@ async def test_tui_app_tree_picker_fold_keys_jump_between_branch_segments() -> N
         await pilot.pause()
 
         assert tree_list.index == 1
+
+
+@pytest.mark.anyio
+async def test_tui_app_tree_picker_branch_navigation_uses_hidden_ancestors() -> None:
+    class FilteredAncestorSession(FakeSession):
+        async def tree_choices(self) -> tuple[SessionTreeChoice, ...]:
+            return (
+                SessionTreeChoice(entry_id="root", label="user: Root"),
+                SessionTreeChoice(
+                    entry_id="assistant-parent",
+                    label="assistant: Hidden parent",
+                    parent_entry_id="root",
+                ),
+                SessionTreeChoice(
+                    entry_id="user-child",
+                    label="user: Visible child",
+                    parent_entry_id="assistant-parent",
+                    active=True,
+                ),
+            )
+
+    session = FilteredAncestorSession()
+    app = TauTuiApp(session, tui_settings=TuiSettings(tree_filter_mode="user-only"))
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/tree"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, TreePickerScreen)
+        tree_list = app.screen.query_one("#tree-picker-list", ListView)
+        assert [str(item.query_one(Label).render()) for item in tree_list.children] == [
+            "  user: Root",
+            "* user: Visible child",
+        ]
+        assert tree_list.index == 1
+
+        await pilot.press("ctrl+left")
+        await pilot.pause()
+
+    assert tree_list.index == 0
 
 
 @pytest.mark.anyio
