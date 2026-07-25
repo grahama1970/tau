@@ -1749,6 +1749,40 @@ async def test_tui_app_renders_session_custom_entries() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_renders_pi_style_custom_message_content_as_markdown(
+    tmp_path: Path,
+) -> None:
+    image_path = tmp_path / "audit-chart.png"
+    image_path.write_bytes(base64.b64decode(PNG_1X1_BASE64))
+    session = FakeSession(messages=[UserMessage(content="Before custom entry")])
+    session.state.custom_entries = (
+        CustomEntry(
+            namespace="extension.audit",
+            data={
+                "content": [
+                    {
+                        "type": "text",
+                        "text": (
+                            "| check | result |\n| --- | --- |\n| receipt | pass |\n\n"
+                            f"![audit chart]({image_path})"
+                        ),
+                    }
+                ]
+            },
+        ),
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test(size=(120, 30)) as pilot:
+        await pilot.pause()
+        image_widgets = list(app.query(".transcript-markdown-image"))
+        markdown_tables = list(app.query("MarkdownTable"))
+
+    assert len(image_widgets) == 1
+    assert len(markdown_tables) == 1
+
+
+@pytest.mark.anyio
 async def test_tui_app_rerenders_custom_entries_when_tool_output_expands() -> None:
     session = FakeSession(messages=[UserMessage(content="Before custom entry")])
     session.state.custom_entries = (

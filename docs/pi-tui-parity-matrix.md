@@ -55,7 +55,7 @@ capabilities.
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks including simple component-like render objects, summarizes permission/approval receipts, surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data, preserves multiple Pi-style image blocks from one tool result, and now shows input-bar terminal command exit codes; full JS Pi component runtime embedding remains out of scope. |
 | Export/artifact viewing | `/export`, `exportToHtml`, RPC `export_html` | Tau `/export`, `/artifacts`, `session_export.py`, TUI command output | `MATCHED` | Tau writes real HTML/JSONL session artifacts, opens a persistent TUI result modal with the artifact path and `file://` URI, supports explicit `/export --open`, renders assistant Markdown tables plus embedded local image links and fenced DOT graph artifacts in HTML exports, attempts Mermaid fail-closed when the local CLI/browser runtime works, makes embedded figures/graphs openable full-size in the browser, and now has a real `/artifacts` browser with selected-artifact preview for current-transcript visual outputs. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider, prompt chrome, and retry countdown | `PARTIAL` | Footer extensibility exists; compact first-screen readiness exposes auth/memory/DAG/SciLLM/queue when the sidebar is hidden, and prompt chrome now names active compaction/branch/reload/share/terminal operations from real worker state. |
-| Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool/custom-entry renderers in live/restored transcripts | `MUST/PARTIAL` | Selector now advertises Pi-style `J/K` navigation and supports tool-output toggle while open; editor now uses Pi-style Enter submit and Shift+Enter newline; custom entries now re-render on tool-output expansion and accept simple component-like render objects; preserve current Tau extension API; full JS Pi component runtime embedding remains out of scope. |
+| Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool/custom-entry renderers in live/restored transcripts | `MUST/PARTIAL` | Selector now advertises Pi-style `J/K` navigation and supports tool-output toggle while open; editor now uses Pi-style Enter submit and Shift+Enter newline; custom entries now re-render on tool-output expansion, accept simple component-like render objects, and render Pi-style text content as Markdown by default; preserve current Tau extension API; full JS Pi component runtime embedding remains out of scope. |
 | Images, figures, and graphs | `show-images-selector`, image component | Tau image visibility setting and image payload rendering | `MATCHED` | Tau has terminal-safe image controls, Kitty/iTerm2/fallback rendering, non-PNG-to-PNG conversion for Kitty, multiple image payload rendering for figure/graph tool results, local Markdown image links in user/assistant/custom transcript output, proven local-tool rendering for fenced DOT graph source, `/artifacts` selected-preview rendering, and fail-closed Mermaid rendering when the local CLI/browser runtime is unavailable. |
 | Workflow/DAG progress | None in Pi | `WorkflowPickerScreen`, DAG/workflow receipts | `TAU-ONLY/MUST` | This is Tau's differentiator and must remain first-class in the TUI. |
 
@@ -95,12 +95,40 @@ Current candidates:
 - `Extension custom component objects`: still partial because Pi can mount
   arbitrary custom TUI components; Tau supports extension selection/input/
   editor/custom screens plus expansion-aware string/JSON/component-like custom
-  entries.
+  entries and Markdown fallback for Pi-style text content.
 - `Cache-miss notices`: defer until Tau assistant/session entries carry the
   provider, model, and timestamp fields needed for Pi's cache-miss algorithm.
   Do not add a fake setting or heuristic notice from aggregate stats.
 
 Latest slice evidence:
+
+- Source inspected: Pi `custom-message.ts`; Tau `_default_custom_entry_text`,
+  `_render_custom_message_entry`, custom-entry renderer normalization, and
+  custom-entry TUI tests.
+- Destination preserved: Tau's extension renderer callbacks, component-like
+  object normalization, JSON fallback for non-content custom data, custom modal
+  API, Memory/SciLLM/DAG/workflow surfaces, and receipt model.
+- Changed: renderer-less custom entries that carry Pi-style `content` text now
+  display that text as Markdown instead of dumping the whole JSON payload.
+  Markdown tables and local image links inside extension custom content mount
+  the same table/image widgets used by transcript messages.
+- Mocked: no.
+- Live: local Textual render path with a renderer-less custom entry, Markdown
+  table, and real PNG image link; no provider-live or SciLLM-live call.
+- Proof: `uv run pytest tests/test_tui_app.py -q -k 'custom_entries or
+  custom_message_content or custom_entry_component or textual_markdown'`
+  reported `8 passed, 455 deselected`; `uv run ruff check
+  src/tau_coding/tui/state.py tests/test_tui_app.py` reported all checks
+  passed; `uv run python -m py_compile src/tau_coding/tui/state.py
+  tests/test_tui_app.py` produced no errors; render proof
+  `/tmp/tau-pi-tui-custom-content-proof-1785021116/proof.json` with
+  screenshot
+  `/tmp/tau-pi-tui-custom-content-proof-1785021116/tau-custom-content-markdown.svg`.
+- Remaining gap: arbitrary Pi JavaScript component embedding is still not
+  ported; Tau covers the common text/Markdown fallback path and simple
+  component-like Python render objects.
+
+Earlier slice evidence:
 
 - Source inspected: Pi `user-message.ts` and `assistant-message.ts`; Tau
   `TranscriptMessageWidget`, `_use_plain_transcript_body`,

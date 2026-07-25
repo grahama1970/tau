@@ -58,8 +58,26 @@ MEMORY_PIPELINE_STAGE_LABELS = {
 
 
 def _default_custom_entry_text(entry: CustomEntry) -> str:
+    content_text = _custom_entry_content_text(entry.data)
+    if content_text:
+        return f"Custom entry: {entry.namespace}\n\n{content_text}"
     payload = dumps(entry.data, indent=2, sort_keys=True)
     return f"Custom entry: {entry.namespace}\n{payload}"
+
+
+def _custom_entry_content_text(data: Mapping[str, Any]) -> str:
+    content = data.get("content")
+    if isinstance(content, str):
+        return content.strip()
+    if not isinstance(content, Sequence) or isinstance(content, (bytes, bytearray)):
+        return ""
+    lines: list[str] = []
+    for item in content:
+        if isinstance(item, Mapping) and item.get("type") == "text":
+            text = item.get("text")
+            if isinstance(text, str) and text.strip():
+                lines.append(text.strip())
+    return "\n\n".join(lines)
 
 
 def _render_custom_entry(
