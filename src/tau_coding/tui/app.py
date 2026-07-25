@@ -5071,6 +5071,34 @@ class ExtensionInputScreen(ModalScreen[str | None]):
         return f"{self.title_text} ({self.remaining_seconds}s)"
 
 
+class ExtensionEditorTextArea(TextArea):
+    """TextArea that keeps Pi-style extension editor keys local to the editor."""
+
+    def _screen(self) -> ExtensionEditorScreen:
+        return cast(ExtensionEditorScreen, self.screen)
+
+    def on_key(self, event: Key) -> None:
+        """Route submit and newline keys before TextArea edits the buffer."""
+        screen = self._screen()
+        keybindings = screen.keybindings
+        if _matches_configured_or_default_key(
+            event.key,
+            keybindings.insert_newline,
+            "shift+enter",
+        ):
+            event.stop()
+            event.prevent_default()
+            self.insert("\n")
+        elif event.key == "ctrl+enter" or _matches_configured_or_default_key(
+            event.key,
+            keybindings.select_confirm,
+            "enter",
+        ):
+            event.stop()
+            event.prevent_default()
+            screen.action_submit()
+
+
 class ExtensionEditorScreen(ModalScreen[str | None]):
     """Pi-style extension multi-line editor dialog."""
 
@@ -5090,13 +5118,16 @@ class ExtensionEditorScreen(ModalScreen[str | None]):
 
     def compose(self) -> ComposeResult:
         """Compose the extension editor dialog."""
+        confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
         cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+        newline_key = _key_hint_with_default(self.keybindings.insert_newline, "shift+enter")
         external_key = _key_hint_with_default(self.keybindings.external_editor, "ctrl+g")
         with Vertical(id="confirmation"):
             yield Static(self.title_text, id="confirmation-title")
-            yield TextArea(id="extension-editor-value")
+            yield ExtensionEditorTextArea(id="extension-editor-value")
             yield Static(
-                f"Ctrl+Enter submits - {cancel_key} cancels - {external_key} external editor",
+                f"{confirm_key} submits - {newline_key} newline - "
+                f"{cancel_key} cancels - {external_key} external editor",
                 id="confirmation-help",
             )
 
@@ -5108,8 +5139,21 @@ class ExtensionEditorScreen(ModalScreen[str | None]):
 
     def on_key(self, event: Key) -> None:
         """Submit or cancel the editor."""
-        if event.key == "ctrl+enter":
+        if _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.insert_newline,
+            "shift+enter",
+        ):
             event.stop()
+            event.prevent_default()
+            self.query_one("#extension-editor-value", TextArea).insert("\n")
+        elif event.key == "ctrl+enter" or _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_confirm,
+            "enter",
+        ):
+            event.stop()
+            event.prevent_default()
             self.action_submit()
         elif _matches_configured_or_default_key(
             event.key,

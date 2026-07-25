@@ -8759,6 +8759,48 @@ async def test_extension_editor_screen_opens_external_editor(
 
 
 @pytest.mark.anyio
+async def test_extension_editor_uses_pi_submit_and_newline_keys() -> None:
+    app = TauTuiApp(FakeSession())
+    submitted: str | None = None
+
+    def record_submitted(value: str | None) -> None:
+        nonlocal submitted
+        submitted = value
+
+    async with app.run_test(size=(80, 24)) as pilot:
+        app.push_screen(
+            ExtensionEditorScreen(
+                "Edit extension value",
+                prefill="line one",
+                keybindings=TuiKeybindings(),
+            ),
+            record_submitted,
+        )
+        await pilot.pause()
+
+        assert isinstance(app.screen, ExtensionEditorScreen)
+        help_text = str(app.screen.query_one("#confirmation-help", Static).render())
+        assert "Enter submits" in help_text
+        assert "Shift+Enter newline" in help_text
+
+        editor = app.screen.query_one("#extension-editor-value", TextArea)
+        editor.move_cursor((0, len("line one")))
+        await pilot.press("shift+enter")
+        await pilot.press("l")
+        await pilot.press("i")
+        await pilot.press("n")
+        await pilot.press("e")
+        await pilot.pause()
+
+        assert editor.text == "line one\nline"
+
+        await pilot.press("enter")
+        await pilot.pause()
+
+    assert submitted == "line one\nline"
+
+
+@pytest.mark.anyio
 async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
     app = TauTuiApp(
         FakeSession(),
