@@ -507,6 +507,7 @@ class CodingSession:
                 "previousSessionFile": config.extension_previous_session_file,
             }
         )
+        await session._resolve_project_trust_from_extensions()
         await session._extend_resources_from_extensions(
             "reload" if config.extension_start_reason == "reload" else "startup"
         )
@@ -1075,6 +1076,109 @@ class CodingSession:
         if diagnostics:
             self._resource_diagnostics = (*self._resource_diagnostics, *diagnostics)
         return tuple(results)
+
+    async def _resolve_project_trust_from_extensions(self) -> None:
+        cwd = self._resource_paths.cwd
+        if cwd is None:
+            return
+        tau_paths = self._resource_paths.paths or TauPaths(
+            home=self._resource_paths.root,
+            agents_home=self._resource_paths.agents_root or Path.home() / ".agents",
+        )
+        if not has_trust_requiring_project_resources(cwd, tau_paths):
+            return
+        store = ProjectTrustStore.from_resource_paths(self._resource_paths)
+        if store.get(cwd) is not None or self._config.default_project_trust != "ask":
+            return
+        diagnostics: list[ResourceDiagnostic] = []
+        for extension in self._extensions:
+            handlers = tuple((extension.event_handlers or {}).get("project_trust", ()))
+            if not handlers:
+                continue
+            context = ExtensionShortcutContext(
+                session=self,
+                key="",
+                extension_name=extension.name,
+            )
+            event: dict[str, object] = {"type": "project_trust", "cwd": str(cwd)}
+            for handler in handlers:
+                try:
+                    result = _call_extension_lifecycle_handler(handler, event, context)
+                    if inspect.isawaitable(result):
+                        result = await result
+                except Exception as exc:  # noqa: BLE001 - extensions are isolated plugins
+                    diagnostics.append(
+                        ResourceDiagnostic(
+                            kind="extension",
+                            name=extension.name,
+                            path=extension.path,
+                            message=(
+                                f"project_trust handler failed: "
+                                f"{type(exc).__name__}: {exc}"
+                            ),
+                            severity="error",
+                        )
+                    )
+                    continue
+                trusted = _extension_project_trust_decision(result)
+                if trusted is None:
+                    continue
+                remember = isinstance(result, Mapping) and result.get("remember") is True
+                if remember:
+                    store.set(cwd, trusted)
+                if trusted:
+                    self._reload_resources_with_project_trust("always")
+                if diagnostics:
+                    self._resource_diagnostics = (
+                        *self._resource_diagnostics,
+                        *diagnostics,
+                    )
+                return
+        if diagnostics:
+            self._resource_diagnostics = (*self._resource_diagnostics, *diagnostics)
+
+    def _reload_resources_with_project_trust(
+        self,
+        default_project_trust: DefaultProjectTrust,
+    ) -> None:
+        resources = _load_session_resources(
+            self._resource_paths,
+            self._config.context_files,
+            skill_paths=self._config.skill_paths,
+            prompt_template_paths=self._config.prompt_template_paths,
+            theme_paths=self._config.theme_paths,
+            extension_paths=self._config.extension_paths,
+            extension_flag_values=self._config.extension_flag_values,
+            discover_skills=self._config.discover_skills,
+            discover_prompt_templates=self._config.discover_prompt_templates,
+            discover_themes=self._config.discover_themes,
+            discover_extensions=self._config.discover_extensions,
+            discover_context_files=self._config.discover_context_files,
+            default_project_trust=default_project_trust,
+        )
+        tools = _build_session_tools(
+            self._config,
+            extension_tools=resources.extension_tools,
+            bash_environment=self._bash_session_environment,
+        )
+        command_registry, command_diagnostics = _command_registry_with_extensions(
+            self._base_command_registry,
+            resources.extensions,
+        )
+        self._available_tools = list(tools)
+        self._harness.config.tools = tools
+        self._skills = resources.skills
+        self._prompt_templates = resources.prompt_templates
+        self._context_files = resources.context_files
+        self._custom_themes = dict(resources.custom_themes)
+        self._extensions = resources.extensions
+        self._resource_diagnostics = (
+            *self._resource_diagnostics,
+            *resources.diagnostics,
+            *command_diagnostics,
+        )
+        self._command_registry = command_registry
+        self._refresh_generated_system_prompt()
 
     async def _extend_resources_from_extensions(
         self,
@@ -3687,6 +3791,17 @@ def _extension_resource_paths(value: object, *, base_path: Path) -> list[Path]:
         path = Path(raw_path).expanduser()
         paths.append(path if path.is_absolute() else base_dir / path)
     return paths
+
+
+def _extension_project_trust_decision(value: object) -> bool | None:
+    if not isinstance(value, Mapping):
+        return None
+    trusted = value.get("trusted")
+    if trusted == "yes" or trusted is True:
+        return True
+    if trusted == "no" or trusted is False:
+        return False
+    return None
 
 
 def _state_thinking_level(
