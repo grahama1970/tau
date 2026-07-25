@@ -11,14 +11,18 @@ from typing import Any, Protocol, cast
 
 from tau_agent.messages import AgentMessage, AssistantMessage, ToolResultMessage, UserMessage
 from tau_agent.tools import AgentTool
+from tau_coding.credentials import credentials_path
+from tau_coding.paths import TauPaths
 from tau_coding.prompt_templates import PromptTemplate
 from tau_coding.provider_catalog import BUILTIN_PROVIDER_CATALOG, builtin_provider_entry
+from tau_coding.provider_config import provider_settings_path
 from tau_coding.reload import CodingReloadSummary, ReloadCategorySummary
-from tau_coding.resources import ResourceDiagnostic
+from tau_coding.resources import ResourceDiagnostic, TauResourcePaths
 from tau_coding.session_manager import CodingSessionRecord, SessionManager
 from tau_coding.skills import Skill
 from tau_coding.system_prompt import ProjectContextFile
 from tau_coding.thinking import normalize_thinking_level
+from tau_coding.trust import ProjectTrustStore
 from tau_coding.workflows.catalog import get_workflow, list_workflows
 
 BUILTIN_TUI_THEME_NAMES = ("tau-dark", "tau-light", "high-contrast")
@@ -264,6 +268,15 @@ def create_default_command_registry() -> CommandRegistry:
             description="Show local changelog entries.",
             handler=_changelog_command,
             search_terms=("release", "version", "news"),
+        )
+    )
+    registry.register(
+        SlashCommand(
+            name="config",
+            usage="/config",
+            description="Show Tau's editable config and resource locations.",
+            handler=_config_command,
+            search_terms=("settings", "resources", "packages", "paths"),
         )
     )
     registry.register(
@@ -575,6 +588,12 @@ def _changelog_command(context: CommandContext) -> CommandResult:
     if context.args:
         return CommandResult(handled=True, message="Usage: /changelog")
     return CommandResult(handled=True, message=_load_changelog_text(context.session.cwd))
+
+
+def _config_command(context: CommandContext) -> CommandResult:
+    if context.args:
+        return CommandResult(handled=True, message="Usage: /config")
+    return CommandResult(handled=True, message=_format_config_map(context.session))
 
 
 def _clone_command(context: CommandContext) -> CommandResult:
@@ -1242,6 +1261,56 @@ def _format_diagnostics(
     lines = ["Resource diagnostics:"]
     lines.extend(f"- {diagnostic.format()}" for diagnostic in filtered)
     return lines
+
+
+def _format_config_map(session: CommandSession) -> str:
+    paths = TauPaths()
+    resource_paths = TauResourcePaths(cwd=session.cwd, paths=paths)
+    trust_path = ProjectTrustStore.from_resource_paths(resource_paths).trust_path
+    loaded_extensions = getattr(session, "extensions", ())
+    extension_count = len(loaded_extensions) if isinstance(loaded_extensions, Sequence) else 0
+    lines = [
+        "Tau Config Map",
+        "",
+        "Status: read-only map; Tau does not currently provide Pi's package selector TUI.",
+        "",
+        "Interactive commands:",
+        "- /settings: edit durable TUI settings",
+        "- /resources: inspect loaded context, skills, prompts, extensions, tools, diagnostics",
+        "- /reload: reload local resources and project context",
+        "- /trust: save project-local resource trust",
+        "- /login, /logout: manage saved provider credentials",
+        "- /model, /scoped-models: choose active model and Ctrl+P model scope",
+        "",
+        "Durable config files:",
+        f"- TUI settings: {paths.home / 'tui.json'}",
+        f"- Provider settings: {provider_settings_path(paths)}",
+        f"- Provider credentials: {credentials_path(paths)}",
+        f"- Project trust: {trust_path}",
+        "",
+        "Resource directories, increasing precedence:",
+        "- Skills:",
+        *[f"  - {path}" for path in resource_paths.skills_dirs],
+        "- Prompt templates:",
+        *[f"  - {path}" for path in resource_paths.prompts_dirs],
+        "- Themes:",
+        *[f"  - {path}" for path in resource_paths.themes_dirs],
+        "- Extensions:",
+        f"  - {resource_paths.extensions_dir}",
+        f"  - {paths.project_tau_dir(session.cwd) / 'extensions'}",
+        "",
+        "Loaded resources:",
+        f"- Context files: {len(session.context_files)}",
+        f"- Skills: {len(session.skills)}",
+        f"- Prompt templates: {len(session.prompt_templates)}",
+        f"- Extensions: {extension_count}",
+        f"- Resource diagnostics: {len(session.resource_diagnostics)}",
+        "",
+        "Boundary:",
+        "- Use file edits plus /reload for resource changes; /config does not mutate state.",
+        "- Missing or untrusted project resources stay visible through /resources diagnostics.",
+    ]
+    return "\n".join(lines)
 
 
 def _refresh_provider_settings(session: CommandSession) -> CommandResult | None:

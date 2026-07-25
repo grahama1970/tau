@@ -321,6 +321,25 @@ Acceptance:
 - Shell/CLI workflow usage remains unchanged; operators can still omit
   `--viewer-hold-seconds` when they intentionally want a long-held viewer.
 
+### Slice 15: Read-Only Config Map
+
+Pi has a `pi config` resource selector for package-backed extensions, skills,
+prompts, and themes. Tau does not yet have a package selector contract, and a
+fake selector would be misleading. Add a read-only `/config` TUI command that
+maps the actual Tau config files, resource directories, loaded resource counts,
+and the commands that mutate supported settings.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- `/config` is visible in slash-command help and autocomplete.
+- `/config` reports `~/.tau/tui.json`, `~/.tau/providers.json`,
+  `~/.tau/credentials.json`, `~/.tau/trust.json`, user/project resource
+  directories, loaded resource counts, and resource diagnostic count.
+- `/config` explicitly states that it is read-only and that Tau does not yet
+  provide Pi's package selector TUI.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.
