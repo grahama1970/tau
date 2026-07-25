@@ -4069,6 +4069,55 @@ async def test_tui_app_artifacts_command_previews_markdown_reports(
 
 
 @pytest.mark.anyio
+async def test_tui_app_artifacts_command_previews_json_receipts(
+    tmp_path: Path,
+) -> None:
+    receipt_path = tmp_path / "run-receipt.json"
+    receipt_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.workflow_run_receipt.v1",
+                "status": "PASS",
+                "workflow_id": "canonical-review",
+                "run_id": "run-123",
+                "run_receipt_path": str(receipt_path),
+                "artifacts": ["review.md"],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    session = FakeSession()
+    app = TauTuiApp(session)
+    app.state.add_item("assistant", f"Receipt: [run receipt]({receipt_path}).")
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/artifacts"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ArtifactBrowserScreen)
+        labels = [
+            str(item.query_one(Label).render())
+            for item in app.screen.query_one("#config-map-list", ListView).children
+        ]
+        assert any(
+            "run-receipt.json" in label and "application/json" in label for label in labels
+        )
+
+        preview_console = Console(file=StringIO(), record=True, width=100)
+        preview_console.print(app.screen._preview_renderable(0))
+        preview = preview_console.export_text()
+        assert "tau.workflow_run_receipt.v1" in preview
+        assert "canonical-review" in preview
+        assert '"run_id": "run-123"' in preview
+        assert '"status": "PASS"' in preview
+
+
+@pytest.mark.anyio
 async def test_tui_app_import_command_reloads_visible_state() -> None:
     session = FakeSession(messages=[UserMessage(content="Earlier")])
     app = TauTuiApp(session)
@@ -9387,8 +9436,7 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "| Key | Action |" in app.screen.message
         assert "| Ctrl+J | open slash-command completions |" in app.screen.message
         artifacts_help = (
-            "| /artifacts | browse image, graph, and Markdown artifacts "
-            "from the current transcript |"
+            "| /artifacts | browse image, graph, Markdown, and JSON receipt artifacts |"
         )
         assert artifacts_help in app.screen.message
         assert "Ctrl+J: open slash-command completions" in app.screen.message

@@ -31,6 +31,8 @@ from rich.cells import cell_len
 from rich.console import Console, Group, RenderableType
 from rich.markdown import Markdown
 from rich.padding import Padding
+from rich.syntax import Syntax
+from rich.table import Table
 from rich.text import Text
 from textual import events, on
 from textual.app import App, ComposeResult
@@ -4531,7 +4533,7 @@ class CommandOutputScreen(ModalScreen[None]):
 type ConfigMapAction = Literal["insert_command", "copy_path", "toggle_resource"]
 type ConfigMapScope = Literal["all", "project", "user"]
 type ArtifactBrowserAction = Literal["open", "copy"]
-type ArtifactPreviewKind = Literal["image", "markdown"]
+type ArtifactPreviewKind = Literal["image", "markdown", "json"]
 MARKDOWN_ARTIFACT_LINK_PATTERN = re.compile(
     r"(?<!!)\[[^\]\n]+\]\((?P<target><[^>\n]+>|[^)\s]+)(?:\s+\"[^\"]*\")?\)"
 )
@@ -4539,7 +4541,11 @@ MARKDOWN_ARTIFACT_MIME_TYPES = {
     ".md": "text/markdown",
     ".markdown": "text/markdown",
 }
+JSON_ARTIFACT_MIME_TYPES = {
+    ".json": "application/json",
+}
 MAX_MARKDOWN_ARTIFACT_BYTES = 512 * 1024
+MAX_JSON_ARTIFACT_BYTES = 512 * 1024
 
 
 @dataclass(frozen=True, slots=True)
@@ -4716,6 +4722,8 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
             return f"Preview unavailable: empty file {artifact.path}"
         if artifact.preview_kind == "markdown":
             return self._markdown_preview_renderable(artifact, data)
+        if artifact.preview_kind == "json":
+            return self._json_preview_renderable(artifact, data)
         return TerminalImage(
             base64.b64encode(data).decode("ascii"),
             artifact.mime_type,
@@ -4757,6 +4765,25 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
             for payload in visual_payloads
         ]
         return Group(Markdown(markdown), *image_renderables)
+
+    def _json_preview_renderable(self, artifact: VisualArtifact, data: bytes) -> RenderableType:
+        if len(data) > MAX_JSON_ARTIFACT_BYTES:
+            return (
+                f"Preview unavailable: {artifact.path} is larger than "
+                f"{_format_artifact_size(MAX_JSON_ARTIFACT_BYTES)}"
+            )
+        try:
+            text = data.decode("utf-8")
+        except UnicodeDecodeError:
+            return f"Preview unavailable: {artifact.path} is not UTF-8 text"
+        try:
+            payload = json.loads(text)
+        except json.JSONDecodeError as exc:
+            return f"Preview unavailable: {artifact.path} is not valid JSON ({exc.msg})"
+        pretty = json.dumps(payload, indent=2, sort_keys=True)
+        summary = _json_artifact_summary_table(artifact, payload)
+        syntax = Syntax(pretty, "json", word_wrap=True)
+        return Group(summary, Text(""), syntax)
 
     def _help_text(self) -> str:
         confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
@@ -13252,6 +13279,25 @@ def _visual_artifacts_from_state(
                     preview_kind="markdown",
                 )
             )
+        for path in _json_artifact_paths_for_chat_item(item, cwd=cwd):
+            key = ("path", str(path))
+            if key in seen:
+                continue
+            try:
+                byte_count = path.stat().st_size
+            except OSError:
+                continue
+            seen.add(key)
+            artifacts.append(
+                VisualArtifact(
+                    title=path.name,
+                    path=path,
+                    mime_type=JSON_ARTIFACT_MIME_TYPES[path.suffix.lower()],
+                    bytes=byte_count,
+                    source=f"{item.role} item {item_index}",
+                    preview_kind="json",
+                )
+            )
     return tuple(artifacts)
 
 
@@ -13269,10 +13315,39 @@ def _visual_payloads_for_chat_item(item: ChatItem, *, cwd: Path) -> tuple[ToolIm
 
 
 def _markdown_artifact_paths_for_chat_item(item: ChatItem, *, cwd: Path) -> tuple[Path, ...]:
+    return _linked_artifact_paths_for_chat_item(
+        item,
+        cwd=cwd,
+        mime_types=MARKDOWN_ARTIFACT_MIME_TYPES,
+        max_bytes=MAX_MARKDOWN_ARTIFACT_BYTES,
+    )
+
+
+def _json_artifact_paths_for_chat_item(item: ChatItem, *, cwd: Path) -> tuple[Path, ...]:
+    return _linked_artifact_paths_for_chat_item(
+        item,
+        cwd=cwd,
+        mime_types=JSON_ARTIFACT_MIME_TYPES,
+        max_bytes=MAX_JSON_ARTIFACT_BYTES,
+    )
+
+
+def _linked_artifact_paths_for_chat_item(
+    item: ChatItem,
+    *,
+    cwd: Path,
+    mime_types: Mapping[str, str],
+    max_bytes: int,
+) -> tuple[Path, ...]:
     paths: list[Path] = []
     seen: set[Path] = set()
     for text in (item.text, item.tool_result_text or ""):
-        for path in _markdown_artifact_paths(text, base_path=cwd):
+        for path in _linked_artifact_paths(
+            text,
+            base_path=cwd,
+            mime_types=mime_types,
+            max_bytes=max_bytes,
+        ):
             if path in seen:
                 continue
             seen.add(path)
@@ -13280,19 +13355,25 @@ def _markdown_artifact_paths_for_chat_item(item: ChatItem, *, cwd: Path) -> tupl
     return tuple(paths)
 
 
-def _markdown_artifact_paths(markdown: str, *, base_path: Path) -> tuple[Path, ...]:
+def _linked_artifact_paths(
+    markdown: str,
+    *,
+    base_path: Path,
+    mime_types: Mapping[str, str],
+    max_bytes: int,
+) -> tuple[Path, ...]:
     paths: list[Path] = []
     for match in MARKDOWN_ARTIFACT_LINK_PATTERN.finditer(markdown):
         path = _artifact_link_target_path(match.group("target"), base_path=base_path)
         if path is None:
             continue
-        if MARKDOWN_ARTIFACT_MIME_TYPES.get(path.suffix.lower()) is None:
+        if mime_types.get(path.suffix.lower()) is None:
             continue
         try:
             stat = path.stat()
         except OSError:
             continue
-        if path.is_file() and 0 < stat.st_size <= MAX_MARKDOWN_ARTIFACT_BYTES:
+        if path.is_file() and 0 < stat.st_size <= max_bytes:
             paths.append(path)
     return tuple(paths)
 
@@ -13316,6 +13397,40 @@ def _artifact_link_target_path(target: str, *, base_path: Path) -> Path | None:
     if not path.is_absolute():
         path = base_path / path
     return path.resolve()
+
+
+def _json_artifact_summary_table(artifact: VisualArtifact, payload: object) -> Table:
+    table = Table.grid(padding=(0, 2))
+    table.add_column(style="bold")
+    table.add_column()
+    table.add_row("file", artifact.path.name)
+    table.add_row("type", artifact.mime_type)
+    table.add_row("size", _format_artifact_size(artifact.bytes))
+    if isinstance(payload, Mapping):
+        for key in (
+            "schema",
+            "status",
+            "verdict",
+            "ok",
+            "workflow_id",
+            "run_id",
+            "node_id",
+            "run_receipt_path",
+        ):
+            value = payload.get(key)
+            if value is not None:
+                table.add_row(key, _json_summary_value(value))
+    return table
+
+
+def _json_summary_value(value: object) -> str:
+    if isinstance(value, str):
+        return value
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, int | float):
+        return str(value)
+    return json.dumps(value, sort_keys=True)
 
 
 def _visual_artifact_key(payload: ToolImagePayload) -> tuple[str, str]:
@@ -13390,9 +13505,10 @@ def _artifact_browser_summary(artifacts: Sequence[VisualArtifact]) -> str:
         return "Found 0 artifacts"
     image_count = sum(1 for artifact in artifacts if artifact.mime_type.startswith("image/"))
     markdown_count = sum(1 for artifact in artifacts if artifact.preview_kind == "markdown")
+    json_count = sum(1 for artifact in artifacts if artifact.preview_kind == "json")
     return (
         f"Found {len(artifacts)} artifact(s), {image_count} image-backed, "
-        f"{markdown_count} Markdown report(s)"
+        f"{markdown_count} Markdown report(s), {json_count} JSON receipt(s)"
     )
 
 
@@ -13972,7 +14088,7 @@ def _render_tui_hotkeys_message(
         ),
         _markdown_table_row(
             "/artifacts",
-            "browse image, graph, and Markdown artifacts from the current transcript",
+            "browse image, graph, Markdown, and JSON receipt artifacts",
         ),
         _markdown_table_row("drop files", "attach paths to the prompt"),
         "",
@@ -14067,7 +14183,7 @@ def _render_tui_hotkeys_message(
         "Slash and shell:",
         "- /: slash commands",
         "- /resources: show loaded context, skills, prompts, tools, and diagnostics",
-        "- /artifacts: browse image, graph, and Markdown artifacts from the current transcript",
+        "- /artifacts: browse image, graph, Markdown, and JSON receipt artifacts",
         "- !: run bash command and add output to context",
         "- !!: run bash command without adding output to context",
     ]
