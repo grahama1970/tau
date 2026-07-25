@@ -13726,6 +13726,10 @@ def _render_tui_hotkeys_message(
             _key_hint(keybindings.copy_last_message),
             "copy last assistant message",
         ),
+        _markdown_table_row(
+            "/artifacts",
+            "browse visual artifacts from the current transcript",
+        ),
         _markdown_table_row("drop files", "attach paths to the prompt"),
         "",
         "Navigation:",
@@ -13819,6 +13823,7 @@ def _render_tui_hotkeys_message(
         "Slash and shell:",
         "- /: slash commands",
         "- /resources: show loaded context, skills, prompts, tools, and diagnostics",
+        "- /artifacts: browse visual artifacts from the current transcript",
         "- !: run bash command and add output to context",
         "- !!: run bash command without adding output to context",
     ]

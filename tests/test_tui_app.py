@@ -9268,6 +9268,10 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "Keyboard Shortcuts" in app.screen.message
         assert "| Key | Action |" in app.screen.message
         assert "| Ctrl+J | open slash-command completions |" in app.screen.message
+        assert (
+            "| /artifacts | browse visual artifacts from the current transcript |"
+            in app.screen.message
+        )
         assert "Ctrl+J: open slash-command completions" in app.screen.message
         assert "F6: open session picker" in app.screen.message
         assert "F5: queue follow-up while running" in app.screen.message

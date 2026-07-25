@@ -109,8 +109,9 @@ Latest slice evidence:
   renderer, and Tau-specific shortcut details.
 - Changed: `CommandOutputScreen` now has an explicit Markdown-rendering mode for
   `/hotkeys` and `/changelog`. `/hotkeys` starts with a Pi-style Markdown table
-  for the most important daily-use keys, including paste image/text and drop
-  file attachment, while retaining the detailed Tau shortcut sections below.
+  for the most important daily-use keys, including paste image/text, drop file
+  attachment, and `/artifacts` visual browsing, while retaining the detailed
+  Tau shortcut sections below.
 - Mocked: no.
 - Live: local Textual command-output render path; no provider-live call.
 - Proof: `uv run pytest tests/test_tui_app.py -q -k 'hotkeys or changelog or
