@@ -1931,6 +1931,13 @@ class CodingSession:
     async def compact(self, instructions: str | None = None) -> str:
         """Generate a manual compaction summary and rebuild active context."""
         plan = self._manual_compaction_plan()
+        if await self._emit_extension_before_compact(
+            plan,
+            custom_instructions=instructions,
+            reason="manual",
+            will_retry=False,
+        ):
+            return "Compaction cancelled by extension."
         summary = await self._generate_compaction_summary(
             plan.messages_to_summarize,
             custom_instructions=instructions,
@@ -1939,6 +1946,7 @@ class CodingSession:
             summary,
             replace_entry_ids=plan.replace_entry_ids,
         )
+        await self._emit_extension_compact(compaction, reason="manual", will_retry=False)
         return f"Compacted {len(compaction.replaces_entry_ids)} context entries."
 
     async def aclose(self) -> None:
@@ -2598,6 +2606,54 @@ class CodingSession:
             self._resource_diagnostics = (*self._resource_diagnostics, *diagnostics)
         return current_messages
 
+    async def _emit_extension_before_compact(
+        self,
+        plan: CompactionPlan,
+        *,
+        custom_instructions: str | None,
+        reason: Literal["manual", "threshold", "overflow"],
+        will_retry: bool,
+    ) -> bool:
+        results = await self.emit_extension_event(
+            {
+                "type": "session_before_compact",
+                "preparation": {
+                    "replaceEntryIds": plan.replace_entry_ids,
+                    "messageCount": len(plan.messages_to_summarize),
+                    "messages": [
+                        _agent_message_payload(message) for message in plan.messages_to_summarize
+                    ],
+                },
+                "branchEntries": [
+                    entry.model_dump(mode="json") for entry in await self._read_session_entries()
+                ],
+                "customInstructions": custom_instructions,
+                "reason": reason,
+                "willRetry": will_retry,
+                "signal": None,
+            }
+        )
+        return any(
+            isinstance(result, Mapping) and bool(result.get("cancel")) for result in results
+        )
+
+    async def _emit_extension_compact(
+        self,
+        compaction: CompactionEntry,
+        *,
+        reason: Literal["manual", "threshold", "overflow"],
+        will_retry: bool,
+    ) -> None:
+        await self.emit_extension_event(
+            {
+                "type": "session_compact",
+                "compactionEntry": compaction.model_dump(mode="json"),
+                "fromExtension": False,
+                "reason": reason,
+                "willRetry": will_retry,
+            }
+        )
+
     def _diagnostic_context(self) -> AgentCallDiagnosticContext:
         return AgentCallDiagnosticContext(
             provider_name=self._provider_name,
@@ -2841,8 +2897,19 @@ class CodingSession:
             plan = self._recent_preserving_compaction_plan()
             if plan is None:
                 return False
+            if await self._emit_extension_before_compact(
+                plan,
+                custom_instructions=None,
+                reason="overflow",
+                will_retry=True,
+            ):
+                return False
             summary = await self._generate_compaction_summary(plan.messages_to_summarize)
-            await self._append_compaction(summary, replace_entry_ids=plan.replace_entry_ids)
+            compaction = await self._append_compaction(
+                summary,
+                replace_entry_ids=plan.replace_entry_ids,
+            )
+            await self._emit_extension_compact(compaction, reason="overflow", will_retry=True)
             return True
         except Exception as exc:  # noqa: BLE001 - the original overflow remains visible
             self._last_diagnostic_log_path = self._diagnostic_logger.log_exception(
@@ -2878,8 +2945,19 @@ class CodingSession:
         plan = self._recent_preserving_compaction_plan()
         if plan is None:
             return False
+        if await self._emit_extension_before_compact(
+            plan,
+            custom_instructions=None,
+            reason="threshold",
+            will_retry=False,
+        ):
+            return False
         summary = await self._generate_compaction_summary(plan.messages_to_summarize)
-        await self._append_compaction(summary, replace_entry_ids=plan.replace_entry_ids)
+        compaction = await self._append_compaction(
+            summary,
+            replace_entry_ids=plan.replace_entry_ids,
+        )
+        await self._emit_extension_compact(compaction, reason="threshold", will_retry=False)
         return True
 
     async def _generate_compaction_summary(
