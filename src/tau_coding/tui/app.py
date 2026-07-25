@@ -5521,6 +5521,7 @@ class TauTuiApp(App[None]):
         self._prompt_worker: Worker[None] | None = None
         self._compaction_worker: Worker[None] | None = None
         self._branch_worker: Worker[None] | None = None
+        self._reload_worker: Worker[None] | None = None
         self._compaction_queued_messages: list[tuple[str, Literal["steer", "follow_up"]]] = []
         self._terminal_worker: Worker[None] | None = None
         self._prompt_run_id = 0
@@ -5737,6 +5738,10 @@ class TauTuiApp(App[None]):
             self._notify("Skill commands are disabled in TUI settings.", severity="warning")
             return
 
+        if _is_reload_command_text(text) and self._is_reload_active():
+            self._notify("A reload is already running.", severity="warning")
+            return
+
         if _is_reload_command_text(text) and self._is_agent_or_queue_active():
             self._notify(
                 "Wait for the current response to finish before reloading.",
@@ -5765,6 +5770,13 @@ class TauTuiApp(App[None]):
             debug_log_path = self._write_debug_log()
             self._append_command_message(text, f"Debug log written\n{debug_log_path}")
             self._refresh()
+            return
+
+        if _is_reload_command_text(text):
+            self._reload_worker = self.run_worker(
+                self._run_reload_command(text),
+                exclusive=False,
+            )
             return
 
         command = _local_tui_command(
@@ -5897,6 +5909,11 @@ class TauTuiApp(App[None]):
         worker = self._terminal_worker
         return worker is not None and not worker.is_finished and not worker.is_cancelled
 
+    def _is_reload_active(self) -> bool:
+        """Return whether a TUI resource reload worker is still running."""
+        worker = self._reload_worker
+        return worker is not None and not worker.is_finished and not worker.is_cancelled
+
     def _is_tui_activity_active(self) -> bool:
         """Return whether any visible TUI operation should show active progress."""
         return (
@@ -5904,6 +5921,7 @@ class TauTuiApp(App[None]):
             or self._is_compaction_active()
             or self._is_branch_active()
             or self._is_terminal_command_active()
+            or self._is_reload_active()
         )
 
     def _is_agent_or_queue_active(self, *, include_branch: bool = True) -> bool:
@@ -5918,6 +5936,7 @@ class TauTuiApp(App[None]):
             or is_worker_active
             or self._is_compaction_active()
             or (include_branch and self._is_branch_active())
+            or self._is_reload_active()
             or self.state.queued_message_count > 0
         )
 
@@ -5981,6 +6000,42 @@ class TauTuiApp(App[None]):
         self._sync_queue_state()
         self._refresh()
         return len(messages)
+
+    async def _run_reload_command(self, text: str) -> None:
+        """Reload session resources and TUI settings without freezing the interface."""
+        self.state.add_item("status", "Reloading local coding resources and project context...")
+        self._sync_activity_indicator()
+        self._refresh()
+        try:
+            command = await asyncio.to_thread(self.session.handle_command, text)
+        except asyncio.CancelledError:
+            self.state.items = [
+                item
+                for item in self.state.items
+                if item.text != "Reloading local coding resources and project context..."
+            ]
+            self._sync_activity_indicator()
+            self._refresh()
+            self._notify("Reload cancelled.", severity="warning")
+            return
+        except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
+            command = CommandResult(handled=True, message=f"Could not reload: {exc}")
+        finally:
+            self._reload_worker = None
+
+        if not command.handled:
+            command = CommandResult(handled=True, message="Usage: /reload")
+        if command.message:
+            self.state.items = [
+                item
+                for item in self.state.items
+                if item.text != "Reloading local coding resources and project context..."
+            ]
+            self._append_command_message(text, command.message)
+        self._reload_tui_settings()
+        self.state.set_skills(self.session.skills)
+        self._sync_activity_indicator()
+        self._refresh()
 
     def _submit_prompt(
         self,
