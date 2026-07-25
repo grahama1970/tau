@@ -263,6 +263,7 @@ from tau_coding.tui.proof import (
     DEFAULT_TUI_PROOF_RUN_ID,
     render_textual_tui_memory_stage_proof,
 )
+from tau_coding.updater import update_tau
 from tau_coding.visible_dag_poc import inspect_visible_dag_run, run_visible_dag_poc
 from tau_coding.workflows.catalog import (
     get_workflow,
@@ -891,6 +892,12 @@ def main(
     positional_args = prompt_args or []
     command = positional_args[0] if positional_args else None
     initial_prompt = " ".join(positional_args) if positional_args else None
+
+    if prompt_option is None and command == "update":
+        if len(positional_args) != 1:
+            raise typer.BadParameter("Usage: tau update")
+        update_command()
+        raise typer.Exit()
 
     if prompt_option is None and command == "workflows":
         if "--help" in positional_args[1:]:
@@ -3119,6 +3126,21 @@ def render_session_list(records: list[CodingSessionRecord]) -> None:
     for record in records:
         title = record.title or "Untitled"
         typer.echo(f"{record.id}\t{title}\t{record.model}\t{record.cwd}")
+
+
+def update_command() -> None:
+    """Upgrade Tau using the installer that manages the current environment."""
+    result = update_tau()
+    if not result.succeeded:
+        typer.echo("Could not safely update Tau:", err=True)
+        for failure in result.failures:
+            typer.echo(f"- {failure}", err=True)
+        raise typer.Exit(1)
+    if result.stdout:
+        typer.echo(result.stdout)
+    if result.stderr:
+        typer.echo(result.stderr, err=True)
+    typer.echo(f"Tau update completed with: {' '.join(result.command or ())}")
 
 
 async def export_session_command(

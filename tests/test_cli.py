@@ -47,6 +47,7 @@ from tau_coding.resources import TauResourcePaths
 from tau_coding.system_prompt import BuildSystemPromptOptions, build_system_prompt
 from tau_coding.tools import create_coding_tools
 from tau_coding.tui.config import TuiSettings, save_tui_settings
+from tau_coding.updater import UpdateResult
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "experiments" / "goal-locked-subagents" / "fixtures"
@@ -91,6 +92,55 @@ def _valid_public_data_boundary() -> dict[str, object]:
         "public_repo_allowed": False,
         "notes": [],
     }
+
+
+def test_update_command_upgrades_without_starting_tui(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        cli,
+        "run_openai_tui",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("no TUI")),
+    )
+    monkeypatch.setattr(
+        cli,
+        "update_tau",
+        lambda: UpdateResult(
+            command=("uv", "tool", "install", "--upgrade", "tau"),
+            stdout="Updated tau",
+        ),
+    )
+
+    result = CliRunner().invoke(app, ["update"])
+
+    assert result.exit_code == 0
+    assert "Updated tau" in result.stdout
+    assert "Tau update completed with: uv tool install --upgrade tau" in result.stdout
+
+
+def test_update_command_reports_installer_failures(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        cli,
+        "update_tau",
+        lambda: UpdateResult(command=None, failures=("uv: not found", "pipx: not found")),
+    )
+
+    result = CliRunner().invoke(app, ["update"])
+
+    assert result.exit_code == 1
+    assert "Could not safely update Tau" in result.stderr
+    assert "uv: not found" in result.stderr
+
+
+def test_update_command_rejects_extra_arguments(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        cli,
+        "update_tau",
+        lambda: (_ for _ in ()).throw(AssertionError("no update attempt")),
+    )
+
+    result = CliRunner().invoke(app, ["update", "--all"])
+
+    assert result.exit_code != 0
+    assert "Usage: tau update" in result.output
 
 
 def _write_cli_dag_viewer_store(run_dir: Path, *, run_id: str) -> None:
