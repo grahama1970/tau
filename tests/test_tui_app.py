@@ -8969,7 +8969,19 @@ async def test_tui_logout_opens_stored_credential_provider_picker(
         assert str(title.render()) == "Logout"
         provider_list = app.screen.query_one("#login-provider-list", ListView)
         labels = [str(item.query_one(Label).render()) for item in provider_list.children]
-        assert labels == ["Anthropic\n  anthropic - configured"]
+        assert labels == ["Anthropic [API key]\n  anthropic - stored credential"]
+
+
+def test_tui_login_provider_status_label_names_env_source(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("OPENROUTER_API_KEY", "env-openrouter-key")
+    entry = tui_app.builtin_provider_entry("openrouter")
+    assert entry is not None
+
+    assert tui_app._login_provider_status_label(entry) == "env: OPENROUTER_API_KEY"
 
 
 @pytest.mark.anyio
@@ -9023,7 +9035,7 @@ async def test_tui_login_method_picker_supports_arrow_keys() -> None:
         assert isinstance(app.screen, LoginProviderPickerScreen)
         provider_list = app.screen.query_one("#login-provider-list", ListView)
         labels = [str(item.query_one(Label).render()) for item in provider_list.children]
-        assert labels[0] == "OpenAI\n  openai - unconfigured"
+        assert labels[0] == "OpenAI [API key]\n  openai - unconfigured"
 
 
 @pytest.mark.anyio

@@ -9063,13 +9063,32 @@ def _login_provider_auth_type_label(provider: ProviderCatalogEntry) -> str:
 def _login_provider_status_label(provider: ProviderCatalogEntry) -> str:
     try:
         config = provider_config_from_catalog_entry(provider.name)
-        configured = provider_has_usable_credentials(
-            config,
-            credential_reader=FileCredentialStore(),
-        )
+        return _provider_credential_status_label(config, FileCredentialStore())
     except Exception:  # noqa: BLE001 - auth status should not prevent opening the picker
         return "status unavailable"
-    return "configured" if configured else "unconfigured"
+
+
+def _provider_credential_status_label(
+    provider: ProviderConfig,
+    credential_store: FileCredentialStore,
+) -> str:
+    """Return a redacted credential source label for provider pickers."""
+    credential_name = getattr(provider, "credential_name", None)
+    if credential_name:
+        get_oauth = getattr(credential_store, "get_oauth", None)
+        if callable(get_oauth) and get_oauth(credential_name) is not None:
+            return "stored OAuth"
+        if credential_store.get(credential_name):
+            return "stored credential"
+
+    if provider.name == "anthropic" and os.environ.get("ANTHROPIC_AUTH_TOKEN"):
+        return "env: ANTHROPIC_AUTH_TOKEN"
+
+    api_key_env = getattr(provider, "api_key_env", "")
+    if api_key_env and os.environ.get(api_key_env):
+        return f"env: {api_key_env}"
+
+    return "unconfigured"
 
 
 def _filter_login_providers(
