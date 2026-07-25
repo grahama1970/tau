@@ -6224,6 +6224,7 @@ def test_cli_without_prompt_invokes_tui_runner(
             bool,
             bool,
             Path | None,
+            ProviderSettings | None,
         ]
     ] = []
 
@@ -6239,6 +6240,7 @@ def test_cli_without_prompt_invokes_tui_runner(
         continue_session: bool,
         no_session: bool,
         session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
     ) -> None:
         calls.append(
             (
@@ -6253,6 +6255,7 @@ def test_cli_without_prompt_invokes_tui_runner(
                 continue_session,
                 no_session,
                 session_dir,
+                provider_settings,
             )
         )
 
@@ -6262,7 +6265,9 @@ def test_cli_without_prompt_invokes_tui_runner(
     result = CliRunner().invoke(app, [])
 
     assert result.exit_code == 0
-    assert calls == [(None, tmp_path, None, False, None, None, None, None, False, False, None)]
+    assert calls == [
+        (None, tmp_path, None, False, None, None, None, None, False, False, None, None)
+    ]
 
 
 def test_cli_positional_prompt_invokes_tui_runner(
@@ -6281,6 +6286,7 @@ def test_cli_positional_prompt_invokes_tui_runner(
             bool,
             bool,
             Path | None,
+            ProviderSettings | None,
         ]
     ] = []
 
@@ -6296,6 +6302,7 @@ def test_cli_positional_prompt_invokes_tui_runner(
         continue_session: bool,
         no_session: bool,
         session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
     ) -> None:
         calls.append(
             (
@@ -6310,6 +6317,7 @@ def test_cli_positional_prompt_invokes_tui_runner(
                 continue_session,
                 no_session,
                 session_dir,
+                provider_settings,
             )
         )
 
@@ -6320,7 +6328,20 @@ def test_cli_positional_prompt_invokes_tui_runner(
 
     assert result.exit_code == 0
     assert calls == [
-        (None, tmp_path, None, False, None, None, "explain this repo", None, False, False, None)
+        (
+            None,
+            tmp_path,
+            None,
+            False,
+            None,
+            None,
+            "explain this repo",
+            None,
+            False,
+            False,
+            None,
+            None,
+        )
     ]
 
 
@@ -7085,6 +7106,7 @@ def test_default_tui_invokes_tui_runner_with_flags(
             bool,
             bool,
             Path | None,
+            ProviderSettings | None,
         ]
     ] = []
 
@@ -7100,6 +7122,7 @@ def test_default_tui_invokes_tui_runner_with_flags(
         continue_session: bool,
         no_session: bool,
         session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
     ) -> None:
         calls.append(
             (
@@ -7114,6 +7137,7 @@ def test_default_tui_invokes_tui_runner_with_flags(
                 continue_session,
                 no_session,
                 session_dir,
+                provider_settings,
             )
         )
 
@@ -7137,7 +7161,7 @@ def test_default_tui_invokes_tui_runner_with_flags(
 
     assert result.exit_code == 0
     assert calls == [
-        ("fake", tmp_path, "session-1", False, "local", 1000, None, None, False, False, None)
+        ("fake", tmp_path, "session-1", False, "local", 1000, None, None, False, False, None, None)
     ]
 
 
@@ -7158,9 +7182,10 @@ def test_default_tui_passes_startup_session_name(
         continue_session: bool,
         no_session: bool,
         session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
-        del initial_prompt, continue_session, no_session, session_dir
+        del initial_prompt, continue_session, no_session, session_dir, provider_settings
         calls.append(session_name)
 
     monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
@@ -7188,9 +7213,10 @@ def test_default_tui_passes_continue_session_flag(
         continue_session: bool,
         no_session: bool,
         session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
-        del initial_prompt, session_name, no_session, session_dir
+        del initial_prompt, session_name, no_session, session_dir, provider_settings
         calls.append(continue_session)
 
     monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
@@ -7218,9 +7244,10 @@ def test_default_tui_passes_no_session_flag(
         continue_session: bool,
         no_session: bool,
         session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
     ) -> None:
         del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
-        del initial_prompt, session_name, continue_session, session_dir
+        del initial_prompt, session_name, continue_session, session_dir, provider_settings
         calls.append(no_session)
 
     monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
@@ -7338,6 +7365,125 @@ def test_list_models_rejects_print_mode() -> None:
     assert "--list-models cannot be combined with --print/--mode" in result.output
 
 
+def test_default_tui_passes_transient_scoped_model_patterns(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = ProviderSettings(
+        default_provider="local",
+        providers=(
+            OpenAICompatibleProviderConfig(
+                name="local",
+                models=("qwen", "llama"),
+                default_model="qwen",
+            ),
+            OpenAICompatibleProviderConfig(
+                name="openai",
+                models=("gpt-5.5", "gpt-5-mini"),
+                default_model="gpt-5.5",
+            ),
+        ),
+    )
+    calls: list[ProviderSettings | None] = []
+
+    async def fake_run_openai_tui(
+        model: str | None,
+        cwd: Path,
+        session_id: str | None,
+        new_session: bool,
+        provider_name: str | None,
+        auto_compact_token_threshold: int | None,
+        initial_prompt: str | None,
+        session_name: str | None,
+        continue_session: bool,
+        no_session: bool,
+        session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
+    ) -> None:
+        del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
+        del initial_prompt, session_name, continue_session, no_session, session_dir
+        calls.append(provider_settings)
+
+    monkeypatch.setattr(cli, "load_provider_settings", lambda: settings)
+    monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
+
+    result = CliRunner().invoke(app, ["--models", "gpt-5*,local:qwen"])
+
+    assert result.exit_code == 0
+    assert calls and calls[0] is not None
+    assert [(item.provider, item.model) for item in calls[0].scoped_models] == [
+        ("local", "qwen"),
+        ("openai", "gpt-5.5"),
+        ("openai", "gpt-5-mini"),
+    ]
+    assert settings.scoped_models == ()
+
+
+def test_default_tui_models_pattern_respects_provider_filter(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = ProviderSettings(
+        default_provider="local",
+        providers=(
+            OpenAICompatibleProviderConfig(
+                name="local",
+                models=("qwen", "llama"),
+                default_model="qwen",
+            ),
+            OpenAICompatibleProviderConfig(
+                name="openai",
+                models=("gpt-5.5", "gpt-5-mini"),
+                default_model="gpt-5.5",
+            ),
+        ),
+    )
+    calls: list[ProviderSettings | None] = []
+
+    async def fake_run_openai_tui(
+        model: str | None,
+        cwd: Path,
+        session_id: str | None,
+        new_session: bool,
+        provider_name: str | None,
+        auto_compact_token_threshold: int | None,
+        initial_prompt: str | None,
+        session_name: str | None,
+        continue_session: bool,
+        no_session: bool,
+        session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
+    ) -> None:
+        del model, cwd, session_id, new_session, provider_name, auto_compact_token_threshold
+        del initial_prompt, session_name, continue_session, no_session, session_dir
+        calls.append(provider_settings)
+
+    monkeypatch.setattr(cli, "load_provider_settings", lambda: settings)
+    monkeypatch.setattr(cli, "run_openai_tui", fake_run_openai_tui)
+
+    result = CliRunner().invoke(app, ["--provider", "openai", "--models", "gpt-5"])
+
+    assert result.exit_code == 0
+    assert calls and calls[0] is not None
+    assert [(item.provider, item.model) for item in calls[0].scoped_models] == [
+        ("openai", "gpt-5.5"),
+        ("openai", "gpt-5-mini"),
+    ]
+
+
+@pytest.mark.parametrize(
+    ("args", "message"),
+    [
+        (["--models", ","], "--models requires at least one non-empty pattern"),
+        (["--models", "not-a-real-model"], "No configured models match --models"),
+        (["--print", "--models", "gpt", "hello"], "--models is supported for TUI startup only"),
+    ],
+)
+def test_default_tui_rejects_invalid_models_patterns(args: list[str], message: str) -> None:
+    result = CliRunner().invoke(app, args)
+
+    assert result.exit_code != 0
+    assert message in result.output
+
+
 def test_default_tui_forks_session_before_starting_tui(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -7377,9 +7523,11 @@ def test_default_tui_forks_session_before_starting_tui(
         continue_session: bool,
         no_session: bool,
         session_dir: Path | None,
+        provider_settings: ProviderSettings | None,
     ) -> str | None:
         del model, cwd, new_session, provider_name, auto_compact_token_threshold
         del initial_prompt, session_name, continue_session, no_session, session_dir
+        del provider_settings
         calls.append(session_id)
         return session_id
 

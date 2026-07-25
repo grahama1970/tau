@@ -319,6 +319,7 @@ tau --session-dir ~/.tau-alt/sessions
 tau --fork <session-id-or-jsonl-path>
 tau --name "Customer bugfix"
 tau --list-models [search]
+tau --models "gpt-5*,local:qwen"
 tau export <session-id>
 tau export <session-id> session.html
 tau export <session-id> --format jsonl
@@ -345,6 +346,10 @@ forked session title.
 
 `--list-models [search]` prints configured provider/model pairs and exits.
 Combine it with `--provider <name>` to list one provider.
+
+`--models <patterns>` sets a transient scoped model list for the TUI run. The
+value is a comma-separated list of model or provider/model glob patterns used
+by Ctrl+P cycling; it does not rewrite `providers.json`.
 
 `tau export` writes a standalone HTML file with the preserved session tree and
 the storage-order transcript. The source can be an indexed session id or a path

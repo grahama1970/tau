@@ -82,6 +82,7 @@ from tau_coding.provider_catalog import (
 from tau_coding.provider_config import (
     ProviderConfig,
     ProviderSelection,
+    ProviderSettings,
     load_provider_settings,
     provider_config_from_catalog_entry,
     provider_has_usable_credentials,
@@ -11187,6 +11188,7 @@ async def run_tui_app(
     continue_session: bool = False,
     no_session: bool = False,
     session_manager: SessionManager | None = None,
+    provider_settings: ProviderSettings | None = None,
 ) -> str | None:
     """Create the default provider/session, run the Textual app, and return the session id."""
     if new_session and session_id is not None:
@@ -11206,7 +11208,7 @@ async def run_tui_app(
     if no_session and session_name is not None:
         raise RuntimeError("--no-session and --name cannot be used together")
 
-    provider_settings = load_provider_settings()
+    provider_settings = provider_settings or load_provider_settings()
     tui_settings = load_tui_settings()
     manager = None if no_session else session_manager or SessionManager()
     if no_session:

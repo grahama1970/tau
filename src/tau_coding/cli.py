@@ -1,6 +1,7 @@
 """Command-line entry point for Tau."""
 
 import asyncio
+import fnmatch
 import hashlib
 import io
 import json
@@ -10,6 +11,7 @@ import sys
 import tempfile
 import webbrowser
 from contextlib import redirect_stdout, suppress
+from dataclasses import replace
 from datetime import UTC, datetime
 from os import environ
 from pathlib import Path
@@ -197,6 +199,7 @@ from tau_coding.provider_config import (
     OpenAICompatibleProviderConfig,
     ProviderConfig,
     ProviderSettings,
+    ScopedModelConfig,
     load_provider_settings,
     provider_config_from_catalog_entry,
     provider_kind,
@@ -759,6 +762,10 @@ def main(
         str | None,
         typer.Option("--model", "-m", help="Model name to request from the provider."),
     ] = None,
+    model_patterns: Annotated[
+        str | None,
+        typer.Option("--models", help="Comma-separated model patterns for scoped cycling."),
+    ] = None,
     list_models: Annotated[
         bool,
         typer.Option("--list-models", help="List configured provider models and exit."),
@@ -1016,6 +1023,19 @@ def main(
 
     if fork_session_ref is not None and print_requested:
         raise typer.BadParameter("--fork is supported for TUI startup only")
+
+    provider_settings_override = None
+    if model_patterns is not None:
+        if print_requested:
+            raise typer.BadParameter("--models is supported for TUI startup only")
+        try:
+            provider_settings_override = scoped_settings_from_model_patterns(
+                load_provider_settings(),
+                model_patterns,
+                provider_name=provider,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
 
     positional_args = prompt_args or []
     command = positional_args[0] if positional_args else None
@@ -3223,6 +3243,7 @@ def main(
                 continue_session,
                 no_session,
                 session_dir,
+                provider_settings_override,
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -3276,6 +3297,7 @@ async def run_openai_tui(
     continue_session: bool = False,
     no_session: bool = False,
     session_dir: Path | None = None,
+    provider_settings: ProviderSettings | None = None,
 ) -> str | None:
     """Run the Textual TUI and return its resumable session id, if any."""
     return await run_tui_app(
@@ -3290,6 +3312,7 @@ async def run_openai_tui(
         continue_session=continue_session,
         no_session=no_session,
         session_manager=_session_manager_from_dir(session_dir),
+        provider_settings=provider_settings,
     )
 
 
@@ -3297,6 +3320,47 @@ def _session_manager_from_dir(session_dir: Path | None) -> SessionManager:
     if session_dir is None:
         return SessionManager()
     return SessionManager(TauPaths(session_root=session_dir.expanduser().resolve()))
+
+
+def scoped_settings_from_model_patterns(
+    settings: ProviderSettings,
+    patterns_text: str,
+    *,
+    provider_name: str | None = None,
+) -> ProviderSettings:
+    """Return settings with transient scoped models selected by pattern."""
+    patterns = tuple(pattern.strip() for pattern in patterns_text.split(",") if pattern.strip())
+    if not patterns:
+        raise RuntimeError("--models requires at least one non-empty pattern")
+    choices: list[ScopedModelConfig] = []
+    seen: set[tuple[str, str]] = set()
+    for provider in settings.providers:
+        if provider_name is not None and provider.name != provider_name:
+            continue
+        for model in provider.models:
+            row = f"{provider.name}:{model}"
+            if not any(
+                _model_pattern_matches(pattern, provider.name, model, row)
+                for pattern in patterns
+            ):
+                continue
+            key = (provider.name, model)
+            if key in seen:
+                continue
+            choices.append(ScopedModelConfig(provider=provider.name, model=model))
+            seen.add(key)
+    if not choices:
+        raise RuntimeError(f"No configured models match --models: {patterns_text}")
+    return replace(settings, scoped_models=tuple(choices))
+
+
+def _model_pattern_matches(pattern: str, provider_name: str, model: str, row: str) -> bool:
+    normalized = pattern.casefold()
+    candidates = (model.casefold(), row.casefold(), f"{provider_name}/{model}".casefold())
+    return any(
+        fnmatch.fnmatchcase(candidate, normalized) or normalized in candidate
+        for candidate in candidates
+    )
 
 
 async def fork_session_command(
