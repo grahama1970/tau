@@ -8434,12 +8434,21 @@ async def test_extension_select_screen_supports_pi_jk_navigation() -> None:
 
         option_list = app.screen.query_one("#extension-select-list", ListView)
         assert option_list.index == 0
+        help_text = str(app.screen.query_one("#confirmation-help", Static).render())
+        assert "Up/Down/J/K navigate" in help_text
+        assert "Ctrl+O toggles tool output" in help_text
 
         await pilot.press("j")
         assert option_list.index == 1
 
         await pilot.press("k")
         assert option_list.index == 0
+
+        assert app.state.show_tool_results is False
+        await pilot.press("ctrl+o")
+        await pilot.pause()
+        assert isinstance(app.screen, ExtensionSelectScreen)
+        assert app.state.show_tool_results is True
 
         await pilot.press("j")
         await pilot.press("j")

@@ -4872,13 +4872,18 @@ class ExtensionSelectScreen(ModalScreen[str | None]):
         """Compose the extension select dialog."""
         confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
         cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
+        tools_key = _key_hint_with_default(self.keybindings.toggle_tool_results, "ctrl+o")
         with Vertical(id="confirmation"):
             yield Static(self._title_label(), id="confirmation-title")
             yield ListView(
                 *(ListItem(Label(option, markup=False)) for option in self.options),
                 id="extension-select-list",
             )
-            yield Static(f"{confirm_key} selects - {cancel_key} cancels", id="confirmation-help")
+            yield Static(
+                f"Up/Down/J/K navigate - {confirm_key} selects - "
+                f"{tools_key} toggles tool output - {cancel_key} cancels",
+                id="confirmation-help",
+            )
 
     def on_mount(self) -> None:
         """Focus the list."""
@@ -4925,6 +4930,15 @@ class ExtensionSelectScreen(ModalScreen[str | None]):
         ):
             event.stop()
             self.dismiss(None)
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.toggle_tool_results,
+            "ctrl+o",
+        ):
+            event.stop()
+            app = self.app
+            if isinstance(app, TauTuiApp):
+                app.action_toggle_tool_results()
 
     def action_select_cursor(self) -> None:
         """Dismiss with the highlighted option."""

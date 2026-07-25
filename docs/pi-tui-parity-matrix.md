@@ -53,7 +53,7 @@ capabilities.
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login, but daily auth readiness should be more visible. |
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MUST/PARTIAL` | Tau renders shell/tool output, colorizes embedded unified diffs, accepts Pi-style extension tool call/result render hooks, summarizes permission/approval receipts, and now surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data; richer interactive component objects remain pending. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider and retry countdown | `PARTIAL` | Footer extensibility exists; compact first-screen readiness now exposes auth/memory/DAG/SciLLM/queue when the sidebar is hidden. |
-| Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool renderers in live/restored transcripts | `MUST/PARTIAL` | Preserve current Tau extension API; full Pi-style custom component objects remain pending beyond plain transcript rendering. |
+| Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool renderers in live/restored transcripts | `MUST/PARTIAL` | Selector now advertises Pi-style `J/K` navigation and supports tool-output toggle while open; preserve current Tau extension API; full Pi-style custom component objects remain pending beyond plain transcript rendering. |
 | Images | `show-images-selector`, image component | Tau image visibility setting and image payload rendering | `MATCHED` | Retain current terminal-safe image controls. |
 | Workflow/DAG progress | None in Pi | `WorkflowPickerScreen`, DAG/workflow receipts | `TAU-ONLY/MUST` | This is Tau's differentiator and must remain first-class in the TUI. |
 
@@ -84,11 +84,28 @@ capabilities.
 
 Port the next highest-value daily-use gap that is still local and bounded:
 
-`Extension UI`: close the next daily-use gap in extension-owned TUI behavior
-without replacing Tau's current extension API or custom DAG/resource surfaces.
-Prefer small render/adapter gaps over full Pi custom component parity.
+`Extension UI`: continue closing daily-use extension-owned TUI behavior without
+replacing Tau's current extension API or custom DAG/resource surfaces. Prefer
+small render/adapter gaps over full Pi custom component parity.
 
 Latest slice evidence:
+
+- Source inspected: Pi `extension-selector.ts`; Tau `ExtensionSelectScreen`.
+- Destination preserved: Tau's extension UI request handler, extension chrome,
+  custom component hooks, transcript rendering, and tool-output state model.
+- Changed: extension selector help now advertises `Up/Down/J/K` navigation and
+  the configured tool-output toggle; pressing the tool-output key while the
+  modal is open toggles Tau's existing transcript tool-result expansion without
+  closing the selector.
+- Mocked: Textual render proof is fixture-backed.
+- Live: no provider-live or live extension backend command.
+- Render proof: `/tmp/tau-pi-tui-extension-select-proof-1785012344/proof.json`
+  with screenshot
+  `/tmp/tau-pi-tui-extension-select-proof-1785012344/tau-extension-select-help.svg`.
+- Remaining gap: full Pi-style extension custom component parity remains
+  partial.
+
+Previous slice evidence:
 
 - Source inspected: Pi `footer.ts`, `status-indicator.ts`, and
   `countdown-timer.ts`; Tau `render_compact_session_info` and sidebar helpers.
@@ -107,7 +124,7 @@ Latest slice evidence:
   and custom extension status rendering; Tau has the practical first-screen cues
   but not full Pi component parity.
 
-Previous slice evidence:
+Earlier slice evidence:
 
 - Source inspected: Pi `config-selector.ts`; Tau `ConfigMapScreen` and
   config-map tests.
