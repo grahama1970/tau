@@ -100,11 +100,64 @@ def _normalize_custom_renderer_result(result: Any) -> str | None:
         return None
     if isinstance(result, str):
         return result
+    component_text = _component_like_custom_renderer_text(result)
+    if component_text is not None:
+        return component_text
     if isinstance(result, Mapping):
         return dumps(dict(result), indent=2, sort_keys=True)
     if isinstance(result, Sequence) and not isinstance(result, (bytes, bytearray)):
         return "\n".join(str(line) for line in result)
     return str(result)
+
+
+def _component_like_custom_renderer_text(result: Any) -> str | None:
+    """Render a small Pi-style component object to transcript text when possible."""
+    render = getattr(result, "render", None)
+    if callable(render):
+        try:
+            rendered = _call_component_render(render)
+        except Exception:  # noqa: BLE001 - extension renderer output is best-effort display
+            rendered = None
+        if rendered is not None:
+            return _normalize_component_text(rendered)
+
+    lines = getattr(result, "lines", None)
+    if lines is not None:
+        return _normalize_component_text(lines)
+    return None
+
+
+def _call_component_render(render: Callable[..., Any]) -> Any:
+    try:
+        parameters = inspect.signature(render).parameters
+    except (TypeError, ValueError):
+        return render(80)
+    positional = [
+        parameter
+        for parameter in parameters.values()
+        if parameter.kind
+        in {
+            inspect.Parameter.POSITIONAL_ONLY,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        }
+    ]
+    accepts_varargs = any(
+        parameter.kind == inspect.Parameter.VAR_POSITIONAL
+        for parameter in parameters.values()
+    )
+    if accepts_varargs or positional:
+        return render(80)
+    return render()
+
+
+def _normalize_component_text(rendered: Any) -> str | None:
+    if rendered is None:
+        return None
+    if isinstance(rendered, str):
+        return rendered
+    if isinstance(rendered, Sequence) and not isinstance(rendered, (bytes, bytearray)):
+        return "\n".join(str(line) for line in rendered)
+    return str(rendered)
 
 
 def _call_custom_entry_renderer(

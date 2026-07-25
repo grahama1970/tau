@@ -1675,6 +1675,44 @@ async def test_tui_app_rerenders_custom_entries_when_tool_output_expands() -> No
     assert "extension.audit collapsed" not in expanded_lines
 
 
+@pytest.mark.anyio
+async def test_tui_app_renders_pi_style_custom_entry_component() -> None:
+    session = FakeSession(messages=[UserMessage(content="Before custom entry")])
+    session.state.custom_entries = (
+        CustomEntry(namespace="extension.audit", data={"result": "ok", "count": 2}),
+    )
+
+    class AuditComponent:
+        def __init__(self, *, expanded: bool) -> None:
+            self.expanded = expanded
+
+        def render(self, width: int) -> list[str]:
+            state = "expanded" if self.expanded else "collapsed"
+            return [f"audit component {state}", f"component width {width}"]
+
+    def render_entry(entry: CustomEntry, options: dict[str, bool]) -> AuditComponent:
+        return AuditComponent(expanded=options["expanded"])
+
+    session.extension_entry_renderers = {"extension.audit": render_entry}
+    app = TauTuiApp(session)
+
+    async with app.run_test(size=(120, 30)) as pilot:
+        await pilot.pause()
+        transcript = app.query_one("#transcript", TranscriptView)
+        collapsed_lines = [line.text for line in transcript.lines]
+
+        await pilot.press("ctrl+o")
+        await pilot.pause()
+
+        expanded_lines = [line.text for line in transcript.lines]
+
+    assert "audit component collapsed" in collapsed_lines
+    assert "component width 80" in collapsed_lines
+    assert "audit component expanded" not in collapsed_lines
+    assert "audit component expanded" in expanded_lines
+    assert "audit component collapsed" not in expanded_lines
+
+
 def test_expanded_skill_invocation_messages_show_skill_body() -> None:
     skill = Skill(
         name="review",
