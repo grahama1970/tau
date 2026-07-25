@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 from rich.console import Console
 from rich.panel import Panel
+from textual.color import Color
 from textual.containers import VerticalScroll
 from textual.geometry import Offset, Spacing
 from textual.selection import SELECT_ALL, Selection
@@ -106,6 +107,7 @@ from tau_coding.tui.config import (
     TAU_LIGHT_THEME,
     TuiKeybindings,
     TuiSettings,
+    TuiTheme,
     save_tui_settings,
     tui_settings_path,
 )
@@ -2661,6 +2663,28 @@ async def test_tui_app_theme_command_opens_picker_and_persists_selection(
         assert app.tui_settings.theme == "tau-light"
         assert tui_settings_path().read_text(encoding="utf-8").find('"theme": "tau-light"') != -1
         assert app.get_theme_variable_defaults()["tau-screen-background"] == "#ffffff"
+
+
+@pytest.mark.parametrize(
+    "theme",
+    [TAU_DARK_THEME, TAU_LIGHT_THEME, HIGH_CONTRAST_THEME],
+)
+@pytest.mark.anyio
+async def test_theme_picker_highlight_uses_theme_selection_palette(theme: TuiTheme) -> None:
+    app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(theme=theme.name))
+
+    async with app.run_test() as pilot:
+        picker = ThemePickerScreen(
+            current_theme=theme.name,
+            theme=theme,
+        )
+        app.push_screen(picker)
+        await pilot.pause()
+
+        highlighted_item = picker.query_one("ListItem.-highlight", ListItem)
+        highlighted_label = highlighted_item.query_one(Label)
+        assert highlighted_label.styles.background == Color.parse(theme.highlight_background)
+        assert highlighted_label.styles.color == Color.parse(theme.highlight_text)
 
 
 @pytest.mark.anyio
