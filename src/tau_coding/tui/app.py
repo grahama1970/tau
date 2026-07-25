@@ -80,6 +80,8 @@ from tau_coding.provider_catalog import (
     builtin_provider_entry,
 )
 from tau_coding.provider_config import (
+    ANTHROPIC_AUTH_TOKEN_ENV,
+    RUNTIME_API_KEY_ENV,
     ProviderConfig,
     ProviderSelection,
     ProviderSettings,
@@ -172,6 +174,12 @@ NO_STORED_CREDENTIALS_MESSAGE = (
     "No stored credentials to remove. /logout only removes credentials saved by /login; "
     "environment variables and providers.json config are unchanged."
 )
+ANTHROPIC_SUBSCRIPTION_AUTH_WARNING = (
+    "Anthropic subscription auth is active. Third-party harness usage draws from extra usage "
+    "and is billed per token, not your Claude plan limits. Manage extra usage at "
+    "https://claude.ai/settings/usage."
+)
+ANTHROPIC_SUBSCRIPTION_AUTH_PREFIX = "sk-ant-oat"
 TREE_RUNNING_MESSAGE = "Tau is already working. Press Escape to cancel before branching."
 
 
@@ -5988,6 +5996,7 @@ class TauTuiApp(App[None]):
         self._last_empty_escape_at: float | None = None
         self._pty_proof_enabled = os.environ.get("TAU_TUI_PTY_PROOF") == "1"
         self._pty_proof_run_id = os.environ.get("TAU_TUI_PTY_RUN_ID", "tau-real-tui")
+        self._anthropic_subscription_warning_shown = False
 
     def _load_session_transcript(self) -> None:
         """Load provider messages plus durable extension/application entries."""
@@ -6070,6 +6079,8 @@ class TauTuiApp(App[None]):
         self._refresh_completions()
         if self.startup_message and not self.tui_settings.quiet_startup:
             self._notify(self.startup_message, severity="warning")
+        if not self.tui_settings.quiet_startup:
+            self._maybe_warn_anthropic_subscription_auth()
         if not self.tui_settings.quiet_startup and not self.is_headless:
             self.run_worker(self._warn_about_tmux_keyboard_setup(), exclusive=False)
         if self.startup_resume_picker:
@@ -8011,6 +8022,7 @@ class TauTuiApp(App[None]):
             self._notify(f"Could not save login: {exc}", severity="error")
             return
         self._notify(_login_success_message(entry, self.session))
+        self._maybe_warn_anthropic_subscription_auth(saved_entry=entry, saved_api_key=api_key)
         self._refresh()
 
     def _handle_oauth_login_result(
@@ -8034,6 +8046,28 @@ class TauTuiApp(App[None]):
             return
         self._notify(_login_success_message(entry, self.session))
         self._refresh()
+
+    def _maybe_warn_anthropic_subscription_auth(
+        self,
+        *,
+        saved_entry: ProviderCatalogEntry | None = None,
+        saved_api_key: str | None = None,
+    ) -> None:
+        """Warn once when Anthropic subscription-style auth is the active auth path."""
+        if self._anthropic_subscription_warning_shown:
+            return
+        provider_name = getattr(self.session, "provider_name", None)
+        saved_anthropic_oat = (
+            saved_entry is not None
+            and saved_entry.name == "anthropic"
+            and _is_anthropic_subscription_auth_key(saved_api_key)
+        )
+        if provider_name != "anthropic" and not saved_anthropic_oat:
+            return
+        if not _anthropic_subscription_auth_active(saved_api_key=saved_api_key):
+            return
+        self._anthropic_subscription_warning_shown = True
+        self._notify(ANTHROPIC_SUBSCRIPTION_AUTH_WARNING, severity="warning")
 
     def _open_logout_picker(self) -> None:
         providers = _stored_credential_providers(BUILTIN_PROVIDER_CATALOG)
@@ -9591,6 +9625,37 @@ def _credential_store_has_entry(
         credential_store.get(credential_name) is not None
         or credential_store.get_oauth(credential_name) is not None
     )
+
+
+def _is_anthropic_subscription_auth_key(api_key: str | None) -> bool:
+    return isinstance(api_key, str) and api_key.startswith(ANTHROPIC_SUBSCRIPTION_AUTH_PREFIX)
+
+
+def _anthropic_subscription_auth_active(
+    *,
+    saved_api_key: str | None = None,
+    credential_store: FileCredentialStore | None = None,
+    env: Mapping[str, str] = os.environ,
+) -> bool:
+    """Return whether Tau's active Anthropic auth source is subscription-style."""
+    runtime_api_key = env.get(RUNTIME_API_KEY_ENV)
+    if runtime_api_key:
+        return _is_anthropic_subscription_auth_key(runtime_api_key)
+
+    if saved_api_key:
+        return _is_anthropic_subscription_auth_key(saved_api_key)
+
+    try:
+        credential = (credential_store or FileCredentialStore()).get("anthropic")
+    except Exception:  # noqa: BLE001 - warning-only checks must not block the TUI
+        credential = None
+    if credential:
+        return _is_anthropic_subscription_auth_key(credential)
+
+    if env.get(ANTHROPIC_AUTH_TOKEN_ENV):
+        return True
+
+    return _is_anthropic_subscription_auth_key(env.get("ANTHROPIC_API_KEY"))
 
 
 def _login_success_message(entry: ProviderCatalogEntry, session: CodingSession) -> str:

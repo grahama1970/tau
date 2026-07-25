@@ -340,6 +340,25 @@ Acceptance:
 - `/config` explicitly states that it is read-only and that Tau does not yet
   provide Pi's package selector TUI.
 
+### Slice 16: Anthropic Subscription Auth Warning
+
+Pi warns operators when Anthropic subscription-style auth is active because
+third-party harness use draws from extra usage rather than normal Claude plan
+limits. Tau already supports Anthropic API-key storage and
+`ANTHROPIC_AUTH_TOKEN` bearer auth; add the same warning without changing the
+provider runtime contract.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Startup warns once when the active Tau provider is Anthropic and the actual
+  auth source is subscription-style.
+- `/login anthropic` warns immediately when the saved key starts with
+  `sk-ant-oat`.
+- The warning follows Tau's Anthropic auth precedence: `TAU_RUNTIME_API_KEY`,
+  stored credential, `ANTHROPIC_AUTH_TOKEN`, then `ANTHROPIC_API_KEY`.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.
