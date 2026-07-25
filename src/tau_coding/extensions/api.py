@@ -12,6 +12,7 @@ ExtensionCommandHandler = Callable[[Any], Any]
 ExtensionShortcutHandler = Callable[[Any], Any]
 ExtensionArgumentCompletionProvider = Callable[[str], Sequence[Any] | None]
 ThemeInfo = dict[str, str | None]
+ContextUsageInfo = dict[str, int | float | None]
 
 
 @dataclass(frozen=True, slots=True)
@@ -96,6 +97,61 @@ class ExtensionShortcutContext:
     def cwd(self) -> Any:
         """Return the active session working directory when available."""
         return getattr(self.session, "cwd", None)
+
+    @property
+    def model(self) -> str | None:
+        """Return the active session model when available."""
+        return _session_model(self.session)
+
+    @property
+    def thinking_level(self) -> str | None:
+        """Return the active Tau thinking level when available."""
+        return _session_thinking_level(self.session)
+
+    @property
+    def thinkingLevel(self) -> str | None:  # noqa: N802
+        """Pi-compatible camelCase alias for thinking_level."""
+        return self.thinking_level
+
+    def is_idle(self) -> bool:
+        """Return whether the session is not currently streaming."""
+        return _session_is_idle(self.session)
+
+    def isIdle(self) -> bool:  # noqa: N802
+        """Pi-compatible camelCase alias for is_idle."""
+        return self.is_idle()
+
+    def has_pending_messages(self) -> bool:
+        """Return whether queued steering or follow-up messages are pending."""
+        return _session_has_pending_messages(self.session)
+
+    def hasPendingMessages(self) -> bool:  # noqa: N802
+        """Pi-compatible camelCase alias for has_pending_messages."""
+        return self.has_pending_messages()
+
+    def is_project_trusted(self) -> bool:
+        """Return whether project-local trust is active for this session."""
+        return _session_project_trusted(self.session)
+
+    def isProjectTrusted(self) -> bool:  # noqa: N802
+        """Pi-compatible camelCase alias for is_project_trusted."""
+        return self.is_project_trusted()
+
+    def get_context_usage(self) -> ContextUsageInfo | None:
+        """Return Pi-style context usage for the active session."""
+        return _session_context_usage(self.session)
+
+    def getContextUsage(self) -> ContextUsageInfo | None:  # noqa: N802
+        """Pi-compatible camelCase alias for get_context_usage."""
+        return self.get_context_usage()
+
+    def get_system_prompt(self) -> str:
+        """Return the current effective system prompt."""
+        return _session_system_prompt(self.session)
+
+    def getSystemPrompt(self) -> str:  # noqa: N802
+        """Pi-compatible camelCase alias for get_system_prompt."""
+        return self.get_system_prompt()
 
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the shortcut returns."""
@@ -294,6 +350,61 @@ class ExtensionCommandContext:
     def cwd(self) -> Any:
         """Return the active session working directory when available."""
         return getattr(self.session, "cwd", None)
+
+    @property
+    def model(self) -> str | None:
+        """Return the active session model when available."""
+        return _session_model(self.session)
+
+    @property
+    def thinking_level(self) -> str | None:
+        """Return the active Tau thinking level when available."""
+        return _session_thinking_level(self.session)
+
+    @property
+    def thinkingLevel(self) -> str | None:  # noqa: N802
+        """Pi-compatible camelCase alias for thinking_level."""
+        return self.thinking_level
+
+    def is_idle(self) -> bool:
+        """Return whether the session is not currently streaming."""
+        return _session_is_idle(self.session)
+
+    def isIdle(self) -> bool:  # noqa: N802
+        """Pi-compatible camelCase alias for is_idle."""
+        return self.is_idle()
+
+    def has_pending_messages(self) -> bool:
+        """Return whether queued steering or follow-up messages are pending."""
+        return _session_has_pending_messages(self.session)
+
+    def hasPendingMessages(self) -> bool:  # noqa: N802
+        """Pi-compatible camelCase alias for has_pending_messages."""
+        return self.has_pending_messages()
+
+    def is_project_trusted(self) -> bool:
+        """Return whether project-local trust is active for this session."""
+        return _session_project_trusted(self.session)
+
+    def isProjectTrusted(self) -> bool:  # noqa: N802
+        """Pi-compatible camelCase alias for is_project_trusted."""
+        return self.is_project_trusted()
+
+    def get_context_usage(self) -> ContextUsageInfo | None:
+        """Return Pi-style context usage for the active session."""
+        return _session_context_usage(self.session)
+
+    def getContextUsage(self) -> ContextUsageInfo | None:  # noqa: N802
+        """Pi-compatible camelCase alias for get_context_usage."""
+        return self.get_context_usage()
+
+    def get_system_prompt(self) -> str:
+        """Return the current effective system prompt."""
+        return _session_system_prompt(self.session)
+
+    def getSystemPrompt(self) -> str:  # noqa: N802
+        """Pi-compatible camelCase alias for get_system_prompt."""
+        return self.get_system_prompt()
 
     def notify(self, message: str, severity: str = "info") -> None:
         """Request that Tau show a TUI notification after the command returns."""
@@ -839,6 +950,64 @@ def _session_has_extension_ui(session: Any) -> bool:
     if available is not None:
         return bool(available)
     return callable(getattr(session, "request_extension_ui", None))
+
+
+def _session_model(session: Any) -> str | None:
+    model = getattr(session, "model", None)
+    return None if model is None else str(model)
+
+
+def _session_thinking_level(session: Any) -> str | None:
+    thinking_level = getattr(session, "thinking_level", None)
+    return None if thinking_level is None else str(thinking_level)
+
+
+def _session_is_idle(session: Any) -> bool:
+    return not bool(getattr(session, "is_running", False))
+
+
+def _session_has_pending_messages(session: Any) -> bool:
+    queued = getattr(session, "queued_messages", None)
+    count = getattr(queued, "count", None)
+    if isinstance(count, int):
+        return count > 0
+    queued_steering = getattr(session, "queued_steering_messages", ())
+    queued_follow_up = getattr(session, "queued_follow_up_messages", ())
+    return bool(queued_steering or queued_follow_up)
+
+
+def _session_project_trusted(session: Any) -> bool:
+    project_trust_state = getattr(session, "project_trust_state", None)
+    if callable(project_trust_state):
+        trust_state = project_trust_state()
+        saved_decision = getattr(trust_state, "saved_decision", None)
+        if saved_decision is not None:
+            return bool(getattr(saved_decision, "decision", False))
+    config = getattr(session, "_config", None)
+    return getattr(config, "default_project_trust", None) == "always"
+
+
+def _session_context_usage(session: Any) -> ContextUsageInfo | None:
+    usage = getattr(session, "context_usage", None)
+    if usage is None:
+        return None
+    tokens = getattr(usage, "total_tokens", None)
+    context_window = getattr(session, "context_window_tokens", None)
+    if not isinstance(tokens, int):
+        return None
+    if not isinstance(context_window, int) or context_window <= 0:
+        context_window = 0
+    percent = (tokens / context_window) * 100 if context_window else None
+    return {
+        "tokens": tokens,
+        "contextWindow": context_window,
+        "percent": percent,
+    }
+
+
+def _session_system_prompt(session: Any) -> str:
+    system_prompt = getattr(session, "system_prompt", "")
+    return str(system_prompt)
 
 
 def _theme_name_from_value(theme: Any) -> str | None:
