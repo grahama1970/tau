@@ -1,5 +1,6 @@
 """Pure provider/tool agent loop."""
 
+import asyncio
 from collections.abc import AsyncIterator, Callable, Mapping, Sequence
 
 from tau_agent.events import (
@@ -15,11 +16,12 @@ from tau_agent.events import (
     ThinkingDeltaEvent,
     ToolExecutionEndEvent,
     ToolExecutionStartEvent,
+    ToolExecutionUpdateEvent,
     TurnEndEvent,
     TurnStartEvent,
 )
 from tau_agent.messages import AgentMessage, AssistantMessage, ToolResultMessage
-from tau_agent.tools import AgentTool, AgentToolResult, ToolCall
+from tau_agent.tools import AgentTool, AgentToolResult, ToolCall, ToolUpdateCallback
 from tau_agent.types import JSONValue
 from tau_ai.events import (
     ProviderErrorEvent,
@@ -210,19 +212,66 @@ async def _execute_tool_calls(
         if tool is None:
             result = _unknown_tool_result(tool_call)
         else:
-            result = await _execute_tool(tool, tool_call, signal)
+            result = None
+            async for tool_event in _execute_tool_with_updates(tool, tool_call, signal):
+                if isinstance(tool_event, ToolExecutionEndEvent):
+                    result = tool_event.result
+                else:
+                    yield tool_event
+            if result is None:
+                result = AgentToolResult(
+                    tool_call_id=tool_call.id,
+                    name=tool_call.name,
+                    ok=False,
+                    content="Tool execution ended without a result",
+                    error="Tool execution ended without a result",
+                )
 
         messages.append(_tool_result_message(result))
         yield ToolExecutionEndEvent(result=result)
+
+
+async def _execute_tool_with_updates(
+    tool: AgentTool,
+    tool_call: ToolCall,
+    signal: CancellationToken | None,
+) -> AsyncIterator[ToolExecutionUpdateEvent | ToolExecutionEndEvent]:
+    updates: asyncio.Queue[ToolExecutionUpdateEvent] = asyncio.Queue()
+
+    def on_update(message: str, data: Mapping[str, JSONValue] | None = None) -> None:
+        updates.put_nowait(
+            ToolExecutionUpdateEvent(
+                tool_call_id=tool_call.id,
+                message=message,
+                data=None if data is None else dict(data),
+            )
+        )
+
+    task = asyncio.create_task(_execute_tool(tool, tool_call, signal, on_update=on_update))
+    try:
+        while not task.done():
+            try:
+                yield await asyncio.wait_for(updates.get(), timeout=0.05)
+            except TimeoutError:
+                continue
+
+        result = await task
+        while not updates.empty():
+            yield updates.get_nowait()
+        yield ToolExecutionEndEvent(result=result)
+    except asyncio.CancelledError:
+        task.cancel()
+        raise
 
 
 async def _execute_tool(
     tool: AgentTool,
     tool_call: ToolCall,
     signal: CancellationToken | None,
+    on_update: ToolUpdateCallback | None = None,
 ) -> AgentToolResult:
     try:
-        result = await tool.execute(tool_call.arguments, signal=signal)
+        result = await tool.execute(tool_call.arguments, signal=signal, on_update=on_update)
     except Exception as exc:  # noqa: BLE001 - tools are an isolation boundary
         return AgentToolResult(
             tool_call_id=tool_call.id,

@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Awaitable, Mapping
+import inspect
+from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -19,6 +20,9 @@ class ToolCancellationToken(Protocol):
         ...
 
 
+type ToolUpdateCallback = Callable[[str, Mapping[str, JSONValue] | None], None]
+
+
 class ToolExecutor(Protocol):
     """Async callable used to execute a tool."""
 
@@ -26,6 +30,7 @@ class ToolExecutor(Protocol):
         self,
         arguments: Mapping[str, JSONValue],
         signal: ToolCancellationToken | None = None,
+        on_update: ToolUpdateCallback | None = None,
     ) -> Awaitable[AgentToolResult]:
         """Execute the tool with optional cancellation support."""
         ...
@@ -70,6 +75,20 @@ class AgentTool:
         self,
         arguments: Mapping[str, JSONValue],
         signal: ToolCancellationToken | None = None,
+        on_update: ToolUpdateCallback | None = None,
     ) -> AgentToolResult:
         """Execute the tool with provider-neutral JSON-like arguments."""
-        return await self.executor(arguments, signal=signal)
+        if on_update is None or not _accepts_on_update(self.executor):
+            return await self.executor(arguments, signal=signal)
+        return await self.executor(arguments, signal=signal, on_update=on_update)
+
+
+def _accepts_on_update(executor: ToolExecutor) -> bool:
+    try:
+        signature = inspect.signature(executor)
+    except (TypeError, ValueError):
+        return True
+    return any(
+        parameter.kind is inspect.Parameter.VAR_KEYWORD or parameter.name == "on_update"
+        for parameter in signature.parameters.values()
+    )

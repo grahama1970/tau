@@ -23,7 +23,13 @@ from math import isfinite
 from pathlib import Path
 from time import monotonic
 
-from tau_agent.tools import AgentTool, AgentToolResult, ToolCancellationToken, ToolExecutor
+from tau_agent.tools import (
+    AgentTool,
+    AgentToolResult,
+    ToolCancellationToken,
+    ToolExecutor,
+    ToolUpdateCallback,
+)
 from tau_agent.types import JSONValue
 
 DEFAULT_MAX_OUTPUT_BYTES = 50 * 1024
@@ -514,12 +520,26 @@ def create_bash_tool_definition(
     async def execute(
         arguments: Mapping[str, JSONValue],
         signal: ToolCancellationToken | None = None,
+        on_update: ToolUpdateCallback | None = None,
     ) -> AgentToolResult:
         command = _str_arg(arguments, "command")
         timeout = _optional_float_arg(arguments, "timeout")
         timeout = _validate_bash_timeout(timeout)
         if signal is not None and signal.is_cancelled():
             raise ToolInputError("Command cancelled")
+
+        def emit_output_chunk(chunk: str) -> None:
+            if on_output_chunk is not None:
+                on_output_chunk(chunk)
+            if on_update is not None:
+                on_update(
+                    chunk,
+                    {
+                        "tool": "bash",
+                        "stream": "combined_output",
+                        "command": command,
+                    },
+                )
 
         start = monotonic()
         if os.name == "posix":
@@ -543,7 +563,9 @@ def create_bash_tool_definition(
             process,
             timeout=timeout,
             signal=signal,
-            on_output_chunk=on_output_chunk,
+            on_output_chunk=emit_output_chunk
+            if on_output_chunk is not None or on_update is not None
+            else None,
         )
 
         output = output_bytes.decode(errors="replace")

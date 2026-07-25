@@ -21,8 +21,8 @@ from tau_agent.harness import (
     AgentHarness,
     AgentHarnessConfig,
     EventListener,
-    QueueMode,
     QueuedMessages,
+    QueueMode,
     SimpleCancellationToken,
 )
 from tau_agent.loop import run_agent_loop
@@ -41,7 +41,13 @@ from tau_agent.session import (
     SessionState,
     ThinkingLevelChangeEntry,
 )
-from tau_agent.tools import AgentTool, AgentToolResult, ToolCall, ToolExecutor
+from tau_agent.tools import (
+    AgentTool,
+    AgentToolResult,
+    ToolCall,
+    ToolExecutor,
+    ToolUpdateCallback,
+)
 from tau_agent.types import JSONObject, JSONPrimitive, JSONValue
 
 __all__ = [
@@ -85,6 +91,7 @@ __all__ = [
     "ToolExecutionStartEvent",
     "ToolExecutionUpdateEvent",
     "ToolExecutor",
+    "ToolUpdateCallback",
     "ToolResultMessage",
     "TurnEndEvent",
     "TurnStartEvent",

@@ -230,6 +230,38 @@ async def test_bash_tool_captures_stdout_and_exit_code(tmp_path: Path) -> None:
 
 
 @pytest.mark.anyio
+async def test_bash_tool_emits_live_output_updates_before_process_exits(tmp_path: Path) -> None:
+    tool = create_bash_tool(cwd=tmp_path)
+    updates: list[tuple[str, dict[str, object] | None]] = []
+
+    def on_update(message: str, data: object | None = None) -> None:
+        updates.append((message, data if isinstance(data, dict) else None))
+
+    task = asyncio.create_task(
+        tool.execute(
+            {"command": "printf 'one\\n'; sleep 0.2; printf 'two\\n'"},
+            on_update=on_update,
+        )
+    )
+    for _ in range(100):
+        if updates:
+            break
+        await asyncio.sleep(0.01)
+
+    assert updates
+    assert task.done() is False
+
+    result = await task
+
+    assert result.ok is True
+    assert result.content == "one\ntwo\n"
+    assert "".join(message for message, _data in updates) == result.content
+    assert updates[0][1] is not None
+    assert updates[0][1]["tool"] == "bash"
+    assert updates[0][1]["stream"] == "combined_output"
+
+
+@pytest.mark.anyio
 async def test_bash_tool_uses_custom_shell_path(tmp_path: Path) -> None:
     shell = tmp_path / "custom-shell"
     shell.write_text(
