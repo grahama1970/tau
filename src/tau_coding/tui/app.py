@@ -6997,6 +6997,42 @@ class TauTuiApp(App[None]):
             message_renderers=message_renderers,
         )
 
+    def _reset_extension_ui_state(self) -> None:
+        """Clear extension-owned TUI state before rebinding resources or sessions."""
+        had_extension_editor = self._extension_editor_component_factory is not None
+        self._extension_terminal_input_listeners.clear()
+        self._extension_autocomplete_providers.clear()
+        self._extension_header_lines = None
+        self._extension_footer_lines = None
+        self._extension_header_component_factory = None
+        self._extension_header_component_name = None
+        self._extension_footer_component_factory = None
+        self._extension_footer_component_name = None
+        self._extension_widgets_above.clear()
+        self._extension_widgets_below.clear()
+        self._extension_widget_components_above.clear()
+        self._extension_widget_component_names_above.clear()
+        self._extension_widget_components_below.clear()
+        self._extension_widget_component_names_below.clear()
+        self._extension_statuses.clear()
+        self._extension_working_visible = True
+        self._extension_working_message = None
+        self._extension_working_indicator_frames = None
+        self._extension_working_indicator_interval_seconds = None
+        self._extension_editor_component_factory = None
+        self._extension_editor_component_name = None
+        self._extension_terminal_title = None
+        self.state.hidden_thinking_label = None
+        self._clear_extension_chrome_component("header")
+        self._clear_extension_chrome_component("footer")
+        self._clear_extension_widget_component_container("above_editor")
+        self._clear_extension_widget_component_container("below_editor")
+        if had_extension_editor:
+            self._apply_extension_editor_component()
+        self._sync_terminal_title()
+        self._refresh_current_prompt_completions()
+        self._sync_activity_indicator()
+
     def copy_to_clipboard(self, text: str) -> None:
         """Copy text using native clipboard helpers, then Textual's fallback."""
         copied = False
@@ -7614,6 +7650,7 @@ class TauTuiApp(App[None]):
 
     async def _run_reload_command(self, text: str) -> None:
         """Reload session resources and TUI settings without freezing the interface."""
+        self._reset_extension_ui_state()
         self.state.add_item("status", "Reloading local coding resources and project context...")
         self._sync_activity_indicator()
         self._refresh()
@@ -8204,6 +8241,17 @@ class TauTuiApp(App[None]):
         self._extension_widget_component_names_above.pop(key, None)
         self._extension_widget_components_below.pop(key, None)
         self._extension_widget_component_names_below.pop(key, None)
+
+    def _clear_extension_widget_component_container(
+        self,
+        placement: Literal["above_editor", "below_editor"],
+    ) -> None:
+        suffix = "below" if placement == "below_editor" else "above"
+        with suppress(NoMatches):
+            container = self.query_one(f"#extension-widget-components-{suffix}", Vertical)
+            _dispose_extension_component_children(container)
+            container.remove_children()
+            container.display = False
 
     def _handle_extension_chrome_component(
         self,
@@ -9278,6 +9326,8 @@ class TauTuiApp(App[None]):
     ) -> None:
         try:
             resume_message = await self.session.resume(session_id)
+            if not _is_extension_cancel_message(resume_message):
+                self._reset_extension_ui_state()
             self.state.clear()
             self.state.set_skills(self.session.skills)
             self._load_session_transcript()
@@ -9318,6 +9368,8 @@ class TauTuiApp(App[None]):
             return
         try:
             message = await import_session(path)
+            if not _is_extension_cancel_message(message):
+                self._reset_extension_ui_state()
             self.state.clear()
             self.state.set_skills(self.session.skills)
             self._load_session_transcript()
@@ -9480,6 +9532,15 @@ class TauTuiApp(App[None]):
             )
             if isawaitable(result):
                 result = await result
+            message_text = (
+                result.message
+                if isinstance(result, SessionTreeBranchResult)
+                else result
+                if isinstance(result, str)
+                else ""
+            )
+            if not _is_extension_cancel_message(message_text):
+                self._reset_extension_ui_state()
             self.state.clear()
             self.state.set_skills(self.session.skills)
             self._load_session_transcript()
@@ -9512,6 +9573,8 @@ class TauTuiApp(App[None]):
             return
         try:
             message = await new_session()
+            if not _is_extension_cancel_message(message):
+                self._reset_extension_ui_state()
             self.state.clear()
             self.state.set_skills(self.session.skills)
             self._load_session_transcript()
@@ -9527,6 +9590,8 @@ class TauTuiApp(App[None]):
             return
         try:
             message = await clone_current_session()
+            if not _is_extension_cancel_message(message):
+                self._reset_extension_ui_state()
             self.state.clear()
             self.state.set_skills(self.session.skills)
             self._load_session_transcript()
@@ -12320,6 +12385,10 @@ def _is_reload_command_text(text: str) -> bool:
     return text.strip().casefold() == "/reload"
 
 
+def _is_extension_cancel_message(message: object) -> bool:
+    return isinstance(message, str) and message.casefold().endswith("cancelled by extension.")
+
+
 def _is_extension_command_text(session: CodingSession, text: str) -> bool:
     stripped = text.strip()
     if (
@@ -14119,11 +14188,13 @@ async def run_tui_app(
                 extension_flag_values=extension_flag_values or {},
             )
         )
-        session.set_provider_timeout_seconds(
-            _provider_timeout_seconds_from_http_idle_timeout_ms(
-                tui_settings.http_idle_timeout_ms
+        set_provider_timeout = getattr(session, "set_provider_timeout_seconds", None)
+        if callable(set_provider_timeout):
+            set_provider_timeout(
+                _provider_timeout_seconds_from_http_idle_timeout_ms(
+                    tui_settings.http_idle_timeout_ms
+                )
             )
-        )
         app = TauTuiApp(
             session,
             tui_settings=tui_settings,
@@ -14133,7 +14204,7 @@ async def run_tui_app(
             show_first_time_setup=first_time_setup,
         )
         await app.run_async()
-        return session.session_id
+        return getattr(session, "session_id", None)
     finally:
         if session is not None:
             close_session = getattr(session, "aclose", None)

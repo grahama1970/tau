@@ -38,7 +38,15 @@ from tau_agent import (
     ToolResultMessage,
     UserMessage,
 )
-from tau_coding.commands import CommandResult, create_default_command_registry
+from tau_coding.commands import (
+    CommandFooterUpdate,
+    CommandHeaderUpdate,
+    CommandResult,
+    CommandStatusUpdate,
+    CommandWidgetUpdate,
+    CommandWorkingIndicatorUpdate,
+    create_default_command_registry,
+)
 from tau_coding.context_window import ContextUsageEstimate
 from tau_coding.credentials import FileCredentialStore, OAuthCredential
 from tau_coding.extensions.api import ExtensionCommandContext
@@ -3509,6 +3517,77 @@ async def test_tui_app_resume_command_reloads_visible_state() -> None:
         assert [(item.role, item.text) for item in app.state.items] == [
             ("user", "Restored prompt"),
         ]
+
+
+@pytest.mark.anyio
+async def test_tui_app_resume_resets_extension_ui_state() -> None:
+    session = FakeSession(messages=[UserMessage(content="Earlier")])
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        command = CommandResult(
+            handled=True,
+            status_updates=(CommandStatusUpdate(key="old", text="busy"),),
+            widget_updates=(
+                CommandWidgetUpdate(key="old-widget", lines=("stale widget",)),
+            ),
+            working_indicator_update=CommandWorkingIndicatorUpdate(
+                visible=False,
+                message_requested=True,
+                message="old work",
+                indicator_requested=True,
+                frames=("old",),
+                interval_ms=25,
+            ),
+            footer_update=CommandFooterUpdate(lines=("stale footer",)),
+            header_update=CommandHeaderUpdate(lines=("stale header",)),
+        )
+        app._apply_command_status_updates(command)
+        app._apply_command_widget_updates(command)
+        app._apply_command_working_indicator_update(command)
+        app._apply_command_footer_update(command)
+        app._apply_command_header_update(command)
+        app._set_hidden_thinking_label("old thinking")
+        app._set_extension_terminal_title("old title")
+        app._register_extension_terminal_input_listener(
+            extension_name="old-extension",
+            handler=lambda data: data,
+        )
+        app._register_extension_autocomplete_provider(
+            extension_name="old-extension",
+            factory=lambda context: (),
+        )
+        app._refresh()
+        await pilot.pause()
+
+        assert app.query_one("#extension-status", Static).display is True
+        assert app.query_one("#extension-widgets-above", Static).display is True
+        assert app.query_one("#extension-footer", Static).display is True
+        assert app._extension_terminal_input_listeners
+        assert app._extension_autocomplete_providers
+
+        await app._resume_session("session-1")
+        await pilot.pause()
+
+        assert session.resumed_session_ids == ["session-1"]
+        assert [(item.role, item.text) for item in app.state.items] == [
+            ("user", "Restored prompt"),
+        ]
+        assert app._extension_statuses == {}
+        assert app._extension_widgets_above == {}
+        assert app._extension_widgets_below == {}
+        assert app._extension_terminal_input_listeners == {}
+        assert app._extension_autocomplete_providers == {}
+        assert app._extension_footer_lines is None
+        assert app._extension_header_lines is None
+        assert app._extension_terminal_title is None
+        assert app._extension_working_visible is True
+        assert app._extension_working_message is None
+        assert app._extension_working_indicator_frames is None
+        assert app.state.hidden_thinking_label is None
+        assert app.query_one("#extension-status", Static).display is False
+        assert app.query_one("#extension-widgets-above", Static).display is False
+        assert app.query_one("#extension-footer", Static).display is False
 
 
 @pytest.mark.anyio
