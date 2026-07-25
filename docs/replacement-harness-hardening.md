@@ -467,6 +467,28 @@ Acceptance:
 - This slice does not claim Pi's async extension command handlers, custom
   extension UI widgets, shortcuts, flags, or lifecycle hooks.
 
+### Slice 23: Extension Commands During Compaction
+
+Pi treats extension slash commands as operator commands, not as chat prompts,
+even while another operator task is active. Tau's manual compaction guard queued
+every non-`/compact` and non-`/reload` input as a prompt, so extension commands
+could be silently delayed and replayed as ordinary user text. Preserve Tau's
+existing compaction queue for normal prompts, but execute extension-owned slash
+commands immediately through the command registry.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Extension commands are tagged with command provenance when registered.
+- During active manual compaction, extension slash commands execute immediately
+  and render their command output inline.
+- Normal prompts still queue for the next turn during compaction.
+- `/compact` and `/reload` keep their existing fail-closed warnings while
+  compaction is active.
+- This slice does not claim async extension command execution or special
+  extension UI actions during compaction.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

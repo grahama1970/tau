@@ -2833,6 +2833,7 @@ def _extension_slash_command(
         search_terms=command.search_terms,
         argument_hint=command.argument_hint,
         hidden=command.hidden,
+        source=f"extension:{extension.name}",
     )
 
 

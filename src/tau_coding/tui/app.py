@@ -6195,6 +6195,17 @@ class TauTuiApp(App[None]):
                 self._notify("A compaction is already running.", severity="warning")
             elif _is_reload_command_text(text):
                 self._notify("Wait for compaction to finish before reloading.", severity="warning")
+            elif _is_extension_command_text(self.session, text):
+                prompt.add_to_history(text)
+                prompt.text = ""
+                prompt.clear_paste_markers()
+                self._completion_state = CompletionState()
+                self._sync_prompt_shell_mode(prompt.text)
+                self._refresh_completions()
+                command = self.session.handle_command(text)
+                if command.message:
+                    self._append_command_message(text, command.message)
+                self._refresh()
             else:
                 self._queue_compaction_message(text, streaming_behavior=streaming_behavior)
                 prompt.add_to_history(text)
@@ -10221,6 +10232,22 @@ def _debug_message_payload(message: AgentMessage) -> object:
 
 def _is_reload_command_text(text: str) -> bool:
     return text.strip().casefold() == "/reload"
+
+
+def _is_extension_command_text(session: CodingSession, text: str) -> bool:
+    stripped = text.strip()
+    if (
+        not stripped.startswith("/")
+        or stripped.startswith("//")
+        or stripped.casefold().startswith("/skill:")
+    ):
+        return False
+    token = stripped.split(maxsplit=1)[0].removeprefix("/")
+    if ":" in token:
+        return False
+    command = _session_command_registry(session).get(token)
+    source = getattr(command, "source", None)
+    return isinstance(source, str) and source.startswith("extension:")
 
 
 def _is_skill_command_text(text: str) -> bool:

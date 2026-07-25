@@ -182,6 +182,7 @@ class SlashCommand:
     search_terms: tuple[str, ...] = ()
     argument_hint: str | None = None
     hidden: bool = False
+    source: str | None = None
 
 
 class CommandRegistry:
