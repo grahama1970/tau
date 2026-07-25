@@ -7956,6 +7956,7 @@ class TauTuiApp(App[None]):
             ok=result.ok,
             added_to_context=result.added_to_context,
             output=formatted_output,
+            exit_code=result.exit_code,
         )
         self._follow_transcript_output()
         self._refresh()

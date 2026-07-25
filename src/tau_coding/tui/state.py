@@ -1126,11 +1126,17 @@ def format_terminal_command_result_block(
     ok: bool,
     added_to_context: bool,
     output: str,
+    exit_code: int | None = None,
 ) -> str:
     """Format an input-bar terminal command result for visible TUI display."""
     status = "✓" if ok else "✗"
     suffix = " · added to context" if added_to_context else " · not added to context"
-    lines = [f"{status} bash{suffix}"]
+    exit_suffix = (
+        f" · exit {exit_code}"
+        if exit_code is not None and (not ok or exit_code != 0)
+        else ""
+    )
+    lines = [f"{status} bash{suffix}{exit_suffix}"]
     if output:
         lines.append(_preview_tail_text(output, max_lines=TERMINAL_COMMAND_OUTPUT_PREVIEW_LINES))
     return "\n".join(lines)

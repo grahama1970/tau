@@ -11256,7 +11256,10 @@ async def test_tui_app_marks_failed_terminal_command_as_error() -> None:
 
     assert session.prompt_texts == []
     assert app.state.items[-1].text == "$ false (Ctrl+O to expand)"
-    assert app.state.items[-1].tool_result_text == "✗ bash · not added to context\nfailed"
+    assert (
+        app.state.items[-1].tool_result_text
+        == "✗ bash · not added to context · exit 2\nfailed"
+    )
 
 
 @pytest.mark.anyio
