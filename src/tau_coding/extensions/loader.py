@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import sys
+import types
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from importlib.util import module_from_spec, spec_from_file_location
+from importlib import invalidate_caches
 from pathlib import Path
 
 from tau_agent.tools import AgentTool
@@ -242,22 +243,15 @@ def _load_setup(
 ) -> Callable[[ExtensionAPI], object] | None:
     global _load_counter
     _load_counter += 1
+    invalidate_caches()
     module_name = f"{_MODULE_NAME_PREFIX}_{path.stem}_{_load_counter}"
-    spec = spec_from_file_location(module_name, path)
-    if spec is None or spec.loader is None:
-        diagnostics.append(
-            ResourceDiagnostic(
-                kind="extension",
-                path=path,
-                message="could not create import spec",
-                severity="error",
-            )
-        )
-        return None
-    module = module_from_spec(spec)
+    module = types.ModuleType(module_name)
+    module.__file__ = str(path)
+    module.__package__ = ""
     sys.modules[module_name] = module
     try:
-        spec.loader.exec_module(module)
+        source = path.read_text(encoding="utf-8")
+        exec(compile(source, str(path), "exec"), module.__dict__)  # noqa: S102
     except Exception as exc:  # noqa: BLE001 - extensions are an isolation boundary
         diagnostics.append(
             ResourceDiagnostic(

@@ -183,6 +183,22 @@ class ExtensionShortcutContext:
         """Pi-compatible camelCase alias for has_pending_messages."""
         return self.has_pending_messages()
 
+    async def wait_for_idle(self) -> None:
+        """Wait until the active session is idle."""
+        await _session_wait_for_idle(self.session)
+
+    async def waitForIdle(self) -> None:  # noqa: N802
+        """Pi-compatible camelCase alias for wait_for_idle."""
+        await self.wait_for_idle()
+
+    async def reload(self) -> object:
+        """Reload session resources for future extension commands and turns."""
+        return await _session_reload(self.session)
+
+    async def compact(self, options: Mapping[str, Any] | None = None) -> str:
+        """Run Tau's manual compaction path when the session supports it."""
+        return await _session_compact(self.session, options)
+
     def is_project_trusted(self) -> bool:
         """Return whether project-local trust is active for this session."""
         return _session_project_trusted(self.session)
@@ -637,6 +653,22 @@ class ExtensionCommandContext:
     def hasPendingMessages(self) -> bool:  # noqa: N802
         """Pi-compatible camelCase alias for has_pending_messages."""
         return self.has_pending_messages()
+
+    async def wait_for_idle(self) -> None:
+        """Wait until the active session is idle."""
+        await _session_wait_for_idle(self.session)
+
+    async def waitForIdle(self) -> None:  # noqa: N802
+        """Pi-compatible camelCase alias for wait_for_idle."""
+        await self.wait_for_idle()
+
+    async def reload(self) -> object:
+        """Reload session resources for future extension commands and turns."""
+        return await _session_reload(self.session)
+
+    async def compact(self, options: Mapping[str, Any] | None = None) -> str:
+        """Run Tau's manual compaction path when the session supports it."""
+        return await _session_compact(self.session, options)
 
     def is_project_trusted(self) -> bool:
         """Return whether project-local trust is active for this session."""
@@ -1909,6 +1941,45 @@ def _session_has_pending_messages(session: Any) -> bool:
     queued_steering = getattr(session, "queued_steering_messages", ())
     queued_follow_up = getattr(session, "queued_follow_up_messages", ())
     return bool(queued_steering or queued_follow_up)
+
+
+async def _session_wait_for_idle(session: Any) -> None:
+    waiter = getattr(session, "wait_for_idle", None)
+    if callable(waiter):
+        result = waiter()
+        if hasattr(result, "__await__"):
+            await result
+        return
+    for _ in range(200):
+        if _session_is_idle(session):
+            return
+        await asyncio.sleep(0.05)
+    raise TimeoutError("session did not become idle within 10 seconds")
+
+
+async def _session_reload(session: Any) -> object:
+    reload = getattr(session, "reload", None)
+    if not callable(reload):
+        raise RuntimeError("active session does not support resource reload")
+    result = reload()
+    if hasattr(result, "__await__"):
+        return await result
+    return result
+
+
+async def _session_compact(session: Any, options: Mapping[str, Any] | None) -> str:
+    compact = getattr(session, "compact", None)
+    if not callable(compact):
+        raise RuntimeError("active session does not support compaction")
+    instructions = None
+    if options is not None:
+        raw_instructions = options.get("instructions", options.get("customInstructions"))
+        if raw_instructions is not None:
+            instructions = str(raw_instructions)
+    result = compact(instructions)
+    if hasattr(result, "__await__"):
+        result = await result
+    return str(result)
 
 
 def _session_project_trusted(session: Any) -> bool:
