@@ -351,6 +351,7 @@ class CodingSession:
         self._shell_path = config.shell_path
         self._shell_command_prefix = config.shell_command_prefix
         self._terminal_signal: SimpleCancellationToken | None = None
+        self._pending_terminal_context_messages: list[UserMessage] = []
         self._owned_providers: list[ClosableModelProvider] = []
         self._quit_shutdown_emitted = False
         self._diagnostic_logger = AgentCallDiagnosticLogger.from_paths(self._resource_paths.paths)
@@ -2202,16 +2203,11 @@ class CodingSession:
             exit_code = raw_exit_code if isinstance(raw_exit_code, int) else None
 
         if add_to_context:
-            before_count = len(self._harness.messages)
-            self._harness.append_message(
+            await self._append_or_defer_terminal_context_message(
                 UserMessage(
-                    content=_terminal_command_context_message(
-                        normalized_command,
-                        result.content,
-                    )
+                    content=_terminal_command_context_message(normalized_command, result.content)
                 )
             )
-            await self._persist_messages_since(before_count)
 
         return TerminalCommandResult(
             command=normalized_command,
@@ -2220,6 +2216,24 @@ class CodingSession:
             ok=result.ok,
             added_to_context=add_to_context,
         )
+
+    async def _append_or_defer_terminal_context_message(self, message: UserMessage) -> None:
+        if self._harness.is_running:
+            self._pending_terminal_context_messages.append(message)
+            return
+        before_count = len(self._harness.messages)
+        self._harness.append_message(message)
+        await self._persist_messages_since(before_count)
+
+    async def _flush_pending_terminal_context_messages(self) -> None:
+        if not self._pending_terminal_context_messages:
+            return
+        messages = tuple(self._pending_terminal_context_messages)
+        self._pending_terminal_context_messages.clear()
+        before_count = len(self._harness.messages)
+        for message in messages:
+            self._harness.append_message(message)
+        await self._persist_messages_since(before_count)
 
     async def prompt(
         self,
@@ -2252,6 +2266,7 @@ class CodingSession:
                 "CodingSession is already running; pass streaming_behavior to queue a message."
             )
 
+        await self._flush_pending_terminal_context_messages()
         await self._try_auto_compact(context=context, phase="auto_compact_before_prompt")
         persisted_count = len(self._harness.messages)
         overflow_event: ErrorEvent | None = None
@@ -2297,6 +2312,7 @@ class CodingSession:
                             terminal_error_message = retry_event.message
                         yield retry_event
                     await self._persist_messages_since(retry_persisted_count)
+                await self._flush_pending_terminal_context_messages()
                 if loop_receipt is not None:
                     await self._finish_loop_receipt(
                         loop_receipt,
@@ -2308,6 +2324,7 @@ class CodingSession:
                     loop_receipt,
                     terminal_error_message=terminal_error_message,
                 )
+            await self._flush_pending_terminal_context_messages()
             await self._try_auto_compact(context=context, phase="auto_compact_after_prompt")
         except Exception as exc:
             self._last_diagnostic_log_path = self._diagnostic_logger.log_exception(
@@ -2333,6 +2350,7 @@ class CodingSession:
                     )
                 yield event
             await self._persist_messages_since(persisted_count)
+            await self._flush_pending_terminal_context_messages()
             await self._try_auto_compact(context=context, phase="auto_compact_after_continue")
         except Exception as exc:
             self._last_diagnostic_log_path = self._diagnostic_logger.log_exception(
