@@ -423,7 +423,7 @@ def create_default_command_registry() -> CommandRegistry:
     registry.register(
         SlashCommand(
             name="name",
-            usage="/name <new name>",
+            usage="/name <name>",
             description="Rename the current session.",
             handler=_name_command,
             search_terms=("rename", "title"),
@@ -944,7 +944,7 @@ def _name_command(context: CommandContext) -> CommandResult:
             return CommandResult(handled=True, message="Usage: /name <name>")
         return CommandResult(
             handled=True,
-            message=f"Current session name: {record.title}\nUsage: /name <name>",
+            message=f"Session name: {record.title}",
         )
 
     try:
