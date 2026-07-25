@@ -480,6 +480,63 @@ def test_tool_result_blocks_preview_long_content() -> None:
     assert "3 more lines" in block
 
 
+def test_tool_result_formats_permission_receipt_data_for_operator_readability() -> None:
+    block = format_tool_result_block(
+        name="permission-request",
+        ok=True,
+        content="",
+        data={
+            "schema": "tau.permission_request_receipt.v1",
+            "status": "PENDING",
+            "mocked": False,
+            "live": True,
+            "request_id": "perm-123",
+            "action": "working_tree_mutation",
+            "decision": "ASK",
+            "resources": ["src/tau_coding/tui/state.py"],
+            "receipt_path": "/tmp/tau/permission-request.json",
+            "errors": [],
+            "proof_scope": {
+                "does_not_prove": ["the requested mutation was executed"],
+            },
+        },
+    )
+
+    assert block == (
+        "✓ permission-request · PENDING · tau.permission_request_receipt.v1\n"
+        "Action: working_tree_mutation\n"
+        "Decision: ASK\n"
+        "Request: perm-123\n"
+        "Resources: src/tau_coding/tui/state.py\n"
+        "Evidence: mocked=false live=true\n"
+        "Receipt: /tmp/tau/permission-request.json\n"
+        "Does not prove: the requested mutation was executed"
+    )
+
+
+def test_tool_result_formats_approval_receipt_json_output_for_operator_readability() -> None:
+    content = (
+        '{"schema":"tau.approval_gate_receipt.v1","status":"BLOCKED",'
+        '"mocked":false,"live":false,"requested_action":"github_apply",'
+        '"approved":false,"approval_packet":"/tmp/tau/approval.json",'
+        '"errors":["approved must be true"],'
+        '"proof_scope":{"does_not_prove":["the gated mutation was executed"]}}'
+    )
+
+    block = format_tool_result_block(name="bash", ok=False, content=content)
+
+    assert block == (
+        "✗ bash · BLOCKED · tau.approval_gate_receipt.v1\n"
+        "Action: github_apply\n"
+        "Approved: false\n"
+        "Evidence: mocked=false live=false\n"
+        "Receipt: /tmp/tau/approval.json\n"
+        "Errors:\n"
+        "- approved must be true\n"
+        "Does not prove: the gated mutation was executed"
+    )
+
+
 def test_tui_adapter_renders_live_edit_patch() -> None:
     state = TuiState()
     adapter = TuiEventAdapter(state)

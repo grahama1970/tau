@@ -9,7 +9,9 @@ from typing import cast
 
 from tau_agent import (
     AgentEvent,
+    AgentToolResult,
     AssistantMessage,
+    ToolExecutionEndEvent,
     ToolExecutionUpdateEvent,
     UserMessage,
 )
@@ -130,10 +132,11 @@ async def _render_textual_tui_memory_stage_proof(
     )
     app = TauTuiApp(cast(CodingSession, session))
     async with app.run_test(size=(130, 24)) as pilot:
+        app.state.show_tool_results = True
         app.state.add_thinking_delta("internal memory routing hidden from transcript")
         app._refresh()
         await pilot.pause()
-        for event in _memory_stage_events(run_id=run_id):
+        for event in (*_memory_stage_events(run_id=run_id), _permission_receipt_event()):
             app.adapter.apply(event)
             await app._apply_streaming_transcript_event(event)
             app._refresh()
@@ -150,6 +153,8 @@ async def _render_textual_tui_memory_stage_proof(
         "handoff_schema": "tau.agent_handoff.v1" in text,
         "next_agent": f"next_agent={next_agent}" in text,
         "run_id": run_id in text,
+        "permission_receipt": "tau.permission_request_receipt.v1" in text,
+        "permission_not_mutated": "the requested mutation was executed" in text,
         "hidden_reasoning_absent": "internal memory routing hidden from transcript" not in text,
     }
     receipt: dict[str, object] = {
@@ -172,6 +177,8 @@ async def _render_textual_tui_memory_stage_proof(
             "live Memory backend call from the TUI process",
             "interactive PTY embedded in UX Lab #tau",
             "production Sparta Chat readiness",
+            "a live human permission decision",
+            "the requested mutation was executed",
         ],
     }
     receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -196,4 +203,32 @@ def _memory_stage_events(*, run_id: str) -> tuple[ToolExecutionUpdateEvent, ...]
             message="memory recall started",
             data={"memory_stage": "recall"},
         ),
+    )
+
+
+def _permission_receipt_event() -> ToolExecutionEndEvent:
+    return ToolExecutionEndEvent(
+        result=AgentToolResult(
+            tool_call_id="permission-proof",
+            name="permission-request",
+            ok=True,
+            content=json.dumps(
+                {
+                    "schema": "tau.permission_request_receipt.v1",
+                    "status": "PENDING",
+                    "mocked": False,
+                    "live": True,
+                    "request_id": "perm-tui-proof",
+                    "action": "working_tree_mutation",
+                    "decision": "ASK",
+                    "resources": ["src/tau_coding/tui/state.py"],
+                    "receipt_path": "/tmp/tau-tui-proof/permission-request.json",
+                    "errors": [],
+                    "proof_scope": {
+                        "does_not_prove": ["the requested mutation was executed"],
+                    },
+                },
+                sort_keys=True,
+            ),
+        )
     )

@@ -25,6 +25,8 @@ def test_textual_tui_memory_stage_proof_writes_receipt_and_screenshot(tmp_path: 
     assert (tmp_path / "tau-textual-tui-memory-stage.svg").exists()
     saved = json.loads((tmp_path / "proof.json").read_text(encoding="utf-8"))
     assert saved["visible_assertions"]["accessing_memory"] is True
+    assert saved["visible_assertions"]["permission_receipt"] is True
+    assert saved["visible_assertions"]["permission_not_mutated"] is True
     assert saved["visible_assertions"]["hidden_reasoning_absent"] is True
     assert any("live Memory backend call" in item for item in saved["does_not_prove"])
 
@@ -50,5 +52,6 @@ def test_tui_proof_cli_writes_fixture_backed_textual_receipt(tmp_path: Path) -> 
     assert payload["mocked"] is True
     assert payload["live"] is False
     assert payload["run_id"] == "loop2-cli-proof"
+    assert payload["visible_assertions"]["permission_receipt"] is True
     assert (tmp_path / "proof.json").exists()
     assert (tmp_path / "tau-textual-tui-memory-stage.svg").exists()

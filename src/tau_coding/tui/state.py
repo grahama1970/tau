@@ -3,7 +3,7 @@
 import inspect
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
-from json import dumps
+from json import JSONDecodeError, dumps, loads
 from pathlib import Path
 from typing import Any
 
@@ -19,6 +19,13 @@ TOOL_RESULT_PREVIEW_LINES = 8
 TOOL_PATCH_PREVIEW_LINES = 32
 TOOL_RESULT_PREVIEW_CHARS = 2_000
 TERMINAL_COMMAND_OUTPUT_PREVIEW_LINES = 20
+PERMISSION_APPROVAL_RECEIPT_SCHEMAS = frozenset(
+    {
+        "tau.permission_request_receipt.v1",
+        "tau.permission_reply_receipt.v1",
+        "tau.approval_gate_receipt.v1",
+    }
+)
 ASSISTANT_LENGTH_STOP_ERROR_TEXT = (
     "Error: Model stopped because it reached the maximum output token limit. "
     "The response may be incomplete."
@@ -868,6 +875,9 @@ def format_tool_result_block(
         rendered = _render_tool_result(renderer, result, expanded=expanded)
         if rendered is not None:
             return rendered
+    receipt = _permission_or_approval_receipt(data=data, content=content)
+    if receipt is not None:
+        return _format_permission_or_approval_receipt(name=name, ok=ok, receipt=receipt)
     status = "✓" if ok else "✗"
     lines = [f"{status} {name}"]
     if content:
@@ -876,6 +886,117 @@ def format_tool_result_block(
     if patch:
         lines.extend(["", "Patch:", _preview_text(patch, max_lines=TOOL_PATCH_PREVIEW_LINES)])
     return "\n".join(lines)
+
+
+def _permission_or_approval_receipt(
+    *,
+    data: dict[str, JSONValue] | None,
+    content: str,
+) -> Mapping[str, JSONValue] | None:
+    payload: Mapping[str, JSONValue] | None = data if isinstance(data, Mapping) else None
+    if payload is None:
+        stripped = content.strip()
+        if not stripped.startswith("{"):
+            return None
+        try:
+            decoded = loads(stripped)
+        except JSONDecodeError:
+            return None
+        if isinstance(decoded, Mapping):
+            payload = decoded
+    schema = payload.get("schema") if payload is not None else None
+    if isinstance(schema, str) and schema in PERMISSION_APPROVAL_RECEIPT_SCHEMAS:
+        return payload
+    return None
+
+
+def _format_permission_or_approval_receipt(
+    *,
+    name: str,
+    ok: bool,
+    receipt: Mapping[str, JSONValue],
+) -> str:
+    status = _string_value(receipt.get("status")) or ("PASS" if ok else "BLOCKED")
+    symbol = "✓" if ok and status not in {"BLOCKED", "FAILED"} else "✗"
+    schema = _string_value(receipt.get("schema"))
+    lines = [f"{symbol} {name} · {status} · {schema}"]
+
+    action = _string_value(receipt.get("action")) or _string_value(
+        receipt.get("requested_action")
+    )
+    if action:
+        lines.append(f"Action: {action}")
+    decision = _string_value(receipt.get("decision"))
+    reply = _string_value(receipt.get("reply"))
+    accepted = _bool_value(receipt.get("accepted"))
+    approved = _bool_value(receipt.get("approved"))
+    if decision:
+        lines.append(f"Decision: {decision}")
+    if reply:
+        reply_line = f"Reply: {reply}"
+        if accepted is not None:
+            reply_line = f"{reply_line} · accepted={_bool_text(accepted)}"
+        lines.append(reply_line)
+    if approved is not None:
+        lines.append(f"Approved: {_bool_text(approved)}")
+
+    request_id = _string_value(receipt.get("request_id"))
+    if request_id:
+        lines.append(f"Request: {request_id}")
+    resources = _string_list(receipt.get("resources"))
+    if resources:
+        lines.append(f"Resources: {', '.join(resources[:3])}{_hidden_count_suffix(resources, 3)}")
+
+    mocked = _bool_value(receipt.get("mocked"))
+    live = _bool_value(receipt.get("live"))
+    if mocked is not None or live is not None:
+        lines.append(
+            f"Evidence: mocked={_optional_bool_text(mocked)} "
+            f"live={_optional_bool_text(live)}"
+        )
+
+    receipt_path = _string_value(receipt.get("receipt_path"))
+    if not receipt_path:
+        receipt_path = _string_value(receipt.get("approval_packet"))
+    if not receipt_path:
+        receipt_path = _string_value(receipt.get("request_receipt"))
+    if receipt_path:
+        lines.append(f"Receipt: {receipt_path}")
+
+    errors = _string_list(receipt.get("errors"))
+    if errors:
+        lines.append("Errors:")
+        lines.extend(f"- {error}" for error in errors[:3])
+        if len(errors) > 3:
+            lines.append(f"- {len(errors) - 3} more error(s)")
+
+    proof_scope = receipt.get("proof_scope")
+    if isinstance(proof_scope, Mapping):
+        does_not_prove = _string_list(proof_scope.get("does_not_prove"))
+        if does_not_prove:
+            lines.append(f"Does not prove: {does_not_prove[0]}")
+    return "\n".join(lines)
+
+
+def _string_list(value: JSONValue | None) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [item for item in value if isinstance(item, str)]
+
+
+def _bool_text(value: bool) -> str:
+    return "true" if value else "false"
+
+
+def _optional_bool_text(value: bool | None) -> str:
+    if value is None:
+        return "unknown"
+    return _bool_text(value)
+
+
+def _hidden_count_suffix(items: Sequence[object], visible_count: int) -> str:
+    hidden = len(items) - visible_count
+    return f" (+{hidden} more)" if hidden > 0 else ""
 
 
 def _tool_image_payload(result: AgentToolResult) -> ToolImagePayload | None:
