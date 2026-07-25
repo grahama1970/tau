@@ -404,16 +404,21 @@ def toggle_saved_scoped_model(
 ) -> ProviderSettings:
     """Reload settings, toggle one scoped model, persist them, and return them."""
     settings = _load_provider_settings_for_write(paths, fallback_settings=fallback_settings)
+    existing = list(settings.scoped_models)
+    target = ScopedModelConfig(provider=provider_name, model=model)
+    if target in existing:
+        updated = replace(
+            settings,
+            scoped_models=tuple(item for item in existing if item != target),
+        )
+        save_provider_settings(updated, paths)
+        return updated
+
     provider = settings.get_provider(provider_name)
     if model not in provider.models:
         raise ProviderConfigError(f"Model is not configured: {provider_name}:{model}")
 
-    existing = list(settings.scoped_models)
-    target = ScopedModelConfig(provider=provider_name, model=model)
-    if target in existing:
-        existing = [item for item in existing if item != target]
-    else:
-        existing.append(target)
+    existing.append(target)
     updated = replace(settings, scoped_models=tuple(existing))
     save_provider_settings(updated, paths)
     return updated
@@ -432,11 +437,16 @@ def set_saved_scoped_models(
         for provider in settings.providers
         for model in provider.models
     }
+    existing_unavailable = {
+        (item.provider, item.model)
+        for item in settings.scoped_models
+        if (item.provider, item.model) not in available
+    }
     scoped: list[ScopedModelConfig] = []
     seen: set[tuple[str, str]] = set()
     for choice in choices:
         key = (choice.provider, choice.model)
-        if key not in available:
+        if key not in available and key not in existing_unavailable:
             raise ProviderConfigError(
                 f"Model is not configured: {choice.provider}:{choice.model}"
             )

@@ -475,6 +475,16 @@ class CodingSession:
         )
 
     @property
+    def configured_scoped_model_choices(self) -> tuple[ModelChoice, ...]:
+        """Return all persisted scoped model choices, including currently unavailable entries."""
+        if self._provider_settings is None:
+            return ()
+        return tuple(
+            ModelChoice(provider_name=item.provider, model=item.model)
+            for item in self._provider_settings.scoped_models
+        )
+
+    @property
     def tools(self) -> tuple[AgentTool, ...]:
         """Return the tools available to the agent."""
         return tuple(self._harness.config.tools)
@@ -886,7 +896,7 @@ class CodingSession:
             fallback_settings=self._provider_settings,
         )
         self._sync_thinking_level_to_active_model()
-        return self.scoped_model_choices
+        return self.configured_scoped_model_choices
 
     def set_scoped_models(self, choices: Sequence[ModelChoice]) -> tuple[ModelChoice, ...]:
         """Replace the persisted scoped model list."""
@@ -901,7 +911,7 @@ class CodingSession:
             fallback_settings=self._provider_settings,
         )
         self._sync_thinking_level_to_active_model()
-        return self.scoped_model_choices
+        return self.configured_scoped_model_choices
 
     def cycle_scoped_model(self, *, reverse: bool = False) -> ModelChoice:
         """Switch to the next configured scoped model."""

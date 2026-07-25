@@ -183,6 +183,24 @@ Acceptance:
   presence, and existing Tau SciLLM receipt commands.
 - `/scillm` does not make provider calls or mutate state.
 
+### Slice 7: Unavailable Scoped Models Remain Editable
+
+Upstream Pi commit `a3ee1d28` keeps configured scoped models visible in the
+scoped-model selector even when the current provider catalog or credentials make
+them unavailable. Tau should mirror that operator behavior without weakening
+quick-cycle safety.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- The `/scoped-models` picker receives all configured scoped entries, including
+  currently unavailable provider/model pairs.
+- Unavailable scoped entries render with an explicit unavailable marker and do
+  not appear in the ordinary active-model picker or quick-cycle set.
+- Existing unavailable entries can be preserved, reordered, or removed from the
+  scoped list, while brand-new unavailable scoped entries remain rejected.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.

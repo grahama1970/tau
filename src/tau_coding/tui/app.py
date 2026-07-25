@@ -4832,6 +4832,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         super().__init__()
         self.choices = tuple(dict.fromkeys(choices))
         self.scoped_choices = tuple(dict.fromkeys(scoped_choices))
+        self._refresh_scoped_choice_sets()
         self.visible_choices = self.choices
         self.current_model = current_model
         self.provider_name = provider_name
@@ -4867,11 +4868,12 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
                                 current_model=self.current_model,
                                 current_provider=self.provider_name,
                                 scoped=choice in self.scoped_choices,
+                                unavailable=choice in self.unavailable_scoped_choices,
                             ),
                             markup=False,
                         )
                     )
-                    for choice in self.choices
+                    for choice in self._available_base_choices()
                 ],
                 id="model-picker-list",
             )
@@ -5061,29 +5063,42 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         if index is None:
             return
         choice = self.visible_choices[index]
-        self.scoped_choices = tuple(dict.fromkeys(self.on_toggle_scoped(choice)))
+        if choice in self.unavailable_scoped_choices:
+            if self.picker_kind != "scoped" or self.on_set_scoped is None:
+                return
+            self._set_scoped_choices(
+                self.on_set_scoped(
+                    tuple(item for item in self.scoped_choices if item != choice)
+                )
+            )
+            self._refresh_model_list()
+            return
+        self._set_scoped_choices(self.on_toggle_scoped(choice))
         self._refresh_model_list()
 
     def action_enable_all_scoped(self) -> None:
         """Add all visible target models to scoped models."""
         if self.picker_kind != "scoped" or self.on_set_scoped is None:
             return
-        target_choices = self.visible_choices if self.search_value else self.choices
-        self.scoped_choices = tuple(
-            dict.fromkeys(self.on_set_scoped((*self.scoped_choices, *target_choices)))
+        target_choices = (
+            self.visible_choices if self.search_value else self._available_base_choices()
         )
+        target_choices = tuple(
+            choice for choice in target_choices if choice not in self.unavailable_scoped_choices
+        )
+        self._set_scoped_choices(self.on_set_scoped((*self.scoped_choices, *target_choices)))
         self._refresh_model_list()
 
     def action_clear_scoped(self) -> None:
         """Remove all visible target models from scoped models."""
         if self.picker_kind != "scoped" or self.on_set_scoped is None:
             return
-        target_choices = set(self.visible_choices if self.search_value else self.choices)
-        self.scoped_choices = tuple(
-            dict.fromkeys(
-                self.on_set_scoped(
-                    tuple(choice for choice in self.scoped_choices if choice not in target_choices)
-                )
+        target_choices = set(
+            self.visible_choices if self.search_value else self._available_base_choices()
+        )
+        self._set_scoped_choices(
+            self.on_set_scoped(
+                tuple(choice for choice in self.scoped_choices if choice not in target_choices)
             )
         )
         self._refresh_model_list()
@@ -5104,6 +5119,8 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         index = model_list.index
         if index is None:
             return
+        if self.visible_choices[index] in self.unavailable_scoped_choices:
+            return
         provider_name = self.visible_choices[index].provider_name
         provider_choices = tuple(
             choice for choice in self.choices if choice.provider_name == provider_name
@@ -5113,7 +5130,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
             scoped = [choice for choice in scoped if choice.provider_name != provider_name]
         else:
             scoped = list(dict.fromkeys((*scoped, *provider_choices)))
-        self.scoped_choices = tuple(dict.fromkeys(self.on_set_scoped(tuple(scoped))))
+        self._set_scoped_choices(self.on_set_scoped(tuple(scoped)))
         self._refresh_model_list()
 
     def action_reorder_scoped_up(self) -> None:
@@ -5142,7 +5159,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         if next_index < 0 or next_index >= len(scoped):
             return
         scoped[scoped_index], scoped[next_index] = scoped[next_index], scoped[scoped_index]
-        self.scoped_choices = tuple(dict.fromkeys(self.on_set_scoped(tuple(scoped))))
+        self._set_scoped_choices(self.on_set_scoped(tuple(scoped)))
         self._refresh_model_list()
         if choice in self.visible_choices:
             model_list.index = self.visible_choices.index(choice)
@@ -5175,7 +5192,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         self.dismiss(choice)
 
     def _refresh_model_list(self) -> None:
-        base_choices = self.scoped_choices if self.mode == "scoped" else self.choices
+        base_choices = self._available_base_choices()
         self.visible_choices = _filter_model_choices(base_choices, self.search_value)
         model_list = self.query_one("#model-picker-list", ListView)
         model_list.clear()
@@ -5188,6 +5205,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
                             current_model=self.current_model,
                             current_provider=self.provider_name,
                             scoped=choice in self.scoped_choices,
+                            unavailable=choice in self.unavailable_scoped_choices,
                         ),
                         markup=False,
                     )
@@ -5197,6 +5215,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         )
         self._reset_model_list_index()
         scope_count = len(self.scoped_choices)
+        unavailable_count = len(self.unavailable_scoped_choices)
         tabs = self.query_one("#model-picker-tabs", Static)
         if self.picker_kind == "scoped":
             select_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
@@ -5213,7 +5232,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
             )
             save_key = _key_hint_with_default(self.keybindings.models_save, "ctrl+s")
             tabs.update(
-                f"Scoped models setup - {select_key} toggles membership; active model is unchanged"
+                f"Scoped models setup — {select_key} toggles membership; active model is unchanged"
             )
             help_text = (
                 f"No matching models - {enable_key}/{clear_key} apply to matching models"
@@ -5222,6 +5241,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
                     f"{select_key} toggles - {enable_key} all - {clear_key} clear - "
                     f"{provider_key} provider - {reorder_up_key}/{reorder_down_key} reorder - "
                     f"{save_key} save - {scope_count} scoped"
+                    + (f", {unavailable_count} unavailable" if unavailable_count else "")
                 )
             )
         elif self.mode == "all":
@@ -5244,6 +5264,23 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
                 else f"Scoped models - {select_key} selects active model - Tab switches tabs"
             )
         self.query_one("#model-picker-help", Static).update(help_text)
+
+    def _available_base_choices(self) -> tuple[ModelChoice, ...]:
+        if self.picker_kind == "scoped":
+            return self.scoped_picker_choices
+        return self.scoped_choices if self.mode == "scoped" else self.choices
+
+    def _set_scoped_choices(self, choices: Sequence[ModelChoice]) -> None:
+        self.scoped_choices = tuple(dict.fromkeys(choices))
+        self._refresh_scoped_choice_sets()
+
+    def _refresh_scoped_choice_sets(self) -> None:
+        self.unavailable_scoped_choices = tuple(
+            choice for choice in self.scoped_choices if choice not in self.choices
+        )
+        self.scoped_picker_choices = tuple(
+            dict.fromkeys((*self.choices, *self.unavailable_scoped_choices))
+        )
 
 
 class LoginScreen(ModalScreen[str | None]):
@@ -8042,6 +8079,15 @@ class TauTuiApp(App[None]):
             )
         )
 
+    def _configured_scoped_model_choices(self) -> tuple[ModelChoice, ...]:
+        return tuple(
+            getattr(
+                self.session,
+                "configured_scoped_model_choices",
+                getattr(self.session, "scoped_model_choices", ()),
+            )
+        )
+
     def _refresh_provider_settings_for_picker(self) -> bool:
         """Reload provider settings before showing provider-backed pickers."""
         reload_provider_settings = getattr(self.session, "reload_provider_settings", None)
@@ -8092,7 +8138,7 @@ class TauTuiApp(App[None]):
         self.push_screen(
             ModelPickerScreen(
                 choices,
-                scoped_choices=tuple(getattr(self.session, "scoped_model_choices", ())),
+                scoped_choices=self._configured_scoped_model_choices(),
                 current_model=self.session.model,
                 provider_name=self.session.provider_name,
                 theme=self.tui_settings.resolved_theme,
@@ -8108,23 +8154,23 @@ class TauTuiApp(App[None]):
         toggle_scoped_model = getattr(self.session, "toggle_scoped_model", None)
         if toggle_scoped_model is None:
             self._notify("Scoped model controls are not available.", severity="warning")
-            return tuple(getattr(self.session, "scoped_model_choices", ()))
+            return self._configured_scoped_model_choices()
         try:
             return tuple(toggle_scoped_model(choice))
         except Exception as exc:  # noqa: BLE001 - surface session state failures in the TUI
             self._notify(f"Could not update scoped models: {exc}", severity="error")
-            return tuple(getattr(self.session, "scoped_model_choices", ()))
+            return self._configured_scoped_model_choices()
 
     def _set_scoped_models(self, choices: Sequence[ModelChoice]) -> Sequence[ModelChoice]:
         set_scoped_models = getattr(self.session, "set_scoped_models", None)
         if set_scoped_models is None:
             self._notify("Scoped model controls are not available.", severity="warning")
-            return tuple(getattr(self.session, "scoped_model_choices", ()))
+            return self._configured_scoped_model_choices()
         try:
             return tuple(set_scoped_models(choices))
         except Exception as exc:  # noqa: BLE001 - surface session state failures in the TUI
             self._notify(f"Could not update scoped models: {exc}", severity="error")
-            return tuple(getattr(self.session, "scoped_model_choices", ()))
+            return self._configured_scoped_model_choices()
 
     def _handle_scoped_models_picker_result(self, choice: ModelChoice | None) -> None:
         del choice
@@ -9927,13 +9973,19 @@ def _model_picker_label(
     current_model: str,
     current_provider: str,
     scoped: bool = False,
+    unavailable: bool = False,
 ) -> str:
     marker = (
         "* "
         if (choice.provider_name == current_provider and choice.model == current_model)
         else "  "
     )
-    suffix = " [scoped]" if scoped else ""
+    suffix_parts = []
+    if scoped:
+        suffix_parts.append("scoped")
+    if unavailable:
+        suffix_parts.append("unavailable")
+    suffix = f" [{', '.join(suffix_parts)}]" if suffix_parts else ""
     return f"{marker}{choice.provider_name}:{choice.model}{suffix}"
 
 
