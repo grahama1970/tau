@@ -1691,7 +1691,17 @@ class PromptInput(TextArea):
 
     def action_insert_newline(self) -> None:
         """Insert a newline in the prompt."""
+        self._push_undo_snapshot()
         self.insert("\n")
+
+    def _insert_newline_from_backslash_enter(self) -> bool:
+        """Convert a preceding backslash into a newline for Pi-style Enter fallback."""
+        cursor_position = self.cursor_position
+        if cursor_position <= 0 or self.text[cursor_position - 1] != "\\":
+            return False
+        self._push_undo_snapshot()
+        self._replace_prompt_range(cursor_position - 1, cursor_position, "\n")
+        return True
 
     async def action_quit(self) -> None:
         """Quit the app through the app-level action."""
@@ -1733,6 +1743,8 @@ class PromptInput(TextArea):
         elif event.key == "enter":
             event.stop()
             event.prevent_default()
+            if self._insert_newline_from_backslash_enter():
+                return
             await self._completion_target().action_submit_prompt()
         elif event.key == "shift+enter" or (
             event.key == "ctrl+j"
