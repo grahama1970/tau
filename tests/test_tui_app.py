@@ -40,6 +40,7 @@ from tau_agent import (
 from tau_coding.commands import CommandResult, create_default_command_registry
 from tau_coding.context_window import ContextUsageEstimate
 from tau_coding.credentials import FileCredentialStore, OAuthCredential
+from tau_coding.extensions.api import ExtensionCommandContext
 from tau_coding.prompt_templates import PromptTemplate
 from tau_coding.provider_config import (
     OpenAICodexProviderConfig,
@@ -72,6 +73,7 @@ from tau_coding.tui.app import (
     CommandOutputScreen,
     ConfigMapScreen,
     ConfirmationScreen,
+    ExtensionSelectScreen,
     FirstTimeSetupScreen,
     ImageVisibilityPickerScreen,
     LoginMethodPickerScreen,
@@ -8304,6 +8306,107 @@ async def test_tui_app_workflows_detail_command_uses_command_output_modal() -> N
             "--repo <repo> --goal <goal> --run-dir <dir> "
             "--publish-path <publish-dir> --open-viewer"
         ) in app.screen.message
+
+
+@pytest.mark.anyio
+async def test_extension_select_screen_shows_timeout_countdown() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test(size=(80, 24)) as pilot:
+        app.push_screen(
+            ExtensionSelectScreen(
+                "Choose extension action",
+                ("Alpha", "Beta"),
+                timeout_seconds=5,
+                keybindings=TuiKeybindings(),
+            )
+        )
+        await pilot.pause()
+
+        assert isinstance(app.screen, ExtensionSelectScreen)
+        assert (
+            str(app.screen.query_one("#confirmation-title", Static).render())
+            == "Choose extension action (5s)"
+        )
+        app.screen.dismiss("Alpha")
+
+
+@pytest.mark.anyio
+async def test_tui_extension_select_request_shows_timeout_countdown() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test(size=(80, 24)) as pilot:
+        worker = app.run_worker(
+            app._handle_extension_ui_request(
+                method="select",
+                extension_name="demo",
+                title="Pick a branch",
+                options=("A", "B"),
+                timeout_seconds=5,
+            )
+        )
+        await pilot.pause()
+
+        assert isinstance(app.screen, ExtensionSelectScreen)
+        assert (
+            str(app.screen.query_one("#confirmation-title", Static).render())
+            == "Pick a branch (5s)"
+        )
+        app.screen.dismiss("B")
+        await asyncio.wait_for(worker.wait(), timeout=1)
+        assert worker.result == "B"
+
+
+@pytest.mark.anyio
+async def test_tui_extension_select_request_short_timeout_expires() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test(size=(80, 24)) as pilot:
+        worker = app.run_worker(
+            app._handle_extension_ui_request(
+                method="select",
+                extension_name="demo",
+                title="Pick a branch",
+                options=("A", "B"),
+                timeout_seconds=0.05,
+            )
+        )
+        await pilot.pause()
+
+        await asyncio.wait_for(worker.wait(), timeout=1)
+        assert worker.result is None
+
+
+@pytest.mark.anyio
+async def test_extension_command_ui_select_passes_timeout_to_session() -> None:
+    class RecordingUiSession:
+        def __init__(self) -> None:
+            self.requests: list[dict[str, object]] = []
+
+        async def request_extension_ui(self, **payload: object) -> str:
+            self.requests.append(payload)
+            return "Beta"
+
+    session = RecordingUiSession()
+    context = ExtensionCommandContext(
+        session=session,
+        registry=None,
+        text="/demo",
+        name="demo",
+        args="",
+        extension_name="demo",
+    )
+
+    assert await context.ui.select("Pick", ("Alpha", "Beta"), {"timeout": 1500}) == "Beta"
+    assert session.requests == [
+        {
+            "method": "select",
+            "extension_name": "demo",
+            "title": "Pick",
+            "options": ("Alpha", "Beta"),
+            "timeout_seconds": 1.5,
+        }
+    ]
 
 
 @pytest.mark.anyio

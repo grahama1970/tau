@@ -4695,11 +4695,18 @@ class ExtensionSelectScreen(ModalScreen[str | None]):
         title: str,
         options: Sequence[str],
         *,
+        timeout_seconds: float | None = None,
         keybindings: TuiKeybindings | None = None,
     ) -> None:
         super().__init__()
         self.title_text = title
         self.options = tuple(options)
+        self.timeout_seconds = timeout_seconds
+        self.remaining_seconds = (
+            max(1, int(timeout_seconds + 0.999)) if timeout_seconds is not None else None
+        )
+        self._countdown_timer: Timer | None = None
+        self._expiration_timer: Timer | None = None
         self.keybindings = keybindings or TuiKeybindings()
 
     def compose(self) -> ComposeResult:
@@ -4707,7 +4714,7 @@ class ExtensionSelectScreen(ModalScreen[str | None]):
         confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
         cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
         with Vertical(id="confirmation"):
-            yield Static(self.title_text, id="confirmation-title")
+            yield Static(self._title_label(), id="confirmation-title")
             yield ListView(
                 *(ListItem(Label(option, markup=False)) for option in self.options),
                 id="extension-select-list",
@@ -4718,6 +4725,18 @@ class ExtensionSelectScreen(ModalScreen[str | None]):
         """Focus the list."""
         with suppress(NoMatches):
             self.query_one("#extension-select-list", ListView).focus()
+        if self.remaining_seconds is not None:
+            self._expiration_timer = self.set_timer(self.timeout_seconds or 0, self._expire_timeout)
+            self._countdown_timer = self.set_interval(1.0, self._tick_timeout)
+
+    def on_unmount(self) -> None:
+        """Stop the timeout timer when the dialog closes."""
+        if self._countdown_timer is not None:
+            self._countdown_timer.stop()
+            self._countdown_timer = None
+        if self._expiration_timer is not None:
+            self._expiration_timer.stop()
+            self._expiration_timer = None
 
     def on_key(self, event: Key) -> None:
         """Route configured select keys."""
@@ -4743,6 +4762,23 @@ class ExtensionSelectScreen(ModalScreen[str | None]):
             self.dismiss(None)
             return
         self.dismiss(self.options[selected])
+
+    def _tick_timeout(self) -> None:
+        if self.remaining_seconds is None:
+            return
+        self.remaining_seconds -= 1
+        if self.remaining_seconds <= 0:
+            self._expire_timeout()
+            return
+        self.query_one("#confirmation-title", Static).update(self._title_label())
+
+    def _expire_timeout(self) -> None:
+        self.dismiss(None)
+
+    def _title_label(self) -> str:
+        if self.remaining_seconds is None:
+            return self.title_text
+        return f"{self.title_text} ({self.remaining_seconds}s)"
 
 
 class ExtensionInputScreen(ModalScreen[str | None]):
@@ -8244,10 +8280,12 @@ class TauTuiApp(App[None]):
             options = tuple(str(option) for option in payload.get("options", ()))
             if not options:
                 return None
+            timeout_seconds = _extension_ui_timeout_seconds(payload.get("timeout_seconds"))
             return await self.push_screen_wait(
                 ExtensionSelectScreen(
                     str(payload.get("title", f"{extension_name} selection")),
                     options,
+                    timeout_seconds=timeout_seconds,
                     keybindings=keybindings,
                 )
             )
@@ -11676,6 +11714,18 @@ def _provider_timeout_seconds_from_http_idle_timeout_ms(timeout_ms: int) -> floa
         # Match Pi's practical "disabled" transport timeout ceiling for JS timers.
         return 2_147_483_647 / 1000
     return timeout_ms / 1000
+
+
+def _extension_ui_timeout_seconds(value: object) -> float | None:
+    if value is None:
+        return None
+    try:
+        timeout_seconds = float(value)
+    except (TypeError, ValueError):
+        return None
+    if timeout_seconds <= 0:
+        return None
+    return timeout_seconds
 
 
 def _agent_queue_mode_from_tui(mode: TuiQueueDrainMode) -> Literal["one_at_a_time", "all"]:

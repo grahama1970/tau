@@ -1414,7 +1414,7 @@ class ExtensionCommandUi:
         request = getattr(self._context.session, "request_extension_ui", None)
         if not callable(request):
             raise RuntimeError("active session does not support extension UI requests")
-        timeout_seconds = payload.pop("timeout_seconds", None)
+        timeout_seconds = payload.get("timeout_seconds")
         request_result = request(
             method=method,
             extension_name=self._context.extension_name,
@@ -1423,7 +1423,7 @@ class ExtensionCommandUi:
         if timeout_seconds is None:
             return await request_result
         try:
-            return await asyncio.wait_for(request_result, timeout=float(timeout_seconds))
+            return await asyncio.wait_for(request_result, timeout=float(timeout_seconds) + 0.25)
         except TimeoutError:
             return None
 
