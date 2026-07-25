@@ -240,9 +240,12 @@ Example:
     "completion_previous": "up",
     "thinking_cycle": "shift+tab",
     "model_cycle": "ctrl+p",
+    "model_cycle_previous": "shift+ctrl+p",
+    "model_picker": "ctrl+l",
     "toggle_thinking": "ctrl+t",
     "toggle_tool_results": "ctrl+o",
     "copy_message": "ctrl+c",
+    "copy_last_message": "ctrl+x",
     "quit": "ctrl+d"
   }
 }

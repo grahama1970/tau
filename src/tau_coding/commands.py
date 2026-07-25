@@ -741,6 +741,8 @@ def _hotkeys_command(context: CommandContext) -> CommandResult:
         "- Esc: cancel active run",
         "- Ctrl+K: open slash-command completions",
         "- Ctrl+R: open session picker",
+        "- Ctrl+L: open model picker",
+        "- Ctrl+P / Shift+Ctrl+P: cycle scoped models",
         "- Double Esc: open the session tree or configured double-escape action",
         '- Session picker: type text, re:<pattern> regex, or "phrase" exact',
         "- Session picker: Tab scope, Ctrl+N named, Ctrl+P path, Ctrl+S sort "
@@ -755,6 +757,7 @@ def _hotkeys_command(context: CommandContext) -> CommandResult:
         "- Ctrl+T: toggle thinking tokens",
         "- Ctrl+O: collapse or expand tool output",
         "- Ctrl+C: clear prompt input",
+        "- Ctrl+X: copy last assistant message",
         "- Ctrl+D: quit",
     ]
     return CommandResult(handled=True, message="\n".join(lines))

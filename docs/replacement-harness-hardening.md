@@ -201,6 +201,21 @@ Acceptance:
 - Existing unavailable entries can be preserved, reordered, or removed from the
   scoped list, while brand-new unavailable scoped entries remain rejected.
 
+### Slice 8: Pi Shortcut Discoverability In Fallback Hotkeys
+
+Tau's interactive `/hotkeys` modal already reflects Pi-style shortcut bindings,
+but the command-registry fallback help can be shown outside the full TUI. Keep
+that fallback aligned with the daily-driver shortcuts operators expect from Pi.
+
+Status: implemented in this branch.
+
+Acceptance:
+
+- Fallback `/hotkeys` lists model picker, scoped model cycling, and copy-last
+  assistant shortcuts.
+- The configuration example includes `model_picker`, reverse scoped cycling,
+  and `copy_last_message` bindings.
+
 ## Non-Goals
 
 - Do not copy OpenCode or Pi UI wholesale.
