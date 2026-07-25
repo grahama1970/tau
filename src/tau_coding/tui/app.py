@@ -4480,6 +4480,22 @@ class ConfigMapSearchInput(Input):
             event.stop()
             event.prevent_default()
             screen.action_cursor_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.select_page_up,
+            "pageup",
+        ):
+            event.stop()
+            event.prevent_default()
+            screen.action_page_up()
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.select_page_down,
+            "pagedown",
+        ):
+            event.stop()
+            event.prevent_default()
+            screen.action_page_down()
         elif (
             _matches_configured_or_default_key(
                 event.key,
@@ -4558,6 +4574,20 @@ class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
             self.action_cursor_down()
         elif _matches_configured_or_default_key(
             event.key,
+            self.keybindings.select_page_up,
+            "pageup",
+        ):
+            event.stop()
+            self.action_page_up()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_page_down,
+            "pagedown",
+        ):
+            event.stop()
+            self.action_page_down()
+        elif _matches_configured_or_default_key(
+            event.key,
             self.keybindings.select_confirm,
             "enter",
         ):
@@ -4591,6 +4621,14 @@ class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
         self.query_one("#config-map-list", ListView).action_cursor_down()
         self._refresh_help_text()
 
+    def action_page_up(self) -> None:
+        """Move up by one page of config rows."""
+        self._move_page(-1)
+
+    def action_page_down(self) -> None:
+        """Move down by one page of config rows."""
+        self._move_page(1)
+
     def action_select_cursor(self) -> None:
         """Run the highlighted row action."""
         config_list = self.query_one("#config-map-list", ListView)
@@ -4607,6 +4645,18 @@ class ConfigMapScreen(ModalScreen[ConfigMapResult | None]):
         if item.action is None or item.action_value is None:
             return
         self.dismiss(ConfigMapResult(item.action, item.action_value))
+
+    def _move_page(self, direction: Literal[-1, 1]) -> None:
+        if not self.filtered_items:
+            return
+        config_list = self.query_one("#config-map-list", ListView)
+        current_index = config_list.index if config_list.index is not None else 0
+        page_size = max(1, config_list.size.height - 1)
+        if page_size <= 1:
+            page_size = 10
+        next_index = current_index + (direction * page_size)
+        config_list.index = max(0, min(len(self.filtered_items) - 1, next_index))
+        self._refresh_help_text()
 
     def _refresh_list(self, index: int) -> None:
         self.filtered_items = _filter_config_map_items(self.items, self.search_value)

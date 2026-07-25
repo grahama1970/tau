@@ -8862,6 +8862,31 @@ async def test_tui_app_config_command_opens_searchable_config_map() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_config_map_supports_pi_page_navigation() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test(size=(80, 8)) as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "/config"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ConfigMapScreen)
+        config_list = app.screen.query_one("#config-map-list", ListView)
+        assert config_list.index == 0
+
+        await pilot.press("pagedown")
+        await pilot.pause()
+        assert config_list.index is not None
+        assert config_list.index > 0
+
+        await pilot.press("pageup")
+        await pilot.pause()
+        assert config_list.index == 0
+
+
+@pytest.mark.anyio
 async def test_tui_app_config_map_disables_loaded_resource(monkeypatch: pytest.MonkeyPatch) -> None:
     session = FakeSession()
     saved_settings: list[TuiSettings] = []
