@@ -154,6 +154,13 @@ class CommandWorkingIndicatorUpdate:
 
 
 @dataclass(frozen=True, slots=True)
+class CommandFooterUpdate:
+    """Footer replacement requested by an extension command."""
+
+    lines: tuple[str, ...] | None
+
+
+@dataclass(frozen=True, slots=True)
 class CommandResult:
     """Result of handling a coding-session slash command."""
 
@@ -201,6 +208,7 @@ class CommandResult:
     status_updates: tuple[CommandStatusUpdate, ...] = ()
     widget_updates: tuple[CommandWidgetUpdate, ...] = ()
     working_indicator_update: CommandWorkingIndicatorUpdate | None = None
+    footer_update: CommandFooterUpdate | None = None
     user_message: str | None = None
     user_message_delivery: Literal["steer", "follow_up"] = "steer"
     message: str | None = None

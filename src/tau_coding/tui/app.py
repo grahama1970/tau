@@ -5739,6 +5739,13 @@ class TauTuiApp(App[None]):
         color: $tau-muted-text;
     }
 
+    #extension-footer {
+        height: auto;
+        padding: 0 1;
+        background: $tau-chrome-background;
+        color: $tau-muted-text;
+    }
+
     #extension-widgets-above,
     #extension-widgets-below {
         height: auto;
@@ -6180,6 +6187,7 @@ class TauTuiApp(App[None]):
         self._terminal_progress_active = False
         self._terminal_title = TerminalTitleController()
         self._extension_terminal_title: str | None = None
+        self._extension_footer_lines: tuple[str, ...] | None = None
         self._extension_working_visible = True
         self._extension_working_message: str | None = None
         self._extension_working_indicator_frames: tuple[str, ...] | None = None
@@ -6270,6 +6278,7 @@ class TauTuiApp(App[None]):
                 yield Static("", id="extension-widgets-below")
                 yield CompactSessionInfo(id="compact-session-info")
                 yield Static("", id="autocomplete")
+        yield Static("", id="extension-footer")
         yield Footer()
 
     async def on_mount(self) -> None:
@@ -6414,6 +6423,7 @@ class TauTuiApp(App[None]):
                 self._apply_command_status_updates(command)
                 self._apply_command_widget_updates(command)
                 self._apply_command_working_indicator_update(command)
+                self._apply_command_footer_update(command)
                 if command.terminal_title_requested:
                     self._set_extension_terminal_title(command.terminal_title)
                 if command.editor_text is not None:
@@ -6630,6 +6640,7 @@ class TauTuiApp(App[None]):
             self._apply_command_status_updates(command)
             self._apply_command_widget_updates(command)
             self._apply_command_working_indicator_update(command)
+            self._apply_command_footer_update(command)
             if command.terminal_title_requested:
                 self._set_extension_terminal_title(command.terminal_title)
             if command.editor_text is not None:
@@ -7137,6 +7148,14 @@ class TauTuiApp(App[None]):
                 update.interval_ms / 1000 if update.interval_ms is not None else None
             )
         self._sync_activity_indicator()
+
+    def _apply_command_footer_update(self, command: CommandResult) -> None:
+        """Apply extension-requested static footer replacement."""
+        update = command.footer_update
+        if update is None:
+            return
+        self._extension_footer_lines = update.lines
+        self._refresh_footer_bindings()
 
     def _set_extension_terminal_title(self, title: str | None) -> None:
         """Override or clear the terminal title requested by an extension command."""
@@ -7679,6 +7698,7 @@ class TauTuiApp(App[None]):
         self._apply_command_status_updates(result)
         self._apply_command_widget_updates(result)
         self._apply_command_working_indicator_update(result)
+        self._apply_command_footer_update(result)
         if result.terminal_title_requested:
             self._set_extension_terminal_title(result.terminal_title)
         if result.editor_text is not None:
@@ -9031,6 +9051,12 @@ class TauTuiApp(App[None]):
     def _refresh_footer_bindings(self) -> None:
         prompt = self.query_one("#prompt", PromptInput)
         prompt.set_footer_mode(_prompt_footer_mode(self.state, self._completion_state))
+        custom_footer = self.query_one("#extension-footer", Static)
+        built_in_footer = self.query_one(Footer)
+        custom_footer_text = _render_extension_footer(self._extension_footer_lines)
+        custom_footer.display = bool(custom_footer_text)
+        custom_footer.update(custom_footer_text)
+        built_in_footer.display = not bool(custom_footer_text)
 
     def _sync_prompt_shell_mode(self, text: str) -> None:
         prompt = self.query_one("#prompt", PromptInput)
@@ -11167,6 +11193,13 @@ def _render_extension_widgets(widgets: dict[str, tuple[str, ...]]) -> str:
         else:
             rendered.append("\n".join((f"{key}:", *(f"  {line}" for line in lines))))
     return "\n\n".join(rendered)
+
+
+def _render_extension_footer(lines: tuple[str, ...] | None) -> str:
+    """Render an extension-owned footer replacement."""
+    if lines is None:
+        return ""
+    return "\n".join(lines)
 
 
 def _queued_message_preview(message: str) -> str:

@@ -49,6 +49,7 @@ from tau_coding.branch_summary import summarize_branch_messages_with_model
 from tau_coding.commands import (
     CommandArgumentCompletion,
     CommandContext,
+    CommandFooterUpdate,
     CommandNotification,
     CommandRegistry,
     CommandResult,
@@ -3102,6 +3103,7 @@ def _extension_command_result(
     status_updates = _extension_command_status_updates(extension_context)
     widget_updates = _extension_command_widget_updates(extension_context)
     working_indicator_update = _extension_command_working_indicator_update(extension_context)
+    footer_update = _extension_command_footer_update(extension_context)
     if isinstance(result, CommandResult):
         if extension_context.shutdown_requested and not result.exit_requested:
             result = replace(result, exit_requested=True)
@@ -3132,6 +3134,8 @@ def _extension_command_result(
             result = replace(result, widget_updates=(*result.widget_updates, *widget_updates))
         if working_indicator_update is not None and result.working_indicator_update is None:
             result = replace(result, working_indicator_update=working_indicator_update)
+        if footer_update is not None and result.footer_update is None:
+            result = replace(result, footer_update=footer_update)
         if extension_context.user_message is not None and result.user_message is None:
             result = replace(
                 result,
@@ -3153,6 +3157,7 @@ def _extension_command_result(
             status_updates=status_updates,
             widget_updates=widget_updates,
             working_indicator_update=working_indicator_update,
+            footer_update=footer_update,
         )
     if extension_context.editor_insert_text is not None:
         return CommandResult(
@@ -3165,6 +3170,7 @@ def _extension_command_result(
             status_updates=status_updates,
             widget_updates=widget_updates,
             working_indicator_update=working_indicator_update,
+            footer_update=footer_update,
         )
     if extension_context.terminal_title_requested:
         return CommandResult(
@@ -3176,6 +3182,7 @@ def _extension_command_result(
             status_updates=status_updates,
             widget_updates=widget_updates,
             working_indicator_update=working_indicator_update,
+            footer_update=footer_update,
         )
     if extension_context.user_message is not None:
         return CommandResult(
@@ -3187,6 +3194,7 @@ def _extension_command_result(
             status_updates=status_updates,
             widget_updates=widget_updates,
             working_indicator_update=working_indicator_update,
+            footer_update=footer_update,
             user_message=extension_context.user_message,
             user_message_delivery=cast(
                 Literal["steer", "follow_up"],
@@ -3203,6 +3211,7 @@ def _extension_command_result(
             status_updates=status_updates,
             widget_updates=widget_updates,
             working_indicator_update=working_indicator_update,
+            footer_update=footer_update,
         )
     return CommandResult(
         handled=True,
@@ -3214,6 +3223,7 @@ def _extension_command_result(
         status_updates=status_updates,
         widget_updates=widget_updates,
         working_indicator_update=working_indicator_update,
+        footer_update=footer_update,
     )
 
 
@@ -3225,6 +3235,7 @@ def _extension_shortcut_result(
     status_updates = _extension_command_status_updates(extension_context)
     widget_updates = _extension_command_widget_updates(extension_context)
     working_indicator_update = _extension_command_working_indicator_update(extension_context)
+    footer_update = _extension_command_footer_update(extension_context)
     if isinstance(result, CommandResult):
         if extension_context.shutdown_requested and not result.exit_requested:
             result = replace(result, exit_requested=True)
@@ -3255,6 +3266,8 @@ def _extension_shortcut_result(
             result = replace(result, widget_updates=(*result.widget_updates, *widget_updates))
         if working_indicator_update is not None and result.working_indicator_update is None:
             result = replace(result, working_indicator_update=working_indicator_update)
+        if footer_update is not None and result.footer_update is None:
+            result = replace(result, footer_update=footer_update)
         return result
     if extension_context.editor_text is not None:
         return CommandResult(
@@ -3267,6 +3280,7 @@ def _extension_shortcut_result(
             status_updates=status_updates,
             widget_updates=widget_updates,
             working_indicator_update=working_indicator_update,
+            footer_update=footer_update,
         )
     if extension_context.editor_insert_text is not None:
         return CommandResult(
@@ -3279,6 +3293,7 @@ def _extension_shortcut_result(
             status_updates=status_updates,
             widget_updates=widget_updates,
             working_indicator_update=working_indicator_update,
+            footer_update=footer_update,
         )
     if extension_context.terminal_title_requested:
         return CommandResult(
@@ -3290,6 +3305,7 @@ def _extension_shortcut_result(
             status_updates=status_updates,
             widget_updates=widget_updates,
             working_indicator_update=working_indicator_update,
+            footer_update=footer_update,
         )
     if result is None:
         return CommandResult(
@@ -3301,6 +3317,7 @@ def _extension_shortcut_result(
             status_updates=status_updates,
             widget_updates=widget_updates,
             working_indicator_update=working_indicator_update,
+            footer_update=footer_update,
         )
     return CommandResult(
         handled=True,
@@ -3312,6 +3329,7 @@ def _extension_shortcut_result(
         status_updates=status_updates,
         widget_updates=widget_updates,
         working_indicator_update=working_indicator_update,
+        footer_update=footer_update,
     )
 
 
@@ -3366,6 +3384,15 @@ def _extension_command_working_indicator_update(
         frames=update.frames,
         interval_ms=update.interval_ms,
     )
+
+
+def _extension_command_footer_update(
+    context: ExtensionCommandContext | ExtensionShortcutContext,
+) -> CommandFooterUpdate | None:
+    update = context.footer_update
+    if update is None:
+        return None
+    return CommandFooterUpdate(lines=update.lines)
 
 
 def _extension_command_usage(usage: str, original_name: str, invocation_name: str) -> str:
