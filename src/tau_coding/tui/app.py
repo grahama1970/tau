@@ -25,9 +25,12 @@ from math import ceil
 from pathlib import Path
 from time import monotonic
 from typing import Any, ClassVar, Literal, Protocol, cast
+from urllib.parse import unquote, urlparse
 
 from rich.cells import cell_len
-from rich.console import Console, Group
+from rich.console import Console, Group, RenderableType
+from rich.markdown import Markdown
+from rich.padding import Padding
 from rich.text import Text
 from textual import events, on
 from textual.app import App, ComposeResult
@@ -4528,17 +4531,27 @@ class CommandOutputScreen(ModalScreen[None]):
 type ConfigMapAction = Literal["insert_command", "copy_path", "toggle_resource"]
 type ConfigMapScope = Literal["all", "project", "user"]
 type ArtifactBrowserAction = Literal["open", "copy"]
+type ArtifactPreviewKind = Literal["image", "markdown"]
+MARKDOWN_ARTIFACT_LINK_PATTERN = re.compile(
+    r"(?<!!)\[[^\]\n]+\]\((?P<target><[^>\n]+>|[^)\s]+)(?:\s+\"[^\"]*\")?\)"
+)
+MARKDOWN_ARTIFACT_MIME_TYPES = {
+    ".md": "text/markdown",
+    ".markdown": "text/markdown",
+}
+MAX_MARKDOWN_ARTIFACT_BYTES = 512 * 1024
 
 
 @dataclass(frozen=True, slots=True)
 class VisualArtifact:
-    """One visual artifact discovered from the visible transcript."""
+    """One inspectable artifact discovered from the visible transcript."""
 
     title: str
     path: Path
     mime_type: str
     bytes: int
     source: str
+    preview_kind: ArtifactPreviewKind = "image"
 
 
 @dataclass(frozen=True, slots=True)
@@ -4550,7 +4563,7 @@ class ArtifactBrowserResult:
 
 
 class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
-    """Open or copy visual artifacts found in the current transcript."""
+    """Open, copy, or preview artifacts found in the current transcript."""
 
     BINDINGS: ClassVar[list[Binding]] = [
         Binding("c", "copy_selected", "Copy"),
@@ -4575,7 +4588,7 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
     def compose(self) -> ComposeResult:
         """Compose the artifact browser."""
         with Vertical(id="config-map"):
-            yield Static("Visual Artifacts", id="config-map-title")
+            yield Static("Artifacts", id="config-map-title")
             yield Static(_artifact_browser_summary(self.artifacts), id="config-map-tabs")
             yield ListView(*self._list_items(), id="config-map-list")
             yield Static(
@@ -4672,7 +4685,7 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
             return [
                 ListItem(
                     Label(
-                        "No visual artifacts in the current transcript.",
+                        "No artifacts in the current transcript.",
                         markup=False,
                     )
                 )
@@ -4691,7 +4704,7 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
         index = artifact_list.index if artifact_list.index is not None else 0
         preview.update(self._preview_renderable(index))
 
-    def _preview_renderable(self, index: int) -> TerminalImage | str:
+    def _preview_renderable(self, index: int) -> RenderableType:
         if not self.artifacts:
             return "No preview available"
         artifact = self.artifacts[max(0, min(len(self.artifacts) - 1, index))]
@@ -4701,6 +4714,8 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
             return f"Preview unavailable: {artifact.path}"
         if not data:
             return f"Preview unavailable: empty file {artifact.path}"
+        if artifact.preview_kind == "markdown":
+            return self._markdown_preview_renderable(artifact, data)
         return TerminalImage(
             base64.b64encode(data).decode("ascii"),
             artifact.mime_type,
@@ -4711,6 +4726,37 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
                 show=self.show_images,
             ),
         )
+
+    def _markdown_preview_renderable(self, artifact: VisualArtifact, data: bytes) -> RenderableType:
+        if len(data) > MAX_MARKDOWN_ARTIFACT_BYTES:
+            return (
+                f"Preview unavailable: {artifact.path} is larger than "
+                f"{_format_artifact_size(MAX_MARKDOWN_ARTIFACT_BYTES)}"
+            )
+        try:
+            markdown = data.decode("utf-8")
+        except UnicodeDecodeError:
+            return f"Preview unavailable: {artifact.path} is not UTF-8 text"
+        visual_payloads = markdown_visual_payloads(markdown, base_path=artifact.path.parent)
+        if not visual_payloads:
+            return Markdown(markdown)
+        image_renderables = [
+            Padding(
+                TerminalImage(
+                    payload.image_base64,
+                    payload.mime_type,
+                    TerminalImageOptions(
+                        filename=Path(payload.path).name,
+                        max_width_cells=self.image_width_cells,
+                        max_height_cells=8,
+                        show=self.show_images,
+                    ),
+                ),
+                (1, 0, 0, 0),
+            )
+            for payload in visual_payloads
+        ]
+        return Group(Markdown(markdown), *image_renderables)
 
     def _help_text(self) -> str:
         confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
@@ -8368,7 +8414,7 @@ class TauTuiApp(App[None]):
         )
 
     def _open_artifact_browser(self) -> None:
-        """Open a browser for visual artifacts found in the current transcript."""
+        """Open a browser for artifacts found in the current transcript."""
         self.push_screen(
             ArtifactBrowserScreen(
                 _visual_artifacts_from_state(
@@ -13158,7 +13204,7 @@ def _visual_artifacts_from_state(
     cwd: Path,
     session_id: str | None,
 ) -> tuple[VisualArtifact, ...]:
-    """Collect local visual artifacts from the visible transcript state."""
+    """Collect local inspectable artifacts from the visible transcript state."""
     artifacts: list[VisualArtifact] = []
     seen: set[tuple[str, str]] = set()
     for item_index, item in enumerate(state.items, 1):
@@ -13187,6 +13233,25 @@ def _visual_artifacts_from_state(
                     source=f"{item.role} item {item_index}",
                 )
             )
+        for path in _markdown_artifact_paths_for_chat_item(item, cwd=cwd):
+            key = ("path", str(path))
+            if key in seen:
+                continue
+            try:
+                byte_count = path.stat().st_size
+            except OSError:
+                continue
+            seen.add(key)
+            artifacts.append(
+                VisualArtifact(
+                    title=path.name,
+                    path=path,
+                    mime_type=MARKDOWN_ARTIFACT_MIME_TYPES[path.suffix.lower()],
+                    bytes=byte_count,
+                    source=f"{item.role} item {item_index}",
+                    preview_kind="markdown",
+                )
+            )
     return tuple(artifacts)
 
 
@@ -13201,6 +13266,56 @@ def _visual_payloads_for_chat_item(item: ChatItem, *, cwd: Path) -> tuple[ToolIm
         if item.tool_result_text:
             payloads.extend(markdown_visual_payloads(item.tool_result_text, base_path=cwd))
     return tuple(payloads)
+
+
+def _markdown_artifact_paths_for_chat_item(item: ChatItem, *, cwd: Path) -> tuple[Path, ...]:
+    paths: list[Path] = []
+    seen: set[Path] = set()
+    for text in (item.text, item.tool_result_text or ""):
+        for path in _markdown_artifact_paths(text, base_path=cwd):
+            if path in seen:
+                continue
+            seen.add(path)
+            paths.append(path)
+    return tuple(paths)
+
+
+def _markdown_artifact_paths(markdown: str, *, base_path: Path) -> tuple[Path, ...]:
+    paths: list[Path] = []
+    for match in MARKDOWN_ARTIFACT_LINK_PATTERN.finditer(markdown):
+        path = _artifact_link_target_path(match.group("target"), base_path=base_path)
+        if path is None:
+            continue
+        if MARKDOWN_ARTIFACT_MIME_TYPES.get(path.suffix.lower()) is None:
+            continue
+        try:
+            stat = path.stat()
+        except OSError:
+            continue
+        if path.is_file() and 0 < stat.st_size <= MAX_MARKDOWN_ARTIFACT_BYTES:
+            paths.append(path)
+    return tuple(paths)
+
+
+def _artifact_link_target_path(target: str, *, base_path: Path) -> Path | None:
+    cleaned = target.strip()
+    if cleaned.startswith("<") and cleaned.endswith(">"):
+        cleaned = cleaned[1:-1].strip()
+    parsed = urlparse(cleaned)
+    if parsed.scheme in {"http", "https", "data"}:
+        return None
+    if parsed.scheme == "file":
+        raw_path = unquote(parsed.path)
+    elif parsed.scheme:
+        return None
+    else:
+        raw_path = unquote(cleaned.split("#", 1)[0].split("?", 1)[0])
+    if not raw_path:
+        return None
+    path = Path(raw_path).expanduser()
+    if not path.is_absolute():
+        path = base_path / path
+    return path.resolve()
 
 
 def _visual_artifact_key(payload: ToolImagePayload) -> tuple[str, str]:
@@ -13272,9 +13387,13 @@ def _safe_artifact_name(value: str) -> str:
 
 def _artifact_browser_summary(artifacts: Sequence[VisualArtifact]) -> str:
     if not artifacts:
-        return "Found 0 visual artifacts"
+        return "Found 0 artifacts"
     image_count = sum(1 for artifact in artifacts if artifact.mime_type.startswith("image/"))
-    return f"Found {len(artifacts)} visual artifact(s), {image_count} image-backed"
+    markdown_count = sum(1 for artifact in artifacts if artifact.preview_kind == "markdown")
+    return (
+        f"Found {len(artifacts)} artifact(s), {image_count} image-backed, "
+        f"{markdown_count} Markdown report(s)"
+    )
 
 
 def _artifact_browser_label(index: int, artifact: VisualArtifact) -> str:
@@ -13853,7 +13972,7 @@ def _render_tui_hotkeys_message(
         ),
         _markdown_table_row(
             "/artifacts",
-            "browse visual artifacts from the current transcript",
+            "browse image, graph, and Markdown artifacts from the current transcript",
         ),
         _markdown_table_row("drop files", "attach paths to the prompt"),
         "",
@@ -13948,7 +14067,7 @@ def _render_tui_hotkeys_message(
         "Slash and shell:",
         "- /: slash commands",
         "- /resources: show loaded context, skills, prompts, tools, and diagnostics",
-        "- /artifacts: browse visual artifacts from the current transcript",
+        "- /artifacts: browse image, graph, and Markdown artifacts from the current transcript",
         "- !: run bash command and add output to context",
         "- !!: run bash command without adding output to context",
     ]

@@ -4004,9 +4004,7 @@ async def test_tui_app_artifacts_command_browses_and_opens_visuals(
             await pilot.pause()
 
             assert isinstance(app.screen, ArtifactBrowserScreen)
-            assert str(app.screen.query_one("#config-map-title", Static).render()) == (
-                "Visual Artifacts"
-            )
+            assert str(app.screen.query_one("#config-map-title", Static).render()) == "Artifacts"
             preview_console = Console(file=StringIO(), record=True, width=80)
             preview_console.print(app.screen._preview_renderable(0))
             assert "Image: chart.png" in preview_console.export_text()
@@ -4021,6 +4019,51 @@ async def test_tui_app_artifacts_command_browses_and_opens_visuals(
             await pilot.pause()
 
             assert opened == [image_path.resolve().as_uri()]
+    finally:
+        reset_capabilities_cache()
+
+
+@pytest.mark.anyio
+async def test_tui_app_artifacts_command_previews_markdown_reports(
+    tmp_path: Path,
+) -> None:
+    set_capabilities(TerminalCapabilities(images=None, true_color=True, hyperlinks=True))
+    try:
+        image_path = tmp_path / "figure.png"
+        image_path.write_bytes(base64.b64decode(PNG_1X1_BASE64))
+        report_path = tmp_path / "review.md"
+        report_path.write_text(
+            "# Review\n\n"
+            "| criterion | verdict |\n"
+            "| --- | --- |\n"
+            "| visual table | pass |\n\n"
+            f"![figure]({image_path.name})\n",
+            encoding="utf-8",
+        )
+        session = FakeSession()
+        app = TauTuiApp(session)
+        app.state.add_item("assistant", f"Inspect [review]({report_path}).")
+
+        async with app.run_test() as pilot:
+            prompt = app.query_one("#prompt")
+            prompt.value = "/artifacts"
+            await pilot.press("enter")
+            await pilot.pause()
+
+            assert isinstance(app.screen, ArtifactBrowserScreen)
+            labels = [
+                str(item.query_one(Label).render())
+                for item in app.screen.query_one("#config-map-list", ListView).children
+            ]
+            assert any("review.md" in label and "text/markdown" in label for label in labels)
+
+            preview_console = Console(file=StringIO(), record=True, width=90)
+            preview_console.print(app.screen._preview_renderable(0))
+            preview = preview_console.export_text()
+            assert "Review" in preview
+            assert "criterion" in preview
+            assert "visual table" in preview
+            assert "Image: figure.png" in preview
     finally:
         reset_capabilities_cache()
 
@@ -9343,10 +9386,11 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "Keyboard Shortcuts" in app.screen.message
         assert "| Key | Action |" in app.screen.message
         assert "| Ctrl+J | open slash-command completions |" in app.screen.message
-        assert (
-            "| /artifacts | browse visual artifacts from the current transcript |"
-            in app.screen.message
+        artifacts_help = (
+            "| /artifacts | browse image, graph, and Markdown artifacts "
+            "from the current transcript |"
         )
+        assert artifacts_help in app.screen.message
         assert "Ctrl+J: open slash-command completions" in app.screen.message
         assert "F6: open session picker" in app.screen.message
         assert "F5: queue follow-up while running" in app.screen.message
