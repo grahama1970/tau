@@ -1,0 +1,224 @@
+name: Canonical Tau proofs
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: canonical-tau-proofs-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  canonical-browser-proofs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      CHROME_BIN: /usr/bin/google-chrome
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+      TAU_PROOF_ROOT: ${{ runner.temp }}/tau-canonical-proofs/${{ github.run_id }}
+      TAU_SOURCE_REF: ${{ github.sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/dag-viewer/package-lock.json
+
+      - name: Install Python and browser dependencies
+        run: |
+          set -euo pipefail
+          uv sync --group dev --frozen
+          npm ci --prefix web/dag-viewer
+          npm run build --prefix web/dag-viewer
+          npm install --global puppeteer
+          "$CHROME_BIN" --version
+          node --version
+          npm --version
+          uv --version
+
+      - name: Run canonical browser proofs
+        run: |
+          set -euo pipefail
+          mkdir -p \
+            "$TAU_PROOF_ROOT/receipts" \
+            "$TAU_PROOF_ROOT/screenshots" \
+            "$TAU_PROOF_ROOT/logs"
+
+          uv run python scripts/run-repository-readiness-browser-proof.py \
+            --positive-out "$TAU_PROOF_ROOT/receipts/repository-readiness-positive.json" \
+            --positive-desktop-screenshot "$TAU_PROOF_ROOT/screenshots/repository-readiness-positive-desktop.png" \
+            --positive-mobile-screenshot "$TAU_PROOF_ROOT/screenshots/repository-readiness-positive-mobile.png" \
+            --negative-out "$TAU_PROOF_ROOT/receipts/repository-readiness-negative.json" \
+            --negative-desktop-screenshot "$TAU_PROOF_ROOT/screenshots/repository-readiness-negative-desktop.png" \
+            --negative-mobile-screenshot "$TAU_PROOF_ROOT/screenshots/repository-readiness-negative-mobile.png" \
+            | tee "$TAU_PROOF_ROOT/logs/repository-readiness-browser-proof.stdout.json"
+
+          uv run python scripts/run-operator-reference-browser-proof.py \
+            --positive-out "$TAU_PROOF_ROOT/receipts/operator-reference-positive.json" \
+            --positive-desktop-screenshot "$TAU_PROOF_ROOT/screenshots/operator-reference-positive-desktop.png" \
+            --positive-mobile-screenshot "$TAU_PROOF_ROOT/screenshots/operator-reference-positive-mobile.png" \
+            --negative-out "$TAU_PROOF_ROOT/receipts/operator-reference-negative.json" \
+            --negative-desktop-screenshot "$TAU_PROOF_ROOT/screenshots/operator-reference-negative-desktop.png" \
+            --negative-mobile-screenshot "$TAU_PROOF_ROOT/screenshots/operator-reference-negative-mobile.png" \
+            | tee "$TAU_PROOF_ROOT/logs/operator-reference-browser-proof.stdout.json"
+
+          uv run python scripts/run-repository-evidence-map-browser-proof.py \
+            --positive-out "$TAU_PROOF_ROOT/receipts/repository-evidence-map-positive.json" \
+            --positive-desktop-screenshot "$TAU_PROOF_ROOT/screenshots/repository-evidence-map-positive-desktop.png" \
+            --positive-mobile-screenshot "$TAU_PROOF_ROOT/screenshots/repository-evidence-map-positive-mobile.png" \
+            --negative-out "$TAU_PROOF_ROOT/receipts/repository-evidence-map-negative.json" \
+            --negative-desktop-screenshot "$TAU_PROOF_ROOT/screenshots/repository-evidence-map-negative-desktop.png" \
+            --negative-mobile-screenshot "$TAU_PROOF_ROOT/screenshots/repository-evidence-map-negative-mobile.png" \
+            | tee "$TAU_PROOF_ROOT/logs/repository-evidence-map-browser-proof.stdout.json"
+
+          uv run python scripts/run-approved-release-browser-proof.py \
+            --output "$TAU_PROOF_ROOT/receipts/approved-release-bundle.json" \
+            --desktop-screenshot "$TAU_PROOF_ROOT/screenshots/approved-release-bundle-desktop.png" \
+            --mobile-screenshot "$TAU_PROOF_ROOT/screenshots/approved-release-bundle-mobile.png" \
+            --rerun-output "$TAU_PROOF_ROOT/receipts/approved-release-bundle-rerun.json" \
+            | tee "$TAU_PROOF_ROOT/logs/approved-release-browser-proof.stdout.json"
+
+          uv run python scripts/run-durable-qualification-browser-proof.py \
+            --output "$TAU_PROOF_ROOT/receipts/durable-repository-qualification.json" \
+            --desktop-screenshot "$TAU_PROOF_ROOT/screenshots/durable-repository-qualification-desktop.png" \
+            --mobile-screenshot "$TAU_PROOF_ROOT/screenshots/durable-repository-qualification-mobile.png" \
+            | tee "$TAU_PROOF_ROOT/logs/durable-qualification-browser-proof.stdout.json"
+
+      - name: Run immutable-goal audit
+        run: |
+          set -euo pipefail
+          mkdir -p "$TAU_PROOF_ROOT/audit" "$TAU_PROOF_ROOT/wheel" "$TAU_PROOF_ROOT/logs"
+          uv build --wheel --out-dir "$TAU_PROOF_ROOT/wheel" \
+            | tee "$TAU_PROOF_ROOT/logs/uv-build-wheel.log"
+          wheel_path="$(find "$TAU_PROOF_ROOT/wheel" -maxdepth 1 -type f -name 'tau-*.whl' -print -quit)"
+          if [ -z "$wheel_path" ]; then
+            echo "No tau wheel produced" >&2
+            exit 1
+          fi
+
+          uv run python scripts/verify-durable-qualification-wheel.py \
+            --wheel "$wheel_path" \
+            --output "$TAU_PROOF_ROOT/receipts/durable-qualification-wheel.json" \
+            | tee "$TAU_PROOF_ROOT/logs/durable-qualification-wheel.stdout.json"
+
+          uv run python scripts/run-immutable-goal-audit.py \
+            --repo "$GITHUB_WORKSPACE" \
+            --ref "$TAU_SOURCE_REF" \
+            --readiness-positive-browser-proof "$TAU_PROOF_ROOT/receipts/repository-readiness-positive.json" \
+            --readiness-negative-browser-proof "$TAU_PROOF_ROOT/receipts/repository-readiness-negative.json" \
+            --operator-positive-browser-proof "$TAU_PROOF_ROOT/receipts/operator-reference-positive.json" \
+            --operator-negative-browser-proof "$TAU_PROOF_ROOT/receipts/operator-reference-negative.json" \
+            --evidence-positive-browser-proof "$TAU_PROOF_ROOT/receipts/repository-evidence-map-positive.json" \
+            --evidence-negative-browser-proof "$TAU_PROOF_ROOT/receipts/repository-evidence-map-negative.json" \
+            --slice04-browser-proof "$TAU_PROOF_ROOT/receipts/approved-release-bundle.json" \
+            --slice04-rerun-proof "$TAU_PROOF_ROOT/receipts/approved-release-bundle-rerun.json" \
+            --slice05-browser-proof "$TAU_PROOF_ROOT/receipts/durable-repository-qualification.json" \
+            --slice05-wheel-proof "$TAU_PROOF_ROOT/receipts/durable-qualification-wheel.json" \
+            --out "$TAU_PROOF_ROOT/audit/immutable-goal-audit.json" \
+            | tee "$TAU_PROOF_ROOT/logs/immutable-goal-audit.stdout.json"
+
+      - name: Write artifact checksums
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path(os.environ["TAU_PROOF_ROOT"]).resolve()
+          records = []
+          for path in sorted(item for item in root.rglob("*") if item.is_file()):
+              relative = path.relative_to(root).as_posix()
+              if relative in {"artifact-manifest.json", "sha256sum.txt"}:
+                  continue
+              records.append(
+                  {
+                      "path": relative,
+                      "sha256": f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}",
+                      "bytes": path.stat().st_size,
+                  }
+              )
+
+          manifest = {
+              "schema": "tau.canonical_proofs_ci_artifact_manifest.v1",
+              "status": "PASS",
+              "mocked": False,
+              "live": True,
+              "provider_live": False,
+              "source_ref": os.environ["TAU_SOURCE_REF"],
+              "github_run_id": os.environ["GITHUB_RUN_ID"],
+              "artifact_root": str(root),
+              "artifact_count": len(records),
+              "artifacts": records,
+          }
+          (root / "artifact-manifest.json").write_text(
+              json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          (root / "sha256sum.txt").write_text(
+              "".join(
+                  f"{record['sha256'].removeprefix('sha256:')}  {record['path']}\n"
+                  for record in records
+              ),
+              encoding="utf-8",
+          )
+          print(json.dumps(manifest, indent=2, sort_keys=True))
+          PY
+
+      - name: Read back artifact checksums
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path(os.environ["TAU_PROOF_ROOT"]).resolve()
+          manifest = json.loads((root / "artifact-manifest.json").read_text(encoding="utf-8"))
+          if manifest.get("status") != "PASS" or manifest.get("artifact_count", 0) < 20:
+              raise SystemExit("artifact manifest did not record the expected proof bundle")
+          for record in manifest["artifacts"]:
+              path = root / record["path"]
+              actual = f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
+              if actual != record["sha256"]:
+                  raise SystemExit(f"sha256 mismatch for {record['path']}")
+          print(
+              json.dumps(
+                  {
+                      "schema": "tau.canonical_proofs_ci_readback.v1",
+                      "status": "PASS",
+                      "artifact_count": manifest["artifact_count"],
+                      "source_ref": manifest["source_ref"],
+                  },
+                  indent=2,
+                  sort_keys=True,
+              )
+          )
+          PY
+
+      - name: Upload canonical proof artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tau-canonical-proofs-${{ github.run_id }}
+          path: ${{ runner.temp }}/tau-canonical-proofs/${{ github.run_id }}
+          if-no-files-found: error
