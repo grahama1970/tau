@@ -98,15 +98,7 @@ def write_memory_intent_gate_receipt(
                     {"inline_evidence_count": len(evidence)},
                 )
             )
-        tool_calls = _list_value(memory_intent, "tool_calls")
-        if tool_calls:
-            alerts.append(
-                _alert(
-                    "memory_tool_calls_rejected",
-                    "Memory intent may not authorize tool calls; Tau treats them as advisory only.",
-                    {"tool_call_count": len(tool_calls)},
-                )
-            )
+    advisory_tool_calls = _list_value(memory_intent, "tool_calls")
 
     return _write_receipt(
         schema=MEMORY_INTENT_GATE_RECEIPT_SCHEMA,
@@ -125,6 +117,10 @@ def write_memory_intent_gate_receipt(
             "Evidence-case artifact correctness.",
             "Provider/model semantic quality.",
         ],
+        extra_fields={
+            "tool_calls": [],
+            "advisory_tool_calls": advisory_tool_calls,
+        },
     )
 
 
@@ -371,7 +367,7 @@ def evaluate_memory_evidence_gate(
                 "Tau inspected Graph Memory intent before DAG dispatch.",
                 "Tau checked Memory intent schema, memory_first, planner_only, "
                 "route blockers, confidence, and evidence separation before dispatch.",
-                "Tau rejected Memory-supplied tool calls as advisory-only data.",
+                "Tau preserved Memory-supplied tool calls as advisory-only data.",
             ],
             "does_not_prove": [
                 "Memory facts are true.",
@@ -440,15 +436,6 @@ def _compat_intent_alerts(
             _alert(
                 "intent_contains_inline_evidence",
                 "Intent must not inline evidence; use create-evidence-case.",
-            )
-        )
-    tool_calls = _list_value(payload, "tool_calls")
-    if tool_calls:
-        alerts.append(
-            _alert(
-                "memory_tool_calls_rejected",
-                "Memory intent may not authorize tool calls; Tau treats them as advisory only.",
-                {"tool_call_count": len(tool_calls)},
             )
         )
     return alerts
@@ -576,6 +563,7 @@ def _write_receipt(
     alerts: list[dict[str, Any]],
     proves: list[str],
     does_not_prove: list[str],
+    extra_fields: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     ok = not alerts
     resolved_receipt = receipt_path.expanduser().resolve()
@@ -600,6 +588,8 @@ def _write_receipt(
         },
         "timestamp": _utc_stamp(),
     }
+    if extra_fields:
+        receipt.update(dict(extra_fields))
     if payload is not None:
         receipt["payload_schema"] = payload.get("schema")
     resolved_receipt.parent.mkdir(parents=True, exist_ok=True)

@@ -82,7 +82,7 @@ def test_memory_evidence_gate_blocks_inline_evidence() -> None:
     assert "intent_contains_inline_evidence" in intent_receipt["alert_codes"]
 
 
-def test_memory_evidence_gate_rejects_memory_supplied_tool_calls() -> None:
+def test_memory_evidence_gate_treats_memory_supplied_tool_calls_as_advisory() -> None:
     intent = _memory_intent()
     intent["tool_calls"] = [{"name": "create_evidence_case"}]
 
@@ -93,10 +93,10 @@ def test_memory_evidence_gate_rejects_memory_supplied_tool_calls() -> None:
         evidence_case=_evidence_case(),
     )
 
-    assert intent_receipt["ok"] is False
+    assert intent_receipt["ok"] is True
     assert intent_receipt["tool_calls"] == []
     assert intent_receipt["advisory_tool_calls"] == [{"name": "create_evidence_case"}]
-    assert "memory_tool_calls_rejected" in intent_receipt["alert_codes"]
+    assert "memory_tool_calls_rejected" not in intent_receipt["alert_codes"]
 
 
 def test_memory_evidence_gate_proof_scope_matches_enforced_boundary() -> None:
@@ -111,6 +111,7 @@ def test_memory_evidence_gate_proof_scope_matches_enforced_boundary() -> None:
     does_not_prove = "\n".join(intent_receipt["proof_scope"]["does_not_prove"])
     assert "ungrounded prompt text" not in proves
     assert "tool calls" in proves
+    assert "advisory-only data" in proves
     assert "trusted instruction authority" in does_not_prove
 
 

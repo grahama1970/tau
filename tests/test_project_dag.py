@@ -1502,6 +1502,12 @@ def test_project_dag_memory_gate_allows_valid_intent_and_evidence_case(
     assert receipt["status"] == "PASS"
     assert Path(str(receipt["memory_intent_gate_receipt"])).exists()
     assert Path(str(receipt["evidence_case_gate_receipt"])).exists()
+    memory_receipt = json.loads(
+        Path(str(receipt["memory_intent_gate_receipt"])).read_text(encoding="utf-8")
+    )
+    assert memory_receipt["tool_calls"] == []
+    assert memory_receipt["advisory_tool_calls"] == [{"name": "create_evidence_case"}]
+    assert "memory_tool_calls_rejected" not in memory_receipt["alert_codes"]
 
 
 def test_project_dag_zero_trust_blocks_external_provider_when_policy_denies(
