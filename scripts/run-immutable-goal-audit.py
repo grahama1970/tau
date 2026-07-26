@@ -466,7 +466,13 @@ def _verify_public_interface(
     run_options = ["--repo", "--run-dir", "--goal", "--publish-path", "--require-tests"]
     missing_run_options = [option for option in run_options if option not in run_help]
     if missing_run_options:
-        raise AuditError(f"workflow_help_contract_missing:{','.join(missing_run_options)}")
+        preview = run_help[:200].encode("unicode_escape").decode("ascii")
+        raise AuditError(
+            "workflow_help_contract_missing:"
+            f"{','.join(missing_run_options)}:"
+            f"help_len={len(run_help)}:"
+            f"preview={preview}"
+        )
     expected_viewer_capabilities = {
         "schema": "tau.dag_viewer_capabilities.v1",
         "manifest_schema": "tau.dag_view_manifest.v1",
