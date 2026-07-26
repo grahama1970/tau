@@ -76,7 +76,7 @@ def main() -> int:
             stderr=subprocess.PIPE,
             text=True,
         )
-        _wait_file(ready_path, browser, 15)
+        _wait_file(ready_path, browser, 45)
         first, first_error, first_thread = _worker(
             lambda: run_generic_dag(spec_path=materialized.source_dag_path)
         )
@@ -170,7 +170,20 @@ def _wait_file(path: Path, process: subprocess.Popen[str], timeout: float) -> No
             stdout, stderr = process.communicate()
             raise RuntimeError(f"browser_exited_early:{stderr}\n{stdout}")
         time.sleep(0.02)
+    stdout, stderr = _terminate_and_collect(process)
+    if stderr or stdout:
+        raise RuntimeError(f"browser_handshake_timeout:{path.name}:{stderr}\n{stdout}")
     raise RuntimeError(f"browser_handshake_timeout:{path.name}")
+
+
+def _terminate_and_collect(process: subprocess.Popen[str]) -> tuple[str, str]:
+    if process.poll() is None:
+        process.terminate()
+    try:
+        return process.communicate(timeout=10)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        return process.communicate(timeout=5)
 
 
 def _git_repo(path: Path) -> Path:

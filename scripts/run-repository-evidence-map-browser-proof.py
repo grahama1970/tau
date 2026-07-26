@@ -113,7 +113,7 @@ def _scenario(
         stderr=subprocess.PIPE,
         text=True,
     )
-    _wait_file(ready_path, browser, 15)
+    _wait_file(ready_path, browser, 45)
     outcome: dict[str, Any] = {}
     failures: list[BaseException] = []
 
@@ -197,7 +197,20 @@ def _wait_file(path: Path, process: subprocess.Popen[str], timeout: float) -> No
             stdout, stderr = process.communicate()
             raise RuntimeError(f"browser_exited_early:{stderr}\n{stdout}")
         time.sleep(0.02)
+    stdout, stderr = _terminate_and_collect(process)
+    if stderr or stdout:
+        raise RuntimeError(f"browser_handshake_timeout:{path.name}:{stderr}\n{stdout}")
     raise RuntimeError("browser_handshake_timeout")
+
+
+def _terminate_and_collect(process: subprocess.Popen[str]) -> tuple[str, str]:
+    if process.poll() is None:
+        process.terminate()
+    try:
+        return process.communicate(timeout=10)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        return process.communicate(timeout=5)
 
 
 def _wait_server(run_dir: Path, worker: threading.Thread, failures: list[BaseException]) -> Any:

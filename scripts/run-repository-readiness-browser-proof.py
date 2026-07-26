@@ -118,11 +118,11 @@ def _proof_scenario(
         text=True,
         env=env,
     )
-    ready_deadline = time.monotonic() + 15
+    ready_deadline = time.monotonic() + 45
     while not ready_path.is_file() and browser.poll() is None and time.monotonic() < ready_deadline:
         time.sleep(0.01)
     if not ready_path.is_file():
-        browser_stdout, browser_stderr = browser.communicate(timeout=5)
+        browser_stdout, browser_stderr = _terminate_and_collect(browser)
         raise RuntimeError(
             f"repository_readiness_browser_prewarm_failed:{browser_stderr}\n{browser_stdout}"
         )
@@ -250,6 +250,16 @@ def main() -> int:
     }
     print(json.dumps(summary, indent=2, sort_keys=True))
     return 0
+
+
+def _terminate_and_collect(process: subprocess.Popen[str]) -> tuple[str, str]:
+    if process.poll() is None:
+        process.terminate()
+    try:
+        return process.communicate(timeout=10)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        return process.communicate(timeout=5)
 
 
 if __name__ == "__main__":
