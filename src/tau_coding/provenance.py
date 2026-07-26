@@ -18,7 +18,7 @@ ACTOR_MANIFEST_SCHEMA = "tau.actor_manifest.v1"
 ENVIRONMENT_MANIFEST_SCHEMA = "tau.environment_manifest.v1"
 
 ACTOR_TYPES = {"agent", "human", "harness", "validator"}
-NETWORK_POLICIES = {"deny", "allowlisted", "allow", "unknown"}
+NETWORK_POLICIES = {"deny", "allowlisted", "allow", "unrestricted", "unknown"}
 PROVIDER_ACCESS = {"denied", "allowed", "unknown"}
 US_PERSON_VALUES = {"verified", "not_verified", "unknown"}
 
@@ -71,6 +71,9 @@ def build_environment_manifest(
     provider_access: str,
     mounted_paths: Sequence[str] | None = None,
     secrets_visible: Sequence[str] | None = None,
+    environment_variables_visible: Sequence[str] | None = None,
+    host_environment_inherited: bool = False,
+    environment_attestation: str = "declared",
     tool_versions: Mapping[str, str] | None = None,
     policy_profile: str | None = None,
     data_boundary: str | None = None,
@@ -106,6 +109,9 @@ def build_environment_manifest(
         "provider_access": provider_access,
         "mounted_paths": list(mounted_paths or []),
         "secrets_visible": list(secrets_visible or []),
+        "environment_variables_visible": list(environment_variables_visible or []),
+        "host_environment_inherited": host_environment_inherited,
+        "environment_attestation": environment_attestation,
         "tool_versions": merged_tool_versions,
         "policy_profile": policy_profile,
         "policy_profile_artifact": _optional_json_reference(policy_profile),
@@ -119,6 +125,7 @@ def build_environment_manifest(
             "does_not_prove": [
                 "Runtime sandbox enforcement.",
                 "Network egress enforcement.",
+                "Environment isolation when host_environment_inherited is true.",
                 "Secret absence outside the declared list.",
                 "Provider/model semantic safety.",
                 "ITAR compliance or legal sufficiency.",
@@ -170,6 +177,12 @@ def validate_environment_manifest(payload: Mapping[str, Any]) -> list[str]:
         errors.append("mounted_paths must be a list of strings")
     if not _string_list(payload.get("secrets_visible")):
         errors.append("secrets_visible must be a list of strings")
+    if not _string_list(payload.get("environment_variables_visible")):
+        errors.append("environment_variables_visible must be a list of strings")
+    if not isinstance(payload.get("host_environment_inherited"), bool):
+        errors.append("host_environment_inherited must be a boolean")
+    if not _non_empty_string(payload.get("environment_attestation")):
+        errors.append("environment_attestation must be a non-empty string")
     tool_versions = payload.get("tool_versions")
     if not isinstance(tool_versions, Mapping) or not all(
         isinstance(key, str) and isinstance(value, str)
@@ -205,7 +218,7 @@ def parse_actor_spec(spec: str) -> dict[str, Any]:
         "actor_id": actor_id,
         "actor_type": actor_type,
         "roles": roles,
-        "trusted": False if actor_type == "agent" else True,
+        "trusted": actor_type != "agent",
         "verified": False,
     }
 

@@ -1,0 +1,25 @@
+{
+  "command_policy": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-173-development-env-manifest-20260726/command-policy.json",
+  "dag_id": "issue-173-proof",
+  "data_boundary": {
+    "classification": "public",
+    "export_controlled": false,
+    "external_provider_allowed": true,
+    "external_research_allowed": false,
+    "foreign_person_access": "allowed",
+    "itar": false,
+    "notes": [
+      "issue 173 proof fixture"
+    ],
+    "public_repo_allowed": false,
+    "schema": "tau.data_boundary.v1",
+    "technical_data": false
+  },
+  "goal": {
+    "goal_hash": "sha256:issue-173-goal",
+    "goal_id": "issue-173-proof",
+    "goal_version": 1
+  },
+  "policy_profile": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-173-development-env-manifest-20260726/policy-profile.json",
+  "schema": "tau.dag_contract.v1"
+}

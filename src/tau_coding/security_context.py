@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -18,6 +20,11 @@ SECURITY_CONTEXT_SCHEMA = "tau.security_context.v1"
 SECURITY_CONTEXT_RECEIPT_SCHEMA = "tau.security_context_receipt.v1"
 SECURITY_MODES = {"development", "secure"}
 CONTROLLED_CLASSIFICATIONS = {"CUI", "EAR", "ITAR"}
+SENSITIVE_ENV_NAME = re.compile(
+    r"(?:secret|token|password|passphrase|credential|authorization|api[_-]?key|"
+    r"private[_-]?key|access[_-]?key|client[_-]?secret|refresh[_-]?token|cookie)",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -104,6 +111,7 @@ def resolve_security_context(
         receipt_dir=resolved_receipt_dir,
         policy_source=policy_source,
         boundary_source=boundary_source,
+        security_mode=effective_mode,
     )
     alerts.extend(env_source.alerts)
     policy_source = _materialize_embedded_source(policy_source, receipt_dir=resolved_receipt_dir)
@@ -262,6 +270,7 @@ def _resolve_or_generate_environment_manifest(
     receipt_dir: Path,
     policy_source: _ResolvedSource,
     boundary_source: _ResolvedSource,
+    security_mode: str,
 ) -> _ResolvedSource:
     value = dag_contract.get("environment_manifest")
     if value is not None:
@@ -272,20 +281,33 @@ def _resolve_or_generate_environment_manifest(
             validator=validate_environment_manifest,
         )
     generated_path = receipt_dir / "environment-manifest.json"
-    network_policy = "deny" if _is_controlled_boundary(boundary_source.payload) else "allowlisted"
+    controlled_boundary = _is_controlled_boundary(boundary_source.payload)
+    network_policy = "deny" if controlled_boundary else "unrestricted"
     provider_access = (
         "denied"
         if isinstance(boundary_source.payload, Mapping)
         and boundary_source.payload.get("external_provider_allowed") is False
         else "allowed"
     )
+    host_environment_inherited = security_mode != "secure"
+    inherited_names = sorted(str(key) for key in os.environ) if host_environment_inherited else []
+    visible_secret_names = [
+        name for name in inherited_names if SENSITIVE_ENV_NAME.search(name) is not None
+    ]
     try:
         payload = build_environment_manifest(
             run_id=str(dag_contract.get("run_id") or dag_contract.get("dag_id") or "unknown"),
             network_policy=network_policy,
             provider_access=provider_access,
             mounted_paths=[],
-            secrets_visible=[],
+            secrets_visible=visible_secret_names,
+            environment_variables_visible=inherited_names,
+            host_environment_inherited=host_environment_inherited,
+            environment_attestation=(
+                "non_attesting_host_environment_inherited"
+                if host_environment_inherited
+                else "secure_executor_filtered_environment"
+            ),
             policy_profile=str(policy_source.path) if policy_source.path is not None else None,
             data_boundary=str(boundary_source.path) if boundary_source.path is not None else None,
             output_path=generated_path,

@@ -1,0 +1,89 @@
+{
+  "alert_codes": [],
+  "alerts": [],
+  "checked_at": "2026-07-26T15:12:00Z",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "ITAR compliance.",
+      "Legal identity proof or authoritative U.S.-person status.",
+      "Runtime sandbox enforcement.",
+      "Provider/model semantic quality.",
+      "Secure enforcement outside tau run and tau dag-run."
+    ],
+    "proves": [
+      "Tau resolved DAG policy, boundary, actor, environment, command-policy, and goal inputs before dispatch.",
+      "Tau hash-bound the resolved security context for this run.",
+      "Tau identified whether the resolved data boundary is controlled."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-173-development-env-manifest-20260726/run/security-context-receipt.json",
+  "schema": "tau.security_context_receipt.v1",
+  "security_context": {
+    "actor": null,
+    "command_policy": {
+      "generated": false,
+      "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-173-development-env-manifest-20260726/command-policy.json",
+      "schema": "tau.command_spec_policy.v1",
+      "sha256": "sha256:0fc727d3724a739ec7113b1b183d31dfe142f8e52f8ec42e0df7db351bfc2598",
+      "source_kind": "absolute_path"
+    },
+    "created_at": "2026-07-26T15:12:00Z",
+    "dag_id": "issue-173-proof",
+    "data_boundary": {
+      "classification": "PUBLIC",
+      "controlled_boundary": false,
+      "export_controlled": false,
+      "generated": false,
+      "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-173-development-env-manifest-20260726/run/resolved-security-inputs/data_boundary.json",
+      "schema": "tau.data_boundary.v1",
+      "sha256": "sha256:aeab302bb1ee7e1ed0cf3ba9af662d1c038b60e1d1d591a71c326497e96319a7",
+      "source_kind": "embedded"
+    },
+    "environment": {
+      "generated": true,
+      "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-173-development-env-manifest-20260726/run/environment-manifest.json",
+      "schema": "tau.environment_manifest.v1",
+      "sha256": "sha256:ba808a332f89f4734b4e7b5202d9512c59d8f92feb896b1e4a631cd8e7b7e575",
+      "source_kind": "generated"
+    },
+    "goal": {
+      "goal_hash": "sha256:issue-173-goal",
+      "goal_id": "issue-173-proof",
+      "goal_version": 1
+    },
+    "policy_profile": {
+      "generated": false,
+      "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-173-development-env-manifest-20260726/policy-profile.json",
+      "schema": "tau.policy_profile.v1",
+      "sha256": "sha256:dcf067d7a4822863231a95c422a32b7dda84973c7b80bb8b22fafd198d4bc0f3",
+      "source_kind": "absolute_path"
+    },
+    "production_authority": false,
+    "regulated_data_authorized": false,
+    "required_gates": [
+      "zero_trust_preflight",
+      "command_policy"
+    ],
+    "resolved_inputs": {
+      "actor_access_manifest": false,
+      "command_policy": true,
+      "data_boundary": true,
+      "environment_manifest": true,
+      "policy_profile": true
+    },
+    "run_id": "issue-173-proof",
+    "schema": "tau.security_context.v1",
+    "security_context_sha256": "sha256:3c68366ee55dfa56953cda742f1aeab4e2861e6b55ed2e24d1673259a32596cf",
+    "security_mode": "development",
+    "security_mode_explicit": true,
+    "security_mode_requested": "development"
+  },
+  "security_context_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-173-development-env-manifest-20260726/run/security-context.json",
+  "security_context_sha256": "sha256:3c68366ee55dfa56953cda742f1aeab4e2861e6b55ed2e24d1673259a32596cf",
+  "security_mode": "development",
+  "status": "PASS"
+}

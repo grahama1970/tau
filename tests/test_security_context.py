@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+from tau_coding.receipt_signing import sign_receipt
 from tau_coding.security_context import resolve_security_context
 
 
@@ -61,6 +62,74 @@ def test_security_context_blocks_controlled_development_mode(tmp_path: Path) -> 
 
     assert result.receipt["status"] == "BLOCKED"
     assert "controlled_boundary_requires_secure_mode" in result.receipt["alert_codes"]
+
+
+def test_development_generated_environment_manifest_records_inherited_secret_names(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "anthropic-test-value")
+    monkeypatch.setenv("GH_TOKEN", "github-test-value")
+    contract_path = tmp_path / "dag.json"
+    contract_path.write_text("{}", encoding="utf-8")
+
+    result = resolve_security_context(
+        dag_contract=_base_contract(tmp_path, data_boundary=_public_boundary()),
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        requested_mode="development",
+    )
+
+    assert result.receipt["status"] == "PASS"
+    assert result.environment_manifest_path is not None
+    manifest = json.loads(result.environment_manifest_path.read_text(encoding="utf-8"))
+    serialized = json.dumps(manifest, sort_keys=True)
+    assert manifest["network_policy"] == "unrestricted"
+    assert manifest["host_environment_inherited"] is True
+    assert manifest["environment_attestation"] == "non_attesting_host_environment_inherited"
+    assert "ANTHROPIC_API_KEY" in manifest["secrets_visible"]
+    assert "GH_TOKEN" in manifest["secrets_visible"]
+    assert "ANTHROPIC_API_KEY" in manifest["environment_variables_visible"]
+    assert "GH_TOKEN" in manifest["environment_variables_visible"]
+    assert "anthropic-test-value" not in serialized
+    assert "github-test-value" not in serialized
+
+
+def test_signed_receipt_with_generated_development_manifest_cannot_claim_no_secret_exposure(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("SCILLM_API_KEY", "scillm-test-value")
+    contract_path = tmp_path / "dag.json"
+    contract_path.write_text("{}", encoding="utf-8")
+    result = resolve_security_context(
+        dag_contract=_base_contract(tmp_path, data_boundary=_public_boundary()),
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        requested_mode="development",
+    )
+    assert result.environment_manifest_path is not None
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text(
+        json.dumps({"schema": "tau.test_receipt.v1", "ok": True, "status": "PASS"}),
+        encoding="utf-8",
+    )
+    key_path = tmp_path / "signing.key"
+    key_path.write_text("local-test-key", encoding="utf-8")
+
+    signed = sign_receipt(
+        receipt_path=receipt_path,
+        key_path=key_path,
+        output_path=tmp_path / "signed.json",
+        environment_manifest_path=result.environment_manifest_path,
+    )
+
+    manifest = json.loads(result.environment_manifest_path.read_text(encoding="utf-8"))
+    assert signed["status"] == "PASS"
+    assert manifest["host_environment_inherited"] is True
+    assert "SCILLM_API_KEY" in manifest["secrets_visible"]
+    assert manifest["secrets_visible"]
+    assert signed["signed_payload"]["environment_manifest"]["sha256"].startswith("sha256:")
 
 
 def test_security_context_secure_mode_requires_actor_access_and_generates_environment(
@@ -134,6 +203,21 @@ def _itar_boundary() -> dict[str, object]:
         "technical_data": True,
         "foreign_person_access": "prohibited",
         "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": False,
+        "notes": ["synthetic fixture only"],
+    }
+
+
+def _public_boundary() -> dict[str, object]:
+    return {
+        "schema": "tau.data_boundary.v1",
+        "classification": "public",
+        "export_controlled": False,
+        "itar": False,
+        "technical_data": False,
+        "foreign_person_access": "allowed",
+        "external_provider_allowed": True,
         "external_research_allowed": False,
         "public_repo_allowed": False,
         "notes": ["synthetic fixture only"],

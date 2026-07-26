@@ -1,0 +1,24 @@
+{
+  "environment_attestation": "non_attesting_host_environment_inherited",
+  "environment_manifest_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-173-development-env-manifest-20260726/run/environment-manifest.json",
+  "environment_variables_visible": [
+    "GH_TOKEN",
+    "HOME",
+    "PATH",
+    "SCILLM_API_KEY"
+  ],
+  "host_environment_inherited": true,
+  "live": true,
+  "mocked": false,
+  "network_policy": "unrestricted",
+  "ok": true,
+  "provider_live": false,
+  "schema": "tau.issue_173_development_env_manifest_proof.v1",
+  "secret_value_leaks": [],
+  "secrets_visible": [
+    "GH_TOKEN",
+    "SCILLM_API_KEY"
+  ],
+  "security_context_status": "PASS",
+  "signed_receipt_status": "PASS"
+}

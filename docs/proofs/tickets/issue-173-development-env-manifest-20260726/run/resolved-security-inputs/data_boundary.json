@@ -1,0 +1,14 @@
+{
+  "classification": "public",
+  "export_controlled": false,
+  "external_provider_allowed": true,
+  "external_research_allowed": false,
+  "foreign_person_access": "allowed",
+  "itar": false,
+  "notes": [
+    "issue 173 proof fixture"
+  ],
+  "public_repo_allowed": false,
+  "schema": "tau.data_boundary.v1",
+  "technical_data": false
+}

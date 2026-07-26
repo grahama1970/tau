@@ -1,0 +1,41 @@
+{
+  "algorithm": "HMAC-SHA256",
+  "key_id": "sha256:008b7e9c46d9a41b",
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Public-key non-repudiation.",
+      "Human legal identity.",
+      "US-person or export-control eligibility.",
+      "ITAR compliance.",
+      "Runtime sandbox enforcement.",
+      "Provider/model semantic safety.",
+      "That the signed receipt claim is true."
+    ],
+    "proves": [
+      "Tau computed a local shared-key signature over receipt input hashes.",
+      "Tau can detect changes to the signed receipt inputs when verified with the same local key."
+    ]
+  },
+  "provider_live": false,
+  "schema": "tau.signed_receipt.v1",
+  "signature": "hmac-sha256:67112e0428f8106d57b4acf65d8148f541b8465ab8dd941fd46b5551ee093694",
+  "signed_at": "2026-07-26T15:12:00.079720Z",
+  "signed_payload": {
+    "actor_manifest": null,
+    "algorithm": "HMAC-SHA256",
+    "environment_manifest": {
+      "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-173-development-env-manifest-20260726/run/environment-manifest.json",
+      "schema": "tau.environment_manifest.v1",
+      "sha256": "sha256:ba808a332f89f4734b4e7b5202d9512c59d8f92feb896b1e4a631cd8e7b7e575"
+    },
+    "receipt": {
+      "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-173-development-env-manifest-20260726/input-receipt.json",
+      "schema": "tau.issue_173_input_receipt.v1",
+      "sha256": "sha256:615feacad3be706040307847ac620e3b016072b933e70656954f9594aa76bcaa"
+    }
+  },
+  "status": "PASS"
+}

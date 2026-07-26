@@ -1775,8 +1775,10 @@ def main(
 
     raw_positional_args = [*(prompt_args or []), *ctx.args]
     if raw_positional_args[:1] in (
+        ["actor-manifest"],
         ["browser-cdp-proof"],
         ["commit-plan"],
+        ["compliance-package-validate"],
         ["dag-view"],
         ["dag-view-capabilities"],
         ["dag-view-events"],
@@ -1788,6 +1790,7 @@ def main(
         ["dag-run"],
         ["github-redact-projection"],
         ["herdr-cleanup"],
+        ["environment-manifest"],
         ["pdf-lab-second-pass-review"],
         ["replacement-harness-sanity"],
         ["run"],

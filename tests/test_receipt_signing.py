@@ -144,6 +144,9 @@ def _write_signing_inputs(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
                 "provider_access": "denied",
                 "mounted_paths": [],
                 "secrets_visible": [],
+                "environment_variables_visible": [],
+                "host_environment_inherited": False,
+                "environment_attestation": "fixture_filtered_environment",
                 "tool_versions": {},
             }
         ),

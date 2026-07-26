@@ -1,0 +1,10 @@
+{
+  "allowed_command_roots": [
+    "python3"
+  ],
+  "allowed_cwd_roots": [
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-173-development-env-manifest-20260726"
+  ],
+  "denied_commands": [],
+  "schema": "tau.command_spec_policy.v1"
+}
