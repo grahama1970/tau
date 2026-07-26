@@ -10,7 +10,7 @@ import subprocess
 import sys
 import tempfile
 import webbrowser
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from contextlib import redirect_stdout, suppress
 from dataclasses import replace
 from datetime import UTC, datetime
@@ -171,6 +171,7 @@ from tau_coding.media_explainer_orchestration import (
     run_media_explainer_smoke,
 )
 from tau_coding.memory_acquisition import (
+    DEFAULT_MEMORY_URL,
     write_evidence_case_acquisition_receipt,
     write_memory_intent_acquisition_receipt,
 )
@@ -764,7 +765,12 @@ def workflows_repair_command(
         raise typer.Exit(1)
 
 
-def doctor_command(*, repo_root: Path | None = None) -> dict[str, object]:
+def doctor_command(
+    *,
+    repo_root: Path | None = None,
+    memory_url: str | None = None,
+    service_probe: Callable[[str, float], tuple[bool, str | None]] | None = None,
+) -> dict[str, object]:
     """Return a read-only Tau runtime preflight receipt."""
 
     root = (repo_root or Path(__file__).resolve().parents[2]).resolve()
@@ -824,6 +830,16 @@ def doctor_command(*, repo_root: Path | None = None) -> dict[str, object]:
     herdr_ready = command_paths["herdr"] is not None
     gh_ready = command_paths["gh"] is not None
     surf_ready = command_paths["surf"] is not None
+    external_services = _doctor_external_services(
+        memory_url=memory_url or environ.get("TAU_MEMORY_URL") or DEFAULT_MEMORY_URL,
+        probe=service_probe,
+    )
+    degraded = any(
+        service.get("required") is True and service.get("state") == "unreachable"
+        for service in external_services
+    )
+    if degraded:
+        warnings.append("one or more required external services are unreachable")
 
     lanes = {
         "local_cli": {
@@ -874,7 +890,7 @@ def doctor_command(*, repo_root: Path | None = None) -> dict[str, object]:
     return {
         "schema": "tau.doctor.v1",
         "ok": ok,
-        "status": "PASS" if ok else "BLOCKED",
+        "status": "PASS" if ok and not degraded else "DEGRADED" if ok else "BLOCKED",
         "mocked": False,
         "live": True,
         "provider_live": False,
@@ -890,6 +906,7 @@ def doctor_command(*, repo_root: Path | None = None) -> dict[str, object]:
         },
         "lanes": lanes,
         "modes": _doctor_mode_manifest(),
+        "external_services": external_services,
         "provider_settings": provider_payload,
         "errors": errors,
         "warnings": warnings,
@@ -900,6 +917,7 @@ def doctor_command(*, repo_root: Path | None = None) -> dict[str, object]:
                 "Optional local executables for uv, git, gh, and Herdr were detected "
                 "without side effects.",
                 "Configured provider entries were inspected without making provider/model calls.",
+                "Configured external service endpoints were probed with read-only health checks.",
             ],
             "does_not_prove": [
                 "Herdr pane readiness.",
@@ -908,9 +926,106 @@ def doctor_command(*, repo_root: Path | None = None) -> dict[str, object]:
                 "GitHub live mutation.",
                 "Browser/CDP UI proof; run tau browser-cdp-proof for screenshot artifacts.",
                 "Full hardening roadmap completion.",
+                "Semantic correctness of any external service response.",
             ],
         },
     }
+
+
+def _doctor_external_services(
+    *,
+    memory_url: str,
+    probe: Callable[[str, float], tuple[bool, str | None]] | None = None,
+) -> list[dict[str, object]]:
+    probe = probe or _doctor_http_probe
+    services: list[dict[str, object]] = [
+        _doctor_service_probe(
+            name="memory",
+            endpoint=memory_url.rstrip("/"),
+            health_path="/health",
+            required=True,
+            remedy="Start Graph Memory on 127.0.0.1:8601 or set TAU_MEMORY_URL.",
+            probe=probe,
+        )
+    ]
+    optional_specs = (
+        (
+            "surf",
+            environ.get("TAU_SURF_URL"),
+            "/health",
+            "Set TAU_SURF_URL when Surf service probing is desired.",
+        ),
+        (
+            "chatterbox_tts",
+            environ.get("TAU_CHATTERBOX_TTS_URL"),
+            "/health",
+            "Set TAU_CHATTERBOX_TTS_URL when voice output is configured.",
+        ),
+        (
+            "realtime_stt",
+            environ.get("TAU_REALTIMESTT_URL"),
+            "/health",
+            "Set TAU_REALTIMESTT_URL when voice input is configured.",
+        ),
+    )
+    for name, endpoint, health_path, remedy in optional_specs:
+        if endpoint:
+            services.append(
+                _doctor_service_probe(
+                    name=name,
+                    endpoint=endpoint.rstrip("/"),
+                    health_path=health_path,
+                    required=False,
+                    remedy=remedy,
+                    probe=probe,
+                )
+            )
+        else:
+            services.append(
+                {
+                    "name": name,
+                    "required": False,
+                    "state": "not_configured",
+                    "endpoint": None,
+                    "remedy": remedy,
+                }
+            )
+    return services
+
+
+def _doctor_service_probe(
+    *,
+    name: str,
+    endpoint: str,
+    health_path: str,
+    required: bool,
+    remedy: str,
+    probe: Callable[[str, float], tuple[bool, str | None]],
+) -> dict[str, object]:
+    url = f"{endpoint.rstrip('/')}{health_path}"
+    reachable, error = probe(url, 2.0)
+    payload: dict[str, object] = {
+        "name": name,
+        "required": required,
+        "state": "reachable" if reachable else "unreachable",
+        "endpoint": endpoint,
+        "health_url": url,
+        "remedy": remedy,
+    }
+    if error:
+        payload["error"] = error
+    return payload
+
+
+def _doctor_http_probe(url: str, timeout_seconds: float) -> tuple[bool, str | None]:
+    try:
+        with httpx.Client(timeout=httpx.Timeout(timeout_seconds, connect=0.5)) as client:
+            response = client.get(url)
+        if response.status_code < 400:
+            return True, None
+        return False, f"HTTP {response.status_code}"
+    except httpx.HTTPError as exc:
+        return False, str(exc)
 
 
 def _doctor_mode_manifest() -> dict[str, dict[str, object]]:

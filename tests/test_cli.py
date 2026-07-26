@@ -1,9 +1,12 @@
 import hashlib
 import json
 import shutil
+import socket
 import subprocess
 import sys
+import threading
 import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import anyio
@@ -35,7 +38,7 @@ from tau_coding import (
     cli,
     github_handoff,
 )
-from tau_coding.cli import app, run_print_mode
+from tau_coding.cli import app, doctor_command, run_print_mode
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import run_dag_plan
@@ -715,7 +718,7 @@ def test_doctor_command_reports_read_only_runtime_preflight() -> None:
     assert result.exit_code == 0
     assert payload["schema"] == "tau.doctor.v1"
     assert payload["ok"] is True
-    assert payload["status"] == "PASS"
+    assert payload["status"] in {"PASS", "DEGRADED"}
     assert payload["mocked"] is False
     assert payload["live"] is True
     assert payload["provider_live"] is False
@@ -731,6 +734,7 @@ def test_doctor_command_reports_read_only_runtime_preflight() -> None:
     assert payload["modes"]["general"]["permission_default"] == "ask_before_mutation"
     assert isinstance(payload["provider_settings"]["provider_count"], int)
     assert "providers" in payload["provider_settings"]
+    assert payload["external_services"][0]["name"] == "memory"
     assert "Herdr pane readiness." in payload["proof_boundary"]["does_not_prove"]
     assert "Live provider/model semantic quality." in payload["proof_boundary"]["does_not_prove"]
 
@@ -743,6 +747,84 @@ def test_doctor_json_option_does_not_fall_through_to_tui() -> None:
     assert payload["schema"] == "tau.doctor.v1"
     assert payload["ok"] is True
     assert "Ask Tau" not in result.output
+
+
+def test_doctor_reports_reachable_external_memory_service(tmp_path: Path) -> None:
+    class HealthHandler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            self.send_response(200 if self.path == "/health" else 404)
+            self.end_headers()
+            self.wfile.write(b"ok")
+
+        def log_message(self, _format: str, *_args: object) -> None:
+            return
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), HealthHandler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    memory_url = f"http://127.0.0.1:{server.server_address[1]}"
+    try:
+        payload = doctor_command(
+            repo_root=Path(__file__).resolve().parents[1],
+            memory_url=memory_url,
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+    receipt_path = tmp_path / "doctor.json"
+    receipt_path.write_text(json.dumps(payload), encoding="utf-8")
+    parsed = json.loads(receipt_path.read_text(encoding="utf-8"))
+
+    memory = parsed["external_services"][0]
+    assert parsed["status"] == "PASS"
+    assert memory["name"] == "memory"
+    assert memory["state"] == "reachable"
+    assert memory["endpoint"] == memory_url
+
+
+def test_doctor_reports_unreachable_required_service_as_degraded(tmp_path: Path) -> None:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(("127.0.0.1", 0))
+        closed_port = sock.getsockname()[1]
+
+    payload = doctor_command(
+        repo_root=Path(__file__).resolve().parents[1],
+        memory_url=f"http://127.0.0.1:{closed_port}",
+    )
+    receipt_path = tmp_path / "doctor.json"
+    receipt_path.write_text(json.dumps(payload), encoding="utf-8")
+    parsed = json.loads(receipt_path.read_text(encoding="utf-8"))
+
+    memory = parsed["external_services"][0]
+    assert parsed["ok"] is True
+    assert parsed["status"] == "DEGRADED"
+    assert memory["state"] == "unreachable"
+    assert memory["remedy"]
+    assert "required external services are unreachable" in parsed["warnings"][0]
+
+
+def test_doctor_reports_unconfigured_optional_services_without_degrading(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("TAU_SURF_URL", raising=False)
+    monkeypatch.delenv("TAU_CHATTERBOX_TTS_URL", raising=False)
+    monkeypatch.delenv("TAU_REALTIMESTT_URL", raising=False)
+
+    payload = doctor_command(
+        repo_root=Path(__file__).resolve().parents[1],
+        memory_url="http://127.0.0.1:8601",
+        service_probe=lambda _url, _timeout: (True, None),
+    )
+
+    optional = {
+        service["name"]: service
+        for service in payload["external_services"]
+        if service["required"] is False
+    }
+    assert payload["status"] == "PASS"
+    assert optional["chatterbox_tts"]["state"] == "not_configured"
+    assert optional["realtime_stt"]["state"] == "not_configured"
 
 
 def test_doctor_rejects_unknown_options() -> None:
