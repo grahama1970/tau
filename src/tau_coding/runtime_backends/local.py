@@ -16,6 +16,7 @@ from tau_coding.dag_runtime.subprocess_control import (
     CancellableSubprocessResult,
     run_cancellable_subprocess,
 )
+from tau_coding.dag_viewer.redaction import redact_for_storage
 from tau_coding.runtime_backends.contracts import (
     RuntimeCapabilities,
     RuntimeEndpointLease,
@@ -390,15 +391,17 @@ class LocalRuntimeBackend:
             ),
         )
         capture = FrozenJson.from_value(
-            {
-                "schema": "tau.local_runtime_capture.v1",
-                "command": list(request.command),
-                "returncode": completed.returncode,
-                "stdout": completed.stdout or "",
-                "stderr": completed.stderr or "",
-                "timed_out": timed_out,
-                "cancelled": cancelled,
-            }
+            redact_for_storage(
+                {
+                    "schema": "tau.local_runtime_capture.v1",
+                    "command": list(request.command),
+                    "returncode": completed.returncode,
+                    "stdout": completed.stdout or "",
+                    "stderr": completed.stderr or "",
+                    "timed_out": timed_out,
+                    "cancelled": cancelled,
+                }
+            ).value
         )
         paths = _write_runtime_artifacts(request.artifact_dir, endpoint, submit, event, capture)
         result = LocalRuntimeExecutionResult(
@@ -449,15 +452,17 @@ class LocalRuntimeBackend:
             ),
         )
         capture = FrozenJson.from_value(
-            {
-                "schema": "tau.local_runtime_capture.v1",
-                "command": list(request.command),
-                "returncode": 130,
-                "stdout": "",
-                "stderr": "local runtime terminated before submit",
-                "timed_out": False,
-                "cancelled": True,
-            }
+            redact_for_storage(
+                {
+                    "schema": "tau.local_runtime_capture.v1",
+                    "command": list(request.command),
+                    "returncode": 130,
+                    "stdout": "",
+                    "stderr": "local runtime terminated before submit",
+                    "timed_out": False,
+                    "cancelled": True,
+                }
+            ).value
         )
         paths = _write_runtime_artifacts(request.artifact_dir, endpoint, submit, event, capture)
         return LocalRuntimeExecutionResult(
@@ -506,16 +511,18 @@ class LocalRuntimeBackend:
             observation=FrozenJson.from_value({"process_started": False, "error": error_text}),
         )
         capture = FrozenJson.from_value(
-            {
-                "schema": "tau.local_runtime_capture.v1",
-                "command": list(request.command),
-                "returncode": 127,
-                "stdout": "",
-                "stderr": error_text,
-                "timed_out": False,
-                "cancelled": False,
-                "launch_failed": True,
-            }
+            redact_for_storage(
+                {
+                    "schema": "tau.local_runtime_capture.v1",
+                    "command": list(request.command),
+                    "returncode": 127,
+                    "stdout": "",
+                    "stderr": error_text,
+                    "timed_out": False,
+                    "cancelled": False,
+                    "launch_failed": True,
+                }
+            ).value
         )
         paths = _write_runtime_artifacts(request.artifact_dir, endpoint, submit, event, capture)
         return LocalRuntimeExecutionResult(
@@ -605,7 +612,8 @@ def _write_runtime_artifacts(
     paths = []
     for name, payload in payloads.items():
         path = root / name
-        path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        redacted = redact_for_storage(payload).value
+        path.write_text(json.dumps(redacted, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         paths.append(str(path))
     return tuple(paths)
 

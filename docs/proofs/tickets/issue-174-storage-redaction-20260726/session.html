@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tau Session Export</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8f7f2;
+      --panel: #ffffff;
+      --text: #171717;
+      --muted: #62615b;
+      --border: #d7d3c8;
+      --accent: #0b766d;
+      --accent-soft: #dff2ed;
+      --shadow: rgba(24, 24, 21, 0.08);
+      font-family:
+        Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121311;
+        --panel: #1b1d19;
+        --text: #eeeeea;
+        --muted: #a9a69d;
+        --border: #3c4038;
+        --accent: #62c7b6;
+        --accent-soft: #153f38;
+        --shadow: rgba(0, 0, 0, 0.22);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      padding: 28px clamp(16px, 4vw, 44px) 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    h1, h2, h3, h4 { margin: 0; line-height: 1.2; }
+    h1 { font-size: clamp(1.7rem, 3vw, 2.35rem); }
+    h2 { font-size: 1rem; margin-bottom: 12px; text-transform: uppercase; }
+    h3 { font-size: 1rem; }
+    h4 { font-size: 0.9rem; margin-top: 16px; }
+    code, pre {
+      font-family:
+        "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.9em;
+    }
+    pre {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background: color-mix(in srgb, var(--bg) 82%, var(--panel));
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      margin: 10px 0 0;
+    }
+    table.markdown-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      overflow-wrap: anywhere;
+    }
+    table.markdown-table th,
+    table.markdown-table td {
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    table.markdown-table th {
+      background: var(--accent-soft);
+    }
+    .markdown-rendered {
+      margin-top: 10px;
+      overflow-wrap: anywhere;
+    }
+    .markdown-rendered > :first-child { margin-top: 0; }
+    .markdown-rendered code {
+      background: color-mix(in srgb, var(--accent-soft) 55%, transparent);
+      border-radius: 4px;
+      padding: 1px 4px;
+    }
+    .markdown-source {
+      margin-top: 10px;
+      color: var(--muted);
+    }
+    .export-images {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .export-image {
+      margin: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      background: color-mix(in srgb, var(--bg) 70%, var(--panel));
+    }
+    .export-image img {
+      display: block;
+      width: 100%;
+      max-height: 70vh;
+      object-fit: contain;
+      background: var(--bg);
+      border-radius: 6px;
+    }
+    .export-image a {
+      display: block;
+      color: inherit;
+      text-decoration: none;
+    }
+    .export-image a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+    .export-image figcaption {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      overflow-wrap: anywhere;
+    }
+    .export-graphs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .export-graph {
+      margin: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      background: color-mix(in srgb, var(--bg) 70%, var(--panel));
+    }
+    .export-graph img {
+      display: block;
+      width: 100%;
+      max-height: 72vh;
+      object-fit: contain;
+      background: var(--bg);
+      border-radius: 6px;
+    }
+    .export-graph a {
+      display: block;
+      color: inherit;
+      text-decoration: none;
+    }
+    .export-graph a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+    .export-graph figcaption {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      overflow-wrap: anywhere;
+    }
+    .source, .generated {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+      gap: 20px;
+      padding: 20px clamp(16px, 4vw, 44px) 44px;
+    }
+    aside, article {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 12px 32px var(--shadow);
+    }
+    aside {
+      position: sticky;
+      top: 16px;
+      align-self: start;
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+      padding: 16px;
+    }
+    article {
+      margin-bottom: 14px;
+      padding: 16px;
+    }
+    .tree {
+      list-style: none;
+      margin: 0;
+      padding-left: 0;
+    }
+    .tree .tree {
+      margin-left: 12px;
+      padding-left: 14px;
+      border-left: 1px solid var(--border);
+    }
+    .tree li { margin: 8px 0; }
+    .node-link {
+      display: block;
+      color: var(--text);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      background: color-mix(in srgb, var(--panel) 88%, var(--bg));
+    }
+    .node-link:hover { border-color: var(--accent); }
+    .active-path > .node-link {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .active-leaf > .node-link {
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+    .node-type {
+      display: block;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+    .node-meta {
+      display: block;
+      color: var(--muted);
+      font-size: 0.82rem;
+      overflow-wrap: anywhere;
+    }
+    .entry-meta {
+      display: grid;
+      grid-template-columns: max-content minmax(0, 1fr);
+      gap: 4px 10px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    .entry-meta dt { font-weight: 700; color: var(--text); }
+    .entry-meta dd { margin: 0; overflow-wrap: anywhere; }
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .badge {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px 8px;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+    .message-role {
+      margin-top: 14px;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+    .empty {
+      color: var(--muted);
+      font-style: italic;
+    }
+    @media (max-width: 820px) {
+      main { grid-template-columns: 1fr; }
+      aside { position: static; max-height: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Tau Session Export</h1>
+    
+    <p class="generated">Generated: <time>2026-07-26T15:02:49+00:00</time></p>
+  </header>
+  <main>
+    <aside>
+      <h2>Session Tree</h2>
+      <ol class="tree"><li class="tree-node active-path"><a class="node-link" href="#entry-user"><span class="node-type">message:user</span><span class="node-meta">please use token=[REDACTED]</span></a><ol class="tree"><li class="tree-node active-path"><a class="node-link" href="#entry-assistant"><span class="node-type">message:assistant</span><span class="node-meta">Authorization: [REDACTED] [REDACTED] [fetch]</span></a><ol class="tree"><li class="tree-node active-path active-leaf"><a class="node-link" href="#entry-tool"><span class="node-type">message:tool</span><span class="node-meta">fetch: stdout api_key=[REDACTED]</span></a></li></ol></li></ol></li></ol>
+    </aside>
+    <section aria-label="Session entries">
+      <h2>Transcript Entries</h2>
+      <article id="entry-user"><h3>1. message:user</h3><div class="badges"><span class="badge">active path</span></div><dl class="entry-meta"><dt>id</dt><dd><code>user</code></dd><dt>parent</dt><dd><span class="empty">root</span></dd><dt>timestamp</dt><dd>2026-07-26T15:02:49+00:00</dd></dl><p class="message-role">user</p><pre>please use token=[REDACTED]</pre></article><article id="entry-assistant"><h3>2. message:assistant</h3><div class="badges"><span class="badge">active path</span></div><dl class="entry-meta"><dt>id</dt><dd><code>assistant</code></dd><dt>parent</dt><dd><a href="#entry-user"><code>user</code></a></dd><dt>timestamp</dt><dd>2026-07-26T15:02:49+00:00</dd></dl><p class="message-role">assistant</p><div class="markdown-rendered"><p>Authorization: [REDACTED] [REDACTED]</p>
+</div><details class="markdown-source"><summary>Raw Markdown</summary><pre>Authorization: [REDACTED] [REDACTED]</pre></details><h4>Tool calls</h4><ul><li><code>fetch</code> <code>call-1</code><pre>{
+  "command": [
+    "curl",
+    "--token=[REDACTED]"
+  ]
+}</pre></li></ul></article><article id="entry-tool"><h3>3. message:tool</h3><div class="badges"><span class="badge">active path</span><span class="badge">active leaf</span></div><dl class="entry-meta"><dt>id</dt><dd><code>tool</code></dd><dt>parent</dt><dd><a href="#entry-assistant"><code>assistant</code></a></dd><dt>timestamp</dt><dd>2026-07-26T15:02:49+00:00</dd></dl><p class="message-role">tool result</p><dl class="entry-meta"><dt>tool</dt><dd><code>fetch</code></dd><dt>tool_call_id</dt><dd><code>call-1</code></dd><dt>ok</dt><dd><code>True</code></dd><dt>error</dt><dd><code>client_secret=[REDACTED]</code></dd></dl><pre>stdout api_key=[REDACTED]</pre><h4>Data</h4><pre>{
+  "stdout": "Bearer [REDACTED]"
+}</pre><h4>Details</h4><pre>{
+  "stderr": "password=[REDACTED]"
+}</pre></article>
+    </section>
+  </main>
+</body>
+</html>

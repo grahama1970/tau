@@ -1,0 +1,22 @@
+{
+  "checked_files": [
+    "docs/proofs/tickets/issue-174-storage-redaction-20260726/dispatch/coder-response.receipt.json",
+    "docs/proofs/tickets/issue-174-storage-redaction-20260726/dispatch/command-artifacts/runtime/runtime-capture.json",
+    "docs/proofs/tickets/issue-174-storage-redaction-20260726/dispatch/command-artifacts/runtime/runtime-endpoint-lease.json",
+    "docs/proofs/tickets/issue-174-storage-redaction-20260726/dispatch/command-artifacts/runtime/runtime-event.json",
+    "docs/proofs/tickets/issue-174-storage-redaction-20260726/dispatch/command-artifacts/runtime/runtime-submit-receipt.json",
+    "docs/proofs/tickets/issue-174-storage-redaction-20260726/dispatch/dispatch-receipt.json",
+    "docs/proofs/tickets/issue-174-storage-redaction-20260726/dispatch/start-handoff.receipt.json",
+    "docs/proofs/tickets/issue-174-storage-redaction-20260726/proof-receipt.json",
+    "docs/proofs/tickets/issue-174-storage-redaction-20260726/session.html",
+    "docs/proofs/tickets/issue-174-storage-redaction-20260726/session.jsonl",
+    "docs/proofs/tickets/issue-174-storage-redaction-20260726/sqlite-query-receipt.json"
+  ],
+  "dispatch_status": "COMPLETED",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "provider_live": false,
+  "schema": "tau.issue_174_storage_redaction_proof.v1",
+  "secret_leak_paths": []
+}

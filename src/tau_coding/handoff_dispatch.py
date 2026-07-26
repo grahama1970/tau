@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from tau_coding.dag_runtime.model import canonical_sha256
+from tau_coding.dag_viewer.redaction import redact_for_storage
 from tau_coding.generated_ticket import ROUTABLE_AGENTS, project_agent_handoff
 from tau_coding.runtime_backends.local import LocalRuntimeBackend, local_runtime_request
 from tau_coding.secure_executor import execute_secure_command
@@ -393,12 +394,9 @@ def dispatch_agent_handoff_command_once(
             local_runtime_request(
                 command=command,
                 run_id=str(
-                    resolved_runtime_identity.get("run_id")
-                    or f"{dag_id}:{identity_hash[-16:]}"
+                    resolved_runtime_identity.get("run_id") or f"{dag_id}:{identity_hash[-16:]}"
                 ),
-                plan_revision=str(
-                    resolved_runtime_identity.get("plan_revision") or identity_hash
-                ),
+                plan_revision=str(resolved_runtime_identity.get("plan_revision") or identity_hash),
                 dag_id=dag_id,
                 node_id=node_id,
                 attempt_id=str(
@@ -411,17 +409,14 @@ def dispatch_agent_handoff_command_once(
                 ),
                 work_order=command_start_payload,
                 goal=(
-                    active_goal_hash
-                    or str(command_start_payload.get("goal", {}).get("goal_hash"))
+                    active_goal_hash or str(command_start_payload.get("goal", {}).get("goal_hash"))
                 ),
                 cwd=cwd,
                 env=env,
                 stdin_text=stdin,
                 timeout_seconds=timeout_s,
                 artifact_dir=(
-                    resolved_artifact_dir / "runtime"
-                    if resolved_artifact_dir is not None
-                    else None
+                    resolved_artifact_dir / "runtime" if resolved_artifact_dir is not None else None
                 ),
                 cancel_event=cancel_event,
             )
@@ -1424,4 +1419,5 @@ def _goal_key(value: object) -> tuple[Any, Any, Any] | None:
 
 
 def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    redacted = redact_for_storage(dict(payload)).value
+    path.write_text(json.dumps(redacted, indent=2, sort_keys=True) + "\n", encoding="utf-8")

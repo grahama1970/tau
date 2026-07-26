@@ -1,0 +1,22 @@
+{
+  "comment": {
+    "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: coder completed with [REDACTED:SECRET_TOKEN]\n- Next agent: `human`\n- Executor: `human`\n- Stop condition: Stop at human.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [],\n    \"summary\": \"stdout carried [REDACTED:SECRET_TOKEN]\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue-174-storage-redaction\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:issue-174-goal\",\n    \"goal_id\": \"issue-174-storage-redaction\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"human\",\n    \"name\": \"human\",\n    \"reason\": \"Stop at human.\"\n  },\n  \"previous_subagent\": \"coder\",\n  \"rationale\": \"The local command produced the handoff.\",\n  \"required_evidence\": [\n    \"handler_receipt\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"handler_receipt\",\n        \"path\": \"handler.json\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"coder completed with [REDACTED:SECRET_TOKEN]\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human.\"\n}\n```\n"
+  },
+  "dry_run": true,
+  "errors": [],
+  "labels": {
+    "add": [
+      "agent-work",
+      "next:human",
+      "executor:human"
+    ],
+    "remove": []
+  },
+  "next_agent": "human",
+  "ok": true,
+  "schema": "tau.agent_handoff_projection_receipt.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue-174-storage-redaction"
+  }
+}

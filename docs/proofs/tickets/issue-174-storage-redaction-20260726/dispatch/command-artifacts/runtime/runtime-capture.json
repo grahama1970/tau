@@ -1,0 +1,14 @@
+{
+  "cancelled": false,
+  "command": [
+    "/tmp/tau-main-issue-137.7nchbf/.venv/bin/python3",
+    "-c",
+    "import json, os; secret=[REDACTED]'TAU_ISSUE_174_SECRET']; payload='{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"issue-174-storage-redaction\"}, \"goal\": {\"goal_id\": \"issue-174-storage-redaction\", \"goal_version\": 1, \"goal_hash\": \"sha256:issue-174-goal\"}, \"previous_subagent\": \"coder\", \"context\": {\"summary\": \"stdout carried ${secret}\", \"artifacts\": []}, \"result\": {\"status\": \"PASS\", \"summary\": \"coder completed with ${secret}\", \"evidence\": [{\"kind\": \"handler_receipt\", \"path\": \"handler.json\"}]}, \"rationale\": \"The local command produced the handoff.\", \"next_agent\": {\"name\": \"human\", \"executor\": \"human\", \"reason\": \"Stop at human.\"}, \"required_evidence\": [\"handler_receipt\"], \"stop_condition\": \"Stop at human.\"}'; print(payload.replace('${secret}', secret))",
+    "--token=[REDACTED]"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"issue-174-storage-redaction\"}, \"goal\": {\"goal_id\": \"issue-174-storage-redaction\", \"goal_version\": 1, \"goal_hash\": \"sha256:issue-174-goal\"}, \"previous_subagent\": \"coder\", \"context\": {\"summary\": \"stdout carried [REDACTED:SECRET_TOKEN]\", \"artifacts\": []}, \"result\": {\"status\": \"PASS\", \"summary\": \"coder completed with [REDACTED:SECRET_TOKEN]\", \"evidence\": [{\"kind\": \"handler_receipt\", \"path\": \"handler.json\"}]}, \"rationale\": \"The local command produced the handoff.\", \"next_agent\": {\"name\": \"human\", \"executor\": \"human\", \"reason\": \"Stop at human.\"}, \"required_evidence\": [\"handler_receipt\"], \"stop_condition\": \"Stop at human.\"}\n",
+  "timed_out": false
+}

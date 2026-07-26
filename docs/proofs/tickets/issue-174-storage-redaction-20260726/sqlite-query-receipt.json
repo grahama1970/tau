@@ -1,0 +1,27 @@
+{
+  "database": "docs/proofs/tickets/issue-174-storage-redaction-20260726/dag-run.sqlite3",
+  "event_rows": [
+    "{\"plan_id\":\"generic:issue-174-proof-run\",\"plan_sha256\":\"sha256:0f244d4b80df7ab3dd5871bb8d8eff581689197204cfbd1a03890c4a22cebea2\"}",
+    "{\"expires_at_ms\":1785078184915,\"owner_id\":\"proof\"}",
+    "{\"attempt\":1,\"idempotency_key\":\"sha256:75af21120cffa4ac05ab4b7837f96d84548405c8d0bdcdfee476ebf0dbe5df95\",\"node_id\":\"worker\"}",
+    "{}",
+    "{\"result\":{\"command_results\":[{\"command\":[\"curl\",\"--token=[REDACTED]\"],\"stderr\":\"password=[REDACTED]\",\"stdout\":\"Bearer [REDACTED]\"}],\"schema\":\"tau.agent_dispatch_result.v1\"},\"result_sha256\":\"sha256:485bfb04bb37eabc4a348c3b144ad95042feed4a06e24201f1ccf5ee9ccb3bbb\"}"
+  ],
+  "output_rows": [
+    "{\"command_results\":[{\"command\":[\"curl\",\"--token=[REDACTED]\"],\"stderr\":\"password=[REDACTED]\",\"stdout\":\"Bearer [REDACTED]\"}],\"schema\":\"tau.agent_dispatch_result.v1\"}"
+  ],
+  "raw_secret_present": false,
+  "staged": {
+    "command_results": [
+      {
+        "command": [
+          "curl",
+          "--token=[REDACTED]"
+        ],
+        "stderr": "password=[REDACTED]",
+        "stdout": "Bearer [REDACTED]"
+      }
+    ],
+    "schema": "tau.agent_dispatch_result.v1"
+  }
+}

@@ -30,6 +30,7 @@ from tau_agent.session import (
     path_to_entry,
 )
 from tau_agent.types import JSONValue
+from tau_coding.dag_viewer.redaction import redact_for_storage, redact_string_for_storage
 from tau_coding.graph_artifacts import render_markdown_graph_artifacts
 
 MARKDOWN_IMAGE_PATTERN = re.compile(
@@ -68,7 +69,7 @@ def default_session_export_artifact_path(
 def export_session_jsonl(entries: Sequence[SessionEntry], output_path: Path) -> Path:
     """Write session entries to a JSONL export and return its path."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    lines = [entry.model_dump_json() for entry in entries]
+    lines = [_redacted_entry_json(entry) for entry in entries]
     output_path.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
     return output_path
 
@@ -614,14 +615,14 @@ def _render_entry_body(entry: SessionEntry) -> str:
     if isinstance(entry, CompactionEntry):
         return (
             "<p>Compaction summary:</p>"
-            f"{_render_markdown_with_raw(entry.summary)}"
+            f"{_render_markdown_with_raw(_redacted_text(entry.summary))}"
             f"{_render_list('Replaces entries', entry.replaces_entry_ids)}"
         )
     if isinstance(entry, BranchSummaryEntry):
         branch_root = entry.branch_root_id or "none"
         return (
             f"<p>Branch root: <code>{_escape(branch_root)}</code></p>"
-            f"{_render_markdown_with_raw(entry.summary)}"
+            f"{_render_markdown_with_raw(_redacted_text(entry.summary))}"
         )
     if isinstance(entry, LabelEntry):
         return f"<p>Session label: <strong>{_escape(entry.label)}</strong></p>"
@@ -639,13 +640,14 @@ def _render_entry_body(entry: SessionEntry) -> str:
             f"<p>Custom namespace: <code>{_escape(entry.namespace)}</code></p>"
             f"<pre>{_escape(_json_dump(entry.data))}</pre>"
         )
-    return f"<pre>{_escape(entry.model_dump_json(indent=2))}</pre>"
+    return f"<pre>{_escape(_redacted_entry_json(entry, indent=2))}</pre>"
 
 
 def _render_message_entry(entry: MessageEntry) -> str:
     message = entry.message
     if isinstance(message, UserMessage):
-        return f'<p class="message-role">user</p><pre>{_escape(message.content)}</pre>'
+        content = _escape(_redacted_text(message.content))
+        return f'<p class="message-role">user</p><pre>{content}</pre>'
     if isinstance(message, AssistantMessage):
         tool_calls = ""
         if message.tool_calls:
@@ -662,11 +664,9 @@ def _render_message_entry(entry: MessageEntry) -> str:
                 )
                 + "</ul>"
             )
-        content = message.content or "(no assistant text)"
+        content = _redacted_text(message.content or "(no assistant text)")
         return (
-            '<p class="message-role">assistant</p>'
-            f"{_render_markdown_with_raw(content)}"
-            f"{tool_calls}"
+            f'<p class="message-role">assistant</p>{_render_markdown_with_raw(content)}{tool_calls}'
         )
     if isinstance(message, ToolResultMessage):
         metadata = [
@@ -675,18 +675,18 @@ def _render_message_entry(entry: MessageEntry) -> str:
             ("ok", str(message.ok)),
         ]
         if message.error:
-            metadata.append(("error", message.error))
+            metadata.append(("error", _redacted_text(message.error)))
         body = (
             '<p class="message-role">tool result</p>'
             f"{_render_metadata(metadata)}"
-            f"<pre>{_escape(message.content)}</pre>"
+            f"<pre>{_escape(_redacted_text(message.content))}</pre>"
         )
         if message.data is not None:
             body += f"<h4>Data</h4><pre>{_escape(_json_dump(message.data))}</pre>"
         if message.details is not None:
             body += f"<h4>Details</h4><pre>{_escape(_json_dump(message.details))}</pre>"
         return body
-    return f"<pre>{_escape(entry.model_dump_json(indent=2))}</pre>"
+    return f"<pre>{_escape(_redacted_entry_json(entry, indent=2))}</pre>"
 
 
 def _render_markdown_with_raw(markdown: str) -> str:
@@ -875,20 +875,20 @@ def _entry_summary(entry: SessionEntry) -> str:
     if isinstance(entry, MessageEntry):
         message = entry.message
         if isinstance(message, ToolResultMessage):
-            return f"{message.name}: {_summarize_text(message.content)}"
+            return f"{message.name}: {_summarize_text(_redacted_text(message.content))}"
         if isinstance(message, AssistantMessage) and message.tool_calls:
             tool_names = ", ".join(call.name for call in message.tool_calls)
-            text = _summarize_text(message.content) or "tool call"
+            text = _summarize_text(_redacted_text(message.content)) or "tool call"
             return f"{text} [{tool_names}]"
-        return _summarize_text(message.content)
+        return _summarize_text(_redacted_text(message.content))
     if isinstance(entry, ModelChangeEntry):
         return entry.model
     if isinstance(entry, ThinkingLevelChangeEntry):
         return entry.thinking_level or "off"
     if isinstance(entry, CompactionEntry):
-        return _summarize_text(entry.summary)
+        return _summarize_text(_redacted_text(entry.summary))
     if isinstance(entry, BranchSummaryEntry):
-        return _summarize_text(entry.summary)
+        return _summarize_text(_redacted_text(entry.summary))
     if isinstance(entry, LabelEntry):
         return entry.label
     if isinstance(entry, LeafEntry):
@@ -908,7 +908,17 @@ def _summarize_text(text: str, *, limit: int = 92) -> str:
 
 
 def _json_dump(value: dict[str, JSONValue]) -> str:
-    return json.dumps(value, indent=2, sort_keys=True)
+    return json.dumps(redact_for_storage(value).value, indent=2, sort_keys=True)
+
+
+def _redacted_text(value: str) -> str:
+    return redact_string_for_storage(value)
+
+
+def _redacted_entry_json(entry: SessionEntry, *, indent: int | None = None) -> str:
+    payload = json.loads(entry.model_dump_json())
+    redacted = redact_for_storage(payload).value
+    return json.dumps(redacted, indent=indent, sort_keys=indent is not None)
 
 
 def _format_timestamp(timestamp: float) -> str:

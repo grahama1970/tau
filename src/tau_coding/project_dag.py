@@ -42,6 +42,7 @@ from tau_coding.dag_runtime.model import DagPlan, DagPlanNode, canonical_sha256
 from tau_coding.dag_runtime.project_transition import ProjectDagTransitionPolicy
 from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
+from tau_coding.dag_viewer.redaction import redact_for_storage
 from tau_coding.dag_viewer.source_artifact import write_dag_source_artifact
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.handoff_dispatch import (
@@ -5678,7 +5679,8 @@ def _read_json_object(path: Path, *, label: str) -> dict[str, Any]:
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    redacted = redact_for_storage(payload).value
+    path.write_text(json.dumps(redacted, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def _write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
@@ -5691,7 +5693,8 @@ def _write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
     temporary_path = Path(temporary_name)
     try:
         with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
-            stream.write(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+            redacted = redact_for_storage(payload).value
+            stream.write(json.dumps(redacted, indent=2, sort_keys=True) + "\n")
             stream.flush()
             os.fsync(stream.fileno())
         os.replace(temporary_path, path)

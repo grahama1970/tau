@@ -1,0 +1,158 @@
+{
+  "artifacts": [
+    "docs/proofs/tickets/issue-174-storage-redaction-20260726/dispatch/start-handoff.receipt.json",
+    "docs/proofs/tickets/issue-174-storage-redaction-20260726/dispatch/coder-response.receipt.json"
+  ],
+  "command_results": [
+    {
+      "command": [
+        "/tmp/tau-main-issue-137.7nchbf/.venv/bin/python3",
+        "-c",
+        "import json, os; secret=[REDACTED]'TAU_ISSUE_174_SECRET']; payload='{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"issue-174-storage-redaction\"}, \"goal\": {\"goal_id\": \"issue-174-storage-redaction\", \"goal_version\": 1, \"goal_hash\": \"sha256:issue-174-goal\"}, \"previous_subagent\": \"coder\", \"context\": {\"summary\": \"stdout carried ${secret}\", \"artifacts\": []}, \"result\": {\"status\": \"PASS\", \"summary\": \"coder completed with ${secret}\", \"evidence\": [{\"kind\": \"handler_receipt\", \"path\": \"handler.json\"}]}, \"rationale\": \"The local command produced the handoff.\", \"next_agent\": {\"name\": \"human\", \"executor\": \"human\", \"reason\": \"Stop at human.\"}, \"required_evidence\": [\"handler_receipt\"], \"stop_condition\": \"Stop at human.\"}'; print(payload.replace('${secret}', secret))",
+        "--token=[REDACTED]"
+      ],
+      "exit_code": 0,
+      "runtime_artifacts": [
+        "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-174-storage-redaction-20260726/dispatch/command-artifacts/runtime/runtime-endpoint-lease.json",
+        "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-174-storage-redaction-20260726/dispatch/command-artifacts/runtime/runtime-submit-receipt.json",
+        "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-174-storage-redaction-20260726/dispatch/command-artifacts/runtime/runtime-event.json",
+        "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-174-storage-redaction-20260726/dispatch/command-artifacts/runtime/runtime-capture.json"
+      ],
+      "runtime_backend": "local",
+      "runtime_capture": {
+        "cancelled": false,
+        "command": [
+          "/tmp/tau-main-issue-137.7nchbf/.venv/bin/python3",
+          "-c",
+          "import json, os; secret=[REDACTED]'TAU_ISSUE_174_SECRET']; payload='{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"issue-174-storage-redaction\"}, \"goal\": {\"goal_id\": \"issue-174-storage-redaction\", \"goal_version\": 1, \"goal_hash\": \"sha256:issue-174-goal\"}, \"previous_subagent\": \"coder\", \"context\": {\"summary\": \"stdout carried ${secret}\", \"artifacts\": []}, \"result\": {\"status\": \"PASS\", \"summary\": \"coder completed with ${secret}\", \"evidence\": [{\"kind\": \"handler_receipt\", \"path\": \"handler.json\"}]}, \"rationale\": \"The local command produced the handoff.\", \"next_agent\": {\"name\": \"human\", \"executor\": \"human\", \"reason\": \"Stop at human.\"}, \"required_evidence\": [\"handler_receipt\"], \"stop_condition\": \"Stop at human.\"}'; print(payload.replace('${secret}', secret))",
+          "--token=[REDACTED]"
+        ],
+        "returncode": 0,
+        "schema": "tau.local_runtime_capture.v1",
+        "stderr": "",
+        "stdout": "{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"issue-174-storage-redaction\"}, \"goal\": {\"goal_id\": \"issue-174-storage-redaction\", \"goal_version\": 1, \"goal_hash\": \"sha256:issue-174-goal\"}, \"previous_subagent\": \"coder\", \"context\": {\"summary\": \"stdout carried [REDACTED:SECRET_TOKEN]\", \"artifacts\": []}, \"result\": {\"status\": \"PASS\", \"summary\": \"coder completed with [REDACTED:SECRET_TOKEN]\", \"evidence\": [{\"kind\": \"handler_receipt\", \"path\": \"handler.json\"}]}, \"rationale\": \"The local command produced the handoff.\", \"next_agent\": {\"name\": \"human\", \"executor\": \"human\", \"reason\": \"Stop at human.\"}, \"required_evidence\": [\"handler_receipt\"], \"stop_condition\": \"Stop at human.\"}\n",
+        "timed_out": false
+      },
+      "runtime_endpoint_lease": {
+        "attempt_id": "coder:attempt-001",
+        "attempt_number": 1,
+        "backend": "local",
+        "backend_ids": {
+          "pid": null
+        },
+        "backend_session_id": null,
+        "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+        "cleanup_policy": {
+          "kind": "process_group_termination"
+        },
+        "created_at": "2026-07-26T15:02:49.873303+00:00",
+        "dag_id": "handoff-command",
+        "endpoint_id": "local:0f7e95b8474010aeb2d084d3",
+        "execution_token": "[REDACTED]",
+        "expires_at": "2026-07-26T15:03:59.873303+00:00",
+        "goal_hash": "sha256:b39c0b57221dbf563cf2eb375dfbbb6f9cf5bfecabbb8347b7a929bbf19c518e",
+        "heartbeat_policy": {
+          "kind": "process_poll"
+        },
+        "node_id": "coder",
+        "owner": "tau",
+        "plan_revision": "sha256:064be632550a69c9b3e9b23ae855bcd2e6603ba50e639b62c380c9fb6203dd74",
+        "run_id": "handoff-command:c380c9fb6203dd74",
+        "schema": "tau.runtime_endpoint_lease.v1",
+        "scope_id": "handoff-command:c380c9fb6203dd74",
+        "work_order_sha256": "sha256:be6eff3a0eb7734a7383799f8f85155d8dc6b095c9d96cee2875700f04e18b9e"
+      },
+      "runtime_event": {
+        "confidence": "PROCESS",
+        "endpoint_lease_sha256": "sha256:cfe6015bb7c55fe5a25cbc6e78de53b418a0ddbfaba7ae165d105f7b4f2b90e9",
+        "event_id": "local-event:0f7e95b8474010aeb2d084d3",
+        "event_type": "RUNTIME_ENDPOINT_EXITED",
+        "liveness": "DEAD",
+        "observation": {
+          "cancelled": false,
+          "returncode": 0,
+          "timed_out": false
+        },
+        "observed_at": "2026-07-26T15:02:49.895265+00:00",
+        "run_id": "handoff-command:c380c9fb6203dd74",
+        "schema": "tau.runtime_event.v1",
+        "source": "local",
+        "state": "EXITED"
+      },
+      "runtime_submit_receipt": {
+        "backend_acknowledgement": {
+          "process_started": true,
+          "stdin_delivery": "confirmed"
+        },
+        "composer_state_after": "NOT_APPLICABLE",
+        "composer_state_before": "NOT_APPLICABLE",
+        "delivery_status": "CONFIRMED",
+        "endpoint_lease_sha256": "sha256:cfe6015bb7c55fe5a25cbc6e78de53b418a0ddbfaba7ae165d105f7b4f2b90e9",
+        "errors": [],
+        "provider_execution_status": "NOT_APPLICABLE",
+        "schema": "tau.runtime_submit_receipt.v1",
+        "submit_attempt_count": 1,
+        "text_delivery_count": 1,
+        "work_order_sha256": "sha256:be6eff3a0eb7734a7383799f8f85155d8dc6b095c9d96cee2875700f04e18b9e"
+      },
+      "stderr": "",
+      "stdout": "{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"issue-174-storage-redaction\"}, \"goal\": {\"goal_id\": \"issue-174-storage-redaction\", \"goal_version\": 1, \"goal_hash\": \"sha256:issue-174-goal\"}, \"previous_subagent\": \"coder\", \"context\": {\"summary\": \"stdout carried [REDACTED:SECRET_TOKEN]\", \"artifacts\": []}, \"result\": {\"status\": \"PASS\", \"summary\": \"coder completed with [REDACTED:SECRET_TOKEN]\", \"evidence\": [{\"kind\": \"handler_receipt\", \"path\": \"handler.json\"}]}, \"rationale\": \"The local command produced the handoff.\", \"next_agent\": {\"name\": \"human\", \"executor\": \"human\", \"reason\": \"Stop at human.\"}, \"required_evidence\": [\"handler_receipt\"], \"stop_condition\": \"Stop at human.\"}\n",
+      "timed_out": false,
+      "timeout_s": 10
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": "docs/proofs/tickets/issue-174-storage-redaction-20260726/dispatch",
+  "response_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: coder completed with [REDACTED:SECRET_TOKEN]\n- Next agent: `human`\n- Executor: `human`\n- Stop condition: Stop at human.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [],\n    \"summary\": \"stdout carried [REDACTED:SECRET_TOKEN]\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue-174-storage-redaction\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:issue-174-goal\",\n    \"goal_id\": \"issue-174-storage-redaction\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"human\",\n    \"name\": \"human\",\n    \"reason\": \"Stop at human.\"\n  },\n  \"previous_subagent\": \"coder\",\n  \"rationale\": \"The local command produced the handoff.\",\n  \"required_evidence\": [\n    \"handler_receipt\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"handler_receipt\",\n        \"path\": \"handler.json\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"coder completed with [REDACTED:SECRET_TOKEN]\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:human",
+        "executor:human"
+      ],
+      "remove": []
+    },
+    "next_agent": "human",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue-174-storage-redaction"
+    }
+  },
+  "runner": "command",
+  "schema": "tau.agent_handoff_dispatch_receipt.v1",
+  "selected_agent": "coder",
+  "start_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: start\n- Next agent: `coder`\n- Executor: `local`\n- Stop condition: Stop at human.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [],\n    \"summary\": \"start\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue-174-storage-redaction\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:issue-174-goal\",\n    \"goal_id\": \"issue-174-storage-redaction\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"coder\",\n    \"reason\": \"Run local coder.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"Dispatch coder.\",\n  \"required_evidence\": [\n    \"handler_receipt\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"start\",\n        \"path\": \"start.json\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"start\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:coder",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "coder",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue-174-storage-redaction"
+    }
+  },
+  "status": "COMPLETED",
+  "stop_reason": "response_consumed"
+}

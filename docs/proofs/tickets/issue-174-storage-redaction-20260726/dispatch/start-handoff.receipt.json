@@ -1,0 +1,22 @@
+{
+  "comment": {
+    "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: start\n- Next agent: `coder`\n- Executor: `local`\n- Stop condition: Stop at human.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [],\n    \"summary\": \"start\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue-174-storage-redaction\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:issue-174-goal\",\n    \"goal_id\": \"issue-174-storage-redaction\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"coder\",\n    \"reason\": \"Run local coder.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"Dispatch coder.\",\n  \"required_evidence\": [\n    \"handler_receipt\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"start\",\n        \"path\": \"start.json\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"start\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human.\"\n}\n```\n"
+  },
+  "dry_run": true,
+  "errors": [],
+  "labels": {
+    "add": [
+      "agent-work",
+      "next:coder",
+      "executor:local"
+    ],
+    "remove": []
+  },
+  "next_agent": "coder",
+  "ok": true,
+  "schema": "tau.agent_handoff_projection_receipt.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue-174-storage-redaction"
+  }
+}

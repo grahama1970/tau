@@ -23,6 +23,7 @@ from tau_coding.dag_runtime.model import (
     canonical_json,
     canonical_sha256,
 )
+from tau_coding.dag_viewer.redaction import redact_for_storage
 from tau_coding.runtime_backends.contracts import RuntimeEvent, RuntimeStateProjection
 
 EVENT_SCHEMA = "tau.dag_run_event.v1"
@@ -976,8 +977,9 @@ class SqliteDagRunStore:
         attempt_id: str,
         result: Mapping[str, Any],
     ) -> dict[str, Any]:
-        canonical = canonical_json(dict(result))
-        digest = canonical_sha256(dict(result))
+        redacted_result = cast(dict[str, Any], redact_for_storage(dict(result)).value)
+        canonical = canonical_json(redacted_result)
+        digest = canonical_sha256(redacted_result)
         with self._transaction():
             self._assert_lease(lease)
             attempt = self._attempt_row(attempt_id)
@@ -1424,7 +1426,7 @@ class SqliteDagRunStore:
     ) -> int:
         if check_lease:
             self._assert_lease(lease)
-        payload_dict = dict(payload)
+        payload_dict = cast(dict[str, Any], redact_for_storage(dict(payload)).value)
         payload_json = canonical_json(payload_dict)
         payload_sha256 = canonical_sha256(payload_dict)
         existing = self._event_by_key(lease.run_id, event_key)
