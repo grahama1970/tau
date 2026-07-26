@@ -458,7 +458,8 @@ def _verify_public_interface(
             "result_node_id": item.get("result_node_id"),
         }
 
-    run_help = _run_text([str(tau), "workflows", "run", "--help"], cwd, commands, env)
+    run_help_result = _run([str(tau), "workflows", "run", "--help"], cwd, commands, env)
+    run_help = f"{run_help_result.stdout}\n{run_help_result.stderr}"
     viewer_capabilities = _run_json(
         [str(tau), "dag-view-capabilities", "--json"], cwd, commands, env
     )
