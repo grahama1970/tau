@@ -24,6 +24,7 @@ from tau_coding.project_dag import (
     run_project_dag_contract,
     write_fail_closed_registry_receipt,
 )
+from tau_coding.run_status import build_run_status
 
 
 def test_transition_receipt_classification_accepts_windows_paths() -> None:
@@ -545,6 +546,69 @@ def test_project_dag_writes_live_subagent_progress_for_handoff_loop(
         for event in progress["events"]
         if event["event"] == "step_started"
     ] == [("step_started", "coder"), ("step_started", "reviewer")]
+
+
+def test_project_dag_progress_events_are_bounded_and_status_still_reads_aggregates(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = project_dag.validate_dag_contract(
+        project_dag.load_dag_contract_payload(contract_path)
+    )
+    receipt_dir = tmp_path / "run"
+    durations: list[float] = []
+    payload_sizes: list[int] = []
+
+    def measured_write(path: Path, payload: dict[str, object]) -> None:
+        started = time.perf_counter()
+        payload_sizes.append(len(json.dumps(payload, sort_keys=True)))
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        durations.append(time.perf_counter() - started)
+
+    monkeypatch.setattr(project_dag, "_write_json_atomic", measured_write)
+    events = [
+        {
+            "event": "step_started" if index % 2 == 0 else "step_completed",
+            "selected_agent": "coder" if index % 2 == 0 else "reviewer",
+            "node_id": "coder" if index % 2 == 0 else "reviewer",
+            "loop_step": index,
+            "ok": True,
+            "ts": f"2026-07-26T18:{index // 60:02d}:{index % 60:02d}Z",
+        }
+        for index in range(1_000)
+    ]
+
+    for index in range(1, len(events) + 1):
+        project_dag._write_project_dag_progress(
+            contract=contract,
+            receipt_dir=receipt_dir,
+            scheduler="bounded-ready-queue",
+            events=events[:index],
+            node_attempts={"coder": index, "reviewer": index},
+            status="RUNNING",
+        )
+
+    progress = json.loads((receipt_dir / "dag-progress.json").read_text(encoding="utf-8"))
+    first_window = durations[:50]
+    last_window = durations[-50:]
+
+    assert progress["event_count"] == 1_000
+    assert progress["recent_event_count"] == project_dag.PROJECT_DAG_PROGRESS_EVENT_WINDOW
+    assert len(progress["events"]) == project_dag.PROJECT_DAG_PROGRESS_EVENT_WINDOW
+    assert progress["events_truncated"] is True
+    assert progress["first_recent_event_index"] == 800
+    assert progress["last_event"] == events[-1]
+    assert max(payload_sizes) < payload_sizes[-1] * 2
+    assert sum(payload_sizes) < payload_sizes[-1] * len(events) * 2
+    assert sum(last_window) / len(last_window) < (sum(first_window) / len(first_window)) * 20
+
+    status = build_run_status(receipt_dir)
+    assert status["detected_type"] == "project_dag"
+    assert status["project_dag_progress"]["active_subagents"]
+    assert status["project_dag_progress"]["node_progress"]
+    assert status["project_dag_progress"]["completed_subagent_count"] >= 0
 
 
 def test_project_dag_allows_repeated_agent_roles_with_node_addressing(

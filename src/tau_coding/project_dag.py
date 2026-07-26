@@ -88,6 +88,7 @@ FAIL_CLOSED_REGISTRY_SCHEMA = "tau.fail_closed_registry.v1"
 DAG_IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,63}$")
 PERSISTENT_SUBAGENT_SCHEMA = "tau.persistent_subagent.v1"
 PROVIDER_COMMAND_TIMEOUT_SECONDS = 900.0
+PROJECT_DAG_PROGRESS_EVENT_WINDOW = 200
 BROWSER_ORACLE_TAB_STALE_CODE = "BLOCKED_BROWSER_ORACLE_TAB_STALE"
 
 FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
@@ -4788,6 +4789,9 @@ def _write_project_dag_progress(
     provider_live: bool = False,
 ) -> None:
     node_progress = _project_dag_node_progress(contract, events, node_attempts)
+    recent_events = _bounded_project_dag_progress_events(events)
+    event_count = len(events)
+    first_recent_event_index = event_count - len(recent_events)
     active_subagents = [
         {
             "node_id": item["node_id"],
@@ -4820,9 +4824,13 @@ def _write_project_dag_progress(
         "node_progress": node_progress,
         "active_subagents": active_subagents,
         "completed_subagents": completed_subagents,
-        "event_count": len(events),
+        "event_count": event_count,
+        "recent_event_count": len(recent_events),
+        "events_window_limit": PROJECT_DAG_PROGRESS_EVENT_WINDOW,
+        "events_truncated": len(recent_events) < event_count,
+        "first_recent_event_index": first_recent_event_index,
         "last_event": events[-1] if events else None,
-        "events": events,
+        "events": recent_events,
         "proof_scope": {
             "proves": [
                 "Tau has written a durable local progress artifact for this DAG run.",
@@ -4840,6 +4848,12 @@ def _write_project_dag_progress(
         "updated_at": _utc_stamp(),
     }
     _write_json_atomic(receipt_dir / "dag-progress.json", payload)
+
+
+def _bounded_project_dag_progress_events(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    if len(events) <= PROJECT_DAG_PROGRESS_EVENT_WINDOW:
+        return list(events)
+    return list(events[-PROJECT_DAG_PROGRESS_EVENT_WINDOW:])
 
 
 def _project_dag_node_progress(
