@@ -396,6 +396,73 @@ def test_generic_dag_resumes_from_existing_valid_receipts(tmp_path: Path) -> Non
     assert receipt["nodes"][1]["resumed"] is False
 
 
+def test_generic_dag_rejects_resumed_live_receipt_without_execution_evidence(
+    tmp_path: Path,
+) -> None:
+    planner_receipt = tmp_path / "receipts" / "planner.json"
+    planner_receipt.parent.mkdir(parents=True, exist_ok=True)
+    _write_node_receipt(planner_receipt, node_id="planner", live=True)
+    spec_path = _write_spec(
+        tmp_path,
+        [
+            _node(
+                tmp_path,
+                "planner",
+                command=[
+                    sys.executable,
+                    "-c",
+                    "raise SystemExit('planner command must not rerun')",
+                ],
+            ),
+            _node(tmp_path, "coder", depends_on=["planner"]),
+        ],
+    )
+
+    receipt = run_generic_dag(spec_path=spec_path, resume=True)
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "INVALID_RECEIPT"
+    assert receipt["completed_node_count"] == 0
+    assert receipt["nodes"][0]["attempt_count"] == 0
+    assert receipt["nodes"][0]["resumed"] is False
+    assert receipt["nodes"][0]["errors"] == ["live true requires local execution evidence"]
+
+
+def test_generic_dag_attaches_local_execution_evidence_to_fresh_live_receipt(
+    tmp_path: Path,
+) -> None:
+    receipt_path = tmp_path / "receipts" / "local-live.json"
+    spec_path = _write_spec(
+        tmp_path,
+        [
+            _node(
+                tmp_path,
+                "local-live",
+                command=[
+                    sys.executable,
+                    "-c",
+                    _receipt_writer_code(receipt_path, node_id="local-live", live=True),
+                ],
+            )
+        ],
+    )
+
+    receipt = run_generic_dag(spec_path=spec_path)
+
+    assert receipt["status"] == "PASS"
+    evidence = receipt["nodes"][0]["execution_evidence"]
+    assert evidence["kind"] == "local_subprocess"
+    assert evidence["returncode"] == 0
+    assert evidence["runtime_backend"] == "local"
+    assert evidence["runtime_event_state"] == "EXITED"
+    assert evidence["runtime_submit_delivery_status"] == "CONFIRMED"
+    assert evidence["runtime_artifact_count"] >= 1
+    assert evidence["command_result_sha256"].startswith("sha256:")
+    persisted = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert persisted["execution_evidence"] == evidence
+
+
 def test_generic_dag_rejects_resumed_receipt_from_changed_goal(tmp_path: Path) -> None:
     receipt_path = tmp_path / "receipts" / "planner.json"
     payload = {
@@ -914,6 +981,7 @@ def _receipt_writer_code(
     work_order_path: Path | None = None,
     accepted_output: dict[str, object] | None = None,
     goal_hash: str | None = None,
+    live: bool = False,
 ) -> str:
     payload = {
         "schema": GENERIC_DAG_NODE_RECEIPT_SCHEMA,
@@ -932,6 +1000,10 @@ def _receipt_writer_code(
         payload["accepted_output"] = accepted_output
     if goal_hash is not None:
         payload["goal_hash"] = goal_hash
+    if live:
+        payload["mocked"] = False
+        payload["live"] = True
+        payload["provider_live"] = False
     return (
         "import json; "
         "from pathlib import Path; "
@@ -956,6 +1028,7 @@ def _write_node_receipt(
     *,
     node_id: str,
     work_order_sha256: str | None = None,
+    live: bool = False,
 ) -> None:
     payload = {
         "schema": GENERIC_DAG_NODE_RECEIPT_SCHEMA,
@@ -970,6 +1043,10 @@ def _write_node_receipt(
     }
     if work_order_sha256 is not None:
         payload["work_order_sha256"] = work_order_sha256
+    if live:
+        payload["mocked"] = False
+        payload["live"] = True
+        payload["provider_live"] = False
     path.write_text(
         json.dumps(payload, sort_keys=True),
         encoding="utf-8",

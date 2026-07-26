@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sqlite3
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -150,6 +152,87 @@ def test_staged_result_crash_resumes_without_rerunning_accepted_branches(
     validated = next(seq for seq, event in events if event == "attempt_result_validated")
     assert staged < takeover < validated
     assert _node(receipt, "publish-qualification")["verdict"] == "APPROVAL_REQUIRED"
+
+
+def test_durable_qualification_reviewer_blocks_invalid_candidate(
+    tmp_path: Path,
+) -> None:
+    artifact_root = tmp_path / "artifacts"
+    json_artifact = artifact_root / "durable-repository-qualification.json"
+    markdown_artifact = artifact_root / "durable-repository-qualification.md"
+    json_artifact.parent.mkdir(parents=True)
+    json_artifact.write_text(
+        json.dumps(
+            {
+                "schema": "tau.durable_repository_qualification.v1",
+                "status": "BROKEN",
+                "goal": {"goal_hash": "sha256:goal"},
+                "repository": {},
+                "branches": {},
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    markdown_artifact.write_text("# Wrong Title\n", encoding="utf-8")
+    feedback_path = tmp_path / "review-feedback.json"
+    context_path = tmp_path / "review-context.json"
+    context = {
+        "schema": "tau.generic_artifact_review_context.v1",
+        "run_id": "run-review-test",
+        "node_id": "publish-qualification",
+        "transaction_id": "publish-qualification",
+        "attempt": 1,
+        "producer_id": "durable_repository_qualification_producer",
+        "reviewer_id": "deterministic_qualification_reviewer",
+        "candidate_manifest_sha256": "sha256:candidate",
+        "goal_hash": "sha256:goal",
+        "validated_artifacts": [
+            {
+                "artifact_id": "qualification_json",
+                "kind": "qualification_json",
+                "media_type": "application/json",
+                "path": str(json_artifact),
+                "sha256": _sha256(json_artifact),
+                "bytes": json_artifact.stat().st_size,
+            },
+            {
+                "artifact_id": "qualification_markdown",
+                "kind": "qualification_markdown",
+                "media_type": "text/markdown",
+                "path": str(markdown_artifact),
+                "sha256": _sha256(markdown_artifact),
+                "bytes": markdown_artifact.stat().st_size,
+            },
+        ],
+        "output_contract": {"review_feedback_path": str(feedback_path)},
+    }
+    context_path.write_text(json.dumps(context, sort_keys=True), encoding="utf-8")
+
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "tau_coding.workflows.nodes.durable_repository_qualification",
+            "review",
+        ],
+        check=True,
+        env={
+            **os.environ,
+            "TAU_GENERIC_DAG_REVIEW_CONTEXT": str(context_path),
+            "TAU_GENERIC_DAG_REVIEW_CONTEXT_SHA256": _sha256(context_path),
+        },
+    )
+
+    feedback = _json(feedback_path)
+    assert feedback["verdict"] == "BLOCKED"
+    assert feedback["live"] is True
+    assert feedback["mocked"] is False
+    reasons = {item["reason"] for item in feedback["findings"]}  # type: ignore[index]
+    assert "qualification_status_invalid" in reasons
+    assert "qualification_repository_missing" in reasons
+    assert "qualification_branches_missing" in reasons
+    assert "qualification_markdown_title_missing" in reasons
 
 
 def _run(

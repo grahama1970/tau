@@ -68,8 +68,9 @@ def main() -> int:
             args.receipt,
             node_id="qualify-documentation",
             schema="tau.documentation_qualification.v1",
-            path_filter=lambda path: path.lower().endswith((".md", ".rst", ".txt"))
-            or "docs/" in path.lower(),
+            path_filter=lambda path: (
+                path.lower().endswith((".md", ".rst", ".txt")) or "docs/" in path.lower()
+            ),
         )
     elif args.command == "tests":
         _qualify_tests(request, args.repair_packet, args.output, args.receipt)
@@ -80,8 +81,9 @@ def main() -> int:
             args.receipt,
             node_id="qualify-package",
             schema="tau.package_qualification.v1",
-            path_filter=lambda path: Path(path).name
-            in {"pyproject.toml", "package.json", "Cargo.toml", "go.mod"},
+            path_filter=lambda path: (
+                Path(path).name in {"pyproject.toml", "package.json", "Cargo.toml", "go.mod"}
+            ),
         )
     elif args.command == "reconcile":
         _reconcile(request, args.output, args.receipt)
@@ -275,9 +277,7 @@ def _validate_transaction() -> None:
             "transaction_id": context["transaction_id"],
             "attempt": context["attempt"],
             "validator_id": context["validator_id"],
-            "validation_context_sha256": os.environ[
-                "TAU_GENERIC_DAG_VALIDATION_CONTEXT_SHA256"
-            ],
+            "validation_context_sha256": os.environ["TAU_GENERIC_DAG_VALIDATION_CONTEXT_SHA256"],
             "candidate_manifest_sha256": context["candidate_manifest_sha256"],
         },
     )
@@ -285,6 +285,8 @@ def _validate_transaction() -> None:
 
 def _review() -> None:
     context, _ = _transaction_context("TAU_GENERIC_DAG_REVIEW_CONTEXT")
+    findings = _review_findings(context)
+    verdict = "PASS" if not findings else "BLOCKED"
     _write_json(
         Path(context["output_contract"]["review_feedback_path"]),
         {
@@ -297,14 +299,135 @@ def _review() -> None:
             "review_context_sha256": os.environ["TAU_GENERIC_DAG_REVIEW_CONTEXT_SHA256"],
             "candidate_manifest_sha256": context["candidate_manifest_sha256"],
             "goal_hash": context["goal_hash"],
-            "verdict": "PASS",
+            "verdict": verdict,
             "mocked": False,
             "live": True,
             "provider_live": False,
-            "summary": "Qualification artifacts accepted for exact human approval.",
-            "findings": [],
+            "summary": (
+                "Qualification artifacts accepted for exact human approval."
+                if verdict == "PASS"
+                else "Qualification artifacts failed deterministic review."
+            ),
+            "findings": findings,
         },
     )
+
+
+def _review_findings(context: dict[str, Any]) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    artifacts = context.get("validated_artifacts")
+    if not isinstance(artifacts, list):
+        return [
+            _finding(
+                "validated_artifacts_missing",
+                ["qualification_json", "qualification_markdown"],
+            )
+        ]
+    by_kind = {str(item.get("kind")): item for item in artifacts if isinstance(item, dict)}
+    json_artifact = by_kind.get("qualification_json")
+    markdown_artifact = by_kind.get("qualification_markdown")
+    if not isinstance(json_artifact, dict):
+        findings.append(_finding("qualification_json_missing", ["qualification_json"]))
+    if not isinstance(markdown_artifact, dict):
+        findings.append(_finding("qualification_markdown_missing", ["qualification_markdown"]))
+    if json_artifact is not None:
+        report = _read_artifact_json(json_artifact, findings)
+        if report is not None:
+            _check_report(report, context, findings)
+    if markdown_artifact is not None:
+        text = _read_artifact_text(markdown_artifact, findings)
+        if text is not None and "Durable Repository Qualification" not in text:
+            findings.append(
+                _finding(
+                    "qualification_markdown_title_missing",
+                    ["qualification_markdown"],
+                )
+            )
+    return findings
+
+
+def _read_artifact_json(
+    artifact: dict[str, Any], findings: list[dict[str, Any]]
+) -> dict[str, Any] | None:
+    path = _artifact_path(artifact, findings)
+    if path is None:
+        return None
+    if _artifact_hash(path, artifact, findings) is None:
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        findings.append(_finding("qualification_json_invalid", ["qualification_json"]))
+        return None
+    if not isinstance(payload, dict):
+        findings.append(_finding("qualification_json_not_object", ["qualification_json"]))
+        return None
+    return payload
+
+
+def _read_artifact_text(artifact: dict[str, Any], findings: list[dict[str, Any]]) -> str | None:
+    path = _artifact_path(artifact, findings)
+    if path is None:
+        return None
+    if _artifact_hash(path, artifact, findings) is None:
+        return None
+    return path.read_text(encoding="utf-8")
+
+
+def _artifact_path(artifact: dict[str, Any], findings: list[dict[str, Any]]) -> Path | None:
+    path_value = artifact.get("path")
+    artifact_id = str(artifact.get("artifact_id") or artifact.get("kind") or "artifact")
+    if not isinstance(path_value, str) or not path_value.strip():
+        findings.append(_finding("artifact_path_missing", [artifact_id]))
+        return None
+    path = Path(path_value)
+    if not path.is_file():
+        findings.append(_finding("artifact_file_missing", [artifact_id]))
+        return None
+    return path
+
+
+def _artifact_hash(
+    path: Path, artifact: dict[str, Any], findings: list[dict[str, Any]]
+) -> str | None:
+    artifact_id = str(artifact.get("artifact_id") or artifact.get("kind") or "artifact")
+    expected = artifact.get("sha256")
+    actual = _sha256(path)
+    if expected != actual:
+        findings.append(_finding("artifact_sha256_mismatch", [artifact_id]))
+        return None
+    return actual
+
+
+def _check_report(
+    report: dict[str, Any],
+    context: dict[str, Any],
+    findings: list[dict[str, Any]],
+) -> None:
+    expected = {
+        "schema": "tau.durable_repository_qualification.v1",
+        "status": "QUALIFIED",
+    }
+    for key, value in expected.items():
+        if report.get(key) != value:
+            findings.append(_finding(f"qualification_{key}_invalid", ["qualification_json"]))
+    goal = report.get("goal")
+    if not isinstance(goal, dict) or goal.get("goal_hash") != context.get("goal_hash"):
+        findings.append(_finding("qualification_goal_hash_mismatch", ["qualification_json"]))
+    repository = report.get("repository")
+    if not isinstance(repository, dict) or not repository.get("head_sha"):
+        findings.append(_finding("qualification_repository_missing", ["qualification_json"]))
+    branches = report.get("branches")
+    if not isinstance(branches, dict) or not branches:
+        findings.append(_finding("qualification_branches_missing", ["qualification_json"]))
+
+
+def _finding(reason: str, artifact_ids: list[str]) -> dict[str, Any]:
+    return {
+        "severity": "BLOCK",
+        "reason": reason,
+        "artifact_ids": artifact_ids,
+    }
 
 
 def _publish(
@@ -319,11 +442,7 @@ def _publish(
     source_markdown = Path(by_kind["qualification_markdown"]["path"])
     publish_path = Path(request["publish_path"])
     idempotency_key = hashlib.sha256(
-        (
-            request["request_sha256"]
-            + _sha256(source_json)
-            + _sha256(source_markdown)
-        ).encode()
+        (request["request_sha256"] + _sha256(source_json) + _sha256(source_markdown)).encode()
     ).hexdigest()
     ledger = {
         "schema": "tau.qualification_publication_ledger.v1",

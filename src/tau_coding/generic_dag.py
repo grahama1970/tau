@@ -715,6 +715,17 @@ def _run_legacy_node(
                 finished_at=_utc_stamp(),
                 duration_seconds=time.monotonic() - node_started_monotonic,
             )
+        if errors and _has_local_execution_evidence_error(errors):
+            return _blocked_node_record(
+                node,
+                verdict="INVALID_RECEIPT",
+                errors=errors,
+                attempt_count=0,
+                command_results=[],
+                started_at=node_started_at,
+                finished_at=_utc_stamp(),
+                duration_seconds=time.monotonic() - node_started_monotonic,
+            )
 
     _append_event(
         events_path,
@@ -773,6 +784,8 @@ def _run_legacy_node(
             duration_seconds=time.monotonic() - node_started_monotonic,
         )
     receipt = _read_json_object(node.receipt_path, label=f"{node.node_id} receipt")
+    _attach_local_execution_evidence(receipt, command_results[0])
+    write_json(node.receipt_path, receipt)
     errors = _validate_node_receipt(receipt, node, expected_goal_hash=goal_hash)
     if errors:
         return _blocked_node_record(
@@ -1002,6 +1015,8 @@ def _run_transaction_node(
             node.receipt_path, label="transaction producer receipt"
         )
         if not receipt_errors:
+            _attach_local_execution_evidence(producer_receipt, command_results[-1])
+            write_json(node.receipt_path, producer_receipt)
             receipt_errors.extend(
                 _validate_node_receipt(
                     producer_receipt,
@@ -1175,16 +1190,25 @@ def _run_transaction_node(
                 started_monotonic=started_monotonic,
                 goal_hash=goal_hash,
             )
-        feedback, feedback_errors = validate_review_feedback(
-            path=review_feedback_path,
-            spec=spec,
-            node_id=node.node_id,
-            attempt=attempt,
-            review_context_sha256=review_context_sha256,
-            candidate_manifest_sha256=candidate_manifest_sha256,
-            artifact_ids={str(item["artifact_id"]) for item in artifacts},
-            expected_goal_hash=goal_hash,
+        feedback_payload, feedback_load_errors = load_json(
+            review_feedback_path, label="review feedback"
         )
+        if feedback_load_errors:
+            feedback = feedback_payload
+            feedback_errors = feedback_load_errors
+        else:
+            _attach_local_execution_evidence(feedback_payload, command_results[-1])
+            write_json(review_feedback_path, feedback_payload)
+            feedback, feedback_errors = validate_review_feedback(
+                path=review_feedback_path,
+                spec=spec,
+                node_id=node.node_id,
+                attempt=attempt,
+                review_context_sha256=review_context_sha256,
+                candidate_manifest_sha256=candidate_manifest_sha256,
+                artifact_ids={str(item["artifact_id"]) for item in artifacts},
+                expected_goal_hash=goal_hash,
+            )
         producer_execution = producer_receipt.get("provider_execution")
         producer_provider_live = producer_receipt.get("provider_live") is True or (
             isinstance(producer_execution, dict) and producer_execution.get("provider_live") is True
@@ -1205,9 +1229,15 @@ def _run_transaction_node(
             "review_verdict": feedback.get("verdict"),
             "review_live": feedback.get("live") is True,
             "review_provider_live": feedback.get("provider_live") is True,
+            "review_execution_evidence": feedback.get("execution_evidence")
+            if isinstance(feedback.get("execution_evidence"), dict)
+            else None,
             "review_model": feedback.get("model"),
             "producer_live": producer_receipt.get("live") is True,
             "producer_provider_live": producer_provider_live,
+            "producer_execution_evidence": producer_receipt.get("execution_evidence")
+            if isinstance(producer_receipt.get("execution_evidence"), dict)
+            else None,
             "producer_provider": (
                 producer_execution.get("provider")
                 if isinstance(producer_execution, dict)
@@ -1714,6 +1744,9 @@ def _node_record(
         "terminal_id": receipt.get("terminal_id"),
         "visible_log_path": receipt.get("visible_log_path"),
         "visible_log_sha256": receipt.get("visible_log_sha256"),
+        "execution_evidence": receipt.get("execution_evidence")
+        if isinstance(receipt.get("execution_evidence"), dict)
+        else None,
         "attempt_count": attempt_count,
         "started_at": started_at,
         "finished_at": finished_at,
@@ -1980,8 +2013,68 @@ def _validate_node_receipt(
             errors.append("goal_hash must be a non-empty string")
         elif observed_goal_hash != expected_goal_hash:
             errors.append("goal_hash does not match the active DAG goal")
+    if receipt.get("live") is True and receipt.get("provider_live") is not True:
+        errors.extend(_validate_local_execution_evidence(receipt.get("execution_evidence")))
     errors.extend(_validate_provider_live_receipt(receipt))
     return errors
+
+
+def _attach_local_execution_evidence(
+    receipt: dict[str, Any],
+    command_result: dict[str, Any],
+) -> None:
+    if receipt.get("live") is not True or receipt.get("provider_live") is True:
+        return
+    runtime_event = command_result.get("runtime_event")
+    runtime_event_state = runtime_event.get("state") if isinstance(runtime_event, dict) else None
+    runtime_submit = command_result.get("runtime_submit_receipt")
+    delivery_status = (
+        runtime_submit.get("delivery_status") if isinstance(runtime_submit, dict) else None
+    )
+    receipt["execution_evidence"] = {
+        "kind": "local_subprocess",
+        "returncode": command_result.get("returncode"),
+        "runtime_backend": command_result.get("runtime_backend"),
+        "runtime_event_state": runtime_event_state,
+        "runtime_submit_delivery_status": delivery_status,
+        "runtime_artifact_count": len(command_result.get("runtime_artifacts", []))
+        if isinstance(command_result.get("runtime_artifacts"), list)
+        else 0,
+        "command_result_sha256": canonical_sha256(command_result),
+    }
+
+
+def _validate_local_execution_evidence(value: Any) -> list[str]:
+    if not isinstance(value, dict):
+        return ["live true requires local execution evidence"]
+    expected = {
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED",
+    }
+    errors = [
+        f"execution_evidence.{key} must be {expected_value}"
+        for key, expected_value in expected.items()
+        if value.get(key) != expected_value
+    ]
+    if not isinstance(value.get("command_result_sha256"), str) or not str(
+        value["command_result_sha256"]
+    ).startswith("sha256:"):
+        errors.append("execution_evidence.command_result_sha256 must be sha256")
+    artifact_count = value.get("runtime_artifact_count")
+    if not isinstance(artifact_count, int) or artifact_count < 1:
+        errors.append("execution_evidence.runtime_artifact_count must be positive")
+    return errors
+
+
+def _has_local_execution_evidence_error(errors: list[str]) -> bool:
+    return any(
+        error == "live true requires local execution evidence"
+        or error.startswith("execution_evidence.")
+        for error in errors
+    )
 
 
 def _validate_provider_live_receipt(receipt: dict[str, Any]) -> list[str]:

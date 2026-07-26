@@ -27,9 +27,7 @@ def test_supplied_proofs_are_hash_bound_and_fail_closed(tmp_path: Path) -> None:
     desktop.write_bytes(b"desktop-image")
     mobile.write_bytes(b"mobile-image")
     all_browser_checks = {
-        check: True
-        for checks in audit.BROWSER_REQUIRED_CHECKS.values()
-        for check in checks
+        check: True for checks in audit.BROWSER_REQUIRED_CHECKS.values() for check in checks
     }
     browser = {
         "schema": "tau.browser_proof.v1",
@@ -144,6 +142,7 @@ def test_result_and_criteria_projection_are_deterministic(tmp_path: Path) -> Non
         {
             "workflow_id": workflow_id,
             "topology": audit.TOPOLOGIES[workflow_id],
+            "temporary_run_dir": str(tmp_path / workflow_id),
             "positive": {"status": "PASS", "result": evidence},
             "negative": {"status": "BLOCKED"},
             "viewer_evidence": [{"workflow_id": workflow_id, "http_status": 200}],
@@ -151,16 +150,26 @@ def test_result_and_criteria_projection_are_deterministic(tmp_path: Path) -> Non
         for workflow_id in audit.WORKFLOW_IDS
     ]
     proofs = [
-        {"label": "readiness_positive_browser"},
-        {"label": "readiness_negative_browser"},
-        {"label": "operator_positive_browser"},
-        {"label": "operator_negative_browser"},
-        {"label": "evidence_positive_browser"},
-        {"label": "evidence_negative_browser"},
-        {"label": "slice04_browser"},
-        {"label": "slice04_no_accepted_producer_rerun"},
-        {"label": "slice05_browser"},
-        {"label": "slice05_wheel"},
+        {
+            "label": label,
+            "path": str(tmp_path / f"{label}.json"),
+            "sha256": f"sha256:{index:064x}",
+            "bytes": index + 1,
+        }
+        for index, label in enumerate(
+            [
+                "readiness_positive_browser",
+                "readiness_negative_browser",
+                "operator_positive_browser",
+                "operator_negative_browser",
+                "evidence_positive_browser",
+                "evidence_negative_browser",
+                "slice04_browser",
+                "slice04_no_accepted_producer_rerun",
+                "slice05_browser",
+                "slice05_wheel",
+            ]
+        )
     ]
 
     first = audit._established_criteria(workflow_records=workflow_records, proofs=proofs)
@@ -168,6 +177,12 @@ def test_result_and_criteria_projection_are_deterministic(tmp_path: Path) -> Non
 
     assert first == second
     assert [item["status"] for item in first[:9]] == ["ESTABLISHED"] * 9
+    for item in first[:9]:
+        for evidence_item in item["evidence"]:
+            assert isinstance(evidence_item, dict)
+            assert any(
+                key.endswith("sha256") or key in {"path", "run_dir"} for key in evidence_item
+            )
     assert first[9] == {
         "criterion": 10,
         "status": "MISSING",

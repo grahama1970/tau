@@ -9,6 +9,7 @@ from tau_coding.generic_artifact_transaction import (
     canonical_command_sha256,
     parse_transaction_spec,
     revalidate_accepted_manifest,
+    validate_review_feedback,
 )
 from tau_coding.generic_dag import run_generic_dag
 
@@ -118,6 +119,13 @@ def test_transaction_revises_then_projects_only_accepted_artifact(tmp_path: Path
     assert all(item["node_id"] == "stage" for item in leases)
     assert all(item["dag_id"] != "generic-local-command" for item in leases)
     assert len({item["attempt_id"] for item in leases}) == len(leases)
+    final_attempt = transaction["attempts"][-1]
+    assert final_attempt["producer_execution_evidence"]["kind"] == "local_subprocess"
+    assert final_attempt["review_execution_evidence"]["kind"] == "local_subprocess"
+    assert final_attempt["producer_execution_evidence"]["command_result_sha256"].startswith(
+        "sha256:"
+    )
+    assert final_attempt["review_execution_evidence"]["command_result_sha256"].startswith("sha256:")
 
 
 def test_transaction_resume_blocks_modified_accepted_artifact_without_rerun(
@@ -308,6 +316,53 @@ def test_transaction_accepts_hash_bound_nested_provider_execution(tmp_path: Path
     node = receipt["nodes"][0]
     assert node["producer_provider_live"] is True
     assert node["attempts"][-1]["producer_provider"] == "fixture-provider"
+
+
+def test_transaction_review_feedback_rejects_live_without_execution_evidence(
+    tmp_path: Path,
+) -> None:
+    worker = _write_worker(tmp_path)
+    spec_path = _write_transaction_spec(tmp_path, worker=worker)
+    spec = json.loads(spec_path.read_text())
+    raw = spec["nodes"][0]
+    transaction = parse_transaction_spec(
+        raw["transaction"], base_dir=spec_path.parent, node_id="stage"
+    )
+    feedback_path = tmp_path / "review-feedback.json"
+    feedback_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.generic_artifact_review.v1",
+                "transaction_id": "tx-stage",
+                "node_id": "stage",
+                "attempt": 1,
+                "producer_id": "producer",
+                "reviewer_id": "reviewer",
+                "review_context_sha256": "sha256:review-context",
+                "candidate_manifest_sha256": "sha256:candidate",
+                "verdict": "PASS",
+                "mocked": False,
+                "live": True,
+                "provider_live": False,
+                "summary": "accepted",
+                "findings": [],
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+
+    _, errors = validate_review_feedback(
+        path=feedback_path,
+        spec=transaction,
+        node_id="stage",
+        attempt=1,
+        review_context_sha256="sha256:review-context",
+        candidate_manifest_sha256="sha256:candidate",
+        artifact_ids={"primary"},
+    )
+
+    assert errors == ["review_live_true_requires_local_execution_evidence"]
 
 
 def test_transaction_can_exclude_execution_dependency_from_accepted_context(

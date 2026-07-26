@@ -233,9 +233,7 @@ def _run_audit(args: argparse.Namespace, commands: list[dict[str, Any]]) -> dict
                 raise AuditError("detached_worktree_not_clean")
 
             wheel = _build_wheel(checkout, root, commands)
-            supplied_wheel = next(
-                item for item in proofs if item["label"] == "slice05_wheel"
-            )
+            supplied_wheel = next(item for item in proofs if item["label"] == "slice05_wheel")
             if supplied_wheel.get("wheel_sha256") != _sha256(wheel):
                 raise AuditError("slice05_wheel_hash_mismatch")
             tau, python, purelib, installed_env = _install_wheel(wheel, root, commands)
@@ -1078,18 +1076,58 @@ def _goal_contract(checkout: Path) -> dict[str, Any]:
 def _established_criteria(
     workflow_records: list[dict[str, Any]], proofs: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
-    workflow_ids = [item["workflow_id"] for item in workflow_records]
-    proof_labels = [item["label"] for item in proofs]
+    workflow_refs = [
+        {
+            "workflow_id": item["workflow_id"],
+            "run_dir": item["temporary_run_dir"],
+            "topology": item["topology"],
+            "result_json_sha256": item["positive"]["result"]["json"]["sha256"],
+            "result_markdown_sha256": item["positive"]["result"]["markdown"]["sha256"],
+        }
+        for item in workflow_records
+    ]
+    proof_refs = [
+        {
+            "label": item["label"],
+            "path": item["path"],
+            "sha256": item["sha256"],
+            "bytes": item["bytes"],
+        }
+        for item in proofs
+    ]
+    browser_refs = [item for item in proof_refs if item["label"] in BROWSER_REQUIRED_CHECKS]
+    workflow_run_dirs = [
+        {"workflow_id": item["workflow_id"], "run_dir": item["temporary_run_dir"]}
+        for item in workflow_records
+    ]
     evidence = {
-        1: ["Five installed workflows produced non-empty JSON/Markdown results.", *workflow_ids],
-        2: [f"{item}:{TOPOLOGIES[item]}" for item in WORKFLOW_IDS],
-        3: ["Every workflow record includes a deterministic blocked or approval path."],
-        4: ["slice05_browser", "slice05_wheel", "Repeated resume retained effect_count=1."],
-        5: ["slice04_browser", "slice04_no_accepted_producer_rerun"],
-        6: ["Every workflow served an identified tau.dag_view_manifest.v1 over HTTP GET."],
-        7: [*BROWSER_REQUIRED_CHECKS],
-        8: ["Exact-ref wheel install, five public sequences, results, and viewers passed."],
-        9: proof_labels,
+        1: workflow_refs,
+        2: [
+            {
+                "workflow_id": item["workflow_id"],
+                "topology": item["topology"],
+                "run_dir": item["temporary_run_dir"],
+            }
+            for item in workflow_records
+        ],
+        3: [
+            {
+                "workflow_id": item["workflow_id"],
+                "negative_status": item["negative"].get("status"),
+                "run_dir": item["temporary_run_dir"],
+            }
+            for item in workflow_records
+        ],
+        4: [item for item in proof_refs if item["label"] in {"slice05_browser", "slice05_wheel"}],
+        5: [
+            item
+            for item in proof_refs
+            if item["label"] in {"slice04_browser", "slice04_no_accepted_producer_rerun"}
+        ],
+        6: workflow_run_dirs,
+        7: browser_refs,
+        8: proof_refs,
+        9: proof_refs,
     }
     return [
         {"criterion": number, "status": "ESTABLISHED", "evidence": evidence[number]}

@@ -370,6 +370,8 @@ def validate_review_feedback(
     if expected_goal_hash is not None:
         expected["goal_hash"] = expected_goal_hash
     errors.extend(_binding_errors(payload, expected))
+    if payload.get("live") is True and payload.get("provider_live") is not True:
+        errors.extend(_validate_local_execution_evidence(payload.get("execution_evidence")))
     verdict = str(payload.get("verdict") or "").upper()
     if verdict not in {"PASS", "REVISE", "BLOCKED"}:
         errors.append("review_verdict_invalid")
@@ -403,6 +405,30 @@ def validate_review_feedback(
     if verdict == "REVISE" and not revision_instruction_found:
         errors.append("revise_requires_revision_instruction")
     return payload, errors
+
+
+def _validate_local_execution_evidence(value: Any) -> list[str]:
+    if not isinstance(value, dict):
+        return ["review_live_true_requires_local_execution_evidence"]
+    expected = {
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED",
+    }
+    errors = [
+        f"review_execution_evidence.{key} must be {expected_value}"
+        for key, expected_value in expected.items()
+        if value.get(key) != expected_value
+    ]
+    digest = value.get("command_result_sha256")
+    if not isinstance(digest, str) or not digest.startswith("sha256:"):
+        errors.append("review_execution_evidence.command_result_sha256 must be sha256")
+    artifact_count = value.get("runtime_artifact_count")
+    if not isinstance(artifact_count, int) or artifact_count < 1:
+        errors.append("review_execution_evidence.runtime_artifact_count must be positive")
+    return errors
 
 
 def write_accepted_manifest(
