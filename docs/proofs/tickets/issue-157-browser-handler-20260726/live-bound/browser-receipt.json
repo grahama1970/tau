@@ -1,0 +1,105 @@
+{
+  "commands": [
+    {
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+        "read",
+        "--filter",
+        "all",
+        "--tab-id",
+        "837362311"
+      ],
+      "elapsed_seconds": 0.118,
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "\n\n[Viewport: 2191x1042]\n\n--- Page Text ---\nTau Bound Tab Routing\n"
+    },
+    {
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+        "snap",
+        "--output",
+        "/tmp/tau-browser-bound.jdJCss/browser-out/bound.png",
+        "--tab-id",
+        "837362311"
+      ],
+      "elapsed_seconds": 0.716,
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "Saved to /tmp/tau-browser-bound.jdJCss/browser-out/bound.png (1200x571, from 3698x1664)\n[Screenshot ID: screenshot_2_1785106328965 - use with upload_image]\n"
+    }
+  ],
+  "errors": [],
+  "goal_hash": "sha256:bound-live-goal",
+  "live": true,
+  "mocked": false,
+  "node_id": "browser",
+  "operations": [
+    {
+      "artifact_path": null,
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+        "read",
+        "--filter",
+        "all",
+        "--tab-id",
+        "837362311"
+      ],
+      "exit_code": 0,
+      "index": 1,
+      "verb": "read"
+    },
+    {
+      "artifact_path": "/tmp/tau-browser-bound.jdJCss/browser-out/bound.png",
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+        "snap",
+        "--output",
+        "/tmp/tau-browser-bound.jdJCss/browser-out/bound.png",
+        "--tab-id",
+        "837362311"
+      ],
+      "exit_code": 0,
+      "index": 2,
+      "verb": "screenshot"
+    }
+  ],
+  "proof_scope": {
+    "does_not_prove": [
+      "Remote browser availability outside this Surf command boundary.",
+      "Provider/model semantic quality.",
+      "Arbitrary UI correctness beyond requested browser operations."
+    ],
+    "proves": [
+      "Tau generic DAG can route a browser node through Surf.",
+      "Browser operations are recorded with command-level receipts.",
+      "Screenshot artifacts are hash-bound when a screenshot operation succeeds."
+    ]
+  },
+  "provider_live": false,
+  "run_id": "browser-handler-bound-live",
+  "schema": "tau.browser_dag_receipt.v1",
+  "screenshot": {
+    "height": 571,
+    "path": "/tmp/tau-browser-bound.jdJCss/browser-out/bound.png",
+    "sha256": "sha256:8213e1fdbe93c7dc1655ab702e2122b0696691f21f5059d313d0562830edb95a",
+    "size_bytes": 5989,
+    "width": 1200
+  },
+  "status": "PASS",
+  "timestamp": "2026-07-26T22:52:09Z",
+  "transport": {
+    "browser_oracle_binding": {
+      "expected_url": "file:///tmp/tau-browser-bound.jdJCss/page.html",
+      "project_id": "tau",
+      "tab_id": "837362311"
+    },
+    "command": "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+    "created_tab_id": null,
+    "keep_tab": false,
+    "kind": "surf",
+    "tab_id": "837362311"
+  },
+  "verdict": "PASS",
+  "work_order_sha256": null
+}

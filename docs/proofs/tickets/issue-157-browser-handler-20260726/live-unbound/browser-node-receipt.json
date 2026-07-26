@@ -1,0 +1,66 @@
+{
+  "artifacts": [
+    {
+      "artifact_id": "browser_receipt",
+      "path": "/tmp/tau-browser-live.tnfUsC/browser-out/browser-receipt.json",
+      "schema": "tau.browser_dag_receipt.v1",
+      "sha256": "e422beb8575ddabe9cbd3f0324b30e3d00c8603ab9bbbbebb0c48ce639f38d0d",
+      "size_bytes": 3840
+    },
+    {
+      "artifact_id": "screenshot",
+      "path": "/tmp/tau-browser-live.tnfUsC/browser-out/main.png",
+      "schema": "image/png",
+      "sha256": "af736764486df1b76430667c3cf5c1fec0d67fee31634e4cbb88d402c9c1fa24",
+      "size_bytes": 6355
+    }
+  ],
+  "browser_provider": "surf",
+  "browser_receipt_path": "/tmp/tau-browser-live.tnfUsC/browser-out/browser-receipt.json",
+  "browser_receipt_schema": "tau.browser_dag_receipt.v1",
+  "capability": "browser_handler",
+  "commands_run": [
+    [
+      "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+      "tab.new",
+      "file:///tmp/tau-browser-live.tnfUsC/page.html"
+    ],
+    [
+      "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+      "read",
+      "--filter",
+      "all",
+      "--tab-id",
+      "837362309"
+    ],
+    [
+      "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+      "snap",
+      "--output",
+      "/tmp/tau-browser-live.tnfUsC/browser-out/main.png",
+      "--tab-id",
+      "837362309"
+    ],
+    [
+      "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+      "tab.close",
+      "837362309"
+    ]
+  ],
+  "duration_seconds": 1.115,
+  "errors": [],
+  "finished_at": "2026-07-26T22:51:46Z",
+  "goal_hash": "sha256:live-goal",
+  "handoff_summary": "Browser DAG node routed through Surf",
+  "live": true,
+  "mocked": false,
+  "node_id": "browser",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "run_id": "browser-handler-live",
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "started_at": "2026-07-26T22:51:45Z",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": null
+}

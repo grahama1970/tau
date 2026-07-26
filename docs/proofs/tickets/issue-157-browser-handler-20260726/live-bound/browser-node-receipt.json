@@ -1,0 +1,56 @@
+{
+  "artifacts": [
+    {
+      "artifact_id": "browser_receipt",
+      "path": "/tmp/tau-browser-bound.jdJCss/browser-out/browser-receipt.json",
+      "schema": "tau.browser_dag_receipt.v1",
+      "sha256": "d02767bc65845616dbafcea30474a490324d5f6e70eda9f41174f56c4bb36e62",
+      "size_bytes": 3054
+    },
+    {
+      "artifact_id": "screenshot",
+      "path": "/tmp/tau-browser-bound.jdJCss/browser-out/bound.png",
+      "schema": "image/png",
+      "sha256": "8213e1fdbe93c7dc1655ab702e2122b0696691f21f5059d313d0562830edb95a",
+      "size_bytes": 5989
+    }
+  ],
+  "browser_provider": "surf",
+  "browser_receipt_path": "/tmp/tau-browser-bound.jdJCss/browser-out/browser-receipt.json",
+  "browser_receipt_schema": "tau.browser_dag_receipt.v1",
+  "capability": "browser_handler",
+  "commands_run": [
+    [
+      "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+      "read",
+      "--filter",
+      "all",
+      "--tab-id",
+      "837362311"
+    ],
+    [
+      "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+      "snap",
+      "--output",
+      "/tmp/tau-browser-bound.jdJCss/browser-out/bound.png",
+      "--tab-id",
+      "837362311"
+    ]
+  ],
+  "duration_seconds": 0.834,
+  "errors": [],
+  "finished_at": "2026-07-26T22:52:09Z",
+  "goal_hash": "sha256:bound-live-goal",
+  "handoff_summary": "Browser DAG node routed through Surf",
+  "live": true,
+  "mocked": false,
+  "node_id": "browser",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "run_id": "browser-handler-bound-live",
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "started_at": "2026-07-26T22:52:08Z",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": null
+}

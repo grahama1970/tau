@@ -17,6 +17,12 @@ from threading import Event
 from typing import Any
 
 from tau_coding.approval_gate import evaluate_approval_gate
+from tau_coding.browser_cdp_proof import (
+    BROWSER_DAG_RECEIPT_SCHEMA,
+    BrowserDagSpec,
+    execute_browser_dag_node,
+    parse_browser_dag_spec,
+)
 from tau_coding.course_correction import write_course_correction_receipt
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import DagPlanNode, canonical_sha256
@@ -73,6 +79,7 @@ class DagNode:
     work_order_path: Path | None
     transaction: ArtifactTransactionSpec | None
     skill: SkillDagSpec | None
+    browser: BrowserDagSpec | None
 
 
 def run_generic_dag(
@@ -831,6 +838,14 @@ def _run_node(
             resume=resume,
             cancel_event=cancel_event,
         )
+    if node.browser is not None:
+        return _run_browser_node(
+            node,
+            run_id=run_id,
+            events_path=events_path,
+            goal_hash=goal_hash,
+            resume=resume,
+        )
     if node.transaction is not None:
         return _run_transaction_node(
             node,
@@ -990,6 +1005,135 @@ def _run_skill_node(
         if isinstance(receipt.get("cost_estimate"), dict)
         else None,
         "resumed": False,
+        "command_results": [],
+        "artifacts": artifacts,
+        "accepted_output": accepted_output,
+        "errors": receipt.get("errors", []),
+    }
+
+
+def _run_browser_node(
+    node: DagNode,
+    *,
+    run_id: str,
+    events_path: Path,
+    goal_hash: str | None,
+    resume: bool,
+) -> dict[str, Any]:
+    assert node.browser is not None
+    started_at = _utc_stamp()
+    started = time.monotonic()
+    if resume and node.receipt_path.is_file():
+        prior = _read_json_object(node.receipt_path, label=f"{node.node_id} browser receipt")
+        errors = _validate_browser_node_receipt(prior, node, expected_goal_hash=goal_hash)
+        artifacts = _receipt_artifacts(prior)
+        if not errors and prior.get("verdict") == "PASS":
+            _append_event(
+                events_path,
+                "node_resumed",
+                {"run_id": run_id, "node_id": node.node_id, "receipt_path": str(node.receipt_path)},
+            )
+            return _browser_node_record(
+                node=node,
+                receipt=prior,
+                artifacts=artifacts,
+                attempt_count=0,
+                resumed=True,
+                started_at=started_at,
+                duration_seconds=time.monotonic() - started,
+            )
+        if errors:
+            _append_resume_rejected_event(
+                events_path,
+                run_id=run_id,
+                node=node,
+                receipt=prior,
+                errors=errors,
+            )
+            return _blocked_node_record(
+                node,
+                verdict="INVALID_RECEIPT",
+                errors=errors,
+                attempt_count=0,
+                command_results=[],
+                started_at=started_at,
+                finished_at=_utc_stamp(),
+                duration_seconds=time.monotonic() - started,
+            )
+    receipt = execute_browser_dag_node(
+        spec=node.browser,
+        run_id=run_id,
+        node_id=node.node_id,
+        goal_hash=goal_hash,
+        work_order_sha256=_work_order_sha256(node),
+    )
+    write_json(node.receipt_path, receipt)
+    errors = _validate_browser_node_receipt(receipt, node, expected_goal_hash=goal_hash)
+    if errors:
+        return _blocked_node_record(
+            node,
+            verdict="INVALID_RECEIPT",
+            errors=errors,
+            attempt_count=1,
+            command_results=[],
+            started_at=started_at,
+            finished_at=_utc_stamp(),
+            duration_seconds=time.monotonic() - started,
+        )
+    artifacts = _receipt_artifacts(receipt)
+    return _browser_node_record(
+        node=node,
+        receipt=receipt,
+        artifacts=artifacts,
+        attempt_count=1,
+        resumed=False,
+        started_at=started_at,
+        duration_seconds=time.monotonic() - started,
+    )
+
+
+def _browser_node_record(
+    *,
+    node: DagNode,
+    receipt: dict[str, Any],
+    artifacts: list[Any],
+    attempt_count: int,
+    resumed: bool,
+    started_at: str,
+    duration_seconds: float,
+) -> dict[str, Any]:
+    accepted_output = (
+        {
+            "source_node_id": node.node_id,
+            "browser_provider": "surf",
+            "capability": "browser_handler",
+            "artifacts": artifacts,
+        }
+        if receipt.get("status") == "PASS"
+        else None
+    )
+    return {
+        "node_id": node.node_id,
+        "role": node.role,
+        "status": receipt.get("status"),
+        "verdict": receipt.get("verdict"),
+        "mocked": False,
+        "live": receipt.get("live") is True,
+        "provider_live": False,
+        "skill_live": False,
+        "browser_live": receipt.get("live") is True,
+        "browser_provider": "surf",
+        "capability": "browser_handler",
+        "attempt_count": attempt_count,
+        "started_at": started_at,
+        "finished_at": _utc_stamp(),
+        "duration_seconds": round(duration_seconds, 3),
+        "receipt_path": str(node.receipt_path),
+        "work_order_path": str(node.work_order_path) if node.work_order_path else None,
+        "work_order_sha256": _work_order_sha256(node),
+        "usage": None,
+        "cost_estimate": None,
+        "resumed": resumed,
         "command_results": [],
         "artifacts": artifacts,
         "accepted_output": accepted_output,
@@ -2324,14 +2468,32 @@ def _parse_node(raw_node: dict[str, Any], *, base_dir: Path) -> DagNode:
         if skill_raw is not None
         else None
     )
-    if skill is None and (
+    browser_raw = raw_node.get("browser")
+    browser = (
+        parse_browser_dag_spec(browser_raw, base_dir=base_dir, node_id=node_id)
+        if browser_raw is not None
+        else None
+    )
+    if skill is None and browser is None and (
         not isinstance(command, list)
         or not command
         or not all(isinstance(part, str) and part for part in command)
     ):
         raise RuntimeError(f"node {node_id} command must be a non-empty string list")
-    if skill is not None and command is not None:
-        raise RuntimeError(f"node {node_id} cannot declare both command and skill")
+    declared_node_kinds = sum(
+        1
+        for present in (
+            command is not None,
+            skill is not None,
+            browser is not None,
+            raw_node.get("transaction") is not None,
+        )
+        if present
+    )
+    if declared_node_kinds > 1:
+        raise RuntimeError(
+            f"node {node_id} must declare exactly one of command, skill, browser, transaction"
+        )
     command = command if isinstance(command, list) else []
     depends_on = raw_node.get("depends_on", [])
     if not isinstance(depends_on, list) or not all(isinstance(dep, str) for dep in depends_on):
@@ -2366,8 +2528,6 @@ def _parse_node(raw_node: dict[str, Any], *, base_dir: Path) -> DagNode:
         raise RuntimeError(f"node {node_id} transaction requires work_order_path")
     if skill is not None and work_order_path is None:
         raise RuntimeError(f"node {node_id} skill requires work_order_path")
-    if transaction is not None and skill is not None:
-        raise RuntimeError(f"node {node_id} cannot declare both transaction and skill")
     return DagNode(
         node_id=node_id,
         role=role,
@@ -2380,6 +2540,7 @@ def _parse_node(raw_node: dict[str, Any], *, base_dir: Path) -> DagNode:
         work_order_path=work_order_path,
         transaction=transaction,
         skill=skill,
+        browser=browser,
     )
 
 
@@ -2466,6 +2627,84 @@ def _validate_skill_node_receipt(
     for artifact_error in _skill_resume_artifact_errors(_receipt_artifacts(receipt)):
         errors.append(artifact_error)
     return errors
+
+
+def _validate_browser_node_receipt(
+    receipt: dict[str, Any],
+    node: DagNode,
+    *,
+    expected_goal_hash: str | None,
+) -> list[str]:
+    assert node.browser is not None
+    errors: list[str] = []
+    if receipt.get("schema") != GENERIC_DAG_NODE_RECEIPT_SCHEMA:
+        errors.append(f"schema must be {GENERIC_DAG_NODE_RECEIPT_SCHEMA}")
+    if receipt.get("node_id") != node.node_id:
+        errors.append(f"node_id must be {node.node_id}")
+    if str(receipt.get("status") or "").upper() not in {"PASS", "BLOCKED"}:
+        errors.append("status must be PASS or BLOCKED")
+    if str(receipt.get("verdict") or "").upper() not in {"PASS", "BROWSER_HANDLER_BLOCKED"}:
+        errors.append("verdict must be PASS or BROWSER_HANDLER_BLOCKED")
+    if receipt.get("browser_provider") != "surf":
+        errors.append("browser_provider must be surf")
+    if receipt.get("capability") != "browser_handler":
+        errors.append("capability must be browser_handler")
+    for key in ("artifacts", "commands_run", "errors", "policy_exceptions"):
+        if not isinstance(receipt.get(key), list):
+            errors.append(f"{key} must be a list")
+    if not isinstance(receipt.get("handoff_summary"), str) or not receipt["handoff_summary"]:
+        errors.append("handoff_summary must be a non-empty string")
+    expected_work_order_hash = _work_order_sha256(node)
+    if node.work_order_path is not None and expected_work_order_hash is None:
+        errors.append(f"work_order_path not found or unreadable: {node.work_order_path}")
+    if (
+        expected_work_order_hash is not None
+        and receipt.get("work_order_sha256") != expected_work_order_hash
+    ):
+        errors.append(
+            f"work_order_sha256 must match current work_order_path {node.work_order_path}"
+        )
+    if expected_goal_hash is not None:
+        observed_goal_hash = receipt.get("goal_hash")
+        if not isinstance(observed_goal_hash, str) or not observed_goal_hash.strip():
+            errors.append("goal_hash must be a non-empty string")
+        elif observed_goal_hash != expected_goal_hash:
+            errors.append("goal_hash does not match the active DAG goal")
+    typed_receipt_path = receipt.get("browser_receipt_path")
+    if not isinstance(typed_receipt_path, str) or not typed_receipt_path.strip():
+        errors.append("browser_receipt_path must be a non-empty string")
+    else:
+        typed_path = Path(typed_receipt_path).expanduser().resolve()
+        if not typed_path.is_file():
+            errors.append(f"browser_receipt_missing:{typed_path}")
+        else:
+            typed = _read_json_object(typed_path, label="browser DAG receipt")
+            if typed.get("schema") != BROWSER_DAG_RECEIPT_SCHEMA:
+                errors.append(f"browser_receipt_schema must be {BROWSER_DAG_RECEIPT_SCHEMA}")
+            typed_screenshot = typed.get("screenshot")
+            if receipt.get("status") == "PASS":
+                errors.extend(_browser_screenshot_hash_errors(typed_screenshot))
+    for artifact_error in _skill_resume_artifact_errors(_receipt_artifacts(receipt)):
+        errors.append(artifact_error)
+    return errors
+
+
+def _browser_screenshot_hash_errors(value: Any) -> list[str]:
+    if not isinstance(value, dict):
+        return ["browser_screenshot must be an object"]
+    path_value = value.get("path")
+    sha256_value = value.get("sha256")
+    if not isinstance(path_value, str) or not path_value.strip():
+        return ["browser_screenshot.path must be a non-empty string"]
+    if not isinstance(sha256_value, str) or not sha256_value.startswith("sha256:"):
+        return ["browser_screenshot.sha256 must be sha256-prefixed"]
+    screenshot_path = Path(path_value).expanduser().resolve()
+    if not screenshot_path.is_file():
+        return [f"browser_screenshot_missing:{screenshot_path}"]
+    actual = hashlib.sha256(screenshot_path.read_bytes()).hexdigest()
+    if sha256_value != f"sha256:{actual}":
+        return [f"browser_screenshot_hash_mismatch:{screenshot_path}"]
+    return []
 
 
 def _receipt_artifacts(receipt: dict[str, Any]) -> list[Any]:

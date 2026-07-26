@@ -1,0 +1,133 @@
+{
+  "commands": [
+    {
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+        "tab.new",
+        "file:///tmp/tau-browser-live.tnfUsC/page.html"
+      ],
+      "elapsed_seconds": 0.116,
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "Created tab 837362309: file:///tmp/tau-browser-live.tnfUsC/page.html\n"
+    },
+    {
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+        "read",
+        "--filter",
+        "all",
+        "--tab-id",
+        "837362309"
+      ],
+      "elapsed_seconds": 0.137,
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "button \"Tau Live Browser Handler\" [e1]\n\n[Viewport: 2191x1042]\n\n--- Page Text ---\nTau Live Browser Handler\n"
+    },
+    {
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+        "snap",
+        "--output",
+        "/tmp/tau-browser-live.tnfUsC/browser-out/main.png",
+        "--tab-id",
+        "837362309"
+      ],
+      "elapsed_seconds": 0.755,
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "Saved to /tmp/tau-browser-live.tnfUsC/browser-out/main.png (1200x571, from 3698x1664)\n[Screenshot ID: screenshot_1_1785106306459 - use with upload_image]\n"
+    },
+    {
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+        "tab.close",
+        "837362309"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "Closed tab 837362309\n"
+    }
+  ],
+  "errors": [],
+  "goal_hash": "sha256:live-goal",
+  "live": true,
+  "mocked": false,
+  "node_id": "browser",
+  "operations": [
+    {
+      "artifact_path": null,
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+        "tab.new",
+        "file:///tmp/tau-browser-live.tnfUsC/page.html"
+      ],
+      "exit_code": 0,
+      "index": 1,
+      "verb": "navigate"
+    },
+    {
+      "artifact_path": null,
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+        "read",
+        "--filter",
+        "all",
+        "--tab-id",
+        "837362309"
+      ],
+      "exit_code": 0,
+      "index": 2,
+      "verb": "read"
+    },
+    {
+      "artifact_path": "/tmp/tau-browser-live.tnfUsC/browser-out/main.png",
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+        "snap",
+        "--output",
+        "/tmp/tau-browser-live.tnfUsC/browser-out/main.png",
+        "--tab-id",
+        "837362309"
+      ],
+      "exit_code": 0,
+      "index": 3,
+      "verb": "screenshot"
+    }
+  ],
+  "proof_scope": {
+    "does_not_prove": [
+      "Remote browser availability outside this Surf command boundary.",
+      "Provider/model semantic quality.",
+      "Arbitrary UI correctness beyond requested browser operations."
+    ],
+    "proves": [
+      "Tau generic DAG can route a browser node through Surf.",
+      "Browser operations are recorded with command-level receipts.",
+      "Screenshot artifacts are hash-bound when a screenshot operation succeeds."
+    ]
+  },
+  "provider_live": false,
+  "run_id": "browser-handler-live",
+  "schema": "tau.browser_dag_receipt.v1",
+  "screenshot": {
+    "height": 571,
+    "path": "/tmp/tau-browser-live.tnfUsC/browser-out/main.png",
+    "sha256": "sha256:af736764486df1b76430667c3cf5c1fec0d67fee31634e4cbb88d402c9c1fa24",
+    "size_bytes": 6355,
+    "width": 1200
+  },
+  "status": "PASS",
+  "timestamp": "2026-07-26T22:51:46Z",
+  "transport": {
+    "browser_oracle_binding": null,
+    "command": "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+    "created_tab_id": "837362309",
+    "keep_tab": false,
+    "kind": "surf",
+    "tab_id": "837362309"
+  },
+  "verdict": "PASS",
+  "work_order_sha256": null
+}
