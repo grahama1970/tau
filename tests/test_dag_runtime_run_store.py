@@ -920,7 +920,9 @@ def test_retry_schedule_replays_once_without_duplicate_attempt_history(tmp_path:
     ]
 
 
-def test_restart_blocks_dispatched_attempt_with_uncertain_effect(tmp_path: Path) -> None:
+def test_operator_can_reconcile_uncertain_dispatched_run_and_start_next_generation(
+    tmp_path: Path,
+) -> None:
     plan = _plan(tmp_path, ["producer"])
     call_count = 0
 
@@ -961,21 +963,53 @@ def test_restart_blocks_dispatched_attempt_with_uncertain_effect(tmp_path: Path)
             for attempt in store.list_attempts("run-1")
             if attempt.state == "UNCERTAIN"
         ]
-    with SqliteDagRunStore(database) as store, pytest.raises(
-        DagRunStoreError, match="dag_run_reconciliation_required"
-    ):
-        run_dag_plan(
-            plan,
-            execute_node=execute,
-            run_store=store,
-            run_id="run-1",
-            lease_owner="owner-c",
-        )
 
     assert resumed.status == "BLOCKED"
     assert resumed.verdict == "DAG_ATTEMPT_EFFECT_UNCERTAIN"
     assert call_count == 0
     assert len(uncertain) == 1
+
+    with SqliteDagRunStore(database) as store:
+        before_events = len(store.load_events("run-1"))
+        decision = store.resolve_reconciliation_required_run(
+            run_id="run-1",
+            decision="reconcile",
+            operator_id="operator-test",
+            reason="operator inspected the uncertain dispatched attempt",
+        )
+        after_events = store.load_events("run-1")
+        record = store.load_run_record("run-1")
+        next_run_id = store.execution_run_id("run-1")
+
+    assert decision["schema"] == "tau.dag_run_reconciliation_decision.v1"
+    assert decision["status"] == "PASS"
+    assert decision["decision"] == "authorize_new_generation"
+    assert decision["previous_status"] == "RECONCILIATION_REQUIRED"
+    assert decision["terminal_status"] == "BLOCKED"
+    assert decision["terminal_verdict"] == "DAG_RECONCILED_OPERATOR_AUTHORIZED_NEW_GENERATION"
+    assert decision["journal_preserved"] is True
+    assert decision["event_count_before"] == before_events
+    assert decision["event_count_after"] == before_events + 1
+    assert decision["next_execution_run_id"] == "run-1:generation:1"
+    assert record.status == "BLOCKED"
+    assert record.verdict == "DAG_RECONCILED_OPERATOR_AUTHORIZED_NEW_GENERATION"
+    assert next_run_id == "run-1:generation:1"
+    assert after_events[-1]["event_type"] == "run_reconciliation_decision_recorded"
+    assert after_events[-1]["payload"]["schema"] == "tau.dag_run_reconciliation_decision.v1"
+    assert after_events[-1]["payload"]["uncertain_attempts"][0]["state"] == "UNCERTAIN"
+
+    with SqliteDagRunStore(database) as store:
+        recovered = run_dag_plan(
+            plan,
+            execute_node=execute,
+            run_store=store,
+            run_id=next_run_id,
+            lease_owner="owner-c",
+        )
+
+    assert recovered.status == "PASS"
+    assert recovered.run_id == "run-1:generation:1"
+    assert call_count == 1
 
 
 def _plan(tmp_path: Path, node_ids: list[str]) -> DagPlan:

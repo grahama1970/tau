@@ -2,6 +2,7 @@ import hashlib
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import anyio
@@ -294,6 +295,89 @@ def test_cli_dag_view_snapshot_projects_history_older_than_visible_event_window(
     transaction = payload["nodes"][0]["transaction"]
     assert transaction["attempts"][0]["candidate_manifest_sha256"] == "sha256:early"
     assert len(payload["recent_events"]) == 200
+
+
+def test_cli_dag_reconcile_writes_operator_decision_receipt(tmp_path: Path) -> None:
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    plan = compile_generic_dag_plan(
+        {
+            "schema": "tau.generic_dag_spec.v1",
+            "run_id": "cli-reconcile",
+            "run_dir": str(run_dir),
+            "nodes": [
+                {
+                    "node_id": "worker",
+                    "role": "producer",
+                    "command": ["true"],
+                    "receipt_path": str(run_dir / "worker-receipt.json"),
+                }
+            ],
+        },
+        source_path=run_dir / "dag.json",
+    )
+
+    class InjectedCrash(RuntimeError):
+        pass
+
+    def execute(node, accepted_inputs, attempt):  # type: ignore[no-untyped-def]
+        del node, accepted_inputs, attempt
+        raise AssertionError("dispatch crash happens before worker execution")
+
+    def crash(point, context):  # type: ignore[no-untyped-def]
+        del context
+        if point == "after_attempt_dispatched":
+            raise InjectedCrash(point)
+
+    with SqliteDagRunStore(run_dir / "dag-run.sqlite3") as store, pytest.raises(
+        InjectedCrash
+    ):
+        run_dag_plan(
+            plan,
+            execute_node=execute,
+            run_store=store,
+            run_id="cli-reconcile",
+            lease_owner="owner-a",
+            lease_ttl_seconds=0.1,
+            fault_injector=crash,
+        )
+    time.sleep(0.12)
+    with SqliteDagRunStore(run_dir / "dag-run.sqlite3") as store:
+        resumed = run_dag_plan(
+            plan,
+            execute_node=execute,
+            run_store=store,
+            run_id="cli-reconcile",
+            lease_owner="owner-b",
+            allow_lease_takeover=True,
+        )
+    assert resumed.status == "BLOCKED"
+    assert resumed.verdict == "DAG_ATTEMPT_EFFECT_UNCERTAIN"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "dag-reconcile",
+            str(run_dir),
+            "--decision",
+            "reconcile",
+            "--operator",
+            "operator-test",
+            "--reason",
+            "operator inspected the uncertain dispatched attempt",
+        ],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    receipt_path = Path(payload["receipt_path"])
+    written = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert payload == written
+    assert payload["schema"] == "tau.dag_run_reconciliation_decision.v1"
+    assert payload["status"] == "PASS"
+    assert payload["decision"] == "authorize_new_generation"
+    assert payload["terminal_verdict"] == "DAG_RECONCILED_OPERATOR_AUTHORIZED_NEW_GENERATION"
+    assert payload["next_execution_run_id"] == "cli-reconcile:generation:1"
 
 
 def test_cli_dag_plan_exports_generic_contract_without_dispatch(tmp_path: Path) -> None:

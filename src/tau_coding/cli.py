@@ -77,6 +77,7 @@ from tau_coding.dag_route_memory import (
     write_dag_route_memory_sync_receipt,
 )
 from tau_coding.dag_runtime import write_dag_plan
+from tau_coding.dag_runtime.run_store import DagRunStoreError, SqliteDagRunStore
 from tau_coding.dag_signals import write_dag_signal_receipt
 from tau_coding.dag_stress_poc import (
     inspect_dag_stress_campaign,
@@ -1790,6 +1791,7 @@ def main(
         ["dag-run"],
         ["dag-route-memory-candidates"],
         ["dag-route-memory-sync"],
+        ["dag-reconcile"],
         ["github-redact-projection"],
         ["herdr-cleanup"],
         ["environment-manifest"],
@@ -2669,6 +2671,26 @@ def main(
         try:
             run_dir = _parse_generic_dag_resume_cli_args(positional_args[1:])
             payload = resume_generic_dag_from_run(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "dag-reconcile":
+        try:
+            options = _parse_dag_reconcile_cli_args(positional_args[1:])
+            payload = _write_dag_reconciliation_decision_receipt(
+                run_dir=Path(str(options["run_dir"])),
+                decision=str(options["decision"]),
+                operator_id=str(options["operator_id"]),
+                reason=str(options["reason"]),
+                receipt_path=(
+                    Path(str(options["receipt"])) if options["receipt"] is not None else None
+                ),
+                run_id=_optional_str(options.get("run_id")),
+            )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -6260,6 +6282,104 @@ def _parse_generic_dag_resume_cli_args(args: list[str]) -> Path:
     if len(args) != 1:
         raise RuntimeError("Usage: tau dag-resume <run-dir>")
     return Path(args[0])
+
+
+def _parse_dag_reconcile_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "run_dir": None,
+        "decision": None,
+        "operator_id": None,
+        "reason": None,
+        "receipt": None,
+        "run_id": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--decision", "--operator", "--reason", "--receipt", "--run-id"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            if arg == "--operator":
+                options["operator_id"] = args[index]
+            else:
+                options[arg.removeprefix("--").replace("-", "_")] = args[index]
+        elif arg.startswith("--decision="):
+            options["decision"] = arg.partition("=")[2]
+        elif arg.startswith("--operator="):
+            options["operator_id"] = arg.partition("=")[2]
+        elif arg.startswith("--reason="):
+            options["reason"] = arg.partition("=")[2]
+        elif arg.startswith("--receipt="):
+            options["receipt"] = arg.partition("=")[2]
+        elif arg.startswith("--run-id="):
+            options["run_id"] = arg.partition("=")[2]
+        elif arg.startswith("-"):
+            raise RuntimeError(f"unknown dag-reconcile option: {arg}")
+        elif options["run_dir"] is None:
+            options["run_dir"] = arg
+        else:
+            raise RuntimeError(f"unexpected dag-reconcile argument: {arg}")
+        index += 1
+    if not _optional_str(options.get("run_dir")):
+        raise RuntimeError(
+            "Usage: tau dag-reconcile <run-dir> --decision <reconcile|abandon> "
+            "--operator <id> --reason <text> [--run-id <id>] [--receipt <path>]"
+        )
+    if not _optional_str(options.get("decision")):
+        raise RuntimeError("dag-reconcile requires --decision <reconcile|abandon>")
+    if not _optional_str(options.get("operator_id")):
+        raise RuntimeError("dag-reconcile requires --operator <id>")
+    if not _optional_str(options.get("reason")):
+        raise RuntimeError("dag-reconcile requires --reason <text>")
+    return options
+
+
+def _write_dag_reconciliation_decision_receipt(
+    *,
+    run_dir: Path,
+    decision: str,
+    operator_id: str,
+    reason: str,
+    receipt_path: Path | None,
+    run_id: str | None,
+) -> dict[str, Any]:
+    resolved_run_dir = run_dir.expanduser().resolve()
+    store_path = resolved_run_dir / "dag-run.sqlite3"
+    if not store_path.is_file():
+        raise RuntimeError(f"dag run store not found: {store_path}")
+    resolved_receipt = (
+        receipt_path.expanduser().resolve()
+        if receipt_path is not None
+        else resolved_run_dir / "reconciliation-decision.json"
+    )
+    with SqliteDagRunStore(store_path) as store:
+        selected_run_id = run_id
+        if selected_run_id is None:
+            records = store.reconciliation_required_runs()
+            if not records:
+                raise RuntimeError("no RECONCILIATION_REQUIRED run found")
+            if len(records) > 1:
+                raise RuntimeError("multiple RECONCILIATION_REQUIRED runs found; pass --run-id")
+            selected_run_id = records[0].run_id
+        try:
+            receipt = store.resolve_reconciliation_required_run(
+                run_id=selected_run_id,
+                decision=decision,
+                operator_id=operator_id,
+                reason=reason,
+            )
+        except DagRunStoreError as exc:
+            raise RuntimeError(str(exc)) from exc
+    payload = {
+        **receipt,
+        "run_dir": str(resolved_run_dir),
+        "run_store_path": str(store_path),
+        "receipt_path": str(resolved_receipt),
+    }
+    resolved_receipt.parent.mkdir(parents=True, exist_ok=True)
+    resolved_receipt.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+    return payload
 
 
 def _parse_generic_provider_dag_node_cli_args(args: list[str]) -> dict[str, object]:

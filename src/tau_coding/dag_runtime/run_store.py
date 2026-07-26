@@ -32,6 +32,7 @@ DIAGNOSTIC_EVENT_SCHEMA = "tau.dag_diagnostic_event.v1"
 CORRECTION_JOURNAL_ENTRY_SCHEMA = "tau.correction_journal_entry.v1"
 MAX_DIAGNOSTIC_EVENT_BYTES = 64 * 1024
 STORE_SCHEMA_VERSION = 1
+DAG_RUN_RECONCILIATION_DECISION_SCHEMA = "tau.dag_run_reconciliation_decision.v1"
 
 
 class DagRunStoreError(RuntimeError):
@@ -660,6 +661,113 @@ class SqliteDagRunStore:
             if row["lease_expires_at_ms"] is not None
             else None,
         )
+
+    def reconciliation_required_runs(self) -> tuple[DagRunRecord, ...]:
+        """Return runs waiting for an explicit operator reconciliation decision."""
+
+        rows = self._connection.execute(
+            "SELECT run_id FROM dag_runs WHERE status = 'RECONCILIATION_REQUIRED' "
+            "ORDER BY updated_at, run_id"
+        ).fetchall()
+        return tuple(self.load_run_record(str(row["run_id"])) for row in rows)
+
+    def resolve_reconciliation_required_run(
+        self,
+        *,
+        run_id: str,
+        decision: str,
+        operator_id: str,
+        reason: str,
+    ) -> dict[str, Any]:
+        """Record an operator decision for a run with uncertain dispatched effects."""
+
+        normalized_decision = decision.strip().lower().replace("-", "_")
+        if normalized_decision in {"reconcile", "authorize", "authorize_new_generation"}:
+            normalized_decision = "authorize_new_generation"
+            verdict = "DAG_RECONCILED_OPERATOR_AUTHORIZED_NEW_GENERATION"
+        elif normalized_decision == "abandon":
+            verdict = "DAG_RUN_ABANDONED_AFTER_UNCERTAIN_EFFECT"
+        else:
+            raise DagRunStoreError("dag_reconciliation_decision_invalid", decision)
+        if not operator_id.strip():
+            raise DagRunStoreError("dag_reconciliation_operator_missing")
+        if not reason.strip():
+            raise DagRunStoreError("dag_reconciliation_reason_missing")
+
+        with self._transaction():
+            row = self._connection.execute(
+                "SELECT * FROM dag_runs WHERE run_id = ?", (run_id,)
+            ).fetchone()
+            if row is None:
+                raise DagRunStoreError("dag_run_missing", run_id)
+            if row["status"] != "RECONCILIATION_REQUIRED":
+                raise DagRunStoreError("dag_run_not_reconciliation_required", run_id)
+            uncertain_attempts = [
+                _stored_attempt_to_receipt(attempt)
+                for attempt in self.list_attempts(run_id)
+                if attempt.state == "UNCERTAIN"
+            ]
+            if not uncertain_attempts:
+                raise DagRunStoreError("dag_run_reconciliation_attempts_missing", run_id)
+            before_event_count = int(
+                self._connection.execute(
+                    "SELECT COUNT(*) FROM dag_run_events WHERE run_id = ?", (run_id,)
+                ).fetchone()[0]
+            )
+            lease = DagRunLease(
+                run_id=run_id,
+                owner_id=operator_id,
+                epoch=int(row["lease_epoch"]),
+                expires_at_ms=0,
+            )
+            payload = {
+                "schema": DAG_RUN_RECONCILIATION_DECISION_SCHEMA,
+                "run_id": run_id,
+                "decision": normalized_decision,
+                "operator_id": operator_id,
+                "reason": reason,
+                "previous_status": row["status"],
+                "previous_verdict": row["verdict"],
+                "uncertain_attempts": uncertain_attempts,
+                "terminal_status": "BLOCKED",
+                "terminal_verdict": verdict,
+            }
+            event_seq = self._append_event(
+                lease,
+                event_key=f"run:reconciliation:{normalized_decision}",
+                event_type="run_reconciliation_decision_recorded",
+                entity_type="run",
+                entity_id=run_id,
+                payload=payload,
+                check_lease=False,
+            )
+            self._connection.execute(
+                """UPDATE dag_runs SET status = 'BLOCKED', verdict = ?,
+                   lease_owner = NULL, lease_expires_at_ms = NULL, updated_at = ?
+                   WHERE run_id = ?""",
+                (verdict, _now_iso(), run_id),
+            )
+            after_event_count = int(
+                self._connection.execute(
+                    "SELECT COUNT(*) FROM dag_run_events WHERE run_id = ?", (run_id,)
+                ).fetchone()[0]
+            )
+            receipt = {
+                **payload,
+                "ok": True,
+                "status": "PASS",
+                "event_seq": event_seq,
+                "event_count_before": before_event_count,
+                "event_count_after": after_event_count,
+                "journal_preserved": after_event_count > before_event_count,
+                "next_execution_run_id": (
+                    self.execution_run_id(_base_run_id(run_id))
+                    if normalized_decision == "authorize_new_generation"
+                    else None
+                ),
+                "created_at": _now_iso(),
+            }
+        return receipt
 
     def max_observed_concurrency(self, run_id: str) -> int:
         """Return the highest scheduler concurrency recorded in the journal."""
@@ -1562,3 +1670,25 @@ class SqliteDagRunStore:
 
     def _transaction(self) -> _Transaction:
         return self._Transaction(self._connection)
+
+
+def _stored_attempt_to_receipt(attempt: StoredAttempt) -> dict[str, Any]:
+    return {
+        "run_id": attempt.identity.run_id,
+        "node_id": attempt.identity.node_id,
+        "attempt": attempt.identity.attempt,
+        "attempt_id": attempt.identity.attempt_id,
+        "idempotency_key": attempt.identity.idempotency_key,
+        "state": attempt.state,
+        "effect_state": attempt.effect_state,
+        "staged_result_present": attempt.staged_result is not None,
+        "committed_result_present": attempt.committed_result is not None,
+    }
+
+
+def _base_run_id(run_id: str) -> str:
+    marker = ":generation:"
+    prefix, found, suffix = run_id.rpartition(marker)
+    if found and prefix and suffix.isdigit():
+        return prefix
+    return run_id
