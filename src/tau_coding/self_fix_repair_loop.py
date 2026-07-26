@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shlex
 import subprocess
 import time
 from datetime import UTC, datetime
@@ -34,7 +35,7 @@ def write_coder_reviewer_repair_loop(
     target_file: Path,
     find_text: str,
     replace_text: str,
-    verification_commands: list[str],
+    verification_commands: list[str] | list[list[str]],
     memory_base_url: str = "http://127.0.0.1:8601",
     scillm_base_url: str = "http://127.0.0.1:4001",
     model: str = "gpt-5.5",
@@ -78,7 +79,8 @@ def write_coder_reviewer_repair_loop(
             "does_not_prove": [
                 "Unbounded autonomous repair.",
                 "GitHub issue monitoring or label mutation.",
-                "Reviewer semantic correctness beyond the recorded live Scillm call and deterministic checks.",
+                "Reviewer semantic correctness beyond the recorded live Scillm call "
+                "and deterministic checks.",
                 "Rollback for unrelated dirty working-tree files.",
             ],
         },
@@ -122,7 +124,10 @@ def write_coder_reviewer_repair_loop(
             ],
             result_status="REQUESTED",
             result_summary="Human requested a live Tau coder-reviewer repair loop.",
-            evidence=[str(resolved_out / "memory-intent.json"), str(resolved_out / "memory-recall.json")],
+            evidence=[
+                str(resolved_out / "memory-intent.json"),
+                str(resolved_out / "memory-recall.json"),
+            ],
             rationale="Memory-first intake produced context for a bounded coder turn.",
             next_name="coder",
             next_executor="local",
@@ -169,7 +174,9 @@ def write_coder_reviewer_repair_loop(
             if coder_call.get("status") != "PASS":
                 raise RuntimeError("coder Scillm call failed")
 
-            patched = _apply_patch_text(resolved_target, find_text=find_text, replace_text=replace_text)
+            patched = _apply_patch_text(
+                resolved_target, find_text=find_text, replace_text=replace_text
+            )
             coder_handoff = _handoff(
                 github_repo=github_repo,
                 github_target=github_target,
@@ -202,7 +209,10 @@ def write_coder_reviewer_repair_loop(
                 subagent="coder",
                 status="COMPLETED",
                 summary=str(coder_handoff["result"]["summary"]),
-                artifacts=[str(coder_dir / "scillm-call-receipt.json"), str(coder_dir / "handoff.json")],
+                artifacts=[
+                    str(coder_dir / "scillm-call-receipt.json"),
+                    str(coder_dir / "handoff.json"),
+                ],
                 next_subagent="reviewer",
                 next_executor="local",
                 next_reason="Reviewer validates the coder mutation.",
@@ -536,24 +546,24 @@ def _apply_patch_text(target: Path, *, find_text: str, replace_text: str) -> boo
 
 def _run_verification_commands(
     repo_root: Path,
-    commands: list[str],
+    commands: list[str] | list[list[str]],
     *,
     out_dir: Path,
 ) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
     for index, command in enumerate(commands, start=1):
+        argv = shlex.split(command) if isinstance(command, str) else list(command)
         started = time.monotonic()
         completed = subprocess.run(
-            command,
+            argv,
             cwd=repo_root,
-            shell=True,
             text=True,
             capture_output=True,
             check=False,
             timeout=120,
         )
         result = {
-            "command": command,
+            "command": argv,
             "exit_code": completed.returncode,
             "duration_seconds": round(time.monotonic() - started, 6),
             "stdout": completed.stdout,

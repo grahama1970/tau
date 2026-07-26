@@ -12725,8 +12725,37 @@ def _fetch_github_issue(*, repo: str, issue: int) -> tuple[dict[str, object], di
     if not isinstance(payload, dict):
         fetch["ok"] = False
         raise RuntimeError(f"gh issue view returned non-object JSON for {repo}#{issue}")
+    payload.update(_fetch_github_issue_rest_metadata(repo=repo, issue=issue))
     fetch["ok"] = True
     return payload, fetch
+
+
+def _fetch_github_issue_rest_metadata(*, repo: str, issue: int) -> dict[str, object]:
+    gh_path = which("gh")
+    if gh_path is None:
+        return {}
+    owner_repo = repo.strip("/")
+    command = [gh_path, "api", f"repos/{owner_repo}/issues/{issue}"]
+    completed = subprocess.run(command, capture_output=True, text=True, timeout=45, check=False)
+    if completed.returncode != 0:
+        return {"securityMetadataFetchError": completed.stderr.strip()}
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError:
+        return {"securityMetadataFetchError": "gh api issue JSON parse failed"}
+    if not isinstance(payload, dict):
+        return {"securityMetadataFetchError": "gh api issue returned non-object JSON"}
+    metadata: dict[str, object] = {}
+    association = payload.get("author_association")
+    if isinstance(association, str):
+        metadata["authorAssociation"] = association
+    updated_at = payload.get("updated_at")
+    if isinstance(updated_at, str):
+        metadata["restUpdatedAt"] = updated_at
+    user = payload.get("user")
+    if isinstance(user, dict) and isinstance(user.get("login"), str):
+        metadata["authorLogin"] = user["login"]
+    return metadata
 
 
 def _fetch_github_open_issues(
@@ -12835,6 +12864,72 @@ def _self_fix_eligibility(
             if eligible
             else "issue has no configured self-fix routing labels"
         ),
+    }
+
+
+def _issue_body_edited_after_routing_label(
+    *,
+    repo: str,
+    issue: int,
+    routing_labels: set[str],
+) -> dict[str, object]:
+    if not routing_labels:
+        return {"ok": True, "edited_after_routing_label": False, "reason": "no_routing_labels"}
+    gh_path = which("gh")
+    if gh_path is None:
+        return {"ok": False, "edited_after_routing_label": True, "error": "gh_missing"}
+    command = [gh_path, "api", f"repos/{repo.strip('/')}/issues/{issue}/events", "--paginate"]
+    completed = subprocess.run(command, capture_output=True, text=True, timeout=45, check=False)
+    if completed.returncode != 0:
+        return {
+            "ok": False,
+            "edited_after_routing_label": True,
+            "error": completed.stderr.strip() or "issue_events_fetch_failed",
+        }
+    try:
+        events = json.loads(completed.stdout)
+    except json.JSONDecodeError:
+        return {
+            "ok": False,
+            "edited_after_routing_label": True,
+            "error": "issue_events_json_parse_failed",
+        }
+    if not isinstance(events, list):
+        return {
+            "ok": False,
+            "edited_after_routing_label": True,
+            "error": "issue_events_non_list",
+        }
+    latest_route_label: str | None = None
+    latest_route_label_at: str | None = None
+    latest_body_edit_at: str | None = None
+    for event in events:
+        if not isinstance(event, dict):
+            continue
+        created_at = event.get("created_at")
+        if not isinstance(created_at, str):
+            continue
+        label = event.get("label")
+        label_name = label.get("name") if isinstance(label, dict) else None
+        if event.get("event") == "labeled" and label_name in routing_labels:
+            if latest_route_label_at is None or created_at > latest_route_label_at:
+                latest_route_label_at = created_at
+                latest_route_label = label_name
+        elif event.get("event") == "edited" and (
+            latest_body_edit_at is None or created_at > latest_body_edit_at
+        ):
+            latest_body_edit_at = created_at
+    edited_after = bool(
+        latest_route_label_at is not None
+        and latest_body_edit_at is not None
+        and latest_body_edit_at > latest_route_label_at
+    )
+    return {
+        "ok": not edited_after,
+        "edited_after_routing_label": edited_after,
+        "latest_routing_label": latest_route_label,
+        "latest_routing_label_at": latest_route_label_at,
+        "latest_body_edit_at": latest_body_edit_at,
     }
 
 
@@ -13115,6 +13210,15 @@ def project_agent_self_fix_tick_command(
     issue_text = _issue_text(issue_payload)
     issue_labels = _issue_labels(issue_payload)
     eligibility = _self_fix_eligibility(issue_labels, required_labels)
+    body_edit_gate = _issue_body_edited_after_routing_label(
+        repo=repo,
+        issue=issue,
+        routing_labels=set(eligibility.get("matched_labels", [])),
+    )
+    issue_payload["bodyEditedAfterRoutingLabel"] = bool(
+        body_edit_gate.get("edited_after_routing_label")
+    )
+    issue_payload["bodyEditAfterRoutingLabelGate"] = body_edit_gate
     memory_preflight = _self_fix_memory_preflight(
         memory_base_url=memory_base_url,
         query=issue_text,

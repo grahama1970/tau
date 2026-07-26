@@ -2,7 +2,8 @@ import json
 import subprocess
 from pathlib import Path
 
-from tau_coding.self_fix_ticket_repair import run_ticket_repair
+from tau_coding.self_fix_repair_loop import _run_verification_commands
+from tau_coding.self_fix_ticket_repair import extract_repair_request, run_ticket_repair
 
 
 def test_ticket_repair_rolls_back_target_when_commit_fails(
@@ -25,6 +26,7 @@ def test_ticket_repair_rolls_back_target_when_commit_fails(
         "number": 77,
         "title": "Probe rollback",
         "url": "https://github.com/grahama1970/tau/issues/77",
+        "authorAssociation": "OWNER",
         "body": """
 ```json
 {
@@ -52,7 +54,9 @@ def test_ticket_repair_rolls_back_target_when_commit_fails(
             ],
         }
 
-    monkeypatch.setattr("tau_coding.self_fix_ticket_repair.write_coder_reviewer_repair_loop", fake_loop)
+    monkeypatch.setattr(
+        "tau_coding.self_fix_ticket_repair.write_coder_reviewer_repair_loop", fake_loop
+    )
     monkeypatch.setattr(
         "tau_coding.self_fix_ticket_repair._commit_and_push_repair",
         lambda *args, **kwargs: {
@@ -91,11 +95,123 @@ def test_ticket_repair_rolls_back_target_when_commit_fails(
     assert written["rollback"]["restored"] is True
 
 
+def test_ticket_repair_rejects_non_allowlisted_verification_command() -> None:
+    body = """
+```json
+{
+  "schema": "tau.self_fix_repair_request.v1",
+  "request": "Repair target value.",
+  "target_file": "target.py",
+  "find_text": "VALUE = 'bug'",
+  "replace_text": "VALUE = 'fixed'",
+  "verification_commands": ["python -m py_compile target.py; touch owned"]
+}
+```
+"""
+
+    assert extract_repair_request(body) is None
+
+
+def test_ticket_repair_rejects_untrusted_author_before_loop(tmp_path: Path, monkeypatch) -> None:
+    repo = _init_repo(tmp_path)
+    target = repo / "target.py"
+    target.write_text("VALUE = 'bug'\n", encoding="utf-8")
+    subprocess.run(["git", "add", "target.py"], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True)
+
+    def fake_loop(**kwargs):
+        raise AssertionError("repair loop must not run for an untrusted issue author")
+
+    monkeypatch.setattr(
+        "tau_coding.self_fix_ticket_repair.write_coder_reviewer_repair_loop", fake_loop
+    )
+
+    receipt = run_ticket_repair(
+        repo="grahama1970/tau",
+        issue_payload=_issue_payload(author_association="NONE"),
+        repo_root=repo,
+        receipt_dir=tmp_path / "receipt",
+        memory_base_url="http://127.0.0.1:8601",
+        scillm_base_url="http://127.0.0.1:4001",
+        model="gpt-5.5",
+        active_goal_hash=None,
+        apply_github=False,
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["error"] == "untrusted_issue_author"
+    assert target.read_text(encoding="utf-8") == "VALUE = 'bug'\n"
+
+
+def test_ticket_repair_rejects_issue_edited_after_routing_label(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo = _init_repo(tmp_path)
+    target = repo / "target.py"
+    target.write_text("VALUE = 'bug'\n", encoding="utf-8")
+    subprocess.run(["git", "add", "target.py"], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True)
+
+    def fake_loop(**kwargs):
+        raise AssertionError("repair loop must not run after post-routing body edit")
+
+    monkeypatch.setattr(
+        "tau_coding.self_fix_ticket_repair.write_coder_reviewer_repair_loop", fake_loop
+    )
+
+    payload = _issue_payload(author_association="OWNER")
+    payload["bodyEditedAfterRoutingLabel"] = True
+    receipt = run_ticket_repair(
+        repo="grahama1970/tau",
+        issue_payload=payload,
+        repo_root=repo,
+        receipt_dir=tmp_path / "receipt",
+        memory_base_url="http://127.0.0.1:8601",
+        scillm_base_url="http://127.0.0.1:4001",
+        model="gpt-5.5",
+        active_goal_hash=None,
+        apply_github=False,
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["error"] == "issue_body_edited_after_routing_label"
+    assert target.read_text(encoding="utf-8") == "VALUE = 'bug'\n"
+
+
+def test_issue_derived_verification_commands_use_argv_not_shell(
+    tmp_path: Path, monkeypatch
+) -> None:
+    calls = []
+
+    class Completed:
+        returncode = 0
+        stdout = "ok"
+        stderr = ""
+
+    def fake_run(command, **kwargs):
+        calls.append((command, kwargs))
+        assert kwargs.get("shell") is not True
+        return Completed()
+
+    monkeypatch.setattr("tau_coding.self_fix_repair_loop.subprocess.run", fake_run)
+
+    results = _run_verification_commands(
+        tmp_path,
+        [["python", "-m", "py_compile", "target.py"]],
+        out_dir=tmp_path / "verification",
+    )
+
+    assert results[0]["command"] == ["python", "-m", "py_compile", "target.py"]
+    assert calls[0][0] == ["python", "-m", "py_compile", "target.py"]
+
+
 def _init_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
     repo.mkdir()
     subprocess.run(["git", "init"], cwd=repo, check=True, stdout=subprocess.DEVNULL)
-    subprocess.run(["git", "config", "user.email", "tau-test@example.invalid"], cwd=repo, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "tau-test@example.invalid"], cwd=repo, check=True
+    )
     subprocess.run(["git", "config", "user.name", "Tau Test"], cwd=repo, check=True)
     return repo
 
@@ -108,3 +224,24 @@ def _tracked_status(repo: Path) -> str:
         text=True,
         capture_output=True,
     ).stdout.strip()
+
+
+def _issue_payload(*, author_association: str) -> dict[str, object]:
+    return {
+        "number": 77,
+        "title": "Probe repair",
+        "url": "https://github.com/grahama1970/tau/issues/77",
+        "authorAssociation": author_association,
+        "body": """
+```json
+{
+  "schema": "tau.self_fix_repair_request.v1",
+  "request": "Repair target value.",
+  "target_file": "target.py",
+  "find_text": "VALUE = 'bug'",
+  "replace_text": "VALUE = 'fixed'",
+  "verification_commands": ["python -m py_compile target.py"]
+}
+```
+""",
+    }

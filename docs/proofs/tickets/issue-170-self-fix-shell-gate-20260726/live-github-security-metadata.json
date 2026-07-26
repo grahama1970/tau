@@ -1,0 +1,39 @@
+{
+  "authorAssociation": "OWNER",
+  "authorLogin": "grahama1970",
+  "body_edit_gate": {
+    "edited_after_routing_label": false,
+    "latest_body_edit_at": null,
+    "latest_routing_label": "goal-lock",
+    "latest_routing_label_at": "2026-07-26T12:12:23Z",
+    "ok": true
+  },
+  "eligibility": {
+    "eligible": true,
+    "issue_labels": [
+      "goal-lock",
+      "maintainer-active",
+      "route:security_or_compliance",
+      "security",
+      "type:bug"
+    ],
+    "matched_labels": [
+      "goal-lock",
+      "route:security_or_compliance",
+      "security"
+    ],
+    "policy": "any_required_label_match",
+    "reason": "issue has at least one configured self-fix routing label",
+    "required_labels_any": [
+      "goal-lock",
+      "route:security_or_compliance",
+      "security"
+    ]
+  },
+  "fetch_ok": true,
+  "live": true,
+  "mocked": false,
+  "number": 170,
+  "restUpdatedAt": "2026-07-26T12:50:31Z",
+  "updatedAt": "2026-07-26T12:50:31Z"
+}

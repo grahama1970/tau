@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import shlex
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
@@ -15,6 +16,11 @@ from tau_coding.self_fix_repair_loop import write_coder_reviewer_repair_loop
 REPAIR_REQUEST_SCHEMA = "tau.self_fix_repair_request.v1"
 REPAIR_RECEIPT_SCHEMA = "tau.self_fix_ticket_repair_receipt.v1"
 _JSON_BLOCK_RE = re.compile(r"```json\s*(\{.*?\})\s*```", re.DOTALL)
+TRUSTED_AUTHOR_ASSOCIATIONS = {"OWNER", "MEMBER", "COLLABORATOR"}
+_ALLOWED_VERIFICATION_COMMAND_TEMPLATES = (
+    ("python", "-m", "py_compile", "{target_file}"),
+    ("uv", "run", "python", "-m", "py_compile", "{target_file}"),
+)
 _HELPER = Path(
     "/home/graham/workspace/experiments/agent-skills/skills/"
     "best-practices-github-ticket/scripts/gh-ticket-tools.sh"
@@ -90,6 +96,11 @@ def run_ticket_repair(
     if request is None:
         receipt["error"] = "repair_request_contract_missing"
         return _write_and_return(resolved_receipt_dir, receipt)
+    trust = _issue_repair_trust(issue_payload)
+    receipt["issue_trust"] = trust
+    if not trust["ok"]:
+        receipt["error"] = trust["error"]
+        return _write_and_return(resolved_receipt_dir, receipt)
 
     clean = _tracked_worktree_clean(resolved_repo)
     receipt["commands"].append(clean)
@@ -132,8 +143,7 @@ def run_ticket_repair(
         resolved_repo,
         target_file=Path(request["target_file"]),
         message=str(
-            request.get("commit_message")
-            or f"Resolve issue #{issue_number}: {issue_title[:64]}"
+            request.get("commit_message") or f"Resolve issue #{issue_number}: {issue_title[:64]}"
         ),
         repo=repo,
     )
@@ -201,13 +211,72 @@ def _normalize_repair_request(payload: dict[str, Any]) -> dict[str, Any]:
     target = str(payload["target_file"])
     if Path(target).is_absolute() or ".." in Path(target).parts:
         raise ValueError("target_file must be a repo-relative path")
+    normalized_commands = _normalize_verification_commands(commands, target_file=target)
     return {
         **payload,
         "request": str(payload["request"]),
         "target_file": target,
         "find_text": str(payload["find_text"]),
         "replace_text": str(payload["replace_text"]),
-        "verification_commands": commands,
+        "verification_commands": normalized_commands,
+    }
+
+
+def _normalize_verification_commands(
+    commands: list[str],
+    *,
+    target_file: str,
+) -> list[list[str]]:
+    normalized: list[list[str]] = []
+    for command in commands:
+        try:
+            argv = shlex.split(command)
+        except ValueError as exc:
+            raise ValueError("verification_command_parse_failed") from exc
+        if not _verification_command_allowed(argv, target_file=target_file):
+            raise ValueError("verification_command_not_allowlisted")
+        normalized.append(argv)
+    return normalized
+
+
+def _verification_command_allowed(argv: list[str], *, target_file: str) -> bool:
+    if not argv:
+        return False
+    allowed = [
+        tuple(target_file if token == "{target_file}" else token for token in template)
+        for template in _ALLOWED_VERIFICATION_COMMAND_TEMPLATES
+    ]
+    return tuple(argv) in allowed
+
+
+def _issue_repair_trust(issue_payload: dict[str, Any]) -> dict[str, Any]:
+    association = (
+        issue_payload.get("authorAssociation")
+        or issue_payload.get("author_association")
+    )
+    trusted_author = isinstance(association, str) and association in TRUSTED_AUTHOR_ASSOCIATIONS
+    edited_after_routing_label = bool(
+        issue_payload.get("bodyEditedAfterRoutingLabel")
+        or issue_payload.get("body_edited_after_routing_label")
+    )
+    if not trusted_author:
+        return {
+            "ok": False,
+            "error": "untrusted_issue_author",
+            "author_association": association,
+            "trusted_author_associations": sorted(TRUSTED_AUTHOR_ASSOCIATIONS),
+        }
+    if edited_after_routing_label:
+        return {
+            "ok": False,
+            "error": "issue_body_edited_after_routing_label",
+            "author_association": association,
+        }
+    return {
+        "ok": True,
+        "author_association": association,
+        "trusted_author": True,
+        "body_edited_after_routing_label": False,
     }
 
 
@@ -292,12 +361,12 @@ def _rollback_failed_commit_or_push(
             timeout=60,
         )
     rollback["commands"].append(restore)
-    status = _run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=repo_root, timeout=30)
+    status = _run(
+        ["git", "status", "--porcelain", "--untracked-files=no"], cwd=repo_root, timeout=30
+    )
     rollback["commands"].append(status)
     rollback["restored"] = bool(
-        restore["ok"]
-        and status["ok"]
-        and str(target_file) not in status["stdout"]
+        restore["ok"] and status["ok"] and str(target_file) not in status["stdout"]
     )
     if not rollback["restored"]:
         rollback["error"] = "tracked_target_not_restored"
@@ -330,6 +399,9 @@ def _write_proof_markdown(
     final_cycle = loop_receipt["cycles"][-1]
     coder = final_cycle["coder"]["scillm_call"]
     reviewer = final_cycle["reviewer"]["scillm_call"]
+    loop_receipt_path = (
+        receipt_dir / "coder-reviewer-loop" / "self-fix-coder-reviewer-loop-receipt.json"
+    )
     text = "\n".join(
         [
             f"## Tau self-fix proof for {repo}#{issue_number}",
@@ -340,7 +412,7 @@ def _write_proof_markdown(
             "",
             "```text",
             f"commit: {commit.get('commit')}",
-            f"loop_receipt: {receipt_dir / 'coder-reviewer-loop' / 'self-fix-coder-reviewer-loop-receipt.json'}",
+            f"loop_receipt: {loop_receipt_path}",
             f"coder_scillm_receipt: {coder}",
             f"reviewer_scillm_receipt: {reviewer}",
             "mocked: false",
@@ -349,7 +421,8 @@ def _write_proof_markdown(
             "scillm_streaming: coder and reviewer receipts use stream=true",
             "```",
             "",
-            "Closure boundary: this proves one bounded ticket repair. It does not prove unbounded autonomous operation.",
+            "Closure boundary: this proves one bounded ticket repair. It does not prove "
+            "unbounded autonomous operation.",
             "",
         ]
     )
