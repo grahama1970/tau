@@ -86,6 +86,8 @@ from tau_coding.commands import (
     daxnuts_easter_message,
 )
 from tau_coding.credentials import FileCredentialStore, OAuthCredential, credentials_path
+from tau_coding.dag_viewer.projection import build_dag_live_snapshot, load_dag_replay
+from tau_coding.dag_viewer.receipt_index import build_receipt_index
 from tau_coding.dag_viewer.server import RunningDagViewerServer, create_dag_viewer_server
 from tau_coding.oauth import OAuthAuthInfo, OAuthPrompt, login_openai_codex
 from tau_coding.paths import TauPaths
@@ -182,6 +184,7 @@ from tau_coding.tui.terminal_notification import TerminalNotificationController
 from tau_coding.tui.terminal_title import TerminalTitleController
 from tau_coding.tui.widgets import (
     CompactSessionInfo,
+    DagRunStatusPane,
     SessionSidebar,
     ThemedMarkdownWidget,
     TranscriptView,
@@ -200,6 +203,7 @@ ACTIVITY_TICK_SECONDS = 0.15
 ACTIVITY_COLOR_FADE_STEPS = 24
 ACTIVITY_INDICATOR_HEIGHT = 3
 EXTENSION_BRANCH_WATCH_INTERVAL_SECONDS = 0.5
+DAG_RUN_STATUS_POLL_SECONDS = 0.75
 TERMINAL_PROGRESS_ACTIVE_SEQUENCE = "\x1b]9;4;3\x07"
 TERMINAL_PROGRESS_CLEAR_SEQUENCE = "\x1b]9;4;0;\x07"
 COMPLETION_MAX_VISIBLE_LINES = DEFAULT_AUTOCOMPLETE_MAX_VISIBLE
@@ -7845,6 +7849,7 @@ class TauTuiApp(App[None]):
                     )
                 yield Static("", id="extension-widgets-below")
                 yield Vertical(id="extension-widget-components-below")
+                yield DagRunStatusPane("", id="dag-run-status-pane")
                 yield CompactSessionInfo(id="compact-session-info")
                 yield Static("", id="autocomplete")
         yield Static("", id="extension-footer")
@@ -7869,6 +7874,11 @@ class TauTuiApp(App[None]):
             self._maybe_warn_anthropic_subscription_auth()
         if not self.tui_settings.quiet_startup and not self.is_headless:
             self.run_worker(self._warn_about_tmux_keyboard_setup(), exclusive=False)
+        self.set_interval(
+            DAG_RUN_STATUS_POLL_SECONDS,
+            self._refresh_dag_run_status,
+            name="dag-run-status",
+        )
         if self.show_first_time_setup:
             self.call_after_refresh(self._open_first_time_setup)
             return
@@ -11234,6 +11244,7 @@ class TauTuiApp(App[None]):
         self._sync_queue_state()
         sidebar = self.query_one("#sidebar", SessionSidebar)
         sidebar.update_from_session(self.session, theme=theme)
+        self._refresh_dag_run_status(theme=theme)
         compact_info = self.query_one("#compact-session-info", CompactSessionInfo)
         compact_info.update_from_session(self.session, theme=theme)
         startup_resources = self.query_one("#startup-resources", Static)
@@ -11284,6 +11295,26 @@ class TauTuiApp(App[None]):
         widget_components_below.display = bool(self._extension_widget_components_below)
         self._sync_activity_indicator()
         self._refresh_footer_bindings()
+
+    def _refresh_dag_run_status(self, *, theme: TuiTheme | None = None) -> None:
+        """Refresh the compact DAG status pane from the viewer's live projection."""
+        pane = self.query_one("#dag-run-status-pane", DagRunStatusPane)
+        run_dir = self._last_dag_viewer_run_dir
+        resolved_theme = theme or self.tui_settings.resolved_theme
+        if run_dir is None:
+            pane.update_from_snapshot(snapshot=None, run_dir=None, theme=resolved_theme)
+            return
+        try:
+            snapshot = _build_tui_dag_status_snapshot(run_dir)
+        except (OSError, RuntimeError, ValueError) as exc:
+            pane.update_from_snapshot(
+                snapshot=None,
+                run_dir=run_dir,
+                error=str(exc),
+                theme=resolved_theme,
+            )
+            return
+        pane.update_from_snapshot(snapshot=snapshot, run_dir=run_dir, theme=resolved_theme)
 
     def _sync_queue_state(self) -> None:
         queue_event = getattr(self.session, "queue_update_event", None)
@@ -12726,6 +12757,17 @@ def _workflow_terminal_run_dir(output: str) -> Path | None:
     if not isinstance(run_dir, str) or not run_dir.strip():
         return None
     return Path(run_dir).expanduser()
+
+
+def _build_tui_dag_status_snapshot(run_dir: Path) -> dict[str, Any]:
+    """Build the TUI status payload from the shared DAG viewer projection."""
+    resolved_run_dir = run_dir.expanduser().resolve()
+    replay, events = load_dag_replay(run_dir=resolved_run_dir)
+    return build_dag_live_snapshot(
+        replay=replay,
+        recent_events=events,
+        receipt_index=build_receipt_index(resolved_run_dir, replay.transition_receipts),
+    )
 
 
 def _dag_viewer_launch_command(link_payload: Mapping[str, object]) -> tuple[str, ...]:

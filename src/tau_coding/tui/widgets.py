@@ -2,8 +2,9 @@
 
 import base64
 import re
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from difflib import SequenceMatcher
 from pathlib import Path
 from subprocess import TimeoutExpired, run
@@ -279,6 +280,33 @@ class CompactSessionInfo(Static):
     ) -> None:
         """Redraw compact session metadata."""
         self.update(render_compact_session_info(session, theme=theme))
+
+
+class DagRunStatusPane(Static):
+    """Compact TUI status pane for the current DAG run."""
+
+    def update_from_snapshot(
+        self,
+        *,
+        snapshot: Mapping[str, Any] | None,
+        run_dir: Path | None,
+        error: str | None = None,
+        theme: TuiTheme = TAU_DARK_THEME,
+    ) -> None:
+        """Redraw from the same live snapshot consumed by the web DAG viewer."""
+        if snapshot is None and run_dir is None and error is None:
+            self.display = False
+            self.update("")
+            return
+        self.display = True
+        self.update(
+            render_dag_run_status_pane(
+                snapshot=snapshot,
+                run_dir=run_dir,
+                error=error,
+                theme=theme,
+            )
+        )
 
 
 class NonSelectableStatic(Static):
@@ -1182,6 +1210,152 @@ def render_compact_session_info(
     table.add_column(ratio=1, justify="right")
     table.add_row(left, identity)
     return Group(table, readiness, metrics)
+
+
+def render_dag_run_status_pane(
+    *,
+    snapshot: Mapping[str, Any] | None,
+    run_dir: Path | None,
+    error: str | None = None,
+    theme: TuiTheme = TAU_DARK_THEME,
+) -> RenderableType:
+    """Render action-oriented DAG run state without duplicating the graph viewer."""
+    if error is not None:
+        message = Text("dag status unavailable: ", style=theme.completion_description)
+        message.append(error, style=theme.muted_text)
+        return Padding(message, (0, 0, 1, 0))
+    if snapshot is None:
+        return ""
+
+    run_summary = _mapping_value(snapshot.get("run_summary"))
+    nodes = _mapping_sequence(snapshot.get("nodes"))
+    active_nodes = _string_sequence(run_summary.get("active_node_ids"))
+    blocker = _mapping_value(run_summary.get("highest_priority_blocker"))
+    status = _string_or(snapshot.get("run_status"), "UNKNOWN")
+    projection_state = _string_or(snapshot.get("projection_state"), "UNKNOWN")
+    sequence = _string_or(snapshot.get("journal_sequence"), "0")
+    state_counts = _node_state_counts(nodes)
+    pending_action = _pending_transaction_action(nodes)
+    elapsed = _elapsed_label(snapshot)
+
+    header = Text("dag status", style=f"bold {theme.accent}")
+    header.append(" ")
+    header.append(f"{status.lower()}/{projection_state.lower()}", style=theme.prompt_text)
+    if run_dir is not None:
+        header.append(" ")
+        header.append(_short_path(run_dir), style=theme.muted_text)
+
+    table = Table.grid(padding=(0, 1))
+    table.add_column(style=theme.completion_description, no_wrap=True)
+    table.add_column(style=theme.prompt_text)
+    table.add_row("active", ", ".join(active_nodes) if active_nodes else "none")
+    table.add_row("states", _state_counts_label(state_counts))
+    table.add_row("elapsed", elapsed)
+    table.add_row("blocker", _blocker_label(blocker))
+    table.add_row("approval", pending_action)
+    table.add_row("seq", sequence)
+    table.add_row("viewer", _dag_viewer_hint(run_dir))
+    return Group(header, table)
+
+
+def _mapping_value(value: object) -> Mapping[str, Any]:
+    return value if isinstance(value, Mapping) else {}
+
+
+def _mapping_sequence(value: object) -> tuple[Mapping[str, Any], ...]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        return ()
+    return tuple(item for item in value if isinstance(item, Mapping))
+
+
+def _string_sequence(value: object) -> tuple[str, ...]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        return ()
+    return tuple(item for item in value if isinstance(item, str) and item)
+
+
+def _string_or(value: object, fallback: str) -> str:
+    if isinstance(value, str) and value:
+        return value
+    if isinstance(value, int):
+        return str(value)
+    return fallback
+
+
+def _node_state_counts(nodes: Sequence[Mapping[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for node in nodes:
+        scheduler = _mapping_value(node.get("scheduler"))
+        state = _string_or(scheduler.get("state"), "unknown")
+        counts[state] = counts.get(state, 0) + 1
+    return counts
+
+
+def _state_counts_label(counts: Mapping[str, int]) -> str:
+    if not counts:
+        return "none"
+    return ", ".join(f"{state}:{counts[state]}" for state in sorted(counts))
+
+
+def _blocker_label(blocker: Mapping[str, Any]) -> str:
+    node_id = blocker.get("node_id")
+    codes = _string_sequence(blocker.get("codes"))
+    if not isinstance(node_id, str) or not node_id:
+        return "none"
+    return f"{node_id}: {', '.join(codes) if codes else 'blocked'}"
+
+
+def _pending_transaction_action(nodes: Sequence[Mapping[str, Any]]) -> str:
+    pending: list[str] = []
+    for node in nodes:
+        transaction = _mapping_value(node.get("transaction"))
+        if not transaction:
+            continue
+        state = _string_or(transaction.get("state"), "")
+        if state in {"AWAITING_RECEIPT", "BLOCKED"}:
+            node_id = _string_or(node.get("node_id"), "unknown")
+            transaction_id = _string_or(transaction.get("transaction_id"), node_id)
+            pending.append(f"{node_id}:{transaction_id}:{state.lower()}")
+    return ", ".join(pending) if pending else "none"
+
+
+def _dag_viewer_hint(run_dir: Path | None) -> str:
+    if run_dir is None:
+        return "/dag-viewer"
+    return f"/dag-viewer {run_dir}"
+
+
+def _elapsed_label(snapshot: Mapping[str, Any]) -> str:
+    timestamps: list[datetime] = []
+    for event in _mapping_sequence(snapshot.get("recent_events")):
+        timestamp = _parse_timestamp(event.get("created_at"))
+        if timestamp is not None:
+            timestamps.append(timestamp)
+    for node in _mapping_sequence(snapshot.get("nodes")):
+        result = _mapping_value(node.get("result"))
+        for key in ("started_at", "finished_at"):
+            timestamp = _parse_timestamp(result.get(key))
+            if timestamp is not None:
+                timestamps.append(timestamp)
+        duration = result.get("duration_seconds")
+        if isinstance(duration, (int, float)) and duration >= 0:
+            return f"{duration:.1f}s"
+    if len(timestamps) >= 2:
+        elapsed = max(timestamps) - min(timestamps)
+        return f"{max(0.0, elapsed.total_seconds()):.1f}s"
+    return "unknown"
+
+
+def _parse_timestamp(value: object) -> datetime | None:
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=UTC)
+    return parsed
 
 
 def render_chat_item(

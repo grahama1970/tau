@@ -175,6 +175,7 @@ from tau_coding.tui.widgets import (
     _transcript_plain_body_text,
     render_chat_item,
     render_compact_session_info,
+    render_dag_run_status_pane,
     render_session_sidebar,
     transcript_item_selection_text,
 )
@@ -903,6 +904,117 @@ def test_compact_session_info_includes_active_session_activity() -> None:
     output = console.export_text()
     assert "2 turns, 2 tool calls" in output
     assert "12k/200k context (auto)" in output
+
+
+def test_dag_run_status_pane_renders_snapshot_fields() -> None:
+    console = Console(record=True, width=120)
+    snapshot = _dag_status_snapshot(
+        active_node_ids=["coder"],
+        states=("running", "blocked", "settled"),
+        blocker={"node_id": "review", "codes": ["approval_required"]},
+        transaction_state="AWAITING_RECEIPT",
+    )
+
+    console.print(
+        render_dag_run_status_pane(
+            snapshot=snapshot,
+            run_dir=Path("/workspace/project/.tau/workflow-runs/run-1"),
+        )
+    )
+
+    output = console.export_text()
+    assert "dag status running/live" in output
+    assert "active" in output
+    assert "coder" in output
+    assert "blocked:1, running:1, settled:1" in output
+    assert "review: approval_required" in output
+    assert "coder:publish:awaiting_receipt" in output
+    assert "seq" in output
+    assert "42" in output
+    assert "/dag-viewer /workspace/project/.tau/workflow-runs/run-1" in output
+
+
+def test_tui_dag_status_snapshot_uses_shared_projection(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    run_dir = _write_tui_dag_viewer_fixture(tmp_path)
+    calls: list[str] = []
+    original = tui_app.build_dag_live_snapshot
+
+    def wrapped_build_dag_live_snapshot(**kwargs: object) -> dict[str, object]:
+        replay = kwargs["replay"]
+        calls.append(replay.run_id)  # type: ignore[attr-defined]
+        return original(**kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(tui_app, "build_dag_live_snapshot", wrapped_build_dag_live_snapshot)
+
+    snapshot = tui_app._build_tui_dag_status_snapshot(run_dir)
+
+    assert calls == ["tui-dag-viewer-run"]
+    assert snapshot["schema"] == "tau.dag_view_snapshot.v2"
+    assert snapshot["run_id"] == "tui-dag-viewer-run"
+
+
+@pytest.mark.anyio
+async def test_tui_app_dag_status_pane_updates_without_operator_input(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    run_dir = tmp_path / "run"
+    snapshots = [
+        _dag_status_snapshot(active_node_ids=["coder"], states=("running",)),
+        _dag_status_snapshot(
+            active_node_ids=[],
+            states=("blocked",),
+            blocker={"node_id": "coder", "codes": ["missing_receipt"]},
+        ),
+    ]
+    current_snapshot = 0
+    calls: list[int] = []
+
+    def fake_snapshot(_: Path) -> dict[str, object]:
+        calls.append(current_snapshot)
+        return snapshots[current_snapshot]
+
+    monkeypatch.setattr(tui_app, "_build_tui_dag_status_snapshot", fake_snapshot)
+    app = TauTuiApp(FakeSession())
+    app._last_dag_viewer_run_dir = run_dir
+
+    async with app.run_test() as pilot:
+        current_snapshot = 0
+        app._refresh_dag_run_status()
+        await pilot.pause()
+        first = _render_static_text(app.query_one("#dag-run-status-pane"))
+        current_snapshot = 1
+        app._refresh_dag_run_status()
+        await pilot.pause()
+        second = _render_static_text(app.query_one("#dag-run-status-pane"))
+
+    assert "active" in first
+    assert "coder" in first
+    assert "running:1" in first
+    assert "coder: missing_receipt" in second
+    assert calls
+    assert 0 in calls
+    assert 1 in calls
+
+
+@pytest.mark.anyio
+async def test_tui_app_dag_status_pane_uses_readable_text_fallback(
+    tmp_path: Path,
+) -> None:
+    app = TauTuiApp(FakeSession())
+    app._last_dag_viewer_run_dir = tmp_path / "not-a-dag-run"
+
+    async with app.run_test() as pilot:
+        app._refresh_dag_run_status()
+        await pilot.pause()
+        output = _render_static_text(app.query_one("#dag-run-status-pane"))
+
+    assert "dag status unavailable" in output
+    assert "dag_run_store_missing" in output
+    assert "┌" not in output
 
 
 def test_compact_session_info_includes_provider_usage_totals() -> None:
@@ -9877,6 +9989,60 @@ def _assert_viewer_health(url: str) -> None:
         connection.close()
     assert response.status == 200
     assert b'"status": "ok"' in body
+
+
+def _render_static_text(widget: Static) -> str:
+    console = Console(record=True, width=140, file=StringIO())
+    rendered = widget.render()
+    console.print(getattr(rendered, "_renderable", rendered))
+    return console.export_text()
+
+
+def _dag_status_snapshot(
+    *,
+    active_node_ids: list[str],
+    states: tuple[str, ...],
+    blocker: dict[str, object] | None = None,
+    transaction_state: str | None = None,
+) -> dict[str, object]:
+    nodes: list[dict[str, object]] = []
+    for index, state in enumerate(states):
+        node_id = "coder" if index == 0 else f"node-{index}"
+        node: dict[str, object] = {
+            "node_id": node_id,
+            "scheduler": {"state": state, "attempt": 1, "max_attempts": 1},
+            "runtime": {"state": "UNKNOWN"},
+            "admission": {"accepted": state == "settled"},
+            "result": {
+                "blocker_codes": ["missing_receipt"] if state == "blocked" else [],
+                "started_at": "2026-07-26T19:00:00Z",
+                "finished_at": "2026-07-26T19:00:05Z",
+                "duration_seconds": 5.0,
+            },
+            "transaction": None,
+        }
+        if index == 0 and transaction_state is not None:
+            node["transaction"] = {
+                "transaction_id": "publish",
+                "state": transaction_state,
+            }
+        nodes.append(node)
+    return {
+        "schema": "tau.dag_view_snapshot.v2",
+        "run_id": "run-1",
+        "journal_sequence": 42,
+        "run_status": "RUNNING",
+        "projection_state": "LIVE",
+        "run_summary": {
+            "active_node_ids": active_node_ids,
+            "highest_priority_blocker": blocker,
+        },
+        "nodes": nodes,
+        "recent_events": [
+            {"created_at": "2026-07-26T19:00:00Z"},
+            {"created_at": "2026-07-26T19:00:05Z"},
+        ],
+    }
 
 
 @pytest.mark.anyio

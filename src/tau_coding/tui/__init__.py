@@ -31,12 +31,14 @@ from tau_coding.tui.config import (
 from tau_coding.tui.state import ChatItem, TuiState
 from tau_coding.tui.widgets import (
     CompactSessionInfo,
+    DagRunStatusPane,
     SessionSidebar,
     StreamingTranscriptMessageWidget,
     TranscriptMessageWidget,
     TranscriptView,
     render_chat_item,
     render_compact_session_info,
+    render_dag_run_status_pane,
     render_session_sidebar,
     transcript_item_selection_text,
 )
@@ -54,6 +56,7 @@ __all__ = [
     "ChatItem",
     "CompletionOption",
     "CompactSessionInfo",
+    "DagRunStatusPane",
     "TauTuiApp",
     "SessionSidebar",
     "TAU_DARK_THEME",
@@ -82,6 +85,7 @@ __all__ = [
     "project_tui_settings_path",
     "render_chat_item",
     "render_compact_session_info",
+    "render_dag_run_status_pane",
     "render_session_sidebar",
     "run_tui_app",
     "save_project_tui_settings",
