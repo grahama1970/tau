@@ -30,6 +30,7 @@ function TauNodeComponent({ data, selected }: NodeProps) {
     <article
       className={`tau-node tau-node--${tone} ${selected ? "tau-node--selected" : ""}`}
       data-qid={`dag:node:${value.label}`}
+      data-state={scheduler}
       data-node-state={scheduler}
       data-admission-state={admission}
       aria-label={`${value.label}, ${scheduler}, ${admission}`}

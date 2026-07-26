@@ -416,6 +416,8 @@ def build_dag_live_events(
 def _project_node_state(*, committed_state: str, attempt_state: str | None) -> tuple[str, str]:
     if committed_state == "success":
         return "settled", "accepted"
+    if committed_state == "superseded":
+        return "superseded", "not_applicable"
     if committed_state in {"skipped", "cancelled"}:
         return committed_state, "not_applicable"
     if committed_state in {"blocked", "failed", "timed_out"}:

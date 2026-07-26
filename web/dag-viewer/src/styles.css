@@ -86,6 +86,7 @@ button:focus-visible, select:focus-visible { outline: 2px solid #65a9ff; outline
 .tau-node--retry_pending, .tau-node--validating, .tau-node--committing { border-color: #d6a74e; background: #292315; }
 .tau-node--blocked, .tau-node--failed, .tau-node--timed_out { border-color: #ef6464; background: #2b181b; }
 .tau-node--skipped, .tau-node--cancelled { opacity: .52; border-style: dashed; }
+.tau-node--superseded { border-color: #b58cff; background: #211d2b; border-style: double; }
 .tau-node--accepted, .tau-node--settled { border-color: #5ecb8b; background: #14271e; }
 .tau-node__header, .tau-node__states, .tau-node footer { display: flex; align-items: center; gap: 7px; }
 .tau-node__header strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }

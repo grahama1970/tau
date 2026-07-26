@@ -34,3 +34,25 @@ test("renders a successful external terminal with the settled tone", () => {
   expect(terminal).toHaveAttribute("aria-label", "human, settled, not_applicable");
   expect(terminal).toHaveClass("tau-node--settled");
 });
+
+test("renders superseded nodes with a distinct state and tone", () => {
+  const superseded = {
+    ...snapshot,
+    nodes: snapshot.nodes.map((node) => (
+      node.node_id === "creator"
+        ? {
+          ...node,
+          scheduler: { ...node.scheduler, state: "superseded" },
+          admission: { ...node.admission, state: "not_applicable", accepted: false },
+        }
+        : node
+    )),
+  };
+  render(<div style={{ width: 900, height: 500 }}><DagWorkspace manifest={manifest} snapshot={superseded} selectedId={null} onSelect={vi.fn()} /></div>);
+
+  const node = screen.getByLabelText("creator, superseded, not_applicable");
+  expect(node).toHaveAttribute("data-state", "superseded");
+  expect(node).toHaveAttribute("data-node-state", "superseded");
+  expect(node).toHaveClass("tau-node--superseded");
+  expect(node).not.toHaveClass("tau-node--accepted");
+});

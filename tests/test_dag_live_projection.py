@@ -437,6 +437,26 @@ def test_active_attempt_state_is_visible_without_accepting_node(tmp_path: Path) 
     assert node["admission"]["accepted"] is False
 
 
+def test_superseded_node_state_is_distinct_from_settled_and_skipped(tmp_path: Path) -> None:
+    _durable_run(tmp_path)
+    replay, _ = load_dag_replay(run_dir=tmp_path, run_id="run-1")
+    superseded = replace(
+        replay,
+        node_states=(("node", "superseded"),),
+        results=(),
+    )
+
+    node = build_dag_live_snapshot(replay=superseded, recent_events=())["nodes"][0]
+
+    assert node["scheduler"]["state"] == "superseded"
+    assert node["scheduler"]["state"] not in {"settled", "skipped"}
+    assert node["admission"] == {
+        "state": "not_applicable",
+        "accepted": False,
+        "receipt_refs": [],
+    }
+
+
 def test_manifest_projects_plan_owned_goal_and_workflow_metadata(tmp_path: Path) -> None:
     _durable_run(tmp_path)
     replay, _ = load_dag_replay(run_dir=tmp_path, run_id="run-1")
