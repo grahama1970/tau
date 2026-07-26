@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -29,10 +30,17 @@ def test_release_bundle_revises_waits_for_approval_and_resumes_once(
     assert not publish_path.exists()
     assert not (run_dir / "results").exists()
 
-    approval = approve_approved_release_bundle(run_dir=run_dir)
+    blocked_approval = approve_approved_release_bundle(run_dir=run_dir)
+    approval_path = _write_approval_packet(
+        run_dir=run_dir,
+        path=tmp_path / "human-release-approval.json",
+    )
+    approval = approve_approved_release_bundle(run_dir=run_dir, approval_packet=approval_path)
     final = resume_approved_release_bundle(run_dir=run_dir)
     final_dag = _json(run_dir / "run-receipt.json")
 
+    assert blocked_approval["status"] == "BLOCKED"
+    assert blocked_approval["errors"] == ["approval_packet_required"]
     assert approval["status"] == "PASS"
     assert final["status"] == "PASS"
     assert final["result"]["status"] == "APPROVED"
@@ -68,7 +76,11 @@ def test_failed_post_write_verification_rolls_back_publication(tmp_path: Path) -
         simulate_publish_verification_failure=True,
     )
     assert first["status"] == "BLOCKED"
-    approve_approved_release_bundle(run_dir=run_dir)
+    approval_path = _write_approval_packet(
+        run_dir=run_dir,
+        path=tmp_path / "human-release-approval.json",
+    )
+    approve_approved_release_bundle(run_dir=run_dir, approval_packet=approval_path)
 
     resumed = resume_approved_release_bundle(run_dir=run_dir)
     rollback = _json(run_dir / "receipts" / "publication-rollback.json")
@@ -110,6 +122,33 @@ def _json(path: Path) -> dict[str, object]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     assert isinstance(payload, dict)
     return payload
+
+
+def _write_approval_packet(*, run_dir: Path, path: Path) -> Path:
+    gate_path = run_dir / "transactions" / "publish-approved-release" / "approval-gate-receipt.json"
+    target = _json(gate_path)["expected_target"]
+    payload: dict[str, object] = {
+        "schema": "tau.human_approval_packet.v1",
+        "approved": True,
+        "actor": {"id": "human:test", "auth_method": "local-signature"},
+        "action": "generic_dag_transaction_continue",
+        "target": target,
+        "reason": "approve exact release publication",
+        "evidence": [str(gate_path)],
+        "nonce": hashlib.sha256(json.dumps(target, sort_keys=True).encode("utf-8")).hexdigest(),
+    }
+    payload["signature"] = _local_signature(payload)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def _local_signature(payload: dict[str, object]) -> str:
+    canonical = dict(payload)
+    canonical.pop("signature", None)
+    digest = hashlib.sha256(
+        json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return f"local-signature-sha256:{digest}"
 
 
 def _git_repo(path: Path) -> Path:
