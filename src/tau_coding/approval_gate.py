@@ -20,9 +20,12 @@ ALLOWED_ACTIONS = {
     "memory_upsert",
     "provider_branch_scheduling",
     "working_tree_mutation",
+    "workflow_repair",
 }
 ALLOWED_AUTH_METHODS = {"github-comment", "local-signature", "manual"}
 LEGACY_TAU_GENERATED_SIGNATURE = "declared-manual-approval"
+LOCAL_SIGNATURE_PREFIX = "local-signature-sha256:"
+VERIFIED_HUMAN_AUTHORSHIPS = {"human_local_signature", "human_github_comment"}
 
 
 def evaluate_approval_gate(
@@ -147,6 +150,7 @@ def _validate_packet(
             "approval packet appears to be Tau-generated; provide an out-of-band "
             "human approval packet"
         )
+    errors.extend(_authorship_validation_errors(packet))
     expires_at = packet.get("expires_at")
     if expires_at is not None and not isinstance(expires_at, str):
         errors.append("expires_at must be a string when present")
@@ -179,7 +183,7 @@ def _packet_summary(packet: dict[str, Any]) -> dict[str, Any] | None:
         "nonce": packet.get("nonce"),
         "signature_present": bool(packet.get("signature")),
         "authorship": _packet_authorship(packet),
-        "machine_fabricated": _is_legacy_tau_generated_packet(packet),
+        "machine_fabricated": _packet_authorship(packet) not in VERIFIED_HUMAN_AUTHORSHIPS,
         "expires_at": packet.get("expires_at"),
     }
 
@@ -194,18 +198,73 @@ def _is_legacy_tau_generated_packet(packet: dict[str, Any]) -> bool:
 
 
 def _packet_authorship(packet: dict[str, Any]) -> str:
+    if packet.get("schema") == "tau.machine_approval_packet.v1":
+        return "machine_originated"
     if _is_legacy_tau_generated_packet(packet):
         return "tau_generated_legacy"
     actor_value = packet.get("actor")
     actor = actor_value if isinstance(actor_value, dict) else {}
     auth_method = actor.get("auth_method")
     if auth_method == "local-signature":
-        return "human_signed_packet"
+        return (
+            "human_local_signature"
+            if _local_signature_valid(packet)
+            else "unverified_local_signature"
+        )
     if auth_method == "github-comment":
-        return "human_github_comment_packet"
+        return (
+            "human_github_comment"
+            if _github_comment_attestation_valid(packet)
+            else "unverified_github_comment"
+        )
     if auth_method == "manual":
-        return "human_declared_packet"
+        return "machine_originated_unverified_manual"
     return "unknown"
+
+
+def _authorship_validation_errors(packet: dict[str, Any]) -> list[str]:
+    authorship = _packet_authorship(packet)
+    if authorship in VERIFIED_HUMAN_AUTHORSHIPS:
+        return []
+    if authorship == "unverified_local_signature":
+        return ["local-signature approval packet signature does not match packet content"]
+    if authorship == "unverified_github_comment":
+        return ["github-comment approval packet is missing a verifiable GitHub attestation"]
+    if authorship == "machine_originated_unverified_manual":
+        return ["manual approval packets are unverifiable and cannot satisfy a human gate"]
+    if authorship == "tau_generated_legacy":
+        return []
+    if authorship == "machine_originated":
+        return ["machine-originated approval packets cannot satisfy a human gate"]
+    return ["approval packet authorship is not verifiable"]
+
+
+def _local_signature_valid(packet: dict[str, Any]) -> bool:
+    signature = packet.get("signature")
+    if not isinstance(signature, str) or not signature.startswith(LOCAL_SIGNATURE_PREFIX):
+        return False
+    return signature == f"{LOCAL_SIGNATURE_PREFIX}{_canonical_packet_digest(packet)}"
+
+
+def _canonical_packet_digest(packet: dict[str, Any]) -> str:
+    canonical = dict(packet)
+    canonical.pop("signature", None)
+    encoded = json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _github_comment_attestation_valid(packet: dict[str, Any]) -> bool:
+    attestation = packet.get("attestation")
+    if not isinstance(attestation, dict):
+        return False
+    return (
+        attestation.get("source") == "github-comment"
+        and isinstance(attestation.get("url"), str)
+        and str(attestation["url"]).startswith("https://github.com/")
+        and attestation.get("author_association") in {"OWNER", "MEMBER", "COLLABORATOR"}
+        and isinstance(attestation.get("comment_body_sha256"), str)
+        and bool(str(attestation["comment_body_sha256"]).strip())
+    )
 
 
 def _parse_timestamp(value: str) -> datetime | None:

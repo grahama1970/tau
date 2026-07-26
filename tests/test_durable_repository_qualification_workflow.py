@@ -40,11 +40,26 @@ def test_targeted_repair_preserves_unaffected_work_and_publication_is_idempotent
     ]
     assert not publish_path.exists()
 
-    repair = repair_durable_repository_qualification(run_dir=run_dir, node_id="qualify-tests")
+    blocked_repair = repair_durable_repository_qualification(
+        run_dir=run_dir, node_id="qualify-tests"
+    )
+    repair_approval_path = _write_repair_approval_packet(
+        run_dir=run_dir,
+        node_id="qualify-tests",
+        path=tmp_path / "human-repair-approval.json",
+    )
+    repair = repair_durable_repository_qualification(
+        run_dir=run_dir,
+        node_id="qualify-tests",
+        approval_packet=repair_approval_path,
+    )
     approval_wait = resume_packaged_workflow(run_dir=run_dir)
     repaired_receipt = _json(run_dir / "run-receipt.json")
 
+    assert blocked_repair["status"] == "BLOCKED"
+    assert blocked_repair["errors"] == ["approval_packet_required"]
     assert repair["status"] == "PASS"
+    assert _json(run_dir / "input" / "repair-qualify-tests.json")["origin"] == "machine"
     assert approval_wait["status"] == "BLOCKED"
     assert _node(repaired_receipt, "publish-qualification")["verdict"] == ("APPROVAL_REQUIRED")
     for name, digest in before.items():
@@ -75,7 +90,7 @@ def test_targeted_repair_preserves_unaffected_work_and_publication_is_idempotent
         run_dir / "transactions" / "publish-qualification" / "approval-gate-receipt.json"
     )["packet_summary"]
     assert isinstance(gate_summary, dict)
-    assert gate_summary["authorship"] == "human_declared_packet"
+    assert gate_summary["authorship"] == "human_local_signature"
     assert gate_summary["machine_fabricated"] is False
     assert final["status"] == "PASS"
     assert final["result"]["status"] == "QUALIFIED"  # type: ignore[index]
@@ -268,28 +283,65 @@ def _sha256(path: Path) -> str:
 def _write_approval_packet(*, run_dir: Path, transaction_node_id: str, path: Path) -> Path:
     gate_path = run_dir / "transactions" / transaction_node_id / "approval-gate-receipt.json"
     target = _json(gate_path)["expected_target"]
-    path.write_text(
-        json.dumps(
-            {
-                "schema": "tau.human_approval_packet.v1",
-                "approved": True,
-                "actor": {"id": "human:test", "auth_method": "manual"},
-                "action": "generic_dag_transaction_continue",
-                "target": target,
-                "reason": "approve exact deterministic continuation",
-                "evidence": [str(gate_path)],
-                "nonce": hashlib.sha256(
-                    json.dumps(target, sort_keys=True).encode("utf-8")
-                ).hexdigest(),
-                "signature": "human-test-signature",
-            },
-            indent=2,
-            sort_keys=True,
-        )
-        + "\n",
-        encoding="utf-8",
+    _write_signed_packet(
+        path,
+        action="generic_dag_transaction_continue",
+        target=target,
+        reason="approve exact deterministic continuation",
+        evidence=[str(gate_path)],
     )
     return path
+
+
+def _write_repair_approval_packet(*, run_dir: Path, node_id: str, path: Path) -> Path:
+    request = _json(run_dir / "input" / "durable-qualification-request.json")
+    goal = request["goal"]
+    assert isinstance(goal, dict)
+    target = {
+        "id": f"durable-repository-qualification:{node_id}:{goal['goal_hash']}",
+        "workflow_id": "durable-repository-qualification",
+        "node_id": node_id,
+        "goal_hash": str(goal["goal_hash"]),
+    }
+    _write_signed_packet(
+        path,
+        action="workflow_repair",
+        target=target,
+        reason="approve exact targeted repair",
+        evidence=[str(run_dir / "receipts" / f"{node_id}.json")],
+    )
+    return path
+
+
+def _write_signed_packet(
+    path: Path,
+    *,
+    action: str,
+    target: object,
+    reason: str,
+    evidence: list[str],
+) -> None:
+    payload = {
+        "schema": "tau.human_approval_packet.v1",
+        "approved": True,
+        "actor": {"id": "human:test", "auth_method": "local-signature"},
+        "action": action,
+        "target": target,
+        "reason": reason,
+        "evidence": evidence,
+        "nonce": hashlib.sha256(json.dumps(target, sort_keys=True).encode("utf-8")).hexdigest(),
+    }
+    payload["signature"] = _local_signature(payload)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _local_signature(payload: dict[str, object]) -> str:
+    canonical = dict(payload)
+    canonical.pop("signature", None)
+    digest = hashlib.sha256(
+        json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return f"local-signature-sha256:{digest}"
 
 
 def _git_repo(path: Path) -> Path:

@@ -1,0 +1,19 @@
+{
+  "assertions": [
+    "manual approval packets are unverifiable and cannot satisfy a human gate",
+    "workflow repair without --approval-packet returns BLOCKED approval_packet_required",
+    "workflow repair with local-signature approval writes a machine-origin repair packet bound to an approval-gate receipt",
+    "replacement-harness sanity emits a machine-origin packet and expects the production human gate to reject it",
+    "local-signature packets with matching digest still pass the human gate"
+  ],
+  "commands": {
+    "py_compile_exit": 0,
+    "pytest_focused": "............                                                             [100%]\n12 passed, 238 deselected in 11.24s",
+    "pytest_wide_approval_slice": "....................................                                     [100%]\n36 passed, 297 deselected in 49.94s",
+    "ruff_check": "All checks passed!",
+    "ruff_format_check": "8 files already formatted"
+  },
+  "live": false,
+  "mocked": false,
+  "schema": "tau.issue_155_proof_summary.v1"
+}

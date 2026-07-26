@@ -1700,6 +1700,40 @@ def test_cli_github_apply_policy_check_writes_policy_receipt(tmp_path: Path) -> 
     assert payload["requirements"]["preflight"] is True
 
 
+def test_replacement_harness_sanity_machine_packet_cannot_satisfy_human_gate(
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "replacement-sanity"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "replacement-harness-sanity",
+            "--run-dir",
+            str(run_dir),
+        ],
+    )
+    payload = json.loads(result.output)
+    approval_packet = json.loads(
+        (run_dir / "artifacts" / "approval-packet.json").read_text(encoding="utf-8")
+    )
+    approval_receipt = json.loads(
+        (run_dir / "receipts" / "approval-gate-receipt.json").read_text(encoding="utf-8")
+    )
+
+    assert result.exit_code == 0, result.output
+    assert payload["status"] == "PASS"
+    assert payload["gates"]["approval_gate_rejects_machine_packet"] is True
+    assert approval_packet["schema"] == "tau.machine_approval_packet.v1"
+    assert approval_packet["origin"] == "machine"
+    assert approval_receipt["status"] == "BLOCKED"
+    assert approval_receipt["approved"] is False
+    assert approval_receipt["packet_summary"]["authorship"] == "machine_originated"
+    assert "machine-originated approval packets cannot satisfy a human gate" in "\n".join(
+        approval_receipt["errors"]
+    )
+
+
 def test_cli_research_source_receipt_writes_review_required_receipt(tmp_path: Path) -> None:
     source_path = tmp_path / "research-source-packet.json"
     receipt_path = tmp_path / "research-source-receipt.json"

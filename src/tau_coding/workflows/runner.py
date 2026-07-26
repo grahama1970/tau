@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 import threading
@@ -81,7 +82,12 @@ def run_durable_repository_qualification_workflow(
     )
 
 
-def repair_durable_repository_qualification(*, run_dir: Path, node_id: str) -> dict[str, object]:
+def repair_durable_repository_qualification(
+    *,
+    run_dir: Path,
+    node_id: str,
+    approval_packet: Path | None = None,
+) -> dict[str, object]:
     resolved = run_dir.expanduser().resolve()
     if node_id != "qualify-tests":
         raise RuntimeError("only qualify-tests is repairable in this workflow")
@@ -95,10 +101,57 @@ def repair_durable_repository_qualification(*, run_dir: Path, node_id: str) -> d
     goal = request.get("goal")
     if not isinstance(goal, dict) or receipt.get("goal_hash") != goal.get("goal_hash"):
         raise RuntimeError("blocked receipt goal hash does not match the active goal")
+    target = {
+        "id": f"durable-repository-qualification:{node_id}:{goal['goal_hash']}",
+        "workflow_id": "durable-repository-qualification",
+        "node_id": node_id,
+        "goal_hash": str(goal["goal_hash"]),
+    }
+    approval_receipt_path = resolved / "transactions" / node_id / "repair-approval-gate.json"
+    if approval_packet is None:
+        return _write_workflow_repair_receipt(
+            run_dir=resolved,
+            status="BLOCKED",
+            ok=False,
+            node_id=node_id,
+            goal_hash=str(goal["goal_hash"]),
+            repair_packet_path=None,
+            approval_packet_path=None,
+            approval_gate_receipt_path=approval_receipt_path,
+            errors=["approval_packet_required"],
+        )
+    source_packet_path = approval_packet.expanduser().resolve()
+    approval_receipt = evaluate_approval_gate(
+        approval_packet=source_packet_path,
+        requested_action="workflow_repair",
+        run_dir=approval_receipt_path.parent,
+        output=approval_receipt_path,
+        expected_target=target,
+    )
+    if approval_receipt.get("status") != "PASS":
+        return _write_workflow_repair_receipt(
+            run_dir=resolved,
+            status="BLOCKED",
+            ok=False,
+            node_id=node_id,
+            goal_hash=str(goal["goal_hash"]),
+            repair_packet_path=None,
+            approval_packet_path=source_packet_path,
+            approval_gate_receipt_path=approval_receipt_path,
+            errors=[
+                str(error) for error in approval_receipt.get("errors", []) if isinstance(error, str)
+            ],
+        )
     packet = {
         "schema": "tau.workflow_repair_packet.v1",
         "authorized": True,
-        "actor": {"id": "human:tau-operator", "auth_method": "manual"},
+        "origin": "machine",
+        "actor": {"id": "tau:workflow-repair", "auth_method": "approval-gate-receipt"},
+        "authorization": {
+            "schema": "tau.approval_gate_receipt.v1",
+            "path": str(approval_receipt_path),
+            "sha256": _file_sha256(approval_receipt_path),
+        },
         "node_id": node_id,
         "goal_hash": goal["goal_hash"],
         "request_sha256": request["request_sha256"],
@@ -107,16 +160,17 @@ def repair_durable_repository_qualification(*, run_dir: Path, node_id: str) -> d
     }
     packet_path = resolved / "input" / "repair-qualify-tests.json"
     packet_path.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return {
-        "schema": "tau.workflow_repair_receipt.v1",
-        "status": "PASS",
-        "ok": True,
-        "workflow_id": "durable-repository-qualification",
-        "run_dir": str(resolved),
-        "node_id": node_id,
-        "repair_packet_path": str(packet_path),
-        "goal_hash": goal["goal_hash"],
-    }
+    return _write_workflow_repair_receipt(
+        run_dir=resolved,
+        status="PASS",
+        ok=True,
+        node_id=node_id,
+        goal_hash=str(goal["goal_hash"]),
+        repair_packet_path=packet_path,
+        approval_packet_path=source_packet_path,
+        approval_gate_receipt_path=approval_receipt_path,
+        errors=[],
+    )
 
 
 def approve_packaged_workflow(
@@ -494,6 +548,38 @@ def _run_materialized_workflow(
     return receipt
 
 
+def _write_workflow_repair_receipt(
+    *,
+    run_dir: Path,
+    status: str,
+    ok: bool,
+    node_id: str,
+    goal_hash: str,
+    repair_packet_path: Path | None,
+    approval_packet_path: Path | None,
+    approval_gate_receipt_path: Path,
+    errors: list[str],
+) -> dict[str, object]:
+    receipt = {
+        "schema": "tau.workflow_repair_receipt.v1",
+        "status": status,
+        "ok": ok,
+        "workflow_id": "durable-repository-qualification",
+        "run_dir": str(run_dir),
+        "node_id": node_id,
+        "repair_packet_path": str(repair_packet_path) if repair_packet_path is not None else None,
+        "approval_packet_path": (
+            str(approval_packet_path) if approval_packet_path is not None else None
+        ),
+        "approval_gate_receipt_path": str(approval_gate_receipt_path),
+        "goal_hash": goal_hash,
+        "errors": errors,
+    }
+    output_path = run_dir / "input" / f"repair-{node_id}-receipt.json"
+    _write_json(output_path, receipt)
+    return receipt
+
+
 def _wait_for_viewer(
     run_dir: Path,
     workflow_thread: threading.Thread,
@@ -568,3 +654,12 @@ def _read_object(path: Path, label: str) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise RuntimeError(f"{label} must be an object")
     return payload
+
+
+def _file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _write_json(path: Path, payload: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")

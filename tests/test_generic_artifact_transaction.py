@@ -1,3 +1,4 @@
+import hashlib
 import json
 import sys
 from dataclasses import replace
@@ -172,22 +173,18 @@ def test_transaction_continuation_waits_for_exact_approval_binding(tmp_path: Pat
         "accepted_manifest_sha256": node["accepted_manifest_sha256"],
         "continuation_command_sha256": canonical_command_sha256(continuation),
     }
-    approval_path.write_text(
-        json.dumps(
-            {
-                "schema": "tau.human_approval_packet.v1",
-                "approved": True,
-                "actor": {"id": "human:test", "auth_method": "manual"},
-                "action": "generic_dag_transaction_continue",
-                "target": target,
-                "reason": "approve exact deterministic continuation",
-                "evidence": [node["accepted_manifest_path"]],
-                "nonce": "test-nonce",
-                "signature": "declared-test-signature",
-            }
-        )
-        + "\n"
-    )
+    approval = {
+        "schema": "tau.human_approval_packet.v1",
+        "approved": True,
+        "actor": {"id": "human:test", "auth_method": "local-signature"},
+        "action": "generic_dag_transaction_continue",
+        "target": target,
+        "reason": "approve exact deterministic continuation",
+        "evidence": [node["accepted_manifest_path"]],
+        "nonce": "test-nonce",
+    }
+    approval["signature"] = _local_signature(approval)
+    approval_path.write_text(json.dumps(approval) + "\n")
     counter_before = (tmp_path / "producer-count.txt").read_text()
 
     second = run_generic_dag(spec_path=spec_path, resume=True)
@@ -196,6 +193,15 @@ def test_transaction_continuation_waits_for_exact_approval_binding(tmp_path: Pat
     assert second["nodes"][0]["transaction_state"] == "CONTINUED"
     assert continuation_marker.read_text() == "continued"
     assert (tmp_path / "producer-count.txt").read_text() == counter_before
+
+
+def _local_signature(payload: dict[str, object]) -> str:
+    canonical = dict(payload)
+    canonical.pop("signature", None)
+    digest = hashlib.sha256(
+        json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return f"local-signature-sha256:{digest}"
 
 
 def test_transaction_resume_blocks_mismatched_transaction_goal_hash(

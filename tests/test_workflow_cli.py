@@ -129,9 +129,31 @@ def test_workflows_repair_approve_and_resume_durable_qualification(
             "--run-dir",
             str(run_dir),
             "--inject-test-branch-failure",
+            "--step-delay-seconds",
+            "0.01",
         ],
     )
-    repaired = runner.invoke(app, ["workflows", "repair", str(run_dir), "--node", "qualify-tests"])
+    blocked_repair = runner.invoke(
+        app,
+        ["workflows", "repair", str(run_dir), "--node", "qualify-tests"],
+    )
+    repair_approval_path = _write_repair_approval_packet(
+        run_dir=run_dir,
+        node_id="qualify-tests",
+        path=tmp_path / "human-repair-approval.json",
+    )
+    repaired = runner.invoke(
+        app,
+        [
+            "workflows",
+            "repair",
+            str(run_dir),
+            "--node",
+            "qualify-tests",
+            "--approval-packet",
+            str(repair_approval_path),
+        ],
+    )
     resumed = runner.invoke(app, ["workflows", "resume", str(run_dir)])
     blocked_approval = runner.invoke(app, ["workflows", "approve", str(run_dir)])
     approval_path = _write_approval_packet(
@@ -152,6 +174,8 @@ def test_workflows_repair_approve_and_resume_durable_qualification(
     final = runner.invoke(app, ["workflows", "resume", str(run_dir)])
 
     assert first.exit_code == 1
+    assert blocked_repair.exit_code == 1
+    assert json.loads(blocked_repair.stdout)["errors"] == ["approval_packet_required"]
     assert repaired.exit_code == 0, repaired.output
     assert resumed.exit_code == 1
     assert json.loads(resumed.stdout)["status"] == "BLOCKED"
@@ -240,25 +264,62 @@ def _git_repo(path: Path) -> Path:
 def _write_approval_packet(*, run_dir: Path, transaction_node_id: str, path: Path) -> Path:
     gate_path = run_dir / "transactions" / transaction_node_id / "approval-gate-receipt.json"
     target = json.loads(gate_path.read_text(encoding="utf-8"))["expected_target"]
-    path.write_text(
-        json.dumps(
-            {
-                "schema": "tau.human_approval_packet.v1",
-                "approved": True,
-                "actor": {"id": "human:test", "auth_method": "manual"},
-                "action": "generic_dag_transaction_continue",
-                "target": target,
-                "reason": "approve exact deterministic continuation",
-                "evidence": [str(gate_path)],
-                "nonce": hashlib.sha256(
-                    json.dumps(target, sort_keys=True).encode("utf-8")
-                ).hexdigest(),
-                "signature": "human-test-signature",
-            },
-            indent=2,
-            sort_keys=True,
-        )
-        + "\n",
-        encoding="utf-8",
+    _write_signed_packet(
+        path,
+        action="generic_dag_transaction_continue",
+        target=target,
+        reason="approve exact deterministic continuation",
+        evidence=[str(gate_path)],
     )
     return path
+
+
+def _write_repair_approval_packet(*, run_dir: Path, node_id: str, path: Path) -> Path:
+    request = json.loads(
+        (run_dir / "input" / "durable-qualification-request.json").read_text(encoding="utf-8")
+    )
+    target = {
+        "id": f"durable-repository-qualification:{node_id}:{request['goal']['goal_hash']}",
+        "workflow_id": "durable-repository-qualification",
+        "node_id": node_id,
+        "goal_hash": str(request["goal"]["goal_hash"]),
+    }
+    _write_signed_packet(
+        path,
+        action="workflow_repair",
+        target=target,
+        reason="approve exact targeted repair",
+        evidence=[str(run_dir / "receipts" / f"{node_id}.json")],
+    )
+    return path
+
+
+def _write_signed_packet(
+    path: Path,
+    *,
+    action: str,
+    target: object,
+    reason: str,
+    evidence: list[str],
+) -> None:
+    payload = {
+        "schema": "tau.human_approval_packet.v1",
+        "approved": True,
+        "actor": {"id": "human:test", "auth_method": "local-signature"},
+        "action": action,
+        "target": target,
+        "reason": reason,
+        "evidence": evidence,
+        "nonce": hashlib.sha256(json.dumps(target, sort_keys=True).encode("utf-8")).hexdigest(),
+    }
+    payload["signature"] = _local_signature(payload)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _local_signature(payload: dict[str, object]) -> str:
+    canonical = dict(payload)
+    canonical.pop("signature", None)
+    digest = hashlib.sha256(
+        json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return f"local-signature-sha256:{digest}"

@@ -540,12 +540,25 @@ def workflows_resume_command(
 def workflows_repair_command(
     run_dir: Annotated[Path, typer.Argument()],
     node_id: Annotated[str, typer.Option("--node")],
+    approval_packet: Annotated[
+        Path | None,
+        typer.Option(
+            "--approval-packet",
+            help="Out-of-band human approval packet authorizing this targeted repair.",
+        ),
+    ] = None,
 ) -> None:
     try:
-        payload = repair_durable_repository_qualification(run_dir=run_dir, node_id=node_id)
+        payload = repair_durable_repository_qualification(
+            run_dir=run_dir,
+            node_id=node_id,
+            approval_packet=approval_packet,
+        )
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
     typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    if payload.get("ok") is not True:
+        raise typer.Exit(1)
 
 
 def doctor_command(*, repo_root: Path | None = None) -> dict[str, object]:
@@ -959,10 +972,11 @@ async def replacement_harness_sanity_command(
     _write_receipt_json(
         approval_packet_path,
         {
-            "schema": "tau.human_approval_packet.v1",
+            "schema": "tau.machine_approval_packet.v1",
             "approved": True,
             "action": "working_tree_mutation",
-            "actor": {"id": "human:local-sanity", "auth_method": "manual"},
+            "origin": "machine",
+            "actor": {"id": "tau:local-sanity", "auth_method": "machine-sanity-receipt"},
             "target": {"id": "replacement-harness-sanity"},
             "reason": "Approve bounded local sanity side effect.",
             "evidence": [str(build_result_path)],
@@ -1035,7 +1049,9 @@ async def replacement_harness_sanity_command(
         ),
         "build_mode_local_write": build_result.ok
         and build_output.read_text(encoding="utf-8") == "Tau build-mode local write smoke.\n",
-        "approval_gate": approval_receipt.get("ok") is True,
+        "approval_gate_rejects_machine_packet": approval_receipt.get("status") == "BLOCKED"
+        and isinstance(approval_receipt.get("packet_summary"), dict)
+        and approval_receipt["packet_summary"].get("authorship") == "machine_originated",
         "session_export": export_path.exists(),
         "status_receipt": status_payload.get("ok") is True,
     }
@@ -1058,6 +1074,8 @@ async def replacement_harness_sanity_command(
                 "Tau can emit one local replacement-harness sanity receipt bundle",
                 "Tau can record read-only plan-mode mutation denial without creating the file",
                 "Tau can perform a local build-mode write through the real Tau write tool",
+                "Tau can classify a local machine sanity packet without letting it satisfy "
+                "a production human approval gate",
                 "Tau can export and report a local indexed session without opening the TUI",
             ],
             "does_not_prove": [
@@ -1753,6 +1771,7 @@ def main(
     raw_positional_args = [*(prompt_args or []), *ctx.args]
     if raw_positional_args[:1] in (
         ["browser-cdp-proof"],
+        ["commit-plan"],
         ["dag-view"],
         ["dag-view-capabilities"],
         ["dag-view-events"],
@@ -1760,6 +1779,8 @@ def main(
         ["dag-view-snapshot"],
         ["dag-viewer-link"],
         ["github-redact-projection"],
+        ["herdr-cleanup"],
+        ["replacement-harness-sanity"],
         ["workflows"],
         ["gs001-closure-publish"],
         ["tui-proof"],
@@ -5204,12 +5225,42 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
             raise RuntimeError(f"Usage: tau workflows {subcommand} <run-dir>")
         return dict(resume_packaged_workflow(run_dir=Path(remaining[0]))), True
     if subcommand == "repair":
-        if len(remaining) != 3 or remaining[1] != "--node":
-            raise RuntimeError("Usage: tau workflows repair <run-dir> --node <node-id>")
+        approval_packet: Path | None = None
+        node_id: str | None = None
+        positional = []
+        index = 0
+        while index < len(remaining):
+            arg = remaining[index]
+            index += 1
+            if arg == "--node":
+                if index >= len(remaining):
+                    raise RuntimeError("--node requires a value")
+                node_id = remaining[index]
+                index += 1
+            elif arg.startswith("--node="):
+                node_id = arg.partition("=")[2]
+            elif arg == "--approval-packet":
+                if index >= len(remaining):
+                    raise RuntimeError("--approval-packet requires a value")
+                approval_packet = Path(remaining[index])
+                index += 1
+            elif arg.startswith("--approval-packet="):
+                approval_packet = Path(arg.partition("=")[2])
+            elif arg.startswith("-"):
+                raise RuntimeError(f"unknown workflows repair option: {arg}")
+            else:
+                positional.append(arg)
+        if len(positional) != 1 or node_id is None:
+            raise RuntimeError(
+                "Usage: tau workflows repair <run-dir> --node <node-id> "
+                "[--approval-packet <approval.json>]"
+            )
         return (
             dict(
                 repair_durable_repository_qualification(
-                    run_dir=Path(remaining[0]), node_id=remaining[2]
+                    run_dir=Path(positional[0]),
+                    node_id=node_id,
+                    approval_packet=approval_packet,
                 )
             ),
             True,
@@ -5237,6 +5288,7 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
         "--run-dir",
         "--publish-path",
         "--viewer-hold-seconds",
+        "--step-delay-seconds",
     }
     flag_options = {
         "--require-clean",
@@ -5273,6 +5325,11 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
         hold_seconds = float(hold) if hold is not None else None
     except ValueError as exc:
         raise RuntimeError("--viewer-hold-seconds must be a number") from exc
+    step_delay = values.get("--step-delay-seconds")
+    try:
+        step_delay_seconds = float(step_delay) if step_delay is not None else 0.0
+    except ValueError as exc:
+        raise RuntimeError("--step-delay-seconds must be a number") from exc
     if workflow_id in {"approved-release-bundle", "durable-repository-qualification"}:
         common = {
             "repo_path": Path(values["--repo"]),
@@ -5289,6 +5346,7 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
             payload = run_durable_repository_qualification_workflow(
                 **common,
                 inject_test_branch_failure="--inject-test-branch-failure" in flags,
+                step_delay_seconds=step_delay_seconds,
             )
     elif workflow_id == "repository-readiness":
         payload = run_repository_readiness_workflow(
