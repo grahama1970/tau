@@ -543,12 +543,35 @@ def test_snapshot_projects_only_committed_accepted_result_and_run_summary(
         "started_at": "2026-07-17T12:00:00Z",
         "finished_at": "2026-07-17T12:00:01Z",
         "duration_seconds": 1.0,
+        "cost_accounting": {
+            "schema": "tau.generic_dag_cost_accounting.v1",
+            "source": "not_reported",
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "total_tokens": 0,
+            "estimated_cost_usd": None,
+            "estimated_cost_is_billing_truth": False,
+        },
+        "budget_blocker": None,
     }
     assert snapshot["run_summary"] == {
         "active_node_ids": [],
         "accepted_node_ids": ["node"],
         "highest_priority_blocker": None,
         "final_result": accepted_output,
+        "cost_accounting": {
+            "schema": "tau.generic_dag_cost_accounting.v1",
+            "source": "not_reported",
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cache_read_tokens": 0,
+            "cache_write_tokens": 0,
+            "total_tokens": 0,
+            "estimated_cost_usd": None,
+            "estimated_cost_is_billing_truth": False,
+        },
     }
 
 

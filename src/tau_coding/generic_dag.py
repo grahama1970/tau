@@ -56,6 +56,7 @@ GENERIC_DAG_RUN_RECEIPT_SCHEMA = "tau.generic_dag_run_receipt.v1"
 GENERIC_DAG_NODE_RECEIPT_SCHEMA = "tau.generic_dag_node_receipt.v1"
 GENERIC_DAG_EVENT_SCHEMA = "tau.generic_dag_event.v1"
 GENERIC_DAG_CHECKPOINT_SCHEMA = "tau.generic_dag_checkpoint.v1"
+GENERIC_DAG_COST_ACCOUNTING_SCHEMA = "tau.generic_dag_cost_accounting.v1"
 
 
 @dataclass(frozen=True)
@@ -116,6 +117,7 @@ def run_generic_dag(
     plan = compile_generic_dag_plan(spec, source_path=resolved_spec_path)
     goal_hash = _generic_goal_hash(spec)
     run_store_path = run_dir / "dag-run.sqlite3"
+    budget = _dag_budget_from_spec(spec, run_dir=run_dir)
     active_lease: DagRunLease | None = None
 
     def initialize_run_artifacts(lease: DagRunLease) -> None:
@@ -249,6 +251,22 @@ def run_generic_dag(
         except BaseException:
             node_log.exception("generic_dag_node_exception")
             raise
+        result["cost_accounting"] = _node_cost_accounting(result)
+        budget_blocker = _cost_budget_blocker(
+            budget=budget,
+            node_results=[*node_results, result],
+            node_id=plan_node.node_id,
+        )
+        if budget_blocker is not None:
+            errors = result.get("errors") if isinstance(result.get("errors"), list) else []
+            result = {
+                **result,
+                "status": "BLOCKED",
+                "verdict": "BUDGET_EXCEEDED",
+                "accepted_output": None,
+                "errors": [*errors, "budget_exceeded"],
+                "budget_blocker": budget_blocker,
+            }
         node_log.bind(
             status=result.get("status"),
             verdict=result.get("verdict"),
@@ -342,6 +360,7 @@ def run_generic_dag(
         "node_count": len(nodes),
         "completed_node_count": len(completed),
         "nodes": node_results,
+        "cost_accounting": _run_cost_accounting(node_results, budget=budget),
         "proof_scope": _proof_scope(provider_live=provider_live, skill_live=skill_live),
         "timestamp": _utc_stamp(),
     }
@@ -462,6 +481,12 @@ def inspect_generic_dag_run(run_dir: Path) -> dict[str, Any]:
                 if isinstance(node.get("artifacts"), list)
                 else 0,
                 "artifacts": _artifact_summary_map(node.get("artifacts")),
+                "cost_accounting": node.get("cost_accounting")
+                if isinstance(node.get("cost_accounting"), dict)
+                else _empty_cost_accounting(),
+                "budget_blocker": node.get("budget_blocker")
+                if isinstance(node.get("budget_blocker"), dict)
+                else None,
             }
             for node in nodes
         ],
@@ -489,6 +514,220 @@ def _artifact_summary_map(value: Any) -> dict[str, str]:
         if isinstance(kind, str) and kind and isinstance(path, str) and path:
             artifacts[kind] = path
     return artifacts
+
+
+def _dag_budget_from_spec(spec: dict[str, Any], *, run_dir: Path) -> dict[str, float] | None:
+    override_path = run_dir / "budget-override.json"
+    if override_path.is_file():
+        override = _read_json_object(override_path, label="DAG budget override")
+        return _budget_from_mapping(override, label="DAG budget override")
+    raw = spec.get("budget")
+    if raw is None:
+        raw = spec.get("cost_budget")
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise RuntimeError("DAG budget must be an object")
+    return _budget_from_mapping(raw, label="DAG budget")
+
+
+def _budget_from_mapping(raw: dict[str, Any], *, label: str) -> dict[str, float]:
+    ceiling = _optional_float(
+        raw.get("estimated_cost_usd")
+        if raw.get("estimated_cost_usd") is not None
+        else raw.get("max_estimated_cost_usd")
+    )
+    if ceiling is None:
+        raise RuntimeError(f"{label} requires estimated_cost_usd or max_estimated_cost_usd")
+    if ceiling < 0:
+        raise RuntimeError(f"{label} estimated cost ceiling must be non-negative")
+    return {"estimated_cost_usd": ceiling}
+
+
+def _node_cost_accounting(node_result: dict[str, Any]) -> dict[str, Any]:
+    usage = _usage_mapping_from_result(node_result)
+    input_tokens = _int_or_zero(usage.get("input_tokens") or usage.get("input"))
+    output_tokens = _int_or_zero(usage.get("output_tokens") or usage.get("output"))
+    cache_read_tokens = _int_or_zero(
+        usage.get("cache_read_tokens")
+        or usage.get("cache_read")
+        or usage.get("cached_tokens")
+    )
+    cache_write_tokens = _int_or_zero(
+        usage.get("cache_write_tokens") or usage.get("cache_write")
+    )
+    estimated_cost = _optional_float(
+        usage.get("estimated_cost_usd")
+        if usage.get("estimated_cost_usd") is not None
+        else usage.get("estimated_cost")
+        if usage.get("estimated_cost") is not None
+        else usage.get("cost_usd")
+        if usage.get("cost_usd") is not None
+        else usage.get("cost")
+    )
+    has_reported_usage = any(
+        value > 0
+        for value in (
+            input_tokens,
+            output_tokens,
+            cache_read_tokens,
+            cache_write_tokens,
+        )
+    ) or estimated_cost is not None
+    return {
+        "schema": GENERIC_DAG_COST_ACCOUNTING_SCHEMA,
+        "source": "provider_reported_estimate" if has_reported_usage else "not_reported",
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "cache_read_tokens": cache_read_tokens,
+        "cache_write_tokens": cache_write_tokens,
+        "total_tokens": input_tokens
+        + output_tokens
+        + cache_read_tokens
+        + cache_write_tokens,
+        "estimated_cost_usd": estimated_cost,
+        "estimated_cost_is_billing_truth": False,
+    }
+
+
+def _usage_mapping_from_result(node_result: dict[str, Any]) -> dict[str, Any]:
+    for key in ("usage", "provider_usage", "cost_accounting"):
+        value = node_result.get(key)
+        if isinstance(value, dict):
+            return value
+    accepted_output = node_result.get("accepted_output")
+    if isinstance(accepted_output, dict):
+        for key in ("usage", "provider_usage", "cost_accounting"):
+            value = accepted_output.get(key)
+            if isinstance(value, dict):
+                return value
+    cost_estimate = node_result.get("cost_estimate")
+    if isinstance(cost_estimate, dict):
+        estimated = cost_estimate.get("estimated_cost_usd")
+        if estimated is not None:
+            return {"estimated_cost_usd": estimated}
+    return {}
+
+
+def _run_cost_accounting(
+    node_results: list[dict[str, Any]],
+    *,
+    budget: dict[str, float] | None,
+) -> dict[str, Any]:
+    node_costs = [
+        item.get("cost_accounting")
+        if isinstance(item.get("cost_accounting"), dict)
+        else _node_cost_accounting(item)
+        for item in node_results
+    ]
+    estimated_cost_values = [
+        value
+        for item in node_costs
+        if (value := _optional_float(item.get("estimated_cost_usd"))) is not None
+    ]
+    total_estimated_cost = (
+        round(sum(estimated_cost_values), 12) if estimated_cost_values else None
+    )
+    allowed = budget.get("estimated_cost_usd") if budget is not None else None
+    return {
+        "schema": GENERIC_DAG_COST_ACCOUNTING_SCHEMA,
+        "source": (
+            "provider_reported_estimate"
+            if any(item.get("source") == "provider_reported_estimate" for item in node_costs)
+            else "not_reported"
+        ),
+        "input_tokens": sum(_int_or_zero(item.get("input_tokens")) for item in node_costs),
+        "output_tokens": sum(_int_or_zero(item.get("output_tokens")) for item in node_costs),
+        "cache_read_tokens": sum(
+            _int_or_zero(item.get("cache_read_tokens")) for item in node_costs
+        ),
+        "cache_write_tokens": sum(
+            _int_or_zero(item.get("cache_write_tokens")) for item in node_costs
+        ),
+        "total_tokens": sum(_int_or_zero(item.get("total_tokens")) for item in node_costs),
+        "estimated_cost_usd": total_estimated_cost,
+        "estimated_cost_is_billing_truth": False,
+        "budget": (
+            {
+                "estimated_cost_usd": allowed,
+                "state": (
+                    "EXCEEDED"
+                    if total_estimated_cost is not None
+                    and allowed is not None
+                    and total_estimated_cost > allowed
+                    else "WITHIN_BUDGET"
+                ),
+            }
+            if allowed is not None
+            else {"state": "NOT_CONFIGURED"}
+        ),
+    }
+
+
+def _cost_budget_blocker(
+    *,
+    budget: dict[str, float] | None,
+    node_results: list[dict[str, Any]],
+    node_id: str,
+) -> dict[str, Any] | None:
+    if budget is None:
+        return None
+    accounting = _run_cost_accounting(node_results, budget=budget)
+    consumed = _optional_float(accounting.get("estimated_cost_usd"))
+    allowed = budget["estimated_cost_usd"]
+    if consumed is None or consumed <= allowed:
+        return None
+    return {
+        "code": "budget_exceeded",
+        "verdict": "BUDGET_EXCEEDED",
+        "node_id": node_id,
+        "consumed_estimated_cost_usd": consumed,
+        "allowed_estimated_cost_usd": allowed,
+        "estimated_cost_is_billing_truth": False,
+        "resume_action": "raise DAG budget ceiling and resume the run",
+    }
+
+
+def _empty_cost_accounting() -> dict[str, Any]:
+    return {
+        "schema": GENERIC_DAG_COST_ACCOUNTING_SCHEMA,
+        "source": "not_reported",
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "total_tokens": 0,
+        "estimated_cost_usd": None,
+        "estimated_cost_is_billing_truth": False,
+    }
+
+
+def _int_or_zero(value: Any) -> int:
+    if isinstance(value, bool):
+        return 0
+    if isinstance(value, int):
+        return max(0, value)
+    if isinstance(value, float):
+        return max(0, int(value))
+    if isinstance(value, str):
+        try:
+            return max(0, int(value))
+        except ValueError:
+            return 0
+    return 0
+
+
+def _optional_float(value: Any) -> float | None:
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, int | float):
+        return float(value)
+    if isinstance(value, str):
+        try:
+            return float(value)
+        except ValueError:
+            return None
+    return None
 
 
 def _write_checkpoint(
@@ -668,6 +907,10 @@ def _run_skill_node(
                 "receipt_path": str(node.receipt_path),
                 "work_order_path": str(node.work_order_path) if node.work_order_path else None,
                 "work_order_sha256": _work_order_sha256(node),
+                "usage": prior.get("usage") if isinstance(prior.get("usage"), dict) else None,
+                "cost_estimate": prior.get("cost_estimate")
+                if isinstance(prior.get("cost_estimate"), dict)
+                else None,
                 "resumed": True,
                 "command_results": [],
                 "artifacts": artifacts,
@@ -741,6 +984,10 @@ def _run_skill_node(
         "receipt_path": str(node.receipt_path),
         "work_order_path": str(node.work_order_path) if node.work_order_path else None,
         "work_order_sha256": _work_order_sha256(node),
+        "usage": receipt.get("usage") if isinstance(receipt.get("usage"), dict) else None,
+        "cost_estimate": receipt.get("cost_estimate")
+        if isinstance(receipt.get("cost_estimate"), dict)
+        else None,
         "resumed": False,
         "command_results": [],
         "artifacts": artifacts,
@@ -1825,6 +2072,10 @@ def _node_record(
         "visible_log_sha256": receipt.get("visible_log_sha256"),
         "execution_evidence": receipt.get("execution_evidence")
         if isinstance(receipt.get("execution_evidence"), dict)
+        else None,
+        "usage": receipt.get("usage") if isinstance(receipt.get("usage"), dict) else None,
+        "cost_estimate": receipt.get("cost_estimate")
+        if isinstance(receipt.get("cost_estimate"), dict)
         else None,
         "attempt_count": attempt_count,
         "started_at": started_at,

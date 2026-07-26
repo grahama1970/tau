@@ -624,6 +624,9 @@ def _write_workflow_receipt(
         "source_dag_path": str(materialized.source_dag_path),
         "run_dir": str(materialized.run_dir),
         "run_receipt_path": str(materialized.run_dir / "run-receipt.json"),
+        "cost_accounting": dag_receipt.get("cost_accounting")
+        if isinstance(dag_receipt.get("cost_accounting"), dict)
+        else None,
         "result": result,
         "viewer": {
             "command": ["tau", "dag-view", "--run-dir", str(materialized.run_dir)],

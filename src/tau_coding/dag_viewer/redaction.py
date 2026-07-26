@@ -49,6 +49,15 @@ RAW_OUTPUT_KEY = re.compile(
     r"chain_of_thought|hidden_reasoning)$",
     re.IGNORECASE,
 )
+SAFE_USAGE_COUNTER_KEYS = {
+    "input_tokens",
+    "output_tokens",
+    "cache_read_tokens",
+    "cache_write_tokens",
+    "cache_write_1h_tokens",
+    "reasoning_tokens",
+    "total_tokens",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -134,7 +143,7 @@ def _walk(
                         redact_raw_output=redact_raw_output,
                         truncate_strings=truncate_strings,
                     )
-            elif SENSITIVE_KEY.search(str(key)):
+            elif SENSITIVE_KEY.search(str(key)) and str(key) not in SAFE_USAGE_COUNTER_KEYS:
                 output[str(key)] = "[REDACTED]"
                 paths.append(child)
             else:

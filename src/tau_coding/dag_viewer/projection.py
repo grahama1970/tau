@@ -232,6 +232,16 @@ def build_dag_view_state(
                         )
                         else None
                     ),
+                    "cost_accounting": (
+                        result_payload.get("cost_accounting")
+                        if isinstance(result_payload.get("cost_accounting"), dict)
+                        else _empty_cost_accounting()
+                    ),
+                    "budget_blocker": (
+                        result_payload.get("budget_blocker")
+                        if isinstance(result_payload.get("budget_blocker"), dict)
+                        else None
+                    ),
                 },
                 "transaction": _transaction_projection(
                     plan_node=plan_node,
@@ -365,6 +375,7 @@ def build_dag_view_state(
                 and result_node["admission"]["accepted"] is True
                 else None
             ),
+            "cost_accounting": _run_cost_accounting(nodes),
         },
         "recent_events": _browser_event_projections(
             recent_events[-200:], receipt_index=receipt_index
@@ -380,6 +391,70 @@ def build_dag_view_state(
         "truncated": redacted.truncated,
     }
     return result, causal
+
+
+def _run_cost_accounting(nodes: list[dict[str, Any]]) -> dict[str, Any]:
+    node_costs = [
+        node["result"]["cost_accounting"]
+        for node in nodes
+        if isinstance(node.get("result"), dict)
+        and isinstance(node["result"].get("cost_accounting"), dict)
+    ]
+    estimated_values = [
+        value
+        for item in node_costs
+        if isinstance((value := item.get("estimated_cost_usd")), (int, float))
+    ]
+    return {
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": (
+            "provider_reported_estimate"
+            if any(item.get("source") == "provider_reported_estimate" for item in node_costs)
+            else "not_reported"
+        ),
+        "input_tokens": sum(_int_or_zero(item.get("input_tokens")) for item in node_costs),
+        "output_tokens": sum(_int_or_zero(item.get("output_tokens")) for item in node_costs),
+        "cache_read_tokens": sum(
+            _int_or_zero(item.get("cache_read_tokens")) for item in node_costs
+        ),
+        "cache_write_tokens": sum(
+            _int_or_zero(item.get("cache_write_tokens")) for item in node_costs
+        ),
+        "total_tokens": sum(_int_or_zero(item.get("total_tokens")) for item in node_costs),
+        "estimated_cost_usd": round(sum(estimated_values), 12)
+        if estimated_values
+        else None,
+        "estimated_cost_is_billing_truth": False,
+    }
+
+
+def _empty_cost_accounting() -> dict[str, Any]:
+    return {
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "total_tokens": 0,
+        "estimated_cost_usd": None,
+        "estimated_cost_is_billing_truth": False,
+    }
+
+
+def _int_or_zero(value: Any) -> int:
+    if isinstance(value, bool):
+        return 0
+    if isinstance(value, int):
+        return max(0, value)
+    if isinstance(value, float):
+        return max(0, int(value))
+    if isinstance(value, str):
+        try:
+            return max(0, int(value))
+        except ValueError:
+            return 0
+    return 0
 
 
 def _result_timestamp(payload: dict[str, Any], key: str) -> str | None:
