@@ -124,6 +124,7 @@ from tau_coding.github_handoff import (
 )
 from tau_coding.github_read_schemes import write_github_read_receipt
 from tau_coding.goal_run import run_goal_until_complete
+from tau_coding.gs001_closure_publisher import publish_gs001_closure_receipt
 from tau_coding.handoff_dispatch import (
     TAU_AGENT_HANDOFF_DISPATCH_RECEIPT_SCHEMA,
     load_agent_dispatch_command_spec,
@@ -1743,6 +1744,7 @@ def main(
         ["dag-view-snapshot"],
         ["dag-viewer-link"],
         ["workflows"],
+        ["gs001-closure-publish"],
         ["tui-proof"],
     ):
         positional_args = raw_positional_args
@@ -2362,6 +2364,17 @@ def main(
     if not print_requested and command in {"dag-run", "run"}:
         try:
             payload = _run_dag_cli_command(positional_args[1:], command_name=str(command))
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "gs001-closure-publish":
+        try:
+            options = _parse_gs001_closure_publish_cli_args(positional_args[1:])
+            payload = publish_gs001_closure_receipt(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -5313,6 +5326,55 @@ def _parse_dag_plan_cli_args(args: list[str]) -> tuple[Path, Path]:
     if output_path is None:
         raise RuntimeError("--out is required")
     return source_path, output_path
+
+
+def _parse_gs001_closure_publish_cli_args(args: list[str]) -> dict[str, object]:
+    usage = (
+        "Usage: tau gs001-closure-publish --repo-root <repo> --dag <dag.json> "
+        "--closure-state <state.json> --terminal-receipt <terminal.json> "
+        "--visual-receipt <visual.json> --out <receipt.json> "
+        "[--expected-goal-hash <sha256:...>]"
+    )
+    value_options = {
+        "--repo-root",
+        "--dag",
+        "--closure-state",
+        "--terminal-receipt",
+        "--visual-receipt",
+        "--out",
+        "--expected-goal-hash",
+    }
+    values: dict[str, str] = {}
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg not in value_options or index + 1 >= len(args):
+            raise RuntimeError(f"{usage}; unknown or incomplete option: {arg}")
+        values[arg] = args[index + 1]
+        index += 2
+    missing = [
+        option
+        for option in (
+            "--repo-root",
+            "--dag",
+            "--closure-state",
+            "--terminal-receipt",
+            "--visual-receipt",
+            "--out",
+        )
+        if option not in values
+    ]
+    if missing:
+        raise RuntimeError(f"{usage}; missing {missing[0]}")
+    return {
+        "repo_root": Path(values["--repo-root"]),
+        "dag_contract_path": Path(values["--dag"]),
+        "closure_state_path": Path(values["--closure-state"]),
+        "terminal_receipt_path": Path(values["--terminal-receipt"]),
+        "visual_receipt_path": Path(values["--visual-receipt"]),
+        "output_path": Path(values["--out"]),
+        "expected_goal_hash": values.get("--expected-goal-hash"),
+    }
 
 
 def _parse_generic_dag_run_cli_args(

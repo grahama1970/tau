@@ -1,0 +1,121 @@
+{
+  "blocking_items": [
+    {
+      "criterion": 4,
+      "evidence": [
+        "artifacts/pdf-lab/loop-runs/gs001-row1-issue4-live-lifecycle-20260720T2145Z/row1-issue4-live-lifecycle-summary.json"
+      ],
+      "name": "No overfitting",
+      "status": "SCOPED_PASS_NOT_FULL_REPLAY",
+      "summary": "Accepted issue #4 repair has anti-overfit PASS and document-wide promotion evidence. Full all-repair static replay is not present in this branch."
+    },
+    {
+      "criterion": 7,
+      "evidence": [
+        ".tau/gs001-execution-dag.json"
+      ],
+      "name": "Tau proof",
+      "status": "PENDING_REPLAY",
+      "summary": "DAG contract goal hash updated to current hash. Historical Tau receipts exist, but full closure-publisher replay with current goal hash is not present in this branch."
+    },
+    {
+      "criterion": 8,
+      "evidence": [
+        "artifacts/pdf-lab/loop-runs/gs001-closure-publication-20260720T2335Z/gs001-closure-state.json",
+        "artifacts/pdf-lab/loop-runs/gs001-closure-publication-20260720T2335Z/gs001-closure-page.html",
+        "artifacts/pdf-lab/loop-runs/gs001-closure-publication-20260720T2335Z/terminal-receipt.json"
+      ],
+      "name": "Closure publication",
+      "status": "PUBLISHED_PENDING_REPLAY",
+      "summary": "This bundle publishes current closure state and terminal reason; visual screenshot proof is added after browser inspection."
+    },
+    {
+      "criterion": 10,
+      "evidence": [],
+      "name": "Human acceptance",
+      "status": "PENDING_HUMAN",
+      "summary": "No machine may establish this criterion."
+    }
+  ],
+  "closure_counts": {
+    "criteria_not_pass": 4,
+    "criteria_pass": 6,
+    "criteria_total": 10
+  },
+  "dag_id": "gs001-extraction-repair-v1",
+  "errors": [
+    "stale_goal_hash"
+  ],
+  "expected_goal_hash": "sha256:old-goal",
+  "goal_hash": "sha256:ca56881acd36f5fdffffafc2a2ee73bbfd806df820f2fe0bd50ec52e794308ca",
+  "live": true,
+  "mocked": false,
+  "node_id": "closure-publisher",
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Human acceptance.",
+      "Full GS001 anti-overfit replay beyond the committed closure-state bundle.",
+      "Provider or model semantic quality."
+    ],
+    "live": true,
+    "mocked": false,
+    "proves": [
+      "The GS001 Tau DAG contract parses under Tau's dag contract validator.",
+      "The closure-publisher terminal receipt is bound to the current DAG goal hash.",
+      "The committed closure-state JSON, HTML page, visual receipt, and screenshot are hash-referenced."
+    ]
+  },
+  "provider_live": false,
+  "references": [
+    {
+      "bytes": 6944,
+      "kind": "dag_contract",
+      "path": "/tmp/pdf_oxide-gs001-119/.tau/gs001-execution-dag.json",
+      "repo_relative_path": ".tau/gs001-execution-dag.json",
+      "sha256": "sha256:fd3f9c001b05058ea3010e5d278bedcdd7fde44abd6884772d4a955b00814798"
+    },
+    {
+      "bytes": 7489,
+      "kind": "closure_state_json",
+      "path": "/tmp/pdf_oxide-gs001-119/artifacts/pdf-lab/loop-runs/gs001-closure-publication-20260720T2335Z/gs001-closure-state.json",
+      "repo_relative_path": "artifacts/pdf-lab/loop-runs/gs001-closure-publication-20260720T2335Z/gs001-closure-state.json",
+      "sha256": "sha256:9904636da26ce39a0500529a165cf6abab161657c6a9dbe0484893a2e5267e05"
+    },
+    {
+      "bytes": 6995,
+      "kind": "closure_page_html",
+      "path": "/tmp/pdf_oxide-gs001-119/artifacts/pdf-lab/loop-runs/gs001-closure-publication-20260720T2335Z/gs001-closure-page.html",
+      "repo_relative_path": "artifacts/pdf-lab/loop-runs/gs001-closure-publication-20260720T2335Z/gs001-closure-page.html",
+      "sha256": "sha256:69351097a3a4de3a2c392909569345933bc33007a9dff682360d9251b2e618b1"
+    },
+    {
+      "bytes": 2196,
+      "kind": "terminal_receipt_json",
+      "path": "/tmp/pdf_oxide-gs001-119/artifacts/pdf-lab/loop-runs/gs001-closure-publication-20260720T2335Z/terminal-receipt.json",
+      "repo_relative_path": "artifacts/pdf-lab/loop-runs/gs001-closure-publication-20260720T2335Z/terminal-receipt.json",
+      "sha256": "sha256:07c0bb669911579f5003892afe0ca7e33d91a42ae176010b7548edf0f7bc8241"
+    },
+    {
+      "bytes": 1510,
+      "kind": "visual_receipt_json",
+      "path": "/tmp/pdf_oxide-gs001-119/artifacts/pdf-lab/loop-runs/gs001-closure-publication-20260720T2335Z/receipts/gs001-closure-page-visual-receipt.json",
+      "repo_relative_path": "artifacts/pdf-lab/loop-runs/gs001-closure-publication-20260720T2335Z/receipts/gs001-closure-page-visual-receipt.json",
+      "sha256": "sha256:e32ceb48461c6e8760e9e09173f5d1c72d618cef355f592c693278e214084e68"
+    },
+    {
+      "bytes": 283294,
+      "kind": "visual_screenshot_png",
+      "path": "/tmp/pdf_oxide-gs001-119/artifacts/pdf-lab/loop-runs/gs001-closure-publication-20260720T2335Z/receipts/gs001-closure-page.png",
+      "repo_relative_path": "artifacts/pdf-lab/loop-runs/gs001-closure-publication-20260720T2335Z/receipts/gs001-closure-page.png",
+      "sha256": "sha256:2ab8fb0cd88042c87a9a13f848f55cb342f9d18f8f33274dd8d25e65318e9307"
+    }
+  ],
+  "repo_root": "/tmp/pdf_oxide-gs001-119",
+  "schema": "tau.gs001_closure_publisher_receipt.v1",
+  "source_commit": "09dd3b183a5184ffa5e22b83704f1b871c35543a",
+  "status": "BLOCKED",
+  "terminal_reason": "tau_full_closure_replay_missing_for_current_goal_hash_and_human_acceptance_pending",
+  "terminal_status": "stale_goal_hash",
+  "verdict": "STALE_GOAL_HASH"
+}

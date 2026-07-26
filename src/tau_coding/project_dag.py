@@ -143,6 +143,10 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.monitor_alerts.pointless_unit_test_drift",
     },
+    "patch_path_violation": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.allowed_paths",
+    },
     "provider_auth_required": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.provider_auth.failure_classifier",
@@ -162,6 +166,14 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
     "evidence_case_policy_mismatch": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.memory_evidence_gate.evidence_case_policy",
+    },
+    "anti_overfit_inspection_failed": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.pdf_lab.gs001_anti_overfit_inspection",
+    },
+    "expected_contract_not_locked": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.pdf_lab.expected_contract_lock",
     },
     "intent_clarify_required": {
         "severity": "BLOCK",
@@ -1646,7 +1658,7 @@ def _provider_command_timeout_policy(
     )
     try:
         timeout_s = float(raw_timeout)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
     if timeout_s <= 0:
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
@@ -5447,7 +5459,7 @@ def _downstream_skill_blocker(response: object) -> dict[str, Any] | None:
             continue
         try:
             receipt = _read_json_object(Path(path_value), label="downstream skill receipt")
-        except (OSError, ValueError):
+        except OSError, ValueError:
             continue
         recovery_packet = receipt.get("recovery_packet")
         recovery_code = (
@@ -5591,7 +5603,7 @@ def _optional_context_mapping(value: object, label: str, errors: list[str]) -> d
 def _json_safe_alert_value(value: object) -> object:
     try:
         json.dumps(value)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return {"type": type(value).__name__, "value": str(value)}
     return value
 
