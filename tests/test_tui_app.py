@@ -4177,6 +4177,49 @@ async def test_tui_app_artifacts_command_previews_html_exports(
 
 
 @pytest.mark.anyio
+async def test_tui_app_artifacts_command_previews_html_export_images(
+    tmp_path: Path,
+) -> None:
+    set_capabilities(TerminalCapabilities(images=None, true_color=True, hyperlinks=True))
+    try:
+        figure_path = tmp_path / "figure.png"
+        figure_path.write_bytes(base64.b64decode(PNG_1X1_BASE64))
+        export_path = tmp_path / "session.html"
+        export_path.write_text(
+            (
+                "<!doctype html>"
+                "<html><head><title>Figure Report</title></head><body>"
+                "<h1>Rendered Figure</h1>"
+                '<img src="figure.png" alt="chart">'
+                "<table><tr><th>metric</th><th>value</th></tr>"
+                "<tr><td>visual</td><td>present</td></tr></table>"
+                "</body></html>"
+            ),
+            encoding="utf-8",
+        )
+        session = FakeSession()
+        app = TauTuiApp(session)
+        app.state.add_item("assistant", f"Export: [figure report]({export_path}).")
+
+        async with app.run_test() as pilot:
+            prompt = app.query_one("#prompt")
+            prompt.value = "/artifacts"
+            await pilot.press("enter")
+            await pilot.pause()
+
+            assert isinstance(app.screen, ArtifactBrowserScreen)
+            preview_console = Console(file=StringIO(), record=True, width=100)
+            preview_console.print(app.screen._preview_renderable(0))
+            preview = preview_console.export_text()
+            assert "Figure Report" in preview
+            assert "Rendered Figure" in preview
+            assert "visual | present" in preview
+            assert "Image: figure.png" in preview
+    finally:
+        reset_capabilities_cache()
+
+
+@pytest.mark.anyio
 async def test_tui_app_artifacts_command_searches_and_filters_artifacts(
     tmp_path: Path,
 ) -> None:

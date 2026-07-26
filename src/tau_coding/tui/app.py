@@ -4558,9 +4558,18 @@ HTML_ARTIFACT_MIME_TYPES = {
     ".html": "text/html",
     ".htm": "text/html",
 }
+HTML_ARTIFACT_IMAGE_MIME_TYPES = {
+    ".gif": "image/gif",
+    ".jpeg": "image/jpeg",
+    ".jpg": "image/jpeg",
+    ".png": "image/png",
+    ".svg": "image/svg+xml",
+    ".webp": "image/webp",
+}
 MAX_MARKDOWN_ARTIFACT_BYTES = 512 * 1024
 MAX_JSON_ARTIFACT_BYTES = 512 * 1024
 MAX_HTML_ARTIFACT_BYTES = 512 * 1024
+MAX_HTML_ARTIFACT_IMAGE_BYTES = 10 * 1024 * 1024
 
 
 @dataclass(frozen=True, slots=True)
@@ -4961,10 +4970,30 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
         except UnicodeDecodeError:
             return f"Preview unavailable: {artifact.path} is not UTF-8 text"
         preview = _html_artifact_preview_markdown(text, fallback_title=artifact.path.name)
+        image_renderables = [
+            Padding(
+                TerminalImage(
+                    payload.image_base64,
+                    payload.mime_type,
+                    TerminalImageOptions(
+                        filename=Path(payload.path).name,
+                        max_width_cells=self.image_width_cells,
+                        max_height_cells=8,
+                        show=self.show_images,
+                    ),
+                ),
+                (1, 0, 0, 0),
+            )
+            for payload in _html_image_payloads(
+                preview.image_targets,
+                base_path=artifact.path.parent,
+            )
+        ]
         return Group(
             _html_artifact_summary_table(artifact, preview.title),
             Text(""),
             Markdown(preview.markdown),
+            *image_renderables,
         )
 
     def _help_text(self) -> str:
@@ -13663,6 +13692,7 @@ class HtmlArtifactPreview:
 
     title: str
     markdown: str
+    image_targets: tuple[str, ...] = ()
 
 
 class HtmlArtifactPreviewParser(HTMLParser):
@@ -13690,6 +13720,7 @@ class HtmlArtifactPreviewParser(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.title_parts: list[str] = []
         self.blocks: list[str] = []
+        self.image_targets: list[str] = []
         self._in_title = False
         self._skip_depth = 0
         self._block_tag: str | None = None
@@ -13698,7 +13729,6 @@ class HtmlArtifactPreviewParser(HTMLParser):
         self._cell_parts: list[str] | None = None
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        del attrs
         normalized = tag.lower()
         if normalized in self._SKIP_TAGS:
             self._skip_depth += 1
@@ -13707,6 +13737,10 @@ class HtmlArtifactPreviewParser(HTMLParser):
             return
         if normalized == "title":
             self._in_title = True
+        elif normalized == "img":
+            source = _html_attr_value(attrs, "src")
+            if source:
+                self.image_targets.append(source)
         elif normalized == "tr":
             self._flush_block()
             self._row = []
@@ -13775,7 +13809,11 @@ class HtmlArtifactPreviewParser(HTMLParser):
         markdown = "\n\n".join(blocks[:80])
         if len(markdown) > 8_000:
             markdown = markdown[:8_000].rstrip() + "\n\n[Preview truncated.]"
-        return HtmlArtifactPreview(title=title, markdown=markdown)
+        return HtmlArtifactPreview(
+            title=title,
+            markdown=markdown,
+            image_targets=tuple(dict.fromkeys(self.image_targets)),
+        )
 
 
 def _html_artifact_preview_markdown(html_text: str, *, fallback_title: str) -> HtmlArtifactPreview:
@@ -13783,6 +13821,50 @@ def _html_artifact_preview_markdown(html_text: str, *, fallback_title: str) -> H
     parser.feed(html_text)
     parser.close()
     return parser.preview(fallback_title=fallback_title)
+
+
+def _html_attr_value(attrs: Sequence[tuple[str, str | None]], name: str) -> str | None:
+    wanted = name.casefold()
+    for key, value in attrs:
+        if key.casefold() == wanted and value:
+            return html_unescape(value)
+    return None
+
+
+def _html_image_payloads(
+    targets: Sequence[str],
+    *,
+    base_path: Path,
+) -> tuple[ToolImagePayload, ...]:
+    payloads: list[ToolImagePayload] = []
+    seen: set[Path] = set()
+    for target in targets:
+        path = _artifact_link_target_path(target, base_path=base_path)
+        if path is None or path in seen:
+            continue
+        mime_type = HTML_ARTIFACT_IMAGE_MIME_TYPES.get(path.suffix.lower())
+        if mime_type is None:
+            continue
+        try:
+            stat = path.stat()
+        except OSError:
+            continue
+        if not path.is_file() or stat.st_size <= 0 or stat.st_size > MAX_HTML_ARTIFACT_IMAGE_BYTES:
+            continue
+        try:
+            data = path.read_bytes()
+        except OSError:
+            continue
+        payloads.append(
+            ToolImagePayload(
+                path=str(path),
+                mime_type=mime_type,
+                bytes=len(data),
+                image_base64=base64.b64encode(data).decode("ascii"),
+            )
+        )
+        seen.add(path)
+    return tuple(payloads)
 
 
 def _html_artifact_summary_table(artifact: VisualArtifact, title: str) -> Table:
