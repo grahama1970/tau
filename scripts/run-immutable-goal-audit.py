@@ -10,10 +10,12 @@ https://sqlite.org/walformat.html.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import hashlib
 import json
 import os
 import re
+import shutil
 import signal
 import socket
 import subprocess
@@ -175,6 +177,20 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--slice05-browser-proof", type=Path, required=True)
     parser.add_argument("--slice05-wheel-proof", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument(
+        "--retention-root",
+        type=Path,
+        help=(
+            "Optional repo-local directory that receives a hash-bound copy of the "
+            "audit receipt, supplied proof JSON, and desktop/mobile screenshots "
+            "after the clean-checkout audit passes."
+        ),
+    )
+    parser.add_argument(
+        "--overwrite-retention",
+        action="store_true",
+        help="Replace an existing retention-root directory before writing the retained bundle.",
+    )
     args = parser.parse_args(argv)
 
     out = args.out.expanduser().resolve()
@@ -182,14 +198,25 @@ def main(argv: list[str] | None = None) -> int:
     commands: list[dict[str, Any]] = []
     try:
         audit = _run_audit(args, commands)
+        _write_json(out, audit)
+        retention = None
+        if args.retention_root is not None:
+            retention = _retain_canonical_workflow_artifacts(
+                audit=audit,
+                audit_receipt=out,
+                retention_root=args.retention_root,
+                overwrite=args.overwrite_retention,
+            )
     except Exception as exc:
         audit = _blocked_audit(args.ref, commands, exc)
         _write_json(out, audit)
         print(json.dumps(audit, indent=2, sort_keys=True))
         return 1
 
-    _write_json(out, audit)
-    print(json.dumps(audit, indent=2, sort_keys=True))
+    if retention is None:
+        print(json.dumps(audit, indent=2, sort_keys=True))
+    else:
+        print(json.dumps({"audit": audit, "retention": retention}, indent=2, sort_keys=True))
     return 0
 
 
@@ -1161,6 +1188,174 @@ def _claims() -> dict[str, list[str]]:
             "Application-level exactly-once publication from SQLite WAL semantics alone.",
         ],
     }
+
+
+def _retain_canonical_workflow_artifacts(
+    *,
+    audit: dict[str, Any],
+    audit_receipt: Path,
+    retention_root: Path,
+    overwrite: bool,
+) -> dict[str, Any]:
+    repo = Path(audit["source"]["repository"]).resolve()
+    root = retention_root.expanduser().resolve()
+    if not root.is_relative_to(repo):
+        raise AuditError("retention_root_must_be_inside_repository")
+    if root.exists():
+        if not root.is_dir():
+            raise AuditError("retention_root_exists_and_is_not_directory")
+        if any(root.iterdir()):
+            if not overwrite:
+                raise AuditError("retention_root_exists_and_is_not_empty")
+            shutil.rmtree(root)
+    root.mkdir(parents=True, exist_ok=True)
+    audit_dir = root / "audit"
+    proofs_dir = root / "supplied-proofs"
+    screenshots_dir = root / "screenshots"
+    for directory in (audit_dir, proofs_dir, screenshots_dir):
+        directory.mkdir()
+
+    artifacts: list[dict[str, Any]] = []
+    retained_audit = audit_dir / "immutable-goal-audit.json"
+    artifacts.append(
+        _retain_file(
+            source=audit_receipt,
+            destination=retained_audit,
+            repo=repo,
+            kind="audit_receipt",
+            label="immutable_goal_audit",
+            expected_sha256=_sha256(audit_receipt),
+        )
+    )
+
+    for proof in audit.get("supplied_proofs", []):
+        if not isinstance(proof, dict):
+            raise AuditError("retention_supplied_proof_not_object")
+        label = proof.get("label")
+        path_value = proof.get("path")
+        sha256 = proof.get("sha256")
+        if (
+            not isinstance(label, str)
+            or not isinstance(path_value, str)
+            or not isinstance(sha256, str)
+        ):
+            raise AuditError("retention_supplied_proof_fields_missing")
+        proof_path = Path(path_value).expanduser().resolve()
+        artifacts.append(
+            _retain_file(
+                source=proof_path,
+                destination=proofs_dir / f"{_safe_artifact_name(label)}{proof_path.suffix}",
+                repo=repo,
+                kind="supplied_proof",
+                label=label,
+                expected_sha256=sha256,
+            )
+        )
+        for screenshot in proof.get("screenshots") or []:
+            if not isinstance(screenshot, dict):
+                raise AuditError("retention_screenshot_not_object")
+            kind = screenshot.get("kind")
+            screenshot_path_value = screenshot.get("path")
+            screenshot_sha256 = screenshot.get("sha256")
+            if (
+                not isinstance(kind, str)
+                or not isinstance(screenshot_path_value, str)
+                or not isinstance(screenshot_sha256, str)
+            ):
+                raise AuditError("retention_screenshot_fields_missing")
+            screenshot_path = Path(screenshot_path_value).expanduser().resolve()
+            destination = screenshots_dir / (
+                f"{_safe_artifact_name(label)}-{_safe_artifact_name(kind)}{screenshot_path.suffix}"
+            )
+            artifacts.append(
+                _retain_file(
+                    source=screenshot_path,
+                    destination=destination,
+                    repo=repo,
+                    kind=f"{kind}_screenshot",
+                    label=label,
+                    expected_sha256=screenshot_sha256,
+                )
+            )
+
+    manifest = {
+        "schema": "tau.canonical_workflow_retention_manifest.v1",
+        "status": "PASS",
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "source_ref": audit.get("source_ref"),
+        "requested_ref": audit.get("requested_ref"),
+        "created_at": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat(),
+        "retention_root": _relative_to_repo(root, repo),
+        "artifact_count": len(artifacts),
+        "artifacts": artifacts,
+        "claims": {
+            "proves": [
+                "The immutable-goal audit receipt is retained in the repository.",
+                "Every supplied proof JSON validated by the audit is retained in the repository.",
+                "Every desktop and mobile screenshot bound by a validated browser proof is "
+                "retained in the repository.",
+                "Every retained artifact was copied only after its SHA-256 matched the audit "
+                "record.",
+            ],
+            "does_not_prove": [
+                "Human acceptance of the immutable goal.",
+                "Provider or model semantic quality.",
+                "That future proof runs will still pass without rerunning the audit.",
+            ],
+        },
+    }
+    manifest_path = root / "manifest.json"
+    _write_json(manifest_path, manifest)
+    return {
+        **manifest,
+        "manifest_file": {
+            "path": _relative_to_repo(manifest_path, repo),
+            "sha256": _sha256(manifest_path),
+            "bytes": manifest_path.stat().st_size,
+        },
+    }
+
+
+def _retain_file(
+    *,
+    source: Path,
+    destination: Path,
+    repo: Path,
+    kind: str,
+    label: str,
+    expected_sha256: str,
+) -> dict[str, Any]:
+    if not source.is_file() or source.stat().st_size < 1:
+        raise AuditError(f"retention_source_missing:{label}:{kind}")
+    if _sha256(source) != expected_sha256:
+        raise AuditError(f"retention_source_hash_mismatch:{label}:{kind}")
+    shutil.copy2(source, destination)
+    if _sha256(destination) != expected_sha256:
+        raise AuditError(f"retention_copy_hash_mismatch:{label}:{kind}")
+    return {
+        "kind": kind,
+        "label": label,
+        "source_path": str(source),
+        "retained_path": _relative_to_repo(destination, repo),
+        "sha256": expected_sha256,
+        "bytes": destination.stat().st_size,
+    }
+
+
+def _safe_artifact_name(value: str) -> str:
+    name = re.sub(r"[^A-Za-z0-9_.-]+", "-", value).strip(".-")
+    if not name:
+        raise AuditError("retention_artifact_name_empty")
+    return name
+
+
+def _relative_to_repo(path: Path, repo: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(repo))
+    except ValueError as exc:
+        raise AuditError("retained_artifact_not_inside_repository") from exc
 
 
 def _blocked_audit(
