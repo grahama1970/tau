@@ -2,6 +2,7 @@
 
 from contextlib import suppress
 from dataclasses import dataclass, field, replace
+from datetime import date
 from json import dumps, loads
 from os import environ
 from pathlib import Path
@@ -68,6 +69,7 @@ class OpenAICompatibleProviderConfig:
     models: tuple[str, ...] = (DEFAULT_MODEL,)
     default_model: str = DEFAULT_MODEL
     context_windows: dict[str, int] = field(default_factory=dict)
+    model_knowledge_cutoffs: dict[str, date] = field(default_factory=dict)
     headers: dict[str, str] = field(default_factory=dict)
     timeout_seconds: float = DEFAULT_OPENAI_COMPATIBLE_TIMEOUT_SECONDS
     max_retries: int = DEFAULT_OPENAI_COMPATIBLE_MAX_RETRIES
@@ -84,6 +86,7 @@ class OpenAICompatibleProviderConfig:
             max_retry_delay_seconds=self.max_retry_delay_seconds,
         )
         _validate_context_windows(self.context_windows)
+        _validate_model_knowledge_cutoffs(self.model_knowledge_cutoffs)
         _validate_thinking_config(
             thinking_levels=self.thinking_levels,
             thinking_models=self.thinking_models,
@@ -102,6 +105,7 @@ class OpenAICompatibleProviderConfig:
             "models": list(self.models),
             "default_model": self.default_model,
             "context_windows": dict(self.context_windows),
+            "model_knowledge_cutoffs": _date_dict_to_json(self.model_knowledge_cutoffs),
             "headers": dict(self.headers),
             "timeout_seconds": self.timeout_seconds,
             "max_retries": self.max_retries,
@@ -126,6 +130,7 @@ class AnthropicProviderConfig:
     models: tuple[str, ...] = ("claude-sonnet-4-6",)
     default_model: str = "claude-sonnet-4-6"
     context_windows: dict[str, int] = field(default_factory=dict)
+    model_knowledge_cutoffs: dict[str, date] = field(default_factory=dict)
     headers: dict[str, str] = field(default_factory=dict)
     timeout_seconds: float = DEFAULT_OPENAI_COMPATIBLE_TIMEOUT_SECONDS
     max_retries: int = DEFAULT_OPENAI_COMPATIBLE_MAX_RETRIES
@@ -142,6 +147,7 @@ class AnthropicProviderConfig:
             max_retry_delay_seconds=self.max_retry_delay_seconds,
         )
         _validate_context_windows(self.context_windows)
+        _validate_model_knowledge_cutoffs(self.model_knowledge_cutoffs)
         _validate_thinking_config(
             thinking_levels=self.thinking_levels,
             thinking_models=self.thinking_models,
@@ -160,6 +166,7 @@ class AnthropicProviderConfig:
             "models": list(self.models),
             "default_model": self.default_model,
             "context_windows": dict(self.context_windows),
+            "model_knowledge_cutoffs": _date_dict_to_json(self.model_knowledge_cutoffs),
             "headers": dict(self.headers),
             "timeout_seconds": self.timeout_seconds,
             "max_retries": self.max_retries,
@@ -191,6 +198,7 @@ class OpenAICodexProviderConfig:
     )
     default_model: str = "gpt-5.5"
     context_windows: dict[str, int] = field(default_factory=dict)
+    model_knowledge_cutoffs: dict[str, date] = field(default_factory=dict)
     headers: dict[str, str] = field(default_factory=dict)
     timeout_seconds: float = DEFAULT_OPENAI_COMPATIBLE_TIMEOUT_SECONDS
     max_retries: int = DEFAULT_OPENAI_COMPATIBLE_MAX_RETRIES
@@ -207,6 +215,7 @@ class OpenAICodexProviderConfig:
             max_retry_delay_seconds=self.max_retry_delay_seconds,
         )
         _validate_context_windows(self.context_windows)
+        _validate_model_knowledge_cutoffs(self.model_knowledge_cutoffs)
         _validate_thinking_config(
             thinking_levels=self.thinking_levels,
             thinking_models=self.thinking_models,
@@ -225,6 +234,7 @@ class OpenAICodexProviderConfig:
             "models": list(self.models),
             "default_model": self.default_model,
             "context_windows": dict(self.context_windows),
+            "model_knowledge_cutoffs": _date_dict_to_json(self.model_knowledge_cutoffs),
             "headers": dict(self.headers),
             "timeout_seconds": self.timeout_seconds,
             "max_retries": self.max_retries,
@@ -312,6 +322,7 @@ def provider_config_from_catalog_entry(name: str) -> ProviderConfig:
                 models=entry.models,
                 default_model=entry.default_model,
                 context_windows=context_windows,
+                model_knowledge_cutoffs=_date_dict_from_catalog(entry.model_knowledge_cutoffs),
                 thinking_levels=entry.thinking_levels,
                 thinking_models=entry.thinking_models,
                 thinking_default=entry.thinking_default,
@@ -326,6 +337,7 @@ def provider_config_from_catalog_entry(name: str) -> ProviderConfig:
                 models=entry.models,
                 default_model=entry.default_model,
                 context_windows=context_windows,
+                model_knowledge_cutoffs=_date_dict_from_catalog(entry.model_knowledge_cutoffs),
                 thinking_levels=entry.thinking_levels,
                 thinking_models=entry.thinking_models,
                 thinking_default=entry.thinking_default,
@@ -339,6 +351,7 @@ def provider_config_from_catalog_entry(name: str) -> ProviderConfig:
             models=entry.models,
             default_model=entry.default_model,
             context_windows=context_windows,
+            model_knowledge_cutoffs=_date_dict_from_catalog(entry.model_knowledge_cutoffs),
             thinking_levels=entry.thinking_levels,
             thinking_models=entry.thinking_models,
             thinking_default=entry.thinking_default,
@@ -598,6 +611,10 @@ def _merge_provider_config(existing: ProviderConfig, incoming: ProviderConfig) -
     )
     headers = {**existing.headers, **incoming.headers}
     context_windows = {**incoming.context_windows, **existing.context_windows}
+    model_knowledge_cutoffs = {
+        **incoming.model_knowledge_cutoffs,
+        **existing.model_knowledge_cutoffs,
+    }
     thinking_levels = (
         existing.thinking_levels
         if existing.thinking_levels is not None
@@ -624,6 +641,7 @@ def _merge_provider_config(existing: ProviderConfig, incoming: ProviderConfig) -
         default_model=default_model,
         headers=headers,
         context_windows=context_windows,
+        model_knowledge_cutoffs=model_knowledge_cutoffs,
         thinking_levels=thinking_levels,
         thinking_models=thinking_models,
         thinking_default=thinking_default,
@@ -785,6 +803,16 @@ def provider_default_thinking_level(
     if DEFAULT_THINKING_LEVEL in levels:
         return DEFAULT_THINKING_LEVEL
     return levels[0]
+
+
+def provider_model_knowledge_cutoff(
+    provider: ProviderConfig,
+    *,
+    model: str | None = None,
+) -> date | None:
+    """Return the explicitly configured knowledge cutoff for a provider/model."""
+
+    return provider.model_knowledge_cutoffs.get(model or provider.default_model)
 
 
 def openai_compatible_config_from_provider(
@@ -983,6 +1011,10 @@ def _provider_from_json(data: object) -> ProviderConfig:
     context_windows = _context_window_dict(
         data.get("context_windows", {}), f"providers[{name}].context_windows"
     )
+    model_knowledge_cutoffs = _date_dict(
+        data.get("model_knowledge_cutoffs", {}),
+        f"providers[{name}].model_knowledge_cutoffs",
+    )
     headers = _string_dict(data.get("headers", {}), f"providers[{name}].headers")
     timeout_seconds = _positive_float(
         data.get("timeout_seconds", DEFAULT_OPENAI_COMPATIBLE_TIMEOUT_SECONDS),
@@ -1022,6 +1054,7 @@ def _provider_from_json(data: object) -> ProviderConfig:
             models=models,
             default_model=default_model,
             context_windows=context_windows,
+            model_knowledge_cutoffs=model_knowledge_cutoffs,
             headers=headers,
             timeout_seconds=timeout_seconds,
             max_retries=max_retries,
@@ -1040,6 +1073,7 @@ def _provider_from_json(data: object) -> ProviderConfig:
             models=models,
             default_model=default_model,
             context_windows=context_windows,
+            model_knowledge_cutoffs=model_knowledge_cutoffs,
             headers=headers,
             timeout_seconds=timeout_seconds,
             max_retries=max_retries,
@@ -1057,6 +1091,7 @@ def _provider_from_json(data: object) -> ProviderConfig:
         models=models,
         default_model=default_model,
         context_windows=context_windows,
+        model_knowledge_cutoffs=model_knowledge_cutoffs,
         headers=headers,
         timeout_seconds=timeout_seconds,
         max_retries=max_retries,
@@ -1145,6 +1180,16 @@ def _validate_context_windows(context_windows: dict[str, int]) -> None:
             or context_window <= 0
         ):
             raise ProviderConfigError("Provider context_windows values must be positive integers")
+
+
+def _validate_model_knowledge_cutoffs(model_knowledge_cutoffs: dict[str, date]) -> None:
+    for model, cutoff in model_knowledge_cutoffs.items():
+        if not isinstance(model, str) or not model.strip():
+            raise ProviderConfigError(
+                "Provider model_knowledge_cutoffs keys must be non-empty strings"
+            )
+        if not isinstance(cutoff, date):
+            raise ProviderConfigError("Provider model_knowledge_cutoffs values must be dates")
 
 
 def _validate_thinking_config(
@@ -1294,6 +1339,35 @@ def _context_window_dict(value: object, field_name: str) -> dict[str, int]:
             )
         items[key.strip()] = item
     return items
+
+
+def _date_dict(value: object, field_name: str) -> dict[str, date]:
+    if not isinstance(value, dict):
+        raise ProviderConfigError(f"Provider field must be a date object: {field_name}")
+    items: dict[str, date] = {}
+    for key, item in value.items():
+        if not isinstance(key, str) or not key.strip():
+            raise ProviderConfigError(f"Provider field must be a date object: {field_name}")
+        if not isinstance(item, str) or not item.strip():
+            raise ProviderConfigError(f"Provider field values must be ISO dates: {field_name}")
+        try:
+            parsed = date.fromisoformat(item.strip())
+        except ValueError as exc:
+            raise ProviderConfigError(
+                f"Provider field values must be ISO dates: {field_name}"
+            ) from exc
+        items[key.strip()] = parsed
+    return items
+
+
+def _date_dict_from_catalog(value: dict[str, str] | None) -> dict[str, date]:
+    if not value:
+        return {}
+    return _date_dict(value, "builtin.model_knowledge_cutoffs")
+
+
+def _date_dict_to_json(value: dict[str, date]) -> dict[str, str]:
+    return {model: cutoff.isoformat() for model, cutoff in value.items()}
 
 
 def _positive_float(value: object, field_name: str) -> float:

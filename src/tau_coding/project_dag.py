@@ -13,7 +13,7 @@ import threading
 import time
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path, PureWindowsPath
 from typing import Any
 
@@ -50,12 +50,23 @@ from tau_coding.handoff_dispatch import (
     load_agent_dispatch_command_spec,
     write_agent_handoff_command_loop_receipt,
 )
+from tau_coding.knowledge_freshness import (
+    DocumentationSource,
+    KnowledgeFreshnessOptions,
+    knowledge_freshness_enabled,
+    write_knowledge_freshness_receipt,
+)
 from tau_coding.memory_evidence_gate import (
     read_gate_payload,
     write_evidence_case_gate_receipt,
     write_memory_intent_gate_receipt,
 )
 from tau_coding.policy_profile import zero_trust_preflight_receipt
+from tau_coding.provider_config import (
+    ProviderConfigError,
+    load_provider_settings,
+    provider_model_knowledge_cutoff,
+)
 from tau_coding.runtime_backends.contracts import RuntimeRequirement
 from tau_coding.security_capability import (
     compile_capability_decision,
@@ -3197,6 +3208,224 @@ def _apply_provider_command_timeout_policy(
     return updated
 
 
+def _node_knowledge_freshness_receipt(
+    *,
+    contract: ProjectDagContract,
+    contract_path: Path,
+    receipt_dir: Path,
+    node: ProjectDagNode,
+    start_payload: dict[str, Any],
+    attempt: int,
+) -> Path | None:
+    if not _requires_knowledge_freshness(contract, node):
+        return None
+    node_payload = _node_payload(contract, node.node_id)
+    model_policy = node_payload.get("model_policy")
+    model = _knowledge_model(model_policy)
+    if not model:
+        return None
+    cutoff = _knowledge_cutoff_from_policy(model_policy)
+    provider_name = _knowledge_provider(model_policy)
+    if cutoff is None and provider_name:
+        cutoff = _knowledge_cutoff_from_provider_settings(provider_name, model)
+    settings = _knowledge_freshness_settings(contract, node_payload)
+    project_root = _knowledge_project_root(contract_path, settings)
+    receipt_path = (
+        receipt_dir
+        / "knowledge-freshness"
+        / f"{node.node_id}-attempt-{attempt:03d}.json"
+    )
+    receipt = write_knowledge_freshness_receipt(
+        receipt_path=receipt_path,
+        node_id=node.node_id,
+        model=model,
+        model_knowledge_cutoff=cutoff,
+        options=KnowledgeFreshnessOptions(
+            project_root=project_root,
+            lockfile_path=_knowledge_lockfile_path(project_root, settings),
+            docs_sources=_knowledge_doc_sources(settings),
+            cache_dir=_knowledge_cache_dir(project_root, settings),
+            max_fetches=_positive_int(settings.get("max_fetches"), default=3),
+            fetch_timeout_seconds=_positive_float_setting(
+                settings.get("fetch_timeout_seconds"),
+                default=10.0,
+            ),
+            network_fetch=settings.get("network_fetch") is not False,
+        ),
+    )
+    provenance = receipt.get("knowledge_provenance")
+    if isinstance(provenance, dict):
+        context = start_payload.setdefault("context", {})
+        if isinstance(context, dict):
+            context["knowledge_provenance"] = provenance
+            context["knowledge_freshness_receipt"] = str(receipt_path)
+            tau_dag_node = context.get("tau_dag_node")
+            if isinstance(tau_dag_node, dict):
+                tau_dag_node["knowledge_provenance"] = provenance
+                tau_dag_node["knowledge_freshness_receipt"] = str(receipt_path)
+        result = start_payload.get("result")
+        if isinstance(result, dict):
+            evidence = result.setdefault("evidence", [])
+            if isinstance(evidence, list):
+                evidence.append(
+                    {
+                        "kind": "knowledge_freshness_receipt",
+                        "path": str(receipt_path),
+                        "status": receipt.get("status"),
+                        "alert_codes": receipt.get("alert_codes", []),
+                    }
+                )
+    return receipt_path
+
+
+def _requires_knowledge_freshness(contract: ProjectDagContract, node: ProjectDagNode) -> bool:
+    if knowledge_freshness_enabled(contract.payload) or knowledge_freshness_enabled(
+        contract.context
+    ):
+        return True
+    node_payload = _node_payload(contract, node.node_id)
+    return knowledge_freshness_enabled(node_payload)
+
+
+def _knowledge_freshness_settings(
+    contract: ProjectDagContract,
+    node_payload: dict[str, Any],
+) -> dict[str, Any]:
+    settings: dict[str, Any] = {}
+    for source in (contract.context, contract.payload, node_payload):
+        value = source.get("knowledge_freshness")
+        if isinstance(value, dict):
+            settings.update(value)
+    return settings
+
+
+def _knowledge_model(model_policy: object) -> str | None:
+    if not isinstance(model_policy, dict):
+        return None
+    model = model_policy.get("model")
+    return model if isinstance(model, str) and model.strip() else None
+
+
+def _knowledge_provider(model_policy: object) -> str | None:
+    if not isinstance(model_policy, dict):
+        return None
+    provider = model_policy.get("provider")
+    return provider if isinstance(provider, str) and provider.strip() else None
+
+
+def _knowledge_cutoff_from_policy(model_policy: object) -> date | None:
+    if not isinstance(model_policy, dict):
+        return None
+    for key in ("knowledge_cutoff", "model_knowledge_cutoff", "training_cutoff"):
+        value = model_policy.get(key)
+        if isinstance(value, str) and value.strip():
+            try:
+                return date.fromisoformat(value.strip())
+            except ValueError:
+                return None
+    return None
+
+
+def _knowledge_cutoff_from_provider_settings(provider_name: str, model: str) -> date | None:
+    try:
+        provider = load_provider_settings().get_provider(provider_name)
+    except (ProviderConfigError, OSError, json.JSONDecodeError):
+        return None
+    return provider_model_knowledge_cutoff(provider, model=model)
+
+
+def _knowledge_project_root(contract_path: Path, settings: Mapping[str, Any]) -> Path:
+    root = settings.get("project_root")
+    if isinstance(root, str) and root.strip():
+        candidate = Path(root).expanduser()
+        if not candidate.is_absolute():
+            candidate = contract_path.parent / candidate
+        return candidate.resolve()
+    return contract_path.parent.resolve()
+
+
+def _knowledge_lockfile_path(project_root: Path, settings: Mapping[str, Any]) -> Path | None:
+    lockfile = settings.get("lockfile_path")
+    if isinstance(lockfile, str) and lockfile.strip():
+        candidate = Path(lockfile).expanduser()
+        if not candidate.is_absolute():
+            candidate = project_root / candidate
+        return candidate.resolve()
+    return project_root / "uv.lock"
+
+
+def _knowledge_cache_dir(project_root: Path, settings: Mapping[str, Any]) -> Path | None:
+    cache_dir = settings.get("cache_dir")
+    if isinstance(cache_dir, str) and cache_dir.strip():
+        candidate = Path(cache_dir).expanduser()
+        if not candidate.is_absolute():
+            candidate = project_root / candidate
+        return candidate.resolve()
+    return None
+
+
+def _knowledge_doc_sources(settings: Mapping[str, Any]) -> tuple[DocumentationSource, ...]:
+    raw_sources = settings.get("docs_sources")
+    if not isinstance(raw_sources, list):
+        return ()
+    sources: list[DocumentationSource] = []
+    for item in raw_sources:
+        if not isinstance(item, dict):
+            continue
+        package = item.get("package")
+        version = item.get("version")
+        if not isinstance(package, str) or not package.strip():
+            continue
+        if not isinstance(version, str) or not version.strip():
+            continue
+        url = item.get("url")
+        release_date = item.get("release_date")
+        import_names = item.get("import_names")
+        sources.append(
+            DocumentationSource(
+                package=package.strip(),
+                version=version.strip(),
+                url=url.strip() if isinstance(url, str) and url.strip() else None,
+                release_date=(
+                    date.fromisoformat(release_date.strip())
+                    if isinstance(release_date, str) and release_date.strip()
+                    else None
+                ),
+                import_names=tuple(
+                    value.strip()
+                    for value in import_names
+                    if isinstance(value, str) and value.strip()
+                )
+                if isinstance(import_names, list)
+                else (),
+            )
+        )
+    return tuple(sources)
+
+
+def _positive_int(value: object, *, default: int) -> int:
+    if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+        return default
+    return value
+
+
+def _positive_float_setting(value: object, *, default: float) -> float:
+    if not isinstance(value, int | float) or isinstance(value, bool) or value <= 0:
+        return default
+    return float(value)
+
+
+def _knowledge_provenance_from_receipt(receipt_path: Path | None) -> dict[str, Any] | None:
+    if receipt_path is None or not receipt_path.is_file():
+        return None
+    try:
+        payload = _read_json_object(receipt_path, label="knowledge freshness receipt")
+    except RuntimeError:
+        return None
+    provenance = payload.get("knowledge_provenance")
+    return provenance if isinstance(provenance, dict) else None
+
+
 def _run_shared_project_dag_plan(
     *,
     plan: DagPlan,
@@ -3311,6 +3540,14 @@ def _run_shared_project_dag_plan(
             contract_path=contract_path,
             predecessor_responses=list(accepted_inputs),
         )
+        knowledge_receipt = _node_knowledge_freshness_receipt(
+            contract=contract,
+            contract_path=contract_path,
+            receipt_dir=receipt_dir,
+            node=node,
+            start_payload=start_payload,
+            attempt=attempt,
+        )
         result = _dispatch_ready_node(
             node=node,
             start_payload=start_payload,
@@ -3362,6 +3599,10 @@ def _run_shared_project_dag_plan(
                 "attempt_count": attempt,
                 "dispatch": dispatch,
                 "accepted_output": None,
+                "knowledge_provenance": _knowledge_provenance_from_receipt(knowledge_receipt),
+                "knowledge_freshness_receipt": str(knowledge_receipt)
+                if knowledge_receipt
+                else None,
                 "stop_reason": stop_reason,
                 "errors": result_errors,
             }
@@ -3460,6 +3701,10 @@ def _run_shared_project_dag_plan(
                 "attempt_count": attempt,
                 "dispatch": dispatch,
                 "accepted_output": None,
+                "knowledge_provenance": _knowledge_provenance_from_receipt(knowledge_receipt),
+                "knowledge_freshness_receipt": str(knowledge_receipt)
+                if knowledge_receipt
+                else None,
                 "errors": ["ready-queue node did not return a JSON handoff response"],
             }
         node_alerts = _node_response_alerts(contract, node, response)
@@ -3538,6 +3783,10 @@ def _run_shared_project_dag_plan(
                 "attempt_count": attempt,
                 "dispatch": dispatch,
                 "accepted_output": None,
+                "knowledge_provenance": _knowledge_provenance_from_receipt(knowledge_receipt),
+                "knowledge_freshness_receipt": str(knowledge_receipt)
+                if knowledge_receipt
+                else None,
                 "alerts": node_alerts,
                 "retryable": (
                     repair_ok and attempt < execution.max_attempts
@@ -3559,6 +3808,8 @@ def _run_shared_project_dag_plan(
             "attempt_count": attempt,
             "dispatch": dispatch,
             "accepted_output": response,
+            "knowledge_provenance": _knowledge_provenance_from_receipt(knowledge_receipt),
+            "knowledge_freshness_receipt": str(knowledge_receipt) if knowledge_receipt else None,
             "errors": [],
         }
 
@@ -3766,6 +4017,17 @@ def _run_shared_project_dag_plan(
         dag_plan_sha256=plan.plan_sha256,
         provider_live=any(item.get("provider_live") is True for item in result.node_results),
     )
+    receipt["knowledge_freshness_receipts"] = [
+        str(item["knowledge_freshness_receipt"])
+        for item in result.node_results
+        if isinstance(item.get("knowledge_freshness_receipt"), str)
+    ]
+    receipt["knowledge_provenance_by_node"] = {
+        str(item["node_id"]): item["knowledge_provenance"]
+        for item in result.node_results
+        if isinstance(item.get("node_id"), str)
+        and isinstance(item.get("knowledge_provenance"), dict)
+    }
     receipt["execution"] = "project_agent_dag_plan_ready_queue"
     receipt["durable"] = result.durable
     receipt["run_store_path"] = str(run_store_path)

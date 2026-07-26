@@ -1,4 +1,5 @@
 import json
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -18,6 +19,7 @@ from tau_coding.provider_config import (
     openai_compatible_config_from_provider,
     provider_default_thinking_level,
     provider_has_usable_credentials,
+    provider_model_knowledge_cutoff,
     provider_settings_from_json,
     provider_thinking_levels,
     provider_thinking_unavailable_reason,
@@ -672,6 +674,49 @@ def test_provider_settings_from_json_loads_headers() -> None:
 
     assert isinstance(provider, OpenAICompatibleProviderConfig)
     assert provider.headers == {"X-HF-Bill-To": "my-org"}
+
+
+def test_provider_settings_from_json_loads_model_knowledge_cutoffs() -> None:
+    settings = provider_settings_from_json(
+        {
+            "default_provider": "local",
+            "providers": [
+                {
+                    "type": "openai-compatible",
+                    "name": "local",
+                    "base_url": "http://localhost:11434/v1",
+                    "api_key_env": "LOCAL_API_KEY",
+                    "models": ["reasoner"],
+                    "default_model": "reasoner",
+                    "model_knowledge_cutoffs": {"reasoner": "2024-11-01"},
+                }
+            ],
+        }
+    )
+
+    provider = settings.get_provider("local")
+    assert provider_model_knowledge_cutoff(provider, model="reasoner") == date(2024, 11, 1)
+    assert provider.to_json()["model_knowledge_cutoffs"] == {"reasoner": "2024-11-01"}
+
+
+def test_provider_settings_from_json_rejects_invalid_model_knowledge_cutoff() -> None:
+    with pytest.raises(ProviderConfigError, match="ISO dates"):
+        provider_settings_from_json(
+            {
+                "default_provider": "local",
+                "providers": [
+                    {
+                        "type": "openai-compatible",
+                        "name": "local",
+                        "base_url": "http://localhost:11434/v1",
+                        "api_key_env": "LOCAL_API_KEY",
+                        "models": ["reasoner"],
+                        "default_model": "reasoner",
+                        "model_knowledge_cutoffs": {"reasoner": "not-a-date"},
+                    }
+                ],
+            }
+        )
 
 
 def test_provider_settings_from_json_loads_custom_thinking_capabilities() -> None:

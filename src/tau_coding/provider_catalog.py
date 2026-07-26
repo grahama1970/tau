@@ -22,6 +22,7 @@ class ProviderCatalogEntry:
     default_model: str
     docs_url: str
     context_windows: dict[str, int] | None = None
+    model_knowledge_cutoffs: dict[str, str] | None = None
     thinking_levels: tuple[ThinkingLevel, ...] | None = None
     thinking_models: tuple[str, ...] = ()
     thinking_default: ThinkingLevel | None = None
@@ -72,6 +73,7 @@ BUILTIN_PROVIDER_CATALOG: tuple[ProviderCatalogEntry, ...] = (
             "gpt-4.1": 1_047_576,
             "gpt-4.1-mini": 1_047_576,
         },
+        model_knowledge_cutoffs={},
         thinking_levels=("off", "low", "medium", "high", "xhigh"),
         thinking_models=(
             "gpt-5.6",
@@ -116,6 +118,7 @@ BUILTIN_PROVIDER_CATALOG: tuple[ProviderCatalogEntry, ...] = (
             "gpt-5.3-codex-spark": 400_000,
             "gpt-5.2": 400_000,
         },
+        model_knowledge_cutoffs={},
         thinking_levels=("off", "minimal", "low", "medium", "high", "xhigh"),
         thinking_models=(
             "gpt-5.5",
@@ -149,6 +152,7 @@ BUILTIN_PROVIDER_CATALOG: tuple[ProviderCatalogEntry, ...] = (
             "claude-opus-4-8": 200_000,
             "claude-haiku-4-5": 200_000,
         },
+        model_knowledge_cutoffs={},
         thinking_levels=("off", "minimal", "low", "medium", "high", "xhigh"),
         thinking_models=(
             "claude-sonnet-4-6",
@@ -195,6 +199,7 @@ BUILTIN_PROVIDER_CATALOG: tuple[ProviderCatalogEntry, ...] = (
             "qwen/qwen3-coder-plus": 1_000_000,
             "mistralai/codestral-2508": 256_000,
         },
+        model_knowledge_cutoffs={},
         thinking_levels=("off", "low", "medium", "high", "xhigh"),
         thinking_models=(
             "openai/gpt-5.5",
@@ -238,6 +243,7 @@ BUILTIN_PROVIDER_CATALOG: tuple[ProviderCatalogEntry, ...] = (
             "openai/gpt-oss-20b": 131_072,
             "Qwen/Qwen3-Coder-480B-A35B-Instruct": 262_144,
         },
+        model_knowledge_cutoffs={},
         thinking_levels=("low", "medium", "high"),
         thinking_models=(
             "openai/gpt-oss-120b",
