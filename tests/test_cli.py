@@ -380,6 +380,64 @@ def test_cli_dag_reconcile_writes_operator_decision_receipt(tmp_path: Path) -> N
     assert payload["next_execution_run_id"] == "cli-reconcile:generation:1"
 
 
+def test_cli_dag_clear_lease_writes_operator_receipt_and_releases_lease(
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    plan = compile_generic_dag_plan(
+        {
+            "schema": "tau.generic_dag_spec.v1",
+            "run_id": "cli-clear-lease",
+            "run_dir": str(run_dir),
+            "nodes": [
+                {
+                    "node_id": "worker",
+                    "role": "producer",
+                    "command": ["true"],
+                    "receipt_path": str(run_dir / "worker-receipt.json"),
+                }
+            ],
+        },
+        source_path=run_dir / "dag.json",
+    )
+    with SqliteDagRunStore(run_dir / "dag-run.sqlite3") as store:
+        store.acquire_run(
+            plan=plan,
+            run_id="cli-clear-lease",
+            owner_id="owner-a",
+            ttl_seconds=60,
+        )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "dag-clear-lease",
+            str(run_dir),
+            "--run-id",
+            "cli-clear-lease",
+            "--operator",
+            "operator-test",
+            "--reason",
+            "operator confirmed original process is gone",
+        ],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    receipt_path = Path(payload["receipt_path"])
+    written = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert payload == written
+    assert payload["schema"] == "tau.dag_run_stale_lease_clear.v1"
+    assert payload["prior_owner_id"] == "owner-a"
+    assert payload["lease_released"] is True
+    with SqliteDagRunStore(run_dir / "dag-run.sqlite3") as store:
+        record = store.load_run_record("cli-clear-lease")
+        events = store.load_events("cli-clear-lease")
+    assert record.lease_owner is None
+    assert events[-1]["event_type"] == "run_stale_lease_cleared"
+
+
 def test_cli_dag_plan_exports_generic_contract_without_dispatch(tmp_path: Path) -> None:
     spec_path = tmp_path / "dag.json"
     output_path = tmp_path / "plan.json"

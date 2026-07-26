@@ -88,6 +88,83 @@ def test_store_reuses_unfinished_generation_and_advances_finished_run(tmp_path: 
         assert store.execution_run_id("run-1") == "run-1:generation:1"
 
 
+def test_store_open_converts_sqlite_error_to_typed_store_error(tmp_path: Path) -> None:
+    corrupt = tmp_path / "corrupt.sqlite3"
+    corrupt.write_text("not a sqlite database", encoding="utf-8")
+
+    with pytest.raises(DagRunStoreError, match="dag_run_store_open_failed"):
+        SqliteDagRunStore(corrupt)
+
+
+def test_scheduler_releases_lease_and_records_terminal_event_on_exception(
+    tmp_path: Path,
+) -> None:
+    plan = _plan(tmp_path, ["producer"])
+    database = tmp_path / "run.sqlite3"
+
+    def execute(node, accepted_inputs, attempt):  # type: ignore[no-untyped-def]
+        del node, accepted_inputs, attempt
+        return _pass_result("producer")
+
+    def crash_after_lease(lease):  # type: ignore[no-untyped-def]
+        del lease
+        raise InjectedCrash("after lease acquired")
+
+    with SqliteDagRunStore(database) as store, pytest.raises(InjectedCrash):
+        run_dag_plan(
+            plan,
+            execute_node=execute,
+            run_store=store,
+            run_id="run-1",
+            lease_owner="owner-a",
+            on_lease_acquired=crash_after_lease,
+        )
+
+    with SqliteDagRunStore(database) as store:
+        record = store.load_run_record("run-1")
+        events = store.load_events("run-1")
+
+    assert record.status == "BLOCKED"
+    assert record.verdict == "DAG_RUN_EXCEPTION"
+    assert record.lease_owner is None
+    assert events[-2]["event_type"] == "run_blocked"
+    assert events[-1]["event_type"] == "run_lease_released"
+
+
+def test_scheduler_releases_lease_and_records_cancelled_on_interrupt(tmp_path: Path) -> None:
+    plan = _plan(tmp_path, ["producer"])
+    database = tmp_path / "run.sqlite3"
+
+    def execute(node, accepted_inputs, attempt):  # type: ignore[no-untyped-def]
+        del node, accepted_inputs, attempt
+        return _pass_result("producer")
+
+    def interrupt(point: str, context: Mapping[str, Any]) -> None:
+        del context
+        if point == "after_attempt_dispatched":
+            raise KeyboardInterrupt
+
+    with SqliteDagRunStore(database) as store, pytest.raises(KeyboardInterrupt):
+        run_dag_plan(
+            plan,
+            execute_node=execute,
+            run_store=store,
+            run_id="run-1",
+            lease_owner="owner-a",
+            fault_injector=interrupt,
+        )
+
+    with SqliteDagRunStore(database) as store:
+        record = store.load_run_record("run-1")
+        events = store.load_events("run-1")
+
+    assert record.status == "CANCELLED"
+    assert record.verdict == "CANCELLED"
+    assert record.lease_owner is None
+    assert events[-2]["event_type"] == "run_cancelled"
+    assert events[-1]["event_type"] == "run_lease_released"
+
+
 def test_store_persists_scheduler_concurrency_high_water_mark(tmp_path: Path) -> None:
     plan = _plan(tmp_path, ["producer"])
     database = tmp_path / "run.sqlite3"

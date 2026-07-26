@@ -6,6 +6,7 @@ import json
 import sqlite3
 import time
 from collections.abc import Mapping
+from contextlib import suppress
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
@@ -33,6 +34,7 @@ CORRECTION_JOURNAL_ENTRY_SCHEMA = "tau.correction_journal_entry.v1"
 MAX_DIAGNOSTIC_EVENT_BYTES = 64 * 1024
 STORE_SCHEMA_VERSION = 1
 DAG_RUN_RECONCILIATION_DECISION_SCHEMA = "tau.dag_run_reconciliation_decision.v1"
+DAG_RUN_STALE_LEASE_CLEAR_SCHEMA = "tau.dag_run_stale_lease_clear.v1"
 
 
 class DagRunStoreError(RuntimeError):
@@ -567,24 +569,37 @@ class SqliteDagRunStore:
     def __init__(self, path: Path) -> None:
         self.path = path.resolve()
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._connection = sqlite3.connect(self.path, isolation_level=None)
-        self._connection.row_factory = sqlite3.Row
-        self._connection.execute("PRAGMA foreign_keys = ON")
-        self._connection.execute("PRAGMA busy_timeout = 5000")
-        journal_mode = str(self._connection.execute("PRAGMA journal_mode = WAL").fetchone()[0])
-        if journal_mode.lower() != "wal":
-            raise DagRunStoreError("dag_run_store_wal_unavailable", journal_mode)
-        self._connection.execute("PRAGMA synchronous = FULL")
-        self._connection.executescript(_SCHEMA)
-        self._connection.execute(
-            "INSERT OR IGNORE INTO dag_store_meta(key, value) VALUES ('schema_version', ?)",
-            (str(STORE_SCHEMA_VERSION),),
-        )
-        stored_version = self._connection.execute(
-            "SELECT value FROM dag_store_meta WHERE key = 'schema_version'"
-        ).fetchone()
-        if stored_version is None or stored_version[0] != str(STORE_SCHEMA_VERSION):
-            raise DagRunStoreError("dag_run_store_schema_mismatch")
+        try:
+            self._connection = sqlite3.connect(self.path, isolation_level=None)
+            self._connection.row_factory = sqlite3.Row
+            self._connection.execute("PRAGMA foreign_keys = ON")
+            self._connection.execute("PRAGMA busy_timeout = 5000")
+            journal_mode = str(self._connection.execute("PRAGMA journal_mode = WAL").fetchone()[0])
+            if journal_mode.lower() != "wal":
+                raise DagRunStoreError("dag_run_store_wal_unavailable", journal_mode)
+            self._connection.execute("PRAGMA synchronous = FULL")
+            self._connection.executescript(_SCHEMA)
+            self._connection.execute(
+                "INSERT OR IGNORE INTO dag_store_meta(key, value) VALUES ('schema_version', ?)",
+                (str(STORE_SCHEMA_VERSION),),
+            )
+            stored_version = self._connection.execute(
+                "SELECT value FROM dag_store_meta WHERE key = 'schema_version'"
+            ).fetchone()
+            if stored_version is None or stored_version[0] != str(STORE_SCHEMA_VERSION):
+                raise DagRunStoreError("dag_run_store_schema_mismatch")
+        except DagRunStoreError:
+            if hasattr(self, "_connection"):
+                with suppress(Exception):
+                    self._connection.close()
+            raise
+        except sqlite3.Error as exc:
+            if hasattr(self, "_connection"):
+                with suppress(Exception):
+                    self._connection.close()
+            raise DagRunStoreError(
+                "dag_run_store_open_failed", f"{self.path}:{exc}"
+            ) from exc
 
     def execution_run_id(self, base_run_id: str) -> str:
         """Return an unfinished generation or allocate a clean invocation."""
@@ -999,6 +1014,68 @@ class SqliteDagRunStore:
                    updated_at = ? WHERE run_id = ?""",
                 (_now_iso(), lease.run_id),
             )
+
+    def clear_stale_lease(
+        self,
+        *,
+        run_id: str,
+        operator_id: str,
+        reason: str,
+    ) -> dict[str, Any]:
+        """Clear a visible stale lease without deleting the run journal."""
+
+        if not operator_id.strip():
+            raise DagRunStoreError("dag_stale_lease_operator_missing")
+        if not reason.strip():
+            raise DagRunStoreError("dag_stale_lease_reason_missing")
+        with self._transaction():
+            row = self._connection.execute(
+                "SELECT * FROM dag_runs WHERE run_id = ?", (run_id,)
+            ).fetchone()
+            if row is None:
+                raise DagRunStoreError("dag_run_missing", run_id)
+            prior_owner = row["lease_owner"]
+            prior_expiry = row["lease_expires_at_ms"]
+            if prior_owner is None:
+                raise DagRunStoreError("dag_run_lease_not_held", run_id)
+            lease = DagRunLease(
+                run_id=run_id,
+                owner_id=operator_id,
+                epoch=int(row["lease_epoch"]),
+                expires_at_ms=int(prior_expiry or 0),
+            )
+            payload = {
+                "schema": DAG_RUN_STALE_LEASE_CLEAR_SCHEMA,
+                "run_id": run_id,
+                "operator_id": operator_id,
+                "reason": reason,
+                "prior_owner_id": prior_owner,
+                "prior_expires_at_ms": prior_expiry,
+                "status": row["status"],
+                "verdict": row["verdict"],
+            }
+            event_seq = self._append_event(
+                lease,
+                event_key=f"lease:{lease.epoch}:operator-cleared",
+                event_type="run_stale_lease_cleared",
+                entity_type="run",
+                entity_id=run_id,
+                payload=payload,
+                check_lease=False,
+            )
+            self._connection.execute(
+                """UPDATE dag_runs SET lease_owner = NULL, lease_expires_at_ms = NULL,
+                   updated_at = ? WHERE run_id = ?""",
+                (_now_iso(), run_id),
+            )
+            return {
+                **payload,
+                "ok": True,
+                "event_seq": event_seq,
+                "lease_released": True,
+                "journal_preserved": True,
+                "created_at": _now_iso(),
+            }
 
     def reserve_attempt(
         self,

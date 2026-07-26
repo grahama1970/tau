@@ -1789,6 +1789,7 @@ def main(
         ["dag-template-compile"],
         ["dag-template-list"],
         ["dag-run"],
+        ["dag-clear-lease"],
         ["dag-route-memory-candidates"],
         ["dag-route-memory-sync"],
         ["dag-reconcile"],
@@ -2690,6 +2691,25 @@ def main(
                     Path(str(options["receipt"])) if options["receipt"] is not None else None
                 ),
                 run_id=_optional_str(options.get("run_id")),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "dag-clear-lease":
+        try:
+            options = _parse_dag_clear_lease_cli_args(positional_args[1:])
+            payload = _write_dag_clear_lease_receipt(
+                run_dir=Path(str(options["run_dir"])),
+                run_id=str(options["run_id"]),
+                operator_id=str(options["operator_id"]),
+                reason=str(options["reason"]),
+                receipt_path=(
+                    Path(str(options["receipt"])) if options["receipt"] is not None else None
+                ),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -6366,6 +6386,91 @@ def _write_dag_reconciliation_decision_receipt(
             receipt = store.resolve_reconciliation_required_run(
                 run_id=selected_run_id,
                 decision=decision,
+                operator_id=operator_id,
+                reason=reason,
+            )
+        except DagRunStoreError as exc:
+            raise RuntimeError(str(exc)) from exc
+    payload = {
+        **receipt,
+        "run_dir": str(resolved_run_dir),
+        "run_store_path": str(store_path),
+        "receipt_path": str(resolved_receipt),
+    }
+    resolved_receipt.parent.mkdir(parents=True, exist_ok=True)
+    resolved_receipt.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+    return payload
+
+
+def _parse_dag_clear_lease_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "run_dir": None,
+        "run_id": None,
+        "operator_id": None,
+        "reason": None,
+        "receipt": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--run-id", "--operator", "--reason", "--receipt"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            if arg == "--operator":
+                options["operator_id"] = args[index]
+            else:
+                options[arg.removeprefix("--").replace("-", "_")] = args[index]
+        elif arg.startswith("--run-id="):
+            options["run_id"] = arg.partition("=")[2]
+        elif arg.startswith("--operator="):
+            options["operator_id"] = arg.partition("=")[2]
+        elif arg.startswith("--reason="):
+            options["reason"] = arg.partition("=")[2]
+        elif arg.startswith("--receipt="):
+            options["receipt"] = arg.partition("=")[2]
+        elif arg.startswith("-"):
+            raise RuntimeError(f"unknown dag-clear-lease option: {arg}")
+        elif options["run_dir"] is None:
+            options["run_dir"] = arg
+        else:
+            raise RuntimeError(f"unexpected dag-clear-lease argument: {arg}")
+        index += 1
+    if not _optional_str(options.get("run_dir")):
+        raise RuntimeError(
+            "Usage: tau dag-clear-lease <run-dir> --run-id <id> "
+            "--operator <id> --reason <text> [--receipt <path>]"
+        )
+    if not _optional_str(options.get("run_id")):
+        raise RuntimeError("dag-clear-lease requires --run-id <id>")
+    if not _optional_str(options.get("operator_id")):
+        raise RuntimeError("dag-clear-lease requires --operator <id>")
+    if not _optional_str(options.get("reason")):
+        raise RuntimeError("dag-clear-lease requires --reason <text>")
+    return options
+
+
+def _write_dag_clear_lease_receipt(
+    *,
+    run_dir: Path,
+    run_id: str,
+    operator_id: str,
+    reason: str,
+    receipt_path: Path | None,
+) -> dict[str, Any]:
+    resolved_run_dir = run_dir.expanduser().resolve()
+    store_path = resolved_run_dir / "dag-run.sqlite3"
+    if not store_path.is_file():
+        raise RuntimeError(f"dag run store not found: {store_path}")
+    resolved_receipt = (
+        receipt_path.expanduser().resolve()
+        if receipt_path is not None
+        else resolved_run_dir / "stale-lease-clear.json"
+    )
+    with SqliteDagRunStore(store_path) as store:
+        try:
+            receipt = store.clear_stale_lease(
+                run_id=run_id,
                 operator_id=operator_id,
                 reason=reason,
             )

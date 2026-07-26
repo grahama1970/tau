@@ -6,6 +6,7 @@ import time
 import uuid
 from collections.abc import Callable, Mapping
 from concurrent.futures import FIRST_COMPLETED, CancelledError, Future, ThreadPoolExecutor, wait
+from contextlib import suppress
 from dataclasses import dataclass, replace
 from threading import Event
 from typing import Any
@@ -123,8 +124,13 @@ def run_dag_plan(
         if on_lease_acquired is not None:
             try:
                 on_lease_acquired(lease)
-            except Exception:
-                run_store.release_lease(lease)
+            except Exception as exc:
+                _finish_interrupted_run(
+                    run_store=run_store,
+                    lease=lease,
+                    exc=exc,
+                    terminalize_exception=True,
+                )
                 raise
 
     declared_terminal_nodes = {
@@ -264,221 +270,300 @@ def run_dag_plan(
         blocked_result = replayed_block or recovery_block
 
     _emit(event_sink, {"event": "scheduler_started", "plan_id": plan.plan_id})
-    with ThreadPoolExecutor(max_workers=max_concurrency) as pool:
-        futures: dict[Future[dict[str, Any]], str] = {}
-        future_attempts: dict[Future[dict[str, Any]], DagAttemptIdentity] = {}
-        while len(resolved) < len(nodes):
-            if (
-                run_store is not None
-                and lease is not None
-                and time.monotonic() >= next_lease_renewal
-            ):
-                lease = run_store.renew_lease(lease, ttl_seconds=lease_ttl_seconds)
-                next_lease_renewal = time.monotonic() + lease_renewal_interval
-            if cancel_requested is not None and cancel_requested():
-                blocked_result = {
-                    "status": "CANCELLED",
-                    "verdict": "CANCELLED",
-                    "errors": ["DAG run cancelled by operator request"],
-                }
-                lease = _cancel_and_collect_futures(
-                    futures=futures,
-                    future_attempts=future_attempts,
-                    cancel_events=cancel_events,
-                    results=results,
-                    result_order=result_order,
-                    node_states=node_states,
-                    resolved=resolved,
-                    event_sink=event_sink,
-                    run_store=run_store,
-                    lease=lease,
-                    lease_ttl_seconds=lease_ttl_seconds,
-                    lease_renewal_interval=lease_renewal_interval,
-                )
-                break
-            if blocked_result is not None:
-                break
-            settle_block = _settle_unrunnable_nodes(
-                plan=plan,
-                policy=policy,
-                nodes=nodes,
-                resolved=resolved,
-                scheduled=scheduled,
-                completed=completed,
-                results=results,
-                result_order=result_order,
-                node_states=node_states,
-                edge_states=edge_states,
-                terminal_states=terminal_states,
-                deadlines=deadlines,
-                cancel_events=cancel_events,
-                futures=futures,
-                transition_receipt_paths=transition_receipt_paths,
-                event_sink=event_sink,
-                run_store=run_store,
-                lease=lease,
-            )
-            if settle_block is not None:
-                blocked_result = {
-                    "status": "BLOCKED",
-                    "verdict": settle_block.failure_code,
-                    "errors": [settle_block.message],
-                    "transition_evidence": settle_block.evidence,
-                }
-                lease = _cancel_and_collect_futures(
-                    futures=futures,
-                    future_attempts=future_attempts,
-                    cancel_events=cancel_events,
-                    results=results,
-                    result_order=result_order,
-                    node_states=node_states,
-                    resolved=resolved,
-                    event_sink=event_sink,
-                    run_store=run_store,
-                    lease=lease,
-                    lease_ttl_seconds=lease_ttl_seconds,
-                    lease_renewal_interval=lease_renewal_interval,
-                )
-                break
-            ready = [
-                node_id
-                for node_id in sorted(nodes)
-                if node_id not in resolved
-                and node_id not in scheduled
-                and _node_is_ready(node_id, incoming_edges=incoming_edges, edge_states=edge_states)
-            ]
-            for node_id in ready:
-                if len(futures) >= max_concurrency:
-                    break
-                attempt_counts[node_id] += 1
-                attempt = attempt_counts[node_id]
-                start_transition = policy.before_node_start(
-                    _transition_view(
-                        plan=plan,
+    try:
+        with ThreadPoolExecutor(max_workers=max_concurrency) as pool:
+            futures: dict[Future[dict[str, Any]], str] = {}
+            future_attempts: dict[Future[dict[str, Any]], DagAttemptIdentity] = {}
+            while len(resolved) < len(nodes):
+                if (
+                    run_store is not None
+                    and lease is not None
+                    and time.monotonic() >= next_lease_renewal
+                ):
+                    lease = run_store.renew_lease(lease, ttl_seconds=lease_ttl_seconds)
+                    next_lease_renewal = time.monotonic() + lease_renewal_interval
+                if cancel_requested is not None and cancel_requested():
+                    blocked_result = {
+                        "status": "CANCELLED",
+                        "verdict": "CANCELLED",
+                        "errors": ["DAG run cancelled by operator request"],
+                    }
+                    lease = _cancel_and_collect_futures(
+                        futures=futures,
+                        future_attempts=future_attempts,
+                        cancel_events=cancel_events,
+                        results=results,
+                        result_order=result_order,
                         node_states=node_states,
-                        edge_states=edge_states,
-                        terminal_states=terminal_states,
-                        running_node_ids=set(futures.values()),
-                        deadlines=deadlines,
-                    ),
-                    node_id,
-                    attempt,
-                )
-                _persist_control_transition(
-                    run_store=run_store,
-                    lease=lease,
-                    event_key=f"before-node:{node_id}:{attempt}",
-                    batch=start_transition,
-                )
-                _apply_transition_batch(
+                        resolved=resolved,
+                        event_sink=event_sink,
+                        run_store=run_store,
+                        lease=lease,
+                        lease_ttl_seconds=lease_ttl_seconds,
+                        lease_renewal_interval=lease_renewal_interval,
+                    )
+                    break
+                if blocked_result is not None:
+                    break
+                settle_block = _settle_unrunnable_nodes(
                     plan=plan,
-                    batch=start_transition,
-                    edge_states=edge_states,
-                    terminal_states=terminal_states,
-                    deadlines=deadlines,
-                )
-                _apply_node_effects(
-                    batch=start_transition,
+                    policy=policy,
                     nodes=nodes,
-                    node_states=node_states,
                     resolved=resolved,
+                    scheduled=scheduled,
                     completed=completed,
                     results=results,
                     result_order=result_order,
-                    scheduled=scheduled,
-                    cancel_events=cancel_events,
-                    futures=futures,
-                    event_sink=event_sink,
-                )
-                transition_receipt_paths.extend(start_transition.receipt_paths)
-                for transition_event in start_transition.events:
-                    _emit(event_sink, transition_event)
-                if start_transition.block_run is not None:
-                    blocked_result = {
-                        "status": "BLOCKED",
-                        "verdict": start_transition.block_run.failure_code,
-                        "errors": [start_transition.block_run.message],
-                    }
-                    break
-                if node_id in resolved or node_id in scheduled:
-                    continue
-                if run_store is not None and lease is not None:
-                    identity = run_store.reserve_attempt(
-                        lease,
-                        plan_sha256=plan.plan_sha256,
-                        node_id=node_id,
-                        attempt=attempt,
-                    )
-                    _inject_fault(fault_injector, "after_attempt_reserved", identity)
-                    run_store.mark_dispatched(lease, identity.attempt_id)
-                    _inject_fault(fault_injector, "after_attempt_dispatched", identity)
-                else:
-                    identity = DagAttemptIdentity(
-                        run_id=effective_run_id,
-                        node_id=node_id,
-                        attempt=attempt,
-                        attempt_id=f"{effective_run_id}:{node_id}:{attempt}",
-                        idempotency_key=f"{effective_run_id}:{node_id}:{attempt}:effect",
-                    )
-                accepted_inputs = tuple(
-                    results[source]["accepted_output"]
-                    for source, edge_id in context_edges.get(node_id, ())
-                    if edge_states.get(edge_id) == "success"
-                    and isinstance(results.get(source, {}).get("accepted_output"), dict)
-                )
-                future = pool.submit(
-                    execute_node,
-                    nodes[node_id],
-                    accepted_inputs,
-                    DagNodeAttempt(
-                        attempt=attempt,
-                        max_attempts=nodes[node_id].max_attempts,
-                        cancel_event=cancel_events[node_id],
-                        run_id=effective_run_id,
-                        attempt_id=identity.attempt_id,
-                        idempotency_key=identity.idempotency_key,
-                        recovered=identity.recovered,
-                    ),
-                )
-                futures[future] = node_id
-                future_attempts[future] = identity
-                scheduled.add(node_id)
-                node_states[node_id] = "running"
-                _emit(
-                    event_sink,
-                    {"event": "node_started", "node_id": node_id, "attempt": attempt},
-                )
-            observed_concurrency = len(futures)
-            if observed_concurrency > max_observed_concurrency:
-                max_observed_concurrency = observed_concurrency
-                if run_store is not None and lease is not None:
-                    run_store.record_observed_concurrency(lease, max_observed_concurrency)
-
-            if blocked_result is not None:
-                lease = _cancel_and_collect_futures(
-                    futures=futures,
-                    future_attempts=future_attempts,
-                    cancel_events=cancel_events,
-                    results=results,
-                    result_order=result_order,
                     node_states=node_states,
-                    resolved=resolved,
+                    edge_states=edge_states,
+                    terminal_states=terminal_states,
+                    deadlines=deadlines,
+                    cancel_events=cancel_events,
+                    futures=futures,
+                    transition_receipt_paths=transition_receipt_paths,
                     event_sink=event_sink,
                     run_store=run_store,
                     lease=lease,
-                    lease_ttl_seconds=lease_ttl_seconds,
-                    lease_renewal_interval=lease_renewal_interval,
                 )
-                break
-            if not futures:
-                if len(resolved) == len(nodes):
+                if settle_block is not None:
+                    blocked_result = {
+                        "status": "BLOCKED",
+                        "verdict": settle_block.failure_code,
+                        "errors": [settle_block.message],
+                        "transition_evidence": settle_block.evidence,
+                    }
+                    lease = _cancel_and_collect_futures(
+                        futures=futures,
+                        future_attempts=future_attempts,
+                        cancel_events=cancel_events,
+                        results=results,
+                        result_order=result_order,
+                        node_states=node_states,
+                        resolved=resolved,
+                        event_sink=event_sink,
+                        run_store=run_store,
+                        lease=lease,
+                        lease_ttl_seconds=lease_ttl_seconds,
+                        lease_renewal_interval=lease_renewal_interval,
+                    )
                     break
-                if deadlines:
-                    next_deadline = min(deadlines.values())
-                    remaining_seconds = next_deadline - time.monotonic()
-                    if remaining_seconds > 0:
-                        time.sleep(min(remaining_seconds, 0.05))
+                ready = [
+                    node_id
+                    for node_id in sorted(nodes)
+                    if node_id not in resolved
+                    and node_id not in scheduled
+                    and _node_is_ready(
+                        node_id,
+                        incoming_edges=incoming_edges,
+                        edge_states=edge_states,
+                    )
+                ]
+                for node_id in ready:
+                    if len(futures) >= max_concurrency:
+                        break
+                    attempt_counts[node_id] += 1
+                    attempt = attempt_counts[node_id]
+                    start_transition = policy.before_node_start(
+                        _transition_view(
+                            plan=plan,
+                            node_states=node_states,
+                            edge_states=edge_states,
+                            terminal_states=terminal_states,
+                            running_node_ids=set(futures.values()),
+                            deadlines=deadlines,
+                        ),
+                        node_id,
+                        attempt,
+                    )
+                    _persist_control_transition(
+                        run_store=run_store,
+                        lease=lease,
+                        event_key=f"before-node:{node_id}:{attempt}",
+                        batch=start_transition,
+                    )
+                    _apply_transition_batch(
+                        plan=plan,
+                        batch=start_transition,
+                        edge_states=edge_states,
+                        terminal_states=terminal_states,
+                        deadlines=deadlines,
+                    )
+                    _apply_node_effects(
+                        batch=start_transition,
+                        nodes=nodes,
+                        node_states=node_states,
+                        resolved=resolved,
+                        completed=completed,
+                        results=results,
+                        result_order=result_order,
+                        scheduled=scheduled,
+                        cancel_events=cancel_events,
+                        futures=futures,
+                        event_sink=event_sink,
+                    )
+                    transition_receipt_paths.extend(start_transition.receipt_paths)
+                    for transition_event in start_transition.events:
+                        _emit(event_sink, transition_event)
+                    if start_transition.block_run is not None:
+                        blocked_result = {
+                            "status": "BLOCKED",
+                            "verdict": start_transition.block_run.failure_code,
+                            "errors": [start_transition.block_run.message],
+                        }
+                        break
+                    if node_id in resolved or node_id in scheduled:
                         continue
+                    if run_store is not None and lease is not None:
+                        identity = run_store.reserve_attempt(
+                            lease,
+                            plan_sha256=plan.plan_sha256,
+                            node_id=node_id,
+                            attempt=attempt,
+                        )
+                        _inject_fault(fault_injector, "after_attempt_reserved", identity)
+                        run_store.mark_dispatched(lease, identity.attempt_id)
+                        _inject_fault(fault_injector, "after_attempt_dispatched", identity)
+                    else:
+                        identity = DagAttemptIdentity(
+                            run_id=effective_run_id,
+                            node_id=node_id,
+                            attempt=attempt,
+                            attempt_id=f"{effective_run_id}:{node_id}:{attempt}",
+                            idempotency_key=f"{effective_run_id}:{node_id}:{attempt}:effect",
+                        )
+                    accepted_inputs = tuple(
+                        results[source]["accepted_output"]
+                        for source, edge_id in context_edges.get(node_id, ())
+                        if edge_states.get(edge_id) == "success"
+                        and isinstance(results.get(source, {}).get("accepted_output"), dict)
+                    )
+                    future = pool.submit(
+                        execute_node,
+                        nodes[node_id],
+                        accepted_inputs,
+                        DagNodeAttempt(
+                            attempt=attempt,
+                            max_attempts=nodes[node_id].max_attempts,
+                            cancel_event=cancel_events[node_id],
+                            run_id=effective_run_id,
+                            attempt_id=identity.attempt_id,
+                            idempotency_key=identity.idempotency_key,
+                            recovered=identity.recovered,
+                        ),
+                    )
+                    futures[future] = node_id
+                    future_attempts[future] = identity
+                    scheduled.add(node_id)
+                    node_states[node_id] = "running"
+                    _emit(
+                        event_sink,
+                        {"event": "node_started", "node_id": node_id, "attempt": attempt},
+                    )
+                observed_concurrency = len(futures)
+                if observed_concurrency > max_observed_concurrency:
+                    max_observed_concurrency = observed_concurrency
+                    if run_store is not None and lease is not None:
+                        run_store.record_observed_concurrency(lease, max_observed_concurrency)
+
+                if blocked_result is not None:
+                    lease = _cancel_and_collect_futures(
+                        futures=futures,
+                        future_attempts=future_attempts,
+                        cancel_events=cancel_events,
+                        results=results,
+                        result_order=result_order,
+                        node_states=node_states,
+                        resolved=resolved,
+                        event_sink=event_sink,
+                        run_store=run_store,
+                        lease=lease,
+                        lease_ttl_seconds=lease_ttl_seconds,
+                        lease_renewal_interval=lease_renewal_interval,
+                    )
+                    break
+                if not futures:
+                    if len(resolved) == len(nodes):
+                        break
+                    if deadlines:
+                        next_deadline = min(deadlines.values())
+                        remaining_seconds = next_deadline - time.monotonic()
+                        if remaining_seconds > 0:
+                            time.sleep(min(remaining_seconds, 0.05))
+                            continue
+                        for deadline_id in sorted(
+                            key for key, value in deadlines.items() if value <= time.monotonic()
+                        ):
+                            transition = policy.on_deadline(
+                                _transition_view(
+                                    plan=plan,
+                                    node_states=node_states,
+                                    edge_states=edge_states,
+                                    terminal_states=terminal_states,
+                                    running_node_ids=set(),
+                                    deadlines=deadlines,
+                                ),
+                                deadline_id,
+                            )
+                            _persist_control_transition(
+                                run_store=run_store,
+                                lease=lease,
+                                event_key=f"deadline:{deadline_id}",
+                                batch=transition,
+                            )
+                            _apply_transition_batch(
+                                plan=plan,
+                                batch=transition,
+                                edge_states=edge_states,
+                                terminal_states=terminal_states,
+                                deadlines=deadlines,
+                            )
+                            _apply_node_effects(
+                                batch=transition,
+                                nodes=nodes,
+                                node_states=node_states,
+                                resolved=resolved,
+                                completed=completed,
+                                results=results,
+                                result_order=result_order,
+                                scheduled=scheduled,
+                                cancel_events=cancel_events,
+                                futures=futures,
+                                event_sink=event_sink,
+                            )
+                            transition_receipt_paths.extend(transition.receipt_paths)
+                            for event in transition.events:
+                                _emit(event_sink, event)
+                            if transition.block_run is not None:
+                                blocked_result = {
+                                    "status": "BLOCKED",
+                                    "verdict": transition.block_run.failure_code,
+                                    "errors": [transition.block_run.message],
+                                }
+                        if blocked_result is not None:
+                            break
+                        continue
+                    remaining = sorted(set(nodes) - completed)
+                    blocked_result = {
+                        "status": "BLOCKED",
+                        "verdict": "READY_QUEUE_STALLED",
+                        "errors": [f"no node became ready: {', '.join(remaining)}"],
+                    }
+                    break
+
+                wait_timeout = None
+                if deadlines:
+                    wait_timeout = max(0.0, min(deadlines.values()) - time.monotonic())
+                if run_store is not None and lease is not None:
+                    lease_wait = max(0.0, next_lease_renewal - time.monotonic())
+                    wait_timeout = (
+                        lease_wait
+                        if wait_timeout is None
+                        else min(wait_timeout, lease_wait)
+                    )
+                if cancel_requested is not None:
+                    wait_timeout = 0.05 if wait_timeout is None else min(wait_timeout, 0.05)
+                done, _ = wait(futures, timeout=wait_timeout, return_when=FIRST_COMPLETED)
+                if not done:
                     for deadline_id in sorted(
                         key for key, value in deadlines.items() if value <= time.monotonic()
                     ):
@@ -488,7 +573,7 @@ def run_dag_plan(
                                 node_states=node_states,
                                 edge_states=edge_states,
                                 terminal_states=terminal_states,
-                                running_node_ids=set(),
+                                running_node_ids=set(futures.values()),
                                 deadlines=deadlines,
                             ),
                             deadline_id,
@@ -529,30 +614,142 @@ def run_dag_plan(
                                 "errors": [transition.block_run.message],
                             }
                     if blocked_result is not None:
+                        lease = _cancel_and_collect_futures(
+                            futures=futures,
+                            future_attempts=future_attempts,
+                            cancel_events=cancel_events,
+                            results=results,
+                            result_order=result_order,
+                            node_states=node_states,
+                            resolved=resolved,
+                            event_sink=event_sink,
+                            run_store=run_store,
+                            lease=lease,
+                            lease_ttl_seconds=lease_ttl_seconds,
+                            lease_renewal_interval=lease_renewal_interval,
+                        )
                         break
                     continue
-                remaining = sorted(set(nodes) - completed)
-                blocked_result = {
-                    "status": "BLOCKED",
-                    "verdict": "READY_QUEUE_STALLED",
-                    "errors": [f"no node became ready: {', '.join(remaining)}"],
-                }
-                break
+                completed_batch: list[tuple[str, DagAttemptIdentity, dict[str, Any]]] = []
+                for future in done:
+                    node_id = futures.pop(future)
+                    identity = future_attempts.pop(future)
+                    try:
+                        result = future.result()
+                    except Exception as exc:  # pragma: no cover - defensive adapter boundary.
+                        result = {
+                            "node_id": node_id,
+                            "status": "BLOCKED",
+                            "verdict": "ADAPTER_EXECUTION_FAILED",
+                            "errors": [str(exc)],
+                        }
+                    completed_batch.append((node_id, identity, result))
 
-            wait_timeout = None
-            if deadlines:
-                wait_timeout = max(0.0, min(deadlines.values()) - time.monotonic())
-            if run_store is not None and lease is not None:
-                lease_wait = max(0.0, next_lease_renewal - time.monotonic())
-                wait_timeout = lease_wait if wait_timeout is None else min(wait_timeout, lease_wait)
-            if cancel_requested is not None:
-                wait_timeout = 0.05 if wait_timeout is None else min(wait_timeout, 0.05)
-            done, _ = wait(futures, timeout=wait_timeout, return_when=FIRST_COMPLETED)
-            if not done:
-                for deadline_id in sorted(
-                    key for key, value in deadlines.items() if value <= time.monotonic()
-                ):
-                    transition = policy.on_deadline(
+                batch_blocked = False
+                for node_id, identity, result in sorted(completed_batch):
+                    attempt = attempt_counts[node_id]
+                    try:
+                        validation = _validate_attempt_result(node_id=node_id, result=result)
+                    except RuntimeError as exc:
+                        result = {
+                            "node_id": node_id,
+                            "status": "BLOCKED",
+                            "verdict": "DAG_ATTEMPT_RESULT_INVALID",
+                            "errors": [str(exc)],
+                            "retryable": False,
+                        }
+                        validation = _validate_attempt_result(node_id=node_id, result=result)
+                    raw_attempt_result = result
+                    if run_store is not None and lease is not None:
+                        result = run_store.stage_result(lease, identity.attempt_id, result)
+                        _inject_fault(fault_injector, "after_result_staged", identity)
+                        run_store.validate_result(lease, identity.attempt_id, validation)
+                        _inject_fault(fault_injector, "after_result_validated", identity)
+                    result = _with_attempt_history(
+                        result,
+                        attempt=attempt,
+                        prior_results=attempt_history[node_id],
+                    )
+                    attempt_history[node_id].append(raw_attempt_result)
+                    retryable = result.get("retryable") is not False
+                    scheduler_cancelled = cancel_events[node_id].is_set()
+                    failed_attempt = (
+                        result.get("status") != "PASS" or result.get("verdict") != "PASS"
+                    )
+                    correction_allows_retry = _correction_allows_retry(
+                        plan=plan,
+                        node=nodes[node_id],
+                        result=result,
+                        attempt=DagNodeAttempt(
+                            attempt=attempt,
+                            max_attempts=nodes[node_id].max_attempts,
+                            cancel_event=cancel_events[node_id],
+                            run_id=effective_run_id,
+                            attempt_id=identity.attempt_id,
+                            idempotency_key=identity.idempotency_key,
+                        ),
+                        run_store=run_store,
+                        lease=lease,
+                        correction_handler=correction_handler,
+                        event_sink=event_sink,
+                    )
+                    will_retry = (
+                        retryable
+                        and correction_allows_retry
+                        and not scheduler_cancelled
+                        and attempt < nodes[node_id].max_attempts
+                    )
+                    if failed_attempt:
+                        _emit(
+                            event_sink,
+                            {
+                                "event": "node_attempt_failed",
+                                "node_id": node_id,
+                                "attempt": attempt,
+                                "retrying": will_retry,
+                                "stop_reason": result.get("stop_reason")
+                                or str(result.get("verdict") or "node_blocked").lower(),
+                                "errors": result.get("errors", []),
+                            },
+                        )
+                    if failed_attempt and will_retry:
+                        if run_store is not None and lease is not None:
+                            run_store.schedule_retry(
+                                lease, identity.attempt_id, next_attempt=attempt + 1
+                            )
+                            _inject_fault(fault_injector, "after_retry_scheduled", identity)
+                        scheduled.remove(node_id)
+                        node_states[node_id] = "pending"
+                        _emit(
+                            event_sink,
+                            {
+                                "event": "node_retry_scheduled",
+                                "node_id": node_id,
+                                "attempt": attempt,
+                                "next_attempt": attempt + 1,
+                                "verdict": result.get("verdict"),
+                            },
+                        )
+                        continue
+                    if run_store is not None and lease is not None:
+                        run_store.commit_output(lease, identity.attempt_id)
+                        _inject_fault(fault_injector, "after_output_committed", identity)
+                    completion = DagNodeCompletion(
+                        node_id=node_id,
+                        attempt=attempt,
+                        status=str(result.get("status") or "BLOCKED"),
+                        verdict=str(result.get("verdict") or "NODE_BLOCKED"),
+                        retryable=retryable,
+                        raw_result=result,
+                        terminal_state=(
+                            "cancelled"
+                            if cancel_events[node_id].is_set()
+                            else "success"
+                            if result.get("status") == "PASS" and result.get("verdict") == "PASS"
+                            else "failed"
+                        ),
+                    )
+                    transition = policy.after_node_terminal(
                         _transition_view(
                             plan=plan,
                             node_states=node_states,
@@ -561,14 +758,21 @@ def run_dag_plan(
                             running_node_ids=set(futures.values()),
                             deadlines=deadlines,
                         ),
-                        deadline_id,
+                        completion,
                     )
-                    _persist_control_transition(
-                        run_store=run_store,
-                        lease=lease,
-                        event_key=f"deadline:{deadline_id}",
-                        batch=transition,
-                    )
+                    if scheduler_cancelled and transition.block_run is not None:
+                        transition = replace(transition, block_run=None)
+                    if run_store is not None and lease is not None:
+                        run_store.commit_transition(
+                            lease,
+                            identity.attempt_id,
+                            completion=_completion_to_payload(completion),
+                            result=result,
+                            transition=transition_batch_to_payload(transition),
+                        )
+                        _inject_fault(fault_injector, "after_transition_committed", identity)
+                    results[node_id] = result
+                    result_order.append(node_id)
                     _apply_transition_batch(
                         plan=plan,
                         batch=transition,
@@ -590,15 +794,87 @@ def run_dag_plan(
                         event_sink=event_sink,
                     )
                     transition_receipt_paths.extend(transition.receipt_paths)
-                    for event in transition.events:
-                        _emit(event_sink, event)
+                    for transition_event in transition.events:
+                        _emit(event_sink, transition_event)
                     if transition.block_run is not None:
+                        if blocked_result is None:
+                            blocked_result = {
+                                **result,
+                                "status": "BLOCKED",
+                                "verdict": transition.block_run.failure_code,
+                                "errors": [transition.block_run.message],
+                                "transition_evidence": transition.block_run.evidence,
+                            }
+                        node_states[node_id] = "blocked"
+                        resolved.add(node_id)
+                        _emit(
+                            event_sink,
+                            {
+                                "event": "node_blocked",
+                                "node_id": node_id,
+                                "attempt": attempt,
+                                "verdict": result.get("verdict"),
+                            },
+                        )
+                        batch_blocked = True
+                        continue
+                    resolved.add(node_id)
+                    node_states[node_id] = completion.terminal_state
+                    if completion.terminal_state == "success":
+                        completed.add(node_id)
+                    _emit(
+                        event_sink,
+                        {"event": "node_completed", "node_id": node_id, "attempt": attempt},
+                    )
+                completion_transition = policy.after_completion_batch(
+                    _transition_view(
+                        plan=plan,
+                        node_states=node_states,
+                        edge_states=edge_states,
+                        terminal_states=terminal_states,
+                        running_node_ids=set(futures.values()),
+                        deadlines=deadlines,
+                    )
+                )
+                _persist_control_transition(
+                    run_store=run_store,
+                    lease=lease,
+                    event_key="completion-batch",
+                    batch=completion_transition,
+                )
+                _apply_transition_batch(
+                    plan=plan,
+                    batch=completion_transition,
+                    edge_states=edge_states,
+                    terminal_states=terminal_states,
+                    deadlines=deadlines,
+                )
+                _apply_node_effects(
+                    batch=completion_transition,
+                    nodes=nodes,
+                    node_states=node_states,
+                    resolved=resolved,
+                    completed=completed,
+                    results=results,
+                    result_order=result_order,
+                    scheduled=scheduled,
+                    cancel_events=cancel_events,
+                    futures=futures,
+                    event_sink=event_sink,
+                )
+                transition_receipt_paths.extend(completion_transition.receipt_paths)
+                for transition_event in completion_transition.events:
+                    _emit(event_sink, transition_event)
+                if completion_transition.block_run is not None:
+                    if blocked_result is None:
                         blocked_result = {
                             "status": "BLOCKED",
-                            "verdict": transition.block_run.failure_code,
-                            "errors": [transition.block_run.message],
+                            "verdict": completion_transition.block_run.failure_code,
+                            "errors": [completion_transition.block_run.message],
+                            "transition_evidence": completion_transition.block_run.evidence,
                         }
-                if blocked_result is not None:
+                    batch_blocked = True
+                if batch_blocked:
                     lease = _cancel_and_collect_futures(
                         futures=futures,
                         future_attempts=future_attempts,
@@ -614,265 +890,15 @@ def run_dag_plan(
                         lease_renewal_interval=lease_renewal_interval,
                     )
                     break
-                continue
-            completed_batch: list[tuple[str, DagAttemptIdentity, dict[str, Any]]] = []
-            for future in done:
-                node_id = futures.pop(future)
-                identity = future_attempts.pop(future)
-                try:
-                    result = future.result()
-                except Exception as exc:  # pragma: no cover - defensive adapter boundary.
-                    result = {
-                        "node_id": node_id,
-                        "status": "BLOCKED",
-                        "verdict": "ADAPTER_EXECUTION_FAILED",
-                        "errors": [str(exc)],
-                    }
-                completed_batch.append((node_id, identity, result))
 
-            batch_blocked = False
-            for node_id, identity, result in sorted(completed_batch):
-                attempt = attempt_counts[node_id]
-                try:
-                    validation = _validate_attempt_result(node_id=node_id, result=result)
-                except RuntimeError as exc:
-                    result = {
-                        "node_id": node_id,
-                        "status": "BLOCKED",
-                        "verdict": "DAG_ATTEMPT_RESULT_INVALID",
-                        "errors": [str(exc)],
-                        "retryable": False,
-                    }
-                    validation = _validate_attempt_result(node_id=node_id, result=result)
-                raw_attempt_result = result
-                if run_store is not None and lease is not None:
-                    result = run_store.stage_result(lease, identity.attempt_id, result)
-                    _inject_fault(fault_injector, "after_result_staged", identity)
-                    run_store.validate_result(lease, identity.attempt_id, validation)
-                    _inject_fault(fault_injector, "after_result_validated", identity)
-                result = _with_attempt_history(
-                    result,
-                    attempt=attempt,
-                    prior_results=attempt_history[node_id],
-                )
-                attempt_history[node_id].append(raw_attempt_result)
-                retryable = result.get("retryable") is not False
-                scheduler_cancelled = cancel_events[node_id].is_set()
-                failed_attempt = result.get("status") != "PASS" or result.get("verdict") != "PASS"
-                correction_allows_retry = _correction_allows_retry(
-                    plan=plan,
-                    node=nodes[node_id],
-                    result=result,
-                    attempt=DagNodeAttempt(
-                        attempt=attempt,
-                        max_attempts=nodes[node_id].max_attempts,
-                        cancel_event=cancel_events[node_id],
-                        run_id=effective_run_id,
-                        attempt_id=identity.attempt_id,
-                        idempotency_key=identity.idempotency_key,
-                    ),
-                    run_store=run_store,
-                    lease=lease,
-                    correction_handler=correction_handler,
-                    event_sink=event_sink,
-                )
-                will_retry = (
-                    retryable
-                    and correction_allows_retry
-                    and not scheduler_cancelled
-                    and attempt < nodes[node_id].max_attempts
-                )
-                if failed_attempt:
-                    _emit(
-                        event_sink,
-                        {
-                            "event": "node_attempt_failed",
-                            "node_id": node_id,
-                            "attempt": attempt,
-                            "retrying": will_retry,
-                            "stop_reason": result.get("stop_reason")
-                            or str(result.get("verdict") or "node_blocked").lower(),
-                            "errors": result.get("errors", []),
-                        },
-                    )
-                if failed_attempt and will_retry:
-                    if run_store is not None and lease is not None:
-                        run_store.schedule_retry(
-                            lease, identity.attempt_id, next_attempt=attempt + 1
-                        )
-                        _inject_fault(fault_injector, "after_retry_scheduled", identity)
-                    scheduled.remove(node_id)
-                    node_states[node_id] = "pending"
-                    _emit(
-                        event_sink,
-                        {
-                            "event": "node_retry_scheduled",
-                            "node_id": node_id,
-                            "attempt": attempt,
-                            "next_attempt": attempt + 1,
-                            "verdict": result.get("verdict"),
-                        },
-                    )
-                    continue
-                if run_store is not None and lease is not None:
-                    run_store.commit_output(lease, identity.attempt_id)
-                    _inject_fault(fault_injector, "after_output_committed", identity)
-                completion = DagNodeCompletion(
-                    node_id=node_id,
-                    attempt=attempt,
-                    status=str(result.get("status") or "BLOCKED"),
-                    verdict=str(result.get("verdict") or "NODE_BLOCKED"),
-                    retryable=retryable,
-                    raw_result=result,
-                    terminal_state=(
-                        "cancelled"
-                        if cancel_events[node_id].is_set()
-                        else "success"
-                        if result.get("status") == "PASS" and result.get("verdict") == "PASS"
-                        else "failed"
-                    ),
-                )
-                transition = policy.after_node_terminal(
-                    _transition_view(
-                        plan=plan,
-                        node_states=node_states,
-                        edge_states=edge_states,
-                        terminal_states=terminal_states,
-                        running_node_ids=set(futures.values()),
-                        deadlines=deadlines,
-                    ),
-                    completion,
-                )
-                if scheduler_cancelled and transition.block_run is not None:
-                    transition = replace(transition, block_run=None)
-                if run_store is not None and lease is not None:
-                    run_store.commit_transition(
-                        lease,
-                        identity.attempt_id,
-                        completion=_completion_to_payload(completion),
-                        result=result,
-                        transition=transition_batch_to_payload(transition),
-                    )
-                    _inject_fault(fault_injector, "after_transition_committed", identity)
-                results[node_id] = result
-                result_order.append(node_id)
-                _apply_transition_batch(
-                    plan=plan,
-                    batch=transition,
-                    edge_states=edge_states,
-                    terminal_states=terminal_states,
-                    deadlines=deadlines,
-                )
-                _apply_node_effects(
-                    batch=transition,
-                    nodes=nodes,
-                    node_states=node_states,
-                    resolved=resolved,
-                    completed=completed,
-                    results=results,
-                    result_order=result_order,
-                    scheduled=scheduled,
-                    cancel_events=cancel_events,
-                    futures=futures,
-                    event_sink=event_sink,
-                )
-                transition_receipt_paths.extend(transition.receipt_paths)
-                for transition_event in transition.events:
-                    _emit(event_sink, transition_event)
-                if transition.block_run is not None:
-                    if blocked_result is None:
-                        blocked_result = {
-                            **result,
-                            "status": "BLOCKED",
-                            "verdict": transition.block_run.failure_code,
-                            "errors": [transition.block_run.message],
-                            "transition_evidence": transition.block_run.evidence,
-                        }
-                    node_states[node_id] = "blocked"
-                    resolved.add(node_id)
-                    _emit(
-                        event_sink,
-                        {
-                            "event": "node_blocked",
-                            "node_id": node_id,
-                            "attempt": attempt,
-                            "verdict": result.get("verdict"),
-                        },
-                    )
-                    batch_blocked = True
-                    continue
-                resolved.add(node_id)
-                node_states[node_id] = completion.terminal_state
-                if completion.terminal_state == "success":
-                    completed.add(node_id)
-                _emit(
-                    event_sink,
-                    {"event": "node_completed", "node_id": node_id, "attempt": attempt},
-                )
-            completion_transition = policy.after_completion_batch(
-                _transition_view(
-                    plan=plan,
-                    node_states=node_states,
-                    edge_states=edge_states,
-                    terminal_states=terminal_states,
-                    running_node_ids=set(futures.values()),
-                    deadlines=deadlines,
-                )
-            )
-            _persist_control_transition(
-                run_store=run_store,
-                lease=lease,
-                event_key="completion-batch",
-                batch=completion_transition,
-            )
-            _apply_transition_batch(
-                plan=plan,
-                batch=completion_transition,
-                edge_states=edge_states,
-                terminal_states=terminal_states,
-                deadlines=deadlines,
-            )
-            _apply_node_effects(
-                batch=completion_transition,
-                nodes=nodes,
-                node_states=node_states,
-                resolved=resolved,
-                completed=completed,
-                results=results,
-                result_order=result_order,
-                scheduled=scheduled,
-                cancel_events=cancel_events,
-                futures=futures,
-                event_sink=event_sink,
-            )
-            transition_receipt_paths.extend(completion_transition.receipt_paths)
-            for transition_event in completion_transition.events:
-                _emit(event_sink, transition_event)
-            if completion_transition.block_run is not None:
-                if blocked_result is None:
-                    blocked_result = {
-                        "status": "BLOCKED",
-                        "verdict": completion_transition.block_run.failure_code,
-                        "errors": [completion_transition.block_run.message],
-                        "transition_evidence": completion_transition.block_run.evidence,
-                    }
-                batch_blocked = True
-            if batch_blocked:
-                lease = _cancel_and_collect_futures(
-                    futures=futures,
-                    future_attempts=future_attempts,
-                    cancel_events=cancel_events,
-                    results=results,
-                    result_order=result_order,
-                    node_states=node_states,
-                    resolved=resolved,
-                    event_sink=event_sink,
-                    run_store=run_store,
-                    lease=lease,
-                    lease_ttl_seconds=lease_ttl_seconds,
-                    lease_renewal_interval=lease_renewal_interval,
-                )
-                break
+    except BaseException as exc:
+        _finish_interrupted_run(
+            run_store=run_store,
+            lease=lease,
+            exc=exc,
+            terminalize_exception=False,
+        )
+        raise
 
     ordered_results = tuple(results[node_id] for node_id in result_order)
     if (
@@ -924,6 +950,31 @@ def run_dag_plan(
         )
         run_store.release_lease(lease)
     return scheduler_result
+
+
+def _finish_interrupted_run(
+    *,
+    run_store: SqliteDagRunStore | None,
+    lease: DagRunLease | None,
+    exc: BaseException,
+    terminalize_exception: bool,
+) -> None:
+    if run_store is None or lease is None:
+        return
+    if isinstance(exc, KeyboardInterrupt):
+        status = "CANCELLED"
+        verdict = "CANCELLED"
+    elif terminalize_exception:
+        status = "BLOCKED"
+        verdict = "DAG_RUN_EXCEPTION"
+    else:
+        status = None
+        verdict = None
+    if status is not None and verdict is not None:
+        with suppress(Exception):
+            run_store.mark_run_finished(lease, status=status, verdict=verdict)
+    with suppress(Exception):
+        run_store.release_lease(lease)
 
 
 def _inject_fault(
