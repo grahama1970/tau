@@ -6,6 +6,7 @@ from dataclasses import dataclass, field, fields
 from json import JSONDecodeError, dumps, loads
 from pathlib import Path
 from typing import Any, Literal, cast
+from warnings import warn
 
 from rich.color import Color, ColorParseError
 from rich.errors import StyleSyntaxError
@@ -1093,6 +1094,7 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
     # Ignore settings from newer Tau versions so one user-level file can survive
     # upgrades, downgrades, and multiple installations. Known fields below still
     # keep strict type and value validation.
+    _warn_unknown_tui_settings_fields(data)
     keybindings_data = data.get("keybindings", {})
     if not isinstance(keybindings_data, dict):
         raise TuiConfigError("TUI keybindings must be a JSON object")
@@ -1262,6 +1264,49 @@ def tui_settings_from_json(data: dict[str, Any]) -> TuiSettings:
         ),
         tree_filter_mode=_tree_filter_mode(data.get("tree_filter_mode", "default")),
     )
+
+
+def _warn_unknown_tui_settings_fields(data: dict[str, Any]) -> None:
+    known_fields = {field.name for field in fields(TuiSettings)}
+    known_fields.update(
+        {
+            "autocompleteMaxVisible",
+            "autoResizeImages",
+            "blockImages",
+            "clearOnShrink",
+            "collapseChangelog",
+            "defaultProjectTrust",
+            "disabledResourcePaths",
+            "editorPaddingX",
+            "enableSkillCommands",
+            "externalEditor",
+            "followUpMode",
+            "hideThinking",
+            "httpIdleTimeoutMs",
+            "imageWidthCells",
+            "images",
+            "outputPad",
+            "quietStartup",
+            "shellCommandPrefix",
+            "shellPath",
+            "showHardwareCursor",
+            "showImages",
+            "showTerminalProgress",
+            "sidebarPosition",
+            "steeringMode",
+            "terminal",
+            "thinkingLevel",
+            "turnNotification",
+            "warnings",
+        }
+    )
+    unknown_fields = sorted(set(data) - known_fields)
+    if unknown_fields:
+        warn(
+            f"Ignoring unknown TUI settings fields: {', '.join(unknown_fields)}",
+            RuntimeWarning,
+            stacklevel=2,
+        )
 
 
 def _bool_setting(value: object, field_name: str) -> bool:
@@ -1434,6 +1479,15 @@ def _keybindings_from_json(data: dict[str, Any]) -> TuiKeybindings:
     normalized_data = _normalize_keybinding_fields(data)
     # Future versions may add actions. Read only actions this version supports;
     # recognized actions still reject invalid or duplicate key values.
+    unknown_fields = sorted(
+        set(normalized_data) - set(defaults.to_json()) - _LEGACY_IGNORED_KEYBINDINGS
+    )
+    if unknown_fields:
+        warn(
+            f"Ignoring unknown TUI keybindings: {', '.join(unknown_fields)}",
+            RuntimeWarning,
+            stacklevel=2,
+        )
     values = {
         field_name: _optional_key_string(normalized_data.get(field_name, default_value), field_name)
         if field_name in _OPTIONAL_KEYBINDING_FIELDS
@@ -1597,6 +1651,7 @@ _PI_KEYBINDING_ALIASES = {
     "selectConfirm": "select_confirm",
     "selectCancel": "select_cancel",
 }
+_LEGACY_IGNORED_KEYBINDINGS = frozenset({"message_previous", "message_next"})
 
 
 def _normalize_keybinding_fields(data: dict[str, Any]) -> dict[str, Any]:

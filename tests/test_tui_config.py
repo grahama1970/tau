@@ -327,26 +327,28 @@ def test_tui_settings_ignores_removed_message_selection_keybindings() -> None:
     assert settings == TuiSettings()
 
 
-def test_tui_settings_ignore_unknown_fields() -> None:
-    settings = tui_settings_from_json(
-        {
-            "theme": "tau-light",
-            "palette": {},
-        }
-    )
+def test_tui_settings_warns_and_ignores_unknown_fields() -> None:
+    with pytest.warns(RuntimeWarning, match="Ignoring unknown TUI settings fields: palette"):
+        settings = tui_settings_from_json(
+            {
+                "theme": "tau-light",
+                "palette": {},
+            }
+        )
 
     assert settings.theme == "tau-light"
 
 
-def test_tui_keybindings_ignore_unknown_actions() -> None:
-    settings = tui_settings_from_json(
-        {
-            "keybindings": {
-                "quit": "f12",
-                "future_action": "ctrl+g",
+def test_tui_keybindings_warns_and_ignores_unknown_actions() -> None:
+    with pytest.warns(RuntimeWarning, match="Ignoring unknown TUI keybindings: future_action"):
+        settings = tui_settings_from_json(
+            {
+                "keybindings": {
+                    "quit": "f12",
+                    "future_action": "ctrl+g",
+                }
             }
-        }
-    )
+        )
 
     assert settings.keybindings.quit == "f12"
 
