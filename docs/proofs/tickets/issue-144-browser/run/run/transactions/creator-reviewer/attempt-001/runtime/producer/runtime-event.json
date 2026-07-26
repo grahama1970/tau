@@ -1,0 +1,17 @@
+{
+  "confidence": "PROCESS",
+  "endpoint_lease_sha256": "sha256:f541d1a77f81469b64cdaa9fb341a728719c08562f0bd2e19725686e2c06d0a1",
+  "event_id": "local-event:69830410912888f5a33433a5",
+  "event_type": "RUNTIME_ENDPOINT_EXITED",
+  "liveness": "DEAD",
+  "observation": {
+    "cancelled": false,
+    "returncode": 0,
+    "timed_out": false
+  },
+  "observed_at": "2026-07-26T16:01:44.377396+00:00",
+  "run_id": "dag-viewer-creator-reviewer",
+  "schema": "tau.runtime_event.v1",
+  "source": "local",
+  "state": "EXITED"
+}

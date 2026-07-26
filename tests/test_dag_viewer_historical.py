@@ -97,10 +97,11 @@ def test_exact_historical_prefix_is_stable_and_excludes_future_state(tmp_path: P
     try:
         with sqlite3.connect(tmp_path / "dag-run.sqlite3") as connection:
             rows = connection.execute(
-                "SELECT seq, event_type FROM dag_run_events "
+                "SELECT seq, event_type, created_at FROM dag_run_events "
                 "WHERE run_id = 'historical-run' ORDER BY seq"
             ).fetchall()
-        sequence_by_type = {event_type: int(sequence) for sequence, event_type in rows}
+        sequence_by_type = {event_type: int(sequence) for sequence, event_type, _ in rows}
+        created_at_by_type = {event_type: created_at for _, event_type, created_at in rows}
         created_sequence = sequence_by_type["run_created"]
         dispatched_sequence = sequence_by_type["attempt_dispatched"]
         committed_sequence = sequence_by_type["scheduler_transition_committed"]
@@ -127,6 +128,12 @@ def test_exact_historical_prefix_is_stable_and_excludes_future_state(tmp_path: P
         assert created["nodes"][0]["admission"]["accepted"] is False
         assert dispatched["nodes"][0]["scheduler"]["state"] == "running"
         assert dispatched["nodes"][0]["admission"]["accepted"] is False
+        assert (
+            dispatched["nodes"][0]["result"]["started_at"]
+            == created_at_by_type["attempt_dispatched"]
+        )
+        assert dispatched["nodes"][0]["result"]["finished_at"] is None
+        assert dispatched["nodes"][0]["result"]["duration_seconds"] is None
         assert committed["nodes"][0]["admission"]["accepted"] is True
         assert int(head_headers["X-Tau-Journal-Head-Sequence"]) == int(
             first_headers["X-Tau-Journal-Head-Sequence"]

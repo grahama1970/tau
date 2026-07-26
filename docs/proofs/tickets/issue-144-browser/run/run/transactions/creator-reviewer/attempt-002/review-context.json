@@ -1,0 +1,26 @@
+{
+  "attempt": 2,
+  "attempt_context_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-144-browser/run/run/transactions/creator-reviewer/attempt-002/attempt-context.json",
+  "attempt_context_sha256": "5ceed7144ff04f9636fb305615046b78be5495cd3ccca5d0e4646af9bda93b26",
+  "candidate_manifest_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-144-browser/run/run/transactions/creator-reviewer/attempt-002/candidate-manifest.json",
+  "candidate_manifest_sha256": "41afba9a722ab06b3790522a181a987b0bacfd6b487c6a7020dc306133a2fd3c",
+  "node_id": "creator-reviewer",
+  "output_contract": {
+    "review_feedback_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-144-browser/run/run/transactions/creator-reviewer/attempt-002/review-feedback.json"
+  },
+  "producer_id": "creator",
+  "reviewer_id": "deterministic-reviewer",
+  "run_id": "dag-viewer-creator-reviewer",
+  "schema": "tau.generic_artifact_review_context.v1",
+  "transaction_id": "tx-creator-reviewer",
+  "validated_artifacts": [
+    {
+      "artifact_id": "primary",
+      "bytes": 20,
+      "kind": "text",
+      "media_type": "text/plain",
+      "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-144-browser/run/artifacts/candidate-2.txt",
+      "sha256": "86930f7ce9e07595b1859cced57ee9498e00a168d2a136c689b98bc93eb05f86"
+    }
+  ]
+}

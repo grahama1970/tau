@@ -88,11 +88,14 @@ button:focus-visible, select:focus-visible { outline: 2px solid #65a9ff; outline
 .tau-node--skipped, .tau-node--cancelled { opacity: .52; border-style: dashed; }
 .tau-node--superseded { border-color: #b58cff; background: #211d2b; border-style: double; }
 .tau-node--accepted, .tau-node--settled { border-color: #5ecb8b; background: #14271e; }
-.tau-node__header, .tau-node__states, .tau-node footer { display: flex; align-items: center; gap: 7px; }
+.tau-node__header, .tau-node__states, .tau-node__timing, .tau-node footer { display: flex; align-items: center; gap: 7px; }
 .tau-node__header strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
 .tau-node__role { color: #9aa8ba; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tau-node__states { align-content: center; flex-wrap: wrap; }
 .tau-node__states span { display: inline-flex; align-items: center; gap: 4px; color: #c7d1dd; font-size: 10px; text-transform: uppercase; }
+.tau-node__timing { min-width: 0; color: #d6b56a; font-size: 10px; text-transform: uppercase; }
+.tau-node__timing span { color: #8f9daf; }
+.tau-node__timing strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #e8d38b; font: 11px ui-monospace, monospace; }
 .tau-node__result, .tau-node__blocker { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 9px; }
 .tau-node__result { color: #9ee0b7; }
 .tau-node__blocker { color: #ffb3b8; font-family: ui-monospace, monospace; }

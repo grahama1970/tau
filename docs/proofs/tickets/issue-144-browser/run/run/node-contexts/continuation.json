@@ -1,0 +1,22 @@
+{
+  "accepted_inputs": [
+    {
+      "accepted_manifest_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-144-browser/run/run/transactions/creator-reviewer/accepted-manifest.json",
+      "accepted_manifest_sha256": "48b819dfa3be1aca00a0a6d77efadf92a6b3888b49b943f78d9f7c0752d41b01",
+      "artifacts": [
+        {
+          "artifact_id": "primary",
+          "bytes": 20,
+          "kind": "text",
+          "media_type": "text/plain",
+          "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-144-browser/run/artifacts/candidate-2.txt",
+          "sha256": "86930f7ce9e07595b1859cced57ee9498e00a168d2a136c689b98bc93eb05f86"
+        }
+      ],
+      "source_node_id": "creator-reviewer"
+    }
+  ],
+  "node_id": "continuation",
+  "run_id": "dag-viewer-creator-reviewer",
+  "schema": "tau.generic_dag_node_context.v1"
+}

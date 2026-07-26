@@ -168,6 +168,15 @@ def build_dag_view_state(
             (item for item in reversed(replay.results) if item.node_id == node_id), None
         )
         result_payload = replay_result.payload if replay_result is not None else {}
+        attempt_started_at = (
+            _attempt_event_created_at(
+                recent_events,
+                attempt_id=attempt.attempt_id,
+                event_type="attempt_dispatched",
+            )
+            if attempt is not None
+            else None
+        )
         accepted_output = result_payload.get("accepted_output")
         errors = result_payload.get("errors")
         endpoint_hash = _find_endpoint_lease_sha256(result_payload)
@@ -209,11 +218,8 @@ def build_dag_view_state(
                         and isinstance(errors, list)
                         else []
                     ),
-                    "started_at": (
-                        result_payload.get("started_at")
-                        if isinstance(result_payload.get("started_at"), str)
-                        else None
-                    ),
+                    "started_at": _result_timestamp(result_payload, "started_at")
+                    or attempt_started_at,
                     "finished_at": (
                         result_payload.get("finished_at")
                         if isinstance(result_payload.get("finished_at"), str)
@@ -374,6 +380,23 @@ def build_dag_view_state(
         "truncated": redacted.truncated,
     }
     return result, causal
+
+
+def _result_timestamp(payload: dict[str, Any], key: str) -> str | None:
+    value = payload.get(key)
+    return value if isinstance(value, str) else None
+
+
+def _attempt_event_created_at(
+    events: tuple[dict[str, Any], ...], *, attempt_id: str, event_type: str
+) -> str | None:
+    for event in events:
+        if event.get("event_type") != event_type or event.get("attempt_id") != attempt_id:
+            continue
+        created_at = event.get("created_at")
+        if isinstance(created_at, str):
+            return created_at
+    return None
 
 
 def _correction_payload(correction: Any) -> dict[str, Any] | None:

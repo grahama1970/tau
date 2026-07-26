@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { DagWorkspace } from "../components/DagWorkspace";
 import { manifest, snapshot } from "./fixtures";
@@ -55,4 +55,53 @@ test("renders superseded nodes with a distinct state and tone", () => {
   expect(node).toHaveAttribute("data-node-state", "superseded");
   expect(node).toHaveClass("tau-node--superseded");
   expect(node).not.toHaveClass("tau-node--accepted");
+});
+
+test("renders completed duration and ticking in-flight elapsed time", () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-01-01T00:02:00Z"));
+  try {
+    const timed = {
+      ...snapshot,
+      nodes: snapshot.nodes.map((node) => {
+        if (node.node_id === "creator") {
+          return {
+            ...node,
+            result: {
+              ...node.result,
+              started_at: "2026-01-01T00:00:00Z",
+              finished_at: null,
+              duration_seconds: null,
+            },
+          };
+        }
+        return {
+          ...node,
+          scheduler: { ...node.scheduler, state: "settled", attempt: 1 },
+          admission: { ...node.admission, state: "accepted", accepted: true },
+          result: {
+            ...node.result,
+            started_at: "2026-01-01T00:00:01Z",
+            finished_at: "2026-01-01T00:01:15Z",
+            duration_seconds: 74,
+          },
+        };
+      }),
+    };
+    const { container } = render(<div style={{ width: 900, height: 500 }}><DagWorkspace manifest={manifest} snapshot={timed} selectedId={null} onSelect={vi.fn()} /></div>);
+    const activeTiming = container.querySelector('[data-qid="dag:node:creator:timing"]');
+    const completedTiming = container.querySelector('[data-qid="dag:node:publish:timing"]');
+
+    expect(activeTiming).toHaveTextContent("elapsed");
+    expect(activeTiming).toHaveTextContent("2m 00s");
+    expect(completedTiming).toHaveTextContent("duration");
+    expect(completedTiming).toHaveTextContent("1m 14s");
+
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(activeTiming).toHaveTextContent("2m 03s");
+  } finally {
+    vi.useRealTimers();
+  }
 });

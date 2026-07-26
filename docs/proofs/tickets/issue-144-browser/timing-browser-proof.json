@@ -1,0 +1,55 @@
+{
+  "schema": "tau.issue_144_timing_browser_proof.v1",
+  "status": "PASS",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "url": "http://127.0.0.1:42685/",
+  "historical_url": "http://127.0.0.1:42685/?at_sequence=6",
+  "screenshot": "docs/proofs/tickets/issue-144-browser/timing-browser-proof.png",
+  "screenshot_sha256": "sha256:edc7e58028d014f8119a891f2d7c3eeb71b35521a8fc53b0402102db81295448",
+  "final_timing_text": "duration1s",
+  "initial_elapsed_text": "elapsed4m 38s",
+  "changed_elapsed_text": "elapsed4m 39s",
+  "final_node_result": {
+    "accepted_output": {
+      "accepted_manifest_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-144-browser/run/run/transactions/creator-reviewer/accepted-manifest.json",
+      "accepted_manifest_sha256": "48b819dfa3be1aca00a0a6d77efadf92a6b3888b49b943f78d9f7c0752d41b01",
+      "artifacts": [
+        {
+          "artifact_id": "primary",
+          "bytes": 20,
+          "kind": "text",
+          "media_type": "text/plain",
+          "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-144-browser/run/artifacts/candidate-2.txt",
+          "sha256": "86930f7ce9e07595b1859cced57ee9498e00a168d2a136c689b98bc93eb05f86"
+        }
+      ],
+      "source_node_id": "creator-reviewer"
+    },
+    "blocker_codes": [],
+    "duration_seconds": 1.204,
+    "finished_at": "2026-07-26T16:01:45Z",
+    "started_at": "2026-07-26T16:01:44Z",
+    "summary": null
+  },
+  "historical_node_result": {
+    "accepted_output": null,
+    "blocker_codes": [],
+    "duration_seconds": null,
+    "finished_at": null,
+    "started_at": "2026-07-26T16:01:44.227495+00:00",
+    "summary": null
+  },
+  "request_methods": [
+    "GET"
+  ],
+  "checks": {
+    "final_duration_visible": true,
+    "final_duration_from_snapshot": true,
+    "historical_inflight_started_at_projected": true,
+    "historical_elapsed_visible": true,
+    "historical_elapsed_ticks": true,
+    "read_only_requests": true
+  }
+}

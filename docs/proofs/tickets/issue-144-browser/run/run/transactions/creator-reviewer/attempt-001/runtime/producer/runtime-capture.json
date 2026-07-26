@@ -1,0 +1,20 @@
+{
+  "cancelled": false,
+  "command": [
+    "/tmp/tau-main-issue-137.7nchbf/.venv/bin/python3",
+    "/tmp/tau-main-issue-137.7nchbf/examples/dag-viewer-creator-reviewer/producer.py",
+    "--artifact-root",
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-144-browser/run/artifacts",
+    "--receipt",
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-144-browser/run/creator-receipt.json",
+    "--work-order",
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-144-browser/run/work-order.json",
+    "--step-delay-seconds",
+    "0.05"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "",
+  "timed_out": false
+}
