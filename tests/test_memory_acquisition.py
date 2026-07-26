@@ -13,9 +13,11 @@ from tau_coding.memory_acquisition import (
     EVIDENCE_CASE_ACQUISITION_RECEIPT_SCHEMA,
     MEMORY_INTENT_ACQUISITION_RECEIPT_SCHEMA,
     SKILL_CHAIN_SELECTION_RECEIPT_SCHEMA,
+    TOOL_CHAIN_SELECTION_RECEIPT_SCHEMA,
     write_evidence_case_acquisition_receipt,
     write_memory_intent_acquisition_receipt,
     write_skill_chain_selection_receipt,
+    write_tool_chain_selection_receipt,
 )
 
 
@@ -158,6 +160,78 @@ def test_skill_chain_selection_degrades_to_registry_fallback(tmp_path: Path) -> 
     assert "memory_recall_unavailable" in receipt["alert_codes"]
 
 
+def test_tool_chain_selection_uses_memory_recall_chain(tmp_path: Path) -> None:
+    server, requests = _start_memory_server(recall_payload=_tool_chain_payload())
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        receipt = write_tool_chain_selection_receipt(
+            query="Patch a file and run focused tests",
+            receipt_path=tmp_path / "tool-chain-selection.json",
+            memory_url=f"http://127.0.0.1:{server.server_port}",
+            goal_hash="sha256:g",
+            target={"repo": "grahama1970/tau", "target": "issue:149"},
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    assert receipt["schema"] == TOOL_CHAIN_SELECTION_RECEIPT_SCHEMA
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert receipt["advisory_only"] is True
+    assert receipt["mutating_tools_invoked"] == []
+    assert receipt["selected_tools"] == ["grep", "read", "edit", "bash"]
+    assert receipt["tool_chain"]["hop_count"] == 3
+    assert receipt["tool_chain"]["outcome"] == "success"
+    assert receipt["tool_chain"]["traversal_path"][0]["edge"] == "locates"
+    assert requests[0]["path"] == "/recall"
+    assert requests[0]["payload"]["collections"] == ["tool_chains"]
+    assert requests[0]["payload"]["recommendation"] == "tool_chain"
+
+
+def test_tool_chain_selection_degrades_without_connected_edges(tmp_path: Path) -> None:
+    payload = _tool_chain_payload()
+    payload["tool_chain"]["traversal_path"] = [
+        {"from_tool": "grep", "to_tool": "bash", "edge": "skips_required_read"}
+    ]
+    server, _ = _start_memory_server(recall_payload=payload)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        receipt = write_tool_chain_selection_receipt(
+            query="Patch a file and run focused tests",
+            receipt_path=tmp_path / "tool-chain-selection.json",
+            memory_url=f"http://127.0.0.1:{server.server_port}",
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "DEGRADED"
+    assert receipt["selected_tools"] == []
+    assert "tool_chain_missing" in receipt["alert_codes"]
+
+
+def test_tool_chain_selection_degrades_when_memory_unreachable(tmp_path: Path) -> None:
+    receipt = write_tool_chain_selection_receipt(
+        query="Need a proven edit and test sequence",
+        receipt_path=tmp_path / "tool-chain-selection.json",
+        memory_url="http://127.0.0.1:9",
+        timeout_seconds=0.2,
+    )
+
+    assert receipt["schema"] == TOOL_CHAIN_SELECTION_RECEIPT_SCHEMA
+    assert receipt["ok"] is False
+    assert receipt["status"] == "DEGRADED"
+    assert receipt["live"] is False
+    assert receipt["selected_tools"] == []
+    assert "memory_recall_unavailable" in receipt["alert_codes"]
+
+
 def test_cli_memory_intent_and_evidence_case_create(tmp_path: Path) -> None:
     server, requests = _start_memory_server()
     thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -239,9 +313,42 @@ def test_cli_skill_chain_recall_writes_receipt(tmp_path: Path) -> None:
     assert [request["path"] for request in requests] == ["/recall"]
 
 
+def test_cli_tool_chain_recall_writes_receipt(tmp_path: Path) -> None:
+    server, requests = _start_memory_server(recall_payload=_tool_chain_payload())
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        receipt_path = tmp_path / "tool-chain-selection.json"
+        result = CliRunner().invoke(
+            app,
+            [
+                "tool-chain-recall",
+                "--query",
+                "Process Tau tickets",
+                "--memory-url",
+                f"http://127.0.0.1:{server.server_port}",
+                "--out",
+                str(receipt_path),
+            ],
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert payload["schema"] == TOOL_CHAIN_SELECTION_RECEIPT_SCHEMA
+    assert payload["status"] == "PASS"
+    assert payload["selected_tools"] == ["grep", "read", "edit", "bash"]
+    assert receipt_path.exists()
+    assert [request["path"] for request in requests] == ["/recall"]
+
+
 def _start_memory_server(
     *,
     non_json_intent: bool = False,
+    recall_payload: dict[str, Any] | None = None,
 ) -> tuple[HTTPServer, list[dict[str, Any]]]:
     requests: list[dict[str, Any]] = []
 
@@ -263,7 +370,7 @@ def _start_memory_server(
                 self._write_json(_evidence_case_payload())
                 return
             if self.path == "/recall":
-                self._write_json(_skill_chain_payload())
+                self._write_json(recall_payload or _skill_chain_payload())
                 return
             self.send_response(404)
             self.end_headers()
@@ -320,5 +427,49 @@ def _skill_chain_payload() -> dict[str, Any]:
             "success_rate": 1.0,
             "observations": 4,
             "score": 0.82,
+        },
+    }
+
+
+def _tool_chain_payload() -> dict[str, Any]:
+    return {
+        "schema": "memory.recall.v1",
+        "found": True,
+        "should_scan": False,
+        "confidence": 0.91,
+        "items": [
+            {
+                "tool_chain": ["grep", "read", "edit", "bash"],
+                "outcome": "success",
+                "score": 0.91,
+            },
+            {
+                "tool_chain": ["grep", "bash"],
+                "outcome": "failure",
+                "score": 0.91,
+            },
+            {
+                "tool_chain": ["grep", "read", "find", "edit", "bash"],
+                "outcome": "success",
+                "score": 0.9,
+                "decoy": "semantically similar but not minimal",
+            },
+        ],
+        "tool_chain": {
+            "tools": [
+                {"name": "grep", "role": "locate candidate files"},
+                {"name": "read", "role": "inspect exact context"},
+                {"name": "edit", "role": "apply scoped patch"},
+                {"name": "bash", "role": "run focused proof"},
+            ],
+            "traversal_path": [
+                {"from_tool": "grep", "to_tool": "read", "edge": "locates"},
+                {"from_tool": "read", "to_tool": "edit", "edge": "confirms_patch_site"},
+                {"from_tool": "edit", "to_tool": "bash", "edge": "requires_proof"},
+            ],
+            "hop_count": 3,
+            "combined_confidence": 0.91,
+            "success_rate": 0.86,
+            "outcome": "success",
         },
     }

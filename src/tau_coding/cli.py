@@ -177,6 +177,7 @@ from tau_coding.memory_acquisition import (
     write_evidence_case_acquisition_receipt,
     write_memory_intent_acquisition_receipt,
     write_skill_chain_selection_receipt,
+    write_tool_chain_selection_receipt,
 )
 from tau_coding.orchestration_evidence import build_orchestration_evidence
 from tau_coding.orchestration_redteam import run_orchestration_redteam
@@ -2998,6 +2999,25 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         if payload.get("status") == "BLOCKED":
             raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "tool-chain-recall":
+        try:
+            options = _parse_tool_chain_recall_cli_args(positional_args[1:])
+            payload = write_tool_chain_selection_receipt(
+                query=str(options["query"]),
+                receipt_path=Path(str(options["out"])),
+                memory_url=_optional_str(options.get("memory_url")),
+                scope=str(options["scope"]),
+                app=str(options["app"]),
+                k=int(options["k"]),
+                goal_hash=_optional_str(options.get("goal_hash")),
+                target=_json_object_option(options.get("target"), label="--target-json"),
+                timeout_seconds=float(options["timeout_seconds"]),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
 
     if not print_requested and command == "dag-inspect":
@@ -6778,6 +6798,76 @@ def _parse_skill_chain_recall_cli_args(args: list[str]) -> dict[str, object]:
     if not _optional_str(options.get("out")):
         raise RuntimeError("Usage: tau skill-chain-recall --query <text> --out <receipt>")
     return options
+
+
+def _parse_tool_chain_recall_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "query": None,
+        "out": None,
+        "memory_url": None,
+        "scope": "tau",
+        "app": "tau",
+        "k": 5,
+        "goal_hash": None,
+        "target": None,
+        "timeout_seconds": 15.0,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--query",
+            "--out",
+            "--memory-url",
+            "--scope",
+            "--app",
+            "--k",
+            "--goal-hash",
+            "--target-json",
+            "--timeout-seconds",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            _set_tool_chain_recall_option(options, arg, args[index])
+        elif arg.startswith("--query="):
+            options["query"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--memory-url="):
+            options["memory_url"] = arg.partition("=")[2]
+        elif arg.startswith("--scope="):
+            options["scope"] = arg.partition("=")[2]
+        elif arg.startswith("--app="):
+            options["app"] = arg.partition("=")[2]
+        elif arg.startswith("--k="):
+            options["k"] = int(arg.partition("=")[2])
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
+        elif arg.startswith("--target-json="):
+            options["target"] = arg.partition("=")[2]
+        elif arg.startswith("--timeout-seconds="):
+            options["timeout_seconds"] = float(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown tool-chain-recall option: {arg}")
+        index += 1
+    if not _optional_str(options.get("query")):
+        raise RuntimeError("Usage: tau tool-chain-recall --query <text> --out <receipt>")
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau tool-chain-recall --query <text> --out <receipt>")
+    return options
+
+
+def _set_tool_chain_recall_option(options: dict[str, object], arg: str, value: str) -> None:
+    key = arg.removeprefix("--").replace("-", "_")
+    if arg == "--target-json":
+        key = "target"
+    if arg == "--timeout-seconds":
+        options[key] = float(value)
+    elif arg == "--k":
+        options[key] = int(value)
+    else:
+        options[key] = value
 
 
 def _set_skill_chain_recall_option(options: dict[str, object], arg: str, value: str) -> None:

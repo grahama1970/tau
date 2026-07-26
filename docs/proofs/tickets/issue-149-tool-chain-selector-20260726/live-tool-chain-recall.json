@@ -1,0 +1,71 @@
+{
+  "advisory_only": true,
+  "alert_codes": [
+    "tool_chain_missing"
+  ],
+  "alerts": [
+    {
+      "code": "tool_chain_missing",
+      "evidence": {
+        "tool_chain_available": false
+      },
+      "message": "Graph Memory /recall did not return a usable tool_chain recommendation.",
+      "severity": "WARN"
+    }
+  ],
+  "call": {
+    "duration_seconds": 0.030773,
+    "ok": true,
+    "path": "/recall",
+    "status_code": 200
+  },
+  "confidence": 0.0,
+  "endpoint": "/recall",
+  "found": false,
+  "goal_hash": null,
+  "live": true,
+  "memory_url": "http://127.0.0.1:8601",
+  "mocked": false,
+  "mutating_tools_invoked": [],
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Memory corpus completeness.",
+      "Memory graph traversal implementation correctness.",
+      "The selected tool sequence is semantically optimal.",
+      "Any recommended tool was executed."
+    ],
+    "proves": [
+      "Tau called Graph Memory /recall for a tool-chain recommendation.",
+      "Tau captured and hashed the Memory request and response artifacts.",
+      "Tau accepts only an explicit Memory tool_chain as a PASS recommendation.",
+      "Tau verifies ordered traversal edges connect the returned tool sequence.",
+      "Tau records the recommendation as advisory context and invokes no Tau tools."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-149-tool-chain-selector-20260726/live-tool-chain-recall.json",
+  "request_payload": {
+    "app": "tau",
+    "brief": true,
+    "collections": [
+      "tool_chains"
+    ],
+    "k": 5,
+    "q": "Tau issue 149 proven tool-call chain recommendation for patch and focused test",
+    "recommendation": "tool_chain",
+    "scope": "tau"
+  },
+  "request_sha256": "sha256:77aadf973587978364215b8fb3c112c45fb1667e433f41d3d2a5b1d0f3a813eb",
+  "response_path": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-149-tool-chain-selector-20260726/live-tool-chain-recall-response.json",
+  "response_schema": null,
+  "response_sha256": "sha256:c6a91537332622cc0068c78ff86ae4622cc07fb02304d0cd98f4b8b29ae54034",
+  "schema": "tau.tool_chain_selection_receipt.v1",
+  "selected_tools": [],
+  "selection_source": null,
+  "should_scan": true,
+  "status": "DEGRADED",
+  "target": null,
+  "timestamp": "2026-07-26T23:19:56Z",
+  "tool_chain": null
+}

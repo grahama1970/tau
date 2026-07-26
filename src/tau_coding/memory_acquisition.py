@@ -16,6 +16,7 @@ import httpx
 MEMORY_INTENT_ACQUISITION_RECEIPT_SCHEMA = "tau.memory_intent_acquisition_receipt.v1"
 EVIDENCE_CASE_ACQUISITION_RECEIPT_SCHEMA = "tau.evidence_case_acquisition_receipt.v1"
 SKILL_CHAIN_SELECTION_RECEIPT_SCHEMA = "tau.skill_chain_selection_receipt.v1"
+TOOL_CHAIN_SELECTION_RECEIPT_SCHEMA = "tau.tool_chain_selection_receipt.v1"
 DEFAULT_MEMORY_URL = "http://127.0.0.1:8601"
 
 
@@ -209,6 +210,61 @@ def write_skill_chain_selection_receipt(
     return receipt
 
 
+def write_tool_chain_selection_receipt(
+    *,
+    query: str,
+    receipt_path: Path,
+    memory_url: str | None = None,
+    scope: str = "tau",
+    app: str = "tau",
+    k: int = 5,
+    goal_hash: str | None = None,
+    target: dict[str, Any] | None = None,
+    timeout_seconds: float = 15.0,
+) -> dict[str, Any]:
+    """Call Graph Memory /recall for advisory tool-chain selection."""
+
+    if not query.strip():
+        raise RuntimeError("--query must be non-empty")
+    if k < 1:
+        raise RuntimeError("--k must be at least 1")
+    resolved_receipt = receipt_path.expanduser().resolve()
+    response_path = resolved_receipt.with_name(f"{resolved_receipt.stem}-response.json")
+    request_payload: dict[str, Any] = {
+        "q": query,
+        "scope": scope,
+        "app": app,
+        "k": k,
+        "brief": True,
+        "collections": ["tool_chains"],
+        "recommendation": "tool_chain",
+    }
+    if goal_hash:
+        request_payload["goal_hash"] = goal_hash
+    if target:
+        request_payload["target"] = target
+    base_url = _memory_url(memory_url)
+    response_payload, call = _post_json(
+        memory_url=base_url,
+        path="/recall",
+        payload=request_payload,
+        timeout_seconds=timeout_seconds,
+    )
+    receipt = _tool_chain_receipt(
+        receipt_path=resolved_receipt,
+        memory_url=base_url,
+        request_payload=request_payload,
+        response_payload=response_payload,
+        response_path=response_path,
+        call=call,
+        goal_hash=goal_hash,
+        target=target,
+    )
+    _write_json(response_path, response_payload)
+    _write_json(resolved_receipt, receipt)
+    return receipt
+
+
 def _receipt(
     *,
     schema: str,
@@ -257,6 +313,140 @@ def _receipt(
     if extra:
         receipt.update(extra)
     return receipt
+
+
+def _tool_chain_receipt(
+    *,
+    receipt_path: Path,
+    memory_url: str,
+    request_payload: dict[str, Any],
+    response_payload: dict[str, Any],
+    response_path: Path,
+    call: dict[str, Any],
+    goal_hash: str | None,
+    target: dict[str, Any] | None,
+) -> dict[str, Any]:
+    request_sha256 = _payload_sha256(request_payload)
+    response_sha256 = _payload_sha256(response_payload)
+    chain = _valid_tool_chain(response_payload.get("tool_chain"))
+    alerts = _tool_chain_alerts(call=call, chain=chain)
+    status = "PASS" if chain and not alerts else "DEGRADED"
+    selected_tools = [tool["name"] for tool in chain["tools"]] if chain else []
+    return {
+        "schema": TOOL_CHAIN_SELECTION_RECEIPT_SCHEMA,
+        "ok": status == "PASS",
+        "status": status,
+        "mocked": False,
+        "live": call.get("ok") is True,
+        "provider_live": False,
+        "memory_url": memory_url,
+        "endpoint": "/recall",
+        "goal_hash": goal_hash,
+        "target": target,
+        "receipt_path": str(receipt_path),
+        "request_payload": request_payload,
+        "request_sha256": f"sha256:{request_sha256}",
+        "response_path": str(response_path),
+        "response_sha256": f"sha256:{response_sha256}",
+        "response_schema": response_payload.get("schema"),
+        "found": response_payload.get("found"),
+        "should_scan": response_payload.get("should_scan"),
+        "confidence": response_payload.get("confidence"),
+        "tool_chain": chain,
+        "selected_tools": selected_tools,
+        "selection_source": "memory_recall_tool_chain" if chain else None,
+        "advisory_only": True,
+        "mutating_tools_invoked": [],
+        "call": call,
+        "alert_codes": [alert["code"] for alert in alerts],
+        "alerts": alerts,
+        "proof_scope": {
+            "proves": [
+                "Tau called Graph Memory /recall for a tool-chain recommendation.",
+                "Tau captured and hashed the Memory request and response artifacts.",
+                "Tau accepts only an explicit Memory tool_chain as a PASS recommendation.",
+                "Tau verifies ordered traversal edges connect the returned tool sequence.",
+                "Tau records the recommendation as advisory context and invokes no Tau tools.",
+            ],
+            "does_not_prove": [
+                "Memory corpus completeness.",
+                "Memory graph traversal implementation correctness.",
+                "The selected tool sequence is semantically optimal.",
+                "Any recommended tool was executed.",
+            ],
+        },
+        "timestamp": _utc_stamp(),
+    }
+
+
+def _valid_tool_chain(value: object) -> dict[str, Any] | None:
+    if not isinstance(value, dict):
+        return None
+    tools = _normalize_tool_chain_tools(value.get("tools"))
+    if not tools:
+        return None
+    traversal_path = value.get("traversal_path")
+    if not isinstance(traversal_path, list):
+        return None
+    path = [edge for edge in traversal_path if isinstance(edge, dict)]
+    if not _tool_edges_connect_chain([tool["name"] for tool in tools], path):
+        return None
+    chain = dict(value)
+    chain["tools"] = tools
+    chain["traversal_path"] = path
+    chain["hop_count"] = int(value.get("hop_count", max(len(tools) - 1, 0)))
+    return chain
+
+
+def _normalize_tool_chain_tools(value: object) -> list[dict[str, Any]]:
+    if not isinstance(value, list):
+        return []
+    tools: list[dict[str, Any]] = []
+    for item in value:
+        if isinstance(item, str):
+            name = item.strip()
+            if name:
+                tools.append({"name": name})
+        elif isinstance(item, dict):
+            name = str(item.get("name") or "").strip()
+            if name:
+                normalized = dict(item)
+                normalized["name"] = name
+                tools.append(normalized)
+    return tools
+
+
+def _tool_edges_connect_chain(tool_names: list[str], traversal_path: list[dict[str, Any]]) -> bool:
+    if len(tool_names) == 1:
+        return True
+    expected_edges = list(zip(tool_names, tool_names[1:], strict=False))
+    observed_edges = set()
+    for edge in traversal_path:
+        from_tool = str(edge.get("from_tool") or edge.get("from") or "")
+        to_tool = str(edge.get("to_tool") or edge.get("to") or "")
+        observed_edges.add((from_tool, to_tool))
+    return all(edge in observed_edges for edge in expected_edges)
+
+
+def _tool_chain_alerts(
+    *,
+    call: dict[str, Any],
+    chain: dict[str, Any] | None,
+) -> list[dict[str, Any]]:
+    alerts = _call_alerts(call)
+    if chain:
+        return alerts
+    code = "memory_recall_unavailable" if alerts else "tool_chain_missing"
+    severity = "BLOCK" if alerts else "WARN"
+    alerts.append(
+        _alert(
+            code,
+            "Graph Memory /recall did not return a usable tool_chain recommendation.",
+            {"tool_chain_available": False},
+            severity=severity,
+        )
+    )
+    return alerts
 
 
 def _skill_chain_receipt(
