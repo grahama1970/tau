@@ -60,7 +60,8 @@ uv run tau workflows run approved-release-bundle \
   --publish-path /tmp/tau-approved-release-published/release.json \
   --run-dir /tmp/tau-approved-release-bundle \
   --open-viewer
-uv run tau workflows approve /tmp/tau-approved-release-bundle
+uv run tau workflows approve /tmp/tau-approved-release-bundle \
+  --approval-packet /path/to/human-approval.json
 uv run tau workflows resume /tmp/tau-approved-release-bundle
 ```
 
@@ -75,7 +76,8 @@ uv run tau workflows run durable-repository-qualification \
   --open-viewer
 uv run tau workflows repair /tmp/tau-durable-qualification --node qualify-tests
 uv run tau workflows resume /tmp/tau-durable-qualification
-uv run tau workflows approve /tmp/tau-durable-qualification
+uv run tau workflows approve /tmp/tau-durable-qualification \
+  --approval-packet /path/to/human-approval.json
 uv run tau workflows resume /tmp/tau-durable-qualification
 ```
 

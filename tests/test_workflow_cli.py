@@ -1,3 +1,4 @@
+import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -11,15 +12,10 @@ def test_workflows_list_and_describe() -> None:
     runner = CliRunner()
 
     listed = runner.invoke(app, ["workflows", "list", "--json"])
-    described = runner.invoke(
-        app, ["workflows", "describe", "repository-readiness", "--json"]
-    )
+    described = runner.invoke(app, ["workflows", "describe", "repository-readiness", "--json"])
 
     assert listed.exit_code == 0, listed.output
-    assert [
-        workflow["workflow_id"]
-        for workflow in json.loads(listed.stdout)["workflows"]
-    ] == [
+    assert [workflow["workflow_id"] for workflow in json.loads(listed.stdout)["workflows"]] == [
         "repository-readiness",
         "tau-operator-reference",
         "repository-evidence-map",
@@ -39,9 +35,7 @@ def test_workflows_list_and_describe() -> None:
 
 def test_workflows_operator_reference_description_and_run_help() -> None:
     runner = CliRunner()
-    described = runner.invoke(
-        app, ["workflows", "describe", "tau-operator-reference", "--json"]
-    )
+    described = runner.invoke(app, ["workflows", "describe", "tau-operator-reference", "--json"])
     help_probe = subprocess.run(
         ["tau", "workflows", "run", "--help"],
         check=False,
@@ -57,9 +51,7 @@ def test_workflows_operator_reference_description_and_run_help() -> None:
 
 
 def test_workflows_describes_evidence_map() -> None:
-    result = CliRunner().invoke(
-        app, ["workflows", "describe", "repository-evidence-map", "--json"]
-    )
+    result = CliRunner().invoke(app, ["workflows", "describe", "repository-evidence-map", "--json"])
 
     assert result.exit_code == 0, result.output
     assert json.loads(result.stdout)["topology"] == "FAN_OUT_FAN_IN"
@@ -86,12 +78,30 @@ def test_workflows_approve_and_resume_release_bundle(tmp_path: Path) -> None:
             str(run_dir),
         ],
     )
-    approved = runner.invoke(app, ["workflows", "approve", str(run_dir)])
+    blocked_approval = runner.invoke(app, ["workflows", "approve", str(run_dir)])
+    approval_path = _write_approval_packet(
+        run_dir=run_dir,
+        transaction_node_id="publish-approved-release",
+        path=tmp_path / "human-approval.json",
+    )
+    approved = runner.invoke(
+        app,
+        [
+            "workflows",
+            "approve",
+            str(run_dir),
+            "--approval-packet",
+            str(approval_path),
+        ],
+    )
     resumed = runner.invoke(app, ["workflows", "resume", str(run_dir)])
 
     assert first.exit_code == 1
     assert json.loads(first.stdout)["status"] == "BLOCKED"
+    assert blocked_approval.exit_code == 1
+    assert json.loads(blocked_approval.stdout)["errors"] == ["approval_packet_required"]
     assert approved.exit_code == 0, approved.output
+    assert json.loads(approved.stdout)["status"] == "PASS"
     assert resumed.exit_code == 0, resumed.output
     assert json.loads(resumed.stdout)["result"]["status"] == "APPROVED"
     assert (publish_path / "approved-release-bundle.json").is_file()
@@ -121,17 +131,32 @@ def test_workflows_repair_approve_and_resume_durable_qualification(
             "--inject-test-branch-failure",
         ],
     )
-    repaired = runner.invoke(
-        app, ["workflows", "repair", str(run_dir), "--node", "qualify-tests"]
-    )
+    repaired = runner.invoke(app, ["workflows", "repair", str(run_dir), "--node", "qualify-tests"])
     resumed = runner.invoke(app, ["workflows", "resume", str(run_dir)])
-    approved = runner.invoke(app, ["workflows", "approve", str(run_dir)])
+    blocked_approval = runner.invoke(app, ["workflows", "approve", str(run_dir)])
+    approval_path = _write_approval_packet(
+        run_dir=run_dir,
+        transaction_node_id="publish-qualification",
+        path=tmp_path / "human-qualification-approval.json",
+    )
+    approved = runner.invoke(
+        app,
+        [
+            "workflows",
+            "approve",
+            str(run_dir),
+            "--approval-packet",
+            str(approval_path),
+        ],
+    )
     final = runner.invoke(app, ["workflows", "resume", str(run_dir)])
 
     assert first.exit_code == 1
     assert repaired.exit_code == 0, repaired.output
     assert resumed.exit_code == 1
     assert json.loads(resumed.stdout)["status"] == "BLOCKED"
+    assert blocked_approval.exit_code == 1
+    assert json.loads(blocked_approval.stdout)["errors"] == ["approval_packet_required"]
     assert approved.exit_code == 0, approved.output
     assert final.exit_code == 0, final.output
     assert json.loads(final.stdout)["result"]["status"] == "QUALIFIED"
@@ -208,5 +233,32 @@ def _git_repo(path: Path) -> Path:
             "fixture",
         ],
         check=True,
+    )
+    return path
+
+
+def _write_approval_packet(*, run_dir: Path, transaction_node_id: str, path: Path) -> Path:
+    gate_path = run_dir / "transactions" / transaction_node_id / "approval-gate-receipt.json"
+    target = json.loads(gate_path.read_text(encoding="utf-8"))["expected_target"]
+    path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.human_approval_packet.v1",
+                "approved": True,
+                "actor": {"id": "human:test", "auth_method": "manual"},
+                "action": "generic_dag_transaction_continue",
+                "target": target,
+                "reason": "approve exact deterministic continuation",
+                "evidence": [str(gate_path)],
+                "nonce": hashlib.sha256(
+                    json.dumps(target, sort_keys=True).encode("utf-8")
+                ).hexdigest(),
+                "signature": "human-test-signature",
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
     )
     return path

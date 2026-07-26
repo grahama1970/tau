@@ -76,3 +76,19 @@ Approval-gate receipts do not execute mutation, close GitHub tickets, verify
 cryptographic signature validity, or approve production repository mutation by
 themselves. They are preconditions that downstream commands must check before
 crossing those boundaries.
+
+## Packaged Workflows
+
+`tau workflows approve <run-dir>` does not create a human approval packet. It
+requires an out-of-band packet and validates it against the exact target digest
+recorded by the blocked transaction:
+
+```bash
+uv run tau workflows approve /tmp/tau-approved-release-bundle \
+  --approval-packet /path/to/human-approval.json
+```
+
+Without `--approval-packet`, the workflow approval receipt is `BLOCKED` with
+`errors:["approval_packet_required"]`. Packets matching Tau's legacy
+self-generated marker are rejected and labeled `tau_generated_legacy` in the
+approval-gate receipt.

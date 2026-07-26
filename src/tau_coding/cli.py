@@ -486,12 +486,24 @@ def workflows_run_command(
 @workflows_app.command("approve")
 def workflows_approve_command(
     run_dir: Annotated[Path, typer.Argument()],
+    approval_packet: Annotated[
+        Path | None,
+        typer.Option(
+            "--approval-packet",
+            help="Out-of-band human approval packet to validate and bind to this run.",
+        ),
+    ] = None,
 ) -> None:
     try:
-        payload = approve_packaged_workflow(run_dir=run_dir)
+        payload = approve_packaged_workflow(
+            run_dir=run_dir,
+            approval_packet=approval_packet,
+        )
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
     typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    if payload.get("ok") is not True:
+        raise typer.Exit(1)
 
 
 @workflows_app.command("resume")
@@ -881,9 +893,9 @@ async def replacement_harness_sanity_command(
     artifacts_dir.mkdir(parents=True, exist_ok=True)
     temp_repo.mkdir(parents=True, exist_ok=True)
     (temp_repo / "README.md").write_text("# Tau replacement sanity\n", encoding="utf-8")
-    run_token = hashlib.sha256(
-        f"{resolved_run_dir}:{_receipt_utc_stamp()}".encode()
-    ).hexdigest()[:12]
+    run_token = hashlib.sha256(f"{resolved_run_dir}:{_receipt_utc_stamp()}".encode()).hexdigest()[
+        :12
+    ]
     session_id = f"replacement-sanity-{run_token}"
 
     doctor_payload = doctor_command(repo_root=Path(__file__).resolve().parents[2])
@@ -3991,6 +4003,7 @@ def main(
             startup_session_id = forked.id
             session_name = None
         try:
+
             async def run_startup_tui() -> str | None:
                 kwargs: dict[str, object] = {
                     "model": model,
@@ -4052,6 +4065,7 @@ def main(
             checks=loop2_checks,
             provider_name=provider,
         )
+
         async def run_startup_print_mode() -> bool:
             kwargs: dict[str, object] = {
                 "prompt": prompt,
@@ -5128,15 +5142,37 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
         if len(positional) != 1:
             raise RuntimeError("Usage: tau workflows describe <workflow-id> [--json]")
         return get_workflow(positional[0]).public_payload(), json_output
-    if subcommand in {"approve", "resume"}:
-        if len(remaining) != 1:
-            raise RuntimeError(f"Usage: tau workflows {subcommand} <run-dir>")
-        payload = (
-            approve_packaged_workflow(run_dir=Path(remaining[0]))
-            if subcommand == "approve"
-            else resume_packaged_workflow(run_dir=Path(remaining[0]))
+    if subcommand == "approve":
+        approval_packet: Path | None = None
+        positional: list[str] = []
+        index = 0
+        while index < len(remaining):
+            arg = remaining[index]
+            index += 1
+            if arg == "--approval-packet":
+                if index >= len(remaining):
+                    raise RuntimeError("--approval-packet requires a value")
+                approval_packet = Path(remaining[index])
+                index += 1
+            elif arg.startswith("--approval-packet="):
+                approval_packet = Path(arg.partition("=")[2])
+            elif arg.startswith("-"):
+                raise RuntimeError(f"unknown workflows approve option: {arg}")
+            else:
+                positional.append(arg)
+        if len(positional) != 1:
+            raise RuntimeError(
+                "Usage: tau workflows approve <run-dir> --approval-packet <approval.json>"
+            )
+        payload = approve_packaged_workflow(
+            run_dir=Path(positional[0]),
+            approval_packet=approval_packet,
         )
         return dict(payload), True
+    if subcommand == "resume":
+        if len(remaining) != 1:
+            raise RuntimeError(f"Usage: tau workflows {subcommand} <run-dir>")
+        return dict(resume_packaged_workflow(run_dir=Path(remaining[0]))), True
     if subcommand == "repair":
         if len(remaining) != 3 or remaining[1] != "--node":
             raise RuntimeError("Usage: tau workflows repair <run-dir> --node <node-id>")

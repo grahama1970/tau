@@ -11,6 +11,7 @@ from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any
 
+from tau_coding.approval_gate import evaluate_approval_gate
 from tau_coding.dag_runtime.run_store import DagRunStoreError
 from tau_coding.dag_viewer.server import RunningDagViewerServer, create_dag_viewer_server
 from tau_coding.generic_dag import run_generic_dag
@@ -80,9 +81,7 @@ def run_durable_repository_qualification_workflow(
     )
 
 
-def repair_durable_repository_qualification(
-    *, run_dir: Path, node_id: str
-) -> dict[str, object]:
+def repair_durable_repository_qualification(*, run_dir: Path, node_id: str) -> dict[str, object]:
     resolved = run_dir.expanduser().resolve()
     if node_id != "qualify-tests":
         raise RuntimeError("only qualify-tests is repairable in this workflow")
@@ -91,9 +90,7 @@ def repair_durable_repository_qualification(
         "durable qualification request",
     )
     receipt = _read_object(resolved / "receipts" / f"{node_id}.json", "blocked receipt")
-    if receipt.get("status") != "BLOCKED" or receipt.get("errors") != [
-        "targeted_repair_required"
-    ]:
+    if receipt.get("status") != "BLOCKED" or receipt.get("errors") != ["targeted_repair_required"]:
         raise RuntimeError("qualify-tests is not blocked on targeted_repair_required")
     goal = request.get("goal")
     if not isinstance(goal, dict) or receipt.get("goal_hash") != goal.get("goal_hash"):
@@ -122,7 +119,9 @@ def repair_durable_repository_qualification(
     }
 
 
-def approve_packaged_workflow(*, run_dir: Path) -> dict[str, object]:
+def approve_packaged_workflow(
+    *, run_dir: Path, approval_packet: Path | None = None
+) -> dict[str, object]:
     resolved = run_dir.expanduser().resolve()
     if (resolved / "input" / "durable-qualification-request.json").is_file():
         return _approve_transaction(
@@ -130,8 +129,12 @@ def approve_packaged_workflow(*, run_dir: Path) -> dict[str, object]:
             workflow_id="durable-repository-qualification",
             transaction_node_id="publish-qualification",
             reason="Human approved the exact accepted repository qualification.",
+            approval_packet=approval_packet,
         )
-    return approve_approved_release_bundle(run_dir=resolved)
+    return approve_approved_release_bundle(
+        run_dir=resolved,
+        approval_packet=approval_packet,
+    )
 
 
 def resume_packaged_workflow(*, run_dir: Path) -> dict[str, object]:
@@ -172,35 +175,101 @@ def _resume_durable_after_fencing(spec_path: Path) -> dict[str, Any]:
 
 
 def _approve_transaction(
-    *, run_dir: Path, workflow_id: str, transaction_node_id: str, reason: str
+    *,
+    run_dir: Path,
+    workflow_id: str,
+    transaction_node_id: str,
+    reason: str,
+    approval_packet: Path | None,
 ) -> dict[str, object]:
     gate_path = run_dir / "transactions" / transaction_node_id / "approval-gate-receipt.json"
     gate = _read_object(gate_path, "approval gate receipt")
     target = gate.get("expected_target")
     if not isinstance(target, dict):
         raise RuntimeError("approval gate receipt has no exact expected_target")
-    packet = {
-        "schema": "tau.human_approval_packet.v1",
-        "approved": True,
-        "actor": {"id": "human:tau-operator", "auth_method": "manual"},
-        "action": "generic_dag_transaction_continue",
-        "target": target,
-        "reason": reason,
-        "evidence": [str(gate_path)],
-        "nonce": f"{workflow_id}:{target.get('accepted_manifest_sha256')}",
-        "signature": "declared-manual-approval",
-    }
     packet_path = run_dir / "input" / "approval.json"
-    packet_path.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return {
+    if approval_packet is None:
+        return _write_workflow_approval_receipt(
+            run_dir=run_dir,
+            workflow_id=workflow_id,
+            status="BLOCKED",
+            ok=False,
+            approval_packet_path=None,
+            target=target,
+            errors=["approval_packet_required"],
+        )
+
+    source_packet_path = approval_packet.expanduser().resolve()
+    validation_receipt = evaluate_approval_gate(
+        approval_packet=source_packet_path,
+        requested_action="generic_dag_transaction_continue",
+        run_dir=gate_path.parent,
+        output=gate_path,
+        expected_target={str(key): str(value) for key, value in target.items()},
+    )
+    if validation_receipt.get("status") != "PASS":
+        return _write_workflow_approval_receipt(
+            run_dir=run_dir,
+            workflow_id=workflow_id,
+            status="BLOCKED",
+            ok=False,
+            approval_packet_path=source_packet_path,
+            target=target,
+            errors=[
+                str(error)
+                for error in validation_receipt.get("errors", [])
+                if isinstance(error, str)
+            ],
+        )
+    if source_packet_path != packet_path.resolve():
+        packet_path.write_bytes(source_packet_path.read_bytes())
+    final_gate_receipt = evaluate_approval_gate(
+        approval_packet=packet_path,
+        requested_action="generic_dag_transaction_continue",
+        run_dir=gate_path.parent,
+        output=gate_path,
+        expected_target={str(key): str(value) for key, value in target.items()},
+    )
+    return _write_workflow_approval_receipt(
+        run_dir=run_dir,
+        workflow_id=workflow_id,
+        status="PASS" if final_gate_receipt.get("status") == "PASS" else "BLOCKED",
+        ok=final_gate_receipt.get("status") == "PASS",
+        approval_packet_path=packet_path,
+        target=target,
+        errors=[
+            str(error) for error in final_gate_receipt.get("errors", []) if isinstance(error, str)
+        ],
+    )
+
+
+def _write_workflow_approval_receipt(
+    *,
+    run_dir: Path,
+    workflow_id: str,
+    status: str,
+    ok: bool,
+    approval_packet_path: Path | None,
+    target: dict[str, object],
+    errors: list[str],
+) -> dict[str, object]:
+    receipt = {
         "schema": "tau.workflow_approval_receipt.v1",
-        "status": "PASS",
-        "ok": True,
+        "status": status,
+        "ok": ok,
         "workflow_id": workflow_id,
         "run_dir": str(run_dir),
-        "approval_packet_path": str(packet_path),
+        "approval_packet_path": str(approval_packet_path) if approval_packet_path else None,
         "target": target,
+        "errors": errors,
     }
+    receipt_path = run_dir / "receipts" / "workflow-approval.json"
+    receipt_path.parent.mkdir(parents=True, exist_ok=True)
+    receipt_path.write_text(
+        json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return {**receipt, "receipt_path": str(receipt_path)}
 
 
 def run_approved_release_bundle_workflow(
@@ -235,12 +304,15 @@ def run_approved_release_bundle_workflow(
     )
 
 
-def approve_approved_release_bundle(*, run_dir: Path) -> dict[str, object]:
+def approve_approved_release_bundle(
+    *, run_dir: Path, approval_packet: Path | None = None
+) -> dict[str, object]:
     return _approve_transaction(
         run_dir=run_dir.expanduser().resolve(),
         workflow_id="approved-release-bundle",
         transaction_node_id="publish-approved-release",
         reason="Human approved the exact accepted release bundle for publication.",
+        approval_packet=approval_packet,
     )
 
 

@@ -22,6 +22,7 @@ ALLOWED_ACTIONS = {
     "working_tree_mutation",
 }
 ALLOWED_AUTH_METHODS = {"github-comment", "local-signature", "manual"}
+LEGACY_TAU_GENERATED_SIGNATURE = "declared-manual-approval"
 
 
 def evaluate_approval_gate(
@@ -38,9 +39,7 @@ def evaluate_approval_gate(
     resolved_run_dir.mkdir(parents=True, exist_ok=True)
     resolved_packet = approval_packet.expanduser().resolve()
     output_path = (
-        output.expanduser().resolve()
-        if output
-        else resolved_run_dir / "approval-gate-receipt.json"
+        output.expanduser().resolve() if output else resolved_run_dir / "approval-gate-receipt.json"
     )
     packet, load_errors = _load_packet(resolved_packet)
     validation_errors = (
@@ -143,6 +142,11 @@ def _validate_packet(
         errors.append("nonce must be a non-empty string")
     if not isinstance(packet.get("signature"), str) or not packet["signature"].strip():
         errors.append("signature must be a non-empty string")
+    if _is_legacy_tau_generated_packet(packet):
+        errors.append(
+            "approval packet appears to be Tau-generated; provide an out-of-band "
+            "human approval packet"
+        )
     expires_at = packet.get("expires_at")
     if expires_at is not None and not isinstance(expires_at, str):
         errors.append("expires_at must be a string when present")
@@ -171,13 +175,37 @@ def _packet_summary(packet: dict[str, Any]) -> dict[str, Any] | None:
         "actor_auth_method": actor.get("auth_method"),
         "human_id": actor.get("id"),
         "target_id": target.get("id"),
-        "evidence_count": (
-            len(evidence) if isinstance(evidence, list) else 0
-        ),
+        "evidence_count": (len(evidence) if isinstance(evidence, list) else 0),
         "nonce": packet.get("nonce"),
         "signature_present": bool(packet.get("signature")),
+        "authorship": _packet_authorship(packet),
+        "machine_fabricated": _is_legacy_tau_generated_packet(packet),
         "expires_at": packet.get("expires_at"),
     }
+
+
+def _is_legacy_tau_generated_packet(packet: dict[str, Any]) -> bool:
+    actor_value = packet.get("actor")
+    actor = actor_value if isinstance(actor_value, dict) else {}
+    return (
+        actor.get("id") == "human:tau-operator"
+        and packet.get("signature") == LEGACY_TAU_GENERATED_SIGNATURE
+    )
+
+
+def _packet_authorship(packet: dict[str, Any]) -> str:
+    if _is_legacy_tau_generated_packet(packet):
+        return "tau_generated_legacy"
+    actor_value = packet.get("actor")
+    actor = actor_value if isinstance(actor_value, dict) else {}
+    auth_method = actor.get("auth_method")
+    if auth_method == "local-signature":
+        return "human_signed_packet"
+    if auth_method == "github-comment":
+        return "human_github_comment_packet"
+    if auth_method == "manual":
+        return "human_declared_packet"
+    return "unknown"
 
 
 def _parse_timestamp(value: str) -> datetime | None:

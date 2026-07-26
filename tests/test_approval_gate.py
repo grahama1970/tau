@@ -121,6 +121,29 @@ def test_approval_gate_blocks_missing_provenance_fields(tmp_path: Path) -> None:
     assert "signature must be a non-empty string" in receipt["errors"]
 
 
+def test_approval_gate_blocks_legacy_tau_generated_approval_marker(
+    tmp_path: Path,
+) -> None:
+    packet = tmp_path / "approval.json"
+    _write_packet(packet, action="generic_dag_transaction_continue")
+    payload = json.loads(packet.read_text(encoding="utf-8"))
+    payload["actor"] = {"id": "human:tau-operator", "auth_method": "manual"}
+    payload["signature"] = "declared-manual-approval"
+    packet.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = evaluate_approval_gate(
+        approval_packet=packet,
+        requested_action="generic_dag_transaction_continue",
+        run_dir=tmp_path / "run",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["approved"] is False
+    assert "approval packet appears to be Tau-generated" in "\n".join(receipt["errors"])
+    assert receipt["packet_summary"]["authorship"] == "tau_generated_legacy"
+    assert receipt["packet_summary"]["machine_fabricated"] is True
+
+
 def test_parse_approval_gate_check_cli_args() -> None:
     options = _parse_approval_gate_check_cli_args(
         [

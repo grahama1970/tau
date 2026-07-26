@@ -38,28 +38,43 @@ def test_targeted_repair_preserves_unaffected_work_and_publication_is_idempotent
     ]
     assert not publish_path.exists()
 
-    repair = repair_durable_repository_qualification(
-        run_dir=run_dir, node_id="qualify-tests"
-    )
+    repair = repair_durable_repository_qualification(run_dir=run_dir, node_id="qualify-tests")
     approval_wait = resume_packaged_workflow(run_dir=run_dir)
     repaired_receipt = _json(run_dir / "run-receipt.json")
 
     assert repair["status"] == "PASS"
     assert approval_wait["status"] == "BLOCKED"
-    assert _node(repaired_receipt, "publish-qualification")["verdict"] == (
-        "APPROVAL_REQUIRED"
-    )
+    assert _node(repaired_receipt, "publish-qualification")["verdict"] == ("APPROVAL_REQUIRED")
     for name, digest in before.items():
         assert _sha256(run_dir / "receipts" / f"{name}.json") == digest
         assert _node(repaired_receipt, name)["resumed"] is True
     assert _node(repaired_receipt, "qualify-tests")["resumed"] is False
     assert _node(repaired_receipt, "reconcile-qualification")["resumed"] is False
 
-    approve_packaged_workflow(run_dir=run_dir)
+    blocked_approval = approve_packaged_workflow(run_dir=run_dir)
+    approval_path = _write_approval_packet(
+        run_dir=run_dir,
+        transaction_node_id="publish-qualification",
+        path=tmp_path / "human-qualification-approval.json",
+    )
+    approved = approve_packaged_workflow(
+        run_dir=run_dir,
+        approval_packet=approval_path,
+    )
     final = resume_packaged_workflow(run_dir=run_dir)
     again = resume_packaged_workflow(run_dir=run_dir)
     ledger = _json(publish_path / "publication-ledger.json")
 
+    assert blocked_approval["status"] == "BLOCKED"
+    assert blocked_approval["errors"] == ["approval_packet_required"]
+    assert approved["status"] == "PASS"
+    assert approved["approval_packet_path"] == str(run_dir / "input" / "approval.json")
+    gate_summary = _json(
+        run_dir / "transactions" / "publish-qualification" / "approval-gate-receipt.json"
+    )["packet_summary"]
+    assert isinstance(gate_summary, dict)
+    assert gate_summary["authorship"] == "human_declared_packet"
+    assert gate_summary["machine_fabricated"] is False
     assert final["status"] == "PASS"
     assert final["result"]["status"] == "QUALIFIED"  # type: ignore[index]
     assert again["status"] == "PASS"
@@ -165,6 +180,33 @@ def _json(path: Path) -> dict[str, object]:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _write_approval_packet(*, run_dir: Path, transaction_node_id: str, path: Path) -> Path:
+    gate_path = run_dir / "transactions" / transaction_node_id / "approval-gate-receipt.json"
+    target = _json(gate_path)["expected_target"]
+    path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.human_approval_packet.v1",
+                "approved": True,
+                "actor": {"id": "human:test", "auth_method": "manual"},
+                "action": "generic_dag_transaction_continue",
+                "target": target,
+                "reason": "approve exact deterministic continuation",
+                "evidence": [str(gate_path)],
+                "nonce": hashlib.sha256(
+                    json.dumps(target, sort_keys=True).encode("utf-8")
+                ).hexdigest(),
+                "signature": "human-test-signature",
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return path
 
 
 def _git_repo(path: Path) -> Path:
