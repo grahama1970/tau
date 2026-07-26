@@ -11,6 +11,7 @@ from pathlib import Path
 from shutil import which
 from typing import Any
 
+from tau_coding.github_handoff import redact_github_projection
 from tau_coding.self_fix_repair_loop import write_coder_reviewer_repair_loop
 
 REPAIR_REQUEST_SCHEMA = "tau.self_fix_repair_request.v1"
@@ -167,8 +168,20 @@ def run_ticket_repair(
         commit=commit,
     )
     receipt["artifacts"]["proof_markdown"] = str(proof_path)
+    github_redaction = _write_self_fix_github_redaction(
+        resolved_receipt_dir,
+        repo=repo,
+        issue_number=issue_number,
+        proof_path=proof_path,
+    )
+    receipt["artifacts"]["github_write_projection"] = github_redaction["projection_path"]
+    receipt["artifacts"]["github_redaction_receipt"] = github_redaction["receipt_path"]
+    receipt["artifacts"]["redacted_proof_markdown"] = github_redaction["redacted_proof_path"]
 
     if apply_github:
+        if github_redaction["receipt"].get("ok") is not True:
+            receipt["error"] = "github_redaction_failed"
+            return _write_and_return(resolved_receipt_dir, receipt)
         close = _run_ticket_helper(
             [
                 "close",
@@ -176,7 +189,7 @@ def run_ticket_repair(
                 "--repo",
                 repo,
                 "--proof",
-                str(proof_path),
+                str(github_redaction["redacted_proof_path"]),
                 "--reason",
                 "completed",
             ]
@@ -250,10 +263,7 @@ def _verification_command_allowed(argv: list[str], *, target_file: str) -> bool:
 
 
 def _issue_repair_trust(issue_payload: dict[str, Any]) -> dict[str, Any]:
-    association = (
-        issue_payload.get("authorAssociation")
-        or issue_payload.get("author_association")
-    )
+    association = issue_payload.get("authorAssociation") or issue_payload.get("author_association")
     trusted_author = isinstance(association, str) and association in TRUSTED_AUTHOR_ASSOCIATIONS
     edited_after_routing_label = bool(
         issue_payload.get("bodyEditedAfterRoutingLabel")
@@ -429,6 +439,45 @@ def _write_proof_markdown(
     path = receipt_dir / "proof.md"
     path.write_text(text, encoding="utf-8")
     return path
+
+
+def _write_self_fix_github_redaction(
+    receipt_dir: Path,
+    *,
+    repo: str,
+    issue_number: int,
+    proof_path: Path,
+) -> dict[str, Any]:
+    projection_path = receipt_dir / "github-write-projection.json"
+    redacted_projection_path = receipt_dir / "github-write-projection.redacted.json"
+    redaction_receipt_path = receipt_dir / "github-redaction-receipt.json"
+    redacted_proof_path = receipt_dir / "proof.redacted.md"
+    projection = {
+        "schema": "tau.self_fix_github_write_projection.v1",
+        "ok": True,
+        "target": {"repo": repo, "target": f"issue#{issue_number}"},
+        "comment": {"body": proof_path.read_text(encoding="utf-8")},
+    }
+    projection_path.write_text(
+        json.dumps(projection, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    redaction_receipt = redact_github_projection(
+        projection_path=projection_path,
+        output_path=redacted_projection_path,
+        receipt_path=redaction_receipt_path,
+    )
+    redacted_projection = json.loads(redacted_projection_path.read_text(encoding="utf-8"))
+    comment = redacted_projection.get("comment") if isinstance(redacted_projection, dict) else None
+    body = comment.get("body") if isinstance(comment, dict) else None
+    redacted_proof_path.write_text(body if isinstance(body, str) else "", encoding="utf-8")
+    return {
+        "projection_path": str(projection_path),
+        "redacted_projection_path": str(redacted_projection_path),
+        "receipt_path": str(redaction_receipt_path),
+        "redacted_proof_path": str(redacted_proof_path),
+        "receipt": redaction_receipt,
+    }
 
 
 def _run_ticket_helper(args: list[str]) -> dict[str, Any]:

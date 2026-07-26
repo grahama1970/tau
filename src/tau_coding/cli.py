@@ -319,6 +319,22 @@ workflows_app = typer.Typer(
 app.add_typer(workflows_app, name="workflows")
 
 
+@app.command("github-redact-projection")
+def github_redact_projection_cli_command(
+    projection: Annotated[Path, typer.Option("--projection")],
+    out: Annotated[Path, typer.Option("--out")],
+    receipt: Annotated[Path | None, typer.Option("--receipt")] = None,
+) -> None:
+    payload = redact_github_projection(
+        projection_path=projection,
+        output_path=out,
+        receipt_path=receipt,
+    )
+    typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    if payload.get("ok") is not True:
+        raise typer.Exit(1)
+
+
 @app.command("tui-proof")
 def tui_proof_cli_command(
     output_dir: Annotated[Path, typer.Option("--out-dir")] = Path(".tmp/tui-proof"),
@@ -1743,6 +1759,7 @@ def main(
         ["dag-view-serve"],
         ["dag-view-snapshot"],
         ["dag-viewer-link"],
+        ["github-redact-projection"],
         ["workflows"],
         ["gs001-closure-publish"],
         ["tui-proof"],

@@ -1,0 +1,37 @@
+{
+  "commands": {
+    "py_compile_exit": 0,
+    "pytest_focused": "........                                                                 [100%]\n8 passed, 227 deselected in 0.68s",
+    "ruff_check": "All checks passed!",
+    "ruff_format_check": "5 files already formatted"
+  },
+  "covered_secret_classes": [
+    "sensitive_json_keys",
+    "linux_home_path",
+    "macos_home_path",
+    "github_token",
+    "openai_key",
+    "anthropic_key",
+    "aws_access_key_id",
+    "google_api_key",
+    "slack_token",
+    "huggingface_token",
+    "gitlab_token",
+    "bearer_jwt"
+  ],
+  "live": false,
+  "mocked": false,
+  "raw_corpus_committed": false,
+  "receipt_ok": true,
+  "redacted_body_sha256": "4406b089947b78acb0ac9cce7e96c31b0ae92ec1bbc3dcc1d9562f46a6500001",
+  "redacted_local_path_count": 2,
+  "redacted_token_count": 8,
+  "schema": "tau.issue_171_proof_summary.v1",
+  "secret_corpus_receipt": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-171-self-fix-redaction-gate-20260726/secret-corpus-redaction-receipt.json",
+  "secret_corpus_redacted_projection": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-171-self-fix-redaction-gate-20260726/secret-corpus.redacted.json",
+  "uncovered_secret_classes": [
+    "unknown provider-specific token formats",
+    "low-entropy example strings",
+    "secrets split across multiple fields"
+  ]
+}

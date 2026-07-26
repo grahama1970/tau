@@ -507,9 +507,7 @@ def test_status_json_reports_latest_indexed_session(tmp_path: Path) -> None:
     async def write_session() -> None:
         storage = JsonlSessionStorage(record.path)
         await storage.append(SessionInfoEntry(id="info", cwd=str(cwd), title="Status target"))
-        await storage.append(
-            ModelChangeEntry(id="model", parent_id="info", model="fake-model-v2")
-        )
+        await storage.append(ModelChangeEntry(id="model", parent_id="info", model="fake-model-v2"))
         await storage.append(
             MessageEntry(
                 id="user",
@@ -1513,11 +1511,11 @@ def test_cli_github_redact_projection_writes_receipt_and_redacted_artifact(
         "comment": {
             "body": (
                 "Inspect /home/graham/workspace/experiments/tau/private.txt "
-                "with token github_pat_abcdefghijklmnopqrstuvwxyz"
+                "with token " + "github_pat_" + "abcdefghijklmnopqrstuvwxyz"
             )
         },
         "labels": {"add": ["agent-work"], "remove": []},
-        "credentials": {"token": "ghp_abcdefghijklmnopqrstuvwxyz"},
+        "credentials": {"token": "ghp_" + "abcdefghijklmnopqrstuvwxyz"},
     }
     projection_path.write_text(json.dumps(projection), encoding="utf-8")
 
@@ -1541,10 +1539,75 @@ def test_cli_github_redact_projection_writes_receipt_and_redacted_artifact(
     assert payload["schema"] == "tau.github_projection_redaction_receipt.v1"
     assert payload["ok"] is True
     assert payload == receipt
-    assert payload["redaction_count"] == 2
+    assert payload["redaction_count"] == 3
     assert "<redacted-local-path>" in redacted["comment"]["body"]
     assert "<redacted-token>" in redacted["comment"]["body"]
     assert redacted["credentials"] == "<redacted:credentials>"
+
+
+def test_cli_github_redact_projection_covers_named_secret_corpus(
+    tmp_path: Path,
+) -> None:
+    projection_path = tmp_path / "projection.json"
+    redacted_path = tmp_path / "projection.redacted.json"
+    receipt_path = tmp_path / "redaction-receipt.json"
+    projection = {
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "ok": True,
+        "target": {"repo": "grahama1970/tau", "target": "issue#47"},
+        "comment": {
+            "body": "\n".join(
+                [
+                    "linux /home/graham/project/private.txt",
+                    "mac /Users/graham/project/private.txt",
+                    "anthropic " + "sk-ant-api03-" + "abcdefghijklmnopqrstuvwxyz012345",
+                    "aws " + "AKIA" + "ABCDEFGHIJKLMNOP",
+                    "google " + "AIza" + "abcdefghijklmnopqrstuvwxyz0123456789",
+                    "slack " + "xoxb-" + "1234567890-abcdefghijk",
+                    "huggingface " + "hf_" + "abcdefghijklmnop1234",
+                    "gitlab " + "glpat-" + "abcdefghijklmnop1234",
+                    "bearer " + "Bearer " + "abc.def.ghi",
+                    "github " + "ghp_" + "abcdefghijklmnop1234",
+                ]
+            )
+        },
+    }
+    projection_path.write_text(json.dumps(projection), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "github-redact-projection",
+            "--projection",
+            str(projection_path),
+            "--out",
+            str(redacted_path),
+            "--receipt",
+            str(receipt_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    redacted = json.loads(redacted_path.read_text(encoding="utf-8"))
+
+    assert result.exit_code == 0
+    assert payload["ok"] is True
+    assert set(payload["covered_secret_classes"]) >= {
+        "anthropic_key",
+        "aws_access_key_id",
+        "bearer_jwt",
+        "github_token",
+        "gitlab_token",
+        "google_api_key",
+        "huggingface_token",
+        "linux_home_path",
+        "macos_home_path",
+        "slack_token",
+    }
+    assert "<redacted-local-path>" in redacted["comment"]["body"]
+    assert redacted["comment"]["body"].count("<redacted-token>") >= 8
+    assert "sk-ant-api03" not in redacted["comment"]["body"]
+    assert "AKIA" not in redacted["comment"]["body"]
+    assert "/Users/graham" not in redacted["comment"]["body"]
 
 
 def test_cli_github_apply_policy_check_writes_policy_receipt(tmp_path: Path) -> None:

@@ -205,6 +205,86 @@ def test_issue_derived_verification_commands_use_argv_not_shell(
     assert calls[0][0] == ["python", "-m", "py_compile", "target.py"]
 
 
+def test_ticket_repair_blocks_github_close_when_redaction_receipt_fails(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo = _init_repo(tmp_path)
+    target = repo / "target.py"
+    target.write_text("VALUE = 'bug'\n", encoding="utf-8")
+    subprocess.run(["git", "add", "target.py"], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True)
+    checkpoint = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        check=True,
+        text=True,
+        capture_output=True,
+    ).stdout.strip()
+    helper_calls = []
+
+    def fake_loop(**kwargs):
+        (repo / "target.py").write_text("VALUE = 'fixed'\n", encoding="utf-8")
+        return {
+            "ok": True,
+            "checkpoint": {"head": checkpoint},
+            "cycles": [
+                {
+                    "coder": {"scillm_call": str(tmp_path / "coder.json")},
+                    "reviewer": {"scillm_call": str(tmp_path / "reviewer.json")},
+                }
+            ],
+        }
+
+    def fake_commit(*args, **kwargs):
+        return {"ok": True, "commands": [], "commit": "abc123"}
+
+    def fake_redaction(*args, **kwargs):
+        return {
+            "projection_path": str(tmp_path / "projection.json"),
+            "redacted_projection_path": str(tmp_path / "projection.redacted.json"),
+            "receipt_path": str(tmp_path / "redaction.json"),
+            "redacted_proof_path": str(tmp_path / "proof.redacted.md"),
+            "receipt": {"ok": False, "status": "BLOCKED"},
+        }
+
+    def fake_ticket_helper(args):
+        helper_calls.append(args)
+        return {"ok": True, "command": ["ticket", *args], "exit_code": 0}
+
+    monkeypatch.setattr(
+        "tau_coding.self_fix_ticket_repair.write_coder_reviewer_repair_loop",
+        fake_loop,
+    )
+    monkeypatch.setattr(
+        "tau_coding.self_fix_ticket_repair._commit_and_push_repair",
+        fake_commit,
+    )
+    monkeypatch.setattr(
+        "tau_coding.self_fix_ticket_repair._write_self_fix_github_redaction",
+        fake_redaction,
+    )
+    monkeypatch.setattr(
+        "tau_coding.self_fix_ticket_repair._run_ticket_helper",
+        fake_ticket_helper,
+    )
+
+    receipt = run_ticket_repair(
+        repo="grahama1970/tau",
+        issue_payload=_issue_payload(author_association="OWNER"),
+        repo_root=repo,
+        receipt_dir=tmp_path / "receipt",
+        memory_base_url="http://127.0.0.1:8601",
+        scillm_base_url="http://127.0.0.1:4001",
+        model="gpt-5.5",
+        active_goal_hash=None,
+        apply_github=True,
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["error"] == "github_redaction_failed"
+    assert [call[0] for call in helper_calls] == ["lease"]
+
+
 def _init_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
     repo.mkdir()

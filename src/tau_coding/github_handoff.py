@@ -25,8 +25,30 @@ _SENSITIVE_KEYS = {
     "token",
 }
 _LOCAL_PATH_PATTERN = re.compile(r"/home/[^\s\"'`<>),\]]+")
-_TOKEN_PATTERN = re.compile(
-    r"(gh[pousr]_[A-Za-z0-9_]{8,}|github_pat_[A-Za-z0-9_]+|sk-[A-Za-z0-9]{8,})"
+_STRING_REDACTION_PATTERNS: tuple[tuple[str, re.Pattern[str], str], ...] = (
+    ("linux_home_path", re.compile(r"/home/[^\s\"'`<>),\]]+"), "<redacted-local-path>"),
+    ("macos_home_path", re.compile(r"/Users/[^\s\"'`<>),\]]+"), "<redacted-local-path>"),
+    (
+        "github_token",
+        re.compile(r"(gh[pousr]_[A-Za-z0-9_]{8,}|github_pat_[A-Za-z0-9_]+)"),
+        "<redacted-token>",
+    ),
+    ("openai_key", re.compile(r"\bsk-[A-Za-z0-9]{8,}\b"), "<redacted-token>"),
+    (
+        "anthropic_key",
+        re.compile(r"\bsk-ant-api03-[A-Za-z0-9_-]{16,}\b"),
+        "<redacted-token>",
+    ),
+    ("aws_access_key_id", re.compile(r"\bAKIA[0-9A-Z]{16}\b"), "<redacted-token>"),
+    ("google_api_key", re.compile(r"\bAIza[0-9A-Za-z_-]{20,}\b"), "<redacted-token>"),
+    ("slack_token", re.compile(r"\bxox[baprs]-[0-9A-Za-z-]{10,}\b"), "<redacted-token>"),
+    ("huggingface_token", re.compile(r"\bhf_[A-Za-z0-9]{16,}\b"), "<redacted-token>"),
+    ("gitlab_token", re.compile(r"\bglpat-[A-Za-z0-9_-]{16,}\b"), "<redacted-token>"),
+    (
+        "bearer_jwt",
+        re.compile(r"\bBearer\s+[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b"),
+        "Bearer <redacted-token>",
+    ),
 )
 
 
@@ -331,11 +353,20 @@ def redact_github_projection(
         "redacted_projection_sha256": _file_sha256(resolved_output),
         "redaction_count": len(redactions),
         "redactions": redactions,
+        "covered_secret_classes": [
+            "sensitive_json_keys",
+            *[name for name, _pattern, _replacement in _STRING_REDACTION_PATTERNS],
+        ],
+        "uncovered_secret_classes": [
+            "unknown provider-specific token formats",
+            "low-entropy example strings",
+            "secrets split across multiple fields",
+        ],
         "review_required": bool(redactions),
         "proof_scope": {
             "proves": [
                 "A GitHub projection artifact was inspected deterministically.",
-                "Sensitive-key values, local absolute paths, and known token patterns "
+                "Sensitive-key values, local absolute paths, and named token patterns "
                 "were redacted.",
                 "A separate redacted projection artifact was written for public GitHub "
                 "transport review.",
@@ -988,10 +1019,12 @@ def _redact_value(value: Any, *, path: str, redactions: list[dict[str, str]]) ->
             for index, item in enumerate(value)
         ]
     if isinstance(value, str):
-        redacted_value = _TOKEN_PATTERN.sub("<redacted-token>", value)
-        redacted_value = _LOCAL_PATH_PATTERN.sub("<redacted-local-path>", redacted_value)
-        if redacted_value != value:
-            redactions.append({"path": path, "kind": "string_pattern"})
+        redacted_value = value
+        for kind, pattern, replacement in _STRING_REDACTION_PATTERNS:
+            next_value = pattern.sub(replacement, redacted_value)
+            if next_value != redacted_value:
+                redactions.append({"path": path, "kind": kind})
+                redacted_value = next_value
         return redacted_value
     return value
 
