@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sqlite3
 import subprocess
 import sys
 import threading
@@ -22,7 +23,7 @@ def _wait_for_server(run_dir: Path, process: subprocess.Popen[str]) -> Any:
     while process.poll() is None and time.monotonic() < deadline:
         try:
             return create_dag_viewer_server(run_dir=run_dir, host="127.0.0.1", port=0)
-        except (OSError, RuntimeError) as exc:
+        except (OSError, RuntimeError, sqlite3.OperationalError) as exc:
             last_error = exc
             time.sleep(0.05)
     raise RuntimeError(f"canonical_resume_viewer_unavailable:{last_error}")

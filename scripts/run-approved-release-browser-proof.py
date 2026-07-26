@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import sqlite3
 import subprocess
 import tempfile
 import threading
@@ -153,7 +154,7 @@ def _wait_server(run_dir: Path, worker: threading.Thread, errors: list[BaseExcep
             raise RuntimeError(f"workflow_failed:{errors[0]}")
         try:
             return create_dag_viewer_server(run_dir=run_dir, host="127.0.0.1", port=0)
-        except (OSError, RuntimeError) as exc:
+        except (OSError, RuntimeError, sqlite3.OperationalError) as exc:
             last_error = exc
             if not worker.is_alive():
                 break
