@@ -3854,7 +3854,7 @@ def _run_shared_project_dag_plan(
     for node_result in result.node_results:
         node_id = str(node_result.get("node_id") or "")
         dispatch = node_result.get("dispatch")
-        if isinstance(dispatch, dict) and dispatch not in dispatches:
+        if isinstance(dispatch, dict) and not _dispatch_already_recorded(dispatches, dispatch):
             dispatches.append(dispatch)
         accepted_output = node_result.get("accepted_output")
         if node_id and isinstance(accepted_output, dict):
@@ -5783,6 +5783,40 @@ def _dispatches(loop_payload: dict[str, Any]) -> list[dict[str, Any]]:
     if not isinstance(dispatches, list):
         return []
     return [item for item in dispatches if isinstance(item, dict)]
+
+
+def _dispatch_already_recorded(
+    dispatches: list[dict[str, Any]],
+    candidate: dict[str, Any],
+) -> bool:
+    candidate_key = _dispatch_identity_key(candidate)
+    if candidate_key is None:
+        return candidate in dispatches
+    return any(_dispatch_identity_key(dispatch) == candidate_key for dispatch in dispatches)
+
+
+def _dispatch_identity_key(dispatch: dict[str, Any]) -> tuple[str, ...] | None:
+    selected_agent = dispatch.get("selected_agent")
+    if not isinstance(selected_agent, str) or not selected_agent:
+        return None
+    command_results = dispatch.get("command_results")
+    if not isinstance(command_results, list) or not command_results:
+        return ("agent", selected_agent)
+    first = command_results[0]
+    if not isinstance(first, dict):
+        return ("agent", selected_agent)
+    runtime_lease = first.get("runtime_endpoint_lease")
+    if isinstance(runtime_lease, dict):
+        attempt_id = runtime_lease.get("attempt_id")
+        if isinstance(attempt_id, str) and attempt_id:
+            return ("attempt", selected_agent, attempt_id)
+        endpoint_id = runtime_lease.get("endpoint_id")
+        if isinstance(endpoint_id, str) and endpoint_id:
+            return ("endpoint", selected_agent, endpoint_id)
+    command_spec_sha256 = first.get("command_spec_sha256")
+    if isinstance(command_spec_sha256, str) and command_spec_sha256:
+        return ("command_spec", selected_agent, command_spec_sha256)
+    return ("agent", selected_agent)
 
 
 def _edge_allowed(contract: ProjectDagContract, source: str, target: str) -> bool:
