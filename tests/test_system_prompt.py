@@ -32,7 +32,7 @@ def test_default_prompt_includes_tools_guidelines_date_and_cwd(tmp_path: Path) -
 
     assert "You are an expert coding assistant operating inside Tau" in prompt
     assert "Available tools:\n- read: Read file contents" in prompt
-    assert "- Use bash for file operations like ls, rg, find" in prompt
+    assert "- Prefer grep/find/ls tools over bash for file exploration" in prompt
     assert "- Use read to examine files instead of cat or sed." in prompt
     assert prompt.endswith(f"Current date: 2026-06-17\nCurrent working directory: {tmp_path}")
 
@@ -109,6 +109,41 @@ def test_skills_are_formatted_as_xml_and_escaped(tmp_path: Path) -> None:
     assert f"<location>{skill_path}</location>" in formatted
 
 
+def test_skills_can_be_limited_to_memory_selected_chain(tmp_path: Path) -> None:
+    skills = [
+        Skill(
+            name="debugger",
+            path=tmp_path / "debugger" / "SKILL.md",
+            content="",
+            description="Debug",
+        ),
+        Skill(
+            name="memory",
+            path=tmp_path / "memory" / "SKILL.md",
+            content="",
+            description="Recall",
+        ),
+        Skill(
+            name="ticket",
+            path=tmp_path / "ticket" / "SKILL.md",
+            content="",
+            description="Tickets",
+        ),
+    ]
+
+    formatted = format_skills_for_prompt(
+        skills,
+        selected_skill_names=["memory", "ticket", "missing", "memory"],
+    )
+
+    assert "Memory-selected working chain" in formatted
+    assert "<name>memory</name>" in formatted
+    assert "<name>ticket</name>" in formatted
+    assert "<name>debugger</name>" not in formatted
+    assert formatted.index("<name>memory</name>") < formatted.index("<name>ticket</name>")
+    assert formatted.count("<skill>") == 2
+
+
 def test_skills_are_included_only_when_read_tool_is_available(tmp_path: Path) -> None:
     skill = Skill(name="testing", path=tmp_path / "testing.md", content="", description="Test")
     no_read_tool = AgentTool(
@@ -130,3 +165,32 @@ def test_skills_are_included_only_when_read_tool_is_available(tmp_path: Path) ->
 
     assert "<available_skills>" not in without_read
     assert "<available_skills>" in with_read
+
+
+def test_build_system_prompt_uses_selected_skill_names(tmp_path: Path) -> None:
+    skills = [
+        Skill(
+            name="debugger",
+            path=tmp_path / "debugger" / "SKILL.md",
+            content="",
+            description="Debug",
+        ),
+        Skill(
+            name="memory",
+            path=tmp_path / "memory" / "SKILL.md",
+            content="",
+            description="Recall",
+        ),
+    ]
+
+    prompt = build_system_prompt(
+        BuildSystemPromptOptions(
+            cwd=tmp_path,
+            tools=create_coding_tools(cwd=tmp_path),
+            skills=skills,
+            selected_skill_names=["memory"],
+        )
+    )
+
+    assert "<name>memory</name>" in prompt
+    assert "<name>debugger</name>" not in prompt

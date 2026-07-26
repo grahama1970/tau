@@ -5,6 +5,8 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -13,6 +15,7 @@ import httpx
 
 MEMORY_INTENT_ACQUISITION_RECEIPT_SCHEMA = "tau.memory_intent_acquisition_receipt.v1"
 EVIDENCE_CASE_ACQUISITION_RECEIPT_SCHEMA = "tau.evidence_case_acquisition_receipt.v1"
+SKILL_CHAIN_SELECTION_RECEIPT_SCHEMA = "tau.skill_chain_selection_receipt.v1"
 DEFAULT_MEMORY_URL = "http://127.0.0.1:8601"
 
 
@@ -151,6 +154,61 @@ def write_evidence_case_acquisition_receipt(
     return receipt
 
 
+def write_skill_chain_selection_receipt(
+    *,
+    query: str,
+    receipt_path: Path,
+    memory_url: str | None = None,
+    scope: str = "tau",
+    app: str = "tau",
+    k: int = 5,
+    goal_hash: str | None = None,
+    target: dict[str, Any] | None = None,
+    fallback_skills: Sequence[Mapping[str, Any]] = (),
+    timeout_seconds: float = 15.0,
+) -> dict[str, Any]:
+    """Call Graph Memory /recall for skill-chain selection and write a Tau receipt."""
+
+    if not query.strip():
+        raise RuntimeError("--query must be non-empty")
+    if k < 1:
+        raise RuntimeError("--k must be at least 1")
+    resolved_receipt = receipt_path.expanduser().resolve()
+    response_path = resolved_receipt.with_name(f"{resolved_receipt.stem}-response.json")
+    request_payload: dict[str, Any] = {
+        "q": query,
+        "scope": scope,
+        "app": app,
+        "k": k,
+        "brief": True,
+    }
+    if goal_hash:
+        request_payload["goal_hash"] = goal_hash
+    if target:
+        request_payload["target"] = target
+    base_url = _memory_url(memory_url)
+    response_payload, call = _post_json(
+        memory_url=base_url,
+        path="/recall",
+        payload=request_payload,
+        timeout_seconds=timeout_seconds,
+    )
+    receipt = _skill_chain_receipt(
+        receipt_path=resolved_receipt,
+        memory_url=base_url,
+        request_payload=request_payload,
+        response_payload=response_payload,
+        response_path=response_path,
+        call=call,
+        fallback_skills=fallback_skills,
+        goal_hash=goal_hash,
+        target=target,
+    )
+    _write_json(response_path, response_payload)
+    _write_json(resolved_receipt, receipt)
+    return receipt
+
+
 def _receipt(
     *,
     schema: str,
@@ -199,6 +257,152 @@ def _receipt(
     if extra:
         receipt.update(extra)
     return receipt
+
+
+def _skill_chain_receipt(
+    *,
+    receipt_path: Path,
+    memory_url: str,
+    request_payload: dict[str, Any],
+    response_payload: dict[str, Any],
+    response_path: Path,
+    call: dict[str, Any],
+    fallback_skills: Sequence[Mapping[str, Any]],
+    goal_hash: str | None,
+    target: dict[str, Any] | None,
+) -> dict[str, Any]:
+    request_sha256 = _payload_sha256(request_payload)
+    response_sha256 = _payload_sha256(response_payload)
+    chain = _valid_skill_chain(response_payload.get("skill_chain"))
+    fallback = (
+        None
+        if chain
+        else _registry_fallback_skill(str(request_payload["q"]), fallback_skills)
+    )
+    alerts = _skill_chain_alerts(call=call, chain=chain, fallback=fallback)
+    status = "PASS" if chain and not alerts else "DEGRADED" if fallback else "BLOCKED"
+    selected_skills = (
+        list(chain["skills"]) if chain else [str(fallback["name"])] if fallback else []
+    )
+    selection_source = (
+        "memory_recall_brief" if chain else "registry_fallback" if fallback else None
+    )
+    return {
+        "schema": SKILL_CHAIN_SELECTION_RECEIPT_SCHEMA,
+        "ok": status == "PASS",
+        "status": status,
+        "mocked": False,
+        "live": call.get("ok") is True,
+        "provider_live": False,
+        "memory_url": memory_url,
+        "endpoint": "/recall",
+        "goal_hash": goal_hash,
+        "target": target,
+        "receipt_path": str(receipt_path),
+        "request_payload": request_payload,
+        "request_sha256": f"sha256:{request_sha256}",
+        "response_path": str(response_path),
+        "response_sha256": f"sha256:{response_sha256}",
+        "response_schema": response_payload.get("schema"),
+        "found": response_payload.get("found"),
+        "should_scan": response_payload.get("should_scan"),
+        "confidence": response_payload.get("confidence"),
+        "skill_chain": chain,
+        "selected_skills": selected_skills,
+        "selection_source": selection_source,
+        "fallback_skill": fallback,
+        "call": call,
+        "alert_codes": [alert["code"] for alert in alerts],
+        "alerts": alerts,
+        "proof_scope": {
+            "proves": [
+                "Tau called Graph Memory /recall with brief skill-chain selection intent.",
+                "Tau captured and hashed the Memory request and response artifacts.",
+                "Tau accepts only an explicit Memory skill_chain as a PASS selection.",
+                "Tau degrades explicitly to a single registry fallback when Memory is "
+                "unavailable or silent.",
+            ],
+            "does_not_prove": [
+                "Memory fact truth.",
+                "The selected chain is semantically optimal.",
+                "The full Tau system prompt has switched all sessions to selected-only skills.",
+                "Provider/model semantic quality.",
+            ],
+        },
+        "timestamp": _utc_stamp(),
+    }
+
+
+def _valid_skill_chain(value: object) -> dict[str, Any] | None:
+    if not isinstance(value, dict):
+        return None
+    skills = value.get("skills")
+    if not isinstance(skills, list) or not skills:
+        return None
+    normalized = [item.strip() for item in skills if isinstance(item, str) and item.strip()]
+    if not normalized:
+        return None
+    chain = dict(value)
+    chain["skills"] = normalized
+    return chain
+
+
+def _skill_chain_alerts(
+    *,
+    call: dict[str, Any],
+    chain: dict[str, Any] | None,
+    fallback: dict[str, Any] | None,
+) -> list[dict[str, Any]]:
+    alerts = _call_alerts(call)
+    if chain:
+        return alerts
+    code = "memory_recall_unavailable" if alerts else "skill_chain_missing"
+    message = (
+        "Graph Memory /recall did not return a usable skill_chain; registry fallback selected."
+        if fallback
+        else "Graph Memory /recall did not return a usable skill_chain and no fallback "
+        "skill was available."
+    )
+    severity = "WARN" if fallback else "BLOCK"
+    alerts.append(
+        _alert(
+            code,
+            message,
+            {"fallback_available": fallback is not None},
+            severity=severity,
+        )
+    )
+    return alerts
+
+
+def _registry_fallback_skill(
+    query: str,
+    fallback_skills: Sequence[Mapping[str, Any]],
+) -> dict[str, Any] | None:
+    best: tuple[int, int, Mapping[str, Any]] | None = None
+    query_terms = set(_word_terms(query))
+    for index, skill in enumerate(fallback_skills):
+        name = str(skill.get("name") or "").strip()
+        if not name:
+            continue
+        description = str(skill.get("description") or "")
+        terms = set(_word_terms(f"{name} {description}"))
+        score = len(query_terms & terms)
+        candidate = (score, -index, skill)
+        if best is None or candidate > best:
+            best = candidate
+    if best is None:
+        return None
+    selected = best[2]
+    return {
+        "name": str(selected.get("name")),
+        "description": str(selected.get("description") or ""),
+        "score": best[0],
+    }
+
+
+def _word_terms(value: str) -> list[str]:
+    return [term for term in re.findall(r"[a-z0-9]+", value.lower()) if len(term) > 1]
 
 
 def _post_json(
@@ -302,8 +506,14 @@ def _call_alerts(call: dict[str, Any]) -> list[dict[str, Any]]:
     ]
 
 
-def _alert(code: str, message: str, evidence: dict[str, Any] | None = None) -> dict[str, Any]:
-    alert: dict[str, Any] = {"severity": "BLOCK", "code": code, "message": message}
+def _alert(
+    code: str,
+    message: str,
+    evidence: dict[str, Any] | None = None,
+    *,
+    severity: str = "BLOCK",
+) -> dict[str, Any]:
+    alert: dict[str, Any] = {"severity": severity, "code": code, "message": message}
     if evidence:
         alert["evidence"] = evidence
     return alert

@@ -1,0 +1,71 @@
+{
+  "alert_codes": [
+    "skill_chain_missing"
+  ],
+  "alerts": [
+    {
+      "code": "skill_chain_missing",
+      "evidence": {
+        "fallback_available": true
+      },
+      "message": "Graph Memory /recall did not return a usable skill_chain; registry fallback selected.",
+      "severity": "WARN"
+    }
+  ],
+  "call": {
+    "duration_seconds": 0.337601,
+    "ok": true,
+    "path": "/recall",
+    "status_code": 200
+  },
+  "confidence": 0.8,
+  "endpoint": "/recall",
+  "fallback_skill": {
+    "description": "Memory-first prior lessons and skill chains",
+    "name": "memory",
+    "score": 2
+  },
+  "found": true,
+  "goal_hash": null,
+  "live": true,
+  "memory_url": "http://127.0.0.1:8601",
+  "mocked": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Memory fact truth.",
+      "The selected chain is semantically optimal.",
+      "The full Tau system prompt has switched all sessions to selected-only skills.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau called Graph Memory /recall with brief skill-chain selection intent.",
+      "Tau captured and hashed the Memory request and response artifacts.",
+      "Tau accepts only an explicit Memory skill_chain as a PASS selection.",
+      "Tau degrades explicitly to a single registry fallback when Memory is unavailable or silent."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-140-memory-skill-selector-20260726/live-skill-chain-recall.json",
+  "request_payload": {
+    "app": "tau",
+    "brief": true,
+    "k": 5,
+    "q": "Tau issue 140 memory-backed skill selector should recommend ticket repair skill chain",
+    "scope": "tau"
+  },
+  "request_sha256": "sha256:c94d0a5ef62f374e5df5e7558f926cbe9ce1b7f300c059a12200c69c20fdf4b6",
+  "response_path": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-140-memory-skill-selector-20260726/live-skill-chain-recall-response.json",
+  "response_schema": null,
+  "response_sha256": "sha256:417b7ecede2cc517f6cb91cd444779927a4a25c80574282e0e1e9bfc64e03227",
+  "schema": "tau.skill_chain_selection_receipt.v1",
+  "selected_skills": [
+    "memory"
+  ],
+  "selection_source": "registry_fallback",
+  "should_scan": false,
+  "skill_chain": null,
+  "status": "DEGRADED",
+  "target": null,
+  "timestamp": "2026-07-26T23:14:33Z"
+}

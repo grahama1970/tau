@@ -12,8 +12,10 @@ from tau_coding.cli import app
 from tau_coding.memory_acquisition import (
     EVIDENCE_CASE_ACQUISITION_RECEIPT_SCHEMA,
     MEMORY_INTENT_ACQUISITION_RECEIPT_SCHEMA,
+    SKILL_CHAIN_SELECTION_RECEIPT_SCHEMA,
     write_evidence_case_acquisition_receipt,
     write_memory_intent_acquisition_receipt,
+    write_skill_chain_selection_receipt,
 )
 
 
@@ -98,6 +100,64 @@ def test_memory_intent_acquisition_blocks_non_json_response(tmp_path: Path) -> N
     assert "memory_non_json_response" in receipt["alert_codes"]
 
 
+def test_skill_chain_selection_uses_memory_recall_chain(tmp_path: Path) -> None:
+    server, requests = _start_memory_server()
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        receipt = write_skill_chain_selection_receipt(
+            query="Process Tau tickets with memory first and checkpoint proof",
+            receipt_path=tmp_path / "skill-chain-selection.json",
+            memory_url=f"http://127.0.0.1:{server.server_port}",
+            goal_hash="sha256:g",
+            target={"repo": "grahama1970/tau", "target": "issue:140"},
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    assert receipt["schema"] == SKILL_CHAIN_SELECTION_RECEIPT_SCHEMA
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert receipt["mocked"] is False
+    assert receipt["live"] is True
+    assert receipt["endpoint"] == "/recall"
+    assert receipt["selection_source"] == "memory_recall_brief"
+    assert receipt["selected_skills"] == ["memory", "best-practices-github-ticket", "checkpoint"]
+    assert receipt["skill_chain"]["success_rate"] == 1.0
+    assert Path(str(receipt["response_path"])).exists()
+    assert requests[0]["path"] == "/recall"
+    assert requests[0]["payload"]["brief"] is True
+    assert (
+        requests[0]["payload"]["q"]
+        == "Process Tau tickets with memory first and checkpoint proof"
+    )
+    assert requests[0]["payload"]["target"]["target"] == "issue:140"
+
+
+def test_skill_chain_selection_degrades_to_registry_fallback(tmp_path: Path) -> None:
+    receipt = write_skill_chain_selection_receipt(
+        query="Need a memory-first ticket workflow",
+        receipt_path=tmp_path / "skill-chain-selection.json",
+        memory_url="http://127.0.0.1:9",
+        fallback_skills=[
+            {"name": "debugger", "description": "Runtime debugging"},
+            {"name": "memory", "description": "Memory-first prior lessons and skill chains"},
+        ],
+        timeout_seconds=0.2,
+    )
+
+    assert receipt["schema"] == SKILL_CHAIN_SELECTION_RECEIPT_SCHEMA
+    assert receipt["ok"] is False
+    assert receipt["status"] == "DEGRADED"
+    assert receipt["live"] is False
+    assert receipt["selection_source"] == "registry_fallback"
+    assert receipt["selected_skills"] == ["memory"]
+    assert receipt["fallback_skill"]["name"] == "memory"
+    assert "memory_recall_unavailable" in receipt["alert_codes"]
+
+
 def test_cli_memory_intent_and_evidence_case_create(tmp_path: Path) -> None:
     server, requests = _start_memory_server()
     thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -146,6 +206,39 @@ def test_cli_memory_intent_and_evidence_case_create(tmp_path: Path) -> None:
     assert [request["path"] for request in requests] == ["/intent", "/create-evidence-case"]
 
 
+def test_cli_skill_chain_recall_writes_receipt(tmp_path: Path) -> None:
+    server, requests = _start_memory_server()
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        receipt_path = tmp_path / "skill-chain-selection.json"
+        result = CliRunner().invoke(
+            app,
+            [
+                "skill-chain-recall",
+                "--query",
+                "Process Tau tickets",
+                "--memory-url",
+                f"http://127.0.0.1:{server.server_port}",
+                "--out",
+                str(receipt_path),
+                "--fallback-skills-json",
+                json.dumps([{"name": "ticket", "description": "GitHub ticket workflow"}]),
+            ],
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert payload["schema"] == SKILL_CHAIN_SELECTION_RECEIPT_SCHEMA
+    assert payload["status"] == "PASS"
+    assert receipt_path.exists()
+    assert [request["path"] for request in requests] == ["/recall"]
+
+
 def _start_memory_server(
     *,
     non_json_intent: bool = False,
@@ -168,6 +261,9 @@ def _start_memory_server(
                 return
             if self.path == "/create-evidence-case":
                 self._write_json(_evidence_case_payload())
+                return
+            if self.path == "/recall":
+                self._write_json(_skill_chain_payload())
                 return
             self.send_response(404)
             self.end_headers()
@@ -208,4 +304,21 @@ def _evidence_case_payload() -> dict[str, Any]:
         "source": "graph-memory-operator:/create-evidence-case",
         "sha256": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
         "support_artifacts": [],
+    }
+
+
+def _skill_chain_payload() -> dict[str, Any]:
+    return {
+        "schema": "memory.recall.v1",
+        "found": True,
+        "should_scan": False,
+        "confidence": 0.87,
+        "items": [{"problem": "ticket processing", "solution": "use memory first", "score": 0.91}],
+        "skill_chain": {
+            "skills": ["memory", "best-practices-github-ticket", "checkpoint"],
+            "task_type": "github_ticket_repair",
+            "success_rate": 1.0,
+            "observations": 4,
+            "score": 0.82,
+        },
     }

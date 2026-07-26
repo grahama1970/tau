@@ -30,6 +30,7 @@ class BuildSystemPromptOptions:
     context_files: Sequence[ProjectContextFile] = ()
     current_date: date | None = None
     extra_guidelines: Sequence[str] = field(default_factory=tuple)
+    selected_skill_names: Sequence[str] | None = None
 
 
 def build_system_prompt(options: BuildSystemPromptOptions) -> str:
@@ -43,7 +44,7 @@ def build_system_prompt(options: BuildSystemPromptOptions) -> str:
         prompt += append_section
         prompt += format_project_context(options.context_files)
         if _has_tool(options.tools, "read"):
-            prompt += format_skills_for_prompt(options.skills)
+            prompt += format_skills_for_prompt(options.skills, options.selected_skill_names)
         prompt += f"\nCurrent date: {current_date.isoformat()}"
         prompt += f"\nCurrent working directory: {cwd}"
         return prompt
@@ -60,7 +61,7 @@ def build_system_prompt(options: BuildSystemPromptOptions) -> str:
     prompt += append_section
     prompt += format_project_context(options.context_files)
     if _has_tool(options.tools, "read"):
-        prompt += format_skills_for_prompt(options.skills)
+        prompt += format_skills_for_prompt(options.skills, options.selected_skill_names)
     prompt += f"\nCurrent date: {current_date.isoformat()}"
     prompt += f"\nCurrent working directory: {cwd}"
     return prompt
@@ -134,9 +135,15 @@ def format_project_context(context_files: Sequence[ProjectContextFile]) -> str:
     return "\n".join(lines)
 
 
-def format_skills_for_prompt(skills: Sequence[Skill]) -> str:
+def format_skills_for_prompt(
+    skills: Sequence[Skill],
+    selected_skill_names: Sequence[str] | None = None,
+) -> str:
     """Format skills for inclusion in a system prompt using Pi's XML style."""
     if not skills:
+        return ""
+    prompt_skills = _select_prompt_skills(skills, selected_skill_names)
+    if not prompt_skills:
         return ""
 
     lines = [
@@ -144,10 +151,14 @@ def format_skills_for_prompt(skills: Sequence[Skill]) -> str:
         "Read the full skill file when the task matches its description.",
         "When a skill file references a relative path, resolve it against the skill directory "
         "(parent of SKILL.md / dirname of the path) and use that absolute path in tool commands.",
-        "",
-        "<available_skills>",
     ]
-    for skill in sorted(skills, key=lambda item: item.name):
+    if selected_skill_names is not None:
+        lines.append(
+            "This skill list is a Memory-selected working chain; explicitly named skills "
+            "remain callable."
+        )
+    lines.extend(["", "<available_skills>"])
+    for skill in prompt_skills:
         description = skill.description or "No description"
         lines.extend(
             [
@@ -168,3 +179,23 @@ def _has_tool(tools: Sequence[AgentTool], name: str) -> bool:
 
 def _format_path(path: Path) -> str:
     return str(path).replace("\\", "/")
+
+
+def _select_prompt_skills(
+    skills: Sequence[Skill],
+    selected_skill_names: Sequence[str] | None,
+) -> list[Skill]:
+    if selected_skill_names is None:
+        return sorted(skills, key=lambda item: item.name)
+    by_name = {skill.name: skill for skill in skills}
+    selected: list[Skill] = []
+    seen: set[str] = set()
+    for name in selected_skill_names:
+        if name in seen:
+            continue
+        skill = by_name.get(name)
+        if skill is None:
+            continue
+        seen.add(name)
+        selected.append(skill)
+    return selected
