@@ -463,8 +463,9 @@ def _verify_public_interface(
         [str(tau), "dag-view-capabilities", "--json"], cwd, commands, env
     )
     run_options = ["--repo", "--run-dir", "--goal", "--publish-path", "--require-tests"]
-    if any(option not in run_help for option in run_options):
-        raise AuditError("workflow_help_contract_missing")
+    missing_run_options = [option for option in run_options if option not in run_help]
+    if missing_run_options:
+        raise AuditError(f"workflow_help_contract_missing:{','.join(missing_run_options)}")
     expected_viewer_capabilities = {
         "schema": "tau.dag_viewer_capabilities.v1",
         "manifest_schema": "tau.dag_view_manifest.v1",
