@@ -12,6 +12,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.documentation_registry import DOCUMENTATION_REGISTRY_SCHEMA
 from tau_coding.itar_boundary import ACTOR_ACCESS_MANIFEST_SCHEMA
 from tau_coding.policy_profile import validate_data_boundary, validate_policy_profile
 from tau_coding.provenance import build_environment_manifest, validate_environment_manifest
@@ -282,7 +283,14 @@ def _resolve_or_generate_environment_manifest(
         )
     generated_path = receipt_dir / "environment-manifest.json"
     controlled_boundary = _is_controlled_boundary(boundary_source.payload)
-    network_policy = "deny" if controlled_boundary else "unrestricted"
+    documentation_allowlist = _documentation_registry_allowlist(dag_contract, contract_path)
+    network_policy = (
+        "deny"
+        if controlled_boundary
+        else "allowlisted"
+        if documentation_allowlist
+        else "unrestricted"
+    )
     provider_access = (
         "denied"
         if isinstance(boundary_source.payload, Mapping)
@@ -312,6 +320,9 @@ def _resolve_or_generate_environment_manifest(
             data_boundary=str(boundary_source.path) if boundary_source.path is not None else None,
             output_path=generated_path,
         )
+        if documentation_allowlist:
+            payload["network_allowlist"] = list(documentation_allowlist)
+            _write_json(generated_path, payload)
     except Exception as exc:  # pragma: no cover - defensive error packaging
         return _ResolvedSource(
             field_name="environment_manifest",
@@ -343,6 +354,32 @@ def _resolve_or_generate_environment_manifest(
         sha256=f"sha256:{_sha256_file(generated_path)}",
         alerts=alerts,
         generated=True,
+    )
+
+
+def _documentation_registry_allowlist(
+    dag_contract: Mapping[str, Any],
+    contract_path: Path,
+) -> tuple[str, ...]:
+    value = dag_contract.get("documentation_registry")
+    payload: Mapping[str, Any] | None = value if isinstance(value, Mapping) else None
+    if payload is None and isinstance(value, str) and value.strip():
+        path = Path(value).expanduser()
+        if not path.is_absolute():
+            path = contract_path.parent / path
+        try:
+            loaded = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            loaded = None
+        if isinstance(loaded, Mapping):
+            payload = loaded
+    if payload is None or payload.get("schema") != DOCUMENTATION_REGISTRY_SCHEMA:
+        return ()
+    allowlist = payload.get("allowlist")
+    if not isinstance(allowlist, list):
+        return ()
+    return tuple(
+        dict.fromkeys(item.strip() for item in allowlist if isinstance(item, str) and item.strip())
     )
 
 
