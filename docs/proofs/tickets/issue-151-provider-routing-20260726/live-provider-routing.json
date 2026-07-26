@@ -1,0 +1,88 @@
+{
+  "alert_codes": [
+    "provider_route_missing"
+  ],
+  "alerts": [
+    {
+      "code": "provider_route_missing",
+      "message": "Graph Memory /recall did not return provider_route evidence.",
+      "severity": "WARN"
+    }
+  ],
+  "candidates": [
+    {
+      "credential_ok": false,
+      "model": "claude-sonnet-4-6",
+      "provider": "anthropic",
+      "reason": "anthropic credential unavailable in local doctor"
+    },
+    {
+      "credential_ok": true,
+      "model": "gpt-5.5",
+      "provider": "openai"
+    },
+    {
+      "credential_ok": true,
+      "model": "Qwen/Qwen3-32B-TEE",
+      "provider": "chutes"
+    }
+  ],
+  "confidence": 0.0,
+  "endpoint": "/recall",
+  "events": [
+    {
+      "attempt": 1,
+      "candidate": {
+        "credential_ok": true,
+        "model": "gpt-5.5",
+        "provider": "openai"
+      },
+      "type": "provider_selected"
+    }
+  ],
+  "found": false,
+  "live": true,
+  "memory_route": null,
+  "memory_url": "http://127.0.0.1:8601",
+  "mocked": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Memory corpus completeness.",
+      "Provider semantic quality.",
+      "Production provider calls unless provider_live is true.",
+      "SciLLM runtime dispatch has adopted this helper everywhere."
+    ],
+    "proves": [
+      "Tau asked Graph Memory for provider_route evidence through /recall.",
+      "Tau filtered candidates by credential/quota eligibility.",
+      "Tau records typed provider failover events for retryable 429/quota responses.",
+      "Tau fails closed when no provider candidate is eligible."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-151-provider-routing-20260726/live-provider-routing.json",
+  "request_payload": {
+    "app": "tau",
+    "brief": true,
+    "collections": [
+      "provider_routes"
+    ],
+    "k": 5,
+    "q": "Tau issue 151 provider routing with cross-provider failover",
+    "recommendation": "provider_route",
+    "scope": "tau"
+  },
+  "request_sha256": "sha256:8fc31056664e90f8132f78bca2585b292c10e0b536bfa7b031f0ded8fc195a9d",
+  "response_path": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-151-provider-routing-20260726/live-provider-routing-response.json",
+  "response_schema": null,
+  "response_sha256": "sha256:c6e4d8ee228ce3e8a2b06299bf4344e973401b8f7e83d77ae7735b710985603a",
+  "schema": "tau.provider_routing_receipt.v1",
+  "selected": {
+    "credential_ok": true,
+    "model": "gpt-5.5",
+    "provider": "openai"
+  },
+  "status": "DEGRADED",
+  "timestamp": "2026-07-26T23:25:50Z"
+}

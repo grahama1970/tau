@@ -1,6 +1,9 @@
 import json
+import threading
 from datetime import date
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -8,6 +11,7 @@ from tau_coding.credentials import FileCredentialStore, OAuthCredential
 from tau_coding.paths import TauPaths
 from tau_coding.provider_config import (
     DEFAULT_MODEL,
+    PROVIDER_ROUTING_RECEIPT_SCHEMA,
     AnthropicProviderConfig,
     OpenAICodexProviderConfig,
     OpenAICompatibleProviderConfig,
@@ -26,6 +30,7 @@ from tau_coding.provider_config import (
     resolve_provider_selection,
     save_provider_settings,
     upsert_openai_compatible_provider,
+    write_provider_routing_receipt,
 )
 
 
@@ -545,6 +550,139 @@ def test_provider_has_usable_credentials_checks_stored_key_and_env(
     assert provider_has_usable_credentials(provider, credential_reader=EmptyCredentials())
 
 
+def test_provider_routing_selects_memory_success_candidate(tmp_path: Path) -> None:
+    server, requests = _start_provider_memory_server()
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        receipt = write_provider_routing_receipt(
+            query="solve a Python bug",
+            receipt_path=tmp_path / "provider-routing.json",
+            memory_url=f"http://127.0.0.1:{server.server_port}",
+            candidates=[
+                {
+                    "provider": "openai",
+                    "model": "gpt-5.5",
+                    "credential_ok": True,
+                },
+                {
+                    "provider": "anthropic",
+                    "model": "claude-sonnet-4-6",
+                    "credential_ok": True,
+                },
+            ],
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    assert receipt["schema"] == PROVIDER_ROUTING_RECEIPT_SCHEMA
+    assert receipt["status"] == "PASS"
+    assert receipt["selected"]["provider"] == "anthropic"
+    assert receipt["selected"]["model"] == "claude-sonnet-4-6"
+    assert receipt["selected"]["memory_evidence"]["outcome"] == "success"
+    assert Path(str(receipt["response_path"])).exists()
+    assert requests[0]["path"] == "/recall"
+    assert requests[0]["payload"]["collections"] == ["provider_routes"]
+
+
+def test_provider_routing_fails_over_on_429(tmp_path: Path) -> None:
+    server, _ = _start_provider_memory_server()
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    calls: list[tuple[str, str]] = []
+
+    def invoke(candidate: dict[str, Any]) -> dict[str, Any]:
+        calls.append((candidate["provider"], candidate["model"]))
+        if candidate["provider"] == "anthropic":
+            return {"ok": False, "status_code": 429, "error": "rate_limited"}
+        return {"ok": True, "status_code": 200}
+
+    thread.start()
+    try:
+        receipt = write_provider_routing_receipt(
+            query="solve a Python bug",
+            receipt_path=tmp_path / "provider-routing.json",
+            memory_url=f"http://127.0.0.1:{server.server_port}",
+            candidates=[
+                {"provider": "anthropic", "model": "claude-sonnet-4-6", "credential_ok": True},
+                {"provider": "openai", "model": "gpt-5.5", "credential_ok": True},
+            ],
+            invoke_provider=invoke,
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    assert receipt["status"] == "PASS"
+    assert receipt["provider_live"] is True
+    assert receipt["selected"]["provider"] == "openai"
+    assert calls == [("anthropic", "claude-sonnet-4-6"), ("openai", "gpt-5.5")]
+    assert any(event["type"] == "provider_failover" for event in receipt["events"])
+
+
+def test_provider_routing_fails_closed_without_eligible_provider(tmp_path: Path) -> None:
+    server, _ = _start_provider_memory_server()
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        receipt = write_provider_routing_receipt(
+            query="solve a Python bug",
+            receipt_path=tmp_path / "provider-routing.json",
+            memory_url=f"http://127.0.0.1:{server.server_port}",
+            candidates=[
+                {"provider": "anthropic", "model": "claude-sonnet-4-6", "credential_ok": False},
+                {
+                    "provider": "openai",
+                    "model": "gpt-5.5",
+                    "credential_ok": True,
+                    "quota_exhausted": True,
+                },
+            ],
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["selected"] is None
+    assert "no_eligible_provider" in receipt["alert_codes"]
+
+
+def test_provider_routing_degrades_when_memory_route_missing(tmp_path: Path) -> None:
+    server, _ = _start_provider_memory_server(
+        response_payload={
+            "schema": "memory.recall.v1",
+            "found": False,
+            "confidence": 0,
+            "items": [],
+        }
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        receipt = write_provider_routing_receipt(
+            query="solve a Python bug",
+            receipt_path=tmp_path / "provider-routing.json",
+            memory_url=f"http://127.0.0.1:{server.server_port}",
+            candidates=[
+                {"provider": "openai", "model": "gpt-5.5", "credential_ok": True},
+            ],
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "DEGRADED"
+    assert receipt["selected"]["provider"] == "openai"
+    assert "provider_route_missing" in receipt["alert_codes"]
+
+
 def test_anthropic_config_from_provider_uses_stored_credential(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1015,3 +1153,63 @@ def test_openai_compatible_provider_config_rejects_invalid_retries() -> None:
         OpenAICompatibleProviderConfig(name="local", max_retries=-1)
     with pytest.raises(ProviderConfigError, match="0 or greater"):
         OpenAICompatibleProviderConfig(name="local", max_retry_delay_seconds=-1)
+
+
+def _start_provider_memory_server(
+    response_payload: dict[str, Any] | None = None,
+) -> tuple[HTTPServer, list[dict[str, Any]]]:
+    requests: list[dict[str, Any]] = []
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:  # noqa: N802
+            length = int(self.headers.get("content-length", "0"))
+            raw = self.rfile.read(length)
+            payload = json.loads(raw.decode("utf-8")) if raw else {}
+            requests.append({"path": self.path, "payload": payload})
+            if self.path == "/recall":
+                self._write_json(response_payload or _provider_route_payload())
+                return
+            self.send_response(404)
+            self.end_headers()
+
+        def log_message(self, format: str, *args: object) -> None:
+            return
+
+        def _write_json(self, payload: dict[str, Any]) -> None:
+            encoded = json.dumps(payload).encode("utf-8")
+            self.send_response(200)
+            self.send_header("content-type", "application/json")
+            self.send_header("content-length", str(len(encoded)))
+            self.end_headers()
+            self.wfile.write(encoded)
+
+    server = HTTPServer(("127.0.0.1", 0), Handler)
+    return server, requests
+
+
+def _provider_route_payload() -> dict[str, Any]:
+    return {
+        "schema": "memory.recall.v1",
+        "found": True,
+        "should_scan": False,
+        "confidence": 0.93,
+        "provider_route": {
+            "task_class": "python_bugfix",
+            "candidates": [
+                {
+                    "provider": "anthropic",
+                    "model": "claude-sonnet-4-6",
+                    "outcome": "success",
+                    "success_rate": 0.91,
+                    "evidence": ["receipt:success"],
+                },
+                {
+                    "provider": "openai",
+                    "model": "gpt-5.5",
+                    "outcome": "failure",
+                    "success_rate": 0.44,
+                    "evidence": ["receipt:failure"],
+                },
+            ],
+        },
+    }

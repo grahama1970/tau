@@ -1,14 +1,19 @@
 """Durable provider configuration for Tau coding sessions."""
 
+import hashlib
+import json
+from collections.abc import Callable, Sequence
 from contextlib import suppress
 from dataclasses import dataclass, field, replace
-from datetime import date
+from datetime import UTC, date, datetime
 from json import dumps, loads
 from os import environ
 from pathlib import Path
 from shutil import copy2
 from tempfile import NamedTemporaryFile
 from typing import Any, Protocol
+
+import httpx
 
 from tau_ai import (
     DEFAULT_ANTHROPIC_BASE_URL,
@@ -22,6 +27,7 @@ from tau_ai import (
 )
 from tau_ai.env import DEFAULT_OPENAI_COMPATIBLE_BASE_URL
 from tau_coding.credentials import FileCredentialStore, credentials_path
+from tau_coding.memory_acquisition import DEFAULT_MEMORY_URL
 from tau_coding.paths import TauPaths
 from tau_coding.provider_catalog import BUILTIN_PROVIDER_CATALOG, ProviderKind
 from tau_coding.thinking import (
@@ -38,6 +44,7 @@ DEFAULT_PROVIDER_NAME = "openai"
 ANTHROPIC_AUTH_TOKEN_ENV = "ANTHROPIC_AUTH_TOKEN"
 RUNTIME_API_KEY_ENV = "TAU_RUNTIME_API_KEY"
 DEFAULT_MODEL = "gpt-5.5"
+PROVIDER_ROUTING_RECEIPT_SCHEMA = "tau.provider_routing_receipt.v1"
 ANTHROPIC_ADAPTIVE_THINKING_MODELS = frozenset({"claude-opus-5"})
 ANTHROPIC_ADAPTIVE_THINKING_LEVELS: tuple[ThinkingLevel, ...] = (
     "off",
@@ -909,6 +916,323 @@ def provider_has_usable_credentials(
     if isinstance(provider, AnthropicProviderConfig) and environ.get(ANTHROPIC_AUTH_TOKEN_ENV):
         return True
     return bool(environ.get(provider.api_key_env))
+
+
+def write_provider_routing_receipt(
+    *,
+    query: str,
+    receipt_path: Path,
+    candidates: Sequence[dict[str, Any]],
+    invoke_provider: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
+    memory_url: str | None = None,
+    scope: str = "tau",
+    app: str = "tau",
+    k: int = 5,
+    timeout_seconds: float = 15.0,
+) -> dict[str, Any]:
+    """Recommend and optionally exercise provider failover with a typed receipt."""
+
+    if not query.strip():
+        raise RuntimeError("--query must be non-empty")
+    if k < 1:
+        raise RuntimeError("--k must be at least 1")
+    resolved_receipt = receipt_path.expanduser().resolve()
+    response_path = resolved_receipt.with_name(f"{resolved_receipt.stem}-response.json")
+    request_payload = {
+        "q": query,
+        "scope": scope,
+        "app": app,
+        "k": k,
+        "brief": True,
+        "collections": ["provider_routes"],
+        "recommendation": "provider_route",
+    }
+    base_url = _provider_router_memory_url(memory_url)
+    memory_payload, memory_call = _provider_router_post_json(
+        memory_url=base_url,
+        path="/recall",
+        payload=request_payload,
+        timeout_seconds=timeout_seconds,
+    )
+    ordered_candidates = _provider_route_candidates(
+        memory_route=memory_payload.get("provider_route"),
+        candidates=candidates,
+    )
+    receipt = _provider_route_receipt(
+        receipt_path=resolved_receipt,
+        response_path=response_path,
+        memory_url=base_url,
+        request_payload=request_payload,
+        memory_payload=memory_payload,
+        memory_call=memory_call,
+        ordered_candidates=ordered_candidates,
+        invoke_provider=invoke_provider,
+    )
+    _provider_router_write_json(response_path, memory_payload)
+    _provider_router_write_json(resolved_receipt, receipt)
+    return receipt
+
+
+def _provider_route_receipt(
+    *,
+    receipt_path: Path,
+    response_path: Path,
+    memory_url: str,
+    request_payload: dict[str, Any],
+    memory_payload: dict[str, Any],
+    memory_call: dict[str, Any],
+    ordered_candidates: list[dict[str, Any]],
+    invoke_provider: Callable[[dict[str, Any]], dict[str, Any]] | None,
+) -> dict[str, Any]:
+    events: list[dict[str, Any]] = []
+    alerts: list[dict[str, Any]] = []
+    memory_route = _valid_provider_route(memory_payload.get("provider_route"))
+    if memory_call.get("ok") is not True:
+        alerts.append(
+            _provider_router_alert(
+                "memory_recall_unavailable",
+                "Graph Memory /recall did not return provider routing evidence.",
+                severity="WARN",
+                evidence={"call": memory_call},
+            )
+        )
+    elif memory_route is None:
+        alerts.append(
+            _provider_router_alert(
+                "provider_route_missing",
+                "Graph Memory /recall did not return provider_route evidence.",
+                severity="WARN",
+            )
+        )
+    eligible = [
+        candidate for candidate in ordered_candidates if _provider_candidate_eligible(candidate)
+    ]
+    if not eligible:
+        alerts.append(
+            _provider_router_alert(
+                "no_eligible_provider",
+                "No configured provider candidate is eligible for routing.",
+                evidence={"candidates": ordered_candidates},
+            )
+        )
+        selected = None
+        status = "BLOCKED"
+    else:
+        selected, status = _exercise_provider_candidates(
+            eligible=eligible,
+            events=events,
+            invoke_provider=invoke_provider,
+        )
+        if status == "PASS" and alerts:
+            status = "DEGRADED"
+    return {
+        "schema": PROVIDER_ROUTING_RECEIPT_SCHEMA,
+        "ok": status == "PASS",
+        "status": status,
+        "mocked": False,
+        "live": memory_call.get("ok") is True,
+        "provider_live": invoke_provider is not None,
+        "memory_url": memory_url,
+        "endpoint": "/recall",
+        "receipt_path": str(receipt_path),
+        "request_payload": request_payload,
+        "request_sha256": f"sha256:{_provider_router_payload_sha256(request_payload)}",
+        "response_path": str(response_path),
+        "response_sha256": f"sha256:{_provider_router_payload_sha256(memory_payload)}",
+        "response_schema": memory_payload.get("schema"),
+        "found": memory_payload.get("found"),
+        "confidence": memory_payload.get("confidence"),
+        "memory_route": memory_route,
+        "candidates": ordered_candidates,
+        "selected": selected,
+        "events": events,
+        "alert_codes": [alert["code"] for alert in alerts],
+        "alerts": alerts,
+        "proof_scope": {
+            "proves": [
+                "Tau asked Graph Memory for provider_route evidence through /recall.",
+                "Tau filtered candidates by credential/quota eligibility.",
+                "Tau records typed provider failover events for retryable 429/quota responses.",
+                "Tau fails closed when no provider candidate is eligible.",
+            ],
+            "does_not_prove": [
+                "Memory corpus completeness.",
+                "Provider semantic quality.",
+                "Production provider calls unless provider_live is true.",
+                "SciLLM runtime dispatch has adopted this helper everywhere.",
+            ],
+        },
+        "timestamp": _provider_router_utc_stamp(),
+    }
+
+
+def _exercise_provider_candidates(
+    *,
+    eligible: list[dict[str, Any]],
+    events: list[dict[str, Any]],
+    invoke_provider: Callable[[dict[str, Any]], dict[str, Any]] | None,
+) -> tuple[dict[str, Any] | None, str]:
+    for index, candidate in enumerate(eligible):
+        events.append({"type": "provider_selected", "candidate": candidate, "attempt": index + 1})
+        if invoke_provider is None:
+            return candidate, "PASS"
+        result = invoke_provider(candidate)
+        events.append({"type": "provider_result", "candidate": candidate, "result": result})
+        if result.get("ok") is True:
+            return candidate, "PASS"
+        if _provider_result_retryable(result) and index + 1 < len(eligible):
+            events.append(
+                {
+                    "type": "provider_failover",
+                    "from": candidate,
+                    "to": eligible[index + 1],
+                    "reason": result.get("error") or f"status_{result.get('status_code')}",
+                }
+            )
+            continue
+        return None, "BLOCKED"
+    return None, "BLOCKED"
+
+
+def _provider_result_retryable(result: dict[str, Any]) -> bool:
+    status_code = result.get("status_code")
+    if status_code in {408, 409, 425, 429}:
+        return True
+    if isinstance(status_code, int) and status_code >= 500:
+        return True
+    return result.get("error") in {"quota_exhausted", "rate_limited"}
+
+
+def _provider_route_candidates(
+    *,
+    memory_route: object,
+    candidates: Sequence[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    by_key = {
+        (str(candidate.get("provider")), str(candidate.get("model"))): dict(candidate)
+        for candidate in candidates
+    }
+    ordered: list[dict[str, Any]] = []
+    route = _valid_provider_route(memory_route)
+    if route:
+        for recommendation in route.get("candidates", []):
+            key = (str(recommendation.get("provider")), str(recommendation.get("model")))
+            candidate = by_key.pop(key, None)
+            if candidate is None:
+                continue
+            candidate["memory_evidence"] = recommendation
+            ordered.append(candidate)
+    ordered.extend(by_key.values())
+    return ordered
+
+
+def _valid_provider_route(value: object) -> dict[str, Any] | None:
+    if not isinstance(value, dict):
+        return None
+    candidates = value.get("candidates")
+    if not isinstance(candidates, list) or not candidates:
+        return None
+    normalized = []
+    for candidate in candidates:
+        if not isinstance(candidate, dict):
+            continue
+        provider = str(candidate.get("provider") or "").strip()
+        model = str(candidate.get("model") or "").strip()
+        if provider and model:
+            item = dict(candidate)
+            item["provider"] = provider
+            item["model"] = model
+            normalized.append(item)
+    if not normalized:
+        return None
+    route = dict(value)
+    route["candidates"] = normalized
+    return route
+
+
+def _provider_candidate_eligible(candidate: dict[str, Any]) -> bool:
+    return bool(candidate.get("credential_ok", True)) and not bool(
+        candidate.get("quota_exhausted", False)
+    )
+
+
+def _provider_router_post_json(
+    *,
+    memory_url: str,
+    path: str,
+    payload: dict[str, Any],
+    timeout_seconds: float,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    started = datetime.now(UTC)
+    try:
+        with httpx.Client(
+            base_url=memory_url.rstrip("/"),
+            timeout=httpx.Timeout(timeout_seconds, connect=min(timeout_seconds, 5.0)),
+        ) as client:
+            response = client.post(path, json=payload)
+    except httpx.HTTPError as exc:
+        return {}, _provider_router_call(path=path, ok=False, started=started, error=str(exc))
+    call = _provider_router_call(path=path, ok=response.status_code < 400, started=started)
+    call["status_code"] = response.status_code
+    try:
+        body = response.json()
+    except json.JSONDecodeError:
+        call["ok"] = False
+        call["error"] = "response was not JSON"
+        return {"raw": response.text}, call
+    if not isinstance(body, dict):
+        call["ok"] = False
+        call["error"] = "response JSON was not an object"
+        return {"value": body}, call
+    return body, call
+
+
+def _provider_router_call(
+    *,
+    path: str,
+    ok: bool,
+    started: datetime,
+    error: str | None = None,
+) -> dict[str, Any]:
+    call: dict[str, Any] = {
+        "ok": ok,
+        "path": path,
+        "duration_seconds": (datetime.now(UTC) - started).total_seconds(),
+    }
+    if error:
+        call["error"] = error
+    return call
+
+
+def _provider_router_alert(
+    code: str,
+    message: str,
+    *,
+    severity: str = "BLOCK",
+    evidence: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    alert: dict[str, Any] = {"severity": severity, "code": code, "message": message}
+    if evidence:
+        alert["evidence"] = evidence
+    return alert
+
+
+def _provider_router_memory_url(memory_url: str | None) -> str:
+    return (memory_url or environ.get("MEMORY_DAEMON_URL") or DEFAULT_MEMORY_URL).rstrip("/")
+
+
+def _provider_router_payload_sha256(payload: dict[str, Any]) -> str:
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _provider_router_write_json(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _provider_router_utc_stamp() -> str:
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _reasoning_effort_from_provider(
