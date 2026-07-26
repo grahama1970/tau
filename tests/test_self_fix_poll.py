@@ -108,8 +108,31 @@ def test_extract_repair_request_from_issue_body() -> None:
     assert request is not None
     assert request["target_file"] == "tests/fixtures/self_fix_ticket_probe.py"
     assert request["verification_commands"] == [
-        "python -m py_compile tests/fixtures/self_fix_ticket_probe.py"
+        ["python", "-m", "py_compile", "tests/fixtures/self_fix_ticket_probe.py"]
     ]
+
+
+def test_extract_repair_request_rejects_shell_metacharacters() -> None:
+    malicious_command = (
+        "python -m py_compile tests/fixtures/self_fix_ticket_probe.py; "
+        "touch /tmp/owned"
+    )
+    body = f"""
+## Required repair
+
+```json
+{{
+  "schema": "tau.self_fix_repair_request.v1",
+  "request": "Change the probe value.",
+  "target_file": "tests/fixtures/self_fix_ticket_probe.py",
+  "find_text": "STATUS = 'bug'",
+  "replace_text": "STATUS = 'fixed'",
+  "verification_commands": [{json.dumps(malicious_command)}]
+}}
+```
+"""
+
+    assert extract_repair_request(body) is None
 
 
 def _install_fake_gh(tmp_path: Path, monkeypatch, issues: list[dict[str, object]]) -> None:
