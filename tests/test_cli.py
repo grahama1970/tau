@@ -1,5 +1,6 @@
 import hashlib
 import json
+import shutil
 import subprocess
 import sys
 import time
@@ -181,6 +182,124 @@ def _write_cli_dag_viewer_store(run_dir: Path, *, run_id: str) -> None:
                 "verdict": "PASS",
             },
         )
+
+
+def _init_cli_git_repo(path: Path) -> None:
+    path.mkdir(parents=True)
+    subprocess.run(["git", "init"], cwd=path, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "config", "user.email", "tau-tests@example.invalid"],
+        cwd=path,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Tau Tests"],
+        cwd=path,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    (path / "README.md").write_text("# Tau test repository\n", encoding="utf-8")
+    subprocess.run(
+        ["git", "add", "README.md"],
+        cwd=path,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "commit", "-m", "initial"],
+        cwd=path,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_cli_runs_list_and_last_resolve_recent_workflows(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    registry_path = tmp_path / "registry" / "runs.json"
+    monkeypatch.setenv("TAU_RUN_REGISTRY", str(registry_path))
+    repo = tmp_path / "repo"
+    _init_cli_git_repo(repo)
+    runner = CliRunner()
+    run_one = tmp_path / "run-one"
+    run_two = tmp_path / "run-two"
+
+    first = runner.invoke(
+        app,
+        [
+            "workflows",
+            "run",
+            "repository-readiness",
+            "--repo",
+            str(repo),
+            "--goal",
+            "first readiness run",
+            "--run-dir",
+            str(run_one),
+            "--no-browser-open",
+        ],
+    )
+    second = runner.invoke(
+        app,
+        [
+            "workflows",
+            "run",
+            "repository-readiness",
+            "--repo",
+            str(repo),
+            "--goal",
+            "second readiness run",
+            "--run-dir",
+            str(run_two),
+            "--no-browser-open",
+        ],
+    )
+
+    assert first.exit_code == 0, first.output
+    assert second.exit_code == 0, second.output
+
+    listing = runner.invoke(app, ["runs", "list", "--json"])
+    assert listing.exit_code == 0, listing.output
+    payload = json.loads(listing.stdout)
+    assert payload["schema"] == "tau.runs_list.v1"
+    assert [run["run_dir"] for run in payload["runs"][:2]] == [
+        str(run_two.resolve()),
+        str(run_one.resolve()),
+    ]
+    assert [run["workflow_id"] for run in payload["runs"][:2]] == [
+        "repository-readiness",
+        "repository-readiness",
+    ]
+    assert [run["state"] for run in payload["runs"][:2]] == ["PASS", "PASS"]
+    assert [run["available"] for run in payload["runs"][:2]] == [True, True]
+
+    link = runner.invoke(app, ["dag-viewer-link", "--last"])
+    assert link.exit_code == 0, link.output
+    link_payload = json.loads(link.stdout)
+    assert link_payload["dag_viewer"]["launch_command"][3] == str(run_two.resolve())
+
+    snapshot = runner.invoke(app, ["dag-view-snapshot", "--last", "--output", "-"])
+    assert snapshot.exit_code == 0, snapshot.output
+    snapshot_payload = json.loads(snapshot.stdout)
+    assert snapshot_payload["run_id"].startswith("repository-readiness-")
+
+    shutil.rmtree(run_two)
+    unavailable_listing = runner.invoke(app, ["runs", "list", "--json"])
+    assert unavailable_listing.exit_code == 0, unavailable_listing.output
+    unavailable_payload = json.loads(unavailable_listing.stdout)
+    assert unavailable_payload["runs"][0]["run_dir"] == str(run_two.resolve())
+    assert unavailable_payload["runs"][0]["available"] is False
+    assert unavailable_payload["runs"][0]["state"] == "UNAVAILABLE"
+
+    unavailable_last = runner.invoke(app, ["dag-viewer-link", "--last"])
+    assert unavailable_last.exit_code != 0
+    assert "tau_last_run_unavailable" in unavailable_last.output
 
 
 def _write_cli_transaction_history_store(run_dir: Path, *, run_id: str) -> None:

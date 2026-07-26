@@ -324,6 +324,8 @@ workflows_app = typer.Typer(
 )
 app.add_typer(workflows_app, name="workflows")
 
+RUN_REGISTRY_SCHEMA = "tau.run_registry.v1"
+
 
 @app.command("github-redact-projection")
 def github_redact_projection_cli_command(
@@ -387,6 +389,197 @@ def workflows_list_command(
                 f"rung {workflow['rung']}\t{workflow['workflow_id']}\t"
                 f"{workflow['topology']}\t{workflow['title']}"
             )
+
+
+def _run_registry_path() -> Path:
+    override = environ.get("TAU_RUN_REGISTRY")
+    if override:
+        return Path(override).expanduser().resolve()
+    return (TauPaths().home / "runs.json").expanduser().resolve()
+
+
+def _now_iso() -> str:
+    return datetime.now(UTC).isoformat().replace("+00:00", "Z")
+
+
+def _read_json_file(path: Path) -> dict[str, object]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {"schema": RUN_REGISTRY_SCHEMA, "runs": []}
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"run registry is unreadable: {path}: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"run registry must contain a JSON object: {path}")
+    return payload
+
+
+def _load_run_registry() -> list[dict[str, object]]:
+    payload = _read_json_file(_run_registry_path())
+    raw_runs = payload.get("runs", [])
+    if not isinstance(raw_runs, list):
+        raise RuntimeError("run registry runs must be a list")
+    runs: list[dict[str, object]] = []
+    for item in raw_runs:
+        if isinstance(item, dict):
+            runs.append(dict(item))
+    return runs
+
+
+def _write_run_registry(runs: list[dict[str, object]]) -> None:
+    registry_path = _run_registry_path()
+    registry_path.parent.mkdir(parents=True, exist_ok=True)
+    registry_path.write_text(
+        json.dumps(
+            {
+                "schema": RUN_REGISTRY_SCHEMA,
+                "updated_at": _now_iso(),
+                "runs": runs,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def _workflow_run_metadata(run_dir: Path, payload: Mapping[str, object]) -> dict[str, str]:
+    resolved = run_dir.expanduser().resolve()
+    workflow_id = _optional_str(payload.get("workflow_id")) or "UNKNOWN"
+    status = _optional_str(payload.get("status")) or "UNKNOWN"
+    run_id = _optional_str(payload.get("run_id"))
+    dag_path = resolved / "workflow" / "dag.json"
+    if run_id is None or workflow_id == "UNKNOWN":
+        with suppress(OSError, json.JSONDecodeError, KeyError, TypeError):
+            dag_payload = json.loads(dag_path.read_text(encoding="utf-8"))
+            if isinstance(dag_payload, dict):
+                run_id = run_id or _optional_str(dag_payload.get("run_id"))
+                workflow_id = _optional_str(dag_payload.get("workflow_id")) or workflow_id
+    return {
+        "run_id": run_id or resolved.name,
+        "workflow_id": workflow_id,
+        "state": status,
+        "run_dir": str(resolved),
+    }
+
+
+def _record_workflow_run(payload: Mapping[str, object]) -> None:
+    run_dir_value = payload.get("run_dir")
+    if not isinstance(run_dir_value, str) or not run_dir_value:
+        return
+    run_dir = Path(run_dir_value)
+    metadata = _workflow_run_metadata(run_dir, payload)
+    now = _now_iso()
+    runs = _load_run_registry()
+    existing = next(
+        (item for item in runs if item.get("run_dir") == metadata["run_dir"]),
+        None,
+    )
+    started_at = now
+    if existing is not None:
+        started_at = str(existing.get("started_at") or now)
+        runs = [item for item in runs if item.get("run_dir") != metadata["run_dir"]]
+    entry: dict[str, object] = {
+        **metadata,
+        "started_at": started_at,
+        "updated_at": now,
+    }
+    runs.insert(0, entry)
+    _write_run_registry(runs)
+
+
+def _run_available(entry: Mapping[str, object]) -> bool:
+    run_dir = entry.get("run_dir")
+    if not isinstance(run_dir, str) or not run_dir:
+        return False
+    return (Path(run_dir).expanduser().resolve() / "dag-run.sqlite3").exists()
+
+
+def _run_entry_public_payload(entry: Mapping[str, object]) -> dict[str, object]:
+    available = _run_available(entry)
+    return {
+        "run_id": str(entry.get("run_id") or "UNKNOWN"),
+        "workflow_id": str(entry.get("workflow_id") or "UNKNOWN"),
+        "state": str(entry.get("state") or "UNKNOWN") if available else "UNAVAILABLE",
+        "started_at": str(entry.get("started_at") or ""),
+        "updated_at": str(entry.get("updated_at") or ""),
+        "run_dir": str(entry.get("run_dir") or ""),
+        "available": available,
+    }
+
+
+def _list_runs_payload(*, limit: int | None = None) -> dict[str, object]:
+    runs = [_run_entry_public_payload(entry) for entry in _load_run_registry()]
+    if limit is not None:
+        runs = runs[:limit]
+    return {
+        "schema": "tau.runs_list.v1",
+        "ok": True,
+        "status": "PASS",
+        "registry_path": str(_run_registry_path()),
+        "runs": runs,
+    }
+
+
+def _resolve_last_run_dir() -> Path:
+    runs = _load_run_registry()
+    if not runs:
+        raise RuntimeError("tau_run_registry_empty: run a workflow or pass --run-dir")
+    entry = runs[0]
+    public = _run_entry_public_payload(entry)
+    if public["available"] is not True:
+        run_dir = public["run_dir"] or "UNKNOWN"
+        raise RuntimeError(f"tau_last_run_unavailable: {run_dir}")
+    return Path(str(public["run_dir"]))
+
+
+def _parse_runs_cli_args(args: list[str]) -> tuple[dict[str, object], bool]:
+    if not args or args[0] != "list":
+        raise RuntimeError("Usage: tau runs list [--json] [--limit <n>]")
+    json_output = False
+    limit: int | None = None
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg == "--json":
+            json_output = True
+            index += 1
+            continue
+        if arg == "--limit":
+            if index + 1 >= len(args):
+                raise RuntimeError("--limit requires a value")
+            try:
+                limit = int(args[index + 1])
+            except ValueError as exc:
+                raise RuntimeError("--limit must be an integer") from exc
+            index += 2
+            continue
+        if arg.startswith("--limit="):
+            try:
+                limit = int(arg.partition("=")[2])
+            except ValueError as exc:
+                raise RuntimeError("--limit must be an integer") from exc
+            index += 1
+            continue
+        raise RuntimeError(f"unknown runs list option: {arg}")
+    if limit is not None and limit < 1:
+        raise RuntimeError("--limit must be at least 1")
+    return _list_runs_payload(limit=limit), json_output
+
+
+def _echo_runs_list(payload: Mapping[str, object]) -> None:
+    runs = payload.get("runs", [])
+    if not isinstance(runs, list):
+        raise RuntimeError("runs payload runs must be a list")
+    for run in runs:
+        if not isinstance(run, dict):
+            continue
+        typer.echo(
+            f"{run.get('run_id', 'UNKNOWN')}\t{run.get('workflow_id', 'UNKNOWN')}\t"
+            f"{run.get('state', 'UNKNOWN')}\t{run.get('started_at', '')}\t"
+            f"{run.get('run_dir', '')}"
+        )
 
 
 @workflows_app.command("describe")
@@ -501,6 +694,7 @@ def workflows_run_command(
             )
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
+    _record_workflow_run(payload)
     typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     if payload.get("ok") is not True:
         raise typer.Exit(1)
@@ -524,6 +718,7 @@ def workflows_approve_command(
         )
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
+    _record_workflow_run(payload)
     typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     if payload.get("ok") is not True:
         raise typer.Exit(1)
@@ -537,6 +732,7 @@ def workflows_resume_command(
         payload = resume_packaged_workflow(run_dir=run_dir)
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
+    _record_workflow_run(payload)
     typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     if payload.get("ok") is not True:
         raise typer.Exit(1)
@@ -562,6 +758,7 @@ def workflows_repair_command(
         )
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
+    _record_workflow_run(payload)
     typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     if payload.get("ok") is not True:
         raise typer.Exit(1)
@@ -1799,6 +1996,7 @@ def main(
         ["pdf-lab-second-pass-review"],
         ["replacement-harness-sanity"],
         ["run"],
+        ["runs"],
         ["scillm-chat-review"],
         ["workflows"],
         ["gs001-closure-publish"],
@@ -1861,6 +2059,17 @@ def main(
             typer.echo(f"Topology: {payload['topology']}")
         if payload.get("ok") is False:
             raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "runs":
+        try:
+            payload, json_output = _parse_runs_cli_args(positional_args[1:])
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if json_output:
+            typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        else:
+            _echo_runs_list(payload)
         raise typer.Exit()
 
     if not print_requested and not export and command == "sessions" and len(positional_args) == 1:
@@ -5313,23 +5522,37 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
                 index += 1
             elif arg.startswith("--approval-packet="):
                 approval_packet = Path(arg.partition("=")[2])
+            elif arg == "--last":
+                positional.append(arg)
             elif arg.startswith("-"):
                 raise RuntimeError(f"unknown workflows approve option: {arg}")
             else:
                 positional.append(arg)
-        if len(positional) != 1:
+        if positional == ["--last"]:
+            run_dir = _resolve_last_run_dir()
+        elif len(positional) == 1:
+            run_dir = Path(positional[0])
+        else:
             raise RuntimeError(
-                "Usage: tau workflows approve <run-dir> --approval-packet <approval.json>"
+                "Usage: tau workflows approve <run-dir>|--last "
+                "[--approval-packet <approval.json>]"
             )
         payload = approve_packaged_workflow(
-            run_dir=Path(positional[0]),
+            run_dir=run_dir,
             approval_packet=approval_packet,
         )
+        _record_workflow_run(payload)
         return dict(payload), True
     if subcommand == "resume":
-        if len(remaining) != 1:
-            raise RuntimeError(f"Usage: tau workflows {subcommand} <run-dir>")
-        return dict(resume_packaged_workflow(run_dir=Path(remaining[0]))), True
+        if remaining == ["--last"]:
+            run_dir = _resolve_last_run_dir()
+        elif len(remaining) == 1:
+            run_dir = Path(remaining[0])
+        else:
+            raise RuntimeError(f"Usage: tau workflows {subcommand} <run-dir>|--last")
+        payload = resume_packaged_workflow(run_dir=run_dir)
+        _record_workflow_run(payload)
+        return dict(payload), True
     if subcommand == "repair":
         approval_packet: Path | None = None
         node_id: str | None = None
@@ -5352,23 +5575,34 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
                 index += 1
             elif arg.startswith("--approval-packet="):
                 approval_packet = Path(arg.partition("=")[2])
+            elif arg == "--last":
+                positional.append(arg)
             elif arg.startswith("-"):
                 raise RuntimeError(f"unknown workflows repair option: {arg}")
             else:
                 positional.append(arg)
-        if len(positional) != 1 or node_id is None:
+        if positional == ["--last"]:
+            run_dir = _resolve_last_run_dir()
+        elif len(positional) == 1:
+            run_dir = Path(positional[0])
+        else:
             raise RuntimeError(
                 "Usage: tau workflows repair <run-dir> --node <node-id> "
                 "[--approval-packet <approval.json>]"
             )
+        if node_id is None:
+            raise RuntimeError(
+                "Usage: tau workflows repair <run-dir>|--last --node <node-id> "
+                "[--approval-packet <approval.json>]"
+            )
+        payload = repair_durable_repository_qualification(
+            run_dir=run_dir,
+            node_id=node_id,
+            approval_packet=approval_packet,
+        )
+        _record_workflow_run(payload)
         return (
-            dict(
-                repair_durable_repository_qualification(
-                    run_dir=Path(positional[0]),
-                    node_id=node_id,
-                    approval_packet=approval_packet,
-                )
-            ),
+            dict(payload),
             True,
         )
     if subcommand != "run":
@@ -5483,6 +5717,7 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
             browser_open="--no-browser-open" not in flags,
             viewer_hold_seconds=hold_seconds,
         )
+    _record_workflow_run(payload)
     return dict(payload), True
 
 
@@ -7014,14 +7249,18 @@ def _parse_permission_reply_cli_args(args: list[str]) -> dict[str, object]:
 
 
 def _parse_run_status_cli_args(args: list[str]) -> Path:
+    if args == ["--last"]:
+        return _resolve_last_run_dir()
     if len(args) != 1:
-        raise RuntimeError("Usage: tau run-status <run-dir>")
+        raise RuntimeError("Usage: tau run-status <run-dir>|--last")
     return Path(args[0])
 
 
 def _parse_dag_viewer_link_cli_args(args: list[str]) -> Path:
+    if args == ["--last"]:
+        return _resolve_last_run_dir()
     if len(args) != 1:
-        raise RuntimeError("Usage: tau dag-viewer-link <run-dir>")
+        raise RuntimeError("Usage: tau dag-viewer-link <run-dir>|--last")
     return Path(args[0])
 
 
@@ -8830,10 +9069,15 @@ def _parse_dag_view_cli_args(args: list[str], *, command: str) -> dict[str, obje
         "run_id": None,
         "after_sequence": 0,
         "limit": 200,
+        "last": False,
     }
     index = 0
     while index < len(args):
         argument = args[index]
+        if argument == "--last":
+            options["last"] = True
+            index += 1
+            continue
         if argument in {"--run-dir", "--run-id", "--after-sequence", "--limit", "--output"}:
             if index + 1 >= len(args):
                 raise RuntimeError(f"{argument} requires a value")
@@ -8857,8 +9101,14 @@ def _parse_dag_view_cli_args(args: list[str], *, command: str) -> dict[str, obje
             index += 2
             continue
         raise RuntimeError(f"unknown {command} option: {argument}")
+    if options["last"] and options["run_dir"] is not None:
+        raise RuntimeError("--last cannot be combined with --run-dir")
+    if options["last"]:
+        options["run_dir"] = _resolve_last_run_dir()
     if options["run_dir"] is None:
-        raise RuntimeError(f"Usage: tau {command} --run-dir <run-dir> [--run-id <run-id>]")
+        raise RuntimeError(
+            f"Usage: tau {command} --run-dir <run-dir>|--last [--run-id <run-id>]"
+        )
     if int(options["after_sequence"]) < 0 or not 1 <= int(options["limit"]) <= 5000:
         raise RuntimeError("dag_viewer_event_range_invalid")
     return options
@@ -8873,11 +9123,16 @@ def _parse_dag_view_serve_cli_args(
         "host": "127.0.0.1",
         "port": 0,
         "open": command == "dag-view" and sys.stdout.isatty(),
+        "last": False,
     }
     index = 0
     while index < len(args):
         argument = args[index]
         if argument == "--json":
+            index += 1
+            continue
+        if argument == "--last":
+            options["last"] = True
             index += 1
             continue
         if argument in {"--open", "--no-open"}:
@@ -8901,8 +9156,14 @@ def _parse_dag_view_serve_cli_args(
             except ValueError as exc:
                 raise RuntimeError("dag_viewer_port_invalid") from exc
         index += 2
+    if options["last"] and options["run_dir"] is not None:
+        raise RuntimeError("--last cannot be combined with --run-dir")
+    if options["last"]:
+        options["run_dir"] = _resolve_last_run_dir()
     if options["run_dir"] is None:
-        raise RuntimeError(f"Usage: tau {command} --run-dir <run-dir> [--run-id <run-id>]")
+        raise RuntimeError(
+            f"Usage: tau {command} --run-dir <run-dir>|--last [--run-id <run-id>]"
+        )
     return options
 
 
