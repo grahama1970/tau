@@ -1718,7 +1718,17 @@ def main(
             raise typer.BadParameter(str(exc)) from exc
 
     raw_positional_args = [*(prompt_args or []), *ctx.args]
-    if raw_positional_args[:1] in (["tui-proof"], ["browser-cdp-proof"]):
+    if raw_positional_args[:1] in (
+        ["browser-cdp-proof"],
+        ["dag-view"],
+        ["dag-view-capabilities"],
+        ["dag-view-events"],
+        ["dag-view-serve"],
+        ["dag-view-snapshot"],
+        ["dag-viewer-link"],
+        ["workflows"],
+        ["tui-proof"],
+    ):
         positional_args = raw_positional_args
         extension_flag_values = {}
     else:
