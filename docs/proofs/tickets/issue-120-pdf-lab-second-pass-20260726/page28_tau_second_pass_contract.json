@@ -1,0 +1,212 @@
+{
+  "context": {
+    "input_artifacts": {
+      "candidate_presets_json": {
+        "path": "artifacts/pdf_lab/live_second_pass_page28_vlm_free2_auth_prompt_repaired_orchestrator_live_20260721T1140Z/page_cases/page_case_0001_p0028/candidate_presets.json",
+        "sha256": "597fec8ba2694095e46e7a03e66540f0b2e855d1f9f44797497e5f27593227b5"
+      },
+      "page_before_json": {
+        "path": "artifacts/pdf_lab/live_second_pass_page28_vlm_free2_auth_prompt_repaired_orchestrator_live_20260721T1140Z/page_cases/page_case_0001_p0028/page_before.json",
+        "sha256": "e04786860b5c9946da99149d00912c5fb3f15d5c37c7555d36900f7889c14833"
+      },
+      "page_before_png": {
+        "path": "artifacts/pdf_lab/live_second_pass_page28_vlm_free2_auth_prompt_repaired_orchestrator_live_20260721T1140Z/page_cases/page_case_0001_p0028/page_before.png",
+        "sha256": "60b2e182813351f6ce023f21d75300f3312cb2136aa99ec450fcf35467d1cac4"
+      },
+      "page_candidates_png": {
+        "path": "artifacts/pdf_lab/live_second_pass_page28_vlm_free2_auth_prompt_repaired_orchestrator_live_20260721T1140Z/page_cases/page_case_0001_p0028/page_candidates.png",
+        "sha256": "3c4da8947a4b45e8d2d91fa35bb067a8dd9cc422ae27ac4753cacd71ac425418"
+      },
+      "review_request_json": {
+        "path": "artifacts/pdf_lab/live_second_pass_page28_vlm_free2_auth_prompt_repaired_orchestrator_live_20260721T1140Z/page_cases/page_case_0001_p0028/review_request.json",
+        "sha256": "8673d79890e646d8884c87a76330e6f0c35124c525e547487d8c08c7961a58c8"
+      }
+    },
+    "page_case": {
+      "candidate_ids": [
+        "cand:p0028:0000:side_chrome",
+        "cand:p0028:0001:side_chrome",
+        "cand:p0028:0002:side_chrome",
+        "cand:p0028:0003:side_chrome",
+        "cand:p0028:0004:section_heading",
+        "cand:p0028:0005:section_heading",
+        "cand:p0028:0006:text",
+        "cand:p0028:0007:text",
+        "cand:p0028:0008:text",
+        "cand:p0028:0009:text",
+        "cand:p0028:0010:list",
+        "cand:p0028:0011:footnote",
+        "cand:p0028:0012:footnote",
+        "cand:p0028:0013:footnote",
+        "cand:p0028:0014:footnote",
+        "cand:p0028:0015:footnote",
+        "cand:p0028:0016:footnote",
+        "cand:p0028:0017:footnote"
+      ],
+      "case_id": "page_case_0001_p0028",
+      "forced_by_human_annotation": true,
+      "page_index": 27,
+      "page_number": 28,
+      "preset_counts": {
+        "footnote": 7,
+        "list": 1,
+        "section_heading": 2,
+        "side_chrome": 4,
+        "text": 4
+      },
+      "selection_probability_basis": {
+        "candidate_count_on_page": 18,
+        "candidate_share_estimate": 1.0,
+        "forced_page": true,
+        "method": "forced_human_annotation",
+        "page_score": 64.5,
+        "total_candidate_count": 18,
+        "total_page_score": 64.5,
+        "weighted_page_score_inclusion_estimate": 1.0
+      },
+      "selection_probability_estimate": 1.0,
+      "selection_reason": [
+        "human_annotated_page",
+        "high_risk_preset",
+        "high_risk_candidate",
+        "boundary_geometry",
+        "high_candidate_score"
+      ],
+      "selection_score": 64.5,
+      "strata": [
+        "geometry:boundary",
+        "preset:footnote",
+        "preset:list",
+        "preset:section_heading",
+        "preset:side_chrome",
+        "preset:text",
+        "risk:high"
+      ]
+    },
+    "required_tau_output_contract": {
+      "allowed_terminal_results": [
+        "reviewed_clean",
+        "still_open",
+        "blocked_substrate",
+        "human_needed"
+      ],
+      "forbidden": [
+        "pdf_oxide_http_model_call",
+        "pdf_oxide_scillm_preflight",
+        "missing_work_order_sha256",
+        "unvalidated_model_response"
+      ],
+      "must_include": [
+        "tau_work_order_sha256",
+        "route_owner=tau",
+        "provider_live",
+        "model_transport_invoked_by_tau",
+        "model_response_artifact",
+        "parseable_review_response_json",
+        "review_validation_artifact",
+        "terminal_result"
+      ],
+      "schema": "pdf_lab.tau_second_pass_review_receipt.v1"
+    },
+    "route_boundary": {
+      "blocked_guard_receipt": "artifacts/pdf_lab/live_second_pass_page28_vlm_free2_auth_prompt_repaired_orchestrator_live_20260721T1140Z/page_cases/page_case_0001_p0028/scillm_review_error.json",
+      "pdf_oxide_direct_model_transport": "forbidden",
+      "required_owner": "tau",
+      "tau_issue": "https://github.com/grahama1970/tau/issues/120"
+    },
+    "schema": "pdf_lab.tau_second_pass_context.v1"
+  },
+  "dag_id": "pdf-lab-page28-second-pass-review-20260726T1435Z",
+  "edges": [
+    {
+      "from": "tau-native-second-pass-review",
+      "to": "project-agent-audit"
+    },
+    {
+      "from": "project-agent-audit",
+      "to": "human"
+    }
+  ],
+  "entry_node": "tau-native-second-pass-review",
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "unexpected_node",
+    "unexpected_edge",
+    "missing_required_evidence",
+    "max_attempts_exceeded",
+    "malformed_handoff",
+    "invalid_provider_receipt",
+    "missing_work_order_sha256",
+    "provider_auth_required",
+    "unresolved_block_alert"
+  ],
+  "goal": {
+    "goal_hash": "sha256:43810ac3a5d7762caf4f43cf0d6259d18108b8a19e29daefde1bb86073997978",
+    "goal_id": "pdf-lab-all-page-candidates",
+    "goal_version": "2026-07-26-page28-tau-owned-retry"
+  },
+  "limits": {
+    "default_timeout_seconds": 900,
+    "max_total_attempts": 2,
+    "provider_command_timeout_seconds": 900,
+    "resume": true
+  },
+  "nodes": [
+    {
+      "agent": "tau-pdf-lab-second-pass-reviewer",
+      "context": {
+        "must_not_call_from_pdf_oxide": true,
+        "required_action": "Execute Tau-owned PDF Lab model transport for page_case_0001_p0028."
+      },
+      "executor": "local",
+      "id": "tau-native-second-pass-review",
+      "max_attempts": 1,
+      "required_evidence": [
+        "tau_work_order_sha256",
+        "provider_readiness_receipt",
+        "model_response_artifact",
+        "parseable_review_response_json",
+        "review_validation_artifact",
+        "tau_second_pass_review_receipt"
+      ]
+    },
+    {
+      "agent": "pdf-oxide-project-agent",
+      "context": {
+        "required_action": "Reconcile Tau receipt with page28 artifacts before any pdf_oxide patch."
+      },
+      "executor": "local",
+      "id": "project-agent-audit",
+      "max_attempts": 1,
+      "required_evidence": [
+        "tau_second_pass_review_receipt",
+        "review_validation_artifact",
+        "terminal_ledger_update",
+        "focused_local_test_or_block_receipt"
+      ]
+    }
+  ],
+  "provider_sensitive": true,
+  "required_evidence": [
+    "tau_work_order_sha256",
+    "tau_second_pass_review_receipt",
+    "review_validation_artifact",
+    "project_agent_audit_receipt"
+  ],
+  "requires_provider_route": true,
+  "schema": "tau.dag_contract.v1",
+  "target": {
+    "allowed_paths": [
+      "artifacts/pdf_lab/live_second_pass_page28_vlm_free2_auth_prompt_repaired_orchestrator_live_20260721T1140Z/page_cases/page_case_0001_p0028/**"
+    ],
+    "branch": "codex/pdf-lab-next-page-20260721",
+    "commit": "cb54da4d053cbdc61f9afa64916daf90cfc75698",
+    "repo": "grahama1970/pdf_oxide",
+    "target": "pdf-lab page_case_0001_p0028 second-pass model review"
+  },
+  "terminal_nodes": [
+    "project-agent-audit",
+    "human"
+  ]
+}

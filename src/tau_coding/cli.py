@@ -174,6 +174,7 @@ from tau_coding.orchestration_redteam import run_orchestration_redteam
 from tau_coding.orchestration_reliability import write_orchestration_reliability_receipt
 from tau_coding.package_validate import write_compliance_package_validation_receipt
 from tau_coding.paths import TauPaths
+from tau_coding.pdf_lab_second_pass_review import write_pdf_lab_second_pass_review_receipt
 from tau_coding.permission_receipts import (
     write_permission_reply_receipt,
     write_permission_request_receipt,
@@ -1780,7 +1781,9 @@ def main(
         ["dag-viewer-link"],
         ["github-redact-projection"],
         ["herdr-cleanup"],
+        ["pdf-lab-second-pass-review"],
         ["replacement-harness-sanity"],
+        ["scillm-chat-review"],
         ["workflows"],
         ["gs001-closure-publish"],
         ["tui-proof"],
@@ -3280,6 +3283,30 @@ def main(
                 response_output_path=(
                     Path(str(options["response_out"]))
                     if options.get("response_out") is not None
+                    else None
+                ),
+                scillm_base_url=str(options["scillm_base_url"]),
+                caller_skill=str(options["caller_skill"]),
+                apply=bool(options["apply"]),
+                auth_token=_optional_str(options.get("auth_token")),
+                request_timeout_s=int(options["request_timeout_s"]),
+                timeout_diagnosis_mode=str(options["timeout_diagnosis_mode"]),
+                timeout_diagnosis_timeout_s=int(options["timeout_diagnosis_timeout_s"]),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
+
+    if not print_requested and command == "pdf-lab-second-pass-review":
+        try:
+            options = _parse_pdf_lab_second_pass_review_cli_args(positional_args[1:])
+            payload = write_pdf_lab_second_pass_review_receipt(
+                contract_path=Path(str(options["contract"])),
+                output_path=Path(str(options["out"])),
+                artifact_root=(
+                    Path(str(options["artifact_root"]))
+                    if options.get("artifact_root") is not None
                     else None
                 ),
                 scillm_base_url=str(options["scillm_base_url"]),
@@ -7904,6 +7931,76 @@ def _parse_scillm_chat_review_cli_args(args: list[str]) -> dict[str, object]:
         raise RuntimeError("Usage: tau scillm-chat-review --request <json> --out <receipt>")
     if not _optional_str(options.get("out")):
         raise RuntimeError("Usage: tau scillm-chat-review --request <json> --out <receipt>")
+    return options
+
+
+def _parse_pdf_lab_second_pass_review_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "contract": None,
+        "out": None,
+        "artifact_root": None,
+        "scillm_base_url": "http://localhost:4001",
+        "caller_skill": "pdf-lab",
+        "apply": False,
+        "auth_token": None,
+        "request_timeout_s": 900,
+        "timeout_diagnosis_mode": "live_canary",
+        "timeout_diagnosis_timeout_s": 30,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--contract",
+            "--out",
+            "--artifact-root",
+            "--scillm-base-url",
+            "--caller-skill",
+            "--auth-token",
+            "--request-timeout-s",
+            "--timeout-diagnosis-mode",
+            "--timeout-diagnosis-timeout-s",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            key = arg.removeprefix("--").replace("-", "_")
+            options[key] = (
+                int(args[index])
+                if key in {"request_timeout_s", "timeout_diagnosis_timeout_s"}
+                else args[index]
+            )
+        elif arg.startswith("--contract="):
+            options["contract"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--artifact-root="):
+            options["artifact_root"] = arg.partition("=")[2]
+        elif arg.startswith("--scillm-base-url="):
+            options["scillm_base_url"] = arg.partition("=")[2]
+        elif arg.startswith("--caller-skill="):
+            options["caller_skill"] = arg.partition("=")[2]
+        elif arg.startswith("--auth-token="):
+            options["auth_token"] = arg.partition("=")[2]
+        elif arg.startswith("--request-timeout-s="):
+            options["request_timeout_s"] = int(arg.partition("=")[2])
+        elif arg.startswith("--timeout-diagnosis-mode="):
+            options["timeout_diagnosis_mode"] = arg.partition("=")[2]
+        elif arg.startswith("--timeout-diagnosis-timeout-s="):
+            options["timeout_diagnosis_timeout_s"] = int(arg.partition("=")[2])
+        elif arg == "--apply":
+            options["apply"] = True
+        else:
+            raise RuntimeError(f"unknown pdf-lab-second-pass-review option: {arg}")
+        index += 1
+    if not _optional_str(options.get("contract")):
+        raise RuntimeError(
+            "Usage: tau pdf-lab-second-pass-review --contract <json> --out <receipt>"
+        )
+    if not _optional_str(options.get("out")):
+        raise RuntimeError(
+            "Usage: tau pdf-lab-second-pass-review --contract <json> --out <receipt>"
+        )
     return options
 
 

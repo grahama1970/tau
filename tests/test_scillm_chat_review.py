@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -312,6 +313,60 @@ def test_scillm_chat_review_timeout_canary_classifies_provider_quota(
     assert "review_response_not_parseable" not in payload["alert_codes"]
 
 
+def test_pdf_lab_second_pass_review_cli_apply_writes_tau_owned_receipt(
+    tmp_path: Path,
+) -> None:
+    server, base_url, requests = _start_fake_chat_server()
+    request = _write_review_request(tmp_path)
+    contract = _write_pdf_lab_contract(tmp_path, request)
+    out = tmp_path / "tau_second_pass_review_receipt.json"
+    try:
+        result = CliRunner().invoke(
+            app,
+            [
+                "pdf-lab-second-pass-review",
+                "--contract",
+                str(contract),
+                "--out",
+                str(out),
+                "--artifact-root",
+                str(tmp_path),
+                "--scillm-base-url",
+                base_url,
+                "--caller-skill",
+                "pdf-lab",
+                "--apply",
+                "--auth-token",
+                "test-token",
+                "--request-timeout-s",
+                "5",
+                "--timeout-diagnosis-mode",
+                "off",
+            ],
+        )
+    finally:
+        server.shutdown()
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["schema"] == "pdf_lab.tau_second_pass_review_receipt.v1"
+    assert payload["route_owner"] == "tau"
+    assert payload["tau_owned_transport"] is True
+    assert payload["model_transport_invoked_by_tau"] is True
+    assert payload["provider_live"] is True
+    assert payload["terminal_result"] == "reviewed_clean"
+    assert payload["review_validation"]["ok"] is True
+    assert payload["review_validation"]["expected_candidate_ids"] == [
+        "cand:p0041:0000:side_chrome"
+    ]
+    assert payload["review_validation"]["seen_candidate_ids"] == [
+        "cand:p0041:0000:side_chrome"
+    ]
+    assert requests[0]["path"] == "/v1/chat/completions"
+    assert requests[0]["caller_skill"] == "pdf-lab"
+
+
 def _write_review_request(tmp_path: Path) -> Path:
     request = {
         "schema": "pdf_lab.second_pass.review_request.v1",
@@ -350,6 +405,50 @@ def _write_review_request(tmp_path: Path) -> Path:
     path = tmp_path / "review_request.json"
     path.write_text(json.dumps(request, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
+
+
+def _write_pdf_lab_contract(tmp_path: Path, request_path: Path) -> Path:
+    candidate_presets = tmp_path / "candidate_presets.json"
+    candidate_presets.write_text(
+        json.dumps({"schema": "pdf_lab.second_pass.candidate_presets.v1"}, sort_keys=True),
+        encoding="utf-8",
+    )
+    page_before = tmp_path / "page_before.json"
+    page_before.write_text(
+        json.dumps({"schema": "pdf_lab.page_before.v1"}, sort_keys=True),
+        encoding="utf-8",
+    )
+    contract = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": "pdf-lab-page41-second-pass-review-test",
+        "provider_sensitive": True,
+        "requires_provider_route": True,
+        "goal": {"goal_hash": "sha256:test"},
+        "target": {"repo": "grahama1970/pdf_oxide"},
+        "context": {
+            "schema": "pdf_lab.tau_second_pass_context.v1",
+            "route_boundary": {
+                "pdf_oxide_direct_model_transport": "forbidden",
+                "required_owner": "tau",
+            },
+            "input_artifacts": {
+                "review_request_json": _artifact_descriptor(tmp_path, request_path),
+                "candidate_presets_json": _artifact_descriptor(tmp_path, candidate_presets),
+                "page_before_json": _artifact_descriptor(tmp_path, page_before),
+            },
+        },
+        "entry_node": "tau-native-second-pass-review",
+    }
+    path = tmp_path / "tau_pdf_lab_second_pass_contract.json"
+    path.write_text(json.dumps(contract, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def _artifact_descriptor(root: Path, path: Path) -> dict[str, str]:
+    return {
+        "path": str(path.relative_to(root)),
+        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+    }
 
 
 def _start_fake_chat_server(

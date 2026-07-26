@@ -1,0 +1,314 @@
+{
+  "alert_codes": [
+    "scillm_chat_review:scillm_chat_review_route_exhausted"
+  ],
+  "alerts": [
+    {
+      "code": "scillm_chat_review:scillm_chat_review_route_exhausted",
+      "message": "SciLLM chat review route exhausted all provider groups",
+      "severity": "BLOCK"
+    }
+  ],
+  "apply_requested": true,
+  "artifact_root": "/tmp/tau-issue-120-20260726T143501Z/page28-artifacts",
+  "blocked_reason": "scillm_chat_review_route_exhausted",
+  "contract_schema": "tau.dag_contract.v1",
+  "created_at": "2026-07-26T14:36:11Z",
+  "dag_id": "pdf-lab-page28-second-pass-review-20260726T1435Z",
+  "dry_run": false,
+  "duration_seconds": 0.66128,
+  "entry_node": "tau-native-second-pass-review",
+  "forbidden_transport_owner": "pdf_oxide",
+  "goal": {
+    "goal_hash": "sha256:43810ac3a5d7762caf4f43cf0d6259d18108b8a19e29daefde1bb86073997978",
+    "goal_id": "pdf-lab-all-page-candidates",
+    "goal_version": "2026-07-26-page28-tau-owned-retry"
+  },
+  "input_artifacts": [
+    {
+      "actual_sha256": "sha256:597fec8ba2694095e46e7a03e66540f0b2e855d1f9f44797497e5f27593227b5",
+      "bytes": 18330,
+      "exists": true,
+      "expected_sha256": "sha256:597fec8ba2694095e46e7a03e66540f0b2e855d1f9f44797497e5f27593227b5",
+      "label": "candidate_presets_json",
+      "path": "/tmp/tau-issue-120-20260726T143501Z/page28-artifacts/artifacts/pdf_lab/live_second_pass_page28_vlm_free2_auth_prompt_repaired_orchestrator_live_20260721T1140Z/page_cases/page_case_0001_p0028/candidate_presets.json"
+    },
+    {
+      "actual_sha256": "sha256:e04786860b5c9946da99149d00912c5fb3f15d5c37c7555d36900f7889c14833",
+      "bytes": 23640,
+      "exists": true,
+      "expected_sha256": "sha256:e04786860b5c9946da99149d00912c5fb3f15d5c37c7555d36900f7889c14833",
+      "label": "page_before_json",
+      "path": "/tmp/tau-issue-120-20260726T143501Z/page28-artifacts/artifacts/pdf_lab/live_second_pass_page28_vlm_free2_auth_prompt_repaired_orchestrator_live_20260721T1140Z/page_cases/page_case_0001_p0028/page_before.json"
+    },
+    {
+      "actual_sha256": "sha256:60b2e182813351f6ce023f21d75300f3312cb2136aa99ec450fcf35467d1cac4",
+      "bytes": 94357,
+      "exists": true,
+      "expected_sha256": "sha256:60b2e182813351f6ce023f21d75300f3312cb2136aa99ec450fcf35467d1cac4",
+      "label": "page_before_png",
+      "path": "/tmp/tau-issue-120-20260726T143501Z/page28-artifacts/artifacts/pdf_lab/live_second_pass_page28_vlm_free2_auth_prompt_repaired_orchestrator_live_20260721T1140Z/page_cases/page_case_0001_p0028/page_before.png"
+    },
+    {
+      "actual_sha256": "sha256:3c4da8947a4b45e8d2d91fa35bb067a8dd9cc422ae27ac4753cacd71ac425418",
+      "bytes": 99582,
+      "exists": true,
+      "expected_sha256": "sha256:3c4da8947a4b45e8d2d91fa35bb067a8dd9cc422ae27ac4753cacd71ac425418",
+      "label": "page_candidates_png",
+      "path": "/tmp/tau-issue-120-20260726T143501Z/page28-artifacts/artifacts/pdf_lab/live_second_pass_page28_vlm_free2_auth_prompt_repaired_orchestrator_live_20260721T1140Z/page_cases/page_case_0001_p0028/page_candidates.png"
+    },
+    {
+      "actual_sha256": "sha256:8673d79890e646d8884c87a76330e6f0c35124c525e547487d8c08c7961a58c8",
+      "bytes": 305268,
+      "exists": true,
+      "expected_sha256": "sha256:8673d79890e646d8884c87a76330e6f0c35124c525e547487d8c08c7961a58c8",
+      "label": "review_request_json",
+      "path": "/tmp/tau-issue-120-20260726T143501Z/page28-artifacts/artifacts/pdf_lab/live_second_pass_page28_vlm_free2_auth_prompt_repaired_orchestrator_live_20260721T1140Z/page_cases/page_case_0001_p0028/review_request.json"
+    }
+  ],
+  "live": true,
+  "mocked": false,
+  "model_response_artifact": null,
+  "model_transport_invoked_by_tau": true,
+  "model_transport_policy": {
+    "decomposition": [
+      "one Tau work order per PDF Lab page case",
+      "one model-ready review_request.json per page case",
+      "exactly one finding per expected candidate_id in request order"
+    ],
+    "endpoint": "/v1/chat/completions",
+    "owner": "tau",
+    "request_timeout_s": 900,
+    "retry_policy": [
+      "retry once without response_format when SciLLM rejects response_format with 400/404/422",
+      "on timeout, optionally run a minimal Tau-owned live canary before page payload retry"
+    ],
+    "surface": "scillm.chat_completions",
+    "timeout_diagnosis_mode": "live_canary",
+    "timeout_diagnosis_timeout_s": 30
+  },
+  "ok": false,
+  "page_case": {
+    "candidate_ids": [
+      "cand:p0028:0000:side_chrome",
+      "cand:p0028:0001:side_chrome",
+      "cand:p0028:0002:side_chrome",
+      "cand:p0028:0003:side_chrome",
+      "cand:p0028:0004:section_heading",
+      "cand:p0028:0005:section_heading",
+      "cand:p0028:0006:text",
+      "cand:p0028:0007:text",
+      "cand:p0028:0008:text",
+      "cand:p0028:0009:text",
+      "cand:p0028:0010:list",
+      "cand:p0028:0011:footnote",
+      "cand:p0028:0012:footnote",
+      "cand:p0028:0013:footnote",
+      "cand:p0028:0014:footnote",
+      "cand:p0028:0015:footnote",
+      "cand:p0028:0016:footnote",
+      "cand:p0028:0017:footnote"
+    ],
+    "case_id": "page_case_0001_p0028",
+    "forced_by_human_annotation": true,
+    "page_index": 27,
+    "page_number": 28,
+    "preset_counts": {
+      "footnote": 7,
+      "list": 1,
+      "section_heading": 2,
+      "side_chrome": 4,
+      "text": 4
+    },
+    "selection_probability_basis": {
+      "candidate_count_on_page": 18,
+      "candidate_share_estimate": 1.0,
+      "forced_page": true,
+      "method": "forced_human_annotation",
+      "page_score": 64.5,
+      "total_candidate_count": 18,
+      "total_page_score": 64.5,
+      "weighted_page_score_inclusion_estimate": 1.0
+    },
+    "selection_probability_estimate": 1.0,
+    "selection_reason": [
+      "human_annotated_page",
+      "high_risk_preset",
+      "high_risk_candidate",
+      "boundary_geometry",
+      "high_candidate_score"
+    ],
+    "selection_score": 64.5,
+    "strata": [
+      "geometry:boundary",
+      "preset:footnote",
+      "preset:list",
+      "preset:section_heading",
+      "preset:side_chrome",
+      "preset:text",
+      "risk:high"
+    ]
+  },
+  "parseable_review_response_json": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "The model's semantic judgment is correct.",
+      "Any pdf_oxide patch should be applied without downstream project-agent audit.",
+      "A dry run invoked live provider transport."
+    ],
+    "proves": [
+      "Tau accepted and hash-checked a PDF Lab second-pass DAG contract.",
+      "Tau, not pdf_oxide, owned the configured SciLLM chat-completions transport.",
+      "Tau wrote a terminal PDF Lab receipt naming provider route, retry policy, timeout policy, and review validation."
+    ]
+  },
+  "provider_live": false,
+  "review_validation": {
+    "candidate_count": 18,
+    "duplicate_seen_candidate_ids": [],
+    "errors": [
+      "review_response_file is missing"
+    ],
+    "expected_candidate_ids": [
+      "cand:p0028:0000:side_chrome",
+      "cand:p0028:0001:side_chrome",
+      "cand:p0028:0002:side_chrome",
+      "cand:p0028:0003:side_chrome",
+      "cand:p0028:0004:section_heading",
+      "cand:p0028:0005:section_heading",
+      "cand:p0028:0006:text",
+      "cand:p0028:0007:text",
+      "cand:p0028:0008:text",
+      "cand:p0028:0009:text",
+      "cand:p0028:0010:list",
+      "cand:p0028:0011:footnote",
+      "cand:p0028:0012:footnote",
+      "cand:p0028:0013:footnote",
+      "cand:p0028:0014:footnote",
+      "cand:p0028:0015:footnote",
+      "cand:p0028:0016:footnote",
+      "cand:p0028:0017:footnote"
+    ],
+    "missing_candidate_ids": [
+      "cand:p0028:0000:side_chrome",
+      "cand:p0028:0001:side_chrome",
+      "cand:p0028:0002:side_chrome",
+      "cand:p0028:0003:side_chrome",
+      "cand:p0028:0004:section_heading",
+      "cand:p0028:0005:section_heading",
+      "cand:p0028:0006:text",
+      "cand:p0028:0007:text",
+      "cand:p0028:0008:text",
+      "cand:p0028:0009:text",
+      "cand:p0028:0010:list",
+      "cand:p0028:0011:footnote",
+      "cand:p0028:0012:footnote",
+      "cand:p0028:0013:footnote",
+      "cand:p0028:0014:footnote",
+      "cand:p0028:0015:footnote",
+      "cand:p0028:0016:footnote",
+      "cand:p0028:0017:footnote"
+    ],
+    "ok": false,
+    "page_case": {
+      "candidate_ids": [
+        "cand:p0028:0000:side_chrome",
+        "cand:p0028:0001:side_chrome",
+        "cand:p0028:0002:side_chrome",
+        "cand:p0028:0003:side_chrome",
+        "cand:p0028:0004:section_heading",
+        "cand:p0028:0005:section_heading",
+        "cand:p0028:0006:text",
+        "cand:p0028:0007:text",
+        "cand:p0028:0008:text",
+        "cand:p0028:0009:text",
+        "cand:p0028:0010:list",
+        "cand:p0028:0011:footnote",
+        "cand:p0028:0012:footnote",
+        "cand:p0028:0013:footnote",
+        "cand:p0028:0014:footnote",
+        "cand:p0028:0015:footnote",
+        "cand:p0028:0016:footnote",
+        "cand:p0028:0017:footnote"
+      ],
+      "case_id": "page_case_0001_p0028",
+      "forced_by_human_annotation": true,
+      "page_index": 27,
+      "page_number": 28,
+      "preset_counts": {
+        "footnote": 7,
+        "list": 1,
+        "section_heading": 2,
+        "side_chrome": 4,
+        "text": 4
+      },
+      "selection_probability_basis": {
+        "candidate_count_on_page": 18,
+        "candidate_share_estimate": 1.0,
+        "forced_page": true,
+        "method": "forced_human_annotation",
+        "page_score": 64.5,
+        "total_candidate_count": 18,
+        "total_page_score": 64.5,
+        "weighted_page_score_inclusion_estimate": 1.0
+      },
+      "selection_probability_estimate": 1.0,
+      "selection_reason": [
+        "human_annotated_page",
+        "high_risk_preset",
+        "high_risk_candidate",
+        "boundary_geometry",
+        "high_candidate_score"
+      ],
+      "selection_score": 64.5,
+      "strata": [
+        "geometry:boundary",
+        "preset:footnote",
+        "preset:list",
+        "preset:section_heading",
+        "preset:side_chrome",
+        "preset:text",
+        "risk:high"
+      ]
+    },
+    "page_status": null,
+    "response_parseable": false,
+    "schema": "pdf_lab.second_pass.review_validation.v1",
+    "seen_candidate_ids": [],
+    "unexpected_candidate_ids": []
+  },
+  "review_validation_artifact": "/tmp/tau-issue-120-20260726T143501Z/live/review_validation.json",
+  "route_owner": "tau",
+  "schema": "pdf_lab.tau_second_pass_review_receipt.v1",
+  "scillm_chat_review": {
+    "alert_codes": [
+      "scillm_chat_review_route_exhausted"
+    ],
+    "http_executed": true,
+    "http_status": 400,
+    "live": true,
+    "ok": false,
+    "provider_live": false,
+    "recommended_next_action": "do not retry PDF Lab page payloads against this model route; repair the route, wait for provider cooldown/quota recovery, or switch Tau to an approved healthy model route, then require a minimal Tau canary PASS",
+    "root_cause_code": "scillm_chat_review_route_exhausted",
+    "schema": "tau.scillm_chat_review_receipt.v1",
+    "status": "BLOCKED",
+    "timed_out": false
+  },
+  "scillm_chat_review_receipt": "/tmp/tau-issue-120-20260726T143501Z/live/scillm_chat_review_receipt.json",
+  "status": "BLOCKED",
+  "target": {
+    "allowed_paths": [
+      "artifacts/pdf_lab/live_second_pass_page28_vlm_free2_auth_prompt_repaired_orchestrator_live_20260721T1140Z/page_cases/page_case_0001_p0028/**"
+    ],
+    "branch": "codex/pdf-lab-next-page-20260721",
+    "commit": "cb54da4d053cbdc61f9afa64916daf90cfc75698",
+    "repo": "grahama1970/pdf_oxide",
+    "target": "pdf-lab page_case_0001_p0028 second-pass model review"
+  },
+  "tau_owned_transport": true,
+  "tau_work_order_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-120-pdf-lab-second-pass-20260726/page28_tau_second_pass_contract.json",
+  "tau_work_order_sha256": "sha256:84f6747016fb0c7973859b01a97f83c9be456855327e36f3f5f1f6a5338d9919",
+  "terminal_result": "blocked_substrate",
+  "verdict": "BLOCKED"
+}

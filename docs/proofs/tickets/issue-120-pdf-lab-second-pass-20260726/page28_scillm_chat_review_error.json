@@ -1,0 +1,15 @@
+{
+  "body_excerpt": "{\"error\":{\"message\":\"All groups exhausted for model='vlm-free2' (chain=['vlm-free2']): Error code: 400 - [{'error': {'code': 400, 'message': 'Please pass a valid API key', 'status': 'INVALID_ARGUMENT'}}]\",\"type\":\"router_error\",\"code\":400,\"advice\":\"All providers failed after exhausting fallbacks. Check /v1/scillm/health for provider status. If batch processing, use CHUNK_SIZE=4 to reduce concurrent load on providers.\",\"skill\":\"/best-practices-scillm\"}}",
+  "error": "HTTP Error 400: Bad Request",
+  "http_status": 400,
+  "response_format_retry_reason": {
+    "body_excerpt": "{\"error\":{\"message\":\"All groups exhausted for model='vlm-free2' (chain=['vlm-free2']): Error code: 400 - [{'error': {'code': 400, 'message': 'Please pass a valid API key', 'status': 'INVALID_ARGUMENT'}}]\",\"type\":\"router_error\",\"code\":400,\"advice\":\"All providers failed after exhausting fallbacks. Check /v1/scillm/health for provider status. If batch processing, use CHUNK_SIZE=4 to reduce concurrent load on providers.\",\"skill\":\"/best-practices-scillm\"}}",
+    "error": "HTTP Error 400: Bad Request",
+    "http_status": 400,
+    "response_format_retry_reason": null,
+    "status": "HTTP_ERROR",
+    "timed_out": false
+  },
+  "status": "HTTP_ERROR",
+  "timed_out": false
+}

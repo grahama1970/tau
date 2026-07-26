@@ -1,0 +1,87 @@
+{
+  "alert_codes": [
+    "scillm_chat_review_route_exhausted"
+  ],
+  "alerts": [
+    {
+      "code": "scillm_chat_review_route_exhausted",
+      "errors": [
+        "HTTP Error 400: Bad Request"
+      ],
+      "message": "SciLLM chat review route exhausted all provider groups",
+      "severity": "BLOCK"
+    }
+  ],
+  "apply_requested": true,
+  "caller_skill": "pdf-lab",
+  "created_at": "2026-07-26T14:36:11Z",
+  "dry_run": false,
+  "duration_seconds": 0.659159,
+  "endpoint": "/v1/chat/completions",
+  "error_bytes": 1313,
+  "error_path": "/tmp/tau-issue-120-20260726T143501Z/live/scillm_chat_review_receipt.error.json",
+  "error_sha256": "sha256:a1d9a92dae6ce3a4a1c0ada80912309a965fcdb4c17cdc61ad9b67c317bb1589",
+  "headers": {
+    "authorization": "REDACTED",
+    "authorization_source": "explicit",
+    "content_type": "application/json",
+    "x_caller_skill": "pdf-lab"
+  },
+  "http_executed": true,
+  "http_status": 400,
+  "launch_skipped": false,
+  "live": true,
+  "mocked": false,
+  "model": "vlm-free2",
+  "ok": false,
+  "parsed_candidate_finding_count": null,
+  "parsed_page_status": null,
+  "parsed_response_schema": null,
+  "provider_live": false,
+  "raw_response_bytes": 455,
+  "raw_response_path": "/tmp/tau-issue-120-20260726T143501Z/live/scillm_chat_review_receipt.raw-response.json",
+  "raw_response_sha256": "sha256:c6bfebee9fd630c905b2ec7a232d5b221321e549576fca2cc4aabf5008087ac9",
+  "recommended_next_action": "do not retry PDF Lab page payloads against this model route; repair the route, wait for provider cooldown/quota recovery, or switch Tau to an approved healthy model route, then require a minimal Tau canary PASS",
+  "request_payload": {
+    "message_count": 1,
+    "messages": "<redacted-review-request-messages>",
+    "model": "vlm-free2",
+    "response_format": {
+      "type": "json_object"
+    },
+    "scillm_metadata": {
+      "batch_id": "pdf-lab-second-pass",
+      "case_id": "page_case_0001_p0028",
+      "item_id": "page_case_0001_p0028:be892c739f145e40",
+      "request_sha256": "be892c739f145e40e029541d9dddee8b48bccc2f307f1e4c4cf34963789ef044"
+    },
+    "temperature": 0
+  },
+  "request_timeout_s": 900,
+  "response_format": {
+    "type": "json_object"
+  },
+  "response_output_bytes": null,
+  "response_output_path": "/tmp/tau-issue-120-20260726T143501Z/live/review_response.json",
+  "response_output_sha256": null,
+  "review_request_bytes": 305268,
+  "review_request_path": "/tmp/tau-issue-120-20260726T143501Z/page28-artifacts/artifacts/pdf_lab/live_second_pass_page28_vlm_free2_auth_prompt_repaired_orchestrator_live_20260721T1140Z/page_cases/page_case_0001_p0028/review_request.json",
+  "review_request_sha256": "sha256:8673d79890e646d8884c87a76330e6f0c35124c525e547487d8c08c7961a58c8",
+  "root_cause_basis": "SciLLM router reported all groups or providers exhausted",
+  "root_cause_code": "scillm_chat_review_route_exhausted",
+  "schema": "tau.scillm_chat_review_receipt.v1",
+  "scillm_base_url": "http://localhost:4001",
+  "scillm_metadata": {
+    "batch_id": "pdf-lab-second-pass",
+    "case_id": "page_case_0001_p0028",
+    "item_id": "page_case_0001_p0028:be892c739f145e40",
+    "request_sha256": "be892c739f145e40e029541d9dddee8b48bccc2f307f1e4c4cf34963789ef044"
+  },
+  "status": "BLOCKED",
+  "surface": "scillm.chat_completions",
+  "timed_out": false,
+  "timeout_diagnosis": null,
+  "timeout_diagnosis_mode": "live_canary",
+  "timeout_diagnosis_timeout_s": 30,
+  "url": "http://localhost:4001/v1/chat/completions"
+}
