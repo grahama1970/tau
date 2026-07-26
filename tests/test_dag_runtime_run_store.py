@@ -96,6 +96,56 @@ def test_store_open_converts_sqlite_error_to_typed_store_error(tmp_path: Path) -
         SqliteDagRunStore(corrupt)
 
 
+def test_store_migrates_v1_journal_and_preserves_resume_state(tmp_path: Path) -> None:
+    plan = _plan(tmp_path, ["producer"])
+    database = tmp_path / "run.sqlite3"
+    with SqliteDagRunStore(database) as store:
+        lease = store.acquire_run(plan=plan, run_id="run-1", owner_id="owner-a")
+        store.release_lease(lease)
+
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "UPDATE dag_store_meta SET value = '1' WHERE key = 'schema_version'"
+        )
+        connection.execute("PRAGMA user_version = 1")
+
+    with SqliteDagRunStore(database) as store:
+        assert store.execution_run_id("run-1") == "run-1"
+        record = store.load_run_record("run-1")
+        migration = store._connection.execute(
+            """
+            SELECT from_version, to_version FROM dag_store_migrations
+            WHERE from_version = 1 AND to_version = 2
+            """
+        ).fetchone()
+        stored_version = store._connection.execute(
+            "SELECT value FROM dag_store_meta WHERE key = 'schema_version'"
+        ).fetchone()
+
+    assert record.status == "RUNNING"
+    assert migration is not None
+    assert tuple(migration) == (1, 2)
+    assert stored_version is not None
+    assert stored_version[0] == "2"
+
+
+def test_store_rejects_future_journal_with_version_details(tmp_path: Path) -> None:
+    database = tmp_path / "run.sqlite3"
+    with SqliteDagRunStore(database):
+        pass
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "UPDATE dag_store_meta SET value = '999' WHERE key = 'schema_version'"
+        )
+        connection.execute("PRAGMA user_version = 999")
+
+    with pytest.raises(DagRunStoreError) as error:
+        SqliteDagRunStore(database)
+
+    assert error.value.code == "dag_run_store_schema_mismatch"
+    assert error.value.detail == "actual=999 expected=2"
+
+
 def test_scheduler_releases_lease_and_records_terminal_event_on_exception(
     tmp_path: Path,
 ) -> None:

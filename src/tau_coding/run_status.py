@@ -1463,15 +1463,21 @@ def _dag_viewer_summary(
     store_exists = run_store_path.is_file()
     run_ids: tuple[str, ...] = ()
     store_error: str | None = None
+    store_error_detail: str | None = None
     if store_exists:
         try:
             with SqliteDagRunReader(run_store_path) as reader:
                 run_ids = reader.run_ids()
             for run_id in run_ids:
                 load_dag_replay(run_dir=run_store_path.parent, run_id=run_id)
-        except (DagRunStoreError, OSError, RuntimeError, sqlite3.Error):
+        except DagRunStoreError as exc:
+            run_ids = ()
+            store_error = exc.code
+            store_error_detail = exc.detail or None
+        except (OSError, RuntimeError, sqlite3.Error):
             run_ids = ()
             store_error = "dag_viewer_store_invalid"
+            store_error_detail = None
     available = store_exists and bool(run_ids) and store_error is None
     viewer_run_dir = run_store_path.parent
     launch_commands = [
@@ -1503,9 +1509,16 @@ def _dag_viewer_summary(
         "run_id_required": len(run_ids) > 1,
         "run_ids": list(run_ids),
         "external_ux_lab_required": False,
-        "source": "dag-run.sqlite3" if available else "missing_or_invalid_dag_run_store",
+        "source": "dag-run.sqlite3"
+        if available
+        else (
+            store_error
+            if store_error == "dag_run_store_schema_mismatch"
+            else "missing_or_invalid_dag_run_store"
+        ),
         "store_path": str(run_store_path) if store_exists else None,
         "store_error": store_error,
+        "store_error_detail": store_error_detail,
         "mocked": bool(project_dag_receipt.get("mocked", False))
         if project_receipt_available
         else False,

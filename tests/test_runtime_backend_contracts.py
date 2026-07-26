@@ -358,6 +358,21 @@ def test_runtime_contract_parsers_reject_unknown_properties() -> None:
         RuntimeRequirement.from_payload(payload)
 
 
+def test_runtime_contract_parsers_report_future_schema_version_skew_before_extras() -> None:
+    payload = _one_shot_requirement().to_payload()
+    payload["schema"] = "tau.runtime_requirement.v2"
+    payload["future_property"] = True
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"schema version skew: expected=tau.runtime_requirement.v1 "
+            r"actual=tau.runtime_requirement.v2"
+        ),
+    ):
+        RuntimeRequirement.from_payload(payload)
+
+
 def test_runtime_models_reject_schema_invalid_counts() -> None:
     with pytest.raises(ValueError, match="attempt_number must be at least 1"):
         RuntimeEndpointLease(

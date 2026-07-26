@@ -32,7 +32,8 @@ RUNTIME_EVENT_JOURNAL_ENTRY_SCHEMA = "tau.runtime_event_journal_entry.v1"
 DIAGNOSTIC_EVENT_SCHEMA = "tau.dag_diagnostic_event.v1"
 CORRECTION_JOURNAL_ENTRY_SCHEMA = "tau.correction_journal_entry.v1"
 MAX_DIAGNOSTIC_EVENT_BYTES = 64 * 1024
-STORE_SCHEMA_VERSION = 1
+STORE_SCHEMA_VERSION = 2
+STORE_COMPATIBLE_READ_VERSIONS = frozenset({1, STORE_SCHEMA_VERSION})
 DAG_RUN_RECONCILIATION_DECISION_SCHEMA = "tau.dag_run_reconciliation_decision.v1"
 DAG_RUN_STALE_LEASE_CLEAR_SCHEMA = "tau.dag_run_stale_lease_clear.v1"
 
@@ -196,6 +197,13 @@ CREATE TABLE IF NOT EXISTS dag_attempt_outputs (
     )
 );
 
+CREATE TABLE IF NOT EXISTS dag_store_migrations (
+    from_version INTEGER NOT NULL,
+    to_version INTEGER NOT NULL,
+    applied_at TEXT NOT NULL,
+    PRIMARY KEY(from_version, to_version)
+);
+
 CREATE TRIGGER IF NOT EXISTS dag_run_events_no_update
 BEFORE UPDATE ON dag_run_events
 BEGIN
@@ -208,6 +216,94 @@ BEGIN
     SELECT RAISE(ABORT, 'dag_run_events is append-only');
 END;
 """
+
+
+def _store_version_detail(actual: int | str | None, expected: int = STORE_SCHEMA_VERSION) -> str:
+    return f"actual={actual if actual is not None else 'missing'} expected={expected}"
+
+
+def _store_schema_version(connection: sqlite3.Connection) -> int | None:
+    row = connection.execute(
+        "SELECT value FROM dag_store_meta WHERE key = 'schema_version'"
+    ).fetchone()
+    if row is None:
+        user_version = int(connection.execute("PRAGMA user_version").fetchone()[0])
+        return user_version if user_version else None
+    try:
+        return int(row[0])
+    except (TypeError, ValueError) as exc:
+        raise DagRunStoreError(
+            "dag_run_store_schema_mismatch", _store_version_detail(str(row[0]))
+        ) from exc
+
+
+def _record_store_version(connection: sqlite3.Connection, version: int) -> None:
+    connection.execute(
+        """
+        INSERT INTO dag_store_meta(key, value) VALUES ('schema_version', ?)
+        ON CONFLICT(key) DO UPDATE SET value = excluded.value
+        """,
+        (str(version),),
+    )
+    connection.execute(f"PRAGMA user_version = {version}")
+
+
+def _migrate_store_schema(connection: sqlite3.Connection, actual_version: int | None) -> None:
+    if actual_version is None:
+        _record_store_version(connection, STORE_SCHEMA_VERSION)
+        return
+    if actual_version > STORE_SCHEMA_VERSION:
+        raise DagRunStoreError(
+            "dag_run_store_schema_mismatch",
+            _store_version_detail(actual_version),
+        )
+    version = actual_version
+    while version < STORE_SCHEMA_VERSION:
+        migration = _STORE_MIGRATIONS.get(version)
+        if migration is None:
+            raise DagRunStoreError(
+                "dag_run_store_schema_mismatch",
+                _store_version_detail(actual_version),
+            )
+        next_version = version + 1
+        migration(connection)
+        connection.execute(
+            """
+            INSERT OR IGNORE INTO dag_store_migrations(from_version, to_version, applied_at)
+            VALUES (?, ?, ?)
+            """,
+            (version, next_version, _now_iso()),
+        )
+        _record_store_version(connection, next_version)
+        version = next_version
+
+
+def _migrate_store_v1_to_v2(connection: sqlite3.Connection) -> None:
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS dag_store_migrations (
+            from_version INTEGER NOT NULL,
+            to_version INTEGER NOT NULL,
+            applied_at TEXT NOT NULL,
+            PRIMARY KEY(from_version, to_version)
+        )
+        """
+    )
+
+
+_STORE_MIGRATIONS = {1: _migrate_store_v1_to_v2}
+
+
+def _refresh_runtime_journal_hashes(payload: dict[str, Any]) -> None:
+    if payload.get("schema") != RUNTIME_EVENT_JOURNAL_ENTRY_SCHEMA:
+        return
+    runtime_payload = payload.get("runtime_event")
+    if not isinstance(runtime_payload, dict):
+        return
+    payload["runtime_event_sha256"] = canonical_sha256(runtime_payload)
+    identity_payload = dict(runtime_payload)
+    identity_payload.pop("observed_at", None)
+    payload["runtime_event_identity_sha256"] = canonical_sha256(identity_payload)
 
 
 def _now_iso() -> str:
@@ -414,8 +510,23 @@ class SqliteDagRunReader:
         version = self._connection.execute(
             "SELECT value FROM dag_store_meta WHERE key = 'schema_version'"
         ).fetchone()
-        if version is None or str(version[0]) != str(STORE_SCHEMA_VERSION):
-            raise DagRunStoreError("dag_run_store_schema_mismatch")
+        if version is None:
+            raise DagRunStoreError(
+                "dag_run_store_schema_mismatch",
+                _store_version_detail(None),
+            )
+        try:
+            actual_version = int(version[0])
+        except (TypeError, ValueError) as exc:
+            raise DagRunStoreError(
+                "dag_run_store_schema_mismatch",
+                _store_version_detail(str(version[0])),
+            ) from exc
+        if actual_version not in STORE_COMPATIBLE_READ_VERSIONS:
+            raise DagRunStoreError(
+                "dag_run_store_schema_mismatch",
+                _store_version_detail(actual_version),
+            )
 
     def close(self) -> None:
         self._connection.close()
@@ -579,15 +690,7 @@ class SqliteDagRunStore:
                 raise DagRunStoreError("dag_run_store_wal_unavailable", journal_mode)
             self._connection.execute("PRAGMA synchronous = FULL")
             self._connection.executescript(_SCHEMA)
-            self._connection.execute(
-                "INSERT OR IGNORE INTO dag_store_meta(key, value) VALUES ('schema_version', ?)",
-                (str(STORE_SCHEMA_VERSION),),
-            )
-            stored_version = self._connection.execute(
-                "SELECT value FROM dag_store_meta WHERE key = 'schema_version'"
-            ).fetchone()
-            if stored_version is None or stored_version[0] != str(STORE_SCHEMA_VERSION):
-                raise DagRunStoreError("dag_run_store_schema_mismatch")
+            _migrate_store_schema(self._connection, _store_schema_version(self._connection))
         except DagRunStoreError:
             if hasattr(self, "_connection"):
                 with suppress(Exception):
@@ -1464,6 +1567,13 @@ class SqliteDagRunStore:
             "endpoint_lease_sha256": event.endpoint_lease_sha256,
             "transport_mode": transport_mode,
         }
+        redacted_journal_payload = cast(
+            dict[str, Any], redact_for_storage(dict(journal_payload)).value
+        )
+        _refresh_runtime_journal_hashes(redacted_journal_payload)
+        stored_identity_sha256 = str(
+            redacted_journal_payload["runtime_event_identity_sha256"]
+        )
         with self._transaction():
             if deadline is not None and datetime.now(UTC) >= deadline:
                 raise DagRunStoreError("runtime_event_deadline_exceeded", event.event_id)
@@ -1471,7 +1581,10 @@ class SqliteDagRunStore:
             existing = self._event_by_key(lease.run_id, event_key)
             if existing is not None:
                 existing_payload = _decoded_runtime_journal_payload(existing)
-                if existing_payload.get("runtime_event_identity_sha256") != identity_sha256:
+                if (
+                    existing_payload.get("runtime_event_identity_sha256")
+                    != stored_identity_sha256
+                ):
                     raise DagRunStoreError("runtime_event_conflict", event.event_id)
                 existing_event = _runtime_event_from_journal_row(
                     existing, expected_run_id=lease.run_id
@@ -1617,6 +1730,7 @@ class SqliteDagRunStore:
         if check_lease:
             self._assert_lease(lease)
         payload_dict = cast(dict[str, Any], redact_for_storage(dict(payload)).value)
+        _refresh_runtime_journal_hashes(payload_dict)
         payload_json = canonical_json(payload_dict)
         payload_sha256 = canonical_sha256(payload_dict)
         existing = self._event_by_key(lease.run_id, event_key)

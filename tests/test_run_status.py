@@ -1,5 +1,6 @@
 import hashlib
 import json
+import sqlite3
 from pathlib import Path
 
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
@@ -1636,6 +1637,22 @@ def test_run_status_blocks_malformed_dag_viewer_store(tmp_path: Path) -> None:
     assert status["dag_viewer"]["status"] == "BLOCKED"
     assert status["dag_viewer"]["source"] == "missing_or_invalid_dag_run_store"
     assert status["dag_viewer"]["store_error"] == "dag_viewer_store_invalid"
+
+
+def test_run_status_reports_dag_viewer_store_schema_skew(tmp_path: Path) -> None:
+    _write_dag_viewer_store(tmp_path, run_id="run-1")
+    with sqlite3.connect(tmp_path / "dag-run.sqlite3") as connection:
+        connection.execute(
+            "UPDATE dag_store_meta SET value = '999' WHERE key = 'schema_version'"
+        )
+
+    status = build_run_status(tmp_path)
+
+    assert status["dag_viewer"]["available"] is False
+    assert status["dag_viewer"]["status"] == "BLOCKED"
+    assert status["dag_viewer"]["source"] == "dag_run_store_schema_mismatch"
+    assert status["dag_viewer"]["store_error"] == "dag_run_store_schema_mismatch"
+    assert status["dag_viewer"]["store_error_detail"] == "actual=999 expected=2"
 
 
 def test_run_status_summarizes_project_dag_command_policy_rejection(

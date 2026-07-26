@@ -6,6 +6,7 @@ from dataclasses import dataclass, fields
 from typing import Any, Literal, cast
 
 from tau_coding.dag_runtime.model import FrozenJson, canonical_sha256
+from tau_coding.schema_registry import require_schema_compatible, require_schema_in
 
 RUNTIME_BACKEND_CAPABILITIES_SCHEMA = "tau.runtime_backend_capabilities.v1"
 RUNTIME_ENDPOINT_LEASE_SCHEMA = "tau.runtime_endpoint_lease.v1"
@@ -517,8 +518,11 @@ class GitWorktreeLease:
     @classmethod
     def from_payload(cls, payload: dict[str, Any]) -> GitWorktreeLease:
         schema = payload.get("schema")
-        if schema not in {LEGACY_GIT_WORKTREE_LEASE_SCHEMA, GIT_WORKTREE_LEASE_SCHEMA}:
-            raise ValueError(f"schema must be {GIT_WORKTREE_LEASE_SCHEMA}")
+        require_schema_in(
+            schema,
+            {LEGACY_GIT_WORKTREE_LEASE_SCHEMA, GIT_WORKTREE_LEASE_SCHEMA},
+            latest=GIT_WORKTREE_LEASE_SCHEMA,
+        )
         _require_schema(payload, cast(str, schema), cls)
         legacy = schema == LEGACY_GIT_WORKTREE_LEASE_SCHEMA
         base_commit = _required_string(payload, "base_commit")
@@ -643,8 +647,7 @@ def _require_schema(
     *,
     extras: set[str] | None = None,
 ) -> None:
-    if payload.get("schema") != schema:
-        raise ValueError(f"schema must be {schema}")
+    require_schema_compatible(payload.get("schema"), schema)
     allowed = {
         "schema",
         *(field.name for field in fields(cast(Any, model))),
