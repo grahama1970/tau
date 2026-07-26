@@ -1,0 +1,41 @@
+{
+  "alerts": [],
+  "has_tier0_goal_hash": true,
+  "has_untrusted_retrieved": true,
+  "health": {
+    "status_code": 200,
+    "text": "{\"status\":\"ok\",\"ok\":true,\"memory_db_connected\":true,\"intent_mapper_ok\":true,\"conversation_classifier_ok\":true,\"conversation_classifier_device\":\"cuda\",\"sparta_corpus_ok\":true,\"sparta_controls_count\":12491,\"sparta_corpus_required\":true}"
+  },
+  "intent_action": "QUERY",
+  "live": true,
+  "manifest_item_count": 8,
+  "manifest_schema": "tau.context_manifest.v1",
+  "memory_call_paths": [
+    "/upsert",
+    "/intent",
+    "/recall"
+  ],
+  "message_sha256": "sha256:749682299bb00745dc2e5c3579c52bea98b49219c1f51d73652fd210108ec734",
+  "mocked": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Memory fact truth.",
+      "Provider/model semantic quality.",
+      "That Memory retrieval is required for every call."
+    ],
+    "proves": [
+      "Tau assembled active context from a recorded manifest.",
+      "Tier 0 items are present before any retrieval-dependent content.",
+      "Retrieved Memory content is labeled as untrusted data."
+    ]
+  },
+  "real_memory_daemon": true,
+  "recall_confidence": 0.0,
+  "retrieved_item_ids": [
+    "tau_context_episode_7c45052dcdddc5a51251535584bd624c"
+  ],
+  "schema": "tau.issue_177.live_memory_context_receipt.v1",
+  "sentinel": "issue-177-live-sentinel-silver-1785087620",
+  "sentinel_recalled": true,
+  "status": "PASS"
+}

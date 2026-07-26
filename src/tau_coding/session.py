@@ -54,7 +54,6 @@ from tau_agent.session.entries import SessionEntry
 from tau_agent.session.tree import SessionTreeError, path_to_entry
 from tau_agent.tools import AgentTool
 from tau_ai import CancellationToken, ModelProvider, ProviderEvent, ProviderHttpHooks
-from tau_ai.events import ProviderErrorEvent, ProviderResponseEndEvent, ProviderTextDeltaEvent
 from tau_coding.branch_summary import summarize_branch_messages_with_model
 from tau_coding.commands import (
     CommandArgumentCompletion,
@@ -75,10 +74,9 @@ from tau_coding.context import discover_project_context_with_diagnostics
 from tau_coding.context_window import (
     DEFAULT_COMPACTION_KEEP_RECENT_TOKENS,
     DEFAULT_CONTEXT_WINDOW_TOKENS,
-    SUMMARIZATION_SYSTEM_PROMPT,
     ContextUsageEstimate,
     auto_compaction_threshold_for_context_window,
-    build_compaction_summary_prompt,
+    build_graph_context_compaction_summary,
     estimate_context_usage,
     estimate_message_tokens,
     summarize_messages_for_compaction,
@@ -3564,31 +3562,11 @@ class CodingSession:
         *,
         custom_instructions: str | None = None,
     ) -> str:
-        prompt = build_compaction_summary_prompt(
+        return await asyncio.to_thread(
+            build_graph_context_compaction_summary,
             messages,
             custom_instructions=custom_instructions,
         )
-        text_parts: list[str] = []
-        final_text: str | None = None
-        summary_messages: list[AgentMessage] = [UserMessage(content=prompt)]
-        async for event in self._harness.config.provider.stream_response(
-            model=self.model,
-            system=SUMMARIZATION_SYSTEM_PROMPT,
-            messages=summary_messages,
-            tools=[],
-        ):
-            if isinstance(event, ProviderTextDeltaEvent):
-                text_parts.append(event.delta)
-            elif isinstance(event, ProviderResponseEndEvent):
-                final_text = event.message.content
-            elif isinstance(event, ProviderErrorEvent):
-                details = f": {event.data}" if event.data is not None else ""
-                raise RuntimeError(f"Compaction summarization failed: {event.message}{details}")
-
-        summary = (final_text if final_text is not None else "".join(text_parts)).strip()
-        if not summary:
-            raise RuntimeError("Compaction summarization returned an empty summary")
-        return summary
 
     async def _summarize_branch_messages(
         self,

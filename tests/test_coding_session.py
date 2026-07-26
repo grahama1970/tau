@@ -40,6 +40,7 @@ from tau_ai import (
     ProviderResponseStartEvent,
 )
 from tau_coding import (
+    CONTEXT_MANIFEST_PREFIX,
     CodingSession,
     CodingSessionConfig,
     FileCredentialStore,
@@ -54,6 +55,8 @@ from tau_coding import (
     SessionTreeBranchResult,
     TauPaths,
     TauResourcePaths,
+    context_manifest_from_summary,
+    context_messages_from_compaction_summary,
     save_provider_settings,
 )
 from tau_coding import session as coding_session_module
@@ -82,6 +85,22 @@ def _config(
         storage=storage,
         cwd=tmp_path,
     )
+
+
+def _assert_context_manifest_summary(summary: str) -> dict[str, object]:
+    assert summary.startswith(CONTEXT_MANIFEST_PREFIX)
+    manifest = context_manifest_from_summary(summary)
+    assert manifest is not None
+    assert manifest["schema"] == "tau.context_manifest.v1"
+    assert manifest["mocked"] is False
+    assert manifest["live"] is True
+    replayed = context_messages_from_compaction_summary(summary)
+    assert replayed is not None
+    expected_messages = tuple(
+        UserMessage.model_validate(message) for message in manifest["messages"]
+    )
+    assert replayed == expected_messages
+    return manifest
 
 
 @pytest.mark.anyio
@@ -2667,12 +2686,6 @@ async def test_session_compact_persists_summary_and_rebuilds_context(tmp_path: P
             ],
             [
                 ProviderResponseStartEvent(model="fake"),
-                ProviderResponseEndEvent(
-                    message=AssistantMessage(content="Generated session summary")
-                ),
-            ],
-            [
-                ProviderResponseStartEvent(model="fake"),
                 ProviderResponseEndEvent(message=AssistantMessage(content="Next answer")),
             ],
         ]
@@ -2695,13 +2708,12 @@ async def test_session_compact_persists_summary_and_rebuilds_context(tmp_path: P
     assert result == f"Compacted {message_count_before} context entries."
     assert len(compactions) == 1
     assert isinstance(compactions[0], CompactionEntry)
-    assert compactions[0].summary == "Generated session summary"
+    manifest = _assert_context_manifest_summary(compactions[0].summary)
     assert compactions[0].replaces_entry_ids == message_entries_before
     assert leaves[-1].entry_id == compactions[0].id
-    assert provider.calls[1][1].startswith("You are a context summarization assistant.")
-    assert "Additional focus: Focus on session persistence." in provider.calls[1][2][0].content
-    assert provider.calls[2][2] == [
-        UserMessage(content=("Previous conversation summary:\nGenerated session summary")),
+    assert "Focus on session persistence." in manifest["messages"][0]["content"]
+    assert provider.calls[1][2] == [
+        context_messages_from_compaction_summary(compactions[0].summary)[0],
         UserMessage(content="Continue."),
     ]
 
@@ -2721,12 +2733,6 @@ async def test_session_auto_compacts_after_response_when_threshold_is_exceeded(
             [
                 ProviderResponseStartEvent(model="fake"),
                 ProviderResponseEndEvent(message=AssistantMessage(content="Second answer")),
-            ],
-            [
-                ProviderResponseStartEvent(model="fake"),
-                ProviderResponseEndEvent(
-                    message=AssistantMessage(content="Generated automatic summary")
-                ),
             ],
             [
                 ProviderResponseStartEvent(model="fake"),
@@ -2753,10 +2759,9 @@ async def test_session_auto_compacts_after_response_when_threshold_is_exceeded(
     compactions = [entry for entry in entries if entry.type == "compaction"]
 
     assert len(compactions) == 1
-    assert compactions[0].summary == "Generated automatic summary"
-    assert "Explain sessions." in provider.calls[2][2][0].content
-    assert provider.calls[3][2] == [
-        UserMessage(content=f"Previous conversation summary:\n{compactions[0].summary}"),
+    _assert_context_manifest_summary(compactions[0].summary)
+    assert provider.calls[2][2] == [
+        context_messages_from_compaction_summary(compactions[0].summary)[0],
         UserMessage(content="Continue."),
         AssistantMessage(content="Second answer"),
         UserMessage(content="Next."),
@@ -2778,12 +2783,6 @@ async def test_session_auto_compacts_with_pi_style_default_threshold(
             [
                 ProviderResponseStartEvent(model="fake"),
                 ProviderResponseEndEvent(message=AssistantMessage(content="Second answer")),
-            ],
-            [
-                ProviderResponseStartEvent(model="fake"),
-                ProviderResponseEndEvent(
-                    message=AssistantMessage(content="Default threshold summary")
-                ),
             ],
         ]
     )
@@ -2819,7 +2818,7 @@ async def test_session_auto_compacts_with_pi_style_default_threshold(
     compactions = [entry for entry in await storage.read_all() if entry.type == "compaction"]
 
     assert len(compactions) == 1
-    assert compactions[0].summary == "Default threshold summary"
+    _assert_context_manifest_summary(compactions[0].summary)
 
 
 @pytest.mark.anyio
@@ -2895,12 +2894,6 @@ async def test_session_compacts_and_retries_once_after_context_overflow(
             [ProviderErrorEvent(message="This model's maximum context length was exceeded.")],
             [
                 ProviderResponseStartEvent(model="fake"),
-                ProviderResponseEndEvent(
-                    message=AssistantMessage(content="Overflow recovery summary")
-                ),
-            ],
-            [
-                ProviderResponseStartEvent(model="fake"),
                 ProviderResponseEndEvent(message=AssistantMessage(content="Recovered answer")),
             ],
         ]
@@ -2914,14 +2907,14 @@ async def test_session_compacts_and_retries_once_after_context_overflow(
     compactions = [entry for entry in entries if entry.type == "compaction"]
 
     assert len(compactions) == 1
-    assert compactions[0].summary == "Overflow recovery summary"
+    _assert_context_manifest_summary(compactions[0].summary)
     assert any(
         getattr(event, "type", None) == "message_end"
         and getattr(event, "message", None) == AssistantMessage(content="Recovered answer")
         for event in retry_events
     )
-    assert provider.calls[4][2] == [
-        UserMessage(content="Previous conversation summary:\nOverflow recovery summary"),
+    assert provider.calls[3][2] == [
+        context_messages_from_compaction_summary(compactions[0].summary)[0],
         UserMessage(content="Keep this recent turn."),
         AssistantMessage(content="Second answer"),
         UserMessage(content="Trigger overflow."),

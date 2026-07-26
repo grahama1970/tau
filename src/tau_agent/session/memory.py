@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import Final, cast
 
-from tau_agent.messages import AgentMessage, UserMessage
+from tau_agent.messages import AgentMessage, AssistantMessage, ToolResultMessage, UserMessage
 from tau_agent.session.entries import (
     BranchSummaryEntry,
     CompactionEntry,
@@ -16,6 +17,8 @@ from tau_agent.session.entries import (
 from tau_agent.session.tree import path_to_entry
 
 _UNSET_LEAF_ID: Final[object] = object()
+_CONTEXT_MANIFEST_PREFIX: Final[str] = "Tau graph context manifest:\n"
+_CONTEXT_MANIFEST_SCHEMA: Final[str] = "tau.context_manifest.v1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -122,20 +125,57 @@ def _apply_compaction(
 ) -> list[tuple[str, AgentMessage]]:
     replaced_ids = set(entry.replaces_entry_ids)
     retained: list[tuple[str, AgentMessage]] = []
+    compaction_rows = _compaction_context_rows(entry)
     inserted_summary = False
     for entry_id, message in message_rows:
         if entry_id not in replaced_ids:
             retained.append((entry_id, message))
             continue
         if not inserted_summary:
-            retained.append(
-                (entry.id, UserMessage(content=_format_compaction_summary(entry.summary)))
-            )
+            retained.extend(compaction_rows)
             inserted_summary = True
 
     if not inserted_summary:
-        retained.append((entry.id, UserMessage(content=_format_compaction_summary(entry.summary))))
+        retained.extend(compaction_rows)
     return retained
+
+
+def _compaction_context_rows(entry: CompactionEntry) -> list[tuple[str, AgentMessage]]:
+    manifest_messages = _context_manifest_messages(entry.summary)
+    if manifest_messages:
+        return [
+            (entry.id if index == 1 else f"{entry.id}:manifest:{index}", message)
+            for index, message in enumerate(manifest_messages, start=1)
+        ]
+    return [(entry.id, UserMessage(content=_format_compaction_summary(entry.summary)))]
+
+
+def _context_manifest_messages(summary: str) -> tuple[AgentMessage, ...] | None:
+    if not summary.startswith(_CONTEXT_MANIFEST_PREFIX):
+        return None
+    try:
+        manifest = json.loads(summary.removeprefix(_CONTEXT_MANIFEST_PREFIX))
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(manifest, dict) or manifest.get("schema") != _CONTEXT_MANIFEST_SCHEMA:
+        return None
+    raw_messages = manifest.get("messages")
+    if not isinstance(raw_messages, list):
+        return None
+    messages: list[AgentMessage] = []
+    for raw in raw_messages:
+        if not isinstance(raw, dict):
+            return None
+        role = raw.get("role")
+        if role == "user":
+            messages.append(UserMessage.model_validate(raw))
+        elif role == "assistant":
+            messages.append(AssistantMessage.model_validate(raw))
+        elif role == "tool":
+            messages.append(ToolResultMessage.model_validate(raw))
+        else:
+            return None
+    return tuple(messages)
 
 
 def _format_compaction_summary(summary: str) -> str:
