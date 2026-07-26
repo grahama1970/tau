@@ -1,0 +1,10 @@
+{
+  "commit": "4fbec492dc207e5f6c1d775ae6de60314ff2b41f",
+  "files": {
+    "pkg/__init__.py": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "pkg/mod.py": "sha256:de455981127e28d20fb77de32c64be23b6f8e978926fe7dcfe99e745b70dd172"
+  },
+  "repo_path": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-156-codebase-ingest-20260726/fixture",
+  "schema": "tau.codebase_ingest_state.v1",
+  "updated_at": "2026-07-26T23:33:08Z"
+}

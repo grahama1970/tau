@@ -1,0 +1,44 @@
+{
+  "changed_file_count": 0,
+  "changed_files": [],
+  "command": [
+    "/skills/ingest-code/run.sh",
+    "rescan",
+    "-c",
+    "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-156-codebase-ingest-20260726/fixture",
+    "--treesitter",
+    "--code-index",
+    "--scope",
+    "monitor-tau"
+  ],
+  "commit": "4fbec492dc207e5f6c1d775ae6de60314ff2b41f",
+  "interactive_blocking": false,
+  "live": true,
+  "memory_writes_performed_by_tau": false,
+  "mocked": false,
+  "ok": true,
+  "process": null,
+  "proof_scope": {
+    "does_not_prove": [
+      "Memory graph write completeness.",
+      "Tree-sitter extraction correctness.",
+      "Point-in-time Memory recall.",
+      "TUI scheduler integration."
+    ],
+    "proves": [
+      "Tau detected changed repository files without scanning unchanged files.",
+      "Tau produced a resumable ingest state marker.",
+      "Tau prepared the existing ingest-code rescan command behind the skill boundary.",
+      "Tau does not block the interactive path unless start=true is explicitly requested."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-156-codebase-ingest-20260726/second-pass-receipt.json",
+  "repo_path": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-156-codebase-ingest-20260726/fixture",
+  "resumable": true,
+  "schema": "tau.codebase_ingest_receipt.v1",
+  "started": false,
+  "state_path": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-156-codebase-ingest-20260726/ingest-state.json",
+  "status": "SKIPPED",
+  "timestamp": "2026-07-26T23:33:08Z"
+}
