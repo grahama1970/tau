@@ -11,7 +11,7 @@ import sys
 import tempfile
 import webbrowser
 from collections.abc import Callable, Mapping, Sequence
-from contextlib import redirect_stdout, suppress
+from contextlib import redirect_stderr, redirect_stdout, suppress
 from dataclasses import replace
 from datetime import UTC, datetime
 from os import environ
@@ -2108,44 +2108,16 @@ def main(
             raise typer.BadParameter(str(exc)) from exc
 
     raw_positional_args = [*(prompt_args or []), *ctx.args]
-    if raw_positional_args[:1] in (
-        ["actor-manifest"],
-        ["browser-cdp-proof"],
-        ["commit-plan"],
-        ["compliance-package-validate"],
-        ["dag-view"],
-        ["dag-view-capabilities"],
-        ["dag-view-events"],
-        ["dag-view-serve"],
-        ["dag-view-snapshot"],
-        ["dag-viewer-link"],
-        ["dag-template-compile"],
-        ["dag-template-list"],
-        ["dag-run"],
-        ["dag-clear-lease"],
-        ["dag-route-memory-candidates"],
-        ["dag-route-memory-sync"],
-        ["dag-reconcile"],
-        ["dag-retention-expire"],
-        ["github-redact-projection"],
-        ["herdr-cleanup"],
-        ["environment-manifest"],
-        ["pdf-lab-second-pass-review"],
-        ["replacement-harness-sanity"],
-        ["run"],
-        ["runs"],
-        ["scillm-chat-review"],
-        ["workflows"],
-        ["gs001-closure-publish"],
-        ["tui-proof"],
-    ):
-        positional_args = raw_positional_args
-        extension_flag_values = {}
-    else:
-        positional_args, extension_flag_values = _split_startup_extension_flags(
-            raw_positional_args,
-        )
+    positional_args, extension_flag_values = _split_startup_extension_flags(
+        raw_positional_args,
+    )
     command = positional_args[0] if positional_args else None
+
+    if command is not None and _manual_command_help_requested(positional_args[1:]):
+        manual_help = _manual_command_help(command)
+        if manual_help is not None:
+            typer.echo(manual_help)
+            raise typer.Exit()
 
     if list_models:
         if print_requested:
@@ -4564,8 +4536,9 @@ def main(
                     "skill_paths": resolved_skill_paths,
                     "prompt_template_paths": resolved_prompt_template_paths,
                     "theme_paths": resolved_theme_paths,
-                    "extension_flag_values": extension_flag_values,
                 }
+                if extension_flag_values:
+                    kwargs["extension_flag_values"] = extension_flag_values
                 if no_extensions or resolved_extension_paths:
                     kwargs["no_extensions"] = no_extensions
                     kwargs["extension_paths"] = resolved_extension_paths
@@ -4622,8 +4595,9 @@ def main(
                 "skill_paths": resolved_skill_paths,
                 "prompt_template_paths": resolved_prompt_template_paths,
                 "theme_paths": resolved_theme_paths,
-                "extension_flag_values": extension_flag_values,
             }
+            if extension_flag_values:
+                kwargs["extension_flag_values"] = extension_flag_values
             if no_extensions or resolved_extension_paths:
                 kwargs["no_extensions"] = no_extensions
                 kwargs["extension_paths"] = resolved_extension_paths
@@ -4660,15 +4634,13 @@ def _split_startup_extension_flags(
     while index < len(args):
         arg = args[index]
         if not arg.startswith("--") or arg == "--":
-            positional.append(arg)
-            index += 1
-            continue
+            positional.extend(args[index:])
+            break
 
         raw_flag = arg[2:]
         if not raw_flag:
-            positional.append(arg)
-            index += 1
-            continue
+            positional.extend(args[index:])
+            break
 
         if "=" in raw_flag:
             name, value = raw_flag.split("=", 1)
@@ -4691,6 +4663,46 @@ def _split_startup_extension_flags(
 
 def _normalize_extension_flag_name(name: str) -> str:
     return str(name).strip().removeprefix("--").lower()
+
+
+def _manual_command_help_requested(args: list[str]) -> bool:
+    return "--help" in args or "-h" in args
+
+
+def _manual_command_help(command: str) -> str | None:
+    usage_by_command = {
+        "commit-plan": (
+            "Usage: tau commit-plan --repo <repo> --out <receipt> "
+            "[--evidence-receipt <receipt>] [--approval-receipt <receipt>] [--apply]"
+        ),
+        "lsp-diagnostics": (
+            "Usage: tau lsp-diagnostics --workspace <path> --out <receipt> "
+            "[--required] [--baseline-receipt <receipt>] [--zero-trust]"
+        ),
+        "lsp-rename-plan": (
+            "Usage: tau lsp-rename-plan --workspace <path> --symbol <symbol> "
+            "--new-name <name> --out <receipt> [--zero-trust]"
+        ),
+        "lsp-symbols": (
+            "Usage: tau lsp-symbols --workspace <path> --query <symbol> "
+            "--out <receipt> [--zero-trust]"
+        ),
+        "review-findings": (
+            "Usage: tau review-findings --findings <findings.json> "
+            "[--out <receipt>] [--zero-trust]"
+        ),
+        "dag-run": "Usage: tau dag-run <dag-spec> [--no-resume]",
+        "run": "Usage: tau run <dag-spec> [--no-resume]",
+        "sandbox-run": (
+            "Usage: tau sandbox-run --policy-profile <policy.json> "
+            "--data-boundary <boundary.json> [--out <receipt.json>] -- <command...>"
+        ),
+        "test-run": (
+            "Usage: tau test-run --repo <repo> --out <receipt> "
+            "[--command <arg>]... [--tested-path <path>]... [--timeout-s <seconds>]"
+        ),
+    }
+    return usage_by_command.get(command)
 
 
 def _parse_startup_thinking_level(value: str | None) -> ThinkingLevel | None:
@@ -5650,10 +5662,11 @@ def _run_dag_cli_command(args: list[str], *, command_name: str) -> dict[str, obj
                 error=str(exc),
                 scheduler=str(options["scheduler"]),
             )
-    return run_generic_dag(
-        spec_path=spec_path,
-        resume=bool(options["resume"]),
-    )
+    with redirect_stderr(io.StringIO()):
+        return run_generic_dag(
+            spec_path=spec_path,
+            resume=bool(options["resume"]),
+        )
 
 
 def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
@@ -13466,14 +13479,19 @@ def project_agent_handoff_dispatch_command(
 
     start_payload = _load_json_object(start_path, label="start handoff")
     response_payloads = _load_handoff_response_dir(responses_dir)
+    resolved_receipt_dir = receipt_dir.expanduser().resolve()
     dispatch = write_agent_handoff_dispatch_receipt(
         start_payload,
         response_payloads,
-        receipt_dir.expanduser().resolve(),
+        resolved_receipt_dir,
         active_goal_hash=active_goal_hash,
         agent_registry_root=agents_root,
     )
-    typer.echo(json.dumps(dispatch.as_dict(), indent=2, sort_keys=True))
+    receipt_payload = _load_json_object(
+        resolved_receipt_dir / "dispatch-receipt.json",
+        label="dispatch receipt",
+    )
+    typer.echo(json.dumps(receipt_payload, indent=2, sort_keys=True))
     return dispatch.ok
 
 
@@ -13489,16 +13507,21 @@ def project_agent_handoff_command_dispatch_command(
 
     start_payload = _load_json_object(start_path, label="start handoff")
     spec = _load_command_dispatch_spec(command_spec)
+    resolved_receipt_dir = receipt_dir.expanduser().resolve()
     dispatch = write_agent_handoff_command_dispatch_receipt(
         start_payload,
         spec["command"],
-        receipt_dir.expanduser().resolve(),
+        resolved_receipt_dir,
         timeout_s=spec["timeout_s"],
         cwd=spec["cwd"],
         active_goal_hash=active_goal_hash,
         agent_registry_root=agents_root,
     )
-    typer.echo(json.dumps(dispatch.as_dict(), indent=2, sort_keys=True))
+    receipt_payload = _load_json_object(
+        resolved_receipt_dir / "dispatch-receipt.json",
+        label="dispatch receipt",
+    )
+    typer.echo(json.dumps(receipt_payload, indent=2, sort_keys=True))
     return dispatch.ok
 
 
