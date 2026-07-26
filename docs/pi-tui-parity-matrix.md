@@ -49,7 +49,7 @@ capabilities.
 | Model selector | `model-selector`, `scoped-models-selector` | `ModelPickerScreen` | `MATCHED` | Search, tabs, scoped membership, provider toggles, and reorder are present. |
 | Session selector | `session-selector`, `session-selector-search` | `SessionPickerScreen` | `MATCHED` | Search, current/all, named-only, path toggle, sort, rename, delete are present. |
 | Branch/trust/tool selectors | `user-message-selector`, `trust-selector`, selector keybindings | `UserMessagePickerScreen`, `TrustPickerScreen`, `ToolsReferenceScreen` | `MATCHED` | `/fork` and `/trust` preserve Tau's backing flows and accept Pi-style `j/k` movement; `/tools` preserves searchable text input while the list accepts `j/k` movement when focused. |
-| Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `PARTIAL` | Tau backs most daily settings, exposes the external editor command, and now shows visible no-match search rows; do not add dead Pi toggles without backing behavior. |
+| Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `MATCHED` | Tau backs the daily-use Pi settings that apply to its architecture: search, Pi-style navigation, theme, auto-compact, queue modes, HTTP idle timeout, image visibility/width/resize/blocking, skill commands, hardware cursor, editor/output padding, autocomplete size, clear-on-shrink, terminal progress, warnings, external editor, thinking level, double-Escape action, tree filter, default trust, quiet startup, changelog collapse, and turn notifications. Pi-only transport/install-telemetry/cache-miss switches remain excluded or deferred unless Tau gets real backing behavior. |
 | Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist, resource rows expose scope/state/action, resource toggles update in-place, backed user and project TUI settings write targets are visible, project resources can be disabled through `<cwd>/.tau/tui.json`, and no-match searches show visible empty rows; Pi package-source filter editing still missing. |
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login; provider picker now shows visible navigation help, empty filter states, and fail-closed empty-row selection. |
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MATCHED` | Tau renders pending/success/error shell and tool output, colorizes embedded unified diffs with intraline changes, accepts Pi-style extension tool call/result render hooks including simple component-like render objects, summarizes permission/approval receipts, surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data, preserves multiple image blocks from one tool result, supports collapsible tool output, and shows input-bar terminal command exit codes. |
@@ -105,6 +105,28 @@ Current candidates:
   Do not add a fake setting or heuristic notice from aggregate stats.
 
 Latest slice evidence:
+
+- Source inspected: Pi `settings-selector.ts`; Tau `SettingsPickerScreen`,
+  `_settings_picker_items`, `_next_tui_settings`, setting persistence/apply
+  paths, and focused settings tests.
+- Destination preserved: Tau's provider/SciLLM routing, Tau-specific
+  memory/skill/workflow surfaces, terminal image controls, trust defaults,
+  external editor command, warning settings, and fail-closed no-match rows.
+- Changed: no code change. The matrix now marks settings selector parity as
+  matched for backed daily-use settings and explicitly keeps Pi-only
+  transport/install-telemetry/cache-miss controls out of the selector unless
+  Tau has real backing behavior.
+- Mocked: yes for the session/provider fixture used by the focused check.
+- Live: no provider-live or SciLLM-live call; this is a source-audit plus local
+  Textual settings interaction proof.
+- Proof: `uv run pytest tests/test_tui_app.py -q -k 'settings_picker or
+  show_images_setting or image_width_cells or clear_on_shrink or
+  external_editor or configured_output_padding or configured_editor_padding or
+  quiet_startup or background_turn_completion'` reported `21 passed, 447
+  deselected`.
+- Remaining gap: config selector package-source include/exclude editing,
+  login/OAuth progress polish, and arbitrary extension component embedding
+  remain separate rows.
 
 - Source inspected: Tau `ArtifactBrowserScreen`, `HtmlArtifactPreviewParser`,
   `TerminalImage`, HTML artifact preview tests, and the existing
