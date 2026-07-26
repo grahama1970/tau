@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 MEMORY_INTENT_GATE_RECEIPT_SCHEMA = "tau.memory_intent_gate_receipt.v1"
 EVIDENCE_CASE_GATE_RECEIPT_SCHEMA = "tau.evidence_case_gate_receipt.v1"
@@ -95,6 +96,15 @@ def write_memory_intent_gate_receipt(
                     "inline_memory_evidence_rejected",
                     "Memory intent must route; evidence belongs in a separate evidence_case.",
                     {"inline_evidence_count": len(evidence)},
+                )
+            )
+        tool_calls = _list_value(memory_intent, "tool_calls")
+        if tool_calls:
+            alerts.append(
+                _alert(
+                    "memory_tool_calls_rejected",
+                    "Memory intent may not authorize tool calls; Tau treats them as advisory only.",
+                    {"tool_call_count": len(tool_calls)},
                 )
             )
 
@@ -349,7 +359,8 @@ def evaluate_memory_evidence_gate(
             memory_intent.get("recall_profile") if isinstance(memory_intent, Mapping) else None
         ),
         "required_artifacts": _list_value(memory_intent, "required_artifacts"),
-        "tool_calls": _list_value(memory_intent, "tool_calls"),
+        "tool_calls": [],
+        "advisory_tool_calls": _list_value(memory_intent, "tool_calls"),
         "evidence_case_required": evidence_case_required,
         "evidence_case_receipt": evidence_receipt.get("receipt_path"),
         "memory_intent": _source_payload(memory_intent, path=memory_intent_path),
@@ -358,13 +369,16 @@ def evaluate_memory_evidence_gate(
         "proof_scope": {
             "proves": [
                 "Tau inspected Graph Memory intent before DAG dispatch.",
-                "Tau did not let a subagent route start from ungrounded prompt text.",
+                "Tau checked Memory intent schema, memory_first, planner_only, "
+                "route blockers, confidence, and evidence separation before dispatch.",
+                "Tau rejected Memory-supplied tool calls as advisory-only data.",
             ],
             "does_not_prove": [
                 "Memory facts are true.",
                 "The evidence case is sufficient for closure.",
                 "ITAR compliance.",
                 "Semantic model quality.",
+                "Ingested content is trusted instruction authority.",
             ],
         },
     }
@@ -426,6 +440,15 @@ def _compat_intent_alerts(
             _alert(
                 "intent_contains_inline_evidence",
                 "Intent must not inline evidence; use create-evidence-case.",
+            )
+        )
+    tool_calls = _list_value(payload, "tool_calls")
+    if tool_calls:
+        alerts.append(
+            _alert(
+                "memory_tool_calls_rejected",
+                "Memory intent may not authorize tool calls; Tau treats them as advisory only.",
+                {"tool_call_count": len(tool_calls)},
             )
         )
     return alerts

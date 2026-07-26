@@ -20,6 +20,7 @@ from typing import Any
 
 import httpx
 
+from tau_coding.content_trust import content_is_untrusted
 from tau_coding.generated_ticket import project_agent_handoff
 from tau_coding.self_fix_scillm import call_scillm_streaming
 from tau_coding.subagent_receipt import validate_subagent_receipt
@@ -44,6 +45,7 @@ def write_coder_reviewer_repair_loop(
     github_target: str = "local-proof",
     active_goal_hash: str | None = None,
     api_key: str | None = None,
+    request_content_trust: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Run one bounded live coder-reviewer repair loop and write receipts."""
 
@@ -112,18 +114,35 @@ def write_coder_reviewer_repair_loop(
         if memory_first.get("ok") is not True:
             raise RuntimeError("Memory-first preflight failed")
 
+        request_is_untrusted = content_is_untrusted(request_content_trust)
+        intake_actor = _request_intake_actor(request_content_trust)
         start_handoff = _handoff(
             github_repo=github_repo,
             github_target=github_target,
             goal=goal,
-            previous_subagent="human",
+            previous_subagent=intake_actor,
             context_summary=request,
             context_artifacts=[
                 str(resolved_out / "memory-intent.json"),
                 str(resolved_out / "memory-recall.json"),
             ],
+            context_extra=(
+                {
+                    "content_trust": {
+                        key: value
+                        for key, value in request_content_trust.items()
+                        if key != "text"
+                    }
+                }
+                if request_is_untrusted and request_content_trust
+                else None
+            ),
             result_status="REQUESTED",
-            result_summary="Human requested a live Tau coder-reviewer repair loop.",
+            result_summary=(
+                "Tau ingested an external repair request as untrusted data."
+                if request_is_untrusted
+                else "Human requested a live Tau coder-reviewer repair loop."
+            ),
             evidence=[
                 str(resolved_out / "memory-intent.json"),
                 str(resolved_out / "memory-recall.json"),
@@ -608,6 +627,7 @@ def _handoff(
     previous_subagent: str,
     context_summary: str,
     context_artifacts: list[str],
+    context_extra: dict[str, Any] | None = None,
     result_status: str,
     result_summary: str,
     evidence: list[str],
@@ -623,13 +643,22 @@ def _handoff(
         "github": {"repo": github_repo, "target": github_target},
         "goal": goal,
         "previous_subagent": previous_subagent,
-        "context": {"summary": context_summary, "artifacts": context_artifacts},
+        "context": {
+            **({"summary": context_summary, "artifacts": context_artifacts}),
+            **(context_extra or {}),
+        },
         "result": {"status": result_status, "summary": result_summary, "evidence": evidence},
         "rationale": rationale,
         "next_agent": {"name": next_name, "executor": next_executor, "reason": next_reason},
         "required_evidence": required_evidence,
         "stop_condition": stop_condition,
     }
+
+
+def _request_intake_actor(request_content_trust: dict[str, Any] | None) -> str:
+    """Return the handoff actor for request intake provenance."""
+
+    return "ticket-intake" if content_is_untrusted(request_content_trust) else "human"
 
 
 def _validate_handoff_or_raise(payload: dict[str, Any], *, active_goal_hash: str) -> None:

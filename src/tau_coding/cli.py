@@ -1788,6 +1788,8 @@ def main(
         ["dag-template-compile"],
         ["dag-template-list"],
         ["dag-run"],
+        ["dag-route-memory-candidates"],
+        ["dag-route-memory-sync"],
         ["github-redact-projection"],
         ["herdr-cleanup"],
         ["environment-manifest"],
@@ -2596,6 +2598,7 @@ def main(
                 collection=str(options["collection"]),
                 memory_url=str(options["memory_url"]),
                 apply=bool(options["apply"]),
+                memory_auth_token=_optional_str(options.get("memory_auth_token")),
                 approval_receipt_path=(
                     Path(str(options["approval_receipt"]))
                     if options["approval_receipt"] is not None
@@ -6083,6 +6086,7 @@ def _parse_dag_route_memory_sync_cli_args(args: list[str]) -> dict[str, object]:
         "memory_url": "http://127.0.0.1:8601",
         "apply": False,
         "approval_receipt": None,
+        "memory_auth_token": None,
     }
     index = 0
     while index < len(args):
@@ -6092,6 +6096,7 @@ def _parse_dag_route_memory_sync_cli_args(args: list[str]) -> dict[str, object]:
             "--receipt",
             "--collection",
             "--memory-url",
+            "--memory-auth-token",
             "--approval-receipt",
         }:
             index += 1
@@ -6114,7 +6119,8 @@ def _parse_dag_route_memory_sync_cli_args(args: list[str]) -> dict[str, object]:
             "--candidate-receipt <dag-route-memory-candidate-receipt.json> "
             "--receipt <dag-route-memory-sync-receipt.json> "
             "[--collection <collection>] [--memory-url <url>] "
-            "[--apply --approval-receipt <approval-gate-receipt.json>]"
+            "[--apply --approval-receipt <approval-gate-receipt.json> "
+            "--memory-auth-token <token>]"
         )
     return options
 

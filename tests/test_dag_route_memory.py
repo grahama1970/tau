@@ -199,6 +199,7 @@ def test_route_memory_sync_apply_requires_approval_receipt(tmp_path: Path) -> No
     assert receipt["sync_status"] == "BLOCKED"
     assert receipt["approval_receipt"] is None
     assert any(alert["code"] == "missing_approval_receipt" for alert in receipt["alerts"])
+    assert any(alert["code"] == "missing_memory_auth_token" for alert in receipt["alerts"])
 
 
 def test_route_memory_sync_apply_blocks_wrong_approval_action(tmp_path: Path) -> None:
@@ -210,6 +211,7 @@ def test_route_memory_sync_apply_blocks_wrong_approval_action(tmp_path: Path) ->
         receipt_path=tmp_path / "sync.json",
         approval_receipt_path=approval_path,
         apply=True,
+        memory_auth_token="issue-172-memory-token",
     )
 
     assert receipt["ok"] is False
@@ -233,12 +235,37 @@ def test_route_memory_sync_apply_blocks_wrong_approval_target(tmp_path: Path) ->
         receipt_path=tmp_path / "sync.json",
         approval_receipt_path=approval_path,
         apply=True,
+        memory_auth_token="issue-172-memory-token",
     )
 
     assert receipt["ok"] is False
     assert receipt["status"] == "BLOCKED"
     assert receipt["memory_sync"] is False
     assert any(alert["code"] == "approval_target_mismatch" for alert in receipt["alerts"])
+
+
+def test_route_memory_sync_apply_rejects_unauthenticated_memory_write(
+    tmp_path: Path,
+) -> None:
+    candidate_path = _write_candidate_receipt(tmp_path)
+    approval_path = _write_approval_receipt(tmp_path, requested_action="memory_upsert")
+
+    receipt = write_dag_route_memory_sync_receipt(
+        candidate_receipt_path=candidate_path,
+        receipt_path=tmp_path / "sync.json",
+        approval_receipt_path=approval_path,
+        apply=True,
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["memory_sync"] is False
+    assert receipt["memory_auth"] == {
+        "required": True,
+        "header_sent": False,
+        "token_recorded": False,
+    }
+    assert "missing_memory_auth_token" in {alert["code"] for alert in receipt["alerts"]}
 
 
 def test_route_memory_sync_apply_posts_to_memory_with_approval(tmp_path: Path) -> None:
@@ -253,6 +280,7 @@ def test_route_memory_sync_apply_posts_to_memory_with_approval(tmp_path: Path) -
             receipt_path=tmp_path / "sync.json",
             approval_receipt_path=approval_path,
             apply=True,
+            memory_auth_token="issue-172-memory-token",
             memory_url=f"http://127.0.0.1:{server.server_port}",
         )
     finally:
@@ -263,11 +291,17 @@ def test_route_memory_sync_apply_posts_to_memory_with_approval(tmp_path: Path) -
     assert receipt["ok"] is True
     assert receipt["status"] == "PASS"
     assert receipt["memory_sync"] is True
+    assert receipt["memory_auth"] == {
+        "required": True,
+        "header_sent": True,
+        "token_recorded": False,
+    }
     assert receipt["sync_status"] == "SYNCED"
     assert receipt["projected_document_count"] == 2
     assert receipt["memory_response"] == {"ok": True, "received": 2}
     assert len(requests) == 1
     assert requests[0]["path"] == "/upsert"
+    assert requests[0]["authorization"] == "Bearer issue-172-memory-token"
     assert requests[0]["payload"]["collection"] == "tau_route_memory"
     assert len(requests[0]["payload"]["documents"]) == 2
 
@@ -316,7 +350,8 @@ def test_cli_route_memory_sync_apply_without_approval_exits_nonzero(
 
     assert result.exit_code == 1
     assert payload["status"] == "BLOCKED"
-    assert payload["alerts"][0]["code"] == "missing_approval_receipt"
+    assert "missing_memory_auth_token" in {alert["code"] for alert in payload["alerts"]}
+    assert "missing_approval_receipt" in {alert["code"] for alert in payload["alerts"]}
     assert receipt_path.exists()
 
 
@@ -369,7 +404,13 @@ def _start_memory_server() -> tuple[ThreadingHTTPServer, list[dict[str, object]]
             length = int(self.headers.get("content-length", "0") or "0")
             body = self.rfile.read(length)
             payload = json.loads(body.decode("utf-8")) if body else {}
-            requests.append({"path": self.path, "payload": payload})
+            requests.append(
+                {
+                    "path": self.path,
+                    "payload": payload,
+                    "authorization": self.headers.get("authorization"),
+                }
+            )
             documents = payload.get("documents") if isinstance(payload, dict) else []
             response = {
                 "ok": True,

@@ -11,6 +11,7 @@ from pathlib import Path
 from shutil import which
 from typing import Any
 
+from tau_coding.content_trust import format_content_for_model, untrusted_content_block
 from tau_coding.github_handoff import redact_github_projection
 from tau_coding.self_fix_repair_loop import write_coder_reviewer_repair_loop
 
@@ -117,10 +118,21 @@ def run_ticket_repair(
             return _write_and_return(resolved_receipt_dir, receipt)
 
     loop_dir = resolved_receipt_dir / "coder-reviewer-loop"
+    raw_request_text = f"{repo}#{issue_number}: {issue_title}\n\n{request['request']}"
+    request_content = untrusted_content_block(
+        text=raw_request_text,
+        source_kind="github_issue",
+        source_id=f"{repo}#{issue_number}",
+        source_url=str(issue_payload.get("url") or ""),
+    )
+    receipt["request_content_trust"] = {
+        key: value for key, value in request_content.items() if key != "text"
+    }
     loop_receipt = write_coder_reviewer_repair_loop(
         repo_root=resolved_repo,
         out_dir=loop_dir,
-        request=f"{repo}#{issue_number}: {issue_title}\n\n{request['request']}",
+        request=format_content_for_model(request_content),
+        request_content_trust=request_content,
         target_file=Path(request["target_file"]),
         find_text=request["find_text"],
         replace_text=request["replace_text"],

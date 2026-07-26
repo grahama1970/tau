@@ -2,7 +2,8 @@ import json
 import subprocess
 from pathlib import Path
 
-from tau_coding.self_fix_repair_loop import _run_verification_commands
+from tau_coding.content_trust import UNTRUSTED_CONTENT_BEGIN, UNTRUSTED_CONTENT_END
+from tau_coding.self_fix_repair_loop import _request_intake_actor, _run_verification_commands
 from tau_coding.self_fix_ticket_repair import extract_repair_request, run_ticket_repair
 
 
@@ -141,6 +142,51 @@ def test_ticket_repair_rejects_untrusted_author_before_loop(tmp_path: Path, monk
     assert receipt["ok"] is False
     assert receipt["error"] == "untrusted_issue_author"
     assert target.read_text(encoding="utf-8") == "VALUE = 'bug'\n"
+
+
+def test_ticket_repair_labels_issue_text_as_untrusted_content(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo = _init_repo(tmp_path)
+    target = repo / "target.py"
+    target.write_text("VALUE = 'bug'\n", encoding="utf-8")
+    subprocess.run(["git", "add", "target.py"], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True)
+    captured = {}
+
+    def fake_loop(**kwargs):
+        captured.update(kwargs)
+        return {"ok": False}
+
+    monkeypatch.setattr(
+        "tau_coding.self_fix_ticket_repair.write_coder_reviewer_repair_loop", fake_loop
+    )
+
+    receipt = run_ticket_repair(
+        repo="grahama1970/tau",
+        issue_payload=_issue_payload(author_association="OWNER"),
+        repo_root=repo,
+        receipt_dir=tmp_path / "receipt",
+        memory_base_url="http://127.0.0.1:8601",
+        scillm_base_url="http://127.0.0.1:4001",
+        model="gpt-5.5",
+        active_goal_hash=None,
+        apply_github=False,
+    )
+
+    content_trust = captured["request_content_trust"]
+    assert receipt["error"] == "coder_reviewer_loop_failed"
+    assert receipt["request_content_trust"]["trust"] == "untrusted"
+    assert receipt["request_content_trust"]["instruction_authority"] is False
+    assert content_trust["source"] == {
+        "kind": "github_issue",
+        "id": "grahama1970/tau#77",
+        "url": "https://github.com/grahama1970/tau/issues/77",
+    }
+    assert UNTRUSTED_CONTENT_BEGIN in captured["request"]
+    assert UNTRUSTED_CONTENT_END in captured["request"]
+    assert _request_intake_actor(content_trust) == "ticket-intake"
+    assert _request_intake_actor(None) == "human"
 
 
 def test_ticket_repair_rejects_issue_edited_after_routing_label(

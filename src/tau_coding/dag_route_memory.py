@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -102,6 +103,7 @@ def write_dag_route_memory_sync_receipt(
     memory_url: str = "http://127.0.0.1:8601",
     apply: bool = False,
     approval_receipt_path: Path | None = None,
+    memory_auth_token: str | None = None,
 ) -> dict[str, Any]:
     """Project candidate routes into Memory documents, optionally syncing through /upsert."""
 
@@ -122,18 +124,22 @@ def write_dag_route_memory_sync_receipt(
         candidate_receipt,
         collection=collection,
         apply=apply,
+        memory_auth_token=memory_auth_token,
         approval_receipt=approval_receipt,
         approval_receipt_path=resolved_approval_path,
     )
     documents = _memory_documents(candidate_receipt, collection=collection) if not alerts else []
     sync_response: dict[str, Any] | None = None
+    resolved_memory_auth_token = memory_auth_token or os.environ.get("TAU_MEMORY_AUTH_TOKEN")
     if apply and not alerts:
         try:
             with httpx.Client(
                 base_url=memory_url.rstrip("/"), timeout=httpx.Timeout(10.0, connect=2.0)
             ) as client:
                 response = client.post(
-                    "/upsert", json={"collection": collection, "documents": documents}
+                    "/upsert",
+                    json={"collection": collection, "documents": documents},
+                    headers={"Authorization": f"Bearer {resolved_memory_auth_token}"},
                 )
                 response.raise_for_status()
                 sync_response = (
@@ -169,6 +175,11 @@ def write_dag_route_memory_sync_receipt(
         "collection": collection,
         "memory_url": memory_url,
         "apply": apply,
+        "memory_auth": {
+            "required": bool(apply),
+            "header_sent": bool(apply and status == "PASS"),
+            "token_recorded": False,
+        },
         "memory_sync": bool(apply and status == "PASS"),
         "sync_status": "SYNCED"
         if apply and status == "PASS"
@@ -192,6 +203,7 @@ def write_dag_route_memory_sync_receipt(
             ],
             "does_not_prove": [
                 "Future route correctness.",
+                "Memory service-side authorization policy.",
                 "Runtime route mutation.",
                 "Adaptive DAG expansion application.",
                 "Provider/model semantic quality.",
@@ -297,6 +309,7 @@ def _sync_gate_alerts(
     *,
     collection: str,
     apply: bool,
+    memory_auth_token: str | None,
     approval_receipt: dict[str, Any] | None,
     approval_receipt_path: Path | None,
 ) -> list[dict[str, Any]]:
@@ -333,6 +346,15 @@ def _sync_gate_alerts(
             )
         )
     if apply:
+        if not (memory_auth_token or os.environ.get("TAU_MEMORY_AUTH_TOKEN")):
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "missing_memory_auth_token",
+                    "Route-memory apply requires a Memory auth token before /upsert.",
+                    {},
+                )
+            )
         alerts.extend(
             _approval_alerts(
                 approval_receipt=approval_receipt,
@@ -429,11 +451,11 @@ def _memory_documents(
     documents: list[dict[str, Any]] = []
     for candidate in _dict_list(candidate_receipt.get("accepted_candidates")):
         route_key = str(candidate.get("route_key") or "")
-        digest = hashlib.sha256(
-            f"{collection}|{candidate_receipt.get('goal_hash')}|{candidate_receipt.get('dag_id')}|{route_key}".encode(
-                "utf-8"
-            )
-        ).hexdigest()[:32]
+        digest_material = (
+            f"{collection}|{candidate_receipt.get('goal_hash')}|"
+            f"{candidate_receipt.get('dag_id')}|{route_key}"
+        )
+        digest = hashlib.sha256(digest_material.encode()).hexdigest()[:32]
         documents.append(
             {
                 "_key": f"tau-route-{digest}",
@@ -453,7 +475,8 @@ def _memory_documents(
                 "source_candidate_receipt": candidate_receipt.get("receipt_path"),
                 "sync_source": "tau.dag_route_memory_sync_receipt.v1",
                 "retrieval_text": (
-                    f"Tau DAG route memory signal {route_key} for {candidate_receipt.get('dag_id')} "
+                    f"Tau DAG route memory signal {route_key} for "
+                    f"{candidate_receipt.get('dag_id')} "
                     f"goal {candidate_receipt.get('goal_hash')}"
                 ),
                 "observed_at": _utc_stamp(),

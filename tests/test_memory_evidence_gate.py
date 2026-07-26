@@ -22,6 +22,8 @@ def test_memory_evidence_gate_allows_valid_intent_and_evidence_case(tmp_path: Pa
     assert intent_receipt["status"] == "PASS"
     assert intent_receipt["mocked"] is False
     assert intent_receipt["live"] is False
+    assert intent_receipt["tool_calls"] == []
+    assert intent_receipt["advisory_tool_calls"] == []
     assert evidence_receipt["schema"] == EVIDENCE_CASE_GATE_RECEIPT_SCHEMA
     assert evidence_receipt["ok"] is True
     assert evidence_receipt["allowed_to_dispatch"] is True
@@ -80,6 +82,38 @@ def test_memory_evidence_gate_blocks_inline_evidence() -> None:
     assert "intent_contains_inline_evidence" in intent_receipt["alert_codes"]
 
 
+def test_memory_evidence_gate_rejects_memory_supplied_tool_calls() -> None:
+    intent = _memory_intent()
+    intent["tool_calls"] = [{"name": "create_evidence_case"}]
+
+    intent_receipt, _ = evaluate_memory_evidence_gate(
+        policy_profile=_policy_profile(),
+        data_boundary=_data_boundary(),
+        memory_intent=intent,
+        evidence_case=_evidence_case(),
+    )
+
+    assert intent_receipt["ok"] is False
+    assert intent_receipt["tool_calls"] == []
+    assert intent_receipt["advisory_tool_calls"] == [{"name": "create_evidence_case"}]
+    assert "memory_tool_calls_rejected" in intent_receipt["alert_codes"]
+
+
+def test_memory_evidence_gate_proof_scope_matches_enforced_boundary() -> None:
+    intent_receipt, _ = evaluate_memory_evidence_gate(
+        policy_profile=_policy_profile(),
+        data_boundary=_data_boundary(),
+        memory_intent=_memory_intent(),
+        evidence_case=_evidence_case(),
+    )
+
+    proves = "\n".join(intent_receipt["proof_scope"]["proves"])
+    does_not_prove = "\n".join(intent_receipt["proof_scope"]["does_not_prove"])
+    assert "ungrounded prompt text" not in proves
+    assert "tool calls" in proves
+    assert "trusted instruction authority" in does_not_prove
+
+
 def test_memory_evidence_gate_blocks_evidence_case_boundary_mismatch() -> None:
     evidence = _evidence_case()
     evidence["data_boundary"] = {**_data_boundary(), "classification": "internal"}
@@ -131,7 +165,7 @@ def _memory_intent() -> dict:
         "confidence": 0.91,
         "recall_profile": "proof_retrieval",
         "required_artifacts": [],
-        "tool_calls": [{"name": "create_evidence_case"}],
+        "tool_calls": [],
         "evidence_case_required": True,
     }
 

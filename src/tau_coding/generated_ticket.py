@@ -17,6 +17,7 @@ ROUTABLE_AGENTS = frozenset(
     {
         "human",
         "goal-guardian",
+        "ticket-intake",
         "webgpt-ticket-author",
         "coder",
         "reviewer",
