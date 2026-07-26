@@ -1,6 +1,6 @@
 # Tau Immutable Goal
 
-**Status:** Complete
+**Status:** Active
 **Owner:** Human
 
 ## Goal

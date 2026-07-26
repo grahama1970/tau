@@ -1,6 +1,6 @@
 # Tau Canonical Workflow Slice 04
 
-**Status:** Complete
+**Status:** Active
 **Owner:** Human
 
 ## Immutable Goal
