@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import signal
 import subprocess
 import tempfile
 import time
@@ -245,18 +246,24 @@ def run_generic_dag(
             )
         return result
 
-    with SqliteDagRunStore(run_store_path) as run_store:
-        scheduler_run_id = run_store.execution_run_id(run_id)
-        scheduler_result = run_dag_plan(
-            plan,
-            execute_node=execute_plan_node,
-            max_concurrency=int(spec.get("max_concurrency", 1)),
-            run_store=run_store,
-            run_id=scheduler_run_id,
-            allow_lease_takeover=True,
-            on_lease_acquired=initialize_run_artifacts,
-            fault_injector=diagnostic_fault_injector,
-        )
+    operator_cancel_event = Event()
+    prior_signal_handlers = _install_operator_stop_handlers(operator_cancel_event)
+    try:
+        with SqliteDagRunStore(run_store_path) as run_store:
+            scheduler_run_id = run_store.execution_run_id(run_id)
+            scheduler_result = run_dag_plan(
+                plan,
+                execute_node=execute_plan_node,
+                max_concurrency=int(spec.get("max_concurrency", 1)),
+                run_store=run_store,
+                run_id=scheduler_run_id,
+                allow_lease_takeover=True,
+                on_lease_acquired=initialize_run_artifacts,
+                fault_injector=diagnostic_fault_injector,
+                cancel_requested=operator_cancel_event.is_set,
+            )
+    finally:
+        _restore_signal_handlers(prior_signal_handlers)
     node_results = list(scheduler_result.node_results)
     completed = set(scheduler_result.completed_node_ids)
     final_status = scheduler_result.status
@@ -318,6 +325,34 @@ def run_generic_dag(
         {"run_id": run_id, "status": final_status, "verdict": final_verdict},
     )
     return receipt
+
+
+def _install_operator_stop_handlers(cancel_event: Event) -> dict[int, Any]:
+    """Translate operator stop signals into cooperative DAG cancellation."""
+
+    prior_handlers: dict[int, Any] = {}
+
+    def request_stop(signum: int, frame: Any) -> None:
+        del frame
+        if cancel_event.is_set():
+            raise KeyboardInterrupt(f"second operator stop signal received: {signum}")
+        cancel_event.set()
+
+    for signum in (signal.SIGINT, signal.SIGTERM):
+        try:
+            prior_handlers[signum] = signal.getsignal(signum)
+            signal.signal(signum, request_stop)
+        except (OSError, RuntimeError, ValueError):
+            prior_handlers.pop(signum, None)
+    return prior_handlers
+
+
+def _restore_signal_handlers(prior_handlers: Mapping[int, Any]) -> None:
+    for signum, handler in prior_handlers.items():
+        try:
+            signal.signal(signum, handler)
+        except (OSError, RuntimeError, ValueError):
+            continue
 
 
 def resume_generic_dag_from_run(run_dir: Path) -> dict[str, Any]:
@@ -773,9 +808,12 @@ def _run_legacy_node(
     )
     command_results = [_command_result_dict(result, elapsed_seconds=time.monotonic() - started_at)]
     if result.returncode != 0:
-        verdict = (
-            "SUBAGENT_TIMEOUT" if result.termination_cause == "timed_out" else "SUBAGENT_ERROR"
-        )
+        if result.termination_cause == "timed_out":
+            verdict = "SUBAGENT_TIMEOUT"
+        elif result.termination_cause == "cancelled":
+            verdict = "CANCELLED"
+        else:
+            verdict = "SUBAGENT_ERROR"
         return _blocked_node_record(
             node,
             verdict=verdict,

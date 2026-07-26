@@ -93,6 +93,7 @@ def run_dag_plan(
     fault_injector: Callable[[str, Mapping[str, Any]], None] | None = None,
     on_lease_acquired: Callable[[DagRunLease], None] | None = None,
     correction_handler: CorrectionHandler | None = None,
+    cancel_requested: Callable[[], bool] | None = None,
 ) -> DagSchedulerResult:
     """Execute an all-success DagPlan through one bounded ready queue.
 
@@ -274,6 +275,27 @@ def run_dag_plan(
             ):
                 lease = run_store.renew_lease(lease, ttl_seconds=lease_ttl_seconds)
                 next_lease_renewal = time.monotonic() + lease_renewal_interval
+            if cancel_requested is not None and cancel_requested():
+                blocked_result = {
+                    "status": "CANCELLED",
+                    "verdict": "CANCELLED",
+                    "errors": ["DAG run cancelled by operator request"],
+                }
+                lease = _cancel_and_collect_futures(
+                    futures=futures,
+                    future_attempts=future_attempts,
+                    cancel_events=cancel_events,
+                    results=results,
+                    result_order=result_order,
+                    node_states=node_states,
+                    resolved=resolved,
+                    event_sink=event_sink,
+                    run_store=run_store,
+                    lease=lease,
+                    lease_ttl_seconds=lease_ttl_seconds,
+                    lease_renewal_interval=lease_renewal_interval,
+                )
+                break
             if blocked_result is not None:
                 break
             settle_block = _settle_unrunnable_nodes(
@@ -523,6 +545,8 @@ def run_dag_plan(
             if run_store is not None and lease is not None:
                 lease_wait = max(0.0, next_lease_renewal - time.monotonic())
                 wait_timeout = lease_wait if wait_timeout is None else min(wait_timeout, lease_wait)
+            if cancel_requested is not None:
+                wait_timeout = 0.05 if wait_timeout is None else min(wait_timeout, 0.05)
             done, _ = wait(futures, timeout=wait_timeout, return_when=FIRST_COMPLETED)
             if not done:
                 for deadline_id in sorted(
@@ -863,7 +887,7 @@ def run_dag_plan(
         }
     if blocked_result is not None:
         verdict = str(blocked_result.get("verdict") or "NODE_BLOCKED")
-        status = "BLOCKED"
+        status = "CANCELLED" if blocked_result.get("status") == "CANCELLED" else "BLOCKED"
     else:
         verdict = "PASS"
         status = "PASS"

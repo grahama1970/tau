@@ -1,10 +1,15 @@
 import hashlib
 import json
+import os
+import signal
+import subprocess
 import sys
+import time
 from pathlib import Path
 
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import canonical_sha256
+from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.generic_dag import (
     GENERIC_DAG_NODE_RECEIPT_SCHEMA,
     GENERIC_DAG_SPEC_SCHEMA,
@@ -71,6 +76,68 @@ def test_generic_dag_runs_dependency_ordered_subprocess_workers(tmp_path: Path) 
     ]
     assert dispatch_order == ["planner", "coder", "reviewer"]
     assert validated_order == ["planner", "coder", "reviewer"]
+
+
+def test_cli_sigint_cancels_running_dag_child_and_records_cancelled_run(
+    tmp_path: Path,
+) -> None:
+    pid_path = tmp_path / "child.pid"
+    child_code = (
+        "import os, time; "
+        "from pathlib import Path; "
+        f"Path({str(pid_path)!r}).write_text(str(os.getpid()), encoding='utf-8'); "
+        "time.sleep(30)"
+    )
+    spec_path = _write_spec(
+        tmp_path,
+        [
+            _node(
+                tmp_path,
+                "sleeper",
+                command=[sys.executable, "-c", child_code],
+            )
+        ],
+    )
+    process = subprocess.Popen(
+        [sys.executable, "-c", "from tau_coding.cli import app; app()", "dag-run", str(spec_path)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    child_pid: int | None = None
+    try:
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline:
+            if pid_path.exists():
+                child_pid = int(pid_path.read_text(encoding="utf-8"))
+                break
+            if process.poll() is not None:
+                stdout, stderr = process.communicate(timeout=1)
+                raise AssertionError(
+                    f"dag-run exited before child started: {process.returncode}\n{stdout}\n{stderr}"
+                )
+            time.sleep(0.05)
+        assert child_pid is not None
+
+        process.send_signal(signal.SIGINT)
+        stdout, stderr = process.communicate(timeout=8)
+
+        assert process.returncode == 1, (stdout, stderr)
+        assert not _process_exists(child_pid)
+        with SqliteDagRunStore(tmp_path / "dag-run.sqlite3") as store:
+            record = store.load_run_record("run-generic-dag-test")
+            events = store.load_events("run-generic-dag-test")
+        assert record.status == "CANCELLED"
+        assert record.verdict == "CANCELLED"
+        assert record.lease_owner is None
+        assert events[-2]["event_type"] == "run_cancelled"
+        assert events[-1]["event_type"] == "run_lease_released"
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.communicate(timeout=2)
+        if child_pid is not None and _process_exists(child_pid):
+            os.kill(child_pid, signal.SIGKILL)
 
 
 def test_generic_dag_preserves_accepted_output_for_downstream_context(
@@ -1119,3 +1186,13 @@ def _read_events(path: Path) -> list[dict[str, object]]:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _process_exists(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True

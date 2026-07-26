@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS dag_runs (
     plan_sha256 TEXT NOT NULL,
     plan_json TEXT NOT NULL,
     status TEXT NOT NULL CHECK (
-        status IN ('RUNNING', 'PASS', 'BLOCKED', 'RECONCILIATION_REQUIRED')
+        status IN ('RUNNING', 'PASS', 'BLOCKED', 'CANCELLED', 'RECONCILIATION_REQUIRED')
     ),
     verdict TEXT,
     lease_owner TEXT,
@@ -1264,8 +1264,13 @@ class SqliteDagRunStore:
             )
 
     def mark_run_finished(self, lease: DagRunLease, *, status: str, verdict: str) -> None:
-        if status not in {"PASS", "BLOCKED"}:
+        if status not in {"PASS", "BLOCKED", "CANCELLED"}:
             raise DagRunStoreError("dag_run_replay_invalid", status)
+        event_type = {
+            "PASS": "run_completed",
+            "BLOCKED": "run_blocked",
+            "CANCELLED": "run_cancelled",
+        }[status]
         with self._transaction():
             self._assert_lease(lease, allow_expired=True)
             self._connection.execute(
@@ -1275,7 +1280,7 @@ class SqliteDagRunStore:
             self._append_event(
                 lease,
                 event_key=f"run:finished:{status}:{verdict}",
-                event_type="run_completed" if status == "PASS" else "run_blocked",
+                event_type=event_type,
                 entity_type="run",
                 entity_id=lease.run_id,
                 payload={"status": status, "verdict": verdict},
