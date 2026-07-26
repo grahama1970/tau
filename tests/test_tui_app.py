@@ -4053,6 +4053,10 @@ async def test_tui_app_artifacts_command_previews_markdown_reports(
             await pilot.pause()
 
             assert isinstance(app.screen, ArtifactBrowserScreen)
+            assert isinstance(
+                app.screen.query_one("#artifact-browser-preview-scroll"),
+                VerticalScroll,
+            )
             labels = [
                 str(item.query_one(Label).render())
                 for item in app.screen.query_one("#config-map-list", ListView).children

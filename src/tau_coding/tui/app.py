@@ -4691,11 +4691,12 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
                 id="artifact-browser-search",
             )
             yield ListView(*self._list_items(), id="config-map-list")
-            yield Static(
-                self._preview_renderable(0),
-                id="artifact-browser-preview",
-                markup=False,
-            )
+            with VerticalScroll(id="artifact-browser-preview-scroll"):
+                yield Static(
+                    self._preview_renderable(0),
+                    id="artifact-browser-preview",
+                    markup=False,
+                )
             yield Static(self._help_text(), id="config-map-help")
 
     def on_mount(self) -> None:
@@ -7281,13 +7282,19 @@ class TauTuiApp(App[None]):
         border: tall $tau-border;
     }
 
-    #artifact-browser-preview {
+    #artifact-browser-preview-scroll {
         height: auto;
-        max-height: 10;
+        max-height: 16;
         margin-top: 1;
         padding: 0 1;
         background: $tau-transcript-background;
         border: tall $tau-border;
+        scrollbar-size-vertical: 1;
+    }
+
+    #artifact-browser-preview {
+        height: auto;
+        background: $tau-transcript-background;
     }
 
     #workflow-picker-list {
@@ -7332,6 +7339,7 @@ class TauTuiApp(App[None]):
     #tools-reference-search,
     #skill-picker-search,
     #prompt-template-picker-search,
+    #artifact-browser-search,
     #config-map-search,
     #tree-label-value {
         height: 3;

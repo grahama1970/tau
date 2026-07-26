@@ -117,7 +117,9 @@ Latest slice evidence:
 - Changed: `/artifacts` now has a focused search input and Pi-style artifact
   kind tabs (`all`, `image`, `markdown`, `json`, `html`). The list, selected
   preview, copy/open actions, no-match row, and help text all operate on the
-  filtered artifact set. The modal exposes Tab/Ctrl+I as the kind switch and
+  filtered artifact set. The selected artifact preview is now a scrollable pane
+  so longer Markdown tables, JSON receipts, and HTML summaries are not clipped
+  to a fixed static block. The modal exposes Tab/Ctrl+I as the kind switch and
   keeps the visible summary counts across real local PNG, Markdown, JSON, and
   HTML artifacts.
 - Mocked: yes for the session/provider fixture used by the proof; no fake
@@ -130,10 +132,11 @@ Latest slice evidence:
   ruff check src/tau_coding/tui/app.py tests/test_tui_app.py` reported all
   checks passed; `uv run python -m py_compile src/tau_coding/tui/app.py
   tests/test_tui_app.py` produced no errors; render proof
-  `/tmp/tau-pi-tui-artifact-search-proof-9gxto1_w/proof.json` with screenshot
-  `/tmp/tau-pi-tui-artifact-search-proof-9gxto1_w/tau-artifact-search-preview.svg`;
+  `/tmp/tau-pi-tui-artifact-search-scroll-proof-vsvchceh/proof.json` with
+  screenshot
+  `/tmp/tau-pi-tui-artifact-search-scroll-proof-vsvchceh/tau-artifact-search-scroll-preview.svg`;
   CDP marker `.codex/ui-verification/latest.json` points to screenshot
-  `/tmp/codex-ui-verification/tau-pi-tui-parity-20260724T1556/tau-artifact-search-preview/20260726T000302Z.png`.
+  `/tmp/codex-ui-verification/tau-pi-tui-parity-20260724T1556/tau-artifact-search-scroll-preview/20260726T000813Z.png`.
 - Remaining gap: `/artifacts` is now navigable for core artifact types, but
   Tau-native bundle aggregation should wait for actual bundle artifacts and
   source contracts.
