@@ -634,7 +634,18 @@ def _run_approved_release(
     _assert_results_absent(run_dir, workflow_id)
     viewers = [_viewer_evidence(tau, run_dir, workflow_id, root, env, commands)]
 
-    approval = _run_json([str(tau), "workflows", "approve", str(run_dir)], root, commands, env)
+    approval_packet = _write_transaction_approval_packet(
+        run_dir=run_dir,
+        transaction_node_id="publish-approved-release",
+        path=root / "human-approved-release-approval.json",
+        reason="Approve the exact accepted local release bundle publication.",
+    )
+    approval = _run_json(
+        [str(tau), "workflows", "approve", str(run_dir), "--approval-packet", str(approval_packet)],
+        root,
+        commands,
+        env,
+    )
     if approval.get("status") != "PASS":
         raise AuditError("approved_release_approval_failed")
     final = _run_json([str(tau), "workflows", "resume", str(run_dir)], root, commands, env)
@@ -689,8 +700,22 @@ def _run_durable_qualification(
     _assert_results_absent(run_dir, workflow_id)
     viewers = [_viewer_evidence(tau, run_dir, workflow_id, root, env, commands)]
 
+    repair_packet = _write_repair_approval_packet(
+        run_dir=run_dir,
+        node_id="qualify-tests",
+        path=root / "human-qualify-tests-repair-approval.json",
+    )
     repair = _run_json(
-        [str(tau), "workflows", "repair", str(run_dir), "--node", "qualify-tests"],
+        [
+            str(tau),
+            "workflows",
+            "repair",
+            str(run_dir),
+            "--node",
+            "qualify-tests",
+            "--approval-packet",
+            str(repair_packet),
+        ],
         root,
         commands,
         env,
@@ -708,7 +733,18 @@ def _run_durable_qualification(
     _assert_workflow(waiting, workflow_id, "BLOCKED")
     viewers.append(_viewer_evidence(tau, run_dir, workflow_id, root, env, commands))
 
-    approval = _run_json([str(tau), "workflows", "approve", str(run_dir)], root, commands, env)
+    approval_packet = _write_transaction_approval_packet(
+        run_dir=run_dir,
+        transaction_node_id="publish-qualification",
+        path=root / "human-qualification-publication-approval.json",
+        reason="Approve the exact accepted durable qualification publication.",
+    )
+    approval = _run_json(
+        [str(tau), "workflows", "approve", str(run_dir), "--approval-packet", str(approval_packet)],
+        root,
+        commands,
+        env,
+    )
     if approval.get("status") != "PASS":
         raise AuditError("durable_approval_failed")
     final = _run_json([str(tau), "workflows", "resume", str(run_dir)], root, commands, env)
@@ -1188,6 +1224,87 @@ def _claims() -> dict[str, list[str]]:
             "Application-level exactly-once publication from SQLite WAL semantics alone.",
         ],
     }
+
+
+def _write_repair_approval_packet(*, run_dir: Path, node_id: str, path: Path) -> Path:
+    request = _read_object(
+        run_dir / "input" / "durable-qualification-request.json", "repair request"
+    )
+    receipt = _read_object(run_dir / "receipts" / f"{node_id}.json", "repair target receipt")
+    goal = request.get("goal")
+    if not isinstance(goal, dict) or receipt.get("goal_hash") != goal.get("goal_hash"):
+        raise AuditError("repair_approval_target_goal_hash_mismatch")
+    target = {
+        "id": f"durable-repository-qualification:{node_id}:{goal['goal_hash']}",
+        "workflow_id": "durable-repository-qualification",
+        "node_id": node_id,
+        "goal_hash": str(goal["goal_hash"]),
+    }
+    return _write_human_approval_packet(
+        path=path,
+        action="workflow_repair",
+        target=target,
+        reason="Approve repair only for the blocked test qualification branch.",
+        evidence=[str(run_dir / "receipts" / f"{node_id}.json")],
+        nonce=f"{node_id}-immutable-audit-repair",
+    )
+
+
+def _write_transaction_approval_packet(
+    *,
+    run_dir: Path,
+    transaction_node_id: str,
+    path: Path,
+    reason: str,
+) -> Path:
+    gate = _read_object(
+        run_dir / "transactions" / transaction_node_id / "approval-gate-receipt.json",
+        "transaction approval gate",
+    )
+    target = gate.get("expected_target")
+    if not isinstance(target, dict) or not target.get("id"):
+        raise AuditError(f"transaction_approval_target_missing:{transaction_node_id}")
+    return _write_human_approval_packet(
+        path=path,
+        action="generic_dag_transaction_continue",
+        target={str(key): str(value) for key, value in target.items()},
+        reason=reason,
+        evidence=[str(gate["approval_packet"]), str(run_dir / "run-receipt.json")],
+        nonce=f"{transaction_node_id}-immutable-audit-approval",
+    )
+
+
+def _write_human_approval_packet(
+    *,
+    path: Path,
+    action: str,
+    target: dict[str, str],
+    reason: str,
+    evidence: list[str],
+    nonce: str,
+) -> Path:
+    packet: dict[str, object] = {
+        "schema": "tau.human_approval_packet.v1",
+        "approved": True,
+        "action": action,
+        "actor": {"id": "human:graham", "auth_method": "local-signature"},
+        "target": target,
+        "reason": reason,
+        "evidence": evidence,
+        "nonce": nonce,
+    }
+    packet["signature"] = _local_signature(packet)
+    _write_json(path, packet)
+    return path
+
+
+def _local_signature(payload: dict[str, object]) -> str:
+    canonical = dict(payload)
+    canonical.pop("signature", None)
+    digest = hashlib.sha256(
+        json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return f"local-signature-sha256:{digest}"
 
 
 def _retain_canonical_workflow_artifacts(

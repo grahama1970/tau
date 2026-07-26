@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sqlite3
@@ -110,8 +111,13 @@ def main() -> int:
         recovery_thread.join(timeout=5)
         if recovery_thread.is_alive() or recovery_error:
             raise RuntimeError(f"recovery failed: {recovery_error}")
+        repair_packet = _write_repair_approval_packet(
+            run_dir=run_dir,
+            node_id="qualify-tests",
+            path=root / "human-qualify-tests-repair-approval.json",
+        )
         repair_durable_repository_qualification(
-            run_dir=run_dir, node_id="qualify-tests"
+            run_dir=run_dir, node_id="qualify-tests", approval_packet=repair_packet
         )
         repaired, repair_error, repair_thread = _worker(
             lambda: resume_packaged_workflow(run_dir=run_dir)
@@ -120,7 +126,13 @@ def main() -> int:
         repair_thread.join(timeout=5)
         if repair_thread.is_alive() or repair_error:
             raise RuntimeError(f"targeted repair failed: {repair_error}")
-        approve_packaged_workflow(run_dir=run_dir)
+        approval_packet = _write_transaction_approval_packet(
+            run_dir=run_dir,
+            transaction_node_id="publish-qualification",
+            path=root / "human-qualification-publication-approval.json",
+            reason="Approve the exact accepted durable qualification publication.",
+        )
+        approve_packaged_workflow(run_dir=run_dir, approval_packet=approval_packet)
         final, final_error, final_thread = _worker(
             lambda: resume_packaged_workflow(run_dir=run_dir)
         )
@@ -137,9 +149,7 @@ def main() -> int:
         ledger = _json(publish_path / "publication-ledger.json")
         receipt["checks"]["publication_effect_count_one"] = ledger["effect_count"] == 1
         receipt["checks"]["journal_recovery_order"] = _journal_recovery_order(run_dir)
-        receipt["status"] = (
-            "PASS" if all(receipt["checks"].values()) else "BLOCKED"
-        )
+        receipt["status"] = "PASS" if all(receipt["checks"].values()) else "BLOCKED"
         output.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         if recovered.get("status") != "BLOCKED":
             raise RuntimeError("recovery did not settle at targeted repair")
@@ -166,6 +176,82 @@ def _journal_recovery_order(run_dir: Path) -> bool:
     return bool(staged < takeover < validated)
 
 
+def _write_repair_approval_packet(*, run_dir: Path, node_id: str, path: Path) -> Path:
+    request = _json(run_dir / "input" / "durable-qualification-request.json")
+    receipt = _json(run_dir / "receipts" / f"{node_id}.json")
+    goal = request.get("goal")
+    if not isinstance(goal, dict) or receipt.get("goal_hash") != goal.get("goal_hash"):
+        raise RuntimeError("repair approval target goal hash mismatch")
+    target = {
+        "id": f"durable-repository-qualification:{node_id}:{goal['goal_hash']}",
+        "workflow_id": "durable-repository-qualification",
+        "node_id": node_id,
+        "goal_hash": str(goal["goal_hash"]),
+    }
+    return _write_human_approval_packet(
+        path=path,
+        action="workflow_repair",
+        target=target,
+        reason="Approve repair only for the blocked test qualification branch.",
+        evidence=[str(run_dir / "receipts" / f"{node_id}.json")],
+        nonce=f"{node_id}-canonical-proof-repair",
+    )
+
+
+def _write_transaction_approval_packet(
+    *,
+    run_dir: Path,
+    transaction_node_id: str,
+    path: Path,
+    reason: str,
+) -> Path:
+    gate = _json(run_dir / "transactions" / transaction_node_id / "approval-gate-receipt.json")
+    target = gate.get("expected_target")
+    if not isinstance(target, dict) or not target.get("id"):
+        raise RuntimeError(f"approval target missing for {transaction_node_id}")
+    return _write_human_approval_packet(
+        path=path,
+        action="generic_dag_transaction_continue",
+        target={str(key): str(value) for key, value in target.items()},
+        reason=reason,
+        evidence=[str(gate["approval_packet"]), str(run_dir / "run-receipt.json")],
+        nonce=f"{transaction_node_id}-canonical-proof-approval",
+    )
+
+
+def _write_human_approval_packet(
+    *,
+    path: Path,
+    action: str,
+    target: dict[str, str],
+    reason: str,
+    evidence: list[str],
+    nonce: str,
+) -> Path:
+    packet: dict[str, object] = {
+        "schema": "tau.human_approval_packet.v1",
+        "approved": True,
+        "action": action,
+        "actor": {"id": "human:graham", "auth_method": "local-signature"},
+        "target": target,
+        "reason": reason,
+        "evidence": evidence,
+        "nonce": nonce,
+    }
+    packet["signature"] = _local_signature(packet)
+    path.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def _local_signature(payload: dict[str, object]) -> str:
+    canonical = dict(payload)
+    canonical.pop("signature", None)
+    digest = hashlib.sha256(
+        json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return f"local-signature-sha256:{digest}"
+
+
 def _worker(
     operation: Callable[[], dict[str, Any]],
 ) -> tuple[dict[str, Any], list[BaseException], threading.Thread]:
@@ -183,9 +269,7 @@ def _worker(
     return outcome, errors, thread
 
 
-def _wait_server(
-    run_dir: Path, worker: threading.Thread, errors: list[BaseException]
-) -> Any:
+def _wait_server(run_dir: Path, worker: threading.Thread, errors: list[BaseException]) -> Any:
     deadline = time.monotonic() + 15
     last_error: Exception | None = None
     while time.monotonic() < deadline:

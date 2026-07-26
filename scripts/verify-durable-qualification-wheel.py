@@ -123,6 +123,14 @@ def main() -> int:
                     str(run_dir),
                     "--node",
                     "qualify-tests",
+                    "--approval-packet",
+                    str(
+                        _write_repair_approval_packet(
+                            run_dir=run_dir,
+                            node_id="qualify-tests",
+                            path=root / "human-qualify-tests-repair-approval.json",
+                        )
+                    ),
                 ],
                 root,
                 env,
@@ -136,18 +144,29 @@ def main() -> int:
                 expected=(1,),
             ).stdout
         )
+        approval_packet = _write_transaction_approval_packet(
+            run_dir=run_dir,
+            transaction_node_id="publish-qualification",
+            path=root / "human-qualification-publication-approval.json",
+            reason="Approve the exact accepted installed durable qualification publication.",
+        )
         _run(
-            [str(bin_dir / "tau"), "workflows", "approve", str(run_dir)], root, env
+            [
+                str(bin_dir / "tau"),
+                "workflows",
+                "approve",
+                str(run_dir),
+                "--approval-packet",
+                str(approval_packet),
+            ],
+            root,
+            env,
         )
         final = _json_text(
-            _run(
-                [str(bin_dir / "tau"), "workflows", "resume", str(run_dir)], root, env
-            ).stdout
+            _run([str(bin_dir / "tau"), "workflows", "resume", str(run_dir)], root, env).stdout
         )
         repeated = _json_text(
-            _run(
-                [str(bin_dir / "tau"), "workflows", "resume", str(run_dir)], root, env
-            ).stdout
+            _run([str(bin_dir / "tau"), "workflows", "resume", str(run_dir)], root, env).stdout
         )
 
         ledger = _json_file(publish_path / "publication-ledger.json")
@@ -163,7 +182,8 @@ def main() -> int:
         reused = {
             item["node_id"]: item.get("resumed")
             for item in receipt["nodes"]
-            if item["node_id"] in {
+            if item["node_id"]
+            in {
                 "capture-repository",
                 "qualify-documentation",
                 "qualify-package",
@@ -264,6 +284,82 @@ def _json_text(value: str) -> dict[str, Any]:
 
 def _json_file(path: Path) -> dict[str, Any]:
     return _json_text(path.read_text(encoding="utf-8"))
+
+
+def _write_repair_approval_packet(*, run_dir: Path, node_id: str, path: Path) -> Path:
+    request = _json_file(run_dir / "input" / "durable-qualification-request.json")
+    receipt = _json_file(run_dir / "receipts" / f"{node_id}.json")
+    goal = request.get("goal")
+    if not isinstance(goal, dict) or receipt.get("goal_hash") != goal.get("goal_hash"):
+        raise RuntimeError("repair approval target goal hash mismatch")
+    target = {
+        "id": f"durable-repository-qualification:{node_id}:{goal['goal_hash']}",
+        "workflow_id": "durable-repository-qualification",
+        "node_id": node_id,
+        "goal_hash": str(goal["goal_hash"]),
+    }
+    return _write_human_approval_packet(
+        path=path,
+        action="workflow_repair",
+        target=target,
+        reason="Approve repair only for the blocked test qualification branch.",
+        evidence=[str(run_dir / "receipts" / f"{node_id}.json")],
+        nonce=f"{node_id}-canonical-proof-repair",
+    )
+
+
+def _write_transaction_approval_packet(
+    *,
+    run_dir: Path,
+    transaction_node_id: str,
+    path: Path,
+    reason: str,
+) -> Path:
+    gate = _json_file(run_dir / "transactions" / transaction_node_id / "approval-gate-receipt.json")
+    target = gate.get("expected_target")
+    if not isinstance(target, dict) or not target.get("id"):
+        raise RuntimeError(f"approval target missing for {transaction_node_id}")
+    return _write_human_approval_packet(
+        path=path,
+        action="generic_dag_transaction_continue",
+        target={str(key): str(value) for key, value in target.items()},
+        reason=reason,
+        evidence=[str(gate["approval_packet"]), str(run_dir / "run-receipt.json")],
+        nonce=f"{transaction_node_id}-canonical-proof-approval",
+    )
+
+
+def _write_human_approval_packet(
+    *,
+    path: Path,
+    action: str,
+    target: dict[str, str],
+    reason: str,
+    evidence: list[str],
+    nonce: str,
+) -> Path:
+    packet: dict[str, object] = {
+        "schema": "tau.human_approval_packet.v1",
+        "approved": True,
+        "action": action,
+        "actor": {"id": "human:graham", "auth_method": "local-signature"},
+        "target": target,
+        "reason": reason,
+        "evidence": evidence,
+        "nonce": nonce,
+    }
+    packet["signature"] = _local_signature(packet)
+    path.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def _local_signature(payload: dict[str, object]) -> str:
+    canonical = dict(payload)
+    canonical.pop("signature", None)
+    digest = hashlib.sha256(
+        json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return f"local-signature-sha256:{digest}"
 
 
 def _sha256(path: Path) -> str:

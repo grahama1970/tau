@@ -88,7 +88,13 @@ def main() -> int:
         if first_thread.is_alive() or first_error:
             raise RuntimeError(f"initial_workflow_failed:{first_error}")
         _wait_file(approval_seen_path, browser, 20)
-        approve_approved_release_bundle(run_dir=run_dir)
+        approval_packet = _write_transaction_approval_packet(
+            run_dir=run_dir,
+            transaction_node_id="publish-approved-release",
+            path=root / "human-approved-release-approval.json",
+            reason="Approve the exact accepted local release bundle publication.",
+        )
+        approve_approved_release_bundle(run_dir=run_dir, approval_packet=approval_packet)
         resumed, resume_error, resume_thread = _worker(
             lambda: run_generic_dag(spec_path=materialized.source_dag_path, resume=True)
         )
@@ -139,9 +145,7 @@ def _worker(
     return outcome, errors, thread
 
 
-def _wait_server(
-    run_dir: Path, worker: threading.Thread, errors: list[BaseException]
-) -> Any:
+def _wait_server(run_dir: Path, worker: threading.Thread, errors: list[BaseException]) -> Any:
     deadline = time.monotonic() + 15
     last_error: Exception | None = None
     while time.monotonic() < deadline:
@@ -257,14 +261,48 @@ def _prove_no_accepted_producer_rerun(
             node_id: after[node_id]["attempt_count"] for node_id in producer_ids
         },
         "accepted_manifest_sha256s": {
-            node_id: after[node_id]["accepted_manifest_sha256"]
-            for node_id in producer_ids
+            node_id: after[node_id]["accepted_manifest_sha256"] for node_id in producer_ids
         },
         "checks": checks,
     }
     if payload["status"] != "PASS":
         raise RuntimeError("accepted_producer_reran_on_repeated_resume")
     return payload
+
+
+def _write_transaction_approval_packet(
+    *,
+    run_dir: Path,
+    transaction_node_id: str,
+    path: Path,
+    reason: str,
+) -> Path:
+    gate = _json(run_dir / "transactions" / transaction_node_id / "approval-gate-receipt.json")
+    target = gate.get("expected_target")
+    if not isinstance(target, dict) or not target.get("id"):
+        raise RuntimeError(f"approval target missing for {transaction_node_id}")
+    packet: dict[str, object] = {
+        "schema": "tau.human_approval_packet.v1",
+        "approved": True,
+        "action": "generic_dag_transaction_continue",
+        "actor": {"id": "human:graham", "auth_method": "local-signature"},
+        "target": {str(key): str(value) for key, value in target.items()},
+        "reason": reason,
+        "evidence": [str(gate["approval_packet"]), str(run_dir / "run-receipt.json")],
+        "nonce": f"{transaction_node_id}-canonical-proof-approval",
+    }
+    packet["signature"] = _local_signature(packet)
+    path.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def _local_signature(payload: dict[str, object]) -> str:
+    canonical = dict(payload)
+    canonical.pop("signature", None)
+    digest = hashlib.sha256(
+        json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return f"local-signature-sha256:{digest}"
 
 
 def _events(path: Path) -> list[dict[str, Any]]:
@@ -284,9 +322,7 @@ def _transaction_evidence(
     nodes = receipt.get("nodes")
     if not isinstance(nodes, list):
         raise RuntimeError("approved_release_run_receipt_nodes_missing")
-    by_id = {
-        str(node.get("node_id")): node for node in nodes if isinstance(node, dict)
-    }
+    by_id = {str(node.get("node_id")): node for node in nodes if isinstance(node, dict)}
     evidence: dict[str, dict[str, object]] = {}
     for node_id in node_ids:
         node = by_id.get(node_id)
