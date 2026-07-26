@@ -18,7 +18,7 @@ jobs:
     env:
       CHROME_BIN: /usr/bin/google-chrome
       PUPPETEER_SKIP_DOWNLOAD: "true"
-      TAU_PROOF_ROOT: ${{ runner.temp }}/tau-canonical-proofs/${{ github.run_id }}
+      TAU_PROOF_ROOT: ${{ github.workspace }}/../tau-canonical-proofs/${{ github.run_id }}
       TAU_SOURCE_REF: ${{ github.sha }}
 
     steps:
@@ -220,5 +220,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tau-canonical-proofs-${{ github.run_id }}
-          path: ${{ runner.temp }}/tau-canonical-proofs/${{ github.run_id }}
+          path: ${{ env.TAU_PROOF_ROOT }}
           if-no-files-found: error
