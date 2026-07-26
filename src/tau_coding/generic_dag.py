@@ -17,6 +17,7 @@ from threading import Event
 from typing import Any
 
 from tau_coding.approval_gate import evaluate_approval_gate
+from tau_coding.course_correction import write_course_correction_receipt
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import DagPlanNode, canonical_sha256
 from tau_coding.dag_runtime.run_store import DagRunLease, SqliteDagRunStore
@@ -1264,6 +1265,7 @@ def _run_transaction_node(
 
     revision: dict[str, Any] | None = None
     previous_artifact_sha256s: set[str] = set()
+    repeated_revision_signatures: dict[str, int] = {}
     for attempt in range(1, node.max_attempts + 1):
         attempt_dir = transaction_dir / f"attempt-{attempt:03d}"
         attempt_context_path = attempt_dir / "attempt-context.json"
@@ -1575,6 +1577,8 @@ def _run_transaction_node(
                 else producer_receipt.get("model")
             ),
         }
+        if str(feedback.get("verdict") or "").upper() == "REVISE":
+            attempt_record["review_revision_signature"] = _review_revision_signature(feedback)
         attempts.append(attempt_record)
         if feedback_errors:
             return _transaction_blocked(
@@ -1612,6 +1616,91 @@ def _run_transaction_node(
                 goal_hash=goal_hash,
             )
         if verdict == "REVISE":
+            revision_signature = str(attempt_record["review_revision_signature"])
+            repeated_revision_signatures[revision_signature] = (
+                repeated_revision_signatures.get(revision_signature, 0) + 1
+            )
+            if repeated_revision_signatures[revision_signature] >= 2:
+                course_correction_path = (
+                    transaction_dir / f"course-correction-attempt-{attempt:03d}.json"
+                )
+                course_correction = write_course_correction_receipt(
+                    course_correction_path,
+                    trigger="brave_search_required_after_two_attempts",
+                    run_id=run_id,
+                    dag_id=str(runtime_identity.get("dag_id") or ""),
+                    goal_hash=goal_hash,
+                    target={
+                        "kind": "generic_artifact_transaction",
+                        "transaction_id": spec.transaction_id,
+                        "node_id": node.node_id,
+                    },
+                    node_id=node.node_id,
+                    agent=node.role,
+                    attempt=attempt,
+                    observed_state={
+                        "attempt_count": attempt,
+                        "repeated_revision_signature": revision_signature,
+                        "repeated_revision_count": repeated_revision_signatures[
+                            revision_signature
+                        ],
+                        "review_feedback_paths": [
+                            item.get("review_feedback_path")
+                            for item in attempts
+                            if item.get("review_revision_signature") == revision_signature
+                        ],
+                        "advisory_only": True,
+                    },
+                    observed_artifact_path=review_feedback_path,
+                    errors=[
+                        (
+                            "two identical reviewer revision signatures observed; "
+                            "normal retry blocked before another same-context attempt"
+                        )
+                    ],
+                    reason=(
+                        "The same reviewer revision signature repeated across two attempts; "
+                        "external research or a new plan is required before another attempt."
+                    ),
+                    required_action={
+                        "type": "advisory_escalation_required",
+                        "skill": "brave-search",
+                        "skill_reference": "$brave-search",
+                        "advisory_evidence_only": True,
+                        "does_not_satisfy_acceptance_gate": True,
+                    },
+                    blocked_report_required={
+                        "required": True,
+                        "fields": [
+                            "blocker_summary",
+                            "attempt_count",
+                            "repeated_revision_signature",
+                            "searches_performed",
+                            "searches_not_performed",
+                        ],
+                    },
+                    mocked=False,
+                    live=False,
+                    provider_live=False,
+                )
+                attempt_record["course_correction_receipt_path"] = str(
+                    course_correction_path
+                )
+                attempt_record["course_correction_trigger"] = course_correction["trigger"]
+                return _transaction_blocked(
+                    node=node,
+                    verdict="COURSE_CORRECTION_REQUIRED",
+                    errors=[
+                        "brave_search_required_after_two_attempts",
+                        f"course_correction_receipt_path:{course_correction_path}",
+                    ],
+                    attempts=attempts,
+                    command_results=command_results,
+                    transaction_receipt_path=transaction_receipt_path,
+                    started_at=started_at,
+                    started_monotonic=started_monotonic,
+                    goal_hash=goal_hash,
+                )
             previous_artifact_sha256s = {
                 str(item["sha256"]) for item in artifacts if isinstance(item.get("sha256"), str)
             }
@@ -1746,6 +1835,15 @@ def _emit_transaction_progress(
 ) -> None:
     if sink is not None:
         sink(node_id, attempt, phase, evidence or {})
+
+
+def _review_revision_signature(feedback: dict[str, Any]) -> str:
+    canonical = {
+        "summary": feedback.get("summary"),
+        "findings": feedback.get("findings") if isinstance(feedback.get("findings"), list) else [],
+    }
+    encoded = json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return f"sha256:{hashlib.sha256(encoded).hexdigest()}"
 
 
 def _continue_transaction(

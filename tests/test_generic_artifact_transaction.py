@@ -129,6 +129,41 @@ def test_transaction_revises_then_projects_only_accepted_artifact(tmp_path: Path
     assert final_attempt["review_execution_evidence"]["command_result_sha256"].startswith("sha256:")
 
 
+def test_transaction_blocks_third_identical_revision_with_course_correction(
+    tmp_path: Path,
+) -> None:
+    worker = _write_worker(tmp_path)
+    spec_path = _write_transaction_spec(
+        tmp_path,
+        worker=worker,
+        max_attempts=3,
+        always_revise=True,
+    )
+
+    receipt = run_generic_dag(spec_path=spec_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "COURSE_CORRECTION_REQUIRED"
+    node = receipt["nodes"][0]
+    assert node["attempt_count"] == 2
+    assert [item["attempt"] for item in node["attempts"]] == [1, 2]
+    assert "brave_search_required_after_two_attempts" in node["errors"]
+    correction_path = Path(
+        node["attempts"][-1]["course_correction_receipt_path"]
+    )
+    course_correction = json.loads(correction_path.read_text(encoding="utf-8"))
+    assert course_correction["schema"] == "tau.course_correction.v1"
+    assert course_correction["trigger"] == "brave_search_required_after_two_attempts"
+    assert course_correction["required_next_action"] == "run_brave_search_then_retry"
+    assert course_correction["required_action"]["advisory_evidence_only"] is True
+    assert course_correction["required_action"]["does_not_satisfy_acceptance_gate"] is True
+    assert course_correction["observed_state"]["attempt_count"] == 2
+    assert course_correction["observed_state"]["repeated_revision_count"] == 2
+    assert len(course_correction["observed_state"]["review_feedback_paths"]) == 2
+    assert course_correction["proof_scope"]["does_not_prove"]
+    assert (tmp_path / "producer-count.txt").read_text() == "2"
+
+
 def test_transaction_resume_blocks_modified_accepted_artifact_without_rerun(
     tmp_path: Path,
 ) -> None:
@@ -581,10 +616,12 @@ def _write_transaction_spec(
     approval_path: Path | None = None,
     acceptance: dict[str, bool] | None = None,
     same_output_on_retry: bool = False,
+    always_revise: bool = False,
     producer_provider_live: bool = False,
     validator: bool = False,
     validator_pass: bool = True,
     goal_hash: str | None = None,
+    max_attempts: int = 2,
 ) -> Path:
     run_dir = root / "run"
     artifacts = root / "artifacts"
@@ -595,6 +632,7 @@ def _write_transaction_spec(
             {
                 "task": "produce deterministic candidate",
                 "same_output_on_retry": same_output_on_retry,
+                "always_revise": always_revise,
                 "producer_provider_live": producer_provider_live,
                 "validator_pass": validator_pass,
             }
@@ -608,7 +646,7 @@ def _write_transaction_spec(
         "producer_id": "producer",
         "reviewer": {
             "reviewer_id": "reviewer",
-            "command": [sys.executable, str(worker), "review"],
+            "command": [sys.executable, str(worker), "review", str(work_order)],
         },
     }
     if acceptance is not None:
@@ -642,7 +680,7 @@ def _write_transaction_spec(
             "depends_on": [],
             "receipt_path": str(receipt),
             "work_order_path": str(work_order),
-            "max_attempts": 2,
+            "max_attempts": max_attempts,
             "transaction": transaction,
         }
     ]
@@ -755,6 +793,7 @@ if mode == "produce":
     counter_path.write_text(str(count + 1))
 elif mode == "review":
     context_path = Path(os.environ["TAU_GENERIC_DAG_REVIEW_CONTEXT"])
+    work_order = json.loads(Path(sys.argv[2]).read_text()) if len(sys.argv) > 2 else {}
     context = json.loads(context_path.read_text())
     assert (
         hashlib.sha256(context_path.read_bytes()).hexdigest()
@@ -762,7 +801,7 @@ elif mode == "review":
     )
     attempt = context["attempt"]
     output = Path(context["output_contract"]["review_feedback_path"])
-    verdict = "REVISE" if attempt == 1 else "PASS"
+    verdict = "REVISE" if work_order.get("always_revise") or attempt == 1 else "PASS"
     findings = ([{
         "finding_id": "f1",
         "code": "REVISE_BYTES",
