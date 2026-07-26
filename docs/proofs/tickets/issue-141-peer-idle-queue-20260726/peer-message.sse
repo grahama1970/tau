@@ -1,0 +1,4 @@
+id: a-to-b-1
+event: peer-message
+data: {"created_at": "2026-07-26T23:36:14Z", "envelope_id": "a-to-b-1", "goal_hash": "sha256:g", "kind": "work_order", "payload": {"task": "patch bug in scratch worktree"}, "schema": "tau.tui_peer_envelope.v1", "source_harness": "tau-a", "target_harness": "tau-b"}
+
