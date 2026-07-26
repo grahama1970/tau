@@ -100,6 +100,7 @@ from tau_coding.dag_viewer.server import create_dag_viewer_server
 from tau_coding.debug_session_receipt import write_debug_session_receipt
 from tau_coding.debugger_skill_adapter import write_debugger_skill_adapter_receipt
 from tau_coding.demo_airgap_itar import run_demo_airgap_itar_basic
+from tau_coding.diagnostics import configure_tau_logging
 from tau_coding.docker_sandbox import write_docker_sandbox_receipt
 from tau_coding.embry_sparta_demo import run_demo_embry_sparta_airgap
 from tau_coding.evidence_case_skill_adapter import write_evidence_case_skill_adapter_receipt
@@ -1835,6 +1836,20 @@ def main(
             help="Force verbose startup output, overriding quiet startup settings.",
         ),
     ] = False,
+    log_level: Annotated[
+        str | None,
+        typer.Option(
+            "--log-level",
+            help="Set Tau diagnostic log level: trace, debug, info, warning, error, critical.",
+        ),
+    ] = None,
+    log_file: Annotated[
+        Path | None,
+        typer.Option(
+            "--log-file",
+            help="Write Tau structured diagnostics to this JSONL file.",
+        ),
+    ] = None,
     auto_compact_threshold: Annotated[
         int | None,
         typer.Option(
@@ -1934,6 +1949,11 @@ def main(
     if version:
         typer.echo(f"tau {__version__}")
         raise typer.Exit()
+
+    try:
+        configure_tau_logging(log_path=log_file, level=log_level, verbose=verbose_startup)
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc)) from exc
 
     if ctx.invoked_subcommand is not None:
         return

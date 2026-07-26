@@ -22,6 +22,7 @@ from tau_coding.dag_runtime.model import DagPlanNode, canonical_sha256
 from tau_coding.dag_runtime.run_store import DagRunLease, SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
 from tau_coding.dag_viewer.source_artifact import write_dag_source_artifact
+from tau_coding.diagnostics import configure_dag_logging, tau_logger
 from tau_coding.generic_artifact_transaction import (
     TRANSACTION_RECEIPT_SCHEMA,
     ArtifactTransactionSpec,
@@ -94,6 +95,13 @@ def run_generic_dag(
     nodes = validate_generic_dag_spec(spec, source_path=resolved_spec_path)
     run_dir = Path(str(spec["run_dir"])).expanduser().resolve()
     run_dir.mkdir(parents=True, exist_ok=True)
+    diagnostics_log_path = configure_dag_logging(run_dir)
+    tau_logger(
+        run_id=str(spec["run_id"]),
+        spec_path=str(resolved_spec_path),
+        run_dir=str(run_dir),
+        diagnostics_log_path=str(diagnostics_log_path),
+    ).info("generic_dag_run_configured")
     events_path = Path(str(spec.get("events_jsonl") or run_dir / "events.jsonl")).expanduser()
     if not events_path.is_absolute():
         events_path = run_dir / events_path
@@ -185,6 +193,16 @@ def run_generic_dag(
         execution: DagNodeAttempt,
     ) -> dict[str, Any]:
         node = nodes_by_id[plan_node.node_id]
+        node_log = tau_logger(
+            run_id=run_id,
+            scheduler_run_id=execution.run_id,
+            node_id=plan_node.node_id,
+            attempt=execution.attempt,
+            attempt_id=execution.attempt_id,
+            idempotency_key=execution.idempotency_key,
+            receipt_path=str(node.receipt_path),
+        )
+        node_log.info("generic_dag_node_started")
         _write_checkpoint(
             path=checkpoint_path,
             current_state_path=current_state_path,
@@ -199,34 +217,42 @@ def run_generic_dag(
             verdict="RUNNING",
             active_node_id=plan_node.node_id,
         )
-        result = _run_node(
-            node,
-            run_id=run_id,
-            run_dir=run_dir,
-            events_path=events_path,
-            resume=resume,
-            accepted_inputs=list(accepted_inputs),
-            goal_hash=goal_hash,
-            scheduler_attempt=execution.attempt,
-            runtime_identity={
-                "run_id": execution.run_id,
-                "plan_revision": plan.plan_sha256,
-                "dag_id": plan.plan_id,
-                "node_id": plan_node.node_id,
-                "attempt_id": execution.attempt_id,
-                "attempt": execution.attempt,
-                "execution_token": execution.idempotency_key,
-                "goal": goal_hash or plan.runtime_goal_hash,
-            },
-            cancel_event=execution.cancel_event,
-            progress_sink=lambda node_id, attempt, phase, evidence: record_transaction_progress(
-                execution.attempt,
-                node_id,
-                attempt,
-                phase,
-                evidence,
-            ),
-        )
+        try:
+            result = _run_node(
+                node,
+                run_id=run_id,
+                run_dir=run_dir,
+                events_path=events_path,
+                resume=resume,
+                accepted_inputs=list(accepted_inputs),
+                goal_hash=goal_hash,
+                scheduler_attempt=execution.attempt,
+                runtime_identity={
+                    "run_id": execution.run_id,
+                    "plan_revision": plan.plan_sha256,
+                    "dag_id": plan.plan_id,
+                    "node_id": plan_node.node_id,
+                    "attempt_id": execution.attempt_id,
+                    "attempt": execution.attempt,
+                    "execution_token": execution.idempotency_key,
+                    "goal": goal_hash or plan.runtime_goal_hash,
+                },
+                cancel_event=execution.cancel_event,
+                progress_sink=lambda node_id, attempt, phase, evidence: record_transaction_progress(
+                    execution.attempt,
+                    node_id,
+                    attempt,
+                    phase,
+                    evidence,
+                ),
+            )
+        except BaseException:
+            node_log.exception("generic_dag_node_exception")
+            raise
+        node_log.bind(
+            status=result.get("status"),
+            verdict=result.get("verdict"),
+        ).info("generic_dag_node_finished")
         if result.get("status") == "PASS" and result.get("verdict") == "PASS":
             node_results.append(result)
             completed.add(plan_node.node_id)
@@ -310,6 +336,7 @@ def run_generic_dag(
         "resume_source": resume_source
         or {"mode": "spec_path", "spec_path": str(resolved_spec_path)},
         "events_jsonl": str(events_path),
+        "diagnostics_log_path": str(diagnostics_log_path),
         "checkpoint_path": str(checkpoint_path),
         "current_state_path": str(current_state_path),
         "node_count": len(nodes),

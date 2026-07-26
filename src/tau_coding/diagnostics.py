@@ -1,8 +1,10 @@
-"""Structured diagnostic logging for coding-session failures."""
+"""Structured diagnostic logging for Tau runtime surfaces."""
 
 from __future__ import annotations
 
 import json
+import os
+import sys
 import traceback
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -10,8 +12,16 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+from loguru import logger
+
 from tau_agent.events import ErrorEvent
 from tau_coding.paths import TauPaths
+
+DEFAULT_LOG_LEVEL = "INFO"
+LOG_LEVEL_ENV = "TAU_LOG_LEVEL"
+LOG_PATH_ENV = "TAU_LOG_PATH"
+
+_CONFIGURED = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,6 +92,60 @@ def new_agent_call_run_id() -> str:
     return uuid4().hex
 
 
+def configure_tau_logging(
+    *,
+    log_path: Path | None = None,
+    level: str | None = None,
+    verbose: bool = False,
+) -> Path | None:
+    """Configure Tau's Loguru logger and return the active file sink path."""
+
+    global _CONFIGURED
+    resolved_level = _normalize_log_level(
+        level or os.environ.get(LOG_LEVEL_ENV) or ("DEBUG" if verbose else DEFAULT_LOG_LEVEL)
+    )
+    resolved_path = log_path or _env_log_path()
+
+    logger.remove()
+    logger.add(
+        sys.stderr,
+        level=resolved_level,
+        format=(
+            "<green>{time:YYYY-MM-DDTHH:mm:ss.SSSZ}</green> "
+            "<level>{level}</level> {message} {extra}"
+        ),
+        enqueue=False,
+    )
+    if resolved_path is not None:
+        resolved_path = resolved_path.expanduser().resolve()
+        resolved_path.parent.mkdir(parents=True, exist_ok=True)
+        logger.add(
+            str(resolved_path),
+            level=resolved_level,
+            serialize=True,
+            enqueue=False,
+        )
+    _CONFIGURED = True
+    return resolved_path
+
+
+def configure_dag_logging(run_dir: Path, *, level: str | None = None) -> Path:
+    """Configure a per-run DAG diagnostic JSONL sink."""
+
+    log_path = _env_log_path() or run_dir / "tau-diagnostics.jsonl"
+    resolved = configure_tau_logging(log_path=log_path, level=level)
+    assert resolved is not None
+    return resolved
+
+
+def tau_logger(**context: Any):
+    """Return the configured Tau logger bound to optional structured context."""
+
+    if not _CONFIGURED:
+        configure_tau_logging()
+    return logger.bind(**context)
+
+
 def _base_entry(
     context: AgentCallDiagnosticContext,
     *,
@@ -98,3 +162,18 @@ def _base_entry(
         "model": context.model,
         "cwd": str(context.cwd),
     }
+
+
+def _env_log_path() -> Path | None:
+    raw = os.environ.get(LOG_PATH_ENV)
+    if raw is None or not raw.strip():
+        return None
+    return Path(raw)
+
+
+def _normalize_log_level(value: str) -> str:
+    level = value.strip().upper()
+    allowed = {"TRACE", "DEBUG", "INFO", "SUCCESS", "WARNING", "ERROR", "CRITICAL"}
+    if level not in allowed:
+        raise ValueError(f"unsupported Tau log level: {value}")
+    return level

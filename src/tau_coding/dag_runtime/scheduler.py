@@ -29,6 +29,7 @@ from tau_coding.dag_runtime.transition import (
     DagTransitionView,
     transition_batch_to_payload,
 )
+from tau_coding.diagnostics import tau_logger
 
 
 @dataclass(frozen=True, slots=True)
@@ -637,6 +638,13 @@ def run_dag_plan(
                     try:
                         result = future.result()
                     except Exception as exc:  # pragma: no cover - defensive adapter boundary.
+                        tau_logger(
+                            run_id=identity.run_id,
+                            node_id=identity.node_id,
+                            attempt=identity.attempt,
+                            attempt_id=identity.attempt_id,
+                            idempotency_key=identity.idempotency_key,
+                        ).exception("dag_node_future_exception")
                         result = {
                             "node_id": node_id,
                             "status": "BLOCKED",
@@ -994,7 +1002,14 @@ def _inject_fault(
         }
     else:
         payload = context
-    injector(point, payload)
+    try:
+        injector(point, payload)
+    except BaseException:
+        tau_logger(
+            **dict(payload),
+            fault_point=point,
+        ).exception("dag_fault_injector_exception")
+        raise
 
 
 def _correction_allows_retry(
