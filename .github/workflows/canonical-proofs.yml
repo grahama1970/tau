@@ -222,3 +222,4 @@ jobs:
           name: tau-canonical-proofs-${{ github.run_id }}
           path: ${{ env.TAU_PROOF_ROOT }}
           if-no-files-found: error
+          include-hidden-files: true
