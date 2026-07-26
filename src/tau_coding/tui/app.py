@@ -909,6 +909,7 @@ class PromptInput(TextArea):
         self.tui_keybindings = tui_keybindings or TuiKeybindings()
         self._base_bindings = self._bindings.copy()
         self._footer_mode: Literal["normal", "completion", "running"] = "normal"
+        self._dag_viewer_handoff_available = False
         self._paste_counter = 0
         self._paste_markers: dict[str, str] = {}
         self._kill_ring: list[str] = []
@@ -922,11 +923,20 @@ class PromptInput(TextArea):
         self._setting_history_text = False
         self._apply_prompt_bindings()
 
-    def set_footer_mode(self, mode: Literal["normal", "completion", "running"]) -> None:
+    def set_footer_mode(
+        self,
+        mode: Literal["normal", "completion", "running"],
+        *,
+        dag_viewer_handoff_available: bool = False,
+    ) -> None:
         """Switch the prompt bindings shown by Textual's built-in footer."""
-        if mode == self._footer_mode:
+        if (
+            mode == self._footer_mode
+            and dag_viewer_handoff_available == self._dag_viewer_handoff_available
+        ):
             return
         self._footer_mode = mode
+        self._dag_viewer_handoff_available = dag_viewer_handoff_available
         self._apply_prompt_bindings()
         self.refresh_bindings()
 
@@ -934,7 +944,13 @@ class PromptInput(TextArea):
         self._bindings = BindingsMap.merge(
             [
                 self._base_bindings,
-                BindingsMap(_prompt_bindings(self.tui_keybindings, mode=self._footer_mode)),
+                BindingsMap(
+                    _prompt_bindings(
+                        self.tui_keybindings,
+                        mode=self._footer_mode,
+                        dag_viewer_handoff_available=self._dag_viewer_handoff_available,
+                    )
+                ),
             ]
         )
 
@@ -11718,7 +11734,13 @@ class TauTuiApp(App[None]):
 
     def _refresh_footer_bindings(self) -> None:
         prompt = self.query_one("#prompt", PromptInput)
-        prompt.set_footer_mode(_prompt_footer_mode(self.state, self._completion_state))
+        footer_mode = _prompt_footer_mode(self.state, self._completion_state)
+        prompt.set_footer_mode(
+            footer_mode,
+            dag_viewer_handoff_available=(
+                footer_mode == "normal" and self._last_dag_viewer_run_dir is not None
+            ),
+        )
         custom_footer = self.query_one("#extension-footer", Static)
         component_footer = self.query_one("#extension-footer-component", Vertical)
         built_in_footer = self.query_one(Footer)
@@ -15733,7 +15755,12 @@ def _app_bindings(keybindings: TuiKeybindings) -> list[Binding]:
             priority=True,
         ),
         Binding(keybindings.toggle_tool_results, "toggle_tool_results", "Tool results"),
-        Binding(keybindings.dag_viewer_handoff, "open_dag_viewer_handoff", "DAG viewer"),
+        Binding(
+            keybindings.dag_viewer_handoff,
+            "open_dag_viewer_handoff",
+            "DAG viewer",
+            show=False,
+        ),
         Binding(keybindings.toggle_thinking, "toggle_thinking", "Thinking tokens"),
         Binding(keybindings.external_editor, "open_external_editor", "Editor"),
         Binding(keybindings.paste_clipboard, "paste_clipboard", "Paste"),
@@ -15750,6 +15777,7 @@ def _prompt_bindings(
     keybindings: TuiKeybindings,
     *,
     mode: Literal["normal", "completion", "running"],
+    dag_viewer_handoff_available: bool = False,
 ) -> list[Binding]:
     if mode == "completion":
         bindings = [
@@ -15825,6 +15853,18 @@ def _prompt_bindings(
         Binding(keybindings.thinking_cycle, "cycle_thinking", "Thinking", priority=True),
         Binding(keybindings.model_cycle, "cycle_model", "Model", priority=True),
         Binding(keybindings.model_picker, "open_model_picker", "Models", priority=True),
+        *(
+            [
+                Binding(
+                    keybindings.dag_viewer_handoff,
+                    "open_dag_viewer_handoff",
+                    "DAG viewer",
+                    priority=True,
+                )
+            ]
+            if dag_viewer_handoff_available
+            else []
+        ),
         Binding(
             keybindings.copy_message,
             "clear_prompt",
@@ -15906,6 +15946,7 @@ def _hidden_prompt_bindings(
         (keybindings.paste_clipboard, "paste_clipboard"),
         (keybindings.copy_last_message, "copy_last_message"),
         (keybindings.toggle_tool_results, "toggle_tool_results"),
+        (keybindings.dag_viewer_handoff, "open_dag_viewer_handoff"),
         (keybindings.toggle_thinking, "toggle_thinking"),
         (keybindings.copy_message, "clear_prompt"),
         (keybindings.suspend, "suspend_process"),

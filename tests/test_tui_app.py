@@ -3074,6 +3074,21 @@ async def test_tui_app_footer_hints_update_while_running() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_footer_shows_dag_viewer_only_when_run_is_known(
+    tmp_path: Path,
+) -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test(size=(120, 30)) as pilot:
+        assert "DAG viewer" not in _visible_footer_bindings(app)
+        app._last_dag_viewer_run_dir = tmp_path / "workflow-run"
+        app._refresh_footer_bindings()
+        await pilot.pause()
+
+        assert _visible_footer_bindings(app)["DAG viewer"] == "ctrl+alt+v"
+
+
+@pytest.mark.anyio
 async def test_tui_app_keeps_textual_footer_on_short_windows() -> None:
     app = TauTuiApp(FakeSession())
 
