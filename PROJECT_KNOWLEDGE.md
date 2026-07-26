@@ -1,9 +1,25 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-21 15:31 by codex
+**Last updated:** 2026-07-26 10:45 by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-26 operating target reset: the recent Pi TUI parity work is a
+  separate coding-harness usability slice; it does not satisfy the broader
+  `GOAL.md` product outcome by itself. The active immutable product goal is
+  still the five canonical real Tau DAG ladder with one shared React Flow
+  progress viewer, truthful accepted evidence, blockers, human decisions,
+  live/resume behavior, and clean-checkout launch documentation. Preserve
+  Tau-specific architecture while improving usability: Memory-first routing,
+  SciLLM as Tau's internal provider boundary, DAG contracts, typed receipts,
+  fail-closed evidence gates, Herdr/monitor surfaces, `$ask` as a convenience
+  compiler to `tau.dag_contract.v1`, and Tau-owned dynamic progress state must
+  not be overwritten by Pi feature ports. Current proof boundary: prior TUI
+  parity commits and screenshots demonstrate terminal-harness renderability for
+  selected features, but the five-DAG product ladder remains `NOT_ESTABLISHED`
+  until the real workflows and shared dynamic viewer are run and inspected
+  against `GOAL.md`.
 
 - 2026-07-21 PDF Lab `scillm-chat-review` timeout/route classification (#123):
   Tau now distinguishes a transport timeout, provider quota/rate-limit
