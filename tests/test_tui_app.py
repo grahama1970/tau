@@ -2743,7 +2743,7 @@ async def test_tui_startup_resources_expand_with_tool_results_key() -> None:
 
         expanded = startup_resources.content
         assert "Loaded Resources" in expanded
-        assert "- /review (.agents/prompts/review.md)" in expanded
+        assert "- /review ([project] .agents/prompts/review.md)" in expanded
         assert "Ctrl+O: collapse startup resources and tool output" in expanded
 
 
