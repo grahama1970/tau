@@ -55,7 +55,7 @@ capabilities.
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MATCHED` | Tau renders pending/success/error shell and tool output, colorizes embedded unified diffs with intraline changes, accepts Pi-style extension tool call/result render hooks including simple component-like render objects, summarizes permission/approval receipts, surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data, preserves multiple image blocks from one tool result, supports collapsible tool output, and shows input-bar terminal command exit codes. |
 | Export/artifact viewing | `/export`, `exportToHtml`, RPC `export_html` | Tau `/export`, `/artifacts`, `session_export.py`, TUI command output | `MATCHED` | Tau writes real HTML/JSONL session artifacts, opens a persistent TUI result modal with the artifact path and `file://` URI, supports explicit `/export --open`, renders assistant Markdown tables plus embedded local image links and fenced DOT graph artifacts in HTML exports, attempts Mermaid fail-closed when the local CLI/browser runtime works, makes embedded figures/graphs openable full-size in the browser, and now has a searchable `/artifacts` browser with kind tabs and selected previews for current-transcript image, graph, Markdown report, JSON receipt, and HTML export artifacts. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider, prompt chrome, compact readiness, sidebar, and retry countdown | `MATCHED` | Tau exposes cwd/session title, provider/model/thinking, context and usage/cost stats, auth/memory/DAG/SciLLM/queue readiness, loop monitor state, queued-message controls, Textual footer keybindings, retry/compaction/branch/share/reload operation labels, and Pi-style extension footer/status hooks. |
-| Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool/custom-entry renderers in live/restored transcripts | `MUST/PARTIAL` | Selector now advertises Pi-style `J/K` navigation and supports tool-output toggle while open; editor now uses Pi-style Enter submit and Shift+Enter newline; custom entries now re-render on tool-output expansion, accept simple component-like render objects, and render Pi-style text content as Markdown by default; preserve current Tau extension API; full JS Pi component runtime embedding remains out of scope. |
+| Extension UI | `extension-selector`, `extension-input`, `extension-editor`, custom UI | Tau extension screens, chrome hooks, extension tool provenance, and extension tool/custom-entry renderers in live/restored transcripts | `MATCHED` | Tau covers Pi's practical extension UI contract through selectable choices with timeout/tool-output toggle, one-line input with timeout, multi-line editor with Pi-style submit/newline/external-editor keys, custom modal content, custom entry/message Markdown rendering, component-like custom-entry render objects, extension header/footer/widget/prompt-component hooks, footer data/status refresh, terminal-title/status hooks, and restored extension tool provenance. Arbitrary Pi JS component runtime embedding is not copied because Tau extensions run through Python/Textual objects. |
 | Images, figures, graphs, tables, receipts, HTML | `show-images-selector`, image component, Markdown renderer, HTML export | Tau image visibility setting, Markdown renderer, artifact preview rendering | `MATCHED` | Tau has terminal-safe image controls, Kitty/iTerm2/fallback rendering, non-PNG-to-PNG conversion for Kitty, multiple image payload rendering for figure/graph tool results, local Markdown image links in user/assistant/custom transcript output, rendered Markdown tables in transcript and artifact previews, JSON receipt previews with schema/status/run fields, HTML export previews with extracted title/headings/table/text plus local `<img>` figures, proven local-tool rendering for fenced DOT graph source, searchable `/artifacts` selected-preview rendering, and fail-closed Mermaid rendering when the local CLI/browser runtime is unavailable. |
 | Workflow/DAG progress | None in Pi | `WorkflowPickerScreen`, DAG/workflow receipts | `TAU-ONLY/MUST` | This is Tau's differentiator and must remain first-class in the TUI. |
 
@@ -89,15 +89,33 @@ Current candidates:
   Tau report bundles only when backed by real linked files or generated
   artifacts. Search, kind tabs, and selected previews are now present; do not
   create static dashboard inventory.
-- `Extension custom component objects`: still partial because Pi can mount
-  arbitrary custom TUI components; Tau supports extension selection/input/
-  editor/custom screens plus expansion-aware string/JSON/component-like custom
-  entries and Markdown fallback for Pi-style text content.
 - `Cache-miss notices`: defer until Tau assistant/session entries carry the
   provider, model, and timestamp fields needed for Pi's cache-miss algorithm.
   Do not add a fake setting or heuristic notice from aggregate stats.
 
 Latest slice evidence:
+
+- Source inspected: Pi `extension-selector.ts`, `extension-editor.ts`,
+  `custom-editor.ts`; Tau `ExtensionSelectScreen`, `ExtensionInputScreen`,
+  `ExtensionEditorScreen`, `ExtensionCustomScreen`, extension chrome/widget/
+  prompt component handlers, custom entry renderers, and extension UI tests.
+- Destination preserved: Tau's Python/Textual extension API, custom
+  header/footer/widget/prompt-component hooks, restored extension tool
+  provenance, Memory/SciLLM/DAG/workflow surfaces, and fail-visible extension
+  component errors.
+- Changed: no code change. The matrix now marks extension UI as matched for
+  Tau's actual extension runtime and records arbitrary Pi JS component
+  embedding as intentionally not copied.
+- Mocked: yes for the session/provider fixture used by the focused check.
+- Live: no provider-live or SciLLM-live call; this is a source-audit plus local
+  Textual extension UI interaction proof.
+- Proof: `uv run pytest tests/test_tui_app.py -q -k 'extension_select or
+  extension_input or extension_editor or extension_footer_component or
+  extension_footer_data or extension_command_ui or custom_entry_component or
+  custom_message_content or rerenders_custom_entries'` reported `15 passed,
+  453 deselected`.
+- Remaining gap: login/OAuth progress polish is the only remaining `PARTIAL`
+  row; cache-miss notices stay deferred until the underlying event fields exist.
 
 - Source inspected: Pi `config-selector.ts`; Tau `ConfigMapScreen`,
   `_config_map_items`, resource disable persistence, project TUI settings,
