@@ -459,7 +459,7 @@ def _verify_public_interface(
         }
 
     run_help_result = _run([str(tau), "workflows", "run", "--help"], cwd, commands, env)
-    run_help = f"{run_help_result.stdout}\n{run_help_result.stderr}"
+    run_help = _strip_ansi(f"{run_help_result.stdout}\n{run_help_result.stderr}")
     viewer_capabilities = _run_json(
         [str(tau), "dag-view-capabilities", "--json"], cwd, commands, env
     )
@@ -1699,6 +1699,10 @@ def _sha256_text(value: str) -> str:
 def _sha256_json(value: dict[str, Any]) -> str:
     data = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
     return f"sha256:{hashlib.sha256(data).hexdigest()}"
+
+
+def _strip_ansi(value: str) -> str:
+    return re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", value)
 
 
 def _failure_message(exc: Exception) -> str:
