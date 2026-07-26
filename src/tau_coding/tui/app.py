@@ -6944,6 +6944,7 @@ class OAuthLoginScreen(ModalScreen[OAuthCredential | None]):
                 on_auth=self._show_auth,
                 on_prompt=self._prompt_for_code,
                 on_manual_code_input=self._manual_code_input,
+                on_progress=self._show_progress,
             )
         except Exception as exc:  # noqa: BLE001 - surface OAuth failures in the TUI
             self.query_one("#login-help", Static).update(f"OAuth failed: {exc}")
@@ -6954,6 +6955,9 @@ class OAuthLoginScreen(ModalScreen[OAuthCredential | None]):
         self.query_one("#login-oauth-url", Static).update(info.url)
         if info.instructions:
             self.query_one("#login-help", Static).update(info.instructions)
+
+    def _show_progress(self, message: str) -> None:
+        self.query_one("#login-help", Static).update(message)
 
     async def _prompt_for_code(self, prompt: OAuthPrompt) -> str:
         self.query_one("#login-help", Static).update(prompt.message)

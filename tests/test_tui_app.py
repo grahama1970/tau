@@ -55,6 +55,7 @@ from tau_coding.commands import (
 from tau_coding.context_window import ContextUsageEstimate
 from tau_coding.credentials import FileCredentialStore, OAuthCredential
 from tau_coding.extensions.api import ExtensionCommandContext
+from tau_coding.oauth import OAuthAuthInfo
 from tau_coding.prompt_templates import PromptTemplate
 from tau_coding.provider_config import (
     OpenAICodexProviderConfig,
@@ -10855,6 +10856,57 @@ async def test_tui_login_openai_codex_saves_oauth_credentials(
     credentials = (tmp_path / ".tau" / "credentials.json").read_text(encoding="utf-8")
     assert '"type": "oauth"' in credentials
     assert "refresh-token" in credentials
+
+
+@pytest.mark.anyio
+async def test_tui_oauth_login_screen_shows_auth_and_progress(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    release_future = asyncio.get_running_loop().create_future()
+
+    async def fake_login_openai_codex(**kwargs: object) -> OAuthCredential:
+        on_auth = kwargs["on_auth"]
+        on_progress = kwargs["on_progress"]
+        assert callable(on_auth)
+        assert callable(on_progress)
+        on_auth(
+            OAuthAuthInfo(
+                url="https://auth.example.test/login",
+                instructions="Use the browser to finish login.",
+            )
+        )
+        on_progress("Exchanging authorization code...")
+        return await release_future
+
+    monkeypatch.setattr(tui_app, "login_openai_codex", fake_login_openai_codex)
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/login openai-codex"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, OAuthLoginScreen)
+        assert (
+            str(app.screen.query_one("#login-oauth-url", Static).render())
+            == "https://auth.example.test/login"
+        )
+        assert str(app.screen.query_one("#login-help", Static).render()) == (
+            "Exchanging authorization code..."
+        )
+
+        release_future.set_result(
+            OAuthCredential(
+                access="access-token",
+                refresh="refresh-token",
+                expires=123456,
+                account_id="account-1",
+            )
+        )
+        await pilot.pause()
 
 
 @pytest.mark.anyio

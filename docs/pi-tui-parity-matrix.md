@@ -51,7 +51,7 @@ capabilities.
 | Branch/trust/tool selectors | `user-message-selector`, `trust-selector`, selector keybindings | `UserMessagePickerScreen`, `TrustPickerScreen`, `ToolsReferenceScreen` | `MATCHED` | `/fork` and `/trust` preserve Tau's backing flows and accept Pi-style `j/k` movement; `/tools` preserves searchable text input while the list accepts `j/k` movement when focused. |
 | Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `MATCHED` | Tau backs the daily-use Pi settings that apply to its architecture: search, Pi-style navigation, theme, auto-compact, queue modes, HTTP idle timeout, image visibility/width/resize/blocking, skill commands, hardware cursor, editor/output padding, autocomplete size, clear-on-shrink, terminal progress, warnings, external editor, thinking level, double-Escape action, tree filter, default trust, quiet startup, changelog collapse, and turn notifications. Pi-only transport/install-telemetry/cache-miss switches remain excluded or deferred unless Tau gets real backing behavior. |
 | Config selector | `config-selector` | `ConfigMapScreen` | `MATCHED` | Tau matches the practical resource-management job for its architecture: searchable config/resource/diagnostic rows, Pi-style page navigation and scope tabs, command insertion, path copy, visible write targets, in-place resource toggles, durable user disables, project-local disables through `<cwd>/.tau/tui.json`, and no-match rows. Pi package-source include/exclude editing is intentionally not copied because Tau does not have Pi's package-source settings manager; adding that would be new resource architecture, not TUI parity. |
-| Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login; provider picker now shows visible navigation help, empty filter states, and fail-closed empty-row selection. |
+| Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `MATCHED` | Tau covers provider/method selection, API-key save, OAuth subscription login, browser URL display, manual redirect/code input, OAuth progress updates, stored credential status labels, logout picker/removal, configured Pi-style select keys, visible empty filter rows, fail-closed empty-row selection, credential persistence, and provider reload without leaking secrets into the transcript. |
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MATCHED` | Tau renders pending/success/error shell and tool output, colorizes embedded unified diffs with intraline changes, accepts Pi-style extension tool call/result render hooks including simple component-like render objects, summarizes permission/approval receipts, surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data, preserves multiple image blocks from one tool result, supports collapsible tool output, and shows input-bar terminal command exit codes. |
 | Export/artifact viewing | `/export`, `exportToHtml`, RPC `export_html` | Tau `/export`, `/artifacts`, `session_export.py`, TUI command output | `MATCHED` | Tau writes real HTML/JSONL session artifacts, opens a persistent TUI result modal with the artifact path and `file://` URI, supports explicit `/export --open`, renders assistant Markdown tables plus embedded local image links and fenced DOT graph artifacts in HTML exports, attempts Mermaid fail-closed when the local CLI/browser runtime works, makes embedded figures/graphs openable full-size in the browser, and now has a searchable `/artifacts` browser with kind tabs and selected previews for current-transcript image, graph, Markdown report, JSON receipt, and HTML export artifacts. |
 | Status/footer | `footer`, `status-indicator`, `countdown-timer` | Tau footer data provider, prompt chrome, compact readiness, sidebar, and retry countdown | `MATCHED` | Tau exposes cwd/session title, provider/model/thinking, context and usage/cost stats, auth/memory/DAG/SciLLM/queue readiness, loop monitor state, queued-message controls, Textual footer keybindings, retry/compaction/branch/share/reload operation labels, and Pi-style extension footer/status hooks. |
@@ -94,6 +94,33 @@ Current candidates:
   Do not add a fake setting or heuristic notice from aggregate stats.
 
 Latest slice evidence:
+
+- Source inspected: Pi `login-dialog.ts`, `oauth-selector.ts`; Tau
+  `LoginProviderPickerScreen`, `LoginMethodPickerScreen`, `LoginScreen`,
+  `OAuthLoginScreen`, `login_openai_codex`, credential persistence/reload
+  paths, and login/OAuth tests.
+- Destination preserved: Tau credential store, provider settings, OpenAI Codex
+  OAuth helper, provider reload behavior, transcript secret redaction,
+  Anthropic extra-usage warning, Memory/SciLLM/DAG/workflow surfaces, and
+  fail-closed empty picker rows.
+- Changed: `OAuthLoginScreen` now passes Tau's existing OAuth `on_progress`
+  callback through to the login helper and displays progress text in the
+  dialog. The matrix marks login/OAuth matched for the supported Tau auth
+  flows.
+- Mocked: yes for focused OAuth worker tests; API-key persistence and picker
+  interactions use local filesystem credential/settings paths.
+- Live: local Textual login/OAuth UI and credential file behavior; no
+  provider-live OAuth callback or token exchange.
+- Proof: `uv run pytest tests/test_tui_app.py -q -k 'login or oauth'`
+  reported `16 passed, 453 deselected`; `uv run ruff check
+  src/tau_coding/tui/app.py tests/test_tui_app.py` reported all checks passed;
+  `uv run python -m py_compile src/tau_coding/tui/app.py tests/test_tui_app.py`
+  produced no errors; render proof
+  `/tmp/tau-pi-tui-oauth-progress-proof-g3n2eflm/proof.json` with screenshot
+  `/tmp/tau-pi-tui-oauth-progress-proof-g3n2eflm/tau-oauth-progress-preview.svg`.
+- Remaining gap: cache-miss notices stay deferred until Tau assistant/session
+  entries carry provider/model/timestamp fields. No active `PARTIAL` Pi TUI row
+  remains in this matrix.
 
 - Source inspected: Pi `extension-selector.ts`, `extension-editor.ts`,
   `custom-editor.ts`; Tau `ExtensionSelectScreen`, `ExtensionInputScreen`,
