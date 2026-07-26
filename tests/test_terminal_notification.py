@@ -62,6 +62,20 @@ def test_terminal_notification_controller_writes_selected_mode() -> None:
     assert writes == ["\x1b]9;Tau turn finished\x07"]
 
 
+def test_terminal_notification_controller_writes_pending_decision_message() -> None:
+    writes: list[str] = []
+    controller = TerminalNotificationController(
+        "desktop",
+        enabled=True,
+        writer=writes.append,
+        environ={"TERM_PROGRAM": "ghostty"},
+    )
+
+    controller.notify_pending_decision("Tau approval required: release")
+
+    assert writes == ["\x1b]9;Tau approval required: release\x07"]
+
+
 def test_terminal_notification_controller_honors_off_and_unknown_desktop_protocol() -> None:
     writes: list[str] = []
     TerminalNotificationController("off", enabled=True, writer=writes.append).notify_turn_finished()

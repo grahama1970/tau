@@ -2,6 +2,7 @@ import asyncio
 import base64
 import http.client
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -8447,6 +8448,116 @@ def test_tui_model_picker_guides_setup_when_no_provider_is_usable() -> None:
     assert notifications == [
         ("No configured providers are usable. Run /login to set up a provider.", "warning")
     ]
+
+
+def test_tui_app_pending_decision_refresh_updates_widget_and_notifies(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    registry_path = tmp_path / "registry" / "runs.json"
+    monkeypatch.setenv("TAU_RUN_REGISTRY", str(registry_path))
+    run_dir = _write_pending_decision_fixture(tmp_path / "run")
+    app = TauTuiApp(FakeSession())
+    notifications: list[tuple[str, str | None]] = []
+    terminal_writes: list[str] = []
+    app._terminal_notification = TerminalNotificationController(
+        "desktop",
+        enabled=True,
+        writer=terminal_writes.append,
+        environ={"TERM_PROGRAM": "ghostty"},
+    )
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        severity = kwargs.get("severity")
+        notifications.append((message, severity if isinstance(severity, str) else None))
+
+    app._notify = fake_notify  # type: ignore[method-assign]
+
+    decisions = app._refresh_pending_decisions(notify=True)
+    app._refresh_pending_decisions(notify=True)
+
+    assert len(decisions) == 1
+    assert app._extension_statuses["decisions"] == "1 pending"
+    assert app._extension_widgets_above["pending-decisions"] == (
+        "Pending human decisions",
+        "- approved-release-bundle/publish-approved-release: "
+        "Provide human approval for generic_dag_transaction_continue",
+        "  target: generic-dag-transaction:run-1:publish-approved-release",
+        f"  command: tau workflows approve {run_dir} --approval-packet <approval.json>",
+    )
+    assert notifications == [
+        ("Tau approval required: approved-release-bundle/publish-approved-release", "warning")
+    ]
+    assert terminal_writes == [
+        "\x1b]9;Tau approval required: approved-release-bundle/publish-approved-release\a"
+    ]
+
+    (run_dir / "receipts" / "workflow-approval.json").write_text(
+        json.dumps({"schema": "tau.workflow_approval_receipt.v1", "ok": True}) + "\n",
+        encoding="utf-8",
+    )
+    assert app._refresh_pending_decisions(notify=True) == ()
+    assert "decisions" not in app._extension_statuses
+    assert "pending-decisions" not in app._extension_widgets_above
+
+
+def _write_pending_decision_fixture(run_dir: Path) -> Path:
+    resolved = run_dir.resolve()
+    (resolved / "transactions" / "publish-approved-release").mkdir(parents=True)
+    (resolved / "receipts").mkdir()
+    (resolved / "dag-run.sqlite3").write_bytes(b"fixture sqlite marker")
+    registry_path = Path(os.environ["TAU_RUN_REGISTRY"])
+    registry_path.parent.mkdir(parents=True)
+    registry_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.run_registry.v1",
+                "runs": [
+                    {
+                        "run_id": "run-1",
+                        "workflow_id": "approved-release-bundle",
+                        "state": "BLOCKED",
+                        "started_at": "2026-07-26T00:00:00Z",
+                        "updated_at": "2026-07-26T00:00:01Z",
+                        "run_dir": str(resolved),
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    transaction_dir = resolved / "transactions" / "publish-approved-release"
+    (transaction_dir / "transaction-receipt.json").write_text(
+        json.dumps(
+            {
+                "schema": "tau.generic_artifact_transaction_receipt.v1",
+                "node_id": "publish-approved-release",
+                "transaction_id": "publish-approved-release",
+                "transaction_state": "APPROVAL_REQUIRED",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (transaction_dir / "approval-gate-receipt.json").write_text(
+        json.dumps(
+            {
+                "schema": "tau.approval_gate_receipt.v1",
+                "status": "BLOCKED",
+                "approved": False,
+                "requested_action": "generic_dag_transaction_continue",
+                "approval_packet": str(resolved / "input" / "approval.json"),
+                "expected_target": {
+                    "id": "generic-dag-transaction:run-1:publish-approved-release",
+                    "transaction_id": "publish-approved-release",
+                },
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return resolved
 
 
 @pytest.mark.anyio

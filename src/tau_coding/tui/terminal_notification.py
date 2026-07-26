@@ -13,6 +13,7 @@ from tau_coding.tui.terminal_title import sanitize_terminal_title
 
 OSC_TERMINATOR = "\a"
 TURN_FINISHED_MESSAGE = "Tau turn finished"
+PENDING_DECISION_MESSAGE = "Tau approval required"
 type DesktopNotificationProtocol = Literal["osc9", "osc99"]
 
 
@@ -95,13 +96,21 @@ class TerminalNotificationController:
 
     def notify_turn_finished(self) -> None:
         """Request attention for a completed turn, if notifications are enabled."""
+        self._notify(TURN_FINISHED_MESSAGE)
+
+    def notify_pending_decision(self, message: str = PENDING_DECISION_MESSAGE) -> None:
+        """Request attention for a Tau run waiting on human approval."""
+        self._notify(message)
+
+    def _notify(self, message: str) -> None:
+        """Write one configured attention sequence."""
         if not self.enabled or self.mode == "off":
             return
         sequence = (
             OSC_TERMINATOR
             if self.mode == "bell"
             else desktop_notification_sequence(
-                TURN_FINISHED_MESSAGE,
+                message,
                 environ=self._environ,
             )
         )

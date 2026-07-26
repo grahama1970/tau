@@ -89,6 +89,12 @@ from tau_coding.credentials import FileCredentialStore, OAuthCredential, credent
 from tau_coding.dag_viewer.server import RunningDagViewerServer, create_dag_viewer_server
 from tau_coding.oauth import OAuthAuthInfo, OAuthPrompt, login_openai_codex
 from tau_coding.paths import TauPaths
+from tau_coding.pending_decisions import (
+    PendingDecision,
+    collect_pending_decisions,
+    pending_decision_lines,
+    pending_decision_report,
+)
 from tau_coding.prompt_templates import PromptTemplate
 from tau_coding.provider_catalog import (
     BUILTIN_PROVIDER_CATALOG,
@@ -7712,6 +7718,7 @@ class TauTuiApp(App[None]):
         self._extension_editor_component_name: str | None = None
         self._app_has_focus = True
         self._active_notification_keys: set[tuple[str, str]] = set()
+        self._pending_decision_keys: set[str] = set()
         self._supports_pyperclip: bool | None = None
         self._last_clear_prompt_at: float | None = None
         self._theme_picker_original_theme: str | None = None
@@ -7853,6 +7860,7 @@ class TauTuiApp(App[None]):
         prompt.focus()
         self._update_responsive_layout(self.size.width, self.size.height)
         self._apply_sidebar_position()
+        self._refresh_pending_decisions(notify=False)
         self._refresh()
         self._refresh_completions()
         if self.startup_message and not self.tui_settings.quiet_startup:
@@ -8100,6 +8108,9 @@ class TauTuiApp(App[None]):
             return
 
         if self._handle_dag_viewer_command(text):
+            return
+
+        if self._handle_pending_decisions_command(text):
             return
 
         if text.casefold() == "/debug":
@@ -8565,6 +8576,7 @@ class TauTuiApp(App[None]):
             output=formatted_output,
             exit_code=result.exit_code,
         )
+        self._refresh_pending_decisions(notify=True)
         self._follow_transcript_output()
         self._refresh()
         self._terminal_worker = None
@@ -10093,6 +10105,48 @@ class TauTuiApp(App[None]):
         self._append_command_message("/dag-viewer", message)
         self._refresh()
         return True
+
+    def _handle_pending_decisions_command(self, text: str) -> bool:
+        """Handle the local /decisions inbox command."""
+        stripped = text.strip()
+        if stripped.casefold() not in {"/decisions", "/decision-inbox"}:
+            return False
+        decisions = self._refresh_pending_decisions(notify=False)
+        self._append_command_message("/decisions", pending_decision_report(decisions))
+        self._refresh()
+        return True
+
+    def _refresh_pending_decisions(self, *, notify: bool) -> tuple[PendingDecision, ...]:
+        """Refresh the prompt-region pending-decision inbox."""
+        try:
+            decisions = collect_pending_decisions()
+        except RuntimeError as exc:
+            self._extension_widgets_above["pending-decisions"] = (
+                "Pending human decisions unavailable",
+                str(exc),
+            )
+            self._extension_statuses["decisions"] = "unavailable"
+            if notify:
+                self._notify(f"Pending decisions unavailable: {exc}", severity="error")
+            return ()
+        lines = pending_decision_lines(decisions)
+        if lines:
+            self._extension_widgets_above["pending-decisions"] = lines
+            self._extension_statuses["decisions"] = f"{len(decisions)} pending"
+        else:
+            self._extension_widgets_above.pop("pending-decisions", None)
+            self._extension_statuses.pop("decisions", None)
+        current_keys = {decision.key for decision in decisions}
+        if notify:
+            new_keys = current_keys - self._pending_decision_keys
+            for decision in decisions:
+                if decision.key not in new_keys:
+                    continue
+                message = f"Tau approval required: {decision.workflow_id}/{decision.node_id}"
+                self._terminal_notification.notify_pending_decision(message)
+                self._notify(message, severity="warning")
+        self._pending_decision_keys = current_keys
+        return decisions
 
     def _open_dag_viewer_handoff(
         self,
@@ -14959,6 +15013,7 @@ def _render_tui_hotkeys_message(
         "- /resources: show loaded context, skills, prompts, tools, and diagnostics",
         "- /artifacts: browse image, graph, Markdown, JSON, and HTML artifacts",
         "- /dag-viewer [run-dir]: open a DAG run in the web viewer",
+        "- /decisions: show pending human approval decisions",
         "- !: run bash command and add output to context",
         "- !!: run bash command without adding output to context",
     ]
