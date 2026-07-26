@@ -1,0 +1,82 @@
+{
+  "active_goal_hash": "sha256:issue-131-proof",
+  "active_subagents": [],
+  "completed_subagents": [
+    {
+      "agent": "handler",
+      "node_id": "handler"
+    }
+  ],
+  "dag_id": "issue-131-single-call-local-run",
+  "entry_node": "handler",
+  "event_count": 3,
+  "events": [
+    {
+      "command_spec_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/compiled-command-specs/handler/tau-dispatch-command.json",
+      "event": "step_started",
+      "loop_step": 1,
+      "selected_agent": "handler",
+      "status": "RUNNING",
+      "ts": "2026-07-26T14:46:59Z"
+    },
+    {
+      "event": "step_completed",
+      "loop_step": 1,
+      "ok": true,
+      "selected_agent": "handler",
+      "status": "COMPLETED",
+      "stop_reason": "response_consumed",
+      "ts": "2026-07-26T14:46:59Z"
+    },
+    {
+      "event": "loop_waiting",
+      "loop_step": 1,
+      "selected_agent": "human",
+      "status": "WAITING",
+      "stop_reason": "next_agent_is_human",
+      "ts": "2026-07-26T14:46:59Z"
+    }
+  ],
+  "last_event": {
+    "event": "loop_waiting",
+    "loop_step": 1,
+    "selected_agent": "human",
+    "status": "WAITING",
+    "stop_reason": "next_agent_is_human",
+    "ts": "2026-07-26T14:46:59Z"
+  },
+  "live": true,
+  "mocked": false,
+  "node_count": 1,
+  "node_progress": [
+    {
+      "agent": "handler",
+      "attempt": 1,
+      "last_event_at": "2026-07-26T14:46:59Z",
+      "node_id": "handler",
+      "status": "COMPLETED"
+    }
+  ],
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "The active subprocess will finish successfully.",
+      "Provider/model semantic quality.",
+      "Final DAG acceptance before dag-receipt.json is written."
+    ],
+    "proves": [
+      "Tau has written a durable local progress artifact for this DAG run.",
+      "Operators can inspect active and completed subagents before the final DAG receipt exists."
+    ]
+  },
+  "provider_live": false,
+  "run_dir": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run",
+  "scheduler": "handoff-loop",
+  "schema": "tau.dag_progress.v1",
+  "status": "PASS",
+  "terminal_nodes": [
+    "human"
+  ],
+  "updated_at": "2026-07-26T14:46:59Z",
+  "verdict": "PASS"
+}

@@ -1,0 +1,26 @@
+{
+  "command": [
+    "/home/graham/.local/bin/python",
+    "-c",
+    "print(\"{\\\"schema\\\": \\\"tau.agent_handoff.v1\\\", \\\"github\\\": {\\\"repo\\\": \\\"grahama1970/tau\\\", \\\"target\\\": \\\"issue-131-dag-template-registry\\\"}, \\\"goal\\\": {\\\"goal_id\\\": \\\"dag-template-proof\\\", \\\"goal_version\\\": 1, \\\"goal_hash\\\": \\\"sha256:issue-131-proof\\\"}, \\\"previous_subagent\\\": \\\"handler\\\", \\\"context\\\": {\\\"summary\\\": \\\"handler completed from issue 131 proof\\\", \\\"artifacts\\\": []}, \\\"result\\\": {\\\"status\\\": \\\"PASS\\\", \\\"summary\\\": \\\"handler completed\\\", \\\"evidence\\\": [{\\\"kind\\\": \\\"handler_receipt\\\", \\\"path\\\": \\\"docs/proofs/tickets/issue-131-dag-template-registry-20260726/handler-receipt.json\\\"}]}, \\\"rationale\\\": \\\"The compiled DAG controls the route.\\\", \\\"next_agent\\\": {\\\"name\\\": \\\"human\\\", \\\"executor\\\": \\\"human\\\", \\\"reason\\\": \\\"Stop at human.\\\"}, \\\"required_evidence\\\": [\\\"handler_receipt\\\"], \\\"stop_condition\\\": \\\"Stop at human.\\\"}\")"
+  ],
+  "tau_dag_node": {
+    "agent": "handler",
+    "dag_id": "issue-131-single-call-local-run",
+    "executor": "local",
+    "goal": {
+      "goal_hash": "sha256:issue-131-proof",
+      "goal_id": "dag-template-proof",
+      "goal_version": 1
+    },
+    "node_id": "handler",
+    "required_evidence": [
+      "handler_receipt"
+    ],
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue-131-dag-template-registry"
+    }
+  },
+  "timeout_s": 5
+}

@@ -1,0 +1,94 @@
+{
+  "context": {
+    "dag_template": {
+      "name": "roundtable",
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "handlers",
+        "join"
+      ],
+      "summary": "Two or more parallel handlers join into a synthesis node.",
+      "topology": "FAN_OUT_JOIN"
+    },
+    "stop_condition": "Stop at human after required evidence gates pass.",
+    "template_params_sha256": "sha256:d7bd65d4b6d7509a5c0a2af5578b48f6053b98321b044f0bbc1715c93a731985"
+  },
+  "dag_id": "issue-131-roundtable",
+  "edges": [
+    {
+      "from": "webgpt",
+      "to": "join"
+    },
+    {
+      "from": "webclaude",
+      "to": "join"
+    },
+    {
+      "from": "join",
+      "to": "human"
+    }
+  ],
+  "entry_node": "webgpt",
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "unexpected_node",
+    "unexpected_edge",
+    "missing_required_evidence",
+    "max_attempts_exceeded",
+    "malformed_handoff"
+  ],
+  "goal": {
+    "goal_hash": "sha256:issue-131-proof",
+    "goal_id": "dag-template-proof",
+    "goal_version": 1
+  },
+  "limits": {
+    "default_timeout_seconds": 120,
+    "max_total_attempts": 3,
+    "resume": true
+  },
+  "nodes": [
+    {
+      "agent": "webgpt",
+      "executor": "local",
+      "id": "webgpt",
+      "max_attempts": 1,
+      "required_evidence": [
+        "handler_receipt"
+      ]
+    },
+    {
+      "agent": "webclaude",
+      "executor": "local",
+      "id": "webclaude",
+      "max_attempts": 1,
+      "required_evidence": [
+        "handler_receipt"
+      ]
+    },
+    {
+      "agent": "join",
+      "executor": "local",
+      "id": "join",
+      "max_attempts": 1,
+      "required_evidence": [
+        "roundtable_join_receipt"
+      ]
+    }
+  ],
+  "required_evidence": [
+    "handler_receipt",
+    "roundtable_join_receipt"
+  ],
+  "schema": "tau.dag_contract.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue-131-dag-template-registry"
+  },
+  "terminal_nodes": [
+    "human"
+  ]
+}

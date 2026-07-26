@@ -1,0 +1,184 @@
+{
+  "artifacts": [
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-loop-step-001.receipt.json",
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-capture.json",
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-endpoint-lease.json",
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-event.json",
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-submit-receipt.json"
+  ],
+  "dispatches": [
+    {
+      "artifacts": [
+        "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-capture.json",
+        "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-endpoint-lease.json",
+        "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-event.json",
+        "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-submit-receipt.json"
+      ],
+      "command_results": [
+        {
+          "command": [
+            "/home/graham/.local/bin/python",
+            "-c",
+            "print(\"{\\\"schema\\\": \\\"tau.agent_handoff.v1\\\", \\\"github\\\": {\\\"repo\\\": \\\"grahama1970/tau\\\", \\\"target\\\": \\\"issue-131-dag-template-registry\\\"}, \\\"goal\\\": {\\\"goal_id\\\": \\\"dag-template-proof\\\", \\\"goal_version\\\": 1, \\\"goal_hash\\\": \\\"sha256:issue-131-proof\\\"}, \\\"previous_subagent\\\": \\\"handler\\\", \\\"context\\\": {\\\"summary\\\": \\\"handler completed from issue 131 proof\\\", \\\"artifacts\\\": []}, \\\"result\\\": {\\\"status\\\": \\\"PASS\\\", \\\"summary\\\": \\\"handler completed\\\", \\\"evidence\\\": [{\\\"kind\\\": \\\"handler_receipt\\\", \\\"path\\\": \\\"docs/proofs/tickets/issue-131-dag-template-registry-20260726/handler-receipt.json\\\"}]}, \\\"rationale\\\": \\\"The compiled DAG controls the route.\\\", \\\"next_agent\\\": {\\\"name\\\": \\\"human\\\", \\\"executor\\\": \\\"human\\\", \\\"reason\\\": \\\"Stop at human.\\\"}, \\\"required_evidence\\\": [\\\"handler_receipt\\\"], \\\"stop_condition\\\": \\\"Stop at human.\\\"}\")"
+          ],
+          "command_spec_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/compiled-command-specs/handler/tau-dispatch-command.json",
+          "command_spec_sha256": "sha256:579610e1afe771c21073ff270ec3a4360dd4cdef2f914b14ab1bc99efedb2b56",
+          "exit_code": 0,
+          "runtime_artifacts": [
+            "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-endpoint-lease.json",
+            "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-submit-receipt.json",
+            "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-event.json",
+            "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-capture.json"
+          ],
+          "runtime_backend": "local",
+          "runtime_capture": {
+            "cancelled": false,
+            "command": [
+              "/home/graham/.local/bin/python",
+              "-c",
+              "print(\"{\\\"schema\\\": \\\"tau.agent_handoff.v1\\\", \\\"github\\\": {\\\"repo\\\": \\\"grahama1970/tau\\\", \\\"target\\\": \\\"issue-131-dag-template-registry\\\"}, \\\"goal\\\": {\\\"goal_id\\\": \\\"dag-template-proof\\\", \\\"goal_version\\\": 1, \\\"goal_hash\\\": \\\"sha256:issue-131-proof\\\"}, \\\"previous_subagent\\\": \\\"handler\\\", \\\"context\\\": {\\\"summary\\\": \\\"handler completed from issue 131 proof\\\", \\\"artifacts\\\": []}, \\\"result\\\": {\\\"status\\\": \\\"PASS\\\", \\\"summary\\\": \\\"handler completed\\\", \\\"evidence\\\": [{\\\"kind\\\": \\\"handler_receipt\\\", \\\"path\\\": \\\"docs/proofs/tickets/issue-131-dag-template-registry-20260726/handler-receipt.json\\\"}]}, \\\"rationale\\\": \\\"The compiled DAG controls the route.\\\", \\\"next_agent\\\": {\\\"name\\\": \\\"human\\\", \\\"executor\\\": \\\"human\\\", \\\"reason\\\": \\\"Stop at human.\\\"}, \\\"required_evidence\\\": [\\\"handler_receipt\\\"], \\\"stop_condition\\\": \\\"Stop at human.\\\"}\")"
+            ],
+            "returncode": 0,
+            "schema": "tau.local_runtime_capture.v1",
+            "stderr": "",
+            "stdout": "{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"issue-131-dag-template-registry\"}, \"goal\": {\"goal_id\": \"dag-template-proof\", \"goal_version\": 1, \"goal_hash\": \"sha256:issue-131-proof\"}, \"previous_subagent\": \"handler\", \"context\": {\"summary\": \"handler completed from issue 131 proof\", \"artifacts\": []}, \"result\": {\"status\": \"PASS\", \"summary\": \"handler completed\", \"evidence\": [{\"kind\": \"handler_receipt\", \"path\": \"docs/proofs/tickets/issue-131-dag-template-registry-20260726/handler-receipt.json\"}]}, \"rationale\": \"The compiled DAG controls the route.\", \"next_agent\": {\"name\": \"human\", \"executor\": \"human\", \"reason\": \"Stop at human.\"}, \"required_evidence\": [\"handler_receipt\"], \"stop_condition\": \"Stop at human.\"}\n",
+            "timed_out": false
+          },
+          "runtime_endpoint_lease": {
+            "attempt_id": "handler:attempt-001",
+            "attempt_number": 1,
+            "backend": "local",
+            "backend_ids": {
+              "pid": null
+            },
+            "backend_session_id": null,
+            "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+            "cleanup_policy": {
+              "kind": "process_group_termination"
+            },
+            "created_at": "2026-07-26T14:46:59.183613+00:00",
+            "dag_id": "issue-131-single-call-local-run",
+            "endpoint_id": "local:a380557b51ec5a59adcee529",
+            "execution_token": "sha256:a6c0823d6c27f07b620a7cd9d2f977bba65de22f57818c635442523c02dd4c8d",
+            "expires_at": "2026-07-26T14:48:04.183613+00:00",
+            "goal_hash": "sha256:c5d97f7171876d9e2e45e423600004cf6046ed8e6c278ab26cd0e33cec6a5bfa",
+            "heartbeat_policy": {
+              "kind": "process_poll"
+            },
+            "node_id": "handler",
+            "owner": "tau",
+            "plan_revision": "sha256:a6c0823d6c27f07b620a7cd9d2f977bba65de22f57818c635442523c02dd4c8d",
+            "run_id": "issue-131-single-call-local-run:5442523c02dd4c8d",
+            "schema": "tau.runtime_endpoint_lease.v1",
+            "scope_id": "issue-131-single-call-local-run:5442523c02dd4c8d",
+            "work_order_sha256": "sha256:c031b54f3ae4388c5b5991501649b4b01f6e81a46e7411a7373da47f35ea262e"
+          },
+          "runtime_event": {
+            "confidence": "PROCESS",
+            "endpoint_lease_sha256": "sha256:863895cba30cccdfaa282ce8e20384f0fc1684fceecc2bcd3ee585f30811d62b",
+            "event_id": "local-event:a380557b51ec5a59adcee529",
+            "event_type": "RUNTIME_ENDPOINT_EXITED",
+            "liveness": "DEAD",
+            "observation": {
+              "cancelled": false,
+              "returncode": 0,
+              "timed_out": false
+            },
+            "observed_at": "2026-07-26T14:46:59.205574+00:00",
+            "run_id": "issue-131-single-call-local-run:5442523c02dd4c8d",
+            "schema": "tau.runtime_event.v1",
+            "source": "local",
+            "state": "EXITED"
+          },
+          "runtime_submit_receipt": {
+            "backend_acknowledgement": {
+              "process_started": true,
+              "stdin_delivery": "confirmed"
+            },
+            "composer_state_after": "NOT_APPLICABLE",
+            "composer_state_before": "NOT_APPLICABLE",
+            "delivery_status": "CONFIRMED",
+            "endpoint_lease_sha256": "sha256:863895cba30cccdfaa282ce8e20384f0fc1684fceecc2bcd3ee585f30811d62b",
+            "errors": [],
+            "provider_execution_status": "NOT_APPLICABLE",
+            "schema": "tau.runtime_submit_receipt.v1",
+            "submit_attempt_count": 1,
+            "text_delivery_count": 1,
+            "work_order_sha256": "sha256:c031b54f3ae4388c5b5991501649b4b01f6e81a46e7411a7373da47f35ea262e"
+          },
+          "stderr": "",
+          "stdout": "{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"issue-131-dag-template-registry\"}, \"goal\": {\"goal_id\": \"dag-template-proof\", \"goal_version\": 1, \"goal_hash\": \"sha256:issue-131-proof\"}, \"previous_subagent\": \"handler\", \"context\": {\"summary\": \"handler completed from issue 131 proof\", \"artifacts\": []}, \"result\": {\"status\": \"PASS\", \"summary\": \"handler completed\", \"evidence\": [{\"kind\": \"handler_receipt\", \"path\": \"docs/proofs/tickets/issue-131-dag-template-registry-20260726/handler-receipt.json\"}]}, \"rationale\": \"The compiled DAG controls the route.\", \"next_agent\": {\"name\": \"human\", \"executor\": \"human\", \"reason\": \"Stop at human.\"}, \"required_evidence\": [\"handler_receipt\"], \"stop_condition\": \"Stop at human.\"}\n",
+          "timed_out": false,
+          "timeout_s": 5.0,
+          "timeout_s_source": "command_spec"
+        }
+      ],
+      "errors": [],
+      "live": true,
+      "loop_step": 1,
+      "mocked": false,
+      "ok": true,
+      "receipt_dir": null,
+      "response_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: handler completed\n- Next agent: `human`\n- Executor: `human`\n- Stop condition: Stop at human.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [],\n    \"summary\": \"handler completed from issue 131 proof\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue-131-dag-template-registry\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:issue-131-proof\",\n    \"goal_id\": \"dag-template-proof\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"human\",\n    \"name\": \"human\",\n    \"reason\": \"Stop at human.\"\n  },\n  \"previous_subagent\": \"handler\",\n  \"rationale\": \"The compiled DAG controls the route.\",\n  \"required_evidence\": [\n    \"handler_receipt\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"handler_receipt\",\n        \"path\": \"docs/proofs/tickets/issue-131-dag-template-registry-20260726/handler-receipt.json\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"handler completed\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:human",
+            "executor:human"
+          ],
+          "remove": []
+        },
+        "next_agent": "human",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "issue-131-dag-template-registry"
+        }
+      },
+      "runner": "command",
+      "schema": "tau.agent_handoff_dispatch_receipt.v1",
+      "selected_agent": "handler",
+      "start_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `DAG_DISPATCH_REQUESTED`\n- Summary: Tau is dispatching entry node handler.\n- Next agent: `handler`\n- Executor: `local`\n- Stop condition: Stop at a terminal DAG node or any fail-closed invariant violation.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run-dag.json\"\n    ],\n    \"dag_agent_role\": \"handler\",\n    \"dag_node_id\": \"handler\",\n    \"dag_template\": {\n      \"name\": \"single-call\",\n      \"required_fields\": [\n        \"dag_id\",\n        \"goal\",\n        \"target\",\n        \"handler\"\n      ],\n      \"summary\": \"One local handler node routes directly to human.\",\n      \"topology\": \"LINEAR_SINGLE\"\n    },\n    \"stop_condition\": \"Stop at human after required evidence gates pass.\",\n    \"summary\": \"Dispatch DAG contract issue-131-single-call-local-run.\",\n    \"tau_dag_node\": {\n      \"agent\": \"handler\",\n      \"dag_id\": \"issue-131-single-call-local-run\",\n      \"executor\": \"local\",\n      \"goal\": {\n        \"goal_hash\": \"sha256:issue-131-proof\",\n        \"goal_id\": \"dag-template-proof\",\n        \"goal_version\": 1\n      },\n      \"node_id\": \"handler\",\n      \"required_evidence\": [\n        \"handler_receipt\"\n      ],\n      \"target\": {\n        \"repo\": \"grahama1970/tau\",\n        \"target\": \"issue-131-dag-template-registry\"\n      }\n    },\n    \"template_params_sha256\": \"sha256:d304ec76415b766e2791ede50dad1b33d1c02e1c2128396105f86b4dd69d1e04\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue-131-dag-template-registry\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:issue-131-proof\",\n    \"goal_id\": \"dag-template-proof\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"handler\",\n    \"reason\": \"Entry node for DAG issue-131-single-call-local-run using role handler.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The DAG contract is the authoritative workflow and immutable goal boundary.\",\n  \"required_evidence\": [\n    \"handler_receipt\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"dag_contract\",\n        \"path\": \"/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run-dag.json\",\n        \"schema\": \"tau.dag_contract.v1\",\n        \"sha256\": \"sha256:8f36c68c4ac5489d748dfbe1c0014f8ce563175452111db61261be6897b69fce\"\n      }\n    ],\n    \"status\": \"DAG_DISPATCH_REQUESTED\",\n    \"summary\": \"Tau is dispatching entry node handler.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at a terminal DAG node or any fail-closed invariant violation.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:handler",
+            "executor:local"
+          ],
+          "remove": []
+        },
+        "next_agent": "handler",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "issue-131-dag-template-registry"
+        }
+      },
+      "status": "COMPLETED",
+      "stop_reason": "response_consumed"
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop",
+  "runner": "agent-registry-command-loop",
+  "schema": "tau.agent_handoff_command_loop_receipt.v1",
+  "status": "WAITING",
+  "step_count": 1,
+  "stop_reason": "next_agent_is_human",
+  "terminal_agent": "human"
+}

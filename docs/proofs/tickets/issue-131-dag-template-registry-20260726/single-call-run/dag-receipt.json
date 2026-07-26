@@ -1,0 +1,85 @@
+{
+  "active_goal_hash": "sha256:issue-131-proof",
+  "alerts": [],
+  "artifacts": [
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/security-context-receipt.json",
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/start-handoff.json",
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-loop-receipt.json",
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-loop-step-001.receipt.json",
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-capture.json",
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-endpoint-lease.json",
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-event.json",
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-submit-receipt.json",
+    "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/compiled-command-specs/handler/tau-dispatch-command.json"
+  ],
+  "capability_decision_receipt": null,
+  "command_loop_receipt": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/command-loop/command-loop-receipt.json",
+  "containment_gate_receipts": {},
+  "contract_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run-dag.json",
+  "contract_sha256": "sha256:8f36c68c4ac5489d748dfbe1c0014f8ce563175452111db61261be6897b69fce",
+  "dag_id": "issue-131-single-call-local-run",
+  "edge_count": 1,
+  "entry_node": "handler",
+  "errors": [],
+  "evidence_case_gate_receipt": null,
+  "evidence_validation_receipt": null,
+  "execution": "project_agent_dag_via_handoff_command_loop",
+  "live": true,
+  "max_steps": 1,
+  "memory_intent_gate_receipt": null,
+  "mocked": false,
+  "node_attempts": {
+    "handler": 1
+  },
+  "node_count": 1,
+  "observed_edges": [
+    {
+      "from_agent": "handler",
+      "from_node": "handler",
+      "to_agent": "human",
+      "to_node": "human"
+    }
+  ],
+  "ok": true,
+  "progress_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/dag-progress.json",
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider/model semantic quality.",
+      "Parallel DAG scheduling.",
+      "GitHub mutation or ticket closure.",
+      "Unbounded autonomous operation.",
+      "Successful secure execution when the selected sandbox backend is unavailable."
+    ],
+    "live": true,
+    "mocked": false,
+    "proves": [
+      "DAG contract parsed and validated.",
+      "Entry node was compiled into a tau.agent_handoff.v1 start handoff.",
+      "Node routing used the development command-loop subprocess runner.",
+      "Observed edges and retry counts were checked against the DAG contract.",
+      "Reviewer verdict evidence was checked against the immutable goal hash."
+    ]
+  },
+  "provider_live": false,
+  "reviewer_verdicts": [],
+  "run_dir": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run",
+  "scheduler": "handoff-loop",
+  "schema": "tau.dag_receipt.v1",
+  "security_context_receipt": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/security-context-receipt.json",
+  "security_context_sha256": "sha256:57944c4333a7eb296f43a7d9cc1746ccf479425bbf7ba97563a938f104c279f4",
+  "security_mode": "development",
+  "selected_agents": [
+    "handler"
+  ],
+  "status": "PASS",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue-131-dag-template-registry"
+  },
+  "terminal_nodes": [
+    "human"
+  ],
+  "timestamp": "2026-07-26T14:46:59Z",
+  "verdict": "PASS",
+  "zero_trust_preflight_receipt": null
+}

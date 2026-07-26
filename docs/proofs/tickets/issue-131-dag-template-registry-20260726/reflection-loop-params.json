@@ -1,0 +1,14 @@
+{
+  "creator": "creator",
+  "dag_id": "issue-131-reflection-loop",
+  "goal": {
+    "goal_hash": "sha256:issue-131-proof",
+    "goal_id": "dag-template-proof",
+    "goal_version": 1
+  },
+  "reviewer": "reviewer",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue-131-dag-template-registry"
+  }
+}

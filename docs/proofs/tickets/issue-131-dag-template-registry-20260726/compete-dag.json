@@ -1,0 +1,98 @@
+{
+  "context": {
+    "dag_template": {
+      "name": "compete",
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "competitors",
+        "judge"
+      ],
+      "summary": "Two or more competitors feed a judge node.",
+      "topology": "COMPETITION_JUDGE"
+    },
+    "stop_condition": "Stop at human after required evidence gates pass.",
+    "template_params_sha256": "sha256:4016a3d2e76caf67c914f0593df378c4536967be35c36489bd85063615a157d0"
+  },
+  "dag_id": "issue-131-compete",
+  "edges": [
+    {
+      "from": "candidate-a",
+      "to": "judge"
+    },
+    {
+      "from": "candidate-b",
+      "to": "judge"
+    },
+    {
+      "from": "judge",
+      "to": "human"
+    }
+  ],
+  "entry_node": "candidate-a",
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "unexpected_node",
+    "unexpected_edge",
+    "missing_required_evidence",
+    "max_attempts_exceeded",
+    "malformed_handoff"
+  ],
+  "goal": {
+    "goal_hash": "sha256:issue-131-proof",
+    "goal_id": "dag-template-proof",
+    "goal_version": 1
+  },
+  "limits": {
+    "default_timeout_seconds": 120,
+    "max_total_attempts": 3,
+    "resume": true
+  },
+  "nodes": [
+    {
+      "agent": "candidate-a",
+      "executor": "local",
+      "id": "candidate-a",
+      "max_attempts": 1,
+      "required_evidence": [
+        "competitor_receipt"
+      ]
+    },
+    {
+      "agent": "candidate-b",
+      "executor": "local",
+      "id": "candidate-b",
+      "max_attempts": 1,
+      "required_evidence": [
+        "competitor_receipt"
+      ]
+    },
+    {
+      "agent": "judge",
+      "executor": "local",
+      "id": "judge",
+      "max_attempts": 1,
+      "required_evidence": [
+        "competition_judgment_receipt"
+      ],
+      "reviewer": {
+        "requires_goal_hash": true,
+        "reviews_node": "candidate-a"
+      }
+    }
+  ],
+  "required_evidence": [
+    "competitor_receipt",
+    "competition_judgment_receipt"
+  ],
+  "schema": "tau.dag_contract.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue-131-dag-template-registry"
+  },
+  "terminal_nodes": [
+    "human"
+  ]
+}

@@ -84,6 +84,10 @@ from tau_coding.dag_stress_poc import (
     run_dag_stress_campaign,
     run_dag_stress_poc,
 )
+from tau_coding.dag_template_registry import (
+    dag_template_registry_payload,
+    write_dag_template_compile_receipt,
+)
 from tau_coding.dag_viewer.contracts import viewer_capabilities
 from tau_coding.dag_viewer.projection import (
     build_dag_live_events,
@@ -1779,10 +1783,14 @@ def main(
         ["dag-view-serve"],
         ["dag-view-snapshot"],
         ["dag-viewer-link"],
+        ["dag-template-compile"],
+        ["dag-template-list"],
+        ["dag-run"],
         ["github-redact-projection"],
         ["herdr-cleanup"],
         ["pdf-lab-second-pass-review"],
         ["replacement-harness-sanity"],
+        ["run"],
         ["scillm-chat-review"],
         ["workflows"],
         ["gs001-closure-publish"],
@@ -2431,6 +2439,29 @@ def main(
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
+
+    if not print_requested and command == "dag-template-list":
+        typer.echo(json.dumps(dag_template_registry_payload(), indent=2, sort_keys=True))
+        raise typer.Exit()
+
+    if not print_requested and command == "dag-template-compile":
+        try:
+            options = _parse_dag_template_compile_cli_args(positional_args[1:])
+            payload = write_dag_template_compile_receipt(
+                template_name=str(options["template"]),
+                params_path=Path(str(options["params"])),
+                out_path=Path(str(options["out"])),
+                receipt_path=Path(str(options["receipt"])),
+                missing_out_path=(
+                    Path(str(options["missing_out"]))
+                    if options.get("missing_out") is not None
+                    else None
+                ),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
 
     if not print_requested and command == "dag-signals":
         try:
@@ -5428,6 +5459,46 @@ def _parse_dag_plan_cli_args(args: list[str]) -> tuple[Path, Path]:
     if output_path is None:
         raise RuntimeError("--out is required")
     return source_path, output_path
+
+
+def _parse_dag_template_compile_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "template": None,
+        "params": None,
+        "out": None,
+        "receipt": None,
+        "missing_out": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--template", "--params", "--out", "--receipt", "--missing-out"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--").replace("-", "_")] = args[index]
+        elif arg.startswith("--template="):
+            options["template"] = arg.partition("=")[2]
+        elif arg.startswith("--params="):
+            options["params"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--receipt="):
+            options["receipt"] = arg.partition("=")[2]
+        elif arg.startswith("--missing-out="):
+            options["missing_out"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown dag-template-compile option: {arg}")
+        index += 1
+    if not _optional_str(options.get("template")):
+        raise RuntimeError("Usage: tau dag-template-compile --template <name> --params <json>")
+    if not _optional_str(options.get("params")):
+        raise RuntimeError("Usage: tau dag-template-compile --template <name> --params <json>")
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau dag-template-compile --out <dag.json>")
+    if not _optional_str(options.get("receipt")):
+        raise RuntimeError("Usage: tau dag-template-compile --receipt <receipt.json>")
+    return options
 
 
 def _parse_gs001_closure_publish_cli_args(args: list[str]) -> dict[str, object]:

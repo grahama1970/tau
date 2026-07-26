@@ -1,0 +1,65 @@
+{
+  "alert_codes": [],
+  "alerts": [],
+  "checked_at": "2026-07-26T14:46:59Z",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "ITAR compliance.",
+      "Legal identity proof or authoritative U.S.-person status.",
+      "Runtime sandbox enforcement.",
+      "Provider/model semantic quality.",
+      "Secure enforcement outside tau run and tau dag-run."
+    ],
+    "proves": [
+      "Tau resolved DAG policy, boundary, actor, environment, command-policy, and goal inputs before dispatch.",
+      "Tau hash-bound the resolved security context for this run.",
+      "Tau identified whether the resolved data boundary is controlled."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/security-context-receipt.json",
+  "schema": "tau.security_context_receipt.v1",
+  "security_context": {
+    "actor": null,
+    "command_policy": null,
+    "created_at": "2026-07-26T14:46:59Z",
+    "dag_id": "issue-131-single-call-local-run",
+    "data_boundary": null,
+    "environment": {
+      "generated": true,
+      "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/environment-manifest.json",
+      "schema": "tau.environment_manifest.v1",
+      "sha256": "sha256:3cb874aca4410a750b539de73eb501c06eceab020ded889fe9328508fa71e667",
+      "source_kind": "generated"
+    },
+    "goal": {
+      "goal_hash": "sha256:issue-131-proof",
+      "goal_id": "dag-template-proof",
+      "goal_version": 1
+    },
+    "policy_profile": null,
+    "production_authority": false,
+    "regulated_data_authorized": false,
+    "required_gates": [],
+    "resolved_inputs": {
+      "actor_access_manifest": false,
+      "command_policy": false,
+      "data_boundary": false,
+      "environment_manifest": true,
+      "policy_profile": false
+    },
+    "run_id": "issue-131-single-call-local-run",
+    "schema": "tau.security_context.v1",
+    "security_context_sha256": "sha256:57944c4333a7eb296f43a7d9cc1746ccf479425bbf7ba97563a938f104c279f4",
+    "security_mode": "development",
+    "security_mode_explicit": false,
+    "security_mode_requested": null
+  },
+  "security_context_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run/security-context.json",
+  "security_context_sha256": "sha256:57944c4333a7eb296f43a7d9cc1746ccf479425bbf7ba97563a938f104c279f4",
+  "security_mode": "development",
+  "status": "PASS"
+}

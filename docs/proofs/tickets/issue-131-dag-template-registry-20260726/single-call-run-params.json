@@ -1,0 +1,16 @@
+{
+  "command_specs": {
+    "handler": "command-specs/handler/tau-dispatch-command.json"
+  },
+  "dag_id": "issue-131-single-call-local-run",
+  "goal": {
+    "goal_hash": "sha256:issue-131-proof",
+    "goal_id": "dag-template-proof",
+    "goal_version": 1
+  },
+  "handler": "handler",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue-131-dag-template-registry"
+  }
+}

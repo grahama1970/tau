@@ -1,0 +1,85 @@
+{
+  "context": {
+    "dag_template": {
+      "name": "reflection-loop",
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "creator",
+        "reviewer"
+      ],
+      "summary": "Creator node followed by reviewer/reflection node and human handoff.",
+      "topology": "CREATOR_REVIEWER"
+    },
+    "stop_condition": "Stop at human after required evidence gates pass.",
+    "template_params_sha256": "sha256:d8905fb2c330cf3c49279f53d39467cf90535fd3a4b32f8fd4748e6a187ed78e"
+  },
+  "dag_id": "issue-131-reflection-loop",
+  "edges": [
+    {
+      "from": "creator",
+      "to": "reviewer"
+    },
+    {
+      "from": "reviewer",
+      "to": "human"
+    }
+  ],
+  "entry_node": "creator",
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "unexpected_node",
+    "unexpected_edge",
+    "missing_required_evidence",
+    "max_attempts_exceeded",
+    "malformed_handoff"
+  ],
+  "goal": {
+    "goal_hash": "sha256:issue-131-proof",
+    "goal_id": "dag-template-proof",
+    "goal_version": 1
+  },
+  "limits": {
+    "default_timeout_seconds": 120,
+    "max_total_attempts": 2,
+    "resume": true
+  },
+  "nodes": [
+    {
+      "agent": "creator",
+      "executor": "local",
+      "id": "creator",
+      "max_attempts": 1,
+      "required_evidence": [
+        "creator_artifact"
+      ]
+    },
+    {
+      "agent": "reviewer",
+      "executor": "local",
+      "id": "reviewer",
+      "max_attempts": 1,
+      "required_evidence": [
+        "reviewer_verdict"
+      ],
+      "reviewer": {
+        "requires_goal_hash": true,
+        "reviews_node": "creator"
+      }
+    }
+  ],
+  "required_evidence": [
+    "creator_artifact",
+    "reviewer_verdict"
+  ],
+  "schema": "tau.dag_contract.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue-131-dag-template-registry"
+  },
+  "terminal_nodes": [
+    "human"
+  ]
+}

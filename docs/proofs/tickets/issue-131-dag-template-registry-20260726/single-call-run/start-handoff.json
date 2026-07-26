@@ -1,0 +1,75 @@
+{
+  "context": {
+    "artifacts": [
+      "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run-dag.json"
+    ],
+    "dag_agent_role": "handler",
+    "dag_node_id": "handler",
+    "dag_template": {
+      "name": "single-call",
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "handler"
+      ],
+      "summary": "One local handler node routes directly to human.",
+      "topology": "LINEAR_SINGLE"
+    },
+    "stop_condition": "Stop at human after required evidence gates pass.",
+    "summary": "Dispatch DAG contract issue-131-single-call-local-run.",
+    "tau_dag_node": {
+      "agent": "handler",
+      "context": {},
+      "dag_id": "issue-131-single-call-local-run",
+      "executor": "local",
+      "goal": {
+        "goal_hash": "sha256:issue-131-proof",
+        "goal_id": "dag-template-proof",
+        "goal_version": 1
+      },
+      "node_id": "handler",
+      "required_evidence": [
+        "handler_receipt"
+      ],
+      "target": {
+        "repo": "grahama1970/tau",
+        "target": "issue-131-dag-template-registry"
+      }
+    },
+    "template_params_sha256": "sha256:d304ec76415b766e2791ede50dad1b33d1c02e1c2128396105f86b4dd69d1e04"
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue-131-dag-template-registry"
+  },
+  "goal": {
+    "goal_hash": "sha256:issue-131-proof",
+    "goal_id": "dag-template-proof",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "handler",
+    "reason": "Entry node for DAG issue-131-single-call-local-run using role handler."
+  },
+  "previous_subagent": "human",
+  "rationale": "The DAG contract is the authoritative workflow and immutable goal boundary.",
+  "required_evidence": [
+    "handler_receipt"
+  ],
+  "result": {
+    "evidence": [
+      {
+        "kind": "dag_contract",
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/single-call-run-dag.json",
+        "schema": "tau.dag_contract.v1",
+        "sha256": "sha256:8f36c68c4ac5489d748dfbe1c0014f8ce563175452111db61261be6897b69fce"
+      }
+    ],
+    "status": "DAG_DISPATCH_REQUESTED",
+    "summary": "Tau is dispatching entry node handler."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Stop at a terminal DAG node or any fail-closed invariant violation."
+}

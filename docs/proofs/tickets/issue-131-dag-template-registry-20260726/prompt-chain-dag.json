@@ -1,0 +1,79 @@
+{
+  "context": {
+    "dag_template": {
+      "name": "prompt-chain",
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "steps"
+      ],
+      "summary": "A sequential chain of two or more explicit local step nodes.",
+      "topology": "LINEAR_CHAIN"
+    },
+    "stop_condition": "Stop at human after required evidence gates pass.",
+    "template_params_sha256": "sha256:cb139f951505628d67126513375dc6bb2a535aa8d0f86f822665a9bbb3beed59"
+  },
+  "dag_id": "issue-131-prompt-chain",
+  "edges": [
+    {
+      "from": "outline",
+      "to": "draft"
+    },
+    {
+      "from": "draft",
+      "to": "human"
+    }
+  ],
+  "entry_node": "outline",
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "unexpected_node",
+    "unexpected_edge",
+    "missing_required_evidence",
+    "max_attempts_exceeded",
+    "malformed_handoff"
+  ],
+  "goal": {
+    "goal_hash": "sha256:issue-131-proof",
+    "goal_id": "dag-template-proof",
+    "goal_version": 1
+  },
+  "limits": {
+    "default_timeout_seconds": 120,
+    "max_total_attempts": 2,
+    "resume": true
+  },
+  "nodes": [
+    {
+      "agent": "outline",
+      "executor": "local",
+      "id": "outline",
+      "max_attempts": 1,
+      "required_evidence": [
+        "step_receipt"
+      ]
+    },
+    {
+      "agent": "draft",
+      "executor": "local",
+      "id": "draft",
+      "max_attempts": 1,
+      "required_evidence": [
+        "step_receipt"
+      ]
+    }
+  ],
+  "required_evidence": [
+    "step_receipt"
+  ],
+  "schema": "tau.dag_contract.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue-131-dag-template-registry"
+  },
+  "terminal_nodes": [
+    "human"
+  ]
+}

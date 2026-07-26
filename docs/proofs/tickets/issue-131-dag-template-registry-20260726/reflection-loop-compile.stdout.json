@@ -1,0 +1,96 @@
+{
+  "alert_codes": [],
+  "alerts": [],
+  "dag_contract_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/reflection-loop-dag.json",
+  "dag_contract_sha256": "sha256:6b766b857823d02c34764390065685966fbbfbfa6f89c203195943a889440af6",
+  "interview_required": false,
+  "live": false,
+  "missing_fields_path": null,
+  "missing_fields_sha256": null,
+  "mocked": false,
+  "ok": true,
+  "params_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-131-dag-template-registry-20260726/reflection-loop-params.json",
+  "params_sha256": "sha256:76ded34b257a5ce6fbbbad4531687fcb530647a1299e9c7ad81f4393766a517d",
+  "proof_scope": {
+    "does_not_prove": [
+      "Runtime execution success.",
+      "Provider/model semantic quality.",
+      "That a missing-field interview has been answered by a human."
+    ],
+    "proves": [
+      "Tau selected a native DAG template by name.",
+      "Tau checked typed required fields before emitting a DAG contract.",
+      "A successful compile emitted a contract accepted by validate_dag_contract.",
+      "No model/provider call or command dispatch occurred during template compile."
+    ]
+  },
+  "provider_live": false,
+  "schema": "tau.dag_template_compile_receipt.v1",
+  "status": "PASS",
+  "template": "reflection-loop",
+  "template_registry": {
+    "schema": "tau.dag_template_registry.v1",
+    "template_count": 5,
+    "templates": [
+      {
+        "name": "single-call",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "handler"
+        ],
+        "summary": "One local handler node routes directly to human.",
+        "topology": "LINEAR_SINGLE"
+      },
+      {
+        "name": "prompt-chain",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "steps"
+        ],
+        "summary": "A sequential chain of two or more explicit local step nodes.",
+        "topology": "LINEAR_CHAIN"
+      },
+      {
+        "name": "reflection-loop",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "creator",
+          "reviewer"
+        ],
+        "summary": "Creator node followed by reviewer/reflection node and human handoff.",
+        "topology": "CREATOR_REVIEWER"
+      },
+      {
+        "name": "roundtable",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "handlers",
+          "join"
+        ],
+        "summary": "Two or more parallel handlers join into a synthesis node.",
+        "topology": "FAN_OUT_JOIN"
+      },
+      {
+        "name": "compete",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "competitors",
+          "judge"
+        ],
+        "summary": "Two or more competitors feed a judge node.",
+        "topology": "COMPETITION_JUDGE"
+      }
+    ]
+  },
+  "timestamp": "2026-07-26T14:44:49Z"
+}
