@@ -1,0 +1,48 @@
+{
+  "dag_id": "route-memory-test",
+  "goal_hash": "sha256:route-memory-test",
+  "live": true,
+  "mocked": false,
+  "negative_signals": [],
+  "ok": true,
+  "provider_live": false,
+  "receipt_path": "/tmp/dag-signal-receipt.json",
+  "route_reinforcement_candidates": [
+    {
+      "confidence": 1.0,
+      "from_agent": "goal-guardian",
+      "from_node": "start",
+      "memory_sync_candidate": true,
+      "source": "deterministic_dag_receipt_pass",
+      "superseded_by": [
+        "tau-route-new"
+      ],
+      "sync_reason": "first_slice_local_only",
+      "sync_status": "NOT_SYNCED",
+      "to_agent": "coder",
+      "to_node": "coder",
+      "valid_to": "2026-07-27T00:00:00Z"
+    },
+    {
+      "confidence": 1.0,
+      "from_agent": "coder",
+      "from_node": "coder",
+      "memory_sync_candidate": true,
+      "source": "deterministic_dag_receipt_pass",
+      "sync_reason": "first_slice_local_only",
+      "sync_status": "NOT_SYNCED",
+      "to_agent": "reviewer",
+      "to_node": "reviewer"
+    }
+  ],
+  "run_id": "run-route-memory-test",
+  "scheduler": "bounded-ready-queue",
+  "schema": "tau.dag_signal_receipt.v1",
+  "source_dag_receipt": "/tmp/dag-receipt.json",
+  "source_dag_receipt_sha256": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "source_ok": true,
+  "source_status": "PASS",
+  "source_verdict": "PASS",
+  "status": "PASS",
+  "timestamp": "2026-07-26T12:00:00Z"
+}

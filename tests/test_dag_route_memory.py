@@ -188,9 +188,44 @@ def test_route_memory_sync_projects_documents_without_memory_write(tmp_path: Pat
     assert document["target_node_id"] == "coder"
     assert document["source_signal_receipt_sha256"].startswith("sha256:")
     assert document["source_dag_receipt_sha256"].startswith("sha256:")
+    assert document["valid_from"] == "2026-07-26T12:00:00Z"
+    assert document["valid_to"] is None
+    assert document["supersedes"] == []
+    assert document["superseded_by"] == []
+    assert document["temporal_status"] == "current"
+    assert document["provenance"]["valid_from"] == "2026-07-26T12:00:00Z"
     assert document["provenance"]["run_id"] == "run-route-memory-test"
     assert document["provenance"]["goal_hash"] == "sha256:route-memory-test"
     assert receipt_path.exists()
+
+
+def test_route_memory_sync_projects_superseded_documents_without_deleting_history(
+    tmp_path: Path,
+) -> None:
+    payload = _signal_receipt()
+    payload["route_reinforcement_candidates"][0]["valid_to"] = "2026-07-27T00:00:00Z"
+    payload["route_reinforcement_candidates"][0]["superseded_by"] = ["tau-route-new"]
+    signal_path = _write_signal(tmp_path, payload)
+    candidate_path = tmp_path / "candidate.json"
+    write_dag_route_memory_candidate_receipt(
+        signal_receipt_path=signal_path,
+        receipt_path=candidate_path,
+    )
+
+    receipt = write_dag_route_memory_sync_receipt(
+        candidate_receipt_path=candidate_path,
+        receipt_path=tmp_path / "sync.json",
+    )
+
+    documents = receipt["documents"]
+    assert receipt["projected_document_count"] == 2
+    superseded = documents[0]
+    current = documents[1]
+    assert superseded["route_key"] == "start:goal-guardian->coder:coder"
+    assert superseded["valid_to"] == "2026-07-27T00:00:00Z"
+    assert superseded["superseded_by"] == ["tau-route-new"]
+    assert superseded["temporal_status"] == "superseded"
+    assert current["temporal_status"] == "current"
 
 
 def test_route_memory_sync_blocks_failed_candidate_receipt(tmp_path: Path) -> None:
@@ -506,6 +541,7 @@ def _signal_receipt() -> dict[str, object]:
         "source_ok": True,
         "source_status": "PASS",
         "source_verdict": "PASS",
+        "timestamp": "2026-07-26T12:00:00Z",
         "scheduler": "bounded-ready-queue",
         "negative_signals": [],
         "route_reinforcement_candidates": [

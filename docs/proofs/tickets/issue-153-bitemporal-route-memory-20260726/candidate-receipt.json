@@ -1,0 +1,91 @@
+{
+  "accepted_candidate_count": 2,
+  "accepted_candidates": [
+    {
+      "confidence": 1.0,
+      "from_agent": "goal-guardian",
+      "from_node": "start",
+      "memory_sync_candidate": true,
+      "route_key": "start:goal-guardian->coder:coder",
+      "source": "deterministic_dag_receipt_pass",
+      "source_dag_receipt": "/tmp/dag-receipt.json",
+      "source_dag_receipt_sha256": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "source_signal_receipt": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-153-bitemporal-route-memory-20260726/dag-signal-receipt.json",
+      "source_signal_receipt_sha256": "sha256:36dfc07c56b7939e7911d8839405e453f0375896fa74696e2fb25242476da204",
+      "superseded_by": [
+        "tau-route-new"
+      ],
+      "supersedes": [],
+      "sync_reason": "local_candidate_receipt_only",
+      "sync_status": "NOT_SYNCED",
+      "temporal_status": "superseded",
+      "to_agent": "coder",
+      "to_node": "coder",
+      "valid_from": "2026-07-26T12:00:00Z",
+      "valid_to": "2026-07-27T00:00:00Z"
+    },
+    {
+      "confidence": 1.0,
+      "from_agent": "coder",
+      "from_node": "coder",
+      "memory_sync_candidate": true,
+      "route_key": "coder:coder->reviewer:reviewer",
+      "source": "deterministic_dag_receipt_pass",
+      "source_dag_receipt": "/tmp/dag-receipt.json",
+      "source_dag_receipt_sha256": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "source_signal_receipt": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-153-bitemporal-route-memory-20260726/dag-signal-receipt.json",
+      "source_signal_receipt_sha256": "sha256:36dfc07c56b7939e7911d8839405e453f0375896fa74696e2fb25242476da204",
+      "superseded_by": [],
+      "supersedes": [],
+      "sync_reason": "local_candidate_receipt_only",
+      "sync_status": "NOT_SYNCED",
+      "temporal_status": "current",
+      "to_agent": "reviewer",
+      "to_node": "reviewer",
+      "valid_from": "2026-07-26T12:00:00Z",
+      "valid_to": null
+    }
+  ],
+  "alerts": [],
+  "dag_id": "route-memory-test",
+  "dag_mutation": false,
+  "errors": [],
+  "goal_hash": "sha256:route-memory-test",
+  "live": true,
+  "memory_sync": false,
+  "min_confidence": 1.0,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Memory route learning.",
+      "Runtime route mutation.",
+      "Adaptive DAG expansion application.",
+      "Provider/model semantic quality.",
+      "Future route correctness."
+    ],
+    "proves": [
+      "DAG signal receipt was inspected deterministically.",
+      "Route reinforcement candidates were quality-gated locally.",
+      "Accepted candidates were not synced to Memory or applied to routing."
+    ]
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-153-bitemporal-route-memory-20260726/candidate-receipt.json",
+  "rejected_candidate_count": 0,
+  "rejected_candidates": [],
+  "route_mutation": false,
+  "run_id": "run-route-memory-test",
+  "scheduler": "bounded-ready-queue",
+  "schema": "tau.dag_route_memory_candidate_receipt.v1",
+  "source_dag_receipt": "/tmp/dag-receipt.json",
+  "source_dag_receipt_sha256": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "source_signal_receipt": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-153-bitemporal-route-memory-20260726/dag-signal-receipt.json",
+  "source_signal_receipt_sha256": "sha256:36dfc07c56b7939e7911d8839405e453f0375896fa74696e2fb25242476da204",
+  "status": "PASS",
+  "sync_reason": "local_candidate_receipt_only",
+  "sync_status": "NOT_SYNCED",
+  "timestamp": "2026-07-26T23:28:54Z",
+  "verdict": "PASS"
+}

@@ -282,6 +282,12 @@ def _gate_candidates(
     rejected: list[dict[str, Any]] = []
     for candidate in _dict_list(signal.get("route_reinforcement_candidates")):
         confidence = _float_or_zero(candidate.get("confidence"))
+        valid_from = _temporal_value(candidate.get("valid_from")) or _temporal_value(
+            signal.get("timestamp")
+        ) or _utc_stamp()
+        valid_to = _temporal_value(candidate.get("valid_to"))
+        supersedes = _string_list(candidate.get("supersedes"))
+        superseded_by = _string_list(candidate.get("superseded_by"))
         missing_route_fields = [
             key
             for key in ("from_node", "to_node", "from_agent", "to_agent")
@@ -299,6 +305,11 @@ def _gate_candidates(
             "source_dag_receipt_sha256": signal.get("source_dag_receipt_sha256"),
             "source_signal_receipt": source_signal_receipt,
             "source_signal_receipt_sha256": source_signal_receipt_sha256,
+            "valid_from": valid_from,
+            "valid_to": valid_to,
+            "supersedes": supersedes,
+            "superseded_by": superseded_by,
+            "temporal_status": "superseded" if valid_to or superseded_by else "current",
             "memory_sync_candidate": True,
             "sync_status": "NOT_SYNCED",
             "sync_reason": "local_candidate_receipt_only",
@@ -555,6 +566,11 @@ def _memory_documents(
                 ),
                 "source_dag_receipt": candidate.get("source_dag_receipt"),
                 "source_dag_receipt_sha256": candidate.get("source_dag_receipt_sha256"),
+                "valid_from": candidate.get("valid_from"),
+                "valid_to": candidate.get("valid_to"),
+                "supersedes": candidate.get("supersedes"),
+                "superseded_by": candidate.get("superseded_by"),
+                "temporal_status": candidate.get("temporal_status"),
                 "provenance": {
                     "episode_id": episode_id,
                     "run_id": candidate_receipt.get("run_id"),
@@ -566,6 +582,10 @@ def _memory_documents(
                     ),
                     "source_dag_receipt": candidate.get("source_dag_receipt"),
                     "source_dag_receipt_sha256": candidate.get("source_dag_receipt_sha256"),
+                    "valid_from": candidate.get("valid_from"),
+                    "valid_to": candidate.get("valid_to"),
+                    "supersedes": candidate.get("supersedes"),
+                    "superseded_by": candidate.get("superseded_by"),
                 },
                 "sync_source": "tau.dag_route_memory_sync_receipt.v1",
                 "retrieval_text": (
@@ -591,6 +611,19 @@ def _dict_list(value: object) -> list[dict[str, Any]]:
     if not isinstance(value, list):
         return []
     return [item for item in value if isinstance(item, dict)]
+
+
+def _string_list(value: object) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [item for item in value if isinstance(item, str) and item]
+
+
+def _temporal_value(value: object) -> str | None:
+    if not isinstance(value, str):
+        return None
+    text = value.strip()
+    return text or None
 
 
 def _float_or_zero(value: object) -> float:
