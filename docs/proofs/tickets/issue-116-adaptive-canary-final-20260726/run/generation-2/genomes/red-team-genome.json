@@ -1,0 +1,35 @@
+{
+  "artifact_role": "red_exploit",
+  "battle_id": "battle-004",
+  "expected_observation": "On the vulnerable public app.py, import_zip writes arena_escape.txt one directory above the destination, the script prints RED_EXPLOIT_CONFIRMED, and exits 0 under --expect-vulnerable.",
+  "generation": 2,
+  "knowledge_packet_id": "battle-004-red-generation-2-knowledge",
+  "mutation_origin": "Adapted from parent success evidence by preserving the local zip-slip proof but strengthening it with explicit outside-destination path validation and required literal app import binding.",
+  "parameters": {
+    "confirmation_string": "RED_EXPLOIT_CONFIRMED",
+    "destination_subdir": "workspace/import_dest",
+    "expected_mode": "--expect-vulnerable exits 0 only on confirmed escaped write",
+    "payload_bytes": "zip-slip traversal marker for battle-004\\n",
+    "traversal_member": "../arena_escape.txt"
+  },
+  "parent_genome_sha256": "652df655d42b48297126fccbcaf08530734afe95aa2f079f5cf0b068c2905cd3",
+  "provider_response_sha256": "51b2a0a703a0917b859799f0c407560fffe12eda2f2326254f26a3f5bf111fdd",
+  "rejected_methods": [
+    "HTTP POST to /api/import-zip",
+    "localhost assumptions",
+    "third-party packages such as requests or httpx",
+    "socket or urllib based probing",
+    "absolute-path payloads that depend on host-specific writable locations"
+  ],
+  "research_receipt_sha256": "7af941f252d21e4ff1adc3fa3c42dd2f7aa8e3621c57d46ae4524de6c2bb4f5e",
+  "run_id": "issue-116-adaptive-canary-final-20260726-g2",
+  "schema": "battle.adaptive_team_genome.v1",
+  "selected_methods": [
+    "local import of public target using from app import import_zip",
+    "temporary zip archive with ../arena_escape.txt traversal entry",
+    "direct function invocation without HTTP or network packages",
+    "post-call filesystem verification that escape file exists outside destination",
+    "nonzero exit when --expect-vulnerable is passed and traversal is not observed"
+  ],
+  "team": "red"
+}

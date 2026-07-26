@@ -1,0 +1,17 @@
+{
+  "artifact_bytes": 2850,
+  "artifact_sha256": "cf233b3b52909acacb92ca69b2d31fc7c438650840c62f72884c0d2ffd946822",
+  "artifact_type": "blue_patch",
+  "parsed_keys": [
+    "app_py",
+    "artifact_type",
+    "rationale",
+    "strategy_genome"
+  ],
+  "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/tau-live/blue/app.py",
+  "rationale": "The original importer joined archive member names directly to the destination, allowing zip-slip traversal. This patch validates member names, checks resolved containment inside the destination, rejects symlinks, and only writes files after validation while preserving the public import_zip behavior.",
+  "schema": "tau.battle_materialized_artifact_receipt.v1",
+  "scillm_call_receipt_sha256": "1b6a1169d5c8393e35728a27ddcd3dd5e426bb0236d898d9b52b4ee8299fd217",
+  "status": "PASS",
+  "strategy_genome_sha256": "4cb5874d7d8a7a72dfaedf864087d71981851407016915cf430d7208733a82d2"
+}

@@ -1,0 +1,92 @@
+{
+  "bad_genetic_material_rate": 0.9688,
+  "error": null,
+  "gate": "docker_py_compile + deterministic_review (identical to live pipeline)",
+  "per_specimen": [
+    {
+      "bad_rate_local": 1.0,
+      "champion_recompiled_ok": true,
+      "generation": 1,
+      "ledger_reject_reasons": [
+        "compile: PyCompileError:   File \"/work/variant_00.py\", line 15\n    from zipfile imporx ZipFile\n                 ^^^^^^\nSyntaxError: invalid syntax\n",
+        "compile: PyCompileError:   File \"/work/variant_01.py\", line 27\n    raise ImportError(f\"could not create import spec for {app_path}\") (\n                                                  ",
+        "compile: PyCompileError:   File \"/work/variant_02.py\", line 33\n    if import_zip is None or not callable(import_zip)\n                                                     ^\nSyntaxError: ",
+        "compile: PyCompileError: Sorry: IndentationError: unexpected indent (variant_03.py, line 52)",
+        "review: red artifact does not bind the public app import interface",
+        "compile: PyCompileError:   File \"/work/variant_05.py\", line 2\n    \"\"\"Local Zip Slip exploit verifier for battle-004.\n    ^\nSyntaxError: unterminated triple-quoted string literal (detect",
+        "compile: PyCompileError:   File \"/work/variant_06.py\", line 81\n    except ValueError:\nSyntaxError: expected 'except' or 'finally' block\n",
+        "compile: PyCompileError: Sorry: IndentationError: expected an indented block after 'except' statement on line 81 (variant_07.py, line 82)"
+      ],
+      "survivor_pool_size": 1,
+      "team": "red",
+      "variants_accepted": 0,
+      "variants_rejected": 8,
+      "variants_sampled": 8
+    },
+    {
+      "bad_rate_local": 1.0,
+      "champion_recompiled_ok": true,
+      "generation": 1,
+      "ledger_reject_reasons": [
+        "compile: PyCompileError:   File \"/work/variant_00.py\", line 2\n    from zipfile imporx ZipFile, ZipInfo\n                 ^^^^^^\nSyntaxError: invalid syntax\n",
+        "compile: PyCompileError:   File \"/work/variant_01.py\", line 26\n    def _safe_target(destination: Path, member_name: str) -> Path\n                                                        ",
+        "compile: PyCompileError:   File \"/work/variant_02.py\", line 13\n    returx True\n           ^^^^\nSyntaxError: invalid syntax\n",
+        "compile: PyCompileError: Sorry: IndentationError: unindent does not match any outer indentation level (variant_03.py, line 16)",
+        "review: blue artifact does not preserve import_zip interface",
+        "compile: PyCompileError:   File \"/work/variant_05.py\", line 45\n    return mode == 0o120000 (\n                            ^\nSyntaxError: '(' was never closed\n",
+        "compile: PyCompileError:   File \"/work/variant_06.py\", line 49\n    \"\"\"\n    ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 50)\n",
+        "compile: PyCompileError:   File \"/work/variant_07.py\", line 17\n    returx True\n           ^^^^\nSyntaxError: invalid syntax\n"
+      ],
+      "survivor_pool_size": 1,
+      "team": "blue",
+      "variants_accepted": 0,
+      "variants_rejected": 8,
+      "variants_sampled": 8
+    },
+    {
+      "bad_rate_local": 1.0,
+      "champion_recompiled_ok": true,
+      "generation": 2,
+      "ledger_reject_reasons": [
+        "compile: PyCompileError:   File \"/work/variant_00.py\", line 25\n    witx zipfile.ZipFile(zip_path, \"w\", compression=zipfile.ZIP_STORED) as zf:\n         ^^^^^^^\nSyntaxError: invalid synta",
+        "compile: PyCompileError:   File \"/work/variant_01.py\", line 13\n    imporx tempfile\n           ^^^^^^^^\nSyntaxError: invalid syntax\n",
+        "compile: PyCompileError:   File \"/work/variant_02.py\", line 18\n    from app imporx import_zip\n             ^^^^^^\nSyntaxError: invalid syntax\n",
+        "compile: PyCompileError:   File \"/work/variant_03.py\", line 57\n    expected_report = str(dest / \"..\" / escape_name) (\n                                                     ^\nSyntaxError:",
+        "compile: PyCompileError:   File \"/work/variant_04.py\", line 53\n    ix escape_path.read_bytes() != marker:\n       ^^^^^^^^^^^\nSyntaxError: invalid syntax\n",
+        "compile: PyCompileError:   File \"/work/variant_05.py\", line 15\n    imporx zipfile\n           ^^^^^^^\nSyntaxError: invalid syntax\n",
+        "review: red artifact does not bind the public app import interface",
+        "compile: PyCompileError:   File \"/work/variant_07.py\", line 59\n    return expected_report in written or any(item.endswith(\"../\" + escape_name) for item in written)\n    ^^^^^^^^^^^^^^^^^"
+      ],
+      "survivor_pool_size": 1,
+      "team": "red",
+      "variants_accepted": 0,
+      "variants_rejected": 8,
+      "variants_sampled": 8
+    },
+    {
+      "bad_rate_local": 0.875,
+      "champion_recompiled_ok": true,
+      "generation": 2,
+      "ledger_reject_reasons": [
+        "compile: PyCompileError:   File \"/work/variant_00.py\", line 78\n    returx written\n           ^^^^^^^\nSyntaxError: invalid syntax\n",
+        "compile: PyCompileError:   File \"/work/variant_01.py\", line 24\n    raise UnsafeArchivePathError(f\"absolute zip member path is not allowed: {member_name!r}\") (\n                          ",
+        "compile: PyCompileError: Sorry: IndentationError: expected an indented block after 'if' statement on line 41 (variant_02.py, line 43)",
+        "compile: PyCompileError:   File \"/work/variant_03.py\", line 13\n    ix not member_name or member_name.strip() == \"\":\n           ^^^^^^^^^^^\nSyntaxError: invalid syntax\n",
+        "compile: PyCompileError:   File \"/work/variant_04.py\", line 57\n    \"\"\"\n    ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 68)\n",
+        "compile: PyCompileError: Sorry: IndentationError: unexpected indent (variant_06.py, line 75)",
+        "compile: PyCompileError: Sorry: IndentationError: expected an indented block after function definition on line 51 (variant_07.py, line 52)"
+      ],
+      "survivor_pool_size": 2,
+      "team": "blue",
+      "variants_accepted": 1,
+      "variants_rejected": 7,
+      "variants_sampled": 8
+    }
+  ],
+  "run_id": "issue-116-adaptive-canary-final-20260726",
+  "schema": "battle.adaptive_specimen_population_summary.v1",
+  "specimens_evaluated": 4,
+  "total_variants_rejected": 31,
+  "total_variants_sampled": 32,
+  "variants_per_champion": 8
+}

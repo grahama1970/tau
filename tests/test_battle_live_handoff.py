@@ -115,6 +115,152 @@ def test_red_materialization_accepts_exact_local_importlib_loader(tmp_path: Path
     assert Path(receipt["path"]).read_text(encoding="utf-8") == script
 
 
+def test_red_materialization_accepts_importlib_import_module_getattr(
+    tmp_path: Path,
+) -> None:
+    script = (
+        "import importlib\n"
+        "module = importlib.import_module('app')\n"
+        "import_zip = getattr(module, 'import_zip')\n"
+        "import_zip('payload.zip', 'destination')\n"
+        "print('RED_EXPLOIT_CONFIRMED')\n"
+        "# --expect-vulnerable\n"
+    )
+
+    receipt = _materialize_team_artifact(
+        team_dir=tmp_path,
+        team="red",
+        scillm_call={
+            "parsed_json": {
+                "artifact_type": "red_exploit",
+                "exploit_py": script,
+                "strategy_genome": _genome("red"),
+            }
+        },
+    )
+
+    assert receipt["status"] == "PASS"
+    assert Path(receipt["path"]).read_text(encoding="utf-8") == script
+
+
+def test_red_materialization_accepts_local_importlib_loader_getattr(
+    tmp_path: Path,
+) -> None:
+    script = (
+        "import importlib.util as import_util\n"
+        "from pathlib import Path\n"
+        "app_path = Path.cwd() / 'app.py'\n"
+        "spec = import_util.spec_from_file_location('battle_local_app', str(app_path))\n"
+        "module = import_util.module_from_spec(spec)\n"
+        "spec.loader.exec_module(module)\n"
+        "getattr(module, 'import_zip')('payload.zip', 'destination')\n"
+        "print('RED_EXPLOIT_CONFIRMED')\n"
+        "# --expect-vulnerable\n"
+    )
+
+    receipt = _materialize_team_artifact(
+        team_dir=tmp_path,
+        team="red",
+        scillm_call={
+            "parsed_json": {
+                "artifact_type": "red_exploit",
+                "exploit_py": script,
+                "strategy_genome": _genome("red"),
+            }
+        },
+    )
+
+    assert receipt["status"] == "PASS"
+    assert Path(receipt["path"]).read_text(encoding="utf-8") == script
+
+
+def test_red_materialization_accepts_helper_returned_import_zip(
+    tmp_path: Path,
+) -> None:
+    script = (
+        "import importlib.util\n"
+        "from pathlib import Path\n"
+        "def load_import_zip():\n"
+        "    app_path = Path.cwd() / 'app.py'\n"
+        "    spec = importlib.util.spec_from_file_location('local_app', str(app_path))\n"
+        "    module = importlib.util.module_from_spec(spec)\n"
+        "    spec.loader.exec_module(module)\n"
+        "    fn = getattr(module, 'import_zip')\n"
+        "    return fn\n"
+        "import_zip = load_import_zip()\n"
+        "import_zip('payload.zip', 'destination')\n"
+        "print('RED_EXPLOIT_CONFIRMED')\n"
+        "# --expect-vulnerable\n"
+    )
+
+    receipt = _materialize_team_artifact(
+        team_dir=tmp_path,
+        team="red",
+        scillm_call={
+            "parsed_json": {
+                "artifact_type": "red_exploit",
+                "exploit_py": script,
+                "strategy_genome": _genome("red"),
+            }
+        },
+    )
+
+    assert receipt["status"] == "PASS"
+    assert Path(receipt["path"]).read_text(encoding="utf-8") == script
+
+
+def test_red_materialization_rejects_http_only_exploit(tmp_path: Path) -> None:
+    script = (
+        "import json\n"
+        "import urllib.request\n"
+        "print('RED_EXPLOIT_CONFIRMED')\n"
+        "# --expect-vulnerable\n"
+    )
+
+    receipt = _materialize_team_artifact(
+        team_dir=tmp_path,
+        team="red",
+        scillm_call={
+            "parsed_json": {
+                "artifact_type": "red_exploit",
+                "exploit_py": script,
+                "strategy_genome": _genome("red"),
+            }
+        },
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["reason"] == "red_artifact_not_local_stdlib_exploit"
+
+
+def test_red_materialization_rejects_importlib_import_module_wrong_module(
+    tmp_path: Path,
+) -> None:
+    script = (
+        "import importlib\n"
+        "module = importlib.import_module('other')\n"
+        "import_zip = getattr(module, 'import_zip')\n"
+        "import_zip('payload.zip', 'destination')\n"
+        "print('RED_EXPLOIT_CONFIRMED')\n"
+        "# --expect-vulnerable\n"
+    )
+
+    receipt = _materialize_team_artifact(
+        team_dir=tmp_path,
+        team="red",
+        scillm_call={
+            "parsed_json": {
+                "artifact_type": "red_exploit",
+                "exploit_py": script,
+                "strategy_genome": _genome("red"),
+            }
+        },
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["reason"] == "red_artifact_missing_local_app_import"
+
+
 def test_red_materialization_rejects_importlib_loader_for_other_path(
     tmp_path: Path,
 ) -> None:

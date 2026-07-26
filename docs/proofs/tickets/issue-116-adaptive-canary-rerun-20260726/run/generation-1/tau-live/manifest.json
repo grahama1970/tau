@@ -1,0 +1,138 @@
+{
+  "battle_id": "battle-004",
+  "claims": {
+    "does_not_prove": [
+      "Battle Docker scorekeeper PASS unless Battle consumes this manifest and Judge receipts.",
+      "Unbounded Battle swarm execution.",
+      "Child-spawn lineage; this rung uses bounded independent workers.",
+      "Blue kill, fastest crash, or promotion."
+    ],
+    "proves": [
+      "Tau consumed bounded Battle Red and Blue handoffs.",
+      "Tau attempted Scillm chat-completions calls for each requested worker.",
+      "Tau wrote tau.subagent_receipt.v1 artifacts for each requested worker.",
+      "Each worker has its own materialization receipt."
+    ]
+  },
+  "duration_seconds": 51.142477,
+  "handoff_topology": "bounded_worker_matrix",
+  "live": true,
+  "materialized_counts": {
+    "blue": 0,
+    "red": 0
+  },
+  "mocked": false,
+  "model": "gpt-5.5",
+  "requested_workers": {
+    "blue": 1,
+    "red": 1
+  },
+  "run_id": "issue-116-adaptive-canary-rerun-20260726-g1",
+  "scenario_id": "arena-zip-slip-import-001",
+  "schema": "tau.battle_live_handoff_proof.v1",
+  "scillm_auth_preflight": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-rerun-20260726/run/generation-1/tau-live/scillm-auth-preflight.json",
+  "scillm_base_url": "http://localhost:4001",
+  "status": "BLOCKED",
+  "surface": "scillm.chat_completions",
+  "teams": [
+    {
+      "error": "red_artifact_does_not_call_import_zip",
+      "handoff": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-rerun-20260726/run/generation-1/tau-live/red/handoff.json",
+      "http_status": 200,
+      "lane_id": "payload-857-receipt",
+      "materialized": {
+        "parsed_keys": [
+          "artifact_type",
+          "exploit_py",
+          "rationale",
+          "strategy_genome"
+        ],
+        "path": null,
+        "reason": "red_artifact_does_not_call_import_zip",
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "scillm_call_receipt_sha256": "783a679a0c9246df3ab7ddcd3715c8a8dfab1f0f9fdb53f4bf88c3bef8f4daa3",
+        "status": "BLOCKED"
+      },
+      "materialized_artifact": {
+        "parsed_keys": [
+          "artifact_type",
+          "exploit_py",
+          "rationale",
+          "strategy_genome"
+        ],
+        "path": null,
+        "reason": "red_artifact_does_not_call_import_zip",
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "scillm_call_receipt_sha256": "783a679a0c9246df3ab7ddcd3715c8a8dfab1f0f9fdb53f4bf88c3bef8f4daa3",
+        "status": "BLOCKED"
+      },
+      "model": "gpt-5.5",
+      "persona": "battle-red-public-auditor",
+      "scillm_call": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-rerun-20260726/run/generation-1/tau-live/red/scillm-call-receipt.json",
+      "status": "BLOCKED",
+      "subagent_receipt": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-rerun-20260726/run/generation-1/tau-live/red/tau-subagent-receipt.json",
+      "surface": "scillm.chat_completions",
+      "team": "red",
+      "validation": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-rerun-20260726/run/generation-1/tau-live/red/validation.json",
+      "validation_ok": true,
+      "worker_id": "red-0",
+      "worker_index": 0
+    },
+    {
+      "error": "blue_app_py_syntax_invalid",
+      "handoff": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-rerun-20260726/run/generation-1/tau-live/blue/handoff.json",
+      "http_status": 200,
+      "lane_id": null,
+      "materialized": {
+        "diagnostic_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-rerun-20260726/run/generation-1/tau-live/blue/app.py",
+        "parsed_keys": [
+          "app_py",
+          "artifact_type",
+          "destination",
+          "member_name",
+          "rationale",
+          "strategy_genome"
+        ],
+        "path": null,
+        "reason": "blue_app_py_syntax_invalid",
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "scillm_call_receipt_sha256": "4e197a0e1d26e2465184c1c62039924dd95adf80300e419d202f6b1c058fc85d",
+        "status": "BLOCKED",
+        "syntax_error": "'(' was never closed (<unknown>, line 18)"
+      },
+      "materialized_artifact": {
+        "diagnostic_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-rerun-20260726/run/generation-1/tau-live/blue/app.py",
+        "parsed_keys": [
+          "app_py",
+          "artifact_type",
+          "destination",
+          "member_name",
+          "rationale",
+          "strategy_genome"
+        ],
+        "path": null,
+        "reason": "blue_app_py_syntax_invalid",
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "scillm_call_receipt_sha256": "4e197a0e1d26e2465184c1c62039924dd95adf80300e419d202f6b1c058fc85d",
+        "status": "BLOCKED",
+        "syntax_error": "'(' was never closed (<unknown>, line 18)"
+      },
+      "model": "gpt-5.5",
+      "persona": "battle-blue-public-hardener",
+      "scillm_call": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-rerun-20260726/run/generation-1/tau-live/blue/scillm-call-receipt.json",
+      "status": "BLOCKED",
+      "subagent_receipt": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-rerun-20260726/run/generation-1/tau-live/blue/tau-subagent-receipt.json",
+      "surface": "scillm.chat_completions",
+      "team": "blue",
+      "validation": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-rerun-20260726/run/generation-1/tau-live/blue/validation.json",
+      "validation_ok": true,
+      "worker_id": "blue-0",
+      "worker_index": 0
+    }
+  ],
+  "timing": {
+    "initial_tau_ended_elapsed_seconds": 53.008955,
+    "initial_tau_started_elapsed_seconds": 1.331849,
+    "source": "battle_control_plane_perf_counter"
+  }
+}

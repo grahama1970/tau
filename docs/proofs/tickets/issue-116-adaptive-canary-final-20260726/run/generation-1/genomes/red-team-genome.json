@@ -1,0 +1,34 @@
+{
+  "artifact_role": "red_exploit",
+  "battle_id": "battle-004",
+  "expected_observation": "On the vulnerable target, import_zip writes arena_escape.txt into the temporary parent directory outside destination, the script prints RED_EXPLOIT_CONFIRMED, and exits 0 when --expect-vulnerable is supplied.",
+  "generation": 1,
+  "knowledge_packet_id": null,
+  "mutation_origin": "Derived directly from the public app.py implementation where target = dest / name is written without normalization or containment checks.",
+  "parameters": {
+    "confirmation_token": "RED_EXPLOIT_CONFIRMED",
+    "destination_layout": "temporary parent directory with destination subdirectory",
+    "execution_mode": "local import and direct function call",
+    "zip_member": "../arena_escape.txt"
+  },
+  "parent_genome_sha256": null,
+  "provider_response_sha256": "3d0203b636783d5796e151ddf046a511a08002a78eab9a3ea675aa67c2d5c9a7",
+  "rejected_methods": [
+    "HTTP endpoint probing",
+    "network sockets",
+    "third-party request libraries",
+    "assuming a running server",
+    "absolute-path payloads that may be environment-dependent"
+  ],
+  "research_receipt_sha256": null,
+  "run_id": "issue-116-adaptive-canary-final-20260726-g1",
+  "schema": "battle.adaptive_team_genome.v1",
+  "selected_methods": [
+    "local importlib load of app.py",
+    "standard-library ZipFile payload creation",
+    "relative path traversal member ../arena_escape.txt",
+    "filesystem assertion outside extraction destination",
+    "--expect-vulnerable confirmation gate"
+  ],
+  "team": "red"
+}

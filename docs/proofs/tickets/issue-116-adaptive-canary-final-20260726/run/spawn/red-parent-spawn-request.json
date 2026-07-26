@@ -1,0 +1,64 @@
+{
+  "authorship": {
+    "agentic": true,
+    "authored_by": "tau_parent",
+    "model": "gpt-5.5",
+    "provider_live": true,
+    "provider_response_sha256": "ec8d1e84da6066bec5791b69f30c1ca6278616cc794992685295ff217c7280ef",
+    "tau_reflection_receipt_sha256": "d4cbac8adc3bc61b505212bca35bb151f115d6cd59b20456b6f2df846e0607d9"
+  },
+  "battle_id": "battle-004",
+  "claims": {
+    "does_not_prove": [
+      "Battle authorized the request or the child improved."
+    ],
+    "proves": [
+      "A live Tau parent authored the bounded reproduction request."
+    ]
+  },
+  "generation": 1,
+  "parent_binding": {
+    "fitness_receipt_sha256": "cfa5669c67f3099d6d86ebb4bd8bf93068205ed7b2fb8077c8042909d65a815d",
+    "judge_receipt_sha256": "b808b57647ca7fc0c314ad24667a32edc2073a704436386cc9eeaa5df59e17d5",
+    "observation_receipt_sha256": "de8b06c514555bff521a95512df922e97990d8450ef9cf0e8222941c24f763b6",
+    "parent_artifact_sha256": "ba2d8620c11b0513a5f94a6c641455753931a66390bf72ccb75320ca4120c97d",
+    "parent_genome_sha256": "652df655d42b48297126fccbcaf08530734afe95aa2f079f5cf0b068c2905cd3",
+    "pipeline_handoff_sha256": "5e590bba22bff931ec7242536335e61176948f1bb20757e775606350aca4cbd9"
+  },
+  "request": {
+    "expected_observation": "The child should determine whether a close adaptive variant remains blocked under the patched target. The most likely outcome, given the current BLUE_SUCCESS verdict, is continued blocking; however, the child may reveal whether the defense is broad or narrowly tailored.",
+    "proposed_child_mission": "Generate one adaptive red-team child that studies the blocked parent behavior and attempts a minimally changed variant aimed at testing whether the blue patch generalizes beyond the original exploit shape, while preserving the same public-evidence constraints and avoiding unsupported assumptions.",
+    "rationale": "The supplied evidence shows the parent exploit was confirmed before the patch but blocked after the patch, with functionality preserved and all compile/review/runtime checks passing. Because the remaining budget allows one child and one provider attempt, the best use is to spawn a child focused on finding an adaptive variant that probes whether the patch is narrow or pattern-specific. No exploit success beyond the Judge verdict is claimed.",
+    "reason_codes": [
+      "BLUE_SUCCESS",
+      "EXPLOIT_CONFIRMED_BEFORE_PATCH",
+      "EXPLOIT_BLOCKED_AFTER_PATCH",
+      "FUNCTIONALITY_PRESERVED",
+      "BUDGET_AVAILABLE_FOR_ONE_CHILD",
+      "ADAPTIVE_MUTATION_WARRANTED"
+    ],
+    "requested_action": "SPAWN_CHILD",
+    "requested_budget": {
+      "child_count": 1,
+      "provider_attempts": 1
+    },
+    "requested_mutation_directions": [
+      "Preserve the original exploit objective but vary superficial structure and triggering conditions.",
+      "Try semantically equivalent payload forms that differ in encoding, ordering, delimiters, or boundary values.",
+      "Explore adjacent edge cases near the original trigger condition rather than unrelated attack classes.",
+      "Minimize changes so that any new observation can be attributed to patch generality rather than wholesale exploit redesign.",
+      "Include negative-control behavior to distinguish genuine bypass indicators from broken functionality."
+    ],
+    "requested_research_questions": [
+      "Was the parent exploit blocked by a broad semantic fix or by a narrow signature/pattern check?",
+      "Can equivalent behavior be reached through a different input shape, encoding, ordering, boundary condition, or invocation path?",
+      "Does the patch cover adjacent edge cases implied by the original exploit confirmation before patch?",
+      "Are there observable differences in runtime behavior that suggest partial rather than complete mitigation?"
+    ]
+  },
+  "request_id": "issue-116-adaptive-canary-final-20260726-red-parent-spawn-request",
+  "run_id": "issue-116-adaptive-canary-final-20260726",
+  "schema": "battle.adaptive_spawn_request.v1",
+  "status": "PASS",
+  "team": "red"
+}

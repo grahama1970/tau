@@ -1,0 +1,48 @@
+{
+  "artifact": {
+    "compile_receipt_sha256": "b749fde0eff4dff61332b54e08c452c7f8a1054fdd8f259a3638eefacc60c5a5",
+    "genome_sha256": "2fb6d6cb5a97dbf9770ddd11c9b681a301d9375933d20a0efef5cd3728e4ec97",
+    "pipeline_handoff_sha256": "a2099696dd363ffb0bb7c2d83b88c0d914408f138720107fac19a9e511f741fc",
+    "review_receipt_sha256": "3275594130c6ff60a4d85d6509aef6fa20079f8493c65ae4637bc7cffb7b6fd5",
+    "selected_artifact_sha256": "cf233b3b52909acacb92ca69b2d31fc7c438650840c62f72884c0d2ffd946822"
+  },
+  "battle_id": "battle-004",
+  "claims": {
+    "does_not_prove": [
+      "The team improved or achieved exploit success beyond the cited Judge verdict."
+    ],
+    "proves": [
+      "Battle projected measured pipeline and Judge evidence for one team generation."
+    ]
+  },
+  "generation": 1,
+  "judge": {
+    "judge_receipt_sha256": "b808b57647ca7fc0c314ad24667a32edc2073a704436386cc9eeaa5df59e17d5",
+    "judged_pair_count": 1,
+    "reviewed_judge_input_sha256": "37431b32d33aadb23ada7b38fc0978e3586899464301bd67e5ccccaa03897e95",
+    "status": "PASS",
+    "verdict": "BLUE_SUCCESS"
+  },
+  "measurements": {
+    "compile_status": "PASS",
+    "execution_elapsed_seconds": "UNKNOWN",
+    "exploit_blocked_after_patch": true,
+    "exploit_confirmed_before_patch": true,
+    "functionality_preserved": true,
+    "provider_attempt_count": 1,
+    "repair_attempt_count": 0,
+    "review_status": "PASS",
+    "runtime_status": "PASS",
+    "target_contact": "UNKNOWN"
+  },
+  "observed_elapsed_seconds": 48.804623,
+  "receipt_id": "issue-116-adaptive-canary-final-20260726-blue-g1-observation",
+  "run_id": "issue-116-adaptive-canary-final-20260726",
+  "schema": "battle.generation_observation_receipt.v1",
+  "status": "PASS",
+  "target_identity": {
+    "original_target_tree_sha256": "b91d9c40e3a0c28ef53df7891503b9d3eed77449d2db708d5724c41f76edb02d",
+    "patched_target_tree_sha256": "f414c2c8f7b32f8b48bd05c48e704f43669343afe4e032a32d001656ee10fcdb"
+  },
+  "team": "blue"
+}

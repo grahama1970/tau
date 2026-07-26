@@ -1,0 +1,14 @@
+{
+  "classification": "public",
+  "export_controlled": false,
+  "external_provider_allowed": false,
+  "external_research_allowed": true,
+  "foreign_person_access": "allowed",
+  "itar": false,
+  "notes": [
+    "Sanitized public Battle research query; no Arena private artifacts."
+  ],
+  "public_repo_allowed": true,
+  "schema": "tau.data_boundary.v1",
+  "technical_data": false
+}

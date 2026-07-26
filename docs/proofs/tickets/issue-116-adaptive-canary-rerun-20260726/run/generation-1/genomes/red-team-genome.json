@@ -1,0 +1,34 @@
+{
+  "artifact_role": "red_exploit",
+  "battle_id": "battle-004",
+  "expected_observation": "On the vulnerable implementation, import_zip writes arena_escape.txt into the parent directory of the destination, the script prints RED_EXPLOIT_CONFIRMED, and exits 0 under --expect-vulnerable.",
+  "generation": 1,
+  "knowledge_packet_id": null,
+  "mutation_origin": "Derived directly from public app.py behavior: target = dest / name followed by parent mkdir and write_bytes for every archive member.",
+  "parameters": {
+    "destination_subdir": "import_workspace",
+    "escape_filename": "arena_escape.txt",
+    "success_marker": "RED_EXPLOIT_CONFIRMED",
+    "zip_entry": "../arena_escape.txt"
+  },
+  "parent_genome_sha256": null,
+  "provider_response_sha256": "783a679a0c9246df3ab7ddcd3715c8a8dfab1f0f9fdb53f4bf88c3bef8f4daa3",
+  "rejected_methods": [
+    "HTTP endpoint probing",
+    "network sockets",
+    "third-party packages",
+    "assuming a running web server",
+    "absolute path payloads"
+  ],
+  "research_receipt_sha256": null,
+  "run_id": "issue-116-adaptive-canary-rerun-20260726-g1",
+  "schema": "battle.adaptive_team_genome.v1",
+  "selected_methods": [
+    "local importlib load of app.py",
+    "temporary isolated workspace",
+    "ZIP member path traversal using ../arena_escape.txt",
+    "post-call filesystem verification outside destination",
+    "nonzero exit when --expect-vulnerable does not observe escape"
+  ],
+  "team": "red"
+}

@@ -1,0 +1,17 @@
+{
+  "diagnostic_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-rerun-20260726/run/generation-1/tau-live/blue/app.py",
+  "parsed_keys": [
+    "app_py",
+    "artifact_type",
+    "destination",
+    "member_name",
+    "rationale",
+    "strategy_genome"
+  ],
+  "path": null,
+  "reason": "blue_app_py_syntax_invalid",
+  "schema": "tau.battle_materialized_artifact_receipt.v1",
+  "scillm_call_receipt_sha256": "4e197a0e1d26e2465184c1c62039924dd95adf80300e419d202f6b1c058fc85d",
+  "status": "BLOCKED",
+  "syntax_error": "'(' was never closed (<unknown>, line 18)"
+}

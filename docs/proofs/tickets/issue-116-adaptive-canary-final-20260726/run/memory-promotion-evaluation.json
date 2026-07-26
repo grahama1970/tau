@@ -1,0 +1,63 @@
+{
+  "battle_id": "battle-004",
+  "claims": {
+    "does_not_prove": [
+      "Memory was written, promoted, or durably recalled."
+    ],
+    "proves": [
+      "Battle evaluated selected evidence under the memory policy."
+    ]
+  },
+  "evaluation_id": "issue-116-adaptive-canary-final-20260726-memory-evaluation",
+  "evaluations": [
+    {
+      "decision": "NO_PROMOTION",
+      "durable_recall_proven": false,
+      "eligible_decisions": [
+        "NO_PROMOTION"
+      ],
+      "evidence_classification": "neutral",
+      "fitness_receipt_sha256": "a4232f6e8e841dbcae8127b3b36facc009df4e83beaf8269de7758b93c04129a",
+      "genome_delta_sha256": "72a9fd044cbce02b7189c7b522812cf573c80eac3f6ab37c19379e9df3bf35d9",
+      "judge_receipt_sha256": "9ab8affa008e50da05381254f64e3956a193d875add737e5dfd0325b2d29a25d",
+      "judge_requirement_satisfied": true,
+      "memory_write_receipt_sha256": null,
+      "memory_write_required": false,
+      "reason_codes": [
+        "evaluate_only_canary",
+        "durable_write_out_of_scope"
+      ],
+      "selected_generation": 2,
+      "team": "red",
+      "visibility_scope": "red_only"
+    },
+    {
+      "decision": "NO_PROMOTION",
+      "durable_recall_proven": false,
+      "eligible_decisions": [
+        "NO_PROMOTION"
+      ],
+      "evidence_classification": "neutral",
+      "fitness_receipt_sha256": "b956d8a7e1c808c49b3c9ab1498573cb46683a27e5a2430dbe62e69ff406b86f",
+      "genome_delta_sha256": "66d7f2e18f0f47e1f797e9e791763b08e9890378b96d9881af2806c41443adbc",
+      "judge_receipt_sha256": "9ab8affa008e50da05381254f64e3956a193d875add737e5dfd0325b2d29a25d",
+      "judge_requirement_satisfied": true,
+      "memory_write_receipt_sha256": null,
+      "memory_write_required": false,
+      "reason_codes": [
+        "evaluate_only_canary",
+        "durable_write_out_of_scope"
+      ],
+      "selected_generation": 2,
+      "team": "blue",
+      "visibility_scope": "blue_only"
+    }
+  ],
+  "policy_id": "battle-memory-promotion-evaluate-only-v1",
+  "policy_mode": "evaluate_only",
+  "policy_sha256": "1c17aa6c109ad8718acdbb84a7f035f1d381f6834a6c4522e701de79338a0b5d",
+  "run_id": "issue-116-adaptive-canary-final-20260726",
+  "schema": "battle.memory_promotion_evaluation.v1",
+  "selection_receipt_sha256": "4b86fe7cc36302cb99c7b476edf6c1cd028ed7c1e3b519b3e17f167161706976",
+  "status": "PASS"
+}

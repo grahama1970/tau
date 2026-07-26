@@ -1,0 +1,29 @@
+{
+  "allowed_runner": "battle_docker_judge",
+  "artifact_review_receipt_sha256": "db6cbc6ec4f5320586dfe36f88d66e9261efebc244684a55566415ff87a538b6",
+  "artifact_role": "red_exploit",
+  "battle_id": "battle-004",
+  "claims": {
+    "does_not_prove": [
+      "The artifact runs.",
+      "Judge verified an outcome."
+    ],
+    "proves": [
+      "Battle bound one provider materialization through Docker compile and deterministic review."
+    ]
+  },
+  "compile_receipt_sha256": "74887e7feeb89d4e1d314ae0e45ad98fb6e8ca96db4c6f2dc20190913421c8fa",
+  "created_at": "2026-07-26T12:46:34Z",
+  "descriptor_sha256": "766fdc79648a784afc27e075d0ffc5a3871a8182c91673a231046a537bfeb6f0",
+  "generation": 2,
+  "genome_sha256": "115c5fd79806ae09cde4e3a5e9763e86d8a33ada63aa04229e94139ef94e5c62",
+  "materialization_receipt_sha256": "c490dcbe42bcd07dc6e66af5b2872a502f8e55dd112bfc2b71e38208247a9f51",
+  "provider_receipt_sha256": "d8a72d48c4a1ac56f0a537346c87f04d2abe346c7c56067a6092b597b9256e40",
+  "run_id": "issue-116-adaptive-canary-final-20260726-g2",
+  "schema": "battle.team_artifact_pipeline_receipt.v1",
+  "selected_artifact": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/reviewed/red/red_exploit_submission.py",
+  "selected_artifact_sha256": "61068346a07305c82dd00c507ca4460fc15d07a966d89c616619a07e1c37c400",
+  "status": "PASS",
+  "target_identity_sha256": "b91d9c40e3a0c28ef53df7891503b9d3eed77449d2db708d5724c41f76edb02d",
+  "team": "red"
+}

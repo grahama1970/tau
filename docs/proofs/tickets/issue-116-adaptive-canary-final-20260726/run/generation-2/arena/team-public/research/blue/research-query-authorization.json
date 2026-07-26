@@ -1,0 +1,15 @@
+{
+  "allowed_methods": [
+    "brave-search"
+  ],
+  "approved": true,
+  "approver": {
+    "id": "battle:adaptive-lineage-policy"
+  },
+  "data_boundary_classification": "public",
+  "expires_at": "2026-07-26T13:45:35Z",
+  "origin_spawn_request_sha256": "b834dad0a7109c7013e65d95cf96852b59f3a4e89f23b9d666f16a2c3e73ddfa",
+  "provider_proposed_query_sha256": "sha256:6ca4a42e62665dc6087aea8ecce136e36950d54b26417cc07a6c3772351f2449",
+  "sanitized_query_sha256": "sha256:6ca4a42e62665dc6087aea8ecce136e36950d54b26417cc07a6c3772351f2449",
+  "schema": "tau.research_query_authorization.v1"
+}

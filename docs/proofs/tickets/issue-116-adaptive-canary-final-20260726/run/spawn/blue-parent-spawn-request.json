@@ -1,0 +1,64 @@
+{
+  "authorship": {
+    "agentic": true,
+    "authored_by": "tau_parent",
+    "model": "gpt-5.5",
+    "provider_live": true,
+    "provider_response_sha256": "973f5eb8317512653ebb28f8d87d6a20dcb327598aa4a355c4bc324572f11db2",
+    "tau_reflection_receipt_sha256": "024a9670550a99a0c30b54f1d54fd48e77c07aaff574806ef739d86042c1ff0c"
+  },
+  "battle_id": "battle-004",
+  "claims": {
+    "does_not_prove": [
+      "Battle authorized the request or the child improved."
+    ],
+    "proves": [
+      "A live Tau parent authored the bounded reproduction request."
+    ]
+  },
+  "generation": 1,
+  "parent_binding": {
+    "fitness_receipt_sha256": "11789cb5b8582beeb6139e87f3900b640c7de16fc43a27e47e2315e95f6ecef3",
+    "judge_receipt_sha256": "b808b57647ca7fc0c314ad24667a32edc2073a704436386cc9eeaa5df59e17d5",
+    "observation_receipt_sha256": "dd7e3ab80096326f8c8a253554f387b8cfb1b11db964ca09cf365c82ecb451f4",
+    "parent_artifact_sha256": "cf233b3b52909acacb92ca69b2d31fc7c438650840c62f72884c0d2ffd946822",
+    "parent_genome_sha256": "2fb6d6cb5a97dbf9770ddd11c9b681a301d9375933d20a0efef5cd3728e4ec97",
+    "pipeline_handoff_sha256": "a2099696dd363ffb0bb7c2d83b88c0d914408f138720107fac19a9e511f741fc"
+  },
+  "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/spawn/blue-parent-spawn-request.json",
+  "request": {
+    "expected_observation": "No further observation requested; retain the current BLUE_SUCCESS result as supported by the supplied Judge verdict and measurements.",
+    "forced_generation_2_continuation": true,
+    "proposed_child_mission": "Evolve the patch to block mutated exploit variants while preserving a callable import_zip(zip_path, destination) interface.",
+    "rationale": "The supplied public evidence shows a terminal successful blue result: judge_verdict is BLUE_SUCCESS, overall status is PASS, compile/review/runtime all PASS, exploit_confirmed_before_patch is true, exploit_blocked_after_patch is true, and functionality_preserved is true. Because the evaluated patch already satisfies the observed success criteria and no contrary public evidence is supplied, no additional child mission is requested.",
+    "reason_codes": [
+      "JUDGE_BLUE_SUCCESS",
+      "COMPILE_PASS",
+      "REVIEW_PASS",
+      "RUNTIME_PASS",
+      "EXPLOIT_CONFIRMED_BEFORE_PATCH",
+      "EXPLOIT_BLOCKED_AFTER_PATCH",
+      "FUNCTIONALITY_PRESERVED",
+      "NO_ADDITIONAL_PUBLIC_EVIDENCE_NEEDED"
+    ],
+    "requested_action": "STOP",
+    "requested_budget": {
+      "child_count": 0,
+      "provider_attempts": 0
+    },
+    "requested_mutation_directions": [
+      "generalize_validation",
+      "harden_path_normalization"
+    ],
+    "requested_research_questions": [
+      "What mutated variants of the blocked exploit could still reach the vulnerable behavior under the current patch?",
+      "How can path normalization/validation generalize to block traversal variants without breaking benign imports?"
+    ]
+  },
+  "request_id": "issue-116-adaptive-canary-final-20260726-blue-parent-spawn-request",
+  "run_id": "issue-116-adaptive-canary-final-20260726",
+  "schema": "battle.adaptive_spawn_request.v1",
+  "sha256": "1e1917855df7baa0f42bc211e95ae25751d9f94df845216f83dc7f28cea82524",
+  "status": "PASS",
+  "team": "blue"
+}

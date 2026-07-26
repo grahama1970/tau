@@ -1,0 +1,51 @@
+{
+  "alert_codes": [],
+  "alerts": [],
+  "authorization": {
+    "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/arena/team-public/research/blue/research-query-authorization.json",
+    "schema": "tau.research_query_authorization.v1",
+    "sha256": "sha256:b0c77a3f7c14351b3e206c68b389b5f4a4fde036f8c51e4884167d951440152f"
+  },
+  "checked_at": "2026-07-26T12:45:37Z",
+  "controlled_artifact_paths": [],
+  "data_boundary": {
+    "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/arena/team-public/research/blue/data-boundary.json",
+    "schema": "tau.data_boundary.v1",
+    "sha256": "sha256:711cb6a9234b8989f33283781f82b0b182ac838854f985b39a127d7dc049e84e"
+  },
+  "external_tool_called": false,
+  "live": true,
+  "method": "brave-search",
+  "mocked": false,
+  "ok": true,
+  "policy_profile": {
+    "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/arena/team-public/research/blue/policy-profile.json",
+    "schema": "tau.policy_profile.v1",
+    "sha256": "sha256:30350419a65cdc3566dfc85db35cf12b2ec46240484c3f691e5b7836c6dee99c"
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "ITAR compliance.",
+      "Export-control legal sufficiency.",
+      "Human identity verification.",
+      "The external research result is true or sufficient.",
+      "The query was actually sent to an external service."
+    ],
+    "proves": [
+      "Tau inspected a research query before any external research call.",
+      "Tau checked policy, data-boundary, authorization, and controlled-artifact constraints deterministically.",
+      "No Brave, WebGPT, Dogpile, provider, GitHub, Memory, or browser action was executed."
+    ]
+  },
+  "provider_live": false,
+  "query_length": 111,
+  "query_sha256": "sha256:6ca4a42e62665dc6087aea8ecce136e36950d54b26417cc07a6c3772351f2449",
+  "receipt_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/arena/team-public/research/blue/research-query-safety-receipt.json",
+  "recommended_action": {
+    "next_agent": "research-auditor",
+    "reason": "Research query passed the pre-query safety gate.",
+    "type": "continue"
+  },
+  "schema": "tau.research_query_safety_receipt.v1",
+  "status": "PASS"
+}

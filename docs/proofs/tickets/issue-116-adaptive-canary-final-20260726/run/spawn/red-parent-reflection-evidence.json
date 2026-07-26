@@ -1,0 +1,32 @@
+{
+  "battle_id": "battle-004",
+  "fitness_receipt_sha256": "cfa5669c67f3099d6d86ebb4bd8bf93068205ed7b2fb8077c8042909d65a815d",
+  "generation": 1,
+  "judge_receipt_sha256": "b808b57647ca7fc0c314ad24667a32edc2073a704436386cc9eeaa5df59e17d5",
+  "judge_verdict": "BLUE_SUCCESS",
+  "measurements": {
+    "compile_status": "PASS",
+    "execution_elapsed_seconds": "UNKNOWN",
+    "exploit_blocked_after_patch": true,
+    "exploit_confirmed_before_patch": true,
+    "functionality_preserved": true,
+    "provider_attempt_count": 1,
+    "repair_attempt_count": 0,
+    "review_status": "PASS",
+    "runtime_status": "PASS",
+    "target_contact": "UNKNOWN"
+  },
+  "observation_receipt_sha256": "de8b06c514555bff521a95512df922e97990d8450ef9cf0e8222941c24f763b6",
+  "parent_artifact_sha256": "ba2d8620c11b0513a5f94a6c641455753931a66390bf72ccb75320ca4120c97d",
+  "parent_genome_sha256": "652df655d42b48297126fccbcaf08530734afe95aa2f079f5cf0b068c2905cd3",
+  "parent_semantic_genome_sha256": "7c06a066c5d93d6d1cc046b105309e7faae21e3257af8c4afb58769af001ba5b",
+  "pipeline_handoff_sha256": "5e590bba22bff931ec7242536335e61176948f1bb20757e775606350aca4cbd9",
+  "remaining_budget": {
+    "child_count": 1,
+    "provider_attempts": 1
+  },
+  "run_id": "issue-116-adaptive-canary-final-20260726",
+  "schema": "battle.parent_reflection_evidence.v1",
+  "status": "PASS",
+  "team": "red"
+}

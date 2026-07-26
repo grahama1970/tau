@@ -1,0 +1,13 @@
+{
+  "parsed_keys": [
+    "artifact_type",
+    "exploit_py",
+    "rationale",
+    "strategy_genome"
+  ],
+  "path": null,
+  "reason": "red_artifact_does_not_call_import_zip",
+  "schema": "tau.battle_materialized_artifact_receipt.v1",
+  "scillm_call_receipt_sha256": "783a679a0c9246df3ab7ddcd3715c8a8dfab1f0f9fdb53f4bf88c3bef8f4daa3",
+  "status": "BLOCKED"
+}

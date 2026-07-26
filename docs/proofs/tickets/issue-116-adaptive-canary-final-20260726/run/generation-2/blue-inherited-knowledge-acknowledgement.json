@@ -1,0 +1,24 @@
+{
+  "artifact_changed": true,
+  "child_artifact_sha256": "d721e7070d424bff7cfff8597e7f206c8c0bb2750b8ffa7db52476cbcf945614",
+  "claims": {
+    "does_not_prove": [
+      "The child improved."
+    ],
+    "proves": [
+      "The provider response cited inherited evidence and external research, then materialized a changed artifact."
+    ]
+  },
+  "external_research_cited_in_provider_response": true,
+  "external_research_receipt_sha256": "e0c7ea8845d55ada6b24c53a4c512b149e536a96f6c47563b790ba0abe1d0bf0",
+  "first_plan_action_declared": true,
+  "inherited_genome_cited": true,
+  "inherited_observation_cited": true,
+  "packet_cited_in_provider_response": true,
+  "packet_id": "battle-004-blue-generation-2-knowledge",
+  "parent_artifact_sha256": "cf233b3b52909acacb92ca69b2d31fc7c438650840c62f72884c0d2ffd946822",
+  "provider_response_sha256": "9baed88b721bae4cd5d09cff213bd0c9aadfa58e6c3ae084fbf6b4892899b131",
+  "schema": "battle.inherited_knowledge_acknowledgement.v1",
+  "status": "PASS",
+  "team": "blue"
+}

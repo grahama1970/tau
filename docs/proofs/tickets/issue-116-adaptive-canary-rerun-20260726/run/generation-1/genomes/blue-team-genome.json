@@ -1,0 +1,37 @@
+{
+  "artifact_role": "blue_patch",
+  "battle_id": "battle-004",
+  "expected_observation": "benign relative archive entries extract normally inside the workspace, while traversal payloads such as ../x, /tmp/x, C:/x, UNC-style paths, NUL-containing names, and symlink members are rejected before any escaped write occurs",
+  "generation": 1,
+  "knowledge_packet_id": null,
+  "mutation_origin": "public artifact showed direct dest/name write from zip namelist without containment validation",
+  "parameters": {
+    "containment_primitive": "os.path.commonpath",
+    "path_separator_policy": "normalize_backslash_to_forward_slash",
+    "unsafe_entry_behavior": "raise UnsafeArchiveEntry",
+    "write_chunk_size_bytes": 1048576
+  },
+  "parent_genome_sha256": null,
+  "provider_response_sha256": "4e197a0e1d26e2465184c1c62039924dd95adf80300e419d202f6b1c058fc85d",
+  "rejected_methods": [
+    "string_prefix_only_validation",
+    "blind_extractall",
+    "silently_rewrite_unsafe_member_names",
+    "post_extraction_cleanup"
+  ],
+  "research_receipt_sha256": null,
+  "run_id": "issue-116-adaptive-canary-rerun-20260726-g1",
+  "schema": "battle.adaptive_team_genome.v1",
+  "selected_methods": [
+    "canonical_destination_resolution",
+    "per_member_path_normalization",
+    "reject_absolute_paths",
+    "reject_dotdot_traversal",
+    "reject_windows_drive_unc_paths",
+    "reject_nul_bytes",
+    "reject_zip_symlinks",
+    "commonpath_containment_check",
+    "streamed_safe_write"
+  ],
+  "team": "blue"
+}

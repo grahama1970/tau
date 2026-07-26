@@ -1,0 +1,88 @@
+{
+  "active_hypotheses": [
+    "Change the parent strategy in response to the Judge outcome."
+  ],
+  "battle_id": "battle-004",
+  "claims": {
+    "does_not_prove": [
+      "The child used the packet."
+    ],
+    "proves": [
+      "Battle derived a child packet from parent artifacts and Judge evidence."
+    ]
+  },
+  "failed_or_partial_attempts": [
+    {
+      "compile_status": "PASS",
+      "execution_elapsed_seconds": "UNKNOWN",
+      "exploit_blocked_after_patch": true,
+      "exploit_confirmed_before_patch": true,
+      "functionality_preserved": true,
+      "provider_attempt_count": 1,
+      "repair_attempt_count": 0,
+      "review_status": "PASS",
+      "runtime_status": "PASS",
+      "target_contact": "UNKNOWN"
+    }
+  ],
+  "generation": 2,
+  "observations": [
+    {
+      "compile_status": "PASS",
+      "execution_elapsed_seconds": "UNKNOWN",
+      "exploit_blocked_after_patch": true,
+      "exploit_confirmed_before_patch": true,
+      "functionality_preserved": true,
+      "provider_attempt_count": 1,
+      "repair_attempt_count": 0,
+      "review_status": "PASS",
+      "runtime_status": "PASS",
+      "target_contact": "UNKNOWN"
+    }
+  ],
+  "packet_id": "battle-004-blue-generation-2-knowledge",
+  "parent_artifact_sha256": "cf233b3b52909acacb92ca69b2d31fc7c438650840c62f72884c0d2ffd946822",
+  "parent_semantic_genome_sha256": "4cb5874d7d8a7a72dfaedf864087d71981851407016915cf430d7208733a82d2",
+  "receipt_id": "issue-116-adaptive-canary-final-20260726-blue-knowledge-packet",
+  "research_questions": [
+    "What public technique or hardening variation addresses the observed Judge outcome?"
+  ],
+  "run_id": "issue-116-adaptive-canary-final-20260726",
+  "schema": "battle.adaptive_team_knowledge_packet.v1",
+  "source_receipts": [
+    {
+      "kind": "parent_spawn_request",
+      "sha256": "b834dad0a7109c7013e65d95cf96852b59f3a4e89f23b9d666f16a2c3e73ddfa"
+    },
+    {
+      "kind": "spawn_policy",
+      "sha256": "4fbf707074dcc1bd936c8b1b7ce58fb0aac97ccf2e8db759832f30e81cdf9a96"
+    },
+    {
+      "kind": "generation_observation",
+      "sha256": "dd7e3ab80096326f8c8a253554f387b8cfb1b11db964ca09cf365c82ecb451f4"
+    },
+    {
+      "kind": "fitness_vector",
+      "sha256": "11789cb5b8582beeb6139e87f3900b640c7de16fc43a27e47e2315e95f6ecef3"
+    },
+    {
+      "kind": "parent_genome",
+      "sha256": "2fb6d6cb5a97dbf9770ddd11c9b681a301d9375933d20a0efef5cd3728e4ec97"
+    },
+    {
+      "kind": "pipeline_handoff",
+      "sha256": "a2099696dd363ffb0bb7c2d83b88c0d914408f138720107fac19a9e511f741fc"
+    },
+    {
+      "kind": "judge_receipt",
+      "sha256": "b808b57647ca7fc0c314ad24667a32edc2073a704436386cc9eeaa5df59e17d5"
+    }
+  ],
+  "status": "PASS",
+  "target_constraints": [
+    "Use only Arena team-public artifacts.",
+    "Do not claim outcomes; Judge decides."
+  ],
+  "team": "blue"
+}

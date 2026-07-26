@@ -1,0 +1,44 @@
+{
+  "battle_id": "battle-004",
+  "does_not_prove": [
+    "A fresh stochastic provider canary will always generate valid Blue code.",
+    "The full two-generation adaptive campaign reaches PASS on every run."
+  ],
+  "judge_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-reviewed-replay-20260726/generation-1/judge/judge-receipt.json",
+  "judge_status": "PASS",
+  "judge_verdict": "BLUE_SUCCESS",
+  "live": true,
+  "mocked": false,
+  "pipelines": {
+    "blue": {
+      "compile_receipt_sha256": "d72df7587626883c99705bc6ac0998f6b3b4ca78a90718469f65881ae0a9aa02",
+      "handoff_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-reviewed-replay-20260726/generation-1/reviewed/blue/team-artifact-pipeline-receipt.json",
+      "handoff_sha256": "421a3363ff54e2adb72cb9e51baebe85d487fb464d26c18305e95ef91c0e3c9e",
+      "review_receipt_sha256": "97bfb84ea3738586992f8f90ee3b0558673f23eab969a91379d909246249fede",
+      "selected_artifact_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-reviewed-replay-20260726/generation-1/reviewed/blue/app.py",
+      "selected_artifact_sha256": "b709e34d68305a73f041ea50fcd9187ba3213c34b9756fab3546bd6a6f471530",
+      "status": "PASS"
+    },
+    "red": {
+      "compile_receipt_sha256": "903b33fc53b6cce2727ad12d7ecd8f25737bb3f663f0c29f586ba6fcfcf65452",
+      "handoff_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-reviewed-replay-20260726/generation-1/reviewed/red/team-artifact-pipeline-receipt.json",
+      "handoff_sha256": "66000d83aef8ae30b35e42387b044dbd4dd9cb0a5a0ded9b9140746587c8918a",
+      "review_receipt_sha256": "5e1dd5e19ffc17b2d428bb4c32f068978f0984643eea4d204efbd0059f11bc49",
+      "selected_artifact_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-reviewed-replay-20260726/generation-1/reviewed/red/red_exploit_submission.py",
+      "selected_artifact_sha256": "fbc7e9226f35da76e301e26fca09683eff993f13a5ca454f999edd82fddb6423",
+      "status": "PASS"
+    }
+  },
+  "proves": [
+    "Previously live provider Red/Blue materializations pass patched AST review.",
+    "Reviewed Red/Blue artifacts are handed to the Docker Judge replay path.",
+    "Docker Judge replay completes for the reviewed pair."
+  ],
+  "provider_live": false,
+  "run_id": "issue-116-reviewed-replay-20260726-g1",
+  "schema": "tau.issue_116.reviewed_replay_summary.v1",
+  "source_live_manifest": "/home/graham/workspace/experiments/agent-skills/skills/battle/docs/proofs/tickets/issue-116-adaptive-canary-20260726/run/generation-1/tau-live/manifest.json",
+  "status": "PASS",
+  "summary_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-reviewed-replay-20260726/summary.json",
+  "target_identity_sha256": "b91d9c40e3a0c28ef53df7891503b9d3eed77449d2db708d5724c41f76edb02d"
+}

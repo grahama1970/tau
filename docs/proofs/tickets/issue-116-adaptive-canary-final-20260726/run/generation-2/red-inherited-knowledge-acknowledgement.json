@@ -1,0 +1,24 @@
+{
+  "artifact_changed": true,
+  "child_artifact_sha256": "61068346a07305c82dd00c507ca4460fc15d07a966d89c616619a07e1c37c400",
+  "claims": {
+    "does_not_prove": [
+      "The child improved."
+    ],
+    "proves": [
+      "The provider response cited inherited evidence and external research, then materialized a changed artifact."
+    ]
+  },
+  "external_research_cited_in_provider_response": true,
+  "external_research_receipt_sha256": "7af941f252d21e4ff1adc3fa3c42dd2f7aa8e3621c57d46ae4524de6c2bb4f5e",
+  "first_plan_action_declared": true,
+  "inherited_genome_cited": true,
+  "inherited_observation_cited": true,
+  "packet_cited_in_provider_response": true,
+  "packet_id": "battle-004-red-generation-2-knowledge",
+  "parent_artifact_sha256": "ba2d8620c11b0513a5f94a6c641455753931a66390bf72ccb75320ca4120c97d",
+  "provider_response_sha256": "51b2a0a703a0917b859799f0c407560fffe12eda2f2326254f26a3f5bf111fdd",
+  "schema": "battle.inherited_knowledge_acknowledgement.v1",
+  "status": "PASS",
+  "team": "red"
+}

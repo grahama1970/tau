@@ -1,0 +1,29 @@
+{
+  "method": "brave-search",
+  "query": "What mutated variants of the blocked exploit could still reach the vulnerable behavior under the current patch?",
+  "retrieved_at": "2026-07-26T12:45:39Z",
+  "schema": "tau.external_research_receipt.v1",
+  "sources": [
+    {
+      "title": "July 2026 Patch Tuesday: Updates and Analysis | CrowdStrike",
+      "url": "https://www.crowdstrike.com/en-us/blog/patch-tuesday-analysis-july-2026/"
+    },
+    {
+      "title": "Researcher Drops New Windows Zero-Day PoC Hours After Microsoft Patch Tuesday",
+      "url": "https://thehackernews.com/2026/07/researcher-drops-new-windows-zero-day.html"
+    },
+    {
+      "title": "Microsoft Patches Record 622 Flaws, Including Two Zero-Days Under Active Attack",
+      "url": "https://thehackernews.com/2026/07/microsoft-patches-record-622-flaws.html"
+    },
+    {
+      "title": "Zero Day Initiative \u2014 The June 2026 Security Update Review",
+      "url": "https://www.thezdi.com/blog/2026/6/9/the-june-2026-security-update-review"
+    },
+    {
+      "title": "Microsoft Patches Active Defender Zero Day Vulnerabilities",
+      "url": "https://sqmagazine.co.uk/microsoft-defender-active-zero-day-vulnerabilities/"
+    }
+  ],
+  "summary": "Brave Search returned 5 source(s) for review."
+}

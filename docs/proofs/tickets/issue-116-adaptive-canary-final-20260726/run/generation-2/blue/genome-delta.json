@@ -1,0 +1,106 @@
+{
+  "added_methods": [
+    "preserve_import_zip_callable_and_return_written_file_paths",
+    "prevalidate_all_zip_members_before_extraction",
+    "reject_absolute_paths",
+    "reject_backslash_and_nul_member_names",
+    "reject_drive_qualified_paths",
+    "reject_parent_directory_components",
+    "resolve_destination_and_candidate_then_commonpath_check"
+  ],
+  "battle_id": "battle-004",
+  "canonicalization_policy_id": "battle-semantic-genome-canonicalization-v1",
+  "canonicalization_policy_sha256": "004a65ba6854305c85cae8b8180d70b910a4d811cda9410bf3ea742ef1e69e32",
+  "child_genome_sha256": "29bbe4757b751dde29cc64687460346297d854ab62ec87a517ecd2f031b08b73",
+  "child_semantic_sha256": "7ad9b14977b95f3fb5757b1322392a48f0978d132745659f47cba906ff772509",
+  "claims": {
+    "does_not_prove": [
+      "The semantic change improved fitness or exploit success."
+    ],
+    "proves": [
+      "The child provider genome differs semantically from its parent."
+    ]
+  },
+  "delta_id": "issue-116-adaptive-canary-final-20260726-blue-g1-g2-delta",
+  "expected_observation": {
+    "changed": true,
+    "child_sha256": "78a0fdd3fd171aaea41b29178aa1698f281041a2165ed4d56c9f22cc227847a0",
+    "parent_sha256": "dfe36f66ecea3d55e2bfe1ac4813f660c2e67bff6b77891468ebf217d9fe3e13"
+  },
+  "from_generation": 1,
+  "mutation_origin": {
+    "changed": true,
+    "child": "Changed parent strategy using inherited Judge observation that the prior patch blocked the exploit while preserving functionality; added stricter cross-platform member-name rejection and all-entry prevalidation from the public target context.",
+    "parent": "public target app.py showed direct dest/name writes from ZipFile.namelist; hardened the same import_zip surface against archive path traversal."
+  },
+  "newly_rejected_methods": [
+    "allow_partial_extraction_before_detecting_unsafe_member",
+    "sanitize_by_basename_only",
+    "silently_skip_unsafe_members",
+    "string_prefix_check_without_path_resolution"
+  ],
+  "no_longer_rejected_methods": [
+    "allow_symlink_materialization",
+    "silently_sanitize_to_basename",
+    "string_prefix_only_check"
+  ],
+  "nonempty_semantic_delta": true,
+  "parameter_changes": [
+    {
+      "child": "create directories but do not include them in returned written file list",
+      "name": "directory_entries",
+      "parent": null
+    },
+    {
+      "child": null,
+      "name": "max_copy_chunk_bytes",
+      "parent": 1048576
+    },
+    {
+      "child": null,
+      "name": "on_unsafe_member",
+      "parent": "raise UnsafeArchivePath"
+    },
+    {
+      "child": "zip POSIX names with platform-safe rejection of alternate separators",
+      "name": "path_semantics",
+      "parent": null
+    },
+    {
+      "child": null,
+      "name": "preserve_relative_paths",
+      "parent": true
+    },
+    {
+      "child": null,
+      "name": "return_written_files_only",
+      "parent": true
+    },
+    {
+      "child": "raise ValueError",
+      "name": "unsafe_path_action",
+      "parent": null
+    },
+    {
+      "child": "validate full archive then write",
+      "name": "write_order",
+      "parent": null
+    }
+  ],
+  "parent_genome_sha256": "2fb6d6cb5a97dbf9770ddd11c9b681a301d9375933d20a0efef5cd3728e4ec97",
+  "parent_semantic_sha256": "4cb5874d7d8a7a72dfaedf864087d71981851407016915cf430d7208733a82d2",
+  "removed_methods": [
+    "canonical_path_containment_check",
+    "reject_absolute_drive_unc_paths",
+    "reject_dotdot_components",
+    "reject_zip_symlink_entries",
+    "stream_copy_after_validation"
+  ],
+  "retained_methods": [],
+  "run_id": "issue-116-adaptive-canary-final-20260726",
+  "schema": "battle.semantic_genome_delta.v1",
+  "semantic_change_count": 29,
+  "status": "PASS",
+  "team": "blue",
+  "to_generation": 2
+}

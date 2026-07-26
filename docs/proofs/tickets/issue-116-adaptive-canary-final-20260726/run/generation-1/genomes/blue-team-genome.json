@@ -1,0 +1,33 @@
+{
+  "artifact_role": "blue_patch",
+  "battle_id": "battle-004",
+  "expected_observation": "Legitimate relative zip entries extract under the destination, while traversal entries such as ../file, absolute paths, drive paths, UNC paths, and symlinks are rejected before writing outside the workspace.",
+  "generation": 1,
+  "knowledge_packet_id": null,
+  "mutation_origin": "public target app.py showed direct dest/name writes from ZipFile.namelist; hardened the same import_zip surface against archive path traversal.",
+  "parameters": {
+    "max_copy_chunk_bytes": 1048576,
+    "on_unsafe_member": "raise UnsafeArchivePath",
+    "preserve_relative_paths": true,
+    "return_written_files_only": true
+  },
+  "parent_genome_sha256": null,
+  "provider_response_sha256": "1b6a1169d5c8393e35728a27ddcd3dd5e426bb0236d898d9b52b4ee8299fd217",
+  "rejected_methods": [
+    "blind_extractall",
+    "string_prefix_only_check",
+    "silently_sanitize_to_basename",
+    "allow_symlink_materialization"
+  ],
+  "research_receipt_sha256": null,
+  "run_id": "issue-116-adaptive-canary-final-20260726-g1",
+  "schema": "battle.adaptive_team_genome.v1",
+  "selected_methods": [
+    "canonical_path_containment_check",
+    "reject_absolute_drive_unc_paths",
+    "reject_dotdot_components",
+    "reject_zip_symlink_entries",
+    "stream_copy_after_validation"
+  ],
+  "team": "blue"
+}

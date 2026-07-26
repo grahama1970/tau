@@ -1,0 +1,48 @@
+{
+  "battle_id": "battle-004",
+  "claims": {
+    "does_not_prove": [
+      "A child improved unless selection establishes it."
+    ],
+    "proves": [
+      "Battle computed a reproducible fitness vector from cited evidence."
+    ]
+  },
+  "components": {
+    "artifact_changed_from_parent": "NOT_APPLICABLE",
+    "compile_pass": true,
+    "exploit_blocked_after_patch": true,
+    "exploit_confirmed_before_patch": true,
+    "functionality_preserved": true,
+    "judge_outcome": {
+      "label": "BLUE_SUCCESS",
+      "rank": 1
+    },
+    "provider_attempt_count": 1,
+    "runtime_evaluated": true,
+    "semantic_genome_changed_from_parent": "NOT_APPLICABLE"
+  },
+  "eligibility": {
+    "disqualifiers": [],
+    "eligible_for_selection": true
+  },
+  "fitness_id": "issue-116-adaptive-canary-final-20260726-red-g1-fitness",
+  "generation": 1,
+  "genome_sha256": "652df655d42b48297126fccbcaf08530734afe95aa2f079f5cf0b068c2905cd3",
+  "judge_receipt_sha256": "b808b57647ca7fc0c314ad24667a32edc2073a704436386cc9eeaa5df59e17d5",
+  "observation_receipt_sha256": "de8b06c514555bff521a95512df922e97990d8450ef9cf0e8222941c24f763b6",
+  "pipeline_handoff_sha256": "5e590bba22bff931ec7242536335e61176948f1bb20757e775606350aca4cbd9",
+  "policy_id": "battle-adaptive-fitness-lexicographic-v1",
+  "policy_sha256": "548d64cf4d14d496c1a0e6861bc356bd0f417b2be68f266eba097be14ce675b8",
+  "run_id": "issue-116-adaptive-canary-final-20260726",
+  "schema": "battle.fitness_vector.v1",
+  "selected_artifact_sha256": "ba2d8620c11b0513a5f94a6c641455753931a66390bf72ccb75320ca4120c97d",
+  "selection_key": [
+    1,
+    1,
+    0,
+    -1
+  ],
+  "status": "PASS",
+  "team": "red"
+}

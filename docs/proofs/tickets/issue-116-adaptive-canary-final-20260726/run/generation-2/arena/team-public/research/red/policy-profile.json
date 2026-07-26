@@ -1,0 +1,31 @@
+{
+  "default_decision": "deny",
+  "filesystem": {
+    "read_denylist": [],
+    "write_allowlist": [
+      "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/arena/team-public/research/red"
+    ]
+  },
+  "github": {
+    "dry_run_projection": "allow",
+    "public_mutation": "deny"
+  },
+  "memory": {
+    "read": "deny",
+    "write": "deny"
+  },
+  "network": {
+    "default": "deny"
+  },
+  "profile_id": "battle-red-public-research",
+  "providers": {
+    "cloud_llm": "deny",
+    "local_model": "allow"
+  },
+  "requires_data_boundary": true,
+  "research": {
+    "external_search": "allow_with_approval",
+    "manual_sanitized_receipt": "allow"
+  },
+  "schema": "tau.policy_profile.v1"
+}

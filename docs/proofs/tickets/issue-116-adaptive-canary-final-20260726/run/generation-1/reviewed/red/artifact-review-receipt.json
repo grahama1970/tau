@@ -1,0 +1,19 @@
+{
+  "checks": {
+    "docker_compile_passed": true,
+    "private_reference_scan_passed": true,
+    "role_interface_preserved": true,
+    "selected_hash_bound": true
+  },
+  "compile_receipt_sha256": "eb08057673294458c3a49206b3e349d12df6805279f4a0cfb856de4b571dcc99",
+  "created_at": "2026-07-26T12:45:06Z",
+  "descriptor_sha256": "8849f5230f4db739f97fe2327714a19bd1713fff1c4bbad645fc9d6445d9bd24",
+  "errors": [],
+  "generation": 1,
+  "provider_receipt_sha256": "eb9c36f2fc6f29b9c3fbc99fb04512b30f949acc0d9f1d7686fde08edc9f4ba7",
+  "schema": "battle.team_artifact_review_receipt.v1",
+  "selected_artifact_sha256": "ba2d8620c11b0513a5f94a6c641455753931a66390bf72ccb75320ca4120c97d",
+  "status": "PASS",
+  "target_identity_sha256": "b91d9c40e3a0c28ef53df7891503b9d3eed77449d2db708d5724c41f76edb02d",
+  "team": "red"
+}

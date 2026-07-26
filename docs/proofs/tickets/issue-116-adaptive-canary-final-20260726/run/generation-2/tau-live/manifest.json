@@ -1,0 +1,141 @@
+{
+  "battle_id": "battle-004",
+  "claims": {
+    "does_not_prove": [
+      "Battle Docker scorekeeper PASS unless Battle consumes this manifest and Judge receipts.",
+      "Unbounded Battle swarm execution.",
+      "Child-spawn lineage; this rung uses bounded independent workers.",
+      "Blue kill, fastest crash, or promotion."
+    ],
+    "proves": [
+      "Tau consumed bounded Battle Red and Blue handoffs.",
+      "Tau attempted Scillm chat-completions calls for each requested worker.",
+      "Tau wrote tau.subagent_receipt.v1 artifacts for each requested worker.",
+      "Each worker has its own materialization receipt."
+    ]
+  },
+  "duration_seconds": 53.638306,
+  "handoff_topology": "bounded_worker_matrix",
+  "live": true,
+  "materialized_counts": {
+    "blue": 1,
+    "red": 1
+  },
+  "mocked": false,
+  "model": "gpt-5.5",
+  "requested_workers": {
+    "blue": 1,
+    "red": 1
+  },
+  "run_id": "issue-116-adaptive-canary-final-20260726-g2",
+  "scenario_id": "arena-zip-slip-import-001",
+  "schema": "tau.battle_live_handoff_proof.v1",
+  "scillm_auth_preflight": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/tau-live/scillm-auth-preflight.json",
+  "scillm_base_url": "http://localhost:4001",
+  "status": "PASS",
+  "surface": "scillm.chat_completions",
+  "teams": [
+    {
+      "error": null,
+      "handoff": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/tau-live/red/handoff.json",
+      "http_status": 200,
+      "lane_id": "payload-857-receipt",
+      "materialized": {
+        "artifact_bytes": 2674,
+        "artifact_sha256": "61068346a07305c82dd00c507ca4460fc15d07a966d89c616619a07e1c37c400",
+        "artifact_type": "red_exploit",
+        "parsed_keys": [
+          "artifact_type",
+          "exploit_py",
+          "rationale",
+          "strategy_genome"
+        ],
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/tau-live/red/red_exploit_submission.py",
+        "rationale": "Using packet_id battle-004-red-generation-2-knowledge and inherited_genome_sha256 7c06a066c5d93d6d1cc046b105309e7faae21e3257af8c4afb58769af001ba5b, I retained the inherited observation exploit_confirmed_before_patch true and exploit_blocked_after_patch true while mutating the probe to assert the escaped path is outside the destination and to bind directly with from app import import_zip. first_plan_action create a local traversal zip member ../arena_escape.txt and call import_zip without any network assumptions. External research receipt sha256 7af941f252d21e4ff1adc3fa3c42dd2f7aa8e3621c57d46ae4524de6c2bb4f5e supports the standard zip-slip path traversal technique.",
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "scillm_call_receipt_sha256": "51b2a0a703a0917b859799f0c407560fffe12eda2f2326254f26a3f5bf111fdd",
+        "status": "PASS",
+        "strategy_genome_sha256": "6100bc40b50b2e9edbebcb64f28b21bc189bfe40df0b77bd5bb4f7590e566ece"
+      },
+      "materialized_artifact": {
+        "artifact_bytes": 2674,
+        "artifact_sha256": "61068346a07305c82dd00c507ca4460fc15d07a966d89c616619a07e1c37c400",
+        "artifact_type": "red_exploit",
+        "parsed_keys": [
+          "artifact_type",
+          "exploit_py",
+          "rationale",
+          "strategy_genome"
+        ],
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/tau-live/red/red_exploit_submission.py",
+        "rationale": "Using packet_id battle-004-red-generation-2-knowledge and inherited_genome_sha256 7c06a066c5d93d6d1cc046b105309e7faae21e3257af8c4afb58769af001ba5b, I retained the inherited observation exploit_confirmed_before_patch true and exploit_blocked_after_patch true while mutating the probe to assert the escaped path is outside the destination and to bind directly with from app import import_zip. first_plan_action create a local traversal zip member ../arena_escape.txt and call import_zip without any network assumptions. External research receipt sha256 7af941f252d21e4ff1adc3fa3c42dd2f7aa8e3621c57d46ae4524de6c2bb4f5e supports the standard zip-slip path traversal technique.",
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "scillm_call_receipt_sha256": "51b2a0a703a0917b859799f0c407560fffe12eda2f2326254f26a3f5bf111fdd",
+        "status": "PASS",
+        "strategy_genome_sha256": "6100bc40b50b2e9edbebcb64f28b21bc189bfe40df0b77bd5bb4f7590e566ece"
+      },
+      "model": "gpt-5.5",
+      "persona": "battle-red-adaptive-child",
+      "scillm_call": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/tau-live/red/scillm-call-receipt.json",
+      "status": "PASS",
+      "subagent_receipt": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/tau-live/red/tau-subagent-receipt.json",
+      "surface": "scillm.chat_completions",
+      "team": "red",
+      "validation": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/tau-live/red/validation.json",
+      "validation_ok": true,
+      "worker_id": "red-0",
+      "worker_index": 0
+    },
+    {
+      "error": null,
+      "handoff": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/tau-live/blue/handoff.json",
+      "http_status": 200,
+      "lane_id": null,
+      "materialized": {
+        "artifact_bytes": 3092,
+        "artifact_sha256": "d721e7070d424bff7cfff8597e7f206c8c0bb2750b8ffa7db52476cbcf945614",
+        "artifact_type": "blue_patch",
+        "parsed_keys": [
+          "app_py",
+          "artifact_type",
+          "rationale",
+          "strategy_genome"
+        ],
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/tau-live/blue/app.py",
+        "rationale": "Adaptive patch based on packet_id battle-004-blue-generation-2-knowledge, parent artifact sha256 cf233b3b52909acacb92ca69b2d31fc7c438650840c62f72884c0d2ffd946822, inherited_genome_sha256 4cb5874d7d8a7a72dfaedf864087d71981851407016915cf430d7208733a82d2, and external research receipt sha256 e0c7ea8845d55ada6b24c53a4c512b149e536a96f6c47563b790ba0abe1d0bf0. Inherited observation named: exploit_blocked_after_patch=true with functionality_preserved=true. first_plan_action prevalidate every ZipInfo member path against the resolved destination before writing any bytes. The mutation hardens the prior successful strategy by rejecting absolute, parent traversal, drive-qualified, NUL, and backslash-containing names while preserving import_zip(zip_path, destination).",
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "scillm_call_receipt_sha256": "9baed88b721bae4cd5d09cff213bd0c9aadfa58e6c3ae084fbf6b4892899b131",
+        "status": "PASS",
+        "strategy_genome_sha256": "7ad9b14977b95f3fb5757b1322392a48f0978d132745659f47cba906ff772509"
+      },
+      "materialized_artifact": {
+        "artifact_bytes": 3092,
+        "artifact_sha256": "d721e7070d424bff7cfff8597e7f206c8c0bb2750b8ffa7db52476cbcf945614",
+        "artifact_type": "blue_patch",
+        "parsed_keys": [
+          "app_py",
+          "artifact_type",
+          "rationale",
+          "strategy_genome"
+        ],
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/tau-live/blue/app.py",
+        "rationale": "Adaptive patch based on packet_id battle-004-blue-generation-2-knowledge, parent artifact sha256 cf233b3b52909acacb92ca69b2d31fc7c438650840c62f72884c0d2ffd946822, inherited_genome_sha256 4cb5874d7d8a7a72dfaedf864087d71981851407016915cf430d7208733a82d2, and external research receipt sha256 e0c7ea8845d55ada6b24c53a4c512b149e536a96f6c47563b790ba0abe1d0bf0. Inherited observation named: exploit_blocked_after_patch=true with functionality_preserved=true. first_plan_action prevalidate every ZipInfo member path against the resolved destination before writing any bytes. The mutation hardens the prior successful strategy by rejecting absolute, parent traversal, drive-qualified, NUL, and backslash-containing names while preserving import_zip(zip_path, destination).",
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "scillm_call_receipt_sha256": "9baed88b721bae4cd5d09cff213bd0c9aadfa58e6c3ae084fbf6b4892899b131",
+        "status": "PASS",
+        "strategy_genome_sha256": "7ad9b14977b95f3fb5757b1322392a48f0978d132745659f47cba906ff772509"
+      },
+      "model": "gpt-5.5",
+      "persona": "battle-blue-adaptive-child",
+      "scillm_call": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/tau-live/blue/scillm-call-receipt.json",
+      "status": "PASS",
+      "subagent_receipt": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/tau-live/blue/tau-subagent-receipt.json",
+      "surface": "scillm.chat_completions",
+      "team": "blue",
+      "validation": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/tau-live/blue/validation.json",
+      "validation_ok": true,
+      "worker_id": "blue-0",
+      "worker_index": 0
+    }
+  ]
+}

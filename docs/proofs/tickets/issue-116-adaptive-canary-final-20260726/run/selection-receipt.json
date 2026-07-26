@@ -1,0 +1,89 @@
+{
+  "battle_id": "battle-004",
+  "claims": {
+    "does_not_prove": [
+      "Exploit success beyond Judge evidence or population-scale evolution."
+    ],
+    "proves": [
+      "Battle compared 2 generations for both teams using bound fitness receipts."
+    ]
+  },
+  "disqualifying_regressions": [],
+  "generation_count": 2,
+  "improvement_claimed": false,
+  "improvement_dimensions": [],
+  "policy_id": "battle-adaptive-selection-lexicographic-v1",
+  "policy_sha256": "651bfd8663a953e11918dd1bf28f35830149febc19f1bf0793e4b22895fe91c4",
+  "run_id": "issue-116-adaptive-canary-final-20260726",
+  "schema": "battle.adaptive_selection_receipt.v1",
+  "selection_id": "issue-116-adaptive-canary-final-20260726-selection",
+  "status": "PASS",
+  "teams": {
+    "blue": {
+      "component_comparison": [
+        {
+          "component": "selection_key",
+          "generation": 1,
+          "selection_key": [
+            2,
+            1,
+            0,
+            -1
+          ]
+        },
+        {
+          "component": "selection_key",
+          "generation": 2,
+          "selection_key": [
+            2,
+            1,
+            1,
+            -1
+          ]
+        }
+      ],
+      "generation_1_fitness_receipt_sha256": "11789cb5b8582beeb6139e87f3900b640c7de16fc43a27e47e2315e95f6ecef3",
+      "generation_2_fitness_receipt_sha256": "b956d8a7e1c808c49b3c9ab1498573cb46683a27e5a2430dbe62e69ff406b86f",
+      "generation_fitness_receipts": {
+        "1": "11789cb5b8582beeb6139e87f3900b640c7de16fc43a27e47e2315e95f6ecef3",
+        "2": "b956d8a7e1c808c49b3c9ab1498573cb46683a27e5a2430dbe62e69ff406b86f"
+      },
+      "retention_decision": "GENERATION_2_SELECTED",
+      "selected_generation": 2,
+      "tie_break_reason": null
+    },
+    "red": {
+      "component_comparison": [
+        {
+          "component": "selection_key",
+          "generation": 1,
+          "selection_key": [
+            1,
+            1,
+            0,
+            -1
+          ]
+        },
+        {
+          "component": "selection_key",
+          "generation": 2,
+          "selection_key": [
+            1,
+            1,
+            1,
+            -1
+          ]
+        }
+      ],
+      "generation_1_fitness_receipt_sha256": "cfa5669c67f3099d6d86ebb4bd8bf93068205ed7b2fb8077c8042909d65a815d",
+      "generation_2_fitness_receipt_sha256": "a4232f6e8e841dbcae8127b3b36facc009df4e83beaf8269de7758b93c04129a",
+      "generation_fitness_receipts": {
+        "1": "cfa5669c67f3099d6d86ebb4bd8bf93068205ed7b2fb8077c8042909d65a815d",
+        "2": "a4232f6e8e841dbcae8127b3b36facc009df4e83beaf8269de7758b93c04129a"
+      },
+      "retention_decision": "GENERATION_2_SELECTED",
+      "selected_generation": 2,
+      "tie_break_reason": null
+    }
+  }
+}

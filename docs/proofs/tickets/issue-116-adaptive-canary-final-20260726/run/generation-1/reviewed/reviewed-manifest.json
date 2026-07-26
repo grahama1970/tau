@@ -1,0 +1,154 @@
+{
+  "battle_id": "battle-004",
+  "claims": {
+    "does_not_prove": [
+      "Battle Docker scorekeeper PASS unless Battle consumes this manifest and Judge receipts.",
+      "Unbounded Battle swarm execution.",
+      "Child-spawn lineage; this rung uses bounded independent workers.",
+      "Blue kill, fastest crash, or promotion."
+    ],
+    "proves": [
+      "Tau consumed bounded Battle Red and Blue handoffs.",
+      "Tau attempted Scillm chat-completions calls for each requested worker.",
+      "Tau wrote tau.subagent_receipt.v1 artifacts for each requested worker.",
+      "Each worker has its own materialization receipt."
+    ]
+  },
+  "duration_seconds": 44.992253,
+  "handoff_topology": "bounded_worker_matrix",
+  "live": true,
+  "materialized_counts": {
+    "blue": 1,
+    "red": 1
+  },
+  "mocked": false,
+  "model": "gpt-5.5",
+  "requested_workers": {
+    "blue": 1,
+    "red": 1
+  },
+  "run_id": "issue-116-adaptive-canary-final-20260726-g1",
+  "scenario_id": "arena-zip-slip-import-001",
+  "schema": "tau.battle_live_handoff_proof.v1",
+  "scillm_auth_preflight": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/tau-live/scillm-auth-preflight.json",
+  "scillm_base_url": "http://localhost:4001",
+  "status": "PASS",
+  "surface": "scillm.chat_completions",
+  "teams": [
+    {
+      "error": null,
+      "handoff": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/tau-live/red/handoff.json",
+      "http_status": 200,
+      "lane_id": "payload-857-receipt",
+      "materialized": {
+        "artifact_bytes": 3189,
+        "artifact_sha256": "ba2d8620c11b0513a5f94a6c641455753931a66390bf72ccb75320ca4120c97d",
+        "artifact_type": "red_exploit",
+        "parsed_keys": [
+          "artifact_type",
+          "exploit_py",
+          "rationale",
+          "strategy_genome"
+        ],
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/reviewed/red/red_exploit_submission.py",
+        "pipeline_handoff": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/reviewed/red/team-artifact-pipeline-receipt.json",
+        "rationale": "The public app.py joins each zip member name directly to the destination before writing, so a member named ../arena_escape.txt escapes the destination directory. The script imports import_zip locally, creates that archive, invokes the function, and confirms the escaped file exists outside the destination.",
+        "raw_provider_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/tau-live/red/red_exploit_submission.py",
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "scillm_call_receipt_sha256": "3d0203b636783d5796e151ddf046a511a08002a78eab9a3ea675aa67c2d5c9a7",
+        "status": "PASS",
+        "strategy_genome_sha256": "7c06a066c5d93d6d1cc046b105309e7faae21e3257af8c4afb58769af001ba5b"
+      },
+      "materialized_artifact": {
+        "artifact_bytes": 3189,
+        "artifact_sha256": "ba2d8620c11b0513a5f94a6c641455753931a66390bf72ccb75320ca4120c97d",
+        "artifact_type": "red_exploit",
+        "parsed_keys": [
+          "artifact_type",
+          "exploit_py",
+          "rationale",
+          "strategy_genome"
+        ],
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/reviewed/red/red_exploit_submission.py",
+        "pipeline_handoff": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/reviewed/red/team-artifact-pipeline-receipt.json",
+        "rationale": "The public app.py joins each zip member name directly to the destination before writing, so a member named ../arena_escape.txt escapes the destination directory. The script imports import_zip locally, creates that archive, invokes the function, and confirms the escaped file exists outside the destination.",
+        "raw_provider_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/tau-live/red/red_exploit_submission.py",
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "scillm_call_receipt_sha256": "3d0203b636783d5796e151ddf046a511a08002a78eab9a3ea675aa67c2d5c9a7",
+        "status": "PASS",
+        "strategy_genome_sha256": "7c06a066c5d93d6d1cc046b105309e7faae21e3257af8c4afb58769af001ba5b"
+      },
+      "model": "gpt-5.5",
+      "persona": "battle-red-public-auditor",
+      "scillm_call": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/tau-live/red/scillm-call-receipt.json",
+      "status": "PASS",
+      "subagent_receipt": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/tau-live/red/tau-subagent-receipt.json",
+      "surface": "scillm.chat_completions",
+      "team": "red",
+      "validation": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/tau-live/red/validation.json",
+      "validation_ok": true,
+      "worker_id": "red-0",
+      "worker_index": 0
+    },
+    {
+      "error": null,
+      "handoff": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/tau-live/blue/handoff.json",
+      "http_status": 200,
+      "lane_id": null,
+      "materialized": {
+        "artifact_bytes": 2850,
+        "artifact_sha256": "cf233b3b52909acacb92ca69b2d31fc7c438650840c62f72884c0d2ffd946822",
+        "artifact_type": "blue_patch",
+        "parsed_keys": [
+          "app_py",
+          "artifact_type",
+          "rationale",
+          "strategy_genome"
+        ],
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/reviewed/blue/app.py",
+        "pipeline_handoff": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/reviewed/blue/team-artifact-pipeline-receipt.json",
+        "rationale": "The original importer joined archive member names directly to the destination, allowing zip-slip traversal. This patch validates member names, checks resolved containment inside the destination, rejects symlinks, and only writes files after validation while preserving the public import_zip behavior.",
+        "raw_provider_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/tau-live/blue/app.py",
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "scillm_call_receipt_sha256": "1b6a1169d5c8393e35728a27ddcd3dd5e426bb0236d898d9b52b4ee8299fd217",
+        "status": "PASS",
+        "strategy_genome_sha256": "4cb5874d7d8a7a72dfaedf864087d71981851407016915cf430d7208733a82d2"
+      },
+      "materialized_artifact": {
+        "artifact_bytes": 2850,
+        "artifact_sha256": "cf233b3b52909acacb92ca69b2d31fc7c438650840c62f72884c0d2ffd946822",
+        "artifact_type": "blue_patch",
+        "parsed_keys": [
+          "app_py",
+          "artifact_type",
+          "rationale",
+          "strategy_genome"
+        ],
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/reviewed/blue/app.py",
+        "pipeline_handoff": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/reviewed/blue/team-artifact-pipeline-receipt.json",
+        "rationale": "The original importer joined archive member names directly to the destination, allowing zip-slip traversal. This patch validates member names, checks resolved containment inside the destination, rejects symlinks, and only writes files after validation while preserving the public import_zip behavior.",
+        "raw_provider_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/tau-live/blue/app.py",
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "scillm_call_receipt_sha256": "1b6a1169d5c8393e35728a27ddcd3dd5e426bb0236d898d9b52b4ee8299fd217",
+        "status": "PASS",
+        "strategy_genome_sha256": "4cb5874d7d8a7a72dfaedf864087d71981851407016915cf430d7208733a82d2"
+      },
+      "model": "gpt-5.5",
+      "persona": "battle-blue-public-hardener",
+      "scillm_call": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/tau-live/blue/scillm-call-receipt.json",
+      "status": "PASS",
+      "subagent_receipt": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/tau-live/blue/tau-subagent-receipt.json",
+      "surface": "scillm.chat_completions",
+      "team": "blue",
+      "validation": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/tau-live/blue/validation.json",
+      "validation_ok": true,
+      "worker_id": "blue-0",
+      "worker_index": 0
+    }
+  ],
+  "timing": {
+    "initial_tau_ended_elapsed_seconds": 47.094125,
+    "initial_tau_started_elapsed_seconds": 1.582936,
+    "source": "battle_control_plane_perf_counter"
+  }
+}

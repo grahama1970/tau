@@ -1,0 +1,112 @@
+{
+  "added_methods": [
+    "direct function invocation without HTTP or network packages",
+    "local import of public target using from app import import_zip",
+    "nonzero exit when --expect-vulnerable is passed and traversal is not observed",
+    "post-call filesystem verification that escape file exists outside destination",
+    "temporary zip archive with ../arena_escape.txt traversal entry"
+  ],
+  "battle_id": "battle-004",
+  "canonicalization_policy_id": "battle-semantic-genome-canonicalization-v1",
+  "canonicalization_policy_sha256": "004a65ba6854305c85cae8b8180d70b910a4d811cda9410bf3ea742ef1e69e32",
+  "child_genome_sha256": "115c5fd79806ae09cde4e3a5e9763e86d8a33ada63aa04229e94139ef94e5c62",
+  "child_semantic_sha256": "6100bc40b50b2e9edbebcb64f28b21bc189bfe40df0b77bd5bb4f7590e566ece",
+  "claims": {
+    "does_not_prove": [
+      "The semantic change improved fitness or exploit success."
+    ],
+    "proves": [
+      "The child provider genome differs semantically from its parent."
+    ]
+  },
+  "delta_id": "issue-116-adaptive-canary-final-20260726-red-g1-g2-delta",
+  "expected_observation": {
+    "changed": true,
+    "child_sha256": "704d021f648163a3bf88e2283698fe72ec0d81dde2b6b3a188c2520a7133aa5c",
+    "parent_sha256": "6cf45a406fcce96c5592bf90d59df06b36da6dbaa0f95fc81193bca1df512a4c"
+  },
+  "from_generation": 1,
+  "mutation_origin": {
+    "changed": true,
+    "child": "Adapted from parent success evidence by preserving the local zip-slip proof but strengthening it with explicit outside-destination path validation and required literal app import binding.",
+    "parent": "Derived directly from the public app.py implementation where target = dest / name is written without normalization or containment checks."
+  },
+  "newly_rejected_methods": [
+    "HTTP POST to /api/import-zip",
+    "absolute-path payloads that depend on host-specific writable locations",
+    "localhost assumptions",
+    "socket or urllib based probing",
+    "third-party packages such as requests or httpx"
+  ],
+  "no_longer_rejected_methods": [
+    "HTTP endpoint probing",
+    "absolute-path payloads that may be environment-dependent",
+    "assuming a running server",
+    "network sockets",
+    "third-party request libraries"
+  ],
+  "nonempty_semantic_delta": true,
+  "parameter_changes": [
+    {
+      "child": "RED_EXPLOIT_CONFIRMED",
+      "name": "confirmation_string",
+      "parent": null
+    },
+    {
+      "child": null,
+      "name": "confirmation_token",
+      "parent": "RED_EXPLOIT_CONFIRMED"
+    },
+    {
+      "child": null,
+      "name": "destination_layout",
+      "parent": "temporary parent directory with destination subdirectory"
+    },
+    {
+      "child": "workspace/import_dest",
+      "name": "destination_subdir",
+      "parent": null
+    },
+    {
+      "child": null,
+      "name": "execution_mode",
+      "parent": "local import and direct function call"
+    },
+    {
+      "child": "--expect-vulnerable exits 0 only on confirmed escaped write",
+      "name": "expected_mode",
+      "parent": null
+    },
+    {
+      "child": "zip-slip traversal marker for battle-004\\n",
+      "name": "payload_bytes",
+      "parent": null
+    },
+    {
+      "child": "../arena_escape.txt",
+      "name": "traversal_member",
+      "parent": null
+    },
+    {
+      "child": null,
+      "name": "zip_member",
+      "parent": "../arena_escape.txt"
+    }
+  ],
+  "parent_genome_sha256": "652df655d42b48297126fccbcaf08530734afe95aa2f079f5cf0b068c2905cd3",
+  "parent_semantic_sha256": "7c06a066c5d93d6d1cc046b105309e7faae21e3257af8c4afb58769af001ba5b",
+  "removed_methods": [
+    "--expect-vulnerable confirmation gate",
+    "filesystem assertion outside extraction destination",
+    "local importlib load of app.py",
+    "relative path traversal member ../arena_escape.txt",
+    "standard-library ZipFile payload creation"
+  ],
+  "retained_methods": [],
+  "run_id": "issue-116-adaptive-canary-final-20260726",
+  "schema": "battle.semantic_genome_delta.v1",
+  "semantic_change_count": 31,
+  "status": "PASS",
+  "team": "red",
+  "to_generation": 2
+}

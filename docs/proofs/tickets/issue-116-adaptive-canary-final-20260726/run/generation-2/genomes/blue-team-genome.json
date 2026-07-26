@@ -1,0 +1,36 @@
+{
+  "artifact_role": "blue_patch",
+  "battle_id": "battle-004",
+  "expected_observation": "Benign relative zip entries extract under the requested destination and traversal attempts such as ../, absolute paths, drive-qualified paths, or backslash-based variants are rejected before any archive bytes are written.",
+  "generation": 2,
+  "knowledge_packet_id": "battle-004-blue-generation-2-knowledge",
+  "mutation_origin": "Changed parent strategy using inherited Judge observation that the prior patch blocked the exploit while preserving functionality; added stricter cross-platform member-name rejection and all-entry prevalidation from the public target context.",
+  "parameters": {
+    "directory_entries": "create directories but do not include them in returned written file list",
+    "path_semantics": "zip POSIX names with platform-safe rejection of alternate separators",
+    "unsafe_path_action": "raise ValueError",
+    "write_order": "validate full archive then write"
+  },
+  "parent_genome_sha256": "2fb6d6cb5a97dbf9770ddd11c9b681a301d9375933d20a0efef5cd3728e4ec97",
+  "provider_response_sha256": "9baed88b721bae4cd5d09cff213bd0c9aadfa58e6c3ae084fbf6b4892899b131",
+  "rejected_methods": [
+    "blind_extractall",
+    "string_prefix_check_without_path_resolution",
+    "sanitize_by_basename_only",
+    "allow_partial_extraction_before_detecting_unsafe_member",
+    "silently_skip_unsafe_members"
+  ],
+  "research_receipt_sha256": "e0c7ea8845d55ada6b24c53a4c512b149e536a96f6c47563b790ba0abe1d0bf0",
+  "run_id": "issue-116-adaptive-canary-final-20260726-g2",
+  "schema": "battle.adaptive_team_genome.v1",
+  "selected_methods": [
+    "prevalidate_all_zip_members_before_extraction",
+    "resolve_destination_and_candidate_then_commonpath_check",
+    "reject_parent_directory_components",
+    "reject_absolute_paths",
+    "reject_drive_qualified_paths",
+    "reject_backslash_and_nul_member_names",
+    "preserve_import_zip_callable_and_return_written_file_paths"
+  ],
+  "team": "blue"
+}

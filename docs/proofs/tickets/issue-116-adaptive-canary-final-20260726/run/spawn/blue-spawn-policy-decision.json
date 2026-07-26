@@ -1,0 +1,49 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "The child improved."
+    ],
+    "proves": [
+      "Battle authorized one bounded child after parent Judge evaluation."
+    ]
+  },
+  "decision": "DENIED_PARENT_DID_NOT_REQUEST_CHILD",
+  "judge_verdict": "BLUE_SUCCESS",
+  "parent_artifact_sha256": "cf233b3b52909acacb92ca69b2d31fc7c438650840c62f72884c0d2ffd946822",
+  "parent_terminal": false,
+  "reason_codes": [
+    "parent_judge_evaluated",
+    "bounded_second_generation_requested",
+    "remaining_budget_available"
+  ],
+  "receipt_id": "issue-116-adaptive-canary-final-20260726-blue-spawn-policy-decision",
+  "schema": "battle.adaptive_spawn_policy_decision.v1",
+  "source_receipts": [
+    {
+      "kind": "parent_spawn_request",
+      "sha256": "1e1917855df7baa0f42bc211e95ae25751d9f94df845216f83dc7f28cea82524"
+    },
+    {
+      "kind": "generation_observation",
+      "sha256": "dd7e3ab80096326f8c8a253554f387b8cfb1b11db964ca09cf365c82ecb451f4"
+    },
+    {
+      "kind": "fitness_vector",
+      "sha256": "11789cb5b8582beeb6139e87f3900b640c7de16fc43a27e47e2315e95f6ecef3"
+    },
+    {
+      "kind": "parent_genome",
+      "sha256": "2fb6d6cb5a97dbf9770ddd11c9b681a301d9375933d20a0efef5cd3728e4ec97"
+    },
+    {
+      "kind": "pipeline_handoff",
+      "sha256": "a2099696dd363ffb0bb7c2d83b88c0d914408f138720107fac19a9e511f741fc"
+    },
+    {
+      "kind": "judge_receipt",
+      "sha256": "b808b57647ca7fc0c314ad24667a32edc2073a704436386cc9eeaa5df59e17d5"
+    }
+  ],
+  "status": "BLOCKED",
+  "team": "blue"
+}

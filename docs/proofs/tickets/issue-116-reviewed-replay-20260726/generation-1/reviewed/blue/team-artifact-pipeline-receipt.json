@@ -1,0 +1,29 @@
+{
+  "allowed_runner": "battle_docker_judge",
+  "artifact_review_receipt_sha256": "97bfb84ea3738586992f8f90ee3b0558673f23eab969a91379d909246249fede",
+  "artifact_role": "blue_patch",
+  "battle_id": "battle-004",
+  "claims": {
+    "does_not_prove": [
+      "The artifact runs.",
+      "Judge verified an outcome."
+    ],
+    "proves": [
+      "Battle bound one provider materialization through Docker compile and deterministic review."
+    ]
+  },
+  "compile_receipt_sha256": "d72df7587626883c99705bc6ac0998f6b3b4ca78a90718469f65881ae0a9aa02",
+  "created_at": "2026-07-26T12:40:11Z",
+  "descriptor_sha256": "7db3c821922340a86325a7114985f395f66cd382a026982f5de8914044b730a1",
+  "generation": 1,
+  "genome_sha256": "c66c23f347ffa8834d6d9add006519c4a0f47265c73942a176c20f457e39569c",
+  "materialization_receipt_sha256": "7aa3e2ab1d66564933e05bccc5a2000c1d2d5e88c16283019d31920eedbc19c9",
+  "provider_receipt_sha256": "cf2053459678e6b22d67c0a898fa7c66514d760176efade22e321f080e8ce623",
+  "run_id": "issue-116-reviewed-replay-20260726-g1",
+  "schema": "battle.team_artifact_pipeline_receipt.v1",
+  "selected_artifact": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-reviewed-replay-20260726/generation-1/reviewed/blue/app.py",
+  "selected_artifact_sha256": "b709e34d68305a73f041ea50fcd9187ba3213c34b9756fab3546bd6a6f471530",
+  "status": "PASS",
+  "target_identity_sha256": "b91d9c40e3a0c28ef53df7891503b9d3eed77449d2db708d5724c41f76edb02d",
+  "team": "blue"
+}

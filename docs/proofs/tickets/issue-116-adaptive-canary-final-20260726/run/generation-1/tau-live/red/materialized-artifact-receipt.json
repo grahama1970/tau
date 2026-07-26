@@ -1,0 +1,17 @@
+{
+  "artifact_bytes": 3189,
+  "artifact_sha256": "ba2d8620c11b0513a5f94a6c641455753931a66390bf72ccb75320ca4120c97d",
+  "artifact_type": "red_exploit",
+  "parsed_keys": [
+    "artifact_type",
+    "exploit_py",
+    "rationale",
+    "strategy_genome"
+  ],
+  "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/tau-live/red/red_exploit_submission.py",
+  "rationale": "The public app.py joins each zip member name directly to the destination before writing, so a member named ../arena_escape.txt escapes the destination directory. The script imports import_zip locally, creates that archive, invokes the function, and confirms the escaped file exists outside the destination.",
+  "schema": "tau.battle_materialized_artifact_receipt.v1",
+  "scillm_call_receipt_sha256": "3d0203b636783d5796e151ddf046a511a08002a78eab9a3ea675aa67c2d5c9a7",
+  "status": "PASS",
+  "strategy_genome_sha256": "7c06a066c5d93d6d1cc046b105309e7faae21e3257af8c4afb58769af001ba5b"
+}

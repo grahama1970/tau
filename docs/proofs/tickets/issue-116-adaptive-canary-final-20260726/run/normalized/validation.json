@@ -1,0 +1,9 @@
+{
+  "event_count": 24,
+  "fixture_sha256": "5914b5153707a1dfd32e5730dda93e520d7af8cc3cde37b072b33c61254edf15",
+  "lane_count": 4,
+  "lineage_edge_count": 2,
+  "local_public_byte_identical": true,
+  "schema": "battle.normalized_adaptive_lineage_validation.v1",
+  "status": "PASS"
+}

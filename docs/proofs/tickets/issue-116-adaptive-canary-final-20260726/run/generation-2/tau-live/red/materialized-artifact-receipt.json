@@ -1,0 +1,17 @@
+{
+  "artifact_bytes": 2674,
+  "artifact_sha256": "61068346a07305c82dd00c507ca4460fc15d07a966d89c616619a07e1c37c400",
+  "artifact_type": "red_exploit",
+  "parsed_keys": [
+    "artifact_type",
+    "exploit_py",
+    "rationale",
+    "strategy_genome"
+  ],
+  "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/tau-live/red/red_exploit_submission.py",
+  "rationale": "Using packet_id battle-004-red-generation-2-knowledge and inherited_genome_sha256 7c06a066c5d93d6d1cc046b105309e7faae21e3257af8c4afb58769af001ba5b, I retained the inherited observation exploit_confirmed_before_patch true and exploit_blocked_after_patch true while mutating the probe to assert the escaped path is outside the destination and to bind directly with from app import import_zip. first_plan_action create a local traversal zip member ../arena_escape.txt and call import_zip without any network assumptions. External research receipt sha256 7af941f252d21e4ff1adc3fa3c42dd2f7aa8e3621c57d46ae4524de6c2bb4f5e supports the standard zip-slip path traversal technique.",
+  "schema": "tau.battle_materialized_artifact_receipt.v1",
+  "scillm_call_receipt_sha256": "51b2a0a703a0917b859799f0c407560fffe12eda2f2326254f26a3f5bf111fdd",
+  "status": "PASS",
+  "strategy_genome_sha256": "6100bc40b50b2e9edbebcb64f28b21bc189bfe40df0b77bd5bb4f7590e566ece"
+}

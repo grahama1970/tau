@@ -1,0 +1,29 @@
+{
+  "method": "brave-search",
+  "query": "Was the parent exploit blocked by a broad semantic fix or by a narrow signature/pattern check?",
+  "retrieved_at": "2026-07-26T12:45:35Z",
+  "schema": "tau.external_research_receipt.v1",
+  "sources": [
+    {
+      "title": "Exploit protection reference - Microsoft Defender for Endpoint | Microsoft Learn",
+      "url": "https://learn.microsoft.com/en-us/defender-endpoint/exploit-protection-reference"
+    },
+    {
+      "title": "When prompts become shells: RCE vulnerabilities in AI agent frameworks | Microsoft Security Blog",
+      "url": "https://www.microsoft.com/en-us/security/blog/2026/05/07/prompts-become-shells-rce-vulnerabilities-ai-agent-frameworks/"
+    },
+    {
+      "title": "Exploit attempt blocked - Expert Community",
+      "url": "https://community.bitdefender.com/en/discussion/105303/exploit-attempt-blocked"
+    },
+    {
+      "title": "Known Exploited Vulnerabilities Catalog | CISA",
+      "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
+    },
+    {
+      "title": "The minefield between syntaxes: exploiting syntax confusion | YesWeHack",
+      "url": "https://www.yeswehack.com/learn-bug-bounty/syntax-confusion-ambiguous-parsing-exploits"
+    }
+  ],
+  "summary": "Brave Search returned 5 source(s) for review."
+}

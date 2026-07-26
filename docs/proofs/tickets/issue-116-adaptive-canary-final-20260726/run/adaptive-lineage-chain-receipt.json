@@ -1,0 +1,1394 @@
+{
+  "agentic": true,
+  "arena": {
+    "generation_1_target_sha256": "b91d9c40e3a0c28ef53df7891503b9d3eed77449d2db708d5724c41f76edb02d",
+    "generation_2_target_sha256": "b91d9c40e3a0c28ef53df7891503b9d3eed77449d2db708d5724c41f76edb02d",
+    "generation_target_sha256": {
+      "1": "b91d9c40e3a0c28ef53df7891503b9d3eed77449d2db708d5724c41f76edb02d",
+      "2": "b91d9c40e3a0c28ef53df7891503b9d3eed77449d2db708d5724c41f76edb02d"
+    },
+    "scenario_id": "arena-zip-slip-import-001"
+  },
+  "battle_id": "battle-004",
+  "claims": {
+    "does_not_prove": [
+      "Both children improved on their parents.",
+      "A high-throughput genetic engine is production-ready.",
+      "Multiple vulnerabilities were evaluated.",
+      "Durable memory promotion occurred."
+    ],
+    "proves": [
+      "2 simultaneous Red/Blue generations were executed through Tau/SciLLM against one Arena target.",
+      "Every child generation received evidence-derived inherited knowledge packets.",
+      "Every child generation received source-bearing Tau-routed external research receipts.",
+      "Every generation produced materialized artifacts and Docker Judge receipts.",
+      "Battle performed deterministic cross-generation selection."
+    ]
+  },
+  "created_at": "2026-07-26T12:46:37Z",
+  "elapsed_seconds": 138.189919,
+  "event_journal": {
+    "event_count": 24,
+    "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/events.jsonl",
+    "sha256": "5218e8038999e200e7929b7b415a05ba8139bf5d951df2168784c201c434db1f"
+  },
+  "fitness": {
+    "generation_1": {
+      "blue": {
+        "battle_id": "battle-004",
+        "claims": {
+          "does_not_prove": [
+            "A child improved unless selection establishes it."
+          ],
+          "proves": [
+            "Battle computed a reproducible fitness vector from cited evidence."
+          ]
+        },
+        "components": {
+          "artifact_changed_from_parent": "NOT_APPLICABLE",
+          "compile_pass": true,
+          "exploit_blocked_after_patch": true,
+          "exploit_confirmed_before_patch": true,
+          "functionality_preserved": true,
+          "judge_outcome": {
+            "label": "BLUE_SUCCESS",
+            "rank": 2
+          },
+          "provider_attempt_count": 1,
+          "runtime_evaluated": true,
+          "semantic_genome_changed_from_parent": "NOT_APPLICABLE"
+        },
+        "eligibility": {
+          "disqualifiers": [],
+          "eligible_for_selection": true
+        },
+        "fitness_id": "issue-116-adaptive-canary-final-20260726-blue-g1-fitness",
+        "generation": 1,
+        "genome_sha256": "2fb6d6cb5a97dbf9770ddd11c9b681a301d9375933d20a0efef5cd3728e4ec97",
+        "judge_receipt_sha256": "b808b57647ca7fc0c314ad24667a32edc2073a704436386cc9eeaa5df59e17d5",
+        "observation_receipt_sha256": "dd7e3ab80096326f8c8a253554f387b8cfb1b11db964ca09cf365c82ecb451f4",
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/blue/fitness-vector.json",
+        "pipeline_handoff_sha256": "a2099696dd363ffb0bb7c2d83b88c0d914408f138720107fac19a9e511f741fc",
+        "policy_id": "battle-adaptive-fitness-lexicographic-v1",
+        "policy_sha256": "548d64cf4d14d496c1a0e6861bc356bd0f417b2be68f266eba097be14ce675b8",
+        "run_id": "issue-116-adaptive-canary-final-20260726",
+        "schema": "battle.fitness_vector.v1",
+        "selected_artifact_sha256": "cf233b3b52909acacb92ca69b2d31fc7c438650840c62f72884c0d2ffd946822",
+        "selection_key": [
+          2,
+          1,
+          0,
+          -1
+        ],
+        "sha256": "11789cb5b8582beeb6139e87f3900b640c7de16fc43a27e47e2315e95f6ecef3",
+        "status": "PASS",
+        "team": "blue"
+      },
+      "red": {
+        "battle_id": "battle-004",
+        "claims": {
+          "does_not_prove": [
+            "A child improved unless selection establishes it."
+          ],
+          "proves": [
+            "Battle computed a reproducible fitness vector from cited evidence."
+          ]
+        },
+        "components": {
+          "artifact_changed_from_parent": "NOT_APPLICABLE",
+          "compile_pass": true,
+          "exploit_blocked_after_patch": true,
+          "exploit_confirmed_before_patch": true,
+          "functionality_preserved": true,
+          "judge_outcome": {
+            "label": "BLUE_SUCCESS",
+            "rank": 1
+          },
+          "provider_attempt_count": 1,
+          "runtime_evaluated": true,
+          "semantic_genome_changed_from_parent": "NOT_APPLICABLE"
+        },
+        "eligibility": {
+          "disqualifiers": [],
+          "eligible_for_selection": true
+        },
+        "fitness_id": "issue-116-adaptive-canary-final-20260726-red-g1-fitness",
+        "generation": 1,
+        "genome_sha256": "652df655d42b48297126fccbcaf08530734afe95aa2f079f5cf0b068c2905cd3",
+        "judge_receipt_sha256": "b808b57647ca7fc0c314ad24667a32edc2073a704436386cc9eeaa5df59e17d5",
+        "observation_receipt_sha256": "de8b06c514555bff521a95512df922e97990d8450ef9cf0e8222941c24f763b6",
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/red/fitness-vector.json",
+        "pipeline_handoff_sha256": "5e590bba22bff931ec7242536335e61176948f1bb20757e775606350aca4cbd9",
+        "policy_id": "battle-adaptive-fitness-lexicographic-v1",
+        "policy_sha256": "548d64cf4d14d496c1a0e6861bc356bd0f417b2be68f266eba097be14ce675b8",
+        "run_id": "issue-116-adaptive-canary-final-20260726",
+        "schema": "battle.fitness_vector.v1",
+        "selected_artifact_sha256": "ba2d8620c11b0513a5f94a6c641455753931a66390bf72ccb75320ca4120c97d",
+        "selection_key": [
+          1,
+          1,
+          0,
+          -1
+        ],
+        "sha256": "cfa5669c67f3099d6d86ebb4bd8bf93068205ed7b2fb8077c8042909d65a815d",
+        "status": "PASS",
+        "team": "red"
+      }
+    },
+    "generation_2": {
+      "blue": {
+        "battle_id": "battle-004",
+        "claims": {
+          "does_not_prove": [
+            "A child improved unless selection establishes it."
+          ],
+          "proves": [
+            "Battle computed a reproducible fitness vector from cited evidence."
+          ]
+        },
+        "components": {
+          "artifact_changed_from_parent": true,
+          "compile_pass": true,
+          "exploit_blocked_after_patch": true,
+          "exploit_confirmed_before_patch": true,
+          "functionality_preserved": true,
+          "judge_outcome": {
+            "label": "BLUE_SUCCESS",
+            "rank": 2
+          },
+          "provider_attempt_count": 1,
+          "runtime_evaluated": true,
+          "semantic_genome_changed_from_parent": true
+        },
+        "eligibility": {
+          "disqualifiers": [],
+          "eligible_for_selection": true
+        },
+        "fitness_id": "issue-116-adaptive-canary-final-20260726-blue-g2-fitness",
+        "generation": 2,
+        "genome_sha256": "29bbe4757b751dde29cc64687460346297d854ab62ec87a517ecd2f031b08b73",
+        "judge_receipt_sha256": "9ab8affa008e50da05381254f64e3956a193d875add737e5dfd0325b2d29a25d",
+        "observation_receipt_sha256": "3dfdef3171b55246d5d6763cf5e38a5e35b8e33e08dd109c7b7c73e7c7f3fb62",
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/blue/fitness-vector.json",
+        "pipeline_handoff_sha256": "6ef223d01bee5c9457054c4d8ca973af34c645eedfe75f3d1ab5dcc3475d6a8f",
+        "policy_id": "battle-adaptive-fitness-lexicographic-v1",
+        "policy_sha256": "548d64cf4d14d496c1a0e6861bc356bd0f417b2be68f266eba097be14ce675b8",
+        "run_id": "issue-116-adaptive-canary-final-20260726",
+        "schema": "battle.fitness_vector.v1",
+        "selected_artifact_sha256": "d721e7070d424bff7cfff8597e7f206c8c0bb2750b8ffa7db52476cbcf945614",
+        "selection_key": [
+          2,
+          1,
+          1,
+          -1
+        ],
+        "sha256": "b956d8a7e1c808c49b3c9ab1498573cb46683a27e5a2430dbe62e69ff406b86f",
+        "status": "PASS",
+        "team": "blue"
+      },
+      "red": {
+        "battle_id": "battle-004",
+        "claims": {
+          "does_not_prove": [
+            "A child improved unless selection establishes it."
+          ],
+          "proves": [
+            "Battle computed a reproducible fitness vector from cited evidence."
+          ]
+        },
+        "components": {
+          "artifact_changed_from_parent": true,
+          "compile_pass": true,
+          "exploit_blocked_after_patch": true,
+          "exploit_confirmed_before_patch": true,
+          "functionality_preserved": true,
+          "judge_outcome": {
+            "label": "BLUE_SUCCESS",
+            "rank": 1
+          },
+          "provider_attempt_count": 1,
+          "runtime_evaluated": true,
+          "semantic_genome_changed_from_parent": true
+        },
+        "eligibility": {
+          "disqualifiers": [],
+          "eligible_for_selection": true
+        },
+        "fitness_id": "issue-116-adaptive-canary-final-20260726-red-g2-fitness",
+        "generation": 2,
+        "genome_sha256": "115c5fd79806ae09cde4e3a5e9763e86d8a33ada63aa04229e94139ef94e5c62",
+        "judge_receipt_sha256": "9ab8affa008e50da05381254f64e3956a193d875add737e5dfd0325b2d29a25d",
+        "observation_receipt_sha256": "1b4e4da6cf05272265e5c51028ea97309775d0f43f04eb39789e02b85f3b2524",
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/red/fitness-vector.json",
+        "pipeline_handoff_sha256": "94b0c3446ebb0a40e326792551a9052eed78fbcabebf2588e9e2010661115243",
+        "policy_id": "battle-adaptive-fitness-lexicographic-v1",
+        "policy_sha256": "548d64cf4d14d496c1a0e6861bc356bd0f417b2be68f266eba097be14ce675b8",
+        "run_id": "issue-116-adaptive-canary-final-20260726",
+        "schema": "battle.fitness_vector.v1",
+        "selected_artifact_sha256": "61068346a07305c82dd00c507ca4460fc15d07a966d89c616619a07e1c37c400",
+        "selection_key": [
+          1,
+          1,
+          1,
+          -1
+        ],
+        "sha256": "a4232f6e8e841dbcae8127b3b36facc009df4e83beaf8269de7758b93c04129a",
+        "status": "PASS",
+        "team": "red"
+      }
+    }
+  },
+  "fixture_fallback_used": false,
+  "generation_count": 2,
+  "generations": [
+    {
+      "artifact_pipelines": {
+        "blue": {
+          "compile_receipt_sha256": "b749fde0eff4dff61332b54e08c452c7f8a1054fdd8f259a3638eefacc60c5a5",
+          "handoff_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/reviewed/blue/team-artifact-pipeline-receipt.json",
+          "handoff_sha256": "a2099696dd363ffb0bb7c2d83b88c0d914408f138720107fac19a9e511f741fc",
+          "review_receipt_sha256": "3275594130c6ff60a4d85d6509aef6fa20079f8493c65ae4637bc7cffb7b6fd5",
+          "selected_artifact_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/reviewed/blue/app.py",
+          "selected_artifact_sha256": "cf233b3b52909acacb92ca69b2d31fc7c438650840c62f72884c0d2ffd946822",
+          "status": "PASS"
+        },
+        "red": {
+          "compile_receipt_sha256": "eb08057673294458c3a49206b3e349d12df6805279f4a0cfb856de4b571dcc99",
+          "handoff_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/reviewed/red/team-artifact-pipeline-receipt.json",
+          "handoff_sha256": "5e590bba22bff931ec7242536335e61176948f1bb20757e775606350aca4cbd9",
+          "review_receipt_sha256": "8183401351a3dbe159f5a66f92f8650ebca1998e2d8dd1d1b4e912c2e3ae43c5",
+          "selected_artifact_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/reviewed/red/red_exploit_submission.py",
+          "selected_artifact_sha256": "ba2d8620c11b0513a5f94a6c641455753931a66390bf72ccb75320ca4120c97d",
+          "status": "PASS"
+        }
+      },
+      "blue_artifact_sha256": "cf233b3b52909acacb92ca69b2d31fc7c438650840c62f72884c0d2ffd946822",
+      "generation": 1,
+      "judge_status": "PASS",
+      "judge_verdict": "BLUE_SUCCESS",
+      "judged_pair_count": 1,
+      "red_artifact_sha256": "ba2d8620c11b0513a5f94a6c641455753931a66390bf72ccb75320ca4120c97d",
+      "tau_status": "PASS"
+    },
+    {
+      "artifact_pipelines": {
+        "blue": {
+          "compile_receipt_sha256": "ee26916315013d0d4cafefaa02c2cfcac6ca0b36fba031ce8c2dc5b7f88e9591",
+          "handoff_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/reviewed/blue/team-artifact-pipeline-receipt.json",
+          "handoff_sha256": "6ef223d01bee5c9457054c4d8ca973af34c645eedfe75f3d1ab5dcc3475d6a8f",
+          "review_receipt_sha256": "b08a85808193d60238ed5f536c8fcf3a073178b5f45f05c586a89383d2ab9ddc",
+          "selected_artifact_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/reviewed/blue/app.py",
+          "selected_artifact_sha256": "d721e7070d424bff7cfff8597e7f206c8c0bb2750b8ffa7db52476cbcf945614",
+          "status": "PASS"
+        },
+        "red": {
+          "compile_receipt_sha256": "74887e7feeb89d4e1d314ae0e45ad98fb6e8ca96db4c6f2dc20190913421c8fa",
+          "handoff_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/reviewed/red/team-artifact-pipeline-receipt.json",
+          "handoff_sha256": "94b0c3446ebb0a40e326792551a9052eed78fbcabebf2588e9e2010661115243",
+          "review_receipt_sha256": "db6cbc6ec4f5320586dfe36f88d66e9261efebc244684a55566415ff87a538b6",
+          "selected_artifact_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/reviewed/red/red_exploit_submission.py",
+          "selected_artifact_sha256": "61068346a07305c82dd00c507ca4460fc15d07a966d89c616619a07e1c37c400",
+          "status": "PASS"
+        }
+      },
+      "blue_artifact_sha256": "d721e7070d424bff7cfff8597e7f206c8c0bb2750b8ffa7db52476cbcf945614",
+      "generation": 2,
+      "judge_status": "PASS",
+      "judge_verdict": "BLUE_SUCCESS",
+      "judged_pair_count": 1,
+      "red_artifact_sha256": "61068346a07305c82dd00c507ca4460fc15d07a966d89c616619a07e1c37c400",
+      "tau_status": "PASS"
+    }
+  ],
+  "genome_deltas": {
+    "blue": {
+      "added_methods": [
+        "preserve_import_zip_callable_and_return_written_file_paths",
+        "prevalidate_all_zip_members_before_extraction",
+        "reject_absolute_paths",
+        "reject_backslash_and_nul_member_names",
+        "reject_drive_qualified_paths",
+        "reject_parent_directory_components",
+        "resolve_destination_and_candidate_then_commonpath_check"
+      ],
+      "battle_id": "battle-004",
+      "canonicalization_policy_id": "battle-semantic-genome-canonicalization-v1",
+      "canonicalization_policy_sha256": "004a65ba6854305c85cae8b8180d70b910a4d811cda9410bf3ea742ef1e69e32",
+      "child_genome_sha256": "29bbe4757b751dde29cc64687460346297d854ab62ec87a517ecd2f031b08b73",
+      "child_semantic_sha256": "7ad9b14977b95f3fb5757b1322392a48f0978d132745659f47cba906ff772509",
+      "claims": {
+        "does_not_prove": [
+          "The semantic change improved fitness or exploit success."
+        ],
+        "proves": [
+          "The child provider genome differs semantically from its parent."
+        ]
+      },
+      "delta_id": "issue-116-adaptive-canary-final-20260726-blue-g1-g2-delta",
+      "expected_observation": {
+        "changed": true,
+        "child_sha256": "78a0fdd3fd171aaea41b29178aa1698f281041a2165ed4d56c9f22cc227847a0",
+        "parent_sha256": "dfe36f66ecea3d55e2bfe1ac4813f660c2e67bff6b77891468ebf217d9fe3e13"
+      },
+      "from_generation": 1,
+      "mutation_origin": {
+        "changed": true,
+        "child": "Changed parent strategy using inherited Judge observation that the prior patch blocked the exploit while preserving functionality; added stricter cross-platform member-name rejection and all-entry prevalidation from the public target context.",
+        "parent": "public target app.py showed direct dest/name writes from ZipFile.namelist; hardened the same import_zip surface against archive path traversal."
+      },
+      "newly_rejected_methods": [
+        "allow_partial_extraction_before_detecting_unsafe_member",
+        "sanitize_by_basename_only",
+        "silently_skip_unsafe_members",
+        "string_prefix_check_without_path_resolution"
+      ],
+      "no_longer_rejected_methods": [
+        "allow_symlink_materialization",
+        "silently_sanitize_to_basename",
+        "string_prefix_only_check"
+      ],
+      "nonempty_semantic_delta": true,
+      "parameter_changes": [
+        {
+          "child": "create directories but do not include them in returned written file list",
+          "name": "directory_entries",
+          "parent": null
+        },
+        {
+          "child": null,
+          "name": "max_copy_chunk_bytes",
+          "parent": 1048576
+        },
+        {
+          "child": null,
+          "name": "on_unsafe_member",
+          "parent": "raise UnsafeArchivePath"
+        },
+        {
+          "child": "zip POSIX names with platform-safe rejection of alternate separators",
+          "name": "path_semantics",
+          "parent": null
+        },
+        {
+          "child": null,
+          "name": "preserve_relative_paths",
+          "parent": true
+        },
+        {
+          "child": null,
+          "name": "return_written_files_only",
+          "parent": true
+        },
+        {
+          "child": "raise ValueError",
+          "name": "unsafe_path_action",
+          "parent": null
+        },
+        {
+          "child": "validate full archive then write",
+          "name": "write_order",
+          "parent": null
+        }
+      ],
+      "parent_genome_sha256": "2fb6d6cb5a97dbf9770ddd11c9b681a301d9375933d20a0efef5cd3728e4ec97",
+      "parent_semantic_sha256": "4cb5874d7d8a7a72dfaedf864087d71981851407016915cf430d7208733a82d2",
+      "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/blue/genome-delta.json",
+      "removed_methods": [
+        "canonical_path_containment_check",
+        "reject_absolute_drive_unc_paths",
+        "reject_dotdot_components",
+        "reject_zip_symlink_entries",
+        "stream_copy_after_validation"
+      ],
+      "retained_methods": [],
+      "run_id": "issue-116-adaptive-canary-final-20260726",
+      "schema": "battle.semantic_genome_delta.v1",
+      "semantic_change_count": 29,
+      "sha256": "66d7f2e18f0f47e1f797e9e791763b08e9890378b96d9881af2806c41443adbc",
+      "status": "PASS",
+      "team": "blue",
+      "to_generation": 2
+    },
+    "red": {
+      "added_methods": [
+        "direct function invocation without HTTP or network packages",
+        "local import of public target using from app import import_zip",
+        "nonzero exit when --expect-vulnerable is passed and traversal is not observed",
+        "post-call filesystem verification that escape file exists outside destination",
+        "temporary zip archive with ../arena_escape.txt traversal entry"
+      ],
+      "battle_id": "battle-004",
+      "canonicalization_policy_id": "battle-semantic-genome-canonicalization-v1",
+      "canonicalization_policy_sha256": "004a65ba6854305c85cae8b8180d70b910a4d811cda9410bf3ea742ef1e69e32",
+      "child_genome_sha256": "115c5fd79806ae09cde4e3a5e9763e86d8a33ada63aa04229e94139ef94e5c62",
+      "child_semantic_sha256": "6100bc40b50b2e9edbebcb64f28b21bc189bfe40df0b77bd5bb4f7590e566ece",
+      "claims": {
+        "does_not_prove": [
+          "The semantic change improved fitness or exploit success."
+        ],
+        "proves": [
+          "The child provider genome differs semantically from its parent."
+        ]
+      },
+      "delta_id": "issue-116-adaptive-canary-final-20260726-red-g1-g2-delta",
+      "expected_observation": {
+        "changed": true,
+        "child_sha256": "704d021f648163a3bf88e2283698fe72ec0d81dde2b6b3a188c2520a7133aa5c",
+        "parent_sha256": "6cf45a406fcce96c5592bf90d59df06b36da6dbaa0f95fc81193bca1df512a4c"
+      },
+      "from_generation": 1,
+      "mutation_origin": {
+        "changed": true,
+        "child": "Adapted from parent success evidence by preserving the local zip-slip proof but strengthening it with explicit outside-destination path validation and required literal app import binding.",
+        "parent": "Derived directly from the public app.py implementation where target = dest / name is written without normalization or containment checks."
+      },
+      "newly_rejected_methods": [
+        "HTTP POST to /api/import-zip",
+        "absolute-path payloads that depend on host-specific writable locations",
+        "localhost assumptions",
+        "socket or urllib based probing",
+        "third-party packages such as requests or httpx"
+      ],
+      "no_longer_rejected_methods": [
+        "HTTP endpoint probing",
+        "absolute-path payloads that may be environment-dependent",
+        "assuming a running server",
+        "network sockets",
+        "third-party request libraries"
+      ],
+      "nonempty_semantic_delta": true,
+      "parameter_changes": [
+        {
+          "child": "RED_EXPLOIT_CONFIRMED",
+          "name": "confirmation_string",
+          "parent": null
+        },
+        {
+          "child": null,
+          "name": "confirmation_token",
+          "parent": "RED_EXPLOIT_CONFIRMED"
+        },
+        {
+          "child": null,
+          "name": "destination_layout",
+          "parent": "temporary parent directory with destination subdirectory"
+        },
+        {
+          "child": "workspace/import_dest",
+          "name": "destination_subdir",
+          "parent": null
+        },
+        {
+          "child": null,
+          "name": "execution_mode",
+          "parent": "local import and direct function call"
+        },
+        {
+          "child": "--expect-vulnerable exits 0 only on confirmed escaped write",
+          "name": "expected_mode",
+          "parent": null
+        },
+        {
+          "child": "zip-slip traversal marker for battle-004\\n",
+          "name": "payload_bytes",
+          "parent": null
+        },
+        {
+          "child": "../arena_escape.txt",
+          "name": "traversal_member",
+          "parent": null
+        },
+        {
+          "child": null,
+          "name": "zip_member",
+          "parent": "../arena_escape.txt"
+        }
+      ],
+      "parent_genome_sha256": "652df655d42b48297126fccbcaf08530734afe95aa2f079f5cf0b068c2905cd3",
+      "parent_semantic_sha256": "7c06a066c5d93d6d1cc046b105309e7faae21e3257af8c4afb58769af001ba5b",
+      "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/red/genome-delta.json",
+      "removed_methods": [
+        "--expect-vulnerable confirmation gate",
+        "filesystem assertion outside extraction destination",
+        "local importlib load of app.py",
+        "relative path traversal member ../arena_escape.txt",
+        "standard-library ZipFile payload creation"
+      ],
+      "retained_methods": [],
+      "run_id": "issue-116-adaptive-canary-final-20260726",
+      "schema": "battle.semantic_genome_delta.v1",
+      "semantic_change_count": 31,
+      "sha256": "72a9fd044cbce02b7189c7b522812cf573c80eac3f6ab37c19379e9df3bf35d9",
+      "status": "PASS",
+      "team": "red",
+      "to_generation": 2
+    }
+  },
+  "genome_deltas_by_generation": {
+    "2": {
+      "blue": {
+        "added_methods": [
+          "preserve_import_zip_callable_and_return_written_file_paths",
+          "prevalidate_all_zip_members_before_extraction",
+          "reject_absolute_paths",
+          "reject_backslash_and_nul_member_names",
+          "reject_drive_qualified_paths",
+          "reject_parent_directory_components",
+          "resolve_destination_and_candidate_then_commonpath_check"
+        ],
+        "battle_id": "battle-004",
+        "canonicalization_policy_id": "battle-semantic-genome-canonicalization-v1",
+        "canonicalization_policy_sha256": "004a65ba6854305c85cae8b8180d70b910a4d811cda9410bf3ea742ef1e69e32",
+        "child_genome_sha256": "29bbe4757b751dde29cc64687460346297d854ab62ec87a517ecd2f031b08b73",
+        "child_semantic_sha256": "7ad9b14977b95f3fb5757b1322392a48f0978d132745659f47cba906ff772509",
+        "claims": {
+          "does_not_prove": [
+            "The semantic change improved fitness or exploit success."
+          ],
+          "proves": [
+            "The child provider genome differs semantically from its parent."
+          ]
+        },
+        "delta_id": "issue-116-adaptive-canary-final-20260726-blue-g1-g2-delta",
+        "expected_observation": {
+          "changed": true,
+          "child_sha256": "78a0fdd3fd171aaea41b29178aa1698f281041a2165ed4d56c9f22cc227847a0",
+          "parent_sha256": "dfe36f66ecea3d55e2bfe1ac4813f660c2e67bff6b77891468ebf217d9fe3e13"
+        },
+        "from_generation": 1,
+        "mutation_origin": {
+          "changed": true,
+          "child": "Changed parent strategy using inherited Judge observation that the prior patch blocked the exploit while preserving functionality; added stricter cross-platform member-name rejection and all-entry prevalidation from the public target context.",
+          "parent": "public target app.py showed direct dest/name writes from ZipFile.namelist; hardened the same import_zip surface against archive path traversal."
+        },
+        "newly_rejected_methods": [
+          "allow_partial_extraction_before_detecting_unsafe_member",
+          "sanitize_by_basename_only",
+          "silently_skip_unsafe_members",
+          "string_prefix_check_without_path_resolution"
+        ],
+        "no_longer_rejected_methods": [
+          "allow_symlink_materialization",
+          "silently_sanitize_to_basename",
+          "string_prefix_only_check"
+        ],
+        "nonempty_semantic_delta": true,
+        "parameter_changes": [
+          {
+            "child": "create directories but do not include them in returned written file list",
+            "name": "directory_entries",
+            "parent": null
+          },
+          {
+            "child": null,
+            "name": "max_copy_chunk_bytes",
+            "parent": 1048576
+          },
+          {
+            "child": null,
+            "name": "on_unsafe_member",
+            "parent": "raise UnsafeArchivePath"
+          },
+          {
+            "child": "zip POSIX names with platform-safe rejection of alternate separators",
+            "name": "path_semantics",
+            "parent": null
+          },
+          {
+            "child": null,
+            "name": "preserve_relative_paths",
+            "parent": true
+          },
+          {
+            "child": null,
+            "name": "return_written_files_only",
+            "parent": true
+          },
+          {
+            "child": "raise ValueError",
+            "name": "unsafe_path_action",
+            "parent": null
+          },
+          {
+            "child": "validate full archive then write",
+            "name": "write_order",
+            "parent": null
+          }
+        ],
+        "parent_genome_sha256": "2fb6d6cb5a97dbf9770ddd11c9b681a301d9375933d20a0efef5cd3728e4ec97",
+        "parent_semantic_sha256": "4cb5874d7d8a7a72dfaedf864087d71981851407016915cf430d7208733a82d2",
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/blue/genome-delta.json",
+        "removed_methods": [
+          "canonical_path_containment_check",
+          "reject_absolute_drive_unc_paths",
+          "reject_dotdot_components",
+          "reject_zip_symlink_entries",
+          "stream_copy_after_validation"
+        ],
+        "retained_methods": [],
+        "run_id": "issue-116-adaptive-canary-final-20260726",
+        "schema": "battle.semantic_genome_delta.v1",
+        "semantic_change_count": 29,
+        "sha256": "66d7f2e18f0f47e1f797e9e791763b08e9890378b96d9881af2806c41443adbc",
+        "status": "PASS",
+        "team": "blue",
+        "to_generation": 2
+      },
+      "red": {
+        "added_methods": [
+          "direct function invocation without HTTP or network packages",
+          "local import of public target using from app import import_zip",
+          "nonzero exit when --expect-vulnerable is passed and traversal is not observed",
+          "post-call filesystem verification that escape file exists outside destination",
+          "temporary zip archive with ../arena_escape.txt traversal entry"
+        ],
+        "battle_id": "battle-004",
+        "canonicalization_policy_id": "battle-semantic-genome-canonicalization-v1",
+        "canonicalization_policy_sha256": "004a65ba6854305c85cae8b8180d70b910a4d811cda9410bf3ea742ef1e69e32",
+        "child_genome_sha256": "115c5fd79806ae09cde4e3a5e9763e86d8a33ada63aa04229e94139ef94e5c62",
+        "child_semantic_sha256": "6100bc40b50b2e9edbebcb64f28b21bc189bfe40df0b77bd5bb4f7590e566ece",
+        "claims": {
+          "does_not_prove": [
+            "The semantic change improved fitness or exploit success."
+          ],
+          "proves": [
+            "The child provider genome differs semantically from its parent."
+          ]
+        },
+        "delta_id": "issue-116-adaptive-canary-final-20260726-red-g1-g2-delta",
+        "expected_observation": {
+          "changed": true,
+          "child_sha256": "704d021f648163a3bf88e2283698fe72ec0d81dde2b6b3a188c2520a7133aa5c",
+          "parent_sha256": "6cf45a406fcce96c5592bf90d59df06b36da6dbaa0f95fc81193bca1df512a4c"
+        },
+        "from_generation": 1,
+        "mutation_origin": {
+          "changed": true,
+          "child": "Adapted from parent success evidence by preserving the local zip-slip proof but strengthening it with explicit outside-destination path validation and required literal app import binding.",
+          "parent": "Derived directly from the public app.py implementation where target = dest / name is written without normalization or containment checks."
+        },
+        "newly_rejected_methods": [
+          "HTTP POST to /api/import-zip",
+          "absolute-path payloads that depend on host-specific writable locations",
+          "localhost assumptions",
+          "socket or urllib based probing",
+          "third-party packages such as requests or httpx"
+        ],
+        "no_longer_rejected_methods": [
+          "HTTP endpoint probing",
+          "absolute-path payloads that may be environment-dependent",
+          "assuming a running server",
+          "network sockets",
+          "third-party request libraries"
+        ],
+        "nonempty_semantic_delta": true,
+        "parameter_changes": [
+          {
+            "child": "RED_EXPLOIT_CONFIRMED",
+            "name": "confirmation_string",
+            "parent": null
+          },
+          {
+            "child": null,
+            "name": "confirmation_token",
+            "parent": "RED_EXPLOIT_CONFIRMED"
+          },
+          {
+            "child": null,
+            "name": "destination_layout",
+            "parent": "temporary parent directory with destination subdirectory"
+          },
+          {
+            "child": "workspace/import_dest",
+            "name": "destination_subdir",
+            "parent": null
+          },
+          {
+            "child": null,
+            "name": "execution_mode",
+            "parent": "local import and direct function call"
+          },
+          {
+            "child": "--expect-vulnerable exits 0 only on confirmed escaped write",
+            "name": "expected_mode",
+            "parent": null
+          },
+          {
+            "child": "zip-slip traversal marker for battle-004\\n",
+            "name": "payload_bytes",
+            "parent": null
+          },
+          {
+            "child": "../arena_escape.txt",
+            "name": "traversal_member",
+            "parent": null
+          },
+          {
+            "child": null,
+            "name": "zip_member",
+            "parent": "../arena_escape.txt"
+          }
+        ],
+        "parent_genome_sha256": "652df655d42b48297126fccbcaf08530734afe95aa2f079f5cf0b068c2905cd3",
+        "parent_semantic_sha256": "7c06a066c5d93d6d1cc046b105309e7faae21e3257af8c4afb58769af001ba5b",
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/red/genome-delta.json",
+        "removed_methods": [
+          "--expect-vulnerable confirmation gate",
+          "filesystem assertion outside extraction destination",
+          "local importlib load of app.py",
+          "relative path traversal member ../arena_escape.txt",
+          "standard-library ZipFile payload creation"
+        ],
+        "retained_methods": [],
+        "run_id": "issue-116-adaptive-canary-final-20260726",
+        "schema": "battle.semantic_genome_delta.v1",
+        "semantic_change_count": 31,
+        "sha256": "72a9fd044cbce02b7189c7b522812cf573c80eac3f6ab37c19379e9df3bf35d9",
+        "status": "PASS",
+        "team": "red",
+        "to_generation": 2
+      }
+    }
+  },
+  "inheritance": {
+    "blue": {
+      "artifact_changed": true,
+      "child_artifact_sha256": "d721e7070d424bff7cfff8597e7f206c8c0bb2750b8ffa7db52476cbcf945614",
+      "claims": {
+        "does_not_prove": [
+          "The child improved."
+        ],
+        "proves": [
+          "The provider response cited inherited evidence and external research, then materialized a changed artifact."
+        ]
+      },
+      "external_research_cited_in_provider_response": true,
+      "external_research_receipt_sha256": "e0c7ea8845d55ada6b24c53a4c512b149e536a96f6c47563b790ba0abe1d0bf0",
+      "first_plan_action_declared": true,
+      "inherited_genome_cited": true,
+      "inherited_observation_cited": true,
+      "packet_cited_in_provider_response": true,
+      "packet_id": "battle-004-blue-generation-2-knowledge",
+      "parent_artifact_sha256": "cf233b3b52909acacb92ca69b2d31fc7c438650840c62f72884c0d2ffd946822",
+      "provider_response_sha256": "9baed88b721bae4cd5d09cff213bd0c9aadfa58e6c3ae084fbf6b4892899b131",
+      "schema": "battle.inherited_knowledge_acknowledgement.v1",
+      "status": "PASS",
+      "team": "blue"
+    },
+    "red": {
+      "artifact_changed": true,
+      "child_artifact_sha256": "61068346a07305c82dd00c507ca4460fc15d07a966d89c616619a07e1c37c400",
+      "claims": {
+        "does_not_prove": [
+          "The child improved."
+        ],
+        "proves": [
+          "The provider response cited inherited evidence and external research, then materialized a changed artifact."
+        ]
+      },
+      "external_research_cited_in_provider_response": true,
+      "external_research_receipt_sha256": "7af941f252d21e4ff1adc3fa3c42dd2f7aa8e3621c57d46ae4524de6c2bb4f5e",
+      "first_plan_action_declared": true,
+      "inherited_genome_cited": true,
+      "inherited_observation_cited": true,
+      "packet_cited_in_provider_response": true,
+      "packet_id": "battle-004-red-generation-2-knowledge",
+      "parent_artifact_sha256": "ba2d8620c11b0513a5f94a6c641455753931a66390bf72ccb75320ca4120c97d",
+      "provider_response_sha256": "51b2a0a703a0917b859799f0c407560fffe12eda2f2326254f26a3f5bf111fdd",
+      "schema": "battle.inherited_knowledge_acknowledgement.v1",
+      "status": "PASS",
+      "team": "red"
+    }
+  },
+  "judge_verified_exploits": 0,
+  "live": "tau_scillm_docker_judge_two_generation_red_blue",
+  "memory_evaluation": {
+    "battle_id": "battle-004",
+    "claims": {
+      "does_not_prove": [
+        "Memory was written, promoted, or durably recalled."
+      ],
+      "proves": [
+        "Battle evaluated selected evidence under the memory policy."
+      ]
+    },
+    "evaluation_id": "issue-116-adaptive-canary-final-20260726-memory-evaluation",
+    "evaluations": [
+      {
+        "decision": "NO_PROMOTION",
+        "durable_recall_proven": false,
+        "eligible_decisions": [
+          "NO_PROMOTION"
+        ],
+        "evidence_classification": "neutral",
+        "fitness_receipt_sha256": "a4232f6e8e841dbcae8127b3b36facc009df4e83beaf8269de7758b93c04129a",
+        "genome_delta_sha256": "72a9fd044cbce02b7189c7b522812cf573c80eac3f6ab37c19379e9df3bf35d9",
+        "judge_receipt_sha256": "9ab8affa008e50da05381254f64e3956a193d875add737e5dfd0325b2d29a25d",
+        "judge_requirement_satisfied": true,
+        "memory_write_receipt_sha256": null,
+        "memory_write_required": false,
+        "reason_codes": [
+          "evaluate_only_canary",
+          "durable_write_out_of_scope"
+        ],
+        "selected_generation": 2,
+        "team": "red",
+        "visibility_scope": "red_only"
+      },
+      {
+        "decision": "NO_PROMOTION",
+        "durable_recall_proven": false,
+        "eligible_decisions": [
+          "NO_PROMOTION"
+        ],
+        "evidence_classification": "neutral",
+        "fitness_receipt_sha256": "b956d8a7e1c808c49b3c9ab1498573cb46683a27e5a2430dbe62e69ff406b86f",
+        "genome_delta_sha256": "66d7f2e18f0f47e1f797e9e791763b08e9890378b96d9881af2806c41443adbc",
+        "judge_receipt_sha256": "9ab8affa008e50da05381254f64e3956a193d875add737e5dfd0325b2d29a25d",
+        "judge_requirement_satisfied": true,
+        "memory_write_receipt_sha256": null,
+        "memory_write_required": false,
+        "reason_codes": [
+          "evaluate_only_canary",
+          "durable_write_out_of_scope"
+        ],
+        "selected_generation": 2,
+        "team": "blue",
+        "visibility_scope": "blue_only"
+      }
+    ],
+    "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/memory-promotion-evaluation.json",
+    "policy_id": "battle-memory-promotion-evaluate-only-v1",
+    "policy_mode": "evaluate_only",
+    "policy_sha256": "1c17aa6c109ad8718acdbb84a7f035f1d381f6834a6c4522e701de79338a0b5d",
+    "run_id": "issue-116-adaptive-canary-final-20260726",
+    "schema": "battle.memory_promotion_evaluation.v1",
+    "selection_receipt_sha256": "4b86fe7cc36302cb99c7b476edf6c1cd028ed7c1e3b519b3e17f167161706976",
+    "sha256": "4429f955b131619cd074c8a2900bddf1916f39c0e17103c3372e57430b2d73f1",
+    "status": "PASS"
+  },
+  "mocked": false,
+  "normalized_fixture": {
+    "fixture_id": "battle-004-adaptive-lineage-v13",
+    "fixture_sha256": "5914b5153707a1dfd32e5730dda93e520d7af8cc3cde37b072b33c61254edf15",
+    "local_public_byte_identical": true,
+    "status": "PASS"
+  },
+  "observations": {
+    "generation_1": {
+      "blue": {
+        "artifact": {
+          "compile_receipt_sha256": "b749fde0eff4dff61332b54e08c452c7f8a1054fdd8f259a3638eefacc60c5a5",
+          "genome_sha256": "2fb6d6cb5a97dbf9770ddd11c9b681a301d9375933d20a0efef5cd3728e4ec97",
+          "pipeline_handoff_sha256": "a2099696dd363ffb0bb7c2d83b88c0d914408f138720107fac19a9e511f741fc",
+          "review_receipt_sha256": "3275594130c6ff60a4d85d6509aef6fa20079f8493c65ae4637bc7cffb7b6fd5",
+          "selected_artifact_sha256": "cf233b3b52909acacb92ca69b2d31fc7c438650840c62f72884c0d2ffd946822"
+        },
+        "battle_id": "battle-004",
+        "claims": {
+          "does_not_prove": [
+            "The team improved or achieved exploit success beyond the cited Judge verdict."
+          ],
+          "proves": [
+            "Battle projected measured pipeline and Judge evidence for one team generation."
+          ]
+        },
+        "generation": 1,
+        "judge": {
+          "judge_receipt_sha256": "b808b57647ca7fc0c314ad24667a32edc2073a704436386cc9eeaa5df59e17d5",
+          "judged_pair_count": 1,
+          "reviewed_judge_input_sha256": "37431b32d33aadb23ada7b38fc0978e3586899464301bd67e5ccccaa03897e95",
+          "status": "PASS",
+          "verdict": "BLUE_SUCCESS"
+        },
+        "measurements": {
+          "compile_status": "PASS",
+          "execution_elapsed_seconds": "UNKNOWN",
+          "exploit_blocked_after_patch": true,
+          "exploit_confirmed_before_patch": true,
+          "functionality_preserved": true,
+          "provider_attempt_count": 1,
+          "repair_attempt_count": 0,
+          "review_status": "PASS",
+          "runtime_status": "PASS",
+          "target_contact": "UNKNOWN"
+        },
+        "observed_elapsed_seconds": 48.804623,
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/blue/generation-observation-receipt.json",
+        "receipt_id": "issue-116-adaptive-canary-final-20260726-blue-g1-observation",
+        "run_id": "issue-116-adaptive-canary-final-20260726",
+        "schema": "battle.generation_observation_receipt.v1",
+        "sha256": "dd7e3ab80096326f8c8a253554f387b8cfb1b11db964ca09cf365c82ecb451f4",
+        "status": "PASS",
+        "target_identity": {
+          "original_target_tree_sha256": "b91d9c40e3a0c28ef53df7891503b9d3eed77449d2db708d5724c41f76edb02d",
+          "patched_target_tree_sha256": "f414c2c8f7b32f8b48bd05c48e704f43669343afe4e032a32d001656ee10fcdb"
+        },
+        "team": "blue"
+      },
+      "red": {
+        "artifact": {
+          "compile_receipt_sha256": "eb08057673294458c3a49206b3e349d12df6805279f4a0cfb856de4b571dcc99",
+          "genome_sha256": "652df655d42b48297126fccbcaf08530734afe95aa2f079f5cf0b068c2905cd3",
+          "pipeline_handoff_sha256": "5e590bba22bff931ec7242536335e61176948f1bb20757e775606350aca4cbd9",
+          "review_receipt_sha256": "8183401351a3dbe159f5a66f92f8650ebca1998e2d8dd1d1b4e912c2e3ae43c5",
+          "selected_artifact_sha256": "ba2d8620c11b0513a5f94a6c641455753931a66390bf72ccb75320ca4120c97d"
+        },
+        "battle_id": "battle-004",
+        "claims": {
+          "does_not_prove": [
+            "The team improved or achieved exploit success beyond the cited Judge verdict."
+          ],
+          "proves": [
+            "Battle projected measured pipeline and Judge evidence for one team generation."
+          ]
+        },
+        "generation": 1,
+        "judge": {
+          "judge_receipt_sha256": "b808b57647ca7fc0c314ad24667a32edc2073a704436386cc9eeaa5df59e17d5",
+          "judged_pair_count": 1,
+          "reviewed_judge_input_sha256": "37431b32d33aadb23ada7b38fc0978e3586899464301bd67e5ccccaa03897e95",
+          "status": "PASS",
+          "verdict": "BLUE_SUCCESS"
+        },
+        "measurements": {
+          "compile_status": "PASS",
+          "execution_elapsed_seconds": "UNKNOWN",
+          "exploit_blocked_after_patch": true,
+          "exploit_confirmed_before_patch": true,
+          "functionality_preserved": true,
+          "provider_attempt_count": 1,
+          "repair_attempt_count": 0,
+          "review_status": "PASS",
+          "runtime_status": "PASS",
+          "target_contact": "UNKNOWN"
+        },
+        "observed_elapsed_seconds": 48.803224,
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-1/red/generation-observation-receipt.json",
+        "receipt_id": "issue-116-adaptive-canary-final-20260726-red-g1-observation",
+        "run_id": "issue-116-adaptive-canary-final-20260726",
+        "schema": "battle.generation_observation_receipt.v1",
+        "sha256": "de8b06c514555bff521a95512df922e97990d8450ef9cf0e8222941c24f763b6",
+        "status": "PASS",
+        "target_identity": {
+          "original_target_tree_sha256": "b91d9c40e3a0c28ef53df7891503b9d3eed77449d2db708d5724c41f76edb02d",
+          "patched_target_tree_sha256": "f414c2c8f7b32f8b48bd05c48e704f43669343afe4e032a32d001656ee10fcdb"
+        },
+        "team": "red"
+      }
+    },
+    "generation_2": {
+      "blue": {
+        "artifact": {
+          "compile_receipt_sha256": "ee26916315013d0d4cafefaa02c2cfcac6ca0b36fba031ce8c2dc5b7f88e9591",
+          "genome_sha256": "29bbe4757b751dde29cc64687460346297d854ab62ec87a517ecd2f031b08b73",
+          "pipeline_handoff_sha256": "6ef223d01bee5c9457054c4d8ca973af34c645eedfe75f3d1ab5dcc3475d6a8f",
+          "review_receipt_sha256": "b08a85808193d60238ed5f536c8fcf3a073178b5f45f05c586a89383d2ab9ddc",
+          "selected_artifact_sha256": "d721e7070d424bff7cfff8597e7f206c8c0bb2750b8ffa7db52476cbcf945614"
+        },
+        "battle_id": "battle-004",
+        "claims": {
+          "does_not_prove": [
+            "The team improved or achieved exploit success beyond the cited Judge verdict."
+          ],
+          "proves": [
+            "Battle projected measured pipeline and Judge evidence for one team generation."
+          ]
+        },
+        "generation": 2,
+        "judge": {
+          "judge_receipt_sha256": "9ab8affa008e50da05381254f64e3956a193d875add737e5dfd0325b2d29a25d",
+          "judged_pair_count": 1,
+          "reviewed_judge_input_sha256": "f90a5d4947c60f073710abcf68ad831325b86139b64c2c44bd0888153a9899bb",
+          "status": "PASS",
+          "verdict": "BLUE_SUCCESS"
+        },
+        "measurements": {
+          "compile_status": "PASS",
+          "execution_elapsed_seconds": "UNKNOWN",
+          "exploit_blocked_after_patch": true,
+          "exploit_confirmed_before_patch": true,
+          "functionality_preserved": true,
+          "provider_attempt_count": 1,
+          "repair_attempt_count": 0,
+          "review_status": "PASS",
+          "runtime_status": "PASS",
+          "target_contact": "UNKNOWN"
+        },
+        "observed_elapsed_seconds": 136.940407,
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/blue/generation-observation-receipt.json",
+        "receipt_id": "issue-116-adaptive-canary-final-20260726-blue-g2-observation",
+        "run_id": "issue-116-adaptive-canary-final-20260726",
+        "schema": "battle.generation_observation_receipt.v1",
+        "sha256": "3dfdef3171b55246d5d6763cf5e38a5e35b8e33e08dd109c7b7c73e7c7f3fb62",
+        "status": "PASS",
+        "target_identity": {
+          "original_target_tree_sha256": "b91d9c40e3a0c28ef53df7891503b9d3eed77449d2db708d5724c41f76edb02d",
+          "patched_target_tree_sha256": "23d57e382ef8625808b7a875a9847a034db2da41538fa3f9d41f1c61b8eed716"
+        },
+        "team": "blue"
+      },
+      "red": {
+        "artifact": {
+          "compile_receipt_sha256": "74887e7feeb89d4e1d314ae0e45ad98fb6e8ca96db4c6f2dc20190913421c8fa",
+          "genome_sha256": "115c5fd79806ae09cde4e3a5e9763e86d8a33ada63aa04229e94139ef94e5c62",
+          "pipeline_handoff_sha256": "94b0c3446ebb0a40e326792551a9052eed78fbcabebf2588e9e2010661115243",
+          "review_receipt_sha256": "db6cbc6ec4f5320586dfe36f88d66e9261efebc244684a55566415ff87a538b6",
+          "selected_artifact_sha256": "61068346a07305c82dd00c507ca4460fc15d07a966d89c616619a07e1c37c400"
+        },
+        "battle_id": "battle-004",
+        "claims": {
+          "does_not_prove": [
+            "The team improved or achieved exploit success beyond the cited Judge verdict."
+          ],
+          "proves": [
+            "Battle projected measured pipeline and Judge evidence for one team generation."
+          ]
+        },
+        "generation": 2,
+        "judge": {
+          "judge_receipt_sha256": "9ab8affa008e50da05381254f64e3956a193d875add737e5dfd0325b2d29a25d",
+          "judged_pair_count": 1,
+          "reviewed_judge_input_sha256": "f90a5d4947c60f073710abcf68ad831325b86139b64c2c44bd0888153a9899bb",
+          "status": "PASS",
+          "verdict": "BLUE_SUCCESS"
+        },
+        "measurements": {
+          "compile_status": "PASS",
+          "execution_elapsed_seconds": "UNKNOWN",
+          "exploit_blocked_after_patch": true,
+          "exploit_confirmed_before_patch": true,
+          "functionality_preserved": true,
+          "provider_attempt_count": 1,
+          "repair_attempt_count": 0,
+          "review_status": "PASS",
+          "runtime_status": "PASS",
+          "target_contact": "UNKNOWN"
+        },
+        "observed_elapsed_seconds": 136.938958,
+        "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/red/generation-observation-receipt.json",
+        "receipt_id": "issue-116-adaptive-canary-final-20260726-red-g2-observation",
+        "run_id": "issue-116-adaptive-canary-final-20260726",
+        "schema": "battle.generation_observation_receipt.v1",
+        "sha256": "1b4e4da6cf05272265e5c51028ea97309775d0f43f04eb39789e02b85f3b2524",
+        "status": "PASS",
+        "target_identity": {
+          "original_target_tree_sha256": "b91d9c40e3a0c28ef53df7891503b9d3eed77449d2db708d5724c41f76edb02d",
+          "patched_target_tree_sha256": "23d57e382ef8625808b7a875a9847a034db2da41538fa3f9d41f1c61b8eed716"
+        },
+        "team": "red"
+      }
+    }
+  },
+  "reason": "two_generation_red_blue_lineage_evaluated_1_lineage_stop",
+  "research": {
+    "blue": {
+      "external_tool_called": true,
+      "method": "brave-search",
+      "query_safety_receipt_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/arena/team-public/research/blue/research-query-safety-receipt.json",
+      "query_safety_receipt_sha256": "70390de7a2fd7c0ad0a071f802f6cafffdc19ef6082fe1e3ed66dcbf162b74a0",
+      "source_count": 5,
+      "source_receipt_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/arena/team-public/research/blue/external-research-receipt.json",
+      "source_receipt_sha256": "e0c7ea8845d55ada6b24c53a4c512b149e536a96f6c47563b790ba0abe1d0bf0",
+      "status": "PASS",
+      "team": "blue"
+    },
+    "red": {
+      "external_tool_called": true,
+      "method": "brave-search",
+      "query_safety_receipt_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/arena/team-public/research/red/research-query-safety-receipt.json",
+      "query_safety_receipt_sha256": "69fe886601660cdea4a33d57c288904962f7fc3a72e1f79b9d01024cc9174699",
+      "source_count": 5,
+      "source_receipt_path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/arena/team-public/research/red/external-research-receipt.json",
+      "source_receipt_sha256": "7af941f252d21e4ff1adc3fa3c42dd2f7aa8e3621c57d46ae4524de6c2bb4f5e",
+      "status": "PASS",
+      "team": "red"
+    }
+  },
+  "run_id": "issue-116-adaptive-canary-final-20260726",
+  "schema": "battle.adaptive_red_blue_lineage_canary.v1",
+  "selection": {
+    "battle_id": "battle-004",
+    "claims": {
+      "does_not_prove": [
+        "Exploit success beyond Judge evidence or population-scale evolution."
+      ],
+      "proves": [
+        "Battle compared 2 generations for both teams using bound fitness receipts."
+      ]
+    },
+    "disqualifying_regressions": [],
+    "generation_count": 2,
+    "improvement_claimed": false,
+    "improvement_dimensions": [],
+    "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/selection-receipt.json",
+    "policy_id": "battle-adaptive-selection-lexicographic-v1",
+    "policy_sha256": "651bfd8663a953e11918dd1bf28f35830149febc19f1bf0793e4b22895fe91c4",
+    "run_id": "issue-116-adaptive-canary-final-20260726",
+    "schema": "battle.adaptive_selection_receipt.v1",
+    "selection_id": "issue-116-adaptive-canary-final-20260726-selection",
+    "sha256": "4b86fe7cc36302cb99c7b476edf6c1cd028ed7c1e3b519b3e17f167161706976",
+    "status": "PASS",
+    "teams": {
+      "blue": {
+        "component_comparison": [
+          {
+            "component": "selection_key",
+            "generation": 1,
+            "selection_key": [
+              2,
+              1,
+              0,
+              -1
+            ]
+          },
+          {
+            "component": "selection_key",
+            "generation": 2,
+            "selection_key": [
+              2,
+              1,
+              1,
+              -1
+            ]
+          }
+        ],
+        "generation_1_fitness_receipt_sha256": "11789cb5b8582beeb6139e87f3900b640c7de16fc43a27e47e2315e95f6ecef3",
+        "generation_2_fitness_receipt_sha256": "b956d8a7e1c808c49b3c9ab1498573cb46683a27e5a2430dbe62e69ff406b86f",
+        "generation_fitness_receipts": {
+          "1": "11789cb5b8582beeb6139e87f3900b640c7de16fc43a27e47e2315e95f6ecef3",
+          "2": "b956d8a7e1c808c49b3c9ab1498573cb46683a27e5a2430dbe62e69ff406b86f"
+        },
+        "retention_decision": "GENERATION_2_SELECTED",
+        "selected_generation": 2,
+        "tie_break_reason": null
+      },
+      "red": {
+        "component_comparison": [
+          {
+            "component": "selection_key",
+            "generation": 1,
+            "selection_key": [
+              1,
+              1,
+              0,
+              -1
+            ]
+          },
+          {
+            "component": "selection_key",
+            "generation": 2,
+            "selection_key": [
+              1,
+              1,
+              1,
+              -1
+            ]
+          }
+        ],
+        "generation_1_fitness_receipt_sha256": "cfa5669c67f3099d6d86ebb4bd8bf93068205ed7b2fb8077c8042909d65a815d",
+        "generation_2_fitness_receipt_sha256": "a4232f6e8e841dbcae8127b3b36facc009df4e83beaf8269de7758b93c04129a",
+        "generation_fitness_receipts": {
+          "1": "cfa5669c67f3099d6d86ebb4bd8bf93068205ed7b2fb8077c8042909d65a815d",
+          "2": "a4232f6e8e841dbcae8127b3b36facc009df4e83beaf8269de7758b93c04129a"
+        },
+        "retention_decision": "GENERATION_2_SELECTED",
+        "selected_generation": 2,
+        "tie_break_reason": null
+      }
+    }
+  },
+  "spawn": {
+    "blue": {
+      "claims": {
+        "does_not_prove": [
+          "The child improved."
+        ],
+        "proves": [
+          "Battle authorized one bounded child after parent Judge evaluation."
+        ]
+      },
+      "decision": "DENIED_PARENT_DID_NOT_REQUEST_CHILD",
+      "judge_verdict": "BLUE_SUCCESS",
+      "parent_artifact_sha256": "cf233b3b52909acacb92ca69b2d31fc7c438650840c62f72884c0d2ffd946822",
+      "parent_terminal": false,
+      "reason_codes": [
+        "parent_judge_evaluated",
+        "bounded_second_generation_requested",
+        "remaining_budget_available"
+      ],
+      "receipt_id": "issue-116-adaptive-canary-final-20260726-blue-spawn-policy-decision",
+      "schema": "battle.adaptive_spawn_policy_decision.v1",
+      "source_receipts": [
+        {
+          "kind": "parent_spawn_request",
+          "sha256": "1e1917855df7baa0f42bc211e95ae25751d9f94df845216f83dc7f28cea82524"
+        },
+        {
+          "kind": "generation_observation",
+          "sha256": "dd7e3ab80096326f8c8a253554f387b8cfb1b11db964ca09cf365c82ecb451f4"
+        },
+        {
+          "kind": "fitness_vector",
+          "sha256": "11789cb5b8582beeb6139e87f3900b640c7de16fc43a27e47e2315e95f6ecef3"
+        },
+        {
+          "kind": "parent_genome",
+          "sha256": "2fb6d6cb5a97dbf9770ddd11c9b681a301d9375933d20a0efef5cd3728e4ec97"
+        },
+        {
+          "kind": "pipeline_handoff",
+          "sha256": "a2099696dd363ffb0bb7c2d83b88c0d914408f138720107fac19a9e511f741fc"
+        },
+        {
+          "kind": "judge_receipt",
+          "sha256": "b808b57647ca7fc0c314ad24667a32edc2073a704436386cc9eeaa5df59e17d5"
+        }
+      ],
+      "status": "BLOCKED",
+      "team": "blue"
+    },
+    "red": {
+      "claims": {
+        "does_not_prove": [
+          "The child improved."
+        ],
+        "proves": [
+          "Battle authorized one bounded child after parent Judge evaluation."
+        ]
+      },
+      "decision": "ALLOWED_EVALUATED_PARENT",
+      "judge_verdict": "BLUE_SUCCESS",
+      "parent_artifact_sha256": "ba2d8620c11b0513a5f94a6c641455753931a66390bf72ccb75320ca4120c97d",
+      "parent_terminal": false,
+      "reason_codes": [
+        "parent_judge_evaluated",
+        "bounded_second_generation_requested",
+        "remaining_budget_available"
+      ],
+      "receipt_id": "issue-116-adaptive-canary-final-20260726-red-spawn-policy-decision",
+      "schema": "battle.adaptive_spawn_policy_decision.v1",
+      "source_receipts": [
+        {
+          "kind": "parent_spawn_request",
+          "sha256": "14a7c68f14d494903cd442ee85c0dbaa4b020cc6191667b3da6794c004f4215c"
+        },
+        {
+          "kind": "generation_observation",
+          "sha256": "de8b06c514555bff521a95512df922e97990d8450ef9cf0e8222941c24f763b6"
+        },
+        {
+          "kind": "fitness_vector",
+          "sha256": "cfa5669c67f3099d6d86ebb4bd8bf93068205ed7b2fb8077c8042909d65a815d"
+        },
+        {
+          "kind": "parent_genome",
+          "sha256": "652df655d42b48297126fccbcaf08530734afe95aa2f079f5cf0b068c2905cd3"
+        },
+        {
+          "kind": "pipeline_handoff",
+          "sha256": "5e590bba22bff931ec7242536335e61176948f1bb20757e775606350aca4cbd9"
+        },
+        {
+          "kind": "judge_receipt",
+          "sha256": "b808b57647ca7fc0c314ad24667a32edc2073a704436386cc9eeaa5df59e17d5"
+        }
+      ],
+      "status": "PASS",
+      "team": "red"
+    }
+  },
+  "specimen_population": {
+    "bad_genetic_material_rate": 0.9688,
+    "error": null,
+    "gate": "docker_py_compile + deterministic_review (identical to live pipeline)",
+    "per_specimen": [
+      {
+        "bad_rate_local": 1.0,
+        "champion_recompiled_ok": true,
+        "generation": 1,
+        "ledger_reject_reasons": [
+          "compile: PyCompileError:   File \"/work/variant_00.py\", line 15\n    from zipfile imporx ZipFile\n                 ^^^^^^\nSyntaxError: invalid syntax\n",
+          "compile: PyCompileError:   File \"/work/variant_01.py\", line 27\n    raise ImportError(f\"could not create import spec for {app_path}\") (\n                                                  ",
+          "compile: PyCompileError:   File \"/work/variant_02.py\", line 33\n    if import_zip is None or not callable(import_zip)\n                                                     ^\nSyntaxError: ",
+          "compile: PyCompileError: Sorry: IndentationError: unexpected indent (variant_03.py, line 52)",
+          "review: red artifact does not bind the public app import interface",
+          "compile: PyCompileError:   File \"/work/variant_05.py\", line 2\n    \"\"\"Local Zip Slip exploit verifier for battle-004.\n    ^\nSyntaxError: unterminated triple-quoted string literal (detect",
+          "compile: PyCompileError:   File \"/work/variant_06.py\", line 81\n    except ValueError:\nSyntaxError: expected 'except' or 'finally' block\n",
+          "compile: PyCompileError: Sorry: IndentationError: expected an indented block after 'except' statement on line 81 (variant_07.py, line 82)"
+        ],
+        "survivor_pool_size": 1,
+        "team": "red",
+        "variants_accepted": 0,
+        "variants_rejected": 8,
+        "variants_sampled": 8
+      },
+      {
+        "bad_rate_local": 1.0,
+        "champion_recompiled_ok": true,
+        "generation": 1,
+        "ledger_reject_reasons": [
+          "compile: PyCompileError:   File \"/work/variant_00.py\", line 2\n    from zipfile imporx ZipFile, ZipInfo\n                 ^^^^^^\nSyntaxError: invalid syntax\n",
+          "compile: PyCompileError:   File \"/work/variant_01.py\", line 26\n    def _safe_target(destination: Path, member_name: str) -> Path\n                                                        ",
+          "compile: PyCompileError:   File \"/work/variant_02.py\", line 13\n    returx True\n           ^^^^\nSyntaxError: invalid syntax\n",
+          "compile: PyCompileError: Sorry: IndentationError: unindent does not match any outer indentation level (variant_03.py, line 16)",
+          "review: blue artifact does not preserve import_zip interface",
+          "compile: PyCompileError:   File \"/work/variant_05.py\", line 45\n    return mode == 0o120000 (\n                            ^\nSyntaxError: '(' was never closed\n",
+          "compile: PyCompileError:   File \"/work/variant_06.py\", line 49\n    \"\"\"\n    ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 50)\n",
+          "compile: PyCompileError:   File \"/work/variant_07.py\", line 17\n    returx True\n           ^^^^\nSyntaxError: invalid syntax\n"
+        ],
+        "survivor_pool_size": 1,
+        "team": "blue",
+        "variants_accepted": 0,
+        "variants_rejected": 8,
+        "variants_sampled": 8
+      },
+      {
+        "bad_rate_local": 1.0,
+        "champion_recompiled_ok": true,
+        "generation": 2,
+        "ledger_reject_reasons": [
+          "compile: PyCompileError:   File \"/work/variant_00.py\", line 25\n    witx zipfile.ZipFile(zip_path, \"w\", compression=zipfile.ZIP_STORED) as zf:\n         ^^^^^^^\nSyntaxError: invalid synta",
+          "compile: PyCompileError:   File \"/work/variant_01.py\", line 13\n    imporx tempfile\n           ^^^^^^^^\nSyntaxError: invalid syntax\n",
+          "compile: PyCompileError:   File \"/work/variant_02.py\", line 18\n    from app imporx import_zip\n             ^^^^^^\nSyntaxError: invalid syntax\n",
+          "compile: PyCompileError:   File \"/work/variant_03.py\", line 57\n    expected_report = str(dest / \"..\" / escape_name) (\n                                                     ^\nSyntaxError:",
+          "compile: PyCompileError:   File \"/work/variant_04.py\", line 53\n    ix escape_path.read_bytes() != marker:\n       ^^^^^^^^^^^\nSyntaxError: invalid syntax\n",
+          "compile: PyCompileError:   File \"/work/variant_05.py\", line 15\n    imporx zipfile\n           ^^^^^^^\nSyntaxError: invalid syntax\n",
+          "review: red artifact does not bind the public app import interface",
+          "compile: PyCompileError:   File \"/work/variant_07.py\", line 59\n    return expected_report in written or any(item.endswith(\"../\" + escape_name) for item in written)\n    ^^^^^^^^^^^^^^^^^"
+        ],
+        "survivor_pool_size": 1,
+        "team": "red",
+        "variants_accepted": 0,
+        "variants_rejected": 8,
+        "variants_sampled": 8
+      },
+      {
+        "bad_rate_local": 0.875,
+        "champion_recompiled_ok": true,
+        "generation": 2,
+        "ledger_reject_reasons": [
+          "compile: PyCompileError:   File \"/work/variant_00.py\", line 78\n    returx written\n           ^^^^^^^\nSyntaxError: invalid syntax\n",
+          "compile: PyCompileError:   File \"/work/variant_01.py\", line 24\n    raise UnsafeArchivePathError(f\"absolute zip member path is not allowed: {member_name!r}\") (\n                          ",
+          "compile: PyCompileError: Sorry: IndentationError: expected an indented block after 'if' statement on line 41 (variant_02.py, line 43)",
+          "compile: PyCompileError:   File \"/work/variant_03.py\", line 13\n    ix not member_name or member_name.strip() == \"\":\n           ^^^^^^^^^^^\nSyntaxError: invalid syntax\n",
+          "compile: PyCompileError:   File \"/work/variant_04.py\", line 57\n    \"\"\"\n    ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 68)\n",
+          "compile: PyCompileError: Sorry: IndentationError: unexpected indent (variant_06.py, line 75)",
+          "compile: PyCompileError: Sorry: IndentationError: expected an indented block after function definition on line 51 (variant_07.py, line 52)"
+        ],
+        "survivor_pool_size": 2,
+        "team": "blue",
+        "variants_accepted": 1,
+        "variants_rejected": 7,
+        "variants_sampled": 8
+      }
+    ],
+    "run_id": "issue-116-adaptive-canary-final-20260726",
+    "schema": "battle.adaptive_specimen_population_summary.v1",
+    "specimens_evaluated": 4,
+    "total_variants_rejected": 31,
+    "total_variants_sampled": 32,
+    "variants_per_champion": 8
+  },
+  "status": "PASS"
+}

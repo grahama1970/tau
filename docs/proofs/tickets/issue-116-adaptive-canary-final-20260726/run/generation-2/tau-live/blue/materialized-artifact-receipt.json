@@ -1,0 +1,17 @@
+{
+  "artifact_bytes": 3092,
+  "artifact_sha256": "d721e7070d424bff7cfff8597e7f206c8c0bb2750b8ffa7db52476cbcf945614",
+  "artifact_type": "blue_patch",
+  "parsed_keys": [
+    "app_py",
+    "artifact_type",
+    "rationale",
+    "strategy_genome"
+  ],
+  "path": "/tmp/tau-main-issue-137.7nchbf/docs/proofs/tickets/issue-116-adaptive-canary-final-20260726/run/generation-2/tau-live/blue/app.py",
+  "rationale": "Adaptive patch based on packet_id battle-004-blue-generation-2-knowledge, parent artifact sha256 cf233b3b52909acacb92ca69b2d31fc7c438650840c62f72884c0d2ffd946822, inherited_genome_sha256 4cb5874d7d8a7a72dfaedf864087d71981851407016915cf430d7208733a82d2, and external research receipt sha256 e0c7ea8845d55ada6b24c53a4c512b149e536a96f6c47563b790ba0abe1d0bf0. Inherited observation named: exploit_blocked_after_patch=true with functionality_preserved=true. first_plan_action prevalidate every ZipInfo member path against the resolved destination before writing any bytes. The mutation hardens the prior successful strategy by rejecting absolute, parent traversal, drive-qualified, NUL, and backslash-containing names while preserving import_zip(zip_path, destination).",
+  "schema": "tau.battle_materialized_artifact_receipt.v1",
+  "scillm_call_receipt_sha256": "9baed88b721bae4cd5d09cff213bd0c9aadfa58e6c3ae084fbf6b4892899b131",
+  "status": "PASS",
+  "strategy_genome_sha256": "7ad9b14977b95f3fb5757b1322392a48f0978d132745659f47cba906ff772509"
+}
