@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from tau_coding.generic_dag import run_generic_dag
+from tau_coding.generic_dag import GENERIC_DAG_NODE_RECEIPT_SCHEMA, run_generic_dag
 from tau_coding.skill_dag_adapter import (
     execute_skill_dag_node,
     parse_skill_dag_spec,
@@ -220,6 +220,66 @@ def test_generic_dag_resume_reuses_hash_valid_skill_receipt(
     assert second["status"] == "PASS"
     assert second["nodes"][0]["resumed"] is True
     assert second["nodes"][0]["attempt_count"] == 0
+
+
+def test_generic_dag_resume_rejects_schema_mismatched_skill_receipt_without_rerun(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _patch_webgpt(monkeypatch, action="PASS", questions=[])
+    work_order = tmp_path / "work-order.json"
+    work_order.write_text('{"task":"review architecture"}\n', encoding="utf-8")
+    receipt_path = tmp_path / "receipt.json"
+    spec_path = tmp_path / "dag.json"
+    spec_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.generic_dag_spec.v1",
+                "run_id": "skill-resume-invalid-schema",
+                "run_dir": str(tmp_path / "run"),
+                "nodes": [
+                    {
+                        "node_id": "review",
+                        "receipt_path": str(receipt_path),
+                        "work_order_path": str(work_order),
+                        "skill": _webgpt_spec(tmp_path),
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    first = run_generic_dag(spec_path=spec_path, resume=False)
+    assert first["status"] == "PASS"
+    prior = json.loads(receipt_path.read_text(encoding="utf-8"))
+    prior["schema"] = "tau.old_skill_receipt.v1"
+    receipt_path.write_text(json.dumps(prior), encoding="utf-8")
+    events_path = tmp_path / "run" / "events.jsonl"
+    events_path.write_text("", encoding="utf-8")
+
+    def unexpected_run(*args, **kwargs):
+        raise AssertionError("schema-mismatched skill receipt must not rerun")
+
+    monkeypatch.setattr(
+        "tau_coding.skill_dag_adapter.run_cancellable_subprocess", unexpected_run
+    )
+
+    second = run_generic_dag(spec_path=spec_path, resume=True)
+
+    assert second["ok"] is False
+    assert second["status"] == "BLOCKED"
+    assert second["verdict"] == "INVALID_RECEIPT"
+    assert second["nodes"][0]["resumed"] is False
+    assert second["nodes"][0]["attempt_count"] == 0
+    assert "schema must be tau.generic_dag_node_receipt.v1" in second["nodes"][0]["errors"]
+    events = [
+        json.loads(line)
+        for line in Path(str(second["events_jsonl"])).read_text(encoding="utf-8").splitlines()
+    ]
+    rejected = [event for event in events if event["kind"] == "node_resume_rejected"]
+    assert len(rejected) == 1
+    assert rejected[0]["expected_schema"] == GENERIC_DAG_NODE_RECEIPT_SCHEMA
+    assert rejected[0]["observed_schema"] == "tau.old_skill_receipt.v1"
+    assert [event for event in events if event["kind"] == "node_dispatch"] == []
 
 
 def _execute(spec):

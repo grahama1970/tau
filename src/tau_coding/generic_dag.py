@@ -523,6 +523,7 @@ def _run_node(
         return _run_skill_node(
             node,
             run_id=run_id,
+            events_path=events_path,
             accepted_inputs=accepted_inputs,
             goal_hash=goal_hash,
             resume=resume,
@@ -566,6 +567,7 @@ def _run_skill_node(
     node: DagNode,
     *,
     run_id: str,
+    events_path: Path,
     accepted_inputs: list[dict[str, Any]],
     goal_hash: str | None,
     resume: bool,
@@ -576,27 +578,14 @@ def _run_skill_node(
     started = time.monotonic()
     if resume and node.receipt_path.is_file():
         prior = _read_json_object(node.receipt_path, label=f"{node.node_id} skill receipt")
-        prior_artifacts = prior.get("artifacts")
-        artifacts: list[Any] = list(prior_artifacts) if isinstance(prior_artifacts, list) else []
-        artifact_errors = []
-        for artifact in artifacts:
-            if not isinstance(artifact, dict) or not isinstance(artifact.get("path"), str):
-                artifact_errors.append("skill_resume_artifact_invalid")
-                continue
-            path = Path(artifact["path"]).expanduser().resolve()
-            if not path.is_file():
-                artifact_errors.append(f"skill_resume_artifact_missing:{path}")
-            elif artifact.get("sha256") != hashlib.sha256(path.read_bytes()).hexdigest():
-                artifact_errors.append(f"skill_resume_artifact_hash_mismatch:{path}")
-        if (
-            prior.get("status") == "PASS"
-            and prior.get("verdict") == "PASS"
-            and prior.get("skill_provider") == node.skill.provider
-            and prior.get("capability") == node.skill.capability
-            and prior.get("goal_hash") == goal_hash
-            and prior.get("work_order_sha256") == _work_order_sha256(node)
-            and not artifact_errors
-        ):
+        errors = _validate_skill_node_receipt(prior, node, expected_goal_hash=goal_hash)
+        artifacts = _receipt_artifacts(prior)
+        if not errors and prior.get("verdict") == "PASS":
+            _append_event(
+                events_path,
+                "node_resumed",
+                {"run_id": run_id, "node_id": node.node_id, "receipt_path": str(node.receipt_path)},
+            )
             return {
                 "node_id": node.node_id,
                 "role": node.role,
@@ -628,6 +617,24 @@ def _run_skill_node(
                 },
                 "errors": [],
             }
+        if errors:
+            _append_resume_rejected_event(
+                events_path,
+                run_id=run_id,
+                node=node,
+                receipt=prior,
+                errors=errors,
+            )
+            return _blocked_node_record(
+                node,
+                verdict="INVALID_RECEIPT",
+                errors=errors,
+                attempt_count=0,
+                command_results=[],
+                started_at=started_at,
+                finished_at=_utc_stamp(),
+                duration_seconds=time.monotonic() - started,
+            )
     receipt = execute_skill_dag_node(
         spec=node.skill,
         run_id=run_id,
@@ -715,7 +722,14 @@ def _run_legacy_node(
                 finished_at=_utc_stamp(),
                 duration_seconds=time.monotonic() - node_started_monotonic,
             )
-        if errors and _has_local_execution_evidence_error(errors):
+        if errors:
+            _append_resume_rejected_event(
+                events_path,
+                run_id=run_id,
+                node=node,
+                receipt=existing,
+                errors=errors,
+            )
             return _blocked_node_record(
                 node,
                 verdict="INVALID_RECEIPT",
@@ -2013,10 +2027,73 @@ def _validate_node_receipt(
             errors.append("goal_hash must be a non-empty string")
         elif observed_goal_hash != expected_goal_hash:
             errors.append("goal_hash does not match the active DAG goal")
-    if receipt.get("live") is True and receipt.get("provider_live") is not True:
+    if (
+        node.skill is None
+        and receipt.get("live") is True
+        and receipt.get("provider_live") is not True
+    ):
         errors.extend(_validate_local_execution_evidence(receipt.get("execution_evidence")))
     errors.extend(_validate_provider_live_receipt(receipt))
     return errors
+
+
+def _validate_skill_node_receipt(
+    receipt: dict[str, Any],
+    node: DagNode,
+    *,
+    expected_goal_hash: str | None,
+) -> list[str]:
+    assert node.skill is not None
+    errors = _validate_node_receipt(receipt, node, expected_goal_hash=expected_goal_hash)
+    if receipt.get("skill_provider") != node.skill.provider:
+        errors.append(f"skill_provider must be {node.skill.provider}")
+    if receipt.get("capability") != node.skill.capability:
+        errors.append(f"capability must be {node.skill.capability}")
+    for artifact_error in _skill_resume_artifact_errors(_receipt_artifacts(receipt)):
+        errors.append(artifact_error)
+    return errors
+
+
+def _receipt_artifacts(receipt: dict[str, Any]) -> list[Any]:
+    artifacts = receipt.get("artifacts")
+    return list(artifacts) if isinstance(artifacts, list) else []
+
+
+def _skill_resume_artifact_errors(artifacts: list[Any]) -> list[str]:
+    errors: list[str] = []
+    for artifact in artifacts:
+        if not isinstance(artifact, dict) or not isinstance(artifact.get("path"), str):
+            errors.append("skill_resume_artifact_invalid")
+            continue
+        path = Path(artifact["path"]).expanduser().resolve()
+        if not path.is_file():
+            errors.append(f"skill_resume_artifact_missing:{path}")
+        elif artifact.get("sha256") != hashlib.sha256(path.read_bytes()).hexdigest():
+            errors.append(f"skill_resume_artifact_hash_mismatch:{path}")
+    return errors
+
+
+def _append_resume_rejected_event(
+    events_path: Path,
+    *,
+    run_id: str,
+    node: DagNode,
+    receipt: dict[str, Any],
+    errors: list[str],
+) -> None:
+    _append_event(
+        events_path,
+        "node_resume_rejected",
+        {
+            "run_id": run_id,
+            "node_id": node.node_id,
+            "receipt_path": str(node.receipt_path),
+            "expected_schema": GENERIC_DAG_NODE_RECEIPT_SCHEMA,
+            "observed_schema": receipt.get("schema"),
+            "errors": errors,
+            "resume_action": "blocked_no_rerun",
+        },
+    )
 
 
 def _attach_local_execution_evidence(

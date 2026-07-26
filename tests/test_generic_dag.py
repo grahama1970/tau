@@ -396,6 +396,48 @@ def test_generic_dag_resumes_from_existing_valid_receipts(tmp_path: Path) -> Non
     assert receipt["nodes"][1]["resumed"] is False
 
 
+def test_generic_dag_rejects_schema_mismatched_resume_without_rerun(
+    tmp_path: Path,
+) -> None:
+    planner_receipt = tmp_path / "receipts" / "planner.json"
+    planner_receipt.parent.mkdir(parents=True, exist_ok=True)
+    _write_node_receipt(planner_receipt, node_id="planner", schema="tau.old_receipt.v1")
+    spec_path = _write_spec(
+        tmp_path,
+        [
+            _node(
+                tmp_path,
+                "planner",
+                command=[
+                    sys.executable,
+                    "-c",
+                    "raise SystemExit('schema-mismatched receipt must not rerun')",
+                ],
+            ),
+            _node(tmp_path, "coder", depends_on=["planner"]),
+        ],
+    )
+
+    receipt = run_generic_dag(spec_path=spec_path, resume=True)
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "INVALID_RECEIPT"
+    assert receipt["completed_node_count"] == 0
+    assert receipt["nodes"][0]["attempt_count"] == 0
+    assert receipt["nodes"][0]["resumed"] is False
+    assert "schema must be tau.generic_dag_node_receipt.v1" in receipt["nodes"][0]["errors"]
+    events = _read_events(Path(str(receipt["events_jsonl"])))
+    rejected = [event for event in events if event["kind"] == "node_resume_rejected"]
+    dispatches = [event for event in events if event["kind"] == "node_dispatch"]
+    assert len(rejected) == 1
+    assert rejected[0]["node_id"] == "planner"
+    assert rejected[0]["expected_schema"] == GENERIC_DAG_NODE_RECEIPT_SCHEMA
+    assert rejected[0]["observed_schema"] == "tau.old_receipt.v1"
+    assert rejected[0]["resume_action"] == "blocked_no_rerun"
+    assert dispatches == []
+
+
 def test_generic_dag_rejects_resumed_live_receipt_without_execution_evidence(
     tmp_path: Path,
 ) -> None:
@@ -427,6 +469,8 @@ def test_generic_dag_rejects_resumed_live_receipt_without_execution_evidence(
     assert receipt["nodes"][0]["attempt_count"] == 0
     assert receipt["nodes"][0]["resumed"] is False
     assert receipt["nodes"][0]["errors"] == ["live true requires local execution evidence"]
+    events = _read_events(Path(str(receipt["events_jsonl"])))
+    assert [event["kind"] for event in events].count("node_resume_rejected") == 1
 
 
 def test_generic_dag_attaches_local_execution_evidence_to_fresh_live_receipt(
@@ -505,7 +549,15 @@ def test_generic_dag_rejects_resumed_receipt_from_changed_goal(tmp_path: Path) -
     assert receipt["status"] == "BLOCKED"
     assert receipt["verdict"] == "INVALID_RECEIPT"
     assert receipt["nodes"][0]["resumed"] is False
+    assert receipt["nodes"][0]["attempt_count"] == 0
     assert "goal_hash does not match the active DAG goal" in receipt["nodes"][0]["errors"]
+    events = _read_events(Path(str(receipt["events_jsonl"])))
+    rejected = [event for event in events if event["kind"] == "node_resume_rejected"]
+    dispatches = [event for event in events if event["kind"] == "node_dispatch"]
+    assert len(rejected) == 1
+    assert rejected[0]["node_id"] == "planner"
+    assert "goal_hash does not match the active DAG goal" in rejected[0]["errors"]
+    assert dispatches == []
 
 
 def test_generic_dag_rejects_node_receipt_missing_goal_hash_when_goal_declared(
@@ -638,10 +690,17 @@ def test_generic_dag_rejects_stale_work_order_receipt_on_resume(tmp_path: Path) 
 
     assert receipt["ok"] is False
     assert receipt["status"] == "BLOCKED"
-    assert receipt["verdict"] == "SUBAGENT_ERROR"
+    assert receipt["verdict"] == "INVALID_RECEIPT"
     assert receipt["nodes"][0]["resumed"] is False
-    assert receipt["nodes"][0]["attempt_count"] == 1
-    assert "stale receipt should not be resumed" in receipt["nodes"][0]["errors"][0]
+    assert receipt["nodes"][0]["attempt_count"] == 0
+    assert (
+        f"work_order_sha256 must match current work_order_path {work_order}"
+        in receipt["nodes"][0]["errors"]
+    )
+    events = _read_events(Path(str(receipt["events_jsonl"])))
+    assert [event["kind"] for event in events if event.get("node_id") == "planner"] == [
+        "node_resume_rejected"
+    ]
 
 
 def test_generic_dag_fails_closed_after_timeout_attempts(tmp_path: Path) -> None:
@@ -1029,9 +1088,10 @@ def _write_node_receipt(
     node_id: str,
     work_order_sha256: str | None = None,
     live: bool = False,
+    schema: str = GENERIC_DAG_NODE_RECEIPT_SCHEMA,
 ) -> None:
     payload = {
-        "schema": GENERIC_DAG_NODE_RECEIPT_SCHEMA,
+        "schema": schema,
         "node_id": node_id,
         "status": "PASS",
         "verdict": "PASS",
