@@ -17,6 +17,14 @@ experiments/loop2-alignment/live-*/
 experiments/loop2-alignment/reliability-stress-*/
 .tmp/
 
+# Tau local run journals and transient run artifacts
+.tau-runs/
+.tau-dag-run/
+**/dag-run.sqlite3
+**/dag-run.sqlite3-*
+**/dag-progress.json
+**/tau-diagnostics.jsonl
+
 # Local oracle/review run logs
 .ask/**/ask-artifacts/
 .ask/**/*heartbeat*.jsonl

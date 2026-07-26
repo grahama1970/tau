@@ -77,6 +77,7 @@ from tau_coding.dag_route_memory import (
     write_dag_route_memory_sync_receipt,
 )
 from tau_coding.dag_runtime import write_dag_plan
+from tau_coding.dag_runtime.retention import expire_dag_run_directories
 from tau_coding.dag_runtime.run_store import DagRunStoreError, SqliteDagRunStore
 from tau_coding.dag_signals import write_dag_signal_receipt
 from tau_coding.dag_stress_poc import (
@@ -2125,6 +2126,7 @@ def main(
         ["dag-route-memory-candidates"],
         ["dag-route-memory-sync"],
         ["dag-reconcile"],
+        ["dag-retention-expire"],
         ["github-redact-projection"],
         ["herdr-cleanup"],
         ["environment-manifest"],
@@ -3016,6 +3018,32 @@ def main(
         try:
             run_dir = _parse_generic_dag_resume_cli_args(positional_args[1:])
             payload = resume_generic_dag_from_run(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "dag-retention-expire":
+        try:
+            options = _parse_dag_retention_expire_cli_args(positional_args[1:])
+            payload = expire_dag_run_directories(
+                root=Path(str(options["root"])),
+                archive_dir=Path(str(options["archive_dir"])),
+                keep_count=(
+                    int(options["keep_count"]) if options["keep_count"] is not None else None
+                ),
+                older_than_days=(
+                    float(options["older_than_days"])
+                    if options["older_than_days"] is not None
+                    else None
+                ),
+                dry_run=bool(options["dry_run"]),
+                receipt_path=(
+                    Path(str(options["receipt"])) if options["receipt"] is not None else None
+                ),
+            )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -6672,6 +6700,77 @@ def _parse_generic_dag_resume_cli_args(args: list[str]) -> Path:
     if len(args) != 1:
         raise RuntimeError("Usage: tau dag-resume <run-dir>")
     return Path(args[0])
+
+
+def _parse_dag_retention_expire_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "root": None,
+        "archive_dir": None,
+        "keep_count": None,
+        "older_than_days": None,
+        "receipt": None,
+        "dry_run": False,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--root",
+            "--archive-dir",
+            "--keep-count",
+            "--older-than-days",
+            "--receipt",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            key = arg.removeprefix("--").replace("-", "_")
+            if key in {"keep_count", "older_than_days"}:
+                options[key] = _parse_non_negative_number(args[index], flag=arg)
+            else:
+                options[key] = args[index]
+        elif arg.startswith("--root="):
+            options["root"] = arg.partition("=")[2]
+        elif arg.startswith("--archive-dir="):
+            options["archive_dir"] = arg.partition("=")[2]
+        elif arg.startswith("--keep-count="):
+            options["keep_count"] = _parse_non_negative_number(
+                arg.partition("=")[2], flag="--keep-count"
+            )
+        elif arg.startswith("--older-than-days="):
+            options["older_than_days"] = _parse_non_negative_number(
+                arg.partition("=")[2], flag="--older-than-days"
+            )
+        elif arg.startswith("--receipt="):
+            options["receipt"] = arg.partition("=")[2]
+        elif arg == "--dry-run":
+            options["dry_run"] = True
+        elif arg.startswith("-"):
+            raise RuntimeError(f"unknown dag-retention-expire option: {arg}")
+        else:
+            raise RuntimeError(f"unexpected dag-retention-expire argument: {arg}")
+        index += 1
+    if not _optional_str(options.get("root")) or not _optional_str(
+        options.get("archive_dir")
+    ):
+        raise RuntimeError(
+            "Usage: tau dag-retention-expire --root <dir> --archive-dir <dir> "
+            "[--keep-count N] [--older-than-days DAYS] [--receipt <path>] [--dry-run]"
+        )
+    if options["keep_count"] is None and options["older_than_days"] is None:
+        raise RuntimeError("dag-retention-expire requires --keep-count or --older-than-days")
+    return options
+
+
+def _parse_non_negative_number(value: str, *, flag: str) -> int | float:
+    try:
+        parsed: int | float
+        parsed = int(value) if flag == "--keep-count" else float(value)
+    except ValueError as exc:
+        raise RuntimeError(f"{flag} requires a non-negative number") from exc
+    if parsed < 0:
+        raise RuntimeError(f"{flag} requires a non-negative number")
+    return parsed
 
 
 def _parse_dag_reconcile_cli_args(args: list[str]) -> dict[str, object]:
