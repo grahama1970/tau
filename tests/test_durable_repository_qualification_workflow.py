@@ -3,9 +3,11 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import signal
 import sqlite3
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -129,7 +131,7 @@ def test_staged_result_crash_resumes_without_rerunning_accepted_branches(
             open_viewer=False,
             browser_open=False,
             viewer_hold_seconds=None,
-            crash_after_staged_node_id="qualify-tests",
+            crash_after_staged_node_id="reconcile-qualification",
             step_delay_seconds=0.05,
         )
     before = {
@@ -139,6 +141,7 @@ def test_staged_result_crash_resumes_without_rerunning_accepted_branches(
             "qualify-documentation",
             "qualify-package",
             "qualify-tests",
+            "reconcile-qualification",
         )
     }
 
@@ -151,7 +154,7 @@ def test_staged_result_crash_resumes_without_rerunning_accepted_branches(
     assert _node(receipt, "capture-repository")["resumed"] is True
     assert _node(receipt, "qualify-documentation")["resumed"] is True
     assert _node(receipt, "qualify-package")["resumed"] is True
-    recovered = _node(receipt, "qualify-tests")
+    recovered = _node(receipt, "reconcile-qualification")
     assert recovered["resumed"] is False
     assert recovered["attempt"] is None
     with sqlite3.connect(run_dir / "dag-run.sqlite3") as connection:
@@ -159,7 +162,8 @@ def test_staged_result_crash_resumes_without_rerunning_accepted_branches(
             """SELECT e.seq, e.event_type
                FROM dag_run_events e
                LEFT JOIN dag_node_attempts a ON a.attempt_id = e.attempt_id
-               WHERE e.event_type = 'run_lease_taken_over' OR a.node_id = 'qualify-tests'
+               WHERE e.event_type = 'run_lease_taken_over'
+                  OR a.node_id = 'reconcile-qualification'
                ORDER BY e.seq"""
         ).fetchall()
     staged = next(seq for seq, event in events if event == "attempt_result_staged")
@@ -167,6 +171,97 @@ def test_staged_result_crash_resumes_without_rerunning_accepted_branches(
     validated = next(seq for seq, event in events if event == "attempt_result_validated")
     assert staged < takeover < validated
     assert _node(receipt, "publish-qualification")["verdict"] == "APPROVAL_REQUIRED"
+
+
+@pytest.mark.skipif(not hasattr(signal, "SIGKILL"), reason="requires POSIX SIGKILL")
+def test_sigkill_after_staged_result_resumes_without_duplicate_publication(
+    tmp_path: Path,
+) -> None:
+    repo = _git_repo(tmp_path / "repo")
+    run_dir = tmp_path / "run"
+    publish_path = tmp_path / "published"
+
+    _sigkill_workflow_child_after_fault_point(
+        tmp_path=tmp_path,
+        repo=repo,
+        run_dir=run_dir,
+        publish_path=publish_path,
+        node_id="reconcile-qualification",
+        fault_point="after_result_staged",
+    )
+    before = {
+        name: _sha256(run_dir / "receipts" / f"{name}.json")
+        for name in (
+            "capture-repository",
+            "qualify-documentation",
+            "qualify-package",
+            "qualify-tests",
+            "reconcile-qualification",
+        )
+    }
+
+    resumed = resume_packaged_workflow(run_dir=run_dir)
+    receipt = _json(run_dir / "run-receipt.json")
+
+    assert resumed["status"] == "BLOCKED"
+    for name, digest in before.items():
+        assert _sha256(run_dir / "receipts" / f"{name}.json") == digest
+    assert _node(receipt, "publish-qualification")["verdict"] == "APPROVAL_REQUIRED"
+    events = _node_journal_events(run_dir, "reconcile-qualification")
+    staged = next(seq for seq, event in events if event == "attempt_result_staged")
+    takeover = next(seq for seq, event in events if event == "run_lease_taken_over")
+    validated = next(seq for seq, event in events if event == "attempt_result_validated")
+    assert staged < takeover < validated
+    assert _attempt_count(run_dir, "reconcile-qualification") == 1
+
+    approval_path = _write_approval_packet(
+        run_dir=run_dir,
+        transaction_node_id="publish-qualification",
+        path=tmp_path / "human-qualification-approval.json",
+    )
+    approved = approve_packaged_workflow(
+        run_dir=run_dir,
+        approval_packet=approval_path,
+    )
+    final = resume_packaged_workflow(run_dir=run_dir)
+    again = resume_packaged_workflow(run_dir=run_dir)
+    ledger = _json(publish_path / "publication-ledger.json")
+
+    assert approved["status"] == "PASS"
+    assert final["status"] == "PASS"
+    assert again["status"] == "PASS"
+    assert ledger["effect_count"] == 1
+
+
+@pytest.mark.skipif(not hasattr(signal, "SIGKILL"), reason="requires POSIX SIGKILL")
+def test_sigkill_before_staging_fails_closed_without_rerunning(
+    tmp_path: Path,
+) -> None:
+    repo = _git_repo(tmp_path / "repo")
+    run_dir = tmp_path / "run"
+    publish_path = tmp_path / "published"
+
+    _sigkill_workflow_child_after_fault_point(
+        tmp_path=tmp_path,
+        repo=repo,
+        run_dir=run_dir,
+        publish_path=publish_path,
+        node_id="qualify-tests",
+        fault_point="after_attempt_dispatched",
+    )
+
+    resumed = resume_packaged_workflow(run_dir=run_dir)
+    receipt = _json(run_dir / "run-receipt.json")
+    attempts = _node_attempt_rows(run_dir, "qualify-tests")
+    events = _node_journal_events(run_dir, "qualify-tests")
+
+    assert resumed["status"] == "BLOCKED"
+    assert receipt["verdict"] == "DAG_ATTEMPT_EFFECT_UNCERTAIN"
+    assert not (run_dir / "receipts" / "qualify-tests.json").exists()
+    assert attempts == [("UNCERTAIN", "UNCERTAIN")]
+    assert "attempt_effect_uncertain" in [event for _, event in events]
+    assert "attempt_result_staged" not in [event for _, event in events]
+    assert _attempt_count(run_dir, "qualify-tests") == 1
 
 
 def test_durable_qualification_reviewer_blocks_invalid_candidate(
@@ -264,6 +359,97 @@ def _run(
         inject_test_branch_failure=inject_failure,
         step_delay_seconds=0.01,
     )
+
+
+def _sigkill_workflow_child_after_fault_point(
+    *,
+    tmp_path: Path,
+    repo: Path,
+    run_dir: Path,
+    publish_path: Path,
+    node_id: str,
+    fault_point: str,
+) -> None:
+    marker_path = tmp_path / f"{fault_point}-{node_id}.json"
+    config_path = tmp_path / f"{fault_point}-{node_id}-config.json"
+    config_path.write_text(
+        json.dumps(
+            {
+                "repo": str(repo),
+                "run_dir": str(run_dir),
+                "publish_path": str(publish_path),
+                "marker_path": str(marker_path),
+                "node_id": node_id,
+                "fault_point": fault_point,
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    process = subprocess.Popen(
+        [sys.executable, "-c", _SIGKILL_WORKFLOW_CHILD, str(config_path)],
+        cwd=Path.cwd(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        _wait_for_marker(marker_path, process)
+        os.kill(process.pid, signal.SIGKILL)
+        stdout, stderr = process.communicate(timeout=5)
+    except Exception:
+        process.kill()
+        process.communicate(timeout=5)
+        raise
+    assert process.returncode == -signal.SIGKILL, (process.returncode, stdout, stderr)
+
+
+def _wait_for_marker(marker_path: Path, process: subprocess.Popen[str]) -> None:
+    deadline = time.monotonic() + 30
+    while time.monotonic() < deadline:
+        if marker_path.is_file():
+            return
+        if process.poll() is not None:
+            stdout, stderr = process.communicate(timeout=5)
+            raise AssertionError(
+                f"workflow child exited before process-loss marker: "
+                f"{process.returncode}\nSTDOUT:\n{stdout}\nSTDERR:\n{stderr}"
+            )
+        time.sleep(0.02)
+    raise AssertionError(f"workflow child did not reach process-loss marker: {marker_path}")
+
+
+def _node_journal_events(run_dir: Path, node_id: str) -> list[tuple[int, str]]:
+    with sqlite3.connect(run_dir / "dag-run.sqlite3") as connection:
+        return [
+            (int(seq), str(event))
+            for seq, event in connection.execute(
+                """SELECT e.seq, e.event_type
+                   FROM dag_run_events e
+                   LEFT JOIN dag_node_attempts a ON a.attempt_id = e.attempt_id
+                   WHERE e.event_type = 'run_lease_taken_over' OR a.node_id = ?
+                   ORDER BY e.seq""",
+                (node_id,),
+            ).fetchall()
+        ]
+
+
+def _node_attempt_rows(run_dir: Path, node_id: str) -> list[tuple[str, str]]:
+    with sqlite3.connect(run_dir / "dag-run.sqlite3") as connection:
+        return [
+            (str(state), str(effect_state))
+            for state, effect_state in connection.execute(
+                """SELECT state, effect_state
+                   FROM dag_node_attempts
+                   WHERE node_id = ?
+                   ORDER BY attempt_no""",
+                (node_id,),
+            ).fetchall()
+        ]
+
+
+def _attempt_count(run_dir: Path, node_id: str) -> int:
+    return len(_node_attempt_rows(run_dir, node_id))
 
 
 def _node(receipt: dict[str, object], node_id: str) -> dict[str, object]:
@@ -372,3 +558,55 @@ def _git_repo(path: Path) -> Path:
         check=True,
     )
     return path
+
+
+_SIGKILL_WORKFLOW_CHILD = r"""
+from __future__ import annotations
+
+import json
+import sys
+import time
+from pathlib import Path
+from typing import Any, Mapping
+
+from tau_coding.generic_dag import run_generic_dag
+from tau_coding.workflows.catalog import get_workflow
+from tau_coding.workflows.materialize import materialize_durable_repository_qualification
+
+config = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+marker_path = Path(config["marker_path"])
+
+materialized = materialize_durable_repository_qualification(
+    definition=get_workflow("durable-repository-qualification"),
+    repo_path=Path(config["repo"]),
+    human_goal="Qualify with real process loss.",
+    publish_path=Path(config["publish_path"]),
+    run_dir=Path(config["run_dir"]),
+    step_delay_seconds=0.01,
+)
+
+
+def inject(point: str, context: Mapping[str, Any]) -> None:
+    if point != config["fault_point"] or context.get("node_id") != config["node_id"]:
+        return
+    marker_path.write_text(
+        json.dumps(
+            {
+                "point": point,
+                "context": dict(context),
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    while True:
+        time.sleep(1)
+
+
+run_generic_dag(
+    spec_path=materialized.source_dag_path,
+    diagnostic_fault_injector=inject,
+)
+raise SystemExit("process-loss injection point was not reached")
+"""
