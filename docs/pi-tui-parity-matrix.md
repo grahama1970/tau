@@ -50,7 +50,7 @@ capabilities.
 | Session selector | `session-selector`, `session-selector-search` | `SessionPickerScreen` | `MATCHED` | Search, current/all, named-only, path toggle, sort, rename, delete are present. |
 | Branch/trust/tool selectors | `user-message-selector`, `trust-selector`, selector keybindings | `UserMessagePickerScreen`, `TrustPickerScreen`, `ToolsReferenceScreen` | `MATCHED` | `/fork` and `/trust` preserve Tau's backing flows and accept Pi-style `j/k` movement; `/tools` preserves searchable text input while the list accepts `j/k` movement when focused. |
 | Settings selector | `settings-selector`, related selectors | `SettingsPickerScreen` and picker screens | `MATCHED` | Tau backs the daily-use Pi settings that apply to its architecture: search, Pi-style navigation, theme, auto-compact, queue modes, HTTP idle timeout, image visibility/width/resize/blocking, skill commands, hardware cursor, editor/output padding, autocomplete size, clear-on-shrink, terminal progress, warnings, external editor, thinking level, double-Escape action, tree filter, default trust, quiet startup, changelog collapse, and turn notifications. Pi-only transport/install-telemetry/cache-miss switches remain excluded or deferred unless Tau gets real backing behavior. |
-| Config selector | `config-selector` | `ConfigMapScreen` | `PARTIAL` | Scope tabs exist, resource rows expose scope/state/action, resource toggles update in-place, backed user and project TUI settings write targets are visible, project resources can be disabled through `<cwd>/.tau/tui.json`, and no-match searches show visible empty rows; Pi package-source filter editing still missing. |
+| Config selector | `config-selector` | `ConfigMapScreen` | `MATCHED` | Tau matches the practical resource-management job for its architecture: searchable config/resource/diagnostic rows, Pi-style page navigation and scope tabs, command insertion, path copy, visible write targets, in-place resource toggles, durable user disables, project-local disables through `<cwd>/.tau/tui.json`, and no-match rows. Pi package-source include/exclude editing is intentionally not copied because Tau does not have Pi's package-source settings manager; adding that would be new resource architecture, not TUI parity. |
 | Login/OAuth | `login-dialog`, `oauth-selector` | login provider/method/OAuth screens | `PARTIAL` | Good enough for API/OAuth login; provider picker now shows visible navigation help, empty filter states, and fail-closed empty-row selection. |
 | Tool execution | `tool-execution`, `bash-execution`, `diff` | transcript renderers in `state.py` and `widgets.py` | `MATCHED` | Tau renders pending/success/error shell and tool output, colorizes embedded unified diffs with intraline changes, accepts Pi-style extension tool call/result render hooks including simple component-like render objects, summarizes permission/approval receipts, surfaces bash exit/duration/timeout/cancel/truncation/full-output metadata from existing tool result data, preserves multiple image blocks from one tool result, supports collapsible tool output, and shows input-bar terminal command exit codes. |
 | Export/artifact viewing | `/export`, `exportToHtml`, RPC `export_html` | Tau `/export`, `/artifacts`, `session_export.py`, TUI command output | `MATCHED` | Tau writes real HTML/JSONL session artifacts, opens a persistent TUI result modal with the artifact path and `file://` URI, supports explicit `/export --open`, renders assistant Markdown tables plus embedded local image links and fenced DOT graph artifacts in HTML exports, attempts Mermaid fail-closed when the local CLI/browser runtime works, makes embedded figures/graphs openable full-size in the browser, and now has a searchable `/artifacts` browser with kind tabs and selected previews for current-transcript image, graph, Markdown report, JSON receipt, and HTML export artifacts. |
@@ -68,9 +68,7 @@ capabilities.
    custom tool activity must be easy to inspect while a session runs.
 3. `MUST`: Extension behavior gap closure. Keep Tau's current extension hooks
    and add Pi-compatible behavior where it affects daily use.
-4. `PARTIAL`: Config and settings editing. Preserve Tau config/resource rows;
-   add real backing behavior before adding more toggles.
-5. `DEFER`: Pi toggles without Tau backing such as cache-miss notices or install
+4. `DEFER`: Pi toggles without Tau backing such as cache-miss notices or install
    telemetry. Do not create UI switches that imply nonexistent runtime behavior.
 
 ## Preservation Rules
@@ -91,11 +89,6 @@ Current candidates:
   Tau report bundles only when backed by real linked files or generated
   artifacts. Search, kind tabs, and selected previews are now present; do not
   create static dashboard inventory.
-- `Config write-scope/package overrides`: still partial because Pi can write
-  global/project package resource overrides directly from the selector; Tau
-  currently has backed user/project disabled-resource toggles, visible write
-  targets, in-place toggle refresh, and scope tabs, but not full Pi package
-  filter editing.
 - `Extension custom component objects`: still partial because Pi can mount
   arbitrary custom TUI components; Tau supports extension selection/input/
   editor/custom screens plus expansion-aware string/JSON/component-like custom
@@ -105,6 +98,27 @@ Current candidates:
   Do not add a fake setting or heuristic notice from aggregate stats.
 
 Latest slice evidence:
+
+- Source inspected: Pi `config-selector.ts`; Tau `ConfigMapScreen`,
+  `_config_map_items`, resource disable persistence, project TUI settings,
+  session disabled-resource adapter, resource discovery paths, and config-map
+  tests.
+- Destination preserved: Tau's fixed Tau/`.agents` resource discovery model,
+  user and project `disabled_resource_paths`, Memory/SciLLM/DAG/workflow
+  surfaces, diagnostics rows, and command/path actions.
+- Changed: no code change. The matrix now marks config selector parity as
+  matched for Tau's actual resource model and records Pi package-source filter
+  editing as intentionally not copied because Tau has no Pi-style package
+  source settings manager.
+- Mocked: yes for the session/provider fixture used by the focused check.
+- Live: no provider-live, SciLLM-live, or package-source mutation; this is a
+  source-audit plus local Textual config interaction proof.
+- Proof: `uv run pytest tests/test_tui_app.py -q -k 'config_map or
+  project_tui_settings or resources_command'` reported `6 passed, 462
+  deselected`.
+- Remaining gap: arbitrary extension component embedding remains the only
+  `MUST/PARTIAL` row; login/OAuth polish remains partial but not a
+  tomorrow-use blocker for API-key/OAuth login.
 
 - Source inspected: Pi `settings-selector.ts`; Tau `SettingsPickerScreen`,
   `_settings_picker_items`, `_next_tui_settings`, setting persistence/apply
