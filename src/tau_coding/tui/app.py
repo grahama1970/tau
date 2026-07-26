@@ -4536,6 +4536,14 @@ type ConfigMapAction = Literal["insert_command", "copy_path", "toggle_resource"]
 type ConfigMapScope = Literal["all", "project", "user"]
 type ArtifactBrowserAction = Literal["open", "copy"]
 type ArtifactPreviewKind = Literal["image", "markdown", "json", "html"]
+type ArtifactBrowserKind = Literal["all", "image", "markdown", "json", "html"]
+ARTIFACT_BROWSER_KINDS: tuple[ArtifactBrowserKind, ...] = (
+    "all",
+    "image",
+    "markdown",
+    "json",
+    "html",
+)
 MARKDOWN_ARTIFACT_LINK_PATTERN = re.compile(
     r"(?<!!)\[[^\]\n]+\]\((?P<target><[^>\n]+>|[^)\s]+)(?:\s+\"[^\"]*\")?\)"
 )
@@ -4575,11 +4583,82 @@ class ArtifactBrowserResult:
     artifact: VisualArtifact
 
 
+class ArtifactBrowserSearchInput(Input):
+    """Search input that keeps artifact-browser control keys local to the screen."""
+
+    BINDINGS: ClassVar[list[Binding]] = [
+        Binding("tab", "cycle_kind", "Kind", priority=True),
+        Binding("ctrl+i", "cycle_kind", "Kind", priority=True),
+    ]
+
+    def _screen(self) -> ArtifactBrowserScreen:
+        return cast(ArtifactBrowserScreen, self.screen)
+
+    def action_cycle_kind(self) -> None:
+        """Cycle artifact kinds while search has focus."""
+        self._screen().action_cycle_kind()
+
+    def action_focus_next(self) -> None:
+        """Treat Tab as Pi-style kind switching instead of focus traversal."""
+        self._screen().action_cycle_kind()
+
+    def on_key(self, event: Key) -> None:
+        """Route configured keys before the input edits its text."""
+        screen = self._screen()
+        keybindings = screen.keybindings
+        if _matches_configured_or_default_key(event.key, keybindings.select_up, "up"):
+            event.stop()
+            event.prevent_default()
+            screen.action_cursor_up()
+        elif _matches_configured_or_default_key(event.key, keybindings.select_down, "down"):
+            event.stop()
+            event.prevent_default()
+            screen.action_cursor_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.select_page_up,
+            "pageup",
+        ):
+            event.stop()
+            event.prevent_default()
+            screen.action_page(-1)
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.select_page_down,
+            "pagedown",
+        ):
+            event.stop()
+            event.prevent_default()
+            screen.action_page(1)
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.select_confirm,
+            "enter",
+        ):
+            event.stop()
+            event.prevent_default()
+            screen.action_select_cursor()
+        elif _matches_configured_or_default_key(
+            event.key,
+            keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            event.prevent_default()
+            screen.action_cancel()
+        elif event.key in {"tab", "ctrl+i"}:
+            event.stop()
+            event.prevent_default()
+            screen.action_cycle_kind()
+
+
 class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
     """Open, copy, or preview artifacts found in the current transcript."""
 
     BINDINGS: ClassVar[list[Binding]] = [
         Binding("c", "copy_selected", "Copy"),
+        Binding("tab", "cycle_kind", "Kind", priority=True),
+        Binding("ctrl+i", "cycle_kind", "Kind", priority=True),
     ]
 
     def __init__(
@@ -4597,12 +4676,20 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
         self.keybindings = keybindings or TuiKeybindings()
         self.show_images = show_images
         self.image_width_cells = image_width_cells
+        self.search_value = ""
+        self.kind: ArtifactBrowserKind = "all"
+        self.filtered_artifacts = self.artifacts
 
     def compose(self) -> ComposeResult:
         """Compose the artifact browser."""
         with Vertical(id="config-map"):
             yield Static("Artifacts", id="config-map-title")
-            yield Static(_artifact_browser_summary(self.artifacts), id="config-map-tabs")
+            yield Static(_artifact_browser_summary(self.artifacts), id="artifact-browser-summary")
+            yield Static("", id="config-map-tabs")
+            yield ArtifactBrowserSearchInput(
+                placeholder="Search artifacts",
+                id="artifact-browser-search",
+            )
             yield ListView(*self._list_items(), id="config-map-list")
             yield Static(
                 self._preview_renderable(0),
@@ -4612,19 +4699,32 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
             yield Static(self._help_text(), id="config-map-help")
 
     def on_mount(self) -> None:
-        """Focus the artifact list."""
-        if self.artifacts:
-            self.query_one("#config-map-list", ListView).index = 0
-        self.query_one("#config-map-list", ListView).focus()
+        """Focus the artifact search input."""
+        self._refresh_list(0)
+        self.query_one("#artifact-browser-search", Input).focus()
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """Filter artifacts as the search value changes."""
+        if event.input.id != "artifact-browser-search":
+            return
+        self.search_value = event.value
+        self._refresh_list(0)
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Open the selected artifact from the search input."""
+        if event.input.id != "artifact-browser-search":
+            return
+        event.stop()
+        self.action_select_cursor()
 
     def on_key(self, event: Key) -> None:
         """Route configured artifact-browser keys."""
         if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
             event.stop()
-            self.query_one("#config-map-list", ListView).action_cursor_up()
+            self.action_cursor_up()
         elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
             event.stop()
-            self.query_one("#config-map-list", ListView).action_cursor_down()
+            self.action_cursor_down()
         elif _matches_configured_or_default_key(
             event.key,
             self.keybindings.select_page_up,
@@ -4645,22 +4745,25 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
             "enter",
         ):
             event.stop()
-            self._select("open")
+            self.action_select_cursor()
         elif _matches_configured_or_default_key(
             event.key,
             self.keybindings.select_cancel,
             "escape",
         ):
             event.stop()
-            self.dismiss(None)
+            self.action_cancel()
         elif event.key == "c":
             event.stop()
             self._select("copy")
+        elif event.key in {"tab", "ctrl+i"}:
+            event.stop()
+            self.action_cycle_kind()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Open the selected artifact."""
-        if event.index < len(self.artifacts):
-            self.dismiss(ArtifactBrowserResult("open", self.artifacts[event.index]))
+        if event.index < len(self.filtered_artifacts):
+            self.dismiss(ArtifactBrowserResult("open", self.filtered_artifacts[event.index]))
 
     def on_list_view_highlighted(self, event: ListView.Highlighted) -> None:
         """Update the selected artifact preview."""
@@ -4671,9 +4774,44 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
         """Copy the selected artifact path."""
         self._select("copy")
 
+    def action_cursor_up(self) -> None:
+        """Move to the previous artifact row."""
+        self.query_one("#config-map-list", ListView).action_cursor_up()
+        self._refresh_preview()
+
+    def action_cursor_down(self) -> None:
+        """Move to the next artifact row."""
+        self.query_one("#config-map-list", ListView).action_cursor_down()
+        self._refresh_preview()
+
+    def action_cycle_kind(self) -> None:
+        """Cycle Pi-style artifact type tabs."""
+        self.kind = ARTIFACT_BROWSER_KINDS[
+            (ARTIFACT_BROWSER_KINDS.index(self.kind) + 1) % len(ARTIFACT_BROWSER_KINDS)
+        ]
+        self._refresh_list(0)
+
+    def action_focus_next(self) -> None:
+        """Treat Tab as Pi-style kind switching inside the artifact modal."""
+        self.action_cycle_kind()
+
+    def action_focus_previous(self) -> None:
+        """Treat Shift+Tab as reverse Pi-style kind switching."""
+        index = (ARTIFACT_BROWSER_KINDS.index(self.kind) - 1) % len(ARTIFACT_BROWSER_KINDS)
+        self.kind = ARTIFACT_BROWSER_KINDS[index]
+        self._refresh_list(0)
+
+    def action_select_cursor(self) -> None:
+        """Open the highlighted artifact."""
+        self._select("open")
+
+    def action_cancel(self) -> None:
+        """Close the artifact browser."""
+        self.dismiss(None)
+
     def action_page(self, direction: Literal[-1, 1]) -> None:
         """Move by one visible artifact page."""
-        if not self.artifacts:
+        if not self.filtered_artifacts:
             return
         artifact_list = self.query_one("#config-map-list", ListView)
         current_index = artifact_list.index if artifact_list.index is not None else 0
@@ -4682,30 +4820,44 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
             page_size = 10
         artifact_list.index = max(
             0,
-            min(len(self.artifacts) - 1, current_index + (direction * page_size)),
+            min(len(self.filtered_artifacts) - 1, current_index + (direction * page_size)),
         )
         self._refresh_preview()
 
     def _select(self, action: ArtifactBrowserAction) -> None:
         artifact_list = self.query_one("#config-map-list", ListView)
         index = artifact_list.index
-        if index is None or index >= len(self.artifacts):
+        if index is None or index >= len(self.filtered_artifacts):
             return
-        self.dismiss(ArtifactBrowserResult(action, self.artifacts[index]))
+        self.dismiss(ArtifactBrowserResult(action, self.filtered_artifacts[index]))
+
+    def _refresh_list(self, index: int) -> None:
+        self.filtered_artifacts = _filter_artifacts(
+            self.artifacts,
+            self.search_value,
+            kind=self.kind,
+        )
+        artifact_list = self.query_one("#config-map-list", ListView)
+        artifact_list.clear()
+        artifact_list.extend(self._list_items())
+        artifact_list.index = (
+            min(index, len(artifact_list.children) - 1) if self.filtered_artifacts else None
+        )
+        self._refresh_preview()
 
     def _list_items(self) -> list[ListItem]:
-        if not self.artifacts:
+        if not self.filtered_artifacts:
             return [
                 ListItem(
                     Label(
-                        "No artifacts in the current transcript.",
+                        _artifact_browser_empty_label(self),
                         markup=False,
                     )
                 )
             ]
         return [
             ListItem(Label(_artifact_browser_label(index, artifact), markup=False))
-            for index, artifact in enumerate(self.artifacts, 1)
+            for index, artifact in enumerate(self.filtered_artifacts, 1)
         ]
 
     def _refresh_preview(self) -> None:
@@ -4716,11 +4868,14 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
             return
         index = artifact_list.index if artifact_list.index is not None else 0
         preview.update(self._preview_renderable(index))
+        self._refresh_help_text()
 
     def _preview_renderable(self, index: int) -> RenderableType:
-        if not self.artifacts:
+        if not self.filtered_artifacts:
             return "No preview available"
-        artifact = self.artifacts[max(0, min(len(self.artifacts) - 1, index))]
+        artifact = self.filtered_artifacts[
+            max(0, min(len(self.filtered_artifacts) - 1, index))
+        ]
         try:
             data = artifact.path.read_bytes()
         except OSError:
@@ -4814,12 +4969,19 @@ class ArtifactBrowserScreen(ModalScreen[ArtifactBrowserResult | None]):
     def _help_text(self) -> str:
         confirm_key = _key_hint_with_default(self.keybindings.select_confirm, "enter")
         cancel_key = _key_hint_with_default(self.keybindings.select_cancel, "escape")
-        if not self.artifacts:
-            return f"No artifacts to open - {cancel_key} closes"
+        if not self.filtered_artifacts:
+            return f"No matching artifacts - Tab/Ctrl+I switches kind - {cancel_key} closes"
         return (
-            f"Up/Down navigates - {confirm_key} opens - c copies path - "
+            f"Type to search - Up/Down navigates - {confirm_key} opens - "
+            f"c copies path - Tab/Ctrl+I switches kind - "
             f"{cancel_key} closes"
         )
+
+    def _refresh_help_text(self) -> None:
+        self.query_one("#config-map-tabs", Static).update(
+            _artifact_browser_kind_tabs(self.artifacts, self.kind)
+        )
+        self.query_one("#config-map-help", Static).update(self._help_text())
 
 
 @dataclass(frozen=True, slots=True)
@@ -13728,6 +13890,73 @@ def _artifact_browser_summary(artifacts: Sequence[VisualArtifact]) -> str:
         f"{markdown_count} Markdown report(s), {json_count} JSON receipt(s), "
         f"{html_count} HTML export(s)"
     )
+
+
+def _artifact_browser_kind(artifact: VisualArtifact) -> ArtifactBrowserKind:
+    if artifact.preview_kind in {"markdown", "json", "html"}:
+        return artifact.preview_kind
+    return "image"
+
+
+def _artifact_browser_kind_tabs(
+    artifacts: Sequence[VisualArtifact],
+    kind: ArtifactBrowserKind,
+) -> str:
+    counts = {
+        artifact_kind: sum(
+            1
+            for artifact in artifacts
+            if artifact_kind == "all" or _artifact_browser_kind(artifact) == artifact_kind
+        )
+        for artifact_kind in ARTIFACT_BROWSER_KINDS
+    }
+    labels = []
+    for artifact_kind in ARTIFACT_BROWSER_KINDS:
+        label = f"{artifact_kind} {counts[artifact_kind]}"
+        labels.append(f"[{label}]" if artifact_kind == kind else label)
+    return "Kind: " + " | ".join(labels)
+
+
+def _filter_artifacts(
+    artifacts: Sequence[VisualArtifact],
+    query: str,
+    *,
+    kind: ArtifactBrowserKind,
+) -> tuple[VisualArtifact, ...]:
+    tokens = tuple(token for token in query.casefold().split() if token)
+    filtered: list[VisualArtifact] = []
+    for artifact in artifacts:
+        if kind != "all" and _artifact_browser_kind(artifact) != kind:
+            continue
+        if tokens and not _artifact_matches_search(artifact, tokens):
+            continue
+        filtered.append(artifact)
+    return tuple(filtered)
+
+
+def _artifact_matches_search(
+    artifact: VisualArtifact,
+    tokens: Sequence[str],
+) -> bool:
+    searchable = " ".join(
+        (
+            artifact.title,
+            artifact.source,
+            artifact.mime_type,
+            artifact.preview_kind,
+            artifact.path.name,
+            str(artifact.path),
+        )
+    ).casefold()
+    return all(token in searchable for token in tokens)
+
+
+def _artifact_browser_empty_label(screen: ArtifactBrowserScreen) -> str:
+    if not screen.artifacts:
+        return "No artifacts in the current transcript."
+    if screen.search_value.strip():
+        return f"No {screen.kind} artifacts matching {screen.search_value!r}."
+    return f"No {screen.kind} artifacts in the current transcript."
 
 
 def _artifact_browser_label(index: int, artifact: VisualArtifact) -> str:

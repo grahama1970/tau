@@ -4173,6 +4173,117 @@ async def test_tui_app_artifacts_command_previews_html_exports(
 
 
 @pytest.mark.anyio
+async def test_tui_app_artifacts_command_searches_and_filters_artifacts(
+    tmp_path: Path,
+) -> None:
+    set_capabilities(TerminalCapabilities(images=None, true_color=True, hyperlinks=True))
+    try:
+        image_path = tmp_path / "chart.png"
+        image_path.write_bytes(base64.b64decode(PNG_1X1_BASE64))
+        report_path = tmp_path / "review.md"
+        report_path.write_text(
+            "# Review\n\n"
+            "| criterion | verdict |\n"
+            "| --- | --- |\n"
+            "| graph visible | pass |\n",
+            encoding="utf-8",
+        )
+        receipt_path = tmp_path / "run-receipt.json"
+        receipt_path.write_text(
+            json.dumps(
+                {
+                    "schema": "tau.workflow_run_receipt.v1",
+                    "status": "FAIL",
+                    "workflow_id": "artifact-review",
+                    "run_id": "run-456",
+                },
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        export_path = tmp_path / "session.html"
+        export_path.write_text(
+            render_session_html(
+                [
+                    MessageEntry(id="user-1", message=UserMessage(content="Inspect artifacts")),
+                    MessageEntry(
+                        id="assistant-1",
+                        parent_id="user-1",
+                        message=AssistantMessage(content="# Export\n\nRendered table"),
+                    ),
+                ],
+                title="Tau Artifact Export",
+                source="/tmp/session.jsonl",
+            ),
+            encoding="utf-8",
+        )
+        session = FakeSession()
+        app = TauTuiApp(session)
+        app.state.add_item(
+            "assistant",
+            "\n".join(
+                (
+                    f"![chart]({image_path})",
+                    f"[review]({report_path})",
+                    f"[receipt]({receipt_path})",
+                    f"[export]({export_path})",
+                )
+            ),
+        )
+
+        async with app.run_test() as pilot:
+            prompt = app.query_one("#prompt")
+            prompt.value = "/artifacts"
+            await pilot.press("enter")
+            await pilot.pause()
+
+            assert isinstance(app.screen, ArtifactBrowserScreen)
+            assert len(app.screen.filtered_artifacts) == 4
+            assert str(app.screen.query_one("#artifact-browser-summary", Static).render()) == (
+                "Found 4 artifact(s), 1 image-backed, 1 Markdown report(s), "
+                "1 JSON receipt(s), 1 HTML export(s)"
+            )
+            assert "[all 4]" in str(app.screen.query_one("#config-map-tabs", Static).render())
+
+            for key in "receipt":
+                await pilot.press(key)
+            await pilot.pause()
+
+            assert app.screen.search_value == "receipt"
+            assert [artifact.path for artifact in app.screen.filtered_artifacts] == [receipt_path]
+            labels = [
+                str(item.query_one(Label).render())
+                for item in app.screen.query_one("#config-map-list", ListView).children
+            ]
+            assert labels == [
+                (
+                    f"01. run-receipt.json - assistant item 1 - application/json, "
+                    f"{receipt_path.stat().st_size} B - {receipt_path}"
+                )
+            ]
+            preview_console = Console(file=StringIO(), record=True, width=100)
+            preview_console.print(app.screen._preview_renderable(0))
+            preview = preview_console.export_text()
+            assert "tau.workflow_run_receipt.v1" in preview
+            assert '"status": "FAIL"' in preview
+
+            await pilot.press("ctrl+i")
+            await pilot.pause()
+
+            assert app.screen.kind == "image"
+            assert app.screen.filtered_artifacts == ()
+            empty_labels = [
+                str(item.query_one(Label).render())
+                for item in app.screen.query_one("#config-map-list", ListView).children
+            ]
+            assert empty_labels == ["No image artifacts matching 'receipt'."]
+    finally:
+        reset_capabilities_cache()
+
+
+@pytest.mark.anyio
 async def test_tui_app_import_command_reloads_visible_state() -> None:
     session = FakeSession(messages=[UserMessage(content="Earlier")])
     app = TauTuiApp(session)
