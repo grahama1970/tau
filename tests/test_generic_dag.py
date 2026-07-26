@@ -51,10 +51,7 @@ def test_generic_dag_runs_dependency_ordered_subprocess_workers(tmp_path: Path) 
         json.loads(spec_path.read_text(encoding="utf-8")),
         source_path=spec_path,
     )
-    assert (
-        runtime_result["runtime_endpoint_lease"]["goal_hash"]
-        == expected_plan.runtime_goal_hash
-    )
+    assert runtime_result["runtime_endpoint_lease"]["goal_hash"] == expected_plan.runtime_goal_hash
     assert runtime_result["runtime_submit_receipt"]["delivery_status"] == "CONFIRMED"
     assert runtime_result["runtime_event"]["state"] == "EXITED"
     assert len(runtime_result["runtime_artifacts"]) == 4
@@ -346,7 +343,7 @@ def test_generic_dag_fails_closed_on_invalid_node_receipt(tmp_path: Path) -> Non
                     (
                         "from pathlib import Path; "
                         f"Path({str(bad_receipt)!r}).parent.mkdir(parents=True, exist_ok=True); "
-                        f"Path({str(bad_receipt)!r}).write_text('{{\"schema\":\"wrong\"}}')"
+                        f'Path({str(bad_receipt)!r}).write_text(\'{{"schema":"wrong"}}\')'
                     ),
                 ],
             },
@@ -442,6 +439,35 @@ def test_generic_dag_rejects_resumed_receipt_from_changed_goal(tmp_path: Path) -
     assert receipt["verdict"] == "INVALID_RECEIPT"
     assert receipt["nodes"][0]["resumed"] is False
     assert "goal_hash does not match the active DAG goal" in receipt["nodes"][0]["errors"]
+
+
+def test_generic_dag_rejects_node_receipt_missing_goal_hash_when_goal_declared(
+    tmp_path: Path,
+) -> None:
+    receipt_path = tmp_path / "receipts" / "planner.json"
+    spec_path = _write_spec(
+        tmp_path,
+        [
+            _node(
+                tmp_path,
+                "planner",
+                command=[
+                    sys.executable,
+                    "-c",
+                    _receipt_writer_code(receipt_path, node_id="planner"),
+                ],
+            )
+        ],
+    )
+    spec = json.loads(spec_path.read_text(encoding="utf-8"))
+    spec["goal_hash"] = "sha256:active-goal"
+    spec_path.write_text(json.dumps(spec), encoding="utf-8")
+
+    receipt = run_generic_dag(spec_path=spec_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "INVALID_RECEIPT"
+    assert receipt["nodes"][0]["errors"] == ["goal_hash must be a non-empty string"]
 
 
 def test_generic_dag_resumes_from_run_directory_metadata(tmp_path: Path) -> None:

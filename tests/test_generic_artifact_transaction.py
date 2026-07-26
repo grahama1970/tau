@@ -190,6 +190,78 @@ def test_transaction_continuation_waits_for_exact_approval_binding(tmp_path: Pat
     assert (tmp_path / "producer-count.txt").read_text() == counter_before
 
 
+def test_transaction_resume_blocks_mismatched_transaction_goal_hash(
+    tmp_path: Path,
+) -> None:
+    worker = _write_worker(tmp_path)
+    goal_hash = "sha256:transaction-goal"
+    spec_path = _write_transaction_spec(tmp_path, worker=worker, goal_hash=goal_hash)
+    first = run_generic_dag(spec_path=spec_path)
+    transaction_receipt_path = (
+        tmp_path / "run" / "transactions" / "stage" / "transaction-receipt.json"
+    )
+    stored = json.loads(transaction_receipt_path.read_text(encoding="utf-8"))
+    stored["goal_hash"] = "sha256:stale-goal"
+    transaction_receipt_path.write_text(json.dumps(stored), encoding="utf-8")
+
+    second = run_generic_dag(spec_path=spec_path, resume=True)
+
+    assert first["status"] == "PASS"
+    assert second["status"] == "BLOCKED"
+    assert second["verdict"] == "STALE_ACCEPTED_STATE"
+    assert second["nodes"][0]["errors"] == ["transaction_receipt_goal_hash_mismatch"]
+    assert second["nodes"][0]["goal_hash"] == goal_hash
+
+
+def test_transaction_approval_rejects_packet_missing_goal_hash_target(
+    tmp_path: Path,
+) -> None:
+    worker = _write_worker(tmp_path)
+    goal_hash = "sha256:transaction-goal"
+    continuation_marker = tmp_path / "continued.txt"
+    continuation = [sys.executable, str(worker), "continue", str(continuation_marker)]
+    approval_path = tmp_path / "approval.json"
+    spec_path = _write_transaction_spec(
+        tmp_path,
+        worker=worker,
+        continuation=continuation,
+        approval_path=approval_path,
+        goal_hash=goal_hash,
+    )
+
+    first = run_generic_dag(spec_path=spec_path)
+    expected_target = first["nodes"][0]["errors"]
+    gate_path = tmp_path / "run" / "transactions" / "stage" / "approval-gate-receipt.json"
+    gate = json.loads(gate_path.read_text(encoding="utf-8"))
+    target = dict(gate["expected_target"])
+    target.pop("goal_hash")
+    approval_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.human_approval_packet.v1",
+                "approved": True,
+                "actor": {"id": "human:test", "auth_method": "manual"},
+                "action": "generic_dag_transaction_continue",
+                "target": target,
+                "reason": "approve exact deterministic continuation",
+                "evidence": [first["nodes"][0]["accepted_manifest_path"]],
+                "nonce": "test-nonce",
+                "signature": "declared-test-signature",
+            }
+        )
+        + "\n"
+    )
+
+    second = run_generic_dag(spec_path=spec_path, resume=True)
+
+    assert "approval packet not found" in expected_target[0]
+    assert gate["expected_target"]["goal_hash"] == goal_hash
+    assert second["status"] == "BLOCKED"
+    assert second["verdict"] == "APPROVAL_REQUIRED"
+    assert "target.goal_hash must match expected value" in second["nodes"][0]["errors"]
+    assert not continuation_marker.exists()
+
+
 def test_transaction_blocks_non_provider_live_producer_when_required(tmp_path: Path) -> None:
     worker = _write_worker(tmp_path)
     spec_path = _write_transaction_spec(
@@ -305,8 +377,7 @@ def test_mixed_dag_runs_transaction_validator_and_command_on_shared_scheduler(
     assert transaction["live"] is True
     assert transaction["provider_live"] is False
     assert all(
-        Path(attempt["validation_receipt_path"]).is_file()
-        for attempt in transaction["attempts"]
+        Path(attempt["validation_receipt_path"]).is_file() for attempt in transaction["attempts"]
     )
     assert downstream["status"] == "PASS"
     assert downstream["live"] is True
@@ -452,6 +523,7 @@ def _write_transaction_spec(
     producer_provider_live: bool = False,
     validator: bool = False,
     validator_pass: bool = True,
+    goal_hash: str | None = None,
 ) -> Path:
     run_dir = root / "run"
     artifacts = root / "artifacts"
@@ -535,6 +607,8 @@ def _write_transaction_spec(
         "run_dir": str(run_dir),
         "nodes": nodes,
     }
+    if goal_hash is not None:
+        spec["goal_hash"] = goal_hash
     path = root / "dag.json"
     path.write_text(json.dumps(spec, indent=2) + "\n")
     return path
@@ -597,7 +671,7 @@ if mode == "produce":
         "receipt_path": str(artifact),
         "receipt_sha256": hashlib.sha256(artifact.read_bytes()).hexdigest(),
     } if work_order.get("producer_provider_live") else None)
-    receipt_path.write_text(json.dumps({
+    producer_receipt = {
         "schema": "tau.generic_dag_node_receipt.v1",
         "node_id": context["node_id"],
         "status": "PASS",
@@ -612,7 +686,10 @@ if mode == "produce":
         "handoff_summary": "candidate produced",
         "work_order_sha256": hashlib.sha256(work_order_path.read_bytes()).hexdigest(),
         "provider_execution": provider_execution,
-    }))
+    }
+    if context.get("goal_hash"):
+        producer_receipt["goal_hash"] = context["goal_hash"]
+    receipt_path.write_text(json.dumps(producer_receipt))
     count = int(counter_path.read_text()) if counter_path.exists() else 0
     counter_path.write_text(str(count + 1))
 elif mode == "review":
@@ -633,7 +710,7 @@ elif mode == "review":
         "artifact_ids": ["primary"],
         "revision_instruction": "revise bytes",
     }] if verdict == "REVISE" else [])
-    output.write_text(json.dumps({
+    review_feedback = {
         "schema": "tau.generic_artifact_review.v1",
         "transaction_id": context["transaction_id"],
         "node_id": context["node_id"],
@@ -648,7 +725,10 @@ elif mode == "review":
         "provider_live": False,
         "summary": "revise first" if verdict == "REVISE" else "accepted",
         "findings": findings,
-    }))
+    }
+    if context.get("goal_hash"):
+        review_feedback["goal_hash"] = context["goal_hash"]
+    output.write_text(json.dumps(review_feedback))
 elif mode == "validate":
     context_path = Path(os.environ["TAU_GENERIC_DAG_VALIDATION_CONTEXT"])
     context = json.loads(context_path.read_text())

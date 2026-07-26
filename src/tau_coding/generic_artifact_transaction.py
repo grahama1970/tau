@@ -235,6 +235,7 @@ def write_attempt_context(
     revision: dict[str, Any] | None,
     candidate_manifest_path: Path,
     producer_receipt_path: Path,
+    goal_hash: str | None = None,
 ) -> tuple[dict[str, Any], str]:
     payload = {
         "schema": ATTEMPT_CONTEXT_SCHEMA,
@@ -253,6 +254,8 @@ def write_attempt_context(
             "producer_receipt_path": str(producer_receipt_path),
         },
     }
+    if goal_hash is not None:
+        payload["goal_hash"] = goal_hash
     write_json(path, payload)
     return payload, file_sha256(path)
 
@@ -270,6 +273,7 @@ def write_review_context(
     candidate_manifest_sha256: str,
     artifacts: list[dict[str, Any]],
     review_feedback_path: Path,
+    goal_hash: str | None = None,
 ) -> tuple[dict[str, Any], str]:
     payload = {
         "schema": REVIEW_CONTEXT_SCHEMA,
@@ -286,6 +290,8 @@ def write_review_context(
         "validated_artifacts": artifacts,
         "output_contract": {"review_feedback_path": str(review_feedback_path)},
     }
+    if goal_hash is not None:
+        payload["goal_hash"] = goal_hash
     write_json(path, payload)
     return payload, file_sha256(path)
 
@@ -346,6 +352,7 @@ def validate_review_feedback(
     review_context_sha256: str,
     candidate_manifest_sha256: str,
     artifact_ids: set[str],
+    expected_goal_hash: str | None = None,
 ) -> tuple[dict[str, Any], list[str]]:
     payload, errors = load_json(path, label="review feedback")
     if errors:
@@ -360,6 +367,8 @@ def validate_review_feedback(
         "review_context_sha256": review_context_sha256,
         "candidate_manifest_sha256": candidate_manifest_sha256,
     }
+    if expected_goal_hash is not None:
+        expected["goal_hash"] = expected_goal_hash
     errors.extend(_binding_errors(payload, expected))
     verdict = str(payload.get("verdict") or "").upper()
     if verdict not in {"PASS", "REVISE", "BLOCKED"}:

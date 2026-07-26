@@ -279,6 +279,7 @@ def _review(*, revise_first: bool) -> None:
             "reviewer_id": context["reviewer_id"],
             "review_context_sha256": os.environ["TAU_GENERIC_DAG_REVIEW_CONTEXT_SHA256"],
             "candidate_manifest_sha256": context["candidate_manifest_sha256"],
+            "goal_hash": context["goal_hash"],
             "verdict": verdict,
             "mocked": False,
             "live": True,

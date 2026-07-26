@@ -167,9 +167,7 @@ def run_generic_dag(
             with SqliteDagRunStore(run_store_path) as progress_store:
                 progress_store.append_diagnostic_event(
                     lease,
-                    event_key=(
-                        f"transaction:{node_id}:{scheduler_attempt}:{attempt}:{phase}"
-                    ),
+                    event_key=(f"transaction:{node_id}:{scheduler_attempt}:{attempt}:{phase}"),
                     node_id=node_id,
                     payload=payload,
                 )
@@ -220,14 +218,12 @@ def run_generic_dag(
                 "goal": goal_hash or plan.runtime_goal_hash,
             },
             cancel_event=execution.cancel_event,
-            progress_sink=lambda node_id, attempt, phase, evidence: (
-                record_transaction_progress(
-                    execution.attempt,
-                    node_id,
-                    attempt,
-                    phase,
-                    evidence,
-                )
+            progress_sink=lambda node_id, attempt, phase, evidence: record_transaction_progress(
+                execution.attempt,
+                node_id,
+                attempt,
+                phase,
+                evidence,
             ),
         )
         if result.get("status") == "PASS" and result.get("verdict") == "PASS":
@@ -702,9 +698,7 @@ def _run_legacy_node(
     node_started_monotonic = time.monotonic()
     if resume and node.receipt_path.exists():
         existing = _read_json_object(node.receipt_path, label=f"{node.node_id} receipt")
-        errors = _validate_node_receipt(existing, node)
-        if goal_hash is not None and existing.get("goal_hash") != goal_hash:
-            errors.append("goal_hash does not match the active DAG goal")
+        errors = _validate_node_receipt(existing, node, expected_goal_hash=goal_hash)
         if not errors and existing.get("verdict") == "PASS":
             _append_event(
                 events_path,
@@ -779,9 +773,7 @@ def _run_legacy_node(
             duration_seconds=time.monotonic() - node_started_monotonic,
         )
     receipt = _read_json_object(node.receipt_path, label=f"{node.node_id} receipt")
-    errors = _validate_node_receipt(receipt, node)
-    if goal_hash is not None and receipt.get("goal_hash") != goal_hash:
-        errors.append("goal_hash does not match the active DAG goal")
+    errors = _validate_node_receipt(receipt, node, expected_goal_hash=goal_hash)
     if errors:
         return _blocked_node_record(
             node,
@@ -855,10 +847,16 @@ def _run_transaction_node(
             and prior.get("schema") == TRANSACTION_RECEIPT_SCHEMA
             and prior.get("state") in {"ACCEPTED", "APPROVAL_REQUIRED", "CONTINUED"}
         ):
+            if goal_hash is not None:
+                prior_goal_hash = prior.get("goal_hash")
+                if not isinstance(prior_goal_hash, str) or not prior_goal_hash.strip():
+                    prior_errors.append("transaction_receipt_goal_hash_required")
+                elif prior_goal_hash != goal_hash:
+                    prior_errors.append("transaction_receipt_goal_hash_mismatch")
             expected_manifest_sha256 = prior.get("accepted_manifest_sha256")
             if not isinstance(expected_manifest_sha256, str):
                 prior_errors.append("accepted_manifest_sha256_missing")
-            else:
+            elif not prior_errors:
                 accepted, accepted_errors = revalidate_accepted_manifest(
                     path=accepted_manifest_path,
                     expected_sha256=expected_manifest_sha256,
@@ -889,6 +887,7 @@ def _run_transaction_node(
                             resumed=True,
                             started_at=started_at,
                             duration_seconds=time.monotonic() - started_monotonic,
+                            goal_hash=goal_hash,
                         )
                     return _continue_transaction(
                         node=node,
@@ -906,6 +905,7 @@ def _run_transaction_node(
                         resumed=True,
                         runtime_identity=runtime_identity,
                         cancel_event=cancel_event,
+                        goal_hash=goal_hash,
                     )
             if prior_errors:
                 return _transaction_record(
@@ -920,6 +920,7 @@ def _run_transaction_node(
                     resumed=False,
                     started_at=started_at,
                     duration_seconds=time.monotonic() - started_monotonic,
+                    goal_hash=goal_hash,
                 )
 
     revision: dict[str, Any] | None = None
@@ -947,6 +948,7 @@ def _run_transaction_node(
             revision=revision,
             candidate_manifest_path=candidate_manifest_path,
             producer_receipt_path=node.receipt_path,
+            goal_hash=goal_hash,
         )
         _append_event(
             events_path,
@@ -994,12 +996,19 @@ def _run_transaction_node(
                 transaction_receipt_path=transaction_receipt_path,
                 started_at=started_at,
                 started_monotonic=started_monotonic,
+                goal_hash=goal_hash,
             )
         producer_receipt, receipt_errors = load_json(
             node.receipt_path, label="transaction producer receipt"
         )
         if not receipt_errors:
-            receipt_errors.extend(_validate_node_receipt(producer_receipt, node))
+            receipt_errors.extend(
+                _validate_node_receipt(
+                    producer_receipt,
+                    node,
+                    expected_goal_hash=goal_hash,
+                )
+            )
             if str(producer_receipt.get("status") or "").upper() != "PASS":
                 receipt_errors.append("producer_receipt_not_passed")
         candidate, candidate_errors = validate_candidate_manifest(
@@ -1021,6 +1030,7 @@ def _run_transaction_node(
                 transaction_receipt_path=transaction_receipt_path,
                 started_at=started_at,
                 started_monotonic=started_monotonic,
+                goal_hash=goal_hash,
             )
         candidate_manifest_sha256 = file_sha256(candidate_manifest_path)
         _emit_transaction_progress(
@@ -1096,6 +1106,7 @@ def _run_transaction_node(
                     transaction_receipt_path=transaction_receipt_path,
                     started_at=started_at,
                     started_monotonic=started_monotonic,
+                    goal_hash=goal_hash,
                 )
             _emit_transaction_progress(
                 progress_sink,
@@ -1119,6 +1130,7 @@ def _run_transaction_node(
             candidate_manifest_sha256=candidate_manifest_sha256,
             artifacts=artifacts,
             review_feedback_path=review_feedback_path,
+            goal_hash=goal_hash,
         )
         _emit_transaction_progress(
             progress_sink,
@@ -1161,6 +1173,7 @@ def _run_transaction_node(
                 transaction_receipt_path=transaction_receipt_path,
                 started_at=started_at,
                 started_monotonic=started_monotonic,
+                goal_hash=goal_hash,
             )
         feedback, feedback_errors = validate_review_feedback(
             path=review_feedback_path,
@@ -1170,6 +1183,7 @@ def _run_transaction_node(
             review_context_sha256=review_context_sha256,
             candidate_manifest_sha256=candidate_manifest_sha256,
             artifact_ids={str(item["artifact_id"]) for item in artifacts},
+            expected_goal_hash=goal_hash,
         )
         producer_execution = producer_receipt.get("provider_execution")
         producer_provider_live = producer_receipt.get("provider_live") is True or (
@@ -1216,6 +1230,7 @@ def _run_transaction_node(
                 transaction_receipt_path=transaction_receipt_path,
                 started_at=started_at,
                 started_monotonic=started_monotonic,
+                goal_hash=goal_hash,
             )
         verdict = str(feedback["verdict"]).upper()
         _emit_transaction_progress(
@@ -1238,6 +1253,7 @@ def _run_transaction_node(
                 transaction_receipt_path=transaction_receipt_path,
                 started_at=started_at,
                 started_monotonic=started_monotonic,
+                goal_hash=goal_hash,
             )
         if verdict == "REVISE":
             previous_artifact_sha256s = {
@@ -1279,6 +1295,7 @@ def _run_transaction_node(
                 transaction_receipt_path=transaction_receipt_path,
                 started_at=started_at,
                 started_monotonic=started_monotonic,
+                goal_hash=goal_hash,
             )
         accepted, accepted_sha256 = write_accepted_manifest(
             path=accepted_manifest_path,
@@ -1322,6 +1339,7 @@ def _run_transaction_node(
                 resumed=False,
                 runtime_identity=runtime_identity,
                 cancel_event=cancel_event,
+                goal_hash=goal_hash,
             )
         _write_transaction_receipt(
             path=transaction_receipt_path,
@@ -1331,6 +1349,7 @@ def _run_transaction_node(
             attempts=attempts,
             accepted_manifest_path=accepted_manifest_path,
             accepted_manifest_sha256=accepted_sha256,
+            goal_hash=goal_hash,
         )
         return _transaction_record(
             node=node,
@@ -1346,6 +1365,7 @@ def _run_transaction_node(
             resumed=False,
             started_at=started_at,
             duration_seconds=time.monotonic() - started_monotonic,
+            goal_hash=goal_hash,
         )
     return _transaction_blocked(
         node=node,
@@ -1356,6 +1376,7 @@ def _run_transaction_node(
         transaction_receipt_path=transaction_receipt_path,
         started_at=started_at,
         started_monotonic=started_monotonic,
+        goal_hash=goal_hash,
     )
 
 
@@ -1388,6 +1409,7 @@ def _continue_transaction(
     resumed: bool,
     runtime_identity: dict[str, Any],
     cancel_event: Event,
+    goal_hash: str | None,
 ) -> dict[str, Any]:
     continuation = spec.continuation
     assert continuation is not None
@@ -1402,6 +1424,8 @@ def _continue_transaction(
             "accepted_manifest_sha256": accepted_manifest_sha256,
             "continuation_command_sha256": command_sha256,
         }
+        if goal_hash is not None:
+            expected_target["goal_hash"] = goal_hash
         approval = evaluate_approval_gate(
             approval_packet=continuation.approval.packet_path,
             requested_action=continuation.approval.action,
@@ -1419,6 +1443,7 @@ def _continue_transaction(
                 accepted_manifest_path=accepted_manifest_path,
                 accepted_manifest_sha256=accepted_manifest_sha256,
                 approval_gate_receipt_path=approval_receipt_path,
+                goal_hash=goal_hash,
             )
             return _transaction_record(
                 node=node,
@@ -1434,6 +1459,7 @@ def _continue_transaction(
                 resumed=resumed,
                 started_at=started_at,
                 duration_seconds=time.monotonic() - started_monotonic,
+                goal_hash=goal_hash,
             )
     continuation_context = transaction_receipt_path.parent / "continuation-context.json"
     write_json(
@@ -1447,6 +1473,7 @@ def _continue_transaction(
             "accepted_manifest_sha256": accepted_manifest_sha256,
             "artifacts": accepted["artifacts"],
             "continuation_command_sha256": command_sha256,
+            **({"goal_hash": goal_hash} if goal_hash is not None else {}),
         },
     )
     result = _run_command(
@@ -1479,6 +1506,7 @@ def _continue_transaction(
             transaction_receipt_path=transaction_receipt_path,
             started_at=started_at,
             started_monotonic=started_monotonic,
+            goal_hash=goal_hash,
         )
     _write_transaction_receipt(
         path=transaction_receipt_path,
@@ -1492,6 +1520,7 @@ def _continue_transaction(
         if continuation.approval is not None
         else None,
         continuation={"command_sha256": command_sha256, "returncode": result.returncode},
+        goal_hash=goal_hash,
     )
     return _transaction_record(
         node=node,
@@ -1507,6 +1536,7 @@ def _continue_transaction(
         resumed=resumed,
         started_at=started_at,
         duration_seconds=time.monotonic() - started_monotonic,
+        goal_hash=goal_hash,
     )
 
 
@@ -1520,6 +1550,7 @@ def _transaction_blocked(
     transaction_receipt_path: Path,
     started_at: str,
     started_monotonic: float,
+    goal_hash: str | None,
 ) -> dict[str, Any]:
     return _transaction_record(
         node=node,
@@ -1533,6 +1564,7 @@ def _transaction_blocked(
         resumed=False,
         started_at=started_at,
         duration_seconds=time.monotonic() - started_monotonic,
+        goal_hash=goal_hash,
     )
 
 
@@ -1552,6 +1584,7 @@ def _transaction_record(
     resumed: bool,
     started_at: str,
     duration_seconds: float,
+    goal_hash: str | None,
 ) -> dict[str, Any]:
     spec = node.transaction
     assert spec is not None
@@ -1584,6 +1617,7 @@ def _transaction_record(
         "receipt_path": str(node.receipt_path),
         "work_order_path": str(node.work_order_path),
         "work_order_sha256": _work_order_sha256(node),
+        "goal_hash": goal_hash,
         "resumed": resumed,
         "started_at": started_at,
         "finished_at": _utc_stamp(),
@@ -1603,6 +1637,7 @@ def _write_transaction_receipt(
     accepted_manifest_sha256: str,
     approval_gate_receipt_path: Path | None = None,
     continuation: dict[str, Any] | None = None,
+    goal_hash: str | None = None,
 ) -> None:
     spec = node.transaction
     assert spec is not None
@@ -1615,6 +1650,7 @@ def _write_transaction_receipt(
             "run_id": run_id,
             "node_id": node.node_id,
             "transaction_id": spec.transaction_id,
+            "goal_hash": goal_hash,
             "work_order_sha256": _work_order_sha256(node),
             "attempt_count": len(attempts),
             "attempts": attempts,
@@ -1908,7 +1944,12 @@ def _topological_order(nodes: dict[str, DagNode]) -> list[DagNode]:
     return ordered
 
 
-def _validate_node_receipt(receipt: dict[str, Any], node: DagNode) -> list[str]:
+def _validate_node_receipt(
+    receipt: dict[str, Any],
+    node: DagNode,
+    *,
+    expected_goal_hash: str | None = None,
+) -> list[str]:
     errors = []
     if receipt.get("schema") != GENERIC_DAG_NODE_RECEIPT_SCHEMA:
         errors.append(f"schema must be {GENERIC_DAG_NODE_RECEIPT_SCHEMA}")
@@ -1933,6 +1974,12 @@ def _validate_node_receipt(receipt: dict[str, Any], node: DagNode) -> list[str]:
         errors.append(
             f"work_order_sha256 must match current work_order_path {node.work_order_path}"
         )
+    if expected_goal_hash is not None:
+        observed_goal_hash = receipt.get("goal_hash")
+        if not isinstance(observed_goal_hash, str) or not observed_goal_hash.strip():
+            errors.append("goal_hash must be a non-empty string")
+        elif observed_goal_hash != expected_goal_hash:
+            errors.append("goal_hash does not match the active DAG goal")
     errors.extend(_validate_provider_live_receipt(receipt))
     return errors
 
@@ -2198,7 +2245,7 @@ def _optional_json_object(path: Path) -> dict[str, Any]:
         return {}
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return {}
     return payload if isinstance(payload, dict) else {}
 
