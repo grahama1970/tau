@@ -81,6 +81,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
             "model_cycle_previous": "f11",
             "model_picker": "f10",
             "toggle_thinking": "f4",
+            "dag_viewer_handoff": "f19",
             "external_editor": "f7",
             "paste_clipboard": "f8",
             "suspend": "f12",
@@ -123,6 +124,7 @@ def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
     assert settings.keybindings.dequeue_messages == "f9"
     assert settings.keybindings.toggle_tool_results == "ctrl+o"
     assert settings.keybindings.toggle_thinking == "f4"
+    assert settings.keybindings.dag_viewer_handoff == "f19"
     assert settings.keybindings.accept_completion == "f2"
     assert settings.keybindings.thinking_cycle == "f3"
     assert settings.keybindings.model_cycle == "f6"
@@ -170,6 +172,7 @@ def test_tui_settings_reads_pi_keybinding_aliases() -> None:
                 "app.message.copy": ["f3", "f4"],
                 "app.message.followUp": "f5",
                 "app.message.dequeue": "f6",
+                "app.dagViewer.open": "f19",
                 "app.clipboard.pasteImage": "f7",
                 "app.editor.external": "f8",
                 "app.session.tree": "f9",
@@ -230,6 +233,7 @@ def test_tui_settings_reads_pi_keybinding_aliases() -> None:
     assert settings.keybindings.copy_last_message == "f3,f4"
     assert settings.keybindings.queue_follow_up == "f5"
     assert settings.keybindings.dequeue_messages == "f6"
+    assert settings.keybindings.dag_viewer_handoff == "f19"
     assert settings.keybindings.paste_clipboard == "f7"
     assert settings.keybindings.external_editor == "f8"
     assert settings.keybindings.session_tree == "f9"
@@ -891,6 +895,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
             model_cycle="f6",
             model_cycle_previous="f11",
             model_picker="f10",
+            dag_viewer_handoff="f19",
             select_up="f13",
             select_down="f14",
             select_page_up="f15",
@@ -933,6 +938,7 @@ def test_tui_keybindings_serialize_to_json() -> None:
     assert settings.to_json()["keybindings"]["model_cycle"] == "f6"
     assert settings.to_json()["keybindings"]["model_cycle_previous"] == "f11"
     assert settings.to_json()["keybindings"]["model_picker"] == "f10"
+    assert settings.to_json()["keybindings"]["dag_viewer_handoff"] == "f19"
     assert settings.to_json()["keybindings"]["select_up"] == "f13"
     assert settings.to_json()["keybindings"]["select_down"] == "f14"
     assert settings.to_json()["keybindings"]["select_page_up"] == "f15"

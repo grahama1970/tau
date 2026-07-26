@@ -13,6 +13,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import threading
 import webbrowser
 from collections.abc import AsyncIterator, Callable, Mapping, Sequence
 from contextlib import suppress
@@ -27,7 +28,7 @@ from math import ceil
 from pathlib import Path
 from time import monotonic
 from typing import Any, ClassVar, Literal, Protocol, cast
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qsl, unquote, urlencode, urlparse, urlunparse
 
 from rich.cells import cell_len
 from rich.console import Console, Group, RenderableType
@@ -85,6 +86,7 @@ from tau_coding.commands import (
     daxnuts_easter_message,
 )
 from tau_coding.credentials import FileCredentialStore, OAuthCredential, credentials_path
+from tau_coding.dag_viewer.server import RunningDagViewerServer, create_dag_viewer_server
 from tau_coding.oauth import OAuthAuthInfo, OAuthPrompt, login_openai_codex
 from tau_coding.paths import TauPaths
 from tau_coding.prompt_templates import PromptTemplate
@@ -108,6 +110,7 @@ from tau_coding.provider_config import (
 )
 from tau_coding.provider_runtime import create_model_provider
 from tau_coding.resources import TauResourcePaths
+from tau_coding.run_status import build_dag_viewer_link
 from tau_coding.session import (
     CodingSession,
     CodingSessionConfig,
@@ -274,6 +277,8 @@ class CompletionActionTarget(Protocol):
     def action_open_model_picker(self) -> None: ...
 
     def action_toggle_tool_results(self) -> None: ...
+
+    def action_open_dag_viewer_handoff(self) -> None: ...
 
     def action_toggle_thinking(self) -> None: ...
 
@@ -7663,6 +7668,10 @@ class TauTuiApp(App[None]):
         self._retry_countdown_attempt: int | None = None
         self._retry_countdown_max_attempts: int | None = None
         self._terminal_progress_active = False
+        self._last_dag_viewer_run_dir: Path | None = None
+        self._last_dag_viewer_launch_command: tuple[str, ...] | None = None
+        self._dag_viewer_servers: list[RunningDagViewerServer] = []
+        self._dag_viewer_threads: list[threading.Thread] = []
         self._terminal_title = TerminalTitleController()
         self._extension_terminal_title: str | None = None
         self._extension_header_lines: tuple[str, ...] | None = None
@@ -7900,6 +7909,7 @@ class TauTuiApp(App[None]):
         if self._terminal_progress_active:
             self._terminal_progress_active = False
             self._write_terminal_progress(active=False)
+        self._shutdown_dag_viewer_servers()
         self._terminal_title.restore()
 
     def on_app_blur(self) -> None:
@@ -8087,6 +8097,9 @@ class TauTuiApp(App[None]):
                 group="terminal",
                 exclusive=True,
             )
+            return
+
+        if self._handle_dag_viewer_command(text):
             return
 
         if text.casefold() == "/debug":
@@ -8543,6 +8556,9 @@ class TauTuiApp(App[None]):
         item.text = _terminal_command_transcript_title(result.command)
         item.always_show_tool_result = False
         formatted_output = _format_workflow_terminal_output(result.output) or result.output
+        remembered_run_dir = _workflow_terminal_run_dir(result.output)
+        if remembered_run_dir is not None:
+            self._last_dag_viewer_run_dir = remembered_run_dir
         item.tool_result_text = format_terminal_command_result_block(
             ok=result.ok,
             added_to_context=result.added_to_context,
@@ -10046,10 +10062,106 @@ class TauTuiApp(App[None]):
         self._refresh()
         self._notify("Tool results expanded." if expanded else "Tool results collapsed.")
 
+    def action_open_dag_viewer_handoff(self) -> None:
+        """Open the web DAG viewer for the current or most recent DAG run."""
+        self._open_dag_viewer_handoff(source="keybinding")
+
     def action_toggle_thinking(self) -> None:
         """Toggle thinking-token display in the transcript."""
         self.state.toggle_thinking()
         self._refresh()
+
+    def _handle_dag_viewer_command(self, text: str) -> bool:
+        """Handle the local /dag-viewer handoff command."""
+        stripped = text.strip()
+        if not stripped.casefold().startswith("/dag-viewer"):
+            return False
+        try:
+            parts = shlex.split(stripped)
+        except ValueError as exc:
+            self._append_command_message("/dag-viewer", f"Usage: /dag-viewer [run-dir]\n{exc}")
+            self._refresh()
+            return True
+        if not parts or parts[0].casefold() != "/dag-viewer":
+            return False
+        if len(parts) > 2:
+            self._append_command_message("/dag-viewer", "Usage: /dag-viewer [run-dir]")
+            self._refresh()
+            return True
+        run_dir = Path(parts[1]) if len(parts) == 2 else None
+        message = self._open_dag_viewer_handoff(run_dir=run_dir, source="/dag-viewer")
+        self._append_command_message("/dag-viewer", message)
+        self._refresh()
+        return True
+
+    def _open_dag_viewer_handoff(
+        self,
+        *,
+        run_dir: Path | None = None,
+        source: str,
+    ) -> str:
+        """Launch a loopback DAG viewer using the existing dag-viewer-link target."""
+        selected_run_dir = run_dir or self._last_dag_viewer_run_dir
+        if selected_run_dir is None:
+            message = (
+                "DAG viewer unavailable: no current DAG run is known. "
+                "Run a workflow first, or use /dag-viewer <run-dir>."
+            )
+            self._notify(message, severity="warning")
+            return message
+        try:
+            link = build_dag_viewer_link(selected_run_dir)
+        except Exception as exc:  # noqa: BLE001 - show invalid paths and malformed stores plainly
+            message = f"DAG viewer unavailable for {selected_run_dir}: {exc}"
+            self._notify(message, severity="error")
+            return message
+        if link.get("ok") is not True:
+            message = _dag_viewer_unavailable_message(link, selected_run_dir)
+            self._notify(message, severity="warning")
+            return message
+        try:
+            launch_command = _dag_viewer_launch_command(link)
+            launch_run_dir, run_id = _dag_viewer_launch_target(launch_command)
+            server = create_dag_viewer_server(
+                run_dir=launch_run_dir,
+                run_id=run_id,
+                host="127.0.0.1",
+                port=0,
+            )
+        except Exception as exc:  # noqa: BLE001 - surface handoff/link drift to the operator
+            message = f"DAG viewer unavailable for {selected_run_dir}: {exc}"
+            self._notify(message, severity="error")
+            return message
+        thread = threading.Thread(
+            target=server.serve_forever,
+            name=f"tau-dag-viewer-{server.port}",
+            daemon=True,
+        )
+        thread.start()
+        self._dag_viewer_servers.append(server)
+        self._dag_viewer_threads.append(thread)
+        self._last_dag_viewer_run_dir = launch_run_dir
+        self._last_dag_viewer_launch_command = launch_command
+        node_id = _dag_viewer_node_target(launch_run_dir)
+        url = _dag_viewer_url_with_node(server.url, node_id)
+        opened = webbrowser.open(url)
+        suffix = f" targeting node {node_id}" if node_id else ""
+        message = f"DAG viewer opened{suffix}: {url}"
+        if opened is False:
+            message = f"{message}\nBrowser open returned false; copy the URL manually."
+        self._notify(f"DAG viewer opened from {source}.")
+        return message
+
+    def _shutdown_dag_viewer_servers(self) -> None:
+        """Stop loopback viewer servers launched from the TUI."""
+        for server in self._dag_viewer_servers:
+            with suppress(Exception):
+                server.shutdown()
+        for thread in self._dag_viewer_threads:
+            if thread.is_alive():
+                thread.join(timeout=2)
+        self._dag_viewer_servers.clear()
+        self._dag_viewer_threads.clear()
 
     def action_open_external_editor(self) -> None:
         """Open the prompt text in the configured external editor."""
@@ -12546,6 +12658,122 @@ def _format_workflow_terminal_output(output: str) -> str | None:
     return "\n".join(lines)
 
 
+def _workflow_terminal_run_dir(output: str) -> Path | None:
+    """Return the run directory from a workflow receipt emitted by a terminal command."""
+    try:
+        payload = json.loads(output.strip())
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    if payload.get("schema") != "tau.workflow_run_receipt.v1":
+        return None
+    run_dir = payload.get("run_dir")
+    if not isinstance(run_dir, str) or not run_dir.strip():
+        return None
+    return Path(run_dir).expanduser()
+
+
+def _dag_viewer_launch_command(link_payload: Mapping[str, object]) -> tuple[str, ...]:
+    """Return the single launch command produced by build_dag_viewer_link."""
+    dag_viewer = link_payload.get("dag_viewer")
+    if not isinstance(dag_viewer, Mapping):
+        raise RuntimeError("dag_viewer_link_missing_summary")
+    command = dag_viewer.get("launch_command")
+    if command is None:
+        commands = dag_viewer.get("launch_commands")
+        if isinstance(commands, list) and len(commands) == 1:
+            command = commands[0]
+        elif isinstance(commands, list) and len(commands) > 1:
+            raise RuntimeError("dag_viewer_run_id_required")
+    if not isinstance(command, list) or not all(isinstance(part, str) for part in command):
+        raise RuntimeError("dag_viewer_launch_command_missing")
+    return tuple(command)
+
+
+def _dag_viewer_launch_target(command: Sequence[str]) -> tuple[Path, str | None]:
+    """Decode the run directory and run id from the existing dag-view launch command."""
+    if len(command) < 4 or command[0] != "tau" or command[1] != "dag-view":
+        raise RuntimeError("dag_viewer_launch_command_invalid")
+    run_dir: Path | None = None
+    run_id: str | None = None
+    index = 2
+    while index < len(command):
+        option = command[index]
+        if option not in {"--run-dir", "--run-id"}:
+            raise RuntimeError("dag_viewer_launch_command_invalid")
+        if index + 1 >= len(command):
+            raise RuntimeError("dag_viewer_launch_command_invalid")
+        value = command[index + 1]
+        if option == "--run-dir":
+            run_dir = Path(value).expanduser().resolve()
+        else:
+            run_id = value
+        index += 2
+    if run_dir is None:
+        raise RuntimeError("dag_viewer_launch_command_missing_run_dir")
+    return run_dir, run_id
+
+
+def _dag_viewer_node_target(run_dir: Path) -> str | None:
+    """Return the active or blocked node id from a DAG current-state file."""
+    path = run_dir.expanduser().resolve() / "current-state.json"
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+    active_node_id = payload.get("active_node_id")
+    if isinstance(active_node_id, str) and active_node_id.strip():
+        return active_node_id
+    blocked_nodes = payload.get("blocked_nodes")
+    if isinstance(blocked_nodes, list):
+        for item in blocked_nodes:
+            if isinstance(item, str) and item.strip():
+                return item
+            if isinstance(item, dict):
+                node_id = item.get("node_id")
+                if isinstance(node_id, str) and node_id.strip():
+                    return node_id
+    return None
+
+
+def _dag_viewer_url_with_node(url: str, node_id: str | None) -> str:
+    """Append viewer query state that filters and selects the current node."""
+    if not node_id:
+        return url
+    parsed = urlparse(url)
+    values = dict(parse_qsl(parsed.query, keep_blank_values=True))
+    values.update(
+        {
+            "filter_kind": "NODE",
+            "filter_q": node_id,
+            "entity_kind": "NODE",
+            "node_id": node_id,
+        }
+    )
+    return urlunparse(parsed._replace(query=urlencode(values)))
+
+
+def _dag_viewer_unavailable_message(
+    link_payload: Mapping[str, object],
+    run_dir: Path,
+) -> str:
+    """Format a clear TUI message when the viewer link cannot be resolved."""
+    status = link_payload.get("status")
+    reason = status if isinstance(status, str) and status else "MISSING"
+    dag_viewer = link_payload.get("dag_viewer")
+    if isinstance(dag_viewer, Mapping):
+        store_error = dag_viewer.get("store_error")
+        source = dag_viewer.get("source")
+        if isinstance(store_error, str) and store_error:
+            reason = store_error
+        elif isinstance(source, str) and source:
+            reason = f"{reason} ({source})"
+    return f"DAG viewer unavailable for {run_dir}: {reason}"
+
+
 def _active_tree_choice_index(choices: Sequence[SessionTreeChoice]) -> int:
     return _tree_choice_index(choices, None)
 
@@ -14620,6 +14848,10 @@ def _render_tui_hotkeys_message(
             "collapse or expand tool output",
         ),
         _markdown_table_row(
+            _key_hint(keybindings.dag_viewer_handoff),
+            "open current DAG run in web viewer",
+        ),
+        _markdown_table_row(
             _key_hint(keybindings.paste_clipboard),
             "paste clipboard text or image",
         ),
@@ -14678,6 +14910,7 @@ def _render_tui_hotkeys_message(
         f"- {_key_hint(keybindings.queue_follow_up)}: queue follow-up while running",
         f"- {_key_hint(keybindings.dequeue_messages)}: restore queued messages",
         f"- {_key_hint(keybindings.toggle_tool_results)}: collapse or expand tool output",
+        f"- {_key_hint(keybindings.dag_viewer_handoff)}: open current DAG run in web viewer",
         f"- {_key_hint(keybindings.toggle_thinking)}: toggle thinking tokens",
         f"- {_key_hint(keybindings.thinking_cycle)}: cycle thinking level",
         "",
@@ -14725,6 +14958,7 @@ def _render_tui_hotkeys_message(
         "- /: slash commands",
         "- /resources: show loaded context, skills, prompts, tools, and diagnostics",
         "- /artifacts: browse image, graph, Markdown, JSON, and HTML artifacts",
+        "- /dag-viewer [run-dir]: open a DAG run in the web viewer",
         "- !: run bash command and add output to context",
         "- !!: run bash command without adding output to context",
     ]
@@ -15402,6 +15636,7 @@ def _app_bindings(keybindings: TuiKeybindings) -> list[Binding]:
             priority=True,
         ),
         Binding(keybindings.toggle_tool_results, "toggle_tool_results", "Tool results"),
+        Binding(keybindings.dag_viewer_handoff, "open_dag_viewer_handoff", "DAG viewer"),
         Binding(keybindings.toggle_thinking, "toggle_thinking", "Thinking tokens"),
         Binding(keybindings.external_editor, "open_external_editor", "Editor"),
         Binding(keybindings.paste_clipboard, "paste_clipboard", "Paste"),

@@ -1,9 +1,11 @@
 import asyncio
 import base64
+import http.client
 import json
 import re
 import shutil
 import subprocess
+import sys
 from collections.abc import AsyncIterator, Sequence
 from contextlib import nullcontext
 from dataclasses import replace
@@ -11,6 +13,7 @@ from datetime import datetime
 from io import StringIO
 from pathlib import Path
 from types import SimpleNamespace
+from urllib.parse import parse_qs, urlparse
 
 import pytest
 from rich.console import Console
@@ -55,6 +58,11 @@ from tau_coding.commands import (
 from tau_coding.context_window import ContextUsageEstimate
 from tau_coding.credentials import FileCredentialStore, OAuthCredential
 from tau_coding.extensions.api import ExtensionCommandContext
+from tau_coding.generic_dag import (
+    GENERIC_DAG_NODE_RECEIPT_SCHEMA,
+    GENERIC_DAG_SPEC_SCHEMA,
+    run_generic_dag,
+)
 from tau_coding.oauth import OAuthAuthInfo
 from tau_coding.prompt_templates import PromptTemplate
 from tau_coding.provider_config import (
@@ -9611,6 +9619,7 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         tui_settings=TuiSettings(
             keybindings=TuiKeybindings(
                 command_palette="ctrl+j",
+                dag_viewer_handoff="f30",
                 session_picker="f6",
                 queue_follow_up="f5",
                 copy_last_message="ctrl+y",
@@ -9649,11 +9658,13 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "Keyboard Shortcuts" in app.screen.message
         assert "| Key | Action |" in app.screen.message
         assert "| Ctrl+J | open slash-command completions |" in app.screen.message
+        assert "| F30 | open current DAG run in web viewer |" in app.screen.message
         artifacts_help = (
             "| /artifacts | browse image, graph, Markdown, JSON, and HTML artifacts |"
         )
         assert artifacts_help in app.screen.message
         assert "Ctrl+J: open slash-command completions" in app.screen.message
+        assert "F30: open current DAG run in web viewer" in app.screen.message
         assert "F6: open session picker" in app.screen.message
         assert "F5: queue follow-up while running" in app.screen.message
         assert "Ctrl+Y: copy last assistant message" in app.screen.message
@@ -9663,13 +9674,15 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
         assert "F15/F16: move one character left/right" in app.screen.message
         assert "F17: move word left" in app.screen.message
         assert "F18: move word right" in app.screen.message
+        assert "/dag-viewer [run-dir]: open a DAG run in the web viewer" in app.screen.message
         assert "F19/F20: jump to next or previous character" in app.screen.message
         assert "Pageup/Pagedown: scroll transcript by page" in app.screen.message
         assert "drop files: attach paths to the prompt" in app.screen.message
         assert "F21: delete to line start" in app.screen.message
         assert "F22: delete to line end when not used for commands" in app.screen.message
         assert (
-            "F23: delete next character; F29 quits when the editor is empty" in app.screen.message
+            "F23: delete next character; F29 quits when the editor is empty"
+            in app.screen.message
         )
         assert "F24: delete previous word" in app.screen.message
         assert "F25: delete next word" in app.screen.message
@@ -9679,6 +9692,155 @@ async def test_tui_app_hotkeys_uses_configured_keybindings() -> None:
             "/resources: show loaded context, skills, prompts, tools, and diagnostics"
             in app.screen.message
         )
+
+
+def _write_tui_dag_viewer_fixture(
+    tmp_path: Path,
+    *,
+    active_node_id: str | None = None,
+    blocked_nodes: list[str] | None = None,
+) -> Path:
+    run_dir = tmp_path / "dag-viewer-run"
+    receipt_path = run_dir / "receipts" / "review.json"
+    node_receipt = {
+        "schema": GENERIC_DAG_NODE_RECEIPT_SCHEMA,
+        "node_id": "review",
+        "status": "PASS",
+        "verdict": "PASS",
+        "artifacts": [],
+        "commands_run": [],
+        "errors": [],
+        "handoff_summary": "review node passed",
+        "policy_exceptions": [],
+    }
+    writer = (
+        "import json\n"
+        "from pathlib import Path\n"
+        f"path = Path({str(receipt_path)!r})\n"
+        "path.parent.mkdir(parents=True, exist_ok=True)\n"
+        f"path.write_text(json.dumps({node_receipt!r}), encoding='utf-8')\n"
+    )
+    spec_path = tmp_path / "dag-viewer-spec.json"
+    spec_path.write_text(
+        json.dumps(
+            {
+                "schema": GENERIC_DAG_SPEC_SCHEMA,
+                "run_id": "tui-dag-viewer-run",
+                "run_dir": str(run_dir),
+                "nodes": [
+                    {
+                        "node_id": "review",
+                        "role": "reviewer",
+                        "receipt_path": str(receipt_path),
+                        "command": [sys.executable, "-c", writer],
+                    }
+                ],
+            },
+            indent=2,
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    receipt = run_generic_dag(spec_path=spec_path)
+    assert receipt["status"] == "PASS"
+    state_path = run_dir / "current-state.json"
+    state = json.loads(state_path.read_text(encoding="utf-8"))
+    if active_node_id is not None:
+        state["active_node_id"] = active_node_id
+    if blocked_nodes is not None:
+        state["blocked_nodes"] = blocked_nodes
+    state_path.write_text(json.dumps(state, indent=2, sort_keys=True), encoding="utf-8")
+    return run_dir
+
+
+def _assert_viewer_health(url: str) -> None:
+    parsed = urlparse(url)
+    assert parsed.hostname is not None
+    assert parsed.port is not None
+    connection = http.client.HTTPConnection(parsed.hostname, parsed.port, timeout=2)
+    try:
+        connection.request("GET", "/healthz")
+        response = connection.getresponse()
+        body = response.read()
+    finally:
+        connection.close()
+    assert response.status == 200
+    assert b'"status": "ok"' in body
+
+
+@pytest.mark.anyio
+async def test_tui_app_dag_viewer_command_opens_existing_link_target(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    run_dir = _write_tui_dag_viewer_fixture(tmp_path)
+    opened_urls: list[str] = []
+    monkeypatch.setattr(tui_app.webbrowser, "open", lambda url: opened_urls.append(url) or True)
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = f"/dag-viewer {run_dir}"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert opened_urls
+        _assert_viewer_health(opened_urls[0])
+
+    link_payload = tui_app.build_dag_viewer_link(run_dir)
+    launch_command = link_payload["dag_viewer"]["launch_command"]
+    assert app._last_dag_viewer_launch_command == tuple(launch_command)
+    assert "DAG viewer opened:" in app.state.items[-1].text
+
+
+@pytest.mark.anyio
+async def test_tui_app_dag_viewer_keybinding_targets_current_node(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    run_dir = _write_tui_dag_viewer_fixture(tmp_path, active_node_id="review")
+    opened_urls: list[str] = []
+    monkeypatch.setattr(tui_app.webbrowser, "open", lambda url: opened_urls.append(url) or True)
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(keybindings=TuiKeybindings(dag_viewer_handoff="f8")),
+    )
+    app._last_dag_viewer_run_dir = run_dir
+
+    async with app.run_test() as pilot:
+        await pilot.press("f8")
+        await pilot.pause()
+
+        assert opened_urls
+        _assert_viewer_health(opened_urls[0])
+
+    query = parse_qs(urlparse(opened_urls[0]).query)
+    assert query["filter_kind"] == ["NODE"]
+    assert query["filter_q"] == ["review"]
+    assert query["entity_kind"] == ["NODE"]
+    assert query["node_id"] == ["review"]
+
+
+@pytest.mark.anyio
+async def test_tui_app_dag_viewer_unavailable_path_surfaces_message(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    run_dir = tmp_path / "not-a-dag-run"
+    run_dir.mkdir()
+    opened_urls: list[str] = []
+    monkeypatch.setattr(tui_app.webbrowser, "open", lambda url: opened_urls.append(url) or True)
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = f"/dag-viewer {run_dir}"
+        await pilot.press("enter")
+        await pilot.pause()
+
+    assert opened_urls == []
+    assert "DAG viewer unavailable" in app.state.items[-1].text
+    assert str(run_dir) in app.state.items[-1].text
 
 
 @pytest.mark.anyio

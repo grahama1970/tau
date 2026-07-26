@@ -95,6 +95,7 @@ class TuiKeybindings:
     select_cancel: str = "escape,ctrl+c"
     toggle_thinking: str = "ctrl+t"
     toggle_tool_results: str = "ctrl+o"
+    dag_viewer_handoff: str = "ctrl+alt+v"
     copy_message: str = "ctrl+c"
     copy_last_message: str = "ctrl+x"
     external_editor: str = "ctrl+g"
@@ -175,6 +176,7 @@ class TuiKeybindings:
             "select_cancel": self.select_cancel,
             "toggle_thinking": self.toggle_thinking,
             "toggle_tool_results": self.toggle_tool_results,
+            "dag_viewer_handoff": self.dag_viewer_handoff,
             "copy_message": self.copy_message,
             "copy_last_message": self.copy_last_message,
             "external_editor": self.external_editor,
@@ -1509,6 +1511,7 @@ _PI_KEYBINDING_ALIASES = {
     "app.message.followUp": "queue_follow_up",
     "app.message.dequeue": "dequeue_messages",
     "app.tools.expand": "toggle_tool_results",
+    "app.dagViewer.open": "dag_viewer_handoff",
     "app.thinking.toggle": "toggle_thinking",
     "app.thinking.cycle": "thinking_cycle",
     "app.model.cycleForward": "model_cycle",
