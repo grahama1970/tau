@@ -1,0 +1,243 @@
+{
+  "artifact_count": 27,
+  "artifacts": [
+    {
+      "bytes": 66240,
+      "kind": "audit_receipt",
+      "label": "immutable_goal_audit",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/audit/immutable-goal-audit.json",
+      "sha256": "sha256:be6eaafea09a1ad90f147e2ecb66c6a97424bb4192d04cd61ecafd4b3ae6b5d3",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/audit/immutable-goal-audit.json"
+    },
+    {
+      "bytes": 9946,
+      "kind": "supplied_proof",
+      "label": "readiness_positive_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/supplied-proofs/readiness_positive_browser.json",
+      "sha256": "sha256:3c175fa89c5c735e57b4bbbe594595b0875488d45c124400e2762ca61bfb9857",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/positive-browser.json"
+    },
+    {
+      "bytes": 169208,
+      "kind": "desktop_screenshot",
+      "label": "readiness_positive_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/readiness_positive_browser-desktop.png",
+      "sha256": "sha256:379bbcc2d6d927a73ab09d629b6e760905bdd69f247e502f6f718ce6d410a9bc",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/positive-desktop.png"
+    },
+    {
+      "bytes": 125670,
+      "kind": "mobile_screenshot",
+      "label": "readiness_positive_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/readiness_positive_browser-mobile.png",
+      "sha256": "sha256:434ed539ff338c04b6fd40c3840305655ae40e1d659deb0769ed2982633bc1a4",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/positive-mobile.png"
+    },
+    {
+      "bytes": 7145,
+      "kind": "supplied_proof",
+      "label": "readiness_negative_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/supplied-proofs/readiness_negative_browser.json",
+      "sha256": "sha256:f608bc8b1a1f0ffca5ef4b37d26cfc246c4399b7df580b0dcd86352f078dbba2",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/negative-browser.json"
+    },
+    {
+      "bytes": 165685,
+      "kind": "desktop_screenshot",
+      "label": "readiness_negative_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/readiness_negative_browser-desktop.png",
+      "sha256": "sha256:4536d97d25f3a24d950a65da7ea44e88abaad01c9adf4be08711778db096b889",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/negative-desktop.png"
+    },
+    {
+      "bytes": 131204,
+      "kind": "mobile_screenshot",
+      "label": "readiness_negative_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/readiness_negative_browser-mobile.png",
+      "sha256": "sha256:741d8e61eba7cd7fb4e392a79560579bd38de9f4a76f82f04ff4a9c79a63f819",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/negative-mobile.png"
+    },
+    {
+      "bytes": 16906,
+      "kind": "supplied_proof",
+      "label": "operator_positive_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/supplied-proofs/operator_positive_browser.json",
+      "sha256": "sha256:3eceff16f3b97130acf0528d3319e38f1c4e3af076eb6ea39a025d69584c2eec",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/positive-browser.json"
+    },
+    {
+      "bytes": 178163,
+      "kind": "desktop_screenshot",
+      "label": "operator_positive_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/operator_positive_browser-desktop.png",
+      "sha256": "sha256:b1c7734fa4a99e4dcd32959a088bd16280b56974befe3ffd7082636e2a5af141",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/positive-desktop.png"
+    },
+    {
+      "bytes": 126031,
+      "kind": "mobile_screenshot",
+      "label": "operator_positive_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/operator_positive_browser-mobile.png",
+      "sha256": "sha256:1cc05ba9e58579d776e333041e7c19c346ec5415902857a9e1e6ae39826dc43a",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/positive-mobile.png"
+    },
+    {
+      "bytes": 15493,
+      "kind": "supplied_proof",
+      "label": "operator_negative_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/supplied-proofs/operator_negative_browser.json",
+      "sha256": "sha256:7dbf7e8ec02c351f3868aefbb2cad6d8c2ae28f051e9803e7a4bedc09fb7d70a",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/negative-browser.json"
+    },
+    {
+      "bytes": 174927,
+      "kind": "desktop_screenshot",
+      "label": "operator_negative_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/operator_negative_browser-desktop.png",
+      "sha256": "sha256:e467f070bd12666062957fa23d927dd4d9d5f02baf74768639de32e98e34e763",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/negative-desktop.png"
+    },
+    {
+      "bytes": 132013,
+      "kind": "mobile_screenshot",
+      "label": "operator_negative_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/operator_negative_browser-mobile.png",
+      "sha256": "sha256:60c0456157516ea4f0e5c92f9ae6b67352c6a05b7a2d21ff9ed89e0e75cd956e",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/negative-mobile.png"
+    },
+    {
+      "bytes": 5558,
+      "kind": "supplied_proof",
+      "label": "evidence_positive_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/supplied-proofs/evidence_positive_browser.json",
+      "sha256": "sha256:84511b22b3e2447ba2ec727da8f0d8d51fca4406de96e2b98eb009c8a9c90241",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/positive-browser.json"
+    },
+    {
+      "bytes": 184704,
+      "kind": "desktop_screenshot",
+      "label": "evidence_positive_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/evidence_positive_browser-desktop.png",
+      "sha256": "sha256:35652d3332be169ea821f00f065e6453d857db584d3a4a88865df3cacc71c64c",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/positive-desktop.png"
+    },
+    {
+      "bytes": 126331,
+      "kind": "mobile_screenshot",
+      "label": "evidence_positive_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/evidence_positive_browser-mobile.png",
+      "sha256": "sha256:79afdb0e43537801d1a5cdc11b62af8181ff9657b5af65405317b1a2d8b52066",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/positive-mobile.png"
+    },
+    {
+      "bytes": 4233,
+      "kind": "supplied_proof",
+      "label": "evidence_negative_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/supplied-proofs/evidence_negative_browser.json",
+      "sha256": "sha256:efc270374d70ba2637085d2b2128f43b3cead694888ef026b303e2c78c80b220",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/negative-browser.json"
+    },
+    {
+      "bytes": 177200,
+      "kind": "desktop_screenshot",
+      "label": "evidence_negative_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/evidence_negative_browser-desktop.png",
+      "sha256": "sha256:b6b8d2c683d7833f346a94d307e9bfdc76a616a7534ae683fd552abb76e1ab9b",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/negative-desktop.png"
+    },
+    {
+      "bytes": 133743,
+      "kind": "mobile_screenshot",
+      "label": "evidence_negative_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/evidence_negative_browser-mobile.png",
+      "sha256": "sha256:0bf8b59fc2e2515ab8da9fb6e933acc59083542ec875c68a0df4cb06de9ce53a",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/negative-mobile.png"
+    },
+    {
+      "bytes": 18801,
+      "kind": "supplied_proof",
+      "label": "slice04_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/supplied-proofs/slice04_browser.json",
+      "sha256": "sha256:7788e612d152c0e8bda2ad318e2393d0e66b2d89e42014ba0b38e0454afcab09",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/approved/browser.json"
+    },
+    {
+      "bytes": 186205,
+      "kind": "desktop_screenshot",
+      "label": "slice04_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/slice04_browser-desktop.png",
+      "sha256": "sha256:acbb7688fbbe74f53c0ebad947ceccce44dd43faf8b3de7d90fd759216226d01",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/approved/desktop.png"
+    },
+    {
+      "bytes": 145517,
+      "kind": "mobile_screenshot",
+      "label": "slice04_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/slice04_browser-mobile.png",
+      "sha256": "sha256:be902df93d40e51f5c691b792107ad9eec997bb97db6869baf61cc874eafd909",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/approved/mobile.png"
+    },
+    {
+      "bytes": 1196,
+      "kind": "supplied_proof",
+      "label": "slice04_no_accepted_producer_rerun",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/supplied-proofs/slice04_no_accepted_producer_rerun.json",
+      "sha256": "sha256:65c1bcda795cceebfc0a3f3cf72e0beed533a53fee634d43bab0d0ff25ebad7e",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/approved/no-accepted-producer-rerun.json"
+    },
+    {
+      "bytes": 54545,
+      "kind": "supplied_proof",
+      "label": "slice05_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/supplied-proofs/slice05_browser.json",
+      "sha256": "sha256:aa40d4e7271553edd10914bfc5b45d34ed91b6ecf0261ab3f1e1aea175038a6f",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/durable/browser.json"
+    },
+    {
+      "bytes": 192532,
+      "kind": "desktop_screenshot",
+      "label": "slice05_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/slice05_browser-desktop.png",
+      "sha256": "sha256:27821aeb0c4d07169582f9cf7f9e23199dbffb018478a63bc0eb8d7cabe6d993",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/durable/desktop.png"
+    },
+    {
+      "bytes": 145514,
+      "kind": "mobile_screenshot",
+      "label": "slice05_browser",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/slice05_browser-mobile.png",
+      "sha256": "sha256:f0e8a5dbd7debe16439381d548b0db9e3d8ba0628b036c5efa8f91eb551cf087",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/durable/mobile.png"
+    },
+    {
+      "bytes": 1211,
+      "kind": "supplied_proof",
+      "label": "slice05_wheel",
+      "retained_path": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/supplied-proofs/slice05_wheel.json",
+      "sha256": "sha256:e92b81f7ab2c887d64c80340be04ad1f546018b6a62da99bb05070f6611b5d0e",
+      "source_path": "/tmp/tau-issue-134-canonical-proof-final-20260726/wheel/durable-wheel-proof.json"
+    }
+  ],
+  "claims": {
+    "does_not_prove": [
+      "Human acceptance of the immutable goal.",
+      "Provider or model semantic quality.",
+      "That future proof runs will still pass without rerunning the audit."
+    ],
+    "proves": [
+      "The immutable-goal audit receipt is retained in the repository.",
+      "Every supplied proof JSON validated by the audit is retained in the repository.",
+      "Every desktop and mobile screenshot bound by a validated browser proof is retained in the repository.",
+      "Every retained artifact was copied only after its SHA-256 matched the audit record."
+    ]
+  },
+  "created_at": "2026-07-26T13:49:05+00:00",
+  "live": true,
+  "mocked": false,
+  "provider_live": false,
+  "requested_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+  "retention_root": "experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z",
+  "schema": "tau.canonical_workflow_retention_manifest.v1",
+  "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+  "status": "PASS"
+}

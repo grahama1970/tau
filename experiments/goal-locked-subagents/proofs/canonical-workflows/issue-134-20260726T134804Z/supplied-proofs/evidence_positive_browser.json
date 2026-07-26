@@ -1,0 +1,169 @@
+{
+  "checks": {
+    "all_branches_accepted": true,
+    "all_branches_running_together": true,
+    "desktop_layout_non_overlapping": true,
+    "final_result_absent": false,
+    "final_result_visible": true,
+    "goal_visible": true,
+    "inventory_accepted": true,
+    "inventory_running": true,
+    "mobile_layout_non_overlapping": true,
+    "no_manual_reload": true,
+    "publish_accepted": true,
+    "publish_not_dispatched": false,
+    "publish_running": true,
+    "read_only_requests": true,
+    "test_surface_missing_exact": false,
+    "workflow_title_visible": true
+  },
+  "desktop_screenshot": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/positive-desktop.png",
+  "desktop_screenshot_sha256": "sha256:35652d3332be169ea821f00f065e6453d857db584d3a4a88865df3cacc71c64c",
+  "live": true,
+  "mobile_screenshot": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/positive-mobile.png",
+  "mobile_screenshot_sha256": "sha256:79afdb0e43537801d1a5cdc11b62af8181ff9657b5af65405317b1a2d8b52066",
+  "mocked": false,
+  "observations": [
+    {
+      "blocker": "",
+      "goal": "Human goalMap this repository for focused work.",
+      "nodes": {
+        "analyze-documentation": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "analyze-package": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "analyze-tests": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "inventory-repository": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "publish-evidence-map": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "workflow": "WorkflowRepository Evidence MapFAN_OUT_FAN_IN \u00b7 repository-evidence-map"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalMap this repository for focused work.",
+      "nodes": {
+        "analyze-documentation": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "analyze-package": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "analyze-tests": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "inventory-repository": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "publish-evidence-map": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "workflow": "WorkflowRepository Evidence MapFAN_OUT_FAN_IN \u00b7 repository-evidence-map"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalMap this repository for focused work.",
+      "nodes": {
+        "analyze-documentation": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "analyze-package": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "analyze-tests": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "inventory-repository": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "publish-evidence-map": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "workflow": "WorkflowRepository Evidence MapFAN_OUT_FAN_IN \u00b7 repository-evidence-map"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalMap this repository for focused work.",
+      "nodes": {
+        "analyze-documentation": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "analyze-package": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "analyze-tests": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "inventory-repository": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "publish-evidence-map": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        }
+      },
+      "result": "ResultRepository evidence map validated from three concurrent analyses.ACCEPTEDrepository_evidence_map_json \u00b7 /tmp/tau-evidence-map-browser-3v3nqb9q/positive-run/results/repository-evidence-map.json \u00b7 sha256:f8f57ab8a9f059b846be980be5f178a34dca4b48280413b6693c667e90c18448repository_evidence_map_markdown \u00b7 /tmp/tau-evidence-map-browser-3v3nqb9q/positive-run/results/repository-evidence-map.md \u00b7 sha256:2c243782806312d00c215d44fb58c5c39346c6263e3674db8536200e593e4ef2",
+      "workflow": "WorkflowRepository Evidence MapFAN_OUT_FAN_IN \u00b7 repository-evidence-map"
+    }
+  ],
+  "provider_live": false,
+  "request_methods": [
+    "GET"
+  ],
+  "scenario": "positive",
+  "schema": "tau.repository_evidence_map_browser_proof.v1",
+  "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+  "status": "PASS",
+  "url": "http://127.0.0.1:38795/"
+}

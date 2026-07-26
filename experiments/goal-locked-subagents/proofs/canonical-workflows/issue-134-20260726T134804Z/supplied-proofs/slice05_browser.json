@@ -1,0 +1,607 @@
+{
+  "checks": {
+    "approval_required_visible": true,
+    "desktop_layout_non_overlapping": true,
+    "final_result_visible": true,
+    "goal_visible": true,
+    "journal_recovery_order": true,
+    "mobile_layout_non_overlapping": true,
+    "no_manual_reload": true,
+    "parallel_branches_running": true,
+    "publication_effect_count_one": true,
+    "read_only_requests": true,
+    "recovery_takeover_visible": true,
+    "repaired_branch_running": true,
+    "targeted_repair_blocker_visible": true,
+    "unaffected_branches_accepted": true,
+    "workflow_title_visible": true
+  },
+  "desktop_screenshot": "/tmp/tau-issue-134-canonical-proof-final-20260726/durable/desktop.png",
+  "desktop_screenshot_sha256": "sha256:27821aeb0c4d07169582f9cf7f9e23199dbffb018478a63bc0eb8d7cabe6d993",
+  "live": true,
+  "mobile_screenshot": "/tmp/tau-issue-134-canonical-proof-final-20260726/durable/mobile.png",
+  "mobile_screenshot_sha256": "sha256:f0e8a5dbd7debe16439381d548b0db9e3d8ba0628b036c5efa8f91eb551cf087",
+  "mocked": false,
+  "observations": [
+    {
+      "blocker": "",
+      "goal": "Human goalQualify this repository through durable recovery.",
+      "nodes": {
+        "capture-repository": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "finalize-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "publish-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "qualify-documentation": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "qualify-package": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "qualify-tests": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "reconcile-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "timeline": "Journal timeline7 recent events#1run_createddurable-repository-qualification-f7da0fb0237f#2run_lease_acquireddurable-repository-qualification-f7da0fb0237f#3scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#4scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#5attempt_reservedattempt-93819bd344930fe6f4a2355e63e52f12#6attempt_dispatchedattempt-93819bd344930fe6f4a2355e63e52f12#7scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f",
+      "workflow": "WorkflowDurable Repository QualificationDURABLE_MIXED_REPAIR_APPROVAL \u00b7 durable-repository-qualification"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalQualify this repository through durable recovery.",
+      "nodes": {
+        "capture-repository": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "finalize-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "publish-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "qualify-documentation": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "qualify-package": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "qualify-tests": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "reconcile-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "timeline": "Journal timeline22 recent events#1run_createddurable-repository-qualification-f7da0fb0237f#2run_lease_acquireddurable-repository-qualification-f7da0fb0237f#3scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#4scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#5attempt_reservedattempt-93819bd344930fe6f4a2355e63e52f12#6attempt_dispatchedattempt-93819bd344930fe6f4a2355e63e52f12#7scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f#8attempt_result_stagedattempt-93819bd344930fe6f4a2355e63e52f12#9attempt_result_validatedattempt-93819bd344930fe6f4a2355e63e52f12#10attempt_output_committedattempt-93819bd344930fe6f4a2355e63e52f12#11scheduler_transition_committedattempt-93819bd344930fe6f4a2355e63e52f12#12scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#13scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#14attempt_reservedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#15attempt_dispatchedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#16scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#17attempt_reservedattempt-4ffcc3ff94a5fa8117dbfef0c39e85a2#18attempt_dispatchedattempt-4ffcc3ff94a5fa8117dbfef0c39e85a2#19scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#20attempt_reservedattempt-c7732d111d5e95bc8413835b3acd2ab7#21attempt_dispatchedattempt-c7732d111d5e95bc8413835b3acd2ab7#22scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f",
+      "workflow": "WorkflowDurable Repository QualificationDURABLE_MIXED_REPAIR_APPROVAL \u00b7 durable-repository-qualification"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalQualify this repository through durable recovery.",
+      "nodes": {
+        "capture-repository": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "finalize-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "publish-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "qualify-documentation": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-package": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "qualify-tests": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "reconcile-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "timeline": "Journal timeline26 recent events#1run_createddurable-repository-qualification-f7da0fb0237f#2run_lease_acquireddurable-repository-qualification-f7da0fb0237f#3scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#4scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#5attempt_reservedattempt-93819bd344930fe6f4a2355e63e52f12#6attempt_dispatchedattempt-93819bd344930fe6f4a2355e63e52f12#7scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f#8attempt_result_stagedattempt-93819bd344930fe6f4a2355e63e52f12#9attempt_result_validatedattempt-93819bd344930fe6f4a2355e63e52f12#10attempt_output_committedattempt-93819bd344930fe6f4a2355e63e52f12#11scheduler_transition_committedattempt-93819bd344930fe6f4a2355e63e52f12#12scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#13scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#14attempt_reservedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#15attempt_dispatchedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#16scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#17attempt_reservedattempt-4ffcc3ff94a5fa8117dbfef0c39e85a2#18attempt_dispatchedattempt-4ffcc3ff94a5fa8117dbfef0c39e85a2#19scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#20attempt_reservedattempt-c7732d111d5e95bc8413835b3acd2ab7#21attempt_dispatchedattempt-c7732d111d5e95bc8413835b3acd2ab7#22scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f#23attempt_result_stagedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#24attempt_result_validatedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#25attempt_output_committedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#26scheduler_transition_committedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7",
+      "workflow": "WorkflowDurable Repository QualificationDURABLE_MIXED_REPAIR_APPROVAL \u00b7 durable-repository-qualification"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalQualify this repository through durable recovery.",
+      "nodes": {
+        "capture-repository": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "finalize-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "publish-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "qualify-documentation": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-package": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-tests": {
+          "admission": "validating",
+          "blocker": "",
+          "state": "validating"
+        },
+        "reconcile-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "timeline": "Journal timeline31 recent events#1run_createddurable-repository-qualification-f7da0fb0237f#2run_lease_acquireddurable-repository-qualification-f7da0fb0237f#3scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#4scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#5attempt_reservedattempt-93819bd344930fe6f4a2355e63e52f12#6attempt_dispatchedattempt-93819bd344930fe6f4a2355e63e52f12#7scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f#8attempt_result_stagedattempt-93819bd344930fe6f4a2355e63e52f12#9attempt_result_validatedattempt-93819bd344930fe6f4a2355e63e52f12#10attempt_output_committedattempt-93819bd344930fe6f4a2355e63e52f12#11scheduler_transition_committedattempt-93819bd344930fe6f4a2355e63e52f12#12scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#13scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#14attempt_reservedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#15attempt_dispatchedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#16scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#17attempt_reservedattempt-4ffcc3ff94a5fa8117dbfef0c39e85a2#18attempt_dispatchedattempt-4ffcc3ff94a5fa8117dbfef0c39e85a2#19scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#20attempt_reservedattempt-c7732d111d5e95bc8413835b3acd2ab7#21attempt_dispatchedattempt-c7732d111d5e95bc8413835b3acd2ab7#22scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f#23attempt_result_stagedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#24attempt_result_validatedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#25attempt_output_committedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#26scheduler_transition_committedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#27attempt_result_stagedattempt-4ffcc3ff94a5fa8117dbfef0c39e85a2#28attempt_result_validatedattempt-4ffcc3ff94a5fa8117dbfef0c39e85a2#29attempt_output_committedattempt-4ffcc3ff94a5fa8117dbfef0c39e85a2#30scheduler_transition_committedattempt-4ffcc3ff94a5fa8117dbfef0c39e85a2#31attempt_result_stagedattempt-c7732d111d5e95bc8413835b3acd2ab7",
+      "workflow": "WorkflowDurable Repository QualificationDURABLE_MIXED_REPAIR_APPROVAL \u00b7 durable-repository-qualification"
+    },
+    {
+      "blocker": "Exact blockerqualify-teststargeted_repair_required",
+      "goal": "Human goalQualify this repository through durable recovery.",
+      "nodes": {
+        "capture-repository": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "finalize-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "publish-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "qualify-documentation": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-package": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-tests": {
+          "admission": "rejected",
+          "blocker": "targeted_repair_required",
+          "state": "blocked"
+        },
+        "reconcile-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "timeline": "Journal timeline37 recent events#1run_createddurable-repository-qualification-f7da0fb0237f#2run_lease_acquireddurable-repository-qualification-f7da0fb0237f#3scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#4scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#5attempt_reservedattempt-93819bd344930fe6f4a2355e63e52f12#6attempt_dispatchedattempt-93819bd344930fe6f4a2355e63e52f12#7scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f#8attempt_result_stagedattempt-93819bd344930fe6f4a2355e63e52f12#9attempt_result_validatedattempt-93819bd344930fe6f4a2355e63e52f12#10attempt_output_committedattempt-93819bd344930fe6f4a2355e63e52f12#11scheduler_transition_committedattempt-93819bd344930fe6f4a2355e63e52f12#12scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#13scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#14attempt_reservedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#15attempt_dispatchedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#16scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#17attempt_reservedattempt-4ffcc3ff94a5fa8117dbfef0c39e85a2#18attempt_dispatchedattempt-4ffcc3ff94a5fa8117dbfef0c39e85a2#19scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f#20attempt_reservedattempt-c7732d111d5e95bc8413835b3acd2ab7#21attempt_dispatchedattempt-c7732d111d5e95bc8413835b3acd2ab7#22scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f#23attempt_result_stagedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#24attempt_result_validatedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#25attempt_output_committedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#26scheduler_transition_committedattempt-76f09c7ae9f1db8fdc3d5794c3592cf7#27attempt_result_stagedattempt-4ffcc3ff94a5fa8117dbfef0c39e85a2#28attempt_result_validatedattempt-4ffcc3ff94a5fa8117dbfef0c39e85a2#29attempt_output_committedattempt-4ffcc3ff94a5fa8117dbfef0c39e85a2#30scheduler_transition_committedattempt-4ffcc3ff94a5fa8117dbfef0c39e85a2#31attempt_result_stagedattempt-c7732d111d5e95bc8413835b3acd2ab7#32run_lease_taken_overdurable-repository-qualification-f7da0fb0237f#33attempt_result_validatedattempt-c7732d111d5e95bc8413835b3acd2ab7#34attempt_output_committedattempt-c7732d111d5e95bc8413835b3acd2ab7#35scheduler_transition_committedattempt-c7732d111d5e95bc8413835b3acd2ab7#36run_blockeddurable-repository-qualification-f7da0fb0237f#37run_lease_releaseddurable-repository-qualification-f7da0fb0237f",
+      "workflow": "WorkflowDurable Repository QualificationDURABLE_MIXED_REPAIR_APPROVAL \u00b7 durable-repository-qualification"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalQualify this repository through durable recovery.",
+      "nodes": {
+        "capture-repository": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "finalize-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "publish-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "qualify-documentation": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-package": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-tests": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "reconcile-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "timeline": "Journal timeline30 recent events#38run_createddurable-repository-qualification-f7da0fb0237f:generation:1#39run_lease_acquireddurable-repository-qualification-f7da0fb0237f:generation:1#40scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#41scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#42attempt_reservedattempt-041edc9cdbe1fa315c4e9066e7114dd5#43attempt_dispatchedattempt-041edc9cdbe1fa315c4e9066e7114dd5#44scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f:generation:1#45attempt_result_stagedattempt-041edc9cdbe1fa315c4e9066e7114dd5#46attempt_result_validatedattempt-041edc9cdbe1fa315c4e9066e7114dd5#47attempt_output_committedattempt-041edc9cdbe1fa315c4e9066e7114dd5#48scheduler_transition_committedattempt-041edc9cdbe1fa315c4e9066e7114dd5#49scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#50scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#51attempt_reservedattempt-9816d2f3ae4a84486c6e9b35cf90c175#52attempt_dispatchedattempt-9816d2f3ae4a84486c6e9b35cf90c175#53scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#54attempt_reservedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#55attempt_dispatchedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#56scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#57attempt_reservedattempt-317a8e1ee0f62b169272ac998675a1e6#58attempt_dispatchedattempt-317a8e1ee0f62b169272ac998675a1e6#59scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f:generation:1#60attempt_result_stagedattempt-9816d2f3ae4a84486c6e9b35cf90c175#61attempt_result_validatedattempt-9816d2f3ae4a84486c6e9b35cf90c175#62attempt_output_committedattempt-9816d2f3ae4a84486c6e9b35cf90c175#63scheduler_transition_committedattempt-9816d2f3ae4a84486c6e9b35cf90c175#64attempt_result_stagedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#65attempt_result_validatedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#66attempt_output_committedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#67scheduler_transition_committedattempt-c30e5faaf2d3fa6a71e42ca591b450ea",
+      "workflow": "WorkflowDurable Repository QualificationDURABLE_MIXED_REPAIR_APPROVAL \u00b7 durable-repository-qualification"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalQualify this repository through durable recovery.",
+      "nodes": {
+        "capture-repository": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "finalize-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "publish-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "qualify-documentation": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-package": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-tests": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "reconcile-qualification": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "timeline": "Journal timeline37 recent events#38run_createddurable-repository-qualification-f7da0fb0237f:generation:1#39run_lease_acquireddurable-repository-qualification-f7da0fb0237f:generation:1#40scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#41scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#42attempt_reservedattempt-041edc9cdbe1fa315c4e9066e7114dd5#43attempt_dispatchedattempt-041edc9cdbe1fa315c4e9066e7114dd5#44scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f:generation:1#45attempt_result_stagedattempt-041edc9cdbe1fa315c4e9066e7114dd5#46attempt_result_validatedattempt-041edc9cdbe1fa315c4e9066e7114dd5#47attempt_output_committedattempt-041edc9cdbe1fa315c4e9066e7114dd5#48scheduler_transition_committedattempt-041edc9cdbe1fa315c4e9066e7114dd5#49scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#50scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#51attempt_reservedattempt-9816d2f3ae4a84486c6e9b35cf90c175#52attempt_dispatchedattempt-9816d2f3ae4a84486c6e9b35cf90c175#53scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#54attempt_reservedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#55attempt_dispatchedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#56scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#57attempt_reservedattempt-317a8e1ee0f62b169272ac998675a1e6#58attempt_dispatchedattempt-317a8e1ee0f62b169272ac998675a1e6#59scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f:generation:1#60attempt_result_stagedattempt-9816d2f3ae4a84486c6e9b35cf90c175#61attempt_result_validatedattempt-9816d2f3ae4a84486c6e9b35cf90c175#62attempt_output_committedattempt-9816d2f3ae4a84486c6e9b35cf90c175#63scheduler_transition_committedattempt-9816d2f3ae4a84486c6e9b35cf90c175#64attempt_result_stagedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#65attempt_result_validatedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#66attempt_output_committedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#67scheduler_transition_committedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#68attempt_result_stagedattempt-317a8e1ee0f62b169272ac998675a1e6#69attempt_result_validatedattempt-317a8e1ee0f62b169272ac998675a1e6#70attempt_output_committedattempt-317a8e1ee0f62b169272ac998675a1e6#71scheduler_transition_committedattempt-317a8e1ee0f62b169272ac998675a1e6#72scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#73attempt_reservedattempt-94dedc12037b2a477fd3e35eddd214fb#74attempt_dispatchedattempt-94dedc12037b2a477fd3e35eddd214fb",
+      "workflow": "WorkflowDurable Repository QualificationDURABLE_MIXED_REPAIR_APPROVAL \u00b7 durable-repository-qualification"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalQualify this repository through durable recovery.",
+      "nodes": {
+        "capture-repository": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "finalize-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "publish-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "qualify-documentation": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-package": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-tests": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "reconcile-qualification": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "timeline": "Journal timeline45 recent events#38run_createddurable-repository-qualification-f7da0fb0237f:generation:1#39run_lease_acquireddurable-repository-qualification-f7da0fb0237f:generation:1#40scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#41scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#42attempt_reservedattempt-041edc9cdbe1fa315c4e9066e7114dd5#43attempt_dispatchedattempt-041edc9cdbe1fa315c4e9066e7114dd5#44scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f:generation:1#45attempt_result_stagedattempt-041edc9cdbe1fa315c4e9066e7114dd5#46attempt_result_validatedattempt-041edc9cdbe1fa315c4e9066e7114dd5#47attempt_output_committedattempt-041edc9cdbe1fa315c4e9066e7114dd5#48scheduler_transition_committedattempt-041edc9cdbe1fa315c4e9066e7114dd5#49scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#50scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#51attempt_reservedattempt-9816d2f3ae4a84486c6e9b35cf90c175#52attempt_dispatchedattempt-9816d2f3ae4a84486c6e9b35cf90c175#53scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#54attempt_reservedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#55attempt_dispatchedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#56scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#57attempt_reservedattempt-317a8e1ee0f62b169272ac998675a1e6#58attempt_dispatchedattempt-317a8e1ee0f62b169272ac998675a1e6#59scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f:generation:1#60attempt_result_stagedattempt-9816d2f3ae4a84486c6e9b35cf90c175#61attempt_result_validatedattempt-9816d2f3ae4a84486c6e9b35cf90c175#62attempt_output_committedattempt-9816d2f3ae4a84486c6e9b35cf90c175#63scheduler_transition_committedattempt-9816d2f3ae4a84486c6e9b35cf90c175#64attempt_result_stagedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#65attempt_result_validatedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#66attempt_output_committedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#67scheduler_transition_committedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#68attempt_result_stagedattempt-317a8e1ee0f62b169272ac998675a1e6#69attempt_result_validatedattempt-317a8e1ee0f62b169272ac998675a1e6#70attempt_output_committedattempt-317a8e1ee0f62b169272ac998675a1e6#71scheduler_transition_committedattempt-317a8e1ee0f62b169272ac998675a1e6#72scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#73attempt_reservedattempt-94dedc12037b2a477fd3e35eddd214fb#74attempt_dispatchedattempt-94dedc12037b2a477fd3e35eddd214fb#75attempt_result_stagedattempt-94dedc12037b2a477fd3e35eddd214fb#76attempt_result_validatedattempt-94dedc12037b2a477fd3e35eddd214fb#77attempt_output_committedattempt-94dedc12037b2a477fd3e35eddd214fb#78scheduler_transition_committedattempt-94dedc12037b2a477fd3e35eddd214fb#79scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#80attempt_reservedattempt-e12c3d13c32278a537559392c28e4baa#81attempt_dispatchedattempt-e12c3d13c32278a537559392c28e4baa#82dag_diagnostic_event_appendedpublish-qualificationdiagnostic only",
+      "workflow": "WorkflowDurable Repository QualificationDURABLE_MIXED_REPAIR_APPROVAL \u00b7 durable-repository-qualification"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalQualify this repository through durable recovery.",
+      "nodes": {
+        "capture-repository": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "finalize-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "publish-qualification": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "qualify-documentation": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-package": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-tests": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "reconcile-qualification": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "timeline": "Journal timeline45 recent events#38run_createddurable-repository-qualification-f7da0fb0237f:generation:1#39run_lease_acquireddurable-repository-qualification-f7da0fb0237f:generation:1#40scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#41scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#42attempt_reservedattempt-041edc9cdbe1fa315c4e9066e7114dd5#43attempt_dispatchedattempt-041edc9cdbe1fa315c4e9066e7114dd5#44scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f:generation:1#45attempt_result_stagedattempt-041edc9cdbe1fa315c4e9066e7114dd5#46attempt_result_validatedattempt-041edc9cdbe1fa315c4e9066e7114dd5#47attempt_output_committedattempt-041edc9cdbe1fa315c4e9066e7114dd5#48scheduler_transition_committedattempt-041edc9cdbe1fa315c4e9066e7114dd5#49scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#50scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#51attempt_reservedattempt-9816d2f3ae4a84486c6e9b35cf90c175#52attempt_dispatchedattempt-9816d2f3ae4a84486c6e9b35cf90c175#53scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#54attempt_reservedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#55attempt_dispatchedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#56scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#57attempt_reservedattempt-317a8e1ee0f62b169272ac998675a1e6#58attempt_dispatchedattempt-317a8e1ee0f62b169272ac998675a1e6#59scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f:generation:1#60attempt_result_stagedattempt-9816d2f3ae4a84486c6e9b35cf90c175#61attempt_result_validatedattempt-9816d2f3ae4a84486c6e9b35cf90c175#62attempt_output_committedattempt-9816d2f3ae4a84486c6e9b35cf90c175#63scheduler_transition_committedattempt-9816d2f3ae4a84486c6e9b35cf90c175#64attempt_result_stagedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#65attempt_result_validatedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#66attempt_output_committedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#67scheduler_transition_committedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#68attempt_result_stagedattempt-317a8e1ee0f62b169272ac998675a1e6#69attempt_result_validatedattempt-317a8e1ee0f62b169272ac998675a1e6#70attempt_output_committedattempt-317a8e1ee0f62b169272ac998675a1e6#71scheduler_transition_committedattempt-317a8e1ee0f62b169272ac998675a1e6#72scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#73attempt_reservedattempt-94dedc12037b2a477fd3e35eddd214fb#74attempt_dispatchedattempt-94dedc12037b2a477fd3e35eddd214fb#75attempt_result_stagedattempt-94dedc12037b2a477fd3e35eddd214fb#76attempt_result_validatedattempt-94dedc12037b2a477fd3e35eddd214fb#77attempt_output_committedattempt-94dedc12037b2a477fd3e35eddd214fb#78scheduler_transition_committedattempt-94dedc12037b2a477fd3e35eddd214fb#79scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#80attempt_reservedattempt-e12c3d13c32278a537559392c28e4baa#81attempt_dispatchedattempt-e12c3d13c32278a537559392c28e4baa#82dag_diagnostic_event_appendedpublish-qualificationdiagnostic only",
+      "workflow": "WorkflowDurable Repository QualificationDURABLE_MIXED_REPAIR_APPROVAL \u00b7 durable-repository-qualification"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalQualify this repository through durable recovery.",
+      "nodes": {
+        "capture-repository": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "finalize-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "publish-qualification": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "qualify-documentation": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-package": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-tests": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "reconcile-qualification": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "timeline": "Journal timeline48 recent events#38run_createddurable-repository-qualification-f7da0fb0237f:generation:1#39run_lease_acquireddurable-repository-qualification-f7da0fb0237f:generation:1#40scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#41scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#42attempt_reservedattempt-041edc9cdbe1fa315c4e9066e7114dd5#43attempt_dispatchedattempt-041edc9cdbe1fa315c4e9066e7114dd5#44scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f:generation:1#45attempt_result_stagedattempt-041edc9cdbe1fa315c4e9066e7114dd5#46attempt_result_validatedattempt-041edc9cdbe1fa315c4e9066e7114dd5#47attempt_output_committedattempt-041edc9cdbe1fa315c4e9066e7114dd5#48scheduler_transition_committedattempt-041edc9cdbe1fa315c4e9066e7114dd5#49scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#50scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#51attempt_reservedattempt-9816d2f3ae4a84486c6e9b35cf90c175#52attempt_dispatchedattempt-9816d2f3ae4a84486c6e9b35cf90c175#53scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#54attempt_reservedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#55attempt_dispatchedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#56scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#57attempt_reservedattempt-317a8e1ee0f62b169272ac998675a1e6#58attempt_dispatchedattempt-317a8e1ee0f62b169272ac998675a1e6#59scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f:generation:1#60attempt_result_stagedattempt-9816d2f3ae4a84486c6e9b35cf90c175#61attempt_result_validatedattempt-9816d2f3ae4a84486c6e9b35cf90c175#62attempt_output_committedattempt-9816d2f3ae4a84486c6e9b35cf90c175#63scheduler_transition_committedattempt-9816d2f3ae4a84486c6e9b35cf90c175#64attempt_result_stagedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#65attempt_result_validatedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#66attempt_output_committedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#67scheduler_transition_committedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#68attempt_result_stagedattempt-317a8e1ee0f62b169272ac998675a1e6#69attempt_result_validatedattempt-317a8e1ee0f62b169272ac998675a1e6#70attempt_output_committedattempt-317a8e1ee0f62b169272ac998675a1e6#71scheduler_transition_committedattempt-317a8e1ee0f62b169272ac998675a1e6#72scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#73attempt_reservedattempt-94dedc12037b2a477fd3e35eddd214fb#74attempt_dispatchedattempt-94dedc12037b2a477fd3e35eddd214fb#75attempt_result_stagedattempt-94dedc12037b2a477fd3e35eddd214fb#76attempt_result_validatedattempt-94dedc12037b2a477fd3e35eddd214fb#77attempt_output_committedattempt-94dedc12037b2a477fd3e35eddd214fb#78scheduler_transition_committedattempt-94dedc12037b2a477fd3e35eddd214fb#79scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#80attempt_reservedattempt-e12c3d13c32278a537559392c28e4baa#81attempt_dispatchedattempt-e12c3d13c32278a537559392c28e4baa#82dag_diagnostic_event_appendedpublish-qualificationdiagnostic only#83dag_diagnostic_event_appendedpublish-qualificationdiagnostic only#84dag_diagnostic_event_appendedpublish-qualificationdiagnostic only#85dag_diagnostic_event_appendedpublish-qualificationdiagnostic only",
+      "workflow": "WorkflowDurable Repository QualificationDURABLE_MIXED_REPAIR_APPROVAL \u00b7 durable-repository-qualification"
+    },
+    {
+      "blocker": "Exact blockerpublish-qualificationapproval packet not found: /tmp/tau-durable-qualification-browser-my857nzn/run/input/approval.json",
+      "goal": "Human goalQualify this repository through durable recovery.",
+      "nodes": {
+        "capture-repository": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "finalize-qualification": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "publish-qualification": {
+          "admission": "rejected",
+          "blocker": "approval packet not found: /tmp/tau-durable-qualification-browser-my857nzn/run/input/approval.json",
+          "state": "blocked"
+        },
+        "qualify-documentation": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-package": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-tests": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "reconcile-qualification": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "timeline": "Journal timeline56 recent events#38run_createddurable-repository-qualification-f7da0fb0237f:generation:1#39run_lease_acquireddurable-repository-qualification-f7da0fb0237f:generation:1#40scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#41scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#42attempt_reservedattempt-041edc9cdbe1fa315c4e9066e7114dd5#43attempt_dispatchedattempt-041edc9cdbe1fa315c4e9066e7114dd5#44scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f:generation:1#45attempt_result_stagedattempt-041edc9cdbe1fa315c4e9066e7114dd5#46attempt_result_validatedattempt-041edc9cdbe1fa315c4e9066e7114dd5#47attempt_output_committedattempt-041edc9cdbe1fa315c4e9066e7114dd5#48scheduler_transition_committedattempt-041edc9cdbe1fa315c4e9066e7114dd5#49scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#50scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#51attempt_reservedattempt-9816d2f3ae4a84486c6e9b35cf90c175#52attempt_dispatchedattempt-9816d2f3ae4a84486c6e9b35cf90c175#53scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#54attempt_reservedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#55attempt_dispatchedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#56scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#57attempt_reservedattempt-317a8e1ee0f62b169272ac998675a1e6#58attempt_dispatchedattempt-317a8e1ee0f62b169272ac998675a1e6#59scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f:generation:1#60attempt_result_stagedattempt-9816d2f3ae4a84486c6e9b35cf90c175#61attempt_result_validatedattempt-9816d2f3ae4a84486c6e9b35cf90c175#62attempt_output_committedattempt-9816d2f3ae4a84486c6e9b35cf90c175#63scheduler_transition_committedattempt-9816d2f3ae4a84486c6e9b35cf90c175#64attempt_result_stagedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#65attempt_result_validatedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#66attempt_output_committedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#67scheduler_transition_committedattempt-c30e5faaf2d3fa6a71e42ca591b450ea#68attempt_result_stagedattempt-317a8e1ee0f62b169272ac998675a1e6#69attempt_result_validatedattempt-317a8e1ee0f62b169272ac998675a1e6#70attempt_output_committedattempt-317a8e1ee0f62b169272ac998675a1e6#71scheduler_transition_committedattempt-317a8e1ee0f62b169272ac998675a1e6#72scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#73attempt_reservedattempt-94dedc12037b2a477fd3e35eddd214fb#74attempt_dispatchedattempt-94dedc12037b2a477fd3e35eddd214fb#75attempt_result_stagedattempt-94dedc12037b2a477fd3e35eddd214fb#76attempt_result_validatedattempt-94dedc12037b2a477fd3e35eddd214fb#77attempt_output_committedattempt-94dedc12037b2a477fd3e35eddd214fb#78scheduler_transition_committedattempt-94dedc12037b2a477fd3e35eddd214fb#79scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:1#80attempt_reservedattempt-e12c3d13c32278a537559392c28e4baa#81attempt_dispatchedattempt-e12c3d13c32278a537559392c28e4baa#82dag_diagnostic_event_appendedpublish-qualificationdiagnostic only#83dag_diagnostic_event_appendedpublish-qualificationdiagnostic only#84dag_diagnostic_event_appendedpublish-qualificationdiagnostic only#85dag_diagnostic_event_appendedpublish-qualificationdiagnostic only#86dag_diagnostic_event_appendedpublish-qualificationdiagnostic only#87dag_diagnostic_event_appendedpublish-qualificationdiagnostic only#88attempt_result_stagedattempt-e12c3d13c32278a537559392c28e4baa#89attempt_result_validatedattempt-e12c3d13c32278a537559392c28e4baa#90attempt_output_committedattempt-e12c3d13c32278a537559392c28e4baa#91scheduler_transition_committedattempt-e12c3d13c32278a537559392c28e4baa#92run_blockeddurable-repository-qualification-f7da0fb0237f:generation:1#93run_lease_releaseddurable-repository-qualification-f7da0fb0237f:generation:1",
+      "workflow": "WorkflowDurable Repository QualificationDURABLE_MIXED_REPAIR_APPROVAL \u00b7 durable-repository-qualification"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalQualify this repository through durable recovery.",
+      "nodes": {
+        "capture-repository": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "finalize-qualification": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "publish-qualification": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-documentation": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-package": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-tests": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "reconcile-qualification": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "timeline": "Journal timeline51 recent events#94run_createddurable-repository-qualification-f7da0fb0237f:generation:2#95run_lease_acquireddurable-repository-qualification-f7da0fb0237f:generation:2#96scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#97scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#98attempt_reservedattempt-414bde70a807cc4828528130f266dcce#99attempt_dispatchedattempt-414bde70a807cc4828528130f266dcce#100scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f:generation:2#101attempt_result_stagedattempt-414bde70a807cc4828528130f266dcce#102attempt_result_validatedattempt-414bde70a807cc4828528130f266dcce#103attempt_output_committedattempt-414bde70a807cc4828528130f266dcce#104scheduler_transition_committedattempt-414bde70a807cc4828528130f266dcce#105scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#106scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#107attempt_reservedattempt-023b9edcc4d5418c7ede9d5c650fda6e#108attempt_dispatchedattempt-023b9edcc4d5418c7ede9d5c650fda6e#109scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#110attempt_reservedattempt-b09290be7ce812257b684f15a2bc3c54#111attempt_dispatchedattempt-b09290be7ce812257b684f15a2bc3c54#112scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#113attempt_reservedattempt-eee8a1c5f9d6148c98dd323195cc7567#114attempt_dispatchedattempt-eee8a1c5f9d6148c98dd323195cc7567#115scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f:generation:2#116attempt_result_stagedattempt-023b9edcc4d5418c7ede9d5c650fda6e#117attempt_result_validatedattempt-023b9edcc4d5418c7ede9d5c650fda6e#118attempt_output_committedattempt-023b9edcc4d5418c7ede9d5c650fda6e#119scheduler_transition_committedattempt-023b9edcc4d5418c7ede9d5c650fda6e#120attempt_result_stagedattempt-b09290be7ce812257b684f15a2bc3c54#121attempt_result_validatedattempt-b09290be7ce812257b684f15a2bc3c54#122attempt_output_committedattempt-b09290be7ce812257b684f15a2bc3c54#123scheduler_transition_committedattempt-b09290be7ce812257b684f15a2bc3c54#124attempt_result_stagedattempt-eee8a1c5f9d6148c98dd323195cc7567#125attempt_result_validatedattempt-eee8a1c5f9d6148c98dd323195cc7567#126attempt_output_committedattempt-eee8a1c5f9d6148c98dd323195cc7567#127scheduler_transition_committedattempt-eee8a1c5f9d6148c98dd323195cc7567#128scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#129attempt_reservedattempt-de9286d95a0f92eef20a772cad889281#130attempt_dispatchedattempt-de9286d95a0f92eef20a772cad889281#131attempt_result_stagedattempt-de9286d95a0f92eef20a772cad889281#132attempt_result_validatedattempt-de9286d95a0f92eef20a772cad889281#133attempt_output_committedattempt-de9286d95a0f92eef20a772cad889281#134scheduler_transition_committedattempt-de9286d95a0f92eef20a772cad889281#135scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#136attempt_reservedattempt-6da52164e792568574ddc1c1eea5a749#137attempt_dispatchedattempt-6da52164e792568574ddc1c1eea5a749#138attempt_result_stagedattempt-6da52164e792568574ddc1c1eea5a749#139attempt_result_validatedattempt-6da52164e792568574ddc1c1eea5a749#140attempt_output_committedattempt-6da52164e792568574ddc1c1eea5a749#141scheduler_transition_committedattempt-6da52164e792568574ddc1c1eea5a749#142scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#143attempt_reservedattempt-8973d6a9ca31239ce5671f8eb987fb27#144attempt_dispatchedattempt-8973d6a9ca31239ce5671f8eb987fb27",
+      "workflow": "WorkflowDurable Repository QualificationDURABLE_MIXED_REPAIR_APPROVAL \u00b7 durable-repository-qualification"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalQualify this repository through durable recovery.",
+      "nodes": {
+        "capture-repository": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "finalize-qualification": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "publish-qualification": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-documentation": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-package": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "qualify-tests": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "reconcile-qualification": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        }
+      },
+      "result": "ResultRepository qualification published after durable recovery and approval.QUALIFIEDdurable_qualification_json \u00b7 /tmp/tau-durable-qualification-browser-my857nzn/run/results/durable-repository-qualification.json \u00b7 a24e1469d1918e5886c9092ec8b107f5d3b9a0090b232c82452d5a1e883c39c0durable_qualification_markdown \u00b7 /tmp/tau-durable-qualification-browser-my857nzn/run/results/durable-repository-qualification.md \u00b7 92812aa14557d60233bcbe0b439b9f776aecee35f6dc02a7d94fe1fb1b8b1f8d",
+      "timeline": "Journal timeline57 recent events#94run_createddurable-repository-qualification-f7da0fb0237f:generation:2#95run_lease_acquireddurable-repository-qualification-f7da0fb0237f:generation:2#96scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#97scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#98attempt_reservedattempt-414bde70a807cc4828528130f266dcce#99attempt_dispatchedattempt-414bde70a807cc4828528130f266dcce#100scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f:generation:2#101attempt_result_stagedattempt-414bde70a807cc4828528130f266dcce#102attempt_result_validatedattempt-414bde70a807cc4828528130f266dcce#103attempt_output_committedattempt-414bde70a807cc4828528130f266dcce#104scheduler_transition_committedattempt-414bde70a807cc4828528130f266dcce#105scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#106scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#107attempt_reservedattempt-023b9edcc4d5418c7ede9d5c650fda6e#108attempt_dispatchedattempt-023b9edcc4d5418c7ede9d5c650fda6e#109scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#110attempt_reservedattempt-b09290be7ce812257b684f15a2bc3c54#111attempt_dispatchedattempt-b09290be7ce812257b684f15a2bc3c54#112scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#113attempt_reservedattempt-eee8a1c5f9d6148c98dd323195cc7567#114attempt_dispatchedattempt-eee8a1c5f9d6148c98dd323195cc7567#115scheduler_concurrency_observeddurable-repository-qualification-f7da0fb0237f:generation:2#116attempt_result_stagedattempt-023b9edcc4d5418c7ede9d5c650fda6e#117attempt_result_validatedattempt-023b9edcc4d5418c7ede9d5c650fda6e#118attempt_output_committedattempt-023b9edcc4d5418c7ede9d5c650fda6e#119scheduler_transition_committedattempt-023b9edcc4d5418c7ede9d5c650fda6e#120attempt_result_stagedattempt-b09290be7ce812257b684f15a2bc3c54#121attempt_result_validatedattempt-b09290be7ce812257b684f15a2bc3c54#122attempt_output_committedattempt-b09290be7ce812257b684f15a2bc3c54#123scheduler_transition_committedattempt-b09290be7ce812257b684f15a2bc3c54#124attempt_result_stagedattempt-eee8a1c5f9d6148c98dd323195cc7567#125attempt_result_validatedattempt-eee8a1c5f9d6148c98dd323195cc7567#126attempt_output_committedattempt-eee8a1c5f9d6148c98dd323195cc7567#127scheduler_transition_committedattempt-eee8a1c5f9d6148c98dd323195cc7567#128scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#129attempt_reservedattempt-de9286d95a0f92eef20a772cad889281#130attempt_dispatchedattempt-de9286d95a0f92eef20a772cad889281#131attempt_result_stagedattempt-de9286d95a0f92eef20a772cad889281#132attempt_result_validatedattempt-de9286d95a0f92eef20a772cad889281#133attempt_output_committedattempt-de9286d95a0f92eef20a772cad889281#134scheduler_transition_committedattempt-de9286d95a0f92eef20a772cad889281#135scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#136attempt_reservedattempt-6da52164e792568574ddc1c1eea5a749#137attempt_dispatchedattempt-6da52164e792568574ddc1c1eea5a749#138attempt_result_stagedattempt-6da52164e792568574ddc1c1eea5a749#139attempt_result_validatedattempt-6da52164e792568574ddc1c1eea5a749#140attempt_output_committedattempt-6da52164e792568574ddc1c1eea5a749#141scheduler_transition_committedattempt-6da52164e792568574ddc1c1eea5a749#142scheduler_control_transition_committeddurable-repository-qualification-f7da0fb0237f:generation:2#143attempt_reservedattempt-8973d6a9ca31239ce5671f8eb987fb27#144attempt_dispatchedattempt-8973d6a9ca31239ce5671f8eb987fb27#145attempt_result_stagedattempt-8973d6a9ca31239ce5671f8eb987fb27#146attempt_result_validatedattempt-8973d6a9ca31239ce5671f8eb987fb27#147attempt_output_committedattempt-8973d6a9ca31239ce5671f8eb987fb27#148scheduler_transition_committedattempt-8973d6a9ca31239ce5671f8eb987fb27#149run_completeddurable-repository-qualification-f7da0fb0237f:generation:2#150run_lease_releaseddurable-repository-qualification-f7da0fb0237f:generation:2",
+      "workflow": "WorkflowDurable Repository QualificationDURABLE_MIXED_REPAIR_APPROVAL \u00b7 durable-repository-qualification"
+    }
+  ],
+  "provider_live": false,
+  "request_methods": [
+    "GET"
+  ],
+  "schema": "tau.durable_qualification_browser_proof.v1",
+  "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+  "status": "PASS",
+  "url": "http://127.0.0.1:38605/"
+}

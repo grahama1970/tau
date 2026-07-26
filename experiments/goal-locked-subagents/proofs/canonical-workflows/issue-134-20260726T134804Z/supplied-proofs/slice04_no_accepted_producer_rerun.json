@@ -1,0 +1,32 @@
+{
+  "accepted_manifest_sha256s": {
+    "draft-release-notes": "9c2b43133a1cd569b6784b4c5573a5a05980e05ae0ef34240c21ba8dc8b8f29d",
+    "publish-approved-release": "24aa72c82f1d7357161c7ae722dd7ac218c3a4116d80d9bc221ed8ed7eb5cc0b"
+  },
+  "checks": {
+    "accepted_manifest_hashes_preserved": true,
+    "accepted_producers_resumed": true,
+    "draft_release_notes_attempt_count_unchanged": true,
+    "no_producer_dispatch_after_resume_finalization": true,
+    "producer_event_counts_match_attempts": true,
+    "publish_approved_release_attempt_count_unchanged": true,
+    "resume_requested": true,
+    "run_pass": true
+  },
+  "live": true,
+  "mocked": false,
+  "producer_attempt_counts": {
+    "draft-release-notes": 2,
+    "publish-approved-release": 1
+  },
+  "producer_dispatch_counts": {
+    "draft-release-notes": 2,
+    "publish-approved-release": 1
+  },
+  "provider_live": false,
+  "run_dir": "/tmp/tau-approved-release-browser-j0_zg2q_/run",
+  "run_receipt_sha256": "sha256:669f804d2889e24ca2b04825be7752bdb94352c08569a2fd89abb06c51cd1381",
+  "schema": "tau.slice04_no_accepted_producer_rerun_verification.v1",
+  "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+  "status": "PASS"
+}

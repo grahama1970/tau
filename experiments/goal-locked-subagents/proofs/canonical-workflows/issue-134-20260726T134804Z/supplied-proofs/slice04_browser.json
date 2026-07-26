@@ -1,0 +1,562 @@
+{
+  "checks": {
+    "approval_required_visible": true,
+    "desktop_layout_non_overlapping": true,
+    "final_result_visible": true,
+    "final_transaction_evidence_visible": true,
+    "goal_visible": true,
+    "mobile_layout_non_overlapping": true,
+    "no_manual_reload": true,
+    "no_publication_before_approval": true,
+    "parallel_branches_running": true,
+    "prepare_running": true,
+    "publish_running_after_resume": true,
+    "read_only_requests": true,
+    "revise_then_pass_visible": true,
+    "workflow_title_visible": true
+  },
+  "desktop_screenshot": "/tmp/tau-issue-134-canonical-proof-final-20260726/approved/desktop.png",
+  "desktop_screenshot_sha256": "sha256:acbb7688fbbe74f53c0ebad947ceccce44dd43faf8b3de7d90fd759216226d01",
+  "live": true,
+  "mobile_screenshot": "/tmp/tau-issue-134-canonical-proof-final-20260726/approved/mobile.png",
+  "mobile_screenshot_sha256": "sha256:be902df93d40e51f5c691b792107ad9eec997bb97db6869baf61cc874eafd909",
+  "mocked": false,
+  "observations": [
+    {
+      "blocker": "",
+      "goal": "Human goalPublish an approved release bundle.",
+      "nodes": {
+        "assemble-release-bundle": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "build-release-manifest": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "draft-release-notes": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "finalize-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "prepare-release": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "publish-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "verify-release-policy": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "transaction": "Bounded transaction0/2Tau admission: AWAITING_RECEIPT",
+      "workflow": "WorkflowApproved Release BundleMIXED_RETRY_APPROVAL \u00b7 approved-release-bundle"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalPublish an approved release bundle.",
+      "nodes": {
+        "assemble-release-bundle": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "build-release-manifest": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "draft-release-notes": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "finalize-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "prepare-release": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "publish-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "verify-release-policy": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "transaction": "Bounded transaction1/2Attempt 1Creator RUNNINGValidator pendingReviewer pendingTau admission: AWAITING_RECEIPT",
+      "workflow": "WorkflowApproved Release BundleMIXED_RETRY_APPROVAL \u00b7 approved-release-bundle"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalPublish an approved release bundle.",
+      "nodes": {
+        "assemble-release-bundle": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "build-release-manifest": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "draft-release-notes": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "finalize-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "prepare-release": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "publish-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "verify-release-policy": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "transaction": "Bounded transaction1/2Attempt 1Creator PASSValidator pendingReviewer pendingTau admission: AWAITING_RECEIPT",
+      "workflow": "WorkflowApproved Release BundleMIXED_RETRY_APPROVAL \u00b7 approved-release-bundle"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalPublish an approved release bundle.",
+      "nodes": {
+        "assemble-release-bundle": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "build-release-manifest": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "draft-release-notes": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "finalize-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "prepare-release": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "publish-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "verify-release-policy": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "transaction": "Bounded transaction1/2Attempt 1Creator PASSValidator PASSReviewer RUNNINGTau admission: AWAITING_RECEIPT",
+      "workflow": "WorkflowApproved Release BundleMIXED_RETRY_APPROVAL \u00b7 approved-release-bundle"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalPublish an approved release bundle.",
+      "nodes": {
+        "assemble-release-bundle": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "build-release-manifest": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "draft-release-notes": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "finalize-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "prepare-release": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "publish-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "verify-release-policy": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "transaction": "Bounded transaction2/2Attempt 1Creator PASSValidator PASSReviewer REVISErevision committedAttempt 2Creator PASSValidator pendingReviewer pendingTau admission: AWAITING_RECEIPT",
+      "workflow": "WorkflowApproved Release BundleMIXED_RETRY_APPROVAL \u00b7 approved-release-bundle"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalPublish an approved release bundle.",
+      "nodes": {
+        "assemble-release-bundle": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "build-release-manifest": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "draft-release-notes": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "finalize-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "prepare-release": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "publish-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "verify-release-policy": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "transaction": "Bounded transaction2/2Attempt 1Creator PASSValidator PASSReviewer REVISErevision committedAttempt 2Creator PASSValidator PASSReviewer RUNNINGTau admission: AWAITING_RECEIPT",
+      "workflow": "WorkflowApproved Release BundleMIXED_RETRY_APPROVAL \u00b7 approved-release-bundle"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalPublish an approved release bundle.",
+      "nodes": {
+        "assemble-release-bundle": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "build-release-manifest": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "draft-release-notes": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "finalize-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "prepare-release": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "publish-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "verify-release-policy": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "transaction": "Bounded transaction2/2Attempt 1Creator PASSValidator PASSReviewer REVISErevision committedAttempt 2Creator PASSValidator PASSReviewer PASSPASS claimTau admission: ACCEPTED",
+      "workflow": "WorkflowApproved Release BundleMIXED_RETRY_APPROVAL \u00b7 approved-release-bundle"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalPublish an approved release bundle.",
+      "nodes": {
+        "assemble-release-bundle": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "build-release-manifest": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "draft-release-notes": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "finalize-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "prepare-release": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "publish-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "verify-release-policy": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "transaction": "Bounded transaction2/2Attempt 1Creator PASSValidator PASSReviewer REVISErevision committedAttempt 2Creator PASSValidator PASSReviewer PASSPASS claimTau admission: ACCEPTED",
+      "workflow": "WorkflowApproved Release BundleMIXED_RETRY_APPROVAL \u00b7 approved-release-bundle"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalPublish an approved release bundle.",
+      "nodes": {
+        "assemble-release-bundle": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "build-release-manifest": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "draft-release-notes": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "finalize-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "prepare-release": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "publish-approved-release": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "verify-release-policy": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "transaction": "Bounded transaction2/2Attempt 1Creator PASSValidator PASSReviewer REVISErevision committedAttempt 2Creator PASSValidator PASSReviewer PASSPASS claimTau admission: ACCEPTED",
+      "workflow": "WorkflowApproved Release BundleMIXED_RETRY_APPROVAL \u00b7 approved-release-bundle"
+    },
+    {
+      "blocker": "Exact blockerpublish-approved-releaseapproval packet not found: /tmp/tau-approved-release-browser-j0_zg2q_/run/input/approval.json",
+      "goal": "Human goalPublish an approved release bundle.",
+      "nodes": {
+        "assemble-release-bundle": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "build-release-manifest": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "draft-release-notes": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "finalize-approved-release": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending"
+        },
+        "prepare-release": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "publish-approved-release": {
+          "admission": "rejected",
+          "blocker": "approval packet not found: /tmp/tau-approved-release-browser-j0_zg2q_/run/input/approval.json",
+          "state": "blocked"
+        },
+        "verify-release-policy": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "transaction": "Bounded transaction2/2Attempt 1Creator PASSValidator PASSReviewer REVISErevision committedAttempt 2Creator PASSValidator PASSReviewer PASSPASS claimTau admission: ACCEPTED",
+      "workflow": "WorkflowApproved Release BundleMIXED_RETRY_APPROVAL \u00b7 approved-release-bundle"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalPublish an approved release bundle.",
+      "nodes": {
+        "assemble-release-bundle": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "build-release-manifest": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "draft-release-notes": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "finalize-approved-release": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running"
+        },
+        "prepare-release": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "publish-approved-release": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "verify-release-policy": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "transaction": "Bounded transaction2/2Attempt 1Creator PASSValidator PASSReviewer REVISErevision committedAttempt 2Creator PASSValidator PASSReviewer PASSPASS claimTau admission: ACCEPTED",
+      "workflow": "WorkflowApproved Release BundleMIXED_RETRY_APPROVAL \u00b7 approved-release-bundle"
+    },
+    {
+      "blocker": "",
+      "goal": "Human goalPublish an approved release bundle.",
+      "nodes": {
+        "assemble-release-bundle": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "build-release-manifest": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "draft-release-notes": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "finalize-approved-release": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "prepare-release": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "publish-approved-release": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        },
+        "verify-release-policy": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled"
+        }
+      },
+      "result": "ResultApproved release bundle published after exact human approval.APPROVEDapproved_release_bundle_json \u00b7 /tmp/tau-approved-release-browser-j0_zg2q_/run/results/approved-release-bundle.json \u00b7 9b44d7fc9745f33acdb80cf1144b79fa4beda69a364d0bf9564acfd4499ec75aapproved_release_bundle_markdown \u00b7 /tmp/tau-approved-release-browser-j0_zg2q_/run/results/approved-release-bundle.md \u00b7 48e76386bf0a315c467306805336e76fc2738bef2987b417e03e7886329c473a",
+      "transaction": "Bounded transaction2/2Attempt 1Creator PASSValidator PASSReviewer REVISErevision committedAttempt 2Creator PASSValidator PASSReviewer PASSPASS claimTau admission: ACCEPTED",
+      "workflow": "WorkflowApproved Release BundleMIXED_RETRY_APPROVAL \u00b7 approved-release-bundle"
+    }
+  ],
+  "provider_live": false,
+  "request_methods": [
+    "GET"
+  ],
+  "schema": "tau.approved_release_browser_proof.v1",
+  "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+  "status": "PASS",
+  "url": "http://127.0.0.1:35319/"
+}

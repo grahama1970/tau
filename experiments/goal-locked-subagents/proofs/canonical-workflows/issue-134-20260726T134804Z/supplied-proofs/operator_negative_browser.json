@@ -1,0 +1,411 @@
+{
+  "checks": {
+    "capture_accepted_observed": true,
+    "capture_running_observed": true,
+    "collect_accepted_observed": true,
+    "collect_running_observed": true,
+    "compose_accepted_observed": true,
+    "compose_running_observed": true,
+    "desktop_layout_non_overlapping": true,
+    "final_result_absent": true,
+    "final_result_visible": true,
+    "first_three_accepted": true,
+    "goal_summary_visible": true,
+    "mobile_layout_non_overlapping": true,
+    "no_manual_reload": true,
+    "read_only_requests": true,
+    "required_workflow_missing_exact": true,
+    "result_artifact_refs_visible": false,
+    "validate_accepted_observed": false,
+    "validate_blocked_observed": true,
+    "validate_running_observed": true,
+    "workflow_title_visible": true
+  },
+  "desktop_screenshot": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/negative-desktop.png",
+  "desktop_screenshot_sha256": "sha256:e467f070bd12666062957fa23d927dd4d9d5f02baf74768639de32e98e34e763",
+  "final_observation": {
+    "blocker": "Exact blockervalidate-operator-referencerequired_workflow_missing",
+    "current": "CurrentRun settled",
+    "goal": "Human goalGenerate a validated Tau operator reference from fixed local repository sources and versioned public CLI evidence.",
+    "nodes": {
+      "capture-operator-cli": {
+        "admission": "accepted",
+        "blocker": "",
+        "state": "settled",
+        "text": "capture-operator-cliCapture versioned Tau CLI probessettledacceptedattempt 1/1UNKNOWN"
+      },
+      "collect-operator-sources": {
+        "admission": "accepted",
+        "blocker": "",
+        "state": "settled",
+        "text": "collect-operator-sourcesCollect fixed Tau operator sourcessettledacceptedattempt 1/1UNKNOWN"
+      },
+      "compose-operator-reference": {
+        "admission": "accepted",
+        "blocker": "",
+        "state": "settled",
+        "text": "compose-operator-referenceCompose operator reference draftssettledacceptedTau operator-reference drafts were composed under intermediate.attempt 1/1UNKNOWN"
+      },
+      "validate-operator-reference": {
+        "admission": "rejected",
+        "blocker": "required_workflow_missing",
+        "state": "blocked",
+        "text": "validate-operator-referenceIndependently validate and publish operator referenceblockedrejectedrequired_workflow_missingattempt 1/1UNKNOWN"
+      }
+    },
+    "result": "ResultNo accepted final result",
+    "workflow": "WorkflowTau Operator ReferenceMULTI_STEP_SEQUENTIAL \u00b7 tau-operator-reference"
+  },
+  "live": true,
+  "main_frame_navigation_count": 1,
+  "mobile_screenshot": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/negative-mobile.png",
+  "mobile_screenshot_sha256": "sha256:60c0456157516ea4f0e5c92f9ae6b67352c6a05b7a2d21ff9ed89e0e75cd956e",
+  "mocked": false,
+  "node_receipts": [
+    {
+      "node_id": "collect-operator-sources",
+      "path": "/tmp/tau-operator-reference-proof-b3hsbg1h/negative-run/receipts/collect-operator-sources.json",
+      "sha256": "sha256:dd84da418e3ebea06a07ebf82fb5fee5ce989204db3525caafbda57e73261593",
+      "status": "PASS"
+    },
+    {
+      "node_id": "capture-operator-cli",
+      "path": "/tmp/tau-operator-reference-proof-b3hsbg1h/negative-run/receipts/capture-operator-cli.json",
+      "sha256": "sha256:0e2c33a7606648d10dd42e6678f545cc1f67b76fd2680b06d9afde38cb713577",
+      "status": "PASS"
+    },
+    {
+      "node_id": "compose-operator-reference",
+      "path": "/tmp/tau-operator-reference-proof-b3hsbg1h/negative-run/receipts/compose-operator-reference.json",
+      "sha256": "sha256:63f438590cfcbd684cd1a5312305e664f4647672dbdebad4b0f9d23ee9fe9798",
+      "status": "PASS"
+    },
+    {
+      "node_id": "validate-operator-reference",
+      "path": "/tmp/tau-operator-reference-proof-b3hsbg1h/negative-run/receipts/validate-operator-reference.json",
+      "sha256": "sha256:1b0086d8b533fb709232d18d2f632b8e0c8b2778df726a53ccf1a9cde2f7b6d8",
+      "status": "BLOCKED"
+    }
+  ],
+  "observations": [
+    {
+      "blocker": "",
+      "current": "Currentcollect-operator-sources",
+      "elapsed_ms": 1,
+      "goal": "Human goalGenerate a validated Tau operator reference from fixed local repository sources and versioned public CLI evidence.",
+      "nodes": {
+        "capture-operator-cli": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending",
+          "text": "capture-operator-cliCapture versioned Tau CLI probespendingnot_startedattempt 0/1UNKNOWN"
+        },
+        "collect-operator-sources": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running",
+          "text": "collect-operator-sourcesCollect fixed Tau operator sourcesrunningawaiting_receiptattempt 1/1UNKNOWN"
+        },
+        "compose-operator-reference": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending",
+          "text": "compose-operator-referenceCompose operator reference draftspendingnot_startedattempt 0/1UNKNOWN"
+        },
+        "validate-operator-reference": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending",
+          "text": "validate-operator-referenceIndependently validate and publish operator referencependingnot_startedattempt 0/1UNKNOWN"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "workflow": "WorkflowTau Operator ReferenceMULTI_STEP_SEQUENTIAL \u00b7 tau-operator-reference"
+    },
+    {
+      "blocker": "",
+      "current": "Currentcapture-operator-cli",
+      "elapsed_ms": 776,
+      "goal": "Human goalGenerate a validated Tau operator reference from fixed local repository sources and versioned public CLI evidence.",
+      "nodes": {
+        "capture-operator-cli": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running",
+          "text": "capture-operator-cliCapture versioned Tau CLI probesrunningawaiting_receiptattempt 1/1UNKNOWN"
+        },
+        "collect-operator-sources": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled",
+          "text": "collect-operator-sourcesCollect fixed Tau operator sourcessettledacceptedattempt 1/1UNKNOWN"
+        },
+        "compose-operator-reference": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending",
+          "text": "compose-operator-referenceCompose operator reference draftspendingnot_startedattempt 0/1UNKNOWN"
+        },
+        "validate-operator-reference": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending",
+          "text": "validate-operator-referenceIndependently validate and publish operator referencependingnot_startedattempt 0/1UNKNOWN"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "workflow": "WorkflowTau Operator ReferenceMULTI_STEP_SEQUENTIAL \u00b7 tau-operator-reference"
+    },
+    {
+      "blocker": "",
+      "current": "Currentcompose-operator-reference",
+      "elapsed_ms": 3816,
+      "goal": "Human goalGenerate a validated Tau operator reference from fixed local repository sources and versioned public CLI evidence.",
+      "nodes": {
+        "capture-operator-cli": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled",
+          "text": "capture-operator-cliCapture versioned Tau CLI probessettledacceptedattempt 1/1UNKNOWN"
+        },
+        "collect-operator-sources": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled",
+          "text": "collect-operator-sourcesCollect fixed Tau operator sourcessettledacceptedattempt 1/1UNKNOWN"
+        },
+        "compose-operator-reference": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running",
+          "text": "compose-operator-referenceCompose operator reference draftsrunningawaiting_receiptattempt 1/1UNKNOWN"
+        },
+        "validate-operator-reference": {
+          "admission": "not_started",
+          "blocker": "",
+          "state": "pending",
+          "text": "validate-operator-referenceIndependently validate and publish operator referencependingnot_startedattempt 0/1UNKNOWN"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "workflow": "WorkflowTau Operator ReferenceMULTI_STEP_SEQUENTIAL \u00b7 tau-operator-reference"
+    },
+    {
+      "blocker": "",
+      "current": "Currentvalidate-operator-reference",
+      "elapsed_ms": 5367,
+      "goal": "Human goalGenerate a validated Tau operator reference from fixed local repository sources and versioned public CLI evidence.",
+      "nodes": {
+        "capture-operator-cli": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled",
+          "text": "capture-operator-cliCapture versioned Tau CLI probessettledacceptedattempt 1/1UNKNOWN"
+        },
+        "collect-operator-sources": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled",
+          "text": "collect-operator-sourcesCollect fixed Tau operator sourcessettledacceptedattempt 1/1UNKNOWN"
+        },
+        "compose-operator-reference": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled",
+          "text": "compose-operator-referenceCompose operator reference draftssettledacceptedTau operator-reference drafts were composed under intermediate.attempt 1/1UNKNOWN"
+        },
+        "validate-operator-reference": {
+          "admission": "awaiting_receipt",
+          "blocker": "",
+          "state": "running",
+          "text": "validate-operator-referenceIndependently validate and publish operator referencerunningawaiting_receiptattempt 1/1UNKNOWN"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "workflow": "WorkflowTau Operator ReferenceMULTI_STEP_SEQUENTIAL \u00b7 tau-operator-reference"
+    },
+    {
+      "blocker": "Exact blockervalidate-operator-referencerequired_workflow_missing",
+      "current": "CurrentRun settled",
+      "elapsed_ms": 8451,
+      "goal": "Human goalGenerate a validated Tau operator reference from fixed local repository sources and versioned public CLI evidence.",
+      "nodes": {
+        "capture-operator-cli": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled",
+          "text": "capture-operator-cliCapture versioned Tau CLI probessettledacceptedattempt 1/1UNKNOWN"
+        },
+        "collect-operator-sources": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled",
+          "text": "collect-operator-sourcesCollect fixed Tau operator sourcessettledacceptedattempt 1/1UNKNOWN"
+        },
+        "compose-operator-reference": {
+          "admission": "accepted",
+          "blocker": "",
+          "state": "settled",
+          "text": "compose-operator-referenceCompose operator reference draftssettledacceptedTau operator-reference drafts were composed under intermediate.attempt 1/1UNKNOWN"
+        },
+        "validate-operator-reference": {
+          "admission": "rejected",
+          "blocker": "required_workflow_missing",
+          "state": "blocked",
+          "text": "validate-operator-referenceIndependently validate and publish operator referenceblockedrejectedrequired_workflow_missingattempt 1/1UNKNOWN"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "workflow": "WorkflowTau Operator ReferenceMULTI_STEP_SEQUENTIAL \u00b7 tau-operator-reference"
+    }
+  ],
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider or model execution quality.",
+      "Network-backed documentation freshness.",
+      "Production deployment readiness."
+    ],
+    "proves": [
+      "The local packaged workflow ran against the installed Tau catalog.",
+      "The read-only viewer exposed live persisted transitions without reload.",
+      "The expected positive or deliberately absent-workflow boundary was observed."
+    ]
+  },
+  "provider_live": false,
+  "request_methods": [
+    "GET"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/assets/index-4iXv8RrW.js"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/assets/index-aGjNdEj4.css"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/state"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/favicon.ico"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/manifest"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/events?after_sequence=0&limit=500"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/explanations/node/capture-operator-cli"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/state"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/state"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/manifest"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/events?after_sequence=0&limit=500"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/state"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/state"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/state"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/state"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/manifest"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/events?after_sequence=0&limit=500"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/state"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/manifest"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/events?after_sequence=0&limit=500"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/state"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/manifest"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/events?after_sequence=0&limit=500"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/state"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/state"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/state"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/state"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/manifest"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:41869/api/v1/events?after_sequence=0&limit=500"
+    }
+  ],
+  "required_workflow": "deliberately-absent-workflow",
+  "result_artifacts": [],
+  "run_dir": "/tmp/tau-operator-reference-proof-b3hsbg1h/negative-run",
+  "scenario": "negative",
+  "schema": "tau.operator_reference_browser_proof.v1",
+  "source_dag_path": "/tmp/tau-operator-reference-proof-b3hsbg1h/negative-run/workflow/dag.json",
+  "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+  "status": "PASS",
+  "url": "http://127.0.0.1:41869/",
+  "workflow_status": "BLOCKED",
+  "workflow_verdict": "BLOCKED"
+}

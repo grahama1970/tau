@@ -1,0 +1,206 @@
+{
+  "checks": {
+    "dirty_repository_visible": true,
+    "final_result_absent": true,
+    "final_result_visible": false,
+    "goal_summary_visible": true,
+    "inspect_accepted_observed": true,
+    "inspect_running_observed": true,
+    "layout_non_overlapping": true,
+    "no_manual_reload": true,
+    "publish_accepted_observed": false,
+    "publish_not_executed": true,
+    "publish_running_observed": false,
+    "read_only_requests": true,
+    "result_artifact_refs_visible": false,
+    "validate_accepted_observed": false,
+    "validate_blocked_observed": true,
+    "validate_running_observed": true,
+    "workflow_title_visible": true
+  },
+  "desktop_screenshot": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/negative-desktop.png",
+  "desktop_screenshot_sha256": "sha256:4536d97d25f3a24d950a65da7ea44e88abaad01c9adf4be08711778db096b889",
+  "final_observation": {
+    "blocker": "Exact blockervalidate-readinessdirty_repository",
+    "current": "CurrentRun settled",
+    "goal": "Human goalDetermine whether this checkout is ready for focused work.",
+    "nodes": {
+      "inspect": {
+        "admission": "accepted",
+        "state": "settled",
+        "text": "inspect-repositoryInspect repositorysettledacceptedRepository inspection completed.attempt 1/1UNKNOWN"
+      },
+      "publish": {
+        "admission": "not_started",
+        "state": "pending",
+        "text": "publish-readinessPublish readiness resultpendingnot_startedattempt 0/1UNKNOWN"
+      },
+      "validate": {
+        "admission": "rejected",
+        "state": "blocked",
+        "text": "validate-readinessValidate readiness policyblockedrejecteddirty_repositoryattempt 1/1UNKNOWN"
+      }
+    },
+    "result": "ResultNo accepted final result",
+    "workflow": "WorkflowRepository ReadinessLINEAR \u00b7 repository-readiness"
+  },
+  "fixture_repo": "/tmp/tau-repository-readiness-proof-znrpl8tp/negative-repo",
+  "live": true,
+  "main_frame_navigation_count": 1,
+  "mobile_screenshot": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/negative-mobile.png",
+  "mobile_screenshot_sha256": "sha256:741d8e61eba7cd7fb4e392a79560579bd38de9f4a76f82f04ff4a9c79a63f819",
+  "mocked": false,
+  "observations": [
+    {
+      "blocker": "",
+      "current": "Currentinspect-repository",
+      "elapsed_ms": 2,
+      "goal": "Human goalDetermine whether this checkout is ready for focused work.",
+      "nodes": {
+        "inspect": {
+          "admission": "awaiting_receipt",
+          "state": "running",
+          "text": "inspect-repositoryInspect repositoryrunningawaiting_receiptattempt 1/1UNKNOWN"
+        },
+        "publish": {
+          "admission": "not_started",
+          "state": "pending",
+          "text": "publish-readinessPublish readiness resultpendingnot_startedattempt 0/1UNKNOWN"
+        },
+        "validate": {
+          "admission": "not_started",
+          "state": "pending",
+          "text": "validate-readinessValidate readiness policypendingnot_startedattempt 0/1UNKNOWN"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "workflow": "WorkflowRepository ReadinessLINEAR \u00b7 repository-readiness"
+    },
+    {
+      "blocker": "",
+      "current": "Currentvalidate-readiness",
+      "elapsed_ms": 773,
+      "goal": "Human goalDetermine whether this checkout is ready for focused work.",
+      "nodes": {
+        "inspect": {
+          "admission": "accepted",
+          "state": "settled",
+          "text": "inspect-repositoryInspect repositorysettledacceptedRepository inspection completed.attempt 1/1UNKNOWN"
+        },
+        "publish": {
+          "admission": "not_started",
+          "state": "pending",
+          "text": "publish-readinessPublish readiness resultpendingnot_startedattempt 0/1UNKNOWN"
+        },
+        "validate": {
+          "admission": "awaiting_receipt",
+          "state": "running",
+          "text": "validate-readinessValidate readiness policyrunningawaiting_receiptattempt 1/1UNKNOWN"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "workflow": "WorkflowRepository ReadinessLINEAR \u00b7 repository-readiness"
+    },
+    {
+      "blocker": "Exact blockervalidate-readinessdirty_repository",
+      "current": "CurrentRun settled",
+      "elapsed_ms": 1544,
+      "goal": "Human goalDetermine whether this checkout is ready for focused work.",
+      "nodes": {
+        "inspect": {
+          "admission": "accepted",
+          "state": "settled",
+          "text": "inspect-repositoryInspect repositorysettledacceptedRepository inspection completed.attempt 1/1UNKNOWN"
+        },
+        "publish": {
+          "admission": "not_started",
+          "state": "pending",
+          "text": "publish-readinessPublish readiness resultpendingnot_startedattempt 0/1UNKNOWN"
+        },
+        "validate": {
+          "admission": "rejected",
+          "state": "blocked",
+          "text": "validate-readinessValidate readiness policyblockedrejecteddirty_repositoryattempt 1/1UNKNOWN"
+        }
+      },
+      "result": "ResultNo accepted final result",
+      "workflow": "WorkflowRepository ReadinessLINEAR \u00b7 repository-readiness"
+    }
+  ],
+  "provider_live": false,
+  "request_methods": [
+    "GET"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:38625/"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:38625/assets/index-4iXv8RrW.js"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:38625/assets/index-aGjNdEj4.css"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:38625/api/v1/state"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:38625/favicon.ico"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:38625/api/v1/manifest"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:38625/api/v1/events?after_sequence=0&limit=500"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:38625/api/v1/explanations/node/inspect-repository"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:38625/api/v1/state"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:38625/api/v1/state"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:38625/api/v1/manifest"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:38625/api/v1/events?after_sequence=0&limit=500"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:38625/api/v1/state"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:38625/api/v1/manifest"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:38625/api/v1/events?after_sequence=0&limit=500"
+    }
+  ],
+  "result_artifacts": [],
+  "run_dir": "/tmp/tau-repository-readiness-proof-znrpl8tp/negative-run",
+  "scenario": "negative",
+  "schema": "tau.repository_readiness_browser_proof.v1",
+  "source_dag_path": "/tmp/tau-repository-readiness-proof-znrpl8tp/negative-run/workflow/dag.json",
+  "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+  "status": "PASS",
+  "url": "http://127.0.0.1:38625/",
+  "workflow_status": "BLOCKED",
+  "workflow_verdict": "BLOCKED"
+}

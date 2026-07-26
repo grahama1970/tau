@@ -1,0 +1,30 @@
+{
+  "approval_status": "BLOCKED",
+  "final_status": "PASS",
+  "initial_blocker": "targeted_repair_required",
+  "installed_import": "/tmp/tau-durable-wheel-dhzhcl2x/venv/lib/python3.14/site-packages/tau_coding/__init__.py",
+  "installed_workflow_ids": [
+    "repository-readiness",
+    "tau-operator-reference",
+    "repository-evidence-map",
+    "approved-release-bundle",
+    "durable-repository-qualification"
+  ],
+  "live": true,
+  "mocked": false,
+  "provider_live": false,
+  "publication_effect_count": 1,
+  "repair_packet": "/tmp/tau-durable-wheel-dhzhcl2x/run/input/repair-qualify-tests.json",
+  "repeated_resume_status": "PASS",
+  "result_json_sha256": "sha256:e883ed2cff76add40db3993b22706cab8e116072df473c9eb1712954b14e3363",
+  "result_markdown_sha256": "sha256:92812aa14557d60233bcbe0b439b9f776aecee35f6dc02a7d94fe1fb1b8b1f8d",
+  "reused_node_ids": [
+    "capture-repository",
+    "qualify-documentation",
+    "qualify-package"
+  ],
+  "schema": "tau.durable_qualification_wheel_proof.v1",
+  "status": "PASS",
+  "wheel": "/tmp/tau-issue-134-canonical-proof-final-20260726/wheel/tau-0.1.0-py3-none-any.whl",
+  "wheel_sha256": "sha256:78e73fae30f3242f5cca9315f1084daf56ea4b8f885c0a5e720ac4ec3bd1dbaf"
+}

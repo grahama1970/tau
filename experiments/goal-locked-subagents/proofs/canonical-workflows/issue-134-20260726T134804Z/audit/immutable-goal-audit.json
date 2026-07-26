@@ -1,0 +1,1890 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "Human acceptance of the immutable goal.",
+      "Provider or model semantic quality.",
+      "Production deployment readiness, a formal airgap, or secret absence.",
+      "Automatic recovery from process loss before a result is durably staged.",
+      "Application-level exactly-once publication from SQLite WAL semantics alone."
+    ],
+    "proves": [
+      "The exact source ref was checked out in a detached clean Git worktree.",
+      "A wheel from that ref was installed and imported from a temporary environment.",
+      "The installed public tau command discovered exactly the five locked workflows.",
+      "All five public workflow sequences produced useful results and blocked paths.",
+      "The installed shared viewer served an identified GET manifest for every run.",
+      "Positive and negative browser proofs for all five workflows were retained and hash-bound.",
+      "The durable ledger and repeated resume retained one publication effect."
+    ]
+  },
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-main-issue-137.7nchbf",
+        "rev-parse",
+        "--show-toplevel"
+      ],
+      "cwd": "/tmp/tau-main-issue-137.7nchbf",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-main-issue-137.7nchbf",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "cwd": "/tmp/tau-main-issue-137.7nchbf",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-main-issue-137.7nchbf",
+        "rev-parse",
+        "--verify",
+        "669f833de65189e9c14c02f77c1df04da1ddf84e^{commit}"
+      ],
+      "cwd": "/tmp/tau-main-issue-137.7nchbf",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-main-issue-137.7nchbf",
+        "worktree",
+        "add",
+        "--detach",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/checkout",
+        "669f833de65189e9c14c02f77c1df04da1ddf84e"
+      ],
+      "cwd": "/tmp/tau-main-issue-137.7nchbf",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/checkout",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx/checkout",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/checkout",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx/checkout",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "uv",
+        "build",
+        "--wheel",
+        "--out-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/wheel"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx/checkout",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/python",
+        "-c",
+        "import sysconfig; print(sysconfig.get_path('purelib'))"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/python",
+        "-m",
+        "pip",
+        "install",
+        "--quiet",
+        "--no-index",
+        "--no-deps",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/wheel/tau-0.1.0-py3-none-any.whl"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "list",
+        "--json"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "describe",
+        "repository-readiness",
+        "--json"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "describe",
+        "tau-operator-reference",
+        "--json"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "describe",
+        "repository-evidence-map",
+        "--json"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "describe",
+        "approved-release-bundle",
+        "--json"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "describe",
+        "durable-repository-qualification",
+        "--json"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "run",
+        "--help"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "dag-view-capabilities",
+        "--json"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "init",
+        "-q",
+        "-b",
+        "main",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/fixture"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/fixture",
+        "add",
+        "."
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx/fixture",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/fixture",
+        "-c",
+        "user.name=Tau Audit",
+        "-c",
+        "user.email=tau-audit@example.invalid",
+        "commit",
+        "-qm",
+        "fixture"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx/fixture",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "init",
+        "-q",
+        "-b",
+        "main",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/dirty-fixture"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/dirty-fixture",
+        "add",
+        "."
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx/dirty-fixture",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/dirty-fixture",
+        "-c",
+        "user.name=Tau Audit",
+        "-c",
+        "user.email=tau-audit@example.invalid",
+        "commit",
+        "-qm",
+        "fixture"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx/dirty-fixture",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "init",
+        "-q",
+        "-b",
+        "main",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/no-tests-fixture"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/no-tests-fixture",
+        "add",
+        "."
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx/no-tests-fixture",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/no-tests-fixture",
+        "-c",
+        "user.name=Tau Audit",
+        "-c",
+        "user.email=tau-audit@example.invalid",
+        "commit",
+        "-qm",
+        "fixture"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx/no-tests-fixture",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/fixture",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx/fixture",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "run",
+        "repository-readiness",
+        "--repo",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/fixture",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-readiness-positive",
+        "--goal",
+        "Determine whether this checkout is ready for focused work.",
+        "--require-clean"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "run",
+        "repository-readiness",
+        "--repo",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/dirty-fixture",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-readiness-negative",
+        "--goal",
+        "Determine whether this checkout is ready for focused work.",
+        "--require-clean"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 1
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "dag-view",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-readiness-positive",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "56803",
+        "--no-open"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "dag-view",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-readiness-negative",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "51555",
+        "--no-open"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "run",
+        "tau-operator-reference",
+        "--repo",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/checkout",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/tau-operator-reference-positive"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "run",
+        "tau-operator-reference",
+        "--repo",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/checkout",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/tau-operator-reference-negative",
+        "--required-workflow",
+        "deliberately-absent-workflow"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 1
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "dag-view",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/tau-operator-reference-positive",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "38413",
+        "--no-open"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "dag-view",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/tau-operator-reference-negative",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "44597",
+        "--no-open"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "run",
+        "repository-evidence-map",
+        "--repo",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/fixture",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-evidence-map-positive",
+        "--goal",
+        "Map this repository for focused work.",
+        "--require-tests"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "run",
+        "repository-evidence-map",
+        "--repo",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/no-tests-fixture",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-evidence-map-negative",
+        "--goal",
+        "Map this repository for focused work.",
+        "--require-tests"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 1
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "dag-view",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-evidence-map-positive",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "37561",
+        "--no-open"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "dag-view",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-evidence-map-negative",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "57175",
+        "--no-open"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "run",
+        "approved-release-bundle",
+        "--repo",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/fixture",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/approved-release-bundle",
+        "--goal",
+        "Publish an approved local release bundle.",
+        "--publish-path",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/published/approved-release-bundle"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 1
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "dag-view",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/approved-release-bundle",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "59727",
+        "--no-open"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "approve",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/approved-release-bundle",
+        "--approval-packet",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/human-approved-release-approval.json"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "resume",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/approved-release-bundle"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "resume",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/approved-release-bundle"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "dag-view",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/approved-release-bundle",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "38297",
+        "--no-open"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "run",
+        "durable-repository-qualification",
+        "--repo",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/fixture",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/durable-repository-qualification",
+        "--goal",
+        "Qualify this repository through durable recovery.",
+        "--publish-path",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/published/durable-repository-qualification",
+        "--inject-test-branch-failure"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 1
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "dag-view",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/durable-repository-qualification",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "44387",
+        "--no-open"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "repair",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/durable-repository-qualification",
+        "--node",
+        "qualify-tests",
+        "--approval-packet",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/human-qualify-tests-repair-approval.json"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "resume",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/durable-repository-qualification"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 1
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "dag-view",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/durable-repository-qualification",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "37415",
+        "--no-open"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "approve",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/durable-repository-qualification",
+        "--approval-packet",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/human-qualification-publication-approval.json"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "resume",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/durable-repository-qualification"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "workflows",
+        "resume",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/durable-repository-qualification"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/tau",
+        "dag-view",
+        "--run-dir",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/durable-repository-qualification",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "48727",
+        "--no-open"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/fixture",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx/fixture",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/fixture",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx/fixture",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/checkout",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx/checkout",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/python",
+        "-c",
+        "import tau_coding; print(tau_coding.__file__)"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/bin/python",
+        "--version"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "uv",
+        "--version"
+      ],
+      "cwd": "/tmp/tau-immutable-goal-audit-cbb3w5fx/checkout",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-main-issue-137.7nchbf",
+        "worktree",
+        "remove",
+        "--force",
+        "/tmp/tau-immutable-goal-audit-cbb3w5fx/checkout"
+      ],
+      "cwd": "/tmp/tau-main-issue-137.7nchbf",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/tau-main-issue-137.7nchbf",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "cwd": "/tmp/tau-main-issue-137.7nchbf",
+      "returncode": 0
+    }
+  ],
+  "criteria": [
+    {
+      "criterion": 1,
+      "evidence": [
+        {
+          "result_json_sha256": "sha256:728771dafa68a23c622cbd36cb646edd81cd9bfeff180739f339a7a9941347ad",
+          "result_markdown_sha256": "sha256:d9024f56e736225200e5660b7b9ffced3663355c341cc86a6a3087739c8161f0",
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-readiness-positive",
+          "topology": "LINEAR",
+          "workflow_id": "repository-readiness"
+        },
+        {
+          "result_json_sha256": "sha256:1ccbf1d2144edfc2620ee88619e39a00dcda2f2e447b83354c90db6171950011",
+          "result_markdown_sha256": "sha256:7465296974aa44ccf88038208b01221211717c260a7f7c555356c7af4550ec7c",
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/tau-operator-reference-positive",
+          "topology": "MULTI_STEP_SEQUENTIAL",
+          "workflow_id": "tau-operator-reference"
+        },
+        {
+          "result_json_sha256": "sha256:d6d0df9b6f372ca8b72022261930b5730483af9a43b8f79a058f864297eb6cf0",
+          "result_markdown_sha256": "sha256:fce7093e6bc87f9be2df42df2c26f332b1944688d6a3c0ffdcc7042f9d703451",
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-evidence-map-positive",
+          "topology": "FAN_OUT_FAN_IN",
+          "workflow_id": "repository-evidence-map"
+        },
+        {
+          "result_json_sha256": "sha256:3e223b32ea4c05f03f5044bb9bf77a573da375fe5e4175a4b4b0135b47dace04",
+          "result_markdown_sha256": "sha256:48e76386bf0a315c467306805336e76fc2738bef2987b417e03e7886329c473a",
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/approved-release-bundle",
+          "topology": "MIXED_RETRY_APPROVAL",
+          "workflow_id": "approved-release-bundle"
+        },
+        {
+          "result_json_sha256": "sha256:b6f150398b1123a7cff6c434809bfe1b6917233110837bf20c49fad3365b34f0",
+          "result_markdown_sha256": "sha256:92812aa14557d60233bcbe0b439b9f776aecee35f6dc02a7d94fe1fb1b8b1f8d",
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/durable-repository-qualification",
+          "topology": "DURABLE_MIXED_REPAIR_APPROVAL",
+          "workflow_id": "durable-repository-qualification"
+        }
+      ],
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 2,
+      "evidence": [
+        {
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-readiness-positive",
+          "topology": "LINEAR",
+          "workflow_id": "repository-readiness"
+        },
+        {
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/tau-operator-reference-positive",
+          "topology": "MULTI_STEP_SEQUENTIAL",
+          "workflow_id": "tau-operator-reference"
+        },
+        {
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-evidence-map-positive",
+          "topology": "FAN_OUT_FAN_IN",
+          "workflow_id": "repository-evidence-map"
+        },
+        {
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/approved-release-bundle",
+          "topology": "MIXED_RETRY_APPROVAL",
+          "workflow_id": "approved-release-bundle"
+        },
+        {
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/durable-repository-qualification",
+          "topology": "DURABLE_MIXED_REPAIR_APPROVAL",
+          "workflow_id": "durable-repository-qualification"
+        }
+      ],
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 3,
+      "evidence": [
+        {
+          "negative_status": "BLOCKED",
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-readiness-positive",
+          "workflow_id": "repository-readiness"
+        },
+        {
+          "negative_status": "BLOCKED",
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/tau-operator-reference-positive",
+          "workflow_id": "tau-operator-reference"
+        },
+        {
+          "negative_status": "BLOCKED",
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-evidence-map-positive",
+          "workflow_id": "repository-evidence-map"
+        },
+        {
+          "negative_status": "BLOCKED",
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/approved-release-bundle",
+          "workflow_id": "approved-release-bundle"
+        },
+        {
+          "negative_status": "BLOCKED",
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/durable-repository-qualification",
+          "workflow_id": "durable-repository-qualification"
+        }
+      ],
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 4,
+      "evidence": [
+        {
+          "bytes": 54545,
+          "label": "slice05_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/durable/browser.json",
+          "sha256": "sha256:aa40d4e7271553edd10914bfc5b45d34ed91b6ecf0261ab3f1e1aea175038a6f"
+        },
+        {
+          "bytes": 1211,
+          "label": "slice05_wheel",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/wheel/durable-wheel-proof.json",
+          "sha256": "sha256:e92b81f7ab2c887d64c80340be04ad1f546018b6a62da99bb05070f6611b5d0e"
+        }
+      ],
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 5,
+      "evidence": [
+        {
+          "bytes": 18801,
+          "label": "slice04_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/approved/browser.json",
+          "sha256": "sha256:7788e612d152c0e8bda2ad318e2393d0e66b2d89e42014ba0b38e0454afcab09"
+        },
+        {
+          "bytes": 1196,
+          "label": "slice04_no_accepted_producer_rerun",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/approved/no-accepted-producer-rerun.json",
+          "sha256": "sha256:65c1bcda795cceebfc0a3f3cf72e0beed533a53fee634d43bab0d0ff25ebad7e"
+        }
+      ],
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 6,
+      "evidence": [
+        {
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-readiness-positive",
+          "workflow_id": "repository-readiness"
+        },
+        {
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/tau-operator-reference-positive",
+          "workflow_id": "tau-operator-reference"
+        },
+        {
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-evidence-map-positive",
+          "workflow_id": "repository-evidence-map"
+        },
+        {
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/approved-release-bundle",
+          "workflow_id": "approved-release-bundle"
+        },
+        {
+          "run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/durable-repository-qualification",
+          "workflow_id": "durable-repository-qualification"
+        }
+      ],
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 7,
+      "evidence": [
+        {
+          "bytes": 9946,
+          "label": "readiness_positive_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/positive-browser.json",
+          "sha256": "sha256:3c175fa89c5c735e57b4bbbe594595b0875488d45c124400e2762ca61bfb9857"
+        },
+        {
+          "bytes": 7145,
+          "label": "readiness_negative_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/negative-browser.json",
+          "sha256": "sha256:f608bc8b1a1f0ffca5ef4b37d26cfc246c4399b7df580b0dcd86352f078dbba2"
+        },
+        {
+          "bytes": 16906,
+          "label": "operator_positive_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/positive-browser.json",
+          "sha256": "sha256:3eceff16f3b97130acf0528d3319e38f1c4e3af076eb6ea39a025d69584c2eec"
+        },
+        {
+          "bytes": 15493,
+          "label": "operator_negative_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/negative-browser.json",
+          "sha256": "sha256:7dbf7e8ec02c351f3868aefbb2cad6d8c2ae28f051e9803e7a4bedc09fb7d70a"
+        },
+        {
+          "bytes": 5558,
+          "label": "evidence_positive_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/positive-browser.json",
+          "sha256": "sha256:84511b22b3e2447ba2ec727da8f0d8d51fca4406de96e2b98eb009c8a9c90241"
+        },
+        {
+          "bytes": 4233,
+          "label": "evidence_negative_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/negative-browser.json",
+          "sha256": "sha256:efc270374d70ba2637085d2b2128f43b3cead694888ef026b303e2c78c80b220"
+        },
+        {
+          "bytes": 18801,
+          "label": "slice04_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/approved/browser.json",
+          "sha256": "sha256:7788e612d152c0e8bda2ad318e2393d0e66b2d89e42014ba0b38e0454afcab09"
+        },
+        {
+          "bytes": 54545,
+          "label": "slice05_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/durable/browser.json",
+          "sha256": "sha256:aa40d4e7271553edd10914bfc5b45d34ed91b6ecf0261ab3f1e1aea175038a6f"
+        }
+      ],
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 8,
+      "evidence": [
+        {
+          "bytes": 9946,
+          "label": "readiness_positive_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/positive-browser.json",
+          "sha256": "sha256:3c175fa89c5c735e57b4bbbe594595b0875488d45c124400e2762ca61bfb9857"
+        },
+        {
+          "bytes": 7145,
+          "label": "readiness_negative_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/negative-browser.json",
+          "sha256": "sha256:f608bc8b1a1f0ffca5ef4b37d26cfc246c4399b7df580b0dcd86352f078dbba2"
+        },
+        {
+          "bytes": 16906,
+          "label": "operator_positive_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/positive-browser.json",
+          "sha256": "sha256:3eceff16f3b97130acf0528d3319e38f1c4e3af076eb6ea39a025d69584c2eec"
+        },
+        {
+          "bytes": 15493,
+          "label": "operator_negative_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/negative-browser.json",
+          "sha256": "sha256:7dbf7e8ec02c351f3868aefbb2cad6d8c2ae28f051e9803e7a4bedc09fb7d70a"
+        },
+        {
+          "bytes": 5558,
+          "label": "evidence_positive_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/positive-browser.json",
+          "sha256": "sha256:84511b22b3e2447ba2ec727da8f0d8d51fca4406de96e2b98eb009c8a9c90241"
+        },
+        {
+          "bytes": 4233,
+          "label": "evidence_negative_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/negative-browser.json",
+          "sha256": "sha256:efc270374d70ba2637085d2b2128f43b3cead694888ef026b303e2c78c80b220"
+        },
+        {
+          "bytes": 18801,
+          "label": "slice04_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/approved/browser.json",
+          "sha256": "sha256:7788e612d152c0e8bda2ad318e2393d0e66b2d89e42014ba0b38e0454afcab09"
+        },
+        {
+          "bytes": 1196,
+          "label": "slice04_no_accepted_producer_rerun",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/approved/no-accepted-producer-rerun.json",
+          "sha256": "sha256:65c1bcda795cceebfc0a3f3cf72e0beed533a53fee634d43bab0d0ff25ebad7e"
+        },
+        {
+          "bytes": 54545,
+          "label": "slice05_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/durable/browser.json",
+          "sha256": "sha256:aa40d4e7271553edd10914bfc5b45d34ed91b6ecf0261ab3f1e1aea175038a6f"
+        },
+        {
+          "bytes": 1211,
+          "label": "slice05_wheel",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/wheel/durable-wheel-proof.json",
+          "sha256": "sha256:e92b81f7ab2c887d64c80340be04ad1f546018b6a62da99bb05070f6611b5d0e"
+        }
+      ],
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 9,
+      "evidence": [
+        {
+          "bytes": 9946,
+          "label": "readiness_positive_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/positive-browser.json",
+          "sha256": "sha256:3c175fa89c5c735e57b4bbbe594595b0875488d45c124400e2762ca61bfb9857"
+        },
+        {
+          "bytes": 7145,
+          "label": "readiness_negative_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/negative-browser.json",
+          "sha256": "sha256:f608bc8b1a1f0ffca5ef4b37d26cfc246c4399b7df580b0dcd86352f078dbba2"
+        },
+        {
+          "bytes": 16906,
+          "label": "operator_positive_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/positive-browser.json",
+          "sha256": "sha256:3eceff16f3b97130acf0528d3319e38f1c4e3af076eb6ea39a025d69584c2eec"
+        },
+        {
+          "bytes": 15493,
+          "label": "operator_negative_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/negative-browser.json",
+          "sha256": "sha256:7dbf7e8ec02c351f3868aefbb2cad6d8c2ae28f051e9803e7a4bedc09fb7d70a"
+        },
+        {
+          "bytes": 5558,
+          "label": "evidence_positive_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/positive-browser.json",
+          "sha256": "sha256:84511b22b3e2447ba2ec727da8f0d8d51fca4406de96e2b98eb009c8a9c90241"
+        },
+        {
+          "bytes": 4233,
+          "label": "evidence_negative_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/negative-browser.json",
+          "sha256": "sha256:efc270374d70ba2637085d2b2128f43b3cead694888ef026b303e2c78c80b220"
+        },
+        {
+          "bytes": 18801,
+          "label": "slice04_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/approved/browser.json",
+          "sha256": "sha256:7788e612d152c0e8bda2ad318e2393d0e66b2d89e42014ba0b38e0454afcab09"
+        },
+        {
+          "bytes": 1196,
+          "label": "slice04_no_accepted_producer_rerun",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/approved/no-accepted-producer-rerun.json",
+          "sha256": "sha256:65c1bcda795cceebfc0a3f3cf72e0beed533a53fee634d43bab0d0ff25ebad7e"
+        },
+        {
+          "bytes": 54545,
+          "label": "slice05_browser",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/durable/browser.json",
+          "sha256": "sha256:aa40d4e7271553edd10914bfc5b45d34ed91b6ecf0261ab3f1e1aea175038a6f"
+        },
+        {
+          "bytes": 1211,
+          "label": "slice05_wheel",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/wheel/durable-wheel-proof.json",
+          "sha256": "sha256:e92b81f7ab2c887d64c80340be04ad1f546018b6a62da99bb05070f6611b5d0e"
+        }
+      ],
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 10,
+      "evidence": [
+        "Human acceptance is not recorded by this automated audit."
+      ],
+      "status": "MISSING"
+    }
+  ],
+  "first_unmet_criterion": 10,
+  "live": true,
+  "mocked": false,
+  "provider_live": false,
+  "requested_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+  "research_sources": [
+    "https://sqlite.org/wal.html",
+    "https://sqlite.org/walformat.html"
+  ],
+  "schema": "tau.immutable_goal_audit.v1",
+  "source": {
+    "caller_worktree_status_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "goal_contract": {
+      "completion_criteria_verified": [
+        "all five canonical DAGs execute",
+        "the ladder visibly progresses",
+        "each DAG has a deterministic acceptance contract",
+        "the advanced DAG demonstrates crash-safe resume",
+        "the human-gated DAG demonstrates an exact approval boundary and rollback",
+        "the same viewer renders fresh authoritative progress for all five DAGs",
+        "the React Flow graph visibly updates during execution without manual reload",
+        "a clean checkout can launch the DAGs and viewer using documented commands",
+        "final proof reports `mocked: no`, `live: yes`",
+        "the human accepts that the workflows and viewer make Tau's value and state"
+      ],
+      "completion_criterion_count": 10,
+      "path": "GOAL.md",
+      "sha256": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e"
+    },
+    "installed_import": "/tmp/tau-immutable-goal-audit-cbb3w5fx/venv/lib/python3.14/site-packages/tau_coding/__init__.py",
+    "public_interface": {
+      "catalog_schema": "tau.workflow_catalog.v1",
+      "descriptions": {
+        "approved-release-bundle": {
+          "result_node_id": "finalize-approved-release",
+          "result_schema": "tau.approved_release_bundle.v1",
+          "topology": "MIXED_RETRY_APPROVAL"
+        },
+        "durable-repository-qualification": {
+          "result_node_id": "finalize-qualification",
+          "result_schema": "tau.durable_repository_qualification.v1",
+          "topology": "DURABLE_MIXED_REPAIR_APPROVAL"
+        },
+        "repository-evidence-map": {
+          "result_node_id": "publish-evidence-map",
+          "result_schema": "tau.repository_evidence_map.v1",
+          "topology": "FAN_OUT_FAN_IN"
+        },
+        "repository-readiness": {
+          "result_node_id": "publish-readiness",
+          "result_schema": "tau.repository_readiness_report.v1",
+          "topology": "LINEAR"
+        },
+        "tau-operator-reference": {
+          "result_node_id": "validate-operator-reference",
+          "result_schema": "tau.operator_reference.v1",
+          "topology": "MULTI_STEP_SEQUENTIAL"
+        }
+      },
+      "readme_commands_verified": [
+        "tau workflows list --json",
+        "tau workflows run repository-readiness",
+        "tau workflows run tau-operator-reference",
+        "tau workflows run repository-evidence-map",
+        "tau workflows run approved-release-bundle",
+        "tau workflows run durable-repository-qualification",
+        "tau workflows repair",
+        "tau workflows approve",
+        "tau workflows resume",
+        "tau dag-view --run-dir"
+      ],
+      "run_help_verified_options": [
+        "--repo",
+        "--run-dir",
+        "--goal",
+        "--publish-path",
+        "--require-tests"
+      ],
+      "viewer_capabilities": {
+        "event_schema": "tau.dag_live_event.v1",
+        "manifest_schema": "tau.dag_view_manifest.v1",
+        "read_only": true,
+        "schema": "tau.dag_viewer_capabilities.v1",
+        "snapshot_schema": "tau.dag_view_snapshot.v2",
+        "supports_attention_items": true,
+        "supports_bounded_query": true,
+        "supports_causal_explanations": true,
+        "supports_exactly_two_comparison": true,
+        "supports_historical_sequences": true,
+        "supports_live": true,
+        "supports_receipt_inspection": true,
+        "supports_replay": true,
+        "supports_route_join_projection": true,
+        "supports_source_json": true,
+        "viewer_version": "1"
+      },
+      "workflow_ids": [
+        "repository-readiness",
+        "tau-operator-reference",
+        "repository-evidence-map",
+        "approved-release-bundle",
+        "durable-repository-qualification"
+      ]
+    },
+    "python_version": "Python 3.14.3",
+    "readme_sha256": "sha256:98ddae498352127b5ca19805ecac7c4a8970a5065478d31741f1c3cb0f490b69",
+    "repository": "/tmp/tau-main-issue-137.7nchbf",
+    "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+    "uv_version": "uv 0.10.4",
+    "wheel": {
+      "bytes": 1297432,
+      "filename": "tau-0.1.0-py3-none-any.whl",
+      "sha256": "sha256:78e73fae30f3242f5cca9315f1084daf56ea4b8f885c0a5e720ac4ec3bd1dbaf"
+    }
+  },
+  "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+  "status": "PASS",
+  "supplied_proofs": [
+    {
+      "bytes": 9946,
+      "check_count": 17,
+      "label": "readiness_positive_browser",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/positive-browser.json",
+      "provider_live": false,
+      "publication_effect_count": null,
+      "repeated_resume_status": null,
+      "request_methods": [
+        "GET"
+      ],
+      "schema": "tau.repository_readiness_browser_proof.v1",
+      "screenshots": [
+        {
+          "bytes": 169208,
+          "kind": "desktop",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/positive-desktop.png",
+          "sha256": "sha256:379bbcc2d6d927a73ab09d629b6e760905bdd69f247e502f6f718ce6d410a9bc"
+        },
+        {
+          "bytes": 125670,
+          "kind": "mobile",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/positive-mobile.png",
+          "sha256": "sha256:434ed539ff338c04b6fd40c3840305655ae40e1d659deb0769ed2982633bc1a4"
+        }
+      ],
+      "sha256": "sha256:3c175fa89c5c735e57b4bbbe594595b0875488d45c124400e2762ca61bfb9857",
+      "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+      "status": "PASS",
+      "wheel_sha256": null
+    },
+    {
+      "bytes": 7145,
+      "check_count": 17,
+      "label": "readiness_negative_browser",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/negative-browser.json",
+      "provider_live": false,
+      "publication_effect_count": null,
+      "repeated_resume_status": null,
+      "request_methods": [
+        "GET"
+      ],
+      "schema": "tau.repository_readiness_browser_proof.v1",
+      "screenshots": [
+        {
+          "bytes": 165685,
+          "kind": "desktop",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/negative-desktop.png",
+          "sha256": "sha256:4536d97d25f3a24d950a65da7ea44e88abaad01c9adf4be08711778db096b889"
+        },
+        {
+          "bytes": 131204,
+          "kind": "mobile",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/readiness/negative-mobile.png",
+          "sha256": "sha256:741d8e61eba7cd7fb4e392a79560579bd38de9f4a76f82f04ff4a9c79a63f819"
+        }
+      ],
+      "sha256": "sha256:f608bc8b1a1f0ffca5ef4b37d26cfc246c4399b7df580b0dcd86352f078dbba2",
+      "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+      "status": "PASS",
+      "wheel_sha256": null
+    },
+    {
+      "bytes": 16906,
+      "check_count": 20,
+      "label": "operator_positive_browser",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/positive-browser.json",
+      "provider_live": false,
+      "publication_effect_count": null,
+      "repeated_resume_status": null,
+      "request_methods": [
+        "GET"
+      ],
+      "schema": "tau.operator_reference_browser_proof.v1",
+      "screenshots": [
+        {
+          "bytes": 178163,
+          "kind": "desktop",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/positive-desktop.png",
+          "sha256": "sha256:b1c7734fa4a99e4dcd32959a088bd16280b56974befe3ffd7082636e2a5af141"
+        },
+        {
+          "bytes": 126031,
+          "kind": "mobile",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/positive-mobile.png",
+          "sha256": "sha256:1cc05ba9e58579d776e333041e7c19c346ec5415902857a9e1e6ae39826dc43a"
+        }
+      ],
+      "sha256": "sha256:3eceff16f3b97130acf0528d3319e38f1c4e3af076eb6ea39a025d69584c2eec",
+      "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+      "status": "PASS",
+      "wheel_sha256": null
+    },
+    {
+      "bytes": 15493,
+      "check_count": 20,
+      "label": "operator_negative_browser",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/negative-browser.json",
+      "provider_live": false,
+      "publication_effect_count": null,
+      "repeated_resume_status": null,
+      "request_methods": [
+        "GET"
+      ],
+      "schema": "tau.operator_reference_browser_proof.v1",
+      "screenshots": [
+        {
+          "bytes": 174927,
+          "kind": "desktop",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/negative-desktop.png",
+          "sha256": "sha256:e467f070bd12666062957fa23d927dd4d9d5f02baf74768639de32e98e34e763"
+        },
+        {
+          "bytes": 132013,
+          "kind": "mobile",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/operator/negative-mobile.png",
+          "sha256": "sha256:60c0456157516ea4f0e5c92f9ae6b67352c6a05b7a2d21ff9ed89e0e75cd956e"
+        }
+      ],
+      "sha256": "sha256:7dbf7e8ec02c351f3868aefbb2cad6d8c2ae28f051e9803e7a4bedc09fb7d70a",
+      "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+      "status": "PASS",
+      "wheel_sha256": null
+    },
+    {
+      "bytes": 5558,
+      "check_count": 16,
+      "label": "evidence_positive_browser",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/positive-browser.json",
+      "provider_live": false,
+      "publication_effect_count": null,
+      "repeated_resume_status": null,
+      "request_methods": [
+        "GET"
+      ],
+      "schema": "tau.repository_evidence_map_browser_proof.v1",
+      "screenshots": [
+        {
+          "bytes": 184704,
+          "kind": "desktop",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/positive-desktop.png",
+          "sha256": "sha256:35652d3332be169ea821f00f065e6453d857db584d3a4a88865df3cacc71c64c"
+        },
+        {
+          "bytes": 126331,
+          "kind": "mobile",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/positive-mobile.png",
+          "sha256": "sha256:79afdb0e43537801d1a5cdc11b62af8181ff9657b5af65405317b1a2d8b52066"
+        }
+      ],
+      "sha256": "sha256:84511b22b3e2447ba2ec727da8f0d8d51fca4406de96e2b98eb009c8a9c90241",
+      "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+      "status": "PASS",
+      "wheel_sha256": null
+    },
+    {
+      "bytes": 4233,
+      "check_count": 16,
+      "label": "evidence_negative_browser",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/negative-browser.json",
+      "provider_live": false,
+      "publication_effect_count": null,
+      "repeated_resume_status": null,
+      "request_methods": [
+        "GET"
+      ],
+      "schema": "tau.repository_evidence_map_browser_proof.v1",
+      "screenshots": [
+        {
+          "bytes": 177200,
+          "kind": "desktop",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/negative-desktop.png",
+          "sha256": "sha256:b6b8d2c683d7833f346a94d307e9bfdc76a616a7534ae683fd552abb76e1ab9b"
+        },
+        {
+          "bytes": 133743,
+          "kind": "mobile",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/evidence/negative-mobile.png",
+          "sha256": "sha256:0bf8b59fc2e2515ab8da9fb6e933acc59083542ec875c68a0df4cb06de9ce53a"
+        }
+      ],
+      "sha256": "sha256:efc270374d70ba2637085d2b2128f43b3cead694888ef026b303e2c78c80b220",
+      "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+      "status": "PASS",
+      "wheel_sha256": null
+    },
+    {
+      "bytes": 18801,
+      "check_count": 14,
+      "label": "slice04_browser",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/approved/browser.json",
+      "provider_live": false,
+      "publication_effect_count": null,
+      "repeated_resume_status": null,
+      "request_methods": [
+        "GET"
+      ],
+      "schema": "tau.approved_release_browser_proof.v1",
+      "screenshots": [
+        {
+          "bytes": 186205,
+          "kind": "desktop",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/approved/desktop.png",
+          "sha256": "sha256:acbb7688fbbe74f53c0ebad947ceccce44dd43faf8b3de7d90fd759216226d01"
+        },
+        {
+          "bytes": 145517,
+          "kind": "mobile",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/approved/mobile.png",
+          "sha256": "sha256:be902df93d40e51f5c691b792107ad9eec997bb97db6869baf61cc874eafd909"
+        }
+      ],
+      "sha256": "sha256:7788e612d152c0e8bda2ad318e2393d0e66b2d89e42014ba0b38e0454afcab09",
+      "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+      "status": "PASS",
+      "wheel_sha256": null
+    },
+    {
+      "bytes": 1196,
+      "check_count": 8,
+      "label": "slice04_no_accepted_producer_rerun",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/approved/no-accepted-producer-rerun.json",
+      "provider_live": false,
+      "publication_effect_count": null,
+      "repeated_resume_status": null,
+      "request_methods": null,
+      "schema": "tau.slice04_no_accepted_producer_rerun_verification.v1",
+      "screenshots": [],
+      "sha256": "sha256:65c1bcda795cceebfc0a3f3cf72e0beed533a53fee634d43bab0d0ff25ebad7e",
+      "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+      "status": "PASS",
+      "wheel_sha256": null
+    },
+    {
+      "bytes": 54545,
+      "check_count": 15,
+      "label": "slice05_browser",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/durable/browser.json",
+      "provider_live": false,
+      "publication_effect_count": null,
+      "repeated_resume_status": null,
+      "request_methods": [
+        "GET"
+      ],
+      "schema": "tau.durable_qualification_browser_proof.v1",
+      "screenshots": [
+        {
+          "bytes": 192532,
+          "kind": "desktop",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/durable/desktop.png",
+          "sha256": "sha256:27821aeb0c4d07169582f9cf7f9e23199dbffb018478a63bc0eb8d7cabe6d993"
+        },
+        {
+          "bytes": 145514,
+          "kind": "mobile",
+          "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/durable/mobile.png",
+          "sha256": "sha256:f0e8a5dbd7debe16439381d548b0db9e3d8ba0628b036c5efa8f91eb551cf087"
+        }
+      ],
+      "sha256": "sha256:aa40d4e7271553edd10914bfc5b45d34ed91b6ecf0261ab3f1e1aea175038a6f",
+      "source_ref": "669f833de65189e9c14c02f77c1df04da1ddf84e",
+      "status": "PASS",
+      "wheel_sha256": null
+    },
+    {
+      "bytes": 1211,
+      "check_count": null,
+      "label": "slice05_wheel",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-134-canonical-proof-final-20260726/wheel/durable-wheel-proof.json",
+      "provider_live": false,
+      "publication_effect_count": 1,
+      "repeated_resume_status": "PASS",
+      "request_methods": null,
+      "schema": "tau.durable_qualification_wheel_proof.v1",
+      "screenshots": [],
+      "sha256": "sha256:e92b81f7ab2c887d64c80340be04ad1f546018b6a62da99bb05070f6611b5d0e",
+      "source_ref": null,
+      "status": "PASS",
+      "wheel_sha256": "sha256:78e73fae30f3242f5cca9315f1084daf56ea4b8f885c0a5e720ac4ec3bd1dbaf"
+    }
+  ],
+  "workflows": [
+    {
+      "negative": {
+        "status": "BLOCKED"
+      },
+      "positive": {
+        "result": {
+          "json": {
+            "bytes": 1031,
+            "filename": "repository-readiness.json",
+            "schema": "tau.repository_readiness_report.v1",
+            "sha256": "sha256:728771dafa68a23c622cbd36cb646edd81cd9bfeff180739f339a7a9941347ad",
+            "status": "READY",
+            "summary": "Repository is ready for focused work."
+          },
+          "markdown": {
+            "bytes": 291,
+            "filename": "repository-readiness.md",
+            "sha256": "sha256:d9024f56e736225200e5660b7b9ffced3663355c341cc86a6a3087739c8161f0"
+          }
+        },
+        "status": "PASS"
+      },
+      "temporary_run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-readiness-positive",
+      "topology": "LINEAR",
+      "viewer_evidence": [
+        {
+          "endpoint": "http://127.0.0.1:56803/api/v1/manifest",
+          "http_status": 200,
+          "logical_run_id": "repository-readiness-9433af117ed8",
+          "manifest_sha256": "sha256:30f198e5e2ab3512b2eccddee4760345831bb8edddf22ff420e7a306248b45bc",
+          "plan_sha256": "sha256:4ed1ef6b0db6ed39084eaca7c774f7ec476648a63ec910d1beab0299324418f0",
+          "process_returncode": 0,
+          "run_id": "repository-readiness-9433af117ed8",
+          "schema": "tau.dag_view_manifest.v1",
+          "source_available": true,
+          "terminated_cleanly": true,
+          "workflow_id": "repository-readiness"
+        },
+        {
+          "endpoint": "http://127.0.0.1:51555/api/v1/manifest",
+          "http_status": 200,
+          "logical_run_id": "repository-readiness-2da83d552bb6",
+          "manifest_sha256": "sha256:634f1545e708f6fc2dd6fd529e5a0f08df5db3e55d411f18cd38ce36c7599c2b",
+          "plan_sha256": "sha256:bd1921299137f935e1a4f9f763d0cdc309ab715f606dfa29183959db0a2db2eb",
+          "process_returncode": 0,
+          "run_id": "repository-readiness-2da83d552bb6",
+          "schema": "tau.dag_view_manifest.v1",
+          "source_available": true,
+          "terminated_cleanly": true,
+          "workflow_id": "repository-readiness"
+        }
+      ],
+      "workflow_id": "repository-readiness"
+    },
+    {
+      "negative": {
+        "status": "BLOCKED"
+      },
+      "positive": {
+        "result": {
+          "json": {
+            "bytes": 16930,
+            "filename": "tau-operator-reference.json",
+            "schema": "tau.operator_reference.v1",
+            "sha256": "sha256:1ccbf1d2144edfc2620ee88619e39a00dcda2f2e447b83354c90db6171950011",
+            "status": "ACCEPTED",
+            "summary": "Tau operator reference validated from fixed local source and CLI evidence."
+          },
+          "markdown": {
+            "bytes": 8504,
+            "filename": "tau-operator-reference.md",
+            "sha256": "sha256:7465296974aa44ccf88038208b01221211717c260a7f7c555356c7af4550ec7c"
+          }
+        },
+        "status": "PASS"
+      },
+      "temporary_run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/tau-operator-reference-positive",
+      "topology": "MULTI_STEP_SEQUENTIAL",
+      "viewer_evidence": [
+        {
+          "endpoint": "http://127.0.0.1:38413/api/v1/manifest",
+          "http_status": 200,
+          "logical_run_id": "tau-operator-reference-e909ab79c33a",
+          "manifest_sha256": "sha256:a19cbea59e97f7d79c6984153aeff9f2459791450a4c9b589d0d688a8e1b423b",
+          "plan_sha256": "sha256:d0783e4fdc83b6e7f93ef9a2acfdc32a263b0fedf9d3b845bbf7a1b26989a586",
+          "process_returncode": 0,
+          "run_id": "tau-operator-reference-e909ab79c33a",
+          "schema": "tau.dag_view_manifest.v1",
+          "source_available": true,
+          "terminated_cleanly": true,
+          "workflow_id": "tau-operator-reference"
+        },
+        {
+          "endpoint": "http://127.0.0.1:44597/api/v1/manifest",
+          "http_status": 200,
+          "logical_run_id": "tau-operator-reference-b433c3059c6d",
+          "manifest_sha256": "sha256:28e42c83ae4aa098d02e8e62dd685d0d6ff0be0723b59d80a0747b1980807634",
+          "plan_sha256": "sha256:5ef8a897ddea8a929660e6513ab5ae05df775b76c960a887955081d8c45b0a8f",
+          "process_returncode": 0,
+          "run_id": "tau-operator-reference-b433c3059c6d",
+          "schema": "tau.dag_view_manifest.v1",
+          "source_available": true,
+          "terminated_cleanly": true,
+          "workflow_id": "tau-operator-reference"
+        }
+      ],
+      "workflow_id": "tau-operator-reference"
+    },
+    {
+      "negative": {
+        "status": "BLOCKED"
+      },
+      "positive": {
+        "result": {
+          "json": {
+            "bytes": 3386,
+            "filename": "repository-evidence-map.json",
+            "schema": "tau.repository_evidence_map.v1",
+            "sha256": "sha256:d6d0df9b6f372ca8b72022261930b5730483af9a43b8f79a058f864297eb6cf0",
+            "status": "ACCEPTED",
+            "summary": "Repository evidence map validated from three concurrent analyses."
+          },
+          "markdown": {
+            "bytes": 338,
+            "filename": "repository-evidence-map.md",
+            "sha256": "sha256:fce7093e6bc87f9be2df42df2c26f332b1944688d6a3c0ffdcc7042f9d703451"
+          }
+        },
+        "status": "PASS"
+      },
+      "temporary_run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/repository-evidence-map-positive",
+      "topology": "FAN_OUT_FAN_IN",
+      "viewer_evidence": [
+        {
+          "endpoint": "http://127.0.0.1:37561/api/v1/manifest",
+          "http_status": 200,
+          "logical_run_id": "repository-evidence-map-9af28b3d4821",
+          "manifest_sha256": "sha256:42c72028f9e4179cb1b24b5db0c8c7cd625fd1bb095b8df4dd5079c63119f056",
+          "plan_sha256": "sha256:310be43c62cd9f2d546325322720adf65e2c1ecb60a5a76898255e8177816274",
+          "process_returncode": 0,
+          "run_id": "repository-evidence-map-9af28b3d4821",
+          "schema": "tau.dag_view_manifest.v1",
+          "source_available": true,
+          "terminated_cleanly": true,
+          "workflow_id": "repository-evidence-map"
+        },
+        {
+          "endpoint": "http://127.0.0.1:57175/api/v1/manifest",
+          "http_status": 200,
+          "logical_run_id": "repository-evidence-map-a260b31e1ea4",
+          "manifest_sha256": "sha256:6c4ab95649bc158e129d05527693737d916e58103a02d50e4e260f8d052ce0f6",
+          "plan_sha256": "sha256:f614e760a9717957d2e448f96e05d4017f545a66eb743de98052e69717b23431",
+          "process_returncode": 0,
+          "run_id": "repository-evidence-map-a260b31e1ea4",
+          "schema": "tau.dag_view_manifest.v1",
+          "source_available": true,
+          "terminated_cleanly": true,
+          "workflow_id": "repository-evidence-map"
+        }
+      ],
+      "workflow_id": "repository-evidence-map"
+    },
+    {
+      "negative": {
+        "boundary": "APPROVAL_REQUIRED",
+        "status": "BLOCKED"
+      },
+      "positive": {
+        "result": {
+          "json": {
+            "bytes": 1969,
+            "filename": "approved-release-bundle.json",
+            "schema": "tau.approved_release_bundle.v1",
+            "sha256": "sha256:3e223b32ea4c05f03f5044bb9bf77a573da375fe5e4175a4b4b0135b47dace04",
+            "status": "APPROVED",
+            "summary": "Approved release bundle published after exact human approval."
+          },
+          "markdown": {
+            "bytes": 111,
+            "filename": "approved-release-bundle.md",
+            "sha256": "sha256:48e76386bf0a315c467306805336e76fc2738bef2987b417e03e7886329c473a"
+          }
+        },
+        "status": "PASS"
+      },
+      "publication_verified": true,
+      "repeated_resume_status": "PASS",
+      "temporary_run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/approved-release-bundle",
+      "topology": "MIXED_RETRY_APPROVAL",
+      "viewer_evidence": [
+        {
+          "endpoint": "http://127.0.0.1:59727/api/v1/manifest",
+          "http_status": 200,
+          "logical_run_id": "approved-release-bundle-05988dfb0453",
+          "manifest_sha256": "sha256:9d45e1c02188682b3e612fe2ff499c3f5ffe8acc58c9ad46362be2d13eb8b173",
+          "plan_sha256": "sha256:617c5f44b98aa225f93f6ac09e6d65ed53aab4d7315a8e2e0391c3a551280acb",
+          "process_returncode": 0,
+          "run_id": "approved-release-bundle-05988dfb0453",
+          "schema": "tau.dag_view_manifest.v1",
+          "source_available": true,
+          "terminated_cleanly": true,
+          "workflow_id": "approved-release-bundle"
+        },
+        {
+          "endpoint": "http://127.0.0.1:38297/api/v1/manifest",
+          "http_status": 200,
+          "logical_run_id": "approved-release-bundle-05988dfb0453",
+          "manifest_sha256": "sha256:679fc50342fb2b0325c7b44218349cf8e0627eb8ca50000864de9e264d8797fd",
+          "plan_sha256": "sha256:617c5f44b98aa225f93f6ac09e6d65ed53aab4d7315a8e2e0391c3a551280acb",
+          "process_returncode": 0,
+          "run_id": "approved-release-bundle-05988dfb0453:generation:2",
+          "schema": "tau.dag_view_manifest.v1",
+          "source_available": true,
+          "terminated_cleanly": true,
+          "workflow_id": "approved-release-bundle"
+        }
+      ],
+      "workflow_id": "approved-release-bundle"
+    },
+    {
+      "approval_wait_status": "BLOCKED",
+      "negative": {
+        "boundary": "targeted_repair_required",
+        "status": "BLOCKED"
+      },
+      "positive": {
+        "result": {
+          "json": {
+            "bytes": 3368,
+            "filename": "durable-repository-qualification.json",
+            "schema": "tau.durable_repository_qualification.v1",
+            "sha256": "sha256:b6f150398b1123a7cff6c434809bfe1b6917233110837bf20c49fad3365b34f0",
+            "status": "QUALIFIED",
+            "summary": "Repository qualification published after durable recovery and approval."
+          },
+          "markdown": {
+            "bytes": 131,
+            "filename": "durable-repository-qualification.md",
+            "sha256": "sha256:92812aa14557d60233bcbe0b439b9f776aecee35f6dc02a7d94fe1fb1b8b1f8d"
+          }
+        },
+        "status": "PASS"
+      },
+      "publication_effect_count": 1,
+      "repair_packet_path": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/durable-repository-qualification/input/repair-qualify-tests.json",
+      "repeated_resume_status": "PASS",
+      "reused_node_ids": [
+        "capture-repository",
+        "qualify-documentation",
+        "qualify-package"
+      ],
+      "temporary_run_dir": "/tmp/tau-immutable-goal-audit-cbb3w5fx/runs/durable-repository-qualification",
+      "topology": "DURABLE_MIXED_REPAIR_APPROVAL",
+      "viewer_evidence": [
+        {
+          "endpoint": "http://127.0.0.1:44387/api/v1/manifest",
+          "http_status": 200,
+          "logical_run_id": "durable-repository-qualification-ba61298ff3db",
+          "manifest_sha256": "sha256:84c898a782ab104f313cb352319db31fb7ffb63303a31574fdb36ede77288537",
+          "plan_sha256": "sha256:c2114d543df9c5fd204ee312a4549a9bfb2a1f8d3b1ee72f8c3713717b024b13",
+          "process_returncode": 0,
+          "run_id": "durable-repository-qualification-ba61298ff3db",
+          "schema": "tau.dag_view_manifest.v1",
+          "source_available": true,
+          "terminated_cleanly": true,
+          "workflow_id": "durable-repository-qualification"
+        },
+        {
+          "endpoint": "http://127.0.0.1:37415/api/v1/manifest",
+          "http_status": 200,
+          "logical_run_id": "durable-repository-qualification-ba61298ff3db",
+          "manifest_sha256": "sha256:227d439e71559e64f3549ce6835b8b291319c5c92fe8bf017fd0545bc4f0aab3",
+          "plan_sha256": "sha256:c2114d543df9c5fd204ee312a4549a9bfb2a1f8d3b1ee72f8c3713717b024b13",
+          "process_returncode": 0,
+          "run_id": "durable-repository-qualification-ba61298ff3db:generation:1",
+          "schema": "tau.dag_view_manifest.v1",
+          "source_available": true,
+          "terminated_cleanly": true,
+          "workflow_id": "durable-repository-qualification"
+        },
+        {
+          "endpoint": "http://127.0.0.1:48727/api/v1/manifest",
+          "http_status": 200,
+          "logical_run_id": "durable-repository-qualification-ba61298ff3db",
+          "manifest_sha256": "sha256:e62ee8183b3d0a7324fe894dbd420c9291725794ef5f4bfa17d748ab9c7fe084",
+          "plan_sha256": "sha256:c2114d543df9c5fd204ee312a4549a9bfb2a1f8d3b1ee72f8c3713717b024b13",
+          "process_returncode": 0,
+          "run_id": "durable-repository-qualification-ba61298ff3db:generation:3",
+          "schema": "tau.dag_view_manifest.v1",
+          "source_available": true,
+          "terminated_cleanly": true,
+          "workflow_id": "durable-repository-qualification"
+        }
+      ],
+      "workflow_id": "durable-repository-qualification"
+    }
+  ]
+}

@@ -23,14 +23,24 @@ and publish one rollback-protected side effect only after explicit approval.
 
 - Focused and regression backend proof: `119 passed`.
 - Frontend proof: typecheck, production build, and `23 passed`.
-- Live browser proof: `/tmp/tau-approved-release-browser-proof.json` reports
-  `PASS` with 13/13 checks, GET-only traffic, one navigation, desktop/mobile
+- Retained canonical proof bundle:
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/manifest.json`
+  reports `PASS`, `mocked: false`, `live: true`, `provider_live: false`,
+  and hash-binds the audit receipt, supplied proof JSON, and screenshots.
+- Live browser proof:
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/supplied-proofs/slice04_browser.json`
+  reports `PASS` with 14/14 checks, GET-only traffic, desktop/mobile
   non-overlap, the visible `REVISE -> PASS` retry, approval wait, resume, and
   final result.
-- Desktop screenshot: `/tmp/tau-approved-release-desktop.png`.
-- Mobile screenshot: `/tmp/tau-approved-release-mobile.png`.
-- Installed-wheel proof: `/tmp/tau-approved-release-wheel-proof.json` reports
-  `PASS`, `mocked: false`, `live: true`, and `provider_live: false`.
+- Desktop screenshot:
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/slice04_browser-desktop.png`.
+- Mobile screenshot:
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/slice04_browser-mobile.png`.
+- Installed-wheel coverage is retained in
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/audit/immutable-goal-audit.json`,
+  which built and installed a wheel from source ref
+  `669f833de65189e9c14c02f77c1df04da1ddf84e` and exercised the
+  `approved-release-bundle` workflow through approval and repeated resume.
 
 This slice proves the exercised local workflow, exact approval packet,
 continuation, publication, and rollback contract. It does not prove provider or

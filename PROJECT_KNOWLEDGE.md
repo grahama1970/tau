@@ -5,6 +5,19 @@
 
 ## Current Understanding
 
+- 2026-07-26 canonical workflow audit retention (#134): The latest
+  clean-checkout immutable-goal audit is retained in-repo at
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/`.
+  `manifest.json` reports `schema:
+  tau.canonical_workflow_retention_manifest.v1`, `status: PASS`,
+  `mocked: false`, `live: true`, `provider_live: false`, `artifact_count:
+  27`, and `source_ref:
+  669f833de65189e9c14c02f77c1df04da1ddf84e`. The retained bundle contains
+  `audit/immutable-goal-audit.json`, ten supplied proof JSON receipts, and
+  sixteen desktop/mobile screenshots. This supersedes older canonical-workflow
+  notes that cited `/tmp`-only proof paths for Slices 01-05; reviewers can now
+  inspect the retained artifacts from a clean checkout.
+
 - 2026-07-26 operating target reset: the recent Pi TUI parity work is a
   separate coding-harness usability slice; it does not satisfy the broader
   `GOAL.md` product outcome by itself. The active immutable product goal is
@@ -7117,14 +7130,20 @@
   rollback.
 - Backend proof: Ruff and mypy pass; the focused plus generic DAG/viewer regression set reports
   `119 passed`. Frontend typecheck/build and `23 passed` succeed.
-- Browser receipt `/tmp/tau-approved-release-browser-proof.json` reports `PASS`,
-  `mocked:false`, `live:true`, `provider_live:false`, 13/13 checks, GET-only traffic, no manual
-  reload, visible parallel execution, retry, approval wait, resume, publication, final result, and
-  desktop/mobile geometry. Screenshots are `/tmp/tau-approved-release-desktop.png` and
-  `/tmp/tau-approved-release-mobile.png`.
-- Installed-wheel receipt `/tmp/tau-approved-release-wheel-proof.json` reports `PASS` and exercises
-  catalog discovery, approval blocking, exact approval, resume, result publication, and hash
-  equality from the built wheel without the source checkout on `PYTHONPATH`.
+- Retained browser receipt
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/supplied-proofs/slice04_browser.json`
+  reports `PASS`, `mocked:false`, `live:true`, `provider_live:false`, 14/14
+  checks, GET-only traffic, no manual reload, visible parallel execution,
+  retry, approval wait, resume, publication, final result, and desktop/mobile
+  geometry. Screenshots are retained at
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/slice04_browser-desktop.png`
+  and
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/slice04_browser-mobile.png`.
+- Installed-wheel coverage is retained in
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/audit/immutable-goal-audit.json`,
+  which built and installed a wheel from source ref
+  `669f833de65189e9c14c02f77c1df04da1ddf84e` and exercised the
+  `approved-release-bundle` workflow through approval and repeated resume.
 - This proves the exercised local workflow and viewer path. It does not prove provider/model
   quality, deployment readiness, every filesystem failure mode, or canonical workflow 05's
   crash-safe targeted repair.
@@ -7147,15 +7166,17 @@
   attempt_result_validated`; the command is not rerun. Process loss before a
   result is staged remains effect-uncertain and is intentionally not claimed as
   automatically rerunnable.
-- Focused backend proof is `/tmp/tau-slice05-focused.log`: `40 passed in
-  47.39s`; scoped Ruff passed. Browser proof
-  `/tmp/tau-durable-qualification-browser-proof.json` reports `PASS`,
-  `mocked:false`, `live:true`, `provider_live:false`, all `15/15` checks,
-  GET-only traffic, no manual reload, recovery ordering, repair, approval, and
-  `publication_effect_count_one`. Screenshots are
-  `/tmp/tau-durable-qualification-desktop.png` and
-  `/tmp/tau-durable-qualification-mobile.png`.
-- Installed-wheel proof `/tmp/tau-durable-qualification-wheel-proof.json`
+- Retained browser proof
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/supplied-proofs/slice05_browser.json`
+  reports `PASS`, `mocked:false`, `live:true`, `provider_live:false`, all
+  `15/15` checks, GET-only traffic, no manual reload, recovery ordering,
+  repair, approval, and `publication_effect_count_one`. Screenshots are
+  retained at
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/slice05_browser-desktop.png`
+  and
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/slice05_browser-mobile.png`.
+- Retained installed-wheel proof
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/supplied-proofs/slice05_wheel.json`
   reports all five workflow IDs, initial `targeted_repair_required`, exact
   repair, approval wait, final and repeated-resume `PASS`, reused accepted
   branches, matching result/publication artifacts, and `effect_count: 1`.

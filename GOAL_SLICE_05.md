@@ -21,14 +21,20 @@ human approval.
 
 ## Completion Evidence
 
-- Focused backend regression: `40 passed in 47.39s` in
-  `/tmp/tau-slice05-focused.log`.
-- Live browser receipt: `/tmp/tau-durable-qualification-browser-proof.json`,
+- Retained canonical proof bundle:
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/manifest.json`
+  reports `PASS`, `mocked: false`, `live: true`, `provider_live: false`,
+  and hash-binds the audit receipt, supplied proof JSON, and screenshots.
+- Live browser receipt:
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/supplied-proofs/slice05_browser.json`,
   `15/15` checks, GET-only traffic, desktop/mobile geometry, recovery ordering,
   targeted repair, approval wait, and one publication effect.
-- Screenshots: `/tmp/tau-durable-qualification-desktop.png` and
-  `/tmp/tau-durable-qualification-mobile.png`.
-- Installed-wheel receipt: `/tmp/tau-durable-qualification-wheel-proof.json`,
+- Screenshots:
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/slice05_browser-desktop.png`
+  and
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/screenshots/slice05_browser-mobile.png`.
+- Installed-wheel receipt:
+  `experiments/goal-locked-subagents/proofs/canonical-workflows/issue-134-20260726T134804Z/supplied-proofs/slice05_wheel.json`,
   with all five workflow IDs, reused accepted branches, and
   `publication_effect_count: 1`.
 
