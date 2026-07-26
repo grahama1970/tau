@@ -18,7 +18,7 @@ jobs:
     env:
       CHROME_BIN: /usr/bin/google-chrome
       PUPPETEER_SKIP_DOWNLOAD: "true"
-      TAU_PROOF_ROOT: ${{ github.workspace }}/../tau-canonical-proofs/${{ github.run_id }}
+      TAU_PROOF_ROOT: /tmp/tau-canonical-proofs/${{ github.run_id }}
       TAU_SOURCE_REF: ${{ github.sha }}
 
     steps:
