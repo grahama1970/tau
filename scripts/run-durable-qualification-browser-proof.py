@@ -56,7 +56,7 @@ def main() -> int:
             publish_path=publish_path,
             run_dir=run_dir,
             inject_test_branch_failure=True,
-            step_delay_seconds=0.8,
+            step_delay_seconds=1.2,
         )
         handshake = root / "handshake"
         handshake.mkdir()

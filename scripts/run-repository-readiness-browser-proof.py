@@ -92,7 +92,7 @@ def _proof_scenario(
         human_goal=HUMAN_GOAL,
         require_clean=True,
         run_dir=run_dir,
-        step_delay_seconds=0.6,
+        step_delay_seconds=1.2,
     )
     result: dict[str, object] = {}
     failure: BaseException | None = None

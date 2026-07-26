@@ -52,7 +52,7 @@ def _materialize(*, repo_path: Path, run_dir: Path, required_workflow: str) -> A
         "definition": get_workflow(WORKFLOW_ID),
         "repo_path": repo_path,
         "run_dir": run_dir,
-        "step_delay_seconds": 0.6,
+        "step_delay_seconds": 1.2,
     }
     if "required_workflow_id" in parameters:
         arguments["required_workflow_id"] = required_workflow

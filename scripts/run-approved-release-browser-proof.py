@@ -52,7 +52,7 @@ def main() -> int:
             human_goal="Publish an approved release bundle.",
             publish_path=publish_path,
             run_dir=run_dir,
-            step_delay_seconds=0.8,
+            step_delay_seconds=1.2,
         )
         handshake = root / "handshake"
         handshake.mkdir()

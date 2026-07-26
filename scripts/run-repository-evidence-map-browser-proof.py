@@ -87,7 +87,7 @@ def _scenario(
         human_goal=GOAL,
         require_tests=True,
         run_dir=run_dir,
-        step_delay_seconds=0.8,
+        step_delay_seconds=1.2,
     )
     handshake = run_dir.parent / f".{scenario}-handshake"
     handshake.mkdir()
