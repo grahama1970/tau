@@ -35,11 +35,11 @@ WORKFLOW_IDS = (
     "durable-repository-qualification",
 )
 CATALOG_ORDER = (
-    "approved-release-bundle",
-    "durable-repository-qualification",
-    "repository-evidence-map",
     "repository-readiness",
     "tau-operator-reference",
+    "repository-evidence-map",
+    "approved-release-bundle",
+    "durable-repository-qualification",
 )
 TOPOLOGIES = {
     "repository-readiness": "LINEAR",

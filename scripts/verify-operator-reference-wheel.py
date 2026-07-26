@@ -282,11 +282,11 @@ def main() -> int:
         )
         workflows = catalog.get("workflows")
         expected_ids = [
-            "approved-release-bundle",
-            "durable-repository-qualification",
-            "repository-evidence-map",
             "repository-readiness",
             WORKFLOW_ID,
+            "repository-evidence-map",
+            "approved-release-bundle",
+            "durable-repository-qualification",
         ]
         if (
             not isinstance(workflows, list)

@@ -2,6 +2,7 @@
   "schema": "tau.workflow_definition.v1",
   "workflow_id": "durable-repository-qualification",
   "workflow_version": 1,
+  "rung": 5,
   "title": "Durable Repository Qualification",
   "summary": "Qualify concurrent repository evidence, recover interrupted work, repair one affected branch, and publish one idempotent result after exact human approval.",
   "topology": "DURABLE_MIXED_REPAIR_APPROVAL",

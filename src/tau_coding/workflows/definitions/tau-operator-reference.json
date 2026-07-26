@@ -2,6 +2,7 @@
   "schema": "tau.workflow_definition.v1",
   "workflow_id": "tau-operator-reference",
   "workflow_version": 1,
+  "rung": 2,
   "title": "Tau Operator Reference",
   "summary": "Build a validated Tau operator reference from fixed local repository sources and versioned public CLI probes.",
   "topology": "MULTI_STEP_SEQUENTIAL",

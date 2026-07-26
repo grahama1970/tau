@@ -27,7 +27,7 @@ def list_workflows() -> tuple[WorkflowDefinition, ...]:
         definition = _definition_from_payload(payload)
         definition.validate(package_root=Path(str(package_root)))
         definitions.append(definition)
-    return tuple(sorted(definitions, key=lambda item: item.workflow_id))
+    return tuple(sorted(definitions, key=lambda item: (item.rung, item.workflow_id)))
 
 
 def get_workflow(workflow_id: str) -> WorkflowDefinition:
@@ -66,9 +66,13 @@ def _definition_from_payload(payload: dict[str, Any]) -> WorkflowDefinition:
     workflow_version = payload.get("workflow_version")
     if type(workflow_version) is not int:
         raise RuntimeError("workflow definition workflow_version must be an integer")
+    rung = payload.get("rung")
+    if type(rung) is not int:
+        raise RuntimeError("workflow definition rung must be an integer")
     return WorkflowDefinition(
         workflow_id=str(payload["workflow_id"]),
         workflow_version=workflow_version,
+        rung=rung,
         title=str(payload["title"]),
         summary=str(payload["summary"]),
         topology=str(payload["topology"]),

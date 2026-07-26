@@ -19,6 +19,7 @@ _WORKFLOW_ID = re.compile(r"^[a-z][a-z0-9-]{0,63}$")
 class WorkflowDefinition:
     workflow_id: str
     workflow_version: int
+    rung: int
     title: str
     summary: str
     topology: str
@@ -34,6 +35,8 @@ class WorkflowDefinition:
             raise RuntimeError("workflow definition workflow_id is invalid")
         if type(self.workflow_version) is not int or self.workflow_version < 1:
             raise RuntimeError("workflow definition workflow_version must be positive")
+        if type(self.rung) is not int or self.rung < 1:
+            raise RuntimeError("workflow definition rung must be a positive integer")
         if self.topology not in {
             "LINEAR",
             "MULTI_STEP_SEQUENTIAL",
@@ -66,6 +69,7 @@ class WorkflowDefinition:
             "schema": WORKFLOW_DEFINITION_SCHEMA,
             "workflow_id": self.workflow_id,
             "workflow_version": self.workflow_version,
+            "rung": self.rung,
             "title": self.title,
             "summary": self.summary,
             "topology": self.topology,

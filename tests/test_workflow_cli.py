@@ -20,11 +20,18 @@ def test_workflows_list_and_describe() -> None:
         workflow["workflow_id"]
         for workflow in json.loads(listed.stdout)["workflows"]
     ] == [
-        "approved-release-bundle",
-        "durable-repository-qualification",
-        "repository-evidence-map",
         "repository-readiness",
         "tau-operator-reference",
+        "repository-evidence-map",
+        "approved-release-bundle",
+        "durable-repository-qualification",
+    ]
+    assert [workflow["rung"] for workflow in json.loads(listed.stdout)["workflows"]] == [
+        1,
+        2,
+        3,
+        4,
+        5,
     ]
     assert described.exit_code == 0, described.output
     assert json.loads(described.stdout)["topology"] == "LINEAR"

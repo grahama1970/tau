@@ -2,6 +2,7 @@
   "schema": "tau.workflow_definition.v1",
   "workflow_id": "approved-release-bundle",
   "workflow_version": 1,
+  "rung": 4,
   "title": "Approved Release Bundle",
   "summary": "Prepare concurrent release evidence, revise and accept release notes, then publish one rollback-protected bundle after exact human approval.",
   "topology": "MIXED_RETRY_APPROVAL",

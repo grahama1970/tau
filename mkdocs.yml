@@ -47,6 +47,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Canonical Workflows: canonical-workflows.md
   - Installation: installation.md
   - Configuration and Files: configuration.md
   - Providers: providers.md

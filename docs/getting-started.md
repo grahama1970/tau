@@ -83,6 +83,17 @@ tau
 
 Tau stores indexed sessions under `~/.tau/sessions/`.
 
+## Run a Canonical Workflow
+
+Tau ships five canonical DAG workflows in ladder order. List them with:
+
+```bash
+uv run tau workflows list
+```
+
+See [Canonical Workflows](canonical-workflows.md) for the rung order and launch
+commands.
+
 ## Run an Initial Prompt in the TUI
 
 ```bash

@@ -465,7 +465,8 @@ uv run tau workflows run repository-readiness \
 uv run tau workflows describe tau-operator-reference --json
 uv run tau workflows run tau-operator-reference \
   --repo /path/to/tau \
-  --run-dir /tmp/tau-operator-reference
+  --run-dir /tmp/tau-operator-reference \
+  --open-viewer
 
 uv run tau workflows describe repository-evidence-map --json
 uv run tau workflows run repository-evidence-map \

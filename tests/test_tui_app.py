@@ -8928,11 +8928,11 @@ async def test_tui_app_workflows_command_opens_picker() -> None:
         assert isinstance(app.screen, WorkflowPickerScreen)
         assert app.state.items == []
         assert [workflow.workflow_id for workflow in app.screen.workflows] == [
-            "approved-release-bundle",
-            "durable-repository-qualification",
-            "repository-evidence-map",
             "repository-readiness",
             "tau-operator-reference",
+            "repository-evidence-map",
+            "approved-release-bundle",
+            "durable-repository-qualification",
         ]
         workflow_list = app.screen.query_one("#workflow-picker-list", ListView)
         assert workflow_list.index == 0

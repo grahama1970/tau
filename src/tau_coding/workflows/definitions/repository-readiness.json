@@ -2,6 +2,7 @@
   "schema": "tau.workflow_definition.v1",
   "workflow_id": "repository-readiness",
   "workflow_version": 1,
+  "rung": 1,
   "title": "Repository Readiness",
   "summary": "Inspect a local Git checkout, validate the requested readiness policy, and publish a hash-bound readiness report.",
   "topology": "LINEAR",

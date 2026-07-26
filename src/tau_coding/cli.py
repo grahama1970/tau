@@ -360,7 +360,10 @@ def workflows_list_command(
         raise RuntimeError("workflow catalog workflows must be a list")
     for workflow in workflows:
         if isinstance(workflow, dict):
-            typer.echo(f"{workflow['workflow_id']}\t{workflow['topology']}\t{workflow['title']}")
+            typer.echo(
+                f"rung {workflow['rung']}\t{workflow['workflow_id']}\t"
+                f"{workflow['topology']}\t{workflow['title']}"
+            )
 
 
 @workflows_app.command("describe")
@@ -377,6 +380,7 @@ def workflows_describe_command(
         return
     typer.echo(f"{payload['title']} ({payload['workflow_id']})")
     typer.echo(str(payload["summary"]))
+    typer.echo(f"Rung: {payload['rung']}")
     typer.echo(f"Topology: {payload['topology']}")
 
 
@@ -1776,11 +1780,13 @@ def main(
         elif positional_args[1:2] == ["list"]:
             for workflow in payload["workflows"]:
                 typer.echo(
-                    f"{workflow['workflow_id']}\t{workflow['topology']}\t{workflow['title']}"
+                    f"rung {workflow['rung']}\t{workflow['workflow_id']}\t"
+                    f"{workflow['topology']}\t{workflow['title']}"
                 )
         else:
             typer.echo(f"{payload['title']} ({payload['workflow_id']})")
             typer.echo(str(payload["summary"]))
+            typer.echo(f"Rung: {payload['rung']}")
             typer.echo(f"Topology: {payload['topology']}")
         if payload.get("ok") is False:
             raise typer.Exit(1)

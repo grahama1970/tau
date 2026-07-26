@@ -2,6 +2,7 @@
   "schema": "tau.workflow_definition.v1",
   "workflow_id": "repository-evidence-map",
   "workflow_version": 1,
+  "rung": 3,
   "title": "Repository Evidence Map",
   "summary": "Inventory a local Git checkout, analyze documentation, tests, and package metadata concurrently, and publish a validated evidence map.",
   "topology": "FAN_OUT_FAN_IN",
