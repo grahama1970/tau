@@ -34,9 +34,19 @@ def test_route_memory_candidates_accept_clean_signal_receipt(tmp_path: Path) -> 
     assert receipt["route_mutation"] is False
     assert receipt["dag_mutation"] is False
     assert receipt["provider_calls"] is False
+    assert receipt["run_id"] == "run-route-memory-test"
+    assert receipt["source_signal_receipt"] == str(signal_path.resolve())
+    assert receipt["source_signal_receipt_sha256"].startswith("sha256:")
+    assert receipt["source_dag_receipt"] == "/tmp/dag-receipt.json"
+    assert receipt["source_dag_receipt_sha256"].startswith("sha256:")
     assert receipt["accepted_candidate_count"] == 2
     assert receipt["rejected_candidate_count"] == 0
     assert receipt["accepted_candidates"][0]["route_key"] == "start:goal-guardian->coder:coder"
+    assert receipt["accepted_candidates"][0]["source_signal_receipt"] == str(
+        signal_path.resolve()
+    )
+    assert receipt["accepted_candidates"][0]["source_signal_receipt_sha256"].startswith("sha256:")
+    assert receipt["accepted_candidates"][0]["source_dag_receipt_sha256"].startswith("sha256:")
     assert receipt_path.exists()
 
 
@@ -161,8 +171,25 @@ def test_route_memory_sync_projects_documents_without_memory_write(tmp_path: Pat
     assert receipt["memory_sync"] is False
     assert receipt["sync_status"] == "DRY_RUN"
     assert receipt["projected_document_count"] == 2
-    assert receipt["documents"][0]["schema"] == "tau.route_memory_signal.v1"
-    assert receipt["documents"][0]["_key"].startswith("tau-route-")
+    document = receipt["documents"][0]
+    assert document["schema"] == "tau.route_memory_signal.v1"
+    assert document["_key"].startswith("tau-route-")
+    assert document["episode_id"].startswith("tau-route-episode-")
+    assert document["episode_kind"] == "tau_route_memory_signal"
+    assert document["source_episode_receipt"] == str(
+        (tmp_path / "dag-signal-receipt.json").resolve()
+    )
+    assert document["source_episode_receipt_sha256"].startswith("sha256:")
+    assert document["source_candidate_receipt"] == str(candidate_path.resolve())
+    assert document["source_candidate_receipt_sha256"].startswith("sha256:")
+    assert document["run_id"] == "run-route-memory-test"
+    assert document["goal_hash"] == "sha256:route-memory-test"
+    assert document["source_node_id"] == "start"
+    assert document["target_node_id"] == "coder"
+    assert document["source_signal_receipt_sha256"].startswith("sha256:")
+    assert document["source_dag_receipt_sha256"].startswith("sha256:")
+    assert document["provenance"]["run_id"] == "run-route-memory-test"
+    assert document["provenance"]["goal_hash"] == "sha256:route-memory-test"
     assert receipt_path.exists()
 
 
@@ -182,6 +209,37 @@ def test_route_memory_sync_blocks_failed_candidate_receipt(tmp_path: Path) -> No
     assert receipt["status"] == "BLOCKED"
     assert receipt["memory_sync"] is False
     assert any(alert["code"] == "candidate_receipt_not_pass" for alert in receipt["alerts"])
+
+
+def test_route_memory_sync_rejects_unattributed_candidate_receipt(tmp_path: Path) -> None:
+    candidate_path = _write_candidate_receipt(tmp_path)
+    candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+    del candidate["run_id"]
+    del candidate["source_signal_receipt_sha256"]
+    candidate["accepted_candidates"][0]["source_signal_receipt"] = None
+    candidate_path.write_text(json.dumps(candidate), encoding="utf-8")
+
+    receipt = write_dag_route_memory_sync_receipt(
+        candidate_receipt_path=candidate_path,
+        receipt_path=tmp_path / "sync.json",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["memory_sync"] is False
+    assert receipt["projected_document_count"] == 0
+    alert = next(
+        alert
+        for alert in receipt["alerts"]
+        if alert["code"] == "route_memory_provenance_missing"
+    )
+    assert alert["evidence"]["missing_receipt_fields"] == [
+        "run_id",
+        "source_signal_receipt_sha256",
+    ]
+    assert alert["evidence"]["candidate_missing_fields"] == [
+        {"index": 0, "missing_fields": ["source_signal_receipt"]}
+    ]
 
 
 def test_route_memory_sync_apply_requires_approval_receipt(tmp_path: Path) -> None:
@@ -440,6 +498,9 @@ def _signal_receipt() -> dict[str, object]:
         "provider_live": False,
         "receipt_path": "/tmp/dag-signal-receipt.json",
         "source_dag_receipt": "/tmp/dag-receipt.json",
+        "source_dag_receipt_sha256": "sha256:"
+        "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "run_id": "run-route-memory-test",
         "dag_id": "route-memory-test",
         "goal_hash": "sha256:route-memory-test",
         "source_ok": True,

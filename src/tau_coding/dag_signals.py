@@ -84,6 +84,7 @@ def _build_signal_receipt(
         "source_dag_receipt": str(source_path),
         "source_dag_receipt_sha256": f"sha256:{_sha256(source_path)}",
         "receipt_path": str(receipt_path),
+        "run_id": source.get("run_id"),
         "dag_id": source.get("dag_id"),
         "goal_hash": source.get("active_goal_hash") or source.get("goal_hash"),
         "source_ok": source.get("ok") is True,

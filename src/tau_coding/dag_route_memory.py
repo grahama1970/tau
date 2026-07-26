@@ -36,8 +36,15 @@ def write_dag_route_memory_candidate_receipt(
     if min_confidence < 0 or min_confidence > 1:
         raise RuntimeError("--min-confidence must be between 0 and 1")
 
+    source_signal_receipt = str(resolved_signal_path)
+    source_signal_receipt_sha256 = f"sha256:{_sha256(resolved_signal_path)}"
     alerts = _gate_alerts(signal)
-    accepted, rejected = _gate_candidates(signal, min_confidence=min_confidence)
+    accepted, rejected = _gate_candidates(
+        signal,
+        min_confidence=min_confidence,
+        source_signal_receipt=source_signal_receipt,
+        source_signal_receipt_sha256=source_signal_receipt_sha256,
+    )
     if not accepted and not alerts:
         alerts.append(
             _alert(
@@ -56,9 +63,12 @@ def write_dag_route_memory_candidate_receipt(
         "mocked": False,
         "live": True,
         "provider_live": False,
-        "source_signal_receipt": str(resolved_signal_path),
-        "source_signal_receipt_sha256": f"sha256:{_sha256(resolved_signal_path)}",
+        "source_signal_receipt": source_signal_receipt,
+        "source_signal_receipt_sha256": source_signal_receipt_sha256,
+        "source_dag_receipt": signal.get("source_dag_receipt"),
+        "source_dag_receipt_sha256": signal.get("source_dag_receipt_sha256"),
         "receipt_path": str(resolved_receipt_path),
+        "run_id": signal.get("run_id"),
         "dag_id": signal.get("dag_id"),
         "goal_hash": signal.get("goal_hash"),
         "scheduler": signal.get("scheduler"),
@@ -120,6 +130,11 @@ def write_dag_route_memory_sync_receipt(
         if resolved_approval_path
         else None
     )
+    candidate_receipt_sha256 = f"sha256:{_sha256(resolved_candidate_path)}"
+    candidate_for_projection = {
+        **candidate_receipt,
+        "candidate_receipt_sha256": candidate_receipt_sha256,
+    }
     alerts = _sync_gate_alerts(
         candidate_receipt,
         collection=collection,
@@ -128,7 +143,9 @@ def write_dag_route_memory_sync_receipt(
         approval_receipt=approval_receipt,
         approval_receipt_path=resolved_approval_path,
     )
-    documents = _memory_documents(candidate_receipt, collection=collection) if not alerts else []
+    documents = (
+        _memory_documents(candidate_for_projection, collection=collection) if not alerts else []
+    )
     sync_response: dict[str, Any] | None = None
     resolved_memory_auth_token = memory_auth_token or os.environ.get("TAU_MEMORY_AUTH_TOKEN")
     if apply and not alerts:
@@ -164,13 +181,14 @@ def write_dag_route_memory_sync_receipt(
         "live": True,
         "provider_live": False,
         "candidate_receipt": str(resolved_candidate_path),
-        "candidate_receipt_sha256": f"sha256:{_sha256(resolved_candidate_path)}",
+        "candidate_receipt_sha256": candidate_receipt_sha256,
         "approval_receipt": str(resolved_approval_path) if resolved_approval_path else None,
         "approval_receipt_sha256": f"sha256:{_sha256(resolved_approval_path)}"
         if resolved_approval_path
         else None,
         "receipt_path": str(resolved_receipt_path),
         "dag_id": candidate_receipt.get("dag_id"),
+        "run_id": candidate_receipt.get("run_id"),
         "goal_hash": candidate_receipt.get("goal_hash"),
         "collection": collection,
         "memory_url": memory_url,
@@ -257,6 +275,8 @@ def _gate_candidates(
     signal: dict[str, Any],
     *,
     min_confidence: float,
+    source_signal_receipt: str,
+    source_signal_receipt_sha256: str,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     accepted: list[dict[str, Any]] = []
     rejected: list[dict[str, Any]] = []
@@ -276,7 +296,9 @@ def _gate_candidates(
             "confidence": confidence,
             "source": candidate.get("source"),
             "source_dag_receipt": signal.get("source_dag_receipt"),
-            "source_signal_receipt": signal.get("receipt_path"),
+            "source_dag_receipt_sha256": signal.get("source_dag_receipt_sha256"),
+            "source_signal_receipt": source_signal_receipt,
+            "source_signal_receipt_sha256": source_signal_receipt_sha256,
             "memory_sync_candidate": True,
             "sync_status": "NOT_SYNCED",
             "sync_reason": "local_candidate_receipt_only",
@@ -345,6 +367,7 @@ def _sync_gate_alerts(
                 {"accepted_candidate_count": candidate_receipt.get("accepted_candidate_count")},
             )
         )
+    alerts.extend(_provenance_alerts(candidate_receipt))
     if apply:
         if not (memory_auth_token or os.environ.get("TAU_MEMORY_AUTH_TOKEN")):
             alerts.append(
@@ -364,6 +387,48 @@ def _sync_gate_alerts(
             )
         )
     return alerts
+
+
+def _provenance_alerts(candidate_receipt: dict[str, Any]) -> list[dict[str, Any]]:
+    required_receipt_fields = (
+        "run_id",
+        "dag_id",
+        "goal_hash",
+        "source_signal_receipt",
+        "source_signal_receipt_sha256",
+        "source_dag_receipt",
+        "source_dag_receipt_sha256",
+        "receipt_path",
+    )
+    missing = [
+        field
+        for field in required_receipt_fields
+        if not isinstance(candidate_receipt.get(field), str) or not candidate_receipt.get(field)
+    ]
+    candidate_missing: list[dict[str, Any]] = []
+    for index, candidate in enumerate(_dict_list(candidate_receipt.get("accepted_candidates"))):
+        missing_candidate_fields = [
+            field
+            for field in ("route_key", "from_node", "to_node", "source_signal_receipt")
+            if not isinstance(candidate.get(field), str) or not candidate.get(field)
+        ]
+        if missing_candidate_fields:
+            candidate_missing.append(
+                {"index": index, "missing_fields": missing_candidate_fields}
+            )
+    if not missing and not candidate_missing:
+        return []
+    return [
+        _alert(
+            "BLOCK",
+            "route_memory_provenance_missing",
+            "Route-memory sync refuses to write unattributed Memory facts.",
+            {
+                "missing_receipt_fields": missing,
+                "candidate_missing_fields": candidate_missing,
+            },
+        )
+    ]
 
 
 def _approval_alerts(
@@ -456,23 +521,52 @@ def _memory_documents(
             f"{candidate_receipt.get('dag_id')}|{route_key}"
         )
         digest = hashlib.sha256(digest_material.encode()).hexdigest()[:32]
+        episode_id = f"tau-route-episode-{digest}"
         documents.append(
             {
                 "_key": f"tau-route-{digest}",
                 "schema": "tau.route_memory_signal.v1",
                 "kind": "tau_route_memory_signal",
+                "episode_id": episode_id,
+                "episode_kind": "tau_route_memory_signal",
+                "source_episode_receipt": candidate_receipt.get("source_signal_receipt"),
+                "source_episode_receipt_sha256": candidate_receipt.get(
+                    "source_signal_receipt_sha256"
+                ),
+                "source_candidate_receipt": candidate_receipt.get("receipt_path"),
+                "source_candidate_receipt_sha256": candidate_receipt.get(
+                    "candidate_receipt_sha256"
+                ),
                 "dag_id": candidate_receipt.get("dag_id"),
+                "run_id": candidate_receipt.get("run_id"),
                 "goal_hash": candidate_receipt.get("goal_hash"),
                 "route_key": route_key,
                 "from_node": candidate.get("from_node"),
                 "to_node": candidate.get("to_node"),
+                "source_node_id": candidate.get("from_node"),
+                "target_node_id": candidate.get("to_node"),
                 "from_agent": candidate.get("from_agent"),
                 "to_agent": candidate.get("to_agent"),
                 "confidence": candidate.get("confidence"),
                 "source": candidate.get("source"),
                 "source_signal_receipt": candidate_receipt.get("source_signal_receipt"),
+                "source_signal_receipt_sha256": candidate_receipt.get(
+                    "source_signal_receipt_sha256"
+                ),
                 "source_dag_receipt": candidate.get("source_dag_receipt"),
-                "source_candidate_receipt": candidate_receipt.get("receipt_path"),
+                "source_dag_receipt_sha256": candidate.get("source_dag_receipt_sha256"),
+                "provenance": {
+                    "episode_id": episode_id,
+                    "run_id": candidate_receipt.get("run_id"),
+                    "dag_id": candidate_receipt.get("dag_id"),
+                    "goal_hash": candidate_receipt.get("goal_hash"),
+                    "source_signal_receipt": candidate_receipt.get("source_signal_receipt"),
+                    "source_signal_receipt_sha256": candidate_receipt.get(
+                        "source_signal_receipt_sha256"
+                    ),
+                    "source_dag_receipt": candidate.get("source_dag_receipt"),
+                    "source_dag_receipt_sha256": candidate.get("source_dag_receipt_sha256"),
+                },
                 "sync_source": "tau.dag_route_memory_sync_receipt.v1",
                 "retrieval_text": (
                     f"Tau DAG route memory signal {route_key} for "
