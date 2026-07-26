@@ -2474,23 +2474,18 @@ def _parse_node(raw_node: dict[str, Any], *, base_dir: Path) -> DagNode:
         if browser_raw is not None
         else None
     )
+    transaction_raw = raw_node.get("transaction")
     if skill is None and browser is None and (
         not isinstance(command, list)
         or not command
         or not all(isinstance(part, str) and part for part in command)
     ):
         raise RuntimeError(f"node {node_id} command must be a non-empty string list")
-    declared_node_kinds = sum(
-        1
-        for present in (
-            command is not None,
-            skill is not None,
-            browser is not None,
-            raw_node.get("transaction") is not None,
-        )
-        if present
-    )
-    if declared_node_kinds > 1:
+    if skill is not None and command is not None:
+        raise RuntimeError(f"node {node_id} cannot declare both command and skill")
+    if browser is not None and command is not None:
+        raise RuntimeError(f"node {node_id} cannot declare both command and browser")
+    if skill is not None and browser is not None:
         raise RuntimeError(
             f"node {node_id} must declare exactly one of command, skill, browser, transaction"
         )
@@ -2518,7 +2513,6 @@ def _parse_node(raw_node: dict[str, Any], *, base_dir: Path) -> DagNode:
         if isinstance(work_order_raw, str) and work_order_raw
         else None
     )
-    transaction_raw = raw_node.get("transaction")
     transaction = (
         parse_transaction_spec(transaction_raw, base_dir=base_dir, node_id=node_id)
         if transaction_raw is not None
@@ -2528,6 +2522,10 @@ def _parse_node(raw_node: dict[str, Any], *, base_dir: Path) -> DagNode:
         raise RuntimeError(f"node {node_id} transaction requires work_order_path")
     if skill is not None and work_order_path is None:
         raise RuntimeError(f"node {node_id} skill requires work_order_path")
+    if transaction is not None and (skill is not None or browser is not None):
+        raise RuntimeError(
+            f"node {node_id} cannot declare transaction with skill or browser"
+        )
     return DagNode(
         node_id=node_id,
         role=role,

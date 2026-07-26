@@ -8,9 +8,11 @@ from collections.abc import Callable, Mapping
 from concurrent.futures import FIRST_COMPLETED, CancelledError, Future, ThreadPoolExecutor, wait
 from contextlib import suppress
 from dataclasses import dataclass, replace
+from pathlib import Path
 from threading import Event
 from typing import Any
 
+from tau_coding.course_correction import write_course_correction_receipt
 from tau_coding.dag_runtime.correction import CorrectionStateProjection
 from tau_coding.dag_runtime.model import DagPlan, DagPlanNode, canonical_sha256
 from tau_coding.dag_runtime.replay import apply_transition_state, replay_dag_run
@@ -668,6 +670,23 @@ def run_dag_plan(
                         }
                         validation = _validate_attempt_result(node_id=node_id, result=result)
                     raw_attempt_result = result
+                    repeated_signature = _repeated_failure_signature(
+                        current=result,
+                        prior_results=attempt_history[node_id],
+                    )
+                    if (
+                        repeated_signature is not None
+                        and attempt < nodes[node_id].max_attempts
+                    ):
+                        result = _with_same_failure_course_correction(
+                            result,
+                            plan=plan,
+                            node=nodes[node_id],
+                            identity=identity,
+                            attempt=attempt,
+                            repeated_signature=repeated_signature,
+                        )
+                        raw_attempt_result = result
                     if run_store is not None and lease is not None:
                         result = run_store.stage_result(lease, identity.attempt_id, result)
                         _inject_fault(fault_injector, "after_result_staged", identity)
@@ -1061,6 +1080,159 @@ def _correction_allows_retry(
         },
     )
     return projection.state == "VERIFIED"
+
+
+def _repeated_failure_signature(
+    *,
+    current: Mapping[str, Any],
+    prior_results: list[dict[str, Any]],
+) -> str | None:
+    if not _failed_result(current) or not prior_results:
+        return None
+    current_signature = _failure_signature(current)
+    previous = prior_results[-1]
+    if _failed_result(previous) and _failure_signature(previous) == current_signature:
+        return current_signature
+    return None
+
+
+def _failed_result(result: Mapping[str, Any]) -> bool:
+    return result.get("status") != "PASS" or result.get("verdict") != "PASS"
+
+
+def _failure_signature(result: Mapping[str, Any]) -> str:
+    errors = result.get("errors")
+    command_results = result.get("command_results")
+    normalized_command_results: list[dict[str, Any]] = []
+    if isinstance(command_results, list):
+        for command_result in command_results:
+            if not isinstance(command_result, dict):
+                continue
+            normalized_command_results.append(
+                {
+                    "returncode": command_result.get("returncode"),
+                    "termination_cause": command_result.get("termination_cause"),
+                    "stderr": command_result.get("stderr"),
+                    "stdout": command_result.get("stdout"),
+                }
+            )
+    return canonical_sha256(
+        {
+            "status": result.get("status"),
+            "verdict": result.get("verdict"),
+            "errors": errors if isinstance(errors, list) else [],
+            "command_results": normalized_command_results,
+        }
+    )
+
+
+def _with_same_failure_course_correction(
+    result: dict[str, Any],
+    *,
+    plan: DagPlan,
+    node: DagPlanNode,
+    identity: DagAttemptIdentity,
+    attempt: int,
+    repeated_signature: str,
+) -> dict[str, Any]:
+    receipt_path = result.get("receipt_path")
+    if isinstance(receipt_path, str) and receipt_path.strip():
+        correction_dir = Path(receipt_path).expanduser().resolve().parent
+    else:
+        correction_dir = Path.cwd()
+    correction_dir.mkdir(parents=True, exist_ok=True)
+    correction_path = (
+        correction_dir / f"{node.node_id}-course-correction-attempt-{attempt:03d}.json"
+    )
+    course_correction = write_course_correction_receipt(
+        correction_path,
+        trigger="brave_search_required_after_two_attempts",
+        run_id=identity.run_id,
+        dag_id=plan.plan_id,
+        goal_hash=plan.runtime_goal_hash,
+        target={
+            "kind": "dag_node_attempt",
+            "node_id": node.node_id,
+            "adapter_kind": node.adapter_kind,
+            "executor": node.executor,
+        },
+        node_id=node.node_id,
+        agent=node.role,
+        attempt=attempt,
+        observed_state={
+            "attempt_count": attempt,
+            "repeated_failure_signature": repeated_signature,
+            "advisory_only": True,
+            "search_ladder_budget": {
+                "memory_recall": 1,
+                "brave_search": 1,
+                "github_search": 1,
+                "dogpile": 1,
+            },
+            "searches_performed": [],
+            "searches_not_performed": [
+                "memory_recall",
+                "registered_dependency_docs",
+                "brave_search",
+                "github_search",
+                "dogpile",
+            ],
+        },
+        errors=[
+            (
+                "two consecutive failed attempts had the same error signature; "
+                "normal retry blocked before a third same-context attempt"
+            )
+        ],
+        reason=(
+            "The same node failure signature repeated across two attempts; "
+            "advisory research or a new plan is required before another retry."
+        ),
+        required_action={
+            "type": "advisory_escalation_required",
+            "ladder": [
+                "memory_recall",
+                "registered_dependency_docs",
+                "brave_search",
+                "github_search",
+                "dogpile",
+                "human",
+            ],
+            "skill": "brave-search",
+            "skill_reference": "$brave-search",
+            "advisory_evidence_only": True,
+            "does_not_satisfy_acceptance_gate": True,
+        },
+        blocked_report_required={
+            "required": True,
+            "fields": [
+                "blocker_summary",
+                "attempt_count",
+                "repeated_failure_signature",
+                "searches_performed",
+                "searches_not_performed",
+            ],
+        },
+        mocked=False,
+        live=False,
+        provider_live=False,
+    )
+    errors = list(result.get("errors")) if isinstance(result.get("errors"), list) else []
+    return {
+        **result,
+        "status": "BLOCKED",
+        "verdict": "COURSE_CORRECTION_REQUIRED",
+        "retryable": False,
+        "correction_required": True,
+        "course_correction_receipt_path": str(correction_path),
+        "course_correction_trigger": course_correction["trigger"],
+        "course_correction_advisory_only": True,
+        "errors": [
+            *errors,
+            "brave_search_required_after_two_attempts",
+            f"course_correction_receipt_path:{correction_path}",
+        ],
+    }
 
 
 def _recover_incomplete_attempts(

@@ -433,6 +433,55 @@ def test_generic_dag_fails_closed_on_invalid_node_receipt(tmp_path: Path) -> Non
     assert checkpoint["ready_nodes"] == []
 
 
+def test_generic_dag_blocks_third_identical_command_error_with_course_correction(
+    tmp_path: Path,
+) -> None:
+    counter_path = tmp_path / "attempt-count.txt"
+    receipt_path = tmp_path / "receipts" / "repeat.json"
+    fail_code = (
+        "from pathlib import Path; import sys; "
+        f"counter=Path({str(counter_path)!r}); "
+        "counter.write_text(str(int(counter.read_text()) + 1) if counter.exists() else '1'); "
+        "print('same typed failure', file=sys.stderr); "
+        "raise SystemExit(7)"
+    )
+    spec_path = _write_spec(
+        tmp_path,
+        [
+            {
+                **_node(
+                    tmp_path,
+                    "repeat",
+                    command=[sys.executable, "-c", fail_code],
+                ),
+                "receipt_path": str(receipt_path),
+                "max_attempts": 3,
+            }
+        ],
+    )
+
+    receipt = run_generic_dag(spec_path=spec_path, resume=False)
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "COURSE_CORRECTION_REQUIRED"
+    node = receipt["nodes"][0]
+    assert node["attempt_count"] == 2
+    assert counter_path.read_text(encoding="utf-8") == "2"
+    assert node["retryable"] is False
+    assert node["correction_required"] is True
+    assert node["course_correction_trigger"] == "brave_search_required_after_two_attempts"
+    assert "brave_search_required_after_two_attempts" in node["errors"]
+    correction_path = Path(node["course_correction_receipt_path"])
+    course_correction = json.loads(correction_path.read_text(encoding="utf-8"))
+    assert course_correction["schema"] == "tau.course_correction.v1"
+    assert course_correction["required_next_action"] == "run_brave_search_then_retry"
+    assert course_correction["required_action"]["advisory_evidence_only"] is True
+    assert course_correction["required_action"]["does_not_satisfy_acceptance_gate"] is True
+    assert course_correction["observed_state"]["attempt_count"] == 2
+    assert course_correction["observed_state"]["searches_performed"] == []
+    assert "brave_search" in course_correction["observed_state"]["searches_not_performed"]
+
+
 def test_generic_dag_resumes_from_existing_valid_receipts(tmp_path: Path) -> None:
     planner_receipt = tmp_path / "receipts" / "planner.json"
     planner_receipt.parent.mkdir(parents=True, exist_ok=True)
