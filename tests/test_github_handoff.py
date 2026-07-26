@@ -73,7 +73,12 @@ def test_github_projection_redaction_writes_redacted_artifact_and_receipt(
 
     assert receipt["schema"] == "tau.github_projection_redaction_receipt.v1"
     assert receipt["ok"] is True
-    assert receipt["redaction_count"] == 2
+    assert receipt["redaction_count"] == 3
+    assert receipt["redactions"] == [
+        {"kind": "linux_home_path", "path": "$.comment.body"},
+        {"kind": "github_token", "path": "$.comment.body"},
+        {"kind": "sensitive_key", "path": "$.context.api_key"},
+    ]
     assert receipt["review_required"] is True
     assert written_receipt == receipt
     assert "<redacted-local-path>" in redacted["comment"]["body"]
@@ -266,7 +271,10 @@ def test_generated_ticket_transport_apply_requires_dedupe_preflight() -> None:
     assert result.dry_run is False
     assert result.applied is False
     assert result.commands == ()
-    assert "dedupe preflight projection is required before applying generated tickets" in result.errors
+    assert (
+        "dedupe preflight projection is required before applying generated tickets"
+        in result.errors
+    )
 
 
 def test_generated_ticket_transport_apply_existing_issue_uses_comment_stdin() -> None:
