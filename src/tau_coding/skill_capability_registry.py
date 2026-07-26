@@ -26,6 +26,8 @@ ALLOWED_REQUIRED_TRIGGERS = {
     "research_required",
     "evidence_case_required",
     "model_worker_required",
+    "goal_not_met_after_failure_report",
+    "wide_solution_space_after_failure_report",
 }
 
 DEFAULT_SKILL_CAPABILITY_REGISTRY: dict[str, Any] = {
@@ -70,6 +72,28 @@ DEFAULT_SKILL_CAPABILITY_REGISTRY: dict[str, Any] = {
             "native_artifact_schema": "scillm.worker_result.v1",
             "tau_receipt_schema": "tau.scillm_worker_receipt.v1",
             "required_for_triggers": ["model_worker_required"],
+        },
+        "roundtable_deliberation": {
+            "skill": "ask",
+            "native_artifact_schema": "ask.roundtable.result.v1",
+            "tau_receipt_schema": "tau.roundtable_advisory_receipt.v1",
+            "required_for_triggers": [
+                "convene_roundtable",
+                "goal_not_met_after_failure_report",
+            ],
+            "advisory_only": True,
+            "does_not_satisfy_goal": True,
+        },
+        "competitive_bakeoff": {
+            "skill": "battle",
+            "native_artifact_schema": "battle.result.v1",
+            "tau_receipt_schema": "tau.competition_advisory_receipt.v1",
+            "required_for_triggers": [
+                "run_competition",
+                "wide_solution_space_after_failure_report",
+            ],
+            "advisory_only": True,
+            "does_not_satisfy_goal": True,
         },
         "architecture_review": {
             "skill": "webgpt",

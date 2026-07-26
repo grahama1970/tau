@@ -5,6 +5,7 @@ from typer.testing import CliRunner
 
 from tau_coding.cli import app
 from tau_coding.skill_capability_registry import (
+    DEFAULT_SKILL_CAPABILITY_REGISTRY,
     SKILL_CAPABILITY_REGISTRY_SCHEMA,
     SKILL_CAPABILITY_REGISTRY_VALIDATION_RECEIPT_SCHEMA,
     validate_skill_capability_registry,
@@ -32,6 +33,37 @@ def test_registry_accepts_known_skills(tmp_path: Path) -> None:
     )
 
     assert validate_skill_capability_registry(registry, skills_root=skills_root) == []
+
+
+def test_default_registry_declares_advisory_roundtable_and_competition(
+    tmp_path: Path,
+) -> None:
+    skills_root = _skills_root(tmp_path, "ask", "battle")
+    registry = _registry(
+        {
+            "roundtable_deliberation": DEFAULT_SKILL_CAPABILITY_REGISTRY[
+                "capabilities"
+            ]["roundtable_deliberation"],
+            "competitive_bakeoff": DEFAULT_SKILL_CAPABILITY_REGISTRY["capabilities"][
+                "competitive_bakeoff"
+            ],
+        }
+    )
+
+    assert validate_skill_capability_registry(registry, skills_root=skills_root) == []
+    roundtable = registry["capabilities"]["roundtable_deliberation"]
+    competition = registry["capabilities"]["competitive_bakeoff"]
+    assert roundtable["skill"] == "ask"
+    assert roundtable["advisory_only"] is True
+    assert roundtable["does_not_satisfy_goal"] is True
+    assert "goal_not_met_after_failure_report" in roundtable["required_for_triggers"]
+    assert competition["skill"] == "battle"
+    assert competition["advisory_only"] is True
+    assert competition["does_not_satisfy_goal"] is True
+    assert (
+        "wide_solution_space_after_failure_report"
+        in competition["required_for_triggers"]
+    )
 
 
 def test_registry_blocks_missing_skill_name(tmp_path: Path) -> None:

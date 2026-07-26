@@ -78,6 +78,75 @@ def test_course_correction_receipt_preserves_legacy_required_action_fields(
     assert "retry_without_research_receipt" in on_disk["forbidden_next_routes"]
 
 
+def test_goal_not_met_failure_report_routes_to_roundtable_without_goal_proof() -> None:
+    payload = build_course_correction_receipt(
+        trigger="goal_not_met_after_failure_report",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="goal-guardian",
+        agent="goal-guardian",
+        attempt=3,
+        observed_state={
+            "failure_report_path": "/tmp/failure-report.json",
+            "search_ladder_exhausted": True,
+        },
+        capability_registry={
+            "schema": "tau.skill_capability_registry.v1",
+            "capabilities": {
+                "roundtable_deliberation": {
+                    "skill": "ask",
+                    "tau_receipt_schema": "tau.roundtable_advisory_receipt.v1",
+                }
+            },
+        },
+        capability_providers={"roundtable_deliberation": "ask"},
+    )
+
+    assert payload["trigger"] == "goal_not_met_after_failure_report"
+    assert payload["required_next_action"] == "convene_roundtable"
+    assert "claim_goal_met_from_panel_consensus" in payload["forbidden_next_routes"]
+    assert "human_release_decision" in payload["required_evidence_before_retry"]
+    assert payload["skill_routes"]["status"] == "PASS"
+    assert payload["skill_routes"]["routes"][0]["capability"] == "roundtable_deliberation"
+    assert payload["skill_routes"]["routes"][0]["skill"] == "ask"
+    assert "The task is complete." in payload["proof_scope"]["does_not_prove"]
+
+
+def test_wide_solution_failure_report_routes_to_competition_without_goal_proof() -> None:
+    payload = build_course_correction_receipt(
+        trigger="wide_solution_space_after_failure_report",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="goal-guardian",
+        agent="goal-guardian",
+        attempt=3,
+        observed_state={
+            "failure_report_path": "/tmp/failure-report.json",
+            "search_ladder_exhausted": True,
+            "wide_solution_space": True,
+        },
+        capability_registry={
+            "schema": "tau.skill_capability_registry.v1",
+            "capabilities": {
+                "competitive_bakeoff": {
+                    "skill": "battle",
+                    "tau_receipt_schema": "tau.competition_advisory_receipt.v1",
+                }
+            },
+        },
+        capability_providers={"competitive_bakeoff": "battle"},
+    )
+
+    assert payload["trigger"] == "wide_solution_space_after_failure_report"
+    assert payload["required_next_action"] == "run_competition"
+    assert "claim_goal_met_from_winning_candidate" in payload["forbidden_next_routes"]
+    assert "human_release_decision" in payload["required_evidence_before_retry"]
+    assert payload["skill_routes"]["status"] == "PASS"
+    assert payload["skill_routes"]["routes"][0]["capability"] == "competitive_bakeoff"
+    assert payload["skill_routes"]["routes"][0]["skill"] == "battle"
+    assert "The task is complete." in payload["proof_scope"]["does_not_prove"]
+
+
 def test_course_correction_created_for_stale_patch() -> None:
     payload = build_course_correction_receipt(
         trigger="patch_stale",

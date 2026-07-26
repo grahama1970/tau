@@ -53,6 +53,39 @@ def test_project_profile_can_drive_course_correction_required_action() -> None:
     assert validate_project_profile(profile, capability_registry=_registry()) == []
 
 
+def test_project_profile_can_drive_roundtable_and_competition_actions() -> None:
+    profile = _profile()
+    profile["capability_providers"] = {
+        **profile["capability_providers"],
+        "roundtable_deliberation": "ask",
+        "competitive_bakeoff": "battle",
+    }
+    profile["course_correction"]["allowed_actions"] = [
+        *profile["course_correction"]["allowed_actions"],
+        "convene_roundtable",
+        "run_competition",
+    ]
+    profile["course_correction"]["action_capabilities"] = {
+        "convene_roundtable": "roundtable_deliberation",
+        "run_competition": "competitive_bakeoff",
+    }
+    registry = _registry()
+    registry["capabilities"].update(
+        {
+            "roundtable_deliberation": {
+                "skill": "ask",
+                "tau_receipt_schema": "tau.roundtable_advisory_receipt.v1",
+            },
+            "competitive_bakeoff": {
+                "skill": "battle",
+                "tau_receipt_schema": "tau.competition_advisory_receipt.v1",
+            },
+        }
+    )
+
+    assert validate_project_profile(profile, capability_registry=registry) == []
+
+
 def test_project_profile_blocks_action_capability_without_provider() -> None:
     profile = _profile()
     profile["course_correction"]["action_capabilities"] = {

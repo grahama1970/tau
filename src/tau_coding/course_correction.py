@@ -31,6 +31,7 @@ KNOWN_COURSE_CORRECTION_TRIGGERS = frozenset(
         "brave_search_required_after_two_attempts",
         "false_progress",
         "forbidden_side_effect",
+        "goal_not_met_after_failure_report",
         "goal_hash_mismatch",
         "herdr_binding_mismatch",
         "human_required",
@@ -47,6 +48,7 @@ KNOWN_COURSE_CORRECTION_TRIGGERS = frozenset(
         "two_failed_attempts",
         "unexpected_edge",
         "unexpected_route",
+        "wide_solution_space_after_failure_report",
     }
 )
 
@@ -55,6 +57,8 @@ COURSE_CORRECTION_ACTION_CAPABILITY_OPTIONS: dict[str, list[list[str]]] = {
     "route_reviewer": [["code_review"]],
     "route_reviewer_or_debug": [["code_review"], ["debug_runtime_state"]],
     "run_brave_search_then_retry": [["deep_research"]],
+    "convene_roundtable": [["roundtable_deliberation"]],
+    "run_competition": [["competitive_bakeoff"]],
     "retry_node": [["bounded_code_fix"], ["model_worker"]],
     "retry_node_or_route_goal_guardian": [["bounded_code_fix"], ["model_worker"]],
 }
@@ -495,6 +499,32 @@ def _policy_for_trigger(trigger: str) -> dict[str, Any]:
             ["goal-guardian", "research-auditor", "human"],
             ["retry_without_research_receipt"],
             ["brave_search_receipt", "blocked_report"],
+        )
+    if trigger == "goal_not_met_after_failure_report":
+        return _policy(
+            "convene_roundtable",
+            "The immutable goal is still unmet after a failure report and cheaper research rungs.",
+            ["roundtable", "goal-guardian", "human"],
+            ["retry_same_context", "claim_goal_met_from_panel_consensus"],
+            [
+                "failure_report_receipt",
+                "search_ladder_receipts",
+                "roundtable_advisory_receipt",
+                "human_release_decision",
+            ],
+        )
+    if trigger == "wide_solution_space_after_failure_report":
+        return _policy(
+            "run_competition",
+            "The immutable goal is unmet and the solution space requires independent approaches.",
+            ["competition", "goal-guardian", "human"],
+            ["merge_unscored_candidates", "claim_goal_met_from_winning_candidate"],
+            [
+                "failure_report_receipt",
+                "search_ladder_receipts",
+                "competition_advisory_receipt",
+                "human_release_decision",
+            ],
         )
     if trigger == "two_failed_attempts":
         return _policy(

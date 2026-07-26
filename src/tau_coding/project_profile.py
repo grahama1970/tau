@@ -18,6 +18,8 @@ DEFAULT_CAPABILITY_PROVIDERS = {
     "deep_research": "dogpile",
     "evidence_case": "create-evidence-case",
     "model_worker": "scillm",
+    "roundtable_deliberation": "ask",
+    "competitive_bakeoff": "battle",
 }
 
 COURSE_CORRECTION_ACTIONS = {
@@ -28,6 +30,8 @@ COURSE_CORRECTION_ACTIONS = {
     "route_human",
     "block_run",
     "run_brave_search_then_retry",
+    "convene_roundtable",
+    "run_competition",
     "retry_node_or_route_goal_guardian",
     "send_reminder_or_route_human",
 }
