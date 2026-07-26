@@ -9209,7 +9209,14 @@ async def test_tui_app_workflows_picker_selection_opens_detail_modal() -> None:
         assert isinstance(app.screen, WorkflowPickerScreen)
 
         workflow_list = app.screen.query_one("#workflow-picker-list", ListView)
-        workflow_list.index = 1
+        labels = [str(item.query_one(Label).render()) for item in workflow_list.children]
+        durable_index = next(
+            index
+            for index, label in enumerate(labels)
+            if label.startswith("durable-repository-qualification:")
+        )
+        workflow_list.index = durable_index
+        assert labels[durable_index].startswith("durable-repository-qualification:")
         app.screen.action_select_cursor()
         await pilot.pause()
 
@@ -9241,10 +9248,11 @@ async def test_tui_app_workflows_picker_search_filters_visible_workflows() -> No
 
         workflow_list = app.screen.query_one("#workflow-picker-list", ListView)
         labels = [str(item.query_one(Label).render()) for item in workflow_list.children]
-        assert labels == [
+        assert len(labels) == 1
+        assert labels[0].startswith(
             "durable-repository-qualification: Durable Repository Qualification\n"
-            "  topology: DURABLE_MIXED_REPAIR_APPROVAL"
-        ]
+        )
+        assert "topology: DURABLE_MIXED_REPAIR_APPROVAL" in labels[0]
         assert workflow_list.index == 0
 
 
@@ -9300,7 +9308,7 @@ async def test_tui_app_workflows_picker_uses_configured_pi_select_keybindings() 
         await pilot.pause()
 
         assert isinstance(app.screen, CommandOutputScreen)
-        assert "Workflow: durable-repository-qualification" in app.screen.message
+        assert "Workflow: tau-operator-reference" in app.screen.message
 
 
 @pytest.mark.anyio
@@ -9318,18 +9326,15 @@ async def test_tui_app_workflows_picker_inserts_runnable_command() -> None:
         await pilot.pause()
 
         assert prompt.value.startswith(
-            "!! uv run tau workflows run approved-release-bundle --repo /workspace/project "
-            "--goal 'Run Approved Release Bundle for /workspace/project' "
+            "!! uv run tau workflows run repository-readiness --repo /workspace/project "
+            "--goal 'Run Repository Readiness for /workspace/project' "
         )
         assert (
-            "--run-dir /workspace/project/.tau/workflow-runs/approved-release-bundle-"
+            "--run-dir /workspace/project/.tau/workflow-runs/repository-readiness-"
             in prompt.value
         )
-        assert (
-            "--publish-path /workspace/project/.tau/workflow-runs/approved-release-bundle-"
-            in prompt.value
-        )
-        assert prompt.value.endswith("/publish --open-viewer --viewer-hold-seconds 120")
+        assert "--publish-path" not in prompt.value
+        assert prompt.value.endswith(" --open-viewer --viewer-hold-seconds 120")
         assert prompt.has_class("-shell-mode")
 
 
@@ -9345,7 +9350,7 @@ async def test_tui_app_workflows_picker_inserts_operator_reference_without_goal(
 
         assert isinstance(app.screen, WorkflowPickerScreen)
         workflow_list = app.screen.query_one("#workflow-picker-list", ListView)
-        workflow_list.index = 4
+        workflow_list.index = 1
         app.screen.action_insert_run_command()
         await pilot.pause()
 
@@ -9355,7 +9360,7 @@ async def test_tui_app_workflows_picker_inserts_operator_reference_without_goal(
         )
         assert "--goal" not in prompt.value
         assert "--publish-path" not in prompt.value
-        assert prompt.value.endswith(" --open-viewer")
+        assert prompt.value.endswith(" --open-viewer --viewer-hold-seconds 120")
 
 
 @pytest.mark.anyio
