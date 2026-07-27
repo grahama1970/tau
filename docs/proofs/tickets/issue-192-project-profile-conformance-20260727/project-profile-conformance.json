@@ -1,0 +1,43 @@
+{
+  "artifacts_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-192-project-profile-conformance-20260727/artifacts",
+  "checked_at": "2026-07-27T16:10:59Z",
+  "checks": {
+    "accepted_dispatch_records_profile_spine_hashes": true,
+    "incompatible_capability_provider_denied": true,
+    "parent_policy_broadening_denied": true,
+    "stale_lineage_denied_with_receipt": true,
+    "valid_profile_permits_dispatch": true
+  },
+  "failed_checks": [],
+  "incompatible_provider_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-192-project-profile-conformance-20260727/artifacts/incompatible-provider-receipt.json",
+  "live": true,
+  "mocked": false,
+  "output": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-192-project-profile-conformance-20260727/project-profile-conformance.json",
+  "parent_policy_broadening_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-192-project-profile-conformance-20260727/artifacts/parent-policy-broadening-receipt.json",
+  "profile_spine_hashes": {
+    "profile_sha256": "sha256:1b08042c73c482617f40b0660e5594af1cead04d15a5db2bc52629ed40cff5ed",
+    "registry_sha256": "sha256:62109d031c979fb54282c83f1f0c50ef363a891cdf9b65b2b174d88ba0654fdc",
+    "spine_sha256": "sha256:f5ef5ad34add765a0ebb77f5ce90f9c79150ce8113870baae274b641928b63dc"
+  },
+  "proof_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-192-project-profile-conformance-20260727",
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider/model semantic quality.",
+      "That a downstream provider call was made.",
+      "Human approval for side effects.",
+      "Future project profile authoring correctness outside this gate."
+    ],
+    "proves": [
+      "Tau created real project profile, project spine, registry, and dispatch receipt artifacts on disk.",
+      "Tau denied dispatch when a child or parent policy attempted to broaden the project profile retry limit.",
+      "Tau denied dispatch when the project spine contained stale lineage.",
+      "Tau denied dispatch when a requested capability/provider route did not match the authoritative profile and registry.",
+      "Tau accepted dispatch only with recorded profile, spine, and registry hashes."
+    ]
+  },
+  "provider_live": false,
+  "schema": "tau.project_profile_conformance.v1",
+  "stale_lineage_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-192-project-profile-conformance-20260727/artifacts/stale-lineage-receipt.json",
+  "status": "PASS",
+  "valid_dispatch_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-192-project-profile-conformance-20260727/artifacts/valid-dispatch-receipt.json"
+}

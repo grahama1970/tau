@@ -1,0 +1,153 @@
+{
+  "block_code": "PROJECT_SPINE_BLOCKED",
+  "block_reasons": [
+    "work item dispatch-001 uses rev-001, not active rev-002"
+  ],
+  "checked_at": "2026-07-27T16:10:59Z",
+  "dispatch_accepted": false,
+  "live": true,
+  "mocked": false,
+  "ok": false,
+  "profile_errors": [],
+  "profile_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-192-project-profile-conformance-20260727/artifacts/stale-lineage/project-profile.json",
+  "profile_provider": "scillm",
+  "profile_sha256": "sha256:1b08042c73c482617f40b0660e5594af1cead04d15a5db2bc52629ed40cff5ed",
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-192-project-profile-conformance-20260727/artifacts/stale-lineage-receipt.json",
+  "registry_errors": [],
+  "registry_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-192-project-profile-conformance-20260727/artifacts/stale-lineage/skill-capability-registry.json",
+  "registry_provider": "scillm",
+  "registry_sha256": "sha256:62109d031c979fb54282c83f1f0c50ef363a891cdf9b65b2b174d88ba0654fdc",
+  "requested_capability": "model_worker",
+  "requested_policy": {
+    "retries": {
+      "max_attempts_per_node": 2
+    }
+  },
+  "requested_provider": "scillm",
+  "schema": "tau.project_profile_dispatch_receipt.v1",
+  "spine_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-192-project-profile-conformance-20260727/artifacts/stale-lineage/project-spine.json",
+  "spine_receipt": {
+    "course_correction_count": 1,
+    "course_corrections": [
+      {
+        "agent": "project-spine-checker",
+        "alert_codes": [],
+        "alerts": [],
+        "allowed_next_routes": [
+          "planner",
+          "goal-guardian",
+          "human"
+        ],
+        "attempt": 1,
+        "code": "stale_lineage",
+        "dag_id": "profile-conformance-dag",
+        "errors": [],
+        "forbidden_next_routes": [
+          "promote_stale_artifact",
+          "continue_from_stale_work_queue"
+        ],
+        "goal_hash": "sha256:goal-profile-conformance",
+        "input_valid": true,
+        "known_coding_trigger": false,
+        "live": true,
+        "mocked": false,
+        "next_allowed": false,
+        "node_id": "project-spine",
+        "observed_artifact": null,
+        "observed_state": {
+          "active_revision_id": "rev-002",
+          "defect_code": "active_work_uses_stale_revision",
+          "defect_message": "work item dispatch-001 uses rev-001, not active rev-002",
+          "defect_target": {
+            "artifact_id": "dispatch-work-order",
+            "revision_id": "rev-001",
+            "status": "done",
+            "work_id": "dispatch-001"
+          },
+          "goal_id": "goal-001"
+        },
+        "ok": false,
+        "proof_scope": {
+          "does_not_prove": [
+            "The agent is truthful.",
+            "The task is complete.",
+            "The proposed correction is semantically sufficient.",
+            "The required next action has been executed."
+          ],
+          "proves": [
+            "Tau classified a blocked or drifting orchestration state.",
+            "Tau selected a bounded next action from the course-correction policy.",
+            "Tau did not mutate the DAG, goal, route, work order, or provider state."
+          ]
+        },
+        "provider_live": false,
+        "reason": "work item dispatch-001 uses rev-001, not active rev-002",
+        "required_evidence_before_retry": [
+          "goal_revision_receipt",
+          "artifact_lineage_index",
+          "replan_plan_receipt"
+        ],
+        "required_next_action": "recompute_replan_plan",
+        "run_id": "profile-conformance-run",
+        "schema": "tau.course_correction.v1",
+        "status": "REQUIRED",
+        "stop_reason": "stale_lineage",
+        "target": {
+          "project_id": "tau-self-fix"
+        },
+        "timestamp": "2026-07-27T16:10:59Z",
+        "trigger": "stale_lineage",
+        "why_normal_retry_is_unsafe": "Accepted or active work is not bound to the active goal revision."
+      }
+    ],
+    "defect_count": 1,
+    "defects": [
+      {
+        "code": "active_work_uses_stale_revision",
+        "message": "work item dispatch-001 uses rev-001, not active rev-002",
+        "severity": "BLOCK",
+        "target": {
+          "artifact_id": "dispatch-work-order",
+          "revision_id": "rev-001",
+          "status": "done",
+          "work_id": "dispatch-001"
+        },
+        "trigger": "stale_lineage"
+      }
+    ],
+    "errors": [],
+    "goal": {
+      "active_revision_id": "rev-002",
+      "goal_hash": "sha256:goal-profile-conformance",
+      "goal_id": "goal-001"
+    },
+    "live": true,
+    "mocked": false,
+    "ok": false,
+    "project_id": "tau-self-fix",
+    "proof_scope": {
+      "does_not_prove": [
+        "Semantic correctness of any project artifact.",
+        "Provider/model semantic quality.",
+        "Human approval.",
+        "That the proposed correction has been executed.",
+        "Future route correctness."
+      ],
+      "proves": [
+        "Tau inspected a revision-bound project spine artifact.",
+        "Tau checked active work, lineage, accepted evidence, progress, leases, and side-effect gates deterministically.",
+        "Tau emitted bounded course-correction records for blocked or drifting project-spine states.",
+        "Tau did not mutate the DAG, goal, route, provider state, Memory, Herdr, filesystem work products, or side-effect targets."
+      ]
+    },
+    "provider_live": false,
+    "schema": "tau.project_spine_check_receipt.v1",
+    "source_project_spine": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-192-project-profile-conformance-20260727/artifacts/stale-lineage/project-spine.json",
+    "source_project_spine_sha256": "sha256:70fda297b5b0d2ec88b23bbb6afaf2abbb635630599e02d84ea7efb8c37b17e4",
+    "status": "BLOCKED",
+    "timestamp": "2026-07-27T16:10:59Z"
+  },
+  "spine_sha256": "sha256:70fda297b5b0d2ec88b23bbb6afaf2abbb635630599e02d84ea7efb8c37b17e4",
+  "status": "BLOCKED"
+}

@@ -1,0 +1,69 @@
+{
+  "block_code": "CAPABILITY_PROVIDER_MISMATCH",
+  "block_reasons": [
+    "requested model_worker provider 'ask' does not match profile and registry"
+  ],
+  "checked_at": "2026-07-27T16:10:59Z",
+  "dispatch_accepted": false,
+  "live": true,
+  "mocked": false,
+  "ok": false,
+  "profile_errors": [],
+  "profile_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-192-project-profile-conformance-20260727/artifacts/incompatible-provider/project-profile.json",
+  "profile_provider": "scillm",
+  "profile_sha256": "sha256:1b08042c73c482617f40b0660e5594af1cead04d15a5db2bc52629ed40cff5ed",
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-192-project-profile-conformance-20260727/artifacts/incompatible-provider-receipt.json",
+  "registry_errors": [],
+  "registry_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-192-project-profile-conformance-20260727/artifacts/incompatible-provider/skill-capability-registry.json",
+  "registry_provider": "scillm",
+  "registry_sha256": "sha256:62109d031c979fb54282c83f1f0c50ef363a891cdf9b65b2b174d88ba0654fdc",
+  "requested_capability": "model_worker",
+  "requested_policy": {
+    "retries": {
+      "max_attempts_per_node": 2
+    }
+  },
+  "requested_provider": "ask",
+  "schema": "tau.project_profile_dispatch_receipt.v1",
+  "spine_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-192-project-profile-conformance-20260727/artifacts/incompatible-provider/project-spine.json",
+  "spine_receipt": {
+    "course_correction_count": 0,
+    "course_corrections": [],
+    "defect_count": 0,
+    "defects": [],
+    "errors": [],
+    "goal": {
+      "active_revision_id": "rev-002",
+      "goal_hash": "sha256:goal-profile-conformance",
+      "goal_id": "goal-001"
+    },
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "project_id": "tau-self-fix",
+    "proof_scope": {
+      "does_not_prove": [
+        "Semantic correctness of any project artifact.",
+        "Provider/model semantic quality.",
+        "Human approval.",
+        "That the proposed correction has been executed.",
+        "Future route correctness."
+      ],
+      "proves": [
+        "Tau inspected a revision-bound project spine artifact.",
+        "Tau checked active work, lineage, accepted evidence, progress, leases, and side-effect gates deterministically.",
+        "Tau emitted bounded course-correction records for blocked or drifting project-spine states.",
+        "Tau did not mutate the DAG, goal, route, provider state, Memory, Herdr, filesystem work products, or side-effect targets."
+      ]
+    },
+    "provider_live": false,
+    "schema": "tau.project_spine_check_receipt.v1",
+    "source_project_spine": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-192-project-profile-conformance-20260727/artifacts/incompatible-provider/project-spine.json",
+    "source_project_spine_sha256": "sha256:f5ef5ad34add765a0ebb77f5ce90f9c79150ce8113870baae274b641928b63dc",
+    "status": "PASS",
+    "timestamp": "2026-07-27T16:10:59Z"
+  },
+  "spine_sha256": "sha256:f5ef5ad34add765a0ebb77f5ce90f9c79150ce8113870baae274b641928b63dc",
+  "status": "BLOCKED"
+}

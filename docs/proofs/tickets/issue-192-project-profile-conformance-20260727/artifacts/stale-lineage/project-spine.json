@@ -1,0 +1,48 @@
+{
+  "accepted_evidence_index": [
+    {
+      "artifact_id": "dispatch-work-order",
+      "receipt_sha256": "sha256:dispatch-work-order",
+      "revision_id": "rev-002"
+    }
+  ],
+  "active_work_queue": [
+    {
+      "artifact_id": "dispatch-work-order",
+      "revision_id": "rev-001",
+      "status": "done",
+      "work_id": "dispatch-001"
+    }
+  ],
+  "artifact_lineage_index": [
+    {
+      "artifact_id": "dispatch-work-order",
+      "depends_on_change_events": [
+        "change-001"
+      ],
+      "revision_id": "rev-002"
+    }
+  ],
+  "change_events": [
+    {
+      "event_id": "change-001",
+      "status": "applied"
+    }
+  ],
+  "dag_id": "profile-conformance-dag",
+  "goal": {
+    "active_revision_id": "rev-002",
+    "goal_hash": "sha256:goal-profile-conformance",
+    "goal_id": "goal-001"
+  },
+  "local_progress": {
+    "derived_percent": 100,
+    "reported_percent": 100,
+    "source": "accepted_evidence_index"
+  },
+  "project_id": "tau-self-fix",
+  "run_id": "profile-conformance-run",
+  "schema": "tau.project_spine.v1",
+  "side_effects": [],
+  "work_lease_index": []
+}

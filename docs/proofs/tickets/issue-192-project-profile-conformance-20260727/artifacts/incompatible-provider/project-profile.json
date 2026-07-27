@@ -1,0 +1,44 @@
+{
+  "capability_providers": {
+    "bounded_code_fix": "code-runner",
+    "code_review": "review-code",
+    "debug_runtime_state": "debugger",
+    "deep_research": "dogpile",
+    "evidence_case": "create-evidence-case",
+    "model_worker": "scillm"
+  },
+  "course_correction": {
+    "action_capabilities": {
+      "route_reviewer": "code_review"
+    },
+    "allowed_actions": [
+      "send_reminder",
+      "retry_node",
+      "route_reviewer",
+      "route_goal_guardian",
+      "route_human",
+      "block_run"
+    ],
+    "forbid_retry_same_context_after": 2
+  },
+  "herdr": {
+    "auth_required_action": "route_human",
+    "crashed_action": "retry_node",
+    "interstitial_action": "route_human",
+    "receipt_timeout_seconds": 300,
+    "stale_pane_seconds": 180
+  },
+  "memory": {
+    "clarify_blocks_dispatch": true,
+    "deflect_blocks_dispatch": true,
+    "evidence_case_required": true,
+    "intent_required": true,
+    "scope": "project:tau"
+  },
+  "project_id": "tau-self-fix",
+  "retries": {
+    "after_two_failures": "require_research_or_goal_guardian",
+    "max_attempts_per_node": 2
+  },
+  "schema": "tau.project_profile.v1"
+}
