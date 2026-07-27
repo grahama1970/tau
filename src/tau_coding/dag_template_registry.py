@@ -25,6 +25,7 @@ DAG_TEMPLATE_COMPILE_RECEIPT_SCHEMA = "tau.dag_template_compile_receipt.v1"
 DAG_TEMPLATE_MISSING_FIELDS_SCHEMA = "tau.dag_template_missing_fields.v1"
 DAG_TEMPLATE_VALIDATION_RECEIPT_SCHEMA = "tau.dag_template_validation_receipt.v1"
 DAG_TEMPLATE_PREVIEW_SCHEMA = "tau.dag_template_preview.v1"
+DAG_TEMPLATE_SELECTION_RECEIPT_SCHEMA = "tau.dag_template_selection_receipt.v1"
 
 DEFAULT_FAIL_CLOSED_ON = [
     "goal_hash_mismatch",
@@ -276,6 +277,65 @@ def preview_dag_template(
                 "Runtime execution success.",
                 "Provider/model semantic quality.",
                 "That the human accepted the preview.",
+            ],
+        },
+        "timestamp": _utc_stamp(),
+    }
+
+
+def select_dag_template_from_facts(facts_path: Path) -> dict[str, Any]:
+    """Select a template from closed typed facts, or fail closed for interview."""
+
+    resolved_facts = facts_path.expanduser().resolve()
+    facts = _read_json_object(resolved_facts)
+    required_missing = _missing_selection_fields(facts)
+    candidates = [] if required_missing else _selection_candidates(facts)
+    selected = candidates[0]["template"] if len(candidates) == 1 else None
+    status = "PASS" if selected else "INTERVIEW_REQUIRED"
+    questions = _selection_questions(required_missing, candidates)
+    return {
+        "schema": DAG_TEMPLATE_SELECTION_RECEIPT_SCHEMA,
+        "ok": selected is not None,
+        "status": status,
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "facts_path": str(resolved_facts),
+        "facts_sha256": _sha256_uri(resolved_facts),
+        "required_fact_fields": [
+            "request_hash",
+            "goal_hash",
+            "policy_hash",
+            "capability_hash",
+            "target.repo",
+            "target.target",
+        ],
+        "missing_fact_fields": required_missing,
+        "selector_inputs": _selection_input_summary(facts),
+        "eligible_templates": candidates,
+        "selected_template": selected,
+        "questions": questions,
+        "diagnostic_model_confidence_ignored": facts.get("model_confidence") is not None,
+        "authority_boundary": {
+            "selection_authority": "deterministic closed typed facts only",
+            "model_confidence": "ignored",
+            "provider_calls": "never during selection",
+        },
+        "next_action": (
+            "Proceed to dag-template-preview with selected_template."
+            if selected
+            else "Ask the human for the missing or ambiguous selection facts."
+        ),
+        "proof_scope": {
+            "proves": [
+                "Tau selected, or refused to select, a template from closed typed facts.",
+                "Missing or ambiguous facts fail closed to INTERVIEW_REQUIRED.",
+                "Model confidence cannot override deterministic selection.",
+            ],
+            "does_not_prove": [
+                "Runtime execution success.",
+                "Provider/model semantic quality.",
+                "That the selected template params are complete.",
             ],
         },
         "timestamp": _utc_stamp(),
@@ -606,6 +666,119 @@ def _interview_questions(
         }
         for field in missing_fields
     ]
+
+
+def _missing_selection_fields(facts: Mapping[str, Any]) -> list[str]:
+    missing: list[str] = []
+    for field in ["request_hash", "goal_hash", "policy_hash", "capability_hash"]:
+        if _missing_value(facts.get(field)):
+            missing.append(field)
+    target = facts.get("target")
+    if not isinstance(target, Mapping) or _missing_value(target.get("repo")):
+        missing.append("target.repo")
+    if not isinstance(target, Mapping) or _missing_value(target.get("target")):
+        missing.append("target.target")
+    if not _selection_signal_count(facts):
+        missing.append("task_shape")
+    return missing
+
+
+def _selection_input_summary(facts: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "task_shape": facts.get("task_shape"),
+        "ordered_steps": facts.get("ordered_steps"),
+        "needs_review": facts.get("needs_review"),
+        "wants_synthesis": facts.get("wants_synthesis"),
+        "wants_winner": facts.get("wants_winner"),
+        "handler_count": facts.get("handler_count"),
+        "competitor_count": facts.get("competitor_count"),
+        "step_count": facts.get("step_count"),
+    }
+
+
+def _selection_signal_count(facts: Mapping[str, Any]) -> int:
+    signals = [
+        _truthy(facts.get("wants_winner")) or facts.get("task_shape") == "competition",
+        _truthy(facts.get("wants_synthesis")) or facts.get("task_shape") == "fanout_join",
+        _truthy(facts.get("needs_review")) or facts.get("task_shape") == "creator_reviewer",
+        _truthy(facts.get("ordered_steps")) or facts.get("task_shape") == "linear_chain",
+        facts.get("task_shape") == "single",
+    ]
+    return sum(1 for signal in signals if signal)
+
+
+def _selection_candidates(facts: Mapping[str, Any]) -> list[dict[str, str]]:
+    candidates: list[dict[str, str]] = []
+    if _truthy(facts.get("wants_winner")) or facts.get("task_shape") == "competition":
+        candidates.append(
+            {
+                "template": "compete",
+                "reason": "closed facts request a winner/judge route",
+            }
+        )
+    if _truthy(facts.get("wants_synthesis")) or facts.get("task_shape") == "fanout_join":
+        candidates.append(
+            {
+                "template": "roundtable",
+                "reason": "closed facts request parallel handlers with synthesis",
+            }
+        )
+    if _truthy(facts.get("needs_review")) or facts.get("task_shape") == "creator_reviewer":
+        candidates.append(
+            {
+                "template": "reflection-loop",
+                "reason": "closed facts request creator plus reviewer/reflection",
+            }
+        )
+    if _truthy(facts.get("ordered_steps")) or facts.get("task_shape") == "linear_chain":
+        candidates.append(
+            {
+                "template": "prompt-chain",
+                "reason": "closed facts request ordered dependent steps",
+            }
+        )
+    if facts.get("task_shape") == "single":
+        candidates.append(
+            {
+                "template": "single-call",
+                "reason": "closed facts request one bounded handler",
+            }
+        )
+    return candidates
+
+
+def _selection_questions(
+    missing_fields: list[str],
+    candidates: list[dict[str, str]],
+) -> list[dict[str, Any]]:
+    questions: list[dict[str, Any]] = [
+        {
+            "field": field,
+            "question": f"Provide closed selector fact {field}.",
+            "required": True,
+        }
+        for field in missing_fields
+    ]
+    if not missing_fields and len(candidates) != 1:
+        questions.append(
+            {
+                "field": "task_shape",
+                "question": "Choose exactly one Tau template shape before selection.",
+                "required": True,
+                "allowed_values": [
+                    "single",
+                    "linear_chain",
+                    "creator_reviewer",
+                    "fanout_join",
+                    "competition",
+                ],
+            }
+        )
+    return questions
+
+
+def _truthy(value: object) -> bool:
+    return value is True
 
 
 def _template_or_raise(template_name: str) -> DagTemplate:

@@ -1,0 +1,57 @@
+{
+  "authority_boundary": {
+    "model_confidence": "ignored",
+    "provider_calls": "never during selection",
+    "selection_authority": "deterministic closed typed facts only"
+  },
+  "diagnostic_model_confidence_ignored": true,
+  "eligible_templates": [
+    {
+      "reason": "closed facts request a winner/judge route",
+      "template": "compete"
+    }
+  ],
+  "facts_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-p2-deterministic-selector-20260727/competition-facts.json",
+  "facts_sha256": "sha256:58fa4007b414c4e295f5ba497a6754f837cd15602e0e523632449d9b4c3f7d13",
+  "live": false,
+  "missing_fact_fields": [],
+  "mocked": false,
+  "next_action": "Proceed to dag-template-preview with selected_template.",
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Runtime execution success.",
+      "Provider/model semantic quality.",
+      "That the selected template params are complete."
+    ],
+    "proves": [
+      "Tau selected, or refused to select, a template from closed typed facts.",
+      "Missing or ambiguous facts fail closed to INTERVIEW_REQUIRED.",
+      "Model confidence cannot override deterministic selection."
+    ]
+  },
+  "provider_live": false,
+  "questions": [],
+  "required_fact_fields": [
+    "request_hash",
+    "goal_hash",
+    "policy_hash",
+    "capability_hash",
+    "target.repo",
+    "target.target"
+  ],
+  "schema": "tau.dag_template_selection_receipt.v1",
+  "selected_template": "compete",
+  "selector_inputs": {
+    "competitor_count": 2,
+    "handler_count": null,
+    "needs_review": null,
+    "ordered_steps": null,
+    "step_count": null,
+    "task_shape": "competition",
+    "wants_synthesis": null,
+    "wants_winner": true
+  },
+  "status": "PASS",
+  "timestamp": "2026-07-27T11:14:36Z"
+}

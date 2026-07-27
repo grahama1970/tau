@@ -90,6 +90,7 @@ from tau_coding.dag_template_registry import (
     dag_template_registry_payload,
     describe_dag_template,
     preview_dag_template,
+    select_dag_template_from_facts,
     validate_dag_template_params,
     write_dag_template_compile_receipt,
 )
@@ -2809,6 +2810,15 @@ def main(
                 str(options["template"]),
                 Path(str(options["params"])),
             )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
+
+    if not print_requested and command == "dag-template-select":
+        try:
+            options = _parse_dag_template_select_cli_args(positional_args[1:])
+            payload = select_dag_template_from_facts(Path(str(options["facts"])))
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -6092,6 +6102,26 @@ def _parse_dag_template_params_cli_args(
         raise RuntimeError(f"Usage: tau {command_name} --template <name> --params <json>")
     if not _optional_str(options.get("params")):
         raise RuntimeError(f"Usage: tau {command_name} --template <name> --params <json>")
+    return options
+
+
+def _parse_dag_template_select_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {"facts": None}
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--facts":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--facts requires a value")
+            options["facts"] = args[index]
+        elif arg.startswith("--facts="):
+            options["facts"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown dag-template-select option: {arg}")
+        index += 1
+    if not _optional_str(options.get("facts")):
+        raise RuntimeError("Usage: tau dag-template-select --facts <json>")
     return options
 
 

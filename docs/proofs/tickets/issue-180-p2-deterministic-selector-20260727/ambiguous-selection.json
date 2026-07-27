@@ -1,0 +1,74 @@
+{
+  "authority_boundary": {
+    "model_confidence": "ignored",
+    "provider_calls": "never during selection",
+    "selection_authority": "deterministic closed typed facts only"
+  },
+  "diagnostic_model_confidence_ignored": false,
+  "eligible_templates": [
+    {
+      "reason": "closed facts request a winner/judge route",
+      "template": "compete"
+    },
+    {
+      "reason": "closed facts request creator plus reviewer/reflection",
+      "template": "reflection-loop"
+    }
+  ],
+  "facts_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-p2-deterministic-selector-20260727/ambiguous-facts.json",
+  "facts_sha256": "sha256:3d718827c7c80d13588d3404c95056ee2ff5988c6f624d70924c69179bc990ab",
+  "live": false,
+  "missing_fact_fields": [],
+  "mocked": false,
+  "next_action": "Ask the human for the missing or ambiguous selection facts.",
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Runtime execution success.",
+      "Provider/model semantic quality.",
+      "That the selected template params are complete."
+    ],
+    "proves": [
+      "Tau selected, or refused to select, a template from closed typed facts.",
+      "Missing or ambiguous facts fail closed to INTERVIEW_REQUIRED.",
+      "Model confidence cannot override deterministic selection."
+    ]
+  },
+  "provider_live": false,
+  "questions": [
+    {
+      "allowed_values": [
+        "single",
+        "linear_chain",
+        "creator_reviewer",
+        "fanout_join",
+        "competition"
+      ],
+      "field": "task_shape",
+      "question": "Choose exactly one Tau template shape before selection.",
+      "required": true
+    }
+  ],
+  "required_fact_fields": [
+    "request_hash",
+    "goal_hash",
+    "policy_hash",
+    "capability_hash",
+    "target.repo",
+    "target.target"
+  ],
+  "schema": "tau.dag_template_selection_receipt.v1",
+  "selected_template": null,
+  "selector_inputs": {
+    "competitor_count": null,
+    "handler_count": null,
+    "needs_review": true,
+    "ordered_steps": null,
+    "step_count": null,
+    "task_shape": null,
+    "wants_synthesis": null,
+    "wants_winner": true
+  },
+  "status": "INTERVIEW_REQUIRED",
+  "timestamp": "2026-07-27T11:14:37Z"
+}

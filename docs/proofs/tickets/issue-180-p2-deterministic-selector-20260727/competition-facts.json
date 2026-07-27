@@ -1,0 +1,17 @@
+{
+  "request_hash": "sha256:request-competition-001",
+  "goal_hash": "sha256:active-goal",
+  "policy_hash": "sha256:policy-001",
+  "capability_hash": "sha256:capability-001",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue#180"
+  },
+  "task_shape": "competition",
+  "wants_winner": true,
+  "competitor_count": 2,
+  "model_confidence": {
+    "template": "roundtable",
+    "confidence": 0.99
+  }
+}
