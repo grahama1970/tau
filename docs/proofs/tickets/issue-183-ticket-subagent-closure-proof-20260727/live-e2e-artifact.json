@@ -1,0 +1,9 @@
+{
+  "filesystem_readback_required": true,
+  "live": true,
+  "mocked": false,
+  "observed_at_unix_ns": 1785161312142784109,
+  "provider_live": false,
+  "run_id": "ticket-closure-proof-0501ebe58af34fdb899d8ce8b4cfe479",
+  "schema": "tau.ticket_subagent_live_e2e_artifact.v1"
+}

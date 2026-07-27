@@ -10,6 +10,10 @@ from tau_coding.subagent_receipt import (
     validate_subagent_receipt,
     validate_subagent_receipt_file,
 )
+from tau_coding.ticket_closure_evidence import (
+    BLOCKED_E2E_REQUIRED,
+    TICKET_CLOSURE_EVIDENCE_SCHEMA,
+)
 
 FIXTURES = (
     Path(__file__).resolve().parents[1]
@@ -130,3 +134,49 @@ def test_human_actor_can_return_goal_amendment_receipt() -> None:
 
     assert result.ok is True
     assert result.next_subagent == "human"
+
+
+def test_code_related_pass_receipt_requires_live_e2e_closure_evidence() -> None:
+    receipt = json.loads((FIXTURES / "valid-subagent-receipt.json").read_text(encoding="utf-8"))
+    receipt["context"]["code_related"] = True
+
+    result = validate_subagent_receipt(receipt, active_goal_hash="sha256:active-goal")
+
+    assert result.ok is False
+    assert result.next_subagent is None
+    assert any(error.startswith(BLOCKED_E2E_REQUIRED) for error in result.errors)
+
+
+def test_code_related_pass_receipt_accepts_live_e2e_closure_evidence(tmp_path: Path) -> None:
+    artifact = tmp_path / "live-e2e-artifact.json"
+    artifact.write_text(json.dumps({"mocked": False, "live": True}) + "\n", encoding="utf-8")
+    receipt = json.loads((FIXTURES / "valid-subagent-receipt.json").read_text(encoding="utf-8"))
+    receipt["context"]["task_type"] = "code"
+    receipt["evidence"].append(
+        {
+            "schema": TICKET_CLOSURE_EVIDENCE_SCHEMA,
+            "unit": {"command": "uv run pytest -q tests/test_subagent_receipt.py", "exit_code": 0},
+            "e2e": {
+                "command": "tau ticket-subagent-closure-proof --allow-live-filesystem",
+                "exit_code": 0,
+                "mocked": False,
+                "live": True,
+                "artifact": str(artifact),
+            },
+        }
+    )
+
+    result = validate_subagent_receipt(receipt, active_goal_hash="sha256:active-goal")
+
+    assert result.ok is True
+    assert result.next_subagent == "reviewer"
+
+
+def test_non_code_pass_receipt_does_not_require_code_ticket_closure_evidence() -> None:
+    receipt = json.loads((FIXTURES / "valid-subagent-receipt.json").read_text(encoding="utf-8"))
+    receipt["context"]["task_type"] = "research"
+
+    result = validate_subagent_receipt(receipt, active_goal_hash="sha256:active-goal")
+
+    assert result.ok is True
+    assert result.next_subagent == "reviewer"

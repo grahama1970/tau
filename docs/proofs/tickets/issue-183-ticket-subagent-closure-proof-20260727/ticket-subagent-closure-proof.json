@@ -1,0 +1,55 @@
+{
+  "accepted_code_subagent_live_e2e": true,
+  "accepted_live_e2e": true,
+  "accepted_non_code_without_e2e": true,
+  "code_receipt_with_e2e_errors": [],
+  "code_receipt_without_e2e_errors": [
+    "BLOCKED_E2E_REQUIRED: code-related PASS receipts require agent_skills.ticket_closure_evidence.v1"
+  ],
+  "live": true,
+  "live_artifact": "/tmp/tau-issue183.TLnmGk/docs/proofs/tickets/issue-183-ticket-subagent-closure-proof-20260727/live-e2e-artifact.json",
+  "live_e2e_result": {
+    "artifact_payload": {
+      "filesystem_readback_required": true,
+      "live": true,
+      "mocked": false,
+      "observed_at_unix_ns": 1785161312142784109,
+      "provider_live": false,
+      "run_id": "ticket-closure-proof-0501ebe58af34fdb899d8ce8b4cfe479",
+      "schema": "tau.ticket_subagent_live_e2e_artifact.v1"
+    },
+    "blocker": null,
+    "errors": [],
+    "ok": true,
+    "status": "ACCEPTED"
+  },
+  "mocked": false,
+  "non_code_receipt_without_e2e_errors": [],
+  "proof_boundary": {
+    "does_not_prove": [
+      "Provider semantic correctness.",
+      "That historical receipts written before this gate carry code-ticket closure evidence."
+    ],
+    "proves": [
+      "Code-ticket closure evidence without an e2e section is rejected.",
+      "Code-ticket closure evidence with a live non-mocked artifact read-back is accepted.",
+      "Passing code-related subagent receipts are blocked without the closure evidence.",
+      "Passing non-code subagent receipts are not forced through the code-ticket gate."
+    ]
+  },
+  "provider_live": false,
+  "rejected_code_subagent_without_e2e": true,
+  "rejected_unit_only": true,
+  "run_id": "ticket-closure-proof-0501ebe58af34fdb899d8ce8b4cfe479",
+  "schema": "tau.ticket_subagent_closure_proof.v1",
+  "status": "PASS",
+  "unit_only_result": {
+    "artifact_payload": null,
+    "blocker": "BLOCKED_E2E_REQUIRED",
+    "errors": [
+      "e2e must be an object"
+    ],
+    "ok": false,
+    "status": "BLOCKED"
+  }
+}

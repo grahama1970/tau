@@ -294,6 +294,10 @@ from tau_coding.skill_invocation import write_skill_invocation_receipt
 from tau_coding.sparta_posture import write_sparta_posture_contract
 from tau_coding.test_run_receipt import write_test_run_receipt
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL, ThinkingLevel, normalize_thinking_level
+from tau_coding.ticket_closure_evidence import (
+    validate_subagent_code_ticket_closure,
+    write_ticket_subagent_closure_proof,
+)
 from tau_coding.tools import create_write_tool
 from tau_coding.traycer.cli import parse_traycer_validate_cli_args, traycer_validate_command
 from tau_coding.trust import DefaultProjectTrust
@@ -379,6 +383,25 @@ def tui_proof_cli_command(
         next_agent=next_agent,
     )
     if not ok:
+        raise typer.Exit(1)
+
+
+@app.command("ticket-subagent-closure-proof")
+def ticket_subagent_closure_proof_cli_command(
+    output: Annotated[Path, typer.Option("--output")],
+    allow_live_filesystem: Annotated[bool, typer.Option("--allow-live-filesystem")] = False,
+) -> None:
+    """Prove code-ticket subagent closure requires live non-mocked E2E evidence."""
+
+    try:
+        payload = write_ticket_subagent_closure_proof(
+            output,
+            allow_live_filesystem=allow_live_filesystem,
+        )
+    except RuntimeError as exc:
+        raise typer.BadParameter(str(exc)) from exc
+    typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    if payload.get("status") != "PASS":
         raise typer.Exit(1)
 
 
@@ -4539,6 +4562,17 @@ def main(
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "ticket-subagent-closure-proof":
+        try:
+            options = _parse_ticket_subagent_closure_proof_cli_args(positional_args[1:])
+            payload = project_agent_ticket_subagent_closure_proof_command(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("status") != "PASS":
             raise typer.Exit(1)
         raise typer.Exit()
 
@@ -11983,6 +12017,32 @@ def _parse_scillm_subagent_gate_cli_args(args: list[str]) -> Path:
     return summary_path
 
 
+def _parse_ticket_subagent_closure_proof_cli_args(args: list[str]) -> dict[str, Path | bool]:
+    output: Path | None = None
+    allow_live_filesystem = False
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--output":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--output requires a value")
+            output = Path(args[index])
+        elif arg.startswith("--output="):
+            output = Path(arg.partition("=")[2])
+        elif arg == "--allow-live-filesystem":
+            allow_live_filesystem = True
+        else:
+            raise RuntimeError(f"Unknown ticket-subagent-closure-proof option: {arg}")
+        index += 1
+    if output is None:
+        raise RuntimeError("ticket-subagent-closure-proof requires --output <proof.json>")
+    return {
+        "output": output,
+        "allow_live_filesystem": allow_live_filesystem,
+    }
+
+
 def _parse_persona_dream_panel_proof_cli_args(
     args: list[str],
 ) -> dict[str, Path | str | bool | None]:
@@ -13987,6 +14047,19 @@ def project_agent_scillm_subagent_gate_command(summary_path: Path) -> bool:
     return result.ok
 
 
+def project_agent_ticket_subagent_closure_proof_command(
+    *,
+    output: Path,
+    allow_live_filesystem: bool,
+) -> dict[str, object]:
+    """Write the code-ticket closure evidence proof receipt."""
+
+    return write_ticket_subagent_closure_proof(
+        output,
+        allow_live_filesystem=allow_live_filesystem,
+    )
+
+
 def project_agent_persona_dream_panel_proof_command(
     *,
     out_dir: Path,
@@ -15487,6 +15560,7 @@ def _validate_subagent_receipt_payload(payload: object) -> list[str]:
     stop_condition = payload.get("stop_condition")
     if not isinstance(stop_condition, str) or not stop_condition.strip():
         errors.append("stop_condition must be a non-empty string")
+    errors.extend(validate_subagent_code_ticket_closure(payload))
     return errors
 
 

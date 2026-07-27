@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from tau_coding.ticket_closure_evidence import validate_subagent_code_ticket_closure
+
 TAU_SUBAGENT_RECEIPT_SCHEMA = "tau.subagent_receipt.v1"
 
 REQUIRED_TOP_LEVEL_FIELDS = (
@@ -120,6 +122,7 @@ def validate_subagent_receipt(
         errors.append("non-human subagent may not change goal.goal_hash")
     if goal.get("immutable_goal_preserved") is False and not is_human:
         errors.append("non-human subagent may not set immutable_goal_preserved=false")
+    errors.extend(validate_subagent_code_ticket_closure(payload))
 
     return SubagentReceiptValidationResult(
         ok=not errors,
