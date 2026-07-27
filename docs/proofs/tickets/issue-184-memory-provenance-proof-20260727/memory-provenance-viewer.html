@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Tau Memory Provenance</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0f1720; color: #e6edf3; margin: 0; }
+    main { padding: 32px; max-width: 1180px; margin: auto; }
+    h1 { margin: 0 0 8px; font-size: 32px; }
+    .path { border: 1px solid #38bdf8; padding: 16px; margin: 24px 0; background: #102436; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    section { border: 1px solid #334155; padding: 16px; background: #111c2a; }
+    dt { color: #93c5fd; font-size: 12px; text-transform: uppercase; }
+    dd { margin: 0 0 10px; font-weight: 650; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Tau Memory Provenance</h1>
+    <p>Governed Graph Memory chain provenance is surfaced without inferring missing workflows.</p>
+    <div class="path">
+      <strong>Populated path</strong>
+      <p>memory -&gt; ticket -&gt; checkpoint -&gt; recommend-skill-chain</p>
+      <p>Hop count: 3</p>
+    </div>
+    <div class="grid">
+        <section>
+          <h2>Populated Memory chain</h2>
+          <dl>
+            <dt>Status</dt><dd>PASS</dd>
+            <dt>Live</dt><dd>True</dd>
+            <dt>Selection</dt><dd>memory_recall_brief</dd>
+            <dt>Alerts</dt><dd></dd>
+          </dl>
+        </section>
+        
+
+        <section>
+          <h2>Invalid chain blocked</h2>
+          <dl>
+            <dt>Status</dt><dd>BLOCKED</dd>
+            <dt>Live</dt><dd>True</dd>
+            <dt>Selection</dt><dd>None</dd>
+            <dt>Alerts</dt><dd>skill_chain_missing</dd>
+          </dl>
+        </section>
+        
+
+        <section>
+          <h2>Memory down degraded</h2>
+          <dl>
+            <dt>Status</dt><dd>BLOCKED</dd>
+            <dt>Live</dt><dd>False</dd>
+            <dt>Selection</dt><dd>None</dd>
+            <dt>Alerts</dt><dd>memory_http_error, memory_recall_unavailable</dd>
+          </dl>
+        </section>
+        </div>
+  </main>
+</body>
+</html>

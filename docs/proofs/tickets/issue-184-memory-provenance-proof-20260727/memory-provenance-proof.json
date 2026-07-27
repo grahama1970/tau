@@ -1,0 +1,79 @@
+{
+  "invalid_chain_blocked": true,
+  "live": true,
+  "live_skill_chain": {
+    "hop_count": 3,
+    "provenance": {
+      "_id": "skill_chains/issue61_tau150_recall_brief_skill_chain_contract",
+      "_key": "issue61_tau150_recall_brief_skill_chain_contract",
+      "collection": "skill_chains",
+      "source": "skill_chains"
+    },
+    "skills": [
+      "memory",
+      "ticket",
+      "checkpoint",
+      "recommend-skill-chain"
+    ],
+    "traversal_path": [
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "memory",
+        "node_type": "skill",
+        "position": 0
+      },
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "ticket",
+        "node_type": "skill",
+        "position": 1
+      },
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "checkpoint",
+        "node_type": "skill",
+        "position": 2
+      },
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "recommend-skill-chain",
+        "node_type": "skill",
+        "position": 3
+      }
+    ]
+  },
+  "memory_down_degraded": true,
+  "memory_url": "http://127.0.0.1:8601",
+  "mocked": false,
+  "populated_path": true,
+  "proof_boundary": {
+    "does_not_prove": [
+      "Memory fact truth.",
+      "That the selected chain is semantically optimal.",
+      "That Tau wrote anything back to Memory."
+    ],
+    "proves": [
+      "Tau consumed a live Graph Memory /recall skill_chain with path and hop count.",
+      "Tau blocked an invalid chain response instead of inferring a workflow.",
+      "Tau degraded explicitly when Memory was unreachable.",
+      "A browser-readable provenance artifact exposes the populated and degraded states."
+    ]
+  },
+  "provider_live": false,
+  "receipts": {
+    "invalid_chain": "/tmp/tau-issue184.YLNaRb/docs/proofs/tickets/issue-184-memory-provenance-proof-20260727/invalid-skill-chain-selection.json",
+    "memory_down": "/tmp/tau-issue184.YLNaRb/docs/proofs/tickets/issue-184-memory-provenance-proof-20260727/memory-down-skill-chain-selection.json",
+    "populated": "/tmp/tau-issue184.YLNaRb/docs/proofs/tickets/issue-184-memory-provenance-proof-20260727/populated-skill-chain-selection.json"
+  },
+  "schema": "tau.memory_provenance_proof.v1",
+  "status": "PASS",
+  "viewer_artifact": {
+    "html": "/tmp/tau-issue184.YLNaRb/docs/proofs/tickets/issue-184-memory-provenance-proof-20260727/memory-provenance-viewer.html",
+    "screenshot": "/tmp/tau-issue184.YLNaRb/docs/proofs/tickets/issue-184-memory-provenance-proof-20260727/memory-provenance-viewer.png",
+    "screenshot_sha256": "sha256:84e28efbefddac8407c065ea3782fcccd31750d7b70306d36a840e84b7a1a5df"
+  }
+}

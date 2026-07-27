@@ -532,9 +532,38 @@ def _valid_skill_chain(value: object) -> dict[str, Any] | None:
     normalized = [item.strip() for item in skills if isinstance(item, str) and item.strip()]
     if not normalized:
         return None
+    path_value = value.get("traversal_path")
+    if path_value is None:
+        path_value = value.get("path")
+    if not isinstance(path_value, list):
+        return None
+    path = [item for item in path_value if isinstance(item, dict)]
+    if not _skill_path_matches_chain(normalized, path):
+        return None
+    try:
+        hop_count = int(value.get("hop_count", value.get("hops", max(len(path) - 1, 0))))
+    except (TypeError, ValueError):
+        return None
+    if hop_count < max(len(normalized) - 1, 0):
+        return None
     chain = dict(value)
     chain["skills"] = normalized
+    chain["traversal_path"] = path
+    chain["path"] = path
+    chain["hop_count"] = hop_count
+    chain["hops"] = hop_count
     return chain
+
+
+def _skill_path_matches_chain(skills: list[str], path: list[dict[str, Any]]) -> bool:
+    if len(skills) == 1:
+        return True
+    path_nodes: list[str] = []
+    for item in path:
+        node = item.get("node", item.get("skill", item.get("name")))
+        if isinstance(node, str) and node.strip():
+            path_nodes.append(node.strip())
+    return path_nodes[: len(skills)] == skills
 
 
 def _skill_chain_alerts(

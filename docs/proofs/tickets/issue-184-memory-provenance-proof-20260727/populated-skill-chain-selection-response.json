@@ -1,0 +1,186 @@
+{
+  "confidence": 0.733,
+  "errors": [],
+  "found": true,
+  "items": [
+    {
+      "problem": "project knowledge chunk for tau: Current Understanding (221)",
+      "score": 1.0,
+      "solution": "- 2026-07-07 actor provenance eligibility shape fail-closed rung:\n  `src/tau_coding/provenance.py` now validates optional actor\n  `eligibility` metadata on `tau.actor_manifest.v1` entries. When present,\n  eligibility must declare closed fields for `us_person`, `foreign_person`,\n  `export_control_training_current`, and `approved_for_boundary`; malformed\n  values block the actor manifest instead of allowing arbitrary high-stakes\n  eligibility claims into later signed receipts or review packages.\n ",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:current-understanding"
+      ]
+    },
+    {
+      "problem": "project knowledge chunk for tau: Current Understanding (219)",
+      "score": 0.991,
+      "solution": "- 2026-07-07 environment provenance policy/data-boundary reference\n  fail-closed rung: `src/tau_coding/provenance.py` now treats supplied\n  `environment-manifest` `policy_profile` and `data_boundary` values as local\n  JSON artifact references. When present, the referenced file must exist,\n  contain a JSON object, and validate as `tau.policy_profile.v1` or\n  `tau.data_boundary.v1`. The environment manifest records artifact existence,\n  SHA-256, and schema for those references. Malformed policy/bo",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:current-understanding"
+      ]
+    },
+    {
+      "problem": "project knowledge chunk for tau: Current Understanding (410)",
+      "score": 0.991,
+      "solution": "  `uv run ruff check --select I,F,E501 scripts/run-coding-capability-sanity.py\n  src/tau_coding/memory_evidence_gate.py src/tau_coding/memory_acquisition.py\n  src/tau_coding/compliance_package.py src/tau_coding/run_report.py\n  src/tau_coding/server.py src/tau_coding/provenance.py\n  src/tau_coding/receipt_signing.py src/tau_coding/zero_trust_redteam.py\n  tests/test_memory_evidence_gate.py tests/test_memory_acquisition.py\n  tests/test_compliance_package.py tests/test_run_report.py tests/test_serve",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:current-understanding"
+      ]
+    },
+    {
+      "problem": "project knowledge chunk for tau: Current Understanding (223)",
+      "score": 0.991,
+      "solution": "- 2026-07-07 signed receipt provenance validity fail-closed rung:\n  `src/tau_coding/receipt_signing.py` now validates supplied\n  `tau.actor_manifest.v1` and `tau.environment_manifest.v1` files before\n  producing a PASS `tau.signed_receipt.v1` envelope. Invalid provenance\n  metadata returns `status:\"BLOCKED\"`, `ok:false`, `signature:null`, and\n  field-prefixed errors instead of signing malformed manifests. Existing\n  verification still recomputes HMAC signatures and file hashes for signed\n  input",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:current-understanding"
+      ]
+    },
+    {
+      "problem": "project knowledge chunk for tau: Current Understanding (666)",
+      "score": 0.991,
+      "solution": "- 2026-06-28 UX Lab now renders the installed-cron watchdog receipt chain in the Tau chat integration viewer. Tau-owned manifest `experiments/goal-locked-subagents/proofs/ux-lab-watchdog-receipt-chain-panel-20260628T144900Z/manifest.json` records pi-mono commit `79f45fec623f8d0b07167df2a06a0c5d2490242e`, focused UX Lab tests `60 passed`, TypeScript exit `0`, live API probe `mocked:false`, `live:true`, run id `project-watchdog-20260628T143801Z`, issue `#15 CLOSED`, selected agent `reviewer`, term",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:current-understanding"
+      ]
+    }
+  ],
+  "meta": {
+    "brief": true,
+    "k": 5,
+    "memory_first": true,
+    "q": "Tau Memory provenance recall-chain skill_chain tool_chain viewer provenance hop count",
+    "runtime_pressure": {
+      "active_workloads": [],
+      "errors": [
+        "No module named 'graph_memory.runtime_pressure'"
+      ],
+      "level": "unknown",
+      "recommended_action": "Runtime pressure collector failed; use normal recall behavior.",
+      "slow_query_risk": false
+    },
+    "scope": "tau",
+    "threshold": 0.3,
+    "took_ms": 182,
+    "used_dense": true,
+    "used_reranker": false
+  },
+  "should_scan": false,
+  "skill_chain": {
+    "_key": "issue61_tau150_recall_brief_skill_chain_contract",
+    "collection": "skill_chains",
+    "commit": "pending-local-fix",
+    "elegance": "direct",
+    "files_changed": [
+      "src/graph_memory/api_client.py",
+      "src/graph_memory/service/app/_models.py",
+      "src/graph_memory/service/app/_core.py",
+      "src/graph_memory/_schema_collections.py",
+      "src/graph_memory/_schema_views.py",
+      "src/graph_memory/lessons/recall_sources/_declarations.py"
+    ],
+    "hop_count": 3,
+    "hops": 3,
+    "observations": 1,
+    "path": [
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "memory",
+        "node_type": "skill",
+        "position": 0
+      },
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "ticket",
+        "node_type": "skill",
+        "position": 1
+      },
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "checkpoint",
+        "node_type": "skill",
+        "position": 2
+      },
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "recommend-skill-chain",
+        "node_type": "skill",
+        "position": 3
+      }
+    ],
+    "problem": "Tau issue 150 requires Graph Memory /recall brief to return a top-level skill_chain with path and provenance.",
+    "provenance": {
+      "_id": "skill_chains/issue61_tau150_recall_brief_skill_chain_contract",
+      "_key": "issue61_tau150_recall_brief_skill_chain_contract",
+      "collection": "skill_chains",
+      "source": "skill_chains"
+    },
+    "scope": "graph-memory-operator",
+    "score": 0.375,
+    "skills": [
+      "memory",
+      "ticket",
+      "checkpoint",
+      "recommend-skill-chain"
+    ],
+    "solution": "Run memory recall first, then ticket lookup/lease, focused repair, checkpoint or proof capture, attach proof, and close only after live read-back evidence.",
+    "source": "skill_chains",
+    "success_rate": 1,
+    "tags": [
+      "issue:61",
+      "tau:150",
+      "skill-chain",
+      "recall-brief",
+      "contract"
+    ],
+    "task_type": "memory_recall_contract",
+    "traversal_path": [
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "memory",
+        "node_type": "skill",
+        "position": 0
+      },
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "ticket",
+        "node_type": "skill",
+        "position": 1
+      },
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "checkpoint",
+        "node_type": "skill",
+        "position": 2
+      },
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "recommend-skill-chain",
+        "node_type": "skill",
+        "position": 3
+      }
+    ]
+  }
+}

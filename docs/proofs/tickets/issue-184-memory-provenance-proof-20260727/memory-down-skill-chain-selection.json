@@ -1,0 +1,79 @@
+{
+  "alert_codes": [
+    "memory_http_error",
+    "memory_recall_unavailable"
+  ],
+  "alerts": [
+    {
+      "code": "memory_http_error",
+      "evidence": {
+        "call": {
+          "duration_seconds": 0.005863,
+          "error": "[Errno 111] Connection refused",
+          "ok": false,
+          "path": "/recall"
+        }
+      },
+      "message": "Graph Memory acquisition call failed.",
+      "severity": "BLOCK"
+    },
+    {
+      "code": "memory_recall_unavailable",
+      "evidence": {
+        "fallback_available": false
+      },
+      "message": "Graph Memory /recall did not return a usable skill_chain and no fallback skill was available.",
+      "severity": "BLOCK"
+    }
+  ],
+  "call": {
+    "duration_seconds": 0.005863,
+    "error": "[Errno 111] Connection refused",
+    "ok": false,
+    "path": "/recall"
+  },
+  "confidence": null,
+  "endpoint": "/recall",
+  "fallback_skill": null,
+  "found": null,
+  "goal_hash": null,
+  "live": false,
+  "memory_url": "http://127.0.0.1:9",
+  "mocked": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Memory fact truth.",
+      "The selected chain is semantically optimal.",
+      "The full Tau system prompt has switched all sessions to selected-only skills.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau called Graph Memory /recall with brief skill-chain selection intent.",
+      "Tau captured and hashed the Memory request and response artifacts.",
+      "Tau accepts only an explicit Memory skill_chain as a PASS selection.",
+      "Tau degrades explicitly to a single registry fallback when Memory is unavailable or silent."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue184.YLNaRb/docs/proofs/tickets/issue-184-memory-provenance-proof-20260727/memory-down-skill-chain-selection.json",
+  "request_payload": {
+    "app": "tau",
+    "brief": true,
+    "k": 5,
+    "q": "Tau Memory down provenance should degrade explicitly",
+    "scope": "tau"
+  },
+  "request_sha256": "sha256:df32e168be4ce52eb17401a09c3c03bf5f11f09123db37528f8d3dd1544fa530",
+  "response_path": "/tmp/tau-issue184.YLNaRb/docs/proofs/tickets/issue-184-memory-provenance-proof-20260727/memory-down-skill-chain-selection-response.json",
+  "response_schema": null,
+  "response_sha256": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "schema": "tau.skill_chain_selection_receipt.v1",
+  "selected_skills": [],
+  "selection_source": null,
+  "should_scan": null,
+  "skill_chain": null,
+  "status": "BLOCKED",
+  "target": null,
+  "timestamp": "2026-07-27T14:26:30Z"
+}

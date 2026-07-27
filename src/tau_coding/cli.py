@@ -185,6 +185,7 @@ from tau_coding.memory_acquisition import (
     write_skill_chain_selection_receipt,
     write_tool_chain_selection_receipt,
 )
+from tau_coding.memory_provenance_proof import write_memory_provenance_proof
 from tau_coding.orchestration_evidence import build_orchestration_evidence
 from tau_coding.orchestration_redteam import run_orchestration_redteam
 from tau_coding.orchestration_reliability import write_orchestration_reliability_receipt
@@ -4581,6 +4582,17 @@ def main(
         try:
             options = _parse_installed_wheel_viewer_proof_cli_args(positional_args[1:])
             payload = project_agent_installed_wheel_viewer_proof_command(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("status") != "PASS":
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "memory-provenance-proof":
+        try:
+            options = _parse_memory_provenance_proof_cli_args(positional_args[1:])
+            payload = project_agent_memory_provenance_proof_command(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -12081,6 +12093,43 @@ def _parse_installed_wheel_viewer_proof_cli_args(args: list[str]) -> dict[str, P
     }
 
 
+def _parse_memory_provenance_proof_cli_args(
+    args: list[str],
+) -> dict[str, Path | bool | str | None]:
+    output: Path | None = None
+    allow_live_memory = False
+    memory_url: str | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--output":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--output requires a value")
+            output = Path(args[index])
+        elif arg.startswith("--output="):
+            output = Path(arg.partition("=")[2])
+        elif arg == "--allow-live-memory":
+            allow_live_memory = True
+        elif arg == "--memory-url":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--memory-url requires a value")
+            memory_url = args[index]
+        elif arg.startswith("--memory-url="):
+            memory_url = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"Unknown memory-provenance-proof option: {arg}")
+        index += 1
+    if output is None:
+        raise RuntimeError("memory-provenance-proof requires --output <proof.json>")
+    return {
+        "output": output,
+        "allow_live_memory": allow_live_memory,
+        "memory_url": memory_url,
+    }
+
+
 def _parse_persona_dream_panel_proof_cli_args(
     args: list[str],
 ) -> dict[str, Path | str | bool | None]:
@@ -14108,6 +14157,21 @@ def project_agent_installed_wheel_viewer_proof_command(
     return write_installed_wheel_viewer_proof(
         output,
         allow_live_browser=allow_live_browser,
+    )
+
+
+def project_agent_memory_provenance_proof_command(
+    *,
+    output: Path,
+    allow_live_memory: bool,
+    memory_url: str | None,
+) -> dict[str, object]:
+    """Write the Memory chain provenance proof receipt."""
+
+    return write_memory_provenance_proof(
+        output,
+        allow_live_memory=allow_live_memory,
+        memory_url=memory_url,
     )
 
 

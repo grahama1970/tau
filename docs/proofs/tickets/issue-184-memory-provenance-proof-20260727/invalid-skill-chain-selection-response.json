@@ -1,0 +1,30 @@
+{
+  "confidence": 0.8,
+  "found": true,
+  "items": [
+    {
+      "problem": "invalid chain",
+      "solution": "must block"
+    }
+  ],
+  "schema": "memory.recall.v1",
+  "should_scan": false,
+  "skill_chain": {
+    "hop_count": 2,
+    "skills": [
+      "memory",
+      "ticket",
+      "checkpoint"
+    ],
+    "traversal_path": [
+      {
+        "node": "memory",
+        "position": 0
+      },
+      {
+        "node": "checkpoint",
+        "position": 1
+      }
+    ]
+  }
+}

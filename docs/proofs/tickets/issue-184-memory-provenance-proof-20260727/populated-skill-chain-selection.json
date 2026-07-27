@@ -1,0 +1,161 @@
+{
+  "alert_codes": [],
+  "alerts": [],
+  "call": {
+    "duration_seconds": 0.315956,
+    "ok": true,
+    "path": "/recall",
+    "status_code": 200
+  },
+  "confidence": 0.733,
+  "endpoint": "/recall",
+  "fallback_skill": null,
+  "found": true,
+  "goal_hash": null,
+  "live": true,
+  "memory_url": "http://127.0.0.1:8601",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Memory fact truth.",
+      "The selected chain is semantically optimal.",
+      "The full Tau system prompt has switched all sessions to selected-only skills.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau called Graph Memory /recall with brief skill-chain selection intent.",
+      "Tau captured and hashed the Memory request and response artifacts.",
+      "Tau accepts only an explicit Memory skill_chain as a PASS selection.",
+      "Tau degrades explicitly to a single registry fallback when Memory is unavailable or silent."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue184.YLNaRb/docs/proofs/tickets/issue-184-memory-provenance-proof-20260727/populated-skill-chain-selection.json",
+  "request_payload": {
+    "app": "tau",
+    "brief": true,
+    "k": 5,
+    "q": "Tau Memory provenance recall-chain skill_chain tool_chain viewer provenance hop count",
+    "scope": "tau"
+  },
+  "request_sha256": "sha256:52e89c072ed8a977a9f5132ce0113777dbebc19463be2e79c34d9a54a48fb3b3",
+  "response_path": "/tmp/tau-issue184.YLNaRb/docs/proofs/tickets/issue-184-memory-provenance-proof-20260727/populated-skill-chain-selection-response.json",
+  "response_schema": null,
+  "response_sha256": "sha256:232898304dc44f019bd836146a9289ce36666603add836ac54c0dd1e93b9cd61",
+  "schema": "tau.skill_chain_selection_receipt.v1",
+  "selected_skills": [
+    "memory",
+    "ticket",
+    "checkpoint",
+    "recommend-skill-chain"
+  ],
+  "selection_source": "memory_recall_brief",
+  "should_scan": false,
+  "skill_chain": {
+    "_key": "issue61_tau150_recall_brief_skill_chain_contract",
+    "collection": "skill_chains",
+    "commit": "pending-local-fix",
+    "elegance": "direct",
+    "files_changed": [
+      "src/graph_memory/api_client.py",
+      "src/graph_memory/service/app/_models.py",
+      "src/graph_memory/service/app/_core.py",
+      "src/graph_memory/_schema_collections.py",
+      "src/graph_memory/_schema_views.py",
+      "src/graph_memory/lessons/recall_sources/_declarations.py"
+    ],
+    "hop_count": 3,
+    "hops": 3,
+    "observations": 1,
+    "path": [
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "memory",
+        "node_type": "skill",
+        "position": 0
+      },
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "ticket",
+        "node_type": "skill",
+        "position": 1
+      },
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "checkpoint",
+        "node_type": "skill",
+        "position": 2
+      },
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "recommend-skill-chain",
+        "node_type": "skill",
+        "position": 3
+      }
+    ],
+    "problem": "Tau issue 150 requires Graph Memory /recall brief to return a top-level skill_chain with path and provenance.",
+    "provenance": {
+      "_id": "skill_chains/issue61_tau150_recall_brief_skill_chain_contract",
+      "_key": "issue61_tau150_recall_brief_skill_chain_contract",
+      "collection": "skill_chains",
+      "source": "skill_chains"
+    },
+    "scope": "graph-memory-operator",
+    "score": 0.375,
+    "skills": [
+      "memory",
+      "ticket",
+      "checkpoint",
+      "recommend-skill-chain"
+    ],
+    "solution": "Run memory recall first, then ticket lookup/lease, focused repair, checkpoint or proof capture, attach proof, and close only after live read-back evidence.",
+    "source": "skill_chains",
+    "success_rate": 1,
+    "tags": [
+      "issue:61",
+      "tau:150",
+      "skill-chain",
+      "recall-brief",
+      "contract"
+    ],
+    "task_type": "memory_recall_contract",
+    "traversal_path": [
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "memory",
+        "node_type": "skill",
+        "position": 0
+      },
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "ticket",
+        "node_type": "skill",
+        "position": 1
+      },
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "checkpoint",
+        "node_type": "skill",
+        "position": 2
+      },
+      {
+        "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+        "collection": "skill_chains",
+        "node": "recommend-skill-chain",
+        "node_type": "skill",
+        "position": 3
+      }
+    ]
+  },
+  "status": "PASS",
+  "target": null,
+  "timestamp": "2026-07-27T14:26:29Z"
+}

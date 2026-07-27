@@ -1,0 +1,65 @@
+{
+  "alert_codes": [
+    "skill_chain_missing"
+  ],
+  "alerts": [
+    {
+      "code": "skill_chain_missing",
+      "evidence": {
+        "fallback_available": false
+      },
+      "message": "Graph Memory /recall did not return a usable skill_chain and no fallback skill was available.",
+      "severity": "BLOCK"
+    }
+  ],
+  "call": {
+    "duration_seconds": 0.00686,
+    "ok": true,
+    "path": "/recall",
+    "status_code": 200
+  },
+  "confidence": 0.8,
+  "endpoint": "/recall",
+  "fallback_skill": null,
+  "found": true,
+  "goal_hash": null,
+  "live": true,
+  "memory_url": "http://127.0.0.1:34365",
+  "mocked": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Memory fact truth.",
+      "The selected chain is semantically optimal.",
+      "The full Tau system prompt has switched all sessions to selected-only skills.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau called Graph Memory /recall with brief skill-chain selection intent.",
+      "Tau captured and hashed the Memory request and response artifacts.",
+      "Tau accepts only an explicit Memory skill_chain as a PASS selection.",
+      "Tau degrades explicitly to a single registry fallback when Memory is unavailable or silent."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue184.YLNaRb/docs/proofs/tickets/issue-184-memory-provenance-proof-20260727/invalid-skill-chain-selection.json",
+  "request_payload": {
+    "app": "tau",
+    "brief": true,
+    "k": 5,
+    "q": "Tau Memory invalid chain provenance should block",
+    "scope": "tau"
+  },
+  "request_sha256": "sha256:719f35ebdf9526348cb768303d057fbd07005f50af64fba4f249ceabe8a199cc",
+  "response_path": "/tmp/tau-issue184.YLNaRb/docs/proofs/tickets/issue-184-memory-provenance-proof-20260727/invalid-skill-chain-selection-response.json",
+  "response_schema": "memory.recall.v1",
+  "response_sha256": "sha256:f23939d3b209ab7479b8e2d281e4636c2d46fcf846b0b6626f031839a043d8d1",
+  "schema": "tau.skill_chain_selection_receipt.v1",
+  "selected_skills": [],
+  "selection_source": null,
+  "should_scan": false,
+  "skill_chain": null,
+  "status": "BLOCKED",
+  "target": null,
+  "timestamp": "2026-07-27T14:26:29Z"
+}

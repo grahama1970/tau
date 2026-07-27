@@ -128,6 +128,8 @@ def test_skill_chain_selection_uses_memory_recall_chain(tmp_path: Path) -> None:
     assert receipt["selection_source"] == "memory_recall_brief"
     assert receipt["selected_skills"] == ["memory", "best-practices-github-ticket", "checkpoint"]
     assert receipt["skill_chain"]["success_rate"] == 1.0
+    assert receipt["skill_chain"]["hop_count"] == 2
+    assert receipt["skill_chain"]["traversal_path"][0]["node"] == "memory"
     assert Path(str(receipt["response_path"])).exists()
     assert requests[0]["path"] == "/recall"
     assert requests[0]["payload"]["brief"] is True
@@ -158,6 +160,32 @@ def test_skill_chain_selection_degrades_to_registry_fallback(tmp_path: Path) -> 
     assert receipt["selected_skills"] == ["memory"]
     assert receipt["fallback_skill"]["name"] == "memory"
     assert "memory_recall_unavailable" in receipt["alert_codes"]
+
+
+def test_skill_chain_selection_degrades_without_memory_provenance_path(tmp_path: Path) -> None:
+    payload = _skill_chain_payload()
+    payload["skill_chain"]["traversal_path"] = [
+        {"position": 0, "node": "memory"},
+        {"position": 1, "node": "checkpoint"},
+    ]
+    server, _ = _start_memory_server(recall_payload=payload)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        receipt = write_skill_chain_selection_receipt(
+            query="Process Tau tickets with memory first and checkpoint proof",
+            receipt_path=tmp_path / "skill-chain-selection.json",
+            memory_url=f"http://127.0.0.1:{server.server_port}",
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["selected_skills"] == []
+    assert "skill_chain_missing" in receipt["alert_codes"]
 
 
 def test_tool_chain_selection_uses_memory_recall_chain(tmp_path: Path) -> None:
@@ -427,6 +455,12 @@ def _skill_chain_payload() -> dict[str, Any]:
             "success_rate": 1.0,
             "observations": 4,
             "score": 0.82,
+            "traversal_path": [
+                {"position": 0, "node": "memory", "node_type": "skill"},
+                {"position": 1, "node": "best-practices-github-ticket", "node_type": "skill"},
+                {"position": 2, "node": "checkpoint", "node_type": "skill"},
+            ],
+            "hop_count": 2,
         },
     }
 
