@@ -1,0 +1,14 @@
+{
+  "checked_at": "2026-07-27T16:23:37Z",
+  "entry_count": 7,
+  "errors": [],
+  "ledger_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/audit/audit-ledger.jsonl",
+  "ledger_sha256": "sha256:0405c137847c5cbca2ca5d3b2d4238ea1635b068f3a679da0b5d7d52dbd164df",
+  "live": true,
+  "mocked": false,
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/audit/audit-ledger-verification.json",
+  "schema": "tau.audit_ledger_verification.v1",
+  "status": "PASS",
+  "terminal_hash": "sha256:4537a94bab07c5add3458387a0f59fbe879270c9df59c81056e3ef5ba87831c4"
+}

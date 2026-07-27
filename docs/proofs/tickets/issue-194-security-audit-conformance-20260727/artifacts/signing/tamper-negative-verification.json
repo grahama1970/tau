@@ -1,0 +1,30 @@
+{
+  "algorithm": "Ed25519",
+  "checked_at": "2026-07-27T16:23:37Z",
+  "command": [
+    "openssl",
+    "pkeyutl",
+    "-verify",
+    "-pubin",
+    "-inkey",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/signing/ed25519-public.pem",
+    "-rawin",
+    "-in",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/signing/receipt-to-sign.tampered.json",
+    "-sigfile",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/signing/receipt-to-sign.sig"
+  ],
+  "exit_code": 1,
+  "live": true,
+  "message_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/signing/receipt-to-sign.tampered.json",
+  "message_sha256": "sha256:ff49257391281f95ab06895eea8a894246bd3f20689e296c248a49a293a4e8dd",
+  "mocked": false,
+  "provider_live": false,
+  "public_key_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/signing/ed25519-public.pem",
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/signing/tamper-negative-verification.json",
+  "schema": "tau.asymmetric_signature_verification.v1",
+  "signature_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/signing/receipt-to-sign.sig",
+  "status": "BLOCKED",
+  "stderr": "",
+  "stdout": "Signature Verification Failure\n"
+}

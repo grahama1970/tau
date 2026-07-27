@@ -1,0 +1,46 @@
+{
+  "approval_packet": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/approvals/approval-valid.json",
+  "approval_packet_sha256": "8a36415c27a8ff40a02ade5addf2c8f05f38535f8af7fb6a2d9c94fd8f31dbfb",
+  "approved": true,
+  "errors": [],
+  "expected_target": {
+    "id": "workspace://tau/protected-file",
+    "lineage": "sha256:security-audit-lineage"
+  },
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "packet_summary": {
+    "action": "working_tree_mutation",
+    "actor_auth_method": "local-signature",
+    "actor_id": "human:graham",
+    "approved": true,
+    "authorship": "human_local_signature",
+    "evidence_count": 1,
+    "expires_at": "2026-07-27T17:23:37Z",
+    "human_id": "human:graham",
+    "machine_fabricated": false,
+    "nonce": "security-audit-workspace://tau/protected-file-2026-07-27T17:23:37Z",
+    "schema": "tau.human_approval_packet.v1",
+    "signature_present": true,
+    "target_id": "workspace://tau/protected-file"
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "the gated mutation was executed",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "cryptographic signature validity beyond requiring a signature field"
+    ],
+    "proves": [
+      "Tau can fail closed before mutation or closure without a valid human approval packet",
+      "Tau can validate explicit human approval for a requested gated action",
+      "Tau writes a durable approval-gate receipt before any gated mutation command"
+    ]
+  },
+  "requested_action": "working_tree_mutation",
+  "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/approvals/valid-run",
+  "schema": "tau.approval_gate_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-27T16:23:37Z"
+}

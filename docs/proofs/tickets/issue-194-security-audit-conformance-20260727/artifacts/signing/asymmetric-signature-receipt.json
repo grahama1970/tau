@@ -1,0 +1,18 @@
+{
+  "algorithm": "Ed25519",
+  "checked_at": "2026-07-27T16:23:37Z",
+  "live": true,
+  "mocked": false,
+  "openssl_path": "/usr/bin/openssl",
+  "private_key_persisted": false,
+  "provider_live": false,
+  "public_key_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/signing/ed25519-public.pem",
+  "public_key_sha256": "sha256:a12a41967487e71f6b96a98458f568aa3059f4a83c479dc685743c1a09c03f93",
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/signing/asymmetric-signature-receipt.json",
+  "schema": "tau.asymmetric_signature_receipt.v1",
+  "signature_base64": "Cu4VqKrnFQlCDecaWfqXqeIMq8BNcZx6/h0BALZCD7glwkTNE9t6M+FSYw3HVbI8wzH4KYw4T7fgPWfM6r2KDg==",
+  "signature_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/signing/receipt-to-sign.sig",
+  "signed_receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/signing/receipt-to-sign.json",
+  "signed_receipt_sha256": "sha256:74675154d4af1f6397c7a6ba1680a2cabf491330474ab505d5eb86a95ebb5b2c",
+  "status": "PASS"
+}

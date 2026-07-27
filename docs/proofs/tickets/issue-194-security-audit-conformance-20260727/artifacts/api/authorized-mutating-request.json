@@ -1,0 +1,24 @@
+{
+  "accepted": true,
+  "action": "working_tree_mutation",
+  "actor_id": "human:graham",
+  "approval_gate_receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/approvals/approval-valid.json",
+  "approval_gate_status": "PASS",
+  "auth_token_present": true,
+  "auth_token_sha256": "sha256:e3adcc11bd125b2f0e67513e5e2379b3554a9bbd4052dbae75af2d92392b1c9f",
+  "checked_at": "2026-07-27T16:23:37Z",
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "mutating_request_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/api/authorized-mutating-request.json",
+  "mutation_applied": true,
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/api/authorized-mutating-request.json",
+  "role": "operator",
+  "schema": "tau.api_mutating_request_receipt.v1",
+  "status": "PASS",
+  "target": {
+    "id": "workspace://tau/protected-file",
+    "lineage": "sha256:security-audit-lineage"
+  }
+}

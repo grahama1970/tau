@@ -1,0 +1,48 @@
+{
+  "approval_bound_action_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/approvals/approval-bound-action.json",
+  "artifacts_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts",
+  "audit_ledger": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/audit/audit-ledger.jsonl",
+  "audit_ledger_verification_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/audit/audit-ledger-verification.json",
+  "authorized_mutating_request_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/api/authorized-mutating-request.json",
+  "checked_at": "2026-07-27T16:23:37Z",
+  "checks": {
+    "approval_bound_action_accepted": true,
+    "audit_ledger_verifies": true,
+    "authorized_request_accepted_with_receipt": true,
+    "expired_approval_denied": true,
+    "signature_verification_pass": true,
+    "tamper_negative_control_denied": true,
+    "unauthorized_api_mutating_request_denied": true,
+    "wrong_target_approval_denied": true
+  },
+  "expired_approval_denial_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/approvals/expired-denial.json",
+  "failed_checks": [],
+  "live": true,
+  "mocked": false,
+  "output": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/security-audit-conformance.json",
+  "proof_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727",
+  "proof_scope": {
+    "does_not_prove": [
+      "Human legal identity.",
+      "Production key custody.",
+      "Network API gateway deployment.",
+      "External identity-provider integration.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau generated an Ed25519 asymmetric keypair through local OpenSSL, signed a receipt artifact, and verified the signature with the public key.",
+      "Tau denied a tampered signed payload.",
+      "Tau accepted only action/target/lineage-bound unexpired human approval.",
+      "Tau denied unauthorized API mutation attempts and accepted an authorized RBAC/API request with a receipt.",
+      "Tau wrote and verified a hash-chained append-only audit ledger for this lane."
+    ]
+  },
+  "provider_live": false,
+  "schema": "tau.security_audit_conformance.v1",
+  "signature_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/signing/asymmetric-signature-receipt.json",
+  "signature_verification_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/signing/signature-verification.json",
+  "status": "PASS",
+  "tamper_negative_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/signing/tamper-negative-verification.json",
+  "unauthorized_mutating_request_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/api/unauthorized-mutating-request.json",
+  "wrong_target_denial_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/approvals/wrong-target-denial.json"
+}

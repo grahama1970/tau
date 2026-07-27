@@ -1,0 +1,18 @@
+{
+  "api_token_sha256": "sha256:e3adcc11bd125b2f0e67513e5e2379b3554a9bbd4052dbae75af2d92392b1c9f",
+  "permissions": {
+    "operator": [
+      "working_tree_mutation"
+    ],
+    "viewer": []
+  },
+  "roles_by_actor": {
+    "agent:unauthorized": "viewer",
+    "human:graham": "operator"
+  },
+  "schema": "tau.rbac_policy.v1",
+  "target": {
+    "id": "workspace://tau/protected-file",
+    "lineage": "sha256:security-audit-lineage"
+  }
+}

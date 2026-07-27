@@ -1,0 +1,27 @@
+{
+  "accepted": false,
+  "action": "working_tree_mutation",
+  "actor_id": "agent:unauthorized",
+  "approval_gate_receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/approvals/approval-valid.json",
+  "approval_gate_status": "PASS",
+  "auth_token_present": false,
+  "auth_token_sha256": null,
+  "checked_at": "2026-07-27T16:23:37Z",
+  "errors": [
+    "api authentication failed",
+    "rbac denied action"
+  ],
+  "live": true,
+  "mocked": false,
+  "mutating_request_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/api/unauthorized-mutating-request.json",
+  "mutation_applied": false,
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/artifacts/api/unauthorized-mutating-request.json",
+  "role": "viewer",
+  "schema": "tau.api_mutating_request_receipt.v1",
+  "status": "BLOCKED",
+  "target": {
+    "id": "workspace://tau/protected-file",
+    "lineage": "sha256:security-audit-lineage"
+  }
+}

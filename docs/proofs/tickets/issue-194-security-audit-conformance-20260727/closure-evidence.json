@@ -1,0 +1,52 @@
+{
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "issue": 194,
+  "unit": {
+    "command": "PYTHONPATH=src uv run pytest tests/test_receipt_signing.py tests/test_approval_gate.py tests/test_github_apply_policy.py tests/test_handoff_dispatch.py",
+    "exit_code": 0,
+    "passed": 54
+  },
+  "static": [
+    {
+      "command": "PYTHONPATH=src uv run python -m py_compile src/tau_coding/security_audit_conformance.py src/tau_coding/cli.py",
+      "exit_code": 0
+    },
+    {
+      "command": "PYTHONPATH=src uv run ruff check src/tau_coding/security_audit_conformance.py src/tau_coding/cli.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    }
+  ],
+  "e2e": {
+    "command": "PYTHONPATH=src uv run tau security-audit-conformance --allow-live-filesystem --output docs/proofs/tickets/issue-194-security-audit-conformance-20260727/security-audit-conformance.json",
+    "exit_code": 0,
+    "mocked": false,
+    "live": true,
+    "provider_live": false,
+    "artifact": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-194-security-audit-conformance-20260727/security-audit-conformance.json",
+    "status": "PASS",
+    "failed_checks": [],
+    "required_checks": {
+      "signature_verification_pass": true,
+      "tamper_negative_control_denied": true,
+      "approval_bound_action_accepted": true,
+      "wrong_target_approval_denied": true,
+      "expired_approval_denied": true,
+      "unauthorized_api_mutating_request_denied": true,
+      "authorized_request_accepted_with_receipt": true,
+      "audit_ledger_verifies": true
+    },
+    "independent_readback": {
+      "signature_verification_status": "PASS",
+      "tamper_negative_status": "BLOCKED",
+      "approval_bound_action_status": "PASS",
+      "wrong_target_status": "BLOCKED",
+      "expired_approval_status": "BLOCKED",
+      "unauthorized_api_request_status": "BLOCKED",
+      "authorized_api_request_status": "PASS",
+      "audit_ledger_status": "PASS",
+      "audit_ledger_entry_count": 7,
+      "private_key_artifacts": 0
+    }
+  }
+}

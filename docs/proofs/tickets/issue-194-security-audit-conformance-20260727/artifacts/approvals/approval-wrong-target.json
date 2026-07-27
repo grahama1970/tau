@@ -1,0 +1,20 @@
+{
+  "action": "working_tree_mutation",
+  "actor": {
+    "auth_method": "local-signature",
+    "id": "human:graham"
+  },
+  "approved": true,
+  "evidence": [
+    "asymmetric-signature-receipt.json"
+  ],
+  "expires_at": "2026-07-27T17:23:37Z",
+  "nonce": "security-audit-workspace://tau/other-target-2026-07-27T17:23:37Z",
+  "reason": "Approve bounded security-audit conformance mutation.",
+  "schema": "tau.human_approval_packet.v1",
+  "signature": "local-signature-sha256:78a9fc84382f558dfdbd10930620c90e20708727a42bc2182e634d17e1e10fc2",
+  "target": {
+    "id": "workspace://tau/other-target",
+    "lineage": "sha256:security-audit-lineage"
+  }
+}

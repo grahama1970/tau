@@ -1,0 +1,12 @@
+{
+  "checked_at": "2026-07-27T16:23:37Z",
+  "live": true,
+  "mocked": false,
+  "run_id": "security-audit-conformance-run",
+  "schema": "tau.security_audit_source_receipt.v1",
+  "status": "BLOCKED",
+  "target": {
+    "id": "workspace://tau/protected-file",
+    "lineage": "sha256:security-audit-lineage"
+  }
+}
