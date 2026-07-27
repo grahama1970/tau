@@ -92,7 +92,13 @@ class DurablePeerQueue:
         self._save(state)
         return item
 
-    def drain_idle(self, *, idle: bool, limit: int = 1) -> list[dict[str, Any]]:
+    def drain_idle(
+        self,
+        *,
+        idle: bool,
+        limit: int = 1,
+        scratch_root: Path | None = None,
+    ) -> list[dict[str, Any]]:
         if limit < 1:
             raise RuntimeError("limit must be at least 1")
         state = self._load()
@@ -105,6 +111,12 @@ class DurablePeerQueue:
                 break
             if item.get("state") != "queued":
                 continue
+            if scratch_root is not None:
+                item["scratch_worktree"] = _write_scratch_artifacts(
+                    item,
+                    harness_id=self.harness_id,
+                    scratch_root=scratch_root,
+                )
             item["state"] = "awaiting_approval"
             item["updated_at"] = _utc_stamp()
             item["attempts"] = int(item.get("attempts") or 0) + 1
@@ -171,6 +183,54 @@ def _validate_envelope(envelope: dict[str, Any], *, target_harness: str) -> None
         value = envelope.get(key)
         if not isinstance(value, str) or not value.strip():
             raise RuntimeError(f"peer envelope missing {key}")
+
+
+def _write_scratch_artifacts(
+    item: dict[str, Any],
+    *,
+    harness_id: str,
+    scratch_root: Path,
+) -> dict[str, Any]:
+    root = scratch_root.expanduser().resolve()
+    item_id = _safe_path_component(str(item.get("id") or "item"))
+    item_dir = (root / harness_id / item_id).resolve()
+    item_dir.relative_to(root)
+    item_dir.mkdir(parents=True, exist_ok=True)
+
+    envelope = item["envelope"]
+    work_order_path = item_dir / "work-order.json"
+    patch_path = item_dir / "candidate.patch"
+    work_order_path.write_text(
+        json.dumps(envelope, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    patch_text = _payload_patch_text(envelope)
+    patch_path.write_text(patch_text, encoding="utf-8")
+    return {
+        "path": str(item_dir),
+        "artifacts": {
+            "work_order": str(work_order_path),
+            "candidate_patch": str(patch_path),
+        },
+        "confined_to": str(root),
+    }
+
+
+def _payload_patch_text(envelope: dict[str, Any]) -> str:
+    payload = envelope.get("payload")
+    if isinstance(payload, dict):
+        patch = payload.get("patch")
+        if isinstance(patch, str) and patch:
+            return patch if patch.endswith("\n") else f"{patch}\n"
+    return "# no candidate patch supplied by peer work order\n"
+
+
+def _safe_path_component(value: str) -> str:
+    safe = "".join(char if char.isalnum() or char in ("-", "_", ".") else "-" for char in value)
+    safe = safe.strip(".-")
+    if not safe:
+        raise RuntimeError("peer queue item id cannot form a safe scratch path")
+    return safe
 
 
 def _utc_stamp() -> str:

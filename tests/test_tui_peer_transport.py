@@ -58,19 +58,20 @@ def test_peer_transport_queue_drains_only_when_idle_and_persists(tmp_path: Path)
                 target_harness="tau-b",
                 goal_hash="sha256:g",
                 kind="work_order",
-                payload={"task": "patch bug"},
+                payload={"task": "patch bug", "patch": "diff --git a/demo.txt b/demo.txt\n"},
             ),
             timeout_seconds=1.0,
         )
         assert server.queue.drain_idle(idle=False) == []
         assert server.queue.snapshot()["items"][0]["state"] == "queued"
 
-        drained = server.queue.drain_idle(idle=True)
+        drained = server.queue.drain_idle(idle=True, scratch_root=tmp_path / "scratch")
     finally:
         server.close()
 
     assert drained[0]["state"] == "awaiting_approval"
     assert drained[0]["approval_gate"]["status"] == "BLOCKED"
+    assert Path(drained[0]["scratch_worktree"]["artifacts"]["candidate_patch"]).is_file()
     restarted = DurablePeerQueue(queue_path, harness_id="tau-b")
     assert restarted.snapshot()["items"][0]["state"] == "awaiting_approval"
 

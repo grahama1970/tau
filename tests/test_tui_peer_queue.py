@@ -78,6 +78,37 @@ def test_peer_queue_persists_across_restart(tmp_path: Path) -> None:
     assert restarted.snapshot()["items"][0]["state"] == "awaiting_approval"
 
 
+def test_peer_queue_idle_drain_writes_only_to_scratch_root(tmp_path: Path) -> None:
+    queue_path = tmp_path / "queue.json"
+    scratch_root = tmp_path / "scratch"
+    queue = DurablePeerQueue(queue_path, harness_id="tau-b")
+    queue.enqueue(
+        build_peer_envelope(
+            envelope_id="../item-1",
+            source_harness="tau-a",
+            target_harness="tau-b",
+            goal_hash="sha256:g",
+            kind="work_order",
+            payload={"patch": "diff --git a/demo.txt b/demo.txt\n"},
+        )
+    )
+
+    drained = queue.drain_idle(idle=True, scratch_root=scratch_root)
+
+    scratch = drained[0]["scratch_worktree"]
+    scratch_path = Path(scratch["path"])
+    assert scratch_path.is_relative_to(scratch_root.resolve())
+    assert Path(scratch["artifacts"]["work_order"]).is_file()
+    assert Path(scratch["artifacts"]["candidate_patch"]).read_text(encoding="utf-8").startswith(
+        "diff --git"
+    )
+    assert not (tmp_path / "item-1").exists()
+    restarted = DurablePeerQueue(queue_path, harness_id="tau-b")
+    assert restarted.snapshot()["items"][0]["scratch_worktree"]["confined_to"] == str(
+        scratch_root.resolve()
+    )
+
+
 def test_sse_event_serializes_json_payload() -> None:
     event = sse_event(
         event="peer-message",

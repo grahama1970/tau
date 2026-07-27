@@ -8,14 +8,15 @@
   "claims": {
     "does_not_prove": [
       "full rendered Textual TUI integration",
-      "automatic scratch-worktree patch execution",
+      "semantic correctness of a peer-proposed patch",
       "human approval UI rendering for queued diffs"
     ],
     "proves": [
       "two local Tau peer transports exchange typed envelopes over HTTP/SSE both directions",
       "peer queue does not drain while busy",
       "peer queue transitions to awaiting_approval while idle",
-      "approval gate blocks with BLOCKED status before worktree effects",
+      "idle drain materializes work-order and patch artifacts under the scratch root",
+      "approval gate blocks with BLOCKED status before non-scratch effects",
       "queue state remains readable from disk after restart"
     ]
   },
@@ -29,6 +30,16 @@
   },
   "restart_readable_state": "awaiting_approval",
   "schema": "tau.ticket_proof_summary.v1",
+  "scratch_confined": true,
+  "scratch_patch_exists": true,
+  "scratch_worktree": {
+    "artifacts": {
+      "candidate_patch": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-141-peer-sse-transport-20260727/scratch/tau-b/a-to-b/candidate.patch",
+      "work_order": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-141-peer-sse-transport-20260727/scratch/tau-b/a-to-b/work-order.json"
+    },
+    "confined_to": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-141-peer-sse-transport-20260727/scratch",
+    "path": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-141-peer-sse-transport-20260727/scratch/tau-b/a-to-b"
+  },
   "server_a_url_scheme": "http",
   "server_b_url_scheme": "http",
   "sse_paths": {

@@ -3,13 +3,14 @@
   "items": [
     {
       "attempts": 0,
-      "created_at": "2026-07-27T00:26:55Z",
+      "created_at": "2026-07-27T00:29:17Z",
       "envelope": {
-        "created_at": "2026-07-27T00:26:55Z",
+        "created_at": "2026-07-27T00:29:17Z",
         "envelope_id": "b-to-a",
         "goal_hash": "sha256:immutable-goal-fixture",
         "kind": "work_order",
         "payload": {
+          "patch": "diff --git a/review.txt b/review.txt\n",
           "scratch_worktree_required": true,
           "task": "apply critique"
         },
@@ -19,9 +20,9 @@
       },
       "id": "b-to-a",
       "state": "queued",
-      "updated_at": "2026-07-27T00:26:55Z"
+      "updated_at": "2026-07-27T00:29:17Z"
     }
   ],
   "schema": "tau.tui_peer_queue.v1",
-  "updated_at": "2026-07-27T00:26:55Z"
+  "updated_at": "2026-07-27T00:29:17Z"
 }
