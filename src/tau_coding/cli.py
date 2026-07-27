@@ -653,14 +653,38 @@ def workflows_run_command(
     workflow_id: str,
     repo: Annotated[Path, typer.Option("--repo")],
     run_dir: Annotated[Path, typer.Option("--run-dir")],
-    goal: Annotated[str | None, typer.Option("--goal")] = None,
+    goal: Annotated[
+        str | None,
+        typer.Option(
+            "--goal",
+            help=(
+                "Human goal bound to the run. Required by every workflow except "
+                "tau-operator-reference."
+            ),
+        ),
+    ] = None,
     required_workflow: Annotated[
         str | None,
-        typer.Option("--required-workflow"),
+        typer.Option(
+            "--required-workflow",
+            help=(
+                "Workflow id the operator reference must document. "
+                "Used by tau-operator-reference; defaults to tau-operator-reference."
+            ),
+        ),
     ] = None,
     require_clean: Annotated[bool, typer.Option("--require-clean")] = False,
     require_tests: Annotated[bool, typer.Option("--require-tests")] = False,
-    publish_path: Annotated[Path | None, typer.Option("--publish-path")] = None,
+    publish_path: Annotated[
+        Path | None,
+        typer.Option(
+            "--publish-path",
+            help=(
+                "Destination for the published bundle. Required by "
+                "approved-release-bundle and durable-repository-qualification."
+            ),
+        ),
+    ] = None,
     inject_test_branch_failure: Annotated[
         bool, typer.Option("--inject-test-branch-failure", hidden=True)
     ] = False,
@@ -6138,7 +6162,10 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
         required_options.append("--publish-path")
     missing = [option for option in required_options if option not in values]
     if missing:
-        raise RuntimeError(f"workflows run missing required option: {missing[0]}")
+        raise RuntimeError(
+            f"workflows run missing required option: {missing[0]} "
+            f"(required by workflow {workflow_id})"
+        )
     hold = values.get("--viewer-hold-seconds")
     try:
         hold_seconds = float(hold) if hold is not None else None

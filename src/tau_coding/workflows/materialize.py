@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import shutil
 import sys
+import sysconfig
 from dataclasses import dataclass
 from importlib import resources
 from pathlib import Path
@@ -194,6 +195,28 @@ def materialize_repository_readiness(
     )
 
 
+def _resolve_tau_executable() -> str | None:
+    """Locate the tau entry point this workflow probes.
+
+    PATH is checked first so an operator can point the probes at a deliberately
+    chosen install. A venv install puts the entry point beside the running
+    interpreter but does not require the venv to be activated, so fall back
+    there rather than failing a run that is demonstrably executing tau already.
+    """
+    on_path = shutil.which("tau")
+    if on_path is not None:
+        return on_path
+    # sysconfig reports the environment's own script directory. Deriving it from
+    # sys.executable instead would resolve the venv's python symlink out to the
+    # base interpreter, whose bin directory holds no tau entry point.
+    scripts_dir = sysconfig.get_path("scripts")
+    if scripts_dir:
+        candidate = Path(scripts_dir) / "tau"
+        if candidate.is_file():
+            return str(candidate)
+    return None
+
+
 def materialize_tau_operator_reference(
     *,
     definition: WorkflowDefinition,
@@ -216,9 +239,12 @@ def materialize_tau_operator_reference(
         raise RuntimeError("required_workflow must be a non-empty string")
     if step_delay_seconds < 0:
         raise RuntimeError("step_delay_seconds must be non-negative")
-    tau_executable = shutil.which("tau")
+    tau_executable = _resolve_tau_executable()
     if tau_executable is None:
-        raise RuntimeError("local tau executable is unavailable")
+        raise RuntimeError(
+            "local tau executable is unavailable: this workflow probes the tau CLI, "
+            "so a 'tau' entry point must be on PATH or beside the running interpreter"
+        )
     resolved_run_dir = run_dir.expanduser().resolve()
     if (resolved_run_dir / "dag-run.sqlite3").exists():
         raise RuntimeError(f"workflow run already exists: {resolved_run_dir}")

@@ -1,14 +1,18 @@
 """Shared pytest fixtures that pin environment-dependent CLI rendering.
 
 Many CLI tests assert that a specific message appears in ``result.output`` from
-``typer.testing.CliRunner``. Typer renders those messages inside Rich panels,
-and Rich emits ANSI style sequences whenever colour is *forced*, regardless of
-whether the destination is a TTY. GitHub Actions runners export ``FORCE_COLOR``,
-so the panel text arrives interleaved with escape sequences and every plain
-substring assertion fails even though the CLI behaved correctly.
+``typer.testing.CliRunner``. Typer renders those messages inside Rich panels, and
+Rich decides whether to emit ANSI sequences from the ambient environment, not
+from whether the destination is a TTY. Two settings change what the suite sees:
 
-``NO_COLOR`` does not undo this: Rich gives ``FORCE_COLOR`` precedence. The only
-reliable fix is to remove the forcing variables for the duration of the suite.
+* ``TERM`` unset — Rich treats the terminal as style-capable and emits dim/bold
+  sequences (``\\x1b[2m``, ``\\x1b[1;2m``) inside the panel text. GitHub Actions
+  runners do not set ``TERM``, which is what broke 35 assertions there while the
+  same commit passed locally. ``TERM=dumb`` disables styling outright.
+* ``FORCE_COLOR`` / ``CLICOLOR_FORCE`` — force colour regardless of destination.
+
+``NO_COLOR`` alone is not sufficient: it suppresses colour but leaves the dim and
+bold attributes in place, so the substring assertions still fail.
 """
 
 import pytest
@@ -18,13 +22,14 @@ _COLOUR_FORCING_ENV_VARS = ("FORCE_COLOR", "CLICOLOR_FORCE")
 
 
 @pytest.fixture(autouse=True)
-def deterministic_cli_colour(monkeypatch: pytest.MonkeyPatch) -> None:
+def deterministic_cli_rendering(monkeypatch: pytest.MonkeyPatch) -> None:
     """Render CLI output without ANSI styling, on developer machines and in CI.
 
-    Applied to every test so that a runner which forces colour cannot change
-    what the suite observes. Subprocess-based CLI probes inherit the cleaned
+    Applied to every test so that the runner's terminal settings cannot change
+    what the suite observes. Subprocess-based CLI probes inherit the pinned
     environment because ``monkeypatch`` edits ``os.environ`` in place.
     """
     for var in _COLOUR_FORCING_ENV_VARS:
         monkeypatch.delenv(var, raising=False)
     monkeypatch.setenv("NO_COLOR", "1")
+    monkeypatch.setenv("TERM", "dumb")

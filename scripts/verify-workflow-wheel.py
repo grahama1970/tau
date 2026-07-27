@@ -168,11 +168,18 @@ def main() -> int:
         )
         catalog = _json_object(catalog_process.stdout, label="installed_workflow_catalog")
         workflows = catalog.get("workflows")
-        if not isinstance(workflows, list) or len(workflows) != 1:
+        if not isinstance(workflows, list) or not workflows:
             raise RuntimeError("installed_workflow_catalog_count_invalid")
-        if workflows[0].get("workflow_id") != WORKFLOW_ID:
+        # This script verifies one workflow. The catalog grows as rungs are added,
+        # so assert this workflow's identity rather than the size of the catalog.
+        matching = [
+            entry
+            for entry in workflows
+            if isinstance(entry, dict) and entry.get("workflow_id") == WORKFLOW_ID
+        ]
+        if len(matching) != 1:
             raise RuntimeError("installed_workflow_catalog_id_invalid")
-        if workflows[0].get("topology") != "LINEAR":
+        if matching[0].get("topology") != "LINEAR":
             raise RuntimeError("installed_workflow_catalog_topology_invalid")
         description_process = _run(
             [str(bin_dir / "tau"), "workflows", "describe", WORKFLOW_ID, "--json"],
