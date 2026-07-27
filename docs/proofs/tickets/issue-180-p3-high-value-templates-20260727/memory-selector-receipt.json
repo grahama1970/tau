@@ -1,0 +1,62 @@
+{
+  "authority_boundary": {
+    "model_confidence": "ignored",
+    "provider_calls": "never during selection",
+    "selection_authority": "deterministic closed typed facts only"
+  },
+  "diagnostic_model_confidence_ignored": false,
+  "eligible_templates": [
+    {
+      "reason": "closed facts request governed Memory recall before work",
+      "template": "memory-recalled-workflow"
+    }
+  ],
+  "facts_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-p3-high-value-templates-20260727/memory-selector-facts.json",
+  "facts_sha256": "sha256:8a49ba0c1f1748c644e380fb8b0aec61cf48c107870ef29aedca3bb459c908d3",
+  "live": false,
+  "missing_fact_fields": [],
+  "mocked": false,
+  "next_action": "Proceed to dag-template-preview with selected_template.",
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Runtime execution success.",
+      "Provider/model semantic quality.",
+      "That the selected template params are complete."
+    ],
+    "proves": [
+      "Tau selected, or refused to select, a template from closed typed facts.",
+      "Missing or ambiguous facts fail closed to INTERVIEW_REQUIRED.",
+      "Model confidence cannot override deterministic selection."
+    ]
+  },
+  "provider_live": false,
+  "questions": [],
+  "required_fact_fields": [
+    "request_hash",
+    "goal_hash",
+    "policy_hash",
+    "capability_hash",
+    "target.repo",
+    "target.target"
+  ],
+  "schema": "tau.dag_template_selection_receipt.v1",
+  "selected_template": "memory-recalled-workflow",
+  "selector_inputs": {
+    "competitor_count": null,
+    "handler_count": null,
+    "needs_claim_verification": null,
+    "needs_dry_run_approval": null,
+    "needs_memory_recall": true,
+    "needs_plan_execute_verify": null,
+    "needs_review": null,
+    "needs_specialists": null,
+    "ordered_steps": null,
+    "step_count": null,
+    "task_shape": "memory_recalled_workflow",
+    "wants_synthesis": null,
+    "wants_winner": null
+  },
+  "status": "PASS",
+  "timestamp": "2026-07-27T11:19:13Z"
+}

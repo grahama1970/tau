@@ -1,0 +1,17 @@
+{
+  "dag_id": "issue-180-specialist-fanout-join",
+  "goal": {
+    "goal_hash": "sha256:active-goal",
+    "goal_id": "issue-180-p3",
+    "goal_version": 1
+  },
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue#180"
+  },
+  "specialists": [
+    "frontend-specialist",
+    "runtime-specialist"
+  ],
+  "join": "join"
+}

@@ -1,0 +1,161 @@
+{
+  "descriptor": {
+    "authority_boundary": {
+      "provider_calls": "never during describe, validate, preview, or compile",
+      "scheduler": "existing Tau DAG runtime",
+      "selector": "deterministic template name and typed params",
+      "viewer": "read-only projection of scheduler journal and admitted receipts"
+    },
+    "avoid_when": [
+      "The work is read-only or already authorized for execution."
+    ],
+    "evidence_contract": {
+      "admission_rule": "Every required evidence kind must be emitted by a routed node before Tau admits progress.",
+      "required_kinds": [
+        "dry_run_receipt",
+        "approval_packet"
+      ]
+    },
+    "human_interview": {
+      "questions_source": "missing typed required fields",
+      "status_when_incomplete": "INTERVIEW_REQUIRED"
+    },
+    "name": "dry-run-human-approval",
+    "node_roles": [
+      "dry_run",
+      "approval_packet",
+      "human"
+    ],
+    "optional_fields": [
+      "limits",
+      "command_specs",
+      "fail_closed_on"
+    ],
+    "preview": {
+      "available": true,
+      "compiles_to_schema": "tau.dag_contract.v1",
+      "dispatches_commands": false
+    },
+    "required_fields": [
+      "dag_id",
+      "goal",
+      "target",
+      "dry_run",
+      "approval_packet"
+    ],
+    "schema": "tau.dag_template_descriptor.v1",
+    "summary": "Dry-run node produces an approval packet before human handoff.",
+    "topology": "DRY_RUN_HUMAN_APPROVAL",
+    "use_when": [
+      "A mutating action needs a non-mutating plan and explicit human approval."
+    ]
+  },
+  "dispatches_commands": false,
+  "live": false,
+  "missing_fields": [],
+  "mocked": false,
+  "ok": true,
+  "params_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-p3-high-value-templates-20260727/dry-run-human-approval-params.json",
+  "params_sha256": "sha256:13416a9ab8f35dd587a742bed6bf6475f117ca5c4125c704a4600125660c1564",
+  "preview": {
+    "context": {
+      "dag_template": {
+        "name": "dry-run-human-approval",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "dry_run",
+          "approval_packet"
+        ],
+        "summary": "Dry-run node produces an approval packet before human handoff.",
+        "topology": "DRY_RUN_HUMAN_APPROVAL"
+      },
+      "stop_condition": "Stop at human after required evidence gates pass.",
+      "template_params_sha256": "sha256:675f3945f2602cd873159d629c0f4ca991136a7015df63e8f44ac42d7598f7ab"
+    },
+    "dag_id": "issue-180-dry-run-human-approval",
+    "edge_count": 2,
+    "edges": [
+      {
+        "from": "dry-run",
+        "to": "approval-packet"
+      },
+      {
+        "from": "approval-packet",
+        "to": "human"
+      }
+    ],
+    "entry_node": "dry-run",
+    "fail_closed_on": [
+      "goal_hash_mismatch",
+      "target_changed",
+      "unexpected_node",
+      "unexpected_edge",
+      "missing_required_evidence",
+      "max_attempts_exceeded",
+      "malformed_handoff"
+    ],
+    "goal": {
+      "goal_hash": "sha256:active-goal",
+      "goal_id": "issue-180-p3",
+      "goal_version": 1
+    },
+    "limits": {
+      "default_timeout_seconds": 120,
+      "max_total_attempts": 2,
+      "resume": true
+    },
+    "node_count": 2,
+    "nodes": [
+      {
+        "agent": "dry-run",
+        "executor": "local",
+        "id": "dry-run",
+        "max_attempts": 1,
+        "required_evidence": [
+          "dry_run_receipt"
+        ]
+      },
+      {
+        "agent": "approval-packet",
+        "executor": "local",
+        "id": "approval-packet",
+        "max_attempts": 1,
+        "required_evidence": [
+          "approval_packet"
+        ]
+      }
+    ],
+    "required_evidence": [
+      "dry_run_receipt",
+      "approval_packet"
+    ],
+    "schema": "tau.dag_contract.preview.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#180"
+    },
+    "terminal_nodes": [
+      "human"
+    ]
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "Runtime execution success.",
+      "Provider/model semantic quality.",
+      "That the human accepted the preview."
+    ],
+    "proves": [
+      "Tau can render the selected native template as an inspectable pre-run DAG preview.",
+      "Incomplete params fail closed to INTERVIEW_REQUIRED.",
+      "Preview does not dispatch workers, providers, or scheduler execution."
+    ]
+  },
+  "provider_live": false,
+  "questions": [],
+  "schema": "tau.dag_template_preview.v1",
+  "status": "PASS",
+  "template": "dry-run-human-approval",
+  "timestamp": "2026-07-27T11:19:11Z"
+}

@@ -28,6 +28,11 @@ def test_dag_template_registry_lists_required_patterns() -> None:
         "reflection-loop",
         "roundtable",
         "compete",
+        "plan-execute-verify",
+        "claim-chain-verification",
+        "specialist-fanout-join",
+        "dry-run-human-approval",
+        "memory-recalled-workflow",
     }
 
 
@@ -188,6 +193,42 @@ def _template_params(tmp_path: Path) -> dict[str, dict[str, object]]:
             "target": _target(),
             "competitors": ["candidate-a", "candidate-b"],
             "judge": "judge",
+        },
+        "plan-execute-verify": {
+            "dag_id": "template-plan-execute-verify",
+            "goal": _goal(),
+            "target": _target(),
+            "planner": "planner",
+            "executor": "executor",
+            "verifier": "verifier",
+        },
+        "claim-chain-verification": {
+            "dag_id": "template-claim-chain-verification",
+            "goal": _goal(),
+            "target": _target(),
+            "claim_steps": ["claim-a", "claim-b"],
+            "verifier": "verifier",
+        },
+        "specialist-fanout-join": {
+            "dag_id": "template-specialist-fanout-join",
+            "goal": _goal(),
+            "target": _target(),
+            "specialists": ["specialist-a", "specialist-b"],
+            "join": "join",
+        },
+        "dry-run-human-approval": {
+            "dag_id": "template-dry-run-human-approval",
+            "goal": _goal(),
+            "target": _target(),
+            "dry_run": "dry-run",
+            "approval_packet": "approval-packet",
+        },
+        "memory-recalled-workflow": {
+            "dag_id": "template-memory-recalled-workflow",
+            "goal": _goal(),
+            "target": _target(),
+            "memory_recall": "memory-recall",
+            "handler": "handler",
         },
     }
 

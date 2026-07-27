@@ -152,6 +152,56 @@ TEMPLATES: dict[str, DagTemplate] = {
         node_roles=("competitor", "judge", "human"),
         required_evidence_kinds=("competitor_receipt", "competition_judgment_receipt"),
     ),
+    "plan-execute-verify": DagTemplate(
+        name="plan-execute-verify",
+        summary="Planner, executor, and verifier nodes run in sequence before human handoff.",
+        required_fields=("dag_id", "goal", "target", "planner", "executor", "verifier"),
+        topology="PLAN_EXECUTE_VERIFY",
+        use_when=("A task needs an explicit plan, implementation, and verification pass.",),
+        avoid_when=("The request is a one-step answer or needs competing candidates.",),
+        node_roles=("planner", "executor", "verifier", "human"),
+        required_evidence_kinds=("plan_receipt", "execution_receipt", "verification_receipt"),
+    ),
+    "claim-chain-verification": DagTemplate(
+        name="claim-chain-verification",
+        summary="One or more claim-producing nodes feed a verifier before human handoff.",
+        required_fields=("dag_id", "goal", "target", "claim_steps", "verifier"),
+        topology="CLAIM_CHAIN_VERIFICATION",
+        use_when=("Claims, citations, or proof steps must be checked before acceptance.",),
+        avoid_when=("The output is an implementation without a claim/proof chain.",),
+        node_roles=("claim_step", "verifier", "human"),
+        required_evidence_kinds=("claim_receipt", "verification_receipt"),
+    ),
+    "specialist-fanout-join": DagTemplate(
+        name="specialist-fanout-join",
+        summary="Specialist workers run in parallel and join into one synthesis node.",
+        required_fields=("dag_id", "goal", "target", "specialists", "join"),
+        topology="SPECIALIST_FAN_OUT_JOIN",
+        use_when=("Named specialists should inspect separate aspects before synthesis.",),
+        avoid_when=("The request needs a winner instead of a synthesized result.",),
+        node_roles=("specialist", "join", "human"),
+        required_evidence_kinds=("specialist_receipt", "specialist_join_receipt"),
+    ),
+    "dry-run-human-approval": DagTemplate(
+        name="dry-run-human-approval",
+        summary="Dry-run node produces an approval packet before human handoff.",
+        required_fields=("dag_id", "goal", "target", "dry_run", "approval_packet"),
+        topology="DRY_RUN_HUMAN_APPROVAL",
+        use_when=("A mutating action needs a non-mutating plan and explicit human approval.",),
+        avoid_when=("The work is read-only or already authorized for execution.",),
+        node_roles=("dry_run", "approval_packet", "human"),
+        required_evidence_kinds=("dry_run_receipt", "approval_packet"),
+    ),
+    "memory-recalled-workflow": DagTemplate(
+        name="memory-recalled-workflow",
+        summary="Memory recall/provenance node precedes a bounded handler node.",
+        required_fields=("dag_id", "goal", "target", "memory_recall", "handler"),
+        topology="MEMORY_RECALLED_WORKFLOW",
+        use_when=("Prior lessons or skill-chain provenance must be recalled before work.",),
+        avoid_when=("Memory is unavailable and the task can proceed without provenance.",),
+        node_roles=("memory_recall", "handler", "human"),
+        required_evidence_kinds=("memory_recall_receipt", "handler_receipt"),
+    ),
 }
 
 
@@ -444,8 +494,18 @@ def compile_dag_template(template_name: str, params: Mapping[str, Any]) -> dict[
         nodes, edges, entry, evidence = _reflection_loop(params)
     elif template_name == "roundtable":
         nodes, edges, entry, evidence = _roundtable(params)
-    else:
+    elif template_name == "compete":
         nodes, edges, entry, evidence = _compete(params)
+    elif template_name == "plan-execute-verify":
+        nodes, edges, entry, evidence = _plan_execute_verify(params)
+    elif template_name == "claim-chain-verification":
+        nodes, edges, entry, evidence = _claim_chain_verification(params)
+    elif template_name == "specialist-fanout-join":
+        nodes, edges, entry, evidence = _specialist_fanout_join(params)
+    elif template_name == "dry-run-human-approval":
+        nodes, edges, entry, evidence = _dry_run_human_approval(params)
+    else:
+        nodes, edges, entry, evidence = _memory_recalled_workflow(params)
     contract = {
         "schema": "tau.dag_contract.v1",
         "dag_id": _string(params["dag_id"]),
@@ -540,6 +600,91 @@ def _compete(params: Mapping[str, Any]) -> TemplateExpansion:
     return nodes, edges, str(competitors[0]["id"]), _all_required_evidence(nodes)
 
 
+def _plan_execute_verify(params: Mapping[str, Any]) -> TemplateExpansion:
+    planner = _node_from_value(params["planner"], default_evidence="plan_receipt")
+    executor = _node_from_value(params["executor"], default_evidence="execution_receipt")
+    verifier = _node_from_value(params["verifier"], default_evidence="verification_receipt")
+    verifier["reviewer"] = {
+        "reviews_node": executor["id"],
+        "requires_goal_hash": True,
+    }
+    nodes = [
+        _with_command_spec(planner, params),
+        _with_command_spec(executor, params),
+        _with_command_spec(verifier, params),
+    ]
+    edges = [
+        {"from": str(planner["id"]), "to": str(executor["id"])},
+        {"from": str(executor["id"]), "to": str(verifier["id"])},
+        {"from": str(verifier["id"]), "to": "human"},
+    ]
+    return nodes, edges, str(planner["id"]), _all_required_evidence(nodes)
+
+
+def _claim_chain_verification(params: Mapping[str, Any]) -> TemplateExpansion:
+    claim_steps = [
+        _with_command_spec(_node_from_value(item, default_evidence="claim_receipt"), params)
+        for item in params["claim_steps"]
+    ]
+    verifier = _with_command_spec(
+        _node_from_value(params["verifier"], default_evidence="verification_receipt"),
+        params,
+    )
+    verifier["reviewer"] = {
+        "reviews_node": str(claim_steps[-1]["id"]),
+        "requires_goal_hash": True,
+    }
+    nodes = [*claim_steps, verifier]
+    edges = [
+        {"from": str(claim_steps[index]["id"]), "to": str(claim_steps[index + 1]["id"])}
+        for index in range(len(claim_steps) - 1)
+    ]
+    edges.append({"from": str(claim_steps[-1]["id"]), "to": str(verifier["id"])})
+    edges.append({"from": str(verifier["id"]), "to": "human"})
+    return nodes, edges, str(claim_steps[0]["id"]), _all_required_evidence(nodes)
+
+
+def _specialist_fanout_join(params: Mapping[str, Any]) -> TemplateExpansion:
+    specialists = [
+        _with_command_spec(_node_from_value(item, default_evidence="specialist_receipt"), params)
+        for item in params["specialists"]
+    ]
+    join = _with_command_spec(
+        _node_from_value(params["join"], default_evidence="specialist_join_receipt"),
+        params,
+    )
+    nodes = [*specialists, join]
+    edges = [{"from": str(specialist["id"]), "to": str(join["id"])} for specialist in specialists]
+    edges.append({"from": str(join["id"]), "to": "human"})
+    return nodes, edges, str(specialists[0]["id"]), _all_required_evidence(nodes)
+
+
+def _dry_run_human_approval(params: Mapping[str, Any]) -> TemplateExpansion:
+    dry_run = _node_from_value(params["dry_run"], default_evidence="dry_run_receipt")
+    approval = _node_from_value(params["approval_packet"], default_evidence="approval_packet")
+    nodes = [_with_command_spec(dry_run, params), _with_command_spec(approval, params)]
+    edges = [
+        {"from": str(dry_run["id"]), "to": str(approval["id"])},
+        {"from": str(approval["id"]), "to": "human"},
+    ]
+    return nodes, edges, str(dry_run["id"]), _all_required_evidence(nodes)
+
+
+def _memory_recalled_workflow(params: Mapping[str, Any]) -> TemplateExpansion:
+    memory_recall = _node_from_value(
+        params["memory_recall"],
+        default_evidence="memory_recall_receipt",
+    )
+    handler = _node_from_value(params["handler"], default_evidence="handler_receipt")
+    handler["requires_memory_provenance"] = True
+    nodes = [_with_command_spec(memory_recall, params), _with_command_spec(handler, params)]
+    edges = [
+        {"from": str(memory_recall["id"]), "to": str(handler["id"])},
+        {"from": str(handler["id"]), "to": "human"},
+    ]
+    return nodes, edges, str(memory_recall["id"]), _all_required_evidence(nodes)
+
+
 def _node_from_value(value: object, *, default_evidence: str) -> dict[str, Any]:
     if isinstance(value, str):
         node_id = value
@@ -630,6 +775,18 @@ def _missing_fields(template: DagTemplate, params: Mapping[str, Any]) -> list[st
         and len(params["competitors"]) < 2
     ):
         missing.append("competitors[1]")
+    if (
+        template.name in {"claim-chain-verification"}
+        and isinstance(params.get("claim_steps"), list)
+        and len(params["claim_steps"]) < 1
+    ):
+        missing.append("claim_steps[0]")
+    if (
+        template.name in {"specialist-fanout-join"}
+        and isinstance(params.get("specialists"), list)
+        and len(params["specialists"]) < 2
+    ):
+        missing.append("specialists[1]")
     return sorted(set(missing))
 
 
@@ -688,6 +845,11 @@ def _selection_input_summary(facts: Mapping[str, Any]) -> dict[str, Any]:
         "task_shape": facts.get("task_shape"),
         "ordered_steps": facts.get("ordered_steps"),
         "needs_review": facts.get("needs_review"),
+        "needs_plan_execute_verify": facts.get("needs_plan_execute_verify"),
+        "needs_claim_verification": facts.get("needs_claim_verification"),
+        "needs_specialists": facts.get("needs_specialists"),
+        "needs_dry_run_approval": facts.get("needs_dry_run_approval"),
+        "needs_memory_recall": facts.get("needs_memory_recall"),
         "wants_synthesis": facts.get("wants_synthesis"),
         "wants_winner": facts.get("wants_winner"),
         "handler_count": facts.get("handler_count"),
@@ -698,6 +860,16 @@ def _selection_input_summary(facts: Mapping[str, Any]) -> dict[str, Any]:
 
 def _selection_signal_count(facts: Mapping[str, Any]) -> int:
     signals = [
+        _truthy(facts.get("needs_plan_execute_verify"))
+        or facts.get("task_shape") == "plan_execute_verify",
+        _truthy(facts.get("needs_claim_verification"))
+        or facts.get("task_shape") == "claim_chain_verification",
+        _truthy(facts.get("needs_specialists"))
+        or facts.get("task_shape") == "specialist_fanout_join",
+        _truthy(facts.get("needs_dry_run_approval"))
+        or facts.get("task_shape") == "dry_run_human_approval",
+        _truthy(facts.get("needs_memory_recall"))
+        or facts.get("task_shape") == "memory_recalled_workflow",
         _truthy(facts.get("wants_winner")) or facts.get("task_shape") == "competition",
         _truthy(facts.get("wants_synthesis")) or facts.get("task_shape") == "fanout_join",
         _truthy(facts.get("needs_review")) or facts.get("task_shape") == "creator_reviewer",
@@ -709,6 +881,56 @@ def _selection_signal_count(facts: Mapping[str, Any]) -> int:
 
 def _selection_candidates(facts: Mapping[str, Any]) -> list[dict[str, str]]:
     candidates: list[dict[str, str]] = []
+    if (
+        _truthy(facts.get("needs_plan_execute_verify"))
+        or facts.get("task_shape") == "plan_execute_verify"
+    ):
+        candidates.append(
+            {
+                "template": "plan-execute-verify",
+                "reason": "closed facts request explicit plan, execution, and verification",
+            }
+        )
+    if (
+        _truthy(facts.get("needs_claim_verification"))
+        or facts.get("task_shape") == "claim_chain_verification"
+    ):
+        candidates.append(
+            {
+                "template": "claim-chain-verification",
+                "reason": "closed facts request claim/proof verification",
+            }
+        )
+    if (
+        _truthy(facts.get("needs_specialists"))
+        or facts.get("task_shape") == "specialist_fanout_join"
+    ):
+        candidates.append(
+            {
+                "template": "specialist-fanout-join",
+                "reason": "closed facts request named specialist fan-out with join",
+            }
+        )
+    if (
+        _truthy(facts.get("needs_dry_run_approval"))
+        or facts.get("task_shape") == "dry_run_human_approval"
+    ):
+        candidates.append(
+            {
+                "template": "dry-run-human-approval",
+                "reason": "closed facts request dry-run evidence before human approval",
+            }
+        )
+    if (
+        _truthy(facts.get("needs_memory_recall"))
+        or facts.get("task_shape") == "memory_recalled_workflow"
+    ):
+        candidates.append(
+            {
+                "template": "memory-recalled-workflow",
+                "reason": "closed facts request governed Memory recall before work",
+            }
+        )
     if _truthy(facts.get("wants_winner")) or facts.get("task_shape") == "competition":
         candidates.append(
             {
@@ -771,6 +993,11 @@ def _selection_questions(
                     "creator_reviewer",
                     "fanout_join",
                     "competition",
+                    "plan_execute_verify",
+                    "claim_chain_verification",
+                    "specialist_fanout_join",
+                    "dry_run_human_approval",
+                    "memory_recalled_workflow",
                 ],
             }
         )

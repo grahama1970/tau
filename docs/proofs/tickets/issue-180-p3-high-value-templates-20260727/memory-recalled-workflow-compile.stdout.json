@@ -1,0 +1,157 @@
+{
+  "alert_codes": [],
+  "alerts": [],
+  "dag_contract_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-p3-high-value-templates-20260727/memory-recalled-workflow-dag.json",
+  "dag_contract_sha256": "sha256:be89ab7f45c44a4fb50ce8619d173d9218416b542755e753fe8b93a1d872c509",
+  "interview_required": false,
+  "live": false,
+  "missing_fields_path": null,
+  "missing_fields_sha256": null,
+  "mocked": false,
+  "ok": true,
+  "params_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-p3-high-value-templates-20260727/memory-recalled-workflow-params.json",
+  "params_sha256": "sha256:84e589e591a443ed9a3b7298dc0d9ddc899d01bdd940f267b1642192bddd3529",
+  "proof_scope": {
+    "does_not_prove": [
+      "Runtime execution success.",
+      "Provider/model semantic quality.",
+      "That a missing-field interview has been answered by a human."
+    ],
+    "proves": [
+      "Tau selected a native DAG template by name.",
+      "Tau checked typed required fields before emitting a DAG contract.",
+      "A successful compile emitted a contract accepted by validate_dag_contract.",
+      "No model/provider call or command dispatch occurred during template compile."
+    ]
+  },
+  "provider_live": false,
+  "schema": "tau.dag_template_compile_receipt.v1",
+  "status": "PASS",
+  "template": "memory-recalled-workflow",
+  "template_registry": {
+    "schema": "tau.dag_template_registry.v1",
+    "template_count": 10,
+    "templates": [
+      {
+        "name": "single-call",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "handler"
+        ],
+        "summary": "One local handler node routes directly to human.",
+        "topology": "LINEAR_SINGLE"
+      },
+      {
+        "name": "prompt-chain",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "steps"
+        ],
+        "summary": "A sequential chain of two or more explicit local step nodes.",
+        "topology": "LINEAR_CHAIN"
+      },
+      {
+        "name": "reflection-loop",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "creator",
+          "reviewer"
+        ],
+        "summary": "Creator node followed by reviewer/reflection node and human handoff.",
+        "topology": "CREATOR_REVIEWER"
+      },
+      {
+        "name": "roundtable",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "handlers",
+          "join"
+        ],
+        "summary": "Two or more parallel handlers join into a synthesis node.",
+        "topology": "FAN_OUT_JOIN"
+      },
+      {
+        "name": "compete",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "competitors",
+          "judge"
+        ],
+        "summary": "Two or more competitors feed a judge node.",
+        "topology": "COMPETITION_JUDGE"
+      },
+      {
+        "name": "plan-execute-verify",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "planner",
+          "executor",
+          "verifier"
+        ],
+        "summary": "Planner, executor, and verifier nodes run in sequence before human handoff.",
+        "topology": "PLAN_EXECUTE_VERIFY"
+      },
+      {
+        "name": "claim-chain-verification",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "claim_steps",
+          "verifier"
+        ],
+        "summary": "One or more claim-producing nodes feed a verifier before human handoff.",
+        "topology": "CLAIM_CHAIN_VERIFICATION"
+      },
+      {
+        "name": "specialist-fanout-join",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "specialists",
+          "join"
+        ],
+        "summary": "Specialist workers run in parallel and join into one synthesis node.",
+        "topology": "SPECIALIST_FAN_OUT_JOIN"
+      },
+      {
+        "name": "dry-run-human-approval",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "dry_run",
+          "approval_packet"
+        ],
+        "summary": "Dry-run node produces an approval packet before human handoff.",
+        "topology": "DRY_RUN_HUMAN_APPROVAL"
+      },
+      {
+        "name": "memory-recalled-workflow",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "memory_recall",
+          "handler"
+        ],
+        "summary": "Memory recall/provenance node precedes a bounded handler node.",
+        "topology": "MEMORY_RECALLED_WORKFLOW"
+      }
+    ]
+  },
+  "timestamp": "2026-07-27T11:19:12Z"
+}

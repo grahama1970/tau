@@ -1,0 +1,81 @@
+{
+  "context": {
+    "dag_template": {
+      "name": "dry-run-human-approval",
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "dry_run",
+        "approval_packet"
+      ],
+      "summary": "Dry-run node produces an approval packet before human handoff.",
+      "topology": "DRY_RUN_HUMAN_APPROVAL"
+    },
+    "stop_condition": "Stop at human after required evidence gates pass.",
+    "template_params_sha256": "sha256:675f3945f2602cd873159d629c0f4ca991136a7015df63e8f44ac42d7598f7ab"
+  },
+  "dag_id": "issue-180-dry-run-human-approval",
+  "edges": [
+    {
+      "from": "dry-run",
+      "to": "approval-packet"
+    },
+    {
+      "from": "approval-packet",
+      "to": "human"
+    }
+  ],
+  "entry_node": "dry-run",
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "unexpected_node",
+    "unexpected_edge",
+    "missing_required_evidence",
+    "max_attempts_exceeded",
+    "malformed_handoff"
+  ],
+  "goal": {
+    "goal_hash": "sha256:active-goal",
+    "goal_id": "issue-180-p3",
+    "goal_version": 1
+  },
+  "limits": {
+    "default_timeout_seconds": 120,
+    "max_total_attempts": 2,
+    "resume": true
+  },
+  "nodes": [
+    {
+      "agent": "dry-run",
+      "executor": "local",
+      "id": "dry-run",
+      "max_attempts": 1,
+      "required_evidence": [
+        "dry_run_receipt"
+      ]
+    },
+    {
+      "agent": "approval-packet",
+      "executor": "local",
+      "id": "approval-packet",
+      "max_attempts": 1,
+      "required_evidence": [
+        "approval_packet"
+      ]
+    }
+  ],
+  "required_evidence": [
+    "dry_run_receipt",
+    "approval_packet"
+  ],
+  "schema": "tau.dag_contract.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue#180"
+  },
+  "terminal_nodes": [
+    "human"
+  ]
+}

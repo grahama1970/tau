@@ -1,0 +1,12 @@
+{
+  "request_hash": "sha256:request-memory-001",
+  "goal_hash": "sha256:active-goal",
+  "policy_hash": "sha256:policy-001",
+  "capability_hash": "sha256:capability-001",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue#180"
+  },
+  "task_shape": "memory_recalled_workflow",
+  "needs_memory_recall": true
+}

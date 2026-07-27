@@ -1,0 +1,14 @@
+{
+  "dag_id": "issue-180-memory-recalled-workflow",
+  "goal": {
+    "goal_hash": "sha256:active-goal",
+    "goal_id": "issue-180-p3",
+    "goal_version": 1
+  },
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue#180"
+  },
+  "memory_recall": "memory-recall",
+  "handler": "handler"
+}

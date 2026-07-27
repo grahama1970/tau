@@ -1,0 +1,178 @@
+{
+  "descriptor": {
+    "authority_boundary": {
+      "provider_calls": "never during describe, validate, preview, or compile",
+      "scheduler": "existing Tau DAG runtime",
+      "selector": "deterministic template name and typed params",
+      "viewer": "read-only projection of scheduler journal and admitted receipts"
+    },
+    "avoid_when": [
+      "The output is an implementation without a claim/proof chain."
+    ],
+    "evidence_contract": {
+      "admission_rule": "Every required evidence kind must be emitted by a routed node before Tau admits progress.",
+      "required_kinds": [
+        "claim_receipt",
+        "verification_receipt"
+      ]
+    },
+    "human_interview": {
+      "questions_source": "missing typed required fields",
+      "status_when_incomplete": "INTERVIEW_REQUIRED"
+    },
+    "name": "claim-chain-verification",
+    "node_roles": [
+      "claim_step",
+      "verifier",
+      "human"
+    ],
+    "optional_fields": [
+      "limits",
+      "command_specs",
+      "fail_closed_on"
+    ],
+    "preview": {
+      "available": true,
+      "compiles_to_schema": "tau.dag_contract.v1",
+      "dispatches_commands": false
+    },
+    "required_fields": [
+      "dag_id",
+      "goal",
+      "target",
+      "claim_steps",
+      "verifier"
+    ],
+    "schema": "tau.dag_template_descriptor.v1",
+    "summary": "One or more claim-producing nodes feed a verifier before human handoff.",
+    "topology": "CLAIM_CHAIN_VERIFICATION",
+    "use_when": [
+      "Claims, citations, or proof steps must be checked before acceptance."
+    ]
+  },
+  "dispatches_commands": false,
+  "live": false,
+  "missing_fields": [],
+  "mocked": false,
+  "ok": true,
+  "params_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-p3-high-value-templates-20260727/claim-chain-verification-params.json",
+  "params_sha256": "sha256:75dd17dc63086a1adeef87a8aa0339491eee397a2c32477b5514978690ef0612",
+  "preview": {
+    "context": {
+      "dag_template": {
+        "name": "claim-chain-verification",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "claim_steps",
+          "verifier"
+        ],
+        "summary": "One or more claim-producing nodes feed a verifier before human handoff.",
+        "topology": "CLAIM_CHAIN_VERIFICATION"
+      },
+      "stop_condition": "Stop at human after required evidence gates pass.",
+      "template_params_sha256": "sha256:d423f88e09c853f07de102c1f3108dd47de4a6d6f24be478b2e8a3a04c874550"
+    },
+    "dag_id": "issue-180-claim-chain-verification",
+    "edge_count": 3,
+    "edges": [
+      {
+        "from": "claim-a",
+        "to": "claim-b"
+      },
+      {
+        "from": "claim-b",
+        "to": "verifier"
+      },
+      {
+        "from": "verifier",
+        "to": "human"
+      }
+    ],
+    "entry_node": "claim-a",
+    "fail_closed_on": [
+      "goal_hash_mismatch",
+      "target_changed",
+      "unexpected_node",
+      "unexpected_edge",
+      "missing_required_evidence",
+      "max_attempts_exceeded",
+      "malformed_handoff"
+    ],
+    "goal": {
+      "goal_hash": "sha256:active-goal",
+      "goal_id": "issue-180-p3",
+      "goal_version": 1
+    },
+    "limits": {
+      "default_timeout_seconds": 120,
+      "max_total_attempts": 3,
+      "resume": true
+    },
+    "node_count": 3,
+    "nodes": [
+      {
+        "agent": "claim-a",
+        "executor": "local",
+        "id": "claim-a",
+        "max_attempts": 1,
+        "required_evidence": [
+          "claim_receipt"
+        ]
+      },
+      {
+        "agent": "claim-b",
+        "executor": "local",
+        "id": "claim-b",
+        "max_attempts": 1,
+        "required_evidence": [
+          "claim_receipt"
+        ]
+      },
+      {
+        "agent": "verifier",
+        "executor": "local",
+        "id": "verifier",
+        "max_attempts": 1,
+        "required_evidence": [
+          "verification_receipt"
+        ],
+        "reviewer": {
+          "requires_goal_hash": true,
+          "reviews_node": "claim-b"
+        }
+      }
+    ],
+    "required_evidence": [
+      "claim_receipt",
+      "verification_receipt"
+    ],
+    "schema": "tau.dag_contract.preview.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#180"
+    },
+    "terminal_nodes": [
+      "human"
+    ]
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "Runtime execution success.",
+      "Provider/model semantic quality.",
+      "That the human accepted the preview."
+    ],
+    "proves": [
+      "Tau can render the selected native template as an inspectable pre-run DAG preview.",
+      "Incomplete params fail closed to INTERVIEW_REQUIRED.",
+      "Preview does not dispatch workers, providers, or scheduler execution."
+    ]
+  },
+  "provider_live": false,
+  "questions": [],
+  "schema": "tau.dag_template_preview.v1",
+  "status": "PASS",
+  "template": "claim-chain-verification",
+  "timestamp": "2026-07-27T11:19:08Z"
+}

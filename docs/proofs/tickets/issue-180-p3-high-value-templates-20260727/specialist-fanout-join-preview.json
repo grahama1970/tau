@@ -1,0 +1,174 @@
+{
+  "descriptor": {
+    "authority_boundary": {
+      "provider_calls": "never during describe, validate, preview, or compile",
+      "scheduler": "existing Tau DAG runtime",
+      "selector": "deterministic template name and typed params",
+      "viewer": "read-only projection of scheduler journal and admitted receipts"
+    },
+    "avoid_when": [
+      "The request needs a winner instead of a synthesized result."
+    ],
+    "evidence_contract": {
+      "admission_rule": "Every required evidence kind must be emitted by a routed node before Tau admits progress.",
+      "required_kinds": [
+        "specialist_receipt",
+        "specialist_join_receipt"
+      ]
+    },
+    "human_interview": {
+      "questions_source": "missing typed required fields",
+      "status_when_incomplete": "INTERVIEW_REQUIRED"
+    },
+    "name": "specialist-fanout-join",
+    "node_roles": [
+      "specialist",
+      "join",
+      "human"
+    ],
+    "optional_fields": [
+      "limits",
+      "command_specs",
+      "fail_closed_on"
+    ],
+    "preview": {
+      "available": true,
+      "compiles_to_schema": "tau.dag_contract.v1",
+      "dispatches_commands": false
+    },
+    "required_fields": [
+      "dag_id",
+      "goal",
+      "target",
+      "specialists",
+      "join"
+    ],
+    "schema": "tau.dag_template_descriptor.v1",
+    "summary": "Specialist workers run in parallel and join into one synthesis node.",
+    "topology": "SPECIALIST_FAN_OUT_JOIN",
+    "use_when": [
+      "Named specialists should inspect separate aspects before synthesis."
+    ]
+  },
+  "dispatches_commands": false,
+  "live": false,
+  "missing_fields": [],
+  "mocked": false,
+  "ok": true,
+  "params_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-p3-high-value-templates-20260727/specialist-fanout-join-params.json",
+  "params_sha256": "sha256:ba20548d230a268dfc21cf150d17529ef320aa16a52dd387e30145f81f821a64",
+  "preview": {
+    "context": {
+      "dag_template": {
+        "name": "specialist-fanout-join",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "specialists",
+          "join"
+        ],
+        "summary": "Specialist workers run in parallel and join into one synthesis node.",
+        "topology": "SPECIALIST_FAN_OUT_JOIN"
+      },
+      "stop_condition": "Stop at human after required evidence gates pass.",
+      "template_params_sha256": "sha256:836a196ae470bc3c75f9596bb41a912d77009665d67e269d7ba44655676863ff"
+    },
+    "dag_id": "issue-180-specialist-fanout-join",
+    "edge_count": 3,
+    "edges": [
+      {
+        "from": "frontend-specialist",
+        "to": "join"
+      },
+      {
+        "from": "runtime-specialist",
+        "to": "join"
+      },
+      {
+        "from": "join",
+        "to": "human"
+      }
+    ],
+    "entry_node": "frontend-specialist",
+    "fail_closed_on": [
+      "goal_hash_mismatch",
+      "target_changed",
+      "unexpected_node",
+      "unexpected_edge",
+      "missing_required_evidence",
+      "max_attempts_exceeded",
+      "malformed_handoff"
+    ],
+    "goal": {
+      "goal_hash": "sha256:active-goal",
+      "goal_id": "issue-180-p3",
+      "goal_version": 1
+    },
+    "limits": {
+      "default_timeout_seconds": 120,
+      "max_total_attempts": 3,
+      "resume": true
+    },
+    "node_count": 3,
+    "nodes": [
+      {
+        "agent": "frontend-specialist",
+        "executor": "local",
+        "id": "frontend-specialist",
+        "max_attempts": 1,
+        "required_evidence": [
+          "specialist_receipt"
+        ]
+      },
+      {
+        "agent": "runtime-specialist",
+        "executor": "local",
+        "id": "runtime-specialist",
+        "max_attempts": 1,
+        "required_evidence": [
+          "specialist_receipt"
+        ]
+      },
+      {
+        "agent": "join",
+        "executor": "local",
+        "id": "join",
+        "max_attempts": 1,
+        "required_evidence": [
+          "specialist_join_receipt"
+        ]
+      }
+    ],
+    "required_evidence": [
+      "specialist_receipt",
+      "specialist_join_receipt"
+    ],
+    "schema": "tau.dag_contract.preview.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#180"
+    },
+    "terminal_nodes": [
+      "human"
+    ]
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "Runtime execution success.",
+      "Provider/model semantic quality.",
+      "That the human accepted the preview."
+    ],
+    "proves": [
+      "Tau can render the selected native template as an inspectable pre-run DAG preview.",
+      "Incomplete params fail closed to INTERVIEW_REQUIRED.",
+      "Preview does not dispatch workers, providers, or scheduler execution."
+    ]
+  },
+  "provider_live": false,
+  "questions": [],
+  "schema": "tau.dag_template_preview.v1",
+  "status": "PASS",
+  "template": "specialist-fanout-join",
+  "timestamp": "2026-07-27T11:19:10Z"
+}

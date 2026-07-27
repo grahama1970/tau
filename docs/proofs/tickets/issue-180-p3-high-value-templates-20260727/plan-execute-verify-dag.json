@@ -1,0 +1,100 @@
+{
+  "context": {
+    "dag_template": {
+      "name": "plan-execute-verify",
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "planner",
+        "executor",
+        "verifier"
+      ],
+      "summary": "Planner, executor, and verifier nodes run in sequence before human handoff.",
+      "topology": "PLAN_EXECUTE_VERIFY"
+    },
+    "stop_condition": "Stop at human after required evidence gates pass.",
+    "template_params_sha256": "sha256:93813f38c7a95e7023ad5845d08327eac9941ef48ab7eaa5afdd6735216ae786"
+  },
+  "dag_id": "issue-180-plan-execute-verify",
+  "edges": [
+    {
+      "from": "planner",
+      "to": "executor"
+    },
+    {
+      "from": "executor",
+      "to": "verifier"
+    },
+    {
+      "from": "verifier",
+      "to": "human"
+    }
+  ],
+  "entry_node": "planner",
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "unexpected_node",
+    "unexpected_edge",
+    "missing_required_evidence",
+    "max_attempts_exceeded",
+    "malformed_handoff"
+  ],
+  "goal": {
+    "goal_hash": "sha256:active-goal",
+    "goal_id": "issue-180-p3",
+    "goal_version": 1
+  },
+  "limits": {
+    "default_timeout_seconds": 120,
+    "max_total_attempts": 3,
+    "resume": true
+  },
+  "nodes": [
+    {
+      "agent": "planner",
+      "executor": "local",
+      "id": "planner",
+      "max_attempts": 1,
+      "required_evidence": [
+        "plan_receipt"
+      ]
+    },
+    {
+      "agent": "executor",
+      "executor": "local",
+      "id": "executor",
+      "max_attempts": 1,
+      "required_evidence": [
+        "execution_receipt"
+      ]
+    },
+    {
+      "agent": "verifier",
+      "executor": "local",
+      "id": "verifier",
+      "max_attempts": 1,
+      "required_evidence": [
+        "verification_receipt"
+      ],
+      "reviewer": {
+        "requires_goal_hash": true,
+        "reviews_node": "executor"
+      }
+    }
+  ],
+  "required_evidence": [
+    "plan_receipt",
+    "execution_receipt",
+    "verification_receipt"
+  ],
+  "schema": "tau.dag_contract.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue#180"
+  },
+  "terminal_nodes": [
+    "human"
+  ]
+}
