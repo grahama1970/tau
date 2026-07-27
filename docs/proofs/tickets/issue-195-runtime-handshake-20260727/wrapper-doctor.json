@@ -1,0 +1,301 @@
+{
+  "can_call_tau_cli": true,
+  "can_call_tau_doctor": true,
+  "can_list_canonical_workflows": true,
+  "can_run_browser_cdp_lane": true,
+  "can_run_durable_repository_qualification": true,
+  "can_run_github_apply_lane": false,
+  "can_run_github_dry_run_lane": true,
+  "can_run_herdr_lane": true,
+  "can_run_local_sanity": true,
+  "can_run_provider_live_lane": false,
+  "can_run_repository_readiness": true,
+  "can_run_tau_owned_dag_viewer": true,
+  "chat_contract": "/tmp/tau-issue189-1785166987/ui/tau-chat-contract.json",
+  "chat_contract_exists": true,
+  "checked_at": "2026-07-27T16:36:07Z",
+  "command": "doctor",
+  "commands": {
+    "git_status": {
+      "command": [
+        "git",
+        "status",
+        "--short"
+      ],
+      "cwd": "/tmp/tau-issue189-1785166987",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": " M src/tau_coding/cli.py\n?? docs/proofs/tickets/issue-195-runtime-handshake-20260727/\n?? src/tau_coding/runtime_handshake.py\n"
+    },
+    "tau_dag_view_capabilities": {
+      "command": [
+        "/home/graham/.local/bin/uv",
+        "run",
+        "--project",
+        "/tmp/tau-issue189-1785166987",
+        "tau",
+        "dag-view-capabilities",
+        "--json"
+      ],
+      "cwd": "/tmp/tau-issue189-1785166987",
+      "exit_code": 0,
+      "stderr": "warning: `VIRTUAL_ENV=/home/graham/workspace/experiments/agent-skills/skills/tau/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "stdout": "{\n  \"authority_boundary\": {\n    \"non_authoritative_inputs\": [\n      \"diagnostic activity\",\n      \"model/provider claims\"\n    ],\n    \"source\": \"scheduler journal, DAG source artifact, and admitted receipts\",\n    \"viewer\": \"read-only projection\"\n  },\n  \"event_schema\": \"tau.dag_live_event.v1\",\n  \"manifest_schema\": \"tau.dag_view_manifest.v1\",\n  \"read_only\": true,\n  \"schema\": \"tau.dag_viewer_capabilities.v1\",\n  \"snapshot_schema\": \"tau.dag_view_snapshot.v2\",\n  \"supports_accepted_evidence\": true,\n  \"supports_artifact_workspace\": true,\n  \"supports_attention_items\": true,\n  \"supports_bounded_query\": true,\n  \"supports_causal_explanations\": true,\n  \"supports_cross_template_conformance\": true,\n  \"supports_diagnostic_activity\": true,\n  \"supports_exactly_two_comparison\": true,\n  \"supports_historical_sequences\": true,\n  \"supports_live\": true,\n  \"supports_memory_provenance\": \"DEGRADED_WHEN_MEMORY_CHAIN_UNAVAILABLE\",\n  \"supports_receipt_inspection\": true,\n  \"supports_replay\": true,\n  \"supports_retry_revision_overlays\": true,\n  \"supports_route_join_projection\": true,\n  \"supports_source_json\": true,\n  \"viewer_version\": \"1\"\n}\n"
+    },
+    "tau_doctor": {
+      "command": [
+        "/home/graham/.local/bin/uv",
+        "run",
+        "--project",
+        "/tmp/tau-issue189-1785166987",
+        "tau",
+        "doctor"
+      ],
+      "cwd": "/tmp/tau-issue189-1785166987",
+      "exit_code": 0,
+      "stderr": "warning: `VIRTUAL_ENV=/home/graham/workspace/experiments/agent-skills/skills/tau/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "stdout": "{\n  \"checked_at\": \"2026-07-27T16:36:05.485462Z\",\n  \"commands\": {\n    \"gh\": \"/usr/bin/gh\",\n    \"git\": \"/usr/bin/git\",\n    \"herdr\": \"/home/graham/.local/bin/herdr\",\n    \"python\": \"/tmp/tau-issue189-1785166987/.venv/bin/python\",\n    \"surf\": \"/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh\",\n    \"uv\": \"/home/graham/.local/bin/uv\"\n  },\n  \"errors\": [],\n  \"external_services\": [\n    {\n      \"endpoint\": \"http://127.0.0.1:8601\",\n      \"health_url\": \"http://127.0.0.1:8601/health\",\n      \"name\": \"memory\",\n      \"remedy\": \"Start Graph Memory on 127.0.0.1:8601 or set TAU_MEMORY_URL.\",\n      \"required\": true,\n      \"state\": \"reachable\"\n    },\n    {\n      \"endpoint\": null,\n      \"name\": \"surf\",\n      \"remedy\": \"Set TAU_SURF_URL when Surf service probing is desired.\",\n      \"required\": false,\n      \"state\": \"not_configured\"\n    },\n    {\n      \"endpoint\": null,\n      \"name\": \"chatterbox_tts\",\n      \"remedy\": \"Set TAU_CHATTERBOX_TTS_URL when voice output is configured.\",\n      \"required\": false,\n      \"state\": \"not_configured\"\n    },\n    {\n      \"endpoint\": null,\n      \"name\": \"realtime_stt\",\n      \"remedy\": \"Set TAU_REALTIMESTT_URL when voice input is configured.\",\n      \"required\": false,\n      \"state\": \"not_configured\"\n    }\n  ],\n  \"lanes\": {\n    \"browser_cdp\": {\n      \"ready\": true,\n      \"reason\": \"Surf wrapper or surf executable found; run tau browser-cdp-proof for screenshot proof\"\n    },\n    \"github_apply\": {\n      \"ready\": false,\n      \"reason\": \"live GitHub mutation requires approval, preflight, redaction, and apply policy receipts\"\n    },\n    \"github_dry_run\": {\n      \"ready\": true,\n      \"reason\": \"gh executable found\"\n    },\n    \"herdr\": {\n      \"ready\": true,\n      \"reason\": \"herdr executable found\"\n    },\n    \"local_cli\": {\n      \"ready\": true,\n      \"reason\": \"required Tau runtime files are present\"\n    },\n    \"local_sanity\": {\n      \"ready\": true,\n      \"reason\": \"uv and pyproject.toml are available\"\n    },\n    \"provider_live\": {\n      \"ready\": false,\n      \"reason\": \"doctor does not allocate provider panes or call model providers\"\n    }\n  },\n  \"live\": true,\n  \"mocked\": false,\n  \"modes\": {\n    \"build\": {\n      \"description\": \"Editing and approved local command execution.\",\n      \"mutating_default\": true,\n      \"permission_default\": \"ask_for_sensitive_actions\",\n      \"ready\": true\n    },\n    \"general\": {\n      \"description\": \"Bounded helper mode; mutation requires promotion or approval.\",\n      \"mutating_default\": false,\n      \"permission_default\": \"ask_before_mutation\",\n      \"ready\": true\n    },\n    \"plan\": {\n      \"description\": \"Read-only planning; edits and writes require approval.\",\n      \"mutating_default\": false,\n      \"permission_default\": \"deny_mutations_without_approval\",\n      \"ready\": true\n    },\n    \"review\": {\n      \"description\": \"Read-only review with evidence and verdict constraints.\",\n      \"mutating_default\": false,\n      \"permission_default\": \"deny_mutations_without_approval\",\n      \"ready\": true\n    }\n  },\n  \"ok\": true,\n  \"paths\": {\n    \"chat_contract\": {\n      \"exists\": true,\n      \"path\": \"/tmp/tau-issue189-1785166987/ui/tau-chat-contract.json\"\n    },\n    \"cli\": {\n      \"exists\": true,\n      \"path\": \"/tmp/tau-issue189-1785166987/src/tau_coding/cli.py\"\n    },\n    \"proofs_root\": {\n      \"exists\": true,\n      \"path\": \"/tmp/tau-issue189-1785166987/experiments/goal-locked-subagents/proofs\"\n    },\n    \"pyproject\": {\n      \"exists\": true,\n      \"path\": \"/tmp/tau-issue189-1785166987/pyproject.toml\"\n    }\n  },\n  \"proof_boundary\": {\n    \"does_not_prove\": [\n      \"Herdr pane readiness.\",\n      \"Live provider/model semantic quality.\",\n      \"Provider DAG execution.\",\n      \"GitHub live mutation.\",\n      \"Browser/CDP UI proof; run tau browser-cdp-proof for screenshot artifacts.\",\n      \"Full hardening roadmap completion.\",\n      \"Semantic correctness of any external service response.\"\n    ],\n    \"proves\": [\n      \"Tau runtime import and CLI dispatch can emit a read-only preflight receipt.\",\n      \"Required local Tau runtime paths were checked.\",\n      \"Optional local executables for uv, git, gh, and Herdr were detected without side effects.\",\n      \"Configured provider entries were inspected without making provider/model calls.\",\n      \"Configured external service endpoints were probed with read-only health checks.\"\n    ]\n  },\n  \"provider_live\": false,\n  \"provider_settings\": {\n    \"default_provider\": \"openai\",\n    \"provider_count\": 6,\n    \"providers\": [\n      {\n        \"credential\": \"missing\",\n        \"kind\": \"anthropic\",\n        \"name\": \"anthropic\"\n      },\n      {\n        \"credential\": \"env:CHUTES_API_TOKEN\",\n        \"kind\": \"openai-compatible\",\n        \"name\": \"chutes\"\n      },\n      {\n        \"credential\": \"missing\",\n        \"kind\": \"openai-compatible\",\n        \"name\": \"huggingface\"\n      },\n      {\n        \"credential\": \"missing\",\n        \"kind\": \"openai-compatible\",\n        \"name\": \"openai\"\n      },\n      {\n        \"credential\": \"stored:openai-codex\",\n        \"kind\": \"openai-codex\",\n        \"name\": \"openai-codex\"\n      },\n      {\n        \"credential\": \"missing\",\n        \"kind\": \"openai-compatible\",\n        \"name\": \"openrouter\"\n      }\n    ]\n  },\n  \"repo_root\": \"/tmp/tau-issue189-1785166987\",\n  \"schema\": \"tau.doctor.v1\",\n  \"status\": \"PASS\",\n  \"version\": \"0.1.0\",\n  \"warnings\": []\n}\n"
+    },
+    "tau_help": {
+      "command": [
+        "/home/graham/.local/bin/uv",
+        "run",
+        "--project",
+        "/tmp/tau-issue189-1785166987",
+        "tau",
+        "--help"
+      ],
+      "cwd": "/tmp/tau-issue189-1785166987",
+      "exit_code": 0,
+      "stderr": "warning: `VIRTUAL_ENV=/home/graham/workspace/experiments/agent-skills/skills/tau/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "stdout": "                                                                                \n Usage: tau [OPTIONS] [PROMPT_ARGS]... COMMAND [ARGS]...                        \n                                                                                \n Tau coding-agent harness.                                                      \n                                                                                \n\u256d\u2500 Arguments \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\n\u2502   prompt_args      [PROMPT_ARGS]...  Initial prompt to run in interactive    \u2502\n\u2502                                      TUI mode.                               \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\n\u256d\u2500 Options \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\n\u2502 --print           -p                                        Run the          \u2502\n\u2502                                                             positional       \u2502\n\u2502                                                             prompt in        \u2502\n\u2502                                                             non-interactive  \u2502\n\u2502                                                             print mode.      \u2502\n\u2502 --provider                                 TEXT             Configured       \u2502\n\u2502                                                             provider name to \u2502\n\u2502                                                             use.             \u2502\n\u2502 --model           -m                       TEXT             Model name to    \u2502\n\u2502                                                             request from the \u2502\n\u2502                                                             provider.        \u2502\n\u2502 --api-key                                  TEXT             Runtime API key  \u2502\n\u2502                                                             for the selected \u2502\n\u2502                                                             explicit model.  \u2502\n\u2502 --thinking                                 TEXT             Set startup      \u2502\n\u2502                                                             thinking level:  \u2502\n\u2502                                                             off, minimal,    \u2502\n\u2502                                                             low, medium,     \u2502\n\u2502                                                             high, xhigh, or  \u2502\n\u2502                                                             max.             \u2502\n\u2502 --system-prompt                            TEXT             Use this text or \u2502\n\u2502                                                             file as the base \u2502\n\u2502                                                             system prompt.   \u2502\n\u2502 --append-system\u2026                           TEXT             Append this text \u2502\n\u2502                                                             or file to the   \u2502\n\u2502                                                             system prompt;   \u2502\n\u2502                                                             repeatable.      \u2502\n\u2502 --models                                   TEXT             Comma-separated  \u2502\n\u2502                                                             model patterns   \u2502\n\u2502                                                             for scoped       \u2502\n\u2502                                                             cycling.         \u2502\n\u2502 --list-models                                               List configured  \u2502\n\u2502                                                             provider models  \u2502\n\u2502                                                             and exit.        \u2502\n\u2502 --base-url                                 TEXT             OpenAI-compatib\u2026 \u2502\n\u2502                                                             base URL for     \u2502\n\u2502                                                             `tau setup`.     \u2502\n\u2502                                                             [default:        \u2502\n\u2502                                                             https://api.ope\u2026 \u2502\n\u2502 --api-key-env                              TEXT             API key          \u2502\n\u2502                                                             environment      \u2502\n\u2502                                                             variable for     \u2502\n\u2502                                                             `tau setup`.     \u2502\n\u2502                                                             [default:        \u2502\n\u2502                                                             OPENAI_API_KEY]  \u2502\n\u2502 --timeout-secon\u2026                           FLOAT            HTTP timeout in  \u2502\n\u2502                                                             seconds for `tau \u2502\n\u2502                                                             setup` provider  \u2502\n\u2502                                                             requests.        \u2502\n\u2502                                                             [default: 60.0]  \u2502\n\u2502 --max-retries                              INTEGER          Provider retry   \u2502\n\u2502                                                             count for `tau   \u2502\n\u2502                                                             setup`.          \u2502\n\u2502                                                             [default: 2]     \u2502\n\u2502 --max-retry-del\u2026                           FLOAT            Provider retry   \u2502\n\u2502                                                             delay in seconds \u2502\n\u2502                                                             for `tau setup`. \u2502\n\u2502                                                             [default: 1.0]   \u2502\n\u2502 --set-default           --no-set-defau\u2026                     Make setup       \u2502\n\u2502                                                             provider the     \u2502\n\u2502                                                             default.         \u2502\n\u2502                                                             [default:        \u2502\n\u2502                                                             set-default]     \u2502\n\u2502 --cwd                                      PATH             Working          \u2502\n\u2502                                                             directory for    \u2502\n\u2502                                                             built-in coding  \u2502\n\u2502                                                             tools.           \u2502\n\u2502 --mode                                     [text|json|tran  Run in           \u2502\n\u2502                                            script]          non-interactive  \u2502\n\u2502                                                             print mode with  \u2502\n\u2502                                                             this output      \u2502\n\u2502                                                             format (text,    \u2502\n\u2502                                                             json, or         \u2502\n\u2502                                                             transcript).     \u2502\n\u2502 --session                                  TEXT             Resume a session \u2502\n\u2502                                                             id in TUI mode.  \u2502\n\u2502 --session-id                               TEXT             Use an exact     \u2502\n\u2502                                                             project session  \u2502\n\u2502                                                             id, creating it  \u2502\n\u2502                                                             if missing.      \u2502\n\u2502 --name            -n                       TEXT             Set session      \u2502\n\u2502                                                             display name at  \u2502\n\u2502                                                             startup.         \u2502\n\u2502 --fork                                     TEXT             Fork a session   \u2502\n\u2502                                                             id or JSONL path \u2502\n\u2502                                                             into a new       \u2502\n\u2502                                                             session.         \u2502\n\u2502 --resume          -r                                        Select a session \u2502\n\u2502                                                             to resume in TUI \u2502\n\u2502                                                             mode.            \u2502\n\u2502 --new-session                                               Create a new     \u2502\n\u2502                                                             session in TUI   \u2502\n\u2502                                                             mode (default).  \u2502\n\u2502 --continue        -c                                        Continue the     \u2502\n\u2502                                                             latest session   \u2502\n\u2502                                                             for this cwd.    \u2502\n\u2502 --session-dir                              PATH             Directory for    \u2502\n\u2502                                                             indexed session  \u2502\n\u2502                                                             storage.         \u2502\n\u2502 --no-session                                                Run without      \u2502\n\u2502                                                             saving or        \u2502\n\u2502                                                             indexing a       \u2502\n\u2502                                                             session.         \u2502\n\u2502 --no-context-fi\u2026  -nc                                       Disable          \u2502\n\u2502                                                             AGENTS.md and    \u2502\n\u2502                                                             CLAUDE.md        \u2502\n\u2502                                                             context          \u2502\n\u2502                                                             discovery.       \u2502\n\u2502 --no-tools        -nt                                       Disable all      \u2502\n\u2502                                                             tools for the    \u2502\n\u2502                                                             startup session. \u2502\n\u2502 --no-builtin-to\u2026  -nbt                                      Disable built-in \u2502\n\u2502                                                             tools while      \u2502\n\u2502                                                             keeping explicit \u2502\n\u2502                                                             custom tools     \u2502\n\u2502                                                             available.       \u2502\n\u2502 --tools           -t                       TEXT             Comma-separated  \u2502\n\u2502                                                             allowlist of     \u2502\n\u2502                                                             tool names to    \u2502\n\u2502                                                             enable.          \u2502\n\u2502 --exclude-tools   -xt                      TEXT             Comma-separated  \u2502\n\u2502                                                             denylist of tool \u2502\n\u2502                                                             names to         \u2502\n\u2502                                                             disable.         \u2502\n\u2502 --no-skills       -ns                                       Disable skills   \u2502\n\u2502                                                             discovery and    \u2502\n\u2502                                                             loading.         \u2502\n\u2502 --no-prompt-tem\u2026  -np                                       Disable prompt   \u2502\n\u2502                                                             template         \u2502\n\u2502                                                             discovery and    \u2502\n\u2502                                                             loading.         \u2502\n\u2502 --no-themes                                                 Disable custom   \u2502\n\u2502                                                             TUI theme        \u2502\n\u2502                                                             discovery and    \u2502\n\u2502                                                             loading.         \u2502\n\u2502 --no-extensions   -ne                                       Disable user     \u2502\n\u2502                                                             extension        \u2502\n\u2502                                                             discovery while  \u2502\n\u2502                                                             keeping explicit \u2502\n\u2502                                                             --extension      \u2502\n\u2502                                                             paths.           \u2502\n\u2502 --skill                                    PATH             Load a skill     \u2502\n\u2502                                                             markdown file or \u2502\n\u2502                                                             directory;       \u2502\n\u2502                                                             repeatable.      \u2502\n\u2502 --prompt-templa\u2026                           PATH             Load a prompt    \u2502\n\u2502                                                             template         \u2502\n\u2502                                                             markdown file or \u2502\n\u2502                                                             directory;       \u2502\n\u2502                                                             repeatable.      \u2502\n\u2502 --theme                                    PATH             Load a custom    \u2502\n\u2502                                                             theme JSON file  \u2502\n\u2502                                                             or directory;    \u2502\n\u2502                                                             repeatable.      \u2502\n\u2502 --extension       -e                       PATH             Load a Python    \u2502\n\u2502                                                             extension file   \u2502\n\u2502                                                             or directory;    \u2502\n\u2502                                                             repeatable.      \u2502\n\u2502 --approve         -a                                        Trust            \u2502\n\u2502                                                             project-local    \u2502\n\u2502                                                             resources for    \u2502\n\u2502                                                             this run.        \u2502\n\u2502 --no-approve      -na                                       Ignore           \u2502\n\u2502                                                             project-local    \u2502\n\u2502                                                             resources for    \u2502\n\u2502                                                             this run.        \u2502\n\u2502 --offline                                                   Disable startup  \u2502\n\u2502                                                             network          \u2502\n\u2502                                                             operations where \u2502\n\u2502                                                             supported.       \u2502\n\u2502 --verbose                                                   Force verbose    \u2502\n\u2502                                                             startup output,  \u2502\n\u2502                                                             overriding quiet \u2502\n\u2502                                                             startup          \u2502\n\u2502                                                             settings.        \u2502\n\u2502 --log-level                                TEXT             Set Tau          \u2502\n\u2502                                                             diagnostic log   \u2502\n\u2502                                                             level: trace,    \u2502\n\u2502                                                             debug, info,     \u2502\n\u2502                                                             warning, error,  \u2502\n\u2502                                                             critical.        \u2502\n\u2502 --log-file                                 PATH             Write Tau        \u2502\n\u2502                                                             structured       \u2502\n\u2502                                                             diagnostics to   \u2502\n\u2502                                                             this JSONL file. \u2502\n\u2502 --auto-compact-\u2026                           INTEGER          Automatically    \u2502\n\u2502                                                             compact TUI      \u2502\n\u2502                                                             context above    \u2502\n\u2502                                                             this rough token \u2502\n\u2502                                                             estimate.        \u2502\n\u2502 --loop2-receipt\u2026                           PATH             Write            \u2502\n\u2502                                                             Loop2-compatible \u2502\n\u2502                                                             receipt          \u2502\n\u2502                                                             artifacts under  \u2502\n\u2502                                                             this run root in \u2502\n\u2502                                                             print mode.      \u2502\n\u2502 --loop2-node-id                            TEXT             Node id for      \u2502\n\u2502                                                             Loop2 receipt    \u2502\n\u2502                                                             artifacts.       \u2502\n\u2502                                                             [default:        \u2502\n\u2502                                                             tau-print]       \u2502\n\u2502 --loop2-allowed\u2026                           TEXT             Allowed file     \u2502\n\u2502                                                             glob for the     \u2502\n\u2502                                                             Loop2 contract;  \u2502\n\u2502                                                             repeatable.      \u2502\n\u2502 --loop2-require\u2026                           TEXT             Required         \u2502\n\u2502                                                             changed-file     \u2502\n\u2502                                                             glob for the     \u2502\n\u2502                                                             Loop2 contract;  \u2502\n\u2502                                                             repeatable.      \u2502\n\u2502 --loop2-check                              TEXT             Local check      \u2502\n\u2502                                                             command for      \u2502\n\u2502                                                             Loop2 receipts;  \u2502\n\u2502                                                             repeatable.      \u2502\n\u2502 --loop2-serve-h\u2026                           TEXT             Host for `tau    \u2502\n\u2502                                                             loop2-serve`.    \u2502\n\u2502                                                             [default:        \u2502\n\u2502                                                             127.0.0.1]       \u2502\n\u2502 --loop2-serve-p\u2026                           INTEGER          Port for `tau    \u2502\n\u2502                                                             loop2-serve`.    \u2502\n\u2502                                                             [default: 8765]  \u2502\n\u2502 --loop2-switchb\u2026                           TEXT             pi-mono          \u2502\n\u2502                                                             switchboard base \u2502\n\u2502                                                             URL for `tau     \u2502\n\u2502                                                             loop2-emit-peer\u2026 \u2502\n\u2502                                                             [default:        \u2502\n\u2502                                                             http://127.0.0.\u2026 \u2502\n\u2502 --loop2-peer-ta\u2026                           TEXT             Target harness   \u2502\n\u2502                                                             for `tau         \u2502\n\u2502                                                             loop2-emit-peer\u2026 \u2502\n\u2502                                                             [default:        \u2502\n\u2502                                                             pi-mono]         \u2502\n\u2502 --loop2-src                                PATH             Path to the      \u2502\n\u2502                                                             Loop2 source     \u2502\n\u2502                                                             directory        \u2502\n\u2502                                                             containing the   \u2502\n\u2502                                                             loop2 package.   \u2502\n\u2502 --loop2-inspect\u2026                                            Include Loop2    \u2502\n\u2502                                                             contract         \u2502\n\u2502                                                             validation in    \u2502\n\u2502                                                             `tau             \u2502\n\u2502                                                             loop2-inspect`   \u2502\n\u2502                                                             output.          \u2502\n\u2502 --loop2-sanity-\u2026                           PATH             Root directory   \u2502\n\u2502                                                             for `tau         \u2502\n\u2502                                                             loop2-sanity`    \u2502\n\u2502                                                             fixture receipt  \u2502\n\u2502                                                             runs.            \u2502\n\u2502                                                             [default:        \u2502\n\u2502                                                             .loop2/sanity]   \u2502\n\u2502 --loop2-scillm-\u2026                           PATH             Passing Scillm   \u2502\n\u2502                                                             doctor receipt   \u2502\n\u2502                                                             required before  \u2502\n\u2502                                                             delegated Scillm \u2502\n\u2502                                                             loop2 runs.      \u2502\n\u2502 --export                                                    Export the given \u2502\n\u2502                                                             session id or    \u2502\n\u2502                                                             JSONL path       \u2502\n\u2502                                                             (mirrors `tau    \u2502\n\u2502                                                             export`).        \u2502\n\u2502 --version         -v                                        Show Tau's       \u2502\n\u2502                                                             version and      \u2502\n\u2502                                                             exit.            \u2502\n\u2502 --help                                                      Show this        \u2502\n\u2502                                                             message and      \u2502\n\u2502                                                             exit.            \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\n\u256d\u2500 Commands \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\n\u2502 github-redact-projection                                                     \u2502\n\u2502 tui-proof                      Render a fixture-backed Textual TUI proof     \u2502\n\u2502                                receipt.                                      \u2502\n\u2502 ticket-subagent-closure-proof  Prove code-ticket subagent closure requires   \u2502\n\u2502                                live non-mocked E2E evidence.                 \u2502\n\u2502 workflows                      Discover and run packaged canonical Tau       \u2502\n\u2502                                workflows.                                    \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\n\n"
+    },
+    "tau_workflow_catalog": {
+      "command": [
+        "/home/graham/.local/bin/uv",
+        "run",
+        "--project",
+        "/tmp/tau-issue189-1785166987",
+        "tau",
+        "workflows",
+        "list",
+        "--json"
+      ],
+      "cwd": "/tmp/tau-issue189-1785166987",
+      "exit_code": 0,
+      "stderr": "warning: `VIRTUAL_ENV=/home/graham/workspace/experiments/agent-skills/skills/tau/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "stdout": "{\n  \"schema\": \"tau.workflow_catalog.v1\",\n  \"workflows\": [\n    {\n      \"availability\": \"AVAILABLE\",\n      \"input_schema\": \"tau.repository_readiness_request.v1\",\n      \"proof_boundary\": {\n        \"live\": true,\n        \"mocked\": false,\n        \"provider_live\": false\n      },\n      \"result_node_id\": \"publish-readiness\",\n      \"result_schema\": \"tau.repository_readiness_report.v1\",\n      \"rung\": 1,\n      \"runtime\": {\n        \"local\": true,\n        \"mutation_allowed\": false,\n        \"network_required\": false,\n        \"provider_required\": false\n      },\n      \"schema\": \"tau.workflow_definition.v1\",\n      \"summary\": \"Inspect a local Git checkout, validate the requested readiness policy, and publish a hash-bound readiness report.\",\n      \"template\": \"templates/repository-readiness.json\",\n      \"title\": \"Repository Readiness\",\n      \"topology\": \"LINEAR\",\n      \"workflow_id\": \"repository-readiness\",\n      \"workflow_version\": 1\n    },\n    {\n      \"availability\": \"AVAILABLE\",\n      \"input_schema\": \"tau.operator_reference_request.v1\",\n      \"proof_boundary\": {\n        \"live\": true,\n        \"mocked\": false,\n        \"provider_live\": false\n      },\n      \"result_node_id\": \"validate-operator-reference\",\n      \"result_schema\": \"tau.operator_reference.v1\",\n      \"rung\": 2,\n      \"runtime\": {\n        \"local\": true,\n        \"mutation_allowed\": false,\n        \"network_required\": false,\n        \"provider_required\": false\n      },\n      \"schema\": \"tau.workflow_definition.v1\",\n      \"summary\": \"Build a validated Tau operator reference from fixed local repository sources and versioned public CLI probes.\",\n      \"template\": \"templates/tau-operator-reference.json\",\n      \"title\": \"Tau Operator Reference\",\n      \"topology\": \"MULTI_STEP_SEQUENTIAL\",\n      \"workflow_id\": \"tau-operator-reference\",\n      \"workflow_version\": 1\n    },\n    {\n      \"availability\": \"AVAILABLE\",\n      \"input_schema\": \"tau.repository_evidence_map_request.v1\",\n      \"proof_boundary\": {\n        \"live\": true,\n        \"mocked\": false,\n        \"provider_live\": false\n      },\n      \"result_node_id\": \"publish-evidence-map\",\n      \"result_schema\": \"tau.repository_evidence_map.v1\",\n      \"rung\": 3,\n      \"runtime\": {\n        \"local\": true,\n        \"mutation_allowed\": false,\n        \"network_required\": false,\n        \"provider_required\": false\n      },\n      \"schema\": \"tau.workflow_definition.v1\",\n      \"summary\": \"Inventory a local Git checkout, analyze documentation, tests, and package metadata concurrently, and publish a validated evidence map.\",\n      \"template\": \"templates/repository-evidence-map.json\",\n      \"title\": \"Repository Evidence Map\",\n      \"topology\": \"FAN_OUT_FAN_IN\",\n      \"workflow_id\": \"repository-evidence-map\",\n      \"workflow_version\": 1\n    },\n    {\n      \"availability\": \"AVAILABLE\",\n      \"input_schema\": \"tau.approved_release_request.v1\",\n      \"proof_boundary\": {\n        \"live\": true,\n        \"mocked\": false,\n        \"provider_live\": false\n      },\n      \"result_node_id\": \"finalize-approved-release\",\n      \"result_schema\": \"tau.approved_release_bundle.v1\",\n      \"rung\": 4,\n      \"runtime\": {\n        \"local\": true,\n        \"mutation_allowed\": false,\n        \"network_required\": false,\n        \"provider_required\": false\n      },\n      \"schema\": \"tau.workflow_definition.v1\",\n      \"summary\": \"Prepare concurrent release evidence, revise and accept release notes, then publish one rollback-protected bundle after exact human approval.\",\n      \"template\": \"templates/approved-release-bundle.json\",\n      \"title\": \"Approved Release Bundle\",\n      \"topology\": \"MIXED_RETRY_APPROVAL\",\n      \"workflow_id\": \"approved-release-bundle\",\n      \"workflow_version\": 1\n    },\n    {\n      \"availability\": \"AVAILABLE\",\n      \"input_schema\": \"tau.durable_repository_qualification_request.v1\",\n      \"proof_boundary\": {\n        \"live\": true,\n        \"mocked\": false,\n        \"provider_live\": false\n      },\n      \"result_node_id\": \"finalize-qualification\",\n      \"result_schema\": \"tau.durable_repository_qualification.v1\",\n      \"rung\": 5,\n      \"runtime\": {\n        \"local\": true,\n        \"mutation_allowed\": false,\n        \"network_required\": false,\n        \"provider_required\": false\n      },\n      \"schema\": \"tau.workflow_definition.v1\",\n      \"summary\": \"Qualify concurrent repository evidence, recover interrupted work, repair one affected branch, and publish one idempotent result after exact human approval.\",\n      \"template\": \"templates/durable-repository-qualification.json\",\n      \"title\": \"Durable Repository Qualification\",\n      \"topology\": \"DURABLE_MIXED_REPAIR_APPROVAL\",\n      \"workflow_id\": \"durable-repository-qualification\",\n      \"workflow_version\": 1\n    }\n  ]\n}\n"
+    }
+  },
+  "errors": [],
+  "gh": "/usr/bin/gh",
+  "git": "/usr/bin/git",
+  "herdr": "/home/graham/.local/bin/herdr",
+  "live": true,
+  "memory_url": "http://127.0.0.1:7331",
+  "mocked": false,
+  "ok": true,
+  "proof_boundary": {
+    "does_not_prove": [
+      "Herdr provider DAG execution",
+      "a completed browser/CDP workflow trace",
+      "GitHub live mutation",
+      "provider/model semantic quality"
+    ],
+    "proves": [
+      "Tau skill wrapper resolved the Tau root path",
+      "Tau skill wrapper resolved uv or reported it missing",
+      "Tau CLI help was invoked through the wrapper when available",
+      "Tau runtime doctor was invoked through the wrapper when available",
+      "Tau canonical workflow catalog was queried through the wrapper",
+      "Tau-owned DAG viewer capabilities were queried through the wrapper"
+    ]
+  },
+  "provider_live": false,
+  "resolved_tau_root": "/tmp/tau-issue189-1785166987",
+  "resolved_uv_bin": "/home/graham/.local/bin/uv",
+  "schema": "agent_skills.tau.doctor.v1",
+  "scillm_url": "http://127.0.0.1:4001",
+  "tau_root": "/tmp/tau-issue189-1785166987",
+  "tau_runtime_doctor": {
+    "checked_at": "2026-07-27T16:36:05.485462Z",
+    "commands": {
+      "gh": "/usr/bin/gh",
+      "git": "/usr/bin/git",
+      "herdr": "/home/graham/.local/bin/herdr",
+      "python": "/tmp/tau-issue189-1785166987/.venv/bin/python",
+      "surf": "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+      "uv": "/home/graham/.local/bin/uv"
+    },
+    "errors": [],
+    "external_services": [
+      {
+        "endpoint": "http://127.0.0.1:8601",
+        "health_url": "http://127.0.0.1:8601/health",
+        "name": "memory",
+        "remedy": "Start Graph Memory on 127.0.0.1:8601 or set TAU_MEMORY_URL.",
+        "required": true,
+        "state": "reachable"
+      },
+      {
+        "endpoint": null,
+        "name": "surf",
+        "remedy": "Set TAU_SURF_URL when Surf service probing is desired.",
+        "required": false,
+        "state": "not_configured"
+      },
+      {
+        "endpoint": null,
+        "name": "chatterbox_tts",
+        "remedy": "Set TAU_CHATTERBOX_TTS_URL when voice output is configured.",
+        "required": false,
+        "state": "not_configured"
+      },
+      {
+        "endpoint": null,
+        "name": "realtime_stt",
+        "remedy": "Set TAU_REALTIMESTT_URL when voice input is configured.",
+        "required": false,
+        "state": "not_configured"
+      }
+    ],
+    "lanes": {
+      "browser_cdp": {
+        "ready": true,
+        "reason": "Surf wrapper or surf executable found; run tau browser-cdp-proof for screenshot proof"
+      },
+      "github_apply": {
+        "ready": false,
+        "reason": "live GitHub mutation requires approval, preflight, redaction, and apply policy receipts"
+      },
+      "github_dry_run": {
+        "ready": true,
+        "reason": "gh executable found"
+      },
+      "herdr": {
+        "ready": true,
+        "reason": "herdr executable found"
+      },
+      "local_cli": {
+        "ready": true,
+        "reason": "required Tau runtime files are present"
+      },
+      "local_sanity": {
+        "ready": true,
+        "reason": "uv and pyproject.toml are available"
+      },
+      "provider_live": {
+        "ready": false,
+        "reason": "doctor does not allocate provider panes or call model providers"
+      }
+    },
+    "live": true,
+    "mocked": false,
+    "modes": {
+      "build": {
+        "description": "Editing and approved local command execution.",
+        "mutating_default": true,
+        "permission_default": "ask_for_sensitive_actions",
+        "ready": true
+      },
+      "general": {
+        "description": "Bounded helper mode; mutation requires promotion or approval.",
+        "mutating_default": false,
+        "permission_default": "ask_before_mutation",
+        "ready": true
+      },
+      "plan": {
+        "description": "Read-only planning; edits and writes require approval.",
+        "mutating_default": false,
+        "permission_default": "deny_mutations_without_approval",
+        "ready": true
+      },
+      "review": {
+        "description": "Read-only review with evidence and verdict constraints.",
+        "mutating_default": false,
+        "permission_default": "deny_mutations_without_approval",
+        "ready": true
+      }
+    },
+    "ok": true,
+    "paths": {
+      "chat_contract": {
+        "exists": true,
+        "path": "/tmp/tau-issue189-1785166987/ui/tau-chat-contract.json"
+      },
+      "cli": {
+        "exists": true,
+        "path": "/tmp/tau-issue189-1785166987/src/tau_coding/cli.py"
+      },
+      "proofs_root": {
+        "exists": true,
+        "path": "/tmp/tau-issue189-1785166987/experiments/goal-locked-subagents/proofs"
+      },
+      "pyproject": {
+        "exists": true,
+        "path": "/tmp/tau-issue189-1785166987/pyproject.toml"
+      }
+    },
+    "proof_boundary": {
+      "does_not_prove": [
+        "Herdr pane readiness.",
+        "Live provider/model semantic quality.",
+        "Provider DAG execution.",
+        "GitHub live mutation.",
+        "Browser/CDP UI proof; run tau browser-cdp-proof for screenshot artifacts.",
+        "Full hardening roadmap completion.",
+        "Semantic correctness of any external service response."
+      ],
+      "proves": [
+        "Tau runtime import and CLI dispatch can emit a read-only preflight receipt.",
+        "Required local Tau runtime paths were checked.",
+        "Optional local executables for uv, git, gh, and Herdr were detected without side effects.",
+        "Configured provider entries were inspected without making provider/model calls.",
+        "Configured external service endpoints were probed with read-only health checks."
+      ]
+    },
+    "provider_live": false,
+    "provider_settings": {
+      "default_provider": "openai",
+      "provider_count": 6,
+      "providers": [
+        {
+          "credential": "missing",
+          "kind": "anthropic",
+          "name": "anthropic"
+        },
+        {
+          "credential": "env:CHUTES_API_TOKEN",
+          "kind": "openai-compatible",
+          "name": "chutes"
+        },
+        {
+          "credential": "missing",
+          "kind": "openai-compatible",
+          "name": "huggingface"
+        },
+        {
+          "credential": "missing",
+          "kind": "openai-compatible",
+          "name": "openai"
+        },
+        {
+          "credential": "stored:openai-codex",
+          "kind": "openai-codex",
+          "name": "openai-codex"
+        },
+        {
+          "credential": "missing",
+          "kind": "openai-compatible",
+          "name": "openrouter"
+        }
+      ]
+    },
+    "repo_root": "/tmp/tau-issue189-1785166987",
+    "schema": "tau.doctor.v1",
+    "status": "PASS",
+    "version": "0.1.0",
+    "warnings": []
+  },
+  "uv": "/home/graham/.local/bin/uv"
+}

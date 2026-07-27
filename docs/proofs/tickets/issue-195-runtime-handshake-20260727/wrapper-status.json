@@ -1,0 +1,341 @@
+{
+  "checked_at": "2026-07-27T16:37:00Z",
+  "git": {
+    "head": "acaf22d2 (HEAD, origin/main) Add security audit conformance lane",
+    "remote_main": "acaf22d24f8321cdca14ff1cc3e2c199cfad7465\trefs/heads/main",
+    "status_short": [
+      " M src/tau_coding/cli.py",
+      "?? docs/proofs/tickets/issue-195-runtime-handshake-20260727/",
+      "?? src/tau_coding/runtime_handshake.py"
+    ]
+  },
+  "github_open_issues": [
+    {
+      "labels": [
+        {
+          "color": "0e8a16",
+          "description": "New capability or changed behavior request",
+          "id": "LA_kwDOTG11HM8AAAACpRFAQQ",
+          "name": "type:feature"
+        },
+        {
+          "color": "0052cc",
+          "description": "Agent has leased this ticket",
+          "id": "LA_kwDOTG11HM8AAAACpRFBcg",
+          "name": "maintainer-active"
+        },
+        {
+          "color": "1d76db",
+          "description": "Maintainer route: backend Python or skill runtime",
+          "id": "LA_kwDOTG11HM8AAAACpRFbZw",
+          "name": "route:backend_python_or_skill_runtime"
+        },
+        {
+          "color": "5319e7",
+          "description": "Requested repair agent: coder",
+          "id": "LA_kwDOTG11HM8AAAACpVklOg",
+          "name": "agent:coder"
+        },
+        {
+          "color": "0052cc",
+          "description": "Tau harness and handoff contract",
+          "id": "LA_kwDOTG11HM8AAAACpVkmUw",
+          "name": "tau-harness"
+        },
+        {
+          "color": "5319E7",
+          "description": "Child work tracked by Tau runtime hardening epic #72",
+          "id": "LA_kwDOTG11HM8AAAACrhTFkg",
+          "name": "epic:72"
+        }
+      ],
+      "number": 195,
+      "state": "OPEN",
+      "title": "#72 child: $tau runtime handshake exposes the proven Tau runtime",
+      "url": "https://github.com/grahama1970/tau/issues/195"
+    },
+    {
+      "labels": [
+        {
+          "color": "0e8a16",
+          "description": "New capability or changed behavior request",
+          "id": "LA_kwDOTG11HM8AAAACpRFAQQ",
+          "name": "type:feature"
+        },
+        {
+          "color": "1d76db",
+          "description": "Maintainer route: backend Python or skill runtime",
+          "id": "LA_kwDOTG11HM8AAAACpRFbZw",
+          "name": "route:backend_python_or_skill_runtime"
+        },
+        {
+          "color": "1d76db",
+          "description": "Project watchdog routing label",
+          "id": "LA_kwDOTG11HM8AAAACpRPVjw",
+          "name": "next:coder"
+        },
+        {
+          "color": "5319e7",
+          "description": "Requested repair agent: coder",
+          "id": "LA_kwDOTG11HM8AAAACpVklOg",
+          "name": "agent:coder"
+        },
+        {
+          "color": "ededed",
+          "description": "",
+          "id": "LA_kwDOTG11HM8AAAACqbhztQ",
+          "name": "dag"
+        },
+        {
+          "color": "5319E7",
+          "description": "Child work tracked by Tau runtime hardening epic #72",
+          "id": "LA_kwDOTG11HM8AAAACrhTFkg",
+          "name": "epic:72"
+        }
+      ],
+      "number": 186,
+      "state": "OPEN",
+      "title": "#72 child: canonical scheduler conformance workload",
+      "url": "https://github.com/grahama1970/tau/issues/186"
+    },
+    {
+      "labels": [
+        {
+          "color": "0e8a16",
+          "description": "New capability or changed behavior request",
+          "id": "LA_kwDOTG11HM8AAAACpRFAQQ",
+          "name": "type:feature"
+        },
+        {
+          "color": "b60205",
+          "description": "Progress is blocked",
+          "id": "LA_kwDOTG11HM8AAAACpRFBlw",
+          "name": "maintainer-blocked"
+        },
+        {
+          "color": "d93f0b",
+          "description": "Human input or authority required",
+          "id": "LA_kwDOTG11HM8AAAACpRFBuA",
+          "name": "needs-human"
+        },
+        {
+          "color": "ededed",
+          "description": "",
+          "id": "LA_kwDOTG11HM8AAAACqbhztQ",
+          "name": "dag"
+        },
+        {
+          "color": "5319e7",
+          "description": "Route: ops, scheduler, DAG, service orchestration, transport runtime",
+          "id": "LA_kwDOTG11HM8AAAACsp_rSQ",
+          "name": "route:ops_or_scheduler"
+        },
+        {
+          "color": "ededed",
+          "description": "",
+          "id": "LA_kwDOTG11HM8AAAACtWpKiA",
+          "name": "ease-of-use"
+        },
+        {
+          "color": "c5def5",
+          "description": "",
+          "id": "LA_kwDOTG11HM8AAAACtWs8kg",
+          "name": "memory"
+        },
+        {
+          "color": "c5def5",
+          "description": "",
+          "id": "LA_kwDOTG11HM8AAAACtWs9Tw",
+          "name": "viewer"
+        }
+      ],
+      "number": 180,
+      "state": "OPEN",
+      "title": "Epic/fleet: productize Tau DAG templates and authoritative viewer UX from proven agentic patterns",
+      "url": "https://github.com/grahama1970/tau/issues/180"
+    },
+    {
+      "labels": [
+        {
+          "color": "0e8a16",
+          "description": "New capability or changed behavior request",
+          "id": "LA_kwDOTG11HM8AAAACpRFAQQ",
+          "name": "type:feature"
+        },
+        {
+          "color": "b60205",
+          "description": "Progress is blocked",
+          "id": "LA_kwDOTG11HM8AAAACpRFBlw",
+          "name": "maintainer-blocked"
+        },
+        {
+          "color": "d93f0b",
+          "description": "Human input or authority required",
+          "id": "LA_kwDOTG11HM8AAAACpRFBuA",
+          "name": "needs-human"
+        },
+        {
+          "color": "1d76db",
+          "description": "Maintainer route: backend Python or skill runtime",
+          "id": "LA_kwDOTG11HM8AAAACpRFbZw",
+          "name": "route:backend_python_or_skill_runtime"
+        }
+      ],
+      "number": 72,
+      "state": "OPEN",
+      "title": "Epic: Harden Tau DAG runtime for durable, secure, adaptive complex workflows",
+      "url": "https://github.com/grahama1970/tau/issues/72"
+    }
+  ],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proofs": {
+    "chat_contract": "/tmp/tau-issue189-1785166987/ui/tau-chat-contract.json",
+    "chat_contract_exists": true,
+    "manifest_count": 12,
+    "manifests": [
+      {
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "path": "/tmp/tau-issue189-1785166987/experiments/goal-locked-subagents/proofs/ux-lab-memory-route-proof-20260628T141615Z/manifest.json",
+        "schema": "tau.ux_lab_memory_route_proof_manifest.v1"
+      },
+      {
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "path": "/tmp/tau-issue189-1785166987/experiments/goal-locked-subagents/proofs/ux-lab-answer-route-proof-panel-20260628T221546Z/manifest.json",
+        "schema": "tau.proof_manifest.v1"
+      },
+      {
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "path": "/tmp/tau-issue189-1785166987/experiments/goal-locked-subagents/proofs/ux-lab-movie-annotation-modal-20260628T214645Z/manifest.json",
+        "schema": "tau.proof_manifest.v1"
+      },
+      {
+        "live": true,
+        "mocked": false,
+        "ok": "evidence-recorded",
+        "path": "/tmp/tau-issue189-1785166987/experiments/goal-locked-subagents/proofs/ux-lab-personaplex-embry-failclosed-20260628T201300Z/manifest.json",
+        "schema": "tau.proof_manifest.v1"
+      },
+      {
+        "live": true,
+        "mocked": false,
+        "ok": "evidence-recorded",
+        "path": "/tmp/tau-issue189-1785166987/experiments/goal-locked-subagents/proofs/ux-lab-real-tui-receipt-stream-20260628T200200Z/manifest.json",
+        "schema": "tau.proof_manifest.v1"
+      },
+      {
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "path": "/tmp/tau-issue189-1785166987/experiments/goal-locked-subagents/proofs/ux-lab-movie-annotation-receipt-endpoint-20260628T220132Z/manifest.json",
+        "schema": "tau.proof_manifest.v1"
+      },
+      {
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "path": "/tmp/tau-issue189-1785166987/experiments/goal-locked-subagents/proofs/ux-lab-repeatable-same-message-tui-mirror-20260628T232614Z/manifest.json",
+        "schema": "tau.proof_manifest.v1"
+      },
+      {
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "path": "/tmp/tau-issue189-1785166987/experiments/goal-locked-subagents/proofs/ux-lab-same-message-visible-tui-mirror-20260628T231859Z/manifest.json",
+        "schema": "tau.proof_manifest.v1"
+      },
+      {
+        "live": true,
+        "mocked": false,
+        "ok": "evidence-recorded",
+        "path": "/tmp/tau-issue189-1785166987/experiments/goal-locked-subagents/proofs/ux-lab-xterm-resizable-chat-tui-20260628T173200Z/manifest.json",
+        "schema": "tau.proof_manifest.v1"
+      },
+      {
+        "live": false,
+        "mocked": true,
+        "ok": "evidence-recorded",
+        "path": "/tmp/tau-issue189-1785166987/experiments/goal-locked-subagents/proofs/ux-lab-side-pane-textual-tui-20260628T205815Z/manifest.json",
+        "schema": "tau.proof_manifest.v1"
+      },
+      {
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "path": "/tmp/tau-issue189-1785166987/experiments/goal-locked-subagents/proofs/ux-lab-watchdog-receipt-chain-panel-20260628T144900Z/manifest.json",
+        "schema": "tau.ux_lab_watchdog_receipt_chain_panel_proof.v1"
+      },
+      {
+        "live": false,
+        "mocked": true,
+        "ok": "evidence-recorded",
+        "path": "/tmp/tau-issue189-1785166987/experiments/goal-locked-subagents/proofs/ux-lab-textual-tui-proof-card-20260628T205044Z/manifest.json",
+        "schema": "tau.proof_manifest.v1"
+      }
+    ],
+    "proofs_root": "/tmp/tau-issue189-1785166987/experiments/goal-locked-subagents/proofs",
+    "schema": "agent_skills.tau.latest_proofs.v1"
+  },
+  "resolved_tau_root": "/tmp/tau-issue189-1785166987",
+  "resolved_uv_bin": "/home/graham/.local/bin/uv",
+  "schema": "agent_skills.tau.status.v1",
+  "tau_root": "/tmp/tau-issue189-1785166987",
+  "watchdog": {
+    "cron_installed": true,
+    "cron_log": "/home/graham/.local/state/project-watchdog/logs/cron.log",
+    "event_log": "/home/graham/.local/state/project-watchdog/logs/project-watchdog.log",
+    "latest_receipts": [
+      {
+        "handled_count": 1,
+        "ok": false,
+        "path": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260727T123337Z/receipt.json",
+        "run_id": "project-watchdog-20260727T123337Z",
+        "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+        "status": "NEEDS_ATTENTION"
+      },
+      {
+        "handled_count": 1,
+        "ok": false,
+        "path": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260727T135601Z/receipt.json",
+        "run_id": "project-watchdog-20260727T135601Z",
+        "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+        "status": "NEEDS_ATTENTION"
+      },
+      {
+        "handled_count": 1,
+        "ok": false,
+        "path": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260727T135701Z/receipt.json",
+        "run_id": "project-watchdog-20260727T135701Z",
+        "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+        "status": "NEEDS_ATTENTION"
+      },
+      {
+        "handled_count": 1,
+        "ok": false,
+        "path": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260727T135801Z/receipt.json",
+        "run_id": "project-watchdog-20260727T135801Z",
+        "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+        "status": "NEEDS_ATTENTION"
+      },
+      {
+        "handled_count": 1,
+        "ok": false,
+        "path": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260727T135901Z/receipt.json",
+        "run_id": "project-watchdog-20260727T135901Z",
+        "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+        "status": "NEEDS_ATTENTION"
+      }
+    ],
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "schema": "agent_skills.tau.watchdog_status.v1"
+  }
+}

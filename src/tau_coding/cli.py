@@ -269,6 +269,7 @@ from tau_coding.review_code_skill_adapter import write_review_code_skill_adapter
 from tau_coding.review_findings import write_review_findings_receipt
 from tau_coding.run_report import write_run_report
 from tau_coding.run_status import build_dag_viewer_link, build_run_status
+from tau_coding.runtime_handshake import write_runtime_handshake
 from tau_coding.sandbox_run import run_sandboxed_command
 from tau_coding.scillm_chat_review import write_scillm_chat_review_receipt
 from tau_coding.scillm_subagent_gate import validate_scillm_subagent_loop_summary
@@ -4715,6 +4716,17 @@ def main(
         try:
             options = _parse_security_audit_conformance_cli_args(positional_args[1:])
             payload = project_agent_security_audit_conformance_command(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("status") != "PASS":
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "runtime-handshake":
+        try:
+            options = _parse_runtime_handshake_cli_args(positional_args[1:])
+            payload = project_agent_runtime_handshake_command(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -12535,6 +12547,26 @@ def _parse_security_audit_conformance_cli_args(args: list[str]) -> dict[str, Pat
     }
 
 
+def _parse_runtime_handshake_cli_args(args: list[str]) -> dict[str, Path]:
+    output: Path | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--output":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--output requires a value")
+            output = Path(args[index])
+        elif arg.startswith("--output="):
+            output = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"Unknown runtime-handshake option: {arg}")
+        index += 1
+    if output is None:
+        raise RuntimeError("runtime-handshake requires --output <proof.json>")
+    return {"output": output}
+
+
 def _parse_persona_dream_panel_proof_cli_args(
     args: list[str],
 ) -> dict[str, Path | str | bool | None]:
@@ -14714,6 +14746,12 @@ def project_agent_security_audit_conformance_command(
         output,
         allow_live_filesystem=allow_live_filesystem,
     )
+
+
+def project_agent_runtime_handshake_command(*, output: Path) -> dict[str, object]:
+    """Write the Tau runtime handshake receipt."""
+
+    return write_runtime_handshake(output)
 
 
 def project_agent_persona_dream_panel_proof_command(
