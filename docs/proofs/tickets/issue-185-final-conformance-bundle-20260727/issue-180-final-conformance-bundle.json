@@ -1,0 +1,145 @@
+{
+  "acceptance": {
+    "reason": "Parent issue #180 remains open; human acceptance is still required.",
+    "status": "BLOCKED_NEEDS_HUMAN_ACCEPTANCE"
+  },
+  "acceptance_recorded_or_blocked": true,
+  "all_children_closed": true,
+  "artifact_errors": [],
+  "browser_packet": {
+    "html": "/tmp/tau-issue185.CenDJ2/docs/proofs/tickets/issue-185-final-conformance-bundle-20260727/issue-180-final-conformance-bundle.html",
+    "screenshot": "/tmp/tau-issue185.CenDJ2/docs/proofs/tickets/issue-185-final-conformance-bundle-20260727/issue-180-final-conformance-bundle.png",
+    "screenshot_sha256": "sha256:3a7f178a4d5c1b19fc34240a2060d5e7d4303855ed47e74a1a1845dd9cc7c4fb"
+  },
+  "child_artifacts": [
+    {
+      "errors": [],
+      "issue": 182,
+      "receipt": {
+        "exists": true,
+        "live": true,
+        "mocked": false,
+        "path": "/tmp/tau-issue185.CenDJ2/docs/proofs/tickets/issue-182-installed-wheel-viewer-proof-20260727/installed-wheel-viewer-proof.json",
+        "provider_live": false,
+        "schema": "tau.installed_wheel_viewer_proof.v1",
+        "sha256": "sha256:1e7ca0970b5a216610c340f0b985f4e424d571f3f21a424c65e554dd3ad9c84b",
+        "status": "PASS"
+      },
+      "screenshots": [
+        {
+          "bytes": 126592,
+          "path": "/tmp/tau-issue185.CenDJ2/docs/proofs/tickets/issue-182-installed-wheel-viewer-proof-20260727/installed-wheel-viewer-desktop.png",
+          "sha256": "sha256:d95d7090549a5a3492b7877b67d43954353271e1ff53527d1a54b8043cf7cbeb"
+        },
+        {
+          "bytes": 46449,
+          "path": "/tmp/tau-issue185.CenDJ2/docs/proofs/tickets/issue-182-installed-wheel-viewer-proof-20260727/installed-wheel-viewer-mobile.png",
+          "sha256": "sha256:7023a9f7253b24c9e6bf4492f2d390f1f6f90dc1c3c6e64d1ccc5140f7de471e"
+        }
+      ]
+    },
+    {
+      "errors": [],
+      "issue": 183,
+      "receipt": {
+        "exists": true,
+        "live": true,
+        "mocked": false,
+        "path": "/tmp/tau-issue185.CenDJ2/docs/proofs/tickets/issue-183-ticket-subagent-closure-proof-20260727/ticket-subagent-closure-proof.json",
+        "provider_live": false,
+        "schema": "tau.ticket_subagent_closure_proof.v1",
+        "sha256": "sha256:7786a4cd9c0ffbc63ff42a5ebf4a441fe5aad47a8cdeece06c6fc4b41aafef7f",
+        "status": "PASS"
+      },
+      "screenshots": []
+    },
+    {
+      "errors": [],
+      "issue": 184,
+      "receipt": {
+        "exists": true,
+        "live": true,
+        "mocked": false,
+        "path": "/tmp/tau-issue185.CenDJ2/docs/proofs/tickets/issue-184-memory-provenance-proof-20260727/memory-provenance-proof.json",
+        "provider_live": false,
+        "schema": "tau.memory_provenance_proof.v1",
+        "sha256": "sha256:0023850f49e268733c8ef3f3ae3aad3016f8a20a755d111a99f8973939e8ad14",
+        "status": "PASS"
+      },
+      "screenshots": [
+        {
+          "bytes": 67391,
+          "path": "/tmp/tau-issue185.CenDJ2/docs/proofs/tickets/issue-184-memory-provenance-proof-20260727/memory-provenance-viewer.png",
+          "sha256": "sha256:84e28efbefddac8407c065ea3782fcccd31750d7b70306d36a840e84b7a1a5df"
+        }
+      ]
+    }
+  ],
+  "children": [
+    {
+      "closedAt": "2026-07-27T14:20:06Z",
+      "number": 182,
+      "state": "CLOSED",
+      "stateReason": "COMPLETED",
+      "title": "#180 child: prove installed Tau wheel serves viewer without runtime Node",
+      "updatedAt": "2026-07-27T14:20:06Z",
+      "url": "https://github.com/grahama1970/tau/issues/182"
+    },
+    {
+      "closedAt": "2026-07-27T14:10:43Z",
+      "number": 183,
+      "state": "CLOSED",
+      "stateReason": "COMPLETED",
+      "title": "Enforce live E2E closure evidence for Tau code-ticket subagents",
+      "updatedAt": "2026-07-27T14:10:43Z",
+      "url": "https://github.com/grahama1970/tau/issues/183"
+    },
+    {
+      "closedAt": "2026-07-27T14:28:22Z",
+      "number": 184,
+      "state": "CLOSED",
+      "stateReason": "COMPLETED",
+      "title": "#180 child: prove Memory provenance live paths in Tau catalogue and viewer",
+      "updatedAt": "2026-07-27T14:28:22Z",
+      "url": "https://github.com/grahama1970/tau/issues/184"
+    }
+  ],
+  "final_packet_issue": {
+    "closedAt": null,
+    "number": 185,
+    "state": "OPEN",
+    "stateReason": "",
+    "title": "#180 child: assemble final conformance bundle and acceptance packet",
+    "updatedAt": "2026-07-27T14:28:47Z",
+    "url": "https://github.com/grahama1970/tau/issues/185"
+  },
+  "live": true,
+  "mocked": false,
+  "parent_issue": {
+    "closedAt": null,
+    "number": 180,
+    "state": "OPEN",
+    "stateReason": "",
+    "title": "Epic/fleet: productize Tau DAG templates and authoritative viewer UX from proven agentic patterns",
+    "updatedAt": "2026-07-27T13:56:49Z",
+    "url": "https://github.com/grahama1970/tau/issues/180"
+  },
+  "proof_boundary": {
+    "does_not_prove": [
+      "Human acceptance of #180.",
+      "Provider semantic correctness.",
+      "That future regressions cannot reopen a child issue."
+    ],
+    "proves": [
+      "Tau queried GitHub live for #180 prerequisite child issue states.",
+      "Tau read retained local proof artifacts for the closed child tickets.",
+      "Tau generated a browser-readable final acceptance packet.",
+      "Tau records #180 as blocked when human acceptance has not been recorded."
+    ]
+  },
+  "provider_live": false,
+  "remote_main_sha": "56b7ecba4fa93ac760dab409554b0cdf9810059c",
+  "repo": "grahama1970/tau",
+  "schema": "tau.issue_180_final_conformance_bundle.v1",
+  "status": "PASS"
+}
