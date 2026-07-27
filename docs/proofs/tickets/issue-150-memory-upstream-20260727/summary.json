@@ -1,0 +1,163 @@
+{
+  "base_url": "http://127.0.0.1:8601",
+  "generated_at_epoch": 1785148903.1984987,
+  "probes": [
+    {
+      "elapsed_ms": 16.76,
+      "found": null,
+      "has_top_level_skill_chain": false,
+      "has_top_level_tool_chain": false,
+      "item_count": 0,
+      "method": "GET",
+      "name": "health",
+      "path": "/health",
+      "request": null,
+      "response_keys": [
+        "conversation_classifier_device",
+        "conversation_classifier_ok",
+        "intent_mapper_ok",
+        "memory_db_connected",
+        "ok",
+        "sparta_controls_count",
+        "sparta_corpus_ok",
+        "sparta_corpus_required",
+        "status"
+      ],
+      "should_scan": null,
+      "status_code": 200
+    },
+    {
+      "elapsed_ms": 522.87,
+      "found": true,
+      "has_top_level_skill_chain": false,
+      "has_top_level_tool_chain": false,
+      "item_count": 5,
+      "method": "POST",
+      "name": "recall_brief_default",
+      "path": "/recall",
+      "request": {
+        "app": "tau",
+        "brief": true,
+        "k": 5,
+        "q": "Tau GitHub ticket repair should return a proven skill_chain with memory and best-practices-github-ticket",
+        "scope": "tau"
+      },
+      "response_keys": [
+        "confidence",
+        "errors",
+        "found",
+        "items",
+        "meta",
+        "should_scan"
+      ],
+      "should_scan": false,
+      "status_code": 200
+    },
+    {
+      "elapsed_ms": 1067.03,
+      "found": false,
+      "has_top_level_skill_chain": false,
+      "has_top_level_tool_chain": false,
+      "item_count": 0,
+      "method": "POST",
+      "name": "recall_skill_chains_targeted",
+      "path": "/recall",
+      "request": {
+        "app": "tau",
+        "brief": true,
+        "collections": [
+          "skill_chains"
+        ],
+        "k": 5,
+        "q": "Tau GitHub ticket repair should return a proven skill_chain with memory and best-practices-github-ticket",
+        "recommendation": "skill_chain",
+        "scope": "tau"
+      },
+      "response_keys": [
+        "confidence",
+        "errors",
+        "found",
+        "items",
+        "meta",
+        "should_scan"
+      ],
+      "should_scan": true,
+      "status_code": 200
+    },
+    {
+      "elapsed_ms": 50.39,
+      "found": false,
+      "has_top_level_skill_chain": false,
+      "has_top_level_tool_chain": false,
+      "item_count": 0,
+      "method": "POST",
+      "name": "recall_tool_chains_targeted",
+      "path": "/recall",
+      "request": {
+        "app": "tau",
+        "brief": true,
+        "collections": [
+          "tool_chains"
+        ],
+        "k": 5,
+        "q": "Tau ticket repair should return a tool_chain for grep read edit bash with traversal_path",
+        "recommendation": "tool_chain",
+        "scope": "tau"
+      },
+      "response_keys": [
+        "confidence",
+        "errors",
+        "found",
+        "items",
+        "meta",
+        "should_scan"
+      ],
+      "should_scan": true,
+      "status_code": 200
+    },
+    {
+      "elapsed_ms": 48.71,
+      "found": null,
+      "has_top_level_skill_chain": false,
+      "has_top_level_tool_chain": false,
+      "item_count": 0,
+      "method": "POST",
+      "name": "list_skill_chains",
+      "path": "/list",
+      "request": {
+        "collection": "skill_chains",
+        "limit": 5
+      },
+      "response_keys": [
+        "collection",
+        "count",
+        "documents",
+        "limit",
+        "offset",
+        "total"
+      ],
+      "should_scan": null,
+      "status_code": 200
+    },
+    {
+      "elapsed_ms": 45.78,
+      "found": null,
+      "has_top_level_skill_chain": false,
+      "has_top_level_tool_chain": false,
+      "item_count": 0,
+      "method": "POST",
+      "name": "list_tool_chains",
+      "path": "/list",
+      "request": {
+        "collection": "tool_chains",
+        "limit": 5
+      },
+      "response_keys": [
+        "detail"
+      ],
+      "should_scan": null,
+      "status_code": 404
+    }
+  ],
+  "schema": "tau.memory_upstream_repro.v1"
+}

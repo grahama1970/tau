@@ -1,0 +1,60 @@
+{
+  "elapsed_ms": 50.39,
+  "found": false,
+  "has_top_level_skill_chain": false,
+  "has_top_level_tool_chain": false,
+  "item_count": 0,
+  "method": "POST",
+  "name": "recall_tool_chains_targeted",
+  "path": "/recall",
+  "request": {
+    "app": "tau",
+    "brief": true,
+    "collections": [
+      "tool_chains"
+    ],
+    "k": 5,
+    "q": "Tau ticket repair should return a tool_chain for grep read edit bash with traversal_path",
+    "recommendation": "tool_chain",
+    "scope": "tau"
+  },
+  "response": {
+    "confidence": 0.0,
+    "errors": [],
+    "found": false,
+    "items": [],
+    "meta": {
+      "collections_filter": [
+        "tool_chains"
+      ],
+      "k": 5,
+      "memory_first": true,
+      "q": "Tau ticket repair should return a tool_chain for grep read edit bash with traversal_path",
+      "runtime_pressure": {
+        "active_workloads": [],
+        "errors": [
+          "No module named 'graph_memory.runtime_pressure'"
+        ],
+        "level": "unknown",
+        "recommended_action": "Runtime pressure collector failed; use normal recall behavior.",
+        "slow_query_risk": false
+      },
+      "scope": "tau",
+      "threshold": 0.3,
+      "took_ms": 5,
+      "used_dense": true,
+      "used_reranker": false
+    },
+    "should_scan": true
+  },
+  "response_keys": [
+    "confidence",
+    "errors",
+    "found",
+    "items",
+    "meta",
+    "should_scan"
+  ],
+  "should_scan": true,
+  "status_code": 200
+}

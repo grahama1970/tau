@@ -1,0 +1,22 @@
+{
+  "elapsed_ms": 45.78,
+  "found": null,
+  "has_top_level_skill_chain": false,
+  "has_top_level_tool_chain": false,
+  "item_count": 0,
+  "method": "POST",
+  "name": "list_tool_chains",
+  "path": "/list",
+  "request": {
+    "collection": "tool_chains",
+    "limit": 5
+  },
+  "response": {
+    "detail": "Collection 'tool_chains' not found"
+  },
+  "response_keys": [
+    "detail"
+  ],
+  "should_scan": null,
+  "status_code": 404
+}

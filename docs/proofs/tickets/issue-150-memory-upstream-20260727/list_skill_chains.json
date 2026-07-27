@@ -1,0 +1,32 @@
+{
+  "elapsed_ms": 48.71,
+  "found": null,
+  "has_top_level_skill_chain": false,
+  "has_top_level_tool_chain": false,
+  "item_count": 0,
+  "method": "POST",
+  "name": "list_skill_chains",
+  "path": "/list",
+  "request": {
+    "collection": "skill_chains",
+    "limit": 5
+  },
+  "response": {
+    "collection": "skill_chains",
+    "count": 0,
+    "documents": [],
+    "limit": 5,
+    "offset": 0,
+    "total": 0
+  },
+  "response_keys": [
+    "collection",
+    "count",
+    "documents",
+    "limit",
+    "offset",
+    "total"
+  ],
+  "should_scan": null,
+  "status_code": 200
+}
