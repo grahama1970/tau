@@ -1,0 +1,15 @@
+{
+  "authorization_receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/receipts/correction-authorization.json",
+  "authorization_status": "PASS",
+  "checked_at": "2026-07-27T16:17:17Z",
+  "controlled_source_sha256": "sha256:83aaefcbd36ee9e8392aaf1d2abd460ff317df936de183e6cf71ec55e6d4b19e",
+  "corrected_artifact": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/correction/corrected-redacted-summary.txt",
+  "corrected_artifact_sha256": "sha256:ae6b967dfb9545abcff134a554b03efe5c3dc589cd9b26e902ee37c29d4710d7",
+  "live": true,
+  "mocked": false,
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/receipts/correction-action.json",
+  "redaction_applied": true,
+  "schema": "tau.controlled_data_correction_action.v1",
+  "status": "PASS"
+}

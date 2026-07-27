@@ -1,0 +1,16 @@
+{
+  "actor_id": "unverified-agent",
+  "actor_type": "agent",
+  "eligibility": {
+    "approved_for_boundary": [],
+    "export_control_training_current": false,
+    "foreign_person": false,
+    "us_person": "unknown"
+  },
+  "roles": [
+    "worker"
+  ],
+  "schema": "tau.actor_access_manifest.v1",
+  "trusted": false,
+  "verified": false
+}

@@ -1,0 +1,62 @@
+{
+  "actor": {
+    "actor_id": "human-export-officer",
+    "actor_type": "human",
+    "approved_for_boundary": [
+      "ITAR"
+    ],
+    "foreign_person": false,
+    "roles": [
+      "approver"
+    ],
+    "trusted": true,
+    "us_person": "verified",
+    "verified": true
+  },
+  "actor_manifest": {
+    "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/controlled-data/authorized-actor.json",
+    "schema": "tau.actor_access_manifest.v1",
+    "sha256": "sha256:22d554743539de1077c55ba97eb157236844192cac2277ce364ea5dffaf7c54c"
+  },
+  "alert_codes": [],
+  "alerts": [],
+  "approval_packet": {
+    "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/controlled-data/approval-packet.json",
+    "schema": "tau.human_approval_packet.v1",
+    "sha256": "sha256:30310197909260fc4cd862c34285f11d082c3c74e8c38adf925d1592e21a726c"
+  },
+  "checked_at": "2026-07-27T16:17:17Z",
+  "data_boundary": {
+    "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/controlled-data/data-boundary.json",
+    "schema": "tau.data_boundary.v1",
+    "sha256": "sha256:6140ddd569ced603f58da64b609d720d66775616c4d0541c97749458bfd5e0d8"
+  },
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "ITAR compliance.",
+      "Export-control legal sufficiency.",
+      "Legal identity proof.",
+      "U.S.-person status truth beyond declared verified metadata.",
+      "Human identity non-repudiation.",
+      "Runtime sandbox enforcement."
+    ],
+    "proves": [
+      "Tau inspected declared actor/access metadata before controlled-boundary work.",
+      "Tau checked data-boundary, actor verification, U.S.-person declaration, foreign-person access, and approval actor consistency deterministically.",
+      "No provider, GitHub, Memory, research, browser, or filesystem mutation was executed."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/receipts/correction-authorization.json",
+  "recommended_action": {
+    "next_agent": "orchestrator",
+    "reason": "Declared actor/access metadata passed the controlled-boundary preflight.",
+    "type": "continue"
+  },
+  "required_boundary": "ITAR",
+  "schema": "tau.itar_access_preflight_receipt.v1",
+  "status": "PASS"
+}

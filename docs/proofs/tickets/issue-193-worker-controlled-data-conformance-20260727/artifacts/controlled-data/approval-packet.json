@@ -1,0 +1,11 @@
+{
+  "actor": {
+    "id": "human-export-officer",
+    "role": "export_control_officer"
+  },
+  "approved": true,
+  "checked_at": "2026-07-27T16:17:17Z",
+  "schema": "tau.human_approval_packet.v1",
+  "scope": "redacted correction artifact only",
+  "target": "synthetic-controlled-data-correction"
+}

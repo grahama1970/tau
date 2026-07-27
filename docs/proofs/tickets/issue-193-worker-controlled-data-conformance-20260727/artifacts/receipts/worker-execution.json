@@ -1,0 +1,21 @@
+{
+  "checked_at": "2026-07-27T16:17:17Z",
+  "command": [
+    "/tmp/tau-issue189-1785166987/.venv/bin/python",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/local_worker.py",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/worker-work-order.json"
+  ],
+  "exit_code": 0,
+  "live": true,
+  "mocked": false,
+  "process_executed": true,
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/receipts/worker-execution.json",
+  "schema": "tau.local_worker_execution_receipt.v1",
+  "status": "PASS",
+  "stderr_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/receipts/worker-execution.json.stderr.txt",
+  "stdout_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/receipts/worker-execution.json.stdout.txt",
+  "work_order_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/worker-work-order.json",
+  "work_order_sha256": "sha256:00227429404986f371d0d297594f1fd66aa52b663edcc595aa8bbe6e7387af5a",
+  "worker_kind": "local-python-subprocess"
+}

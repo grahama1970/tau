@@ -1,0 +1,1 @@
+{"status": "PASS", "result_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/worker-repo/worker-result.json"}

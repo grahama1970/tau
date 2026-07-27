@@ -1,0 +1,153 @@
+{
+  "agent": "local-python-worker",
+  "alert_codes": [],
+  "alerts": [],
+  "attempt": 1,
+  "changed_files": [
+    "reports/worker-output.json"
+  ],
+  "course_correction": null,
+  "course_correction_artifacts": [],
+  "course_correction_path": null,
+  "dag_id": "worker-controlled-data-conformance-dag",
+  "data_boundary": null,
+  "data_boundary_artifact": null,
+  "data_boundary_bytes": null,
+  "data_boundary_sha256": null,
+  "execution_substrate": "local-low-risk",
+  "goal_hash": "sha256:worker-controlled-data-conformance",
+  "herdr_binding": null,
+  "herdr_receipt_path": null,
+  "high_stakes": false,
+  "live": true,
+  "mocked": false,
+  "model_provider_route": {
+    "provider": "local-python-subprocess",
+    "provider_live": false,
+    "surface": "local_subprocess"
+  },
+  "next_recommended_route": "reviewer",
+  "node_id": "controlled-data-worker",
+  "normalized_changed_files": [
+    "reports/worker-output.json"
+  ],
+  "normalized_result_artifacts": [
+    "reports/worker-output.json",
+    "logs/worker.log"
+  ],
+  "observed_model": null,
+  "observed_provider": null,
+  "ok": true,
+  "policy_profile": null,
+  "policy_profile_artifact": null,
+  "policy_profile_bytes": null,
+  "policy_profile_sha256": null,
+  "proof_scope": {
+    "does_not_prove": [
+      "The worker is trustworthy.",
+      "The code is semantically correct.",
+      "Tests passed unless durable logs are present.",
+      "Provider/model semantic quality.",
+      "The worker was launched by Tau unless provider_live is true and a provider_execution_attestation is present."
+    ],
+    "proves": [
+      "Tau inspected an external coding worker result before accepting it.",
+      "Tau recorded hashes for the validated work order and worker result.",
+      "Tau checked goal hash, changed paths, required artifacts, test logs, mutation claims, and research claims.",
+      "Tau emitted a bounded course-correction receipt when worker output was blocked.",
+      "When a SciLLM launch receipt is supplied, Tau checked its provider execution and work-order/result bindings."
+    ]
+  },
+  "provider_execution_attestation": null,
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/receipts/worker-validation.json",
+  "required_artifact_descriptors": [
+    {
+      "artifact": "reports/worker-output.json",
+      "bytes": 129,
+      "exists": true,
+      "label": "required_artifact",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/worker-repo/reports/worker-output.json",
+      "sha256": "sha256:cdff913fa3a6649489d3dbbdae1f2835657e24a4b3964695dab9cb7a9d423293"
+    },
+    {
+      "artifact": "logs/worker.log",
+      "bytes": 37,
+      "exists": true,
+      "label": "required_artifact",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/worker-repo/logs/worker.log",
+      "sha256": "sha256:5fa63095dbbf78507ba0c3414468608ebd5c6cb64af6a7140af2c75bbfb0d82f"
+    }
+  ],
+  "required_artifacts": [
+    "reports/worker-output.json",
+    "logs/worker.log"
+  ],
+  "research_receipts": [],
+  "result_artifact_descriptors": [
+    {
+      "artifact": "reports/worker-output.json",
+      "bytes": 129,
+      "exists": true,
+      "label": "result_artifact",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/worker-repo/reports/worker-output.json",
+      "sha256": "sha256:cdff913fa3a6649489d3dbbdae1f2835657e24a4b3964695dab9cb7a9d423293"
+    },
+    {
+      "artifact": "logs/worker.log",
+      "bytes": 37,
+      "exists": true,
+      "label": "result_artifact",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/worker-repo/logs/worker.log",
+      "sha256": "sha256:5fa63095dbbf78507ba0c3414468608ebd5c6cb64af6a7140af2c75bbfb0d82f"
+    }
+  ],
+  "result_artifacts": [
+    "reports/worker-output.json",
+    "logs/worker.log"
+  ],
+  "result_bytes": 449,
+  "result_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/worker-repo/worker-result.json",
+  "result_schema": "tau.omp_worker_result.v1",
+  "result_sha256": "sha256:977d595239b7b8d3b8080224b9a92294584b371e071218eb27d60219fa740628",
+  "sandbox_receipt_path": null,
+  "schema": "tau.omp_worker_receipt.v1",
+  "side_effect_receipts": [],
+  "status": "PASS",
+  "substrate_receipts": [],
+  "test_log_artifacts": [
+    {
+      "artifact": "logs/worker.log",
+      "bytes": 37,
+      "exists": true,
+      "label": "test_log",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/worker-repo/logs/worker.log",
+      "sha256": "sha256:5fa63095dbbf78507ba0c3414468608ebd5c6cb64af6a7140af2c75bbfb0d82f",
+      "test_index": 0,
+      "test_name": "local-worker-script",
+      "test_status": "PASS"
+    }
+  ],
+  "timestamp": "2026-07-27T16:17:17Z",
+  "validated_artifacts": [
+    {
+      "bytes": 994,
+      "exists": true,
+      "label": "work_order",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/worker-work-order.json",
+      "sha256": "sha256:00227429404986f371d0d297594f1fd66aa52b663edcc595aa8bbe6e7387af5a"
+    },
+    {
+      "bytes": 449,
+      "exists": true,
+      "label": "worker_result",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/worker-repo/worker-result.json",
+      "sha256": "sha256:977d595239b7b8d3b8080224b9a92294584b371e071218eb27d60219fa740628"
+    }
+  ],
+  "work_order_bytes": 994,
+  "work_order_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/worker-work-order.json",
+  "work_order_schema": "tau.executor.omp.v1",
+  "work_order_sha256": "sha256:00227429404986f371d0d297594f1fd66aa52b663edcc595aa8bbe6e7387af5a",
+  "worker_kind": "omp"
+}

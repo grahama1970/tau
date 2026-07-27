@@ -1,0 +1,21 @@
+{
+  "artifacts": [
+    "reports/worker-output.json",
+    "logs/worker.log"
+  ],
+  "changed_files": [
+    "reports/worker-output.json"
+  ],
+  "findings": [],
+  "goal_hash": "sha256:worker-controlled-data-conformance",
+  "next_recommended_route": "reviewer",
+  "schema": "tau.omp_worker_result.v1",
+  "status": "PASS",
+  "tests_run": [
+    {
+      "log_path": "logs/worker.log",
+      "name": "local-worker-script",
+      "status": "PASS"
+    }
+  ]
+}

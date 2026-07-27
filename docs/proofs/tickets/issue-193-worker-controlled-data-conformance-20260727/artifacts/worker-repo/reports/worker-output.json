@@ -1,0 +1,5 @@
+{
+  "schema": "tau.local_worker_output.v1",
+  "status": "PASS",
+  "summary": "worker emitted non-sensitive operational output"
+}

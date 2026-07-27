@@ -1,0 +1,49 @@
+{
+  "artifacts_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts",
+  "checked_at": "2026-07-27T16:17:17Z",
+  "checks": {
+    "controlled_data_denial_receipt_present": true,
+    "correction_action_receipt_present": true,
+    "correction_authorization_receipt_present": true,
+    "correction_validation_receipt_present": true,
+    "no_restricted_data_leaked_into_unauthorized_outputs": true,
+    "worker_execution_process_ran": true,
+    "worker_readiness_receipt_present": true,
+    "worker_result_artifact_validated": true
+  },
+  "controlled_data_denial_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/receipts/controlled-data-denial.json",
+  "correction_action_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/receipts/correction-action.json",
+  "correction_authorization_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/receipts/correction-authorization.json",
+  "correction_validation_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/receipts/correction-validation.json",
+  "failed_checks": [],
+  "live": true,
+  "mocked": false,
+  "output": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/worker-controlled-data-conformance.json",
+  "proof_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727",
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider/model semantic quality.",
+      "ITAR legal sufficiency.",
+      "Authorization to process real controlled technical data.",
+      "That OMP or SciLLM provider workers were launched.",
+      "Absence of every possible leak outside the enumerated unauthorized outputs."
+    ],
+    "proves": [
+      "Tau launched an available local Python worker subprocess.",
+      "Tau validated the worker's structured result artifact through the existing OMP worker-result adapter.",
+      "Tau denied controlled-data access for an unverified actor.",
+      "Tau accepted a correction path only after a verified human approval receipt and validated that unauthorized outputs did not contain the restricted marker."
+    ]
+  },
+  "provider_live": false,
+  "schema": "tau.worker_controlled_data_conformance.v1",
+  "status": "PASS",
+  "unauthorized_outputs": [
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/unauthorized-outputs/denied-response.txt",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/worker-repo/reports/worker-output.json"
+  ],
+  "worker_execution_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/receipts/worker-execution.json",
+  "worker_readiness_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/receipts/worker-readiness.json",
+  "worker_result_artifact": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/worker-repo/worker-result.json",
+  "worker_validation_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/receipts/worker-validation.json"
+}

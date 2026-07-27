@@ -1,0 +1,39 @@
+{
+  "checked_at": "2026-07-27T16:17:17Z",
+  "corrected_artifact": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/correction/corrected-redacted-summary.txt",
+  "corrected_artifact_scan": {
+    "bytes": 88,
+    "contains_restricted_marker": false,
+    "exists": true,
+    "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/correction/corrected-redacted-summary.txt",
+    "sha256": "sha256:ae6b967dfb9545abcff134a554b03efe5c3dc589cd9b26e902ee37c29d4710d7"
+  },
+  "live": true,
+  "mocked": false,
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/receipts/correction-validation.json",
+  "redaction_marker_present": true,
+  "schema": "tau.controlled_data_correction_validation.v1",
+  "status": "PASS",
+  "unauthorized_leak_count": 0,
+  "unauthorized_outputs": [
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/unauthorized-outputs/denied-response.txt",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/worker-repo/reports/worker-output.json"
+  ],
+  "unauthorized_scans": [
+    {
+      "bytes": 63,
+      "contains_restricted_marker": false,
+      "exists": true,
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/unauthorized-outputs/denied-response.txt",
+      "sha256": "sha256:c56b8e9b91849837ae5540f9aabb4357d92d6a2faeb5dc5067c4caa21dfb6057"
+    },
+    {
+      "bytes": 129,
+      "contains_restricted_marker": false,
+      "exists": true,
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/worker-repo/reports/worker-output.json",
+      "sha256": "sha256:cdff913fa3a6649489d3dbbdae1f2835657e24a4b3964695dab9cb7a9d423293"
+    }
+  ]
+}

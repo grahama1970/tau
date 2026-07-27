@@ -1,0 +1,33 @@
+{
+  "agent": "local-python-worker",
+  "allowed_paths": [
+    "reports/**",
+    "logs/**",
+    "worker-result.json",
+    "worker-receipt.json"
+  ],
+  "attempt": 1,
+  "dag_id": "worker-controlled-data-conformance-dag",
+  "execution_substrate": "local-low-risk",
+  "forbidden_paths": [
+    "controlled-data/**",
+    "secrets/**"
+  ],
+  "goal_hash": "sha256:worker-controlled-data-conformance",
+  "high_stakes": false,
+  "model_provider_route": {
+    "provider": "local-python-subprocess",
+    "provider_live": false,
+    "surface": "local_subprocess"
+  },
+  "node_id": "controlled-data-worker",
+  "receipt_path": "worker-receipt.json",
+  "repo": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/worker-repo",
+  "required_artifacts": [
+    "reports/worker-output.json",
+    "logs/worker.log"
+  ],
+  "result_path": "worker-result.json",
+  "schema": "tau.executor.omp.v1",
+  "task": "Write a structured non-sensitive worker result."
+}

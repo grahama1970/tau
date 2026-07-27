@@ -1,0 +1,19 @@
+{
+  "checked_at": "2026-07-27T16:17:17Z",
+  "command": [
+    "/tmp/tau-issue189-1785166987/.venv/bin/python",
+    "--version"
+  ],
+  "exit_code": 0,
+  "live": true,
+  "mocked": false,
+  "process_executed": true,
+  "provider_live": false,
+  "python_executable": "/tmp/tau-issue189-1785166987/.venv/bin/python",
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/receipts/worker-readiness.json",
+  "schema": "tau.local_worker_readiness_receipt.v1",
+  "status": "PASS",
+  "stderr": "",
+  "stdout": "Python 3.14.3\n",
+  "worker_kind": "local-python-subprocess"
+}

@@ -1,0 +1,103 @@
+{
+  "actor": {
+    "actor_id": "unverified-agent",
+    "actor_type": "agent",
+    "approved_for_boundary": [],
+    "foreign_person": false,
+    "roles": [
+      "worker"
+    ],
+    "trusted": false,
+    "us_person": "unknown",
+    "verified": false
+  },
+  "actor_manifest": {
+    "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/controlled-data/unauthorized-actor.json",
+    "schema": "tau.actor_access_manifest.v1",
+    "sha256": "sha256:1d4c99876c78ce80924466bfe60a1d94e2dffcf72b35268e17a911170bc7f7ec"
+  },
+  "alert_codes": [
+    "actor_not_verified",
+    "actor_not_trusted",
+    "us_person_not_verified",
+    "export_training_not_current",
+    "actor_boundary_not_approved"
+  ],
+  "alerts": [
+    {
+      "code": "actor_not_verified",
+      "evidence": {
+        "actor_id": "unverified-agent"
+      },
+      "message": "Actor is not marked verified.",
+      "severity": "BLOCK"
+    },
+    {
+      "code": "actor_not_trusted",
+      "evidence": {
+        "actor_id": "unverified-agent"
+      },
+      "message": "Actor is not marked trusted.",
+      "severity": "BLOCK"
+    },
+    {
+      "code": "us_person_not_verified",
+      "evidence": {
+        "actor_id": "unverified-agent"
+      },
+      "message": "ITAR boundary requires declared verified U.S.-person eligibility.",
+      "severity": "BLOCK"
+    },
+    {
+      "code": "export_training_not_current",
+      "evidence": {
+        "actor_id": "unverified-agent"
+      },
+      "message": "Controlled-boundary work requires current export-control training metadata.",
+      "severity": "BLOCK"
+    },
+    {
+      "code": "actor_boundary_not_approved",
+      "evidence": {
+        "actor_id": "unverified-agent"
+      },
+      "message": "Actor is not approved for boundary ITAR.",
+      "severity": "BLOCK"
+    }
+  ],
+  "approval_packet": null,
+  "checked_at": "2026-07-27T16:17:17Z",
+  "data_boundary": {
+    "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/controlled-data/data-boundary.json",
+    "schema": "tau.data_boundary.v1",
+    "sha256": "sha256:6140ddd569ced603f58da64b609d720d66775616c4d0541c97749458bfd5e0d8"
+  },
+  "live": false,
+  "mocked": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "ITAR compliance.",
+      "Export-control legal sufficiency.",
+      "Legal identity proof.",
+      "U.S.-person status truth beyond declared verified metadata.",
+      "Human identity non-repudiation.",
+      "Runtime sandbox enforcement."
+    ],
+    "proves": [
+      "Tau inspected declared actor/access metadata before controlled-boundary work.",
+      "Tau checked data-boundary, actor verification, U.S.-person declaration, foreign-person access, and approval actor consistency deterministically.",
+      "No provider, GitHub, Memory, research, browser, or filesystem mutation was executed."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/artifacts/receipts/controlled-data-denial.json",
+  "recommended_action": {
+    "next_agent": "human",
+    "reason": "Provide verified actor/access metadata and a matching human approval packet before controlled-boundary work proceeds.",
+    "type": "repair_actor_access"
+  },
+  "required_boundary": "ITAR",
+  "schema": "tau.itar_access_preflight_receipt.v1",
+  "status": "BLOCKED"
+}
