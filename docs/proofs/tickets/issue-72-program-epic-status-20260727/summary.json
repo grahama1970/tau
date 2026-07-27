@@ -1,0 +1,149 @@
+{
+  "blocking_reason": "#72 is a program-level epic whose own completion criteria remain broader than the now-closed child tranche. No deterministic proof bundle currently demonstrates the full program workload.",
+  "closable": false,
+  "epic72_labeled_children": [
+    {
+      "number": 73,
+      "state": "CLOSED",
+      "title": "chore(tracker): reconcile legacy Tau issues and proof/CI baseline",
+      "url": "https://github.com/grahama1970/tau/issues/73"
+    },
+    {
+      "number": 74,
+      "state": "CLOSED",
+      "title": "fix(dag): fail closed on unsupported conditional edges in bounded-ready-queue",
+      "url": "https://github.com/grahama1970/tau/issues/74"
+    },
+    {
+      "number": 75,
+      "state": "CLOSED",
+      "title": "feat(dag): add typed route conditions and route-decision receipts",
+      "url": "https://github.com/grahama1970/tau/issues/75"
+    },
+    {
+      "number": 76,
+      "state": "CLOSED",
+      "title": "feat(dag): add terminal branch contributions and deterministic join policies",
+      "url": "https://github.com/grahama1970/tau/issues/76"
+    },
+    {
+      "number": 77,
+      "state": "CLOSED",
+      "title": "refactor(dag): compile project and generic DAGs into one DagPlan IR",
+      "url": "https://github.com/grahama1970/tau/issues/77"
+    },
+    {
+      "number": 78,
+      "state": "CLOSED",
+      "title": "refactor(dag): converge command, skill, transaction, and human nodes on one scheduler",
+      "url": "https://github.com/grahama1970/tau/issues/78"
+    },
+    {
+      "number": 79,
+      "state": "CLOSED",
+      "title": "feat(runtime): add append-only run events and idempotent attempt commits",
+      "url": "https://github.com/grahama1970/tau/issues/79"
+    },
+    {
+      "number": 84,
+      "state": "CLOSED",
+      "title": "feat(runtime): add backend-neutral agent sessions, tmux/Herdr adapters, and durable reconciliation",
+      "url": "https://github.com/grahama1970/tau/issues/84"
+    },
+    {
+      "number": 88,
+      "state": "CLOSED",
+      "title": "feat(runtime): add backend contracts, registry, and capability negotiation",
+      "url": "https://github.com/grahama1970/tau/issues/88"
+    },
+    {
+      "number": 89,
+      "state": "CLOSED",
+      "title": "refactor(runtime): move local subprocess execution behind runtime backend",
+      "url": "https://github.com/grahama1970/tau/issues/89"
+    },
+    {
+      "number": 90,
+      "state": "CLOSED",
+      "title": "refactor(runtime): extract Herdr runtime adapter",
+      "url": "https://github.com/grahama1970/tau/issues/90"
+    },
+    {
+      "number": 91,
+      "state": "CLOSED",
+      "title": "feat(runtime): add tmux interactive conformance backend",
+      "url": "https://github.com/grahama1970/tau/issues/91"
+    },
+    {
+      "number": 92,
+      "state": "CLOSED",
+      "title": "feat(runtime): add endpoint ownership and Git worktree leases",
+      "url": "https://github.com/grahama1970/tau/issues/92"
+    },
+    {
+      "number": 93,
+      "state": "CLOSED",
+      "title": "feat(runtime): bridge runtime events into durable DAG journal",
+      "url": "https://github.com/grahama1970/tau/issues/93"
+    },
+    {
+      "number": 94,
+      "state": "CLOSED",
+      "title": "feat(runtime): add durable endpoint reconciliation and adoption",
+      "url": "https://github.com/grahama1970/tau/issues/94"
+    },
+    {
+      "number": 95,
+      "state": "CLOSED",
+      "title": "test(runtime): add backend conformance and adversarial matrix",
+      "url": "https://github.com/grahama1970/tau/issues/95"
+    }
+  ],
+  "epic72_labeled_children_open_count": 0,
+  "issue": 72,
+  "issue_state": {
+    "labels": [
+      "type:feature",
+      "maintainer-blocked",
+      "needs-human",
+      "route:backend_python_or_skill_runtime"
+    ],
+    "number": 72,
+    "state": "OPEN",
+    "title": "Epic: Harden Tau DAG runtime for durable, secure, adaptive complex workflows",
+    "url": "https://github.com/grahama1970/tau/issues/72"
+  },
+  "latest_main": "900b1d8b53898017f2ec45ce04f114ba78be12de",
+  "live": true,
+  "mocked": false,
+  "provider_live": false,
+  "repo_open_issues": [
+    {
+      "number": 72,
+      "state": "OPEN",
+      "title": "Epic: Harden Tau DAG runtime for durable, secure, adaptive complex workflows",
+      "url": "https://github.com/grahama1970/tau/issues/72"
+    },
+    {
+      "number": 150,
+      "state": "OPEN",
+      "title": "Epic: Tau is a first-class graph-based, memory-first TUI",
+      "url": "https://github.com/grahama1970/tau/issues/150"
+    }
+  ],
+  "schema": "tau.issue72.program_epic_status.v1",
+  "source": "GitHub issue API via gh CLI plus current main remote verification",
+  "unmet_program_completion_criteria": [
+    "one canonical scheduler executes command, skill, transaction, human, map, child-DAG, validator, conditional-route, and join nodes",
+    "event replay and crash recovery do not duplicate accepted effects across the full program workload",
+    "secure mode enforces mounts, secrets, egress, backend isolation, and fresh retry grants",
+    "resource leases govern provider, GPU, workspace, and mutation concurrency",
+    "bounded adaptive revision cannot exceed policy or budget",
+    "six blocked and eight killed sprite frames pass frame, sequence, atlas, and playback validation",
+    "targeted repair reruns only affected frames or groups",
+    "project profile, project spine, lineage revisions, and capability-provider matching are authoritative",
+    "real worker and synthetic controlled-data denial/correction demo pass",
+    "asymmetric signatures, action-bound approvals, audit verification, workspace auth, RBAC, and mutating-request receipts are operational",
+    "$tau exposes the proven runtime through a thin version-negotiating operator interface"
+  ]
+}
