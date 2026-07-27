@@ -1,0 +1,31 @@
+{
+  "does_not_prove": [
+    "live provider call",
+    "live Memory backend call from the TUI process",
+    "interactive PTY embedded in UX Lab #tau",
+    "production Sparta Chat readiness",
+    "a live human permission decision",
+    "the requested mutation was executed"
+  ],
+  "exercised": "real TauTuiApp Textual rendering with fixture session and structured Tau Memory events",
+  "live": false,
+  "mocked": true,
+  "next_agent": "human",
+  "ok": true,
+  "prompt": "How does Tau handle a CWE-287 SPARTA evidence case?",
+  "route": "DEGRADED",
+  "run_id": "issue-150-memory-degraded",
+  "schema": "tau.textual_tui_render_proof.v1",
+  "screenshot_svg": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-150-memory-first-epic-20260727/tui-memory-stage/tau-textual-tui-memory-stage.svg",
+  "visible_assertions": {
+    "accessing_memory": true,
+    "bash_execution_metadata": true,
+    "handoff_schema": true,
+    "hidden_reasoning_absent": true,
+    "next_agent": true,
+    "permission_not_mutated": true,
+    "permission_receipt": true,
+    "prompt": true,
+    "run_id": true
+  }
+}

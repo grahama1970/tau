@@ -1,0 +1,55 @@
+                                                         τ = 2π                                                         
+                                                                                                                        
+ session                                                                                                                
+ cwd      /tmp/tau-issue-132.cyVJhE                                                                                     
+ name     Issue 150 memory degraded TUI proof                                                                           
+ context  <1k/200k context (auto) 0%                                                                                    
+ provider scillm                                                                                                        
+ model    local-routing-proof                                                                                           
+ auth     ready (1 provider)                                                                                            
+ thinking --                                                                                                            
+ queue    idle                                                                                                          
+ memory   loaded                                                                                                        
+ dag      canonical: /workflows                                                                                         
+ scillm   active: /scillm                                                                                               
+ tools    7                                                                                                             
+ skills   1                                                                                                             
+                                                                                                                        
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                                        
+ loop2 monitor                                                                                                          
+ status         MEMORY DEGRADED                                                                                         
+ run            issue-150-memory-down                                                                                   
+ events         1                                                                                                       
+ last           doctor_memory_probe                                                                                     
+ receipt        DEGRADED                                                                                                
+ evidence       mocked:false live:true                                                                                  
+ scope          memory_down_explicit_degraded_state                                                                     
+ does not prove live graph-chain recommendation                                                                         
+ source         /tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-150-memory-first-epic-20260727/memory-down-doctor.j…
+                                                                                                                        
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                                        
+ context                                                                                                                
+ No context files                                                                                                       
+                                                                                                                        
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                                        
+ tools                                                                                                                  
+ • read                                                                                                                 
+ • ls                                                                                                                   
+ • grep                                                                                                                 
+ • find                                                                                                                 
+ • write                                                                                                                
+ ...(2 more)                                                                                                            
+                                                                                                                        
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                                        
+ skills                                                                                                                 
+ • memory                                                                                                               
+                                                                                                                        
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                                        
+ prompts                                                                                                                
+ No prompt templates                                                                                                    
+                                                                                                                        

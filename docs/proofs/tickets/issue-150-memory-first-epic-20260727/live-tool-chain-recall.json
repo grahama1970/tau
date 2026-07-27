@@ -1,0 +1,71 @@
+{
+  "advisory_only": true,
+  "alert_codes": [
+    "tool_chain_missing"
+  ],
+  "alerts": [
+    {
+      "code": "tool_chain_missing",
+      "evidence": {
+        "tool_chain_available": false
+      },
+      "message": "Graph Memory /recall did not return a usable tool_chain recommendation.",
+      "severity": "WARN"
+    }
+  ],
+  "call": {
+    "duration_seconds": 0.030422,
+    "ok": true,
+    "path": "/recall",
+    "status_code": 200
+  },
+  "confidence": 0.0,
+  "endpoint": "/recall",
+  "found": false,
+  "goal_hash": null,
+  "live": true,
+  "memory_url": "http://127.0.0.1:8601",
+  "mocked": false,
+  "mutating_tools_invoked": [],
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Memory corpus completeness.",
+      "Memory graph traversal implementation correctness.",
+      "The selected tool sequence is semantically optimal.",
+      "Any recommended tool was executed."
+    ],
+    "proves": [
+      "Tau called Graph Memory /recall for a tool-chain recommendation.",
+      "Tau captured and hashed the Memory request and response artifacts.",
+      "Tau accepts only an explicit Memory tool_chain as a PASS recommendation.",
+      "Tau verifies ordered traversal edges connect the returned tool sequence.",
+      "Tau records the recommendation as advisory context and invokes no Tau tools."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-150-memory-first-epic-20260727/live-tool-chain-recall.json",
+  "request_payload": {
+    "app": "tau",
+    "brief": true,
+    "collections": [
+      "tool_chains"
+    ],
+    "k": 5,
+    "q": "Tau memory first graph TUI ticket repair tool chain with traversal provenance",
+    "recommendation": "tool_chain",
+    "scope": "tau"
+  },
+  "request_sha256": "sha256:ffffbb236a4bd5e9659a28fe85bf50619d6a2f23aa65bdecd6bce7780db7e4b5",
+  "response_path": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-150-memory-first-epic-20260727/live-tool-chain-recall-response.json",
+  "response_schema": null,
+  "response_sha256": "sha256:f77408998c4c7339420706c4e49a97da5db8ba8529ce3f0b80173390a82edbdb",
+  "schema": "tau.tool_chain_selection_receipt.v1",
+  "selected_tools": [],
+  "selection_source": null,
+  "should_scan": true,
+  "status": "DEGRADED",
+  "target": null,
+  "timestamp": "2026-07-27T00:52:44Z",
+  "tool_chain": null
+}

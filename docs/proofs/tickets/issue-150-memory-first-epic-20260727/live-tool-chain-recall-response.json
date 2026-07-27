@@ -1,0 +1,29 @@
+{
+  "confidence": 0.0,
+  "errors": [],
+  "found": false,
+  "items": [],
+  "meta": {
+    "collections_filter": [
+      "tool_chains"
+    ],
+    "k": 5,
+    "memory_first": true,
+    "q": "Tau memory first graph TUI ticket repair tool chain with traversal provenance",
+    "runtime_pressure": {
+      "active_workloads": [],
+      "errors": [
+        "No module named 'graph_memory.runtime_pressure'"
+      ],
+      "level": "unknown",
+      "recommended_action": "Runtime pressure collector failed; use normal recall behavior.",
+      "slow_query_risk": false
+    },
+    "scope": "tau",
+    "threshold": 0.3,
+    "took_ms": 7,
+    "used_dense": true,
+    "used_reranker": false
+  },
+  "should_scan": true
+}

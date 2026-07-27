@@ -1,0 +1,84 @@
+{
+  "acceptance_legs": {
+    "bounded_resident_skill_context": {
+      "artifact": "docs/proofs/tickets/issue-150-memory-first-epic-20260727/prompt-assembly-measurement.json",
+      "delta_tokens": 0,
+      "expanded_corpus_size": 740,
+      "expanded_selected_system_prompt_token_estimate": 630,
+      "selected_system_prompt_token_estimate": 630,
+      "skill_corpus_size": 370,
+      "status": "PASS"
+    },
+    "graph_traversal_skill_chain": {
+      "alert_codes": [
+        "skill_chain_missing"
+      ],
+      "artifact": "docs/proofs/tickets/issue-150-memory-first-epic-20260727/live-skill-chain-recall.json",
+      "memory_call": {
+        "duration_seconds": 0.413546,
+        "ok": true,
+        "path": "/recall",
+        "status_code": 200
+      },
+      "ok": false,
+      "selected_skills": [
+        "memory"
+      ],
+      "selection_source": "registry_fallback",
+      "status": "DEGRADED"
+    },
+    "graph_traversal_tool_chain": {
+      "alert_codes": [
+        "tool_chain_missing"
+      ],
+      "artifact": "docs/proofs/tickets/issue-150-memory-first-epic-20260727/live-tool-chain-recall.json",
+      "memory_call": {
+        "duration_seconds": 0.030422,
+        "ok": true,
+        "path": "/recall",
+        "status_code": 200
+      },
+      "ok": false,
+      "selected_tools": [],
+      "selection_source": null,
+      "status": "DEGRADED"
+    },
+    "memory_down_cli": {
+      "artifact": "docs/proofs/tickets/issue-150-memory-first-epic-20260727/memory-down-doctor.json",
+      "memory_service": {
+        "endpoint": "http://127.0.0.1:9",
+        "error": "[Errno 111] Connection refused",
+        "health_url": "http://127.0.0.1:9/health",
+        "name": "memory",
+        "remedy": "Start Graph Memory on 127.0.0.1:8601 or set TAU_MEMORY_URL.",
+        "required": true,
+        "state": "unreachable"
+      },
+      "ok": true,
+      "status": "DEGRADED"
+    },
+    "memory_down_tui_surface": {
+      "artifact": "docs/proofs/tickets/issue-150-memory-first-epic-20260727/tui-memory-down-sidebar-proof.json",
+      "rendered_text": "docs/proofs/tickets/issue-150-memory-first-epic-20260727/tui-memory-down-sidebar.txt",
+      "status": "PASS"
+    }
+  },
+  "blocking_reason": "Live Graph Memory /recall returned HTTP 200 but no usable skill_chain or tool_chain graph contract, so #150 cannot satisfy its traversal-sourced chain receipt close gate.",
+  "child_issues_checked": {
+    "140": "CLOSED",
+    "141": "CLOSED",
+    "142": "CLOSED",
+    "146": "CLOSED",
+    "149": "CLOSED",
+    "153": "CLOSED",
+    "154": "CLOSED",
+    "156": "CLOSED"
+  },
+  "closable": false,
+  "issue": 150,
+  "live": true,
+  "mocked": false,
+  "provider_live": false,
+  "required_next_repair": "Repair/seed Graph Memory so /recall returns explicit skill_chain and tool_chain objects with traversal_path, hop_count, and provenance for Tau ticket-repair queries; then rerun this proof bundle.",
+  "schema": "tau.issue150.epic_status_summary.v1"
+}

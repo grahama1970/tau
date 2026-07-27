@@ -1,0 +1,37 @@
+{
+  "expanded_corpus_size": 740,
+  "expanded_selected_skill_prompt_chars": 843,
+  "expanded_selected_skill_prompt_token_estimate": 211,
+  "expanded_selected_system_prompt_chars": 2518,
+  "expanded_selected_system_prompt_token_estimate": 630,
+  "expanded_skill_index_chars": 31993,
+  "expanded_skill_index_token_estimate": 7999,
+  "full_skill_index_chars": 14603,
+  "full_skill_index_token_estimate": 3651,
+  "full_system_prompt_chars": 80518,
+  "full_system_prompt_token_estimate": 20130,
+  "live": false,
+  "mocked": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Live Memory returned a valid skill_chain for this run.",
+      "Provider prompt acceptance or semantic quality."
+    ],
+    "proves": [
+      "Prompt assembly can bound resident skill context to a Memory-selected chain and remains stable when the corpus doubles."
+    ]
+  },
+  "provider_live": false,
+  "schema": "tau.issue150.prompt_assembly_measurement.v1",
+  "selected_prompt_unchanged_under_corpus_growth": true,
+  "selected_skill_names": [
+    "memory",
+    "best-practices-github-ticket"
+  ],
+  "selected_skill_prompt_chars": 843,
+  "selected_skill_prompt_token_estimate": 211,
+  "selected_system_prompt_chars": 2518,
+  "selected_system_prompt_delta_tokens_after_corpus_growth": 0,
+  "selected_system_prompt_token_estimate": 630,
+  "skill_corpus_size": 370
+}

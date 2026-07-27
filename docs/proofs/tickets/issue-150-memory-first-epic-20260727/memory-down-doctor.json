@@ -1,0 +1,183 @@
+{
+  "checked_at": "2026-07-27T00:54:49.547525Z",
+  "commands": {
+    "gh": "/usr/bin/gh",
+    "git": "/usr/bin/git",
+    "herdr": "/home/graham/.local/bin/herdr",
+    "python": "/tmp/tau-issue-132.cyVJhE/.venv/bin/python",
+    "surf": "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+    "uv": "/home/graham/.local/bin/uv"
+  },
+  "errors": [],
+  "external_services": [
+    {
+      "endpoint": "http://127.0.0.1:9",
+      "error": "[Errno 111] Connection refused",
+      "health_url": "http://127.0.0.1:9/health",
+      "name": "memory",
+      "remedy": "Start Graph Memory on 127.0.0.1:8601 or set TAU_MEMORY_URL.",
+      "required": true,
+      "state": "unreachable"
+    },
+    {
+      "endpoint": null,
+      "name": "surf",
+      "remedy": "Set TAU_SURF_URL when Surf service probing is desired.",
+      "required": false,
+      "state": "not_configured"
+    },
+    {
+      "endpoint": null,
+      "name": "chatterbox_tts",
+      "remedy": "Set TAU_CHATTERBOX_TTS_URL when voice output is configured.",
+      "required": false,
+      "state": "not_configured"
+    },
+    {
+      "endpoint": null,
+      "name": "realtime_stt",
+      "remedy": "Set TAU_REALTIMESTT_URL when voice input is configured.",
+      "required": false,
+      "state": "not_configured"
+    }
+  ],
+  "lanes": {
+    "browser_cdp": {
+      "ready": true,
+      "reason": "Surf wrapper or surf executable found; run tau browser-cdp-proof for screenshot proof"
+    },
+    "github_apply": {
+      "ready": false,
+      "reason": "live GitHub mutation requires approval, preflight, redaction, and apply policy receipts"
+    },
+    "github_dry_run": {
+      "ready": true,
+      "reason": "gh executable found"
+    },
+    "herdr": {
+      "ready": true,
+      "reason": "herdr executable found"
+    },
+    "local_cli": {
+      "ready": true,
+      "reason": "required Tau runtime files are present"
+    },
+    "local_sanity": {
+      "ready": true,
+      "reason": "uv and pyproject.toml are available"
+    },
+    "provider_live": {
+      "ready": false,
+      "reason": "doctor does not allocate provider panes or call model providers"
+    }
+  },
+  "live": true,
+  "mocked": false,
+  "modes": {
+    "build": {
+      "description": "Editing and approved local command execution.",
+      "mutating_default": true,
+      "permission_default": "ask_for_sensitive_actions",
+      "ready": true
+    },
+    "general": {
+      "description": "Bounded helper mode; mutation requires promotion or approval.",
+      "mutating_default": false,
+      "permission_default": "ask_before_mutation",
+      "ready": true
+    },
+    "plan": {
+      "description": "Read-only planning; edits and writes require approval.",
+      "mutating_default": false,
+      "permission_default": "deny_mutations_without_approval",
+      "ready": true
+    },
+    "review": {
+      "description": "Read-only review with evidence and verdict constraints.",
+      "mutating_default": false,
+      "permission_default": "deny_mutations_without_approval",
+      "ready": true
+    }
+  },
+  "ok": true,
+  "paths": {
+    "chat_contract": {
+      "exists": true,
+      "path": "/tmp/tau-issue-132.cyVJhE/ui/tau-chat-contract.json"
+    },
+    "cli": {
+      "exists": true,
+      "path": "/tmp/tau-issue-132.cyVJhE/src/tau_coding/cli.py"
+    },
+    "proofs_root": {
+      "exists": true,
+      "path": "/tmp/tau-issue-132.cyVJhE/experiments/goal-locked-subagents/proofs"
+    },
+    "pyproject": {
+      "exists": true,
+      "path": "/tmp/tau-issue-132.cyVJhE/pyproject.toml"
+    }
+  },
+  "proof_boundary": {
+    "does_not_prove": [
+      "Herdr pane readiness.",
+      "Live provider/model semantic quality.",
+      "Provider DAG execution.",
+      "GitHub live mutation.",
+      "Browser/CDP UI proof; run tau browser-cdp-proof for screenshot artifacts.",
+      "Full hardening roadmap completion.",
+      "Semantic correctness of any external service response."
+    ],
+    "proves": [
+      "Tau runtime import and CLI dispatch can emit a read-only preflight receipt.",
+      "Required local Tau runtime paths were checked.",
+      "Optional local executables for uv, git, gh, and Herdr were detected without side effects.",
+      "Configured provider entries were inspected without making provider/model calls.",
+      "Configured external service endpoints were probed with read-only health checks."
+    ]
+  },
+  "provider_live": false,
+  "provider_settings": {
+    "default_provider": "openai",
+    "provider_count": 6,
+    "providers": [
+      {
+        "credential": "missing",
+        "kind": "anthropic",
+        "name": "anthropic"
+      },
+      {
+        "credential": "env:CHUTES_API_TOKEN",
+        "kind": "openai-compatible",
+        "name": "chutes"
+      },
+      {
+        "credential": "missing",
+        "kind": "openai-compatible",
+        "name": "huggingface"
+      },
+      {
+        "credential": "missing",
+        "kind": "openai-compatible",
+        "name": "openai"
+      },
+      {
+        "credential": "stored:openai-codex",
+        "kind": "openai-codex",
+        "name": "openai-codex"
+      },
+      {
+        "credential": "missing",
+        "kind": "openai-compatible",
+        "name": "openrouter"
+      }
+    ]
+  },
+  "repo_root": "/tmp/tau-issue-132.cyVJhE",
+  "schema": "tau.doctor.v1",
+  "status": "DEGRADED",
+  "version": "0.1.0",
+  "warnings": [
+    "one or more required external services are unreachable"
+  ]
+}

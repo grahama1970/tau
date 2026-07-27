@@ -1,0 +1,24 @@
+{
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Interactive full-screen TUI manual operation.",
+      "Live graph-chain recommendation."
+    ],
+    "proves": [
+      "Existing Tau TUI sidebar/loop-monitor surface can display explicit Memory degraded status from a receipt."
+    ]
+  },
+  "provider_live": false,
+  "rendered_text": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-150-memory-first-epic-20260727/tui-memory-down-sidebar.txt",
+  "schema": "tau.issue150.tui_memory_down_surface_proof.v1",
+  "source_receipt": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-150-memory-first-epic-20260727/memory-down-doctor.json",
+  "visible_assertions": {
+    "degraded_receipt": true,
+    "evidence_scope": true,
+    "memory_degraded_label": true,
+    "mocked_live_flags": true
+  }
+}
