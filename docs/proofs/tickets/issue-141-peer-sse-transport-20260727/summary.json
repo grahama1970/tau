@@ -1,0 +1,40 @@
+{
+  "approval_status": "BLOCKED",
+  "bidirectional_sse_frames": {
+    "tau_a_received_event": true,
+    "tau_b_received_event": true
+  },
+  "busy_drain_count": 0,
+  "claims": {
+    "does_not_prove": [
+      "full rendered Textual TUI integration",
+      "automatic scratch-worktree patch execution",
+      "human approval UI rendering for queued diffs"
+    ],
+    "proves": [
+      "two local Tau peer transports exchange typed envelopes over HTTP/SSE both directions",
+      "peer queue does not drain while busy",
+      "peer queue transitions to awaiting_approval while idle",
+      "approval gate blocks with BLOCKED status before worktree effects",
+      "queue state remains readable from disk after restart"
+    ]
+  },
+  "idle_drain_count": 1,
+  "idle_state": "awaiting_approval",
+  "live": true,
+  "mocked": false,
+  "queue_paths": {
+    "tau_a": "docs/proofs/tickets/issue-141-peer-sse-transport-20260727/tau-a-queue.json",
+    "tau_b": "docs/proofs/tickets/issue-141-peer-sse-transport-20260727/tau-b-queue.json"
+  },
+  "restart_readable_state": "awaiting_approval",
+  "schema": "tau.ticket_proof_summary.v1",
+  "server_a_url_scheme": "http",
+  "server_b_url_scheme": "http",
+  "sse_paths": {
+    "tau_a": "docs/proofs/tickets/issue-141-peer-sse-transport-20260727/tau-a-peer-message.sse",
+    "tau_b": "docs/proofs/tickets/issue-141-peer-sse-transport-20260727/tau-b-peer-message.sse"
+  },
+  "ticket": 141,
+  "transport": "loopback_http_sse"
+}
