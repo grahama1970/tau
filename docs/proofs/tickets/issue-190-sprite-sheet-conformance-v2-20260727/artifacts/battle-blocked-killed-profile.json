@@ -1,0 +1,42 @@
+{
+  "anchor": {
+    "x": 0.5,
+    "y": 0.85
+  },
+  "animations": [
+    {
+      "frames": 6,
+      "loop": false,
+      "name": "blocked",
+      "row": 8
+    },
+    {
+      "frames": 8,
+      "loop": false,
+      "name": "killed",
+      "row": 10
+    }
+  ],
+  "atlas": {
+    "columns": 8,
+    "frame_height": 64,
+    "frame_width": 64,
+    "margin": 0,
+    "rows": 14,
+    "spacing": 0
+  },
+  "normalization": {
+    "allow_per_frame_scaling": false,
+    "baseline_tolerance_px": 2,
+    "body_scale_tolerance_ratio": 0.08,
+    "edge_guard_px": 1
+  },
+  "output": {
+    "background": "transparent",
+    "format": "png",
+    "mode": "RGBA",
+    "scale_mode": "nearest_neighbor"
+  },
+  "profile_id": "battle-blocked-killed-conformance-v1",
+  "schema": "sprite_atlas.profile.v1"
+}

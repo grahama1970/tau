@@ -1,0 +1,133 @@
+{
+  "checks": {
+    "blocked_frame_count": true,
+    "killed_frame_count": true
+  },
+  "live": true,
+  "manifest_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/atlas-pack/atlas.candidate.json",
+  "manifest_sha256": "cd17107f022e919dcbb6602d0131f9aa490e500f5d4c319a9cba44d8511240e5",
+  "mocked": false,
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/playback-proof.json",
+  "schema": "tau.sprite_playback_proof.v1",
+  "sequences": {
+    "blocked": {
+      "expected_frame_count": 6,
+      "frame_count": 6,
+      "frame_rectangles": {
+        "battle_blocked_0": {
+          "h": 64,
+          "w": 64,
+          "x": 0,
+          "y": 512
+        },
+        "battle_blocked_1": {
+          "h": 64,
+          "w": 64,
+          "x": 64,
+          "y": 512
+        },
+        "battle_blocked_2": {
+          "h": 64,
+          "w": 64,
+          "x": 128,
+          "y": 512
+        },
+        "battle_blocked_3": {
+          "h": 64,
+          "w": 64,
+          "x": 192,
+          "y": 512
+        },
+        "battle_blocked_4": {
+          "h": 64,
+          "w": 64,
+          "x": 256,
+          "y": 512
+        },
+        "battle_blocked_5": {
+          "h": 64,
+          "w": 64,
+          "x": 320,
+          "y": 512
+        }
+      },
+      "frames": [
+        "battle_blocked_0",
+        "battle_blocked_1",
+        "battle_blocked_2",
+        "battle_blocked_3",
+        "battle_blocked_4",
+        "battle_blocked_5"
+      ],
+      "loop": false
+    },
+    "killed": {
+      "expected_frame_count": 8,
+      "frame_count": 8,
+      "frame_rectangles": {
+        "battle_killed_0": {
+          "h": 64,
+          "w": 64,
+          "x": 0,
+          "y": 640
+        },
+        "battle_killed_1": {
+          "h": 64,
+          "w": 64,
+          "x": 64,
+          "y": 640
+        },
+        "battle_killed_2": {
+          "h": 64,
+          "w": 64,
+          "x": 128,
+          "y": 640
+        },
+        "battle_killed_3": {
+          "h": 64,
+          "w": 64,
+          "x": 192,
+          "y": 640
+        },
+        "battle_killed_4": {
+          "h": 64,
+          "w": 64,
+          "x": 256,
+          "y": 640
+        },
+        "battle_killed_5": {
+          "h": 64,
+          "w": 64,
+          "x": 320,
+          "y": 640
+        },
+        "battle_killed_6": {
+          "h": 64,
+          "w": 64,
+          "x": 384,
+          "y": 640
+        },
+        "battle_killed_7": {
+          "h": 64,
+          "w": 64,
+          "x": 448,
+          "y": 640
+        }
+      },
+      "frames": [
+        "battle_killed_0",
+        "battle_killed_1",
+        "battle_killed_2",
+        "battle_killed_3",
+        "battle_killed_4",
+        "battle_killed_5",
+        "battle_killed_6",
+        "battle_killed_7"
+      ],
+      "loop": false
+    }
+  },
+  "sprite_id": "battle",
+  "status": "PASS"
+}

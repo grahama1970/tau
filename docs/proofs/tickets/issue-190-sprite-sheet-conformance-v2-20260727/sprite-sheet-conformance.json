@@ -1,0 +1,146 @@
+{
+  "artifacts_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts",
+  "atlas_manifest": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/atlas-pack/atlas.candidate.json",
+  "atlas_validation_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/atlas-runtime-validation/validation.json",
+  "checked_at": "2026-07-27T16:00:13Z",
+  "checks": {
+    "atlas_pack_pass": true,
+    "atlas_validator_pass": true,
+    "blocked_frame_count": true,
+    "final_release_human_gated": true,
+    "killed_frame_count": true,
+    "lineage_hash_present_per_frame": true,
+    "playback_proof_present": true,
+    "scheduler_status_pass": true,
+    "sequence_validator_pass": true
+  },
+  "dag_plan_sha256": "sha256:5fdb59d902a62194a961b1ebefb47868fac5d4fe76db6996bc70ceb474649814",
+  "dag_spec": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/sprite-sheet-conformance-dag.json",
+  "failed_checks": [],
+  "frame_counts": {
+    "blocked": 6,
+    "killed": 8
+  },
+  "frame_lineage_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frame-lineage-receipt.json",
+  "journal_event_count": 42,
+  "live": true,
+  "mocked": false,
+  "output": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/sprite-sheet-conformance.json",
+  "playback_proof": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/playback-proof.json",
+  "proof_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727",
+  "proof_scope": {
+    "does_not_prove": [
+      "Battle art direction quality.",
+      "Provider/model semantic quality.",
+      "Browser playback rendering in PixiJS.",
+      "Human approval to promote the candidate runtime atlas."
+    ],
+    "proves": [
+      "Tau ran a sprite-sheet workload through the canonical DAG scheduler.",
+      "Six blocked and eight killed frames were generated with per-frame lineage.",
+      "The real sprite-atlas validator accepted the named frame tree.",
+      "The real sprite-atlas packer and runtime atlas validator accepted the atlas.",
+      "Tau produced a playback proof bound to the runtime manifest.",
+      "Final release remains human-gated and no promotion was performed."
+    ]
+  },
+  "provider_live": false,
+  "release_boundary_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/release-boundary-receipt.json",
+  "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/run",
+  "scheduler_events": [
+    {
+      "event": "scheduler_started",
+      "plan_id": "generic:sprite-sheet-conformance"
+    },
+    {
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "frame-lineage"
+    },
+    {
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "frame-lineage"
+    },
+    {
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "sequence-validation"
+    },
+    {
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "sequence-validation"
+    },
+    {
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "atlas-validation"
+    },
+    {
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "atlas-validation"
+    },
+    {
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "playback-proof"
+    },
+    {
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "playback-proof"
+    },
+    {
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "release-boundary"
+    },
+    {
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "release-boundary"
+    },
+    {
+      "event": "scheduler_finished",
+      "plan_id": "generic:sprite-sheet-conformance",
+      "status": "PASS",
+      "verdict": "PASS"
+    }
+  ],
+  "scheduler_result": {
+    "completed_node_ids": [
+      "atlas-validation",
+      "frame-lineage",
+      "playback-proof",
+      "release-boundary",
+      "sequence-validation"
+    ],
+    "edge_states": {
+      "generic-dependency:atlas-validation:playback-proof": "success",
+      "generic-dependency:frame-lineage:sequence-validation": "success",
+      "generic-dependency:playback-proof:release-boundary": "success",
+      "generic-dependency:sequence-validation:atlas-validation": "success"
+    },
+    "lease_epoch": 1,
+    "max_observed_concurrency": 1,
+    "node_states": {
+      "atlas-validation": "success",
+      "frame-lineage": "success",
+      "playback-proof": "success",
+      "release-boundary": "success",
+      "sequence-validation": "success"
+    },
+    "replayed_event_count": 2,
+    "run_id": "sprite-sheet-conformance-run",
+    "status": "PASS",
+    "terminal_states": {
+      "release-boundary": "success"
+    },
+    "verdict": "PASS"
+  },
+  "schema": "tau.sprite_sheet_conformance.v1",
+  "sequence_validation_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/sequence-validation/frame-validation-index.json",
+  "status": "PASS"
+}

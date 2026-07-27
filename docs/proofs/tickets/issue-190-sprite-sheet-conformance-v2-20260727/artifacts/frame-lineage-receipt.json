@@ -1,0 +1,133 @@
+{
+  "accepted_counts": {
+    "blocked": 6,
+    "killed": 8
+  },
+  "expected_counts": {
+    "blocked": 6,
+    "killed": 8
+  },
+  "frame_count": 14,
+  "frames": [
+    {
+      "accepted": true,
+      "frame_index": 0,
+      "lineage_hash": "sha256:1f1fc7d49007f9f6714f2fbc4b883ef8e72be88fb8f2c7091c25d255fc13d960",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frames/battle/blocked/000.png",
+      "sha256": "3d2e9bf5d006c08d4bbae733d7c29249ad3d0c235ac8dd73c201b62bf256807a",
+      "state": "blocked"
+    },
+    {
+      "accepted": true,
+      "frame_index": 1,
+      "lineage_hash": "sha256:3743267c7796254a1dcbeef2ecca0d3e668a94cd29a7da1091e4613460dc6118",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frames/battle/blocked/001.png",
+      "sha256": "8ed274a4b5ebf90ec25ebe6611974f17199d236b5c89e6d373310cf13e1c5221",
+      "state": "blocked"
+    },
+    {
+      "accepted": true,
+      "frame_index": 2,
+      "lineage_hash": "sha256:18225bb956423bb076fc3d52db25d8d70fc13069da21d16e3de12df75f3984c3",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frames/battle/blocked/002.png",
+      "sha256": "ab8dd62e4ff67d3b27201a22153d3ae3c645b992c82601e4202895a82182b9a6",
+      "state": "blocked"
+    },
+    {
+      "accepted": true,
+      "frame_index": 3,
+      "lineage_hash": "sha256:ba17ed190ed0f737fb8d4664c0bc3e4d18a709264e902342a00e2f9dbf26c9ad",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frames/battle/blocked/003.png",
+      "sha256": "7e72f6896dfcfe4a2085f37f91292ee74620ee19dd55782835bddc00eb9754e8",
+      "state": "blocked"
+    },
+    {
+      "accepted": true,
+      "frame_index": 4,
+      "lineage_hash": "sha256:7e4da88ba59fd9ffcba57f2e6dbef840504588fb073d82fec468b6dcbf914ee2",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frames/battle/blocked/004.png",
+      "sha256": "965d3b8113a6ba385269fafe2833a3703c74562d1221bdf438256268164e49a9",
+      "state": "blocked"
+    },
+    {
+      "accepted": true,
+      "frame_index": 5,
+      "lineage_hash": "sha256:bb0a21cbd923d81871288e26a14df435e1909cb6dc31d30fef53f8b3c406127f",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frames/battle/blocked/005.png",
+      "sha256": "0e67c1848f44b4ab5aae3e0eafa4460ca6069c070fcc1425fc9c64f81475be82",
+      "state": "blocked"
+    },
+    {
+      "accepted": true,
+      "frame_index": 0,
+      "lineage_hash": "sha256:8e0714d93dfdeea73549ff8858ce02f7f080053e0b0a1cac24d07dc13486d7e8",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frames/battle/killed/000.png",
+      "sha256": "7ae10c98187d49c6e00b54db407e5c3a5b1d7e430d747970b67cfdd1acd3fcfe",
+      "state": "killed"
+    },
+    {
+      "accepted": true,
+      "frame_index": 1,
+      "lineage_hash": "sha256:898eb1f1e2fde659684489b3848d0d5b4286378e46a38902fe9fd5364811d411",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frames/battle/killed/001.png",
+      "sha256": "671e776a6d7b0a8c5c80ed3b05ea9bde3a1d560d0e80f1d6eb4b970f409540be",
+      "state": "killed"
+    },
+    {
+      "accepted": true,
+      "frame_index": 2,
+      "lineage_hash": "sha256:72aa746201ddbb8d085cb990f4f0fdf3fb612647be47f4eee7b0cd866cfdb2f7",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frames/battle/killed/002.png",
+      "sha256": "53c772ec205c60b6428eead9c84fc27dcb02f3134bf40b84d7f43b2f8914ed6e",
+      "state": "killed"
+    },
+    {
+      "accepted": true,
+      "frame_index": 3,
+      "lineage_hash": "sha256:8e7239cb809d6f6d213038290a07ed65ea0e9dda2515e990b64dede290bc4ff6",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frames/battle/killed/003.png",
+      "sha256": "6ab08c450effb14b457e7dfec6214e7b7ec10a0a4803ceb8496a9e7f2109e749",
+      "state": "killed"
+    },
+    {
+      "accepted": true,
+      "frame_index": 4,
+      "lineage_hash": "sha256:ebeaf4555c5f432cff3b5386ec2312481d65fb60841adc9056a94e8e0ce31a02",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frames/battle/killed/004.png",
+      "sha256": "368ecc95f8f134a0a8a60368a8db8dbc803bef61293c412f32c3af62e2e670f6",
+      "state": "killed"
+    },
+    {
+      "accepted": true,
+      "frame_index": 5,
+      "lineage_hash": "sha256:f0d0c6506032db451ccc9259416fc14e2b63d23e1a0a01b41e9ca41e4b3de4fe",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frames/battle/killed/005.png",
+      "sha256": "30460b9e5f6ec38c300d25ff60dc63f529829059561bc3cef83600816c70e607",
+      "state": "killed"
+    },
+    {
+      "accepted": true,
+      "frame_index": 6,
+      "lineage_hash": "sha256:e675f37f9e4e51e2fa20db69f7b96c0aa5d8663cc389c6cbe6bafb815f57ffef",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frames/battle/killed/006.png",
+      "sha256": "3bdce599b8a8a1c83b367c335336383cb2d918ffa5c573273fe1768e4c2fdffe",
+      "state": "killed"
+    },
+    {
+      "accepted": true,
+      "frame_index": 7,
+      "lineage_hash": "sha256:bed3cca4a0a794932bafba35f2c0869ae476ab277357041d0ae891a9dc8f793b",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frames/battle/killed/007.png",
+      "sha256": "016b9bfc015ac7e0f4931d2d7fb6566aecfc492b25e2754d7aa7613ea1b0bb7b",
+      "state": "killed"
+    }
+  ],
+  "frames_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frames/battle",
+  "live": true,
+  "mocked": false,
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frame-lineage-receipt.json",
+  "schema": "tau.sprite_frame_lineage.v1",
+  "sprite_id": "battle",
+  "status": "PASS"
+}

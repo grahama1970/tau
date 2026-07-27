@@ -299,6 +299,7 @@ from tau_coding.skill_capability_registry import (
 from tau_coding.skill_composition_redteam import run_skill_composition_redteam
 from tau_coding.skill_invocation import write_skill_invocation_receipt
 from tau_coding.sparta_posture import write_sparta_posture_contract
+from tau_coding.sprite_sheet_conformance import write_sprite_sheet_conformance
 from tau_coding.test_run_receipt import write_test_run_receipt
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL, ThinkingLevel, normalize_thinking_level
 from tau_coding.ticket_closure_evidence import (
@@ -4653,6 +4654,17 @@ def main(
         try:
             options = _parse_adaptive_revision_conformance_cli_args(positional_args[1:])
             payload = project_agent_adaptive_revision_conformance_command(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("status") != "PASS":
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "sprite-sheet-conformance":
+        try:
+            options = _parse_sprite_sheet_conformance_cli_args(positional_args[1:])
+            payload = project_agent_sprite_sheet_conformance_command(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -12337,6 +12349,32 @@ def _parse_adaptive_revision_conformance_cli_args(args: list[str]) -> dict[str, 
     }
 
 
+def _parse_sprite_sheet_conformance_cli_args(args: list[str]) -> dict[str, Path | bool]:
+    output: Path | None = None
+    allow_live_filesystem = False
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--output":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--output requires a value")
+            output = Path(args[index])
+        elif arg.startswith("--output="):
+            output = Path(arg.partition("=")[2])
+        elif arg == "--allow-live-filesystem":
+            allow_live_filesystem = True
+        else:
+            raise RuntimeError(f"Unknown sprite-sheet-conformance option: {arg}")
+        index += 1
+    if output is None:
+        raise RuntimeError("sprite-sheet-conformance requires --output <proof.json>")
+    return {
+        "output": output,
+        "allow_live_filesystem": allow_live_filesystem,
+    }
+
+
 def _parse_persona_dream_panel_proof_cli_args(
     args: list[str],
 ) -> dict[str, Path | str | bool | None]:
@@ -14446,6 +14484,19 @@ def project_agent_adaptive_revision_conformance_command(
     """Write the adaptive graph revision conformance receipt."""
 
     return write_adaptive_revision_conformance(
+        output,
+        allow_live_filesystem=allow_live_filesystem,
+    )
+
+
+def project_agent_sprite_sheet_conformance_command(
+    *,
+    output: Path,
+    allow_live_filesystem: bool,
+) -> dict[str, object]:
+    """Write the sprite-sheet conformance receipt."""
+
+    return write_sprite_sheet_conformance(
         output,
         allow_live_filesystem=allow_live_filesystem,
     )

@@ -1,0 +1,77 @@
+{
+  "events_jsonl": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/run/events.jsonl",
+  "goal_hash": "sha256:sprite-sheet-conformance",
+  "nodes": [
+    {
+      "command": [
+        "tau-internal-sprite-sheet-conformance",
+        "frame-lineage"
+      ],
+      "depends_on": [],
+      "max_attempts": 1,
+      "node_id": "frame-lineage",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/frame-lineage-node-receipt.json",
+      "role": "frame-lineage",
+      "timeout_seconds": 60
+    },
+    {
+      "command": [
+        "tau-internal-sprite-sheet-conformance",
+        "sequence-validation"
+      ],
+      "depends_on": [
+        "frame-lineage"
+      ],
+      "max_attempts": 1,
+      "node_id": "sequence-validation",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/sequence-validation-node-receipt.json",
+      "role": "sequence-validation",
+      "timeout_seconds": 60
+    },
+    {
+      "command": [
+        "tau-internal-sprite-sheet-conformance",
+        "atlas-validation"
+      ],
+      "depends_on": [
+        "sequence-validation"
+      ],
+      "max_attempts": 1,
+      "node_id": "atlas-validation",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/atlas-validation-node-receipt.json",
+      "role": "atlas-validation",
+      "timeout_seconds": 60
+    },
+    {
+      "command": [
+        "tau-internal-sprite-sheet-conformance",
+        "playback-proof"
+      ],
+      "depends_on": [
+        "atlas-validation"
+      ],
+      "max_attempts": 1,
+      "node_id": "playback-proof",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/playback-proof-node-receipt.json",
+      "role": "playback-proof",
+      "timeout_seconds": 60
+    },
+    {
+      "command": [
+        "tau-internal-sprite-sheet-conformance",
+        "release-boundary"
+      ],
+      "depends_on": [
+        "playback-proof"
+      ],
+      "max_attempts": 1,
+      "node_id": "release-boundary",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/artifacts/release-boundary-node-receipt.json",
+      "role": "release-boundary",
+      "timeout_seconds": 60
+    }
+  ],
+  "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/run",
+  "run_id": "sprite-sheet-conformance",
+  "schema": "tau.generic_dag_spec.v1"
+}
