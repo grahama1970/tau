@@ -149,6 +149,7 @@ from tau_coding.herdr_cleanup import run_herdr_cleanup, run_herdr_gc
 from tau_coding.herdr_observation_gate import write_herdr_observation_gate_receipt
 from tau_coding.human_goal_change import write_human_goal_change_bridge_receipt
 from tau_coding.init_project import initialize_tau_project
+from tau_coding.installed_wheel_viewer_proof import write_installed_wheel_viewer_proof
 from tau_coding.itar_boundary import write_itar_access_preflight_receipt
 from tau_coding.itar_contract import write_itar_contract_receipt
 from tau_coding.local_provider_readiness import write_local_provider_readiness_receipt
@@ -4569,6 +4570,17 @@ def main(
         try:
             options = _parse_ticket_subagent_closure_proof_cli_args(positional_args[1:])
             payload = project_agent_ticket_subagent_closure_proof_command(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("status") != "PASS":
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "installed-wheel-viewer-proof":
+        try:
+            options = _parse_installed_wheel_viewer_proof_cli_args(positional_args[1:])
+            payload = project_agent_installed_wheel_viewer_proof_command(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -12043,6 +12055,32 @@ def _parse_ticket_subagent_closure_proof_cli_args(args: list[str]) -> dict[str, 
     }
 
 
+def _parse_installed_wheel_viewer_proof_cli_args(args: list[str]) -> dict[str, Path | bool]:
+    output: Path | None = None
+    allow_live_browser = False
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--output":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--output requires a value")
+            output = Path(args[index])
+        elif arg.startswith("--output="):
+            output = Path(arg.partition("=")[2])
+        elif arg == "--allow-live-browser":
+            allow_live_browser = True
+        else:
+            raise RuntimeError(f"Unknown installed-wheel-viewer-proof option: {arg}")
+        index += 1
+    if output is None:
+        raise RuntimeError("installed-wheel-viewer-proof requires --output <proof.json>")
+    return {
+        "output": output,
+        "allow_live_browser": allow_live_browser,
+    }
+
+
 def _parse_persona_dream_panel_proof_cli_args(
     args: list[str],
 ) -> dict[str, Path | str | bool | None]:
@@ -14057,6 +14095,19 @@ def project_agent_ticket_subagent_closure_proof_command(
     return write_ticket_subagent_closure_proof(
         output,
         allow_live_filesystem=allow_live_filesystem,
+    )
+
+
+def project_agent_installed_wheel_viewer_proof_command(
+    *,
+    output: Path,
+    allow_live_browser: bool,
+) -> dict[str, object]:
+    """Write the installed-wheel packaged viewer proof receipt."""
+
+    return write_installed_wheel_viewer_proof(
+        output,
+        allow_live_browser=allow_live_browser,
     )
 
 

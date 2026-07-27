@@ -1,0 +1,77 @@
+{
+  "http": {
+    "asset_checks": [
+      {
+        "bytes": 449657,
+        "content_type": "text/javascript; charset=utf-8",
+        "path": "/assets/index-B2d-Cyk0.js",
+        "status": 200
+      },
+      {
+        "bytes": 33594,
+        "content_type": "text/css; charset=utf-8",
+        "path": "/assets/index-Dm8BBQiL.css",
+        "status": 200
+      }
+    ],
+    "capabilities_read_only": true,
+    "index_bytes": 445,
+    "index_status": 200,
+    "mutating_method": {
+      "method": "POST",
+      "path": "/api/v1/state",
+      "status": 405
+    },
+    "state_schema": "tau.dag_view_snapshot.v2"
+  },
+  "live": true,
+  "mocked": false,
+  "proof_boundary": {
+    "does_not_prove": [
+      "Provider semantic correctness.",
+      "That every possible terminal/browser environment can render the viewer."
+    ],
+    "proves": [
+      "A freshly built Tau wheel contains the DAG viewer static index and assets.",
+      "An isolated venv can install the wheel and run the packaged tau CLI.",
+      "The installed tau CLI serves the packaged DAG viewer over loopback.",
+      "The viewer accepts read-only GET requests and rejects a POST mutation attempt.",
+      "Chrome can render desktop and mobile screenshots without Node after wheel install."
+    ]
+  },
+  "provider_live": false,
+  "runtime": {
+    "commands_after_wheel_install": [
+      "/tmp/tau-installed-wheel-viewer-proof-5id06pn0/venv/bin/python",
+      "/tmp/tau-installed-wheel-viewer-proof-5id06pn0/venv/bin/tau",
+      "/usr/bin/google-chrome"
+    ],
+    "installed_tau": "/tmp/tau-installed-wheel-viewer-proof-5id06pn0/venv/bin/tau",
+    "no_runtime_node_required": true,
+    "node_commands_after_wheel_install": []
+  },
+  "schema": "tau.installed_wheel_viewer_proof.v1",
+  "screenshots": {
+    "desktop": {
+      "bytes": 126592,
+      "path": "/tmp/tau-issue182.DN1Q79/docs/proofs/tickets/issue-182-installed-wheel-viewer-proof-20260727/installed-wheel-viewer-desktop.png",
+      "sha256": "sha256:d95d7090549a5a3492b7877b67d43954353271e1ff53527d1a54b8043cf7cbeb"
+    },
+    "mobile": {
+      "bytes": 46449,
+      "path": "/tmp/tau-issue182.DN1Q79/docs/proofs/tickets/issue-182-installed-wheel-viewer-proof-20260727/installed-wheel-viewer-mobile.png",
+      "sha256": "sha256:7023a9f7253b24c9e6bf4492f2d390f1f6f90dc1c3c6e64d1ccc5140f7de471e"
+    }
+  },
+  "status": "PASS",
+  "wheel": {
+    "path": "/tmp/tau-issue182.DN1Q79/docs/proofs/tickets/issue-182-installed-wheel-viewer-proof-20260727/dist/tau-0.1.0-py3-none-any.whl",
+    "sha256": "sha256:ef924968175ec49e2b49933c930dcf946f2895675a0f8f85433f6554b626a677",
+    "static_asset_count": 2,
+    "static_assets": [
+      "tau_coding/dag_viewer/static/assets/index-B2d-Cyk0.js",
+      "tau_coding/dag_viewer/static/assets/index-Dm8BBQiL.css"
+    ],
+    "static_index_present": true
+  }
+}
