@@ -1,0 +1,475 @@
+{
+  "backend": {
+    "available": true,
+    "image": "python@sha256:6c4dd321d176d61ea848dc8c73a4f7dbae8f70e0ee48bb411ea2f045b599fa8e",
+    "path": "/usr/bin/docker",
+    "requested": "auto",
+    "selected": "docker",
+    "selection": {
+      "bwrap_path": "/usr/bin/bwrap",
+      "bwrap_probe": {
+        "command": [
+          "/usr/bin/bwrap",
+          "--unshare-net",
+          "--die-with-parent",
+          "--ro-bind",
+          "/usr",
+          "/usr",
+          "--ro-bind",
+          "/bin",
+          "/bin",
+          "--ro-bind",
+          "/lib",
+          "/lib",
+          "--ro-bind",
+          "/lib64",
+          "/lib64",
+          "--dev",
+          "/dev",
+          "--proc",
+          "/proc",
+          "--tmpfs",
+          "/tmp",
+          "--dir",
+          "/work",
+          "--chdir",
+          "/work",
+          "/usr/bin/env",
+          "-i",
+          "PATH=/usr/bin:/bin:/usr/local/bin",
+          "python3",
+          "-c",
+          "print('tau-secure-conformance-probe')"
+        ],
+        "ok": false,
+        "returncode": 1,
+        "stderr": "bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted\n",
+        "stdout": ""
+      },
+      "docker_image": "python@sha256:6c4dd321d176d61ea848dc8c73a4f7dbae8f70e0ee48bb411ea2f045b599fa8e",
+      "docker_path": "/usr/bin/docker",
+      "mode": "auto",
+      "reason": "bwrap_probe_blocked_docker_digest_available"
+    }
+  },
+  "checked_at": "2026-07-27T15:29:08Z",
+  "checks": {
+    "expired_grant_denied_before_execution": true,
+    "host_environment_not_inherited": true,
+    "path_escape_denied": true,
+    "positive_isolated_command_passed": true,
+    "secret_access_denied": true,
+    "secure_mode_did_not_fallback_to_direct_subprocess": true,
+    "undeclared_egress_denied": true,
+    "undeclared_read_denied": true,
+    "undeclared_write_denied": true,
+    "wrong_attempt_grant_denied_before_execution": true
+  },
+  "data_boundary": {
+    "bytes": 302,
+    "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/fixtures/data-boundary.json",
+    "sha256": "sha256:18483e92bdd9ac8c9efa9d38583c6b266a35ebe5f0a4c184ea3be823c190647b"
+  },
+  "failed_checks": [],
+  "fixture_dir": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/fixtures",
+  "host_secret": {
+    "bytes": 40,
+    "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/fixtures/host-secret.txt",
+    "sha256": "sha256:543e50096506d1e40c666882face67c06a0206236777dce7579a91c0c412ae23"
+  },
+  "host_write_target": {
+    "bytes": 10,
+    "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/fixtures/host-write-target.txt",
+    "sha256": "sha256:1cd263f1102656dd6b6cf1d626d1a96f9eba0406af3cb2a52560d473d4801052"
+  },
+  "live": true,
+  "mocked": false,
+  "output": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/secure-execution-conformance.json",
+  "policy_profile": {
+    "bytes": 642,
+    "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/fixtures/policy-profile.json",
+    "sha256": "sha256:130eb2f9fb5f15bd3f0c2916e20c81937ddec79384cecf14c26425216d485a87"
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "ITAR compliance.",
+      "Kernel or Bubblewrap vulnerability absence.",
+      "Arbitrary production workload safety.",
+      "Provider/model semantic quality.",
+      "Network allow-grant behavior."
+    ],
+    "proves": [
+      "Tau launched the positive command through secure_executor and the recorded sandbox backend when status is PASS.",
+      "Tau did not inherit the host environment into the secure child process.",
+      "Tau denied host file reads, path escapes, host writes, undeclared egress, expired grants, and wrong-attempt grants in this live sandbox environment when status is PASS.",
+      "Tau did not fall back to direct subprocess execution for pre-dispatch grant denials."
+    ]
+  },
+  "provider_live": false,
+  "receipt_root": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs",
+  "runs": {
+    "expired_grant_denied": {
+      "alert_codes": [
+        "secure_executor_grant_expired",
+        "secure_executor_process_execute_grant_missing"
+      ],
+      "command_executed": false,
+      "exit_code": null,
+      "host_environment_inherited": false,
+      "network_egress": "denied",
+      "receipt_path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/expired-grant-denied/secure-execution-receipt.json",
+      "sandbox_command": null,
+      "status": "BLOCKED",
+      "stderr": {
+        "bytes": 0,
+        "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/expired-grant-denied/stderr.txt",
+        "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/expired-grant-denied/stdout.txt",
+        "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout_json": null
+    },
+    "path_escape_denied": {
+      "alert_codes": [
+        "docker_command_nonzero"
+      ],
+      "command_executed": true,
+      "exit_code": 1,
+      "host_environment_inherited": false,
+      "network_egress": "denied",
+      "receipt_path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/path-escape-denied/secure-execution-receipt.json",
+      "sandbox_command": [
+        "docker",
+        "run",
+        "--rm",
+        "--network",
+        "none",
+        "--user",
+        "65532:65532",
+        "--cidfile",
+        "/tmp/tau-docker-sandbox-cqx8l8gn/sandbox-receipt.container-id.txt",
+        "--read-only",
+        "--cap-drop",
+        "ALL",
+        "--security-opt",
+        "no-new-privileges:true",
+        "python@sha256:6c4dd321d176d61ea848dc8c73a4f7dbae8f70e0ee48bb411ea2f045b599fa8e",
+        "/usr/bin/env",
+        "-i",
+        "PATH=/usr/bin:/bin:/usr/local/bin",
+        "TAU_DAG_ATTEMPT=1",
+        "TAU_DAG_ID=secure-execution-conformance-dag",
+        "TAU_DAG_NODE_ID=secure-worker",
+        "TAU_GOAL_HASH=sha256:secure-execution-conformance",
+        "TAU_RUN_ID=secure-execution-conformance-run",
+        "TAU_SECURITY_CONTEXT_SHA256=sha256:secure-execution-context",
+        "TAU_SECURITY_MODE=secure",
+        "python3",
+        "-c",
+        "open('/etc/shadow', 'rb').read(1)"
+      ],
+      "status": "BLOCKED",
+      "stderr": {
+        "bytes": 135,
+        "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/path-escape-denied/stderr.txt",
+        "sha256": "sha256:d8634d3c50b57d210416d00e11970bbae0c19359263b36141e3f2869fb130f59"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/path-escape-denied/stdout.txt",
+        "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout_json": null
+    },
+    "positive_isolated_command": {
+      "alert_codes": [],
+      "command_executed": true,
+      "exit_code": 0,
+      "host_environment_inherited": false,
+      "network_egress": "denied",
+      "receipt_path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/positive-isolated-command/secure-execution-receipt.json",
+      "sandbox_command": [
+        "docker",
+        "run",
+        "--rm",
+        "--network",
+        "none",
+        "--user",
+        "65532:65532",
+        "--cidfile",
+        "/tmp/tau-docker-sandbox-5xcfb06q/sandbox-receipt.container-id.txt",
+        "--read-only",
+        "--cap-drop",
+        "ALL",
+        "--security-opt",
+        "no-new-privileges:true",
+        "python@sha256:6c4dd321d176d61ea848dc8c73a4f7dbae8f70e0ee48bb411ea2f045b599fa8e",
+        "/usr/bin/env",
+        "-i",
+        "PATH=/usr/bin:/bin:/usr/local/bin",
+        "TAU_CONFORMANCE_ALLOWED=yes",
+        "TAU_DAG_ATTEMPT=1",
+        "TAU_DAG_ID=secure-execution-conformance-dag",
+        "TAU_DAG_NODE_ID=secure-worker",
+        "TAU_GOAL_HASH=sha256:secure-execution-conformance",
+        "TAU_RUN_ID=secure-execution-conformance-run",
+        "TAU_SECURITY_CONTEXT_SHA256=sha256:secure-execution-context",
+        "TAU_SECURITY_MODE=secure",
+        "python3",
+        "-c",
+        "import json, os; print(json.dumps({'secure': os.environ.get('TAU_SECURITY_MODE'), 'run_id': os.environ.get('TAU_RUN_ID'), 'host_secret_present': 'TAU_CONFORMANCE_HOST_SECRET' in os.environ}, sort_keys=True))"
+      ],
+      "status": "PASS",
+      "stderr": {
+        "bytes": 0,
+        "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/positive-isolated-command/stderr.txt",
+        "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 97,
+        "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/positive-isolated-command/stdout.txt",
+        "sha256": "sha256:f87527740b8abadc9e65c6e1f6f18450c13217799161c14da627dfa76a570d02"
+      },
+      "stdout_json": {
+        "host_secret_present": false,
+        "run_id": "secure-execution-conformance-run",
+        "secure": "secure"
+      }
+    },
+    "secret_environment_denied": {
+      "alert_codes": [],
+      "command_executed": true,
+      "exit_code": 0,
+      "host_environment_inherited": false,
+      "network_egress": "denied",
+      "receipt_path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/secret-environment-denied/secure-execution-receipt.json",
+      "sandbox_command": [
+        "docker",
+        "run",
+        "--rm",
+        "--network",
+        "none",
+        "--user",
+        "65532:65532",
+        "--cidfile",
+        "/tmp/tau-docker-sandbox-dhqyiko_/sandbox-receipt.container-id.txt",
+        "--read-only",
+        "--cap-drop",
+        "ALL",
+        "--security-opt",
+        "no-new-privileges:true",
+        "python@sha256:6c4dd321d176d61ea848dc8c73a4f7dbae8f70e0ee48bb411ea2f045b599fa8e",
+        "/usr/bin/env",
+        "-i",
+        "PATH=/usr/bin:/bin:/usr/local/bin",
+        "TAU_DAG_ATTEMPT=1",
+        "TAU_DAG_ID=secure-execution-conformance-dag",
+        "TAU_DAG_NODE_ID=secure-worker",
+        "TAU_GOAL_HASH=sha256:secure-execution-conformance",
+        "TAU_RUN_ID=secure-execution-conformance-run",
+        "TAU_SECURITY_CONTEXT_SHA256=sha256:secure-execution-context",
+        "TAU_SECURITY_MODE=secure",
+        "python3",
+        "-c",
+        "import os, sys; sys.exit(0 if 'TAU_CONFORMANCE_HOST_SECRET' not in os.environ else 23)"
+      ],
+      "status": "PASS",
+      "stderr": {
+        "bytes": 0,
+        "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/secret-environment-denied/stderr.txt",
+        "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/secret-environment-denied/stdout.txt",
+        "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout_json": null
+    },
+    "undeclared_egress_denied": {
+      "alert_codes": [
+        "docker_command_nonzero"
+      ],
+      "command_executed": true,
+      "exit_code": 1,
+      "host_environment_inherited": false,
+      "network_egress": "denied",
+      "receipt_path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/undeclared-egress-denied/secure-execution-receipt.json",
+      "sandbox_command": [
+        "docker",
+        "run",
+        "--rm",
+        "--network",
+        "none",
+        "--user",
+        "65532:65532",
+        "--cidfile",
+        "/tmp/tau-docker-sandbox-nsm62jvg/sandbox-receipt.container-id.txt",
+        "--read-only",
+        "--cap-drop",
+        "ALL",
+        "--security-opt",
+        "no-new-privileges:true",
+        "python@sha256:6c4dd321d176d61ea848dc8c73a4f7dbae8f70e0ee48bb411ea2f045b599fa8e",
+        "/usr/bin/env",
+        "-i",
+        "PATH=/usr/bin:/bin:/usr/local/bin",
+        "TAU_DAG_ATTEMPT=1",
+        "TAU_DAG_ID=secure-execution-conformance-dag",
+        "TAU_DAG_NODE_ID=secure-worker",
+        "TAU_GOAL_HASH=sha256:secure-execution-conformance",
+        "TAU_RUN_ID=secure-execution-conformance-run",
+        "TAU_SECURITY_CONTEXT_SHA256=sha256:secure-execution-context",
+        "TAU_SECURITY_MODE=secure",
+        "python3",
+        "-c",
+        "import socket; socket.create_connection(('93.184.216.34', 80), timeout=1.0)"
+      ],
+      "status": "BLOCKED",
+      "stderr": {
+        "bytes": 317,
+        "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/undeclared-egress-denied/stderr.txt",
+        "sha256": "sha256:c10013ac257ba43ec6af8af76c767ce3f287f246a53c1c7612495c8e34d71f37"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/undeclared-egress-denied/stdout.txt",
+        "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout_json": null
+    },
+    "undeclared_read_denied": {
+      "alert_codes": [
+        "docker_command_nonzero"
+      ],
+      "command_executed": true,
+      "exit_code": 1,
+      "host_environment_inherited": false,
+      "network_egress": "denied",
+      "receipt_path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/undeclared-read-denied/secure-execution-receipt.json",
+      "sandbox_command": [
+        "docker",
+        "run",
+        "--rm",
+        "--network",
+        "none",
+        "--user",
+        "65532:65532",
+        "--cidfile",
+        "/tmp/tau-docker-sandbox-t6sioniy/sandbox-receipt.container-id.txt",
+        "--read-only",
+        "--cap-drop",
+        "ALL",
+        "--security-opt",
+        "no-new-privileges:true",
+        "python@sha256:6c4dd321d176d61ea848dc8c73a4f7dbae8f70e0ee48bb411ea2f045b599fa8e",
+        "/usr/bin/env",
+        "-i",
+        "PATH=/usr/bin:/bin:/usr/local/bin",
+        "TAU_DAG_ATTEMPT=1",
+        "TAU_DAG_ID=secure-execution-conformance-dag",
+        "TAU_DAG_NODE_ID=secure-worker",
+        "TAU_GOAL_HASH=sha256:secure-execution-conformance",
+        "TAU_RUN_ID=secure-execution-conformance-run",
+        "TAU_SECURITY_CONTEXT_SHA256=sha256:secure-execution-context",
+        "TAU_SECURITY_MODE=secure",
+        "python3",
+        "-c",
+        "from pathlib import Path; print(Path('/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/fixtures/host-secret.txt').read_text())"
+      ],
+      "status": "BLOCKED",
+      "stderr": {
+        "bytes": 661,
+        "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/undeclared-read-denied/stderr.txt",
+        "sha256": "sha256:b7572ad665d097d3bd5552a3903fb1b6fee000ab36b7e1188ba5ac571f53b34c"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/undeclared-read-denied/stdout.txt",
+        "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout_json": null
+    },
+    "undeclared_write_denied": {
+      "alert_codes": [
+        "docker_command_nonzero"
+      ],
+      "command_executed": true,
+      "exit_code": 1,
+      "host_environment_inherited": false,
+      "network_egress": "denied",
+      "receipt_path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/undeclared-write-denied/secure-execution-receipt.json",
+      "sandbox_command": [
+        "docker",
+        "run",
+        "--rm",
+        "--network",
+        "none",
+        "--user",
+        "65532:65532",
+        "--cidfile",
+        "/tmp/tau-docker-sandbox-48fii44z/sandbox-receipt.container-id.txt",
+        "--read-only",
+        "--cap-drop",
+        "ALL",
+        "--security-opt",
+        "no-new-privileges:true",
+        "python@sha256:6c4dd321d176d61ea848dc8c73a4f7dbae8f70e0ee48bb411ea2f045b599fa8e",
+        "/usr/bin/env",
+        "-i",
+        "PATH=/usr/bin:/bin:/usr/local/bin",
+        "TAU_DAG_ATTEMPT=1",
+        "TAU_DAG_ID=secure-execution-conformance-dag",
+        "TAU_DAG_NODE_ID=secure-worker",
+        "TAU_GOAL_HASH=sha256:secure-execution-conformance",
+        "TAU_RUN_ID=secure-execution-conformance-run",
+        "TAU_SECURITY_CONTEXT_SHA256=sha256:secure-execution-context",
+        "TAU_SECURITY_MODE=secure",
+        "python3",
+        "-c",
+        "from pathlib import Path; Path('/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/fixtures/host-write-target.txt').write_text('changed')"
+      ],
+      "status": "BLOCKED",
+      "stderr": {
+        "bytes": 702,
+        "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/undeclared-write-denied/stderr.txt",
+        "sha256": "sha256:d1bb5770651e118abcea0fcbf34248c780524d890f8f5890d47e357f2a0b0475"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/undeclared-write-denied/stdout.txt",
+        "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout_json": null
+    },
+    "wrong_attempt_grant_denied": {
+      "alert_codes": [
+        "secure_executor_grant_binding_mismatch",
+        "secure_executor_process_execute_grant_missing"
+      ],
+      "command_executed": false,
+      "exit_code": null,
+      "host_environment_inherited": false,
+      "network_egress": "denied",
+      "receipt_path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/wrong-attempt-grant-denied/secure-execution-receipt.json",
+      "sandbox_command": null,
+      "status": "BLOCKED",
+      "stderr": {
+        "bytes": 0,
+        "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/wrong-attempt-grant-denied/stderr.txt",
+        "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/wrong-attempt-grant-denied/stdout.txt",
+        "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout_json": null
+    }
+  },
+  "schema": "tau.secure_execution_conformance.v1",
+  "status": "PASS"
+}

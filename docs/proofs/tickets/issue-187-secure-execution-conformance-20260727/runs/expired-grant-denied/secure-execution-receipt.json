@@ -1,0 +1,82 @@
+{
+  "alert_codes": [
+    "secure_executor_grant_expired",
+    "secure_executor_process_execute_grant_missing"
+  ],
+  "alerts": [
+    {
+      "code": "secure_executor_grant_expired",
+      "evidence": {},
+      "message": "grant[0] is expired.",
+      "severity": "BLOCK"
+    },
+    {
+      "code": "secure_executor_process_execute_grant_missing",
+      "evidence": {},
+      "message": "Secure command requires a matching process.execute grant.",
+      "severity": "BLOCK"
+    }
+  ],
+  "attempt": 1,
+  "backend": {
+    "available": false,
+    "name": "docker"
+  },
+  "checked_at": "2026-07-27T15:29:08Z",
+  "child_environment_names": [
+    "TAU_DAG_ATTEMPT",
+    "TAU_DAG_ID",
+    "TAU_DAG_NODE_ID",
+    "TAU_GOAL_HASH",
+    "TAU_RUN_ID",
+    "TAU_SECURITY_CONTEXT_SHA256",
+    "TAU_SECURITY_MODE"
+  ],
+  "command_executed": false,
+  "dag_id": "secure-execution-conformance-dag",
+  "data_boundary_sha256": "sha256:18483e92bdd9ac8c9efa9d38583c6b266a35ebe5f0a4c184ea3be823c190647b",
+  "exit_code": null,
+  "goal_hash": "sha256:secure-execution-conformance",
+  "grant_sha256s": [],
+  "host_environment_inherited": false,
+  "live": true,
+  "mocked": false,
+  "network_egress": "denied",
+  "node_id": "secure-worker",
+  "ok": false,
+  "policy_profile_sha256": "sha256:130eb2f9fb5f15bd3f0c2916e20c81937ddec79384cecf14c26425216d485a87",
+  "proof_scope": {
+    "does_not_prove": [
+      "ITAR compliance.",
+      "Kernel or Bubblewrap vulnerability absence.",
+      "Scoped host filesystem access.",
+      "Secret-reference injection.",
+      "Network allow-grant enforcement.",
+      "Secure retries beyond attempt 1.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau checked the process.execute grant binding before secure command launch.",
+      "Tau used the recorded sandbox backend with denied network egress and an explicit empty-base child environment when command_executed is true.",
+      "Tau did not fall back to direct subprocess execution when secure execution was blocked."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/expired-grant-denied/secure-execution-receipt.json",
+  "run_id": "secure-execution-conformance-run",
+  "sandbox_command": null,
+  "schema": "tau.secure_execution_receipt.v1",
+  "security_context_sha256": "sha256:secure-execution-context",
+  "status": "BLOCKED",
+  "stderr": {
+    "bytes": 0,
+    "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/expired-grant-denied/stderr.txt",
+    "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 0,
+    "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/expired-grant-denied/stdout.txt",
+    "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "timed_out": false
+}

@@ -1,0 +1,107 @@
+{
+  "alert_codes": [
+    "docker_command_nonzero"
+  ],
+  "alerts": [
+    {
+      "code": "docker_command_nonzero",
+      "evidence": {},
+      "message": "Docker sandbox command exited with code 1.",
+      "severity": "BLOCK"
+    }
+  ],
+  "attempt": 1,
+  "backend": {
+    "image": "python@sha256:6c4dd321d176d61ea848dc8c73a4f7dbae8f70e0ee48bb411ea2f045b599fa8e",
+    "image_digest": "sha256:6c4dd321d176d61ea848dc8c73a4f7dbae8f70e0ee48bb411ea2f045b599fa8e",
+    "name": "docker"
+  },
+  "checked_at": "2026-07-27T15:29:07Z",
+  "child_environment_names": [
+    "TAU_DAG_ATTEMPT",
+    "TAU_DAG_ID",
+    "TAU_DAG_NODE_ID",
+    "TAU_GOAL_HASH",
+    "TAU_RUN_ID",
+    "TAU_SECURITY_CONTEXT_SHA256",
+    "TAU_SECURITY_MODE"
+  ],
+  "command_executed": true,
+  "dag_id": "secure-execution-conformance-dag",
+  "data_boundary_sha256": "sha256:18483e92bdd9ac8c9efa9d38583c6b266a35ebe5f0a4c184ea3be823c190647b",
+  "exit_code": 1,
+  "goal_hash": "sha256:secure-execution-conformance",
+  "grant_sha256s": [
+    "sha256:5f68273bae9617fcc5b690224d0d5254cec47137e23cc98a16001dd14bb183a0"
+  ],
+  "host_environment_inherited": false,
+  "live": true,
+  "mocked": false,
+  "network_egress": "denied",
+  "node_id": "secure-worker",
+  "ok": false,
+  "policy_profile_sha256": "sha256:130eb2f9fb5f15bd3f0c2916e20c81937ddec79384cecf14c26425216d485a87",
+  "proof_scope": {
+    "does_not_prove": [
+      "ITAR compliance.",
+      "Kernel or Bubblewrap vulnerability absence.",
+      "Scoped host filesystem access.",
+      "Secret-reference injection.",
+      "Network allow-grant enforcement.",
+      "Secure retries beyond attempt 1.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau checked the process.execute grant binding before secure command launch.",
+      "Tau used the recorded sandbox backend with denied network egress and an explicit empty-base child environment when command_executed is true.",
+      "Tau did not fall back to direct subprocess execution when secure execution was blocked."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/undeclared-read-denied/secure-execution-receipt.json",
+  "run_id": "secure-execution-conformance-run",
+  "sandbox_command": [
+    "docker",
+    "run",
+    "--rm",
+    "--network",
+    "none",
+    "--user",
+    "65532:65532",
+    "--cidfile",
+    "/tmp/tau-docker-sandbox-t6sioniy/sandbox-receipt.container-id.txt",
+    "--read-only",
+    "--cap-drop",
+    "ALL",
+    "--security-opt",
+    "no-new-privileges:true",
+    "python@sha256:6c4dd321d176d61ea848dc8c73a4f7dbae8f70e0ee48bb411ea2f045b599fa8e",
+    "/usr/bin/env",
+    "-i",
+    "PATH=/usr/bin:/bin:/usr/local/bin",
+    "TAU_DAG_ATTEMPT=1",
+    "TAU_DAG_ID=secure-execution-conformance-dag",
+    "TAU_DAG_NODE_ID=secure-worker",
+    "TAU_GOAL_HASH=sha256:secure-execution-conformance",
+    "TAU_RUN_ID=secure-execution-conformance-run",
+    "TAU_SECURITY_CONTEXT_SHA256=sha256:secure-execution-context",
+    "TAU_SECURITY_MODE=secure",
+    "python3",
+    "-c",
+    "from pathlib import Path; print(Path('/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/fixtures/host-secret.txt').read_text())"
+  ],
+  "schema": "tau.secure_execution_receipt.v1",
+  "security_context_sha256": "sha256:secure-execution-context",
+  "status": "BLOCKED",
+  "stderr": {
+    "bytes": 661,
+    "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/undeclared-read-denied/stderr.txt",
+    "sha256": "sha256:b7572ad665d097d3bd5552a3903fb1b6fee000ab36b7e1188ba5ac571f53b34c"
+  },
+  "stdout": {
+    "bytes": 0,
+    "path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/undeclared-read-denied/stdout.txt",
+    "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "timed_out": false
+}

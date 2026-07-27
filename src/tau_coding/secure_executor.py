@@ -1,4 +1,4 @@
-"""Grant-bound Bubblewrap execution for secure Tau DAG nodes."""
+"""Grant-bound sandbox execution for secure Tau DAG nodes."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from typing import Any
 from tau_coding.sandbox_run import run_sandboxed_command
 
 SECURE_EXECUTION_RECEIPT_SCHEMA = "tau.secure_execution_receipt.v1"
-SUPPORTED_SECURE_BACKENDS = {"bwrap"}
+SUPPORTED_SECURE_BACKENDS = {"bwrap", "docker", "docker-sbx"}
 
 
 @dataclass(frozen=True)
@@ -42,10 +42,11 @@ def execute_secure_command(
     security_context_sha256: str,
     policy_profile_sha256: str,
     data_boundary_sha256: str,
+    image: str | None = None,
     child_environment: Mapping[str, str] | None = None,
     checked_at: datetime | None = None,
 ) -> SecureExecutionResult:
-    """Validate grants and execute one command through Bubblewrap only."""
+    """Validate grants and execute one command through the configured sandbox."""
 
     resolved_receipt_dir = receipt_dir.expanduser().resolve()
     resolved_receipt_dir.mkdir(parents=True, exist_ok=True)
@@ -119,6 +120,8 @@ def execute_secure_command(
     if not alerts:
         environment_command = [
             "/usr/bin/env",
+            "-i",
+            "PATH=/usr/bin:/bin:/usr/local/bin",
             *[f"{key}={value}" for key, value in sorted(environment.items())],
             *command,
         ]
@@ -129,15 +132,11 @@ def execute_secure_command(
             goal_hash=goal_hash,
             timeout_seconds=timeout_seconds,
             backend=backend,
+            image=image,
             stdin_text=stdin_text,
             work_dir=None,
         )
-        command_result = sandbox_receipt.get("command_result")
-        if isinstance(command_result, Mapping):
-            stdout = str(command_result.get("stdout") or "")
-            stderr = str(command_result.get("stderr") or "")
-            raw_returncode = command_result.get("returncode")
-            returncode = raw_returncode if isinstance(raw_returncode, int) else None
+        stdout, stderr, returncode = _sandbox_outputs(sandbox_receipt)
         if sandbox_receipt.get("status") != "PASS":
             alerts.extend(
                 _alert(
@@ -161,6 +160,10 @@ def execute_secure_command(
         command_result = sandbox_receipt.get("command_result")
         if isinstance(command_result, Mapping):
             sandbox_command = command_result.get("command")
+        if sandbox_command is None:
+            docker_command = sandbox_receipt.get("docker_command")
+            if isinstance(docker_command, list):
+                sandbox_command = docker_command
     receipt = {
         "schema": SECURE_EXECUTION_RECEIPT_SCHEMA,
         "ok": status == "PASS",
@@ -200,8 +203,8 @@ def execute_secure_command(
         "proof_scope": {
             "proves": [
                 "Tau checked the process.execute grant binding before secure command launch.",
-                "Tau used Bubblewrap with a new network namespace and an explicit empty-base "
-                "child environment when command_executed is true.",
+                "Tau used the recorded sandbox backend with denied network egress and an "
+                "explicit empty-base child environment when command_executed is true.",
                 "Tau did not fall back to direct subprocess execution when secure execution "
                 "was blocked.",
             ],
@@ -301,6 +304,33 @@ def _validate_grants(
             )
         )
     return alerts, accepted
+
+
+def _sandbox_outputs(receipt: Mapping[str, Any]) -> tuple[str, str, int | None]:
+    command_result = receipt.get("command_result")
+    if isinstance(command_result, Mapping):
+        raw_returncode = command_result.get("returncode")
+        return (
+            str(command_result.get("stdout") or ""),
+            str(command_result.get("stderr") or ""),
+            raw_returncode if isinstance(raw_returncode, int) else None,
+        )
+    execution = receipt.get("execution")
+    if isinstance(execution, Mapping):
+        stdout = _read_text_if_path(execution.get("stdout_path"))
+        stderr = _read_text_if_path(execution.get("stderr_path"))
+        raw_returncode = execution.get("exit_code")
+        return stdout, stderr, raw_returncode if isinstance(raw_returncode, int) else None
+    return "", "", None
+
+
+def _read_text_if_path(value: object) -> str:
+    if not isinstance(value, str) or not value:
+        return ""
+    try:
+        return Path(value).read_text(encoding="utf-8")
+    except OSError:
+        return ""
 
 
 def _grant_sha256(grant: Mapping[str, Any]) -> str:

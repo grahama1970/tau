@@ -269,6 +269,7 @@ from tau_coding.run_status import build_dag_viewer_link, build_run_status
 from tau_coding.sandbox_run import run_sandboxed_command
 from tau_coding.scillm_chat_review import write_scillm_chat_review_receipt
 from tau_coding.scillm_subagent_gate import validate_scillm_subagent_loop_summary
+from tau_coding.secure_execution_conformance import write_secure_execution_conformance
 from tau_coding.self_fix_repair_loop import write_coder_reviewer_repair_loop
 from tau_coding.self_fix_ticket_repair import run_ticket_repair
 from tau_coding.server import serve_tau_api
@@ -4617,6 +4618,17 @@ def main(
         try:
             options = _parse_canonical_scheduler_conformance_cli_args(positional_args[1:])
             payload = project_agent_canonical_scheduler_conformance_command(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("status") != "PASS":
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "secure-execution-conformance":
+        try:
+            options = _parse_secure_execution_conformance_cli_args(positional_args[1:])
+            payload = project_agent_secure_execution_conformance_command(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -12212,6 +12224,43 @@ def _parse_canonical_scheduler_conformance_cli_args(args: list[str]) -> dict[str
     }
 
 
+def _parse_secure_execution_conformance_cli_args(
+    args: list[str],
+) -> dict[str, Path | bool | str]:
+    output: Path | None = None
+    allow_live_sandbox = False
+    backend = "auto"
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--output":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--output requires a value")
+            output = Path(args[index])
+        elif arg.startswith("--output="):
+            output = Path(arg.partition("=")[2])
+        elif arg == "--allow-live-sandbox":
+            allow_live_sandbox = True
+        elif arg == "--backend":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--backend requires a value")
+            backend = args[index]
+        elif arg.startswith("--backend="):
+            backend = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"Unknown secure-execution-conformance option: {arg}")
+        index += 1
+    if output is None:
+        raise RuntimeError("secure-execution-conformance requires --output <proof.json>")
+    return {
+        "output": output,
+        "allow_live_sandbox": allow_live_sandbox,
+        "backend": backend,
+    }
+
+
 def _parse_persona_dream_panel_proof_cli_args(
     args: list[str],
 ) -> dict[str, Path | str | bool | None]:
@@ -14282,6 +14331,21 @@ def project_agent_canonical_scheduler_conformance_command(
     return write_canonical_scheduler_conformance(
         output,
         allow_live_filesystem=allow_live_filesystem,
+    )
+
+
+def project_agent_secure_execution_conformance_command(
+    *,
+    output: Path,
+    allow_live_sandbox: bool,
+    backend: str,
+) -> dict[str, object]:
+    """Write the secure execution conformance receipt."""
+
+    return write_secure_execution_conformance(
+        output,
+        allow_live_sandbox=allow_live_sandbox,
+        backend=backend,
     )
 
 

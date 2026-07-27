@@ -1,0 +1,30 @@
+{
+  "default_decision": "deny",
+  "filesystem": {
+    "read_denylist": [],
+    "write_allowlist": []
+  },
+  "github": {
+    "dry_run_projection": "allow",
+    "public_mutation": "deny"
+  },
+  "memory": {
+    "read": "allow",
+    "write": "approval_required"
+  },
+  "network": {
+    "allowed_domains": [],
+    "default": "deny"
+  },
+  "profile_id": "itar-zero-trust-local-only",
+  "providers": {
+    "cloud_llm": "deny",
+    "local_model": "allow_with_approval"
+  },
+  "requires_data_boundary": true,
+  "research": {
+    "external_search": "deny",
+    "manual_sanitized_receipt": "allow_with_review"
+  },
+  "schema": "tau.policy_profile.v1"
+}

@@ -1,0 +1,105 @@
+{
+  "actor_id": "human:operator",
+  "alert_codes": [],
+  "alerts": [],
+  "checked_at": "2026-07-27T15:29:07Z",
+  "command_executed": false,
+  "dag_id": "secure-execution-conformance-dag",
+  "data_boundary_sha256": "sha256:18483e92bdd9ac8c9efa9d38583c6b266a35ebe5f0a4c184ea3be823c190647b",
+  "decisions": [
+    {
+      "errors": [],
+      "executor": "local",
+      "grant_sha256s": [
+        "sha256:5f68273bae9617fcc5b690224d0d5254cec47137e23cc98a16001dd14bb183a0"
+      ],
+      "node_id": "secure-worker",
+      "requested_count": 1,
+      "status": "PASS"
+    }
+  ],
+  "filesystem_mutation_performed": false,
+  "goal_hash": "sha256:secure-execution-conformance",
+  "grant_count": 1,
+  "grants": [
+    {
+      "actor_id": "human:operator",
+      "attempt": 1,
+      "capability": "process.execute",
+      "dag_id": "secure-execution-conformance-dag",
+      "data_boundary_sha256": "sha256:18483e92bdd9ac8c9efa9d38583c6b266a35ebe5f0a4c184ea3be823c190647b",
+      "expires_at": "2026-07-27T15:34:07Z",
+      "goal_hash": "sha256:secure-execution-conformance",
+      "grant_id": "grant:secure-execution-conformance-dag:secure-worker:1:0:process.execute",
+      "grant_path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/capability-decision/capability-grants/secure-worker/000-process-execute.json",
+      "grant_sha256": "sha256:5f68273bae9617fcc5b690224d0d5254cec47137e23cc98a16001dd14bb183a0",
+      "granting_authority": "tau.command_spec_policy.v1",
+      "issued_at": "2026-07-27T15:29:07Z",
+      "maximum_effect": {
+        "max_processes": 1
+      },
+      "node_id": "secure-worker",
+      "policy_profile_sha256": "sha256:130eb2f9fb5f15bd3f0c2916e20c81937ddec79384cecf14c26425216d485a87",
+      "request_sha256": "sha256:ce42c1ede0318b87a3dd61435cb981c0cccd2c23207e8a6ea9b45675af31c6ec",
+      "resource_scope": [
+        "empty-workdir"
+      ],
+      "run_id": "secure-execution-conformance-run",
+      "schema": "tau.capability_grant.v1",
+      "security_context_sha256": "sha256:secure-execution-context",
+      "target": "python3"
+    }
+  ],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "policy_profile_sha256": "sha256:130eb2f9fb5f15bd3f0c2916e20c81937ddec79384cecf14c26425216d485a87",
+  "proof_scope": {
+    "does_not_prove": [
+      "Runtime capability enforcement.",
+      "Sandbox isolation.",
+      "Secret isolation.",
+      "Network isolation.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau compiled declared node capability requests against the resolved command policy.",
+      "Tau bound generated grants to the goal, security context, policy, boundary, node, and attempt.",
+      "Tau denied the complete pre-dispatch decision when any requested capability was not allowed."
+    ]
+  },
+  "provider_invoked": false,
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/capability-decision/capability-decision-receipt.json",
+  "request_count": 1,
+  "requests": [
+    {
+      "actor_id": "human:operator",
+      "attempt": 1,
+      "capability": "process.execute",
+      "dag_id": "secure-execution-conformance-dag",
+      "data_boundary_sha256": "sha256:18483e92bdd9ac8c9efa9d38583c6b266a35ebe5f0a4c184ea3be823c190647b",
+      "goal_hash": "sha256:secure-execution-conformance",
+      "maximum_effect": {
+        "max_processes": 1
+      },
+      "node_id": "secure-worker",
+      "policy_profile_sha256": "sha256:130eb2f9fb5f15bd3f0c2916e20c81937ddec79384cecf14c26425216d485a87",
+      "request_id": "secure-execution-conformance-dag:secure-worker:1:0:process.execute",
+      "request_path": "/tmp/tau-issue187-1785165638/docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/runs/capability-decision/capability-requests/secure-worker/000.json",
+      "request_sha256": "sha256:ce42c1ede0318b87a3dd61435cb981c0cccd2c23207e8a6ea9b45675af31c6ec",
+      "requested_at": "2026-07-27T15:29:07Z",
+      "resource_scope": [
+        "empty-workdir"
+      ],
+      "run_id": "secure-execution-conformance-run",
+      "schema": "tau.capability_request.v1",
+      "security_context_sha256": "sha256:secure-execution-context",
+      "target": "python3"
+    }
+  ],
+  "run_id": "secure-execution-conformance-run",
+  "schema": "tau.capability_decision_receipt.v1",
+  "security_context_sha256": "sha256:secure-execution-context",
+  "status": "PASS"
+}
