@@ -1,0 +1,8 @@
+{
+  "negative_signals": [],
+  "ok": true,
+  "schema": "tau.dag_signal_receipt.v1",
+  "source_ok": true,
+  "source_status": "PASS",
+  "status": "PASS"
+}

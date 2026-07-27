@@ -1,0 +1,30 @@
+{
+  "bounded_revision": {
+    "new_edges": [
+      {
+        "from": "coder",
+        "to": "validator"
+      },
+      {
+        "from": "validator",
+        "to": "reviewer"
+      }
+    ],
+    "new_node_ids": [
+      "validator"
+    ]
+  },
+  "live": true,
+  "mocked": false,
+  "proposal": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/adaptive-revision-proposal.json",
+  "proposal_sha256": "sha256:3490608848aa4f96781213bc33189a40a82561d425f2e41b5aa2db3abe97ea3e",
+  "safe_checkpoint_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/safe-checkpoint-receipt.json",
+  "safe_checkpoint_sha256": "sha256:cf59a9df2f528075c783dff324eace1a00c702e2ee05eb3e46d19032cb96ca53",
+  "schema": "tau.adaptive_revision_proposal_receipt.v1",
+  "source_dag_contract": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/source-dag-contract.json",
+  "source_dag_contract_sha256": "sha256:0c34b0b3d2565d373171b93c030c8087ea6cf4f708852666799711b6104ddd05",
+  "status": "PASS",
+  "superseded_pending_node_ids": [
+    "reviewer"
+  ]
+}

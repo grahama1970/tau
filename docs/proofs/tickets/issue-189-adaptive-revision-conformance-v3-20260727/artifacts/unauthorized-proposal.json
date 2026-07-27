@@ -1,0 +1,30 @@
+{
+  "goal_hash": "sha256:adaptive-revision-conformance-goal",
+  "new_edges": [
+    {
+      "from": "coder",
+      "to": "validator"
+    },
+    {
+      "from": "validator",
+      "to": "reviewer"
+    }
+  ],
+  "new_nodes": [
+    {
+      "agent": "validator",
+      "executor": "local",
+      "id": "validator",
+      "max_attempts": 1,
+      "required_evidence": [
+        "validation_receipt"
+      ]
+    }
+  ],
+  "parent_dag_id": "adaptive-revision-conformance",
+  "phase": "running",
+  "proposal_id": "unauthorized-revision",
+  "proposed_by": "worker",
+  "reason": "Insert bounded validator before the pending reviewer reruns.",
+  "schema": "tau.dag_expansion_proposal.v1"
+}

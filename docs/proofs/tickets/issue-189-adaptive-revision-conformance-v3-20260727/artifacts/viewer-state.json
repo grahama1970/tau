@@ -1,0 +1,61 @@
+{
+  "edges": [
+    {
+      "from": "coder",
+      "to": "reviewer"
+    },
+    {
+      "from": "reviewer",
+      "to": "human"
+    },
+    {
+      "from": "coder",
+      "to": "validator"
+    },
+    {
+      "from": "validator",
+      "to": "reviewer"
+    }
+  ],
+  "live": true,
+  "mocked": false,
+  "nodes": [
+    {
+      "id": "coder",
+      "plan": "source+revised",
+      "state": "accepted_preserved"
+    },
+    {
+      "id": "validator",
+      "plan": "revised",
+      "state": "inserted_by_revision"
+    },
+    {
+      "id": "reviewer",
+      "plan": "source+revised",
+      "state": "superseded_pending_then_replayed"
+    }
+  ],
+  "revised_plan_sha256": "sha256:87b773e2d3059b980b6b4627b06f5d63b51d5f7ef29b99de49f386ba197d9271",
+  "revision_receipts": {
+    "apply": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/apply-receipt.json",
+    "policy": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/policy-receipt.json",
+    "proposal": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/proposal-receipt.json",
+    "revision_apply": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/revision-apply-receipt.json",
+    "validation": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/validation-receipt.json"
+  },
+  "safe_checkpoint": {
+    "accepted_node_ids": [
+      "coder"
+    ],
+    "pending_node_ids": [
+      "reviewer"
+    ],
+    "superseded_pending_node_ids": [
+      "reviewer"
+    ]
+  },
+  "schema": "tau.adaptive_revision_viewer_state.v1",
+  "source_plan_sha256": "sha256:db1f0e80e9674fada8ce57ceabe5cda821164add82113401c830b9da8504608b",
+  "status": "PASS"
+}

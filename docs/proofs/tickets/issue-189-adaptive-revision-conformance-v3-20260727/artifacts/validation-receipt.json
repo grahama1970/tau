@@ -1,0 +1,57 @@
+{
+  "alerts": [],
+  "applied": false,
+  "dag_contract": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/source-dag-contract.json",
+  "dag_contract_sha256": "sha256:0c34b0b3d2565d373171b93c030c8087ea6cf4f708852666799711b6104ddd05",
+  "dag_id": "adaptive-revision-conformance",
+  "errors": [],
+  "goal_hash": "sha256:adaptive-revision-conformance-goal",
+  "limits": {
+    "allow_command_spec_change": false,
+    "allow_goal_change": false,
+    "allow_new_executors": false,
+    "allow_target_change": false,
+    "allow_terminal_node_change": false,
+    "max_depth_delta": 1,
+    "max_new_edges": 4,
+    "max_new_nodes": 2
+  },
+  "live": true,
+  "memory_sync": false,
+  "mocked": false,
+  "mutated_source_dag": false,
+  "ok": true,
+  "preview_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/expanded-dag.preview.json",
+  "preview_sha256": "sha256:26588f68afae98310e1646ddefcb1e750e93bcd3469f6ee05955c4d691bb9c18",
+  "proof_scope": {
+    "does_not_prove": [
+      "Adaptive DAG expansion application.",
+      "Runtime route mutation.",
+      "Provider/model semantic quality.",
+      "Memory route learning.",
+      "Mutating branch safety."
+    ],
+    "proves": [
+      "DAG expansion proposal was inspected deterministically.",
+      "Immutable goal, target, terminal node, executor, command-spec, depth, node, and edge limits were checked.",
+      "No expansion was applied to a running DAG.",
+      "No source DAG contract mutation, route mutation, Memory write, GitHub mutation, provider call, or command dispatch occurred."
+    ]
+  },
+  "proposal": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/adaptive-revision-proposal.json",
+  "proposal_sha256": "sha256:3490608848aa4f96781213bc33189a40a82561d425f2e41b5aa2db3abe97ea3e",
+  "proposal_summary": {
+    "new_edge_count": 2,
+    "new_node_count": 1,
+    "phase": "running",
+    "proposal_id": "adaptive-revision-001",
+    "proposed_by": "reviewer"
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/validation-receipt.json",
+  "schema": "tau.dag_expansion_validation_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-27T15:52:32Z",
+  "verdict": "PASS"
+}

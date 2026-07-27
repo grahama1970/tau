@@ -1,0 +1,178 @@
+{
+  "accepted_work_preserved": true,
+  "accepted_work_sha256": "sha256:4000ab3e525309d1176516135290fb7ca17ab5cfa425cfad4e6ff7613aad648e",
+  "artifacts_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts",
+  "checked_at": "2026-07-27T15:52:32Z",
+  "checks": {
+    "accepted_work_preserved": true,
+    "apply_receipt_present": true,
+    "new_plan_hash_recorded": true,
+    "old_plan_hash_recorded": true,
+    "plan_hash_changed": true,
+    "policy_receipt_present": true,
+    "proposal_receipt_present": true,
+    "revised_run_passed": true,
+    "source_accepted_work_recorded": true,
+    "source_checkpoint_blocked_before_pending_node": true,
+    "superseded_nodes_explicit": true,
+    "unauthorized_expansion_denied": true,
+    "validation_receipt_present": true,
+    "viewer_state_written": true
+  },
+  "failed_checks": [],
+  "live": true,
+  "mocked": false,
+  "output": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/adaptive-revision-conformance.json",
+  "proof_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727",
+  "proof_scope": {
+    "does_not_prove": [
+      "In-place mutation of an already-running scheduler route.",
+      "Provider/model semantic quality.",
+      "Distributed scheduler coordination across hosts.",
+      "Human approval UX for selecting between multiple revision proposals."
+    ],
+    "proves": [
+      "Tau can checkpoint a source DAG before dispatching a pending node.",
+      "Tau can validate, policy-check, and apply a bounded adaptive DAG expansion into a new DAG artifact.",
+      "Tau records old and new plan hashes and explicit superseded pending nodes.",
+      "Tau preserves accepted checkpoint work across the revised run.",
+      "Tau denies an unauthorized expansion proposal fail-closed.",
+      "Tau emits a viewer-state artifact that can show the checkpoint and revision receipts."
+    ]
+  },
+  "provider_live": false,
+  "receipts": {
+    "apply": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/apply-receipt.json",
+    "policy": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/policy-receipt.json",
+    "proposal": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/proposal-receipt.json",
+    "revision_apply": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/revision-apply-receipt.json",
+    "safe_checkpoint": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/safe-checkpoint-receipt.json",
+    "unauthorized_validation": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/unauthorized-validation-receipt.json",
+    "validation": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/validation-receipt.json",
+    "viewer_state": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/viewer-state.json"
+  },
+  "revised_plan_sha256": "sha256:87b773e2d3059b980b6b4627b06f5d63b51d5f7ef29b99de49f386ba197d9271",
+  "revised_scheduler_events": [
+    {
+      "event": "scheduler_started",
+      "plan_id": "project:adaptive-revision-conformance"
+    },
+    {
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "coder"
+    },
+    {
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "coder"
+    },
+    {
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "validator"
+    },
+    {
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "validator"
+    },
+    {
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "reviewer"
+    },
+    {
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "reviewer"
+    },
+    {
+      "event": "scheduler_finished",
+      "plan_id": "project:adaptive-revision-conformance",
+      "status": "PASS",
+      "verdict": "PASS"
+    }
+  ],
+  "revised_scheduler_result": {
+    "completed_node_ids": [
+      "coder",
+      "reviewer",
+      "validator"
+    ],
+    "edge_states": {
+      "project-edge:0:coder:reviewer": "success",
+      "project-edge:1:reviewer:human": "success",
+      "project-edge:2:coder:validator": "success",
+      "project-edge:3:validator:reviewer": "success"
+    },
+    "lease_epoch": 1,
+    "max_observed_concurrency": 1,
+    "node_states": {
+      "coder": "success",
+      "reviewer": "success",
+      "validator": "success"
+    },
+    "replayed_event_count": 2,
+    "run_id": "adaptive-revision-revised-run",
+    "status": "PASS",
+    "terminal_states": {
+      "human": "success"
+    },
+    "verdict": "PASS"
+  },
+  "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/run",
+  "schema": "tau.adaptive_revision_conformance.v1",
+  "source_plan_sha256": "sha256:db1f0e80e9674fada8ce57ceabe5cda821164add82113401c830b9da8504608b",
+  "source_scheduler_events": [
+    {
+      "event": "scheduler_started",
+      "plan_id": "project:adaptive-revision-conformance"
+    },
+    {
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "coder"
+    },
+    {
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "coder"
+    },
+    {
+      "attempt": 1,
+      "event": "adaptive_revision_checkpoint_reached",
+      "node_id": "reviewer"
+    },
+    {
+      "event": "scheduler_finished",
+      "plan_id": "project:adaptive-revision-conformance",
+      "status": "BLOCKED",
+      "verdict": "SAFE_ADAPTIVE_REVISION_CHECKPOINT"
+    }
+  ],
+  "source_scheduler_result": {
+    "completed_node_ids": [
+      "coder"
+    ],
+    "edge_states": {
+      "project-edge:0:coder:reviewer": "success"
+    },
+    "lease_epoch": 1,
+    "max_observed_concurrency": 1,
+    "node_states": {
+      "coder": "success",
+      "reviewer": "pending"
+    },
+    "replayed_event_count": 2,
+    "run_id": "adaptive-revision-source-run",
+    "status": "BLOCKED",
+    "terminal_states": {},
+    "verdict": "SAFE_ADAPTIVE_REVISION_CHECKPOINT"
+  },
+  "status": "PASS",
+  "superseded_nodes": [
+    "reviewer"
+  ],
+  "unauthorized_expansion_denied": true
+}

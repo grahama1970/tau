@@ -1,0 +1,48 @@
+{
+  "accepted_work_preserved": true,
+  "accepted_work_sha256": "sha256:4000ab3e525309d1176516135290fb7ca17ab5cfa425cfad4e6ff7613aad648e",
+  "apply_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/apply-receipt.json",
+  "expanded_dag_contract": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/expanded-dag-contract.json",
+  "live": true,
+  "mocked": false,
+  "policy_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/policy-receipt.json",
+  "proposal_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/proposal-receipt.json",
+  "revised_journal_event_count": 28,
+  "revised_plan_sha256": "sha256:87b773e2d3059b980b6b4627b06f5d63b51d5f7ef29b99de49f386ba197d9271",
+  "revised_scheduler_result": {
+    "completed_node_ids": [
+      "coder",
+      "reviewer",
+      "validator"
+    ],
+    "edge_states": {
+      "project-edge:0:coder:reviewer": "success",
+      "project-edge:1:reviewer:human": "success",
+      "project-edge:2:coder:validator": "success",
+      "project-edge:3:validator:reviewer": "success"
+    },
+    "lease_epoch": 1,
+    "max_observed_concurrency": 1,
+    "node_states": {
+      "coder": "success",
+      "reviewer": "success",
+      "validator": "success"
+    },
+    "replayed_event_count": 2,
+    "run_id": "adaptive-revision-revised-run",
+    "status": "PASS",
+    "terminal_states": {
+      "human": "success"
+    },
+    "verdict": "PASS"
+  },
+  "safe_checkpoint_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/safe-checkpoint-receipt.json",
+  "schema": "tau.adaptive_revision_apply_receipt.v1",
+  "source_dag_contract": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/source-dag-contract.json",
+  "source_plan_sha256": "sha256:db1f0e80e9674fada8ce57ceabe5cda821164add82113401c830b9da8504608b",
+  "status": "PASS",
+  "superseded_pending_node_ids": [
+    "reviewer"
+  ],
+  "validation_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/validation-receipt.json"
+}

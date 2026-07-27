@@ -1,0 +1,66 @@
+{
+  "alerts": [
+    {
+      "code": "unauthorized_expansion_author",
+      "evidence": {
+        "author": "worker"
+      },
+      "message": "Only reviewer, validator, goal-guardian, or pre-run planner may propose expansion.",
+      "severity": "BLOCK"
+    }
+  ],
+  "applied": false,
+  "dag_contract": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/source-dag-contract.json",
+  "dag_contract_sha256": "sha256:0c34b0b3d2565d373171b93c030c8087ea6cf4f708852666799711b6104ddd05",
+  "dag_id": "adaptive-revision-conformance",
+  "errors": [],
+  "goal_hash": "sha256:adaptive-revision-conformance-goal",
+  "limits": {
+    "allow_command_spec_change": false,
+    "allow_goal_change": false,
+    "allow_new_executors": false,
+    "allow_target_change": false,
+    "allow_terminal_node_change": false,
+    "max_depth_delta": 1,
+    "max_new_edges": 4,
+    "max_new_nodes": 2
+  },
+  "live": true,
+  "memory_sync": false,
+  "mocked": false,
+  "mutated_source_dag": false,
+  "ok": false,
+  "preview_path": null,
+  "preview_sha256": null,
+  "proof_scope": {
+    "does_not_prove": [
+      "Adaptive DAG expansion application.",
+      "Runtime route mutation.",
+      "Provider/model semantic quality.",
+      "Memory route learning.",
+      "Mutating branch safety."
+    ],
+    "proves": [
+      "DAG expansion proposal was inspected deterministically.",
+      "Immutable goal, target, terminal node, executor, command-spec, depth, node, and edge limits were checked.",
+      "No expansion was applied to a running DAG.",
+      "No source DAG contract mutation, route mutation, Memory write, GitHub mutation, provider call, or command dispatch occurred."
+    ]
+  },
+  "proposal": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/unauthorized-proposal.json",
+  "proposal_sha256": "sha256:95e5f8b8447bb81db830390a1b124e1a0c7b095576e9ddb3edb1c780bd369a9b",
+  "proposal_summary": {
+    "new_edge_count": 2,
+    "new_node_count": 1,
+    "phase": "running",
+    "proposal_id": "unauthorized-revision",
+    "proposed_by": "worker"
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/unauthorized-validation-receipt.json",
+  "schema": "tau.dag_expansion_validation_receipt.v1",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-27T15:52:32Z",
+  "verdict": "UNAUTHORIZED_EXPANSION_AUTHOR"
+}

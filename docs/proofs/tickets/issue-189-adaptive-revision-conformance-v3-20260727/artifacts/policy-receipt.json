@@ -1,0 +1,40 @@
+{
+  "alerts": [],
+  "applied": false,
+  "apply_allowed": true,
+  "dag_id": "adaptive-revision-conformance",
+  "dag_mutation": false,
+  "errors": [],
+  "goal_hash": "sha256:adaptive-revision-conformance-goal",
+  "live": true,
+  "memory_sync": false,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Expansion application.",
+      "Runtime route mutation.",
+      "Provider/model semantic quality.",
+      "Memory route learning."
+    ],
+    "proves": [
+      "Expansion validation receipt was checked for policy eligibility.",
+      "Policy decision was emitted as a receipt.",
+      "No DAG artifact was written by policy validation."
+    ]
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/policy-receipt.json",
+  "recommended_next_command": "tau dag-expansion-apply --validation-receipt <receipt> --policy-receipt <policy-receipt.json> --out <expanded-dag.json> --receipt <apply-receipt.json>",
+  "require_clean_signal": true,
+  "route_mutation": false,
+  "schema": "tau.dag_expansion_policy_receipt.v1",
+  "signal_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/clean-signal-receipt.json",
+  "signal_receipt_sha256": "sha256:411d4fd5388ad779829e526e3378ec327ae5d9dea7b39c46a43eb563200cdc47",
+  "status": "PASS",
+  "timestamp": "2026-07-27T15:52:32Z",
+  "validation_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/validation-receipt.json",
+  "validation_receipt_sha256": "sha256:a3cb8e6c135c9fab2c7446ded4c56911e39dcc835a4daf5b406ef1764e51bad2",
+  "verdict": "PASS"
+}

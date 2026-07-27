@@ -1,0 +1,48 @@
+{
+  "alerts": [],
+  "applied": true,
+  "dag_id": "adaptive-revision-conformance",
+  "errors": [],
+  "expanded_dag": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/expanded-dag-contract.json",
+  "expanded_dag_sha256": "sha256:26588f68afae98310e1646ddefcb1e750e93bcd3469f6ee05955c4d691bb9c18",
+  "goal_hash": "sha256:adaptive-revision-conformance-goal",
+  "live": true,
+  "memory_sync": false,
+  "mocked": false,
+  "mutated_source_dag": false,
+  "ok": true,
+  "policy_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/policy-receipt.json",
+  "policy_receipt_sha256": "sha256:c867ccaa27a85bb7bdbbbba0c422bd09039b4f682267ce542ae178797f1b319c",
+  "proof_scope": {
+    "does_not_prove": [
+      "Expanded DAG execution.",
+      "Provider/model semantic quality.",
+      "Memory route learning.",
+      "Mutating branch safety."
+    ],
+    "proves": [
+      "Validated expansion preview was materialized as a new DAG contract artifact.",
+      "Source DAG contract was not mutated.",
+      "No running DAG route was mutated."
+    ]
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/apply-receipt.json",
+  "rerun_command": [
+    "tau",
+    "dag-run",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/expanded-dag-contract.json",
+    "--scheduler",
+    "bounded-ready-queue"
+  ],
+  "resume_supported": true,
+  "runtime_route_mutation": false,
+  "schema": "tau.dag_expansion_apply_receipt.v1",
+  "source_dag_contract": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/source-dag-contract.json",
+  "status": "PASS",
+  "timestamp": "2026-07-27T15:52:32Z",
+  "validation_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/validation-receipt.json",
+  "validation_receipt_sha256": "sha256:a3cb8e6c135c9fab2c7446ded4c56911e39dcc835a4daf5b406ef1764e51bad2",
+  "verdict": "PASS"
+}

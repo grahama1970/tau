@@ -1,0 +1,72 @@
+{
+  "accepted_node_ids": [
+    "coder"
+  ],
+  "accepted_work": {
+    "artifact": "deterministic-coder-output",
+    "schema": "tau.adaptive_revision_accepted_work.v1",
+    "value": "accepted-before-revision"
+  },
+  "accepted_work_sha256": "sha256:4000ab3e525309d1176516135290fb7ca17ab5cfa425cfad4e6ff7613aad648e",
+  "journal_event_count": 15,
+  "live": true,
+  "mocked": false,
+  "pending_node_ids": [
+    "reviewer"
+  ],
+  "scheduler_events": [
+    {
+      "event": "scheduler_started",
+      "plan_id": "project:adaptive-revision-conformance"
+    },
+    {
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "coder"
+    },
+    {
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "coder"
+    },
+    {
+      "attempt": 1,
+      "event": "adaptive_revision_checkpoint_reached",
+      "node_id": "reviewer"
+    },
+    {
+      "event": "scheduler_finished",
+      "plan_id": "project:adaptive-revision-conformance",
+      "status": "BLOCKED",
+      "verdict": "SAFE_ADAPTIVE_REVISION_CHECKPOINT"
+    }
+  ],
+  "scheduler_result": {
+    "completed_node_ids": [
+      "coder"
+    ],
+    "edge_states": {
+      "project-edge:0:coder:reviewer": "success"
+    },
+    "lease_epoch": 1,
+    "max_observed_concurrency": 1,
+    "node_states": {
+      "coder": "success",
+      "reviewer": "pending"
+    },
+    "replayed_event_count": 2,
+    "run_id": "adaptive-revision-source-run",
+    "status": "BLOCKED",
+    "terminal_states": {},
+    "verdict": "SAFE_ADAPTIVE_REVISION_CHECKPOINT"
+  },
+  "schema": "tau.adaptive_revision_checkpoint.v1",
+  "source_dag_contract": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/artifacts/source-dag-contract.json",
+  "source_dag_contract_sha256": "sha256:0c34b0b3d2565d373171b93c030c8087ea6cf4f708852666799711b6104ddd05",
+  "source_plan_sha256": "sha256:db1f0e80e9674fada8ce57ceabe5cda821164add82113401c830b9da8504608b",
+  "source_run_id": "adaptive-revision-source-run",
+  "status": "PASS",
+  "superseded_pending_node_ids": [
+    "reviewer"
+  ]
+}
