@@ -1,0 +1,68 @@
+{
+  "active_node_id": null,
+  "blocked_nodes": [],
+  "completed_nodes": [
+    "implement",
+    "plan",
+    "release",
+    "review",
+    "test"
+  ],
+  "events_jsonl": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-04/run/events.jsonl",
+  "node_statuses": {
+    "implement": {
+      "attempt_count": 1,
+      "receipt_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-04/receipts/implement.json",
+      "resumed": false,
+      "status": "PASS",
+      "verdict": "PASS"
+    },
+    "plan": {
+      "attempt_count": 1,
+      "receipt_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-04/receipts/plan.json",
+      "resumed": false,
+      "status": "PASS",
+      "verdict": "PASS"
+    },
+    "release": {
+      "attempt_count": 1,
+      "receipt_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-04/receipts/release.json",
+      "resumed": false,
+      "status": "PASS",
+      "verdict": "PASS"
+    },
+    "review": {
+      "attempt_count": 2,
+      "receipt_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-04/receipts/review.json",
+      "resumed": false,
+      "status": "PASS",
+      "verdict": "PASS"
+    },
+    "test": {
+      "attempt_count": 1,
+      "receipt_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-04/receipts/test.json",
+      "resumed": false,
+      "status": "PASS",
+      "verdict": "PASS"
+    }
+  },
+  "ready_nodes": [],
+  "resume": {
+    "enabled_by_default": true,
+    "receipt_paths": {
+      "implement": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-04/receipts/implement.json",
+      "plan": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-04/receipts/plan.json",
+      "release": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-04/receipts/release.json",
+      "review": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-04/receipts/review.json",
+      "test": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-04/receipts/test.json"
+    },
+    "will_reuse_valid_pass_receipts": true
+  },
+  "run_dir": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-04/run",
+  "run_id": "canonical-04-mixed-retry-approval",
+  "schema": "tau.generic_dag_checkpoint.v1",
+  "spec_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-04/dag.json",
+  "status": "PASS",
+  "timestamp": "2026-07-27T15:16:09Z",
+  "verdict": "PASS"
+}

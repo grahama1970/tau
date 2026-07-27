@@ -1,0 +1,19 @@
+{
+  "completed_node_count": 4,
+  "dag_id": "canonical-02-multi-step-sequential",
+  "durable": true,
+  "live": true,
+  "max_observed_concurrency": 1,
+  "mocked": false,
+  "node_count": 4,
+  "output_artifact": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-02/artifacts/verify.json",
+  "provider_live": false,
+  "resumed_node_count": 0,
+  "run_dir": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-02/run",
+  "schema": "tau.canonical_dag_example_result.v1",
+  "status": "PASS",
+  "title": "Multi-step sequential",
+  "verdict": "PASS",
+  "viewer_command": "uv run tau dag-view --run-dir /tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-02/run",
+  "viewer_url": null
+}

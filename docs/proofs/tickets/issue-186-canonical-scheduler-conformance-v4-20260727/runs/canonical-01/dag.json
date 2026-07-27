@@ -1,0 +1,72 @@
+{
+  "goal": {
+    "sha256": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+    "statement": "Tau lets a human launch and supervise a small ladder of real, goal-locked agent DAGs.",
+    "version": 1
+  },
+  "goal_hash": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "nodes": [
+    {
+      "command": [
+        "/tmp/tau-issue186-1785164636/.venv/bin/python",
+        "/tmp/tau-issue186-1785164636/examples/canonical-dags/01-simple-linear/workflow.py",
+        "extract-goal",
+        "--goal",
+        "/tmp/tau-issue186-1785164636/GOAL.md",
+        "--output",
+        "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-01/artifacts/tau-goal-digest.json",
+        "--receipt",
+        "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-01/receipts/extract-goal.json",
+        "--delay",
+        "0.0"
+      ],
+      "depends_on": [],
+      "max_attempts": 1,
+      "node_id": "extract-goal",
+      "receipt_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-01/receipts/extract-goal.json",
+      "role": "goal-reader",
+      "timeout_seconds": 30
+    },
+    {
+      "accepted_context_from": [
+        "extract-goal"
+      ],
+      "command": [
+        "/tmp/tau-issue186-1785164636/.venv/bin/python",
+        "/tmp/tau-issue186-1785164636/examples/canonical-dags/01-simple-linear/workflow.py",
+        "validate-goal",
+        "--goal",
+        "/tmp/tau-issue186-1785164636/GOAL.md",
+        "--digest",
+        "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-01/artifacts/tau-goal-digest.json",
+        "--output",
+        "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-01/artifacts/tau-goal-summary.md",
+        "--receipt",
+        "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-01/receipts/validate-goal.json",
+        "--delay",
+        "0.0"
+      ],
+      "depends_on": [
+        "extract-goal"
+      ],
+      "max_attempts": 1,
+      "node_id": "validate-goal",
+      "receipt_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-01/receipts/validate-goal.json",
+      "role": "deterministic-validator",
+      "timeout_seconds": 30
+    }
+  ],
+  "run_dir": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-01/run",
+  "run_id": "canonical-01-simple-linear",
+  "schema": "tau.generic_dag_spec.v1",
+  "workflow": {
+    "result_node_id": "validate-goal",
+    "result_schema": "tau.canonical_dag_result.v1",
+    "schema": "tau.workflow_metadata.v1",
+    "summary": "Extract and validate the immutable Tau goal.",
+    "title": "Simple linear DAG",
+    "topology": "LINEAR",
+    "workflow_id": "canonical-01-simple-linear",
+    "workflow_version": 1
+  }
+}

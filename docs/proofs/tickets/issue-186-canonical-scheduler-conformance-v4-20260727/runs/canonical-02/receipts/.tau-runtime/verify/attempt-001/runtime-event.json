@@ -1,0 +1,17 @@
+{
+  "confidence": "PROCESS",
+  "endpoint_lease_sha256": "sha256:4f4316d366086134ff8dd1a4b27c353074a6d3f35989d3bcb210b3b3cd3b92b1",
+  "event_id": "local-event:db98723ad00be2a5e2c63730",
+  "event_type": "RUNTIME_ENDPOINT_EXITED",
+  "liveness": "DEAD",
+  "observation": {
+    "cancelled": false,
+    "returncode": 0,
+    "timed_out": false
+  },
+  "observed_at": "2026-07-27T15:16:08.035244+00:00",
+  "run_id": "canonical-02-multi-step-sequential",
+  "schema": "tau.runtime_event.v1",
+  "source": "local",
+  "state": "EXITED"
+}

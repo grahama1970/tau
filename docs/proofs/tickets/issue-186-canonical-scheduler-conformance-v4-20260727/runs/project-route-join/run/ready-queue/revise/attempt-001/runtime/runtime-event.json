@@ -1,0 +1,17 @@
+{
+  "confidence": "PROCESS",
+  "endpoint_lease_sha256": "sha256:80b73867d54e85977cdcb2d8d237877e486e9e0f84997c149bc0e78c6b53a9ab",
+  "event_id": "local-event:fd85a0a8d89db18ccb5964ae",
+  "event_type": "RUNTIME_ENDPOINT_EXITED",
+  "liveness": "DEAD",
+  "observation": {
+    "cancelled": false,
+    "returncode": 0,
+    "timed_out": false
+  },
+  "observed_at": "2026-07-27T15:16:18.383823+00:00",
+  "run_id": "canonical-project-route-join",
+  "schema": "tau.runtime_event.v1",
+  "source": "local",
+  "state": "EXITED"
+}

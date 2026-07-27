@@ -1,0 +1,6 @@
+{
+  "authorized_by": "human-cli-flag",
+  "dag_id": "canonical-05-durable-resume-repair",
+  "kind": "targeted-repair",
+  "schema": "tau.canonical_dag_authorization.v1"
+}

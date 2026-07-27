@@ -1,0 +1,36 @@
+{
+  "actor": null,
+  "command_policy": null,
+  "created_at": "2026-07-27T15:16:18Z",
+  "dag_id": "canonical-project-route-join",
+  "data_boundary": null,
+  "environment": {
+    "generated": true,
+    "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/project-route-join/run/environment-manifest.json",
+    "schema": "tau.environment_manifest.v1",
+    "sha256": "sha256:f500089a5c3a88ee4e0cd609b200f010c4afe3b51805a0b548b7d4dc14375bc2",
+    "source_kind": "generated"
+  },
+  "goal": {
+    "goal_hash": "sha256:canonical-scheduler-conformance",
+    "goal_id": "canonical-scheduler-conformance",
+    "goal_version": 1
+  },
+  "policy_profile": null,
+  "production_authority": false,
+  "regulated_data_authorized": false,
+  "required_gates": [],
+  "resolved_inputs": {
+    "actor_access_manifest": false,
+    "command_policy": false,
+    "data_boundary": false,
+    "environment_manifest": true,
+    "policy_profile": false
+  },
+  "run_id": "canonical-project-route-join",
+  "schema": "tau.security_context.v1",
+  "security_context_sha256": "sha256:69eb0796b4e587daa4b2deaa726a117a9b260f333924978059b6f38646553acd",
+  "security_mode": "development",
+  "security_mode_explicit": false,
+  "security_mode_requested": null
+}

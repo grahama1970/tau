@@ -1,0 +1,29 @@
+{
+  "accepted_input_artifacts": [
+    {
+      "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-04/artifacts/plan.json",
+      "sha256": "sha256:239b74187616a47cd47ff0e727c33ecfd5e4a4eac516c6994a818451a502f029"
+    }
+  ],
+  "approval_path": null,
+  "dependency_ids": [
+    {
+      "artifacts": [
+        {
+          "bytes": 311,
+          "kind": "goal-locked-plan",
+          "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-04/artifacts/plan.json",
+          "sha256": "sha256:239b74187616a47cd47ff0e727c33ecfd5e4a4eac516c6994a818451a502f029"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "plan produced its accepted goal-locked-plan artifact."
+    }
+  ],
+  "goal_sha256": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "node_id": "implement",
+  "repair_authorization_path": null,
+  "role": "bounded-implementation",
+  "schema": "tau.canonical_dag_artifact.v1"
+}

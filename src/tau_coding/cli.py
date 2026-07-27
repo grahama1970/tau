@@ -52,6 +52,7 @@ from tau_coding.browser_cdp_proof import (
     DEFAULT_SURF_WRAPPER,
     write_browser_cdp_proof,
 )
+from tau_coding.canonical_scheduler_conformance import write_canonical_scheduler_conformance
 from tau_coding.code_patch import apply_code_patch_receipt
 from tau_coding.code_runner_skill_adapter import write_code_runner_skill_adapter_receipt
 from tau_coding.coding_worker_adapters import (
@@ -4605,6 +4606,17 @@ def main(
         try:
             options = _parse_issue_180_final_conformance_bundle_cli_args(positional_args[1:])
             payload = project_agent_issue_180_final_conformance_bundle_command(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("status") != "PASS":
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "canonical-scheduler-conformance":
+        try:
+            options = _parse_canonical_scheduler_conformance_cli_args(positional_args[1:])
+            payload = project_agent_canonical_scheduler_conformance_command(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -12174,6 +12186,32 @@ def _parse_issue_180_final_conformance_bundle_cli_args(
     }
 
 
+def _parse_canonical_scheduler_conformance_cli_args(args: list[str]) -> dict[str, Path | bool]:
+    output: Path | None = None
+    allow_live_filesystem = False
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--output":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--output requires a value")
+            output = Path(args[index])
+        elif arg.startswith("--output="):
+            output = Path(arg.partition("=")[2])
+        elif arg == "--allow-live-filesystem":
+            allow_live_filesystem = True
+        else:
+            raise RuntimeError(f"Unknown canonical-scheduler-conformance option: {arg}")
+        index += 1
+    if output is None:
+        raise RuntimeError("canonical-scheduler-conformance requires --output <proof.json>")
+    return {
+        "output": output,
+        "allow_live_filesystem": allow_live_filesystem,
+    }
+
+
 def _parse_persona_dream_panel_proof_cli_args(
     args: list[str],
 ) -> dict[str, Path | str | bool | None]:
@@ -14231,6 +14269,19 @@ def project_agent_issue_180_final_conformance_bundle_command(
         output,
         allow_live_github=allow_live_github,
         allow_live_browser=allow_live_browser,
+    )
+
+
+def project_agent_canonical_scheduler_conformance_command(
+    *,
+    output: Path,
+    allow_live_filesystem: bool,
+) -> dict[str, object]:
+    """Write the canonical scheduler conformance receipt."""
+
+    return write_canonical_scheduler_conformance(
+        output,
+        allow_live_filesystem=allow_live_filesystem,
     )
 
 

@@ -1,0 +1,19 @@
+{
+  "completed_node_count": 5,
+  "dag_id": "canonical-03-concurrent-fanout-fanin",
+  "durable": true,
+  "live": true,
+  "max_observed_concurrency": 3,
+  "mocked": false,
+  "node_count": 5,
+  "output_artifact": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-03/artifacts/integrate.json",
+  "provider_live": false,
+  "resumed_node_count": 0,
+  "run_dir": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-03/run",
+  "schema": "tau.canonical_dag_example_result.v1",
+  "status": "PASS",
+  "title": "Concurrent fan-out/fan-in",
+  "verdict": "PASS",
+  "viewer_command": "uv run tau dag-view --run-dir /tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v4-20260727/runs/canonical-03/run",
+  "viewer_url": null
+}

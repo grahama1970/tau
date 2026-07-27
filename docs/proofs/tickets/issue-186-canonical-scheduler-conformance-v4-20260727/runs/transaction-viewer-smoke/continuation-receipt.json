@@ -1,0 +1,25 @@
+{
+  "artifacts": [],
+  "commands_run": [
+    "deterministic continuation"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:aa71451867482726be236abd7952eb159b8aff32de69671c26763b019320bac9",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "handoff_summary": "accepted transaction output consumed",
+  "live": true,
+  "mocked": false,
+  "node_id": "continuation",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}
