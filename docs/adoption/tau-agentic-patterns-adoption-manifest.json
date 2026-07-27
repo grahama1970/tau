@@ -1,0 +1,99 @@
+{
+  "schema": "tau.external_adoption_manifest.v1",
+  "manifest_id": "tau-agentic-patterns-issue-180-p0-20260727",
+  "target_issue": "https://github.com/grahama1970/tau/issues/180",
+  "generated_for": "P0 adoption boundary for Tau DAG template catalogue and authoritative viewer UX fleet",
+  "generated_at": "2026-07-27",
+  "tau_source_commit": "a2e608d2d6a25e0c0a96f71cea93df02756df834",
+  "runtime_constraints": {
+    "may_add_runtime_dependency": false,
+    "may_add_scheduler": false,
+    "may_add_viewer_state_reducer": false,
+    "may_add_memory_client_or_store": false,
+    "viewer_authority": "read_only_projection_from_tau_scheduler_journal_and_admitted_receipts"
+  },
+  "sources": [
+    {
+      "source_id": "all-agentic-architectures",
+      "repository": "https://github.com/FareedKhan-dev/all-agentic-architectures",
+      "pinned_commit": "cf9d620a8cc55d59589399c30f305e6dfaa428ec",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "license_sha256": "3af7509fdf483718aa1b8ab030d8ed639b9e43ae273321d9e7b75ddbf0e07f13",
+      "adaptation_status": "research_input_only",
+      "copied_files": [],
+      "local_targets": [],
+      "patterns_or_interactions_considered": [
+        "common architecture contract",
+        "deterministic picker discipline",
+        "planning and verification workflow examples",
+        "multi-agent and safety pattern examples",
+        "workflow-memory examples"
+      ],
+      "tau_specific_trust_model_changes": [
+        "Pattern metadata must compile to existing tau.dag_contract.v1 and canonical DagPlan.",
+        "Model scores or prose cannot select templates authoritatively.",
+        "No hidden prompt-only route, evidence, retry, or stop condition is allowed."
+      ],
+      "proof_boundary": {
+        "proves": [
+          "The source repository, pinned commit, license kind, and license hash were recorded before adaptation."
+        ],
+        "does_not_prove": [
+          "The external repository implementation is correct.",
+          "Any source code has been copied into Tau.",
+          "Any Tau runtime behavior is complete."
+        ]
+      }
+    },
+    {
+      "source_id": "agentic-architectures-arena-fork",
+      "repository": "https://github.com/theaiautomators/agentic-architectures",
+      "pinned_commit": "eeeff664308e2c7c337b9fe36245cc4780024951",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "license_sha256": "cb65589aa3aba75f701a0827d507cf03dcfc05448978d225e544373dd2ab23d4",
+      "adaptation_status": "research_input_only",
+      "copied_files": [],
+      "local_targets": [],
+      "patterns_or_interactions_considered": [
+        "responsive full-screen pattern presentation",
+        "resizable and pannable graph canvases",
+        "node and edge activity telemetry",
+        "workspace, knowledge-graph, and event-feed panels",
+        "run replay and cross-pattern status presentation"
+      ],
+      "tau_specific_trust_model_changes": [
+        "Diagnostic activity may animate but cannot settle authoritative node or edge state.",
+        "Tau keeps its existing React Flow viewer rather than adopting the fork's renderer as authority.",
+        "Viewer remains read-only and backed by scheduler journal replay."
+      ],
+      "proof_boundary": {
+        "proves": [
+          "The source repository, pinned commit, license kind, and license hash were recorded before adaptation."
+        ],
+        "does_not_prove": [
+          "The external repository implementation is correct.",
+          "Any source code has been copied into Tau.",
+          "Any Tau runtime behavior is complete."
+        ]
+      }
+    }
+  ],
+  "copy_policy": {
+    "default": "independent_tau_native_implementation",
+    "requires_before_copying": [
+      "source file path",
+      "local destination path",
+      "copied versus adapted status",
+      "license header retention check",
+      "transformation notes",
+      "focused proof that Tau authority boundaries remain intact"
+    ]
+  },
+  "current_p0_decision": {
+    "copied_external_files": false,
+    "adopted_external_runtime_dependency": false,
+    "next_allowed_work": "Implement Tau-native descriptor, selector, pattern, catalogue, viewer, Memory provenance, and conformance slices under narrow tickets."
+  }
+}

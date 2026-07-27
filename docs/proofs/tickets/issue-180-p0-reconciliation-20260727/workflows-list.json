@@ -1,0 +1,130 @@
+{
+  "schema": "tau.workflow_catalog.v1",
+  "workflows": [
+    {
+      "availability": "AVAILABLE",
+      "input_schema": "tau.repository_readiness_request.v1",
+      "proof_boundary": {
+        "live": true,
+        "mocked": false,
+        "provider_live": false
+      },
+      "result_node_id": "publish-readiness",
+      "result_schema": "tau.repository_readiness_report.v1",
+      "rung": 1,
+      "runtime": {
+        "local": true,
+        "mutation_allowed": false,
+        "network_required": false,
+        "provider_required": false
+      },
+      "schema": "tau.workflow_definition.v1",
+      "summary": "Inspect a local Git checkout, validate the requested readiness policy, and publish a hash-bound readiness report.",
+      "template": "templates/repository-readiness.json",
+      "title": "Repository Readiness",
+      "topology": "LINEAR",
+      "workflow_id": "repository-readiness",
+      "workflow_version": 1
+    },
+    {
+      "availability": "AVAILABLE",
+      "input_schema": "tau.operator_reference_request.v1",
+      "proof_boundary": {
+        "live": true,
+        "mocked": false,
+        "provider_live": false
+      },
+      "result_node_id": "validate-operator-reference",
+      "result_schema": "tau.operator_reference.v1",
+      "rung": 2,
+      "runtime": {
+        "local": true,
+        "mutation_allowed": false,
+        "network_required": false,
+        "provider_required": false
+      },
+      "schema": "tau.workflow_definition.v1",
+      "summary": "Build a validated Tau operator reference from fixed local repository sources and versioned public CLI probes.",
+      "template": "templates/tau-operator-reference.json",
+      "title": "Tau Operator Reference",
+      "topology": "MULTI_STEP_SEQUENTIAL",
+      "workflow_id": "tau-operator-reference",
+      "workflow_version": 1
+    },
+    {
+      "availability": "AVAILABLE",
+      "input_schema": "tau.repository_evidence_map_request.v1",
+      "proof_boundary": {
+        "live": true,
+        "mocked": false,
+        "provider_live": false
+      },
+      "result_node_id": "publish-evidence-map",
+      "result_schema": "tau.repository_evidence_map.v1",
+      "rung": 3,
+      "runtime": {
+        "local": true,
+        "mutation_allowed": false,
+        "network_required": false,
+        "provider_required": false
+      },
+      "schema": "tau.workflow_definition.v1",
+      "summary": "Inventory a local Git checkout, analyze documentation, tests, and package metadata concurrently, and publish a validated evidence map.",
+      "template": "templates/repository-evidence-map.json",
+      "title": "Repository Evidence Map",
+      "topology": "FAN_OUT_FAN_IN",
+      "workflow_id": "repository-evidence-map",
+      "workflow_version": 1
+    },
+    {
+      "availability": "AVAILABLE",
+      "input_schema": "tau.approved_release_request.v1",
+      "proof_boundary": {
+        "live": true,
+        "mocked": false,
+        "provider_live": false
+      },
+      "result_node_id": "finalize-approved-release",
+      "result_schema": "tau.approved_release_bundle.v1",
+      "rung": 4,
+      "runtime": {
+        "local": true,
+        "mutation_allowed": false,
+        "network_required": false,
+        "provider_required": false
+      },
+      "schema": "tau.workflow_definition.v1",
+      "summary": "Prepare concurrent release evidence, revise and accept release notes, then publish one rollback-protected bundle after exact human approval.",
+      "template": "templates/approved-release-bundle.json",
+      "title": "Approved Release Bundle",
+      "topology": "MIXED_RETRY_APPROVAL",
+      "workflow_id": "approved-release-bundle",
+      "workflow_version": 1
+    },
+    {
+      "availability": "AVAILABLE",
+      "input_schema": "tau.durable_repository_qualification_request.v1",
+      "proof_boundary": {
+        "live": true,
+        "mocked": false,
+        "provider_live": false
+      },
+      "result_node_id": "finalize-qualification",
+      "result_schema": "tau.durable_repository_qualification.v1",
+      "rung": 5,
+      "runtime": {
+        "local": true,
+        "mutation_allowed": false,
+        "network_required": false,
+        "provider_required": false
+      },
+      "schema": "tau.workflow_definition.v1",
+      "summary": "Qualify concurrent repository evidence, recover interrupted work, repair one affected branch, and publish one idempotent result after exact human approval.",
+      "template": "templates/durable-repository-qualification.json",
+      "title": "Durable Repository Qualification",
+      "topology": "DURABLE_MIXED_REPAIR_APPROVAL",
+      "workflow_id": "durable-repository-qualification",
+      "workflow_version": 1
+    }
+  ]
+}

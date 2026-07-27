@@ -1,0 +1,18 @@
+{
+  "event_schema": "tau.dag_live_event.v1",
+  "manifest_schema": "tau.dag_view_manifest.v1",
+  "read_only": true,
+  "schema": "tau.dag_viewer_capabilities.v1",
+  "snapshot_schema": "tau.dag_view_snapshot.v2",
+  "supports_attention_items": true,
+  "supports_bounded_query": true,
+  "supports_causal_explanations": true,
+  "supports_exactly_two_comparison": true,
+  "supports_historical_sequences": true,
+  "supports_live": true,
+  "supports_receipt_inspection": true,
+  "supports_replay": true,
+  "supports_route_join_projection": true,
+  "supports_source_json": true,
+  "viewer_version": "1"
+}

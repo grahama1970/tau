@@ -1,0 +1,64 @@
+{
+  "schema": "tau.dag_template_registry.v1",
+  "template_count": 5,
+  "templates": [
+    {
+      "name": "single-call",
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "handler"
+      ],
+      "summary": "One local handler node routes directly to human.",
+      "topology": "LINEAR_SINGLE"
+    },
+    {
+      "name": "prompt-chain",
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "steps"
+      ],
+      "summary": "A sequential chain of two or more explicit local step nodes.",
+      "topology": "LINEAR_CHAIN"
+    },
+    {
+      "name": "reflection-loop",
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "creator",
+        "reviewer"
+      ],
+      "summary": "Creator node followed by reviewer/reflection node and human handoff.",
+      "topology": "CREATOR_REVIEWER"
+    },
+    {
+      "name": "roundtable",
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "handlers",
+        "join"
+      ],
+      "summary": "Two or more parallel handlers join into a synthesis node.",
+      "topology": "FAN_OUT_JOIN"
+    },
+    {
+      "name": "compete",
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "competitors",
+        "judge"
+      ],
+      "summary": "Two or more competitors feed a judge node.",
+      "topology": "COMPETITION_JUDGE"
+    }
+  ]
+}
