@@ -20,8 +20,11 @@ from typing import Any
 from tau_coding.project_dag import validate_dag_contract
 
 DAG_TEMPLATE_REGISTRY_SCHEMA = "tau.dag_template_registry.v1"
+DAG_TEMPLATE_DESCRIPTOR_SCHEMA = "tau.dag_template_descriptor.v1"
 DAG_TEMPLATE_COMPILE_RECEIPT_SCHEMA = "tau.dag_template_compile_receipt.v1"
 DAG_TEMPLATE_MISSING_FIELDS_SCHEMA = "tau.dag_template_missing_fields.v1"
+DAG_TEMPLATE_VALIDATION_RECEIPT_SCHEMA = "tau.dag_template_validation_receipt.v1"
+DAG_TEMPLATE_PREVIEW_SCHEMA = "tau.dag_template_preview.v1"
 
 DEFAULT_FAIL_CLOSED_ON = [
     "goal_hash_mismatch",
@@ -44,6 +47,10 @@ class DagTemplate:
     summary: str
     required_fields: tuple[str, ...]
     topology: str
+    use_when: tuple[str, ...]
+    avoid_when: tuple[str, ...]
+    node_roles: tuple[str, ...]
+    required_evidence_kinds: tuple[str, ...]
 
     def to_json(self) -> dict[str, Any]:
         return {
@@ -53,6 +60,45 @@ class DagTemplate:
             "topology": self.topology,
         }
 
+    def descriptor_json(self) -> dict[str, Any]:
+        return {
+            "schema": DAG_TEMPLATE_DESCRIPTOR_SCHEMA,
+            "name": self.name,
+            "summary": self.summary,
+            "topology": self.topology,
+            "required_fields": list(self.required_fields),
+            "optional_fields": [
+                "limits",
+                "command_specs",
+                "fail_closed_on",
+            ],
+            "use_when": list(self.use_when),
+            "avoid_when": list(self.avoid_when),
+            "node_roles": list(self.node_roles),
+            "evidence_contract": {
+                "required_kinds": list(self.required_evidence_kinds),
+                "admission_rule": (
+                    "Every required evidence kind must be emitted by a routed node "
+                    "before Tau admits progress."
+                ),
+            },
+            "human_interview": {
+                "status_when_incomplete": "INTERVIEW_REQUIRED",
+                "questions_source": "missing typed required fields",
+            },
+            "preview": {
+                "available": True,
+                "dispatches_commands": False,
+                "compiles_to_schema": "tau.dag_contract.v1",
+            },
+            "authority_boundary": {
+                "selector": "deterministic template name and typed params",
+                "scheduler": "existing Tau DAG runtime",
+                "viewer": "read-only projection of scheduler journal and admitted receipts",
+                "provider_calls": "never during describe, validate, preview, or compile",
+            },
+        }
+
 
 TEMPLATES: dict[str, DagTemplate] = {
     "single-call": DagTemplate(
@@ -60,30 +106,50 @@ TEMPLATES: dict[str, DagTemplate] = {
         summary="One local handler node routes directly to human.",
         required_fields=("dag_id", "goal", "target", "handler"),
         topology="LINEAR_SINGLE",
+        use_when=("One bounded worker can produce the requested artifact or answer.",),
+        avoid_when=("Independent review, retry, or multi-step decomposition is required.",),
+        node_roles=("handler", "human"),
+        required_evidence_kinds=("handler_receipt",),
     ),
     "prompt-chain": DagTemplate(
         name="prompt-chain",
         summary="A sequential chain of two or more explicit local step nodes.",
         required_fields=("dag_id", "goal", "target", "steps"),
         topology="LINEAR_CHAIN",
+        use_when=("The task has ordered steps where later work depends on earlier artifacts.",),
+        avoid_when=("Steps can run concurrently or the route needs a reviewer gate.",),
+        node_roles=("step", "human"),
+        required_evidence_kinds=("step_receipt",),
     ),
     "reflection-loop": DagTemplate(
         name="reflection-loop",
         summary="Creator node followed by reviewer/reflection node and human handoff.",
         required_fields=("dag_id", "goal", "target", "creator", "reviewer"),
         topology="CREATOR_REVIEWER",
+        use_when=("A produced artifact needs a separate review/reflection pass before handoff.",),
+        avoid_when=("Two or more independent candidate solutions should compete.",),
+        node_roles=("creator", "reviewer", "human"),
+        required_evidence_kinds=("creator_artifact", "reviewer_verdict"),
     ),
     "roundtable": DagTemplate(
         name="roundtable",
         summary="Two or more parallel handlers join into a synthesis node.",
         required_fields=("dag_id", "goal", "target", "handlers", "join"),
         topology="FAN_OUT_JOIN",
+        use_when=("Multiple independent specialists should work in parallel before synthesis.",),
+        avoid_when=("The request needs a winner rather than a synthesis.",),
+        node_roles=("handler", "join", "human"),
+        required_evidence_kinds=("handler_receipt", "roundtable_join_receipt"),
     ),
     "compete": DagTemplate(
         name="compete",
         summary="Two or more competitors feed a judge node.",
         required_fields=("dag_id", "goal", "target", "competitors", "judge"),
         topology="COMPETITION_JUDGE",
+        use_when=("Two or more candidate solutions should be judged against explicit criteria.",),
+        avoid_when=("The desired output is a merged synthesis rather than a selected winner.",),
+        node_roles=("competitor", "judge", "human"),
+        required_evidence_kinds=("competitor_receipt", "competition_judgment_receipt"),
     ),
 }
 
@@ -95,6 +161,124 @@ def dag_template_registry_payload() -> dict[str, Any]:
         "schema": DAG_TEMPLATE_REGISTRY_SCHEMA,
         "template_count": len(TEMPLATES),
         "templates": [template.to_json() for template in TEMPLATES.values()],
+    }
+
+
+def describe_dag_template(template_name: str) -> dict[str, Any]:
+    """Return the machine-readable descriptor for one native Tau template."""
+
+    template = _template_or_raise(template_name)
+    return template.descriptor_json()
+
+
+def validate_dag_template_params(
+    template_name: str,
+    params_path: Path,
+) -> dict[str, Any]:
+    """Validate typed template params without compiling or dispatching commands."""
+
+    resolved_params = params_path.expanduser().resolve()
+    params = _read_json_object(resolved_params)
+    template = _template_or_raise(template_name)
+    missing = _missing_fields(template, params)
+    ok = not missing
+    return {
+        "schema": DAG_TEMPLATE_VALIDATION_RECEIPT_SCHEMA,
+        "ok": ok,
+        "status": "PASS" if ok else "INTERVIEW_REQUIRED",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "template": template.name,
+        "params_path": str(resolved_params),
+        "params_sha256": _sha256_uri(resolved_params),
+        "descriptor": template.descriptor_json(),
+        "missing_fields": missing,
+        "questions": _interview_questions(template=template, missing_fields=missing),
+        "next_action": (
+            "Proceed to dag-template-preview or dag-template-compile."
+            if ok
+            else "Ask the human for the missing fields, then rerun validation."
+        ),
+        "proof_scope": {
+            "proves": [
+                "Tau checked the template's typed required fields without dispatching commands.",
+                "Incomplete params fail closed to INTERVIEW_REQUIRED.",
+            ],
+            "does_not_prove": [
+                "Runtime execution success.",
+                "Provider/model semantic quality.",
+                "That a compiled DAG will be executed.",
+            ],
+        },
+        "timestamp": _utc_stamp(),
+    }
+
+
+def preview_dag_template(
+    template_name: str,
+    params_path: Path,
+) -> dict[str, Any]:
+    """Return a pre-run DAG preview without writing artifacts or dispatching commands."""
+
+    resolved_params = params_path.expanduser().resolve()
+    params = _params_with_resolved_command_specs(
+        _read_json_object(resolved_params),
+        resolved_params.parent,
+    )
+    template = _template_or_raise(template_name)
+    missing = _missing_fields(template, params)
+    ok = not missing
+    preview: dict[str, Any] | None = None
+    if ok:
+        contract = compile_dag_template(template.name, params)
+        preview = {
+            "schema": "tau.dag_contract.preview.v1",
+            "dag_id": contract["dag_id"],
+            "goal": contract["goal"],
+            "target": contract["target"],
+            "entry_node": contract["entry_node"],
+            "terminal_nodes": contract["terminal_nodes"],
+            "node_count": len(contract["nodes"]),
+            "edge_count": len(contract["edges"]),
+            "nodes": contract["nodes"],
+            "edges": contract["edges"],
+            "required_evidence": contract["required_evidence"],
+            "limits": contract["limits"],
+            "fail_closed_on": contract["fail_closed_on"],
+            "context": contract["context"],
+        }
+    return {
+        "schema": DAG_TEMPLATE_PREVIEW_SCHEMA,
+        "ok": ok,
+        "status": "PASS" if ok else "INTERVIEW_REQUIRED",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "template": template.name,
+        "params_path": str(resolved_params),
+        "params_sha256": _sha256_uri(resolved_params),
+        "descriptor": template.descriptor_json(),
+        "missing_fields": missing,
+        "questions": _interview_questions(template=template, missing_fields=missing),
+        "preview": preview,
+        "dispatches_commands": False,
+        "proof_scope": {
+            "proves": [
+                (
+                    "Tau can render the selected native template as an inspectable "
+                    "pre-run DAG preview."
+                ),
+                "Incomplete params fail closed to INTERVIEW_REQUIRED.",
+                "Preview does not dispatch workers, providers, or scheduler execution.",
+            ],
+            "does_not_prove": [
+                "Runtime execution success.",
+                "Provider/model semantic quality.",
+                "That the human accepted the preview.",
+            ],
+        },
+        "timestamp": _utc_stamp(),
     }
 
 
@@ -188,9 +372,7 @@ def write_dag_template_compile_receipt(
 def compile_dag_template(template_name: str, params: Mapping[str, Any]) -> dict[str, Any]:
     """Compile one complete params object into `tau.dag_contract.v1`."""
 
-    if template_name not in TEMPLATES:
-        raise RuntimeError(f"unknown DAG template: {template_name}")
-    template = TEMPLATES[template_name]
+    template = _template_or_raise(template_name)
     missing = _missing_fields(template, params)
     if missing:
         raise RuntimeError(f"missing DAG template fields: {', '.join(missing)}")
@@ -405,17 +587,32 @@ def _missing_fields_packet(
         "params_path": str(params_path),
         "params_sha256": _sha256_uri(params_path),
         "missing_fields": missing_fields,
-        "questions": [
-            {
-                "field": field,
-                "question": f"Provide {field} for DAG template {template.name}.",
-                "required": True,
-            }
-            for field in missing_fields
-        ],
+        "questions": _interview_questions(template=template, missing_fields=missing_fields),
         "interview_required": True,
         "next_action": "Ask the human for the missing fields, then rerun dag-template-compile.",
     }
+
+
+def _interview_questions(
+    *,
+    template: DagTemplate,
+    missing_fields: list[str],
+) -> list[dict[str, Any]]:
+    return [
+        {
+            "field": field,
+            "question": f"Provide {field} for DAG template {template.name}.",
+            "required": True,
+        }
+        for field in missing_fields
+    ]
+
+
+def _template_or_raise(template_name: str) -> DagTemplate:
+    template = TEMPLATES.get(template_name)
+    if template is None:
+        raise RuntimeError(f"unknown DAG template: {template_name}")
+    return template
 
 
 def _all_required_evidence(nodes: list[dict[str, Any]]) -> list[str]:

@@ -88,6 +88,9 @@ from tau_coding.dag_stress_poc import (
 )
 from tau_coding.dag_template_registry import (
     dag_template_registry_payload,
+    describe_dag_template,
+    preview_dag_template,
+    validate_dag_template_params,
     write_dag_template_compile_receipt,
 )
 from tau_coding.dag_viewer.contracts import viewer_capabilities
@@ -2771,6 +2774,45 @@ def main(
     if not print_requested and command == "dag-template-list":
         typer.echo(json.dumps(dag_template_registry_payload(), indent=2, sort_keys=True))
         raise typer.Exit()
+
+    if not print_requested and command == "dag-template-describe":
+        try:
+            options = _parse_dag_template_describe_cli_args(positional_args[1:])
+            payload = describe_dag_template(str(options["template"]))
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit()
+
+    if not print_requested and command == "dag-template-validate":
+        try:
+            options = _parse_dag_template_params_cli_args(
+                positional_args[1:],
+                command_name="dag-template-validate",
+            )
+            payload = validate_dag_template_params(
+                str(options["template"]),
+                Path(str(options["params"])),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
+
+    if not print_requested and command == "dag-template-preview":
+        try:
+            options = _parse_dag_template_params_cli_args(
+                positional_args[1:],
+                command_name="dag-template-preview",
+            )
+            payload = preview_dag_template(
+                str(options["template"]),
+                Path(str(options["params"])),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
 
     if not print_requested and command == "dag-template-compile":
         try:
@@ -6002,6 +6044,54 @@ def _parse_dag_template_compile_cli_args(args: list[str]) -> dict[str, object]:
         raise RuntimeError("Usage: tau dag-template-compile --out <dag.json>")
     if not _optional_str(options.get("receipt")):
         raise RuntimeError("Usage: tau dag-template-compile --receipt <receipt.json>")
+    return options
+
+
+def _parse_dag_template_describe_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {"template": None}
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--template":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--template requires a value")
+            options["template"] = args[index]
+        elif arg.startswith("--template="):
+            options["template"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown dag-template-describe option: {arg}")
+        index += 1
+    if not _optional_str(options.get("template")):
+        raise RuntimeError("Usage: tau dag-template-describe --template <name>")
+    return options
+
+
+def _parse_dag_template_params_cli_args(
+    args: list[str],
+    *,
+    command_name: str,
+) -> dict[str, object]:
+    options: dict[str, object] = {"template": None, "params": None}
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--template", "--params"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--")] = args[index]
+        elif arg.startswith("--template="):
+            options["template"] = arg.partition("=")[2]
+        elif arg.startswith("--params="):
+            options["params"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown {command_name} option: {arg}")
+        index += 1
+    if not _optional_str(options.get("template")):
+        raise RuntimeError(f"Usage: tau {command_name} --template <name> --params <json>")
+    if not _optional_str(options.get("params")):
+        raise RuntimeError(f"Usage: tau {command_name} --template <name> --params <json>")
     return options
 
 

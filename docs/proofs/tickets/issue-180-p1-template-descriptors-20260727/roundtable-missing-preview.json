@@ -1,0 +1,93 @@
+{
+  "descriptor": {
+    "authority_boundary": {
+      "provider_calls": "never during describe, validate, preview, or compile",
+      "scheduler": "existing Tau DAG runtime",
+      "selector": "deterministic template name and typed params",
+      "viewer": "read-only projection of scheduler journal and admitted receipts"
+    },
+    "avoid_when": [
+      "The request needs a winner rather than a synthesis."
+    ],
+    "evidence_contract": {
+      "admission_rule": "Every required evidence kind must be emitted by a routed node before Tau admits progress.",
+      "required_kinds": [
+        "handler_receipt",
+        "roundtable_join_receipt"
+      ]
+    },
+    "human_interview": {
+      "questions_source": "missing typed required fields",
+      "status_when_incomplete": "INTERVIEW_REQUIRED"
+    },
+    "name": "roundtable",
+    "node_roles": [
+      "handler",
+      "join",
+      "human"
+    ],
+    "optional_fields": [
+      "limits",
+      "command_specs",
+      "fail_closed_on"
+    ],
+    "preview": {
+      "available": true,
+      "compiles_to_schema": "tau.dag_contract.v1",
+      "dispatches_commands": false
+    },
+    "required_fields": [
+      "dag_id",
+      "goal",
+      "target",
+      "handlers",
+      "join"
+    ],
+    "schema": "tau.dag_template_descriptor.v1",
+    "summary": "Two or more parallel handlers join into a synthesis node.",
+    "topology": "FAN_OUT_JOIN",
+    "use_when": [
+      "Multiple independent specialists should work in parallel before synthesis."
+    ]
+  },
+  "dispatches_commands": false,
+  "live": false,
+  "missing_fields": [
+    "handlers[1]",
+    "join"
+  ],
+  "mocked": false,
+  "ok": false,
+  "params_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-131-dag-template-registry-20260726/roundtable-missing-params.json",
+  "params_sha256": "sha256:c47414d9b7cc9e015b06e41fd5d0b5a5a8a7237c0496c4a43de705baa00526a2",
+  "preview": null,
+  "proof_scope": {
+    "does_not_prove": [
+      "Runtime execution success.",
+      "Provider/model semantic quality.",
+      "That the human accepted the preview."
+    ],
+    "proves": [
+      "Tau can render the selected native template as an inspectable pre-run DAG preview.",
+      "Incomplete params fail closed to INTERVIEW_REQUIRED.",
+      "Preview does not dispatch workers, providers, or scheduler execution."
+    ]
+  },
+  "provider_live": false,
+  "questions": [
+    {
+      "field": "handlers[1]",
+      "question": "Provide handlers[1] for DAG template roundtable.",
+      "required": true
+    },
+    {
+      "field": "join",
+      "question": "Provide join for DAG template roundtable.",
+      "required": true
+    }
+  ],
+  "schema": "tau.dag_template_preview.v1",
+  "status": "INTERVIEW_REQUIRED",
+  "template": "roundtable",
+  "timestamp": "2026-07-27T11:11:22Z"
+}

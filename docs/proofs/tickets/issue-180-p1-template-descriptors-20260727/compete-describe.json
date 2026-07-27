@@ -1,0 +1,51 @@
+{
+  "authority_boundary": {
+    "provider_calls": "never during describe, validate, preview, or compile",
+    "scheduler": "existing Tau DAG runtime",
+    "selector": "deterministic template name and typed params",
+    "viewer": "read-only projection of scheduler journal and admitted receipts"
+  },
+  "avoid_when": [
+    "The desired output is a merged synthesis rather than a selected winner."
+  ],
+  "evidence_contract": {
+    "admission_rule": "Every required evidence kind must be emitted by a routed node before Tau admits progress.",
+    "required_kinds": [
+      "competitor_receipt",
+      "competition_judgment_receipt"
+    ]
+  },
+  "human_interview": {
+    "questions_source": "missing typed required fields",
+    "status_when_incomplete": "INTERVIEW_REQUIRED"
+  },
+  "name": "compete",
+  "node_roles": [
+    "competitor",
+    "judge",
+    "human"
+  ],
+  "optional_fields": [
+    "limits",
+    "command_specs",
+    "fail_closed_on"
+  ],
+  "preview": {
+    "available": true,
+    "compiles_to_schema": "tau.dag_contract.v1",
+    "dispatches_commands": false
+  },
+  "required_fields": [
+    "dag_id",
+    "goal",
+    "target",
+    "competitors",
+    "judge"
+  ],
+  "schema": "tau.dag_template_descriptor.v1",
+  "summary": "Two or more competitors feed a judge node.",
+  "topology": "COMPETITION_JUDGE",
+  "use_when": [
+    "Two or more candidate solutions should be judged against explicit criteria."
+  ]
+}
