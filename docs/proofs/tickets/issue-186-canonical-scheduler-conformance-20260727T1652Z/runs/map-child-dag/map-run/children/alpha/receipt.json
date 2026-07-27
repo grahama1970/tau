@@ -1,0 +1,29 @@
+{
+  "accepted_output": {
+    "item_id": "alpha",
+    "result": 2,
+    "value": 1
+  },
+  "artifacts": [],
+  "commands_run": [],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:1ff480caae04e157b9bab31738298fa71b7eae29bc6bbf26ca80d245b273735e",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:canonical-scheduler-conformance",
+  "handoff_summary": "Processed map item alpha",
+  "live": true,
+  "mocked": false,
+  "node_id": "child-alpha",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}

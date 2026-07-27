@@ -1,0 +1,46 @@
+{
+  "accepted_inputs": [
+    {
+      "artifacts": [
+        {
+          "bytes": 1113,
+          "kind": "documentation-analysis",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/docs.json",
+          "sha256": "sha256:00775244f7de3065dd4bba3b871b1b23d0ff15512f85f70d09e02e123609ffca"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "docs produced its accepted documentation-analysis artifact."
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 1105,
+          "kind": "test-analysis",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/tests.json",
+          "sha256": "sha256:8c2f39dbff599bf5304e1c1aecd8f0fc15c1ae90c1222e445e576398ca2f22fd"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "tests produced its accepted test-analysis artifact."
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 1105,
+          "kind": "risk-analysis",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/risks.json",
+          "sha256": "sha256:f0942b28973c5cf8cfd9fbc00d10ae9898119d314ba9d4b80862e37c53d93e9b"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "risks produced its accepted risk-analysis artifact."
+    }
+  ],
+  "node_id": "integrate",
+  "run_id": "canonical-03-concurrent-fanout-fanin",
+  "schema": "tau.generic_dag_node_context.v1"
+}

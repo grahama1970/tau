@@ -1,0 +1,29 @@
+{
+  "accepted_input_artifacts": [
+    {
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-02/artifacts/analyze.json",
+      "sha256": "sha256:02f75a14c25517da7de0d9562a5817728c5cb2bfd7ae05131e69b7355e69158f"
+    }
+  ],
+  "approval_path": null,
+  "dependency_ids": [
+    {
+      "artifacts": [
+        {
+          "bytes": 1113,
+          "kind": "goal-analysis",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-02/artifacts/analyze.json",
+          "sha256": "sha256:02f75a14c25517da7de0d9562a5817728c5cb2bfd7ae05131e69b7355e69158f"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "analyze produced its accepted goal-analysis artifact."
+    }
+  ],
+  "goal_sha256": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "node_id": "draft",
+  "repair_authorization_path": null,
+  "role": "artifact-draft",
+  "schema": "tau.canonical_dag_artifact.v1"
+}

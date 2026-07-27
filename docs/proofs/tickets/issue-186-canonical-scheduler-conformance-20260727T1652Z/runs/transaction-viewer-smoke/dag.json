@@ -1,0 +1,75 @@
+{
+  "nodes": [
+    {
+      "command": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python",
+        "/tmp/tau-issue189-1785166987/examples/dag-viewer-creator-reviewer/producer.py",
+        "--artifact-root",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/transaction-viewer-smoke/artifacts",
+        "--receipt",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/transaction-viewer-smoke/creator-receipt.json",
+        "--work-order",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/transaction-viewer-smoke/work-order.json",
+        "--step-delay-seconds",
+        "0.25"
+      ],
+      "depends_on": [],
+      "max_attempts": 2,
+      "node_id": "creator-reviewer",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/transaction-viewer-smoke/creator-receipt.json",
+      "role": "artifact-transaction",
+      "transaction": {
+        "acceptance": {
+          "require_output_change_after_revise": true
+        },
+        "artifact_root": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/transaction-viewer-smoke/artifacts",
+        "producer_id": "creator",
+        "reviewer": {
+          "command": [
+            "/tmp/tau-issue189-1785166987/.venv/bin/python",
+            "/tmp/tau-issue189-1785166987/examples/dag-viewer-creator-reviewer/reviewer.py",
+            "--step-delay-seconds",
+            "0.25"
+          ],
+          "reviewer_id": "deterministic-reviewer"
+        },
+        "schema": "tau.generic_artifact_transaction.v1",
+        "transaction_id": "tx-creator-reviewer",
+        "validator": {
+          "command": [
+            "/tmp/tau-issue189-1785166987/.venv/bin/python",
+            "/tmp/tau-issue189-1785166987/examples/dag-viewer-creator-reviewer/validator.py",
+            "--step-delay-seconds",
+            "0.25"
+          ],
+          "validator_id": "deterministic-validator"
+        }
+      },
+      "work_order_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/transaction-viewer-smoke/work-order.json"
+    },
+    {
+      "accepted_context_from": [
+        "creator-reviewer"
+      ],
+      "command": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python",
+        "/tmp/tau-issue189-1785166987/examples/dag-viewer-creator-reviewer/continuation.py",
+        "--receipt",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/transaction-viewer-smoke/continuation-receipt.json",
+        "--marker",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/transaction-viewer-smoke/continuation.txt",
+        "--step-delay-seconds",
+        "0.25"
+      ],
+      "depends_on": [
+        "creator-reviewer"
+      ],
+      "node_id": "continuation",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/transaction-viewer-smoke/continuation-receipt.json",
+      "role": "dependent-continuation"
+    }
+  ],
+  "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/transaction-viewer-smoke/run",
+  "run_id": "dag-viewer-creator-reviewer",
+  "schema": "tau.generic_dag_spec.v1"
+}

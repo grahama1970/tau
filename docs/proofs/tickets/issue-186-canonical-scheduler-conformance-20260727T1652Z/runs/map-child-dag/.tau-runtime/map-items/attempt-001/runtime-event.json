@@ -1,0 +1,17 @@
+{
+  "confidence": "PROCESS",
+  "endpoint_lease_sha256": "sha256:6022f60e8621ec11f7a1ecbb225d96e76ed327eebe0e135f30b756f13b591aec",
+  "event_id": "local-event:59ee829b5856915f07f57dda",
+  "event_type": "RUNTIME_ENDPOINT_EXITED",
+  "liveness": "DEAD",
+  "observation": {
+    "cancelled": false,
+    "returncode": 0,
+    "timed_out": false
+  },
+  "observed_at": "2026-07-27T16:50:30.352987+00:00",
+  "run_id": "canonical-map-child-dag",
+  "schema": "tau.runtime_event.v1",
+  "source": "local",
+  "state": "EXITED"
+}

@@ -1,0 +1,5 @@
+{
+  "goal_hash": "sha256:canonical-scheduler-conformance",
+  "schema": "tau.skill_work_order.v1",
+  "task": "Run Tau runtime handshake through a native generic DAG skill node."
+}

@@ -1,0 +1,46 @@
+{
+  "accepted_output": {
+    "artifacts": [
+      {
+        "bytes": 1113,
+        "kind": "documentation-analysis",
+        "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/docs.json",
+        "sha256": "sha256:00775244f7de3065dd4bba3b871b1b23d0ff15512f85f70d09e02e123609ffca"
+      }
+    ],
+    "schema": "tau.canonical_dag_result.v1",
+    "status": "ACCEPTED",
+    "summary": "docs produced its accepted documentation-analysis artifact."
+  },
+  "artifacts": [
+    {
+      "bytes": 1113,
+      "kind": "documentation-analysis",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/docs.json",
+      "sha256": "sha256:00775244f7de3065dd4bba3b871b1b23d0ff15512f85f70d09e02e123609ffca"
+    }
+  ],
+  "commands_run": [
+    "canonical-worker:docs"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:418f0bef371c510bba7558618b49a1d85432c8e98a65e52ccd73e5f333451607",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "handoff_summary": "docs produced its bounded artifact.",
+  "live": true,
+  "mocked": false,
+  "node_id": "docs",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}

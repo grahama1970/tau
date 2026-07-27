@@ -1,0 +1,17 @@
+{
+  "confidence": "PROCESS",
+  "endpoint_lease_sha256": "sha256:09977b7a78a1d07303bf02ee1199589ecfd5be9cca9209e8e11d71e910cd5078",
+  "event_id": "local-event:de5ab22bbcc438dc9d59dd7a",
+  "event_type": "RUNTIME_ENDPOINT_EXITED",
+  "liveness": "DEAD",
+  "observation": {
+    "cancelled": false,
+    "returncode": 0,
+    "timed_out": false
+  },
+  "observed_at": "2026-07-27T16:50:14.876162+00:00",
+  "run_id": "canonical-04-mixed-retry-approval",
+  "schema": "tau.runtime_event.v1",
+  "source": "local",
+  "state": "EXITED"
+}

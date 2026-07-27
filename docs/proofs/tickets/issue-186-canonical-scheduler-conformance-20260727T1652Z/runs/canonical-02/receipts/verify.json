@@ -1,0 +1,46 @@
+{
+  "accepted_output": {
+    "artifacts": [
+      {
+        "bytes": 1123,
+        "kind": "deterministic-verification",
+        "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-02/artifacts/verify.json",
+        "sha256": "sha256:29e0f883aa17abb6299c52e29f12af5d18dc47e6ded61111cd29636621e961ef"
+      }
+    ],
+    "schema": "tau.canonical_dag_result.v1",
+    "status": "ACCEPTED",
+    "summary": "verify produced its accepted deterministic-verification artifact."
+  },
+  "artifacts": [
+    {
+      "bytes": 1123,
+      "kind": "deterministic-verification",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-02/artifacts/verify.json",
+      "sha256": "sha256:29e0f883aa17abb6299c52e29f12af5d18dc47e6ded61111cd29636621e961ef"
+    }
+  ],
+  "commands_run": [
+    "canonical-worker:verify"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:121683d2f657ea8bc2bc41675a5a5790d18d623158d86ee0ef109c6c5907ba7f",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "handoff_summary": "verify produced its bounded artifact.",
+  "live": true,
+  "mocked": false,
+  "node_id": "verify",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}

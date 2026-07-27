@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -44,6 +45,7 @@ def parse_skill_dag_spec(raw: Any, *, base_dir: Path, node_id: str) -> SkillDagS
     if (capability, provider) not in {
         ("architecture_review", "webgpt"),
         ("architecture_render", "create-architecture"),
+        ("runtime_handshake", "tau"),
     }:
         raise RuntimeError(
             f"node {node_id} unsupported skill capability/provider: {capability}/{provider}"
@@ -95,6 +97,15 @@ def execute_skill_dag_node(
     spec.output_dir.mkdir(parents=True, exist_ok=True)
     if spec.provider == "webgpt":
         return _execute_webgpt(
+            spec=spec,
+            run_id=run_id,
+            node_id=node_id,
+            goal_hash=goal_hash,
+            work_order_sha256=work_order_sha256,
+            cancel_event=cancel_event,
+        )
+    if spec.provider == "tau":
+        return _execute_tau_runtime_handshake(
             spec=spec,
             run_id=run_id,
             node_id=node_id,
@@ -437,6 +448,85 @@ def _execute_create_architecture(
     )
 
 
+def _execute_tau_runtime_handshake(
+    *,
+    spec: SkillDagSpec,
+    run_id: str,
+    node_id: str,
+    goal_hash: str | None,
+    work_order_sha256: str | None,
+    cancel_event: Event | None,
+) -> dict[str, Any]:
+    if spec.capability != "runtime_handshake":
+        return _node_receipt(
+            node_id=node_id,
+            capability=spec.capability,
+            provider=spec.provider,
+            status="BLOCKED",
+            verdict="BLOCKED",
+            errors=[f"unsupported_tau_capability:{spec.capability}"],
+        )
+    repo_root = _tau_repo_root()
+    output_path = spec.output_dir / "runtime-handshake.json"
+    output_path.unlink(missing_ok=True)
+    command = [
+        "uv",
+        "run",
+        "tau",
+        "runtime-handshake",
+        "--output",
+        str(output_path),
+    ]
+    env = dict(os.environ)
+    src_path = str(repo_root / "src")
+    env["PYTHONPATH"] = (
+        src_path
+        if not env.get("PYTHONPATH")
+        else f"{src_path}{os.pathsep}{env['PYTHONPATH']}"
+    )
+    completed = run_cancellable_subprocess(
+        command,
+        cwd=repo_root,
+        env=env,
+        timeout_seconds=float(spec.configuration.get("timeout_seconds", 120)),
+        cancel_event=cancel_event,
+    )
+    commands_run = [command]
+    errors: list[str] = []
+    if completed.returncode != 0:
+        errors.append(f"tau_runtime_handshake_failed:{completed.returncode}")
+    if not output_path.is_file():
+        errors.append("tau_runtime_handshake_output_missing")
+    else:
+        payload = _read_optional_json(output_path)
+        if payload.get("schema") != "tau.runtime_handshake.v1":
+            errors.append("tau_runtime_handshake_schema_invalid")
+        if payload.get("status") != "PASS":
+            errors.append(f"tau_runtime_handshake_status:{payload.get('status')}")
+        if payload.get("mocked") is not False or payload.get("live") is not True:
+            errors.append("tau_runtime_handshake_live_contract_invalid")
+    artifacts = (
+        [_artifact(output_path, "tau.runtime_handshake.v1")] if output_path.is_file() else []
+    )
+    return _node_receipt(
+        node_id=node_id,
+        capability=spec.capability,
+        provider=spec.provider,
+        status="PASS" if not errors else "BLOCKED",
+        verdict="PASS" if not errors else "BLOCKED",
+        errors=errors,
+        round_number=1,
+        max_rounds=1,
+        commands_run=commands_run,
+        artifacts=artifacts,
+        provider_live=False,
+        handoff_summary=(
+            f"Tau runtime handshake skill node {'passed' if not errors else 'blocked'} "
+            f"for {run_id}"
+        ),
+    )
+
+
 def _webgpt_configuration_errors(spec: SkillDagSpec) -> list[str]:
     errors = []
     if not _non_empty(spec.configuration.get("tab_id")):
@@ -711,6 +801,10 @@ def _json_sha256(value: Any) -> str:
     return hashlib.sha256(
         json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
+
+
+def _tau_repo_root() -> Path:
+    return Path(__file__).resolve().parents[2]
 
 
 def _required_string(payload: dict[str, Any], key: str, *, node_id: str) -> str:

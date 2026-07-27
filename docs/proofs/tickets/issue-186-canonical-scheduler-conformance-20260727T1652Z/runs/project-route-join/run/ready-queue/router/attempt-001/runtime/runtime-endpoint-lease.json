@@ -1,0 +1,29 @@
+{
+  "attempt_id": "attempt-a7a319226548856362e289b3179a513c",
+  "attempt_number": 1,
+  "backend": "local",
+  "backend_ids": {
+    "pid": null
+  },
+  "backend_session_id": null,
+  "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+  "cleanup_policy": {
+    "kind": "process_group_termination"
+  },
+  "created_at": "2026-07-27T16:50:23.607855+00:00",
+  "dag_id": "canonical-project-route-join",
+  "endpoint_id": "local:4a5ed1e542c89bd10824d070",
+  "execution_token": "[REDACTED]",
+  "expires_at": "2026-07-27T16:51:28.607855+00:00",
+  "goal_hash": "sha256:3013b32f9c31e643513fe0ed4f028fc5b0985a4811acbf2cbf4c8be6cd992721",
+  "heartbeat_policy": {
+    "kind": "process_poll"
+  },
+  "node_id": "router",
+  "owner": "tau",
+  "plan_revision": "sha256:bd5f5ea47a16a570d94e4eb4bb84bcbb39aa379f2180cf4c0f624a57d6930026",
+  "run_id": "canonical-project-route-join",
+  "schema": "tau.runtime_endpoint_lease.v1",
+  "scope_id": "canonical-project-route-join",
+  "work_order_sha256": "sha256:e8603021d57b28adc8fd1b4eb760468450e7db022cc31279e4bcd646f378ddda"
+}

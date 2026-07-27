@@ -1,0 +1,56 @@
+{
+  "artifacts": [
+    {
+      "bytes": 4145,
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/map-child-dag-conformance.json",
+      "schema": "tau.map_child_dag_conformance.v1",
+      "sha256": "f15209ceca45ab3f938da39cc2c5f6d9670058bd6b59ba4d3349fcec15cec3ff"
+    }
+  ],
+  "commands_run": [
+    [
+      "uv",
+      "run",
+      "tau",
+      "dag-run",
+      "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/dag.json",
+      "--no-resume"
+    ],
+    [
+      "uv",
+      "run",
+      "tau",
+      "dag-run",
+      "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/bravo/dag.json",
+      "--no-resume"
+    ],
+    [
+      "uv",
+      "run",
+      "tau",
+      "dag-run",
+      "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/charlie/dag.json",
+      "--no-resume"
+    ]
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:4af77621e0674802916a9a68d06676856c7e9abf61e62c1b0fd92a1926b37de1",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:canonical-scheduler-conformance",
+  "handoff_summary": "Mapped 3 items into 3 child DAGs with exact cardinality True",
+  "live": true,
+  "mocked": false,
+  "node_id": "map-items",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}

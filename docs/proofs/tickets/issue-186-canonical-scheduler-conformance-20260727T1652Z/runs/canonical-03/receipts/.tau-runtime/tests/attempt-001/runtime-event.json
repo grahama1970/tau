@@ -1,0 +1,17 @@
+{
+  "confidence": "PROCESS",
+  "endpoint_lease_sha256": "sha256:fa7c8bd91ce4c24d67e7d659d30893070ff11723f3bf2eacc1450967a0b21569",
+  "event_id": "local-event:ff8e2c0f99ecfc5ff8ed9ed9",
+  "event_type": "RUNTIME_ENDPOINT_EXITED",
+  "liveness": "DEAD",
+  "observation": {
+    "cancelled": false,
+    "returncode": 0,
+    "timed_out": false
+  },
+  "observed_at": "2026-07-27T16:50:13.966733+00:00",
+  "run_id": "canonical-03-concurrent-fanout-fanin",
+  "schema": "tau.runtime_event.v1",
+  "source": "local",
+  "state": "EXITED"
+}

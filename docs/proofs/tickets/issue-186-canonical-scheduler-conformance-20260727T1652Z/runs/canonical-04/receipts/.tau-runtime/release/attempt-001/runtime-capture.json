@@ -1,0 +1,30 @@
+{
+  "cancelled": false,
+  "command": [
+    "/tmp/tau-issue189-1785166987/.venv/bin/python",
+    "/tmp/tau-issue189-1785166987/examples/canonical-dags/worker.py",
+    "--node-id",
+    "release",
+    "--role",
+    "approval-gated-side-effect",
+    "--output",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-04/artifacts/release.json",
+    "--receipt",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-04/receipts/release.json",
+    "--goal",
+    "/tmp/tau-issue189-1785166987/GOAL.md",
+    "--delay",
+    "0.0",
+    "--approval",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-04/authorizations/human-release.json",
+    "--input",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-04/artifacts/review.json",
+    "--rollback",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-04/rollback/release.json"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "",
+  "timed_out": false
+}

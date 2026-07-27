@@ -1,0 +1,46 @@
+{
+  "accepted_output": {
+    "artifacts": [
+      {
+        "bytes": 823,
+        "kind": "goal-digest",
+        "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-01/artifacts/tau-goal-digest.json",
+        "sha256": "sha256:17d4a01ec98e95b9b82a20393a68cc2928f8512a0db377502a1fb5d679c7c75a"
+      }
+    ],
+    "schema": "tau.canonical_dag_result.v1",
+    "status": "ACCEPTED",
+    "summary": "Extracted the immutable Tau goal and canonical DAG ladder."
+  },
+  "artifacts": [
+    {
+      "bytes": 823,
+      "kind": "goal-digest",
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-01/artifacts/tau-goal-digest.json",
+      "sha256": "sha256:17d4a01ec98e95b9b82a20393a68cc2928f8512a0db377502a1fb5d679c7c75a"
+    }
+  ],
+  "commands_run": [
+    "canonical-dag-01:extract-goal"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:10eb76ad4c7a42f9c1feb9726f03da805df1c30d351ae56688bd717f40a5d7ae",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "handoff_summary": "Extracted the immutable Tau goal and canonical DAG ladder.",
+  "live": true,
+  "mocked": false,
+  "node_id": "extract-goal",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}

@@ -1,0 +1,29 @@
+{
+  "accepted_output": {
+    "item_id": "bravo",
+    "result": 4,
+    "value": 2
+  },
+  "artifacts": [],
+  "commands_run": [],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:94c7015c35bfcaf09aae270d38f15b8bc63468d411c42f676ee35f04e777e798",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:canonical-scheduler-conformance",
+  "handoff_summary": "Processed map item bravo",
+  "live": true,
+  "mocked": false,
+  "node_id": "child-bravo",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}

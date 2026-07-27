@@ -1,0 +1,6 @@
+{
+  "accepted_inputs": [],
+  "node_id": "plan",
+  "run_id": "canonical-04-mixed-retry-approval",
+  "schema": "tau.generic_dag_node_context.v1"
+}

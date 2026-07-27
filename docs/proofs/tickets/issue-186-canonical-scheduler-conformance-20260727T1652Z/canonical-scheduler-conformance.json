@@ -1,0 +1,1631 @@
+{
+  "live": true,
+  "missing_surfaces": [],
+  "mocked": false,
+  "output": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/canonical-scheduler-conformance.json",
+  "proof_boundary": {
+    "does_not_prove": [
+      "Provider or model semantic quality.",
+      "Security sandbox enforcement.",
+      "Resource lease enforcement.",
+      "A first-class dynamic map-node schema beyond this canonical conformance workload."
+    ],
+    "proves": [
+      "Tau executed live local canonical DAG examples through the durable generic scheduler.",
+      "Tau observed transaction validator/reviewer admission through the live DAG viewer smoke.",
+      "Tau executed a native generic DAG skill node through a Tau-owned provider.",
+      "Tau executed a canonical map workload that launched item-specific child DAGs through tau dag-run and joined the exact child cardinality.",
+      "Tau reports unsupported or unexercised scheduler surfaces as blockers."
+    ]
+  },
+  "provider_live": false,
+  "repo_root": "/tmp/tau-issue189-1785166987",
+  "required_surfaces": [
+    "command_node",
+    "validator_node",
+    "transaction_node",
+    "skill_node",
+    "human_boundary",
+    "join",
+    "retry",
+    "durable_resume",
+    "targeted_repair",
+    "map_node",
+    "child_dag",
+    "conditional_route"
+  ],
+  "runs": {
+    "canonical_01": {
+      "command": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python",
+        "/tmp/tau-issue189-1785166987/examples/canonical-dags/01-simple-linear/workflow.py",
+        "run",
+        "--run-root",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-01",
+        "--step-delay-seconds",
+        "0",
+        "--no-open",
+        "--serve-after-seconds",
+        "0"
+      ],
+      "exit_code": 0,
+      "exit_code_expected": true,
+      "expected_exit_codes": [
+        0
+      ],
+      "json": {
+        "completed_node_count": 2,
+        "dag_id": "canonical-01-simple-linear",
+        "live": true,
+        "max_observed_concurrency": 1,
+        "mocked": false,
+        "node_count": 2,
+        "output_artifact": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-01/artifacts/tau-goal-summary.md",
+        "output_sha256": "sha256:e382d4c22d835c334944471e9248ddf965fbc033c36f7617c39ae771d1750738",
+        "provider_live": false,
+        "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-01/run",
+        "schema": "tau.canonical_dag_example_result.v1",
+        "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-01/dag.json",
+        "status": "PASS",
+        "viewer_command": "uv run tau dag-view --run-dir /tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-01/run",
+        "viewer_url": null
+      },
+      "json_parse_error": null,
+      "stderr_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/canonical-01.stderr",
+      "stderr_sha256": "sha256:e76aa070cc8b7b111ab4abb70e3be74f91da8212dde0aacfc58f73e2c717338d",
+      "stdout_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/canonical-01.stdout",
+      "stdout_sha256": "sha256:648c281f30a08f29454622991bb73b8e4735b8f007a0392354f11da0b2a30160"
+    },
+    "canonical_02": {
+      "command": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python",
+        "/tmp/tau-issue189-1785166987/examples/canonical-dags/run.py",
+        "--dag",
+        "2",
+        "--run-root",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-02",
+        "--step-delay-seconds",
+        "0",
+        "--serve-after-seconds",
+        "0"
+      ],
+      "exit_code": 0,
+      "exit_code_expected": true,
+      "expected_exit_codes": [
+        0
+      ],
+      "json": {
+        "completed_node_count": 4,
+        "dag_id": "canonical-02-multi-step-sequential",
+        "durable": true,
+        "live": true,
+        "max_observed_concurrency": 1,
+        "mocked": false,
+        "node_count": 4,
+        "output_artifact": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-02/artifacts/verify.json",
+        "provider_live": false,
+        "resumed_node_count": 0,
+        "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-02/run",
+        "schema": "tau.canonical_dag_example_result.v1",
+        "status": "PASS",
+        "title": "Multi-step sequential",
+        "verdict": "PASS",
+        "viewer_command": "uv run tau dag-view --run-dir /tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-02/run",
+        "viewer_url": null
+      },
+      "json_parse_error": null,
+      "stderr_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/canonical-02.stderr",
+      "stderr_sha256": "sha256:f383312ed68dba3c18d5256e019dfe008d4723c14552ddebf1619f345f38365d",
+      "stdout_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/canonical-02.stdout",
+      "stdout_sha256": "sha256:a6818286d90e38c11a1c5368f319959200197c76fc378d9c59835d28cee8ef30"
+    },
+    "canonical_03": {
+      "command": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python",
+        "/tmp/tau-issue189-1785166987/examples/canonical-dags/run.py",
+        "--dag",
+        "3",
+        "--run-root",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03",
+        "--step-delay-seconds",
+        "0",
+        "--serve-after-seconds",
+        "0"
+      ],
+      "exit_code": 0,
+      "exit_code_expected": true,
+      "expected_exit_codes": [
+        0
+      ],
+      "json": {
+        "completed_node_count": 5,
+        "dag_id": "canonical-03-concurrent-fanout-fanin",
+        "durable": true,
+        "live": true,
+        "max_observed_concurrency": 3,
+        "mocked": false,
+        "node_count": 5,
+        "output_artifact": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/integrate.json",
+        "provider_live": false,
+        "resumed_node_count": 0,
+        "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/run",
+        "schema": "tau.canonical_dag_example_result.v1",
+        "status": "PASS",
+        "title": "Concurrent fan-out/fan-in",
+        "verdict": "PASS",
+        "viewer_command": "uv run tau dag-view --run-dir /tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/run",
+        "viewer_url": null
+      },
+      "json_parse_error": null,
+      "stderr_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/canonical-03.stderr",
+      "stderr_sha256": "sha256:27487b7b8cc1b96e7251b693e217115e14bc7f258d5f8308244b5e81db49f245",
+      "stdout_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/canonical-03.stdout",
+      "stdout_sha256": "sha256:a7fb5e3d4b81b310f1c83adfd6af0e8118e6a6eaea4da8b851f1d2195ddb8bf2"
+    },
+    "canonical_04": {
+      "command": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python",
+        "/tmp/tau-issue189-1785166987/examples/canonical-dags/run.py",
+        "--dag",
+        "4",
+        "--run-root",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-04",
+        "--step-delay-seconds",
+        "0",
+        "--serve-after-seconds",
+        "0",
+        "--approve"
+      ],
+      "exit_code": 0,
+      "exit_code_expected": true,
+      "expected_exit_codes": [
+        0
+      ],
+      "json": {
+        "completed_node_count": 5,
+        "dag_id": "canonical-04-mixed-retry-approval",
+        "durable": true,
+        "live": true,
+        "max_observed_concurrency": 2,
+        "mocked": false,
+        "node_count": 5,
+        "output_artifact": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-04/artifacts/release.json",
+        "provider_live": false,
+        "resumed_node_count": 0,
+        "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-04/run",
+        "schema": "tau.canonical_dag_example_result.v1",
+        "status": "PASS",
+        "title": "Mixed topology with retry and human approval",
+        "verdict": "PASS",
+        "viewer_command": "uv run tau dag-view --run-dir /tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-04/run",
+        "viewer_url": null
+      },
+      "json_parse_error": null,
+      "stderr_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/canonical-04.stderr",
+      "stderr_sha256": "sha256:ccb7ff0e3262d4f3de0dd3aa6d4fcd68817d1c1f01c4abf8bf72043409906290",
+      "stdout_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/canonical-04.stdout",
+      "stdout_sha256": "sha256:af34a7381db5a45c23dccc09caeee7609064d7ecca1365b926bbf29be0faeb57"
+    },
+    "canonical_05_initial_block": {
+      "command": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python",
+        "/tmp/tau-issue189-1785166987/examples/canonical-dags/run.py",
+        "--dag",
+        "5",
+        "--run-root",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05",
+        "--step-delay-seconds",
+        "0",
+        "--serve-after-seconds",
+        "0",
+        "--approve"
+      ],
+      "exit_code": 2,
+      "exit_code_expected": true,
+      "expected_exit_codes": [
+        2
+      ],
+      "json": {
+        "completed_node_count": 4,
+        "dag_id": "canonical-05-durable-resume-repair",
+        "durable": true,
+        "live": true,
+        "max_observed_concurrency": 3,
+        "mocked": false,
+        "node_count": 6,
+        "output_artifact": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05/artifacts/release.json",
+        "provider_live": false,
+        "resumed_node_count": 0,
+        "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05/run",
+        "schema": "tau.canonical_dag_example_result.v1",
+        "status": "BLOCKED",
+        "title": "Durable mixed topology with targeted repair",
+        "verdict": "BLOCKED",
+        "viewer_command": "uv run tau dag-view --run-dir /tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05/run",
+        "viewer_url": null
+      },
+      "json_parse_error": null,
+      "stderr_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/canonical-05-initial-block.stderr",
+      "stderr_sha256": "sha256:c9a72c8429cf9f666b7cf709c9c71aa40cff2a99a30cdf35f010ea466e1030e3",
+      "stdout_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/canonical-05-initial-block.stdout",
+      "stdout_sha256": "sha256:4ad1b3b485955226eb123d39a249be171051568557fb4e9390a46299286ca826"
+    },
+    "canonical_05_resume_repair": {
+      "command": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python",
+        "/tmp/tau-issue189-1785166987/examples/canonical-dags/run.py",
+        "--dag",
+        "5",
+        "--run-root",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05",
+        "--step-delay-seconds",
+        "0",
+        "--serve-after-seconds",
+        "0",
+        "--approve",
+        "--repair",
+        "--resume"
+      ],
+      "exit_code": 0,
+      "exit_code_expected": true,
+      "expected_exit_codes": [
+        0
+      ],
+      "json": {
+        "completed_node_count": 6,
+        "dag_id": "canonical-05-durable-resume-repair",
+        "durable": true,
+        "live": true,
+        "max_observed_concurrency": 3,
+        "mocked": false,
+        "node_count": 6,
+        "output_artifact": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05/artifacts/release.json",
+        "provider_live": false,
+        "resumed_node_count": 4,
+        "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05/run",
+        "schema": "tau.canonical_dag_example_result.v1",
+        "status": "PASS",
+        "title": "Durable mixed topology with targeted repair",
+        "verdict": "PASS",
+        "viewer_command": "uv run tau dag-view --run-dir /tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05/run",
+        "viewer_url": null
+      },
+      "json_parse_error": null,
+      "stderr_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/canonical-05-resume-repair.stderr",
+      "stderr_sha256": "sha256:5d880440eb7ae8f9d80edb56db042d950bc722bb7dc62eac091330542b03e989",
+      "stdout_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/canonical-05-resume-repair.stdout",
+      "stdout_sha256": "sha256:96df4e9952e484af91dc7823176a1d9f8d893cbe36349ba9b2fec78a5bacc7f6"
+    },
+    "map_child_dag": {
+      "command": [
+        "uv",
+        "run",
+        "tau",
+        "dag-run",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-child-parent.json",
+        "--no-resume"
+      ],
+      "exit_code": 0,
+      "exit_code_expected": true,
+      "expected_exit_codes": [
+        0
+      ],
+      "json": {
+        "checkpoint_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/parent-run/checkpoint.json",
+        "completed_node_count": 1,
+        "cost_accounting": {
+          "budget": {
+            "state": "NOT_CONFIGURED"
+          },
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "estimated_cost_is_billing_truth": false,
+          "estimated_cost_usd": null,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "schema": "tau.generic_dag_cost_accounting.v1",
+          "source": "not_reported",
+          "total_tokens": 0
+        },
+        "current_state_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/parent-run/current-state.json",
+        "dag_plan_sha256": "sha256:4fc5aa40a455b67f6eb9d0c453471fadf72467bd806190dae54d425bc217bba4",
+        "diagnostics_log_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/parent-run/tau-diagnostics.jsonl",
+        "durable": true,
+        "events_jsonl": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/parent-run/events.jsonl",
+        "execution": "local_subprocess_receipt_gated_dag",
+        "lease_epoch": 1,
+        "live": true,
+        "max_observed_concurrency": 1,
+        "mocked": false,
+        "node_count": 1,
+        "nodes": [
+          {
+            "accepted_output": null,
+            "artifacts": [
+              {
+                "bytes": 4145,
+                "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/map-child-dag-conformance.json",
+                "schema": "tau.map_child_dag_conformance.v1",
+                "sha256": "f15209ceca45ab3f938da39cc2c5f6d9670058bd6b59ba4d3349fcec15cec3ff"
+              }
+            ],
+            "attempt": null,
+            "attempt_count": 1,
+            "command_results": [
+              {
+                "argv": [
+                  "/tmp/tau-issue189-1785166987/.venv/bin/python",
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map_child_runner.py",
+                  "--repo-root",
+                  "/tmp/tau-issue189-1785166987",
+                  "--root",
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run",
+                  "--receipt",
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-node-receipt.json",
+                  "--goal-hash",
+                  "sha256:canonical-scheduler-conformance"
+                ],
+                "elapsed_seconds": 3.135,
+                "returncode": 0,
+                "runtime_artifacts": [
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/.tau-runtime/map-items/attempt-001/runtime-endpoint-lease.json",
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/.tau-runtime/map-items/attempt-001/runtime-submit-receipt.json",
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/.tau-runtime/map-items/attempt-001/runtime-event.json",
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/.tau-runtime/map-items/attempt-001/runtime-capture.json"
+                ],
+                "runtime_backend": "local",
+                "runtime_capture": {
+                  "cancelled": false,
+                  "command": [
+                    "/tmp/tau-issue189-1785166987/.venv/bin/python",
+                    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map_child_runner.py",
+                    "--repo-root",
+                    "/tmp/tau-issue189-1785166987",
+                    "--root",
+                    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run",
+                    "--receipt",
+                    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-node-receipt.json",
+                    "--goal-hash",
+                    "sha256:canonical-scheduler-conformance"
+                  ],
+                  "returncode": 0,
+                  "schema": "tau.local_runtime_capture.v1",
+                  "stderr": "",
+                  "stdout": "{\n  \"child_dag\": {\n    \"all_children_passed\": true,\n    \"child_count\": 3,\n    \"child_receipts\": [\n      {\n        \"child_id\": \"child-alpha\",\n        \"exit_code\": 0,\n        \"item_id\": \"alpha\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/receipt.json\",\n        \"receipt_sha256\": \"a16b577bbdaeeb0267f7c92b435a577edbd5fb5b5468b9d3f4d2ced6aa6ff384\",\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/dag.json\",\n        \"status\": \"PASS\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/dag-run.stdout\"\n      },\n      {\n        \"child_id\": \"child-bravo\",\n        \"exit_code\": 0,\n        \"item_id\": \"bravo\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/bravo/receipt.json\",\n        \"receipt_sha256\": \"62f1f3b1236a623a3df448a64f5f63dc313750b0dac998e05d46136e32873656\",\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/bravo/dag.json\",\n        \"status\": \"PASS\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/bravo/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/bravo/dag-run.stdout\"\n      },\n      {\n        \"child_id\": \"child-charlie\",\n        \"exit_code\": 0,\n        \"item_id\": \"charlie\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/charlie/receipt.json\",\n        \"receipt_sha256\": \"ab9b145e849ad4dbafa86ae5b7c40c1cee8df808ce1e7aaf5c9fb8355cddee20\",\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/charlie/dag.json\",\n        \"status\": \"PASS\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/charlie/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/charlie/dag-run.stdout\"\n      }\n    ]\n  },\n  \"commands_run\": [\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/dag.json\",\n      \"--no-resume\"\n    ],\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/bravo/dag.json\",\n      \"--no-resume\"\n    ],\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/charlie/dag.json\",\n      \"--no-resume\"\n    ]\n  ],\n  \"errors\": [],\n  \"live\": true,\n  \"map_node\": {\n    \"deterministic_child_ids\": [\n      \"child-alpha\",\n      \"child-bravo\",\n      \"child-charlie\"\n    ],\n    \"exact_join_cardinality\": true,\n    \"item_count\": 3\n  },\n  \"mocked\": false,\n  \"provider_live\": false,\n  \"schema\": \"tau.map_child_dag_conformance.v1\",\n  \"status\": \"PASS\"\n}\n",
+                  "timed_out": false
+                },
+                "runtime_endpoint_lease": {
+                  "attempt_id": "attempt-70429d49f7508abf2f217d39effb7f07",
+                  "attempt_number": 1,
+                  "backend": "local",
+                  "backend_ids": {
+                    "pid": null
+                  },
+                  "backend_session_id": null,
+                  "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+                  "cleanup_policy": {
+                    "kind": "process_group_termination"
+                  },
+                  "created_at": "2026-07-27T16:50:27.221137+00:00",
+                  "dag_id": "generic:canonical-map-child-dag",
+                  "endpoint_id": "local:59ee829b5856915f07f57dda",
+                  "execution_token": "[REDACTED]",
+                  "expires_at": "2026-07-27T16:53:27.221137+00:00",
+                  "goal_hash": "sha256:3013b32f9c31e643513fe0ed4f028fc5b0985a4811acbf2cbf4c8be6cd992721",
+                  "heartbeat_policy": {
+                    "kind": "process_poll"
+                  },
+                  "node_id": "map-items",
+                  "owner": "tau",
+                  "plan_revision": "sha256:4fc5aa40a455b67f6eb9d0c453471fadf72467bd806190dae54d425bc217bba4",
+                  "run_id": "canonical-map-child-dag",
+                  "schema": "tau.runtime_endpoint_lease.v1",
+                  "scope_id": "canonical-map-child-dag",
+                  "work_order_sha256": "sha256:7e267b069dea8eb2eb72b6de260bd5f337b235525b83a68a149acb4a589e533c"
+                },
+                "runtime_event": {
+                  "confidence": "PROCESS",
+                  "endpoint_lease_sha256": "sha256:6022f60e8621ec11f7a1ecbb225d96e76ed327eebe0e135f30b756f13b591aec",
+                  "event_id": "local-event:59ee829b5856915f07f57dda",
+                  "event_type": "RUNTIME_ENDPOINT_EXITED",
+                  "liveness": "DEAD",
+                  "observation": {
+                    "cancelled": false,
+                    "returncode": 0,
+                    "timed_out": false
+                  },
+                  "observed_at": "2026-07-27T16:50:30.352987+00:00",
+                  "run_id": "canonical-map-child-dag",
+                  "schema": "tau.runtime_event.v1",
+                  "source": "local",
+                  "state": "EXITED"
+                },
+                "runtime_submit_receipt": {
+                  "backend_acknowledgement": {
+                    "process_started": true,
+                    "stdin_delivery": "not_requested"
+                  },
+                  "composer_state_after": "NOT_APPLICABLE",
+                  "composer_state_before": "NOT_APPLICABLE",
+                  "delivery_status": "CONFIRMED",
+                  "endpoint_lease_sha256": "sha256:6022f60e8621ec11f7a1ecbb225d96e76ed327eebe0e135f30b756f13b591aec",
+                  "errors": [],
+                  "provider_execution_status": "NOT_APPLICABLE",
+                  "schema": "tau.runtime_submit_receipt.v1",
+                  "submit_attempt_count": 1,
+                  "text_delivery_count": 0,
+                  "work_order_sha256": "sha256:7e267b069dea8eb2eb72b6de260bd5f337b235525b83a68a149acb4a589e533c"
+                },
+                "stderr": "",
+                "stdout": "{\n  \"child_dag\": {\n    \"all_children_passed\": true,\n    \"child_count\": 3,\n    \"child_receipts\": [\n      {\n        \"child_id\": \"child-alpha\",\n        \"exit_code\": 0,\n        \"item_id\": \"alpha\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/receipt.json\",\n        \"receipt_sha256\": \"a16b577bbdaeeb0267f7c92b435a577edbd5fb5b5468b9d3f4d2ced6aa6ff384\",\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/dag.json\",\n        \"status\": \"PASS\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/dag-run.stdout\"\n      },\n      {\n        \"child_id\": \"child-bravo\",\n        \"exit_code\": 0,\n        \"item_id\": \"bravo\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/bravo/receipt.json\",\n        \"receipt_sha256\": \"62f1f3b1236a623a3df448a64f5f63dc313750b0dac998e05d46136e32873656\",\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/bravo/dag.json\",\n        \"status\": \"PASS\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/bravo/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/bravo/dag-run.stdout\"\n      },\n      {\n        \"child_id\": \"child-charlie\",\n        \"exit_code\": 0,\n        \"item_id\": \"charlie\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/charlie/receipt.json\",\n        \"receipt_sha256\": \"ab9b145e849ad4dbafa86ae5b7c40c1cee8df808ce1e7aaf5c9fb8355cddee20\",\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/charlie/dag.json\",\n        \"status\": \"PASS\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/charlie/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/charlie/dag-run.stdout\"\n      }\n    ]\n  },\n  \"commands_run\": [\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/dag.json\",\n      \"--no-resume\"\n    ],\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/bravo/dag.json\",\n      \"--no-resume\"\n    ],\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/charlie/dag.json\",\n      \"--no-resume\"\n    ]\n  ],\n  \"errors\": [],\n  \"live\": true,\n  \"map_node\": {\n    \"deterministic_child_ids\": [\n      \"child-alpha\",\n      \"child-bravo\",\n      \"child-charlie\"\n    ],\n    \"exact_join_cardinality\": true,\n    \"item_count\": 3\n  },\n  \"mocked\": false,\n  \"provider_live\": false,\n  \"schema\": \"tau.map_child_dag_conformance.v1\",\n  \"status\": \"PASS\"\n}\n",
+                "termination_cause": "exited"
+              }
+            ],
+            "cost_accounting": {
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "estimated_cost_is_billing_truth": false,
+              "estimated_cost_usd": null,
+              "input_tokens": 0,
+              "output_tokens": 0,
+              "schema": "tau.generic_dag_cost_accounting.v1",
+              "source": "not_reported",
+              "total_tokens": 0
+            },
+            "cost_estimate": null,
+            "duration_seconds": 3.135,
+            "errors": [],
+            "execution_evidence": {
+              "command_result_sha256": "sha256:4af77621e0674802916a9a68d06676856c7e9abf61e62c1b0fd92a1926b37de1",
+              "kind": "local_subprocess",
+              "returncode": 0,
+              "runtime_artifact_count": 4,
+              "runtime_backend": "local",
+              "runtime_event_state": "EXITED",
+              "runtime_submit_delivery_status": "CONFIRMED"
+            },
+            "finished_at": "2026-07-27T16:50:30Z",
+            "goal_hash": "sha256:canonical-scheduler-conformance",
+            "live": true,
+            "mocked": false,
+            "node_id": "map-items",
+            "pane_id": null,
+            "provider_live": false,
+            "provider_status": null,
+            "provider_verdict": null,
+            "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-node-receipt.json",
+            "resumed": false,
+            "role": "map-items",
+            "scheduler_attempts": [
+              {
+                "attempt": 1,
+                "errors": [],
+                "status": "PASS",
+                "verdict": "PASS"
+              }
+            ],
+            "started_at": "2026-07-27T16:50:27Z",
+            "status": "PASS",
+            "terminal_id": null,
+            "usage": null,
+            "verdict": "PASS",
+            "visible_log_path": null,
+            "visible_log_sha256": null,
+            "work_order_path": null,
+            "work_order_sha256": null,
+            "workspace_id": null
+          }
+        ],
+        "ok": true,
+        "proof_scope": {
+          "does_not_prove": [
+            "remote Tailscale monitoring",
+            "GitHub ticket closure",
+            "production repository mutation",
+            "live provider CLI execution",
+            "Herdr pane visibility"
+          ],
+          "proves": [
+            "Tau can validate a generic DAG spec",
+            "Tau can execute local subprocess workers in dependency order",
+            "Tau can gate downstream nodes on schema-valid node receipts",
+            "Tau can resume from existing valid node receipts",
+            "Tau can reject stale work-order receipts when work_order_sha256 no longer matches",
+            "Tau can write durable checkpoint and current-state artifacts",
+            "Tau can fail closed on timeout, non-zero exit, invalid receipt, or blocked verdict"
+          ]
+        },
+        "provider_live": false,
+        "replayed_event_count": 2,
+        "resume_requested": false,
+        "resume_source": {
+          "mode": "spec_path",
+          "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-child-parent.json"
+        },
+        "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/parent-run",
+        "run_id": "canonical-map-child-dag",
+        "run_store_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/parent-run/dag-run.sqlite3",
+        "scheduler": "dag_plan_ready_queue",
+        "scheduler_run_id": "canonical-map-child-dag",
+        "schema": "tau.generic_dag_run_receipt.v1",
+        "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-child-parent.json",
+        "status": "PASS",
+        "timestamp": "2026-07-27T16:50:30Z",
+        "verdict": "PASS"
+      },
+      "json_parse_error": null,
+      "stderr_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/map-child-dag.stderr",
+      "stderr_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/map-child-dag.stdout",
+      "stdout_sha256": "sha256:3f01c497e776a864007a14cd73364ababd561e489af3acb9830af24f3a76e523"
+    },
+    "project_route_join": {
+      "command": [
+        "uv",
+        "run",
+        "tau",
+        "dag-run",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/project-route-join.json",
+        "--receipt-dir",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run",
+        "--agents-root",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/agents",
+        "--scheduler",
+        "bounded-ready-queue"
+      ],
+      "exit_code": 0,
+      "exit_code_expected": true,
+      "expected_exit_codes": [
+        0
+      ],
+      "json": {
+        "activated_edges": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "activated_terminals": [
+          "human"
+        ],
+        "active_goal_hash": "sha256:canonical-scheduler-conformance",
+        "alerts": [],
+        "artifacts": [
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/compiled-command-specs/accept/tau-dispatch-command.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/compiled-command-specs/revise/tau-dispatch-command.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/compiled-command-specs/router/tau-dispatch-command.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/dag-agent-registry/accept/AGENTS.md",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/dag-agent-registry/join/AGENTS.md",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/dag-agent-registry/revise/AGENTS.md",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/dag-agent-registry/router/AGENTS.md",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/dag-agent-registry/start/AGENTS.md",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/dag-progress.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/dag-run.sqlite3",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/environment-manifest.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/join-decisions/join.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/dispatch-receipt.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-capture.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-endpoint-lease.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-event.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-submit-receipt.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/dispatch-receipt.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/runtime/runtime-capture.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/runtime/runtime-endpoint-lease.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/runtime/runtime-event.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/runtime/runtime-submit-receipt.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/dispatch-receipt.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/runtime/runtime-capture.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/runtime/runtime-endpoint-lease.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/runtime/runtime-event.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/runtime/runtime-submit-receipt.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/route-decisions/router/attempt-001.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/security-context-receipt.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/security-context.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/source-dag-reference.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/source-dag.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/terminal-contributions/join/edge-0003.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/terminal-contributions/join/edge-0004.json"
+        ],
+        "command_executed": true,
+        "command_spec_root": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/compiled-command-specs",
+        "contract_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/project-route-join.json",
+        "contract_sha256": "sha256:561687b8c3163fe01b0476248dc8d1e6c98721644fd66b5d74b6cdc14a312348",
+        "course_correction_artifacts": [],
+        "dag_id": "canonical-project-route-join",
+        "dag_plan_sha256": "sha256:bd5f5ea47a16a570d94e4eb4bb84bcbb39aa379f2180cf4c0f624a57d6930026",
+        "dispatches": [
+          {
+            "artifacts": [
+              "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/runtime/runtime-capture.json",
+              "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/runtime/runtime-endpoint-lease.json",
+              "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/runtime/runtime-event.json",
+              "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/runtime/runtime-submit-receipt.json"
+            ],
+            "command_results": [
+              {
+                "command": [
+                  "/tmp/tau-issue189-1785166987/.venv/bin/python",
+                  "-c",
+                  "import json; print(\"{\\\"schema\\\": \\\"tau.agent_handoff.v1\\\", \\\"github\\\": {\\\"repo\\\": \\\"grahama1970/tau\\\", \\\"target\\\": \\\"canonical-scheduler-conformance\\\"}, \\\"goal\\\": {\\\"goal_id\\\": \\\"canonical-scheduler-conformance\\\", \\\"goal_version\\\": 1, \\\"goal_hash\\\": \\\"sha256:canonical-scheduler-conformance\\\"}, \\\"previous_subagent\\\": \\\"router\\\", \\\"context\\\": {\\\"summary\\\": \\\"router node response.\\\", \\\"artifacts\\\": []}, \\\"result\\\": {\\\"status\\\": \\\"PASS\\\", \\\"summary\\\": \\\"router completed.\\\", \\\"evidence\\\": [{\\\"kind\\\": \\\"creator_artifact\\\", \\\"summary\\\": \\\"Canonical scheduler conformance fixture artifact.\\\"}], \\\"route\\\": \\\"BOTH\\\"}, \\\"rationale\\\": \\\"The DAG contract controls the next route.\\\", \\\"next_agent\\\": {\\\"name\\\": \\\"accept\\\", \\\"executor\\\": \\\"local\\\", \\\"reason\\\": \\\"Continue along the DAG route.\\\"}, \\\"required_evidence\\\": [\\\"creator_artifact\\\"], \\\"stop_condition\\\": \\\"Stop at human.\\\"}\")"
+                ],
+                "command_spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/compiled-command-specs/router/tau-dispatch-command.json",
+                "command_spec_sha256": "sha256:a40f051b67fd7788b0d01d83bfccc3a01939e6a641438361097cfdd17691d640",
+                "exit_code": 0,
+                "runtime_artifacts": [
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/runtime/runtime-endpoint-lease.json",
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/runtime/runtime-submit-receipt.json",
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/runtime/runtime-event.json",
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/runtime/runtime-capture.json"
+                ],
+                "runtime_backend": "local",
+                "runtime_capture": {
+                  "cancelled": false,
+                  "command": [
+                    "/tmp/tau-issue189-1785166987/.venv/bin/python",
+                    "-c",
+                    "import json; print(\"{\\\"schema\\\": \\\"tau.agent_handoff.v1\\\", \\\"github\\\": {\\\"repo\\\": \\\"grahama1970/tau\\\", \\\"target\\\": \\\"canonical-scheduler-conformance\\\"}, \\\"goal\\\": {\\\"goal_id\\\": \\\"canonical-scheduler-conformance\\\", \\\"goal_version\\\": 1, \\\"goal_hash\\\": \\\"sha256:canonical-scheduler-conformance\\\"}, \\\"previous_subagent\\\": \\\"router\\\", \\\"context\\\": {\\\"summary\\\": \\\"router node response.\\\", \\\"artifacts\\\": []}, \\\"result\\\": {\\\"status\\\": \\\"PASS\\\", \\\"summary\\\": \\\"router completed.\\\", \\\"evidence\\\": [{\\\"kind\\\": \\\"creator_artifact\\\", \\\"summary\\\": \\\"Canonical scheduler conformance fixture artifact.\\\"}], \\\"route\\\": \\\"BOTH\\\"}, \\\"rationale\\\": \\\"The DAG contract controls the next route.\\\", \\\"next_agent\\\": {\\\"name\\\": \\\"accept\\\", \\\"executor\\\": \\\"local\\\", \\\"reason\\\": \\\"Continue along the DAG route.\\\"}, \\\"required_evidence\\\": [\\\"creator_artifact\\\"], \\\"stop_condition\\\": \\\"Stop at human.\\\"}\")"
+                  ],
+                  "returncode": 0,
+                  "schema": "tau.local_runtime_capture.v1",
+                  "stderr": "",
+                  "stdout": "{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"canonical-scheduler-conformance\"}, \"goal\": {\"goal_id\": \"canonical-scheduler-conformance\", \"goal_version\": 1, \"goal_hash\": \"sha256:canonical-scheduler-conformance\"}, \"previous_subagent\": \"router\", \"context\": {\"summary\": \"router node response.\", \"artifacts\": []}, \"result\": {\"status\": \"PASS\", \"summary\": \"router completed.\", \"evidence\": [{\"kind\": \"creator_artifact\", \"summary\": \"Canonical scheduler conformance fixture artifact.\"}], \"route\": \"BOTH\"}, \"rationale\": \"The DAG contract controls the next route.\", \"next_agent\": {\"name\": \"accept\", \"executor\": \"local\", \"reason\": \"Continue along the DAG route.\"}, \"required_evidence\": [\"creator_artifact\"], \"stop_condition\": \"Stop at human.\"}\n",
+                  "timed_out": false
+                },
+                "runtime_endpoint_lease": {
+                  "attempt_id": "attempt-a7a319226548856362e289b3179a513c",
+                  "attempt_number": 1,
+                  "backend": "local",
+                  "backend_ids": {
+                    "pid": null
+                  },
+                  "backend_session_id": null,
+                  "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+                  "cleanup_policy": {
+                    "kind": "process_group_termination"
+                  },
+                  "created_at": "2026-07-27T16:50:23.607855+00:00",
+                  "dag_id": "canonical-project-route-join",
+                  "endpoint_id": "local:4a5ed1e542c89bd10824d070",
+                  "execution_token": "sha256:892ad8c1b6cb719146cb0ffca50ab6b0b02636ef07acf3495dc3ca7fe681c6fd",
+                  "expires_at": "2026-07-27T16:51:28.607855+00:00",
+                  "goal_hash": "sha256:3013b32f9c31e643513fe0ed4f028fc5b0985a4811acbf2cbf4c8be6cd992721",
+                  "heartbeat_policy": {
+                    "kind": "process_poll"
+                  },
+                  "node_id": "router",
+                  "owner": "tau",
+                  "plan_revision": "sha256:bd5f5ea47a16a570d94e4eb4bb84bcbb39aa379f2180cf4c0f624a57d6930026",
+                  "run_id": "canonical-project-route-join",
+                  "schema": "tau.runtime_endpoint_lease.v1",
+                  "scope_id": "canonical-project-route-join",
+                  "work_order_sha256": "sha256:e8603021d57b28adc8fd1b4eb760468450e7db022cc31279e4bcd646f378ddda"
+                },
+                "runtime_event": {
+                  "confidence": "PROCESS",
+                  "endpoint_lease_sha256": "sha256:66533865e3b858ab41b85268f762e551f895c65b6a7abcf21727ea824420ea1c",
+                  "event_id": "local-event:4a5ed1e542c89bd10824d070",
+                  "event_type": "RUNTIME_ENDPOINT_EXITED",
+                  "liveness": "DEAD",
+                  "observation": {
+                    "cancelled": false,
+                    "returncode": 0,
+                    "timed_out": false
+                  },
+                  "observed_at": "2026-07-27T16:50:23.628309+00:00",
+                  "run_id": "canonical-project-route-join",
+                  "schema": "tau.runtime_event.v1",
+                  "source": "local",
+                  "state": "EXITED"
+                },
+                "runtime_submit_receipt": {
+                  "backend_acknowledgement": {
+                    "process_started": true,
+                    "stdin_delivery": "confirmed"
+                  },
+                  "composer_state_after": "NOT_APPLICABLE",
+                  "composer_state_before": "NOT_APPLICABLE",
+                  "delivery_status": "CONFIRMED",
+                  "endpoint_lease_sha256": "sha256:66533865e3b858ab41b85268f762e551f895c65b6a7abcf21727ea824420ea1c",
+                  "errors": [],
+                  "provider_execution_status": "NOT_APPLICABLE",
+                  "schema": "tau.runtime_submit_receipt.v1",
+                  "submit_attempt_count": 1,
+                  "text_delivery_count": 1,
+                  "work_order_sha256": "sha256:e8603021d57b28adc8fd1b4eb760468450e7db022cc31279e4bcd646f378ddda"
+                },
+                "stderr": "",
+                "stdout": "{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"canonical-scheduler-conformance\"}, \"goal\": {\"goal_id\": \"canonical-scheduler-conformance\", \"goal_version\": 1, \"goal_hash\": \"sha256:canonical-scheduler-conformance\"}, \"previous_subagent\": \"router\", \"context\": {\"summary\": \"router node response.\", \"artifacts\": []}, \"result\": {\"status\": \"PASS\", \"summary\": \"router completed.\", \"evidence\": [{\"kind\": \"creator_artifact\", \"summary\": \"Canonical scheduler conformance fixture artifact.\"}], \"route\": \"BOTH\"}, \"rationale\": \"The DAG contract controls the next route.\", \"next_agent\": {\"name\": \"accept\", \"executor\": \"local\", \"reason\": \"Continue along the DAG route.\"}, \"required_evidence\": [\"creator_artifact\"], \"stop_condition\": \"Stop at human.\"}\n",
+                "timed_out": false,
+                "timeout_s": 5.0,
+                "timeout_s_source": "command_spec"
+              }
+            ],
+            "errors": [],
+            "live": true,
+            "mocked": false,
+            "ok": true,
+            "receipt_dir": null,
+            "response_projection": {
+              "comment": {
+                "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: router completed.\n- Next agent: `accept`\n- Executor: `local`\n- Stop condition: Stop at human.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [],\n    \"summary\": \"router node response.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"canonical-scheduler-conformance\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:canonical-scheduler-conformance\",\n    \"goal_id\": \"canonical-scheduler-conformance\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"accept\",\n    \"reason\": \"Continue along the DAG route.\"\n  },\n  \"previous_subagent\": \"router\",\n  \"rationale\": \"The DAG contract controls the next route.\",\n  \"required_evidence\": [\n    \"creator_artifact\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"creator_artifact\",\n        \"summary\": \"Canonical scheduler conformance fixture artifact.\"\n      }\n    ],\n    \"route\": \"BOTH\",\n    \"status\": \"PASS\",\n    \"summary\": \"router completed.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human.\"\n}\n```\n"
+              },
+              "dry_run": true,
+              "errors": [],
+              "labels": {
+                "add": [
+                  "agent-work",
+                  "next:accept",
+                  "executor:local"
+                ],
+                "remove": []
+              },
+              "next_agent": "accept",
+              "ok": true,
+              "schema": "tau.agent_handoff_projection_receipt.v1",
+              "target": {
+                "repo": "grahama1970/tau",
+                "target": "canonical-scheduler-conformance"
+              }
+            },
+            "runner": "command",
+            "schema": "tau.agent_handoff_dispatch_receipt.v1",
+            "selected_agent": "router",
+            "start_projection": {
+              "comment": {
+                "body": "## Tau Agent Handoff\n\n- Result: `DAG_NODE_READY`\n- Summary: Dependencies are satisfied for DAG node router.\n- Next agent: `router`\n- Executor: `local`\n- Stop condition: Stop at a terminal DAG node or any fail-closed invariant violation.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/project-route-join.json\"\n    ],\n    \"dag_agent_role\": \"router\",\n    \"dag_node_id\": \"router\",\n    \"summary\": \"Dispatch ready DAG node router.\",\n    \"tau_dag_node\": {\n      \"agent\": \"router\",\n      \"dag_id\": \"canonical-project-route-join\",\n      \"executor\": \"local\",\n      \"goal\": {\n        \"goal_hash\": \"sha256:canonical-scheduler-conformance\",\n        \"goal_id\": \"canonical-scheduler-conformance\",\n        \"goal_version\": 1\n      },\n      \"node_id\": \"router\",\n      \"required_evidence\": [\n        \"creator_artifact\"\n      ],\n      \"target\": {\n        \"repo\": \"grahama1970/tau\",\n        \"target\": \"canonical-scheduler-conformance\"\n      }\n    }\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"canonical-scheduler-conformance\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:canonical-scheduler-conformance\",\n    \"goal_id\": \"canonical-scheduler-conformance\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"router\",\n    \"reason\": \"Ready DAG node router in canonical-project-route-join.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The DAG contract is the authoritative workflow and immutable goal boundary.\",\n  \"required_evidence\": [\n    \"creator_artifact\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"dag_contract\",\n        \"path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/project-route-join.json\",\n        \"schema\": \"tau.dag_contract.v1\",\n        \"sha256\": \"sha256:561687b8c3163fe01b0476248dc8d1e6c98721644fd66b5d74b6cdc14a312348\"\n      }\n    ],\n    \"status\": \"DAG_NODE_READY\",\n    \"summary\": \"Dependencies are satisfied for DAG node router.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at a terminal DAG node or any fail-closed invariant violation.\"\n}\n```\n"
+              },
+              "dry_run": true,
+              "errors": [],
+              "labels": {
+                "add": [
+                  "agent-work",
+                  "next:router",
+                  "executor:local"
+                ],
+                "remove": []
+              },
+              "next_agent": "router",
+              "ok": true,
+              "schema": "tau.agent_handoff_projection_receipt.v1",
+              "target": {
+                "repo": "grahama1970/tau",
+                "target": "canonical-scheduler-conformance"
+              }
+            },
+            "status": "COMPLETED",
+            "stop_reason": "response_consumed"
+          },
+          {
+            "artifacts": [
+              "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-capture.json",
+              "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-endpoint-lease.json",
+              "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-event.json",
+              "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-submit-receipt.json"
+            ],
+            "command_results": [
+              {
+                "command": [
+                  "/tmp/tau-issue189-1785166987/.venv/bin/python",
+                  "-c",
+                  "import json; print(\"{\\\"schema\\\": \\\"tau.agent_handoff.v1\\\", \\\"github\\\": {\\\"repo\\\": \\\"grahama1970/tau\\\", \\\"target\\\": \\\"canonical-scheduler-conformance\\\"}, \\\"goal\\\": {\\\"goal_id\\\": \\\"canonical-scheduler-conformance\\\", \\\"goal_version\\\": 1, \\\"goal_hash\\\": \\\"sha256:canonical-scheduler-conformance\\\"}, \\\"previous_subagent\\\": \\\"accept\\\", \\\"context\\\": {\\\"summary\\\": \\\"accept node response.\\\", \\\"artifacts\\\": []}, \\\"result\\\": {\\\"status\\\": \\\"PASS\\\", \\\"summary\\\": \\\"accept completed.\\\", \\\"evidence\\\": [{\\\"kind\\\": \\\"creator_artifact\\\", \\\"summary\\\": \\\"Canonical scheduler conformance fixture artifact.\\\"}]}, \\\"rationale\\\": \\\"The DAG contract controls the next route.\\\", \\\"next_agent\\\": {\\\"name\\\": \\\"join\\\", \\\"executor\\\": \\\"local\\\", \\\"reason\\\": \\\"Continue along the DAG route.\\\"}, \\\"required_evidence\\\": [\\\"creator_artifact\\\"], \\\"stop_condition\\\": \\\"Stop at human.\\\"}\")"
+                ],
+                "command_spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/compiled-command-specs/accept/tau-dispatch-command.json",
+                "command_spec_sha256": "sha256:741b790f373f70d109bb472a5d0ef600809d957f9038cdad41c98a81c79928e8",
+                "exit_code": 0,
+                "runtime_artifacts": [
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-endpoint-lease.json",
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-submit-receipt.json",
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-event.json",
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-capture.json"
+                ],
+                "runtime_backend": "local",
+                "runtime_capture": {
+                  "cancelled": false,
+                  "command": [
+                    "/tmp/tau-issue189-1785166987/.venv/bin/python",
+                    "-c",
+                    "import json; print(\"{\\\"schema\\\": \\\"tau.agent_handoff.v1\\\", \\\"github\\\": {\\\"repo\\\": \\\"grahama1970/tau\\\", \\\"target\\\": \\\"canonical-scheduler-conformance\\\"}, \\\"goal\\\": {\\\"goal_id\\\": \\\"canonical-scheduler-conformance\\\", \\\"goal_version\\\": 1, \\\"goal_hash\\\": \\\"sha256:canonical-scheduler-conformance\\\"}, \\\"previous_subagent\\\": \\\"accept\\\", \\\"context\\\": {\\\"summary\\\": \\\"accept node response.\\\", \\\"artifacts\\\": []}, \\\"result\\\": {\\\"status\\\": \\\"PASS\\\", \\\"summary\\\": \\\"accept completed.\\\", \\\"evidence\\\": [{\\\"kind\\\": \\\"creator_artifact\\\", \\\"summary\\\": \\\"Canonical scheduler conformance fixture artifact.\\\"}]}, \\\"rationale\\\": \\\"The DAG contract controls the next route.\\\", \\\"next_agent\\\": {\\\"name\\\": \\\"join\\\", \\\"executor\\\": \\\"local\\\", \\\"reason\\\": \\\"Continue along the DAG route.\\\"}, \\\"required_evidence\\\": [\\\"creator_artifact\\\"], \\\"stop_condition\\\": \\\"Stop at human.\\\"}\")"
+                  ],
+                  "returncode": 0,
+                  "schema": "tau.local_runtime_capture.v1",
+                  "stderr": "",
+                  "stdout": "{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"canonical-scheduler-conformance\"}, \"goal\": {\"goal_id\": \"canonical-scheduler-conformance\", \"goal_version\": 1, \"goal_hash\": \"sha256:canonical-scheduler-conformance\"}, \"previous_subagent\": \"accept\", \"context\": {\"summary\": \"accept node response.\", \"artifacts\": []}, \"result\": {\"status\": \"PASS\", \"summary\": \"accept completed.\", \"evidence\": [{\"kind\": \"creator_artifact\", \"summary\": \"Canonical scheduler conformance fixture artifact.\"}]}, \"rationale\": \"The DAG contract controls the next route.\", \"next_agent\": {\"name\": \"join\", \"executor\": \"local\", \"reason\": \"Continue along the DAG route.\"}, \"required_evidence\": [\"creator_artifact\"], \"stop_condition\": \"Stop at human.\"}\n",
+                  "timed_out": false
+                },
+                "runtime_endpoint_lease": {
+                  "attempt_id": "attempt-f2fdbe4a246d45f3afaaf839bf9ed714",
+                  "attempt_number": 1,
+                  "backend": "local",
+                  "backend_ids": {
+                    "pid": null
+                  },
+                  "backend_session_id": null,
+                  "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+                  "cleanup_policy": {
+                    "kind": "process_group_termination"
+                  },
+                  "created_at": "2026-07-27T16:50:23.654135+00:00",
+                  "dag_id": "canonical-project-route-join",
+                  "endpoint_id": "local:904d944c39dfde4c4c160983",
+                  "execution_token": "sha256:a5e1d7d47aff89198e8bbe027d674d7dad02a4c4a498843a4c110fe791876fb9",
+                  "expires_at": "2026-07-27T16:51:28.654135+00:00",
+                  "goal_hash": "sha256:3013b32f9c31e643513fe0ed4f028fc5b0985a4811acbf2cbf4c8be6cd992721",
+                  "heartbeat_policy": {
+                    "kind": "process_poll"
+                  },
+                  "node_id": "accept",
+                  "owner": "tau",
+                  "plan_revision": "sha256:bd5f5ea47a16a570d94e4eb4bb84bcbb39aa379f2180cf4c0f624a57d6930026",
+                  "run_id": "canonical-project-route-join",
+                  "schema": "tau.runtime_endpoint_lease.v1",
+                  "scope_id": "canonical-project-route-join",
+                  "work_order_sha256": "sha256:00c894ff77d745635f9713400b183ec916d96154ed3edfca596802f8754a3a13"
+                },
+                "runtime_event": {
+                  "confidence": "PROCESS",
+                  "endpoint_lease_sha256": "sha256:9a2ee8687f82aa3b60e0937459f43002e158261e899bc4d7373e0ae926169dfc",
+                  "event_id": "local-event:904d944c39dfde4c4c160983",
+                  "event_type": "RUNTIME_ENDPOINT_EXITED",
+                  "liveness": "DEAD",
+                  "observation": {
+                    "cancelled": false,
+                    "returncode": 0,
+                    "timed_out": false
+                  },
+                  "observed_at": "2026-07-27T16:50:23.674007+00:00",
+                  "run_id": "canonical-project-route-join",
+                  "schema": "tau.runtime_event.v1",
+                  "source": "local",
+                  "state": "EXITED"
+                },
+                "runtime_submit_receipt": {
+                  "backend_acknowledgement": {
+                    "process_started": true,
+                    "stdin_delivery": "confirmed"
+                  },
+                  "composer_state_after": "NOT_APPLICABLE",
+                  "composer_state_before": "NOT_APPLICABLE",
+                  "delivery_status": "CONFIRMED",
+                  "endpoint_lease_sha256": "sha256:9a2ee8687f82aa3b60e0937459f43002e158261e899bc4d7373e0ae926169dfc",
+                  "errors": [],
+                  "provider_execution_status": "NOT_APPLICABLE",
+                  "schema": "tau.runtime_submit_receipt.v1",
+                  "submit_attempt_count": 1,
+                  "text_delivery_count": 1,
+                  "work_order_sha256": "sha256:00c894ff77d745635f9713400b183ec916d96154ed3edfca596802f8754a3a13"
+                },
+                "stderr": "",
+                "stdout": "{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"canonical-scheduler-conformance\"}, \"goal\": {\"goal_id\": \"canonical-scheduler-conformance\", \"goal_version\": 1, \"goal_hash\": \"sha256:canonical-scheduler-conformance\"}, \"previous_subagent\": \"accept\", \"context\": {\"summary\": \"accept node response.\", \"artifacts\": []}, \"result\": {\"status\": \"PASS\", \"summary\": \"accept completed.\", \"evidence\": [{\"kind\": \"creator_artifact\", \"summary\": \"Canonical scheduler conformance fixture artifact.\"}]}, \"rationale\": \"The DAG contract controls the next route.\", \"next_agent\": {\"name\": \"join\", \"executor\": \"local\", \"reason\": \"Continue along the DAG route.\"}, \"required_evidence\": [\"creator_artifact\"], \"stop_condition\": \"Stop at human.\"}\n",
+                "timed_out": false,
+                "timeout_s": 5.0,
+                "timeout_s_source": "command_spec"
+              }
+            ],
+            "errors": [],
+            "live": true,
+            "mocked": false,
+            "ok": true,
+            "receipt_dir": null,
+            "response_projection": {
+              "comment": {
+                "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: accept completed.\n- Next agent: `join`\n- Executor: `local`\n- Stop condition: Stop at human.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [],\n    \"summary\": \"accept node response.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"canonical-scheduler-conformance\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:canonical-scheduler-conformance\",\n    \"goal_id\": \"canonical-scheduler-conformance\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"join\",\n    \"reason\": \"Continue along the DAG route.\"\n  },\n  \"previous_subagent\": \"accept\",\n  \"rationale\": \"The DAG contract controls the next route.\",\n  \"required_evidence\": [\n    \"creator_artifact\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"creator_artifact\",\n        \"summary\": \"Canonical scheduler conformance fixture artifact.\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"accept completed.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human.\"\n}\n```\n"
+              },
+              "dry_run": true,
+              "errors": [],
+              "labels": {
+                "add": [
+                  "agent-work",
+                  "next:join",
+                  "executor:local"
+                ],
+                "remove": []
+              },
+              "next_agent": "join",
+              "ok": true,
+              "schema": "tau.agent_handoff_projection_receipt.v1",
+              "target": {
+                "repo": "grahama1970/tau",
+                "target": "canonical-scheduler-conformance"
+              }
+            },
+            "runner": "command",
+            "schema": "tau.agent_handoff_dispatch_receipt.v1",
+            "selected_agent": "accept",
+            "start_projection": {
+              "comment": {
+                "body": "## Tau Agent Handoff\n\n- Result: `DAG_NODE_READY`\n- Summary: Dependencies are satisfied for DAG node accept.\n- Next agent: `accept`\n- Executor: `local`\n- Stop condition: Stop at a terminal DAG node or any fail-closed invariant violation.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/project-route-join.json\"\n    ],\n    \"dag_agent_role\": \"accept\",\n    \"dag_node_id\": \"accept\",\n    \"summary\": \"Dispatch ready DAG node accept.\",\n    \"tau_dag_node\": {\n      \"agent\": \"accept\",\n      \"dag_id\": \"canonical-project-route-join\",\n      \"executor\": \"local\",\n      \"goal\": {\n        \"goal_hash\": \"sha256:canonical-scheduler-conformance\",\n        \"goal_id\": \"canonical-scheduler-conformance\",\n        \"goal_version\": 1\n      },\n      \"node_id\": \"accept\",\n      \"required_evidence\": [\n        \"creator_artifact\"\n      ],\n      \"target\": {\n        \"repo\": \"grahama1970/tau\",\n        \"target\": \"canonical-scheduler-conformance\"\n      }\n    }\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"canonical-scheduler-conformance\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:canonical-scheduler-conformance\",\n    \"goal_id\": \"canonical-scheduler-conformance\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"accept\",\n    \"reason\": \"Ready DAG node accept in canonical-project-route-join.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The DAG contract is the authoritative workflow and immutable goal boundary.\",\n  \"required_evidence\": [\n    \"creator_artifact\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"dag_contract\",\n        \"path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/project-route-join.json\",\n        \"schema\": \"tau.dag_contract.v1\",\n        \"sha256\": \"sha256:561687b8c3163fe01b0476248dc8d1e6c98721644fd66b5d74b6cdc14a312348\"\n      },\n      {\n        \"kind\": \"creator_artifact\",\n        \"summary\": \"Canonical scheduler conformance fixture artifact.\"\n      }\n    ],\n    \"status\": \"DAG_NODE_READY\",\n    \"summary\": \"Dependencies are satisfied for DAG node accept.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at a terminal DAG node or any fail-closed invariant violation.\"\n}\n```\n"
+              },
+              "dry_run": true,
+              "errors": [],
+              "labels": {
+                "add": [
+                  "agent-work",
+                  "next:accept",
+                  "executor:local"
+                ],
+                "remove": []
+              },
+              "next_agent": "accept",
+              "ok": true,
+              "schema": "tau.agent_handoff_projection_receipt.v1",
+              "target": {
+                "repo": "grahama1970/tau",
+                "target": "canonical-scheduler-conformance"
+              }
+            },
+            "status": "COMPLETED",
+            "stop_reason": "response_consumed"
+          },
+          {
+            "artifacts": [
+              "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/runtime/runtime-capture.json",
+              "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/runtime/runtime-endpoint-lease.json",
+              "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/runtime/runtime-event.json",
+              "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/runtime/runtime-submit-receipt.json"
+            ],
+            "command_results": [
+              {
+                "command": [
+                  "/tmp/tau-issue189-1785166987/.venv/bin/python",
+                  "-c",
+                  "import json; print(\"{\\\"schema\\\": \\\"tau.agent_handoff.v1\\\", \\\"github\\\": {\\\"repo\\\": \\\"grahama1970/tau\\\", \\\"target\\\": \\\"canonical-scheduler-conformance\\\"}, \\\"goal\\\": {\\\"goal_id\\\": \\\"canonical-scheduler-conformance\\\", \\\"goal_version\\\": 1, \\\"goal_hash\\\": \\\"sha256:canonical-scheduler-conformance\\\"}, \\\"previous_subagent\\\": \\\"revise\\\", \\\"context\\\": {\\\"summary\\\": \\\"revise node response.\\\", \\\"artifacts\\\": []}, \\\"result\\\": {\\\"status\\\": \\\"PASS\\\", \\\"summary\\\": \\\"revise completed.\\\", \\\"evidence\\\": [{\\\"kind\\\": \\\"creator_artifact\\\", \\\"summary\\\": \\\"Canonical scheduler conformance fixture artifact.\\\"}]}, \\\"rationale\\\": \\\"The DAG contract controls the next route.\\\", \\\"next_agent\\\": {\\\"name\\\": \\\"join\\\", \\\"executor\\\": \\\"local\\\", \\\"reason\\\": \\\"Continue along the DAG route.\\\"}, \\\"required_evidence\\\": [\\\"creator_artifact\\\"], \\\"stop_condition\\\": \\\"Stop at human.\\\"}\")"
+                ],
+                "command_spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/compiled-command-specs/revise/tau-dispatch-command.json",
+                "command_spec_sha256": "sha256:6446748c5623cd0e8df3c2f0ce57343642844c6ef2bad9e9919a0357f3b17381",
+                "exit_code": 0,
+                "runtime_artifacts": [
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/runtime/runtime-endpoint-lease.json",
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/runtime/runtime-submit-receipt.json",
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/runtime/runtime-event.json",
+                  "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/runtime/runtime-capture.json"
+                ],
+                "runtime_backend": "local",
+                "runtime_capture": {
+                  "cancelled": false,
+                  "command": [
+                    "/tmp/tau-issue189-1785166987/.venv/bin/python",
+                    "-c",
+                    "import json; print(\"{\\\"schema\\\": \\\"tau.agent_handoff.v1\\\", \\\"github\\\": {\\\"repo\\\": \\\"grahama1970/tau\\\", \\\"target\\\": \\\"canonical-scheduler-conformance\\\"}, \\\"goal\\\": {\\\"goal_id\\\": \\\"canonical-scheduler-conformance\\\", \\\"goal_version\\\": 1, \\\"goal_hash\\\": \\\"sha256:canonical-scheduler-conformance\\\"}, \\\"previous_subagent\\\": \\\"revise\\\", \\\"context\\\": {\\\"summary\\\": \\\"revise node response.\\\", \\\"artifacts\\\": []}, \\\"result\\\": {\\\"status\\\": \\\"PASS\\\", \\\"summary\\\": \\\"revise completed.\\\", \\\"evidence\\\": [{\\\"kind\\\": \\\"creator_artifact\\\", \\\"summary\\\": \\\"Canonical scheduler conformance fixture artifact.\\\"}]}, \\\"rationale\\\": \\\"The DAG contract controls the next route.\\\", \\\"next_agent\\\": {\\\"name\\\": \\\"join\\\", \\\"executor\\\": \\\"local\\\", \\\"reason\\\": \\\"Continue along the DAG route.\\\"}, \\\"required_evidence\\\": [\\\"creator_artifact\\\"], \\\"stop_condition\\\": \\\"Stop at human.\\\"}\")"
+                  ],
+                  "returncode": 0,
+                  "schema": "tau.local_runtime_capture.v1",
+                  "stderr": "",
+                  "stdout": "{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"canonical-scheduler-conformance\"}, \"goal\": {\"goal_id\": \"canonical-scheduler-conformance\", \"goal_version\": 1, \"goal_hash\": \"sha256:canonical-scheduler-conformance\"}, \"previous_subagent\": \"revise\", \"context\": {\"summary\": \"revise node response.\", \"artifacts\": []}, \"result\": {\"status\": \"PASS\", \"summary\": \"revise completed.\", \"evidence\": [{\"kind\": \"creator_artifact\", \"summary\": \"Canonical scheduler conformance fixture artifact.\"}]}, \"rationale\": \"The DAG contract controls the next route.\", \"next_agent\": {\"name\": \"join\", \"executor\": \"local\", \"reason\": \"Continue along the DAG route.\"}, \"required_evidence\": [\"creator_artifact\"], \"stop_condition\": \"Stop at human.\"}\n",
+                  "timed_out": false
+                },
+                "runtime_endpoint_lease": {
+                  "attempt_id": "attempt-ad8d0286d84a97bd85486f8e7c5f7637",
+                  "attempt_number": 1,
+                  "backend": "local",
+                  "backend_ids": {
+                    "pid": null
+                  },
+                  "backend_session_id": null,
+                  "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+                  "cleanup_policy": {
+                    "kind": "process_group_termination"
+                  },
+                  "created_at": "2026-07-27T16:50:23.658767+00:00",
+                  "dag_id": "canonical-project-route-join",
+                  "endpoint_id": "local:fe0607e5f00521ca45bec7b2",
+                  "execution_token": "sha256:691ea528aadc4e8ed62557adf40be440bbe21080445ae670d090b89b5f6f00c3",
+                  "expires_at": "2026-07-27T16:51:28.658767+00:00",
+                  "goal_hash": "sha256:3013b32f9c31e643513fe0ed4f028fc5b0985a4811acbf2cbf4c8be6cd992721",
+                  "heartbeat_policy": {
+                    "kind": "process_poll"
+                  },
+                  "node_id": "revise",
+                  "owner": "tau",
+                  "plan_revision": "sha256:bd5f5ea47a16a570d94e4eb4bb84bcbb39aa379f2180cf4c0f624a57d6930026",
+                  "run_id": "canonical-project-route-join",
+                  "schema": "tau.runtime_endpoint_lease.v1",
+                  "scope_id": "canonical-project-route-join",
+                  "work_order_sha256": "sha256:4aecad2dd8a2785a6178522610bb502b624655cb15e99de6c4b5bacbf03e4cf9"
+                },
+                "runtime_event": {
+                  "confidence": "PROCESS",
+                  "endpoint_lease_sha256": "sha256:aced9998dede30f87ee14473634dc805e28690e0721c1066bd726abec8fe925c",
+                  "event_id": "local-event:fe0607e5f00521ca45bec7b2",
+                  "event_type": "RUNTIME_ENDPOINT_EXITED",
+                  "liveness": "DEAD",
+                  "observation": {
+                    "cancelled": false,
+                    "returncode": 0,
+                    "timed_out": false
+                  },
+                  "observed_at": "2026-07-27T16:50:23.682355+00:00",
+                  "run_id": "canonical-project-route-join",
+                  "schema": "tau.runtime_event.v1",
+                  "source": "local",
+                  "state": "EXITED"
+                },
+                "runtime_submit_receipt": {
+                  "backend_acknowledgement": {
+                    "process_started": true,
+                    "stdin_delivery": "confirmed"
+                  },
+                  "composer_state_after": "NOT_APPLICABLE",
+                  "composer_state_before": "NOT_APPLICABLE",
+                  "delivery_status": "CONFIRMED",
+                  "endpoint_lease_sha256": "sha256:aced9998dede30f87ee14473634dc805e28690e0721c1066bd726abec8fe925c",
+                  "errors": [],
+                  "provider_execution_status": "NOT_APPLICABLE",
+                  "schema": "tau.runtime_submit_receipt.v1",
+                  "submit_attempt_count": 1,
+                  "text_delivery_count": 1,
+                  "work_order_sha256": "sha256:4aecad2dd8a2785a6178522610bb502b624655cb15e99de6c4b5bacbf03e4cf9"
+                },
+                "stderr": "",
+                "stdout": "{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"canonical-scheduler-conformance\"}, \"goal\": {\"goal_id\": \"canonical-scheduler-conformance\", \"goal_version\": 1, \"goal_hash\": \"sha256:canonical-scheduler-conformance\"}, \"previous_subagent\": \"revise\", \"context\": {\"summary\": \"revise node response.\", \"artifacts\": []}, \"result\": {\"status\": \"PASS\", \"summary\": \"revise completed.\", \"evidence\": [{\"kind\": \"creator_artifact\", \"summary\": \"Canonical scheduler conformance fixture artifact.\"}]}, \"rationale\": \"The DAG contract controls the next route.\", \"next_agent\": {\"name\": \"join\", \"executor\": \"local\", \"reason\": \"Continue along the DAG route.\"}, \"required_evidence\": [\"creator_artifact\"], \"stop_condition\": \"Stop at human.\"}\n",
+                "timed_out": false,
+                "timeout_s": 5.0,
+                "timeout_s_source": "command_spec"
+              }
+            ],
+            "errors": [],
+            "live": true,
+            "mocked": false,
+            "ok": true,
+            "receipt_dir": null,
+            "response_projection": {
+              "comment": {
+                "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: revise completed.\n- Next agent: `join`\n- Executor: `local`\n- Stop condition: Stop at human.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [],\n    \"summary\": \"revise node response.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"canonical-scheduler-conformance\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:canonical-scheduler-conformance\",\n    \"goal_id\": \"canonical-scheduler-conformance\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"join\",\n    \"reason\": \"Continue along the DAG route.\"\n  },\n  \"previous_subagent\": \"revise\",\n  \"rationale\": \"The DAG contract controls the next route.\",\n  \"required_evidence\": [\n    \"creator_artifact\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"creator_artifact\",\n        \"summary\": \"Canonical scheduler conformance fixture artifact.\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"revise completed.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human.\"\n}\n```\n"
+              },
+              "dry_run": true,
+              "errors": [],
+              "labels": {
+                "add": [
+                  "agent-work",
+                  "next:join",
+                  "executor:local"
+                ],
+                "remove": []
+              },
+              "next_agent": "join",
+              "ok": true,
+              "schema": "tau.agent_handoff_projection_receipt.v1",
+              "target": {
+                "repo": "grahama1970/tau",
+                "target": "canonical-scheduler-conformance"
+              }
+            },
+            "runner": "command",
+            "schema": "tau.agent_handoff_dispatch_receipt.v1",
+            "selected_agent": "revise",
+            "start_projection": {
+              "comment": {
+                "body": "## Tau Agent Handoff\n\n- Result: `DAG_NODE_READY`\n- Summary: Dependencies are satisfied for DAG node revise.\n- Next agent: `revise`\n- Executor: `local`\n- Stop condition: Stop at a terminal DAG node or any fail-closed invariant violation.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/project-route-join.json\"\n    ],\n    \"dag_agent_role\": \"revise\",\n    \"dag_node_id\": \"revise\",\n    \"summary\": \"Dispatch ready DAG node revise.\",\n    \"tau_dag_node\": {\n      \"agent\": \"revise\",\n      \"dag_id\": \"canonical-project-route-join\",\n      \"executor\": \"local\",\n      \"goal\": {\n        \"goal_hash\": \"sha256:canonical-scheduler-conformance\",\n        \"goal_id\": \"canonical-scheduler-conformance\",\n        \"goal_version\": 1\n      },\n      \"node_id\": \"revise\",\n      \"required_evidence\": [\n        \"creator_artifact\"\n      ],\n      \"target\": {\n        \"repo\": \"grahama1970/tau\",\n        \"target\": \"canonical-scheduler-conformance\"\n      }\n    }\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"canonical-scheduler-conformance\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:canonical-scheduler-conformance\",\n    \"goal_id\": \"canonical-scheduler-conformance\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"revise\",\n    \"reason\": \"Ready DAG node revise in canonical-project-route-join.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The DAG contract is the authoritative workflow and immutable goal boundary.\",\n  \"required_evidence\": [\n    \"creator_artifact\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"dag_contract\",\n        \"path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/project-route-join.json\",\n        \"schema\": \"tau.dag_contract.v1\",\n        \"sha256\": \"sha256:561687b8c3163fe01b0476248dc8d1e6c98721644fd66b5d74b6cdc14a312348\"\n      },\n      {\n        \"kind\": \"creator_artifact\",\n        \"summary\": \"Canonical scheduler conformance fixture artifact.\"\n      }\n    ],\n    \"status\": \"DAG_NODE_READY\",\n    \"summary\": \"Dependencies are satisfied for DAG node revise.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at a terminal DAG node or any fail-closed invariant violation.\"\n}\n```\n"
+              },
+              "dry_run": true,
+              "errors": [],
+              "labels": {
+                "add": [
+                  "agent-work",
+                  "next:revise",
+                  "executor:local"
+                ],
+                "remove": []
+              },
+              "next_agent": "revise",
+              "ok": true,
+              "schema": "tau.agent_handoff_projection_receipt.v1",
+              "target": {
+                "repo": "grahama1970/tau",
+                "target": "canonical-scheduler-conformance"
+              }
+            },
+            "status": "COMPLETED",
+            "stop_reason": "response_consumed"
+          }
+        ],
+        "durable": true,
+        "edge_count": 6,
+        "edge_terminal_states": {
+          "0": "success",
+          "1": "success",
+          "2": "success",
+          "3": "success",
+          "4": "success",
+          "5": "success"
+        },
+        "entry_node": "start",
+        "errors": [],
+        "execution": "project_agent_dag_plan_ready_queue",
+        "execution_seconds": 0.144246,
+        "join_decision_receipts": [
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/join-decisions/join.json"
+        ],
+        "knowledge_freshness_receipts": [],
+        "knowledge_provenance_by_node": {},
+        "lease_epoch": 1,
+        "live": true,
+        "max_concurrency": 2,
+        "max_observed_concurrency": 2,
+        "max_steps": 6,
+        "mocked": false,
+        "node_artifacts": {
+          "accept": [
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/dispatch-receipt.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-capture.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-endpoint-lease.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-event.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-submit-receipt.json"
+          ],
+          "join": [],
+          "revise": [
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/dispatch-receipt.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/runtime/runtime-capture.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/runtime/runtime-endpoint-lease.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/runtime/runtime-event.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/revise/attempt-001/runtime/runtime-submit-receipt.json"
+          ],
+          "router": [
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/dispatch-receipt.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/runtime/runtime-capture.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/runtime/runtime-endpoint-lease.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/runtime/runtime-event.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/ready-queue/router/attempt-001/runtime/runtime-submit-receipt.json"
+          ],
+          "start": []
+        },
+        "node_attempts": {
+          "accept": 1,
+          "revise": 1,
+          "router": 1
+        },
+        "node_count": 5,
+        "node_semantic_verdicts": [],
+        "node_terminal_states": {
+          "accept": "success",
+          "join": "success",
+          "revise": "success",
+          "router": "success",
+          "start": "success"
+        },
+        "observed_edges": [
+          {
+            "from_agent": "goal-guardian",
+            "from_node": "start",
+            "to_agent": "router",
+            "to_node": "router"
+          },
+          {
+            "from_agent": "router",
+            "from_node": "router",
+            "to_agent": "accept",
+            "to_node": "accept"
+          },
+          {
+            "from_agent": "router",
+            "from_node": "router",
+            "to_agent": "revise",
+            "to_node": "revise"
+          },
+          {
+            "from_agent": "accept",
+            "from_node": "accept",
+            "to_agent": "join",
+            "to_node": "join"
+          },
+          {
+            "from_agent": "revise",
+            "from_node": "revise",
+            "to_agent": "join",
+            "to_node": "join"
+          },
+          {
+            "from_agent": "join",
+            "from_node": "join",
+            "to_agent": "human",
+            "to_node": "human"
+          }
+        ],
+        "ok": true,
+        "progress_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/dag-progress.json",
+        "proof_scope": {
+          "does_not_prove": [
+            "Provider/model semantic quality.",
+            "GitHub mutation or ticket closure.",
+            "Mutating branch safety.",
+            "Unbounded autonomous operation.",
+            "Semantic truth of successful branch results.",
+            "Process termination for cancelled join contributions."
+          ],
+          "live": true,
+          "mocked": false,
+          "proves": [
+            "DAG contract parsed and validated.",
+            "Bounded ready-queue scheduler preflight checked unsupported edge conditions, acyclicity, local-only execution, provider branches, and mutating branches.",
+            "Ready nodes were dispatched by the bounded ready-queue scheduler.",
+            "Independent ready nodes can run concurrently when dependencies are satisfied.",
+            "Each dispatched node used the real local command subprocess runner.",
+            "Node evidence and reviewer verdicts were checked against the immutable goal hash.",
+            "Every declared join input produced an immutable terminal contribution.",
+            "Declared join policies were evaluated before successor activation.",
+            "Persisted terminal join decisions are hash-bound and replayable."
+          ]
+        },
+        "provider_live": false,
+        "replayed_event_count": 2,
+        "resolved_sources": [
+          "accept",
+          "join",
+          "revise",
+          "router",
+          "start"
+        ],
+        "reviewer_verdicts": [],
+        "route_decision_receipts": [
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/route-decisions/router/attempt-001.json"
+        ],
+        "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run",
+        "run_store_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/dag-run.sqlite3",
+        "scheduler": "bounded-ready-queue",
+        "scheduler_events": [
+          {
+            "event": "scheduler_started",
+            "plan_id": "project:canonical-project-route-join",
+            "ts": "2026-07-27T16:50:23Z"
+          },
+          {
+            "agent": "goal-guardian",
+            "event": "virtual_node_completed",
+            "node_id": "start",
+            "ts": "2026-07-27T16:50:23Z"
+          },
+          {
+            "attempt": 1,
+            "event": "node_started",
+            "node_id": "start",
+            "ts": "2026-07-27T16:50:23Z"
+          },
+          {
+            "attempt": 1,
+            "event": "node_completed",
+            "node_id": "start",
+            "ts": "2026-07-27T16:50:23Z"
+          },
+          {
+            "attempt": 1,
+            "event": "node_started",
+            "node_id": "router",
+            "ts": "2026-07-27T16:50:23Z"
+          },
+          {
+            "attempt": 1,
+            "event": "route_decided",
+            "node_id": "router",
+            "route_decision_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/route-decisions/router/attempt-001.json",
+            "selected_targets": [
+              "accept",
+              "revise"
+            ],
+            "status": "PASS",
+            "ts": "2026-07-27T16:50:23Z"
+          },
+          {
+            "attempt": 1,
+            "event": "node_completed",
+            "node_id": "router",
+            "ts": "2026-07-27T16:50:23Z"
+          },
+          {
+            "event": "join_deadline_armed",
+            "join_node_id": "join",
+            "origin": "source_start",
+            "source_node_id": "accept",
+            "timeout_seconds": 30.0,
+            "ts": "2026-07-27T16:50:23Z"
+          },
+          {
+            "attempt": 1,
+            "event": "node_started",
+            "node_id": "accept",
+            "ts": "2026-07-27T16:50:23Z"
+          },
+          {
+            "attempt": 1,
+            "event": "node_started",
+            "node_id": "revise",
+            "ts": "2026-07-27T16:50:23Z"
+          },
+          {
+            "edge_index": 3,
+            "event": "terminal_contribution_recorded",
+            "join_node_id": "join",
+            "receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/terminal-contributions/join/edge-0003.json",
+            "source_node_id": "accept",
+            "state": "success",
+            "ts": "2026-07-27T16:50:23Z"
+          },
+          {
+            "attempt": 1,
+            "event": "node_completed",
+            "node_id": "accept",
+            "ts": "2026-07-27T16:50:23Z"
+          },
+          {
+            "edge_index": 4,
+            "event": "terminal_contribution_recorded",
+            "join_node_id": "join",
+            "receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/terminal-contributions/join/edge-0004.json",
+            "source_node_id": "revise",
+            "state": "success",
+            "ts": "2026-07-27T16:50:23Z"
+          },
+          {
+            "attempt": 1,
+            "event": "node_completed",
+            "node_id": "revise",
+            "ts": "2026-07-27T16:50:23Z"
+          },
+          {
+            "decision": "release",
+            "event": "join_decided",
+            "join_decision_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/join-decisions/join.json",
+            "join_node_id": "join",
+            "reason_code": "join_minimum_success_count_met",
+            "ts": "2026-07-27T16:50:23Z"
+          },
+          {
+            "event": "scheduler_finished",
+            "plan_id": "project:canonical-project-route-join",
+            "status": "PASS",
+            "ts": "2026-07-27T16:50:23Z",
+            "verdict": "PASS"
+          }
+        ],
+        "schema": "tau.dag_receipt.v1",
+        "selected_agents": [
+          "router",
+          "accept",
+          "revise"
+        ],
+        "status": "PASS",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "canonical-scheduler-conformance"
+        },
+        "terminal_contribution_receipts": [
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/terminal-contributions/join/edge-0003.json",
+          "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/terminal-contributions/join/edge-0004.json"
+        ],
+        "terminal_nodes": [
+          "human"
+        ],
+        "timestamp": "2026-07-27T16:50:23Z",
+        "verdict": "PASS"
+      },
+      "json_parse_error": null,
+      "stderr_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/project-route-join.stderr",
+      "stderr_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/project-route-join.stdout",
+      "stdout_sha256": "sha256:24f137e6d9c45d5bbb6fff851b9d84646fa7b5905f1702c00d26ccd9bdfa342d"
+    },
+    "skill_node": {
+      "command": [
+        "uv",
+        "run",
+        "tau",
+        "dag-run",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/skill-node/skill-node.json",
+        "--no-resume"
+      ],
+      "exit_code": 0,
+      "exit_code_expected": true,
+      "expected_exit_codes": [
+        0
+      ],
+      "json": {
+        "checkpoint_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/skill-node/run/checkpoint.json",
+        "completed_node_count": 1,
+        "cost_accounting": {
+          "budget": {
+            "state": "NOT_CONFIGURED"
+          },
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "estimated_cost_is_billing_truth": false,
+          "estimated_cost_usd": null,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "schema": "tau.generic_dag_cost_accounting.v1",
+          "source": "not_reported",
+          "total_tokens": 0
+        },
+        "current_state_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/skill-node/run/current-state.json",
+        "dag_plan_sha256": "sha256:6eb12b2ecc02e9d7be5b359d36ff6982890f375ba0475b21649c09cd23dd5845",
+        "diagnostics_log_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/skill-node/run/tau-diagnostics.jsonl",
+        "durable": true,
+        "events_jsonl": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/skill-node/run/events.jsonl",
+        "execution": "local_subprocess_receipt_gated_dag",
+        "lease_epoch": 1,
+        "live": true,
+        "max_observed_concurrency": 1,
+        "mocked": false,
+        "node_count": 1,
+        "nodes": [
+          {
+            "accepted_output": {
+              "artifacts": [
+                {
+                  "bytes": 4691,
+                  "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/skill-node/skill-output/runtime-handshake.json",
+                  "schema": "tau.runtime_handshake.v1",
+                  "sha256": "ffef4e5caf0efc00c1edf33ad5c63c47f8cd13b8a9cb79e703b007e53ee9cc3a"
+                }
+              ],
+              "capability": "runtime_handshake",
+              "skill_provider": "tau",
+              "source_node_id": "tau-runtime-handshake-skill"
+            },
+            "artifacts": [
+              {
+                "bytes": 4691,
+                "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/skill-node/skill-output/runtime-handshake.json",
+                "schema": "tau.runtime_handshake.v1",
+                "sha256": "ffef4e5caf0efc00c1edf33ad5c63c47f8cd13b8a9cb79e703b007e53ee9cc3a"
+              }
+            ],
+            "attempt_count": 1,
+            "capability": "runtime_handshake",
+            "command_results": [],
+            "cost_accounting": {
+              "cache_read_tokens": 0,
+              "cache_write_tokens": 0,
+              "estimated_cost_is_billing_truth": false,
+              "estimated_cost_usd": null,
+              "input_tokens": 0,
+              "output_tokens": 0,
+              "schema": "tau.generic_dag_cost_accounting.v1",
+              "source": "not_reported",
+              "total_tokens": 0
+            },
+            "cost_estimate": null,
+            "duration_seconds": 1.647,
+            "errors": [],
+            "finished_at": "2026-07-27T16:50:26Z",
+            "live": true,
+            "max_rounds": 1,
+            "mocked": false,
+            "node_id": "tau-runtime-handshake-skill",
+            "provider_live": false,
+            "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/skill-node/skill-node-receipt.json",
+            "resumed": false,
+            "role": "tau-runtime-handshake-skill",
+            "round_number": 1,
+            "scheduler_attempts": [
+              {
+                "attempt": 1,
+                "errors": [],
+                "status": "PASS",
+                "verdict": "PASS"
+              }
+            ],
+            "skill_live": true,
+            "skill_provider": "tau",
+            "started_at": "2026-07-27T16:50:24Z",
+            "status": "PASS",
+            "usage": null,
+            "verdict": "PASS",
+            "work_order_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/skill-node/skill-work-order.json",
+            "work_order_sha256": "50d3c2d116176fcbcb4d25176ece51fd46f4900faa58e7985350b0699615a50e"
+          }
+        ],
+        "ok": true,
+        "proof_scope": {
+          "does_not_prove": [
+            "remote Tailscale monitoring",
+            "GitHub ticket closure",
+            "production repository mutation",
+            "skill output semantic correctness",
+            "future skill route correctness"
+          ],
+          "proves": [
+            "Tau can validate a generic DAG spec",
+            "Tau can execute local subprocess workers in dependency order",
+            "Tau can gate downstream nodes on schema-valid node receipts",
+            "Tau can resume from existing valid node receipts",
+            "Tau can reject stale work-order receipts when work_order_sha256 no longer matches",
+            "Tau can write durable checkpoint and current-state artifacts",
+            "Tau can fail closed on timeout, non-zero exit, invalid receipt, or blocked verdict",
+            "Tau can invoke a registered skill capability and hash-bind its returned artifacts"
+          ]
+        },
+        "provider_live": false,
+        "replayed_event_count": 2,
+        "resume_requested": false,
+        "resume_source": {
+          "mode": "spec_path",
+          "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/skill-node/skill-node.json"
+        },
+        "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/skill-node/run",
+        "run_id": "canonical-skill-node",
+        "run_store_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/skill-node/run/dag-run.sqlite3",
+        "scheduler": "dag_plan_ready_queue",
+        "scheduler_run_id": "canonical-skill-node",
+        "schema": "tau.generic_dag_run_receipt.v1",
+        "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/skill-node/skill-node.json",
+        "status": "PASS",
+        "timestamp": "2026-07-27T16:50:26Z",
+        "verdict": "PASS"
+      },
+      "json_parse_error": null,
+      "stderr_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/skill-node.stderr",
+      "stderr_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/skill-node.stdout",
+      "stdout_sha256": "sha256:9d3c74250156ffca2e908c1b5692927bb900b07d4a5bdd8fca8a10e435102be9"
+    },
+    "transaction_viewer_smoke": {
+      "command": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python",
+        "/tmp/tau-issue189-1785166987/scripts/run-dag-viewer-live-smoke.py",
+        "--out",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/transaction-viewer-smoke.json",
+        "--run-root",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/transaction-viewer-smoke",
+        "--step-delay-seconds",
+        "0.25",
+        "--serve-after-seconds",
+        "0"
+      ],
+      "exit_code": 0,
+      "exit_code_expected": true,
+      "expected_exit_codes": [
+        0
+      ],
+      "json": {
+        "checks": {
+          "accepted_only_after_receipt": true,
+          "creator_attempt_1_visible": true,
+          "creator_attempt_2_visible": true,
+          "dependent_released_after_acceptance": true,
+          "page_refresh_reconstructed_state": true,
+          "reviewer_revise_visible": true
+        },
+        "live": true,
+        "mocked": false,
+        "proof_scope": {
+          "does_not_prove": [
+            "Provider or model semantic quality.",
+            "Production deployment readiness."
+          ],
+          "proves": [
+            "A real local creator-reviewer transaction was observed through Tau snapshots.",
+            "The dependent node was released only after committed Tau admission."
+          ]
+        },
+        "provider_live": false,
+        "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/transaction-viewer-smoke/run",
+        "run_id": "dag-viewer-creator-reviewer",
+        "schema": "tau.dag_viewer_live_smoke_receipt.v1",
+        "snapshot_count": 93,
+        "status": "PASS"
+      },
+      "json_parse_error": null,
+      "stderr_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/transaction-viewer-smoke.stderr",
+      "stderr_sha256": "sha256:12f56d7e54220ac86186adf7bdea13e7e1745bbf3938c1ed74994c997d7ba695",
+      "stdout_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/command-logs/transaction-viewer-smoke.stdout",
+      "stdout_sha256": "sha256:6ce1a64bc7dc57e0727c903e285ddd06776556ab3bf20a42f787e5e160d4b712"
+    }
+  },
+  "schema": "tau.canonical_scheduler_conformance.v1",
+  "status": "PASS",
+  "surfaces": {
+    "child_dag": true,
+    "command_node": true,
+    "conditional_route": true,
+    "durable_resume": true,
+    "human_boundary": true,
+    "join": true,
+    "map_node": true,
+    "retry": true,
+    "skill_node": true,
+    "targeted_repair": true,
+    "transaction_node": true,
+    "validator_node": true
+  },
+  "timestamp": "2026-07-27T16:50:30.563573+00:00"
+}

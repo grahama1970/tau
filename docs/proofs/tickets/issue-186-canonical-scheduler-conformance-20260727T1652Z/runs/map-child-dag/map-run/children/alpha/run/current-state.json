@@ -1,0 +1,32 @@
+{
+  "active_node_id": null,
+  "blocked_nodes": [],
+  "completed_nodes": [
+    "child-alpha"
+  ],
+  "events_jsonl": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/run/events.jsonl",
+  "node_statuses": {
+    "child-alpha": {
+      "attempt_count": 1,
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/receipt.json",
+      "resumed": false,
+      "status": "PASS",
+      "verdict": "PASS"
+    }
+  },
+  "ready_nodes": [],
+  "resume": {
+    "enabled_by_default": true,
+    "receipt_paths": {
+      "child-alpha": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/receipt.json"
+    },
+    "will_reuse_valid_pass_receipts": true
+  },
+  "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/run",
+  "run_id": "child-alpha",
+  "schema": "tau.generic_dag_checkpoint.v1",
+  "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/dag.json",
+  "status": "PASS",
+  "timestamp": "2026-07-27T16:50:28Z",
+  "verdict": "PASS"
+}

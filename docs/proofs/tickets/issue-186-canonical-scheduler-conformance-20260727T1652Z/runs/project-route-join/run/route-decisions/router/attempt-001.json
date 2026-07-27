@@ -1,0 +1,80 @@
+{
+  "attempt": 1,
+  "dag_id": "canonical-project-route-join",
+  "decision_sha256": "sha256:6587ba45abab41b522cc7f102eabbf161a00bdb4ba5925f35bd3fc042855cfb2",
+  "evaluations": [
+    {
+      "edge_index": 1,
+      "error_code": null,
+      "evaluated": true,
+      "matched": true,
+      "target": "accept"
+    },
+    {
+      "edge_index": 2,
+      "error_code": null,
+      "evaluated": true,
+      "matched": true,
+      "target": "revise"
+    }
+  ],
+  "failure_code": null,
+  "goal_hash": "sha256:canonical-scheduler-conformance",
+  "mode": "fanout",
+  "proof_scope": {
+    "does_not_prove": [
+      "The source result is semantically true.",
+      "The selected branch will complete successfully.",
+      "Provider or model quality.",
+      "Join or terminal contribution semantics."
+    ],
+    "proves": [
+      "Tau evaluated the normalized closed route contract against recorded typed source fields.",
+      "Tau selected only the recorded targets under the declared route mode."
+    ]
+  },
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/project-route-join/run/route-decisions/router/attempt-001.json",
+  "route_contract": {
+    "edges": [
+      {
+        "condition": {
+          "field": "route",
+          "op": "eq",
+          "schema": "tau.route_condition.v1",
+          "value": "BOTH"
+        },
+        "edge_index": 1,
+        "target": "accept"
+      },
+      {
+        "condition": {
+          "field": "route",
+          "op": "eq",
+          "schema": "tau.route_condition.v1",
+          "value": "BOTH"
+        },
+        "edge_index": 2,
+        "target": "revise"
+      }
+    ],
+    "mode": "fanout",
+    "source_node_id": "router"
+  },
+  "route_contract_sha256": "sha256:af89050984e8cc4f051d0ce5d3a93a5d84e18255c535df3d4618c09e72602172",
+  "schema": "tau.dag_route_decision.v1",
+  "selected_targets": [
+    "accept",
+    "revise"
+  ],
+  "source_fields": [
+    {
+      "field": "route",
+      "present": true,
+      "value": "BOTH"
+    }
+  ],
+  "source_fields_sha256": "sha256:2a79992994b52d93798cb12c2b48f171c23c87cdb953016b21b9130251218557",
+  "source_node_id": "router",
+  "source_result_sha256": "sha256:37ab91453234f1935447aad0c142028a2b2723587a0b5f23c66a148e6acb4108",
+  "status": "PASS"
+}

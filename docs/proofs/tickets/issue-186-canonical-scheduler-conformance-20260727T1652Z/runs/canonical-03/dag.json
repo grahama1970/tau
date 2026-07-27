@@ -1,0 +1,166 @@
+{
+  "goal": {
+    "sha256": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+    "statement": "Tau lets a human launch and supervise a small ladder of real, goal-locked agent DAGs, from simple to durable and failure-recovering, while showing truthful progress, accepted evidence, blockers, and required human decisions in one easy-to-use interface. Humans decide what must happen. Agents propose and execute bounded work. Tau decides what counts as admissible progress.",
+    "version": 1
+  },
+  "goal_hash": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "max_concurrency": 3,
+  "nodes": [
+    {
+      "command": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python",
+        "/tmp/tau-issue189-1785166987/examples/canonical-dags/worker.py",
+        "--node-id",
+        "source",
+        "--role",
+        "source-lock",
+        "--output",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/source.json",
+        "--receipt",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/receipts/source.json",
+        "--goal",
+        "/tmp/tau-issue189-1785166987/GOAL.md",
+        "--delay",
+        "0.0"
+      ],
+      "depends_on": [],
+      "max_attempts": 1,
+      "node_id": "source",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/receipts/source.json",
+      "role": "source-lock",
+      "timeout_seconds": 30
+    },
+    {
+      "command": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python",
+        "/tmp/tau-issue189-1785166987/examples/canonical-dags/worker.py",
+        "--node-id",
+        "docs",
+        "--role",
+        "documentation-analysis",
+        "--output",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/docs.json",
+        "--receipt",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/receipts/docs.json",
+        "--goal",
+        "/tmp/tau-issue189-1785166987/GOAL.md",
+        "--delay",
+        "0.0",
+        "--input",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/source.json"
+      ],
+      "depends_on": [
+        "source"
+      ],
+      "max_attempts": 1,
+      "node_id": "docs",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/receipts/docs.json",
+      "role": "documentation-analysis",
+      "timeout_seconds": 30
+    },
+    {
+      "command": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python",
+        "/tmp/tau-issue189-1785166987/examples/canonical-dags/worker.py",
+        "--node-id",
+        "tests",
+        "--role",
+        "test-analysis",
+        "--output",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/tests.json",
+        "--receipt",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/receipts/tests.json",
+        "--goal",
+        "/tmp/tau-issue189-1785166987/GOAL.md",
+        "--delay",
+        "0.0",
+        "--input",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/source.json"
+      ],
+      "depends_on": [
+        "source"
+      ],
+      "max_attempts": 1,
+      "node_id": "tests",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/receipts/tests.json",
+      "role": "test-analysis",
+      "timeout_seconds": 30
+    },
+    {
+      "command": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python",
+        "/tmp/tau-issue189-1785166987/examples/canonical-dags/worker.py",
+        "--node-id",
+        "risks",
+        "--role",
+        "risk-analysis",
+        "--output",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/risks.json",
+        "--receipt",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/receipts/risks.json",
+        "--goal",
+        "/tmp/tau-issue189-1785166987/GOAL.md",
+        "--delay",
+        "0.0",
+        "--input",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/source.json"
+      ],
+      "depends_on": [
+        "source"
+      ],
+      "max_attempts": 1,
+      "node_id": "risks",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/receipts/risks.json",
+      "role": "risk-analysis",
+      "timeout_seconds": 30
+    },
+    {
+      "command": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python",
+        "/tmp/tau-issue189-1785166987/examples/canonical-dags/worker.py",
+        "--node-id",
+        "integrate",
+        "--role",
+        "accepted-branch-integration",
+        "--output",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/integrate.json",
+        "--receipt",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/receipts/integrate.json",
+        "--goal",
+        "/tmp/tau-issue189-1785166987/GOAL.md",
+        "--delay",
+        "0.0",
+        "--input",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/docs.json",
+        "--input",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/tests.json",
+        "--input",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/risks.json"
+      ],
+      "depends_on": [
+        "docs",
+        "tests",
+        "risks"
+      ],
+      "max_attempts": 1,
+      "node_id": "integrate",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/receipts/integrate.json",
+      "role": "accepted-branch-integration",
+      "timeout_seconds": 30
+    }
+  ],
+  "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/run",
+  "run_id": "canonical-03-concurrent-fanout-fanin",
+  "schema": "tau.generic_dag_spec.v1",
+  "workflow": {
+    "result_node_id": "integrate",
+    "result_schema": "tau.canonical_dag_result.v1",
+    "schema": "tau.workflow_metadata.v1",
+    "summary": "Run Tau's concurrent fan-out/fan-in canonical workflow.",
+    "title": "Concurrent fan-out/fan-in",
+    "topology": "FAN_OUT_FAN_IN",
+    "workflow_id": "canonical-03-concurrent-fanout-fanin",
+    "workflow_version": 1
+  }
+}

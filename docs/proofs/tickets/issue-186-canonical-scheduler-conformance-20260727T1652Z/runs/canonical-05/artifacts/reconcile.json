@@ -1,0 +1,63 @@
+{
+  "accepted_input_artifacts": [
+    {
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05/artifacts/build.json",
+      "sha256": "sha256:89e884b26c15a6ab95dfad9ecd97abb6465a6edab76a950fcec03558ba917114"
+    },
+    {
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05/artifacts/test.json",
+      "sha256": "sha256:05c92d1d5c08d008a414e0ca8384c652ad223593f98882a73dfc873e5f5837d1"
+    },
+    {
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05/artifacts/document.json",
+      "sha256": "sha256:0ee4b7ec194bb99791e56c44b6f74e073ccc09f59fd56f05146fa79402a68ca2"
+    }
+  ],
+  "approval_path": null,
+  "dependency_ids": [
+    {
+      "artifacts": [
+        {
+          "bytes": 1129,
+          "kind": "bounded-build",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05/artifacts/build.json",
+          "sha256": "sha256:89e884b26c15a6ab95dfad9ecd97abb6465a6edab76a950fcec03558ba917114"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "build produced its accepted bounded-build artifact."
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 1131,
+          "kind": "independent-test",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05/artifacts/test.json",
+          "sha256": "sha256:05c92d1d5c08d008a414e0ca8384c652ad223593f98882a73dfc873e5f5837d1"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "test produced its accepted independent-test artifact."
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 1141,
+          "kind": "operator-documentation",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05/artifacts/document.json",
+          "sha256": "sha256:0ee4b7ec194bb99791e56c44b6f74e073ccc09f59fd56f05146fa79402a68ca2"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "document produced its accepted operator-documentation artifact."
+    }
+  ],
+  "goal_sha256": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "node_id": "reconcile",
+  "repair_authorization_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05/authorizations/targeted-repair.json",
+  "role": "branch-reconciliation",
+  "schema": "tau.canonical_dag_artifact.v1"
+}

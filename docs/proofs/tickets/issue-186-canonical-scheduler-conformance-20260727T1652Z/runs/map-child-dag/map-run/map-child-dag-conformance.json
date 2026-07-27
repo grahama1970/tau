@@ -1,0 +1,82 @@
+{
+  "child_dag": {
+    "all_children_passed": true,
+    "child_count": 3,
+    "child_receipts": [
+      {
+        "child_id": "child-alpha",
+        "exit_code": 0,
+        "item_id": "alpha",
+        "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/receipt.json",
+        "receipt_sha256": "a16b577bbdaeeb0267f7c92b435a577edbd5fb5b5468b9d3f4d2ced6aa6ff384",
+        "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/dag.json",
+        "status": "PASS",
+        "stderr_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/dag-run.stderr",
+        "stdout_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/dag-run.stdout"
+      },
+      {
+        "child_id": "child-bravo",
+        "exit_code": 0,
+        "item_id": "bravo",
+        "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/bravo/receipt.json",
+        "receipt_sha256": "62f1f3b1236a623a3df448a64f5f63dc313750b0dac998e05d46136e32873656",
+        "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/bravo/dag.json",
+        "status": "PASS",
+        "stderr_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/bravo/dag-run.stderr",
+        "stdout_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/bravo/dag-run.stdout"
+      },
+      {
+        "child_id": "child-charlie",
+        "exit_code": 0,
+        "item_id": "charlie",
+        "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/charlie/receipt.json",
+        "receipt_sha256": "ab9b145e849ad4dbafa86ae5b7c40c1cee8df808ce1e7aaf5c9fb8355cddee20",
+        "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/charlie/dag.json",
+        "status": "PASS",
+        "stderr_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/charlie/dag-run.stderr",
+        "stdout_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/charlie/dag-run.stdout"
+      }
+    ]
+  },
+  "commands_run": [
+    [
+      "uv",
+      "run",
+      "tau",
+      "dag-run",
+      "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/alpha/dag.json",
+      "--no-resume"
+    ],
+    [
+      "uv",
+      "run",
+      "tau",
+      "dag-run",
+      "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/bravo/dag.json",
+      "--no-resume"
+    ],
+    [
+      "uv",
+      "run",
+      "tau",
+      "dag-run",
+      "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/charlie/dag.json",
+      "--no-resume"
+    ]
+  ],
+  "errors": [],
+  "live": true,
+  "map_node": {
+    "deterministic_child_ids": [
+      "child-alpha",
+      "child-bravo",
+      "child-charlie"
+    ],
+    "exact_join_cardinality": true,
+    "item_count": 3
+  },
+  "mocked": false,
+  "provider_live": false,
+  "schema": "tau.map_child_dag_conformance.v1",
+  "status": "PASS"
+}

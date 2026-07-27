@@ -1,0 +1,13 @@
+{
+  "cancelled": false,
+  "command": [
+    "/tmp/tau-issue189-1785166987/.venv/bin/python",
+    "-c",
+    "import json\nfrom pathlib import Path\nreceipt_path = Path(\"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/children/charlie/receipt.json\")\npayload = json.loads(\"{\\\"schema\\\": \\\"tau.generic_dag_node_receipt.v1\\\", \\\"node_id\\\": \\\"child-charlie\\\", \\\"status\\\": \\\"PASS\\\", \\\"verdict\\\": \\\"PASS\\\", \\\"mocked\\\": false, \\\"live\\\": true, \\\"provider_live\\\": false, \\\"goal_hash\\\": \\\"sha256:canonical-scheduler-conformance\\\", \\\"accepted_output\\\": {\\\"item_id\\\": \\\"charlie\\\", \\\"value\\\": 3, \\\"result\\\": 6}, \\\"artifacts\\\": [], \\\"commands_run\\\": [], \\\"errors\\\": [], \\\"policy_exceptions\\\": [], \\\"handoff_summary\\\": \\\"Processed map item charlie\\\"}\")\nreceipt_path.parent.mkdir(parents=True, exist_ok=True)\nreceipt_path.write_text(\n    json.dumps(payload, indent=2, sort_keys=True) + '\\n',\n    encoding='utf-8',\n)\nprint(json.dumps(payload, sort_keys=True))\n"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "{\"accepted_output\": {\"item_id\": \"charlie\", \"result\": 6, \"value\": 3}, \"artifacts\": [], \"commands_run\": [], \"errors\": [], \"goal_hash\": \"sha256:canonical-scheduler-conformance\", \"handoff_summary\": \"Processed map item charlie\", \"live\": true, \"mocked\": false, \"node_id\": \"child-charlie\", \"policy_exceptions\": [], \"provider_live\": false, \"schema\": \"tau.generic_dag_node_receipt.v1\", \"status\": \"PASS\", \"verdict\": \"PASS\"}\n",
+  "timed_out": false
+}

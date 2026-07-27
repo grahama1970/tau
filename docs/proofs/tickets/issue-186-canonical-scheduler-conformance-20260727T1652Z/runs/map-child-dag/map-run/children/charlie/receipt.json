@@ -1,0 +1,29 @@
+{
+  "accepted_output": {
+    "item_id": "charlie",
+    "result": 6,
+    "value": 3
+  },
+  "artifacts": [],
+  "commands_run": [],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:73ebdedffdb01760fdb64827292a9c6b368b60b4ef38feef8b68ade429a4eda3",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:canonical-scheduler-conformance",
+  "handoff_summary": "Processed map item charlie",
+  "live": true,
+  "mocked": false,
+  "node_id": "child-charlie",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}

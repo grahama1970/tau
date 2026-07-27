@@ -1,0 +1,26 @@
+{
+  "cancelled": false,
+  "command": [
+    "/tmp/tau-issue189-1785166987/.venv/bin/python",
+    "/tmp/tau-issue189-1785166987/examples/canonical-dags/worker.py",
+    "--node-id",
+    "tests",
+    "--role",
+    "test-analysis",
+    "--output",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/tests.json",
+    "--receipt",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/receipts/tests.json",
+    "--goal",
+    "/tmp/tau-issue189-1785166987/GOAL.md",
+    "--delay",
+    "0.0",
+    "--input",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-03/artifacts/source.json"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "",
+  "timed_out": false
+}

@@ -1,0 +1,60 @@
+{
+  "schema": "tau.ticket_closure_evidence.v1",
+  "issue": 186,
+  "repo": "grahama1970/tau",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "proof_artifacts": {
+    "primary_receipt": "docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/canonical-scheduler-conformance.json",
+    "map_child_aggregate": "docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/map-child-dag-conformance.json",
+    "proof_markdown": "docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/proof.md"
+  },
+  "live_e2e": {
+    "command": "PYTHONPATH=src uv run tau canonical-scheduler-conformance --allow-live-filesystem --output docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/canonical-scheduler-conformance.json",
+    "exit_code": 0,
+    "status": "PASS",
+    "missing_surfaces": [],
+    "required_surface_count": 12,
+    "true_surface_count": 12
+  },
+  "map_child_dag": {
+    "status": "PASS",
+    "item_count": 3,
+    "child_count": 3,
+    "all_children_passed": true,
+    "exact_join_cardinality": true,
+    "child_exit_codes": [0, 0, 0],
+    "errors": []
+  },
+  "skill_node": {
+    "status": "PASS",
+    "skill_provider": "tau",
+    "capability": "runtime_handshake",
+    "skill_live": true
+  },
+  "supporting_checks": [
+    {
+      "command": "PYTHONPATH=src uv run python -m py_compile src/tau_coding/canonical_scheduler_conformance.py src/tau_coding/skill_dag_adapter.py",
+      "exit_code": 0
+    },
+    {
+      "command": "PYTHONPATH=src uv run ruff check src/tau_coding/canonical_scheduler_conformance.py src/tau_coding/skill_dag_adapter.py",
+      "exit_code": 0,
+      "summary": "All checks passed"
+    },
+    {
+      "command": "PYTHONPATH=src uv run pytest tests/test_skill_dag_adapter.py tests/test_cli.py --tb=short",
+      "exit_code": 0,
+      "summary": "245 passed in 15.84s"
+    }
+  ],
+  "does_not_prove": [
+    "Provider or model semantic quality",
+    "Security sandbox enforcement",
+    "Resource lease enforcement",
+    "A first-class dynamic map-node schema beyond this canonical conformance workload",
+    "Full #72 epic closure"
+  ]
+}
+

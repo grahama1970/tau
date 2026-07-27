@@ -1,0 +1,20 @@
+{
+  "accepted_inputs": [
+    {
+      "artifacts": [
+        {
+          "bytes": 2894,
+          "kind": "branch-reconciliation",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05/artifacts/reconcile.json",
+          "sha256": "sha256:b4c5b740d34384943f6515ac9b9b1bcea7f9e7d436afdcec9a24017b7bf4495e"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "reconcile produced its accepted branch-reconciliation artifact."
+    }
+  ],
+  "node_id": "release",
+  "run_id": "canonical-05-durable-resume-repair",
+  "schema": "tau.generic_dag_node_context.v1"
+}

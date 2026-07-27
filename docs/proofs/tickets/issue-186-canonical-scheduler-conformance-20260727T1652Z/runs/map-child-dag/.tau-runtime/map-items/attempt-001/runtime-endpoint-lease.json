@@ -1,0 +1,29 @@
+{
+  "attempt_id": "attempt-70429d49f7508abf2f217d39effb7f07",
+  "attempt_number": 1,
+  "backend": "local",
+  "backend_ids": {
+    "pid": null
+  },
+  "backend_session_id": null,
+  "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+  "cleanup_policy": {
+    "kind": "process_group_termination"
+  },
+  "created_at": "2026-07-27T16:50:27.221137+00:00",
+  "dag_id": "generic:canonical-map-child-dag",
+  "endpoint_id": "local:59ee829b5856915f07f57dda",
+  "execution_token": "[REDACTED]",
+  "expires_at": "2026-07-27T16:53:27.221137+00:00",
+  "goal_hash": "sha256:3013b32f9c31e643513fe0ed4f028fc5b0985a4811acbf2cbf4c8be6cd992721",
+  "heartbeat_policy": {
+    "kind": "process_poll"
+  },
+  "node_id": "map-items",
+  "owner": "tau",
+  "plan_revision": "sha256:4fc5aa40a455b67f6eb9d0c453471fadf72467bd806190dae54d425bc217bba4",
+  "run_id": "canonical-map-child-dag",
+  "schema": "tau.runtime_endpoint_lease.v1",
+  "scope_id": "canonical-map-child-dag",
+  "work_order_sha256": "sha256:7e267b069dea8eb2eb72b6de260bd5f337b235525b83a68a149acb4a589e533c"
+}

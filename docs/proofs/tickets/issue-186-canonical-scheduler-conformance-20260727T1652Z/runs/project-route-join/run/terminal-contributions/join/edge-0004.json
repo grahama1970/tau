@@ -1,0 +1,36 @@
+{
+  "basis": {
+    "kind": "source_terminal"
+  },
+  "contribution_sha256": "sha256:31ca4ad02dcb706b9d1edb2e9b26f1a295ccbfb51e1111fc568490abee0e9bcf",
+  "dag_id": "canonical-project-route-join",
+  "edge_contract": {
+    "condition": null,
+    "edge_index": 4,
+    "source_node_id": "revise",
+    "target_node_id": "join"
+  },
+  "edge_contract_sha256": "sha256:b002991945cd77a6d5e7ca2d53acd5db58ebe601b1ec21a7870c39df827c8f81",
+  "goal_hash": "sha256:canonical-scheduler-conformance",
+  "join_node_id": "join",
+  "join_policy_sha256": "sha256:e759d929bc5d24177f28009de47decf4c5a8062b981c8b932b439c4681991271",
+  "proof_scope": {
+    "does_not_prove": [
+      "The source result is semantically true.",
+      "A cancelled contribution terminated the underlying process.",
+      "Provider or model quality."
+    ],
+    "proves": [
+      "Tau recorded one terminal state for the declared incoming DAG edge.",
+      "Tau hash-bound the contribution to the DAG, goal, edge, and join policy."
+    ]
+  },
+  "reason_code": "source_passed",
+  "schema": "tau.dag_terminal_contribution.v1",
+  "source_binding": {
+    "attempt": 1,
+    "source_node_id": "revise"
+  },
+  "state": "success",
+  "status": "PASS"
+}

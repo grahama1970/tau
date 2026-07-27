@@ -1,0 +1,10 @@
+{
+  "accepted_input_artifacts": [],
+  "approval_path": null,
+  "dependency_ids": [],
+  "goal_sha256": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "node_id": "discover",
+  "repair_authorization_path": null,
+  "role": "goal-and-source-lock",
+  "schema": "tau.canonical_dag_artifact.v1"
+}

@@ -1,0 +1,20 @@
+{
+  "accepted_inputs": [
+    {
+      "artifacts": [
+        {
+          "bytes": 311,
+          "kind": "bounded-intake",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-02/artifacts/intake.json",
+          "sha256": "sha256:c0c38366cd79dce1fe70e9a9fea526a3e86fa25c6315cfaf06d81b1bf5e4543c"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "intake produced its accepted bounded-intake artifact."
+    }
+  ],
+  "node_id": "analyze",
+  "run_id": "canonical-02-multi-step-sequential",
+  "schema": "tau.generic_dag_node_context.v1"
+}

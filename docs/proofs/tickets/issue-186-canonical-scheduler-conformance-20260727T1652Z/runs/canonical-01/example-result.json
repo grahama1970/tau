@@ -1,0 +1,17 @@
+{
+  "completed_node_count": 2,
+  "dag_id": "canonical-01-simple-linear",
+  "live": true,
+  "max_observed_concurrency": 1,
+  "mocked": false,
+  "node_count": 2,
+  "output_artifact": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-01/artifacts/tau-goal-summary.md",
+  "output_sha256": "sha256:e382d4c22d835c334944471e9248ddf965fbc033c36f7617c39ae771d1750738",
+  "provider_live": false,
+  "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-01/run",
+  "schema": "tau.canonical_dag_example_result.v1",
+  "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-01/dag.json",
+  "status": "PASS",
+  "viewer_command": "uv run tau dag-view --run-dir /tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-01/run",
+  "viewer_url": null
+}

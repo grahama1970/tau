@@ -1,0 +1,20 @@
+{
+  "accepted_inputs": [
+    {
+      "artifacts": [
+        {
+          "bytes": 1934,
+          "kind": "typed-review",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-04/artifacts/review.json",
+          "sha256": "sha256:3a386336f0494142a5e93d310c5dc632b18443b4fbdb05d7ca6b6c38ac096395"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "review produced its accepted typed-review artifact."
+    }
+  ],
+  "node_id": "release",
+  "run_id": "canonical-04-mixed-retry-approval",
+  "schema": "tau.generic_dag_node_context.v1"
+}

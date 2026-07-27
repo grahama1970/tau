@@ -1,0 +1,29 @@
+{
+  "accepted_input_artifacts": [
+    {
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05/artifacts/reconcile.json",
+      "sha256": "sha256:b4c5b740d34384943f6515ac9b9b1bcea7f9e7d436afdcec9a24017b7bf4495e"
+    }
+  ],
+  "approval_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05/authorizations/human-release.json",
+  "dependency_ids": [
+    {
+      "artifacts": [
+        {
+          "bytes": 2894,
+          "kind": "branch-reconciliation",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-05/artifacts/reconcile.json",
+          "sha256": "sha256:b4c5b740d34384943f6515ac9b9b1bcea7f9e7d436afdcec9a24017b7bf4495e"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "reconcile produced its accepted branch-reconciliation artifact."
+    }
+  ],
+  "goal_sha256": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "node_id": "release",
+  "repair_authorization_path": null,
+  "role": "human-release",
+  "schema": "tau.canonical_dag_artifact.v1"
+}

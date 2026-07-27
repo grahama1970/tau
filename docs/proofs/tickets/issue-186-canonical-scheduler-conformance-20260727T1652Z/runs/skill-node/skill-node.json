@@ -1,0 +1,22 @@
+{
+  "goal_hash": "sha256:canonical-scheduler-conformance",
+  "nodes": [
+    {
+      "node_id": "tau-runtime-handshake-skill",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/skill-node/skill-node-receipt.json",
+      "skill": {
+        "capability": "runtime_handshake",
+        "configuration": {
+          "timeout_seconds": 120
+        },
+        "output_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/skill-node/skill-output",
+        "provider": "tau",
+        "schema": "tau.skill_dag_node.v1"
+      },
+      "work_order_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/skill-node/skill-work-order.json"
+    }
+  ],
+  "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/skill-node/run",
+  "run_id": "canonical-skill-node",
+  "schema": "tau.generic_dag_spec.v1"
+}

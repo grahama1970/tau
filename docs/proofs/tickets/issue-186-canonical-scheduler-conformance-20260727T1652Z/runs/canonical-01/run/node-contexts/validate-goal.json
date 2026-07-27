@@ -1,0 +1,20 @@
+{
+  "accepted_inputs": [
+    {
+      "artifacts": [
+        {
+          "bytes": 823,
+          "kind": "goal-digest",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/canonical-01/artifacts/tau-goal-digest.json",
+          "sha256": "sha256:17d4a01ec98e95b9b82a20393a68cc2928f8512a0db377502a1fb5d679c7c75a"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "Extracted the immutable Tau goal and canonical DAG ladder."
+    }
+  ],
+  "node_id": "validate-goal",
+  "run_id": "canonical-01-simple-linear",
+  "schema": "tau.generic_dag_node_context.v1"
+}
