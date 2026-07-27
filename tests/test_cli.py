@@ -3674,7 +3674,22 @@ def test_cli_handoff_command_loop_reaches_human(tmp_path: Path) -> None:
     assert (receipt_dir / "command-loop-receipt.json").exists()
 
 
+def _require_persona_dream_fixtures() -> None:
+    """Skip unless the external persona-dream fixture tree is present.
+
+    The panel-creator command spec runs tau_coding.persona_dream_panel_agent,
+    whose PERSONA_DREAM_ROOT points at the agent-skills checkout outside this
+    repository. Without it the agent exits non-zero and the loop reports
+    command_failed, so the test cannot reach the first blocker it asserts on.
+    """
+    from tau_coding.persona_dream_panel_agent import PERSONA_DREAM_ROOT
+
+    if not PERSONA_DREAM_ROOT.is_dir():
+        pytest.skip("persona-dream fixture tree unavailable")
+
+
 def test_cli_persona_dream_panel_proof_writes_first_blocker(tmp_path: Path) -> None:
+    _require_persona_dream_fixtures()
     out_dir = tmp_path / "persona-proof"
     agents_root = tmp_path / "agents"
     agents_root.mkdir()

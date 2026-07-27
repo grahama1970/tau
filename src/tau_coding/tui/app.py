@@ -204,6 +204,11 @@ ACTIVITY_COLOR_FADE_STEPS = 24
 ACTIVITY_INDICATOR_HEIGHT = 3
 EXTENSION_BRANCH_WATCH_INTERVAL_SECONDS = 0.5
 DAG_RUN_STATUS_POLL_SECONDS = 0.75
+# Wall-clock window in which a second empty-prompt escape counts as a double
+# press. Named so tests can widen it: driving two key presses through the pilot
+# can exceed this on a loaded machine, which is a property of the runner rather
+# than of the behaviour under test.
+DOUBLE_ESCAPE_WINDOW_SECONDS = 0.5
 TERMINAL_PROGRESS_ACTIVE_SEQUENCE = "\x1b]9;4;3\x07"
 TERMINAL_PROGRESS_CLEAR_SEQUENCE = "\x1b]9;4;0;\x07"
 COMPLETION_MAX_VISIBLE_LINES = DEFAULT_AUTOCOMPLETE_MAX_VISIBLE
@@ -9816,7 +9821,7 @@ class TauTuiApp(App[None]):
 
         now = monotonic()
         last_escape_at = self._last_empty_escape_at
-        if last_escape_at is not None and now - last_escape_at <= 0.5:
+        if last_escape_at is not None and now - last_escape_at <= DOUBLE_ESCAPE_WINDOW_SECONDS:
             self._last_empty_escape_at = None
             if action == "tree":
                 self.run_worker(self._open_tree_picker(), exclusive=False)

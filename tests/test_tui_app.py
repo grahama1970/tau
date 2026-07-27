@@ -11059,19 +11059,36 @@ async def test_tui_app_escape_without_running_does_not_append_transcript_status(
         assert notifications == []
 
 
+@pytest.fixture
+def wide_double_escape_window(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Remove the wall-clock deadline from double-escape detection.
+
+    Two pilot key presses can take longer than the production 0.5s window on a
+    loaded machine, which makes these tests fail for a property of the runner
+    rather than of the behaviour under test.
+    """
+    monkeypatch.setattr(tui_app, "DOUBLE_ESCAPE_WINDOW_SECONDS", 3600.0)
+
+
 @pytest.mark.anyio
-async def test_tui_app_double_escape_opens_tree_picker_by_default() -> None:
+async def test_tui_app_double_escape_opens_tree_picker_by_default(
+    wide_double_escape_window: None,
+) -> None:
     app = TauTuiApp(FakeSession())
 
     async with app.run_test() as pilot:
         await pilot.press("escape", "escape")
+        await pilot.pause()
+        await app.workers.wait_for_complete()
         await pilot.pause()
 
         assert isinstance(app.screen, TreePickerScreen)
 
 
 @pytest.mark.anyio
-async def test_tui_app_double_escape_can_open_fork_picker() -> None:
+async def test_tui_app_double_escape_can_open_fork_picker(
+    wide_double_escape_window: None,
+) -> None:
     app = TauTuiApp(
         FakeSession(),
         tui_settings=TuiSettings(double_escape_action="fork"),
@@ -11079,6 +11096,8 @@ async def test_tui_app_double_escape_can_open_fork_picker() -> None:
 
     async with app.run_test() as pilot:
         await pilot.press("escape", "escape")
+        await pilot.pause()
+        await app.workers.wait_for_complete()
         await pilot.pause()
 
         assert isinstance(app.screen, UserMessagePickerScreen)
