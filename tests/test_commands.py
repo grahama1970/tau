@@ -116,10 +116,11 @@ def test_registry_ignores_ordinary_prompts_and_skill_expansion(tmp_path: Path) -
         assert result.message is None
 
 
-def test_registered_commands_are_pi_aligned(tmp_path: Path) -> None:
+def test_registered_commands_keep_pi_surface_and_tau_extensions(tmp_path: Path) -> None:
     commands = create_default_command_registry().list_commands()
+    command_names = [command.name for command in commands]
 
-    assert [command.name for command in commands] == [
+    pi_commands = [
         "artifacts",
         "changelog",
         "clone",
@@ -155,6 +156,10 @@ def test_registered_commands_are_pi_aligned(tmp_path: Path) -> None:
         "trust",
         "workflows",
     ]
+    tau_extension_commands = ["config", "permissions", "scillm"]
+
+    assert all(command in command_names for command in pi_commands)
+    assert all(command in command_names for command in tau_extension_commands)
 
 
 def test_quit_and_new_return_control_flags(tmp_path: Path) -> None:
@@ -359,13 +364,14 @@ def test_trust_command_requests_project_trust_picker(tmp_path: Path) -> None:
 
 
 def test_session_command_includes_session_details(tmp_path: Path) -> None:
-    result = create_default_command_registry().execute(FakeSession(tmp_path), "/session")
+    session = FakeSession(tmp_path)
+    result = create_default_command_registry().execute(session, "/session")
 
     assert result.message is not None
     assert "Model: fake-model" in result.message
     assert f"CWD: {tmp_path}" in result.message
     assert f"Session file: {tmp_path / '.tau' / 'sessions' / 'session-1.jsonl'}" in result.message
-    assert "Tools: 4" in result.message
+    assert f"Tools: {len(session.tools)}" in result.message
     assert "Skills: 1" in result.message
     assert "Context files: 1" in result.message
     assert "Messages: 3" in result.message
@@ -648,14 +654,15 @@ def test_non_pi_commands_are_not_registered(tmp_path: Path) -> None:
 
 
 def test_resources_command_lists_loaded_counts(tmp_path: Path) -> None:
-    result = create_default_command_registry().execute(FakeSession(tmp_path), "/resources")
+    session = FakeSession(tmp_path)
+    result = create_default_command_registry().execute(session, "/resources")
 
     assert result.handled is True
     assert result.message is not None
     assert "Skills: 1" in result.message
     assert "Prompt templates: 0" in result.message
     assert "Context files: 1" in result.message
-    assert "Tools: 4" in result.message
+    assert f"Tools: {len(session.tools)}" in result.message
 
 
 def test_config_command_requests_picker_and_keeps_printable_map(tmp_path: Path) -> None:

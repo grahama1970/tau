@@ -1,0 +1,58 @@
+{
+  "schema": "tau.loop2_live_env_auth_proof.v1",
+  "feature": "delegated Scillm Loop2 runs use SCILLM_API_KEY for the execution contract without mutating the source contract",
+  "mocked": false,
+  "live": true,
+  "contract": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-env-auth-20260626T183449Z/live-scillm-contract.json",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-env-auth-20260626T183449Z/.loop2/runs/loop2-tau-live-env-auth-buggy-math-1782498900-05df2d",
+  "tau_output": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-env-auth-20260626T183449Z/tau-live-output.json",
+  "tau_exit_code": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-env-auth-20260626T183449Z/tau-live-exit-code.txt",
+  "native_validation": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-env-auth-20260626T183449Z/native-validate.json",
+  "native_validation_exit_code": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-env-auth-20260626T183449Z/native-validate.exit",
+  "artifacts": {
+    "final_receipt": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-env-auth-20260626T183449Z/.loop2/runs/loop2-tau-live-env-auth-buggy-math-1782498900-05df2d/final-receipt.json",
+    "node_result": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-env-auth-20260626T183449Z/.loop2/runs/loop2-tau-live-env-auth-buggy-math-1782498900-05df2d/node-result.json",
+    "tau_sanitization": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-env-auth-20260626T183449Z/.loop2/runs/loop2-tau-live-env-auth-buggy-math-1782498900-05df2d/tau-sanitization.json",
+    "events": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-env-auth-20260626T183449Z/.loop2/runs/loop2-tau-live-env-auth-buggy-math-1782498900-05df2d/events.jsonl",
+    "check_stdout": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-env-auth-20260626T183449Z/.loop2/runs/loop2-tau-live-env-auth-buggy-math-1782498900-05df2d/checks/01-stdout.txt",
+    "check_stderr": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-env-auth-20260626T183449Z/.loop2/runs/loop2-tau-live-env-auth-buggy-math-1782498900-05df2d/checks/01-stderr.txt"
+  },
+  "observed": {
+    "status": "PASS",
+    "changed_files": ["src/buggy_math.py"],
+    "check_command": "PYTHONPATH=src python3 -m pytest tests -q",
+    "check_exit_code": 0,
+    "contract_preparation_auth_source": "env:SCILLM_API_KEY",
+    "contract_preparation_ran": true,
+    "native_validation_ok": true,
+    "native_validation_checked_tau_sanitization": true,
+    "persisted_contract_api_key": "<redacted-scillm-api-key>",
+    "active_key_present_in_experiment_artifacts": false
+  },
+  "test_commands": [
+    {
+      "command": "uv run pytest tests/test_cli.py -q",
+      "exit_code": 0,
+      "observed": "67 passed"
+    },
+    {
+      "command": "uv run pytest tests/test_loop_receipt.py tests/test_loop_monitor.py tests/test_loop_sanity.py tests/test_loop2_alignment_experiment.py -q",
+      "exit_code": 0,
+      "observed": "62 passed"
+    },
+    {
+      "command": "uv run ruff check src/tau_coding/cli.py tests/test_cli.py",
+      "exit_code": 0,
+      "observed": "All checks passed"
+    }
+  ],
+  "proves": [
+    "Tau can delegate a live Loop2 Scillm run using SCILLM_API_KEY instead of a manually injected contract key",
+    "the original contract path remains the reported contract path while Loop2 receives a prepared execution copy",
+    "persisted native Loop2 artifacts redact contract.scillm.api_key and validate tau_sanitization"
+  ],
+  "does_not_prove": [
+    "full multi-node harness scheduling",
+    "all future Scillm auth discovery mechanisms beyond SCILLM_API_KEY"
+  ]
+}

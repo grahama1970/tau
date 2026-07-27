@@ -1,0 +1,26 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "tau",
+    "handoff-agent-adapter",
+    "--result-status",
+    "COMPLETED",
+    "--result-summary",
+    "Orchestrator consumes the planner-emitted tau.dag_run_spec.v1 for bounded execution under structured readiness, receipt gates, and finite retries; this command-spec overlay does not itself prove provider execution.",
+    "--next-agent",
+    "human",
+    "--next-executor",
+    "human",
+    "--next-reason",
+    "Human review is required before accepting any bounded orchestration result.",
+    "--required-evidence",
+    "Human reviews the retained tau.dag_run_receipt.v1, provider-readiness receipt, node receipts, deterministic checks, and proof boundaries; command-spec presence is not execution proof.",
+    "--stop-condition",
+    "Human accepts, redirects, or requests one bounded correction after retained run evidence is available."
+  ],
+  "agent_contract": "agents/orchestrator/AGENTS.md",
+  "persona_contract": "agents/orchestrator/persona.yaml",
+  "cwd": ".",
+  "timeout_s": 30
+}

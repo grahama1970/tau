@@ -1,0 +1,39 @@
+{
+  "schema": "tau.loop2_live_sidecar_index_proof.v1",
+  "mocked": false,
+  "live": true,
+  "contract": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/live-scillm-contract.json",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/.loop2/runs/loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb",
+  "tau_output": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/tau-live-output-active-key.json",
+  "tau_exit_code": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/tau-live-exit-code-active-key.txt",
+  "native_validation": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/native-validate-active-key.json",
+  "native_validation_exit_code": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/native-validate-active-key.exit",
+  "artifacts": {
+    "final_receipt": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/.loop2/runs/loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb/final-receipt.json",
+    "node_result": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/.loop2/runs/loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb/node-result.json",
+    "tau_sanitization": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/.loop2/runs/loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb/tau-sanitization.json",
+    "events": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/.loop2/runs/loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb/events.jsonl",
+    "check_stdout": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/.loop2/runs/loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb/checks/01-stdout.txt",
+    "check_stderr": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/.loop2/runs/loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb/checks/01-stderr.txt"
+  },
+  "observed": {
+    "status": "PASS",
+    "changed_files": ["src/buggy_math.py"],
+    "check_command": "PYTHONPATH=src python3 -m pytest tests -q",
+    "check_exit_code": 0,
+    "native_validation_ok": true,
+    "native_validation_checked_tau_sanitization": true,
+    "tau_sanitization_indexed_in_final_receipt": true,
+    "sanitization_redacted_keys": ["contract.scillm.api_key"],
+    "sanitization_filtered_changed_files": 8
+  },
+  "proves": [
+    "Tau delegated a live Loop2 Scillm repair through the real proxy/OpenCode transport",
+    "the repair changed src/buggy_math.py to pass the configured pytest command",
+    "Tau wrote tau-sanitization.json, indexed it in final-receipt.json, and native validation checked tau_sanitization"
+  ],
+  "does_not_prove": [
+    "full multi-node harness scheduling",
+    "all future Scillm auth configurations"
+  ]
+}

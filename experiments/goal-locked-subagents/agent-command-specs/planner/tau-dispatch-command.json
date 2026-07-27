@@ -1,0 +1,26 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "tau",
+    "handoff-agent-adapter",
+    "--result-status",
+    "COMPLETED",
+    "--result-summary",
+    "Planner consumes the Tau handoff JSON contract and emits a bounded tau.dag_run_spec.v1 for orchestrator validation; this command-spec overlay does not execute providers.",
+    "--next-agent",
+    "orchestrator",
+    "--next-executor",
+    "local",
+    "--next-reason",
+    "Orchestrator must validate and execute only the planner-emitted tau.dag_run_spec.v1 within structured readiness, receipt, retry, and stop gates.",
+    "--required-evidence",
+    "Schema-valid tau.dag_run_spec.v1 and planner receipt with scope, dependencies, provider declarations, retry budget, forbidden actions, receipt paths, and stop conditions.",
+    "--stop-condition",
+    "Orchestrator accepts the schema-valid DAG spec or returns a BLOCKED handoff with specific contract gaps."
+  ],
+  "agent_contract": "agents/planner/AGENTS.md",
+  "persona_contract": "agents/planner/persona.yaml",
+  "cwd": ".",
+  "timeout_s": 30
+}

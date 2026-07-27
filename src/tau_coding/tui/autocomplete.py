@@ -153,6 +153,8 @@ def build_completion_state(
         or _matches_registered_command(token, command_registry)
     ):
         return CompletionState()
+    if has_argument_text:
+        return CompletionState()
 
     return CompletionState(
         _command_completions(
@@ -232,6 +234,8 @@ async def build_completion_state_async(
         _matches_prompt_template_command(token, prompt_templates)
         or _matches_registered_command(token, command_registry)
     ):
+        return CompletionState()
+    if has_argument_text:
         return CompletionState()
 
     return CompletionState(

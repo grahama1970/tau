@@ -1,0 +1,75 @@
+{
+  "schema": "tau.loop2_live_auth_preflight_proof.v1",
+  "feature": "Tau performs Scillm proxy auth preflight before delegated Loop2 runner invocation",
+  "mocked": false,
+  "live": true,
+  "bad_auth": {
+    "contract": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/bad-auth/live-scillm-contract.json",
+    "tau_output": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/bad-auth/tau-live-output.json",
+    "tau_exit_code": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/bad-auth/tau-live-exit-code.txt",
+    "observed": {
+      "command_exit_code": 1,
+      "ok": false,
+      "run_dir": "",
+      "scillm_auth_preflight_status_code": 401,
+      "loop2_run_directories_created": 0
+    }
+  },
+  "good_auth": {
+    "contract": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/live-scillm-contract.json",
+    "run_dir": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/.loop2/runs/loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62",
+    "tau_output": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/tau-live-output.json",
+    "tau_exit_code": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/tau-live-exit-code.txt",
+    "native_validation": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/native-validate.json",
+    "native_validation_exit_code": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/native-validate.exit",
+    "artifacts": {
+      "final_receipt": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/.loop2/runs/loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62/final-receipt.json",
+      "node_result": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/.loop2/runs/loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62/node-result.json",
+      "tau_sanitization": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/.loop2/runs/loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62/tau-sanitization.json",
+      "events": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/.loop2/runs/loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62/events.jsonl",
+      "check_stdout": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/.loop2/runs/loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62/checks/01-stdout.txt",
+      "check_stderr": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/.loop2/runs/loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62/checks/01-stderr.txt"
+    },
+    "observed": {
+      "command_exit_code": 0,
+      "ok": true,
+      "status": "PASS",
+      "scillm_auth_preflight_status_code": 200,
+      "changed_files": ["src/buggy_math.py"],
+      "check_command": "PYTHONPATH=src python3 -m pytest tests -q",
+      "check_exit_code": 0,
+      "native_validation_ok": true,
+      "native_validation_checked_tau_sanitization": true,
+      "persisted_contract_api_key": "<redacted-scillm-api-key>"
+    }
+  },
+  "test_commands": [
+    {
+      "command": "uv run pytest tests/test_cli.py -q",
+      "exit_code": 0,
+      "observed": "68 passed"
+    },
+    {
+      "command": "uv run pytest tests/test_loop_receipt.py tests/test_loop_monitor.py tests/test_loop_sanity.py tests/test_loop2_alignment_experiment.py -q",
+      "exit_code": 0,
+      "observed": "62 passed"
+    },
+    {
+      "command": "uv run ruff check src/tau_coding/cli.py tests/test_cli.py",
+      "exit_code": 0,
+      "observed": "All checks passed"
+    }
+  ],
+  "secret_scan": {
+    "active_key_present_in_proof_tree": false
+  },
+  "proves": [
+    "bad Scillm proxy auth fails in Tau before Loop2 runner invocation",
+    "good SCILLM_API_KEY passes Tau preflight and still completes a live delegated Loop2 repair",
+    "preflight evidence is included in Tau loop2-run JSON output"
+  ],
+  "does_not_prove": [
+    "full multi-node harness scheduling",
+    "provider behavior after future Scillm proxy auth changes"
+  ]
+}

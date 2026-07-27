@@ -1218,8 +1218,10 @@ def test_chat_items_fold_long_unbroken_text_to_console_width() -> None:
 
     console.print(render_chat_item(ChatItem(role="assistant", text=long_text)))
     output = console.export_text()
+    visible_output = re.sub(r"\x1b\][^\x07]*(?:\x07|\x1b\\)", "", output)
+    visible_output = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", visible_output)
 
-    assert max(len(line) for line in output.splitlines()) <= 36
+    assert max(len(line) for line in visible_output.splitlines()) <= 36
 
 
 def test_chat_items_use_configured_theme_accent() -> None:
@@ -1845,7 +1847,7 @@ def test_tui_state_compacts_expanded_skill_messages() -> None:
     assert [(item.role, item.text, item.tool_result_text) for item in state.items] == [
         (
             "skill",
-            "[skill] review (Ctrl+O to expand)",
+            "Using skill: review (Ctrl+O to expand)",
             "**review**\n\n"
             "References are relative to /workspace/.tau/skills.\n\n"
             "# Review\nFull noisy instructions.",
@@ -3832,7 +3834,7 @@ async def test_tui_app_new_command_starts_new_visible_state() -> None:
 
         assert app.session.new_session_count == 1
         assert app.state.items == []
-        assert notifications == []
+        assert notifications == ["Started new session: new-session"]
 
 
 @pytest.mark.anyio
@@ -7780,7 +7782,7 @@ async def test_tui_app_tree_summary_clears_transcript_while_summarizing() -> Non
         await pilot.pause()
 
         assert [(item.role, item.text) for item in app.state.items] == [
-            ("status", "Summarizing branch…"),
+            ("status", "Summarizing branch... (Escape to cancel)"),
         ]
         working_message = app.query_one("#prompt-working-message", Static)
         assert working_message.display is True
@@ -11712,7 +11714,11 @@ async def test_tui_login_provider_picker_ignores_empty_filter_row_selection() ->
 
 
 @pytest.mark.anyio
-async def test_tui_login_subscription_opens_oauth_provider_picker() -> None:
+async def test_tui_login_subscription_opens_oauth_provider_picker(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
     app = TauTuiApp(FakeSession())
 
     async with app.run_test() as pilot:
@@ -11815,7 +11821,7 @@ async def test_tui_model_opens_interactive_picker() -> None:
     assert session.provider_name == "local"
     assert session.model == "local-model"
     assert session.prompt_texts == []
-    assert notifications == []
+    assert notifications == ["Switched to local:local-model."]
 
 
 def test_model_picker_filter_matches_provider_prefixed_queries() -> None:

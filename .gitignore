@@ -14,6 +14,12 @@ site/
 experiments/loop2-alignment/live-*/repo/
 experiments/loop2-alignment/live-*/*/repo/
 experiments/loop2-alignment/live-*/
+!experiments/loop2-alignment/live-sidecar-20260626T182740Z/
+!experiments/loop2-alignment/live-sidecar-20260626T182740Z/live-sidecar-proof.json
+!experiments/loop2-alignment/live-env-auth-20260626T183449Z/
+!experiments/loop2-alignment/live-env-auth-20260626T183449Z/live-env-auth-proof.json
+!experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/
+!experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/live-auth-preflight-proof.json
 experiments/loop2-alignment/reliability-stress-*/
 .tmp/
 

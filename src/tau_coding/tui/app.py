@@ -963,6 +963,7 @@ class PromptInput(TextArea):
     def value(self, text: str) -> None:
         self._exit_prompt_history()
         self.text = text
+        self.cursor_position = len(text)
         self.clear_paste_markers()
         self._last_prompt_edit = None
         self._last_yank_range = None
@@ -4318,9 +4319,9 @@ class TreePickerScreen(ModalScreen[TreePickerResult | None]):
         return (
             f"Type to filter | {branch_key} branch | S summarize | C custom | "
             f"{copy_key} copy | {label_key} label | "
-            f"{label_time_key} label time {label_time_state} | "
+            f"{label_time_key} label time ({label_time_state}) | "
             f"{page_left_key}/{page_right_key} page | {fold_key}/{unfold_key} branch | "
-            f"{no_tools_key} no-tools {tool_call_state} | "
+            f"{no_tools_key} no-tools ({tool_call_state}) | "
             f"{filter_next_key}/{filter_previous_key} filter {filter_label} | "
             f"{cancel_key} clear/close"
         )
@@ -8033,6 +8034,15 @@ class TauTuiApp(App[None]):
                 self._notify("A compaction is already running.", severity="warning")
             elif _is_reload_command_text(text):
                 self._notify("Wait for compaction to finish before reloading.", severity="warning")
+            elif _is_session_switch_command_text(text):
+                prompt.text = raw_text
+                prompt.move_cursor(_text_end_location(raw_text))
+                self._completion_state = CompletionState()
+                self._refresh_completions()
+                self._notify(
+                    "Compaction is still running. You can keep editing, but wait to submit.",
+                    severity="warning",
+                )
             elif _is_extension_command_text(self.session, text):
                 prompt.add_to_history(text)
                 prompt.text = ""
@@ -13709,6 +13719,11 @@ def _debug_message_payload(message: AgentMessage) -> object:
 
 def _is_reload_command_text(text: str) -> bool:
     return text.strip().casefold() == "/reload"
+
+
+def _is_session_switch_command_text(text: str) -> bool:
+    token = text.strip().split(maxsplit=1)[0].casefold()
+    return token in {"/new", "/resume"}
 
 
 def _is_extension_cancel_message(message: object) -> bool:

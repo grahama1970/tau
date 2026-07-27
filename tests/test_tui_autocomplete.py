@@ -84,7 +84,12 @@ def test_command_completion_suggests_registered_commands() -> None:
         prompt_templates=(),
     )
 
-    assert [item.display for item in state.items] == ["/session", "/settings", "/skills"]
+    assert [item.display for item in state.items] == [
+        "/session",
+        "/settings",
+        "/config",
+        "/skills",
+    ]
     assert state.selected is not None
     assert state.selected.apply("/se") == "/session"
 
@@ -165,9 +170,13 @@ def test_command_completion_prioritizes_direct_matches_over_search_terms() -> No
         prompt_templates=(),
     )
 
-    assert [item.display for item in state.items[:3]] == ["/resume", "/import", "/new"]
+    assert [item.display for item in state.items[:3]] == [
+        "/resources",
+        "/resume",
+        "/config",
+    ]
     assert state.selected is not None
-    assert state.selected.apply("/res") == "/resume"
+    assert state.selected.apply("/res") == "/resources"
 
 
 def test_skill_command_is_available_for_command_completion() -> None:
@@ -178,7 +187,7 @@ def test_skill_command_is_available_for_command_completion() -> None:
         prompt_templates=(),
     )
 
-    assert [item.display for item in state.items] == ["/skill:", "/skills"]
+    assert [item.display for item in state.items] == ["/skill:", "/skills", "/resources"]
     assert state.selected is not None
     assert state.selected.apply("/ski") == "/skill:"
 
@@ -192,7 +201,7 @@ def test_skill_command_completion_can_be_disabled() -> None:
         enable_skill_commands=False,
     )
 
-    assert [item.display for item in state.items] == ["/skills"]
+    assert [item.display for item in state.items] == ["/skills", "/resources"]
 
 
 def test_skill_name_completion_preserves_request_text_for_incomplete_name() -> None:
@@ -400,9 +409,8 @@ def test_provider_argument_completion_is_not_available() -> None:
         provider_names=("openai", "local"),
     )
 
-    assert [item.display for item in state.items] == ["high"]
-    assert state.selected is not None
-    assert state.selected.apply("/thinking h") == "/thinking high"
+    assert state.items == ()
+    assert state.selected is None
 
 
 def test_login_argument_completion_uses_available_providers() -> None:

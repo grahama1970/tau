@@ -964,6 +964,24 @@ def _status_command(context: CommandContext) -> CommandResult:
     lines.extend(_thinking_status_lines(session))
     if session.auto_compact_token_threshold is not None:
         lines.append(f"Auto compact threshold: {session.auto_compact_token_threshold:,}")
+    lines.extend(
+        (
+            "",
+            "Compatibility summary",
+            f"Session: {session.session_id if session.session_id is not None else 'In-memory'}",
+            f"Session file: {session_path if session_path is not None else 'In-memory'}",
+            f"Model: {session.model}",
+            f"Messages: {len(messages):,}",
+            f"User messages: {user_messages:,}",
+            f"Assistant messages: {assistant_messages:,}",
+            f"Tool calls: {tool_calls:,}",
+            f"Tool results: {tool_results:,}",
+            f"Estimated context tokens: {session.context_token_estimate:,}",
+            f"Resource diagnostics: {len(session.resource_diagnostics):,}",
+        )
+    )
+    if session.session_title:
+        lines.append(f"Session name: {session.session_title}")
     return CommandResult(handled=True, message="\n".join(lines))
 
 
