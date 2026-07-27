@@ -1089,9 +1089,15 @@ def _repeated_failure_signature(
 ) -> str | None:
     if not _failed_result(current) or not prior_results:
         return None
+    if not _has_actionable_failure_evidence(current):
+        return None
     current_signature = _failure_signature(current)
     previous = prior_results[-1]
-    if _failed_result(previous) and _failure_signature(previous) == current_signature:
+    if (
+        _failed_result(previous)
+        and _has_actionable_failure_evidence(previous)
+        and _failure_signature(previous) == current_signature
+    ):
         return current_signature
     return None
 
@@ -1124,6 +1130,24 @@ def _failure_signature(result: Mapping[str, Any]) -> str:
             "command_results": normalized_command_results,
         }
     )
+
+
+def _has_actionable_failure_evidence(result: Mapping[str, Any]) -> bool:
+    errors = result.get("errors")
+    if isinstance(errors, list) and any(str(error).strip() for error in errors):
+        return True
+    command_results = result.get("command_results")
+    if not isinstance(command_results, list):
+        return False
+    for command_result in command_results:
+        if not isinstance(command_result, dict):
+            continue
+        if any(
+            command_result.get(field) not in (None, "")
+            for field in ("returncode", "termination_cause", "stderr", "stdout")
+        ):
+            return True
+    return False
 
 
 def _with_same_failure_course_correction(

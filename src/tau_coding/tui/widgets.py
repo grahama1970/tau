@@ -1744,9 +1744,9 @@ def _render_chat_body(
     )
     if patch_body is not None:
         return patch_body
-    if role in {"status", "custom"}:
+    if role in {"user", "status", "custom"}:
         return _plain_text(display_text, body_style=body_style)
-    if role in {"user", "assistant", "thinking"}:
+    if role in {"assistant", "thinking"}:
         if _has_unclosed_fence(display_text):
             return _plain_text(display_text, body_style=body_style)
         return ThemedMarkdown(

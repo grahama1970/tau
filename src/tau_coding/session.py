@@ -342,7 +342,8 @@ class CodingSession:
         self._extensions = extensions
         self._runtime_extension_tool_sources: dict[str, str] = {}
         self._runtime_extension_tool_renderers: dict[str, ExtensionToolRenderers] = {}
-        self._available_tools: list[AgentTool] = list(harness.config.tools)
+        harness_config = getattr(harness, "config", None)
+        self._available_tools: list[AgentTool] = list(getattr(harness_config, "tools", ()))
         self._extension_ui_handler: Callable[..., object] | None = None
         self._extension_terminal_input_handler: Callable[..., object] | None = None
         self._extension_autocomplete_provider_handler: Callable[..., object] | None = None
@@ -375,7 +376,8 @@ class CodingSession:
             credentials_path(self._resource_paths.paths) if self._resource_paths.paths else None
         )
         self._last_diagnostic_log_path: Path | None = None
-        self._install_extension_provider_adapter(harness.config.provider)
+        if harness_config is not None and hasattr(harness_config, "provider"):
+            self._install_extension_provider_adapter(harness_config.provider)
 
     def _install_extension_provider_adapter(self, provider: ModelProvider) -> None:
         self._harness.config.provider = _ExtensionAwareModelProvider(

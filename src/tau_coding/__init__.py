@@ -1,5 +1,7 @@
 """Tau coding-agent application package."""
 
+from typing import TYPE_CHECKING, Any
+
 from tau_coding.commands import (
     CommandRegistry,
     CommandResult,
@@ -116,15 +118,6 @@ from tau_coding.provider_config import (
     upsert_saved_provider,
 )
 from tau_coding.resources import ResourceDiagnostic, ResourceError, TauResourcePaths
-from tau_coding.session import (
-    CodingSession,
-    CodingSessionConfig,
-    ModelChoice,
-    SessionTreeBranchResult,
-    SessionTreeChoice,
-    default_session_path,
-    jsonl_session_storage,
-)
 from tau_coding.session_export import (
     SessionExportError,
     default_session_export_path,
@@ -204,6 +197,37 @@ except ModuleNotFoundError as exc:
         raise RuntimeError(
             "Tau rendering requires the optional textual dependency"
         ) from _rendering_import_error
+
+if TYPE_CHECKING:
+    from tau_coding.session import (
+        CodingSession,
+        CodingSessionConfig,
+        ModelChoice,
+        SessionTreeBranchResult,
+        SessionTreeChoice,
+        default_session_path,
+        jsonl_session_storage,
+    )
+
+
+_SESSION_EXPORT_NAMES = {
+    "CodingSession",
+    "CodingSessionConfig",
+    "ModelChoice",
+    "SessionTreeBranchResult",
+    "SessionTreeChoice",
+    "default_session_path",
+    "jsonl_session_storage",
+}
+
+
+def __getattr__(name: str) -> Any:
+    if name in _SESSION_EXPORT_NAMES:
+        from tau_coding import session
+
+        return getattr(session, name)
+    raise AttributeError(f"module 'tau_coding' has no attribute {name!r}")
+
 
 __version__ = "0.1.0"
 

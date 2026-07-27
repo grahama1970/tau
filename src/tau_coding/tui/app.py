@@ -10384,7 +10384,7 @@ class TauTuiApp(App[None]):
     ) -> None:
         try:
             resume_message = await self.session.resume(session_id)
-            if not _is_extension_cancel_message(resume_message):
+            if not _is_extension_cancel_message(resume_message) and self.is_running:
                 self._reset_extension_ui_state()
             self.state.clear()
             self.state.set_skills(self.session.skills)
@@ -11129,7 +11129,12 @@ class TauTuiApp(App[None]):
         del choice
         self._refresh()
 
-    def _handle_model_picker_result(self, choice: ModelChoice | None) -> None:
+    def _handle_model_picker_result(
+        self,
+        choice: ModelChoice | None,
+        *,
+        notify: bool = True,
+    ) -> None:
         if choice is None:
             return
         try:
@@ -11147,7 +11152,8 @@ class TauTuiApp(App[None]):
         if daxnuts_message is not None:
             self.state.add_item("status", daxnuts_message)
         self._refresh()
-        self._notify(f"Switched to {choice.provider_name}:{choice.model}.")
+        if notify:
+            self._notify(f"Switched to {choice.provider_name}:{choice.model}.")
 
     def _open_theme_picker(self) -> None:
         self._theme_picker_original_theme = self.tui_settings.theme
@@ -11199,8 +11205,6 @@ class TauTuiApp(App[None]):
             self._notify(f"Could not change thinking mode: {exc}", severity="error")
             return
         self._refresh()
-        if isinstance(result, str) and result:
-            self._notify(result)
 
     async def _cycle_scoped_model(
         self,
@@ -11221,7 +11225,10 @@ class TauTuiApp(App[None]):
         except ValueError:
             current_index = 0 if direction == "previous" else -1
         delta = -1 if direction == "previous" else 1
-        self._handle_model_picker_result(choices[(current_index + delta) % len(choices)])
+        self._handle_model_picker_result(
+            choices[(current_index + delta) % len(choices)],
+            notify=False,
+        )
 
     def _notify(
         self,
@@ -14782,9 +14789,10 @@ def _render_queued_messages(
     state: TuiState,
     *,
     theme: TuiTheme,
-    keybindings: TuiKeybindings,
+    keybindings: TuiKeybindings | None = None,
 ) -> Group:
     """Render queued prompts stacked above the prompt input."""
+    keybindings = keybindings or TuiKeybindings()
     rows: list[Text] = []
     for message in state.queued_steering:
         row = Text("↪ steering · queued: ", style=theme.muted_text)
@@ -14851,7 +14859,7 @@ def _render_extension_header(lines: tuple[str, ...] | None) -> str:
 
 def _queued_message_preview(message: str) -> str:
     """Return the single-line preview shown above the prompt."""
-    preview = " ".join(message.split())
+    preview = next((line.strip() for line in message.splitlines() if line.strip()), "")
     if len(preview) <= QUEUED_MESSAGE_PREVIEW_CHARS:
         return preview
     return f"{preview[: QUEUED_MESSAGE_PREVIEW_CHARS - 3]}..."
@@ -16366,7 +16374,7 @@ async def run_tui_app(
             show_first_time_setup=first_time_setup,
         )
         await app.run_async()
-        return getattr(session, "session_id", None)
+        return getattr(session, "session_id", None) or startup_session_id
     finally:
         if session is not None:
             close_session = getattr(session, "aclose", None)

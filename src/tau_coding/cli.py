@@ -1979,6 +1979,15 @@ def main(
             raise typer.BadParameter("--api-key requires a non-empty value")
         if model is None and model_patterns is None:
             raise typer.BadParameter("--api-key requires --model or --models")
+        previous_runtime_api_key = environ.get(RUNTIME_API_KEY_ENV)
+
+        def restore_runtime_api_key() -> None:
+            if previous_runtime_api_key is None:
+                environ.pop(RUNTIME_API_KEY_ENV, None)
+            else:
+                environ[RUNTIME_API_KEY_ENV] = previous_runtime_api_key
+
+        ctx.call_on_close(restore_runtime_api_key)
         environ[RUNTIME_API_KEY_ENV] = runtime_api_key
 
     if session is not None and new_session:
