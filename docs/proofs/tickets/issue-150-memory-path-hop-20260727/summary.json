@@ -1,0 +1,39 @@
+{
+  "health.json": {
+    "memory_db_connected": true,
+    "ok": true
+  },
+  "recall-brief.json": {
+    "chain": "skill_chain",
+    "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+    "found": true,
+    "has_hop_count": true,
+    "has_path": true,
+    "has_provenance": true,
+    "hop_count": 3,
+    "items": 3,
+    "path_len": 4
+  },
+  "recall-skill-chains.json": {
+    "chain": "skill_chain",
+    "chain_key": "issue61_tau150_recall_brief_skill_chain_contract",
+    "found": true,
+    "has_hop_count": true,
+    "has_path": true,
+    "has_provenance": true,
+    "hop_count": 3,
+    "items": 1,
+    "path_len": 4
+  },
+  "recall-tool-chains.json": {
+    "chain": "tool_chain",
+    "chain_key": "issue61_tau150_recall_tool_chain_contract",
+    "found": true,
+    "has_hop_count": true,
+    "has_path": true,
+    "has_provenance": true,
+    "hop_count": 6,
+    "items": 1,
+    "path_len": 7
+  }
+}

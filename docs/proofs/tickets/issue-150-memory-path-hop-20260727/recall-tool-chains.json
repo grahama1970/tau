@@ -1,0 +1,228 @@
+{
+  "confidence": 42.529,
+  "errors": [],
+  "found": true,
+  "items": [
+    {
+      "_id": "tool_chains/issue61_tau150_recall_tool_chain_contract",
+      "_key": "issue61_tau150_recall_tool_chain_contract",
+      "_source": "tool_chains",
+      "commit": "pending-local-fix",
+      "elegance_grade": "direct",
+      "files_changed": [
+        "src/graph_memory/api_client.py",
+        "src/graph_memory/_schema_collections.py",
+        "src/graph_memory/_schema_views.py",
+        "src/graph_memory/lessons/recall_sources/_declarations.py"
+      ],
+      "grade": "proven",
+      "observation_count": 1,
+      "problem": "Tau issue 150 requires Graph Memory /recall to return a top-level tool_chain recommendation with tool provenance.",
+      "scope": "graph-memory-operator",
+      "scores": {
+        "bm25": 42.529197692871094,
+        "dense": 0.0,
+        "graph": 0.0
+      },
+      "solution": "Use memory.recall for chain evidence, ticket.lookup and ticket.lease for issue state, focused tests for deterministic proof, ticket.attach-proof for the transcript, and ticket.close after proof passes.",
+      "source": "tool_chains",
+      "success_rate": 1,
+      "tags": [
+        "issue:61",
+        "tau:150",
+        "tool-chain",
+        "recall-contract"
+      ],
+      "task_type": "memory_recall_contract",
+      "tool_chain": [
+        "memory.recall",
+        "ticket.lookup",
+        "ticket.lease",
+        "pytest",
+        "curl.recall",
+        "ticket.attach-proof",
+        "ticket.close"
+      ],
+      "tools": [
+        "memory.recall",
+        "ticket.lookup",
+        "ticket.lease",
+        "pytest",
+        "curl.recall",
+        "ticket.attach-proof",
+        "ticket.close"
+      ],
+      "type": "tool_chain"
+    }
+  ],
+  "meta": {
+    "collections_filter": [
+      "tool_chains"
+    ],
+    "k": 3,
+    "memory_first": true,
+    "q": "tau issue 150 memory tool chain proof",
+    "runtime_pressure": {
+      "active_workloads": [],
+      "errors": [
+        "No module named 'graph_memory.runtime_pressure'"
+      ],
+      "level": "unknown",
+      "recommended_action": "Runtime pressure collector failed; use normal recall behavior.",
+      "slow_query_risk": false
+    },
+    "scope": "",
+    "supplemental_count": 1,
+    "supplemental_promoted": 1,
+    "threshold": 0.3,
+    "took_ms": 134,
+    "used_dense": true,
+    "used_reranker": false
+  },
+  "should_scan": false,
+  "tool_chain": {
+    "_key": "issue61_tau150_recall_tool_chain_contract",
+    "collection": "tool_chains",
+    "commit": "pending-local-fix",
+    "elegance": "direct",
+    "files_changed": [
+      "src/graph_memory/api_client.py",
+      "src/graph_memory/_schema_collections.py",
+      "src/graph_memory/_schema_views.py",
+      "src/graph_memory/lessons/recall_sources/_declarations.py"
+    ],
+    "hop_count": 6,
+    "hops": 6,
+    "observations": 1,
+    "path": [
+      {
+        "chain_key": "issue61_tau150_recall_tool_chain_contract",
+        "collection": "tool_chains",
+        "node": "memory.recall",
+        "node_type": "tool",
+        "position": 0
+      },
+      {
+        "chain_key": "issue61_tau150_recall_tool_chain_contract",
+        "collection": "tool_chains",
+        "node": "ticket.lookup",
+        "node_type": "tool",
+        "position": 1
+      },
+      {
+        "chain_key": "issue61_tau150_recall_tool_chain_contract",
+        "collection": "tool_chains",
+        "node": "ticket.lease",
+        "node_type": "tool",
+        "position": 2
+      },
+      {
+        "chain_key": "issue61_tau150_recall_tool_chain_contract",
+        "collection": "tool_chains",
+        "node": "pytest",
+        "node_type": "tool",
+        "position": 3
+      },
+      {
+        "chain_key": "issue61_tau150_recall_tool_chain_contract",
+        "collection": "tool_chains",
+        "node": "curl.recall",
+        "node_type": "tool",
+        "position": 4
+      },
+      {
+        "chain_key": "issue61_tau150_recall_tool_chain_contract",
+        "collection": "tool_chains",
+        "node": "ticket.attach-proof",
+        "node_type": "tool",
+        "position": 5
+      },
+      {
+        "chain_key": "issue61_tau150_recall_tool_chain_contract",
+        "collection": "tool_chains",
+        "node": "ticket.close",
+        "node_type": "tool",
+        "position": 6
+      }
+    ],
+    "problem": "Tau issue 150 requires Graph Memory /recall to return a top-level tool_chain recommendation with tool provenance.",
+    "provenance": {
+      "_id": "tool_chains/issue61_tau150_recall_tool_chain_contract",
+      "_key": "issue61_tau150_recall_tool_chain_contract",
+      "collection": "tool_chains",
+      "source": "tool_chains"
+    },
+    "scope": "graph-memory-operator",
+    "score": 42.529,
+    "solution": "Use memory.recall for chain evidence, ticket.lookup and ticket.lease for issue state, focused tests for deterministic proof, ticket.attach-proof for the transcript, and ticket.close after proof passes.",
+    "source": "tool_chains",
+    "success_rate": 1,
+    "tags": [
+      "issue:61",
+      "tau:150",
+      "tool-chain",
+      "recall-contract"
+    ],
+    "task_type": "memory_recall_contract",
+    "tools": [
+      "memory.recall",
+      "ticket.lookup",
+      "ticket.lease",
+      "pytest",
+      "curl.recall",
+      "ticket.attach-proof",
+      "ticket.close"
+    ],
+    "traversal_path": [
+      {
+        "chain_key": "issue61_tau150_recall_tool_chain_contract",
+        "collection": "tool_chains",
+        "node": "memory.recall",
+        "node_type": "tool",
+        "position": 0
+      },
+      {
+        "chain_key": "issue61_tau150_recall_tool_chain_contract",
+        "collection": "tool_chains",
+        "node": "ticket.lookup",
+        "node_type": "tool",
+        "position": 1
+      },
+      {
+        "chain_key": "issue61_tau150_recall_tool_chain_contract",
+        "collection": "tool_chains",
+        "node": "ticket.lease",
+        "node_type": "tool",
+        "position": 2
+      },
+      {
+        "chain_key": "issue61_tau150_recall_tool_chain_contract",
+        "collection": "tool_chains",
+        "node": "pytest",
+        "node_type": "tool",
+        "position": 3
+      },
+      {
+        "chain_key": "issue61_tau150_recall_tool_chain_contract",
+        "collection": "tool_chains",
+        "node": "curl.recall",
+        "node_type": "tool",
+        "position": 4
+      },
+      {
+        "chain_key": "issue61_tau150_recall_tool_chain_contract",
+        "collection": "tool_chains",
+        "node": "ticket.attach-proof",
+        "node_type": "tool",
+        "position": 5
+      },
+      {
+        "chain_key": "issue61_tau150_recall_tool_chain_contract",
+        "collection": "tool_chains",
+        "node": "ticket.close",
+        "node_type": "tool",
+        "position": 6
+      }
+    ]
+  }
+}
