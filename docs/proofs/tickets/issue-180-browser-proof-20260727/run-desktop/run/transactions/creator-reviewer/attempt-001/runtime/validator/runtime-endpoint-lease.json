@@ -1,0 +1,29 @@
+{
+  "attempt_id": "attempt-34d7145388a83c7e80307eac3f6b503c:validator:001",
+  "attempt_number": 1,
+  "backend": "local",
+  "backend_ids": {
+    "pid": null
+  },
+  "backend_session_id": null,
+  "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+  "cleanup_policy": {
+    "kind": "process_group_termination"
+  },
+  "created_at": "2026-07-27T11:54:09.790501+00:00",
+  "dag_id": "generic:dag-viewer-creator-reviewer",
+  "endpoint_id": "local:4023e03807f69f70f4dc5a15",
+  "execution_token": "[REDACTED]",
+  "expires_at": "2026-07-27T11:56:09.790501+00:00",
+  "goal_hash": "sha256:2ff9cdff091aef6faf5f29ea2e9d90021c8046bb62ad5a5591d615403ad52203",
+  "heartbeat_policy": {
+    "kind": "process_poll"
+  },
+  "node_id": "creator-reviewer",
+  "owner": "tau",
+  "plan_revision": "sha256:199c53e3af3235659bf8a582c0d120566eae9c31416dcca614e9c6a1da811cc7",
+  "run_id": "dag-viewer-creator-reviewer",
+  "schema": "tau.runtime_endpoint_lease.v1",
+  "scope_id": "dag-viewer-creator-reviewer",
+  "work_order_sha256": "sha256:3a5abd129767df2c2730bbe9ad88dea097c8f9a8632785b1c78b4dcfc906e487"
+}

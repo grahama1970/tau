@@ -1,0 +1,43 @@
+{
+  "schema": "tau.issue_180_browser_proof_summary.v1",
+  "date": "2026-07-27",
+  "ticket": "grahama1970/tau#180",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "browser_receipts": [
+    {
+      "path": "browser-desktop-proof.json",
+      "status": "PASS",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "deviceScaleFactor": 1
+      },
+      "screenshot": "browser-desktop-proof.png",
+      "screenshot_sha256": "sha256:a4163a70eb2741df1df6002815182f24b7126147b179340f1f15f15a402a1917"
+    },
+    {
+      "path": "browser-mobile-proof.json",
+      "status": "PASS",
+      "viewport": {
+        "width": 430,
+        "height": 900,
+        "deviceScaleFactor": 1
+      },
+      "screenshot": "browser-mobile-proof.png",
+      "screenshot_sha256": "sha256:3652a8cb19b9ae0091f957ed05cbcad5efecb9644f140d29a8c3bc5ea842946c"
+    }
+  ],
+  "checks": {
+    "python_viewer_tests": "24 passed in 10.84s",
+    "npm_ci": "added 161 packages; audited 162 packages; found 0 vulnerabilities",
+    "web_typecheck": "exit 0",
+    "web_build": "exit 0",
+    "web_vitest": "6 passed (6) files; 26 passed (26) tests"
+  },
+  "still_outstanding": [
+    "Final #180 issue closure still requires acceptance that this browser proof plus prior P0-P5 and memory path/hop proof satisfy the integrated product checklist.",
+    "Tau immutable goal remains broader than this proof bundle."
+  ]
+}

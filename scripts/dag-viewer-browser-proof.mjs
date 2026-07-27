@@ -8,6 +8,14 @@ const puppeteer = require(`${process.env.NODE_PATH}/puppeteer`);
 
 const [url, screenshotPath, outputPath] = process.argv.slice(2);
 if (!url || !screenshotPath || !outputPath) throw new Error("browser-proof arguments missing");
+const viewport = {
+  width: Number.parseInt(process.env.TAU_DAG_VIEWPORT_WIDTH || "1440", 10),
+  height: Number.parseInt(process.env.TAU_DAG_VIEWPORT_HEIGHT || "1000", 10),
+  deviceScaleFactor: Number.parseFloat(process.env.TAU_DAG_DEVICE_SCALE_FACTOR || "1"),
+};
+if (!Number.isFinite(viewport.width) || !Number.isFinite(viewport.height) || !Number.isFinite(viewport.deviceScaleFactor)) {
+  throw new Error("invalid viewport environment");
+}
 
 const browser = await puppeteer.launch({
   executablePath: process.env.CHROME_BIN || "/usr/bin/google-chrome",
@@ -15,7 +23,7 @@ const browser = await puppeteer.launch({
   args: ["--no-sandbox", "--disable-dev-shm-usage"],
 });
 const page = await browser.newPage();
-await page.setViewport({ width: 1440, height: 1000, deviceScaleFactor: 1 });
+await page.setViewport(viewport);
 const methods = [];
 page.on("request", (request) => methods.push(request.method()));
 await page.goto(url, { waitUntil: "networkidle0", timeout: 15000 });
@@ -111,16 +119,23 @@ observed.layout_non_overlapping = await page.evaluate(() => {
     && child.top >= parent.top - 1
     && child.bottom <= parent.bottom + 1;
 
-  return graph.right <= inspector.left + 1
-    && Math.max(graph.bottom, inspector.bottom) <= timeline.top + 1
-    && timeline.bottom <= window.innerHeight + 1
+  const pageHeight = Math.max(document.documentElement.scrollHeight, window.innerHeight);
+  const sideBySideLayout =
+    graph.right <= inspector.left + 1
+    && Math.max(graph.bottom, inspector.bottom) <= timeline.top + 1;
+  const stackedLayout =
+    graph.bottom <= inspector.top + 1
+    && inspector.bottom <= timeline.top + 1;
+
+  return (sideBySideLayout || stackedLayout)
+    && timeline.bottom <= pageHeight + 1
     && contained(canvas, graph)
     && (!attempts || (contained(attempts, graph) && canvas.bottom <= attempts.top + 1))
     && contained(inspectorContent, inspector)
     && contained(proofBoundary, inspector)
     && inspectorContent.bottom <= proofBoundary.top + 1;
 });
-await page.screenshot({ path: screenshotPath, fullPage: false });
+await page.screenshot({ path: screenshotPath, fullPage: viewport.width < 900 });
 await browser.close();
 const screenshotSha256 = `sha256:${createHash("sha256").update(fs.readFileSync(screenshotPath)).digest("hex")}`;
 
@@ -131,6 +146,7 @@ const receipt = {
   live: true,
   provider_live: false,
   url,
+  viewport,
   screenshot: screenshotPath,
   screenshot_sha256: screenshotSha256,
   request_methods: [...new Set(methods)].sort(),

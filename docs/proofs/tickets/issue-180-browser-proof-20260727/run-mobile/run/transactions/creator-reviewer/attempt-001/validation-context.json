@@ -1,0 +1,23 @@
+{
+  "artifacts": [
+    {
+      "artifact_id": "primary",
+      "bytes": 20,
+      "kind": "text",
+      "media_type": "text/plain",
+      "path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-browser-proof-20260727/run-mobile/artifacts/candidate-1.txt",
+      "sha256": "cc73169219fb1787d9ac625ec3471e234d32becca8e2165a15a5fe7d7d016548"
+    }
+  ],
+  "attempt": 1,
+  "candidate_manifest_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-browser-proof-20260727/run-mobile/run/transactions/creator-reviewer/attempt-001/candidate-manifest.json",
+  "candidate_manifest_sha256": "5e14f690af3052797ae0f735de9bc06051233b014a6f7d363b60794810ecec80",
+  "node_id": "creator-reviewer",
+  "output_contract": {
+    "validation_receipt_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-browser-proof-20260727/run-mobile/run/transactions/creator-reviewer/attempt-001/validation-receipt.json"
+  },
+  "run_id": "dag-viewer-creator-reviewer",
+  "schema": "tau.generic_artifact_validation_context.v1",
+  "transaction_id": "tx-creator-reviewer",
+  "validator_id": "deterministic-validator"
+}

@@ -1,0 +1,20 @@
+{
+  "cancelled": false,
+  "command": [
+    "/tmp/tau-remaining-tickets-20260727.8FsbQ8/.venv/bin/python3",
+    "/tmp/tau-remaining-tickets-20260727.8FsbQ8/examples/dag-viewer-creator-reviewer/producer.py",
+    "--artifact-root",
+    "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-browser-proof-20260727/run-mobile/artifacts",
+    "--receipt",
+    "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-browser-proof-20260727/run-mobile/creator-receipt.json",
+    "--work-order",
+    "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-browser-proof-20260727/run-mobile/work-order.json",
+    "--step-delay-seconds",
+    "0.25"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "",
+  "timed_out": false
+}

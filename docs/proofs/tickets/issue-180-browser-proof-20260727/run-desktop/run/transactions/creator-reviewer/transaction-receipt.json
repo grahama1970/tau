@@ -1,0 +1,91 @@
+{
+  "accepted_manifest_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-browser-proof-20260727/run-desktop/run/transactions/creator-reviewer/accepted-manifest.json",
+  "accepted_manifest_sha256": "7668b2cd68077b87e2c16998159802c27f0a0be5194bf2400fd61318064cacd2",
+  "approval_gate_receipt_path": null,
+  "attempt_count": 2,
+  "attempts": [
+    {
+      "attempt": 1,
+      "attempt_context_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-browser-proof-20260727/run-desktop/run/transactions/creator-reviewer/attempt-001/attempt-context.json",
+      "attempt_context_sha256": "d01b4cd3c982aadc6b87f9fd90f67f72ec6f0b4bf92915c926403f4094f7aa58",
+      "candidate_manifest_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-browser-proof-20260727/run-desktop/run/transactions/creator-reviewer/attempt-001/candidate-manifest.json",
+      "candidate_manifest_sha256": "4b2ae5dcf9ced91bb973937805c8520bc9319a2a8d4c551fd74b6a92a635d3da",
+      "producer_execution_evidence": {
+        "command_result_sha256": "sha256:140ea57cfc951b2dc6b0f05ba4cf49922638ba7f913661f47cf968903f2e279e",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "producer_live": true,
+      "producer_model": null,
+      "producer_provider": null,
+      "producer_provider_live": false,
+      "review_execution_evidence": {
+        "command_result_sha256": "sha256:074be1f8ad4559e7d0b044efaefbb9626ff07a6f3bb3e6b65414041f6dde443f",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "review_feedback_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-browser-proof-20260727/run-desktop/run/transactions/creator-reviewer/attempt-001/review-feedback.json",
+      "review_feedback_sha256": "4624f14b9b9bb8de632c72edbc0819f752fbf2a69f48e9a5b3cb7666dc835d06",
+      "review_live": true,
+      "review_model": null,
+      "review_provider_live": false,
+      "review_revision_signature": "sha256:1824b9815aff1a34685320580a0172290f5169ece549143603cc0c060feca331",
+      "review_verdict": "REVISE",
+      "validation_receipt_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-browser-proof-20260727/run-desktop/run/transactions/creator-reviewer/attempt-001/validation-receipt.json"
+    },
+    {
+      "attempt": 2,
+      "attempt_context_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-browser-proof-20260727/run-desktop/run/transactions/creator-reviewer/attempt-002/attempt-context.json",
+      "attempt_context_sha256": "673920ef0e5e5f0a87b67f8ad99a9d6381e4d0553a5f593b0eaa48f1e8a7930c",
+      "candidate_manifest_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-browser-proof-20260727/run-desktop/run/transactions/creator-reviewer/attempt-002/candidate-manifest.json",
+      "candidate_manifest_sha256": "ea1af9d6a786ec704db4d1902353498eef4d759beb55bdb90b1c8e4d80760425",
+      "producer_execution_evidence": {
+        "command_result_sha256": "sha256:f43838bea032d130d7a476f70e37d4a10e2175f8f34f87c5d2b168727a917662",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "producer_live": true,
+      "producer_model": null,
+      "producer_provider": null,
+      "producer_provider_live": false,
+      "review_execution_evidence": {
+        "command_result_sha256": "sha256:a84f98c54e310298e08f1298bbfd2eb2aad95a0b32b2286f6990c937f287b0cc",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "review_feedback_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-browser-proof-20260727/run-desktop/run/transactions/creator-reviewer/attempt-002/review-feedback.json",
+      "review_feedback_sha256": "60ff09f530eed159fc625a80a501ed71efe49d1867e42ef9870031fc2761616f",
+      "review_live": true,
+      "review_model": null,
+      "review_provider_live": false,
+      "review_verdict": "PASS",
+      "validation_receipt_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-browser-proof-20260727/run-desktop/run/transactions/creator-reviewer/attempt-002/validation-receipt.json"
+    }
+  ],
+  "continuation": null,
+  "errors": [],
+  "goal_hash": null,
+  "node_id": "creator-reviewer",
+  "run_id": "dag-viewer-creator-reviewer",
+  "schema": "tau.generic_artifact_transaction_receipt.v1",
+  "state": "ACCEPTED",
+  "status": "PASS",
+  "transaction_id": "tx-creator-reviewer",
+  "work_order_sha256": "3a5abd129767df2c2730bbe9ad88dea097c8f9a8632785b1c78b4dcfc906e487"
+}
