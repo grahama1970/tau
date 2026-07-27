@@ -87,6 +87,7 @@ from tau_coding.dag_stress_poc import (
     run_dag_stress_poc,
 )
 from tau_coding.dag_template_registry import (
+    dag_template_catalog_payload,
     dag_template_registry_payload,
     describe_dag_template,
     preview_dag_template,
@@ -2774,6 +2775,10 @@ def main(
 
     if not print_requested and command == "dag-template-list":
         typer.echo(json.dumps(dag_template_registry_payload(), indent=2, sort_keys=True))
+        raise typer.Exit()
+
+    if not print_requested and command == "dag-template-catalog":
+        typer.echo(json.dumps(dag_template_catalog_payload(), indent=2, sort_keys=True))
         raise typer.Exit()
 
     if not print_requested and command == "dag-template-describe":

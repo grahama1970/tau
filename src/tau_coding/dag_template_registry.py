@@ -17,9 +17,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.dag_runtime.compiler import compile_project_dag_plan
 from tau_coding.project_dag import validate_dag_contract
 
 DAG_TEMPLATE_REGISTRY_SCHEMA = "tau.dag_template_registry.v1"
+DAG_TEMPLATE_CATALOG_SCHEMA = "tau.dag_template_catalog.v1"
 DAG_TEMPLATE_DESCRIPTOR_SCHEMA = "tau.dag_template_descriptor.v1"
 DAG_TEMPLATE_COMPILE_RECEIPT_SCHEMA = "tau.dag_template_compile_receipt.v1"
 DAG_TEMPLATE_MISSING_FIELDS_SCHEMA = "tau.dag_template_missing_fields.v1"
@@ -82,6 +84,16 @@ class DagTemplate:
                     "Every required evidence kind must be emitted by a routed node "
                     "before Tau admits progress."
                 ),
+            },
+            "resources": {
+                "requires_memory": self.name == "memory-recalled-workflow",
+                "requires_human_approval": self.name == "dry-run-human-approval",
+                "external_services": [],
+            },
+            "side_effects": {
+                "describe_validate_preview_select": "none",
+                "compile": "writes only caller-specified DAG, receipt, and missing-field paths",
+                "runtime": "depends on compiled node command_specs and executor policy",
             },
             "human_interview": {
                 "status_when_incomplete": "INTERVIEW_REQUIRED",
@@ -215,6 +227,34 @@ def dag_template_registry_payload() -> dict[str, Any]:
     }
 
 
+def dag_template_catalog_payload() -> dict[str, Any]:
+    """Return full catalogue metadata for pre-run UX and docs surfaces."""
+
+    return {
+        "schema": DAG_TEMPLATE_CATALOG_SCHEMA,
+        "template_count": len(TEMPLATES),
+        "templates": [template.descriptor_json() for template in TEMPLATES.values()],
+        "commands": {
+            "list": "tau dag-template-list",
+            "catalog": "tau dag-template-catalog",
+            "describe": "tau dag-template-describe --template <name>",
+            "select": "tau dag-template-select --facts <json>",
+            "validate": "tau dag-template-validate --template <name> --params <json>",
+            "preview": "tau dag-template-preview --template <name> --params <json>",
+            "compile": (
+                "tau dag-template-compile --template <name> --params <json> "
+                "--out <dag.json> --receipt <receipt.json>"
+            ),
+        },
+        "authority_boundary": {
+            "selection_authority": "deterministic closed typed facts only",
+            "preview_authority": "compiled Tau DAG contract and DagPlan summary",
+            "execution_authority": "existing Tau scheduler",
+            "viewer_authority": "read-only scheduler journal projection",
+        },
+    }
+
+
 def describe_dag_template(template_name: str) -> dict[str, Any]:
     """Return the machine-readable descriptor for one native Tau template."""
 
@@ -283,6 +323,7 @@ def preview_dag_template(
     preview: dict[str, Any] | None = None
     if ok:
         contract = compile_dag_template(template.name, params)
+        plan_payload = compile_project_dag_plan(contract).to_payload()
         preview = {
             "schema": "tau.dag_contract.preview.v1",
             "dag_id": contract["dag_id"],
@@ -298,6 +339,8 @@ def preview_dag_template(
             "limits": contract["limits"],
             "fail_closed_on": contract["fail_closed_on"],
             "context": contract["context"],
+            "compiled_dag_plan": _dag_plan_preview(plan_payload),
+            "source_to_plan_diff": _source_to_plan_diff(contract, plan_payload),
         }
     return {
         "schema": DAG_TEMPLATE_PREVIEW_SCHEMA,
@@ -1006,6 +1049,43 @@ def _selection_questions(
 
 def _truthy(value: object) -> bool:
     return value is True
+
+
+def _dag_plan_preview(plan_payload: Mapping[str, Any]) -> dict[str, Any]:
+    nodes = plan_payload.get("nodes")
+    edges = plan_payload.get("control_edges")
+    terminals = plan_payload.get("terminal_endpoints")
+    return {
+        "schema": plan_payload.get("schema"),
+        "plan_id": plan_payload.get("plan_id"),
+        "plan_sha256": plan_payload.get("plan_sha256"),
+        "node_count": len(nodes) if isinstance(nodes, list) else 0,
+        "edge_count": len(edges) if isinstance(edges, list) else 0,
+        "entry_node_ids": plan_payload.get("entry_node_ids"),
+        "terminal_endpoints": terminals if isinstance(terminals, list) else [],
+        "required_evidence": plan_payload.get("required_evidence"),
+    }
+
+
+def _source_to_plan_diff(
+    contract: Mapping[str, Any],
+    plan_payload: Mapping[str, Any],
+) -> dict[str, Any]:
+    plan_preview = _dag_plan_preview(plan_payload)
+    source_nodes = contract.get("nodes")
+    source_edges = contract.get("edges")
+    source_required_evidence = contract.get("required_evidence")
+    return {
+        "source_schema": contract.get("schema"),
+        "plan_schema": plan_payload.get("schema"),
+        "source_node_count": len(source_nodes) if isinstance(source_nodes, list) else 0,
+        "plan_node_count": plan_preview["node_count"],
+        "source_edge_count": len(source_edges) if isinstance(source_edges, list) else 0,
+        "plan_edge_count": plan_preview["edge_count"],
+        "entry_preserved": contract.get("entry_node") in (plan_payload.get("entry_node_ids") or []),
+        "required_evidence_preserved": source_required_evidence
+        == plan_payload.get("required_evidence"),
+    }
 
 
 def _template_or_raise(template_name: str) -> DagTemplate:

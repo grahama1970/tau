@@ -1,0 +1,225 @@
+{
+  "descriptor": {
+    "authority_boundary": {
+      "provider_calls": "never during describe, validate, preview, or compile",
+      "scheduler": "existing Tau DAG runtime",
+      "selector": "deterministic template name and typed params",
+      "viewer": "read-only projection of scheduler journal and admitted receipts"
+    },
+    "avoid_when": [
+      "The request is a one-step answer or needs competing candidates."
+    ],
+    "evidence_contract": {
+      "admission_rule": "Every required evidence kind must be emitted by a routed node before Tau admits progress.",
+      "required_kinds": [
+        "plan_receipt",
+        "execution_receipt",
+        "verification_receipt"
+      ]
+    },
+    "human_interview": {
+      "questions_source": "missing typed required fields",
+      "status_when_incomplete": "INTERVIEW_REQUIRED"
+    },
+    "name": "plan-execute-verify",
+    "node_roles": [
+      "planner",
+      "executor",
+      "verifier",
+      "human"
+    ],
+    "optional_fields": [
+      "limits",
+      "command_specs",
+      "fail_closed_on"
+    ],
+    "preview": {
+      "available": true,
+      "compiles_to_schema": "tau.dag_contract.v1",
+      "dispatches_commands": false
+    },
+    "required_fields": [
+      "dag_id",
+      "goal",
+      "target",
+      "planner",
+      "executor",
+      "verifier"
+    ],
+    "resources": {
+      "external_services": [],
+      "requires_human_approval": false,
+      "requires_memory": false
+    },
+    "schema": "tau.dag_template_descriptor.v1",
+    "side_effects": {
+      "compile": "writes only caller-specified DAG, receipt, and missing-field paths",
+      "describe_validate_preview_select": "none",
+      "runtime": "depends on compiled node command_specs and executor policy"
+    },
+    "summary": "Planner, executor, and verifier nodes run in sequence before human handoff.",
+    "topology": "PLAN_EXECUTE_VERIFY",
+    "use_when": [
+      "A task needs an explicit plan, implementation, and verification pass."
+    ]
+  },
+  "dispatches_commands": false,
+  "live": false,
+  "missing_fields": [],
+  "mocked": false,
+  "ok": true,
+  "params_path": "/tmp/tau-remaining-tickets-20260727.8FsbQ8/docs/proofs/tickets/issue-180-p3-high-value-templates-20260727/plan-execute-verify-params.json",
+  "params_sha256": "sha256:3df28abf066f936539b0da8ed1d376aefdb23ccca69a8bb20dcda3e467aefc30",
+  "preview": {
+    "compiled_dag_plan": {
+      "edge_count": 3,
+      "entry_node_ids": [
+        "planner"
+      ],
+      "node_count": 3,
+      "plan_id": "project:issue-180-plan-execute-verify",
+      "plan_sha256": "sha256:d011bdf422690802f3d8457b7afae337fed9e8742342bbf569a7a8801c396c14",
+      "required_evidence": [
+        "plan_receipt",
+        "execution_receipt",
+        "verification_receipt"
+      ],
+      "schema": "tau.dag_plan.v1",
+      "terminal_endpoints": [
+        {
+          "kind": "external",
+          "origin": "declared",
+          "terminal_id": "human"
+        }
+      ]
+    },
+    "context": {
+      "dag_template": {
+        "name": "plan-execute-verify",
+        "required_fields": [
+          "dag_id",
+          "goal",
+          "target",
+          "planner",
+          "executor",
+          "verifier"
+        ],
+        "summary": "Planner, executor, and verifier nodes run in sequence before human handoff.",
+        "topology": "PLAN_EXECUTE_VERIFY"
+      },
+      "stop_condition": "Stop at human after required evidence gates pass.",
+      "template_params_sha256": "sha256:93813f38c7a95e7023ad5845d08327eac9941ef48ab7eaa5afdd6735216ae786"
+    },
+    "dag_id": "issue-180-plan-execute-verify",
+    "edge_count": 3,
+    "edges": [
+      {
+        "from": "planner",
+        "to": "executor"
+      },
+      {
+        "from": "executor",
+        "to": "verifier"
+      },
+      {
+        "from": "verifier",
+        "to": "human"
+      }
+    ],
+    "entry_node": "planner",
+    "fail_closed_on": [
+      "goal_hash_mismatch",
+      "target_changed",
+      "unexpected_node",
+      "unexpected_edge",
+      "missing_required_evidence",
+      "max_attempts_exceeded",
+      "malformed_handoff"
+    ],
+    "goal": {
+      "goal_hash": "sha256:active-goal",
+      "goal_id": "issue-180-p3",
+      "goal_version": 1
+    },
+    "limits": {
+      "default_timeout_seconds": 120,
+      "max_total_attempts": 3,
+      "resume": true
+    },
+    "node_count": 3,
+    "nodes": [
+      {
+        "agent": "planner",
+        "executor": "local",
+        "id": "planner",
+        "max_attempts": 1,
+        "required_evidence": [
+          "plan_receipt"
+        ]
+      },
+      {
+        "agent": "executor",
+        "executor": "local",
+        "id": "executor",
+        "max_attempts": 1,
+        "required_evidence": [
+          "execution_receipt"
+        ]
+      },
+      {
+        "agent": "verifier",
+        "executor": "local",
+        "id": "verifier",
+        "max_attempts": 1,
+        "required_evidence": [
+          "verification_receipt"
+        ],
+        "reviewer": {
+          "requires_goal_hash": true,
+          "reviews_node": "executor"
+        }
+      }
+    ],
+    "required_evidence": [
+      "plan_receipt",
+      "execution_receipt",
+      "verification_receipt"
+    ],
+    "schema": "tau.dag_contract.preview.v1",
+    "source_to_plan_diff": {
+      "entry_preserved": true,
+      "plan_edge_count": 3,
+      "plan_node_count": 3,
+      "plan_schema": "tau.dag_plan.v1",
+      "required_evidence_preserved": true,
+      "source_edge_count": 3,
+      "source_node_count": 3,
+      "source_schema": "tau.dag_contract.v1"
+    },
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#180"
+    },
+    "terminal_nodes": [
+      "human"
+    ]
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "Runtime execution success.",
+      "Provider/model semantic quality.",
+      "That the human accepted the preview."
+    ],
+    "proves": [
+      "Tau can render the selected native template as an inspectable pre-run DAG preview.",
+      "Incomplete params fail closed to INTERVIEW_REQUIRED.",
+      "Preview does not dispatch workers, providers, or scheduler execution."
+    ]
+  },
+  "provider_live": false,
+  "questions": [],
+  "schema": "tau.dag_template_preview.v1",
+  "status": "PASS",
+  "template": "plan-execute-verify",
+  "timestamp": "2026-07-27T11:22:04Z"
+}
