@@ -23,6 +23,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      # Tau shells out to these binaries; without them the corresponding code
+      # paths degrade silently (graph_artifacts._render_graphviz returns None)
+      # or raise ToolInputError, so their tests fail instead of proving the real
+      # path. fd-find installs as `fdfind`, which tools.py already accepts.
+      - name: Install external tool dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y ripgrep fd-find graphviz
+
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:

@@ -281,6 +281,20 @@ def _collect_sources(request: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _uncoloured_probe_env() -> dict[str, str]:
+    """Environment for CLI probes whose stdout is hashed as evidence.
+
+    Probe output is captured and hashed, so it must not vary with the ambient
+    terminal. ``NO_COLOR`` alone is not enough: Rich gives ``FORCE_COLOR``
+    precedence, and CI runners commonly export it, which would inject ANSI
+    sequences into the captured text and change ``stdout_sha256``.
+    """
+    env = {**os.environ, "NO_COLOR": "1", "TERM": "dumb"}
+    for forcing_var in ("FORCE_COLOR", "CLICOLOR_FORCE"):
+        env.pop(forcing_var, None)
+    return env
+
+
 def _capture_cli(request: dict[str, Any]) -> dict[str, Any]:
     executable = Path(_required_string(request, "tau_executable")).resolve()
     if not executable.is_file():
@@ -300,7 +314,7 @@ def _capture_cli(request: dict[str, Any]) -> dict[str, Any]:
             capture_output=True,
             text=True,
             timeout=20,
-            env={**os.environ, "NO_COLOR": "1", "TERM": "dumb"},
+            env=_uncoloured_probe_env(),
         )
         results.append(
             {

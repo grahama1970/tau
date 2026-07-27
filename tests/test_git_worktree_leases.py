@@ -1541,12 +1541,22 @@ def test_failed_allocation_does_not_prune_unrelated_missing_worktree(
     unrelated = tmp_path / "unrelated-worktree"
     _git(repository, "worktree", "add", "--detach", str(unrelated), "HEAD")
     _git(repository, "config", "gc.worktreePruneExpire", "now")
+    # Auto-gc prunes stale worktrees as a side effect of unrelated git commands,
+    # and which commands trigger it varies by git version. Disable it so the
+    # only candidate pruner left is the code under test.
+    _git(repository, "config", "gc.auto", "0")
     shutil.rmtree(unrelated)
     external = tmp_path / "external"
     external.write_text("outside\n", encoding="utf-8")
     (repository / "src" / "escape").symlink_to(external)
     _git(repository, "add", "src/escape")
     _git(repository, "commit", "-m", "symlink fixture")
+
+    # Establish the precondition explicitly. If fixture setup already lost the
+    # entry, this test cannot observe what it claims to measure, and asserting
+    # afterwards would blame the lease manager for git's own behaviour.
+    if str(unrelated) not in _git(repository, "worktree", "list", "--porcelain"):
+        pytest.skip("git pruned the stale worktree during fixture setup")
 
     with pytest.raises(GitWorktreeLeaseError, match="worktree_symlink_forbidden"):
         _allocate(GitWorktreeLeaseManager(tmp_path / "lease-state"), repository)

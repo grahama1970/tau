@@ -3,6 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from tau_coding.cli import app
@@ -746,7 +747,26 @@ def test_committed_research_auditor_overlay_command_spec_loads() -> None:
     assert spec["timeout_s_source"] == "command_spec"
 
 
+def _agent_registry_root_for_tests() -> Path:
+    """Locate the external agent-skills registry, or skip.
+
+    The registry lives outside this repository, so a clean checkout — including
+    CI — has no copy of it. Skipping keeps the absence visible instead of
+    failing a chain this repository cannot satisfy on its own.
+    """
+    root = Path(__file__).resolve().parents[1]
+    candidates = [
+        root.parent / "agent-skills" / "agents",
+        Path.home() / "workspace" / "experiments" / "agent-skills" / "agents",
+    ]
+    for candidate in candidates:
+        if candidate.is_dir():
+            return candidate
+    pytest.skip("agent-skills agent registry unavailable")
+
+
 def test_committed_persona_dream_panel_overlay_specs_run_fail_closed_chain() -> None:
+    agent_registry_root = _agent_registry_root_for_tests()
     root = Path(__file__).resolve().parents[1]
     start = _valid_handoff()
     start["previous_subagent"] = "human"
@@ -758,7 +778,7 @@ def test_committed_persona_dream_panel_overlay_specs_run_fail_closed_chain() -> 
 
     result = run_agent_handoff_command_loop(
         start,
-        agent_registry_root=Path("/home/graham/workspace/experiments/agent-skills/agents"),
+        agent_registry_root=agent_registry_root,
         command_spec_root=root / "experiments/goal-locked-subagents/agent-command-specs",
         active_goal_hash="sha256:active-goal",
         max_steps=4,
