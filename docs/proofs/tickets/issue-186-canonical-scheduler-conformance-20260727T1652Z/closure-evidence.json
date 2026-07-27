@@ -1,5 +1,5 @@
 {
-  "schema": "tau.ticket_closure_evidence.v1",
+  "schema": "agent_skills.ticket_closure_evidence.v1",
   "issue": 186,
   "repo": "grahama1970/tau",
   "mocked": false,
@@ -57,4 +57,3 @@
     "Full #72 epic closure"
   ]
 }
-
