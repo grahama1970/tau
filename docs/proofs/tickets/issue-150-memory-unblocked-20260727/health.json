@@ -1,0 +1,1 @@
+{"status":"ok","ok":true,"memory_db_connected":true,"intent_mapper_ok":true,"conversation_classifier_ok":true,"conversation_classifier_device":"cuda","sparta_corpus_ok":true,"sparta_controls_count":12491,"sparta_corpus_required":true}
