@@ -1,0 +1,169 @@
+{
+  "capture": {
+    "backend": "tmux",
+    "backend_session_id": "sha256:5df94c96aa26fadf2df27b1e81acbe62d217855aacb7a7e183c451cdfd8bf48a",
+    "byte_truncated": false,
+    "diagnostic_only": true,
+    "endpoint_id": "%2",
+    "errors": [],
+    "line_truncated": false,
+    "max_capture_bytes": 65536,
+    "requested_lines": 80,
+    "returncode": 0,
+    "returned_bytes": 186,
+    "returned_lines": 4,
+    "text": "bash-5.2$ printf x >> /tmp/tau-issue-95-tmux-smoke-20260727/submit-side-effect.t\nxt; printf 'TAU_TMUX_RUNTIME_SMOKE_20260727T003353Z\\n'\nTAU_TMUX_RUNTIME_SMOKE_20260727T003353Z\nbash-5.2$\n",
+    "truncated": false
+  },
+  "duplicate_label_control": {
+    "distinct_exact_ids": true,
+    "session_ids": [
+      "$0",
+      "$1"
+    ]
+  },
+  "endpoint_cleanup": {
+    "action": "endpoint_close",
+    "close_returncode": 0,
+    "endpoint_id": "%2",
+    "post_verified_absent": true,
+    "post_verify_returncode": 0,
+    "status": "PASS"
+  },
+  "endpoint_lease": {
+    "attempt_id": "attempt-1",
+    "attempt_number": 1,
+    "backend": "tmux",
+    "backend_ids": {
+      "pane_id": "%2",
+      "server_incarnation_sha256": "sha256:5df94c96aa26fadf2df27b1e81acbe62d217855aacb7a7e183c451cdfd8bf48a",
+      "server_name": "tau-smoke-20260727t003353z",
+      "server_pid": 1857109,
+      "server_start_time": 1785112433,
+      "server_version": "3.4",
+      "session_id": "$0",
+      "session_name": "tau-tau-tmux-runtime-smoke-b1ec311fa561",
+      "socket_path": "/tmp/tmux-1000/tau-smoke-20260727t003353z",
+      "socket_root": "/tmp",
+      "window_id": "@2",
+      "window_name": "tau-shell-worker-628beeab3cd8"
+    },
+    "backend_session_id": "sha256:5df94c96aa26fadf2df27b1e81acbe62d217855aacb7a7e183c451cdfd8bf48a",
+    "capabilities_sha256": "sha256:0989cd24b37f1aeebb234afb9393c9bb3c405f720aae35a35bcf7177550d5d02",
+    "cleanup_policy": {
+      "kind": "exact_endpoint_authorization",
+      "scope_cleanup": "explicit"
+    },
+    "created_at": "2026-07-27T00:33:53.951316+00:00",
+    "dag_id": "tau-tmux-runtime-smoke",
+    "endpoint_id": "%2",
+    "execution_token": "sha256:3556a9bd05c161a6e41c0881408f655e7fe6add9ec95f4bcd91eebf00d305f5f",
+    "expires_at": "2026-07-27T00:35:53.951316+00:00",
+    "goal_hash": "sha256:aaf91d506bb37733cf308fc8f5f70e62b74d572b33630327eda6e29011a47c97",
+    "heartbeat_policy": {
+      "interval_seconds": 0.05,
+      "kind": "bounded_poll"
+    },
+    "node_id": "shell-worker",
+    "owner": "tau-runtime-smoke",
+    "plan_revision": "sha256:9d9b367d34f532364ddfdb46d7355b492faa3b05da2d8761954fb6bd414166e0",
+    "run_id": "tau-tmux-runtime-smoke-20260727T003353Z-primary",
+    "schema": "tau.runtime_endpoint_lease.v1",
+    "scope_id": "$0",
+    "work_order_sha256": "sha256:d52073925dfa642fc96c76f240eb3e96dde531b33a6245b525bb2b5b67dfc58d"
+  },
+  "errors": [],
+  "induced_ambiguity_count": 1,
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "paste_attempt_count": 1,
+  "proof_scope": {
+    "does_not_prove": [
+      "Pane text or process liveness completed a Tau DAG node.",
+      "Provider or model semantic quality.",
+      "Crash-safe restart reconciliation.",
+      "Secure sandbox isolation or production readiness."
+    ],
+    "proves": [
+      "Tau used a real tmux binary with an explicit isolated server name.",
+      "Duplicate labels produced distinct recorded session IDs.",
+      "Tau exercised one exact pane through spawn, submit, capture, observation, inventory, and termination.",
+      "A real paste with a hidden acknowledgement was not retried; its side effect occurred exactly once.",
+      "Wrong-server lookup and unowned endpoint cleanup were blocked.",
+      "The endpoint and dedicated tmux server were post-verified absent."
+    ]
+  },
+  "provider_live": false,
+  "run_id": "tau-tmux-runtime-smoke-20260727T003353Z",
+  "runtime_event": {
+    "confidence": "PROCESS",
+    "endpoint_lease_sha256": "sha256:690328d33c37dd7177af3edda9e4f842f576b93ffc440ad068b6eada72d458b1",
+    "event_id": "tmux:6e425d4656dd150640145bd07f28ec60b7b8cab1cc3ee18f359687829b4eb694",
+    "event_type": "RUNTIME_OBSERVATION_RECORDED",
+    "liveness": "ALIVE",
+    "observation": {
+      "pane_current_command": "bash",
+      "pane_dead": "0",
+      "pane_dead_signal": "",
+      "pane_dead_status": "",
+      "pane_id": "%2",
+      "pane_pid": "1857156",
+      "pane_present": true,
+      "server_name": "tau-smoke-20260727t003353z",
+      "session_id": "$0",
+      "window_id": "@2"
+    },
+    "observed_at": "2026-07-27T00:33:53.998883+00:00",
+    "run_id": "tau-tmux-runtime-smoke-20260727T003353Z-primary",
+    "schema": "tau.runtime_event.v1",
+    "source": "tmux",
+    "state": "UNKNOWN"
+  },
+  "schema": "tau.tmux_runtime_smoke_receipt.v1",
+  "server_cleanup": {
+    "kill_returncode": 0,
+    "post_verified_absent": true,
+    "verify_returncode": 1,
+    "verify_stderr": "no server running on /tmp/tmux-1000/tau-smoke-20260727t003353z\n",
+    "verify_stdout": ""
+  },
+  "side_effect_count": 1,
+  "status": "PASS",
+  "submit_receipt": {
+    "backend_acknowledgement": {
+      "automatic_retry_allowed": false,
+      "buffer_name": "tau-d1a62d5884552b74363325f24191c6cc",
+      "mutation_attempted": true,
+      "mutation_returncode": 124,
+      "pane_id": "%2",
+      "post_verify_error": null,
+      "post_verify_returncode": null,
+      "server_name": "tau-smoke-20260727t003353z"
+    },
+    "composer_state_after": "UNKNOWN",
+    "composer_state_before": "UNKNOWN",
+    "delivery_status": "INDETERMINATE",
+    "endpoint_lease_sha256": "sha256:690328d33c37dd7177af3edda9e4f842f576b93ffc440ad068b6eada72d458b1",
+    "errors": [
+      "tmux_runtime_submit_outcome_uncertain"
+    ],
+    "provider_execution_status": "NOT_OBSERVED",
+    "schema": "tau.runtime_submit_receipt.v1",
+    "submit_attempt_count": 1,
+    "text_delivery_count": 0,
+    "work_order_sha256": "sha256:d52073925dfa642fc96c76f240eb3e96dde531b33a6245b525bb2b5b67dfc58d"
+  },
+  "submit_replay_same_receipt": true,
+  "tmux_bin": "/usr/bin/tmux",
+  "tmux_server": "tau-smoke-20260727t003353z",
+  "tmux_surface": "real",
+  "unowned_cleanup_blocked": true,
+  "wrong_server_control": {
+    "blocked": true,
+    "returncode": 1,
+    "stderr": "error connecting to /tmp/tmux-1000/tau-smoke-20260727t003353z-wrong (No such file or directory)\n",
+    "stdout": "",
+    "timed_out": false
+  }
+}

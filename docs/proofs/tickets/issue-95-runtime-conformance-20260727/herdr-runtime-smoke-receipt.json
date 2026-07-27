@@ -1,0 +1,352 @@
+{
+  "backend_session_id": "default",
+  "capture": {
+    "backend": "herdr",
+    "backend_session_id": "default",
+    "diagnostic_only": true,
+    "endpoint_id": "w7Z:p3",
+    "errors": [],
+    "returncode": 0,
+    "text": "bash-5.2$ printf 'TAU_HERDR_RUNTIME_SMOKE:20260727T003\n353Z\\n'\nTAU_HERDR_RUNTIME_SMOKE:20260727T003353Z\nbash-5.2$\n"
+  },
+  "created_at": "2026-07-27T00:33:56.161935+00:00",
+  "duplicate_label_control": {
+    "distinct_exact_ids": true,
+    "workspace_ids": [
+      "w7Z",
+      "w70"
+    ]
+  },
+  "endpoint_cleanup": {
+    "action": "endpoint_close",
+    "close_returncode": 0,
+    "endpoint_id": "w7Z:p3",
+    "post_verified_absent": true,
+    "post_verify_error_code": "pane_not_found",
+    "post_verify_returncode": 1,
+    "status": "PASS"
+  },
+  "endpoint_lease": {
+    "attempt_id": "attempt-1",
+    "attempt_number": 1,
+    "backend": "herdr",
+    "backend_ids": {
+      "agent_name": "tau-shell-worker-295e12cb9ab0",
+      "pane_id": "w7Z:p3",
+      "session": "default",
+      "tab_id": "w7Z:t2",
+      "terminal_id": "term_6578ce09dad467a",
+      "workspace_id": "w7Z"
+    },
+    "backend_session_id": "default",
+    "capabilities_sha256": "sha256:5bb1843bb15edcea81294883221c6804e7fadd4e751f5dde661b3dd20dec9fe2",
+    "cleanup_policy": {
+      "kind": "exact_endpoint_authorization",
+      "workspace_cleanup": "delegated_to_tau_herdr_cleanup"
+    },
+    "created_at": "2026-07-27T00:33:55.766792+00:00",
+    "dag_id": "tau-herdr-runtime-smoke",
+    "endpoint_id": "w7Z:p3",
+    "execution_token": "sha256:51baa1b0fc3b81af3c6f54537b82b6b2ebac1f62e78364176109d519dfc999e3",
+    "expires_at": "2026-07-27T00:35:55.766792+00:00",
+    "goal_hash": "sha256:c478849fbaf3960d35b001463587a6bee91a77509e68b769755ae643923d6e23",
+    "heartbeat_policy": {
+      "interval_seconds": 0.05,
+      "kind": "native_event_with_bounded_poll_fallback",
+      "native_discovery_error": null
+    },
+    "node_id": "shell-worker",
+    "owner": "tau-runtime-smoke",
+    "plan_revision": "sha256:eacd864e1ed0fd8fe62a31ef521b405603655ff879c333cb44a98c3ff1bb7ea6",
+    "run_id": "tau-herdr-runtime-smoke-20260727T003353Z-primary",
+    "schema": "tau.runtime_endpoint_lease.v1",
+    "scope_id": "w7Z",
+    "work_order_sha256": "sha256:ce86d36137effc528e52f9b78cdc86d545199bbf1fbaa7415bdb856332f2d248"
+  },
+  "errors": [],
+  "herdr_surface": "real",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Pane text or runtime state completed a Tau DAG node.",
+      "Provider/model semantic quality.",
+      "Crash-safe restart reconciliation.",
+      "Secure sandbox isolation or production readiness."
+    ],
+    "proves": [
+      "Tau used the real Herdr CLI with an explicit session.",
+      "Duplicate labels produced distinct recorded workspace IDs.",
+      "Tau spawned, submitted to, captured, and observed one exact pane ID.",
+      "Wrong-session lookup and unowned endpoint cleanup were blocked.",
+      "Endpoint and workspace cleanup were post-verified absent."
+    ]
+  },
+  "provider_live": false,
+  "run_id": "tau-herdr-runtime-smoke-20260727T003353Z",
+  "runtime_event": {
+    "confidence": "NATIVE",
+    "endpoint_lease_sha256": "sha256:9f9fc4e4699029a579e073e0b2c5631b845bcb0998d3d924ba3986ca1c01740a",
+    "event_id": "herdr:39756774c05e3ccf0f587ad5df10ad95ff7782812b3fdea3f8f37844743b8aad",
+    "event_type": "RUNTIME_OBSERVATION_RECORDED",
+    "liveness": "ALIVE",
+    "observation": {
+      "agent_status": "unknown",
+      "pane_id": "w7Z:p3",
+      "process_info_error_code": null,
+      "processes": [
+        {
+          "argv": [
+            "bash",
+            "--noprofile",
+            "--norc"
+          ],
+          "cmdline": "bash --noprofile --norc",
+          "cwd": "/tmp/tau-issue-95-herdr-smoke-20260727",
+          "name": "bash",
+          "pid": 1860483
+        }
+      ],
+      "session": "default",
+      "terminal_id": "term_6578ce09dad467a",
+      "visible_auth_marker": false,
+      "visible_interstitial_marker": false,
+      "visible_text_diagnostic_only": true,
+      "visible_text_sha256": "sha256:c9f1a606802911282416ecc8541fa71ffc947ab2fb26b89851dde7de82636355",
+      "workspace_id": "w7Z"
+    },
+    "observed_at": "2026-07-27T00:33:56.006103+00:00",
+    "run_id": "tau-herdr-runtime-smoke-20260727T003353Z-primary",
+    "schema": "tau.runtime_event.v1",
+    "source": "herdr",
+    "state": "UNKNOWN"
+  },
+  "schema": "tau.herdr_runtime_smoke_receipt.v1",
+  "status": "PASS",
+  "submit_receipt": {
+    "backend_acknowledgement": {
+      "pane_id": "w7Z:p3",
+      "response": null,
+      "returncode": 0,
+      "session": "default"
+    },
+    "composer_state_after": "UNKNOWN",
+    "composer_state_before": "UNKNOWN",
+    "delivery_status": "CONFIRMED",
+    "endpoint_lease_sha256": "sha256:9f9fc4e4699029a579e073e0b2c5631b845bcb0998d3d924ba3986ca1c01740a",
+    "errors": [],
+    "provider_execution_status": "NOT_OBSERVED",
+    "schema": "tau.runtime_submit_receipt.v1",
+    "submit_attempt_count": 1,
+    "text_delivery_count": 1,
+    "work_order_sha256": "sha256:ce86d36137effc528e52f9b78cdc86d545199bbf1fbaa7415bdb856332f2d248"
+  },
+  "unowned_cleanup_blocked": true,
+  "workspace_cleanup": {
+    "alerts": [],
+    "applied_action_count": 2,
+    "applied_actions": [
+      {
+        "action": "workspace_close",
+        "applied": true,
+        "pane_ids": [],
+        "post_verified_absent": true,
+        "post_verify_action": "workspace_get",
+        "post_verify_error_code": "workspace_not_found",
+        "post_verify_returncode": 1,
+        "reason": "run-owned workspace recorded in runtime manifest",
+        "returncode": 0,
+        "roles": [
+          "scope-2"
+        ],
+        "workspace_id": "w70"
+      },
+      {
+        "action": "workspace_close",
+        "applied": true,
+        "pane_ids": [
+          "w7Z:p3"
+        ],
+        "post_verified_absent": true,
+        "post_verify_action": "workspace_get",
+        "post_verify_error_code": "workspace_not_found",
+        "post_verify_returncode": 1,
+        "reason": "run-owned workspace recorded in runtime manifest",
+        "returncode": 0,
+        "roles": [
+          "scope-1"
+        ],
+        "workspace_id": "w7Z"
+      }
+    ],
+    "backend_session_id": "default",
+    "candidate_count": 2,
+    "candidates": [
+      {
+        "action": "workspace_close",
+        "pane_ids": [],
+        "reason": "run-owned workspace recorded in runtime manifest",
+        "roles": [
+          "scope-2"
+        ],
+        "workspace_id": "w70"
+      },
+      {
+        "action": "workspace_close",
+        "pane_ids": [
+          "w7Z:p3"
+        ],
+        "reason": "run-owned workspace recorded in runtime manifest",
+        "roles": [
+          "scope-1"
+        ],
+        "workspace_id": "w7Z"
+      }
+    ],
+    "command_results": [
+      {
+        "argv": [
+          "herdr",
+          "--session",
+          "default",
+          "workspace",
+          "close",
+          "w70"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+      },
+      {
+        "argv": [
+          "herdr",
+          "--session",
+          "default",
+          "workspace",
+          "get",
+          "w70"
+        ],
+        "returncode": 1,
+        "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w70 not found\"},\"id\":\"cli:workspace:get\"}\n",
+        "stdout": ""
+      },
+      {
+        "argv": [
+          "herdr",
+          "--session",
+          "default",
+          "workspace",
+          "close",
+          "w7Z"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+      },
+      {
+        "argv": [
+          "herdr",
+          "--session",
+          "default",
+          "workspace",
+          "get",
+          "w7Z"
+        ],
+        "returncode": 1,
+        "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w7Z not found\"},\"id\":\"cli:workspace:get\"}\n",
+        "stdout": ""
+      }
+    ],
+    "current_workspace": "w11",
+    "herdr_bin": "herdr",
+    "herdr_surface": "real",
+    "include_current_workspace": false,
+    "lease_required": true,
+    "live": true,
+    "mocked": false,
+    "mode": "apply",
+    "ok": true,
+    "post_verified_absent_count": 2,
+    "proof_scope": {
+      "does_not_prove": [
+        "global regex cleanup of unrelated Herdr resources",
+        "Git worktree deletion",
+        "session deletion beyond explicitly owned sessions recorded in tau.herdr_session_ownership.v1"
+      ],
+      "proves": [
+        "Tau can identify Herdr workspace/session resources recorded by one run",
+        "Tau cleanup defaults to audit/dry-run before mutation",
+        "Tau refuses to close the current Herdr workspace unless explicitly allowed",
+        "Tau apply cleanup requires a Herdr workspace lease before mutation",
+        "Tau verifies applied workspace cleanup by requiring Herdr workspace get to report workspace_not_found",
+        "Tau apply cleanup blocks instead of silently skipping recorded Herdr sessions",
+        "Tau apply cleanup requires explicit session ownership before stopping recorded sessions"
+      ]
+    },
+    "resource_count": 2,
+    "resources": [
+      {
+        "kind": "workspace",
+        "pane_ids": [],
+        "roles": [
+          "scope-2"
+        ],
+        "sources": [
+          "provider_sessions"
+        ],
+        "terminal_ids": [],
+        "workspace_id": "w70"
+      },
+      {
+        "kind": "workspace",
+        "pane_ids": [
+          "w7Z:p3"
+        ],
+        "roles": [
+          "scope-1"
+        ],
+        "sources": [
+          "provider_sessions"
+        ],
+        "terminal_ids": [
+          "term_6578ce09dad467a"
+        ],
+        "workspace_id": "w7Z"
+      }
+    ],
+    "run_dir": "/tmp/tau-issue-95-herdr-smoke-20260727",
+    "runtime_manifest": "/tmp/tau-issue-95-herdr-smoke-20260727/runtime-manifest.json",
+    "runtime_manifest_sha256": "e294bb3cb0a436e7a3a996921820d68885faaa4b49617341a71124ab4275825d",
+    "schema": "tau.herdr_cleanup_receipt.v1",
+    "session_ownership": null,
+    "session_ownership_payload": null,
+    "session_ownership_sha256": null,
+    "status": "PASS",
+    "timestamp": "2026-07-27T00:33:56Z",
+    "workspace_lease": "/tmp/tau-issue-95-herdr-smoke-20260727/herdr-workspace-lease.json",
+    "workspace_lease_payload": {
+      "cleanup_policy": "apply",
+      "created_at": "2026-07-27T00:33:56.040901+00:00",
+      "dag_id": "tau-herdr-runtime-smoke",
+      "expires_at": "2026-07-27T00:43:56.040913+00:00",
+      "owner": "tau-runtime-smoke",
+      "run_id": "tau-herdr-runtime-smoke-20260727T003353Z",
+      "schema": "tau.herdr_workspace_lease.v1",
+      "workspace_ids": [
+        "w7Z",
+        "w70"
+      ]
+    },
+    "workspace_lease_sha256": "c1e92d1ce232a109615e2df8939197e021957c2c18eaf8828eac176864e06e1c"
+  },
+  "workspace_cleanup_receipt": "/tmp/tau-issue-95-herdr-smoke-20260727/herdr-cleanup-receipt.json",
+  "wrong_session_control": {
+    "blocked": true,
+    "returncode": 1,
+    "session": "tau-issue-90-missing-20260727t003353z",
+    "stderr": "Error: Os { code: 2, kind: NotFound, message: \"No such file or directory\" }\n",
+    "stdout": "",
+    "timed_out": false
+  }
+}

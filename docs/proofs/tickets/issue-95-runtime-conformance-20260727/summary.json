@@ -1,0 +1,43 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "provider/model semantic quality",
+      "production security certification",
+      "all future backend implementations"
+    ],
+    "proves": [
+      "backend contract/adversarial matrix passed across runtime contract, local, Herdr, tmux, event bridge, and Git worktree lease suites",
+      "real tmux smoke exercised spawn, submit, capture, observe, inventory, terminate, duplicate-label controls, wrong-server block, and cleanup absence verification",
+      "real Herdr smoke exercised spawn, submit, capture, observe, duplicate-label controls, wrong-session block, cleanup lease, and post-verified absence"
+    ]
+  },
+  "focused_matrix": {
+    "command": "uv run pytest -q tests/test_runtime_backend_contracts.py tests/test_local_runtime_backend.py tests/test_herdr_runtime_backend.py tests/test_tmux_runtime_backend.py tests/test_runtime_event_bridge.py tests/test_git_worktree_leases.py",
+    "result": "259 passed in 20.17s"
+  },
+  "herdr_smoke": {
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "post_verified_absent_count": 2,
+    "status": "PASS",
+    "unowned_cleanup_blocked": true,
+    "workspace_cleanup_live": true,
+    "workspace_cleanup_status": "PASS"
+  },
+  "live": true,
+  "mocked": false,
+  "provider_live": false,
+  "schema": "tau.ticket_proof_summary.v1",
+  "ticket": 95,
+  "tmux_smoke": {
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "paste_attempt_count": 1,
+    "server_post_verified_absent": true,
+    "side_effect_count": 1,
+    "status": "PASS",
+    "unowned_cleanup_blocked": true
+  }
+}

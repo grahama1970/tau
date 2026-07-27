@@ -1,0 +1,197 @@
+{
+  "alerts": [],
+  "applied_action_count": 2,
+  "applied_actions": [
+    {
+      "action": "workspace_close",
+      "applied": true,
+      "pane_ids": [],
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "returncode": 0,
+      "roles": [
+        "scope-2"
+      ],
+      "workspace_id": "w70"
+    },
+    {
+      "action": "workspace_close",
+      "applied": true,
+      "pane_ids": [
+        "w7Z:p3"
+      ],
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "returncode": 0,
+      "roles": [
+        "scope-1"
+      ],
+      "workspace_id": "w7Z"
+    }
+  ],
+  "backend_session_id": "default",
+  "candidate_count": 2,
+  "candidates": [
+    {
+      "action": "workspace_close",
+      "pane_ids": [],
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "roles": [
+        "scope-2"
+      ],
+      "workspace_id": "w70"
+    },
+    {
+      "action": "workspace_close",
+      "pane_ids": [
+        "w7Z:p3"
+      ],
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "roles": [
+        "scope-1"
+      ],
+      "workspace_id": "w7Z"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "--session",
+        "default",
+        "workspace",
+        "close",
+        "w70"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "--session",
+        "default",
+        "workspace",
+        "get",
+        "w70"
+      ],
+      "returncode": 1,
+      "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w70 not found\"},\"id\":\"cli:workspace:get\"}\n",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "--session",
+        "default",
+        "workspace",
+        "close",
+        "w7Z"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "--session",
+        "default",
+        "workspace",
+        "get",
+        "w7Z"
+      ],
+      "returncode": 1,
+      "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w7Z not found\"},\"id\":\"cli:workspace:get\"}\n",
+      "stdout": ""
+    }
+  ],
+  "current_workspace": "w11",
+  "herdr_bin": "herdr",
+  "herdr_surface": "real",
+  "include_current_workspace": false,
+  "lease_required": true,
+  "live": true,
+  "mocked": false,
+  "mode": "apply",
+  "ok": true,
+  "post_verified_absent_count": 2,
+  "proof_scope": {
+    "does_not_prove": [
+      "global regex cleanup of unrelated Herdr resources",
+      "Git worktree deletion",
+      "session deletion beyond explicitly owned sessions recorded in tau.herdr_session_ownership.v1"
+    ],
+    "proves": [
+      "Tau can identify Herdr workspace/session resources recorded by one run",
+      "Tau cleanup defaults to audit/dry-run before mutation",
+      "Tau refuses to close the current Herdr workspace unless explicitly allowed",
+      "Tau apply cleanup requires a Herdr workspace lease before mutation",
+      "Tau verifies applied workspace cleanup by requiring Herdr workspace get to report workspace_not_found",
+      "Tau apply cleanup blocks instead of silently skipping recorded Herdr sessions",
+      "Tau apply cleanup requires explicit session ownership before stopping recorded sessions"
+    ]
+  },
+  "resource_count": 2,
+  "resources": [
+    {
+      "kind": "workspace",
+      "pane_ids": [],
+      "roles": [
+        "scope-2"
+      ],
+      "sources": [
+        "provider_sessions"
+      ],
+      "terminal_ids": [],
+      "workspace_id": "w70"
+    },
+    {
+      "kind": "workspace",
+      "pane_ids": [
+        "w7Z:p3"
+      ],
+      "roles": [
+        "scope-1"
+      ],
+      "sources": [
+        "provider_sessions"
+      ],
+      "terminal_ids": [
+        "term_6578ce09dad467a"
+      ],
+      "workspace_id": "w7Z"
+    }
+  ],
+  "run_dir": "/tmp/tau-issue-95-herdr-smoke-20260727",
+  "runtime_manifest": "/tmp/tau-issue-95-herdr-smoke-20260727/runtime-manifest.json",
+  "runtime_manifest_sha256": "e294bb3cb0a436e7a3a996921820d68885faaa4b49617341a71124ab4275825d",
+  "schema": "tau.herdr_cleanup_receipt.v1",
+  "session_ownership": null,
+  "session_ownership_payload": null,
+  "session_ownership_sha256": null,
+  "status": "PASS",
+  "timestamp": "2026-07-27T00:33:56Z",
+  "workspace_lease": "/tmp/tau-issue-95-herdr-smoke-20260727/herdr-workspace-lease.json",
+  "workspace_lease_payload": {
+    "cleanup_policy": "apply",
+    "created_at": "2026-07-27T00:33:56.040901+00:00",
+    "dag_id": "tau-herdr-runtime-smoke",
+    "expires_at": "2026-07-27T00:43:56.040913+00:00",
+    "owner": "tau-runtime-smoke",
+    "run_id": "tau-herdr-runtime-smoke-20260727T003353Z",
+    "schema": "tau.herdr_workspace_lease.v1",
+    "workspace_ids": [
+      "w7Z",
+      "w70"
+    ]
+  },
+  "workspace_lease_sha256": "c1e92d1ce232a109615e2df8939197e021957c2c18eaf8828eac176864e06e1c"
+}
