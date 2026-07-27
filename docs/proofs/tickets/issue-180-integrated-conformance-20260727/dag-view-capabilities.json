@@ -1,0 +1,32 @@
+{
+  "authority_boundary": {
+    "non_authoritative_inputs": [
+      "diagnostic activity",
+      "model/provider claims"
+    ],
+    "source": "scheduler journal, DAG source artifact, and admitted receipts",
+    "viewer": "read-only projection"
+  },
+  "event_schema": "tau.dag_live_event.v1",
+  "manifest_schema": "tau.dag_view_manifest.v1",
+  "read_only": true,
+  "schema": "tau.dag_viewer_capabilities.v1",
+  "snapshot_schema": "tau.dag_view_snapshot.v2",
+  "supports_accepted_evidence": true,
+  "supports_artifact_workspace": true,
+  "supports_attention_items": true,
+  "supports_bounded_query": true,
+  "supports_causal_explanations": true,
+  "supports_cross_template_conformance": true,
+  "supports_diagnostic_activity": true,
+  "supports_exactly_two_comparison": true,
+  "supports_historical_sequences": true,
+  "supports_live": true,
+  "supports_memory_provenance": "DEGRADED_WHEN_MEMORY_CHAIN_UNAVAILABLE",
+  "supports_receipt_inspection": true,
+  "supports_replay": true,
+  "supports_retry_revision_overlays": true,
+  "supports_route_join_projection": true,
+  "supports_source_json": true,
+  "viewer_version": "1"
+}
