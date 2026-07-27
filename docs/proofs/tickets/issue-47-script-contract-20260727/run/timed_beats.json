@@ -1,0 +1,16 @@
+[
+  {
+    "beat_id": "beat-001",
+    "end_s": 6.0,
+    "scene": 1,
+    "start_s": 0.0,
+    "summary": "The camera holds on the workspace while evidence is organized."
+  },
+  {
+    "beat_id": "beat-002",
+    "end_s": 12.0,
+    "scene": 1,
+    "start_s": 6.0,
+    "summary": "The scene resolves at the approval boundary."
+  }
+]

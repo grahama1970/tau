@@ -46,6 +46,12 @@ def run_persona_dream_packet_agent(role: str) -> dict[str, Any]:
     if role == "storyboard-reviewer":
         storyboard_context = _storyboard_panel_context(start_payload, artifact_dir)
         return _run_storyboard_reviewer(start_payload, storyboard_context, artifact_dir)
+    if role == "script-writer":
+        script_context = _script_contract_context(start_payload, artifact_dir)
+        return _run_script_writer(start_payload, script_context, artifact_dir)
+    if role == "script-reviewer":
+        script_context = _script_contract_context(start_payload, artifact_dir)
+        return _run_script_reviewer(start_payload, script_context, artifact_dir)
     raise RuntimeError(f"unsupported persona-dream dream-packet role: {role}")
 
 
@@ -416,6 +422,122 @@ def write_persona_dream_storyboard_panel_loop_proof(
                     "This does not claim full persona-dream pipeline readiness beyond "
                     "the next blocker."
                 ),
+            ],
+        },
+    }
+    _write_json(proof_dir / "manifest.json", manifest)
+    return manifest
+
+
+def write_persona_dream_script_contract_loop_proof(
+    *,
+    work_order: Path,
+    out_dir: Path,
+    active_goal_hash: str = (
+        "sha256:0000000000000000000000000000000000000000000000000000000000000046"
+    ),
+    github_target: str = "issue#47",
+) -> dict[str, Any]:
+    """Run the Phase 06 script-writer -> script-reviewer loop and write a proof manifest."""
+
+    from tau_coding.handoff_dispatch import write_agent_handoff_command_loop_receipt
+
+    proof_dir = out_dir.expanduser().resolve()
+    proof_dir.mkdir(parents=True, exist_ok=True)
+    input_work_order = proof_dir / "input_script_contract_work_order.json"
+    input_work_order.write_text(
+        work_order.expanduser().resolve().read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    work_order_payload = _read_json(input_work_order)
+    source_paths = _required_mapping(work_order_payload, "source_paths")
+    run_root = Path(str(source_paths["run_root"])).expanduser().resolve()
+    start_payload = {
+        "schema": "tau.agent_handoff.v1",
+        "github": {"repo": "grahama1970/tau", "target": github_target},
+        "goal": {
+            "goal_id": "goal-tau-issue-47-persona-dream-script-contract-loop",
+            "goal_version": 1,
+            "goal_hash": active_goal_hash,
+        },
+        "previous_subagent": "human",
+        "context": {
+            "summary": "Run a bounded Tau Phase 06 script-contract creator/reviewer loop.",
+            "artifacts": [str(input_work_order)],
+            "persona_dream_script_contract": {
+                "work_order": str(input_work_order),
+                "run_root": str(run_root),
+                "run_id": proof_dir.name,
+            },
+        },
+        "result": {
+            "status": "COMPLETED",
+            "summary": "Human requested a Tau script-contract creator/reviewer proof.",
+            "evidence": [str(input_work_order)],
+        },
+        "rationale": "The first bounded step is a script-writer command.",
+        "next_agent": {
+            "name": "script-writer",
+            "executor": "local",
+            "reason": (
+                "Script-writer must create Phase 06 script artifacts from "
+                "the accepted prompt bundle."
+            ),
+        },
+        "required_evidence": [
+            (
+                "Script-writer and script-reviewer write Tau receipts, "
+                "script_contract.json, timed transcript/beats, entity-environment "
+                "table, and reviewer verdict."
+            )
+        ],
+        "stop_condition": "Script-reviewer routes to human with PASS or BLOCKED evidence.",
+    }
+    start_path = proof_dir / "start-handoff.json"
+    _write_json(start_path, start_payload)
+    loop = write_agent_handoff_command_loop_receipt(
+        start_payload,
+        proof_dir / "command-loop",
+        agent_registry_root=Path("/home/graham/workspace/experiments/agent-skills/agents"),
+        command_spec_root=Path("experiments/goal-locked-subagents/agent-command-specs"),
+        active_goal_hash=active_goal_hash,
+        max_steps=3,
+    )
+    loop_payload = loop.as_dict()
+    validation_path = run_root / "receipts" / "validate_script_contract.json"
+    validation = _read_json_optional(validation_path)
+    manifest = {
+        "schema": "tau.persona_dream_script_contract_loop_proof.v1",
+        "created_at": _now_iso(),
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "issue": 47,
+        "input_work_order": str(input_work_order),
+        "start_handoff": str(start_path),
+        "run_root": str(run_root),
+        "script_contract": str(run_root / "script_contract.json"),
+        "timed_transcript": str(run_root / "timed_transcript.json"),
+        "timed_beats": str(run_root / "timed_beats.json"),
+        "entity_environment_script_table": str(run_root / "entity_environment_script_table.json"),
+        "script_reviewer_verdict": str(run_root / "script-reviewer-verdict.json"),
+        "command_loop_receipt": str(proof_dir / "command-loop" / "command-loop-receipt.json"),
+        "command_loop_status": loop_payload.get("status"),
+        "command_loop_ok": loop_payload.get("ok"),
+        "command_loop_step_count": loop_payload.get("step_count"),
+        "terminal_agent": loop_payload.get("terminal_agent"),
+        "stop_reason": loop_payload.get("stop_reason"),
+        "validate_script_contract": str(validation_path) if validation else None,
+        "validate_script_contract_status": validation.get("status") if validation else None,
+        "claims": {
+            "proves": [
+                "Tau ran a command-spec loop from script-writer to script-reviewer.",
+                "Script-writer created script_contract.json and UI-loadable script artifacts.",
+                "Script-reviewer produced validate_script_contract.json and a reviewer verdict.",
+            ],
+            "does_not_prove": [
+                "No paid provider, Kling, public upload, or voice synthesis call was performed.",
+                "This deterministic pass does not prove model-authored screenplay quality.",
             ],
         },
     }
@@ -1099,6 +1221,194 @@ def _run_storyboard_reviewer(
     )
 
 
+def _run_script_writer(
+    start_payload: Mapping[str, Any],
+    context: dict[str, str],
+    artifact_dir: Path,
+) -> dict[str, Any]:
+    work_order = _load_script_work_order(context["work_order"])
+    run_root = Path(context["run_root"]).expanduser().resolve()
+    run_root.mkdir(parents=True, exist_ok=True)
+    prompt_payload = _read_json(Path(context["prompt_payload"]).expanduser().resolve())
+    script_contract = _script_contract_from_prompt_payload(
+        prompt_payload=prompt_payload,
+        work_order=work_order,
+        run_root=run_root,
+    )
+    script_path = run_root / "script_contract.json"
+    transcript_path = run_root / "timed_transcript.json"
+    beats_path = run_root / "timed_beats.json"
+    table_path = run_root / "entity_environment_script_table.json"
+    md_path = run_root / "script_contract.md"
+    _write_json(script_path, script_contract)
+    _write_json(transcript_path, script_contract["timed_transcript"])
+    _write_json(beats_path, script_contract["timed_beats"])
+    _write_json(table_path, script_contract["entity_environment_script_table"])
+    md_path.write_text(_script_contract_markdown(script_contract), encoding="utf-8")
+    receipt = _subagent_receipt(
+        start_payload,
+        run_id=context["run_id"],
+        subagent="script-writer",
+        status="COMPLETED",
+        summary="Script-writer created Phase 06 script_contract.json from the prompt payload.",
+        artifacts=[
+            str(context["work_order"]),
+            str(context["prompt_payload"]),
+            str(script_path),
+            str(transcript_path),
+            str(beats_path),
+            str(table_path),
+        ],
+        next_subagent="script-reviewer",
+        next_executor="local",
+        next_reason="Script-reviewer must independently validate script_contract.json.",
+        stop_condition="Script-reviewer emits validation receipts and routes to human.",
+    )
+    tau_receipt_path = artifact_dir / "script_writer_tau_subagent_receipt.json"
+    _write_json(tau_receipt_path, receipt)
+    _validate_subagent_receipt_or_raise(receipt, str(start_payload["goal"]["goal_hash"]))
+    writer_receipt = {
+        "schema": "tau.persona_dream.script_writer_receipt.v1",
+        "created_at": _now_iso(),
+        "role": "script-writer",
+        "status": "COMPLETED",
+        "work_order": work_order,
+        "run_root": str(run_root),
+        "script_contract": str(script_path),
+        "timed_transcript": str(transcript_path),
+        "timed_beats": str(beats_path),
+        "entity_environment_script_table": str(table_path),
+        "script_contract_md": str(md_path),
+        "subagent_receipt": str(tau_receipt_path),
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+    }
+    writer_receipt_path = artifact_dir / "script_writer_receipt.json"
+    _write_json(writer_receipt_path, writer_receipt)
+    return _handoff(
+        start_payload,
+        previous_subagent="script-writer",
+        result_status="COMPLETED",
+        result_summary=receipt["result"]["summary"],
+        evidence=[str(tau_receipt_path), str(writer_receipt_path), str(script_path)],
+        context_summary="Script-writer consumed the prompt payload and wrote script_contract.json.",
+        artifacts=[
+            str(tau_receipt_path),
+            str(writer_receipt_path),
+            str(script_path),
+            str(transcript_path),
+            str(beats_path),
+            str(table_path),
+        ],
+        context_update={"persona_dream_script_contract": context},
+        rationale="Independent validation is required before script-contract acceptance.",
+        next_agent="script-reviewer",
+        next_executor="local",
+        next_reason="Script-reviewer must validate source coverage and strict script fields.",
+        required_evidence="validate_script_contract JSON and script-reviewer verdict JSON.",
+        stop_condition="Script-reviewer routes to human with PASS or BLOCKED evidence.",
+    )
+
+
+def _run_script_reviewer(
+    start_payload: Mapping[str, Any],
+    context: dict[str, str],
+    artifact_dir: Path,
+) -> dict[str, Any]:
+    run_root = Path(context["run_root"]).expanduser().resolve()
+    receipts_dir = run_root / "receipts"
+    receipts_dir.mkdir(parents=True, exist_ok=True)
+    script_path = run_root / "script_contract.json"
+    validation_path = receipts_dir / "validate_script_contract.json"
+    verdict_path = run_root / "script-reviewer-verdict.json"
+    script_contract = _read_json_optional(script_path)
+    errors = _script_contract_errors(script_contract)
+    status = "PASS" if not errors else "BLOCKED"
+    validation = {
+        "schema": "persona_dream.validate_script_contract.v1",
+        "status": "PASS_SCRIPT_CONTRACT" if status == "PASS" else "BLOCKED_SCRIPT_CONTRACT",
+        "script_contract": str(script_path),
+        "errors": errors,
+    }
+    _write_json(validation_path, validation)
+    verdict = {
+        "schema": "tau.persona_dream.script_reviewer_verdict.v1",
+        "created_at": _now_iso(),
+        "role": "script-reviewer",
+        "pass": status == "PASS",
+        "verdict": status,
+        "blocking_issues": [
+            {"target": "script_contract.json", "issue": error} for error in errors
+        ],
+        "matrix_completeness": script_contract.get("quality_checks", {}).get(
+            "entity_environment_matrix_complete"
+        )
+        if isinstance(script_contract, Mapping)
+        else False,
+    }
+    _write_json(verdict_path, verdict)
+    receipt = _subagent_receipt(
+        start_payload,
+        run_id=context["run_id"],
+        subagent="script-reviewer",
+        status=status,
+        summary=(
+            "Script-reviewer accepted the Phase 06 script contract."
+            if status == "PASS"
+            else "Script-reviewer failed closed on script contract coverage."
+        ),
+        artifacts=[str(script_path), str(validation_path), str(verdict_path)],
+        next_subagent="human",
+        next_executor="human",
+        next_reason="Human or ticket resolver reviews the script proof.",
+        stop_condition="Issue resolver comments proof and closes or files the next blocker.",
+    )
+    tau_receipt_path = artifact_dir / "script_reviewer_tau_subagent_receipt.json"
+    _write_json(tau_receipt_path, receipt)
+    _validate_subagent_receipt_or_raise(receipt, str(start_payload["goal"]["goal_hash"]))
+    reviewer_receipt = {
+        "schema": "tau.persona_dream.script_reviewer_receipt.v1",
+        "created_at": _now_iso(),
+        "role": "script-reviewer",
+        "status": status,
+        "validate_script_contract": str(validation_path),
+        "script_reviewer_verdict": str(verdict_path),
+        "subagent_receipt": str(tau_receipt_path),
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+    }
+    reviewer_receipt_path = artifact_dir / "script_reviewer_receipt.json"
+    _write_json(reviewer_receipt_path, reviewer_receipt)
+    return _handoff(
+        start_payload,
+        previous_subagent="script-reviewer",
+        result_status=status,
+        result_summary=receipt["result"]["summary"],
+        evidence=[
+            str(tau_receipt_path),
+            str(reviewer_receipt_path),
+            str(validation_path),
+            str(verdict_path),
+        ],
+        context_summary="Script-reviewer ran script-contract validation.",
+        artifacts=[
+            str(tau_receipt_path),
+            str(reviewer_receipt_path),
+            str(validation_path),
+            str(verdict_path),
+        ],
+        context_update={"persona_dream_script_contract": context},
+        rationale="The bounded script creator/reviewer loop reached terminal proof.",
+        next_agent="human",
+        next_executor="human",
+        next_reason="Human/ticket resolver reviews proof artifacts and closes or redirects.",
+        required_evidence="Proof cites script-writer, script-reviewer, validation, and verdict.",
+        stop_condition="GitHub issue is closed with proof or left open with exact blocker.",
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class CommandResult:
     command: list[str]
@@ -1235,6 +1545,33 @@ def _storyboard_panel_context(
     }
 
 
+def _script_contract_context(
+    start_payload: Mapping[str, Any],
+    artifact_dir: Path,
+) -> dict[str, str]:
+    context = start_payload.get("context")
+    raw = context.get("persona_dream_script_contract") if isinstance(context, Mapping) else None
+    if not isinstance(raw, Mapping):
+        raw = {}
+    work_order = _find_work_order(
+        start_payload,
+        raw,
+        schema="persona_dream.script_contract_work_order.v1",
+        label="script contract",
+    )
+    work_order_payload = _read_json(work_order)
+    source_paths = _required_mapping(work_order_payload, "source_paths")
+    run_root = Path(str(raw.get("run_root") or source_paths["run_root"])).expanduser().resolve()
+    prompt_payload = Path(str(source_paths["prompt_payload"])).expanduser().resolve()
+    run_id = str(raw.get("run_id") or run_root.name or f"tau-script-contract-{int(time.time())}")
+    return {
+        "work_order": str(work_order),
+        "run_root": str(run_root),
+        "run_id": run_id,
+        "prompt_payload": str(prompt_payload),
+    }
+
+
 def _find_work_order(
     start_payload: Mapping[str, Any],
     raw: Mapping[str, Any],
@@ -1283,6 +1620,16 @@ def _load_storyboard_work_order(path_value: str) -> dict[str, Any]:
     if payload.get("schema") != "persona_dream.storyboard_panel_work_order.v1":
         raise RuntimeError(
             f"work order schema must be persona_dream.storyboard_panel_work_order.v1: {path}"
+        )
+    return payload
+
+
+def _load_script_work_order(path_value: str) -> dict[str, Any]:
+    path = Path(path_value)
+    payload = _read_json(path)
+    if payload.get("schema") != "persona_dream.script_contract_work_order.v1":
+        raise RuntimeError(
+            f"work order schema must be persona_dream.script_contract_work_order.v1: {path}"
         )
     return payload
 
@@ -1568,6 +1915,204 @@ def _target_duration(story_contract: Mapping[str, Any]) -> float:
     return 7.5
 
 
+def _script_contract_from_prompt_payload(
+    *,
+    prompt_payload: Mapping[str, Any],
+    work_order: Mapping[str, Any],
+    run_root: Path,
+) -> dict[str, Any]:
+    task = prompt_payload.get("task") if isinstance(prompt_payload.get("task"), Mapping) else {}
+    scene_count = int(task.get("scene_count") or 1) if isinstance(task, Mapping) else 1
+    duration = float(task.get("duration_seconds") or 12) if isinstance(task, Mapping) else 12.0
+    source_context = (
+        prompt_payload.get("source_context")
+        if isinstance(prompt_payload.get("source_context"), Mapping)
+        else {}
+    )
+    story = str(
+        source_context.get("story_contract")
+        or work_order.get("purpose")
+        or "Persona prepares a proof package while the room waits for approval."
+    )
+    characters = _script_characters(prompt_payload)
+    environment = str(source_context.get("location") or "Tau review workspace")
+    script = _screenplay_from_story(story, characters=characters, environment=environment)
+    timed_beats = _script_timed_beats(script, duration_seconds=duration, scene_count=scene_count)
+    timed_transcript = _script_timed_transcript(timed_beats, characters=characters)
+    table = _entity_environment_script_table(
+        characters=characters,
+        environment=environment,
+        script=script,
+    )
+    return {
+        "schema": "persona_dream.script_contract.v1",
+        "artifact_id": f"{run_root.name}_script_contract",
+        "status": "ACCEPTED_AUTOMATED",
+        "created_at": _now_iso(),
+        "kind": "phase_06_script",
+        "source_work_order": work_order,
+        "prompt_payload_schema": prompt_payload.get("schema"),
+        "script": script,
+        "timed_beats": timed_beats,
+        "timed_transcript": timed_transcript,
+        "entity_environment_script_table": table,
+        "quality_checks": {
+            "timed_transcript_present": bool(timed_transcript),
+            "timed_beats_present": bool(timed_beats),
+            "entity_environment_matrix_complete": bool(table),
+            "voice_lines_have_speakers": all(
+                bool(item.get("speaker")) for item in timed_transcript
+            ),
+        },
+        "proof_scope": {
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "does_not_prove": [
+                "model-authored screenplay quality",
+                "voice synthesis",
+                "provider video generation",
+            ],
+        },
+    }
+
+
+def _script_characters(prompt_payload: Mapping[str, Any]) -> list[str]:
+    raw = prompt_payload.get("voices") or prompt_payload.get("characters")
+    if isinstance(raw, list):
+        names = []
+        for item in raw:
+            if isinstance(item, Mapping):
+                value = item.get("name") or item.get("id") or item.get("voice")
+            else:
+                value = item
+            if isinstance(value, str) and value.strip():
+                names.append(_title_name(value))
+        if names:
+            return list(dict.fromkeys(names))
+    return ["Narrator"]
+
+
+def _screenplay_from_story(
+    story: str,
+    *,
+    characters: list[str],
+    environment: str,
+) -> list[dict[str, Any]]:
+    first = characters[0]
+    trimmed = " ".join(story.split())[:420] or "The proof package is ready for review."
+    return [
+        {
+            "scene": 1,
+            "environment": environment,
+            "speaker": first,
+            "line": trimmed,
+            "action": "The camera holds on the workspace while evidence is organized.",
+        },
+        {
+            "scene": 1,
+            "environment": environment,
+            "speaker": "Narrator" if first != "Narrator" else first,
+            "line": "The decision remains human-owned; the system only prepares evidence.",
+            "action": "The scene resolves at the approval boundary.",
+        },
+    ]
+
+
+def _script_timed_beats(
+    script: list[Mapping[str, Any]],
+    *,
+    duration_seconds: float,
+    scene_count: int,
+) -> list[dict[str, Any]]:
+    beat_count = max(len(script), scene_count, 1)
+    step = max(duration_seconds / beat_count, 1.0)
+    beats = []
+    for index, item in enumerate(script):
+        start = round(index * step, 2)
+        end = round(min((index + 1) * step, duration_seconds), 2)
+        beats.append(
+            {
+                "beat_id": f"beat-{index + 1:03d}",
+                "scene": item.get("scene", 1),
+                "start_s": start,
+                "end_s": end,
+                "summary": str(item.get("action") or item.get("line") or ""),
+            }
+        )
+    return beats
+
+
+def _script_timed_transcript(
+    timed_beats: list[Mapping[str, Any]],
+    *,
+    characters: list[str],
+) -> list[dict[str, Any]]:
+    transcript = []
+    for index, beat in enumerate(timed_beats):
+        speaker = characters[min(index, len(characters) - 1)]
+        transcript.append(
+            {
+                "line_id": f"line-{index + 1:03d}",
+                "speaker": speaker,
+                "start_s": beat["start_s"],
+                "end_s": beat["end_s"],
+                "text": str(beat["summary"]),
+            }
+        )
+    return transcript
+
+
+def _entity_environment_script_table(
+    *,
+    characters: list[str],
+    environment: str,
+    script: list[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    rows = []
+    for character in characters:
+        rows.append(
+            {
+                "entity": character,
+                "environment": environment,
+                "script_presence": "dialogue",
+                "evidence": [
+                    str(item.get("line"))
+                    for item in script
+                    if item.get("speaker") in {character, "Narrator"}
+                ],
+            }
+        )
+    return rows
+
+
+def _script_contract_errors(payload: Mapping[str, Any]) -> list[str]:
+    errors = []
+    required = (
+        "script",
+        "timed_transcript",
+        "timed_beats",
+        "entity_environment_script_table",
+    )
+    for key in required:
+        value = payload.get(key)
+        if not isinstance(value, list) or not value:
+            errors.append(f"{key}_missing")
+    checks = payload.get("quality_checks")
+    if not isinstance(checks, Mapping) or not checks.get("entity_environment_matrix_complete"):
+        errors.append("entity_environment_matrix_incomplete")
+    return errors
+
+
+def _script_contract_markdown(script_contract: Mapping[str, Any]) -> str:
+    lines = ["# Script Contract", "", f"Status: `{script_contract.get('status')}`", ""]
+    for item in script_contract.get("script", []):
+        if isinstance(item, Mapping):
+            lines.append(f"- **{item.get('speaker')}**: {item.get('line')}")
+    lines.append("")
+    return "\n".join(lines)
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -1733,6 +2278,8 @@ def main(argv: list[str] | None = None) -> int:
             "dream-reviewer",
             "story-writer",
             "story-reviewer",
+            "script-writer",
+            "script-reviewer",
             "storyboard-writer",
             "storyboard-reviewer",
         ],
@@ -1741,6 +2288,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--proof", action="store_true")
     parser.add_argument("--story-proof", action="store_true")
     parser.add_argument("--storyboard-proof", action="store_true")
+    parser.add_argument("--script-proof", action="store_true")
     parser.add_argument("--work-order", type=Path)
     parser.add_argument("--out-dir", type=Path)
     parser.add_argument("--active-goal-hash", default=DEFAULT_GOAL_HASH)
@@ -1751,6 +2299,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--frames", type=int, default=3)
     parser.add_argument("--limit", type=int, default=4)
     args = parser.parse_args(argv)
+    if args.script_proof:
+        if args.work_order is None or args.out_dir is None:
+            parser.error("--script-proof requires --work-order and --out-dir")
+        payload = write_persona_dream_script_contract_loop_proof(
+            work_order=args.work_order,
+            out_dir=args.out_dir,
+            active_goal_hash=args.active_goal_hash,
+            github_target=args.github_target,
+        )
+        print(json.dumps(payload, sort_keys=True))
+        return 0
     if args.storyboard_proof:
         if args.work_order is None or args.out_dir is None:
             parser.error("--storyboard-proof requires --work-order and --out-dir")

@@ -1,0 +1,172 @@
+{
+  "artifacts": [
+    "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-capture.json",
+    "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-endpoint-lease.json",
+    "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-event.json",
+    "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-submit-receipt.json",
+    "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/script_writer_receipt.json",
+    "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/script_writer_tau_subagent_receipt.json"
+  ],
+  "command_results": [
+    {
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "-m",
+        "tau_coding.persona_dream_dream_packet_agent",
+        "--role",
+        "script-writer"
+      ],
+      "command_spec_path": "/tmp/tau-issue-132.cyVJhE/experiments/goal-locked-subagents/agent-command-specs/script-writer/tau-dispatch-command.json",
+      "command_spec_sha256": "sha256:52aef5c4d4ca9848855080e74906c49e17fb1d6f8268cb78fd8927ec7c82f6ee",
+      "exit_code": 0,
+      "runtime_artifacts": [
+        "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-endpoint-lease.json",
+        "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-submit-receipt.json",
+        "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-event.json",
+        "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/runtime/runtime-capture.json"
+      ],
+      "runtime_backend": "local",
+      "runtime_capture": {
+        "cancelled": false,
+        "command": [
+          "uv",
+          "run",
+          "python",
+          "-m",
+          "tau_coding.persona_dream_dream_packet_agent",
+          "--role",
+          "script-writer"
+        ],
+        "returncode": 0,
+        "schema": "tau.local_runtime_capture.v1",
+        "stderr": "",
+        "stdout": "{\"context\": {\"artifacts\": [\"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input_script_contract_work_order.json\", \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/script_writer_tau_subagent_receipt.json\", \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/script_writer_receipt.json\", \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/script_contract.json\", \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/timed_transcript.json\", \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/timed_beats.json\", \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/entity_environment_script_table.json\"], \"persona_dream_script_contract\": {\"prompt_payload\": \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input/prompt_payload.json\", \"run_id\": \"issue-47-script-contract-20260727\", \"run_root\": \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run\", \"work_order\": \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input_script_contract_work_order.json\"}, \"summary\": \"Script-writer consumed the prompt payload and wrote script_contract.json.\"}, \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"issue#47\"}, \"goal\": {\"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000047\", \"goal_id\": \"goal-tau-issue-47-persona-dream-script-contract-loop\", \"goal_version\": 1}, \"next_agent\": {\"executor\": \"local\", \"name\": \"script-reviewer\", \"reason\": \"Script-reviewer must validate source coverage and strict script fields.\"}, \"previous_subagent\": \"script-writer\", \"rationale\": \"Independent validation is required before script-contract acceptance.\", \"required_evidence\": [\"validate_script_contract JSON and script-reviewer verdict JSON.\"], \"result\": {\"evidence\": [\"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/script_writer_tau_subagent_receipt.json\", \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/script_writer_receipt.json\", \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/script_contract.json\"], \"status\": \"COMPLETED\", \"summary\": \"Script-writer created Phase 06 script_contract.json from the prompt payload.\"}, \"schema\": \"tau.agent_handoff.v1\", \"stop_condition\": \"Script-reviewer routes to human with PASS or BLOCKED evidence.\"}\n",
+        "timed_out": false
+      },
+      "runtime_endpoint_lease": {
+        "attempt_id": "script-writer:attempt-001",
+        "attempt_number": 1,
+        "backend": "local",
+        "backend_ids": {
+          "pid": null
+        },
+        "backend_session_id": null,
+        "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+        "cleanup_policy": {
+          "kind": "process_group_termination"
+        },
+        "created_at": "2026-07-27T00:49:11.238564+00:00",
+        "dag_id": "handoff-command",
+        "endpoint_id": "local:a743265f44f82a528858bbe3",
+        "execution_token": "[REDACTED]",
+        "expires_at": "2026-07-27T00:54:11.238564+00:00",
+        "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000047",
+        "heartbeat_policy": {
+          "kind": "process_poll"
+        },
+        "node_id": "script-writer",
+        "owner": "tau",
+        "plan_revision": "sha256:8e8cfafaab52bb49dc3fef82a6340be0377b841839164c05c66023e8db996553",
+        "run_id": "handoff-command:c66023e8db996553",
+        "schema": "tau.runtime_endpoint_lease.v1",
+        "scope_id": "handoff-command:c66023e8db996553",
+        "work_order_sha256": "sha256:e49da32de083fd3b46c9b0a8e394704c15c5015d86c27b0f34702c78b9b73aef"
+      },
+      "runtime_event": {
+        "confidence": "PROCESS",
+        "endpoint_lease_sha256": "sha256:2f127da124815aa4d3ab182af761d7fb1bdfd9470fbc282bb1dbe51d3097eb29",
+        "event_id": "local-event:a743265f44f82a528858bbe3",
+        "event_type": "RUNTIME_ENDPOINT_EXITED",
+        "liveness": "DEAD",
+        "observation": {
+          "cancelled": false,
+          "returncode": 0,
+          "timed_out": false
+        },
+        "observed_at": "2026-07-27T00:49:11.793173+00:00",
+        "run_id": "handoff-command:c66023e8db996553",
+        "schema": "tau.runtime_event.v1",
+        "source": "local",
+        "state": "EXITED"
+      },
+      "runtime_submit_receipt": {
+        "backend_acknowledgement": {
+          "process_started": true,
+          "stdin_delivery": "confirmed"
+        },
+        "composer_state_after": "NOT_APPLICABLE",
+        "composer_state_before": "NOT_APPLICABLE",
+        "delivery_status": "CONFIRMED",
+        "endpoint_lease_sha256": "sha256:2f127da124815aa4d3ab182af761d7fb1bdfd9470fbc282bb1dbe51d3097eb29",
+        "errors": [],
+        "provider_execution_status": "NOT_APPLICABLE",
+        "schema": "tau.runtime_submit_receipt.v1",
+        "submit_attempt_count": 1,
+        "text_delivery_count": 1,
+        "work_order_sha256": "sha256:e49da32de083fd3b46c9b0a8e394704c15c5015d86c27b0f34702c78b9b73aef"
+      },
+      "stderr": "",
+      "stdout": "{\"context\": {\"artifacts\": [\"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input_script_contract_work_order.json\", \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/script_writer_tau_subagent_receipt.json\", \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/script_writer_receipt.json\", \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/script_contract.json\", \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/timed_transcript.json\", \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/timed_beats.json\", \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/entity_environment_script_table.json\"], \"persona_dream_script_contract\": {\"prompt_payload\": \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input/prompt_payload.json\", \"run_id\": \"issue-47-script-contract-20260727\", \"run_root\": \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run\", \"work_order\": \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input_script_contract_work_order.json\"}, \"summary\": \"Script-writer consumed the prompt payload and wrote script_contract.json.\"}, \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"issue#47\"}, \"goal\": {\"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000047\", \"goal_id\": \"goal-tau-issue-47-persona-dream-script-contract-loop\", \"goal_version\": 1}, \"next_agent\": {\"executor\": \"local\", \"name\": \"script-reviewer\", \"reason\": \"Script-reviewer must validate source coverage and strict script fields.\"}, \"previous_subagent\": \"script-writer\", \"rationale\": \"Independent validation is required before script-contract acceptance.\", \"required_evidence\": [\"validate_script_contract JSON and script-reviewer verdict JSON.\"], \"result\": {\"evidence\": [\"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/script_writer_tau_subagent_receipt.json\", \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/script_writer_receipt.json\", \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/script_contract.json\"], \"status\": \"COMPLETED\", \"summary\": \"Script-writer created Phase 06 script_contract.json from the prompt payload.\"}, \"schema\": \"tau.agent_handoff.v1\", \"stop_condition\": \"Script-reviewer routes to human with PASS or BLOCKED evidence.\"}\n",
+      "timed_out": false,
+      "timeout_s": 240.0,
+      "timeout_s_source": "command_spec"
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "loop_step": 1,
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": null,
+  "response_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `COMPLETED`\n- Summary: Script-writer created Phase 06 script_contract.json from the prompt payload.\n- Next agent: `script-reviewer`\n- Executor: `local`\n- Stop condition: Script-reviewer routes to human with PASS or BLOCKED evidence.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input_script_contract_work_order.json\",\n      \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/script_writer_tau_subagent_receipt.json\",\n      \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/script_writer_receipt.json\",\n      \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/script_contract.json\",\n      \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/timed_transcript.json\",\n      \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/timed_beats.json\",\n      \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/entity_environment_script_table.json\"\n    ],\n    \"persona_dream_script_contract\": {\n      \"prompt_payload\": \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input/prompt_payload.json\",\n      \"run_id\": \"issue-47-script-contract-20260727\",\n      \"run_root\": \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run\",\n      \"work_order\": \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input_script_contract_work_order.json\"\n    },\n    \"summary\": \"Script-writer consumed the prompt payload and wrote script_contract.json.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#47\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000047\",\n    \"goal_id\": \"goal-tau-issue-47-persona-dream-script-contract-loop\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"script-reviewer\",\n    \"reason\": \"Script-reviewer must validate source coverage and strict script fields.\"\n  },\n  \"previous_subagent\": \"script-writer\",\n  \"rationale\": \"Independent validation is required before script-contract acceptance.\",\n  \"required_evidence\": [\n    \"validate_script_contract JSON and script-reviewer verdict JSON.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/script_writer_tau_subagent_receipt.json\",\n      \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/script_writer_receipt.json\",\n      \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/script_contract.json\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Script-writer created Phase 06 script_contract.json from the prompt payload.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Script-reviewer routes to human with PASS or BLOCKED evidence.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:script-reviewer",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "script-reviewer",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#47"
+    }
+  },
+  "runner": "command",
+  "schema": "tau.agent_handoff_dispatch_receipt.v1",
+  "selected_agent": "script-writer",
+  "start_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `COMPLETED`\n- Summary: Human requested a Tau script-contract creator/reviewer proof.\n- Next agent: `script-writer`\n- Executor: `local`\n- Stop condition: Script-reviewer routes to human with PASS or BLOCKED evidence.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input_script_contract_work_order.json\"\n    ],\n    \"persona_dream_script_contract\": {\n      \"run_id\": \"issue-47-script-contract-20260727\",\n      \"run_root\": \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run\",\n      \"work_order\": \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input_script_contract_work_order.json\"\n    },\n    \"summary\": \"Run a bounded Tau Phase 06 script-contract creator/reviewer loop.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#47\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000047\",\n    \"goal_id\": \"goal-tau-issue-47-persona-dream-script-contract-loop\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"script-writer\",\n    \"reason\": \"Script-writer must create Phase 06 script artifacts from the accepted prompt bundle.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The first bounded step is a script-writer command.\",\n  \"required_evidence\": [\n    \"Script-writer and script-reviewer write Tau receipts, script_contract.json, timed transcript/beats, entity-environment table, and reviewer verdict.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input_script_contract_work_order.json\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Human requested a Tau script-contract creator/reviewer proof.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Script-reviewer routes to human with PASS or BLOCKED evidence.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:script-writer",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "script-writer",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#47"
+    }
+  },
+  "status": "COMPLETED",
+  "stop_reason": "response_consumed"
+}

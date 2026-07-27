@@ -1,0 +1,48 @@
+{
+  "schema": "tau.ticket_proof_summary.v1",
+  "issue": 47,
+  "title": "Add persona-dream Phase 06 script creator-reviewer Tau loop",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "primary_command": "uv run python -m tau_coding.persona_dream_dream_packet_agent --script-proof --work-order docs/proofs/tickets/issue-47-script-contract-20260727/input/script_contract_work_order.json --out-dir docs/proofs/tickets/issue-47-script-contract-20260727 --active-goal-hash sha256:0000000000000000000000000000000000000000000000000000000000000047 --github-target issue#47",
+  "primary_result": {
+    "command_loop_ok": true,
+    "command_loop_status": "WAITING",
+    "command_loop_step_count": 2,
+    "terminal_agent": "human",
+    "stop_reason": "next_agent_is_human",
+    "validate_script_contract_status": "PASS_SCRIPT_CONTRACT",
+    "script_reviewer_verdict": "PASS"
+  },
+  "artifact_counts": {
+    "script_lines": 2,
+    "timed_transcript_lines": 2,
+    "timed_beats": 2,
+    "entity_environment_script_rows": 2
+  },
+  "verification": [
+    {
+      "command": "uv run pytest -q tests/test_persona_dream_dream_packet_agent.py",
+      "result": "6 passed in 0.43s"
+    },
+    {
+      "command": "uv run ruff check src/tau_coding/persona_dream_dream_packet_agent.py tests/test_persona_dream_dream_packet_agent.py",
+      "result": "All checks passed!"
+    },
+    {
+      "command": "uv run python -m py_compile src/tau_coding/persona_dream_dream_packet_agent.py",
+      "result": "exit 0"
+    }
+  ],
+  "artifacts": [
+    "docs/proofs/tickets/issue-47-script-contract-20260727/manifest.json",
+    "docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-loop-receipt.json",
+    "docs/proofs/tickets/issue-47-script-contract-20260727/run/script_contract.json",
+    "docs/proofs/tickets/issue-47-script-contract-20260727/run/timed_transcript.json",
+    "docs/proofs/tickets/issue-47-script-contract-20260727/run/timed_beats.json",
+    "docs/proofs/tickets/issue-47-script-contract-20260727/run/entity_environment_script_table.json",
+    "docs/proofs/tickets/issue-47-script-contract-20260727/run/receipts/validate_script_contract.json",
+    "docs/proofs/tickets/issue-47-script-contract-20260727/run/script-reviewer-verdict.json"
+  ]
+}

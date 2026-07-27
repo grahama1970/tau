@@ -1,0 +1,16 @@
+[
+  {
+    "end_s": 6.0,
+    "line_id": "line-001",
+    "speaker": "Embry",
+    "start_s": 0.0,
+    "text": "The camera holds on the workspace while evidence is organized."
+  },
+  {
+    "end_s": 12.0,
+    "line_id": "line-002",
+    "speaker": "Narrator",
+    "start_s": 6.0,
+    "text": "The scene resolves at the approval boundary."
+  }
+]

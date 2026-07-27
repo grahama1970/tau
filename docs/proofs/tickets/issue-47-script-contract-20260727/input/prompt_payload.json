@@ -1,0 +1,19 @@
+{
+  "schema": "persona_dream.script_prompt_payload.v1",
+  "task": {
+    "duration_seconds": 12,
+    "scene_count": 1
+  },
+  "source_context": {
+    "story_contract": "Embry stands at the Tau console, reviews a proof packet, and confirms that the human keeps the final decision.",
+    "location": "Tau evidence review room"
+  },
+  "voices": [
+    {
+      "name": "Embry"
+    },
+    {
+      "name": "Narrator"
+    }
+  ]
+}

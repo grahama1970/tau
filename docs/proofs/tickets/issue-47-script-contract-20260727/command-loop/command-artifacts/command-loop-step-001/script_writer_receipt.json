@@ -1,0 +1,25 @@
+{
+  "created_at": "2026-07-27T00:49:11Z",
+  "entity_environment_script_table": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/entity_environment_script_table.json",
+  "live": true,
+  "mocked": false,
+  "provider_live": false,
+  "role": "script-writer",
+  "run_root": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run",
+  "schema": "tau.persona_dream.script_writer_receipt.v1",
+  "script_contract": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/script_contract.json",
+  "script_contract_md": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/script_contract.md",
+  "status": "COMPLETED",
+  "subagent_receipt": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/command-loop/command-artifacts/command-loop-step-001/script_writer_tau_subagent_receipt.json",
+  "timed_beats": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/timed_beats.json",
+  "timed_transcript": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/timed_transcript.json",
+  "work_order": {
+    "purpose": "Generate a Phase 06 script contract with timed transcript, timed beats, and entity-environment-script table.",
+    "schema": "persona_dream.script_contract_work_order.v1",
+    "source_paths": {
+      "prompt_payload": "docs/proofs/tickets/issue-47-script-contract-20260727/input/prompt_payload.json",
+      "run_root": "docs/proofs/tickets/issue-47-script-contract-20260727/run"
+    },
+    "status": "WORK_ORDER_READY_SCRIPT_REQUIRED"
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "artifact_id": "run_script_contract",
+  "created_at": "2026-07-27T00:49:11Z",
+  "entity_environment_script_table": [
+    {
+      "entity": "Embry",
+      "environment": "Tau evidence review room",
+      "evidence": [
+        "Embry stands at the Tau console, reviews a proof packet, and confirms that the human keeps the final decision.",
+        "The decision remains human-owned; the system only prepares evidence."
+      ],
+      "script_presence": "dialogue"
+    },
+    {
+      "entity": "Narrator",
+      "environment": "Tau evidence review room",
+      "evidence": [
+        "The decision remains human-owned; the system only prepares evidence."
+      ],
+      "script_presence": "dialogue"
+    }
+  ],
+  "kind": "phase_06_script",
+  "prompt_payload_schema": "persona_dream.script_prompt_payload.v1",
+  "proof_scope": {
+    "does_not_prove": [
+      "model-authored screenplay quality",
+      "voice synthesis",
+      "provider video generation"
+    ],
+    "live": true,
+    "mocked": false,
+    "provider_live": false
+  },
+  "quality_checks": {
+    "entity_environment_matrix_complete": true,
+    "timed_beats_present": true,
+    "timed_transcript_present": true,
+    "voice_lines_have_speakers": true
+  },
+  "schema": "persona_dream.script_contract.v1",
+  "script": [
+    {
+      "action": "The camera holds on the workspace while evidence is organized.",
+      "environment": "Tau evidence review room",
+      "line": "Embry stands at the Tau console, reviews a proof packet, and confirms that the human keeps the final decision.",
+      "scene": 1,
+      "speaker": "Embry"
+    },
+    {
+      "action": "The scene resolves at the approval boundary.",
+      "environment": "Tau evidence review room",
+      "line": "The decision remains human-owned; the system only prepares evidence.",
+      "scene": 1,
+      "speaker": "Narrator"
+    }
+  ],
+  "source_work_order": {
+    "purpose": "Generate a Phase 06 script contract with timed transcript, timed beats, and entity-environment-script table.",
+    "schema": "persona_dream.script_contract_work_order.v1",
+    "source_paths": {
+      "prompt_payload": "docs/proofs/tickets/issue-47-script-contract-20260727/input/prompt_payload.json",
+      "run_root": "docs/proofs/tickets/issue-47-script-contract-20260727/run"
+    },
+    "status": "WORK_ORDER_READY_SCRIPT_REQUIRED"
+  },
+  "status": "ACCEPTED_AUTOMATED",
+  "timed_beats": [
+    {
+      "beat_id": "beat-001",
+      "end_s": 6.0,
+      "scene": 1,
+      "start_s": 0.0,
+      "summary": "The camera holds on the workspace while evidence is organized."
+    },
+    {
+      "beat_id": "beat-002",
+      "end_s": 12.0,
+      "scene": 1,
+      "start_s": 6.0,
+      "summary": "The scene resolves at the approval boundary."
+    }
+  ],
+  "timed_transcript": [
+    {
+      "end_s": 6.0,
+      "line_id": "line-001",
+      "speaker": "Embry",
+      "start_s": 0.0,
+      "text": "The camera holds on the workspace while evidence is organized."
+    },
+    {
+      "end_s": 12.0,
+      "line_id": "line-002",
+      "speaker": "Narrator",
+      "start_s": 6.0,
+      "text": "The scene resolves at the approval boundary."
+    }
+  ]
+}

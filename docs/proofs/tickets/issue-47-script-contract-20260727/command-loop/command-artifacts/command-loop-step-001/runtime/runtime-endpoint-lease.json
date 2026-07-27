@@ -1,0 +1,29 @@
+{
+  "attempt_id": "script-writer:attempt-001",
+  "attempt_number": 1,
+  "backend": "local",
+  "backend_ids": {
+    "pid": null
+  },
+  "backend_session_id": null,
+  "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+  "cleanup_policy": {
+    "kind": "process_group_termination"
+  },
+  "created_at": "2026-07-27T00:49:11.238564+00:00",
+  "dag_id": "handoff-command",
+  "endpoint_id": "local:a743265f44f82a528858bbe3",
+  "execution_token": "[REDACTED]",
+  "expires_at": "2026-07-27T00:54:11.238564+00:00",
+  "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000047",
+  "heartbeat_policy": {
+    "kind": "process_poll"
+  },
+  "node_id": "script-writer",
+  "owner": "tau",
+  "plan_revision": "sha256:8e8cfafaab52bb49dc3fef82a6340be0377b841839164c05c66023e8db996553",
+  "run_id": "handoff-command:c66023e8db996553",
+  "schema": "tau.runtime_endpoint_lease.v1",
+  "scope_id": "handoff-command:c66023e8db996553",
+  "work_order_sha256": "sha256:e49da32de083fd3b46c9b0a8e394704c15c5015d86c27b0f34702c78b9b73aef"
+}

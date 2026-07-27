@@ -1,0 +1,6 @@
+{
+  "errors": [],
+  "schema": "persona_dream.validate_script_contract.v1",
+  "script_contract": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/script_contract.json",
+  "status": "PASS_SCRIPT_CONTRACT"
+}

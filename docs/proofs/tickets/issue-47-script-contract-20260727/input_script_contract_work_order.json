@@ -1,0 +1,9 @@
+{
+  "schema": "persona_dream.script_contract_work_order.v1",
+  "status": "WORK_ORDER_READY_SCRIPT_REQUIRED",
+  "purpose": "Generate a Phase 06 script contract with timed transcript, timed beats, and entity-environment-script table.",
+  "source_paths": {
+    "run_root": "docs/proofs/tickets/issue-47-script-contract-20260727/run",
+    "prompt_payload": "docs/proofs/tickets/issue-47-script-contract-20260727/input/prompt_payload.json"
+  }
+}

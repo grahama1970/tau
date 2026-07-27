@@ -1,0 +1,19 @@
+[
+  {
+    "entity": "Embry",
+    "environment": "Tau evidence review room",
+    "evidence": [
+      "Embry stands at the Tau console, reviews a proof packet, and confirms that the human keeps the final decision.",
+      "The decision remains human-owned; the system only prepares evidence."
+    ],
+    "script_presence": "dialogue"
+  },
+  {
+    "entity": "Narrator",
+    "environment": "Tau evidence review room",
+    "evidence": [
+      "The decision remains human-owned; the system only prepares evidence."
+    ],
+    "script_presence": "dialogue"
+  }
+]

@@ -1,0 +1,41 @@
+{
+  "context": {
+    "artifacts": [
+      "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input_script_contract_work_order.json"
+    ],
+    "persona_dream_script_contract": {
+      "run_id": "issue-47-script-contract-20260727",
+      "run_root": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run",
+      "work_order": "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input_script_contract_work_order.json"
+    },
+    "summary": "Run a bounded Tau Phase 06 script-contract creator/reviewer loop."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#47"
+  },
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000047",
+    "goal_id": "goal-tau-issue-47-persona-dream-script-contract-loop",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "script-writer",
+    "reason": "Script-writer must create Phase 06 script artifacts from the accepted prompt bundle."
+  },
+  "previous_subagent": "human",
+  "rationale": "The first bounded step is a script-writer command.",
+  "required_evidence": [
+    "Script-writer and script-reviewer write Tau receipts, script_contract.json, timed transcript/beats, entity-environment table, and reviewer verdict."
+  ],
+  "result": {
+    "evidence": [
+      "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input_script_contract_work_order.json"
+    ],
+    "status": "COMPLETED",
+    "summary": "Human requested a Tau script-contract creator/reviewer proof."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Script-reviewer routes to human with PASS or BLOCKED evidence."
+}

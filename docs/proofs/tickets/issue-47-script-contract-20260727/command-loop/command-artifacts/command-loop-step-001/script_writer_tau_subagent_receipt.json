@@ -1,0 +1,53 @@
+{
+  "context": {
+    "actor_type": "tau",
+    "artifacts_read": [
+      "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input_script_contract_work_order.json",
+      "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input/prompt_payload.json",
+      "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/script_contract.json",
+      "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/timed_transcript.json",
+      "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/timed_beats.json",
+      "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/entity_environment_script_table.json"
+    ],
+    "assumptions": [],
+    "run_id": "issue-47-script-contract-20260727",
+    "subagent": "script-writer",
+    "unknowns": []
+  },
+  "evidence": [
+    "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input_script_contract_work_order.json",
+    "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input/prompt_payload.json",
+    "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/script_contract.json",
+    "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/timed_transcript.json",
+    "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/timed_beats.json",
+    "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/entity_environment_script_table.json"
+  ],
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000047",
+    "goal_id": "goal-tau-issue-47-persona-dream-script-contract-loop",
+    "goal_version": 1,
+    "immutable_goal_preserved": true
+  },
+  "next": {
+    "executor": "local",
+    "reason": "Script-reviewer must independently validate script_contract.json.",
+    "subagent": "script-reviewer"
+  },
+  "rationale": "This receipt records one bounded Tau persona-dream dream-packet subagent turn.",
+  "result": {
+    "artifacts": [
+      "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input_script_contract_work_order.json",
+      "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/input/prompt_payload.json",
+      "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/script_contract.json",
+      "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/timed_transcript.json",
+      "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/timed_beats.json",
+      "/tmp/tau-issue-132.cyVJhE/docs/proofs/tickets/issue-47-script-contract-20260727/run/entity_environment_script_table.json"
+    ],
+    "live": true,
+    "mocked": false,
+    "status": "COMPLETED",
+    "summary": "Script-writer created Phase 06 script_contract.json from the prompt payload."
+  },
+  "schema": "tau.subagent_receipt.v1",
+  "stop_condition": "Script-reviewer emits validation receipts and routes to human."
+}
