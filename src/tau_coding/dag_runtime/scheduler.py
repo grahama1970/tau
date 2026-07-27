@@ -16,6 +16,11 @@ from tau_coding.course_correction import write_course_correction_receipt
 from tau_coding.dag_runtime.correction import CorrectionStateProjection
 from tau_coding.dag_runtime.model import DagPlan, DagPlanNode, canonical_sha256
 from tau_coding.dag_runtime.replay import apply_transition_state, replay_dag_run
+from tau_coding.dag_runtime.resource_leases import (
+    ResourceLeaseDenied,
+    ResourceLeaseManager,
+    ResourceLeaseToken,
+)
 from tau_coding.dag_runtime.run_store import (
     DagAttemptIdentity,
     DagRunLease,
@@ -98,6 +103,8 @@ def run_dag_plan(
     on_lease_acquired: Callable[[DagRunLease], None] | None = None,
     correction_handler: CorrectionHandler | None = None,
     cancel_requested: Callable[[], bool] | None = None,
+    resource_lease_manager: ResourceLeaseManager | None = None,
+    resource_lease_ttl_seconds: float = 15.0,
 ) -> DagSchedulerResult:
     """Execute an all-success DagPlan through one bounded ready queue.
 
@@ -277,6 +284,9 @@ def run_dag_plan(
         with ThreadPoolExecutor(max_workers=max_concurrency) as pool:
             futures: dict[Future[dict[str, Any]], str] = {}
             future_attempts: dict[Future[dict[str, Any]], DagAttemptIdentity] = {}
+            future_resource_leases: dict[
+                Future[dict[str, Any]], tuple[ResourceLeaseToken, ...]
+            ] = {}
             while len(resolved) < len(nodes):
                 if (
                     run_store is not None
@@ -424,6 +434,29 @@ def run_dag_plan(
                             attempt=attempt,
                         )
                         _inject_fault(fault_injector, "after_attempt_reserved", identity)
+                        try:
+                            resource_tokens = (
+                                resource_lease_manager.acquire_for_attempt(
+                                    node=nodes[node_id],
+                                    run_id=effective_run_id,
+                                    attempt_id=identity.attempt_id,
+                                    ttl_seconds=resource_lease_ttl_seconds,
+                                    run_store=run_store,
+                                    scheduler_lease=lease,
+                                )
+                                if resource_lease_manager is not None
+                                else ()
+                            )
+                        except ResourceLeaseDenied as exc:
+                            blocked_result = {
+                                "node_id": node_id,
+                                "status": "BLOCKED",
+                                "verdict": exc.code.upper(),
+                                "errors": [str(exc)],
+                            }
+                            node_states[node_id] = "blocked"
+                            resolved.add(node_id)
+                            break
                         run_store.mark_dispatched(lease, identity.attempt_id)
                         _inject_fault(fault_injector, "after_attempt_dispatched", identity)
                     else:
@@ -434,6 +467,7 @@ def run_dag_plan(
                             attempt_id=f"{effective_run_id}:{node_id}:{attempt}",
                             idempotency_key=f"{effective_run_id}:{node_id}:{attempt}:effect",
                         )
+                        resource_tokens = ()
                     accepted_inputs = tuple(
                         results[source]["accepted_output"]
                         for source, edge_id in context_edges.get(node_id, ())
@@ -456,6 +490,7 @@ def run_dag_plan(
                     )
                     futures[future] = node_id
                     future_attempts[future] = identity
+                    future_resource_leases[future] = resource_tokens
                     scheduled.add(node_id)
                     node_states[node_id] = "running"
                     _emit(
@@ -637,6 +672,7 @@ def run_dag_plan(
                 for future in done:
                     node_id = futures.pop(future)
                     identity = future_attempts.pop(future)
+                    resource_tokens = future_resource_leases.pop(future, ())
                     try:
                         result = future.result()
                     except Exception as exc:  # pragma: no cover - defensive adapter boundary.
@@ -653,6 +689,12 @@ def run_dag_plan(
                             "verdict": "ADAPTER_EXECUTION_FAILED",
                             "errors": [str(exc)],
                         }
+                    if resource_lease_manager is not None and resource_tokens:
+                        resource_lease_manager.release(
+                            resource_tokens,
+                            run_store=run_store,
+                            scheduler_lease=lease,
+                        )
                     completed_batch.append((node_id, identity, result))
 
                 batch_blocked = False

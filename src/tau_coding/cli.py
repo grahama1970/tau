@@ -261,6 +261,7 @@ from tau_coding.rendering import PrintOutputMode, create_event_renderer
 from tau_coding.research_query_gate import write_research_query_safety_receipt
 from tau_coding.research_skill_adapter import write_research_skill_adapter_receipt
 from tau_coding.research_source_receipt import write_research_source_receipt
+from tau_coding.resource_lease_conformance import write_resource_lease_conformance
 from tau_coding.resources import TauResourcePaths
 from tau_coding.review_code_skill_adapter import write_review_code_skill_adapter_receipt
 from tau_coding.review_findings import write_review_findings_receipt
@@ -4629,6 +4630,17 @@ def main(
         try:
             options = _parse_secure_execution_conformance_cli_args(positional_args[1:])
             payload = project_agent_secure_execution_conformance_command(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("status") != "PASS":
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "resource-lease-conformance":
+        try:
+            options = _parse_resource_lease_conformance_cli_args(positional_args[1:])
+            payload = project_agent_resource_lease_conformance_command(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -12261,6 +12273,32 @@ def _parse_secure_execution_conformance_cli_args(
     }
 
 
+def _parse_resource_lease_conformance_cli_args(args: list[str]) -> dict[str, Path | bool]:
+    output: Path | None = None
+    allow_live_filesystem = False
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--output":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--output requires a value")
+            output = Path(args[index])
+        elif arg.startswith("--output="):
+            output = Path(arg.partition("=")[2])
+        elif arg == "--allow-live-filesystem":
+            allow_live_filesystem = True
+        else:
+            raise RuntimeError(f"Unknown resource-lease-conformance option: {arg}")
+        index += 1
+    if output is None:
+        raise RuntimeError("resource-lease-conformance requires --output <proof.json>")
+    return {
+        "output": output,
+        "allow_live_filesystem": allow_live_filesystem,
+    }
+
+
 def _parse_persona_dream_panel_proof_cli_args(
     args: list[str],
 ) -> dict[str, Path | str | bool | None]:
@@ -14346,6 +14384,19 @@ def project_agent_secure_execution_conformance_command(
         output,
         allow_live_sandbox=allow_live_sandbox,
         backend=backend,
+    )
+
+
+def project_agent_resource_lease_conformance_command(
+    *,
+    output: Path,
+    allow_live_filesystem: bool,
+) -> dict[str, object]:
+    """Write the resource lease conformance receipt."""
+
+    return write_resource_lease_conformance(
+        output,
+        allow_live_filesystem=allow_live_filesystem,
     )
 
 

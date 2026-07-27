@@ -1,0 +1,323 @@
+{
+  "checked_at": "2026-07-27T15:39:10Z",
+  "checks": {
+    "acquisition_events_durable": true,
+    "configured_concurrency_enforced": true,
+    "expired_lease_recovery_recorded": true,
+    "expired_leases_fail_closed": true,
+    "overlapping_mutation_lock_denied": true,
+    "release_events_durable": true,
+    "run_store_integrity_pass": true,
+    "scheduler_diagnostic_events_durable": true,
+    "scheduler_status_pass": true
+  },
+  "dag_store": "/tmp/tau-issue188-1785166351/docs/proofs/tickets/issue-188-resource-lease-conformance-v2-20260727/run/dag-run.sqlite3",
+  "event_counts": {
+    "resource_lease_acquired": 4,
+    "resource_lease_denied": 1,
+    "resource_lease_expired": 1,
+    "resource_lease_released": 3
+  },
+  "expiry_recovery": {
+    "active_after_recovery": 0,
+    "expired_count": 1,
+    "token_count": 1
+  },
+  "failed_checks": [],
+  "journal_event_count": 25,
+  "live": true,
+  "mocked": false,
+  "mutation_denial": {
+    "denied": true,
+    "error": {
+      "code": "resource_lease_conflict",
+      "detail": "{\"attempt_id\":\"attempt-mutator-b\",\"mode\":\"exclusive\",\"mutation_key\":\"branch:main\",\"node_id\":\"mutator-b\",\"reason\":\"resource_lease_conflict\",\"resource_id\":\"workspace:shared\",\"resource_kind\":\"workspace\",\"run_id\":\"resource-lease-mutation-denial\"}",
+      "message": "resource_lease_conflict:{\"attempt_id\":\"attempt-mutator-b\",\"mode\":\"exclusive\",\"mutation_key\":\"branch:main\",\"node_id\":\"mutator-b\",\"reason\":\"resource_lease_conflict\",\"resource_id\":\"workspace:shared\",\"resource_kind\":\"workspace\",\"run_id\":\"resource-lease-mutation-denial\"}"
+    }
+  },
+  "output": "/tmp/tau-issue188-1785166351/docs/proofs/tickets/issue-188-resource-lease-conformance-v2-20260727/resource-lease-conformance.json",
+  "proof_scope": {
+    "does_not_prove": [
+      "Distributed lock consensus across hosts.",
+      "OS isolation against malicious same-user processes.",
+      "Provider/model semantic quality.",
+      "GPU driver-level isolation."
+    ],
+    "proves": [
+      "Tau scheduler dispatch acquired resource leases before node execution.",
+      "Tau released resource leases after node completion.",
+      "Tau recorded lease acquire/release/denial/expiry events durably.",
+      "Tau denied an overlapping mutation branch lock.",
+      "Tau recovered expired leases before later dispatch could reuse them."
+    ]
+  },
+  "provider_live": false,
+  "resource_lease_event_count": 9,
+  "resource_lease_events": [
+    {
+      "created_at": "2026-07-27T15:39:10Z",
+      "event_type": "resource_lease_acquired",
+      "payload": {
+        "created_at": "2026-07-27T15:39:10Z",
+        "event_type": "resource_lease_acquired",
+        "payload": {
+          "attempt_id": "attempt-66c4a5cdb14958583f8e21ae51af3cad",
+          "expires_at_ms": 1785166760017,
+          "mode": "shared",
+          "mutation_key": null,
+          "node_id": "gpu-left",
+          "resource_id": "gpu:0",
+          "resource_kind": "gpu",
+          "run_id": "resource-lease-conformance-run",
+          "token": "lease-24b3a804c7cb4f4da5fb493699417142"
+        },
+        "schema": "tau.resource_lease_event.v1"
+      },
+      "payload_sha256": "sha256:48bf8dda082a75c4394d2ccd2d8abe62c9ebd055cf873b15e8747aff238b31c0",
+      "seq": 1,
+      "token": "lease-24b3a804c7cb4f4da5fb493699417142"
+    },
+    {
+      "created_at": "2026-07-27T15:39:10Z",
+      "event_type": "resource_lease_acquired",
+      "payload": {
+        "created_at": "2026-07-27T15:39:10Z",
+        "event_type": "resource_lease_acquired",
+        "payload": {
+          "attempt_id": "attempt-8657e87384225a4c8aefb81b64965abb",
+          "expires_at_ms": 1785166760022,
+          "mode": "shared",
+          "mutation_key": null,
+          "node_id": "gpu-right",
+          "resource_id": "gpu:0",
+          "resource_kind": "gpu",
+          "run_id": "resource-lease-conformance-run",
+          "token": "lease-c85aa7a182e444a481cb454c21db3042"
+        },
+        "schema": "tau.resource_lease_event.v1"
+      },
+      "payload_sha256": "sha256:f2d2a0f448b295dfd9a14457a387e452a4c0194762c849261e37c24840d072b3",
+      "seq": 2,
+      "token": "lease-c85aa7a182e444a481cb454c21db3042"
+    },
+    {
+      "created_at": "2026-07-27T15:39:10Z",
+      "event_type": "resource_lease_released",
+      "payload": {
+        "created_at": "2026-07-27T15:39:10Z",
+        "event_type": "resource_lease_released",
+        "payload": {
+          "attempt_id": "attempt-8657e87384225a4c8aefb81b64965abb",
+          "expires_at_ms": 1785166760022,
+          "mode": "shared",
+          "mutation_key": null,
+          "node_id": "gpu-right",
+          "reason": "node_finished",
+          "resource_id": "gpu:0",
+          "resource_kind": "gpu",
+          "run_id": "resource-lease-conformance-run",
+          "token": "lease-c85aa7a182e444a481cb454c21db3042"
+        },
+        "schema": "tau.resource_lease_event.v1"
+      },
+      "payload_sha256": "sha256:e80a7039191aba122548097d91ee9437a913a9260e43ef547d5dfca2c757c083",
+      "seq": 3,
+      "token": "lease-c85aa7a182e444a481cb454c21db3042"
+    },
+    {
+      "created_at": "2026-07-27T15:39:10Z",
+      "event_type": "resource_lease_released",
+      "payload": {
+        "created_at": "2026-07-27T15:39:10Z",
+        "event_type": "resource_lease_released",
+        "payload": {
+          "attempt_id": "attempt-66c4a5cdb14958583f8e21ae51af3cad",
+          "expires_at_ms": 1785166760017,
+          "mode": "shared",
+          "mutation_key": null,
+          "node_id": "gpu-left",
+          "reason": "node_finished",
+          "resource_id": "gpu:0",
+          "resource_kind": "gpu",
+          "run_id": "resource-lease-conformance-run",
+          "token": "lease-24b3a804c7cb4f4da5fb493699417142"
+        },
+        "schema": "tau.resource_lease_event.v1"
+      },
+      "payload_sha256": "sha256:8eb9a437b919c039b9242aedfc374800292a88f45600d1d4ced50ca7a9cdb57b",
+      "seq": 4,
+      "token": "lease-24b3a804c7cb4f4da5fb493699417142"
+    },
+    {
+      "created_at": "2026-07-27T15:39:10Z",
+      "event_type": "resource_lease_acquired",
+      "payload": {
+        "created_at": "2026-07-27T15:39:10Z",
+        "event_type": "resource_lease_acquired",
+        "payload": {
+          "attempt_id": "attempt-mutator-a",
+          "expires_at_ms": 1785166760092,
+          "mode": "exclusive",
+          "mutation_key": "branch:main",
+          "node_id": "mutator-a",
+          "resource_id": "workspace:shared",
+          "resource_kind": "workspace",
+          "run_id": "resource-lease-mutation-denial",
+          "token": "lease-bccbca51bebe4b52b0f1a83c2f0cc873"
+        },
+        "schema": "tau.resource_lease_event.v1"
+      },
+      "payload_sha256": "sha256:148c297411b32d4d19ad39e69affb9dfd803783dba500460ed6dc9b806e17053",
+      "seq": 5,
+      "token": "lease-bccbca51bebe4b52b0f1a83c2f0cc873"
+    },
+    {
+      "created_at": "2026-07-27T15:39:10Z",
+      "event_type": "resource_lease_denied",
+      "payload": {
+        "created_at": "2026-07-27T15:39:10Z",
+        "event_type": "resource_lease_denied",
+        "payload": {
+          "attempt_id": "attempt-mutator-b",
+          "mode": "exclusive",
+          "mutation_key": "branch:main",
+          "node_id": "mutator-b",
+          "reason": "resource_lease_conflict",
+          "resource_id": "workspace:shared",
+          "resource_kind": "workspace",
+          "run_id": "resource-lease-mutation-denial"
+        },
+        "schema": "tau.resource_lease_event.v1"
+      },
+      "payload_sha256": "sha256:74372aa9938dfe49e8e29737ec29159ab559f4e6b11426fc4212faaf91f75632",
+      "seq": 6,
+      "token": "denied-81b6a1f7fa3e408f8e8cdfe5f4baf74c"
+    },
+    {
+      "created_at": "2026-07-27T15:39:10Z",
+      "event_type": "resource_lease_released",
+      "payload": {
+        "created_at": "2026-07-27T15:39:10Z",
+        "event_type": "resource_lease_released",
+        "payload": {
+          "attempt_id": "attempt-mutator-a",
+          "expires_at_ms": 1785166760092,
+          "mode": "exclusive",
+          "mutation_key": "branch:main",
+          "node_id": "mutator-a",
+          "reason": "mutation_probe_done",
+          "resource_id": "workspace:shared",
+          "resource_kind": "workspace",
+          "run_id": "resource-lease-mutation-denial",
+          "token": "lease-bccbca51bebe4b52b0f1a83c2f0cc873"
+        },
+        "schema": "tau.resource_lease_event.v1"
+      },
+      "payload_sha256": "sha256:8e8793e9d79f3a314e874e06cff4303c7d5db01166c3caa0b3fda72b069d360f",
+      "seq": 7,
+      "token": "lease-bccbca51bebe4b52b0f1a83c2f0cc873"
+    },
+    {
+      "created_at": "2026-07-27T15:39:10Z",
+      "event_type": "resource_lease_acquired",
+      "payload": {
+        "created_at": "2026-07-27T15:39:10Z",
+        "event_type": "resource_lease_acquired",
+        "payload": {
+          "attempt_id": "attempt-expiry-holder",
+          "expires_at_ms": 1785166750122,
+          "mode": "exclusive",
+          "mutation_key": null,
+          "node_id": "expiry-holder",
+          "resource_id": "workspace:shared",
+          "resource_kind": "workspace",
+          "run_id": "resource-lease-expiry-recovery",
+          "token": "lease-118fd503b92b4c98b60446203c94ac39"
+        },
+        "schema": "tau.resource_lease_event.v1"
+      },
+      "payload_sha256": "sha256:18c25697763c2e90829a9e75cc84b278efb2996a197c995403797b19d50303ab",
+      "seq": 8,
+      "token": "lease-118fd503b92b4c98b60446203c94ac39"
+    },
+    {
+      "created_at": "2026-07-27T15:39:10Z",
+      "event_type": "resource_lease_expired",
+      "payload": {
+        "created_at": "2026-07-27T15:39:10Z",
+        "event_type": "resource_lease_expired",
+        "payload": {
+          "attempt_id": "attempt-expiry-holder",
+          "expires_at_ms": 1785166750122,
+          "mode": "exclusive",
+          "mutation_key": null,
+          "node_id": "expiry-holder",
+          "reason": "conformance_crash_recovery",
+          "resource_id": "workspace:shared",
+          "resource_kind": "workspace",
+          "run_id": "resource-lease-expiry-recovery",
+          "token": "lease-118fd503b92b4c98b60446203c94ac39"
+        },
+        "schema": "tau.resource_lease_event.v1"
+      },
+      "payload_sha256": "sha256:47819033834257b5053fa438cfbd1a5eb7903bc7cbee0f3bddcafb46a5de3c5d",
+      "seq": 9,
+      "token": "lease-118fd503b92b4c98b60446203c94ac39"
+    }
+  ],
+  "resource_lease_store": "/tmp/tau-issue188-1785166351/docs/proofs/tickets/issue-188-resource-lease-conformance-v2-20260727/run/resource-leases.sqlite3",
+  "run_dir": "/tmp/tau-issue188-1785166351/docs/proofs/tickets/issue-188-resource-lease-conformance-v2-20260727/run",
+  "run_store_integrity": {
+    "foreign_key_check": [],
+    "integrity_check": [
+      "ok"
+    ],
+    "journal_mode": "wal",
+    "ok": true
+  },
+  "scheduler_events": [
+    {
+      "event": "scheduler_started",
+      "plan_id": "generic:resource-lease-conformance"
+    },
+    {
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "gpu-left"
+    },
+    {
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "gpu-right"
+    },
+    {
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "gpu-right"
+    },
+    {
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "gpu-left"
+    },
+    {
+      "event": "scheduler_finished",
+      "plan_id": "generic:resource-lease-conformance",
+      "status": "PASS",
+      "verdict": "PASS"
+    }
+  ],
+  "scheduler_result": {
+    "completed_node_ids": [
+      "gpu-left",
+      "gpu-right"
+    ],
+    "lease_epoch": 1,
+    "max_observed_concurrency": 2,
+    "run_id": "resource-lease-conformance-run",
+    "status": "PASS",
+    "verdict": "PASS"
+  },
+  "schema": "tau.resource_lease_conformance.v1",
+  "status": "PASS"
+}
