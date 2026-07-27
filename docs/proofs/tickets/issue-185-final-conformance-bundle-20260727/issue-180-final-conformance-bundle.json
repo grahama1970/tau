@@ -9,7 +9,7 @@
   "browser_packet": {
     "html": "/tmp/tau-issue185.CenDJ2/docs/proofs/tickets/issue-185-final-conformance-bundle-20260727/issue-180-final-conformance-bundle.html",
     "screenshot": "/tmp/tau-issue185.CenDJ2/docs/proofs/tickets/issue-185-final-conformance-bundle-20260727/issue-180-final-conformance-bundle.png",
-    "screenshot_sha256": "sha256:3a7f178a4d5c1b19fc34240a2060d5e7d4303855ed47e74a1a1845dd9cc7c4fb"
+    "screenshot_sha256": "sha256:9dc8b3a28b9f036fc5d26f45f98fee4b9bf9081a3714fc95d0c73a4a7b5658b6"
   },
   "child_artifacts": [
     {
@@ -138,7 +138,7 @@
     ]
   },
   "provider_live": false,
-  "remote_main_sha": "56b7ecba4fa93ac760dab409554b0cdf9810059c",
+  "remote_main_sha": "4a0430c1c9ae09c8496641251fa2bd064967a946",
   "repo": "grahama1970/tau",
   "schema": "tau.issue_180_final_conformance_bundle.v1",
   "status": "PASS"

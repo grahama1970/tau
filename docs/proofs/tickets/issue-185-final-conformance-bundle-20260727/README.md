@@ -42,7 +42,7 @@ file docs/proofs/tickets/issue-185-final-conformance-bundle-20260727/issue-180-f
       "stateReason": "COMPLETED"
     }
   ],
-  "remote_main_sha": "56b7ecba4fa93ac760dab409554b0cdf9810059c",
+  "remote_main_sha": "4a0430c1c9ae09c8496641251fa2bd064967a946",
   "browser_screenshot": "/tmp/tau-issue185.CenDJ2/docs/proofs/tickets/issue-185-final-conformance-bundle-20260727/issue-180-final-conformance-bundle.png"
 }
 ```
