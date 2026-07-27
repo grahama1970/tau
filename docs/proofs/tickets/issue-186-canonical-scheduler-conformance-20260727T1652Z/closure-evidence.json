@@ -5,6 +5,18 @@
   "mocked": false,
   "live": true,
   "provider_live": false,
+  "unit": {
+    "command": "PYTHONPATH=src uv run pytest tests/test_skill_dag_adapter.py tests/test_cli.py --tb=short",
+    "exit_code": 0,
+    "passed": 245
+  },
+  "e2e": {
+    "command": "PYTHONPATH=src uv run tau canonical-scheduler-conformance --allow-live-filesystem --output docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/canonical-scheduler-conformance.json",
+    "exit_code": 0,
+    "mocked": false,
+    "live": true,
+    "artifact": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/canonical-scheduler-conformance.json"
+  },
   "proof_artifacts": {
     "primary_receipt": "docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/canonical-scheduler-conformance.json",
     "map_child_aggregate": "docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/runs/map-child-dag/map-run/map-child-dag-conformance.json",
