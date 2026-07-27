@@ -1,0 +1,150 @@
+{
+  "artifacts_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/artifacts",
+  "baseline_lineage_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/artifacts/baseline/frame-lineage-receipt.json",
+  "changed_target": {
+    "frame_index": 3,
+    "relative_path": "killed/003.png",
+    "state": "killed"
+  },
+  "checked_at": "2026-07-27T16:04:30Z",
+  "checks": {
+    "affected_nodes_rerun": true,
+    "atlas_validator_pass": true,
+    "changed_frame_hash_changed": true,
+    "changed_target_identified": true,
+    "downstream_atlas_rebuilt": true,
+    "downstream_playback_rebuilt": true,
+    "final_release_human_gated": true,
+    "lineage_readback_proves_reuse": true,
+    "scheduler_status_pass": true,
+    "sequence_validator_pass": true,
+    "unaffected_frames_reused": true,
+    "unaffected_regeneration_zero": true
+  },
+  "dag_plan_sha256": "sha256:31e0890fd2177a2f1add5227ed3d36cbf953672a63ff8fe0e3c65259053f059c",
+  "dag_spec": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/artifacts/targeted-repair-conformance-dag.json",
+  "failed_checks": [],
+  "journal_event_count": 42,
+  "lineage_readback_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/artifacts/repair/lineage-readback-receipt.json",
+  "live": true,
+  "mocked": false,
+  "output": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/targeted-repair-conformance.json",
+  "proof_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727",
+  "proof_scope": {
+    "does_not_prove": [
+      "Battle art direction quality.",
+      "Provider/model semantic quality.",
+      "Automatic selection of the correct human repair target.",
+      "Human approval to promote the rebuilt candidate atlas."
+    ],
+    "proves": [
+      "Tau ran a targeted repair workload through the canonical DAG scheduler.",
+      "Exactly one changed frame target was regenerated.",
+      "Unaffected accepted frames were reused byte-for-byte with regeneration count zero.",
+      "Sequence, atlas, and playback outputs were invalidated and rebuilt.",
+      "Lineage readback proves reuse for unaffected accepted frames."
+    ]
+  },
+  "provider_live": false,
+  "repair_plan_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/artifacts/repair/targeted-repair-plan.json",
+  "repaired_atlas_validation_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/artifacts/repair/atlas-runtime-validation/validation.json",
+  "repaired_playback_proof": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/artifacts/repair/playback-proof.json",
+  "repaired_sequence_validation_receipt": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/artifacts/repair/sequence-validation/frame-validation-index.json",
+  "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/run",
+  "scheduler_events": [
+    {
+      "event": "scheduler_started",
+      "plan_id": "generic:targeted-repair-conformance"
+    },
+    {
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "baseline-acceptance"
+    },
+    {
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "baseline-acceptance"
+    },
+    {
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "targeted-repair"
+    },
+    {
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "targeted-repair"
+    },
+    {
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "downstream-rebuild"
+    },
+    {
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "downstream-rebuild"
+    },
+    {
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "lineage-readback"
+    },
+    {
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "lineage-readback"
+    },
+    {
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "release-boundary"
+    },
+    {
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "release-boundary"
+    },
+    {
+      "event": "scheduler_finished",
+      "plan_id": "generic:targeted-repair-conformance",
+      "status": "PASS",
+      "verdict": "PASS"
+    }
+  ],
+  "scheduler_result": {
+    "completed_node_ids": [
+      "baseline-acceptance",
+      "downstream-rebuild",
+      "lineage-readback",
+      "release-boundary",
+      "targeted-repair"
+    ],
+    "edge_states": {
+      "generic-dependency:baseline-acceptance:targeted-repair": "success",
+      "generic-dependency:downstream-rebuild:lineage-readback": "success",
+      "generic-dependency:lineage-readback:release-boundary": "success",
+      "generic-dependency:targeted-repair:downstream-rebuild": "success"
+    },
+    "lease_epoch": 1,
+    "max_observed_concurrency": 1,
+    "node_states": {
+      "baseline-acceptance": "success",
+      "downstream-rebuild": "success",
+      "lineage-readback": "success",
+      "release-boundary": "success",
+      "targeted-repair": "success"
+    },
+    "replayed_event_count": 2,
+    "run_id": "targeted-repair-conformance-run",
+    "status": "PASS",
+    "terminal_states": {
+      "release-boundary": "success"
+    },
+    "verdict": "PASS"
+  },
+  "schema": "tau.targeted_repair_conformance.v1",
+  "status": "PASS",
+  "unaffected_accepted_frame_regeneration_count": 0
+}

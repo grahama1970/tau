@@ -1,0 +1,77 @@
+{
+  "events_jsonl": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/run/events.jsonl",
+  "goal_hash": "sha256:targeted-repair-conformance",
+  "nodes": [
+    {
+      "command": [
+        "tau-internal-targeted-repair-conformance",
+        "baseline-acceptance"
+      ],
+      "depends_on": [],
+      "max_attempts": 1,
+      "node_id": "baseline-acceptance",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/artifacts/baseline-acceptance-node-receipt.json",
+      "role": "baseline-acceptance",
+      "timeout_seconds": 60
+    },
+    {
+      "command": [
+        "tau-internal-targeted-repair-conformance",
+        "targeted-repair"
+      ],
+      "depends_on": [
+        "baseline-acceptance"
+      ],
+      "max_attempts": 1,
+      "node_id": "targeted-repair",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/artifacts/targeted-repair-node-receipt.json",
+      "role": "targeted-repair",
+      "timeout_seconds": 60
+    },
+    {
+      "command": [
+        "tau-internal-targeted-repair-conformance",
+        "downstream-rebuild"
+      ],
+      "depends_on": [
+        "targeted-repair"
+      ],
+      "max_attempts": 1,
+      "node_id": "downstream-rebuild",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/artifacts/downstream-rebuild-node-receipt.json",
+      "role": "downstream-rebuild",
+      "timeout_seconds": 60
+    },
+    {
+      "command": [
+        "tau-internal-targeted-repair-conformance",
+        "lineage-readback"
+      ],
+      "depends_on": [
+        "downstream-rebuild"
+      ],
+      "max_attempts": 1,
+      "node_id": "lineage-readback",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/artifacts/lineage-readback-node-receipt.json",
+      "role": "lineage-readback",
+      "timeout_seconds": 60
+    },
+    {
+      "command": [
+        "tau-internal-targeted-repair-conformance",
+        "release-boundary"
+      ],
+      "depends_on": [
+        "lineage-readback"
+      ],
+      "max_attempts": 1,
+      "node_id": "release-boundary",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/artifacts/release-boundary-node-receipt.json",
+      "role": "release-boundary",
+      "timeout_seconds": 60
+    }
+  ],
+  "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/run",
+  "run_id": "targeted-repair-conformance",
+  "schema": "tau.generic_dag_spec.v1"
+}

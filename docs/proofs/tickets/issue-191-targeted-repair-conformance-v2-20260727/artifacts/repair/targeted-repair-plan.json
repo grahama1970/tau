@@ -1,0 +1,42 @@
+{
+  "affected_frame_paths": [
+    "killed/003.png"
+  ],
+  "affected_nodes_rerun": [
+    "targeted-repair",
+    "downstream-rebuild",
+    "lineage-readback"
+  ],
+  "changed_frame_hash_after": "4e80b2f3a6330ab5077bc7055d78301357776a4d529a7559e1a82bb9ead6fff1",
+  "changed_frame_hash_before": "6ab08c450effb14b457e7dfec6214e7b7ec10a0a4803ceb8496a9e7f2109e749",
+  "changed_target": {
+    "frame_index": 3,
+    "relative_path": "killed/003.png",
+    "state": "killed"
+  },
+  "invalidated_outputs": [
+    "sequence-validation",
+    "atlas-validation",
+    "playback-proof"
+  ],
+  "live": true,
+  "mocked": false,
+  "schema": "tau.targeted_repair_plan.v1",
+  "status": "PASS",
+  "unaffected_frame_paths": [
+    "blocked/000.png",
+    "blocked/001.png",
+    "blocked/002.png",
+    "blocked/003.png",
+    "blocked/004.png",
+    "blocked/005.png",
+    "killed/000.png",
+    "killed/001.png",
+    "killed/002.png",
+    "killed/004.png",
+    "killed/005.png",
+    "killed/006.png",
+    "killed/007.png"
+  ],
+  "unaffected_regeneration_count": 0
+}

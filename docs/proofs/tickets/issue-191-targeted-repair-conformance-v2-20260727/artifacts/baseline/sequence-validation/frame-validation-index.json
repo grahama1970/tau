@@ -1,0 +1,93 @@
+{
+  "checks": [
+    {
+      "opaque_pixels": 1240,
+      "passed": true,
+      "path": "blocked/000.png",
+      "sha256": "3d2e9bf5d006c08d4bbae733d7c29249ad3d0c235ac8dd73c201b62bf256807a"
+    },
+    {
+      "opaque_pixels": 1215,
+      "passed": true,
+      "path": "blocked/001.png",
+      "sha256": "8ed274a4b5ebf90ec25ebe6611974f17199d236b5c89e6d373310cf13e1c5221"
+    },
+    {
+      "opaque_pixels": 1190,
+      "passed": true,
+      "path": "blocked/002.png",
+      "sha256": "ab8dd62e4ff67d3b27201a22153d3ae3c645b992c82601e4202895a82182b9a6"
+    },
+    {
+      "opaque_pixels": 1165,
+      "passed": true,
+      "path": "blocked/003.png",
+      "sha256": "7e72f6896dfcfe4a2085f37f91292ee74620ee19dd55782835bddc00eb9754e8"
+    },
+    {
+      "opaque_pixels": 1140,
+      "passed": true,
+      "path": "blocked/004.png",
+      "sha256": "965d3b8113a6ba385269fafe2833a3703c74562d1221bdf438256268164e49a9"
+    },
+    {
+      "opaque_pixels": 1115,
+      "passed": true,
+      "path": "blocked/005.png",
+      "sha256": "0e67c1848f44b4ab5aae3e0eafa4460ca6069c070fcc1425fc9c64f81475be82"
+    },
+    {
+      "opaque_pixels": 1248,
+      "passed": true,
+      "path": "killed/000.png",
+      "sha256": "7ae10c98187d49c6e00b54db407e5c3a5b1d7e430d747970b67cfdd1acd3fcfe"
+    },
+    {
+      "opaque_pixels": 1222,
+      "passed": true,
+      "path": "killed/001.png",
+      "sha256": "671e776a6d7b0a8c5c80ed3b05ea9bde3a1d560d0e80f1d6eb4b970f409540be"
+    },
+    {
+      "opaque_pixels": 1195,
+      "passed": true,
+      "path": "killed/002.png",
+      "sha256": "53c772ec205c60b6428eead9c84fc27dcb02f3134bf40b84d7f43b2f8914ed6e"
+    },
+    {
+      "opaque_pixels": 1169,
+      "passed": true,
+      "path": "killed/003.png",
+      "sha256": "6ab08c450effb14b457e7dfec6214e7b7ec10a0a4803ceb8496a9e7f2109e749"
+    },
+    {
+      "opaque_pixels": 1142,
+      "passed": true,
+      "path": "killed/004.png",
+      "sha256": "368ecc95f8f134a0a8a60368a8db8dbc803bef61293c412f32c3af62e2e670f6"
+    },
+    {
+      "opaque_pixels": 1116,
+      "passed": true,
+      "path": "killed/005.png",
+      "sha256": "30460b9e5f6ec38c300d25ff60dc63f529829059561bc3cef83600816c70e607"
+    },
+    {
+      "opaque_pixels": 1090,
+      "passed": true,
+      "path": "killed/006.png",
+      "sha256": "3bdce599b8a8a1c83b367c335336383cb2d918ffa5c573273fe1768e4c2fdffe"
+    },
+    {
+      "opaque_pixels": 1065,
+      "passed": true,
+      "path": "killed/007.png",
+      "sha256": "016b9bfc015ac7e0f4931d2d7fb6566aecfc492b25e2754d7aa7613ea1b0bb7b"
+    }
+  ],
+  "failed_frame_count": 0,
+  "passed": true,
+  "passed_frame_count": 14,
+  "required_frame_count": 14,
+  "schema": "sprite_atlas.named_frame_validation.v1"
+}

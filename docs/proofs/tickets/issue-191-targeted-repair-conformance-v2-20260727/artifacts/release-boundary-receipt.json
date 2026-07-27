@@ -1,0 +1,16 @@
+{
+  "allowed_next_action": "human_review_then_sprite_atlas_promote",
+  "candidate_atlas": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/artifacts/repair/atlas-pack/atlas.candidate.png",
+  "candidate_atlas_sha256": "d97b85c87817483fdf3b981991cdaf341bcc5880de48a456bfc95d5f58f1d836",
+  "candidate_manifest": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/artifacts/repair/atlas-pack/atlas.candidate.json",
+  "candidate_manifest_sha256": "cd17107f022e919dcbb6602d0131f9aa490e500f5d4c319a9cba44d8511240e5",
+  "human_required": true,
+  "live": true,
+  "mocked": false,
+  "promotion_performed": false,
+  "provider_live": false,
+  "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/artifacts/release-boundary-receipt.json",
+  "release_state": "HUMAN_GATED",
+  "schema": "tau.sprite_release_boundary.v1",
+  "status": "PASS"
+}

@@ -1,0 +1,60 @@
+{
+  "checks": [
+    {
+      "detail": "found 512x896",
+      "name": "png_dimensions",
+      "passed": true
+    },
+    {
+      "detail": "RGBA",
+      "name": "png_mode_rgba",
+      "passed": true
+    },
+    {
+      "detail": "alpha0=96.44%",
+      "name": "actual_transparency",
+      "passed": true
+    },
+    {
+      "detail": "[(np.uint8(0), np.uint8(0), np.uint8(0), np.uint8(0)), (np.uint8(0), np.uint8(0), np.uint8(0), np.uint8(0)), (np.uint8(0), np.uint8(0), np.uint8(0), np.uint8(0)), (np.uint8(0), np.uint8(0), np.uint8(0), np.uint8(0))]",
+      "name": "corner_alpha_zero",
+      "passed": true
+    },
+    {
+      "detail": "expected 6, found 6",
+      "name": "row_blocked_occupied",
+      "passed": true
+    },
+    {
+      "detail": "expected 8, found 8",
+      "name": "row_killed_occupied",
+      "passed": true
+    },
+    {
+      "detail": "violations=0",
+      "name": "unused_cells_alpha_zero",
+      "passed": true
+    },
+    {
+      "detail": "cells_with_scars=0",
+      "name": "no_grid_scars",
+      "passed": true
+    },
+    {
+      "detail": "clipped=0",
+      "name": "no_clipped_required_frames",
+      "passed": true
+    },
+    {
+      "detail": "animation names/order/count",
+      "name": "animation_arrays_match_profile",
+      "passed": true
+    },
+    {
+      "detail": "frame rectangles",
+      "name": "pixi_frame_rectangles",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

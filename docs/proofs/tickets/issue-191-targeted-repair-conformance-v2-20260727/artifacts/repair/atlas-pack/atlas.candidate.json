@@ -1,0 +1,296 @@
+{
+  "animations": {
+    "blocked": [
+      "battle_blocked_0",
+      "battle_blocked_1",
+      "battle_blocked_2",
+      "battle_blocked_3",
+      "battle_blocked_4",
+      "battle_blocked_5"
+    ],
+    "killed": [
+      "battle_killed_0",
+      "battle_killed_1",
+      "battle_killed_2",
+      "battle_killed_3",
+      "battle_killed_4",
+      "battle_killed_5",
+      "battle_killed_6",
+      "battle_killed_7"
+    ]
+  },
+  "frames": {
+    "battle_blocked_0": {
+      "frame": {
+        "h": 64,
+        "w": 64,
+        "x": 0,
+        "y": 512
+      },
+      "sourceSize": {
+        "h": 64,
+        "w": 64
+      },
+      "spriteSourceSize": {
+        "h": 64,
+        "w": 64,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "battle_blocked_1": {
+      "frame": {
+        "h": 64,
+        "w": 64,
+        "x": 64,
+        "y": 512
+      },
+      "sourceSize": {
+        "h": 64,
+        "w": 64
+      },
+      "spriteSourceSize": {
+        "h": 64,
+        "w": 64,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "battle_blocked_2": {
+      "frame": {
+        "h": 64,
+        "w": 64,
+        "x": 128,
+        "y": 512
+      },
+      "sourceSize": {
+        "h": 64,
+        "w": 64
+      },
+      "spriteSourceSize": {
+        "h": 64,
+        "w": 64,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "battle_blocked_3": {
+      "frame": {
+        "h": 64,
+        "w": 64,
+        "x": 192,
+        "y": 512
+      },
+      "sourceSize": {
+        "h": 64,
+        "w": 64
+      },
+      "spriteSourceSize": {
+        "h": 64,
+        "w": 64,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "battle_blocked_4": {
+      "frame": {
+        "h": 64,
+        "w": 64,
+        "x": 256,
+        "y": 512
+      },
+      "sourceSize": {
+        "h": 64,
+        "w": 64
+      },
+      "spriteSourceSize": {
+        "h": 64,
+        "w": 64,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "battle_blocked_5": {
+      "frame": {
+        "h": 64,
+        "w": 64,
+        "x": 320,
+        "y": 512
+      },
+      "sourceSize": {
+        "h": 64,
+        "w": 64
+      },
+      "spriteSourceSize": {
+        "h": 64,
+        "w": 64,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "battle_killed_0": {
+      "frame": {
+        "h": 64,
+        "w": 64,
+        "x": 0,
+        "y": 640
+      },
+      "sourceSize": {
+        "h": 64,
+        "w": 64
+      },
+      "spriteSourceSize": {
+        "h": 64,
+        "w": 64,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "battle_killed_1": {
+      "frame": {
+        "h": 64,
+        "w": 64,
+        "x": 64,
+        "y": 640
+      },
+      "sourceSize": {
+        "h": 64,
+        "w": 64
+      },
+      "spriteSourceSize": {
+        "h": 64,
+        "w": 64,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "battle_killed_2": {
+      "frame": {
+        "h": 64,
+        "w": 64,
+        "x": 128,
+        "y": 640
+      },
+      "sourceSize": {
+        "h": 64,
+        "w": 64
+      },
+      "spriteSourceSize": {
+        "h": 64,
+        "w": 64,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "battle_killed_3": {
+      "frame": {
+        "h": 64,
+        "w": 64,
+        "x": 192,
+        "y": 640
+      },
+      "sourceSize": {
+        "h": 64,
+        "w": 64
+      },
+      "spriteSourceSize": {
+        "h": 64,
+        "w": 64,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "battle_killed_4": {
+      "frame": {
+        "h": 64,
+        "w": 64,
+        "x": 256,
+        "y": 640
+      },
+      "sourceSize": {
+        "h": 64,
+        "w": 64
+      },
+      "spriteSourceSize": {
+        "h": 64,
+        "w": 64,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "battle_killed_5": {
+      "frame": {
+        "h": 64,
+        "w": 64,
+        "x": 320,
+        "y": 640
+      },
+      "sourceSize": {
+        "h": 64,
+        "w": 64
+      },
+      "spriteSourceSize": {
+        "h": 64,
+        "w": 64,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "battle_killed_6": {
+      "frame": {
+        "h": 64,
+        "w": 64,
+        "x": 384,
+        "y": 640
+      },
+      "sourceSize": {
+        "h": 64,
+        "w": 64
+      },
+      "spriteSourceSize": {
+        "h": 64,
+        "w": 64,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "battle_killed_7": {
+      "frame": {
+        "h": 64,
+        "w": 64,
+        "x": 448,
+        "y": 640
+      },
+      "sourceSize": {
+        "h": 64,
+        "w": 64
+      },
+      "spriteSourceSize": {
+        "h": 64,
+        "w": 64,
+        "x": 0,
+        "y": 0
+      }
+    }
+  },
+  "meta": {
+    "battle": {
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "columns": 8,
+      "frameHeight": 64,
+      "frameWidth": 64,
+      "margin": 0,
+      "rows": 14,
+      "spacing": 0,
+      "style": "original_16bit_grimdark_scifi_pixel_art",
+      "usage": "pixijs-v8",
+      "variant_id": "battle"
+    },
+    "format": "RGBA8888",
+    "image": "battle.png",
+    "scale": "1"
+  }
+}

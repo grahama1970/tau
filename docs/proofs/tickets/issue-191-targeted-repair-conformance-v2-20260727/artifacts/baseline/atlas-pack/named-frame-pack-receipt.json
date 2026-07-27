@@ -1,0 +1,9 @@
+{
+  "atlas_candidate_sha256": "54f62acb7e31e198fcc09d19ddb6e226d36296c179b5492a5cfd3cf3753cac60",
+  "manifest_candidate_sha256": "cd17107f022e919dcbb6602d0131f9aa490e500f5d4c319a9cba44d8511240e5",
+  "named_frame_validation_sha256": "d4fbea184706d66e071ea0b9e8f31812e5dffa560993c8c34df94b34240467ce",
+  "profile_sha256": "5392d780d0ae4ce091e0f862c61163cd9cd9b2090506ece3f7a742f66509f375",
+  "schema": "sprite_atlas.named_frame_pack_receipt.v1",
+  "sprite_id": "battle",
+  "status": "PASS_NAMED_FRAME_PACK"
+}
