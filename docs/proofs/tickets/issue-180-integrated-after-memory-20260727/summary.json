@@ -1,0 +1,11 @@
+{
+  "catalog_templates": 10,
+  "memory_hop": true,
+  "memory_hop_count": 3,
+  "memory_path": true,
+  "memory_path_len": 4,
+  "memory_provenance": true,
+  "memory_skill_chain": true,
+  "viewer_memory_provenance": "DEGRADED_WHEN_MEMORY_CHAIN_UNAVAILABLE",
+  "viewer_read_only": true
+}

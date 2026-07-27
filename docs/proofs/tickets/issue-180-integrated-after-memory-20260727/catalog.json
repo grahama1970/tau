@@ -1,0 +1,628 @@
+{
+  "authority_boundary": {
+    "execution_authority": "existing Tau scheduler",
+    "preview_authority": "compiled Tau DAG contract and DagPlan summary",
+    "selection_authority": "deterministic closed typed facts only",
+    "viewer_authority": "read-only scheduler journal projection"
+  },
+  "commands": {
+    "catalog": "tau dag-template-catalog",
+    "compile": "tau dag-template-compile --template <name> --params <json> --out <dag.json> --receipt <receipt.json>",
+    "describe": "tau dag-template-describe --template <name>",
+    "list": "tau dag-template-list",
+    "preview": "tau dag-template-preview --template <name> --params <json>",
+    "select": "tau dag-template-select --facts <json>",
+    "validate": "tau dag-template-validate --template <name> --params <json>"
+  },
+  "schema": "tau.dag_template_catalog.v1",
+  "template_count": 10,
+  "templates": [
+    {
+      "authority_boundary": {
+        "provider_calls": "never during describe, validate, preview, or compile",
+        "scheduler": "existing Tau DAG runtime",
+        "selector": "deterministic template name and typed params",
+        "viewer": "read-only projection of scheduler journal and admitted receipts"
+      },
+      "avoid_when": [
+        "Independent review, retry, or multi-step decomposition is required."
+      ],
+      "evidence_contract": {
+        "admission_rule": "Every required evidence kind must be emitted by a routed node before Tau admits progress.",
+        "required_kinds": [
+          "handler_receipt"
+        ]
+      },
+      "human_interview": {
+        "questions_source": "missing typed required fields",
+        "status_when_incomplete": "INTERVIEW_REQUIRED"
+      },
+      "name": "single-call",
+      "node_roles": [
+        "handler",
+        "human"
+      ],
+      "optional_fields": [
+        "limits",
+        "command_specs",
+        "fail_closed_on"
+      ],
+      "preview": {
+        "available": true,
+        "compiles_to_schema": "tau.dag_contract.v1",
+        "dispatches_commands": false
+      },
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "handler"
+      ],
+      "resources": {
+        "external_services": [],
+        "requires_human_approval": false,
+        "requires_memory": false
+      },
+      "schema": "tau.dag_template_descriptor.v1",
+      "side_effects": {
+        "compile": "writes only caller-specified DAG, receipt, and missing-field paths",
+        "describe_validate_preview_select": "none",
+        "runtime": "depends on compiled node command_specs and executor policy"
+      },
+      "summary": "One local handler node routes directly to human.",
+      "topology": "LINEAR_SINGLE",
+      "use_when": [
+        "One bounded worker can produce the requested artifact or answer."
+      ]
+    },
+    {
+      "authority_boundary": {
+        "provider_calls": "never during describe, validate, preview, or compile",
+        "scheduler": "existing Tau DAG runtime",
+        "selector": "deterministic template name and typed params",
+        "viewer": "read-only projection of scheduler journal and admitted receipts"
+      },
+      "avoid_when": [
+        "Steps can run concurrently or the route needs a reviewer gate."
+      ],
+      "evidence_contract": {
+        "admission_rule": "Every required evidence kind must be emitted by a routed node before Tau admits progress.",
+        "required_kinds": [
+          "step_receipt"
+        ]
+      },
+      "human_interview": {
+        "questions_source": "missing typed required fields",
+        "status_when_incomplete": "INTERVIEW_REQUIRED"
+      },
+      "name": "prompt-chain",
+      "node_roles": [
+        "step",
+        "human"
+      ],
+      "optional_fields": [
+        "limits",
+        "command_specs",
+        "fail_closed_on"
+      ],
+      "preview": {
+        "available": true,
+        "compiles_to_schema": "tau.dag_contract.v1",
+        "dispatches_commands": false
+      },
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "steps"
+      ],
+      "resources": {
+        "external_services": [],
+        "requires_human_approval": false,
+        "requires_memory": false
+      },
+      "schema": "tau.dag_template_descriptor.v1",
+      "side_effects": {
+        "compile": "writes only caller-specified DAG, receipt, and missing-field paths",
+        "describe_validate_preview_select": "none",
+        "runtime": "depends on compiled node command_specs and executor policy"
+      },
+      "summary": "A sequential chain of two or more explicit local step nodes.",
+      "topology": "LINEAR_CHAIN",
+      "use_when": [
+        "The task has ordered steps where later work depends on earlier artifacts."
+      ]
+    },
+    {
+      "authority_boundary": {
+        "provider_calls": "never during describe, validate, preview, or compile",
+        "scheduler": "existing Tau DAG runtime",
+        "selector": "deterministic template name and typed params",
+        "viewer": "read-only projection of scheduler journal and admitted receipts"
+      },
+      "avoid_when": [
+        "Two or more independent candidate solutions should compete."
+      ],
+      "evidence_contract": {
+        "admission_rule": "Every required evidence kind must be emitted by a routed node before Tau admits progress.",
+        "required_kinds": [
+          "creator_artifact",
+          "reviewer_verdict"
+        ]
+      },
+      "human_interview": {
+        "questions_source": "missing typed required fields",
+        "status_when_incomplete": "INTERVIEW_REQUIRED"
+      },
+      "name": "reflection-loop",
+      "node_roles": [
+        "creator",
+        "reviewer",
+        "human"
+      ],
+      "optional_fields": [
+        "limits",
+        "command_specs",
+        "fail_closed_on"
+      ],
+      "preview": {
+        "available": true,
+        "compiles_to_schema": "tau.dag_contract.v1",
+        "dispatches_commands": false
+      },
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "creator",
+        "reviewer"
+      ],
+      "resources": {
+        "external_services": [],
+        "requires_human_approval": false,
+        "requires_memory": false
+      },
+      "schema": "tau.dag_template_descriptor.v1",
+      "side_effects": {
+        "compile": "writes only caller-specified DAG, receipt, and missing-field paths",
+        "describe_validate_preview_select": "none",
+        "runtime": "depends on compiled node command_specs and executor policy"
+      },
+      "summary": "Creator node followed by reviewer/reflection node and human handoff.",
+      "topology": "CREATOR_REVIEWER",
+      "use_when": [
+        "A produced artifact needs a separate review/reflection pass before handoff."
+      ]
+    },
+    {
+      "authority_boundary": {
+        "provider_calls": "never during describe, validate, preview, or compile",
+        "scheduler": "existing Tau DAG runtime",
+        "selector": "deterministic template name and typed params",
+        "viewer": "read-only projection of scheduler journal and admitted receipts"
+      },
+      "avoid_when": [
+        "The request needs a winner rather than a synthesis."
+      ],
+      "evidence_contract": {
+        "admission_rule": "Every required evidence kind must be emitted by a routed node before Tau admits progress.",
+        "required_kinds": [
+          "handler_receipt",
+          "roundtable_join_receipt"
+        ]
+      },
+      "human_interview": {
+        "questions_source": "missing typed required fields",
+        "status_when_incomplete": "INTERVIEW_REQUIRED"
+      },
+      "name": "roundtable",
+      "node_roles": [
+        "handler",
+        "join",
+        "human"
+      ],
+      "optional_fields": [
+        "limits",
+        "command_specs",
+        "fail_closed_on"
+      ],
+      "preview": {
+        "available": true,
+        "compiles_to_schema": "tau.dag_contract.v1",
+        "dispatches_commands": false
+      },
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "handlers",
+        "join"
+      ],
+      "resources": {
+        "external_services": [],
+        "requires_human_approval": false,
+        "requires_memory": false
+      },
+      "schema": "tau.dag_template_descriptor.v1",
+      "side_effects": {
+        "compile": "writes only caller-specified DAG, receipt, and missing-field paths",
+        "describe_validate_preview_select": "none",
+        "runtime": "depends on compiled node command_specs and executor policy"
+      },
+      "summary": "Two or more parallel handlers join into a synthesis node.",
+      "topology": "FAN_OUT_JOIN",
+      "use_when": [
+        "Multiple independent specialists should work in parallel before synthesis."
+      ]
+    },
+    {
+      "authority_boundary": {
+        "provider_calls": "never during describe, validate, preview, or compile",
+        "scheduler": "existing Tau DAG runtime",
+        "selector": "deterministic template name and typed params",
+        "viewer": "read-only projection of scheduler journal and admitted receipts"
+      },
+      "avoid_when": [
+        "The desired output is a merged synthesis rather than a selected winner."
+      ],
+      "evidence_contract": {
+        "admission_rule": "Every required evidence kind must be emitted by a routed node before Tau admits progress.",
+        "required_kinds": [
+          "competitor_receipt",
+          "competition_judgment_receipt"
+        ]
+      },
+      "human_interview": {
+        "questions_source": "missing typed required fields",
+        "status_when_incomplete": "INTERVIEW_REQUIRED"
+      },
+      "name": "compete",
+      "node_roles": [
+        "competitor",
+        "judge",
+        "human"
+      ],
+      "optional_fields": [
+        "limits",
+        "command_specs",
+        "fail_closed_on"
+      ],
+      "preview": {
+        "available": true,
+        "compiles_to_schema": "tau.dag_contract.v1",
+        "dispatches_commands": false
+      },
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "competitors",
+        "judge"
+      ],
+      "resources": {
+        "external_services": [],
+        "requires_human_approval": false,
+        "requires_memory": false
+      },
+      "schema": "tau.dag_template_descriptor.v1",
+      "side_effects": {
+        "compile": "writes only caller-specified DAG, receipt, and missing-field paths",
+        "describe_validate_preview_select": "none",
+        "runtime": "depends on compiled node command_specs and executor policy"
+      },
+      "summary": "Two or more competitors feed a judge node.",
+      "topology": "COMPETITION_JUDGE",
+      "use_when": [
+        "Two or more candidate solutions should be judged against explicit criteria."
+      ]
+    },
+    {
+      "authority_boundary": {
+        "provider_calls": "never during describe, validate, preview, or compile",
+        "scheduler": "existing Tau DAG runtime",
+        "selector": "deterministic template name and typed params",
+        "viewer": "read-only projection of scheduler journal and admitted receipts"
+      },
+      "avoid_when": [
+        "The request is a one-step answer or needs competing candidates."
+      ],
+      "evidence_contract": {
+        "admission_rule": "Every required evidence kind must be emitted by a routed node before Tau admits progress.",
+        "required_kinds": [
+          "plan_receipt",
+          "execution_receipt",
+          "verification_receipt"
+        ]
+      },
+      "human_interview": {
+        "questions_source": "missing typed required fields",
+        "status_when_incomplete": "INTERVIEW_REQUIRED"
+      },
+      "name": "plan-execute-verify",
+      "node_roles": [
+        "planner",
+        "executor",
+        "verifier",
+        "human"
+      ],
+      "optional_fields": [
+        "limits",
+        "command_specs",
+        "fail_closed_on"
+      ],
+      "preview": {
+        "available": true,
+        "compiles_to_schema": "tau.dag_contract.v1",
+        "dispatches_commands": false
+      },
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "planner",
+        "executor",
+        "verifier"
+      ],
+      "resources": {
+        "external_services": [],
+        "requires_human_approval": false,
+        "requires_memory": false
+      },
+      "schema": "tau.dag_template_descriptor.v1",
+      "side_effects": {
+        "compile": "writes only caller-specified DAG, receipt, and missing-field paths",
+        "describe_validate_preview_select": "none",
+        "runtime": "depends on compiled node command_specs and executor policy"
+      },
+      "summary": "Planner, executor, and verifier nodes run in sequence before human handoff.",
+      "topology": "PLAN_EXECUTE_VERIFY",
+      "use_when": [
+        "A task needs an explicit plan, implementation, and verification pass."
+      ]
+    },
+    {
+      "authority_boundary": {
+        "provider_calls": "never during describe, validate, preview, or compile",
+        "scheduler": "existing Tau DAG runtime",
+        "selector": "deterministic template name and typed params",
+        "viewer": "read-only projection of scheduler journal and admitted receipts"
+      },
+      "avoid_when": [
+        "The output is an implementation without a claim/proof chain."
+      ],
+      "evidence_contract": {
+        "admission_rule": "Every required evidence kind must be emitted by a routed node before Tau admits progress.",
+        "required_kinds": [
+          "claim_receipt",
+          "verification_receipt"
+        ]
+      },
+      "human_interview": {
+        "questions_source": "missing typed required fields",
+        "status_when_incomplete": "INTERVIEW_REQUIRED"
+      },
+      "name": "claim-chain-verification",
+      "node_roles": [
+        "claim_step",
+        "verifier",
+        "human"
+      ],
+      "optional_fields": [
+        "limits",
+        "command_specs",
+        "fail_closed_on"
+      ],
+      "preview": {
+        "available": true,
+        "compiles_to_schema": "tau.dag_contract.v1",
+        "dispatches_commands": false
+      },
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "claim_steps",
+        "verifier"
+      ],
+      "resources": {
+        "external_services": [],
+        "requires_human_approval": false,
+        "requires_memory": false
+      },
+      "schema": "tau.dag_template_descriptor.v1",
+      "side_effects": {
+        "compile": "writes only caller-specified DAG, receipt, and missing-field paths",
+        "describe_validate_preview_select": "none",
+        "runtime": "depends on compiled node command_specs and executor policy"
+      },
+      "summary": "One or more claim-producing nodes feed a verifier before human handoff.",
+      "topology": "CLAIM_CHAIN_VERIFICATION",
+      "use_when": [
+        "Claims, citations, or proof steps must be checked before acceptance."
+      ]
+    },
+    {
+      "authority_boundary": {
+        "provider_calls": "never during describe, validate, preview, or compile",
+        "scheduler": "existing Tau DAG runtime",
+        "selector": "deterministic template name and typed params",
+        "viewer": "read-only projection of scheduler journal and admitted receipts"
+      },
+      "avoid_when": [
+        "The request needs a winner instead of a synthesized result."
+      ],
+      "evidence_contract": {
+        "admission_rule": "Every required evidence kind must be emitted by a routed node before Tau admits progress.",
+        "required_kinds": [
+          "specialist_receipt",
+          "specialist_join_receipt"
+        ]
+      },
+      "human_interview": {
+        "questions_source": "missing typed required fields",
+        "status_when_incomplete": "INTERVIEW_REQUIRED"
+      },
+      "name": "specialist-fanout-join",
+      "node_roles": [
+        "specialist",
+        "join",
+        "human"
+      ],
+      "optional_fields": [
+        "limits",
+        "command_specs",
+        "fail_closed_on"
+      ],
+      "preview": {
+        "available": true,
+        "compiles_to_schema": "tau.dag_contract.v1",
+        "dispatches_commands": false
+      },
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "specialists",
+        "join"
+      ],
+      "resources": {
+        "external_services": [],
+        "requires_human_approval": false,
+        "requires_memory": false
+      },
+      "schema": "tau.dag_template_descriptor.v1",
+      "side_effects": {
+        "compile": "writes only caller-specified DAG, receipt, and missing-field paths",
+        "describe_validate_preview_select": "none",
+        "runtime": "depends on compiled node command_specs and executor policy"
+      },
+      "summary": "Specialist workers run in parallel and join into one synthesis node.",
+      "topology": "SPECIALIST_FAN_OUT_JOIN",
+      "use_when": [
+        "Named specialists should inspect separate aspects before synthesis."
+      ]
+    },
+    {
+      "authority_boundary": {
+        "provider_calls": "never during describe, validate, preview, or compile",
+        "scheduler": "existing Tau DAG runtime",
+        "selector": "deterministic template name and typed params",
+        "viewer": "read-only projection of scheduler journal and admitted receipts"
+      },
+      "avoid_when": [
+        "The work is read-only or already authorized for execution."
+      ],
+      "evidence_contract": {
+        "admission_rule": "Every required evidence kind must be emitted by a routed node before Tau admits progress.",
+        "required_kinds": [
+          "dry_run_receipt",
+          "approval_packet"
+        ]
+      },
+      "human_interview": {
+        "questions_source": "missing typed required fields",
+        "status_when_incomplete": "INTERVIEW_REQUIRED"
+      },
+      "name": "dry-run-human-approval",
+      "node_roles": [
+        "dry_run",
+        "approval_packet",
+        "human"
+      ],
+      "optional_fields": [
+        "limits",
+        "command_specs",
+        "fail_closed_on"
+      ],
+      "preview": {
+        "available": true,
+        "compiles_to_schema": "tau.dag_contract.v1",
+        "dispatches_commands": false
+      },
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "dry_run",
+        "approval_packet"
+      ],
+      "resources": {
+        "external_services": [],
+        "requires_human_approval": true,
+        "requires_memory": false
+      },
+      "schema": "tau.dag_template_descriptor.v1",
+      "side_effects": {
+        "compile": "writes only caller-specified DAG, receipt, and missing-field paths",
+        "describe_validate_preview_select": "none",
+        "runtime": "depends on compiled node command_specs and executor policy"
+      },
+      "summary": "Dry-run node produces an approval packet before human handoff.",
+      "topology": "DRY_RUN_HUMAN_APPROVAL",
+      "use_when": [
+        "A mutating action needs a non-mutating plan and explicit human approval."
+      ]
+    },
+    {
+      "authority_boundary": {
+        "provider_calls": "never during describe, validate, preview, or compile",
+        "scheduler": "existing Tau DAG runtime",
+        "selector": "deterministic template name and typed params",
+        "viewer": "read-only projection of scheduler journal and admitted receipts"
+      },
+      "avoid_when": [
+        "Memory is unavailable and the task can proceed without provenance."
+      ],
+      "evidence_contract": {
+        "admission_rule": "Every required evidence kind must be emitted by a routed node before Tau admits progress.",
+        "required_kinds": [
+          "memory_recall_receipt",
+          "handler_receipt"
+        ]
+      },
+      "human_interview": {
+        "questions_source": "missing typed required fields",
+        "status_when_incomplete": "INTERVIEW_REQUIRED"
+      },
+      "name": "memory-recalled-workflow",
+      "node_roles": [
+        "memory_recall",
+        "handler",
+        "human"
+      ],
+      "optional_fields": [
+        "limits",
+        "command_specs",
+        "fail_closed_on"
+      ],
+      "preview": {
+        "available": true,
+        "compiles_to_schema": "tau.dag_contract.v1",
+        "dispatches_commands": false
+      },
+      "required_fields": [
+        "dag_id",
+        "goal",
+        "target",
+        "memory_recall",
+        "handler"
+      ],
+      "resources": {
+        "external_services": [],
+        "requires_human_approval": false,
+        "requires_memory": true
+      },
+      "schema": "tau.dag_template_descriptor.v1",
+      "side_effects": {
+        "compile": "writes only caller-specified DAG, receipt, and missing-field paths",
+        "describe_validate_preview_select": "none",
+        "runtime": "depends on compiled node command_specs and executor policy"
+      },
+      "summary": "Memory recall/provenance node precedes a bounded handler node.",
+      "topology": "MEMORY_RECALLED_WORKFLOW",
+      "use_when": [
+        "Prior lessons or skill-chain provenance must be recalled before work."
+      ]
+    }
+  ]
+}
