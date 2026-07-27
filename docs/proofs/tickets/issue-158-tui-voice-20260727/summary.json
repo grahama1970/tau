@@ -1,0 +1,36 @@
+{
+  "acceptance": {
+    "approval_wait_announcement": true,
+    "graceful_degraded_start": true,
+    "mid_utterance_interruption": true,
+    "spoken_approval_does_not_satisfy_gate": true,
+    "spoken_query_tui_snapshot_parity": true
+  },
+  "claims": {
+    "does_not_prove": [
+      "real microphone capture quality",
+      "real Chatterbox audio synthesis quality",
+      "voice authentication"
+    ],
+    "proves": [
+      "optional Tau voice adapter can announce approval-wait state through a Chatterbox-shaped endpoint",
+      "spoken status query response is derived from the same VoiceRunSnapshot used by the TUI layer",
+      "interrupt output posts to the turn-control endpoint",
+      "missing voice service configuration degrades explicitly without crashing",
+      "recognized approval phrases never authorize side effects or satisfy the approval gate"
+    ]
+  },
+  "commands": {
+    "diff_check": "git diff --check -> exit 0",
+    "py_compile": "uv run python -m py_compile src/tau_coding/tui/voice.py -> exit 0",
+    "pytest": "uv run pytest -q tests/test_tui_voice.py -> 5 passed in 1.96s",
+    "ruff": "uv run ruff check src/tau_coding/tui/voice.py tests/test_tui_voice.py -> All checks passed!"
+  },
+  "live": true,
+  "mocked": true,
+  "mocked_boundary": "external Chatterbox and RealtimeSTT services are represented by local HTTP stubs as required by the ticket proof",
+  "provider_live": false,
+  "schema": "tau.ticket_proof_summary.v1",
+  "service_endpoints": "stubbed local HTTP endpoints for Chatterbox/RealtimeSTT contract",
+  "ticket": 158
+}
