@@ -1,0 +1,19 @@
+{
+  "render": {
+    "schema": "tau.tui_voice_surface_receipt.v1",
+    "status": "PASS",
+    "action": "voice_render",
+    "turn_id": "turn-1",
+    "request_schema": "tau.voice_render_request.v1",
+    "service_ok": true,
+    "service_live": true,
+    "service_mocked": false,
+    "failed_gates": [],
+    "approval_gate_satisfied": false
+  },
+  "refuse_approval": {
+    "command": "approval_rejected",
+    "authorized": false
+  },
+  "ok": true
+}
