@@ -1,0 +1,19 @@
+{
+  "allowed_paths": [
+    "src/**"
+  ],
+  "dod_artifact": ".tau-admission/dod.json",
+  "goal_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "native_provenance": {
+    "backend": "codex",
+    "execution_mode": "isolated_worktree",
+    "native_status": "pass",
+    "source_unchanged": true,
+    "verdict_basis": "derived from dod_passed AND allowlist, not native status",
+    "worktree_removed": true
+  },
+  "patch_artifact": ".tau-admission/patch.json",
+  "schema": "code_runner.result.v1",
+  "status": "PASS",
+  "test_log_artifact": ".tau-admission/test-log.txt"
+}

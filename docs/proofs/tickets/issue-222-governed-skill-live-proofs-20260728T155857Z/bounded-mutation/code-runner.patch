@@ -1,0 +1,8 @@
+diff --git a/src/app.py b/src/app.py
+index 8d96fe4..fe81f17 100644
+--- a/src/app.py
++++ b/src/app.py
+@@ -1,2 +1,2 @@
+ def add_one(x):
+-    return x + 2
++    return x + 1

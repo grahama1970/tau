@@ -1,0 +1,39 @@
+{
+  "code_patch_receipt_path": "/home/graham/.claude/jobs/9829a738/tmp/cr-fixture/.tau-admission/code-patch-receipt.json",
+  "code_patch_receipt_status": "PASS",
+  "course_correction": null,
+  "dod_artifact": {
+    "bytes": 57,
+    "path": "/home/graham/.claude/jobs/9829a738/tmp/cr-fixture/.tau-admission/dod.json"
+  },
+  "errors": [],
+  "expected_goal_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "goal_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "ok": true,
+  "patch_artifact": {
+    "bytes": 600,
+    "path": "/home/graham/.claude/jobs/9829a738/tmp/cr-fixture/.tau-admission/patch.json"
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "The patch is semantically correct.",
+      "The task is complete.",
+      "The worker model was truthful.",
+      "The patch was applied."
+    ],
+    "proves": [
+      "Tau ingested a code-runner result artifact.",
+      "Tau checked patch, DoD, and test/log artifact presence.",
+      "Tau dry-run validated the patch through tau.code_patch_receipt.v1."
+    ]
+  },
+  "repo_root": "/home/graham/.claude/jobs/9829a738/tmp/cr-fixture",
+  "schema": "tau.code_runner_worker_receipt.v1",
+  "source_result_path": "/home/graham/.claude/jobs/9829a738/tmp/cr-fixture/.tau-admission/code-runner-result.json",
+  "status": "PASS",
+  "test_log_artifact": {
+    "bytes": 57,
+    "path": "/home/graham/.claude/jobs/9829a738/tmp/cr-fixture/.tau-admission/test-log.txt"
+  },
+  "worker_status": "PASS"
+}
