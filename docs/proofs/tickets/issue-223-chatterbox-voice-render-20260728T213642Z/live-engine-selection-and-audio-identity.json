@@ -1,0 +1,18 @@
+{
+  "routine": {
+    "ok": true,
+    "engine": "chatterbox_turbo",
+    "mocked": false,
+    "live": true,
+    "audio_keys": [
+      "answer_text_sha256",
+      "finished_response_audio"
+    ]
+  },
+  "weighted": {
+    "ok": true,
+    "engine": "chatterbox_base",
+    "mocked": false,
+    "effective_emotion": {}
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "ticket": "grahama1970/tau#223",
+  "title": "Bind Tau TUI voice events to Chatterbox /tau/voice-render and real turn controls",
+  "mocked": false, "live": true, "provider_live": true,
+  "closed_on_operator_instruction": true,
+  "chatterbox_service": "live on :8018 (uvicorn chatterbox.agent.server:app; /health ok/live/model_loaded/cuda); implements /tau/voice-render + turn/playback controls (server.py:2128,2301,2306).",
+  "proven_live": {
+    "contract_and_failure_tests": "request schema/hashes/run-turn lineage/delivery deterministic; missing config -> one explicit degraded receipt; approve/authorized/yes cannot satisfy a gate (tests/test_tui_voice.py: 6 passed).",
+    "live_item_1_routine_turbo": "routine progress render -> engine=chatterbox_turbo, ok/live=true, mocked=false.",
+    "live_item_2_blocker_approval_via_voice_render": "blocker+approval-wait rendered through /tau/voice-render with lineage/delivery metadata; failed_gates=[].",
+    "live_item_3_weighted_base": "weighted request (intensity 0.55, valence -0.20) -> engine=chatterbox_base, ok=true, mocked=false.",
+    "live_item_4_turn_controls": "cancel_turn/duck_playback/stop_playback -> real /turn|/playback endpoints, ok=true live.",
+    "end_to_end_receipt": "mocked:false live:true binding with audio identity (finished_response_audio, answer_text_sha256). See live-engine-selection-and-audio-identity.json + live-tau-voice-render-proof.json.",
+    "approval_boundary": "voice never satisfies approval/repair/release; spoken approval refused."
+  },
+  "deferred_not_proven": [
+    "live item 4 tail: 'no later PCM accepted for a cancelled turn' (control accepted; post-cancel audio rejection not asserted).",
+    "live item 5: stale-turn supersession cannot resume.",
+    "live item 6: audio playback through the documented local path retained.",
+    "live items 7/8: stop/restart Chatterbox resilience — requires bouncing the shared :8018 service, not done unilaterally."
+  ],
+  "proves": ["Tau projects authoritative run/turn state into the real Chatterbox /tau/voice-render contract with live non-mocked synthesis, correct turbo-vs-base model selection on weighted affect, real turn controls, an end-to-end audio-identity receipt, and a preserved refuse-approval boundary — the real-service integration #158 explicitly excluded."],
+  "does_not_prove": ["Stale-turn supersession, local audio playback retention, and stop/restart resilience (deferred list above); perceptual emotion calibration (tracked separately)."]
+}
