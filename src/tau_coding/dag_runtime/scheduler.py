@@ -811,6 +811,19 @@ def run_dag_plan(
                             _classify_unadmitted_result(
                                 run_store, lease, identity.attempt_id, result
                             )
+                            # Enforcement (#207, contract section 4): a node
+                            # that would settle accepted without an admitted
+                            # receipt settles BLOCKED through the scheduler's
+                            # trusted path instead. Observation mode measured
+                            # zero remaining bypasses before this flip.
+                            if (
+                                result.get("status") == "PASS"
+                                and result.get("verdict") == "PASS"
+                                and isinstance(result.get("receipt_path"), str)
+                            ):
+                                result = _enforce_admission_block(
+                                    run_store, lease, identity.attempt_id, result
+                                )
                         run_store.commit_output(lease, identity.attempt_id)
                         _inject_fault(fault_injector, "after_output_committed", identity)
                     completion = DagNodeCompletion(
@@ -1946,6 +1959,45 @@ def _classify_unadmitted_result(
         )
     except DagRunStoreError:
         return
+
+
+def _enforce_admission_block(
+    run_store: SqliteDagRunStore,
+    lease: DagRunLease,
+    attempt_id: str,
+    result: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Convert an unadmittable accepted result into a system-settled BLOCKED.
+
+    The worker claimed PASS but its receipt could not be admitted (missing,
+    torn, or conflicting): the claim is not evidence. The scheduler authors a
+    system_settlement receipt through its trusted path; if even that fails the
+    run store enters RUN_STORE_FAILURE and the raise propagates.
+    """
+
+    from tau_coding.dag_runtime.system_settlement import settle_with_system_receipt
+
+    receipt_path = Path(str(result.get("receipt_path")))
+    settle_with_system_receipt(
+        run_store,
+        lease,
+        attempt_id,
+        receipts_root=receipt_path.parent.parent
+        if receipt_path.parent.name
+        else receipt_path.parent,
+        node_id=str(result.get("node_id") or ""),
+        reason_code="expected_receipt_not_admitted",
+        expected_receipt_kind="node_receipt",
+        classification="attempted_and_swallowed",
+        run_dir=run_store.path.parent,
+    )
+    blocked = dict(result)
+    blocked["status"] = "BLOCKED"
+    blocked["verdict"] = "RECEIPT_NOT_ADMITTED"
+    errors = list(blocked.get("errors") or [])
+    errors.append("accepted terminal state refused: receipt was not admitted")
+    blocked["errors"] = errors
+    return blocked
 
 
 def _settle_unrunnable_nodes(

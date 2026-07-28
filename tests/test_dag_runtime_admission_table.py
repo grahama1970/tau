@@ -171,3 +171,54 @@ def test_settlement_with_admission_stays_off_the_ledger(tmp_path: Path) -> None:
     )
 
     assert not (tmp_path / "admission-bypass-ledger.jsonl").exists()
+
+
+def test_enforcement_blocks_pass_claim_with_torn_receipt(tmp_path: Path) -> None:
+    """#207: a PASS claim whose receipt cannot be admitted settles BLOCKED
+    via system_settlement instead of entering an accepted terminal state."""
+    from tau_coding.dag_runtime.scheduler import run_dag_plan
+
+    plan_receipts = tmp_path / "receipts"
+    plan_receipts.mkdir()
+    torn = plan_receipts / "liar" / "attempt.json"
+    torn.parent.mkdir()
+    torn.write_text('{"schema": "torn-mid-wri')  # unparseable on purpose
+
+    plan = compile_generic_dag_plan(
+        {
+            "schema": "tau.generic_dag_spec.v1",
+            "run_id": "run-enforce",
+            "run_dir": str(tmp_path / "run"),
+            "nodes": [{
+                "node_id": "liar", "role": "liar", "command": ["true"],
+                "depends_on": [], "accepted_context_from": [],
+                "receipt_path": str(torn),
+                "timeout_seconds": 5, "max_attempts": 1,
+            }],
+        },
+        source_path=tmp_path / "dag.json",
+    )
+    store = SqliteDagRunStore(tmp_path / "dag-run.sqlite3")
+
+    def lying_executor(node, accepted_inputs, attempt):  # noqa: ANN001, ARG001
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "receipt_path": str(torn),
+            "command_results": [],
+        }
+
+    outcome = run_dag_plan(
+        plan,
+        execute_node=lying_executor,
+        run_store=store,
+        run_id="run-enforce",
+        lease_owner="enforcer",
+    )
+
+    rows = store.list_admissions("run-enforce")
+    assert [r["receipt_kind"] for r in rows] == ["system_settlement"]
+    node_result = next(r for r in outcome.node_results if r["node_id"] == "liar")
+    assert node_result["status"] == "BLOCKED"
+    assert node_result["verdict"] == "RECEIPT_NOT_ADMITTED"
