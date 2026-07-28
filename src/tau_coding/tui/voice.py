@@ -1,7 +1,16 @@
-"""Optional voice surface over Tau TUI state."""
+"""Optional voice surface over Tau TUI state.
+
+The delivery path is the real Chatterbox agent-server contract
+(``POST /tau/voice-render`` with a ``tau.voice_render_request.v1`` envelope, and
+turn-scoped ``/turn/{id}/cancel`` + ``/playback/{id}/duck|stop`` controls), not
+a generic ``/speak`` stub. Tau projects authoritative run/turn state and
+lineage into the envelope; voice is never a source of workflow truth and never
+an approval authority (spoken approval phrases are refused).
+"""
 
 from __future__ import annotations
 
+import hashlib
 import json
 import urllib.error
 import urllib.request
@@ -9,6 +18,64 @@ from dataclasses import dataclass
 from typing import Any
 
 VOICE_RECEIPT_SCHEMA = "tau.tui_voice_surface_receipt.v1"
+VOICE_RENDER_REQUEST_SCHEMA = "tau.voice_render_request.v1"
+
+
+def _sha256_text(text: str) -> str:
+    # Raw hex digest (no prefix) to match the Chatterbox /tau/voice-render
+    # sha256_matches gates, which compare against hashlib.sha256(text).hexdigest().
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def build_voice_render_request(
+    snapshot: VoiceRunSnapshot,
+    *,
+    conversation_id: str,
+    turn_id: str,
+    tone: str | None = None,
+) -> dict[str, Any]:
+    """Project authoritative run state into a tau.voice_render_request.v1 envelope.
+
+    The envelope carries lineage (run id, question text + hash, memory-route
+    metadata, external evidence) so Chatterbox delivery is auditable. It never
+    carries approval authority: ``interruptible`` stays true and no field can
+    authorize a side effect.
+    """
+
+    text = _announcement_text(snapshot)
+    chunk = {
+        "chunk_id": f"{turn_id}-000",
+        "text": text,
+        "text_sha256": _sha256_text(text),
+        "interruptible": True,
+    }
+    return {
+        "schema": VOICE_RENDER_REQUEST_SCHEMA,
+        "run_id": snapshot.run_id,
+        "conversation_id": conversation_id,
+        "turn_id": turn_id,
+        "route": "tau_voice_render",
+        "question_text": text,
+        "question_text_sha256": _sha256_text(text),
+        "memory_route_decision": {
+            "source": "tau_run_state",
+            "workflow": snapshot.workflow,
+            "state": snapshot.state,
+            "active_node": snapshot.active_node,
+        },
+        "voice_delivery": {
+            "notable": _should_announce(snapshot),
+            "approval_required": snapshot.approval_required,
+        },
+        "speakable_chunks": [chunk],
+        "tone": tone,
+        "interruptible": True,
+        "external_evidence": {
+            "tau_run_id": snapshot.run_id,
+            "blocker": snapshot.blocker,
+            "required_decision": snapshot.required_decision,
+        },
+    }
 
 
 @dataclass(frozen=True, slots=True)
@@ -94,41 +161,65 @@ class VoiceSurface:
             },
         }
 
-    def announce_state_change(self, snapshot: VoiceRunSnapshot) -> dict[str, Any]:
+    def announce_state_change(
+        self,
+        snapshot: VoiceRunSnapshot,
+        *,
+        conversation_id: str,
+        turn_id: str,
+        tone: str | None = None,
+    ) -> dict[str, Any]:
+        """Render one turn through the real /tau/voice-render contract."""
+
         if self.chatterbox_url is None:
             return self._degraded("chatterbox_url_missing")
         if not _should_announce(snapshot):
             return {"schema": VOICE_RECEIPT_SCHEMA, "status": "SKIPPED", "reason": "not_notable"}
-        text = _announcement_text(snapshot)
-        response = self._post_json(
-            self.chatterbox_url,
-            "speak",
-            {
-                "text": text,
-                "interruptible": True,
-                "source": "tau",
-                "run_id": snapshot.run_id,
-            },
+        envelope = build_voice_render_request(
+            snapshot, conversation_id=conversation_id, turn_id=turn_id, tone=tone
         )
+        response = self._post_json(self.chatterbox_url, "tau/voice-render", envelope)
+        # The service verdict is derived from its own gates, not asserted by Tau.
+        service_ok = bool(response.get("ok"))
         return {
             "schema": VOICE_RECEIPT_SCHEMA,
-            "status": "PASS",
-            "action": "announce",
-            "text": text,
-            "service_response": response,
+            "status": "PASS" if service_ok else "DEGRADED",
+            "action": "voice_render",
+            "turn_id": turn_id,
+            "request_schema": VOICE_RENDER_REQUEST_SCHEMA,
+            "service_ok": service_ok,
+            "service_live": bool(response.get("live")),
+            "service_mocked": response.get("mocked"),
+            "failed_gates": response.get("failed_gates", []),
             "approval_gate_satisfied": False,
         }
 
-    def interrupt_output(self) -> dict[str, Any]:
+    def _turn_control(self, action: str, turn_id: str, reason: str | None) -> dict[str, Any]:
         if self.chatterbox_url is None:
             return self._degraded("chatterbox_url_missing")
-        response = self._post_json(self.chatterbox_url, "turn/interrupt", {"source": "tau"})
+        path = f"turn/{turn_id}/cancel" if action == "cancel" else f"playback/{turn_id}/{action}"
+        response = self._post_json(self.chatterbox_url, path, {"reason": reason or f"tau_{action}"})
         return {
             "schema": VOICE_RECEIPT_SCHEMA,
             "status": "PASS",
-            "action": "interrupt",
+            "action": action,
+            "turn_id": turn_id,
             "service_response": response,
         }
+
+    def cancel_turn(self, turn_id: str, *, reason: str | None = None) -> dict[str, Any]:
+        return self._turn_control("cancel", turn_id, reason)
+
+    def duck_playback(self, turn_id: str, *, reason: str | None = None) -> dict[str, Any]:
+        return self._turn_control("duck", turn_id, reason)
+
+    def stop_playback(self, turn_id: str, *, reason: str | None = None) -> dict[str, Any]:
+        return self._turn_control("stop", turn_id, reason)
+
+    def interrupt_output(self, turn_id: str, *, reason: str | None = None) -> dict[str, Any]:
+        """Back-compat alias: interruption maps to a turn cancel."""
+
+        return self.cancel_turn(turn_id, reason=reason)
 
     def poll_spoken_query(self, snapshot: VoiceRunSnapshot) -> VoiceCommandResult:
         if self.stt_url is None:

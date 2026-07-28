@@ -1,27 +1,54 @@
+import hashlib
 import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
-from tau_coding.tui.voice import VoiceRunSnapshot, VoiceSurface, interpret_spoken_command
+from tau_coding.tui.voice import (
+    VOICE_RENDER_REQUEST_SCHEMA,
+    VoiceRunSnapshot,
+    VoiceSurface,
+    build_voice_render_request,
+    interpret_spoken_command,
+)
 
 
-def test_voice_announces_approval_wait_transition(tmp_path: Path) -> None:
+def test_voice_render_posts_versioned_envelope_to_tau_voice_render(tmp_path: Path) -> None:
     server = StubVoiceServer(tmp_path, next_text="what is blocked")
     server.start()
     try:
         surface = VoiceSurface(chatterbox_url=server.url, stt_url=server.url)
-        receipt = surface.announce_state_change(_approval_snapshot())
+        receipt = surface.announce_state_change(
+            _approval_snapshot(), conversation_id="conv-1", turn_id="turn-1"
+        )
     finally:
         server.close()
 
     assert receipt["status"] == "PASS"
     assert receipt["approval_gate_satisfied"] is False
-    speak = server.posts["/speak"][0]
-    assert "Publish qualification" in speak["text"]
-    assert "release approval" in speak["text"]
-    assert speak["interruptible"] is True
+    assert receipt["request_schema"] == VOICE_RENDER_REQUEST_SCHEMA
+    env = server.posts["/tau/voice-render"][0]
+    assert env["schema"] == VOICE_RENDER_REQUEST_SCHEMA
+    assert env["conversation_id"] == "conv-1" and env["turn_id"] == "turn-1"
+    assert env["run_id"] == "run-1"
+    assert env["speakable_chunks"][0]["interruptible"] is True
+    # raw-hex sha256 (no prefix) to match the Chatterbox sha256_matches gates
+    chunk = env["speakable_chunks"][0]
+    assert chunk["text_sha256"] == hashlib.sha256(chunk["text"].encode()).hexdigest()
+    assert env["question_text_sha256"] == hashlib.sha256(env["question_text"].encode()).hexdigest()
+
+
+def test_build_envelope_carries_lineage_and_no_approval_authority() -> None:
+    env = build_voice_render_request(
+        _approval_snapshot(), conversation_id="c", turn_id="t", tone="calm"
+    )
+    assert env["memory_route_decision"]["workflow"] == "Publish qualification"
+    assert env["external_evidence"]["tau_run_id"] == "run-1"
+    assert env["interruptible"] is True
+    assert env["voice_delivery"]["approval_required"] is True
+    # nothing in the envelope authorizes a side effect
+    assert "side_effect_authorized" not in json.dumps(env)
 
 
 def test_voice_spoken_query_matches_tui_snapshot(tmp_path: Path) -> None:
@@ -39,17 +66,23 @@ def test_voice_spoken_query_matches_tui_snapshot(tmp_path: Path) -> None:
     assert result.approval_gate_satisfied is False
 
 
-def test_voice_interrupt_posts_turn_control(tmp_path: Path) -> None:
+def test_voice_turn_controls_hit_real_endpoints(tmp_path: Path) -> None:
     server = StubVoiceServer(tmp_path, next_text="")
     server.start()
     try:
         surface = VoiceSurface(chatterbox_url=server.url, stt_url=server.url)
-        receipt = surface.interrupt_output()
+        cancel = surface.cancel_turn("turn-9", reason="user interrupted")
+        surface.duck_playback("turn-9")
+        surface.stop_playback("turn-9")
+        surface.interrupt_output("turn-9")  # back-compat alias -> cancel
     finally:
         server.close()
 
-    assert receipt["status"] == "PASS"
-    assert server.posts["/turn/interrupt"] == [{"source": "tau"}]
+    assert cancel["status"] == "PASS"
+    assert server.posts["/turn/turn-9/cancel"][0]["reason"] == "user interrupted"
+    assert "/playback/turn-9/duck" in server.posts
+    assert "/playback/turn-9/stop" in server.posts
+    assert len(server.posts["/turn/turn-9/cancel"]) == 2  # explicit + alias
 
 
 def test_voice_startup_degrades_when_services_absent() -> None:
