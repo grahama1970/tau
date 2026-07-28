@@ -1,0 +1,78 @@
+name: Project Status Freshness
+
+# Fails when a bound status source (GOAL.md, pyproject.toml, the proof index,
+# the acceptance receipt, or the checked-in GitHub snapshot) changed without
+# regenerating docs/status/CURRENT_STATE.json (#224). Uses the CHECKED-IN
+# snapshot only -- no live network dependency; live refresh is a maintainer act.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "GOAL.md"
+      - "pyproject.toml"
+      - "docs/proofs/**"
+      - "docs/status/**"
+      - "src/tau_coding/workflows/definitions/**"
+      - "src/tau_coding/dag_runtime/**"
+      - "src/tau_coding/project_status.py"
+  pull_request:
+    paths:
+      - "GOAL.md"
+      - "pyproject.toml"
+      - "docs/proofs/**"
+      - "docs/status/**"
+      - "src/tau_coding/workflows/definitions/**"
+      - "src/tau_coding/dag_runtime/**"
+      - "src/tau_coding/project_status.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: project-status-freshness-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: tau project-status verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+
+      - name: Install dependencies
+        run: uv sync --frozen || uv sync
+
+      - name: Verify generated status is fresh vs bound sources
+        run: |
+          uv run tau project-status verify \
+            --status docs/status/CURRENT_STATE.json \
+            --github-snapshot docs/status/github-snapshot.json
+
+      - name: Verify rendered markdown matches the JSON digest
+        run: |
+          uv run python - <<'PY'
+          import json, re, sys
+          from pathlib import Path
+          status = json.loads(Path("docs/status/CURRENT_STATE.json").read_text())
+          md = Path("docs/status/CURRENT_STATE.md").read_text()
+          digest = status["semantic_content_digest"]
+          if digest not in md:
+              print(f"CURRENT_STATE.md does not bind the current JSON digest {digest}")
+              sys.exit(1)
+          print("rendered markdown binds the current semantic-content digest")
+          PY

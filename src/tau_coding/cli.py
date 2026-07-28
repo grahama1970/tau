@@ -4648,6 +4648,16 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if not print_requested and command == "project-status":
+        try:
+            payload = project_agent_project_status_command(positional_args[1:])
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("status") != "PASS":
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if not print_requested and command == "memory-provenance-proof":
         try:
             options = _parse_memory_provenance_proof_cli_args(positional_args[1:])
@@ -14618,6 +14628,75 @@ def project_agent_scillm_subagent_gate_command(summary_path: Path) -> bool:
     result = validate_scillm_subagent_loop_summary(summary_path)
     typer.echo(json.dumps(result.as_dict(), indent=2, sort_keys=True))
     return result.ok
+
+
+def project_agent_project_status_command(args: list[str]) -> dict[str, object]:
+    """Dispatch `tau project-status build|render|verify` (#224).
+
+    build   --out <status.json> [--github-snapshot <file>] [--repo <dir>]
+    render  <status.json> --out <status.md>
+    verify  [--status <status.json>] [--github-snapshot <file>] [--repo <dir>]
+    """
+
+    from datetime import UTC, datetime
+
+    from tau_coding import project_status as ps
+
+    if not args:
+        raise RuntimeError("project-status requires a subcommand: build|render|verify")
+    action, rest = args[0], args[1:]
+
+    def _opt(name: str, default: str | None = None) -> str | None:
+        if name in rest:
+            idx = rest.index(name)
+            if idx + 1 >= len(rest):
+                raise RuntimeError(f"{name} requires a value")
+            return rest[idx + 1]
+        return default
+
+    repo = Path(_opt("--repo", ".") or ".").expanduser().resolve()
+    snapshot_path = _opt("--github-snapshot")
+    github_snapshot = None
+    if snapshot_path:
+        github_snapshot = json.loads(Path(snapshot_path).read_text(encoding="utf-8"))
+
+    if action == "build":
+        out = _opt("--out")
+        if not out:
+            raise RuntimeError("project-status build requires --out <status.json>")
+        generated_at = datetime.now(UTC).isoformat()
+        status = ps.build_project_status(
+            repo, generated_at=generated_at, github_snapshot=github_snapshot
+        )
+        out_path = Path(out).expanduser()
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(status, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        return {"status": "PASS", "action": "build", "out": str(out_path),
+                "semantic_content_digest": status["semantic_content_digest"],
+                "github_freshness": status["github"]["freshness"]}
+
+    if action == "render":
+        if not rest or rest[0].startswith("--"):
+            raise RuntimeError("project-status render requires <status.json>")
+        status = json.loads(Path(rest[0]).expanduser().read_text(encoding="utf-8"))
+        out = _opt("--out")
+        if not out:
+            raise RuntimeError("project-status render requires --out <status.md>")
+        rendered = ps.render_markdown(status)
+        out_path = Path(out).expanduser()
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(rendered.markdown, encoding="utf-8")
+        return {"status": "PASS", "action": "render", "out": str(out_path),
+                "semantic_content_digest": rendered.semantic_content_digest}
+
+    if action == "verify":
+        status_path = _opt("--status", "docs/status/CURRENT_STATE.json")
+        status = json.loads(Path(status_path).expanduser().read_text(encoding="utf-8"))
+        errors = ps.verify_freshness(status, repo, github_snapshot=github_snapshot)
+        return {"status": "PASS" if not errors else "FAIL", "action": "verify",
+                "errors": errors, "checked": status_path}
+
+    raise RuntimeError(f"unknown project-status subcommand: {action}")
 
 
 def project_agent_ticket_subagent_closure_proof_command(
