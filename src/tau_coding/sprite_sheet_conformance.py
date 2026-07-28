@@ -16,12 +16,13 @@ from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import DagPlanNode, canonical_sha256
 from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
+from tau_coding.external_workspace import agent_skills_root
 
 SPRITE_SHEET_CONFORMANCE_SCHEMA = "tau.sprite_sheet_conformance.v1"
 SPRITE_FRAME_LINEAGE_SCHEMA = "tau.sprite_frame_lineage.v1"
 SPRITE_PLAYBACK_PROOF_SCHEMA = "tau.sprite_playback_proof.v1"
 SPRITE_RELEASE_BOUNDARY_SCHEMA = "tau.sprite_release_boundary.v1"
-SPRITE_ATLAS = Path("/home/graham/workspace/experiments/agent-skills/skills/sprite-atlas/run.sh")
+SPRITE_ATLAS = agent_skills_root() / "skills/sprite-atlas/run.sh"
 BATTLE_PROFILE = Path(
     "/home/graham/workspace/experiments/agent-skills/skills/battle/profiles/"
     "pixijs-runtime-atlas-64.v1.json"

@@ -17,11 +17,13 @@ from typing import Any
 
 import httpx
 
-PERSONA_DREAM_ROOT = Path("/home/graham/workspace/experiments/agent-skills/skills/persona-dream")
+from tau_coding.external_workspace import agent_skills_root
+
+PERSONA_DREAM_ROOT = agent_skills_root() / "skills/persona-dream"
 DEFAULT_FIXTURE_ROOT = PERSONA_DREAM_ROOT / "fixtures/one_scene_kling_dry_run"
 DEFAULT_IMAGE = DEFAULT_FIXTURE_ROOT / "artifacts/panel_001_reference.png"
 DEFAULT_VISUAL_REVIEW = DEFAULT_FIXTURE_ROOT / "receipts/visual_review_receipt.json"
-SCILLM_SKILL_RUN = Path("/home/graham/workspace/experiments/agent-skills/skills/scillm/run.sh")
+SCILLM_SKILL_RUN = agent_skills_root() / "skills/scillm/run.sh"
 
 
 def run_persona_dream_panel_agent(role: str) -> dict[str, Any]:

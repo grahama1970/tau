@@ -13,9 +13,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from tau_coding.external_workspace import agent_skills_root
 from tau_coding.subagent_receipt import validate_subagent_receipt
 
-PERSONA_DREAM_ROOT = Path("/home/graham/workspace/experiments/agent-skills/skills/persona-dream")
+PERSONA_DREAM_ROOT = agent_skills_root() / "skills/persona-dream"
 PERSONA_DREAM_RUN = PERSONA_DREAM_ROOT / "run.sh"
 DEFAULT_GOAL_HASH = "sha256:0000000000000000000000000000000000000000000000000000000000000041"
 

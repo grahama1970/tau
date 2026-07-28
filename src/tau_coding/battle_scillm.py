@@ -16,6 +16,8 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+from tau_coding.external_workspace import scillm_root
+
 SURFACE = "scillm.chat_completions"
 CALLER_SKILL = "battle"
 DEFAULT_DEV_PROXY_KEY = "sk-dev-proxy-123"
@@ -29,7 +31,7 @@ HEALTHY_CODEX_AUTH_STATUSES = {
     "ready",
     "valid",
 }
-DEFAULT_SCILLM_COMPOSE_DIR = Path("/home/graham/workspace/experiments/scillm/deploy/docker")
+DEFAULT_SCILLM_COMPOSE_DIR = scillm_root() / "deploy/docker"
 DEFAULT_SCILLM_REPAIR_COMMAND = [
     "docker",
     "compose",

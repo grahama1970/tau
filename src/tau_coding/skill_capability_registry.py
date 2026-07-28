@@ -9,13 +9,14 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
+from tau_coding.external_workspace import agent_skills_root
 from tau_coding.project_profile import COURSE_CORRECTION_ACTIONS
 
 SKILL_CAPABILITY_REGISTRY_SCHEMA = "tau.skill_capability_registry.v1"
 SKILL_CAPABILITY_REGISTRY_VALIDATION_RECEIPT_SCHEMA = (
     "tau.skill_capability_registry_validation_receipt.v1"
 )
-DEFAULT_SKILLS_ROOT = Path("/home/graham/workspace/experiments/agent-skills/skills")
+DEFAULT_SKILLS_ROOT = agent_skills_root() / "skills"
 
 ALLOWED_REQUIRED_TRIGGERS = {
     *COURSE_CORRECTION_ACTIONS,

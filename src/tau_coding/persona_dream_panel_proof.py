@@ -8,6 +8,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from tau_coding.external_workspace import agent_skills_root
 from tau_coding.handoff_dispatch import write_agent_handoff_command_loop_receipt
 from tau_coding.persona_dream_panel_agent import (
     DEFAULT_FIXTURE_ROOT,
@@ -17,7 +18,7 @@ from tau_coding.persona_dream_panel_agent import (
 
 
 PERSONA_DREAM_PANEL_PROOF_SCHEMA = "tau.persona_dream_panel_proof.v1"
-DEFAULT_AGENT_REGISTRY_ROOT = Path("/home/graham/workspace/experiments/agent-skills/agents")
+DEFAULT_AGENT_REGISTRY_ROOT = agent_skills_root() / "agents"
 DEFAULT_COMMAND_SPEC_ROOT = Path("experiments/goal-locked-subagents/agent-command-specs")
 DEFAULT_GOAL_HASH = "sha256:0000000000000000000000000000000000000000000000000000000000000027"
 

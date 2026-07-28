@@ -1561,14 +1561,22 @@ def test_failed_allocation_does_not_prune_unrelated_missing_worktree(
     # The registration survives allocation on git 2.43 but not on the 2.54 CI
     # runner, and no git subcommand this code issues prunes on either version
     # when driven directly. Trace every git invocation so the failure names the
-    # command that removed it instead of leaving it to inference.
+    # command that removed it instead of leaving it to inference. GIT_TRACE
+    # cannot come from the ambient environment because _git_environment strips
+    # every GIT_* variable, so inject it through the builder itself.
     trace_path = tmp_path / "git-trace.log"
-    monkeypatch.setenv("GIT_TRACE", str(trace_path))
+    original_git_environment = worktrees_module._git_environment
+
+    def traced_git_environment() -> dict[str, str]:
+        environment = original_git_environment()
+        environment["GIT_TRACE"] = str(trace_path)
+        return environment
+
+    monkeypatch.setattr(worktrees_module, "_git_environment", traced_git_environment)
 
     with pytest.raises(GitWorktreeLeaseError, match="worktree_symlink_forbidden"):
         _allocate(GitWorktreeLeaseManager(tmp_path / "lease-state"), repository)
 
-    monkeypatch.delenv("GIT_TRACE", raising=False)
     registered = _git(repository, "worktree", "list", "--porcelain")
     trace = trace_path.read_text(encoding="utf-8") if trace_path.exists() else "<no trace>"
     assert str(unrelated) in registered, f"registered={registered}\ngit trace:\n{trace}"

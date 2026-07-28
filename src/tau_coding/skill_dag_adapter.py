@@ -12,12 +12,13 @@ from threading import Event
 from typing import Any
 
 from tau_coding.dag_runtime.subprocess_control import run_cancellable_subprocess
+from tau_coding.external_workspace import agent_skills_root
 
 SKILL_DAG_NODE_SCHEMA = "tau.skill_dag_node.v1"
 SKILL_ROUND_POLICY_SCHEMA = "tau.bounded_skill_round_policy.v1"
 SKILL_ROUND_RECEIPT_SCHEMA = "tau.skill_round_receipt.v1"
 
-SURF_RUN = Path("/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh")
+SURF_RUN = agent_skills_root() / "skills/surf/run.sh"
 CREATE_ARCHITECTURE_RUN = Path(
     "/home/graham/workspace/experiments/agent-skills/skills/create-architecture/run.sh"
 )
