@@ -1,0 +1,44 @@
+{
+  "apply_to_source": false,
+  "backend": "codex",
+  "best_score": 1.0,
+  "dod_passed": true,
+  "error": "",
+  "execution_mode": "isolated_worktree",
+  "patch_artifact": "/home/graham/.claude/jobs/9829a738/tmp/cr-out/tau222-bounded-mutation.patch",
+  "round_details": [
+    {
+      "assistant_response_snippet": "DOD_OK",
+      "changed_paths": [
+        "src/app.py"
+      ],
+      "dod_passed": true,
+      "error": "",
+      "exit_code": 0,
+      "round": 1,
+      "score": 1.0,
+      "status": "pass",
+      "stderr_tail": "",
+      "stdout_tail": "DOD_OK\n",
+      "written_files": [
+        "src/app.py"
+      ]
+    }
+  ],
+  "rounds": 1,
+  "source_apply_error": "",
+  "source_commit": "",
+  "source_dod_passed": false,
+  "source_head_after": "26568fcb916eef823a381f2edd083aae5c9b6ea6",
+  "source_head_before": "26568fcb916eef823a381f2edd083aae5c9b6ea6",
+  "source_patch_applied": false,
+  "source_rollback_applied": false,
+  "source_status_after": [],
+  "source_status_before": [],
+  "source_unchanged": true,
+  "status": "pass",
+  "task_id": "tau222-bounded-mutation",
+  "title": "Fix add_one off-by-one",
+  "worktree_path": "/tmp/code-runner-worktrees/tau222-bounded-mutation/worktree-acfd6bb5d8",
+  "worktree_removed": true
+}

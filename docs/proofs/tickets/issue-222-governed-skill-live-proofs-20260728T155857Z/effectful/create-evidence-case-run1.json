@@ -1,0 +1,362 @@
+{
+  "claim": {
+    "text": "Does Python's sorted() return a new list rather than sorting in place?",
+    "category": "auto",
+    "id": "c779a8577925",
+    "node_type": "claim",
+    "created_at": "2026-07-28T15:55:33.033164+00:00",
+    "verdict": "NOT_SATISFIED",
+    "control_ids": [],
+    "gate_results": [
+      {
+        "gate": "extract_entities",
+        "passed": false,
+        "detail": "0 resolved, 1 unresolved, 0 external",
+        "data": {
+          "grounding_ok": false,
+          "control_ids": [],
+          "action": "retry_with_more_context",
+          "reason": "no_entities_found"
+        }
+      },
+      {
+        "gate": "qra_recall",
+        "passed": false,
+        "detail": "0 QRA items"
+      },
+      {
+        "gate": "technique_intersection",
+        "passed": false,
+        "detail": "software_only_no_techniques"
+      },
+      {
+        "gate": "lean4_prove",
+        "passed": true,
+        "detail": "skipped"
+      },
+      {
+        "gate": "answer_render",
+        "passed": false,
+        "detail": "verdict=not_satisfied"
+      }
+    ],
+    "sub_claims": []
+  },
+  "strategies": [
+    {
+      "name": "agent_driven",
+      "skills": [
+        "/memory recall",
+        "/memory clarify",
+        "/extract-entities",
+        "/assistant classify",
+        "/lean4-prove",
+        "/dogpile",
+        "/edge-verifier",
+        "/cmmc-assessor",
+        "/create-gsn-diagram",
+        "/export-oscal",
+        "/create-figure",
+        "/taxonomy"
+      ],
+      "id": "97f269650d38",
+      "node_type": "strategy",
+      "turns": 5,
+      "score": 0.25,
+      "visits": 0,
+      "wins": 0,
+      "uct": 0.0,
+      "selected": true,
+      "latency_ms": 0.0
+    }
+  ],
+  "evidence": [],
+  "verdict": {
+    "state": "not_satisfied",
+    "grade": "C",
+    "score": 0.25,
+    "strategy_id": "97f269650d38",
+    "evidence_ids": [],
+    "id": "72e3e1fb3a08",
+    "node_type": "verdict",
+    "reasoning": "NOT_SATISFIED: the evidence case did not pass its grounding and recall gates. Unresolved entities: new list. Renderer fallback reason: direct SciLLM render disabled; route provider rendering through Tau",
+    "grader": {
+      "type": "agent_driven",
+      "model_id": "",
+      "modified_in_session": false
+    },
+    "rendered_at": "2026-07-28T15:55:33.033197+00:00"
+  },
+  "answer": "NOT_SATISFIED: the evidence case did not pass its grounding and recall gates. Unresolved entities: new list. Renderer fallback reason: direct SciLLM render disabled; route provider rendering through Tau",
+  "gate_trace": [
+    {
+      "gate": "extract_entities",
+      "passed": false,
+      "detail": "0 resolved, 1 unresolved, 0 external",
+      "data": {
+        "grounding_ok": false,
+        "control_ids": [],
+        "action": "retry_with_more_context",
+        "reason": "no_entities_found"
+      }
+    },
+    {
+      "gate": "qra_recall",
+      "passed": false,
+      "detail": "0 QRA items"
+    },
+    {
+      "gate": "technique_intersection",
+      "passed": false,
+      "detail": "software_only_no_techniques"
+    },
+    {
+      "gate": "lean4_prove",
+      "passed": true,
+      "detail": "skipped"
+    },
+    {
+      "gate": "answer_render",
+      "passed": false,
+      "detail": "verdict=not_satisfied"
+    }
+  ],
+  "gates_passed": 1,
+  "gates_total": 5,
+  "control_ids": [],
+  "recall_count": 0,
+  "technique_groups": {},
+  "sub_claims": [],
+  "decomposition": null,
+  "persisted": true,
+  "source_framework": null,
+  "source_control_id": null,
+  "relationship_id": null,
+  "expertise": "expert",
+  "difficulty": "single_hop",
+  "mind": [],
+  "evidence_case": null,
+  "formal_proof": null,
+  "sacm_ref": null,
+  "entities": {
+    "ok": true,
+    "grounding_ok": false,
+    "query_text": "Does Python's sorted() return a new list rather than sorting in place?",
+    "resolved_entities": [],
+    "external_entities": [],
+    "unresolved_entities": [
+      {
+        "mention": "new list",
+        "span": [
+          32,
+          40
+        ],
+        "normalized_text": "new list",
+        "reason": "not_in_corpus",
+        "detail": "Term 'new list' not found in corpus"
+      }
+    ],
+    "domain_terms": [
+      {
+        "text": "Python",
+        "span": [
+          5,
+          11
+        ],
+        "kind": "domain_term",
+        "source_collection": null,
+        "source_key": null,
+        "persona_id": null,
+        "tags": [],
+        "aliases": []
+      },
+      {
+        "text": "place",
+        "span": [
+          64,
+          69
+        ],
+        "kind": "domain_term",
+        "source_collection": null,
+        "source_key": null,
+        "persona_id": null,
+        "tags": [],
+        "aliases": []
+      }
+    ],
+    "media_timecodes": [],
+    "agent_decision": {
+      "safe_to_answer": false,
+      "needs_clarification": false,
+      "needs_retry": true,
+      "suggested_action": "retry_with_more_context",
+      "reason": "no_entities_found"
+    },
+    "technique_coherence": {
+      "ok": false,
+      "detail": "software_only_no_techniques"
+    },
+    "summary": {
+      "resolved_count": 0,
+      "external_count": 0,
+      "unresolved_count": 1,
+      "domain_term_count": 2
+    },
+    "proof_packet": {
+      "generated_by": "deterministic_extractor",
+      "llm_used": false,
+      "authoritative": true,
+      "query_text": "Does Python's sorted() return a new list rather than sorting in place?",
+      "primary_entity_id": null,
+      "assertions": [],
+      "anchors": [],
+      "validated_context": [],
+      "context_terms": [
+        {
+          "id": "domain:python",
+          "node_kind": "domain_term",
+          "status": "extracted",
+          "proof_role": "query_context",
+          "extracted": {
+            "text": "Python",
+            "span": [
+              5,
+              11
+            ],
+            "source": "extract_entities_domain_terms",
+            "kind": "domain_term"
+          },
+          "metadata": {
+            "name": "Python",
+            "type": "domain_term",
+            "grounded": true,
+            "exists": true
+          }
+        },
+        {
+          "id": "domain:place",
+          "node_kind": "domain_term",
+          "status": "extracted",
+          "proof_role": "query_context",
+          "extracted": {
+            "text": "place",
+            "span": [
+              64,
+              69
+            ],
+            "source": "extract_entities_domain_terms",
+            "kind": "domain_term"
+          },
+          "metadata": {
+            "name": "place",
+            "type": "domain_term",
+            "grounded": true,
+            "exists": true
+          }
+        }
+      ],
+      "suppressed_nodes": [],
+      "unsupported_nodes": []
+    },
+    "display_summary": {
+      "generated_by": "deterministic_template",
+      "llm_used": false,
+      "authoritative": false,
+      "proof_role": "explanation_only",
+      "text": "No grounded extraction anchors were found."
+    },
+    "agent_contract": {
+      "use_for_grounding": [
+        "proof_packet.assertions"
+      ],
+      "authoritative_paths": [
+        "proof_packet.assertions",
+        "nodes.anchors",
+        "nodes.validated_context",
+        "nodes.suppressed"
+      ],
+      "ignore_for_grounding": [
+        "display_summary",
+        "candidate_nodes",
+        "guess_nodes",
+        "rationale.summary"
+      ],
+      "llm_generated_fields_are_never_authoritative": true
+    },
+    "candidate_nodes": {
+      "status": "candidate_only",
+      "proof_role": "none",
+      "usable_for": [
+        "suggestions",
+        "related_results",
+        "did_you_mean"
+      ],
+      "not_usable_for": [
+        "grounding",
+        "proof",
+        "approval",
+        "answer_authority",
+        "evidence_gate"
+      ],
+      "requires_user_confirmation": true,
+      "controls": [],
+      "qras": []
+    },
+    "view": "legacy",
+    "all_control_ids": [],
+    "control_ids": [],
+    "control_metadata": [],
+    "spans": [
+      {
+        "text": "Python",
+        "span": [
+          5,
+          11
+        ],
+        "type": "domain_term",
+        "status": "extracted",
+        "grounded_to_framework": false,
+        "relevant_to_query": true
+      },
+      {
+        "text": "place",
+        "span": [
+          64,
+          69
+        ],
+        "type": "domain_term",
+        "status": "extracted",
+        "grounded_to_framework": false,
+        "relevant_to_query": true
+      }
+    ],
+    "warnings": [
+      {
+        "term": "new list",
+        "category": "not_in_corpus",
+        "detail": "Term 'new list' not found in corpus"
+      }
+    ],
+    "resolution_map": {
+      "new list": {
+        "exists": false,
+        "reason": "not_in_corpus"
+      }
+    },
+    "headline": "0 resolved",
+    "related_pairs": [],
+    "phrases": [
+      "Python",
+      "place"
+    ],
+    "unresolved_terms": [
+      {
+        "term": "new list",
+        "type": "not_in_corpus"
+      }
+    ],
+    "method": "daemon_http"
+  },
+  "evidence_items": [],
+  "total_ms": 148.8
+}
