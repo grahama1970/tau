@@ -804,7 +804,13 @@ def run_dag_plan(
                         )
                         continue
                     if run_store is not None and lease is not None:
-                        _admit_result_receipt(run_store, lease, identity.attempt_id, result)
+                        admitted = _admit_result_receipt(
+                            run_store, lease, identity.attempt_id, result
+                        )
+                        if not admitted:
+                            _classify_unadmitted_result(
+                                run_store, lease, identity.attempt_id, result
+                            )
                         run_store.commit_output(lease, identity.attempt_id)
                         _inject_fault(fault_injector, "after_output_committed", identity)
                     completion = DagNodeCompletion(
@@ -1853,7 +1859,7 @@ def _admit_result_receipt(
     lease: DagRunLease,
     attempt_id: str,
     result: Mapping[str, Any],
-) -> None:
+) -> bool:
     """Parent-side S6-S7 (#203): hash the durable receipt and admit it.
 
     The digest is computed from the bytes on disk, never from worker-reported
@@ -1864,12 +1870,12 @@ def _admit_result_receipt(
 
     raw_path = result.get("receipt_path")
     if not isinstance(raw_path, str) or not raw_path.strip():
-        return
+        return False
     path = Path(raw_path)
     try:
         blob = path.read_bytes()
     except OSError:
-        return
+        return False
     # S6 validation: never admit bytes that do not parse as a JSON object -
     # a child SIGKILLed mid-write leaves a torn file, and admitting its hash
     # would make torn evidence authoritative. Torn/invalid receipts stay
@@ -1878,9 +1884,9 @@ def _admit_result_receipt(
     try:
         parsed = json.loads(blob.decode("utf-8"))
     except (UnicodeDecodeError, ValueError):
-        return
+        return False
     if not isinstance(parsed, dict):
-        return
+        return False
     digest = f"sha256:{hashlib.sha256(blob).hexdigest()}"
     try:
         run_store.admit_receipt(
@@ -1891,9 +1897,54 @@ def _admit_result_receipt(
             path=str(path),
             size_bytes=len(blob),
         )
+        return True
     except DagRunStoreError:
         # dag_admission_conflict or lease loss: surfaced by the store's own
         # event trail; settlement still records the gap via the observer.
+        return False
+
+
+def _classify_unadmitted_result(
+    run_store: SqliteDagRunStore,
+    lease: DagRunLease,
+    attempt_id: str,
+    result: Mapping[str, Any],
+) -> None:
+    """Absence classification for the subprocess family (#205).
+
+    The durable attempt row is the attempt witness: a DISPATCHED attempt whose
+    child terminated by signal or timeout and left no admissible receipt is
+    (b) attempted-and-swallowed; a child that exited on its own without a
+    receipt is (a)-shaped at this layer (control flow never reached a write).
+    Recorded as a diagnostic event so #215's load campaign reads
+    classifications instead of re-deriving them.
+    """
+
+    command_results = result.get("command_results")
+    returncodes = [
+        r.get("returncode")
+        for r in command_results
+        if isinstance(r, dict)
+    ] if isinstance(command_results, list) else []
+    if not returncodes:
+        return
+    terminated = any(rc in (-9, -15, 124, 130) for rc in returncodes)
+    classification = "attempted_and_swallowed" if terminated else "never_attempted_write"
+    try:
+        run_store.append_diagnostic_event(
+            lease,
+            event_key=f"absence-classified:{attempt_id}",
+            node_id=str(result.get("node_id") or ""),
+            attempt_id=attempt_id,
+            payload={
+                "schema": "tau.dag_diagnostic_event.v1",
+                "event_type": "receipt_absence_classified",
+                "classification": classification,
+                "returncodes": returncodes,
+                "receipt_path": result.get("receipt_path"),
+            },
+        )
+    except DagRunStoreError:
         return
 
 
