@@ -14,7 +14,11 @@ import pytest
 
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import DagPlan, DagPlanNode, canonical_sha256
-from tau_coding.dag_runtime.run_store import DagRunStoreError, SqliteDagRunStore
+from tau_coding.dag_runtime.run_store import (
+    STORE_SCHEMA_VERSION,
+    DagRunStoreError,
+    SqliteDagRunStore,
+)
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
 from tau_coding.dag_runtime.transition import AllSuccessTransitionPolicy, DagPolicyReplayState
 from tau_coding.generic_dag import run_generic_dag
@@ -126,7 +130,7 @@ def test_store_migrates_v1_journal_and_preserves_resume_state(tmp_path: Path) ->
     assert migration is not None
     assert tuple(migration) == (1, 2)
     assert stored_version is not None
-    assert stored_version[0] == "2"
+    assert stored_version[0] == str(STORE_SCHEMA_VERSION)
 
 
 def test_store_rejects_future_journal_with_version_details(tmp_path: Path) -> None:
@@ -143,7 +147,7 @@ def test_store_rejects_future_journal_with_version_details(tmp_path: Path) -> No
         SqliteDagRunStore(database)
 
     assert error.value.code == "dag_run_store_schema_mismatch"
-    assert error.value.detail == "actual=999 expected=2"
+    assert error.value.detail == f"actual=999 expected={STORE_SCHEMA_VERSION}"
 
 
 def test_scheduler_releases_lease_and_records_terminal_event_on_exception(

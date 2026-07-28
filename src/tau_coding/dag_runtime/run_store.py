@@ -32,7 +32,7 @@ RUNTIME_EVENT_JOURNAL_ENTRY_SCHEMA = "tau.runtime_event_journal_entry.v1"
 DIAGNOSTIC_EVENT_SCHEMA = "tau.dag_diagnostic_event.v1"
 CORRECTION_JOURNAL_ENTRY_SCHEMA = "tau.correction_journal_entry.v1"
 MAX_DIAGNOSTIC_EVENT_BYTES = 64 * 1024
-STORE_SCHEMA_VERSION = 2
+STORE_SCHEMA_VERSION = 3
 STORE_COMPATIBLE_READ_VERSIONS = frozenset({1, STORE_SCHEMA_VERSION})
 DAG_RUN_RECONCILIATION_DECISION_SCHEMA = "tau.dag_run_reconciliation_decision.v1"
 DAG_RUN_STALE_LEASE_CLEAR_SCHEMA = "tau.dag_run_stale_lease_clear.v1"
@@ -204,6 +204,33 @@ CREATE TABLE IF NOT EXISTS dag_store_migrations (
     PRIMARY KEY(from_version, to_version)
 );
 
+CREATE TABLE IF NOT EXISTS receipt_admissions (
+    admission_id TEXT PRIMARY KEY,
+    run_id TEXT NOT NULL REFERENCES dag_runs(run_id),
+    node_id TEXT NOT NULL,
+    attempt_id TEXT NOT NULL,
+    receipt_kind TEXT NOT NULL,
+    sha256 TEXT NOT NULL,
+    path TEXT NOT NULL,
+    size_bytes INTEGER NOT NULL CHECK (size_bytes >= 0),
+    legacy INTEGER NOT NULL DEFAULT 0,
+    admitted_event_seq INTEGER,
+    admitted_at TEXT NOT NULL,
+    UNIQUE(run_id, node_id, attempt_id, receipt_kind)
+);
+
+CREATE TRIGGER IF NOT EXISTS receipt_admissions_no_update
+BEFORE UPDATE ON receipt_admissions
+BEGIN
+    SELECT RAISE(ABORT, 'receipt_admissions is append-only');
+END;
+
+CREATE TRIGGER IF NOT EXISTS receipt_admissions_no_delete
+BEFORE DELETE ON receipt_admissions
+BEGIN
+    SELECT RAISE(ABORT, 'receipt_admissions is append-only');
+END;
+
 CREATE TRIGGER IF NOT EXISTS dag_run_events_no_update
 BEFORE UPDATE ON dag_run_events
 BEGIN
@@ -291,7 +318,39 @@ def _migrate_store_v1_to_v2(connection: sqlite3.Connection) -> None:
     )
 
 
-_STORE_MIGRATIONS = {1: _migrate_store_v1_to_v2}
+
+
+def _migrate_store_v2_to_v3(connection: sqlite3.Connection) -> None:
+    connection.executescript(
+        """
+        CREATE TABLE IF NOT EXISTS receipt_admissions (
+            admission_id TEXT PRIMARY KEY,
+            run_id TEXT NOT NULL REFERENCES dag_runs(run_id),
+            node_id TEXT NOT NULL,
+            attempt_id TEXT NOT NULL,
+            receipt_kind TEXT NOT NULL,
+            sha256 TEXT NOT NULL,
+            path TEXT NOT NULL,
+            size_bytes INTEGER NOT NULL CHECK (size_bytes >= 0),
+            legacy INTEGER NOT NULL DEFAULT 0,
+            admitted_event_seq INTEGER,
+            admitted_at TEXT NOT NULL,
+            UNIQUE(run_id, node_id, attempt_id, receipt_kind)
+        );
+        CREATE TRIGGER IF NOT EXISTS receipt_admissions_no_update
+        BEFORE UPDATE ON receipt_admissions
+        BEGIN
+            SELECT RAISE(ABORT, 'receipt_admissions is append-only');
+        END;
+        CREATE TRIGGER IF NOT EXISTS receipt_admissions_no_delete
+        BEFORE DELETE ON receipt_admissions
+        BEGIN
+            SELECT RAISE(ABORT, 'receipt_admissions is append-only');
+        END;
+        """
+    )
+
+_STORE_MIGRATIONS = {1: _migrate_store_v1_to_v2, 2: _migrate_store_v2_to_v3}
 
 
 def _refresh_runtime_journal_hashes(payload: dict[str, Any]) -> None:
@@ -1424,6 +1483,121 @@ class SqliteDagRunStore:
                    updated_at = ? WHERE attempt_id = ?""",
                 (event_seq, _now_iso(), attempt_id),
             )
+
+    def admit_receipt(
+        self,
+        lease: DagRunLease,
+        attempt_id: str,
+        *,
+        receipt_kind: str,
+        sha256: str,
+        path: str,
+        size_bytes: int,
+        legacy: bool = False,
+    ) -> dict[str, Any]:
+        """Commit one authoritative receipt admission (contract S7, #199).
+
+        Inside one BEGIN IMMEDIATE transaction: verify the attempt exists,
+        insert the admission row, and append the ``receipt_admitted`` event.
+        A duplicate admitting writer loses at the UNIQUE constraint: an
+        identical digest returns the existing row with ``duplicate=True``
+        (idempotent recovery per contract A1) and must not error the node; a
+        different digest raises ``dag_admission_conflict`` because two
+        non-identical receipts can never both be authoritative for one
+        (attempt, kind).
+        """
+
+        if not receipt_kind or not sha256.startswith("sha256:"):
+            raise DagRunStoreError("dag_admission_invalid", f"{attempt_id}:{receipt_kind}")
+        with self._transaction():
+            self._assert_lease(lease)
+            attempt = self._attempt_row(attempt_id)
+            node_id = str(attempt["node_id"])
+            existing = self._connection.execute(
+                """SELECT * FROM receipt_admissions
+                   WHERE run_id = ? AND node_id = ? AND attempt_id = ? AND receipt_kind = ?""",
+                (lease.run_id, node_id, attempt_id, receipt_kind),
+            ).fetchone()
+            if existing is not None:
+                if existing["sha256"] != sha256:
+                    raise DagRunStoreError(
+                        "dag_admission_conflict", f"{attempt_id}:{receipt_kind}"
+                    )
+                self._append_event(
+                    lease,
+                    event_key=f"admission:{attempt_id}:{receipt_kind}:duplicate",
+                    event_type="receipt_admission_duplicate_suppressed",
+                    entity_type="attempt",
+                    entity_id=attempt_id,
+                    attempt_id=attempt_id,
+                    payload={"receipt_kind": receipt_kind, "sha256": sha256},
+                )
+                return {**dict(existing), "duplicate": True}
+            admitted_at = _now_iso()
+            admission_id = canonical_sha256(
+                {
+                    "schema": "tau.receipt_admission_identity.v1",
+                    "run_id": lease.run_id,
+                    "node_id": node_id,
+                    "attempt_id": attempt_id,
+                    "receipt_kind": receipt_kind,
+                }
+            ).removeprefix("sha256:")[:32]
+            event_seq = self._append_event(
+                lease,
+                event_key=f"admission:{attempt_id}:{receipt_kind}",
+                event_type="receipt_admitted",
+                entity_type="attempt",
+                entity_id=attempt_id,
+                attempt_id=attempt_id,
+                payload={
+                    "receipt_kind": receipt_kind,
+                    "sha256": sha256,
+                    "path": path,
+                    "size_bytes": size_bytes,
+                },
+            )
+            self._connection.execute(
+                """INSERT INTO receipt_admissions(
+                    admission_id, run_id, node_id, attempt_id, receipt_kind,
+                    sha256, path, size_bytes, legacy, admitted_event_seq, admitted_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    admission_id,
+                    lease.run_id,
+                    node_id,
+                    attempt_id,
+                    receipt_kind,
+                    sha256,
+                    path,
+                    size_bytes,
+                    1 if legacy else 0,
+                    event_seq,
+                    admitted_at,
+                ),
+            )
+            return {
+                "admission_id": admission_id,
+                "run_id": lease.run_id,
+                "node_id": node_id,
+                "attempt_id": attempt_id,
+                "receipt_kind": receipt_kind,
+                "sha256": sha256,
+                "path": path,
+                "size_bytes": size_bytes,
+                "legacy": 1 if legacy else 0,
+                "admitted_event_seq": event_seq,
+                "admitted_at": admitted_at,
+                "duplicate": False,
+            }
+
+    def list_admissions(self, run_id: str) -> list[dict[str, Any]]:
+        rows = self._connection.execute(
+            """SELECT * FROM receipt_admissions WHERE run_id = ?
+               ORDER BY node_id, attempt_id, receipt_kind""",
+            (run_id,),
+        ).fetchall()
+        return [dict(row) for row in rows]
 
     def commit_control_transition(
         self,
