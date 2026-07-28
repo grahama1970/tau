@@ -1,0 +1,7 @@
+2026-07-28 19:39:23.819 | INFO     | watchdog.core:log_event:86 - tick_start
+2026-07-28 19:39:26.103 | INFO     | watchdog.core:log_event:86 - github_issue_scan
+2026-07-28 19:39:26.104 | INFO     | watchdog.core:log_event:86 - issues_excluded_from_dispatch
+2026-07-28 19:39:26.104 | INFO     | watchdog.core:log_event:86 - project_selected
+2026-07-28 19:39:26.104 | INFO     | watchdog.core:log_event:86 - handle_ticket_repair_start
+2026-07-28 19:39:51.533 | INFO     | watchdog.core:log_event:86 - handle_ticket_repair_failed
+2026-07-28 19:39:51.534 | INFO     | watchdog.core:log_event:86 - tick_finish

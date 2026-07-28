@@ -1,0 +1,300 @@
+{
+  "apply": true,
+  "cron_log_file": "/tmp/project-watchdog-issue181-20260728T2343Z/state/logs/cron.log",
+  "errors": [],
+  "handled_count": 1,
+  "handled_issues": [
+    {
+      "action": "ticket_repair",
+      "artifacts": [
+        "/tmp/project-watchdog-issue181-20260728T2343Z/state/receipts/project-watchdog-20260728T233923Z/repair-task.md",
+        "/tmp/project-watchdog-issue181-20260728T2343Z/state/repair-worktrees/tau-181",
+        "/tmp/project-watchdog-issue181-20260728T2343Z/state/receipts/project-watchdog-20260728T233923Z/ask"
+      ],
+      "commands": [
+        {
+          "command": [
+            "gh",
+            "issue",
+            "comment",
+            "181",
+            "--repo",
+            "grahama1970/tau",
+            "--body",
+            "## Project Watchdog: Lease acquired\n\n<!-- project-watchdog:v1 -->\n```json\n{\n  \"acquired_at\": \"2026-07-28T23:39:28Z\",\n  \"action\": \"ticket_repair\",\n  \"goal_hash\": \"sha256:c077c990320a7caaa9476f008f54558136510d0a63e0fadaed0cfc2a3ec63722\",\n  \"issue\": \"issue#181\",\n  \"repo\": \"grahama1970/tau\",\n  \"run_id\": \"project-watchdog-20260728T233923Z\",\n  \"schema\": \"agent_skills.project_watchdog.lease.v1\",\n  \"selected_agent\": \"coder\",\n  \"targets\": [\n    \"docs/watchdog-live-probe.md\"\n  ]\n}\n```\n"
+          ],
+          "cwd": null,
+          "duration_seconds": 0.66784,
+          "exit_code": 0,
+          "stderr": "",
+          "stdout": "https://github.com/grahama1970/tau/issues/181#issuecomment-5110927831\n"
+        },
+        {
+          "command": [
+            "gh",
+            "issue",
+            "edit",
+            "181",
+            "--repo",
+            "grahama1970/tau",
+            "--add-label",
+            "agent-active"
+          ],
+          "cwd": null,
+          "duration_seconds": 1.072914,
+          "exit_code": 0,
+          "stderr": "",
+          "stdout": "https://github.com/grahama1970/tau/issues/181\n"
+        },
+        {
+          "command": [
+            "/tmp/agent-skills-watchdog-181-20260728/skills/ask/run.sh",
+            "tau-dag",
+            "Repair grahama1970/tau#181: TEST: project-watchdog live dispatch probe (safe to close)\n\nAllowed paths: docs/watchdog-live-probe.md\n\nCommit to the current branch only. Do not push, do not merge, do not switch branches. Whether this reaches main is the reviewer's decision and a human's, not the creator's.\n\nThe creator seat implements the fix and commits it. The reviewer seat checks it against the ticket's acceptance criterion and required proof, and answers VERDICT: PASS, VERDICT: FAIL, or VERDICT: NEEDS_ATTENTION.\n\n--- ticket body ---\n## Type\n\nbug\n\n## Target\n\ndocs/watchdog-live-probe.md\n\n## Target paths\n\n- docs/watchdog-live-probe.md\n\n## Current state\n\nproject-watchdog has never dispatched a real ticket; 3000/3000 receipts are NOOP and 0 issues have ever been handled\n\n## Requested outcome\n\nthe cron leases this issue, runs one bounded tau self-fix tick, and writes a receipt with handled_count >= 1\n\n## Required proof\n\na project-watchdog receipt.json with status COMPLETED or NEEDS_ATTENTION and a non-empty handled_issues array\n\n## Route\n\nbackend_python_or_skill_runtime\n\n## Maintainer route\n\nbackend_python_or_skill_runtime\n\n## Requested repair agent\n\nNot specified.\n\n## Non-goals\n\nNo unrelated refactors or scope expansion.\n\n## Ticket type details\n\n- **Observed failure:** project-watchdog has never dispatched a real ticket; 3000/3000 receipts are NOOP and 0 issues have ever been handled\n- **Expected behavior:** the cron leases this issue, runs one bounded tau self-fix tick, and writes a receipt with handled_count >= 1\n- **Reproduction or artifact:** file this ticket with agent-work, then run: skills/project-watchdog/run.sh tick --apply --project tau\n\n<!-- ticket-skill\ntype: bug\ntarget: docs/watchdog-live-probe.md\nroute: backend_python_or_skill_runtime\nagent: unspecified\n-->\n\nThis ticket must be resolved under `best-practices-github-ticket`. Closure requires deterministic proof; WebGPT review or CI green alone is not closure proof.\n",
+            "--repo",
+            "grahama1970/tau",
+            "--target",
+            "docs/watchdog-live-probe.md",
+            "--immutable-goal",
+            "Resolve grahama1970/tau#181 so its stated acceptance criterion holds, proven by the proof command the ticket names. Change only the paths the ticket targets. Do not weaken or delete a test to make it pass. Commit to the current branch only: do not push, do not merge, and do not modify any other branch. The reviewer seat decides whether this lands.",
+            "--dag-template",
+            "creator-reviewer",
+            "--handler",
+            "codex",
+            "--handler-workspace",
+            "codex=/tmp/project-watchdog-issue181-20260728T2343Z/state/repair-worktrees/tau-181",
+            "--handler",
+            "claude-opus-4-8",
+            "--topology",
+            "sequential",
+            "--run-output-root",
+            "/tmp/project-watchdog-issue181-20260728T2343Z/state/receipts/project-watchdog-20260728T233923Z/ask",
+            "--execute",
+            "--allow-provider-calls",
+            "--json"
+          ],
+          "cwd": "/tmp/agent-skills-watchdog-181-20260728/skills/ask",
+          "duration_seconds": 20.024306,
+          "exit_code": 124,
+          "stderr": "",
+          "stdout": "",
+          "timed_out": true,
+          "timeout_seconds": 20
+        },
+        {
+          "command": [
+            "gh",
+            "issue",
+            "edit",
+            "181",
+            "--repo",
+            "grahama1970/tau",
+            "--add-label",
+            "agent-blocked",
+            "--remove-label",
+            "agent-active"
+          ],
+          "cwd": null,
+          "duration_seconds": 1.052468,
+          "exit_code": 0,
+          "stderr": "",
+          "stdout": "https://github.com/grahama1970/tau/issues/181\n"
+        }
+      ],
+      "goal_hash": "sha256:c077c990320a7caaa9476f008f54558136510d0a63e0fadaed0cfc2a3ec63722",
+      "issue_number": 181,
+      "issue_url": "https://github.com/grahama1970/tau/issues/181",
+      "ok": false,
+      "origin_main_before": "877d8ddd2d5ea249dac896892debd7fa45ef930e",
+      "project_id": "tau",
+      "repair_worktree": {
+        "branch": "watchdog/issue-181",
+        "ok": true,
+        "steps": [
+          {
+            "argv": [
+              "git",
+              "worktree",
+              "prune"
+            ],
+            "exit_code": 0
+          },
+          {
+            "argv": [
+              "git",
+              "fetch",
+              "origin",
+              "main"
+            ],
+            "exit_code": 0
+          },
+          {
+            "argv": [
+              "git",
+              "worktree",
+              "add",
+              "-B",
+              "watchdog/issue-181",
+              "/tmp/project-watchdog-issue181-20260728T2343Z/state/repair-worktrees/tau-181",
+              "origin/main"
+            ],
+            "exit_code": 0
+          }
+        ],
+        "worktree": "/tmp/project-watchdog-issue181-20260728T2343Z/state/repair-worktrees/tau-181"
+      },
+      "repo": "grahama1970/tau",
+      "runner_kind": "tau-command-loop",
+      "seats": {
+        "creator": "codex",
+        "reviewer": "claude-opus-4-8"
+      },
+      "selected_agent": "coder",
+      "status": "NEEDS_ATTENTION",
+      "summary": "$ask tau-dag failed for grahama1970/tau#181",
+      "targets": [
+        "docs/watchdog-live-probe.md"
+      ],
+      "worktree_readiness": {
+        "branch": "main",
+        "dirty_paths": [],
+        "dirty_tracked": 0,
+        "exists": true,
+        "ready": true,
+        "reasons": [],
+        "scope": [
+          "docs/watchdog-live-probe.md"
+        ],
+        "untracked": 0,
+        "worktree": "/tmp/tau-autocomplete-20260728"
+      }
+    }
+  ],
+  "in_flight": {
+    "issues": [],
+    "leases": [],
+    "targets": []
+  },
+  "lease_staleness": {
+    "stale": [],
+    "stale_after_seconds": 86400,
+    "unknown_acquisition_time": []
+  },
+  "live": true,
+  "log_file": "/tmp/project-watchdog-issue181-20260728T2343Z/state/logs/project-watchdog.log",
+  "mocked": false,
+  "ok": false,
+  "project_id": "tau",
+  "receipt_dir": "/tmp/project-watchdog-issue181-20260728T2343Z/state/receipts/project-watchdog-20260728T233923Z",
+  "receipt_path": "/tmp/project-watchdog-issue181-20260728T2343Z/state/receipts/project-watchdog-20260728T233923Z/receipt.json",
+  "reclaimed_leases": [],
+  "rotation": {
+    "requested": "tau",
+    "selected": "tau",
+    "skipped": []
+  },
+  "run_id": "project-watchdog-20260728T233923Z",
+  "scanned_issues": [
+    {
+      "body": "## Type\n\nbug\n\n## Target\n\ndocs/watchdog-live-probe.md\n\n## Target paths\n\n- docs/watchdog-live-probe.md\n\n## Current state\n\nproject-watchdog has never dispatched a real ticket; 3000/3000 receipts are NOOP and 0 issues have ever been handled\n\n## Requested outcome\n\nthe cron leases this issue, runs one bounded tau self-fix tick, and writes a receipt with handled_count >= 1\n\n## Required proof\n\na project-watchdog receipt.json with status COMPLETED or NEEDS_ATTENTION and a non-empty handled_issues array\n\n## Route\n\nbackend_python_or_skill_runtime\n\n## Maintainer route\n\nbackend_python_or_skill_runtime\n\n## Requested repair agent\n\nNot specified.\n\n## Non-goals\n\nNo unrelated refactors or scope expansion.\n\n## Ticket type details\n\n- **Observed failure:** project-watchdog has never dispatched a real ticket; 3000/3000 receipts are NOOP and 0 issues have ever been handled\n- **Expected behavior:** the cron leases this issue, runs one bounded tau self-fix tick, and writes a receipt with handled_count >= 1\n- **Reproduction or artifact:** file this ticket with agent-work, then run: skills/project-watchdog/run.sh tick --apply --project tau\n\n<!-- ticket-skill\ntype: bug\ntarget: docs/watchdog-live-probe.md\nroute: backend_python_or_skill_runtime\nagent: unspecified\n-->\n\nThis ticket must be resolved under `best-practices-github-ticket`. Closure requires deterministic proof; WebGPT review or CI green alone is not closure proof.\n",
+      "labels": [
+        {
+          "color": "0052cc",
+          "description": "Ticket is routable to a cron-dispatched repair agent",
+          "id": "LA_kwDOTG11HM8AAAACpOWQ-w",
+          "name": "agent-work"
+        },
+        {
+          "color": "d73a4a",
+          "description": "Defect or regression",
+          "id": "LA_kwDOTG11HM8AAAACpRFAJA",
+          "name": "type:bug"
+        },
+        {
+          "color": "1d76db",
+          "description": "Maintainer route: backend Python or skill runtime",
+          "id": "LA_kwDOTG11HM8AAAACpRFbZw",
+          "name": "route:backend_python_or_skill_runtime"
+        }
+      ],
+      "number": 181,
+      "title": "TEST: project-watchdog live dispatch probe (safe to close)",
+      "url": "https://github.com/grahama1970/tau/issues/181",
+      "watchdog_action": "ticket_repair",
+      "watchdog_targets": [
+        "docs/watchdog-live-probe.md"
+      ]
+    }
+  ],
+  "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+  "state_snapshot": {
+    "global": {
+      "reason": "maintenance complete: best-practices alignment 2026-07-27",
+      "resume_allowed_by": [
+        "human"
+      ],
+      "resume_requires": [
+        "dispatcher-implementation",
+        "dry-run-scan-receipt",
+        "no-live-mutation-without-apply"
+      ],
+      "state": "active"
+    },
+    "last_served_project": "tau",
+    "projects": {
+      "agent-skills": {
+        "reason": "Repository has extensive unrelated dirty worktree state; mutation requires explicit dirty-worktree policy.",
+        "resume_requires": [
+          "clean-worktree-policy",
+          "valid-github-auth"
+        ],
+        "state": "paused"
+      },
+      "chatgpt-lab": {
+        "reason": "Existing PhatGPT watchdog needs an adapter to the shared lease and receipt protocol before global scheduling.",
+        "resume_requires": [
+          "shared-lease-adapter",
+          "valid-github-auth"
+        ],
+        "state": "paused"
+      },
+      "memory": {
+        "reason": "Registered 2026-07-27. No bounded one-issue runner and no routing-label contract yet.",
+        "resume_requires": [
+          "bounded-issue-runner",
+          "routing-label-contract",
+          "valid-github-auth"
+        ],
+        "state": "paused"
+      },
+      "pi-mono": {
+        "reason": "Registered as a reference project; safe bounded issue runner is not confirmed.",
+        "resume_requires": [
+          "safe-bounded-runner",
+          "valid-github-auth"
+        ],
+        "state": "paused"
+      },
+      "scillm": {
+        "reason": "Registered for future issue routing; bounded watchdog command contract is not proven yet.",
+        "resume_requires": [
+          "project-command-contract",
+          "valid-github-auth"
+        ],
+        "state": "paused"
+      },
+      "tau": {
+        "last_operator": "human-approved-development-session",
+        "reason": "Tau has a proven one-tick handoff path, recent live GitHub mutation proof, and a generic issue-to-handoff watchdog proof for project-watchdog-action:tau-handoff-dispatch.",
+        "resume_requires": [
+          "valid-goal-file",
+          "valid-github-auth"
+        ],
+        "state": "active"
+      }
+    },
+    "schema": "agent_skills.project_watchdog.state.v1",
+    "updated_at": "2026-07-27"
+  },
+  "status": "NEEDS_ATTENTION"
+}

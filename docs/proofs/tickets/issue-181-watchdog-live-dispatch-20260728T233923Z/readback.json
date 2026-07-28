@@ -1,0 +1,26 @@
+{
+  "status": "NEEDS_ATTENTION",
+  "ok": false,
+  "handled_count": 1,
+  "receipt_path": "/tmp/project-watchdog-issue181-20260728T2343Z/state/receipts/project-watchdog-20260728T233923Z/receipt.json",
+  "handled_issues": [
+    {
+      "issue_number": 181,
+      "action": "ticket_repair",
+      "status": "NEEDS_ATTENTION",
+      "summary": "$ask tau-dag failed for grahama1970/tau#181",
+      "command_count": 4,
+      "timeout_commands": [
+        {
+          "exit_code": 124,
+          "timed_out": true,
+          "timeout_seconds": 20,
+          "command": [
+            "/tmp/agent-skills-watchdog-181-20260728/skills/ask/run.sh",
+            "tau-dag"
+          ]
+        }
+      ]
+    }
+  ]
+}
