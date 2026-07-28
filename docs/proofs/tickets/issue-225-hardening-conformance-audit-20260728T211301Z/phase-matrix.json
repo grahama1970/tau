@@ -1,7 +1,7 @@
 {
   "schema": "tau.epic72_phase_matrix.v1",
   "generated_for": "grahama1970/tau#225 — current-head hardening conformance + #72 closure audit",
-  "audit_head": "origin/main (P10 governed-adapter evidence #222 is on branch issue-222-governed-skill-live-proofs / PR pending)",
+  "audit_head": "origin/main through 093fc66817548e5a058a454bfb4aad86bef2d37d (P10 governed-adapter evidence #222 merged and closed with current-head proof)",
   "note": "Every row's proof is a committed executable artifact; PROVEN requires module + deterministic test + committed conformance proof. PARTIAL = executable proof exists but a proof-layer element (dedicated unit test, or a committed conformance bundle) is missing. Verified this turn by direct git ls-files / json read-back.",
   "phases": [
     {"id": "P0", "title": "Repository, tracker, proof, CI hygiene", "status": "PROVEN",
@@ -63,9 +63,9 @@
     {"id": "P10", "title": "Real skill/worker composition and controlled-data demo", "status": "PROVEN",
      "modules": ["src/tau_coding/worker_controlled_data_conformance.py", "src/tau_coding/coding_worker_adapters.py", "src/tau_coding/governed_skill_execution.py"],
      "tests": ["tests/test_coding_worker_adapters.py", "tests/test_skill_composition_redteam.py", "tests/test_governed_skill_execution.py"],
-     "proofs": ["docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/closure-evidence.json", "docs/proofs/tickets/issue-222-governed-skill-live-proofs-* (branch, PR pending)"],
+     "proofs": ["docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/closure-evidence.json", "docs/proofs/tickets/issue-222-governed-skill-live-proofs-20260728T155857Z/closure-evidence.json", "docs/proofs/tickets/issue-222-governed-skill-live-proofs-20260728T155857Z/installed-wheel-current-head/current-wheel-governed-admission.json"],
      "owning_issues": ["#193", "#222"],
-     "remaining": "Governed generic adapter (#222) live-proven for all three classes this session; its proof dir lands with the #222 PR."},
+     "remaining": null},
     {"id": "P11", "title": "Asymmetric signing, audit ledger, API auth, RBAC", "status": "PARTIAL",
      "modules": ["src/tau_coding/receipt_signing.py", "src/tau_coding/security_audit_conformance.py", "src/tau_coding/security_capability.py"],
      "tests": ["tests/test_receipt_signing.py (SIGNING)", "tests/test_security_capability.py", "tests/test_approval_gate.py"],
