@@ -1,0 +1,10 @@
+{
+  "attempt_id": "attempt-46ff070d55d8eb396e7ef536d157a2cf",
+  "classification": "attempted_and_swallowed",
+  "expected_receipt_kind": "node_receipt",
+  "node_id": "liar",
+  "reason_code": "expected_receipt_not_admitted",
+  "receipt_kind": "system_settlement",
+  "schema": "tau.system_settlement_receipt.v1",
+  "verdict": "BLOCKED"
+}

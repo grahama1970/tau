@@ -1,0 +1,19 @@
+{
+  "nodes": [
+    {
+      "accepted_context_from": [],
+      "command": [
+        "true"
+      ],
+      "depends_on": [],
+      "max_attempts": 1,
+      "node_id": "liar",
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-208-admission-enforcement-readback-20260728T2320Z/receipts/liar/attempt.json",
+      "role": "liar",
+      "timeout_seconds": 5
+    }
+  ],
+  "run_dir": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-208-admission-enforcement-readback-20260728T2320Z/run",
+  "run_id": "run-enforce-live",
+  "schema": "tau.generic_dag_spec.v1"
+}

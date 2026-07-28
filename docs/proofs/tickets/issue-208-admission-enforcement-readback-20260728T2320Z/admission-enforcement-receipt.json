@@ -1,0 +1,32 @@
+{
+  "accepted_pass_state_present": false,
+  "admission_rows": [
+    {
+      "admission_id": "4c8ef9bbbdf29ebd5366dc808def0a61",
+      "admitted_at": "2026-07-28T23:19:28.715319+00:00",
+      "admitted_event_seq": 10,
+      "attempt_id": "attempt-46ff070d55d8eb396e7ef536d157a2cf",
+      "legacy": 0,
+      "node_id": "liar",
+      "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-208-admission-enforcement-readback-20260728T2320Z/receipts/liar/attempt-46ff070d55d8eb396e7ef536d157a2cf-system-settlement.json",
+      "receipt_kind": "system_settlement",
+      "run_id": "run-enforce-live",
+      "sha256": "sha256:5246aeeecb96630e945f9cfb9c8457e36050aedc76ba90000f0394b7c38b4b9a",
+      "size_bytes": 335
+    }
+  ],
+  "event_count": 15,
+  "live": true,
+  "mocked": false,
+  "node_status": "BLOCKED",
+  "node_verdict": "RECEIPT_NOT_ADMITTED",
+  "ok": true,
+  "provider_live": false,
+  "run_status": "BLOCKED",
+  "run_verdict": "RECEIPT_NOT_ADMITTED",
+  "schema": "tau.admission_enforcement_harness_receipt.v1",
+  "spec_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-208-admission-enforcement-readback-20260728T2320Z/bypass-spec.json",
+  "store_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-208-admission-enforcement-readback-20260728T2320Z/dag-run.sqlite3",
+  "system_settlement_admission_rows": 1,
+  "torn_receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-208-admission-enforcement-readback-20260728T2320Z/receipts/liar/attempt.json"
+}
