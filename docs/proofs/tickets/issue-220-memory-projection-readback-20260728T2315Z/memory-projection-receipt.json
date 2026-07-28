@@ -1,0 +1,11 @@
+{
+  "execution_authority_intact_after_outage": true,
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "outage_degraded_not_blocked": true,
+  "recovery_projects_and_dedupes": true,
+  "run_status_after_outage": "RUNNING",
+  "same_transaction_rollback": true,
+  "schema": "tau.memory_projection_harness_receipt.v1"
+}
