@@ -349,3 +349,4 @@ ENFORCEMENT. 11. Delete legacy writers + CI architectural guard.
     kind), length-prefixed and CRC-framed per record, O_APPEND single-writer;
     a torn final append fails its CRC and is ignored as trailing garbage —
     detected, logged, never fatal, and never able to corrupt earlier records.
+- 2026-07-28 branch protection enabled (ticket #214): required checks 'uv run pytest -q' + 'canonical-browser-proofs', force pushes and deletions disabled. Verified by API read-back.
