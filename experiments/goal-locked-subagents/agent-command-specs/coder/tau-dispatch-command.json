@@ -1,7 +1,7 @@
 {
   "agent_contract": "agents/coder/AGENTS.md",
   "command": [
-    "/home/graham/.local/bin/uv",
+    "uv",
     "run",
     "tau",
     "handoff-agent-adapter",

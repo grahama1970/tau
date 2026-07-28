@@ -75,7 +75,7 @@ class EffectHandle:
 
 
 def _now_ms() -> int:
-    return int(time.time() * 1000)
+    return time.time_ns() // 1_000_000
 
 
 def _now_iso() -> str:
@@ -145,7 +145,7 @@ class EffectLedger:
                        updated_at = ?
                    WHERE effect_type = ? AND effect_scope = ? AND effect_key = ?
                      AND state IN ('intent', 'uncertain')
-                     AND (owner_attempt_id IS NULL OR lease_expires_at_ms < ?)""",
+                     AND (owner_attempt_id IS NULL OR lease_expires_at_ms <= ?)""",
                 (owner_attempt_id, token, expires, _now_iso(),
                  effect_type, effect_scope, effect_key, _now_ms()),
             )
@@ -234,7 +234,7 @@ class EffectLedger:
                 """SELECT effect_type, effect_scope, effect_key, reconciliation
                    FROM accepted_effects
                    WHERE state = 'intent' AND owner_attempt_id IS NOT NULL
-                     AND lease_expires_at_ms < ?""",
+                     AND lease_expires_at_ms <= ?""",
                 (_now_ms(),),
             ).fetchall()
             moved = []

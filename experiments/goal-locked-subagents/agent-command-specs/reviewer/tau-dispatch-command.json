@@ -1,7 +1,7 @@
 {
   "agent_contract": "agents/reviewer/AGENTS.md",
   "command": [
-    "/home/graham/.local/bin/uv",
+    "uv",
     "run",
     "tau",
     "handoff-agent-adapter",
@@ -22,5 +22,5 @@
   ],
   "cwd": ".",
   "persona_contract": "agents/reviewer/persona.yaml",
-  "timeout_s": 60
+  "timeout_s": 30
 }

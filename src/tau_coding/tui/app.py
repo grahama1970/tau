@@ -11336,7 +11336,10 @@ class TauTuiApp(App[None]):
 
     def _refresh_dag_run_status(self, *, theme: TuiTheme | None = None) -> None:
         """Refresh the compact DAG status pane from the viewer's live projection."""
-        pane = self.query_one("#dag-run-status-pane", DagRunStatusPane)
+        try:
+            pane = self.query_one("#dag-run-status-pane", DagRunStatusPane)
+        except NoMatches:
+            return
         run_dir = self._last_dag_viewer_run_dir
         resolved_theme = theme or self.tui_settings.resolved_theme
         if run_dir is None:
@@ -16745,7 +16748,11 @@ class _TauFooterDataProvider:
 
     def getExtensionStatuses(self) -> Mapping[str, str]:  # noqa: N802
         """Return extension status texts set through ctx.ui.setStatus."""
-        return dict(self._app._extension_statuses)
+        return {
+            key: value
+            for key, value in self._app._extension_statuses.items()
+            if key != "decisions"
+        }
 
     def getAvailableProviderCount(self) -> int:  # noqa: N802
         """Return how many providers the active session exposes."""
