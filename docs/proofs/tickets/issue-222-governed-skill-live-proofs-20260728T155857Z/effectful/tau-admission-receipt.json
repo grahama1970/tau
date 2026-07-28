@@ -1,0 +1,60 @@
+{
+  "claim": {
+    "category": "auto",
+    "control_ids": [],
+    "created_at": "2026-07-28T21:01:15.662039+00:00",
+    "gate_results": [
+      {
+        "blocking_entities": [
+          "AC-7"
+        ],
+        "data": {
+          "blocking_entities": [
+            "AC-7"
+          ],
+          "rule": "RULE_0B_FAIL_NON_QUESTION_SURFACE",
+          "verdict": "NONSENSICAL"
+        },
+        "detail": "RULE_0B_FAIL_NON_QUESTION_SURFACE: AC-7",
+        "gate": "question_surface",
+        "passed": false
+      }
+    ],
+    "id": "123d9bb0fd76",
+    "node_type": "claim",
+    "sub_claims": [],
+    "text": "NIST AC-7 Unsuccessful Logon Attempts enforces a limit on consecutive invalid attempts",
+    "verdict": "NOT_SATISFIED"
+  },
+  "course_correction": null,
+  "errors": [],
+  "evidence_case_gate_alert_codes": [],
+  "evidence_case_gate_receipt_path": "/home/graham/.claude/jobs/9829a738/tmp/eff-proof-out/evidence-case-gate-receipt.json",
+  "evidence_case_gate_status": "PASS",
+  "expected_goal_hash": null,
+  "goal_hash": null,
+  "normalized_evidence_case_path": "/home/graham/.claude/jobs/9829a738/tmp/eff-proof-out/evidence-case.json",
+  "normalized_evidence_case_sha256": "sha256:ffec872d008038a5a133919242bb04c318eaaa82e747cb7059723c87004371ba",
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Evidence-case semantic completeness.",
+      "Compliance sufficiency.",
+      "Memory fact truth.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau ingested a create-evidence-case artifact.",
+      "Tau normalized it into a separate memory.evidence_case.v1 artifact.",
+      "Tau validated the normalized artifact with tau.evidence_case_gate_receipt.v1."
+    ]
+  },
+  "question": "NIST AC-7 Unsuccessful Logon Attempts enforces a limit on consecutive invalid attempts",
+  "repo_root": "/home/graham/.claude/jobs/9829a738/tmp/eff-proof-out",
+  "schema": "tau.evidence_case_skill_adapter_receipt.v1",
+  "source_case_path": "/home/graham/.claude/jobs/9829a738/tmp/eff-proof-out/native-case.json",
+  "source_case_sha256": "sha256:3a453791ff6cf687d5cda1dcec144db866d2f7286c2d610309fbf944c0260efa",
+  "status": "PASS",
+  "support_artifact_count": 0,
+  "verdict": "not_satisfied"
+}

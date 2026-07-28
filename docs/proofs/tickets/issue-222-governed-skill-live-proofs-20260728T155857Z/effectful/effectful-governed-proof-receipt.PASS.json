@@ -1,0 +1,19 @@
+{
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "provider_live": true,
+  "schema": "tau.governed_effectful_proof.v1",
+  "steps": {
+    "claim_id": "123d9bb0fd76",
+    "declared_before_call": true,
+    "duplicate_suppressed": true,
+    "effect_lifecycle": "intent->succeeded->accepted",
+    "effect_rows": 1,
+    "external_effect_persisted": true,
+    "read_back_confirmed": true,
+    "read_back_key": "a8f1878c527ea7c3",
+    "tau_admission_ok": true,
+    "tau_admission_status": "PASS"
+  }
+}
