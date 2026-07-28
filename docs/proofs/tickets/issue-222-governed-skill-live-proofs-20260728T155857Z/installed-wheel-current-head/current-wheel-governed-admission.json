@@ -1,0 +1,16 @@
+{
+  "admission_ok": true,
+  "admission_receipt_path": "/tmp/tau-current-wheel-222-admission-qs0i5k4r/admission.json",
+  "admission_status": "PASS",
+  "derived_verdict": "REVISE",
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "normalized_review_path": "/tmp/tau-current-wheel-222-admission-qs0i5k4r/review-code-result.json",
+  "provider_live": false,
+  "resolved_agent_skills_root": "/tmp/agent-skills-watchdog-181-20260728",
+  "schema": "tau.issue222_current_wheel_governed_admission.v1",
+  "separate_checkout_exists": true,
+  "tau_agent_skills_root_env": "/tmp/agent-skills-watchdog-181-20260728",
+  "wheel": "/tmp/tau-current-wheel-222/tau-0.1.0-py3-none-any.whl"
+}

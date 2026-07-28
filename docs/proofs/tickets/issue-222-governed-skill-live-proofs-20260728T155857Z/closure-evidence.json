@@ -6,7 +6,7 @@
   "environment": {
     "agent_skills": "../agent-skills; effectful/installed-wheel proofs used TAU_AGENT_SKILLS_ROOT -> a separate fixed checkout",
     "scillm": "http://localhost:4001 live",
-    "dependency_fix": "create-evidence-case read-back defect fixed (agent-skills branch fix-evidence-case-get-readback): recall_case now does an exact daemon /query (AQL) lookup by claim.id/_key before semantic recall"
+    "dependency_fix": "create-evidence-case read-back defect fixed on agent-skills main at 1b5a3fc83bfbd3b968b72e83d31231f23c6997ea: recall_case now does an exact daemon /query (AQL) lookup by claim.id/_key before semantic recall"
   },
   "required_proof_map": [
     {"bullet": "registry/contract schema and compile tests", "status": "MET", "evidence": "skill_execution_contract.py + tests (existing, passing)"},
@@ -19,19 +19,18 @@
     {"bullet": "missing or malformed native output cannot settle PASS", "status": "MET", "evidence": "verdict derived from evidence not native status (test_verdict_is_derived_from_dod_not_native_status); native_schema_mismatch"},
     {"bullet": "undeclared network/filesystem/provider/effect fails closed", "status": "MET", "evidence": "skill_composition_redteam suite + validate_contract"},
     {"bullet": "unsupported skill reports UNSUPPORTED_ADAPTER, not silent fallback", "status": "MET", "evidence": "bind_contract UNSUPPORTED_ADAPTER (existing test)"},
-    {"bullet": "installed-wheel proof with TAU_AGENT_SKILLS_ROOT at a separate checkout", "status": "MET", "evidence": "installed-wheel/: the installed tau wheel (venv) resolved TAU_AGENT_SKILLS_ROOT to a separately located checkout (matches override) and ran a governed admission from the wheel (PASS). Note: wheel is the #211-era build containing the adapters; the newest governed_skill_execution normalizer runs from source"},
+    {"bullet": "installed-wheel proof with TAU_AGENT_SKILLS_ROOT at a separate checkout", "status": "MET", "evidence": "installed-wheel-current-head/current-wheel-governed-admission.json: current Tau wheel built from this head resolved TAU_AGENT_SKILLS_ROOT to /tmp/agent-skills-watchdog-181-20260728, a separately located checkout, imported governed_skill_execution from the wheel, normalized a review-code native result, and admitted PASS with derived verdict REVISE"},
     {"bullet": "retained mocked/live/provider_live/proves/does_not_prove", "status": "MET", "evidence": "this receipt + per-run receipts"}
   ],
   "new_code": [
     "src/tau_coding/governed_skill_execution.py (normalizers for code-runner + review-code; verdict derived from evidence)",
     "tests/test_governed_skill_execution.py (7 passed)",
-    "agent-skills: create-evidence-case storage.py recall_case direct-lookup fix (branch fix-evidence-case-get-readback)"
+    "agent-skills: create-evidence-case storage.py recall_case direct-lookup fix (main commit 1b5a3fc83bfbd3b968b72e83d31231f23c6997ea)"
   ],
   "proves": [
     "All three representative agent-skills capability classes execute live under one governed contract and admit through canonical Tau receipts with verdicts derived from evidence rather than skill-authored status: read-only (review-code), bounded mutation (code-runner, isolated worktree + allowlist), and external/effectful (create-evidence-case with #218 effect ownership, confirmed read-back, duplicate suppression). Cancellation kills owned descendants with a terminal receipt; unsupported/hash-drift/undeclared-effect fail closed; the installed wheel resolves a separately located skills checkout."
   ],
   "does_not_prove": [
-    "Semantic correctness of any skill's output beyond schema validity and derived-verdict gating.",
-    "That the create-evidence-case read-back fix is merged to agent-skills main (pushed on a branch; PR pending)."
+    "Semantic correctness of any skill's output beyond schema validity and derived-verdict gating."
   ]
 }
