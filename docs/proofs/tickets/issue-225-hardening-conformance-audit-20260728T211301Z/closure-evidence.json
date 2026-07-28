@@ -1,0 +1,37 @@
+{
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "ticket": "grahama1970/tau#225",
+  "title": "#72 child: current-head hardening conformance and parent closure audit",
+  "mocked": false, "live": true, "provider_live": false,
+  "disposition": "NARROW",
+  "disposition_rationale": "12 of 13 phases have a genuine committed executable proof; 9 are fully PROVEN (module + deterministic test + committed conformance bundle). Four phases are PARTIAL: P1 (route/join unit-tested but no committed conformance bundle); P8 (north-star sprite workload proven e2e — 6 blocked + 8 killed frames, atlas, playback, release boundary, DAG journal — but no dedicated deterministic unit test); P11 (signing fully proven; audit-ledger/RBAC/API-auth proven at the e2e layer only, no dedicated unit tests); P12 (runtime-handshake proven e2e via the external tau wrapper, no in-repo unit test). The epic's own docs/proofs/tickets/issue-72-program-epic-status-20260727/summary.json records closable=false. Independent branch-protection read-back this turn shows enforce_admins=false; per this ticket's branch-protection gate, deferred admin enforcement means #72 cannot claim branch protection as an absolute invariant and must remain open or narrow that claim. CLOSE is therefore not honest; NARROW is.",
+  "phase_matrix": "phase-matrix.json (this dir)",
+  "phase_summary": {"PROVEN": ["P0","P2","P3","P4","P5","P6","P7","P9","P10"], "PARTIAL": ["P1","P8","P11","P12"], "MISSING": []},
+  "branch_protection_readback": {
+    "verified_this_turn": true,
+    "required_status_checks": ["uv run pytest -q", "canonical-browser-proofs"],
+    "allow_force_pushes": false, "allow_deletions": false,
+    "enforce_admins": false,
+    "gate_conclusion": "checks + force-push/deletion disabled satisfy the gate; enforce_admins=false is the open item — either set it true or narrow the absolute-invariant claim."
+  },
+  "integrated_conformance": {
+    "full_python_suite": "3302 passed, 29 skipped, 3 load-only (a)-shaped intermittents (verified this session at the receipt-admission head; the 3 pass deterministically in isolation).",
+    "web_viewer": "install/typecheck/build/vitest all exit 0 (this session).",
+    "committed_conformance_bundles": 11,
+    "bundle_issues": ["#186","#187","#188","#189","#190","#191","#192","#193","#194","#195","#222"]
+  },
+  "remaining_program_for_72": [
+    "P1: add a committed route/join conformance bundle (exclusive route selection, ambiguous fail-closed, skipped-branch terminal, join non-hang, replayable receipts) — behavior is unit-tested; bind it to a closure-evidence.",
+    "P8: add a deterministic unit test for src/tau_coding/sprite_sheet_conformance.py (the north-star e2e proof exists; the unit layer does not).",
+    "P11: add dedicated deterministic unit tests for the audit-ledger, RBAC, and API-auth sub-parts (signing is already unit-tested; the others are e2e-only).",
+    "P12: add tests/test_runtime_handshake.py (in-repo unit coverage; currently proven only via the external agent-skills tau wrapper).",
+    "Branch protection: set enforce_admins=true after the direct-push repair loop ends, or narrow #72's branch-protection claim from absolute-invariant to required-checks-with-admin-bypass."
+  ],
+  "proves": [
+    "At current head, 9 of 13 epic-#72 phases are fully PROVEN (module + deterministic test + committed conformance bundle) and the remaining 4 have genuine committed executable proofs with a specific, enumerated proof-layer gap each. The correct disposition is NARROW: preserve this matrix as the closure record and reduce #72 to the five-item remaining program above."
+  ],
+  "does_not_prove": [
+    "That #72 is closeable (it is not — the epic self-reports closable=false and enforce_admins is deferred).",
+    "Semantic correctness of any provider output beyond schema/gate validity."
+  ]
+}
