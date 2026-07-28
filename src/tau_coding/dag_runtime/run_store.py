@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import time
 from collections.abc import Mapping
@@ -1483,6 +1484,45 @@ class SqliteDagRunStore:
                    updated_at = ? WHERE attempt_id = ?""",
                 (event_seq, _now_iso(), attempt_id),
             )
+            self._observe_admission_gap(lease, attempt_id, str(attempt["node_id"]))
+
+    def _observe_admission_gap(
+        self, lease: DagRunLease, attempt_id: str, node_id: str
+    ) -> None:
+        """Shadow-mode invariant (#202): record, never block.
+
+        Every terminal settlement without an admission row is appended to a
+        JSONL bypass ledger beside the store. This measures which legacy
+        writer paths still bypass admission before enforcement (contract A7
+        step 5) flips on; ledger write failures are swallowed because
+        observation must not change production semantics.
+        """
+
+        row = self._connection.execute(
+            "SELECT COUNT(*) FROM receipt_admissions WHERE attempt_id = ?",
+            (attempt_id,),
+        ).fetchone()
+        if row is not None and int(row[0]) > 0:
+            return
+        entry = json.dumps(
+            {
+                "schema": "tau.admission_bypass.v1",
+                "run_id": lease.run_id,
+                "node_id": node_id,
+                "attempt_id": attempt_id,
+                "observed_at": _now_iso(),
+            },
+            sort_keys=True,
+        )
+        ledger = self.path.parent / "admission-bypass-ledger.jsonl"
+        try:
+            fd = os.open(ledger, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o644)
+            try:
+                os.write(fd, entry.encode("utf-8") + b"\n")
+            finally:
+                os.close(fd)
+        except OSError:
+            pass
 
     def admit_receipt(
         self,

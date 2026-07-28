@@ -135,3 +135,39 @@ def test_v2_store_migrates_to_v3_with_admissions_table(tmp_path: Path) -> None:
         "SELECT from_version, to_version FROM dag_store_migrations"
     ).fetchall()
     assert (2, 3) in {(r[0], r[1]) for r in migrations}
+
+
+def test_settlement_without_admission_lands_in_bypass_ledger(tmp_path: Path) -> None:
+    """Shadow observer (#202): unadmitted settlement is recorded, not blocked."""
+    import json as _json
+
+    store, lease, attempt_id = _store_with_attempt(tmp_path)
+    store.mark_dispatched(lease, attempt_id)
+    store.stage_result(lease, attempt_id, {"ok": True})
+    store.validate_result(lease, attempt_id, {"valid": True})
+    store.commit_output(lease, attempt_id)
+    store.commit_transition(
+        lease, attempt_id, completion={}, result={}, transition={}
+    )
+
+    ledger = tmp_path / "admission-bypass-ledger.jsonl"
+    entries = [_json.loads(line) for line in ledger.read_text().splitlines()]
+    assert [e["node_id"] for e in entries] == ["node-a"]
+    assert entries[0]["attempt_id"] == attempt_id
+
+
+def test_settlement_with_admission_stays_off_the_ledger(tmp_path: Path) -> None:
+    store, lease, attempt_id = _store_with_attempt(tmp_path)
+    store.admit_receipt(
+        lease, attempt_id, receipt_kind="node_receipt",
+        sha256="sha256:abc", path="/p.json", size_bytes=1,
+    )
+    store.mark_dispatched(lease, attempt_id)
+    store.stage_result(lease, attempt_id, {"ok": True})
+    store.validate_result(lease, attempt_id, {"valid": True})
+    store.commit_output(lease, attempt_id)
+    store.commit_transition(
+        lease, attempt_id, completion={}, result={}, transition={}
+    )
+
+    assert not (tmp_path / "admission-bypass-ledger.jsonl").exists()
