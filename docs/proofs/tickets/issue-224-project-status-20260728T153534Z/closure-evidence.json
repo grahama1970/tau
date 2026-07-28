@@ -17,9 +17,9 @@
       "evidence": "test_project_status.py::test_deterministic_apart_from_timestamp"
     },
     {
-      "requirement": "reflects #214 (branch protection), #211/#217-220 (recently closed), #221/#222/#223 open",
+      "requirement": "reflects #214 (branch protection), #211/#217-220/#222/#225 (recently closed), #221/#223/#224 open, and parent #72/#180 still open",
       "status": "MET",
-      "evidence": "docs/status/github-snapshot.json + CURRENT_STATE.json: branch_protection enabled, open [72,180,221,222,223,224,225], recently_completed [211..220]"
+      "evidence": "docs/status/github-snapshot.json + CURRENT_STATE.json: branch_protection required checks enabled with enforce_admins=false, open [72,180,221,223,224], recently_completed includes [211,217,218,219,220,222,225]"
     },
     {
       "requirement": "mutating a source without regenerating fails the freshness verifier",

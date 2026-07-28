@@ -10,11 +10,11 @@
     },
     "source": "src/tau_coding/dag_runtime/"
   },
-  "generated_at": "2026-07-28T15:36:59.035926+00:00",
+  "generated_at": "2026-07-28T23:54:03.456139+00:00",
   "generator_version": "1.0.0",
   "git": {
     "clean_tree": false,
-    "commit": "3ef7b4f3b9215e49717b8e62e62d0c999e8d3f6e"
+    "commit": "98bbadf1673826fccf68221ebbb4929ea633060f"
   },
   "github": {
     "branch_protection": {
@@ -24,20 +24,12 @@
     "freshness": "FRESH",
     "open_critical_issues": [
       {
-        "number": 225,
-        "title": "#72 child: current-head hardening conformance and parent closure audit"
-      },
-      {
         "number": 224,
         "title": "Generate authoritative project-status artifacts and fail CI on stale README/PROJECT_KNOWLEDGE claims"
       },
       {
         "number": 223,
         "title": "Bind Tau TUI voice events to Chatterbox `/tau/voice-render` and real turn controls"
-      },
-      {
-        "number": 222,
-        "title": "#72 child: governed generic execution adapter for agent-skills capabilities"
       },
       {
         "number": 221,
@@ -54,50 +46,161 @@
     ],
     "recently_completed": [
       {
+        "closedAt": "2026-07-28T23:52:00Z",
+        "number": 225,
+        "title": "#72 child: current-head hardening conformance and parent closure audit"
+      },
+      {
+        "closedAt": "2026-07-28T23:47:43Z",
+        "number": 222,
+        "title": "#72 child: governed generic execution adapter for agent-skills capabilities"
+      },
+      {
+        "closedAt": "2026-07-28T23:17:10Z",
         "number": 220,
         "title": "#180 child: idempotent accepted-outcome projection to graph-memory-operator"
       },
       {
+        "closedAt": "2026-07-28T14:12:20Z",
         "number": 219,
         "title": "#72 child: repair-time join reevaluation and single downstream release conformance"
       },
       {
+        "closedAt": "2026-07-28T14:00:40Z",
         "number": 218,
         "title": "#72 child: accepted-effect identity, ownership, and reconciliation"
       },
       {
+        "closedAt": "2026-07-28T14:22:05Z",
         "number": 217,
         "title": "#180 child: acceptance bundle generator"
       },
       {
+        "closedAt": "2026-07-28T13:36:49Z",
         "number": 216,
         "title": "#72 child: route TUI proof receipt and screenshot as one admitted manifest"
       },
       {
+        "closedAt": "2026-07-28T14:26:46Z",
         "number": 215,
         "title": "#72 child: classify the three load-only receipt-absence intermittents"
       },
       {
+        "closedAt": "2026-07-28T12:47:42Z",
         "number": 214,
         "title": "#72 child: enable branch protection with required checks on main"
       },
       {
+        "closedAt": "2026-07-28T21:56:25Z",
         "number": 213,
         "title": "#180 child: remove remaining machine-specific paths from src and README"
       },
       {
+        "closedAt": "2026-07-28T13:33:53Z",
         "number": 212,
         "title": "#180 child: remove remaining machine-specific paths from src and README"
       },
       {
+        "closedAt": "2026-07-28T23:12:29Z",
         "number": 211,
         "title": "#180 child: repeat rungs 3\u20135 from one clean wheel and retain beta evidence"
+      },
+      {
+        "closedAt": "2026-07-28T13:34:01Z",
+        "number": 210,
+        "title": "#72 child: git 2.54 prunes unrelated worktree registration during failed allocation"
+      },
+      {
+        "closedAt": "2026-07-28T13:54:12Z",
+        "number": 209,
+        "title": "#72 child: delete legacy write_json copies and add CI architectural guard"
+      },
+      {
+        "closedAt": "2026-07-28T23:20:57Z",
+        "number": 208,
+        "title": "#72 child: flip admission invariant from observation to enforcement"
+      },
+      {
+        "closedAt": "2026-07-28T13:43:48Z",
+        "number": 207,
+        "title": "#72 child: flip admission invariant from observation to enforcement"
+      },
+      {
+        "closedAt": "2026-07-28T23:28:29Z",
+        "number": 206,
+        "title": "#72 child: route subprocess workflow receipts via staging and promotion"
+      },
+      {
+        "closedAt": "2026-07-28T23:31:01Z",
+        "number": 205,
+        "title": "#72 child: route subprocess workflow receipts via staging and promotion"
+      },
+      {
+        "closedAt": "2026-07-28T11:50:20Z",
+        "number": 204,
+        "title": "#72 child: route in-process skill receipts through admission"
+      },
+      {
+        "closedAt": "2026-07-28T13:19:16Z",
+        "number": 203,
+        "title": "#72 child: route in-process skill receipts through admission"
+      },
+      {
+        "closedAt": "2026-07-28T12:46:31Z",
+        "number": 202,
+        "title": "#72 child: shadow-mode terminal-without-admission observer"
+      },
+      {
+        "closedAt": "2026-07-28T12:43:55Z",
+        "number": 201,
+        "title": "#72 child: scheduler-authored system_settlement receipts"
+      },
+      {
+        "closedAt": "2026-07-28T12:41:07Z",
+        "number": 200,
+        "title": "#72 child: startup reconciliation with the strict orphan rule"
+      },
+      {
+        "closedAt": "2026-07-28T12:37:51Z",
+        "number": 199,
+        "title": "#72 child: admission table and single-transaction settle (S7)"
+      },
+      {
+        "closedAt": "2026-07-28T12:23:42Z",
+        "number": 198,
+        "title": "#72 child: CRC-framed attempt-scoped write-intent sidecar"
+      },
+      {
+        "closedAt": "2026-07-28T12:15:52Z",
+        "number": 197,
+        "title": "#72 child: atomic durable receipt write primitive"
+      },
+      {
+        "closedAt": "2026-07-28T12:12:55Z",
+        "number": 196,
+        "title": "#72 child: durable attempt allocator with never-reused attempt ids"
+      },
+      {
+        "closedAt": "2026-07-27T16:41:42Z",
+        "number": 195,
+        "title": "#72 child: $tau runtime handshake exposes the proven Tau runtime"
+      },
+      {
+        "closedAt": "2026-07-27T16:25:46Z",
+        "number": 194,
+        "title": "#72 child: signatures, action-bound approvals, audit ledger, API auth, and RBAC"
+      },
+      {
+        "closedAt": "2026-07-27T16:19:08Z",
+        "number": 193,
+        "title": "#72 child: real worker and controlled-data denial/correction demo"
       }
     ],
     "required_checks": [
-      "ci"
+      "uv run pytest -q",
+      "canonical-browser-proofs"
     ],
-    "snapshot_sha256": "sha256:82b77eecbe3f7cfea35748622e09744fe738b03e4c416b46f64e3efacfa2494f"
+    "snapshot_sha256": "sha256:64e1da6dbd711d21bf963333042bc76219db4085ad4cb00a7fba786751e9fc2f"
   },
   "human_acceptance": {
     "baseline_present": true,
@@ -136,8 +239,8 @@
     "provider_live": false
   },
   "proof_index": {
-    "count": 11,
-    "digest": "sha256:ee09f9dec539dc40f6fbe1fee064c3bd8352efbfb8a66dd0e0d39e5cc12bc63c",
+    "count": 14,
+    "digest": "sha256:c0bc07860f7c0ff50d8748264f4a63810984998a8c83ab4faf5fad06f4b8319d",
     "entries": [
       {
         "path": "docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/closure-evidence.json",
@@ -180,18 +283,30 @@
         "sha256": "sha256:f69a3c64cb05e9e11dce65e9c89a92149f6174c07aae7f9fc92923cad0a8dc1d"
       },
       {
+        "path": "docs/proofs/tickets/issue-211-clean-wheel-completion-20260728T152212Z/closure-evidence.json",
+        "sha256": "sha256:8406a4ee83fa4c3cf4e81ef7fd0aa121c5beb9d9a41ef31a1458d4ae875e8382"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-222-governed-skill-live-proofs-20260728T155857Z/closure-evidence.json",
+        "sha256": "sha256:bc34f2be22e1eae92ef0f1312cc1ce600ad9e12d2b39ad39ebdea5b1c967bf42"
+      },
+      {
         "path": "docs/proofs/tickets/issue-224-project-status-20260728T153534Z/closure-evidence.json",
-        "sha256": "sha256:72ad195609dd808fb601b8a2736937722172e0192d085b4864ec8e5be0addc9e"
+        "sha256": "sha256:7092cf4c465c0b0bc94f40301e1a7a5aae0dbdb07a77c3f148cb0d175f59a5ad"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-225-hardening-conformance-audit-20260728T211301Z/closure-evidence.json",
+        "sha256": "sha256:f2c76df5e9ed510cadb5dd47eb7c39ef2af70be42429116d26db37657734988c"
       }
     ]
   },
   "schema": "tau.project_status.v1",
-  "semantic_content_digest": "sha256:0308358eb14b06efde0e6423711a50304df42bc6d3a2de7dcf4a29432bb5ba10",
+  "semantic_content_digest": "sha256:977aec7ba040e4051e575b8b9d080e73ffec683884ee02751dcc5dbb3d5b22d2",
   "source_digests": {
     "GOAL.md": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
     "acceptance_receipt": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab",
-    "github_snapshot": "sha256:82b77eecbe3f7cfea35748622e09744fe738b03e4c416b46f64e3efacfa2494f",
-    "proof_index": "sha256:ee09f9dec539dc40f6fbe1fee064c3bd8352efbfb8a66dd0e0d39e5cc12bc63c",
+    "github_snapshot": "sha256:64e1da6dbd711d21bf963333042bc76219db4085ad4cb00a7fba786751e9fc2f",
+    "proof_index": "sha256:c0bc07860f7c0ff50d8748264f4a63810984998a8c83ab4faf5fad06f4b8319d",
     "pyproject.toml": "sha256:846cfd5812f312395f363db523bf485487f6d72a651644098b92f34565dccb55"
   },
   "workflows": {
