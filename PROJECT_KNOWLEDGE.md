@@ -3,6 +3,16 @@
 **Last updated:** 2026-07-28 by agent
 **Status:** Active development
 
+<!-- BEGIN AUTHORITATIVE STATUS LINK (#224) -->
+> **Authoritative current status** is machine-generated at
+> [`docs/status/CURRENT_STATE.md`](docs/status/CURRENT_STATE.md) /
+> [`docs/status/CURRENT_STATE.json`](docs/status/CURRENT_STATE.json)
+> (`tau project-status build`). The narrative below is historical understanding
+> and cannot override that generated block; when they disagree, the generated
+> status wins. CI (`project-status-freshness`) fails if a bound source changed
+> without regeneration.
+<!-- END AUTHORITATIVE STATUS LINK -->
+
 ## Current Understanding
 
 - 2026-07-28 CI truth restoration and roundtable-ratified beta plan. CI on

@@ -1,0 +1,215 @@
+{
+  "capabilities": {
+    "all_present": true,
+    "present": {
+      "accepted_effect_ledger": true,
+      "memory_projection_outbox": true,
+      "receipt_admission": true,
+      "reconciliation": true,
+      "system_settlement": true
+    },
+    "source": "src/tau_coding/dag_runtime/"
+  },
+  "generated_at": "2026-07-28T15:36:59.035926+00:00",
+  "generator_version": "1.0.0",
+  "git": {
+    "clean_tree": false,
+    "commit": "3ef7b4f3b9215e49717b8e62e62d0c999e8d3f6e"
+  },
+  "github": {
+    "branch_protection": {
+      "enforce_admins": false,
+      "required_status_checks": true
+    },
+    "freshness": "FRESH",
+    "open_critical_issues": [
+      {
+        "number": 225,
+        "title": "#72 child: current-head hardening conformance and parent closure audit"
+      },
+      {
+        "number": 224,
+        "title": "Generate authoritative project-status artifacts and fail CI on stale README/PROJECT_KNOWLEDGE claims"
+      },
+      {
+        "number": 223,
+        "title": "Bind Tau TUI voice events to Chatterbox `/tau/voice-render` and real turn controls"
+      },
+      {
+        "number": 222,
+        "title": "#72 child: governed generic execution adapter for agent-skills capabilities"
+      },
+      {
+        "number": 221,
+        "title": "#180 child: execute the five-rung human acceptance walkthrough and sign the acceptance record"
+      },
+      {
+        "number": 180,
+        "title": "Epic/fleet: productize Tau DAG templates and authoritative viewer UX from proven agentic patterns"
+      },
+      {
+        "number": 72,
+        "title": "Epic: Harden Tau DAG runtime for durable, secure, adaptive complex workflows"
+      }
+    ],
+    "recently_completed": [
+      {
+        "number": 220,
+        "title": "#180 child: idempotent accepted-outcome projection to graph-memory-operator"
+      },
+      {
+        "number": 219,
+        "title": "#72 child: repair-time join reevaluation and single downstream release conformance"
+      },
+      {
+        "number": 218,
+        "title": "#72 child: accepted-effect identity, ownership, and reconciliation"
+      },
+      {
+        "number": 217,
+        "title": "#180 child: acceptance bundle generator"
+      },
+      {
+        "number": 216,
+        "title": "#72 child: route TUI proof receipt and screenshot as one admitted manifest"
+      },
+      {
+        "number": 215,
+        "title": "#72 child: classify the three load-only receipt-absence intermittents"
+      },
+      {
+        "number": 214,
+        "title": "#72 child: enable branch protection with required checks on main"
+      },
+      {
+        "number": 213,
+        "title": "#180 child: remove remaining machine-specific paths from src and README"
+      },
+      {
+        "number": 212,
+        "title": "#180 child: remove remaining machine-specific paths from src and README"
+      },
+      {
+        "number": 211,
+        "title": "#180 child: repeat rungs 3\u20135 from one clean wheel and retain beta evidence"
+      }
+    ],
+    "required_checks": [
+      "ci"
+    ],
+    "snapshot_sha256": "sha256:82b77eecbe3f7cfea35748622e09744fe738b03e4c416b46f64e3efacfa2494f"
+  },
+  "human_acceptance": {
+    "baseline_present": true,
+    "sha256": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab",
+    "signature_present": false,
+    "source": "docs/proofs/acceptance/rungs-evidence-receipt.json",
+    "state": "PENDING_HUMAN_SIGNATURE"
+  },
+  "immutable_goal": {
+    "sha256": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+    "source": "GOAL.md",
+    "status": "Active"
+  },
+  "package": {
+    "description": "A local-first, zero-trust DAG admission and supervision plane for goal-locked agent workflows, with a Pi-inspired coding surface as a secondary layer.",
+    "sha256": "sha256:846cfd5812f312395f363db523bf485487f6d72a651644098b92f34565dccb55",
+    "source": "pyproject.toml",
+    "version": "0.1.0"
+  },
+  "proof_boundary": {
+    "checked": [
+      "local git commit and clean-tree state",
+      "package version/description from pyproject.toml",
+      "immutable-goal status from GOAL.md",
+      "checked-in closure-evidence proof index digest",
+      "clean-wheel acceptance baseline presence and signature presence",
+      "GitHub branch-protection, required checks, and open/closed critical issues"
+    ],
+    "live": true,
+    "mocked": false,
+    "not_checked": [
+      "human acceptance signature validity (distinct from presence)",
+      "provider semantic correctness",
+      "runtime settlement authority (this artifact has none)"
+    ],
+    "provider_live": false
+  },
+  "proof_index": {
+    "count": 11,
+    "digest": "sha256:ee09f9dec539dc40f6fbe1fee064c3bd8352efbfb8a66dd0e0d39e5cc12bc63c",
+    "entries": [
+      {
+        "path": "docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/closure-evidence.json",
+        "sha256": "sha256:e756a42048a35768b89425446851f3d0e37492a016282d8fdb9d210d671dc591"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-187-secure-execution-conformance-20260727/closure-evidence.json",
+        "sha256": "sha256:e503753b09af8d34f3651fe4a161022dc8a12fb2805988f794b11697279e0c36"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-188-resource-lease-conformance-v2-20260727/closure-evidence.json",
+        "sha256": "sha256:f3e6338a86f0ce71eabae79aae9738f896fba6de2df695ebcb2793551df4d07f"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-189-adaptive-revision-conformance-v3-20260727/closure-evidence.json",
+        "sha256": "sha256:180987b20e5ba6ef560e2520b62faf067102434c4f649df5f46dba054b481cba"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/closure-evidence.json",
+        "sha256": "sha256:91051e5678b5eb3c01fe196c55bcbcef750a08d680f38771f638d80d2e7c0ce3"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-191-targeted-repair-conformance-v2-20260727/closure-evidence.json",
+        "sha256": "sha256:bdd7a65655ef2f97880e66b0c3bf670dbb5e331b12a2833800fd7130ee417ecf"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-192-project-profile-conformance-20260727/closure-evidence.json",
+        "sha256": "sha256:d7b7a7eab06c7e2b02bcb130466340bdf2363d44b03b8a05480127b4cb3b3087"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-193-worker-controlled-data-conformance-20260727/closure-evidence.json",
+        "sha256": "sha256:34fe24364410f2d333151f447dca1ef63a27c4fa4a56d35ea6ec882f36769cbd"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-194-security-audit-conformance-20260727/closure-evidence.json",
+        "sha256": "sha256:fb654cbdea6ab2f5159b452f9d61963ac16c88168ce03a97717812b0e74b0e2b"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-195-runtime-handshake-20260727/closure-evidence.json",
+        "sha256": "sha256:f69a3c64cb05e9e11dce65e9c89a92149f6174c07aae7f9fc92923cad0a8dc1d"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-224-project-status-20260728T153534Z/closure-evidence.json",
+        "sha256": "sha256:72ad195609dd808fb601b8a2736937722172e0192d085b4864ec8e5be0addc9e"
+      }
+    ]
+  },
+  "schema": "tau.project_status.v1",
+  "semantic_content_digest": "sha256:0308358eb14b06efde0e6423711a50304df42bc6d3a2de7dcf4a29432bb5ba10",
+  "source_digests": {
+    "GOAL.md": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+    "acceptance_receipt": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab",
+    "github_snapshot": "sha256:82b77eecbe3f7cfea35748622e09744fe738b03e4c416b46f64e3efacfa2494f",
+    "proof_index": "sha256:ee09f9dec539dc40f6fbe1fee064c3bd8352efbfb8a66dd0e0d39e5cc12bc63c",
+    "pyproject.toml": "sha256:846cfd5812f312395f363db523bf485487f6d72a651644098b92f34565dccb55"
+  },
+  "workflows": {
+    "all_present": true,
+    "available": {
+      "approved-release-bundle": true,
+      "durable-repository-qualification": true,
+      "repository-evidence-map": true,
+      "repository-readiness": true,
+      "tau-operator-reference": true
+    },
+    "expected": [
+      "repository-readiness",
+      "tau-operator-reference",
+      "repository-evidence-map",
+      "approved-release-bundle",
+      "durable-repository-qualification"
+    ],
+    "source": "src/tau_coding/workflows/definitions/"
+  }
+}

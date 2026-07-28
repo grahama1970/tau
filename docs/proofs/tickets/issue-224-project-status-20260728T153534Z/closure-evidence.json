@@ -1,0 +1,79 @@
+{
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "ticket": "grahama1970/tau#224",
+  "title": "Generate authoritative project-status artifacts and fail CI on stale README/PROJECT_KNOWLEDGE claims",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "commands": [
+    "tau project-status build --out docs/status/CURRENT_STATE.json --github-snapshot docs/status/github-snapshot.json",
+    "tau project-status render docs/status/CURRENT_STATE.json --out docs/status/CURRENT_STATE.md",
+    "tau project-status verify --status docs/status/CURRENT_STATE.json --github-snapshot docs/status/github-snapshot.json"
+  ],
+  "required_proof_map": [
+    {
+      "requirement": "deterministic same-input generation (byte-identical apart from generated_at)",
+      "status": "MET",
+      "evidence": "test_project_status.py::test_deterministic_apart_from_timestamp"
+    },
+    {
+      "requirement": "reflects #214 (branch protection), #211/#217-220 (recently closed), #221/#222/#223 open",
+      "status": "MET",
+      "evidence": "docs/status/github-snapshot.json + CURRENT_STATE.json: branch_protection enabled, open [72,180,221,222,223,224,225], recently_completed [211..220]"
+    },
+    {
+      "requirement": "mutating a source without regenerating fails the freshness verifier",
+      "status": "MET",
+      "evidence": "CLI: verify vs mutated github-snapshot -> status FAIL, source_drift:github_snapshot, exit 1; tests test_source_mutation_without_rebuild_fails_verifier, test_github_snapshot_edit_without_rebuild_fails_verifier"
+    },
+    {
+      "requirement": "mutating generated status text without changing bound source digest fails validation",
+      "status": "MET",
+      "evidence": "test_edited_status_text_fails_semantic_digest (semantic_content_digest_drift)"
+    },
+    {
+      "requirement": "GitHub unavailable path reports degraded/stale, does not fail offline use",
+      "status": "MET",
+      "evidence": "test_offline_reports_degraded_not_green: github.freshness=STALE, fields UNKNOWN, verify passes"
+    },
+    {
+      "requirement": "README/PROJECT_KNOWLEDGE carry a bounded generated section; historical prose cannot masquerade as current",
+      "status": "MET",
+      "evidence": "AUTHORITATIVE STATUS LINK blocks in README.md and PROJECT_KNOWLEDGE.md link docs/status/CURRENT_STATE.md as the authority"
+    },
+    {
+      "requirement": "package description updated and tested through package metadata",
+      "status": "MET",
+      "evidence": "pyproject.toml description = control-plane product; test_package_description_reflects_control_plane_product"
+    },
+    {
+      "requirement": "CI verifies generated status freshness on changes to tracked source inputs",
+      "status": "MET",
+      "evidence": ".github/workflows/project-status-freshness.yml (verify + rendered-digest match, path-filtered on bound sources)"
+    },
+    {
+      "requirement": "retained receipt states mocked/live/provider_live, checked, not_checked",
+      "status": "MET",
+      "evidence": "CURRENT_STATE.json proof_boundary block; this receipt"
+    },
+    {
+      "requirement": "no runtime authority (does not settle workflows/admit receipts/change goal)",
+      "status": "MET",
+      "evidence": "project_status.py is read-only over sources; render states 'carries no runtime authority'"
+    }
+  ],
+  "artifacts": {
+    "current_state_json": "docs/status/CURRENT_STATE.json",
+    "current_state_md": "docs/status/CURRENT_STATE.md",
+    "github_snapshot": "docs/status/github-snapshot.json",
+    "semantic_content_digest": "see docs/status/CURRENT_STATE.json (bound at generation; not embedded here to avoid a self-referential proof-index cycle)"
+  },
+  "tests": "tests/test_project_status.py: 10 passed",
+  "proves": [
+    "tau project-status build/render/verify generate a deterministic, source-digest-bound current-state artifact from explicit sources; drift in any bound source or in the generated text is detected and fails CI; offline builds degrade to STALE/UNKNOWN rather than inferring green; README/PROJECT_KNOWLEDGE defer to the generated block."
+  ],
+  "does_not_prove": [
+    "Human acceptance signature validity (#221).",
+    "That every historical prose claim elsewhere in the repo has been individually corrected (non-goal: no arbitrary historical-prose editing)."
+  ]
+}

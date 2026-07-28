@@ -10,6 +10,18 @@
 
 > Agents hallucinate. Tau contains them.
 
+<!-- BEGIN AUTHORITATIVE STATUS LINK (#224) -->
+> **Authoritative current status** is machine-generated, not the prose below.
+> See [`docs/status/CURRENT_STATE.md`](docs/status/CURRENT_STATE.md) (rendered)
+> and [`docs/status/CURRENT_STATE.json`](docs/status/CURRENT_STATE.json) (source),
+> produced by `tau project-status build`. Everything else in this README is
+> narrative/historical context and does not override that generated block.
+> Regenerate with `tau project-status build --out docs/status/CURRENT_STATE.json
+> --github-snapshot docs/status/github-snapshot.json` and verify with
+> `tau project-status verify`.
+<!-- END AUTHORITATIVE STATUS LINK -->
+
+
 Tau is the agentic harness for Embry-OS and Sparta Explorer.
 
 Embry-OS provides the local or air-gapped operating environment: memory, scillm,
