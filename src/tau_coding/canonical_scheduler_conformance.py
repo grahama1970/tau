@@ -422,6 +422,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from tau_coding.dag_runtime.admission import write_durable_json
+
 GENERIC_DAG_SPEC_SCHEMA = "tau.generic_dag_spec.v1"
 GENERIC_DAG_NODE_RECEIPT_SCHEMA = "tau.generic_dag_node_receipt.v1"
 MAP_CHILD_SCHEMA = "tau.map_child_dag_conformance.v1"
@@ -631,8 +633,13 @@ def read_json(path: Path) -> dict[str, Any]:
 
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    """Durable JSON write (#209): delegates to the admission primitive.
+
+    The former bare write_text body could tear under kill; every authoritative
+    artifact now goes through temp/fsync/rename/dir-fsync.
+    """
+
+    write_durable_json(path, payload)
 
 
 def artifact(path: Path, schema: str) -> dict[str, Any]:

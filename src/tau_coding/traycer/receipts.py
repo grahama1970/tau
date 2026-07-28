@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.dag_runtime.admission import write_durable_json
 from tau_coding.traycer.models import MONITOR_ALERT_SCHEMA
 
 
@@ -35,10 +36,9 @@ def stable_sha256_payload(payload: dict[str, Any]) -> str:
 
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
-    """Write a JSON object with deterministic formatting."""
+    """Durable JSON write (#209): delegates to the admission primitive."""
 
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    write_durable_json(path, payload)
 
 
 def monitor_alert(

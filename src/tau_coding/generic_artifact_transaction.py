@@ -14,6 +14,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from tau_coding.dag_runtime.admission import write_durable_json
+
 TRANSACTION_SCHEMA = "tau.generic_artifact_transaction.v1"
 CANDIDATE_MANIFEST_SCHEMA = "tau.media_artifact_manifest.v1"
 REVIEW_SCHEMA = "tau.generic_artifact_review.v1"
@@ -570,8 +572,13 @@ def load_json(path: Path, *, label: str) -> tuple[dict[str, Any], list[str]]:
 
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    """Durable JSON write (#209): delegates to the admission primitive.
+
+    The former bare write_text body could tear under kill; every authoritative
+    artifact now goes through temp/fsync/rename/dir-fsync.
+    """
+
+    write_durable_json(path, payload)
 
 
 def _validate_artifact(item: dict[str, Any], *, root: Path, artifact_id: Any) -> list[str]:
