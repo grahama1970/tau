@@ -1,9 +1,99 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-26 10:45 by agent
+**Last updated:** 2026-07-28 by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-28 CI truth restoration and roundtable-ratified beta plan. CI on
+  `main` went 42 -> 38 -> 2 -> 1 -> 0 failures across five pushes
+  (`89721cec`..`a7ac544c`); Tests and Canonical Tau proofs are both green, and
+  canonical proofs now run on every push to `main` (previously
+  `workflow_dispatch`-only and never run against a current head). The 42
+  failures were environment lies, not product defects: GitHub runners leave
+  `TERM` unset, so Rich emits dim/bold styling inside Typer error panels that
+  `NO_COLOR` does not suppress (`tests/conftest.py` now pins `TERM=dumb`);
+  `rg`/`fd`/`dot` were absent (now installed in the workflow; missing `dot`
+  made `_render_graphviz` silently return `None` — fail-open, noted below);
+  one test hardcoded a machine path; one TUI test raced a 0.5 s double-escape
+  window. Two commit messages in this range contain corrected misdiagnoses
+  (FORCE_COLOR; an operator-reference "evidence hash defect" that a probe
+  disproved) — the corrections are recorded in the later commit bodies.
+
+- 2026-07-28 clean-wheel operator surface verified and fixed. From a built
+  wheel installed into an empty venv under `env -i` with a throwaway HOME:
+  all five packaged workflows are discovered AVAILABLE; rung 1
+  (repository-readiness) and rung 2 (tau-operator-reference) run to PASS.
+  Three defects found and fixed by that probe: `workflows run --help` hid the
+  conditional requirement of `--goal`/`--publish-path`; rung 2 could not
+  resolve the `tau` executable without PATH activation (now falls back to
+  `sysconfig.get_path("scripts")` — note `Path(sys.executable).resolve()` is
+  wrong, it escapes the venv through the symlink); and
+  `scripts/verify-workflow-wheel.py` asserted a one-workflow catalog against
+  the five-workflow product. Eight module-level `/home/graham/...` constants
+  across seven modules were replaced by `src/tau_coding/external_workspace.py`
+  (env override `TAU_AGENT_SKILLS_ROOT`/`TAU_SCILLM_ROOT` -> sibling checkout
+  -> legacy layout). 17 `/home/graham` references remain in `src/` (non-
+  constant call sites) and `README.md:599` still hardcodes the repo path.
+
+- 2026-07-28 open reliability question: the receipt/artifact absence family.
+  Three load-only intermittents remain unclassified, all with the signature
+  "an artifact that should exist after settlement is absent, and nothing
+  fails closed": sibling receipt missing when a concurrent sibling blocks a
+  fan-out/fan-in join (`test_evidence_map_missing_required_tests_blocks_join_
+  without_result`, seen in CI); approval-gate receipt missing after
+  repair/resume (`test_workflows_repair_approve_and_resume_durable_
+  qualification`, seen under local full-suite load); TUI proof
+  receipt+screenshot (`test_textual_tui_memory_stage_proof_writes_receipt_
+  and_screenshot`, local load only). Each passes in isolation. A fourth
+  member (graphviz None-on-missing-dot) is fixed. Related latent bug: the
+  worktree lease drops an unrelated stale worktree registration during failed
+  allocation on git 2.54 only (runner git; local 2.43 unaffected); container
+  probes eliminated every direct git subcommand Tau issues, and the test now
+  injects GIT_TRACE through `_git_environment` (which strips all `GIT_*`
+  vars — ambient env vars never reach Tau's git subprocesses) so the next CI
+  failure names the pruning command.
+
+- 2026-07-28 roundtable-ratified plan (three-round panel + one-round
+  acceptance panel via `$ask tau-dag`, browser seats webgpt/webclaude/webkimi/
+  webgemini/webgrok, receipts under
+  `/mnt/storage12tb/skills/ask/outputs/.ask_artifacts/tau-dag-runs/`).
+  Unanimous: keep local SQLite durability; do NOT adopt
+  Temporal/DBOS/Restate/Prefect — the failing layer is Tau's admission layer
+  (receipt materialization), which no engine owns, and a required
+  service/Postgres daemon violates the clean-checkout goal. Ratified
+  instrument (2-1, dissent preserved): dual-channel write-intent — an
+  append-only sidecar file as attempt witness (survives transaction rollback,
+  covers DB and filesystem substrates) plus a same-connection same-transaction
+  SQLite row as commit-coupled authority; startup canary that hard-fails if
+  the instrument itself is dead; four deterministic controls that produce
+  (a) never-attempted / (b) attempted-and-swallowed / (c) written-then-lost /
+  WAL-pinned-reader and must classify correctly before any load run is
+  trusted. Only a pure (c) classification reopens the external-engine
+  question. SQLite WAL note from the research sweep: an already-open reader
+  is pinned to its snapshot, so a committed sibling receipt can be
+  legitimately invisible to a join reader that opened earlier — visibility,
+  not loss.
+
+- 2026-07-28 acceptance-bundle plan (panel converged round 1; webgpt seat
+  truncated at 139 bytes and the join correctly settled BLOCKED rather than
+  reporting 5/5). Prepare now, gate only the signature: a `tau acceptance
+  bundle` generator emits BUILD_MANIFEST.json (commit SHA, clean-tree
+  assertion, wheel sha256, env versions), WALKTHROUGH.md with four beats per
+  rung (PREPARE keystrokes / OBSERVE truthful behavior / FALSIFIER what lying
+  looks like, logged as defect / RECORD run-id + receipt path), an unchecked
+  falsifiable-observations checklist including two negative paths (missing
+  `--goal` must fail with the documented error; "no" at the rung-4 approval
+  gate must abort), a defect log template, `verify_bundle.sh`, and an
+  unsigned ACCEPTANCE.json. The human signature (`ssh-keygen -Y sign`) binds
+  sha256(commit || wheel || sorted receipt hashes || observations) and waits
+  on three preconditions: instrument merged and active, the three
+  intermittents classified, rungs 3-5 producing receipts from a clean wheel
+  (>=5 reps, instrument active). Surviving dissent, adopted: the walkthrough
+  legitimately closes #180 but NOT #72 — #72 closes separately on hardening
+  evidence (instrument, classifications, worktree-prune fix, branch
+  protection). `main` still has no branch protection (verified 404);
+  enabling it is authorized-pending with CI green.
 
 - 2026-07-26 canonical workflow audit retention (#134): The latest
   clean-checkout immutable-goal audit is retained in-repo at
