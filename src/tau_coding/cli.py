@@ -373,6 +373,27 @@ def github_redact_projection_cli_command(
         raise typer.Exit(1)
 
 
+@app.command("acceptance-bundle")
+def acceptance_bundle_cli_command(
+    repo: Annotated[Path, typer.Option("--repo")],
+    wheel: Annotated[Path, typer.Option("--wheel")],
+    out_dir: Annotated[Path, typer.Option("--out-dir")] = Path(".tmp/acceptance-bundle"),
+) -> None:
+    """Generate the human-acceptance bundle for rungs 1-5 (#217)."""
+
+    from tau_coding.acceptance_bundle import (
+        AcceptanceBundleError,
+        generate_acceptance_bundle,
+    )
+
+    try:
+        result = generate_acceptance_bundle(repo=repo, wheel=wheel, output_dir=out_dir)
+    except AcceptanceBundleError as exc:
+        raise typer.BadParameter(str(exc)) from exc
+    typer.echo(json.dumps({"bundle_dir": str(result.directory),
+                           "bundle_digest": result.bundle_digest}))
+
+
 @app.command("tui-proof")
 def tui_proof_cli_command(
     output_dir: Annotated[Path, typer.Option("--out-dir")] = Path(".tmp/tui-proof"),
