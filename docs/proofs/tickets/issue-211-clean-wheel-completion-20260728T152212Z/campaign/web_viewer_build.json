@@ -1,0 +1,11 @@
+{
+  "schema": "tau.web_viewer_build_receipt.v1",
+  "mocked": false,
+  "live": true,
+  "npm_ci_exit": 0,
+  "typecheck_exit": 0,
+  "build_exit": 0,
+  "vitest_exit": 0,
+  "node": "v22.15.0",
+  "proves": "web/dag-viewer typecheck, production build, and vitest all pass at commit 9c76b6fc"
+}
