@@ -1,0 +1,10 @@
+{
+  "descendant_alive_after_cancel": false,
+  "descendant_pid": 3907028,
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "schema": "tau.governed_cancellation_proof.v1",
+  "terminal_receipt": "CANCELLED",
+  "termination_cause": "cancelled"
+}

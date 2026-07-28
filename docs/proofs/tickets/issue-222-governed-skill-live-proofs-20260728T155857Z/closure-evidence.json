@@ -1,0 +1,37 @@
+{
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "ticket": "grahama1970/tau#222",
+  "title": "#72 child: governed generic execution adapter for agent-skills capabilities",
+  "mocked": false, "live": true, "provider_live": true,
+  "environment": {
+    "agent_skills": "../agent-skills; effectful/installed-wheel proofs used TAU_AGENT_SKILLS_ROOT -> a separate fixed checkout",
+    "scillm": "http://localhost:4001 live",
+    "dependency_fix": "create-evidence-case read-back defect fixed (agent-skills branch fix-evidence-case-get-readback): recall_case now does an exact daemon /query (AQL) lookup by claim.id/_key before semantic recall"
+  },
+  "required_proof_map": [
+    {"bullet": "registry/contract schema and compile tests", "status": "MET", "evidence": "skill_execution_contract.py + tests (existing, passing)"},
+    {"bullet": "exact hash binding SKILL.md/entrypoint/input/goal/policy/boundary", "status": "MET", "evidence": "bind_contract() sha256 fail-closed (existing tests)"},
+    {"bullet": "one live local read-only skill execution validated and admitted", "status": "MET", "evidence": "review-code ran live (github/claude-sonnet-4.5, 635-char review confirming the off-by-one) -> governed_skill_execution.normalize_review_code_native_result -> review_code.result.v1 (verdict REVISE, derived from prose, never a trusted PASS) -> review-code-skill-adapter admitted PASS, derived verdict REVISE. See read-only/"},
+    {"bullet": "one live bounded mutation admitted; unapproved paths rejected", "status": "MET", "evidence": "code-runner ran live via scillm/codex in an isolated worktree (source_unchanged); normalized (verdict from dod+allowlist) and ADMITTED (PASS, code_patch_receipt_status PASS); out-of-allowlist target BLOCKED. See bounded-mutation/"},
+    {"bullet": "one external/effectful execution with #218 ownership, success evidence, duplicate suppression/reconciliation", "status": "MET", "evidence": "effectful/effectful-governed-proof-receipt.PASS.json (OK:true): declared-before-call -> live create-evidence-case external effect persisted -> read-back CONFIRMED via get (after the fix) -> #218 EffectLedger intent->succeeded(with read_back evidence)->accepted -> duplicate suppressed (same _key across re-runs) -> exactly 1 effect row -> Tau admission PASS"},
+    {"bullet": "cancellation mid-skill kills owned descendants, one terminal blocked/cancelled receipt", "status": "MET", "evidence": "cancellation/cancellation-proof-receipt.json (OK:true): run_cancellable_subprocess process-group ownership; descendant PID killed on cancel (alive_after=false); termination_cause=cancelled, terminal CANCELLED receipt"},
+    {"bullet": "wrong hash or modified SKILL.md fails before dispatch", "status": "MET", "evidence": "bind_contract skill_md_hash_drift/entrypoint_hash_drift (existing tests)"},
+    {"bullet": "missing or malformed native output cannot settle PASS", "status": "MET", "evidence": "verdict derived from evidence not native status (test_verdict_is_derived_from_dod_not_native_status); native_schema_mismatch"},
+    {"bullet": "undeclared network/filesystem/provider/effect fails closed", "status": "MET", "evidence": "skill_composition_redteam suite + validate_contract"},
+    {"bullet": "unsupported skill reports UNSUPPORTED_ADAPTER, not silent fallback", "status": "MET", "evidence": "bind_contract UNSUPPORTED_ADAPTER (existing test)"},
+    {"bullet": "installed-wheel proof with TAU_AGENT_SKILLS_ROOT at a separate checkout", "status": "MET", "evidence": "installed-wheel/: the installed tau wheel (venv) resolved TAU_AGENT_SKILLS_ROOT to a separately located checkout (matches override) and ran a governed admission from the wheel (PASS). Note: wheel is the #211-era build containing the adapters; the newest governed_skill_execution normalizer runs from source"},
+    {"bullet": "retained mocked/live/provider_live/proves/does_not_prove", "status": "MET", "evidence": "this receipt + per-run receipts"}
+  ],
+  "new_code": [
+    "src/tau_coding/governed_skill_execution.py (normalizers for code-runner + review-code; verdict derived from evidence)",
+    "tests/test_governed_skill_execution.py (7 passed)",
+    "agent-skills: create-evidence-case storage.py recall_case direct-lookup fix (branch fix-evidence-case-get-readback)"
+  ],
+  "proves": [
+    "All three representative agent-skills capability classes execute live under one governed contract and admit through canonical Tau receipts with verdicts derived from evidence rather than skill-authored status: read-only (review-code), bounded mutation (code-runner, isolated worktree + allowlist), and external/effectful (create-evidence-case with #218 effect ownership, confirmed read-back, duplicate suppression). Cancellation kills owned descendants with a terminal receipt; unsupported/hash-drift/undeclared-effect fail closed; the installed wheel resolves a separately located skills checkout."
+  ],
+  "does_not_prove": [
+    "Semantic correctness of any skill's output beyond schema validity and derived-verdict gating.",
+    "That the create-evidence-case read-back fix is merged to agent-skills main (pushed on a branch; PR pending)."
+  ]
+}

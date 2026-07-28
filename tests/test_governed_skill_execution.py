@@ -117,6 +117,36 @@ def test_base_post_sha_binding_is_deterministic(tmp_path: Path) -> None:
     assert ops == [{"op": "replace", "old": "    return x + 2", "new": "    return x + 1"}]
 
 
+def test_review_code_normalizer_derives_revise_and_admits(tmp_path: Path) -> None:
+    from tau_coding.governed_skill_execution import normalize_review_code_native_result
+    from tau_coding.review_code_skill_adapter import write_review_code_skill_adapter_receipt
+
+    native = {"meta": {"provider": "github", "model": "claude-sonnet-4.5"},
+              "response": "The function add_one has an off-by-one error and should return x + 1."}
+    out = tmp_path / "ro"
+    path = normalize_review_code_native_result(native_output=native, goal_hash=_GOAL, output_dir=out)
+    env = json.loads(path.read_text())
+    assert env["schema"] == "review_code.result.v1"
+    assert env["verdict"] == "REVISE"  # concern found -> never PASS
+    receipt = write_review_code_skill_adapter_receipt(
+        review_path=path, output_path=out / "adm.json", repo_root=out, expected_goal_hash=_GOAL
+    )
+    assert receipt["status"] == "PASS"
+    assert receipt["tau_review_findings_derived_verdict"] == "REVISE"
+
+
+def test_review_code_normalizer_rejects_empty_response(tmp_path: Path) -> None:
+    from tau_coding.governed_skill_execution import (
+        GovernedNormalizationError,
+        normalize_review_code_native_result,
+    )
+
+    with pytest.raises(GovernedNormalizationError):
+        normalize_review_code_native_result(
+            native_output={"meta": {}, "response": "   "}, goal_hash=_GOAL, output_dir=tmp_path / "x"
+        )
+
+
 def test_unbalanced_hunk_is_typed_error(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "src").mkdir(parents=True)

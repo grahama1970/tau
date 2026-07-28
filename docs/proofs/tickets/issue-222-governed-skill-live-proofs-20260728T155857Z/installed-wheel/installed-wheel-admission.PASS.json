@@ -1,0 +1,52 @@
+{
+  "alert_codes": [],
+  "blocking_finding_count": 0,
+  "course_correction": {
+    "allowed_next_routes": [
+      "code-runner",
+      "coder",
+      "review-code"
+    ],
+    "forbidden_next_routes": [
+      "claim_pass_without_patch"
+    ],
+    "required_evidence_before_retry": [
+      "patch_receipt",
+      "test_receipt"
+    ],
+    "required_next_action": "retry_node",
+    "schema": "tau.course_correction.v1",
+    "trigger": "reviewer_revise"
+  },
+  "declared_review_code_verdict": "REVISE",
+  "errors": [],
+  "expected_goal_hash": null,
+  "finding_count": 1,
+  "goal_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "The reviewer is correct.",
+      "The code is semantically correct.",
+      "The task is complete.",
+      "Reviewer consensus is proof."
+    ],
+    "proves": [
+      "Tau ingested a review-code result artifact.",
+      "Tau normalized advisory review-code findings into tau.review_findings.v1.",
+      "Tau validated normalized findings with the existing review findings gate."
+    ]
+  },
+  "repo_root": "/home/graham/.claude/jobs/9829a738/tmp/ro-out",
+  "reviewer": "review-code:github:claude-sonnet-4.5",
+  "revision_finding_count": 1,
+  "schema": "tau.review_code_skill_adapter_receipt.v1",
+  "source_review_path": "/home/graham/.claude/jobs/9829a738/tmp/ro-out/review-code-result.json",
+  "source_review_sha256": "sha256:69acae364b53efb2d9ed77ca355ab025c6d290f7a7d525413c9d03511c4e94e6",
+  "status": "PASS",
+  "tau_review_findings_derived_verdict": "REVISE",
+  "tau_review_findings_path": "/home/graham/.claude/jobs/9829a738/tmp/review-code-findings.json",
+  "tau_review_findings_receipt_path": "/home/graham/.claude/jobs/9829a738/tmp/review-findings-receipt.json",
+  "tau_review_findings_receipt_status": "PASS",
+  "tau_review_findings_sha256": "sha256:df6d3ce9ec74d3e9beff35854c0ce7733d35b46d8bea15ae62a74ef8a993fa1c"
+}

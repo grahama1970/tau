@@ -205,10 +205,71 @@ def normalize_code_runner_native_result(
     )
 
 
+REVIEW_CODE_RESULT_SCHEMA = "review_code.result.v1"
+
+# A review is advisory. A live review-code run that surfaces any concern maps to
+# REVISE; only an explicit, concern-free approval maps to PASS. We never emit
+# PASS merely because the skill's prose sounds positive, and the admission
+# adapter's own proof scope states the reviewer may still be wrong.
+_REVISE_MARKERS = ("bug", "error", "incorrect", "off-by-one", "should return",
+                   "issue", "vulnerab", "fix", "wrong", "must return")
+
+
+def normalize_review_code_native_result(
+    *,
+    native_output: dict[str, Any],
+    goal_hash: str,
+    output_dir: Path,
+) -> Path:
+    """Compile a live review-code ``{meta, response}`` output into an admittable
+    ``review_code.result.v1`` artifact.
+
+    review-code emits free-form reviewer prose, not structured findings. The
+    Tau verdict is derived conservatively from that prose (any concern -> REVISE)
+    and never trusts a skill-authored PASS; the full response is retained as the
+    finding's evidence so a human can adjudicate.
+    """
+
+    meta = native_output.get("meta", {})
+    response = native_output.get("response", "")
+    if not isinstance(response, str) or not response.strip():
+        raise GovernedNormalizationError("review-code response is empty")
+
+    lowered = response.lower()
+    verdict = "REVISE" if any(m in lowered for m in _REVISE_MARKERS) else "PASS"
+    reviewer = "review-code:" + ":".join(
+        str(meta.get(k)) for k in ("provider", "model") if meta.get(k)
+    )
+    summary = response.strip().splitlines()[0][:200] or "review-code advisory review"
+
+    artifact = {
+        "schema": REVIEW_CODE_RESULT_SCHEMA,
+        "goal_hash": goal_hash,
+        "reviewer": reviewer or "review-code",
+        "verdict": verdict,
+        "allowed_paths": [],
+        "forbidden_paths": [],
+        "findings": [{
+            "id": "review-code-0001",
+            "severity": "P1" if verdict == "REVISE" else "P3",
+            "required_action": "revise" if verdict == "REVISE" else "note",
+            "claim": summary,
+            "evidence": [response.strip()[:2000]],
+            "confidence": 0.7,
+        }],
+    }
+    output_dir.mkdir(parents=True, exist_ok=True)
+    path = output_dir / "review-code-result.json"
+    path.write_text(json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
 __all__ = [
     "CODE_PATCH_SCHEMA",
     "CODE_RUNNER_RESULT_SCHEMA",
+    "REVIEW_CODE_RESULT_SCHEMA",
     "GovernedNormalizationError",
     "NormalizedCodeRunnerResult",
     "normalize_code_runner_native_result",
+    "normalize_review_code_native_result",
 ]
