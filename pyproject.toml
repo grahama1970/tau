@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "tau"
 version = "0.1.0"
-description = "A Python implementation of a minimalist Pi-style coding-agent harness."
+description = "A local-first, zero-trust DAG admission and supervision plane for goal-locked agent workflows, with a Pi-inspired coding surface as a secondary layer."
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [

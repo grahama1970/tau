@@ -1,0 +1,82 @@
+{
+  "branch_protection": {
+    "enforce_admins": false,
+    "required_status_checks": true
+  },
+  "open_critical_issues": [
+    {
+      "number": 225,
+      "title": "#72 child: current-head hardening conformance and parent closure audit"
+    },
+    {
+      "number": 224,
+      "title": "Generate authoritative project-status artifacts and fail CI on stale README/PROJECT_KNOWLEDGE claims"
+    },
+    {
+      "number": 223,
+      "title": "Bind Tau TUI voice events to Chatterbox `/tau/voice-render` and real turn controls"
+    },
+    {
+      "number": 222,
+      "title": "#72 child: governed generic execution adapter for agent-skills capabilities"
+    },
+    {
+      "number": 221,
+      "title": "#180 child: execute the five-rung human acceptance walkthrough and sign the acceptance record"
+    },
+    {
+      "number": 180,
+      "title": "Epic/fleet: productize Tau DAG templates and authoritative viewer UX from proven agentic patterns"
+    },
+    {
+      "number": 72,
+      "title": "Epic: Harden Tau DAG runtime for durable, secure, adaptive complex workflows"
+    }
+  ],
+  "recently_completed": [
+    {
+      "number": 220,
+      "title": "#180 child: idempotent accepted-outcome projection to graph-memory-operator"
+    },
+    {
+      "number": 219,
+      "title": "#72 child: repair-time join reevaluation and single downstream release conformance"
+    },
+    {
+      "number": 218,
+      "title": "#72 child: accepted-effect identity, ownership, and reconciliation"
+    },
+    {
+      "number": 217,
+      "title": "#180 child: acceptance bundle generator"
+    },
+    {
+      "number": 216,
+      "title": "#72 child: route TUI proof receipt and screenshot as one admitted manifest"
+    },
+    {
+      "number": 215,
+      "title": "#72 child: classify the three load-only receipt-absence intermittents"
+    },
+    {
+      "number": 214,
+      "title": "#72 child: enable branch protection with required checks on main"
+    },
+    {
+      "number": 213,
+      "title": "#180 child: remove remaining machine-specific paths from src and README"
+    },
+    {
+      "number": 212,
+      "title": "#180 child: remove remaining machine-specific paths from src and README"
+    },
+    {
+      "number": 211,
+      "title": "#180 child: repeat rungs 3\u20135 from one clean wheel and retain beta evidence"
+    }
+  ],
+  "required_checks": [
+    "ci"
+  ],
+  "source": "gh api repos/grahama1970/tau (branch protection + issues)"
+}
