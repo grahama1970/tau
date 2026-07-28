@@ -1,7 +1,10 @@
-# Receipt Admission Contract (proposed, v1)
+# Receipt Admission Contract (v2 — ratified with amendments)
 
-Status: DESIGN — do not implement until the four decision points below are
-human-ratified. Produced 2026-07-28 against `main` @ `fbbcd821` in response to
+Status: RATIFIED FOR IMPLEMENTATION per external review 2026-07-28: D2 and D4
+ratified as proposed; D1 and D3 ratified with the amendments recorded in
+Section 8, which override the corresponding v1 text below wherever they
+conflict. The v1 crash-matrix row for "durable file, no row" is superseded by
+Amendment A1. Produced 2026-07-28 against `main` @ `fbbcd821` in response to
 external review questions. Every code fact cites file:line read on that commit;
 proposals are labeled PROPOSAL.
 
@@ -178,3 +181,171 @@ the scheduler invariant. 9. Prohibit legacy writers: CI test that fails on
 any `write_text`/duplicated `write_json` targeting receipt paths (grep-based
 architectural check) and delete the three `write_json` copies. 10. Load and
 clean-wheel campaigns; only then the acceptance walkthrough.
+
+## 8. Ratified amendments (v2, 2026-07-28) — these override v1 where they conflict
+
+### A1. D1 amended: composite admission authority and the orphan rule
+
+ADMITTED is a composite invariant, not a row property:
+
+    ADMITTED = committed admission row
+             AND matching durable evidence object
+             AND successful schema/hash validation
+
+SQLite is the authority for STATE and IDENTITY; the content-addressed file is
+the authority for EVIDENCE CONTENT. This supersedes the v1 phrase "the SQLite
+row is authoritative."
+
+Orphan recovery rule (resolves the v1 D1/crash-matrix contradiction — the
+crash-matrix row "durable file, no row => re-validated and re-admitted" is
+replaced by this): a file without an admission row is re-admitted ONLY when
+ALL of the following hold, otherwise it is quarantined and the run BLOCKED:
+
+1. a matching, valid write-intent record exists in the sidecar;
+2. run_id, node_id, attempt_id, receipt_kind, goal_hash, schema, path and
+   digest all verify against that intent;
+3. the attempt has not been superseded, cancelled, or explicitly rejected.
+
+A bare file is never sufficient for re-admission. This prevents an old,
+injected, or abandoned file from becoming authoritative.
+
+### A2. D2 clarification: candidate staging vs authoritative durability
+
+Child staging is intentionally NON-authoritative. A killed child may leave an
+incomplete staging candidate; that is acceptable because only the parent can
+promote it. Protocol:
+
+- the child writes into a private per-attempt staging directory
+  (`staging/<node_id>/attempt-<n>/`);
+- the parent never validates or admits from a path still owned by a live
+  child: promotion requires the child process to be reaped first;
+- after child exit, the parent PROMOTES the candidate by `os.replace` into a
+  parent-owned immutable path, then performs the authoritative
+  temp/fsync/rename/dir-fsync itself if the staged object was not already
+  written with the atomic primitive, and only then hashes, validates, and
+  admits (S6-S7). A child can therefore never mutate a file the parent is
+  hashing.
+
+### A3. D3 amended: effect identity, ownership, reconciliation, evidence
+
+1. Namespace. Effect uniqueness is `(effect_type, effect_scope, effect_key)`,
+   not a bare key. run_id is provenance, never part of the uniqueness key —
+   duplicate suppression must survive a new run.
+2. Ownership. The `accepted_effects` row carries `owner_attempt_id`,
+   `lease_token`, `lease_expires_at`, `state_version`. Acquisition is a
+   single transactional conditional update (proceed only when exactly one row
+   was updated); two workers can never both own an intent.
+3. Reconciliation is effect-type-specific and DECLARED. A node whose external
+   effect has no declared reconciliation strategy fails validation before
+   execution or is explicitly labelled manual-reconciliation-only.
+   Current inventory (verified on `main` this date): scheduler/workflow core
+   performs filesystem publication only — staged `_publish` in
+   `approved_release_bundle.py:293` and
+   `durable_repository_qualification.py:433`, the latter already carrying a
+   deterministic digest read-back (`_verify_published`, `:478`) — plus git
+   worktree mutation in `runtime_backends/worktrees.py`. No GitHub/HTTP
+   writes exist in scheduler or workflow core (grep verified). Provider/
+   browser calls and Memory writes live in skill-node adapters outside the
+   core and default to manual-reconciliation-only until each declares a
+   strategy. Reconciliation classes: filesystem => digest compare
+   (deterministic); git => worktree list/status compare (deterministic);
+   external services => read-back by idempotency key where one exists, else
+   human resolution.
+4. `succeeded` requires external evidence recorded on the row: remote
+   operation id or target identity, response digest, completion timestamp,
+   read-back result. Without these, `succeeded` is a local assertion and is
+   not accepted.
+
+D3 is thereby an at-least-once-with-reconciliation contract. Exactly-once is
+claimed only for admission (database uniqueness), never for external calls.
+
+### A4. D4 addition: durable, never-reused attempt IDs
+
+An attempt number is allocated DURABLY BEFORE node execution and is never
+reused, even when no receipt is produced: an `attempts` table row
+(run_id, node_id, attempt_no, allocated_at, state) with
+UNIQUE(run_id, node_id, attempt_no) commits before dispatch; attempt_no is
+max+1 computed inside the same transaction; allocator rows are exempt from
+retention deletion. Staging directories are named by the allocated attempt,
+so crash recovery can never confuse abandoned staging with a new attempt.
+
+### A5. Scheduler-authored system settlement receipts (recursion fix)
+
+Node-authored receipts and scheduler-authored receipts are distinct kinds.
+When a worker cannot produce or admit its expected receipt, the scheduler
+settles the node through its own trusted admission path with a minimal
+authoritative receipt:
+
+    { "receipt_kind": "system_settlement",
+      "verdict": "BLOCKED",
+      "reason_code": "expected_receipt_not_admitted",
+      "expected_receipt_kind": "...",
+      "attempt_id": "...",
+      "classification": "attempted_and_swallowed" }
+
+This breaks the recursion "BLOCKED requires a receipt whose admission just
+failed." If even the trusted system path cannot admit, the run store enters
+RUN_STORE_FAILURE (below) — a storage-level state, not a node state.
+
+### A6. State model
+
+Normal progression (per node attempt):
+
+    ALLOCATED -> RUNNING -> CANDIDATE_STAGED -> EVIDENCE_DURABLE
+      -> VALIDATED -> ADMITTED_AND_SETTLED -> RELEASED
+
+Exceptional states: ABANDONED_STAGING, QUARANTINED_EVIDENCE,
+RECONCILIATION_REQUIRED, EVIDENCE_LOST, RUN_STORE_FAILURE.
+
+Core invariant: no accepted terminal state exists before
+ADMITTED_AND_SETTLED. RELEASED is derived from the committed projection and
+is recoverable; it is not part of settlement authority.
+
+RUN_STORE_FAILURE: entered when the trusted admission path itself fails.
+The scheduler stops dispatching; a last-resort marker (sidecar append plus a
+fsynced `run-store-failure.marker` file, since SQLite may be unusable) records
+the condition; the viewer must render storage failure; no node status beyond
+the last committed state is trusted.
+
+### A7. Rollout v2 (shadow-mode invariant before enforcement)
+
+1. Ratify amended D1-D4 (done, this section). 2. Define schemas + state
+machine. 3. Implement atomic primitive, attempt allocator, sidecar.
+4. Startup reconciliation + system_settlement receipts. 5. Scheduler
+invariant in OBSERVATION mode: record every terminal transition lacking
+admission; block nothing yet — this measures existing bypasses before
+enforcement breaks legacy paths. 6. Classification controls
+(a/b/c/WAL-pinned). 7. Route in-process receipts. 8. Route subprocess
+staging/promotion/admission. 9. Route TUI manifests. 10. Flip invariant to
+ENFORCEMENT. 11. Delete legacy writers + CI architectural guard.
+12. Load, clean-wheel, and acceptance campaigns.
+
+### A8. Answers to the ten clarifying questions
+
+1. Orphan re-admission is conditional on a matching durable intent AND
+   current-attempt validation (A1); bare valid orphans always quarantine.
+2. Yes: reaped-child, then promotion to a parent-owned immutable path, then
+   hash/validate/admit (A2). Never hash a child-owned path.
+3. Attempt IDs: durable pre-dispatch allocator rows, UNIQUE, monotonic,
+   retention-exempt (A4).
+4. Namespace `(effect_type, effect_scope, effect_key)`; transactional
+   conditional-update lease with owner/lease/state_version (A3.1-2).
+5. Current effect inventory and per-type reconciliation: A3.3. Only
+   filesystem publication and git worktree mutation exist in core;
+   both have deterministic reconciliation; everything else is adapter-level
+   and manual-reconciliation-only until declared.
+6. Missing/invalid worker evidence settles via `system_settlement` (A5).
+7. Trusted-path failure => RUN_STORE_FAILURE, run-wide, marker-file backed
+   (A6).
+8. Startup order: reconciliation runs before scheduler dispatch/resume; the
+   run row is set to a `reconciling` state first, which the (read-only,
+   separate-connection) viewer renders as reconciling — the viewer is never
+   blocked, it is informed.
+9. Legacy receipts: migration admits `receipts/<node_id>.json` as
+   attempt 1 with `legacy: true` on the admission row; the allocator for a
+   migrated node starts at max(1, existing)+1, so a legacy file can never be
+   read as both attempt 1 and a new attempt.
+10. The sidecar is attempt-scoped (every record carries run/node/attempt/
+    kind), length-prefixed and CRC-framed per record, O_APPEND single-writer;
+    a torn final append fails its CRC and is ignored as trailing garbage —
+    detected, logged, never fatal, and never able to corrupt earlier records.
