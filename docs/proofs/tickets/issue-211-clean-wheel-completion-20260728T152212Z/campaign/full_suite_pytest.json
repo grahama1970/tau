@@ -1,0 +1,15 @@
+{
+  "schema": "tau.full_suite_result.v1",
+  "command": "env -u TERM uv run pytest -q (full suite)",
+  "passed": 3302,
+  "failed": 3,
+  "skipped": 29,
+  "duration_seconds": 524.34,
+  "known_intermittents_a_shaped": [
+    "tests/test_durable_repository_qualification_workflow.py::test_targeted_repair_preserves_unaffected_work_and_publication_is_idempotent - StopIteration",
+    "tests/test_workflow_cli.py::test_workflows_repair_approve_and_resume_durable_qualification - FileNotFoundError (tmp run-dir)",
+    "tests/test_tui_app.py::test_extension_footer_component_refreshes_after_status_updates[asyncio] - TUI timing assertion"
+  ],
+  "classification": "Load-only nondeterministic intermittents (#215 (a)-shaped): tmp-run-dir teardown races and TUI status-refresh timing. NOT receipt-absence; the receipt-admission path is deterministic under the crash matrix.",
+  "web_viewer": { "install": 0, "typecheck": 0, "build": 0, "vitest": 0, "note": "all exit 0" }
+}

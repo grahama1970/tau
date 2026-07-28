@@ -1,0 +1,37 @@
+{
+  "schema": "tau.rung45_completion_campaign.v1",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "ok": true,
+  "results": {
+    "rung4": {
+      "blocked_at_approval": true,
+      "nothing_published_on_decline": true,
+      "approved_status": "PASS",
+      "final_status": "PASS",
+      "repeated_resume_status": "PASS",
+      "published_after_approval": true,
+      "published_files": [
+        "approved-release-bundle.json",
+        "approved-release-bundle.md"
+      ],
+      "publication_idempotent_across_repeated_resume": true
+    },
+    "rung5": {
+      "blocked_at_failure": true,
+      "repair_status": "PASS",
+      "final_status": "PASS",
+      "repeated_resume_status": "PASS",
+      "publication_effect_count": 1,
+      "publish_admissions": 3
+    }
+  },
+  "proves": [
+    "Rungs 4 and 5 driven from the installed wheel THROUGH approval/repair/resume to PASS; approval-no aborts with nothing published; publication effect_count is 1 across repeated resume (exactly-once)."
+  ],
+  "does_not_prove": [
+    "Human acceptance (that is #221).",
+    "Viewer no-reload traces or desktop/mobile captures (separate clause)."
+  ]
+}

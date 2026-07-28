@@ -1,0 +1,77 @@
+{
+  "http": {
+    "asset_checks": [
+      {
+        "bytes": 449657,
+        "content_type": "text/javascript; charset=utf-8",
+        "path": "/assets/index-B2d-Cyk0.js",
+        "status": 200
+      },
+      {
+        "bytes": 33594,
+        "content_type": "text/css; charset=utf-8",
+        "path": "/assets/index-Dm8BBQiL.css",
+        "status": 200
+      }
+    ],
+    "capabilities_read_only": true,
+    "index_bytes": 445,
+    "index_status": 200,
+    "mutating_method": {
+      "method": "POST",
+      "path": "/api/v1/state",
+      "status": 405
+    },
+    "state_schema": "tau.dag_view_snapshot.v2"
+  },
+  "live": true,
+  "mocked": false,
+  "proof_boundary": {
+    "does_not_prove": [
+      "Provider semantic correctness.",
+      "That every possible terminal/browser environment can render the viewer."
+    ],
+    "proves": [
+      "A freshly built Tau wheel contains the DAG viewer static index and assets.",
+      "An isolated venv can install the wheel and run the packaged tau CLI.",
+      "The installed tau CLI serves the packaged DAG viewer over loopback.",
+      "The viewer accepts read-only GET requests and rejects a POST mutation attempt.",
+      "Chrome can render desktop and mobile screenshots without Node after wheel install."
+    ]
+  },
+  "provider_live": false,
+  "runtime": {
+    "commands_after_wheel_install": [
+      "/tmp/tau-installed-wheel-viewer-proof-wy6nte0a/venv/bin/python",
+      "/tmp/tau-installed-wheel-viewer-proof-wy6nte0a/venv/bin/tau",
+      "/usr/bin/google-chrome"
+    ],
+    "installed_tau": "/tmp/tau-installed-wheel-viewer-proof-wy6nte0a/venv/bin/tau",
+    "no_runtime_node_required": true,
+    "node_commands_after_wheel_install": []
+  },
+  "schema": "tau.installed_wheel_viewer_proof.v1",
+  "screenshots": {
+    "desktop": {
+      "bytes": 125620,
+      "path": "/tmp/claude-1000/-home-graham-workspace-experiments-tau/07123255-a624-4391-adfd-df87689c9094/scratchpad/211-campaign-bundle/viewer-evidence/installed-wheel-viewer-desktop.png",
+      "sha256": "sha256:19bc9e9dad1692d8cbbd38b4794ebb8212bab3c95b7b4fe104692085386a5086"
+    },
+    "mobile": {
+      "bytes": 46449,
+      "path": "/tmp/claude-1000/-home-graham-workspace-experiments-tau/07123255-a624-4391-adfd-df87689c9094/scratchpad/211-campaign-bundle/viewer-evidence/installed-wheel-viewer-mobile.png",
+      "sha256": "sha256:7023a9f7253b24c9e6bf4492f2d390f1f6f90dc1c3c6e64d1ccc5140f7de471e"
+    }
+  },
+  "status": "PASS",
+  "wheel": {
+    "path": "/tmp/claude-1000/-home-graham-workspace-experiments-tau/07123255-a624-4391-adfd-df87689c9094/scratchpad/211-campaign-bundle/viewer-evidence/dist/tau-0.1.0-py3-none-any.whl",
+    "sha256": "sha256:4770bbfe38623e622395165b54c99fb240dd3085e12047bd21137e0803ad26a7",
+    "static_asset_count": 2,
+    "static_assets": [
+      "tau_coding/dag_viewer/static/assets/index-B2d-Cyk0.js",
+      "tau_coding/dag_viewer/static/assets/index-Dm8BBQiL.css"
+    ],
+    "static_index_present": true
+  }
+}

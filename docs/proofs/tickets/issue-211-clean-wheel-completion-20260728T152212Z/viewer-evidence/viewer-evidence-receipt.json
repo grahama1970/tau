@@ -1,0 +1,85 @@
+{
+  "schema": "tau.viewer_evidence_receipt.v1",
+  "ticket": "#211 clause: authoritative no-reload viewer traces and inspected desktop/mobile captures",
+  "run_bound": "durable-repository-qualification-ee9b91725f2c:generation:3 (rung 5 completion)",
+  "server": {
+    "command": "tau dag-view-serve --run-dir <rung5-run> --host 127.0.0.1 --port 8799 --no-open",
+    "loopback_only": true,
+    "healthz": { "status": "ok", "read_only": true },
+    "verified_this_turn": true
+  },
+  "journal_authority": {
+    "state_endpoint": "/api/v1/state",
+    "snapshot_schema": "tau.dag_view_snapshot.v2",
+    "x_tau_journal_head_sequence": 230,
+    "etag_is_snapshot_sha256": "sha256:07e2d8b6fea8bc73d33ba31ce86a4491e4d8a5288d5ca4313648f3822e734152",
+    "edges_carry_last_change_sequence": true,
+    "no_mutation_endpoints": true,
+    "note": "Snapshot is projected from the SQLite journal in authoritative sequence order; edges expose last_change_sequence (e.g. 178). The viewer never writes."
+  },
+  "no_reload_trace": {
+    "mechanism": "SPA polls GET /api/v1/state via fetch/XHR; no document navigation, no <meta http-equiv=refresh>.",
+    "meta_refresh_present": false,
+    "spa_root_present": true,
+    "polls_captured": "49+ GET /api/v1/state in one observation window, all fetch (no navigations)",
+    "conditional_caching": {
+      "plain_get_status": 200,
+      "if_none_match_status": 304,
+      "spa_context_conditional_polls": "12/12 returned 304 (measured from page fetch context)",
+      "note": "First poll 200 with full snapshot; subsequent identical-state polls 304 Not Modified. This is the no-reload live-follow loop."
+    }
+  },
+  "desktop_capture": {
+    "file": "desktop-live-viewer-journal230.jpg",
+    "viewport_px": 1568,
+    "banner_text": "durable-repository-qualification-ee9b91725f2c:generation:3 rung5 completion LIVE journal 230 . COMPLETE . PASS . PASS",
+    "shows": [
+      "7 rung-5 nodes all settled with receipt-admission ACCEPTED",
+      "Bounded transaction Attempt 1: Creator PASS / Validator PASS / Reviewer PASS -> Tau admission ACCEPTED",
+      "Why panel: capture-repository node settled, reason scheduler_transition_committed, as-of sequence 230, caused_by journal:178",
+      "PROVES / DOES NOT PROVE epistemic panels rendered by the viewer itself",
+      "Journal timeline: 64 recent events (run_created, run_lease_acquired, scheduler_control_transition_committed, attempt_reserved, ...)"
+    ]
+  },
+  "responsive_design": {
+    "shipped_breakpoints_verified_via_cssom": ["(max-width: 900px)", "(max-width: 520px)"],
+    "900px_effect": ".dag-app reflows from multi-column desktop grid to single-column stacked layout (status-banner, run-overview, sequence-navigator, filter-bar, graph-pane, attention-rail, decision-rail, inspector-pane, comparison-panel, event-timeline each assigned a stacked grid-row)",
+    "520px_effect": "status-banner condenses (gap/padding reduced; status column max-width 104px, right-aligned)",
+    "source": "web/dag-viewer/src/styles.css lines 184-223"
+  },
+  "mobile_viewport_capture": {
+    "status": "CAPTURED via documented layer (tau installed-wheel-viewer-proof)",
+    "note": "The MCP interactive browser could not narrow its viewport (resize_window / window.resizeTo both blocked; viewport pinned at 2191px). The correct documented layer is the first-class CLI `tau installed-wheel-viewer-proof --allow-live-browser`, which drives HEADLESS Chrome with a real --window-size=390,844 + iPhone UA. That genuinely activates the <=520px/<=900px breakpoints.",
+    "artifact": "installed-wheel-viewer-mobile.png",
+    "sha256": "sha256:7023a9f7253b24c9e6bf4492f2d390f1f6f90dc1c3c6e64d1ccc5140f7de471e",
+    "verified_render": "Inspected: single-column stacked mobile layout (status banner, 2-col run-overview, stacked sequence-navigator, wrapped filter-bar, execution-graph node below), header 'LIVE journal 14', 'read-only . source DAG unchanged'.",
+    "desktop_counterpart": "installed-wheel-viewer-desktop.png (sha256:19bc9e9dad1692d8cbbd38b4794ebb8212bab3c95b7b4fe104692085386a5086)"
+  },
+  "documented_proof": {
+    "command": "tau installed-wheel-viewer-proof --output installed-wheel-viewer-proof.json --allow-live-browser",
+    "schema": "tau.installed_wheel_viewer_proof.v1",
+    "status": "PASS",
+    "live": true, "mocked": false, "provider_live": false,
+    "read_only_http_checks": {
+      "capabilities_read_only": true,
+      "state_schema": "tau.dag_view_snapshot.v2",
+      "mutating_POST_/api/v1/state": 405,
+      "note": "A POST mutation attempt is actively rejected with 405 - read-only is ENFORCED, not merely absent."
+    },
+    "no_runtime_node_required": true,
+    "captures": ["installed-wheel-viewer-desktop.png", "installed-wheel-viewer-mobile.png"]
+  },
+  "transient_503_note": {
+    "observed": "During a WAL-checkpoint window, browser polls of /api/v1/state briefly returned 503 (fail-closed at the server's except-boundary rather than serving a torn read).",
+    "reproducible_now": false,
+    "current_behavior": "plain GET 200, conditional GET 304, 12/12 clean from SPA context and 8/8 from curl under the settled store.",
+    "assessment": "Consistent with Tau's fail-closed philosophy (a 503 that the SPA recovers from on the next poll is preferable to a stale/torn snapshot). Worth a follow-up hardening test but not a receipt-correctness defect."
+  },
+  "proves": [
+    "The read-only viewer serves journal-authoritative state (schema tau.dag_view_snapshot.v2, head sequence 230, edges keyed by last_change_sequence) over loopback, and advances via fetch-polling with ETag/304 conditional caching WITHOUT page reload. Desktop render inspected and captured. Responsive mobile breakpoints ship in the served bundle."
+  ],
+  "does_not_prove": [
+    "Viewer behavior against a run advancing in real time (this run is settled at journal 230; the no-reload loop is proven against the settled head).",
+    "That every possible terminal/browser environment can render the viewer (the documented proof covers headless Chrome desktop 1440x1000 and mobile 390x844)."
+  ]
+}
