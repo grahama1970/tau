@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import time
 import uuid
 from collections.abc import Callable, Mapping
@@ -24,6 +25,7 @@ from tau_coding.dag_runtime.resource_leases import (
 from tau_coding.dag_runtime.run_store import (
     DagAttemptIdentity,
     DagRunLease,
+    DagRunStoreError,
     SqliteDagRunStore,
 )
 from tau_coding.dag_runtime.transition import (
@@ -801,6 +803,7 @@ def run_dag_plan(
                         )
                         continue
                     if run_store is not None and lease is not None:
+                        _admit_result_receipt(run_store, lease, identity.attempt_id, result)
                         run_store.commit_output(lease, identity.attempt_id)
                         _inject_fault(fault_injector, "after_output_committed", identity)
                     completion = DagNodeCompletion(
@@ -1842,6 +1845,44 @@ def _apply_node_effects(
         scheduled.add(node_id)
         if settlement.state == "success":
             completed.add(node_id)
+
+
+def _admit_result_receipt(
+    run_store: SqliteDagRunStore,
+    lease: DagRunLease,
+    attempt_id: str,
+    result: Mapping[str, Any],
+) -> None:
+    """Parent-side S6-S7 (#203): hash the durable receipt and admit it.
+
+    The digest is computed from the bytes on disk, never from worker-reported
+    values, so the admission row binds what actually exists. A missing or
+    unreadable receipt is not an error here - it stays visible as a bypass
+    ledger entry until enforcement (#207) flips on.
+    """
+
+    raw_path = result.get("receipt_path")
+    if not isinstance(raw_path, str) or not raw_path.strip():
+        return
+    path = Path(raw_path)
+    try:
+        blob = path.read_bytes()
+    except OSError:
+        return
+    digest = f"sha256:{hashlib.sha256(blob).hexdigest()}"
+    try:
+        run_store.admit_receipt(
+            lease,
+            attempt_id,
+            receipt_kind="node_receipt",
+            sha256=digest,
+            path=str(path),
+            size_bytes=len(blob),
+        )
+    except DagRunStoreError:
+        # dag_admission_conflict or lease loss: surfaced by the store's own
+        # event trail; settlement still records the gap via the observer.
+        return
 
 
 def _settle_unrunnable_nodes(

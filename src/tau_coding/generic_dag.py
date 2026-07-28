@@ -24,6 +24,7 @@ from tau_coding.browser_cdp_proof import (
     parse_browser_dag_spec,
 )
 from tau_coding.course_correction import write_course_correction_receipt
+from tau_coding.dag_runtime.admission import write_durable_json
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import DagPlanNode, canonical_sha256
 from tau_coding.dag_runtime.run_store import DagRunLease, SqliteDagRunStore
@@ -967,7 +968,10 @@ def _run_skill_node(
     )
     receipt["goal_hash"] = goal_hash
     receipt["work_order_sha256"] = _work_order_sha256(node)
-    write_json(node.receipt_path, receipt)
+    # Admission contract S2-S5: skill receipts are authoritative evidence and
+    # must never be torn by a crash; the scheduler performs S6-S7 admission
+    # from the durable bytes (#203).
+    write_durable_json(node.receipt_path, receipt)
     receipt_artifacts = receipt.get("artifacts")
     artifacts = list(receipt_artifacts) if isinstance(receipt_artifacts, list) else []
     accepted_output = (
