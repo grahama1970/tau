@@ -1536,7 +1536,7 @@ def test_cleanup_does_not_prune_unrelated_missing_worktree(
 
 
 def test_failed_allocation_does_not_prune_unrelated_missing_worktree(
-    tmp_path: Path, repository: Path
+    tmp_path: Path, repository: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     unrelated = tmp_path / "unrelated-worktree"
     _git(repository, "worktree", "add", "--detach", str(unrelated), "HEAD")
@@ -1558,11 +1558,20 @@ def test_failed_allocation_does_not_prune_unrelated_missing_worktree(
     if str(unrelated) not in _git(repository, "worktree", "list", "--porcelain"):
         pytest.skip("git pruned the stale worktree during fixture setup")
 
+    # The registration survives allocation on git 2.43 but not on the 2.54 CI
+    # runner, and no git subcommand this code issues prunes on either version
+    # when driven directly. Trace every git invocation so the failure names the
+    # command that removed it instead of leaving it to inference.
+    trace_path = tmp_path / "git-trace.log"
+    monkeypatch.setenv("GIT_TRACE", str(trace_path))
+
     with pytest.raises(GitWorktreeLeaseError, match="worktree_symlink_forbidden"):
         _allocate(GitWorktreeLeaseManager(tmp_path / "lease-state"), repository)
 
+    monkeypatch.delenv("GIT_TRACE", raising=False)
     registered = _git(repository, "worktree", "list", "--porcelain")
-    assert str(unrelated) in registered
+    trace = trace_path.read_text(encoding="utf-8") if trace_path.exists() else "<no trace>"
+    assert str(unrelated) in registered, f"registered={registered}\ngit trace:\n{trace}"
     _git(repository, "worktree", "remove", "--force", str(unrelated))
 
 

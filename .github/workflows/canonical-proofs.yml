@@ -1,6 +1,12 @@
 name: Canonical Tau proofs
 
 on:
+  # Run on every push to main, not only by hand: a proof workflow that is never
+  # triggered cannot tell anyone whether main still satisfies the canonical
+  # workflows it claims to prove.
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
