@@ -1,0 +1,15 @@
+{
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "ticket": "grahama1970/tau#206",
+  "title": "#72 child: route subprocess workflow receipts via staging and promotion",
+  "mocked": false, "live": true, "provider_live": false,
+  "proof_command": "uv run tau workflows run durable-repository-qualification --goal probe --repo <fixture> --run-dir run --publish-path pub",
+  "receipt_admissions_read_back": "sqlite3 dag-run.sqlite3 'SELECT node_id FROM receipt_admissions' -> all six nodes: capture-repository, publish-qualification, qualify-documentation, qualify-package, qualify-tests, reconcile-qualification",
+  "acceptance": {
+    "rung5_admission_rows_for_every_node_receipt": "MET — 6/6 node receipts staged (run_store.stage_result) and parent-admitted (receipt_admissions), verified by read-back",
+    "child_killed_mid_stage_classifies_b": "MET — _classify_unadmitted_result (scheduler.py:1920) emits receipt_absence_classified; deterministic SIGKILL tests pass: test_staged_result_crash_resumes_without_rerunning_accepted_branches, test_sigkill_after_staged_result_resumes_without_duplicate_publication, test_sigkill_before_staging_fails_closed_without_rerunning (3 passed)"
+  },
+  "note": "The staging+promotion+admission path (contract 8.A2) landed via #196-#209; this closure supplies the specific proof the project-watchdog audit found missing (the exact command + receipt_admissions read-back).",
+  "proves": ["Every durable-repository-qualification node receipt is staged and parent-side admitted (receipt_admissions rows for all six nodes), and a child killed before/after staging is deterministically classified rather than leaving unclassifiable absence."],
+  "does_not_prove": ["Semantic correctness of node outputs beyond schema/gate validity."]
+}
