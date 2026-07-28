@@ -1,0 +1,6 @@
+{
+  "accepted_inputs": [],
+  "node_id": "killed-child",
+  "run_id": "run-absence-probe",
+  "schema": "tau.generic_dag_node_context.v1"
+}

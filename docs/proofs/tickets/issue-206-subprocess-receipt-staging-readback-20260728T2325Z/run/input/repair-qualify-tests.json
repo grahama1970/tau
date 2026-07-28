@@ -1,0 +1,21 @@
+{
+  "actor": {
+    "auth_method": "approval-gate-receipt",
+    "id": "tau:workflow-repair"
+  },
+  "authorization": {
+    "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/qualify-tests/repair-approval-gate.json",
+    "schema": "tau.approval_gate_receipt.v1",
+    "sha256": "e83102d97155d3d64a6658e31e6794e72ac315e5147fb92c3fdd6395a9a0e1b4"
+  },
+  "authorized": true,
+  "evidence": [
+    "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-tests.json"
+  ],
+  "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+  "node_id": "qualify-tests",
+  "origin": "machine",
+  "reason": "Repair only the blocked test qualification branch.",
+  "request_sha256": "sha256:59656297814812bb63f05e7950abc7256660b15f8225cfea08258619debb353f",
+  "schema": "tau.workflow_repair_packet.v1"
+}

@@ -1,0 +1,13 @@
+{
+  "branch": "main",
+  "head_sha": "1e4ba516185bf5cf2dd555659ea8abf137d3ef22",
+  "repo_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/fixture-repo",
+  "schema": "tau.durable_repository_capture.v1",
+  "summary": "Repository identity and tracked-file snapshot captured.",
+  "tracked_path_count": 3,
+  "tracked_paths": [
+    "README.md",
+    "pyproject.toml",
+    "tests/test_fixture.py"
+  ]
+}

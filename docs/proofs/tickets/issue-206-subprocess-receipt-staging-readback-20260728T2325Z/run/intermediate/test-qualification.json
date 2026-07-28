@@ -1,0 +1,11 @@
+{
+  "head_sha": "1e4ba516185bf5cf2dd555659ea8abf137d3ef22",
+  "repair_applied": true,
+  "schema": "tau.test_qualification.v1",
+  "status": "REPAIRED",
+  "summary": "Test qualification branch was repaired and accepted.",
+  "test_path_count": 1,
+  "test_paths": [
+    "tests/test_fixture.py"
+  ]
+}

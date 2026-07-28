@@ -1,0 +1,21 @@
+{
+  "nodes": [
+    {
+      "accepted_context_from": [],
+      "command": [
+        "python3",
+        "-c",
+        "import time; time.sleep(5)"
+      ],
+      "depends_on": [],
+      "max_attempts": 1,
+      "node_id": "killed-child",
+      "receipt_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/absence-probe/receipts/killed-child.json",
+      "role": "worker",
+      "timeout_seconds": 0.2
+    }
+  ],
+  "run_dir": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/absence-probe/run",
+  "run_id": "run-absence-probe",
+  "schema": "tau.generic_dag_spec.v1"
+}

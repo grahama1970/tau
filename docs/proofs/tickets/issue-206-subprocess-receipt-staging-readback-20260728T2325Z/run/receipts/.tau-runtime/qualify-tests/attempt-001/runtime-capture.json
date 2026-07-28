@@ -1,0 +1,24 @@
+{
+  "cancelled": false,
+  "command": [
+    "/tmp/tau-autocomplete-20260728/.venv/bin/python",
+    "-m",
+    "tau_coding.workflows.nodes.durable_repository_qualification",
+    "tests",
+    "--request",
+    "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/durable-qualification-request.json",
+    "--repair-packet",
+    "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/repair-qualify-tests.json",
+    "--output",
+    "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/test-qualification.json",
+    "--receipt",
+    "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-tests.json",
+    "--step-delay-seconds",
+    "0.01"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "",
+  "timed_out": false
+}

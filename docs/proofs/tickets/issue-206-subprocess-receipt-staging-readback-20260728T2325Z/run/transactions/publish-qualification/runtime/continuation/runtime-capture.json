@@ -1,0 +1,22 @@
+{
+  "cancelled": false,
+  "command": [
+    "/tmp/tau-autocomplete-20260728/.venv/bin/python",
+    "-m",
+    "tau_coding.workflows.nodes.durable_repository_qualification",
+    "publish",
+    "--request",
+    "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/durable-qualification-request.json",
+    "--json-output",
+    "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.json",
+    "--markdown-output",
+    "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.md",
+    "--ledger",
+    "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualification-publication-ledger.json"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "",
+  "timed_out": false
+}

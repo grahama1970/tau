@@ -1,0 +1,10 @@
+{
+  "attempt": 1,
+  "candidate_manifest_sha256": "8a48d241837234b240942cb1c4e56030e209d1effbcf4fe63f3fab988aa8940c",
+  "node_id": "publish-qualification",
+  "schema": "tau.generic_artifact_validation.v1",
+  "status": "PASS",
+  "transaction_id": "durable-qualification-publication",
+  "validation_context_sha256": "24eacd2b03bfc33e1017bccda7e9e9bbfd21bf1293e3eb96cf4f893343a61ab7",
+  "validator_id": "qualification-validator"
+}

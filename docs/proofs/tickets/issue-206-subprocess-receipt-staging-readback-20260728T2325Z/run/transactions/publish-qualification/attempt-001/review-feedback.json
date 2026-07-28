@@ -1,0 +1,26 @@
+{
+  "attempt": 1,
+  "candidate_manifest_sha256": "8a48d241837234b240942cb1c4e56030e209d1effbcf4fe63f3fab988aa8940c",
+  "execution_evidence": {
+    "command_result_sha256": "sha256:2c27bdb3e1379f5641ebf813e24f5139308ce8be50168eb19dfe492002b2c55e",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "findings": [],
+  "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+  "live": true,
+  "mocked": false,
+  "node_id": "publish-qualification",
+  "producer_id": "qualification-producer",
+  "provider_live": false,
+  "review_context_sha256": "2044e135b3825c143abef1f3e426e80392a69d0eecaf3ea30d01146245dba68d",
+  "reviewer_id": "qualification-reviewer",
+  "schema": "tau.generic_artifact_review.v1",
+  "summary": "Qualification artifacts accepted for exact human approval.",
+  "transaction_id": "durable-qualification-publication",
+  "verdict": "PASS"
+}

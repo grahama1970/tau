@@ -1,0 +1,32 @@
+{
+  "active_node_id": null,
+  "blocked_nodes": [
+    "killed-child"
+  ],
+  "completed_nodes": [],
+  "events_jsonl": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/absence-probe/run/events.jsonl",
+  "node_statuses": {
+    "killed-child": {
+      "attempt_count": 1,
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/absence-probe/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/absence-probe/receipts/killed-child.json",
+      "resumed": false,
+      "status": "BLOCKED",
+      "verdict": "SUBAGENT_TIMEOUT"
+    }
+  },
+  "ready_nodes": [],
+  "resume": {
+    "enabled_by_default": true,
+    "receipt_paths": {
+      "killed-child": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/absence-probe/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/absence-probe/receipts/killed-child.json"
+    },
+    "will_reuse_valid_pass_receipts": true
+  },
+  "run_dir": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/absence-probe/run",
+  "run_id": "run-absence-probe",
+  "schema": "tau.generic_dag_checkpoint.v1",
+  "spec_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/absence-probe/timeout-spec.json",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-28T23:24:44Z",
+  "verdict": "SUBAGENT_TIMEOUT"
+}

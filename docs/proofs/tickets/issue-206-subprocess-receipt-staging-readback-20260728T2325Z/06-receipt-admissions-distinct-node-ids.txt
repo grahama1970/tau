@@ -1,0 +1,7 @@
+capture-repository
+finalize-qualification
+publish-qualification
+qualify-documentation
+qualify-package
+qualify-tests
+reconcile-qualification

@@ -1,0 +1,17 @@
+capture-repository
+capture-repository
+capture-repository
+finalize-qualification
+publish-qualification
+publish-qualification
+qualify-documentation
+qualify-documentation
+qualify-documentation
+qualify-package
+qualify-package
+qualify-package
+qualify-tests
+qualify-tests
+qualify-tests
+reconcile-qualification
+reconcile-qualification

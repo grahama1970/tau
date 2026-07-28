@@ -1,0 +1,18 @@
+{
+  "approval_packet_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/approval.json",
+  "errors": [],
+  "ok": true,
+  "run_dir": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run",
+  "schema": "tau.workflow_approval_receipt.v1",
+  "status": "PASS",
+  "target": {
+    "accepted_manifest_sha256": "e32f3a3fac1ecafe36a994e0c498ed5c851b690e774c0261a5a8a7b97aecb30c",
+    "continuation_command_sha256": "40a46710754513e052ce4df8db3c0a0bff3513d7a5512ea06bf814c1371fb7b9",
+    "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+    "id": "generic-dag-transaction:durable-repository-qualification-596562978148:durable-qualification-publication",
+    "node_id": "publish-qualification",
+    "run_id": "durable-repository-qualification-596562978148",
+    "transaction_id": "durable-qualification-publication"
+  },
+  "workflow_id": "durable-repository-qualification"
+}

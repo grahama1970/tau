@@ -1,0 +1,23 @@
+{
+  "distinct_admitted_nodes": [
+    "capture-repository",
+    "finalize-qualification",
+    "publish-qualification",
+    "qualify-documentation",
+    "qualify-package",
+    "qualify-tests",
+    "reconcile-qualification"
+  ],
+  "extra_admitted_nodes": [
+    "finalize-qualification"
+  ],
+  "required_six_nodes": [
+    "capture-repository",
+    "publish-qualification",
+    "qualify-documentation",
+    "qualify-package",
+    "qualify-tests",
+    "reconcile-qualification"
+  ],
+  "required_six_nodes_present": true
+}

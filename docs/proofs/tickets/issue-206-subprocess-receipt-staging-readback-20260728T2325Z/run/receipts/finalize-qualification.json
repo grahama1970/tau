@@ -1,0 +1,56 @@
+{
+  "accepted_output": {
+    "artifacts": [
+      {
+        "kind": "durable_qualification_json",
+        "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.json",
+        "sha256": "b675c9cef47cd1883bc39f866426f585f5369e20783e00c3c5a08cdeb94b4818"
+      },
+      {
+        "kind": "durable_qualification_markdown",
+        "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.md",
+        "sha256": "92812aa14557d60233bcbe0b439b9f776aecee35f6dc02a7d94fe1fb1b8b1f8d"
+      }
+    ],
+    "publish_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/pub",
+    "schema": "tau.durable_repository_qualification.v1",
+    "status": "QUALIFIED",
+    "summary": "Repository qualification published after durable recovery and approval."
+  },
+  "artifacts": [
+    {
+      "kind": "durable_qualification_json",
+      "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.json",
+      "sha256": "b675c9cef47cd1883bc39f866426f585f5369e20783e00c3c5a08cdeb94b4818"
+    },
+    {
+      "kind": "durable_qualification_markdown",
+      "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.md",
+      "sha256": "92812aa14557d60233bcbe0b439b9f776aecee35f6dc02a7d94fe1fb1b8b1f8d"
+    }
+  ],
+  "commands_run": [
+    "durable-qualification:finalize-qualification"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:2f5fdf080714ff1d70becd1c5ff24069a652884127b89107b728021cdc5b4811",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+  "handoff_summary": "finalize-qualification accepted output is available.",
+  "live": true,
+  "mocked": false,
+  "node_id": "finalize-qualification",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "side_effects": [],
+  "status": "PASS",
+  "verdict": "PASS"
+}

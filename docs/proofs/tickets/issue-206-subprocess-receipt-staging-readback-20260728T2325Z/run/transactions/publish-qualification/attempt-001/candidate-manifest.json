@@ -1,0 +1,27 @@
+{
+  "artifacts": [
+    {
+      "artifact_id": "qualification_json",
+      "bytes": 3553,
+      "kind": "qualification_json",
+      "media_type": "application/json",
+      "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transaction-artifacts/qualification/durable-repository-qualification.json",
+      "sha256": "b675c9cef47cd1883bc39f866426f585f5369e20783e00c3c5a08cdeb94b4818"
+    },
+    {
+      "artifact_id": "qualification_markdown",
+      "bytes": 131,
+      "kind": "qualification_markdown",
+      "media_type": "text/markdown",
+      "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transaction-artifacts/qualification/durable-repository-qualification.md",
+      "sha256": "92812aa14557d60233bcbe0b439b9f776aecee35f6dc02a7d94fe1fb1b8b1f8d"
+    }
+  ],
+  "attempt": 1,
+  "attempt_context_sha256": "1be21dfae722cffdfbca741149227a064a66687aba37cf92956ae29f4695658b",
+  "node_id": "publish-qualification",
+  "producer_id": "qualification-producer",
+  "schema": "tau.media_artifact_manifest.v1",
+  "transaction_id": "durable-qualification-publication",
+  "work_order_sha256": "81c15da9c33d80b3268e90662d207ce838cfd688ec7a8d799edbe60b14bd297a"
+}

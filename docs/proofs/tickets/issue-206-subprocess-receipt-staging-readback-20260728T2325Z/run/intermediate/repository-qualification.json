@@ -1,0 +1,75 @@
+{
+  "branches": {
+    "documentation": {
+      "artifacts": [
+        {
+          "kind": "documentation",
+          "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/documentation-qualification.json",
+          "sha256": "36db32a8b1aa77bb1dc7a628377b2442658028baefbcf0193cf4502c0b186a95"
+        }
+      ],
+      "head_sha": "1e4ba516185bf5cf2dd555659ea8abf137d3ef22",
+      "matching_path_count": 1,
+      "matching_paths": [
+        "README.md"
+      ],
+      "schema": "tau.documentation_qualification.v1",
+      "status": "PASS",
+      "summary": "qualify-documentation completed against the accepted repository snapshot."
+    },
+    "package": {
+      "artifacts": [
+        {
+          "kind": "package",
+          "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/package-qualification.json",
+          "sha256": "d21e763558e63d5be1b49be2a24317a589822c43ec90bdcd19dcc8e058efd0bd"
+        }
+      ],
+      "head_sha": "1e4ba516185bf5cf2dd555659ea8abf137d3ef22",
+      "matching_path_count": 1,
+      "matching_paths": [
+        "pyproject.toml"
+      ],
+      "schema": "tau.package_qualification.v1",
+      "status": "PASS",
+      "summary": "qualify-package completed against the accepted repository snapshot."
+    },
+    "tests": {
+      "artifacts": [
+        {
+          "kind": "test_qualification",
+          "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/test-qualification.json",
+          "sha256": "92f08aaa896e49026450a99af24299d41c13f3a677a8eec3cc5333865b8946df"
+        }
+      ],
+      "head_sha": "1e4ba516185bf5cf2dd555659ea8abf137d3ef22",
+      "repair_applied": true,
+      "schema": "tau.test_qualification.v1",
+      "status": "REPAIRED",
+      "summary": "Test qualification branch was repaired and accepted.",
+      "test_path_count": 1,
+      "test_paths": [
+        "tests/test_fixture.py"
+      ]
+    }
+  },
+  "goal": {
+    "completion_criteria": [
+      "Capture the exact requested Git repository without mutation.",
+      "Qualify documentation, tests, and package metadata concurrently.",
+      "Repair only a blocked qualification branch while preserving accepted work.",
+      "Publish one idempotent qualification result after exact human approval."
+    ],
+    "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+    "goal_id": "durable-repository-qualification:596562978148",
+    "goal_version": 1,
+    "summary": "probe"
+  },
+  "repository": {
+    "head_sha": "1e4ba516185bf5cf2dd555659ea8abf137d3ef22",
+    "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/fixture-repo"
+  },
+  "schema": "tau.reconciled_repository_qualification.v1",
+  "status": "QUALIFIED",
+  "summary": "Accepted repository qualification branches were reconciled."
+}

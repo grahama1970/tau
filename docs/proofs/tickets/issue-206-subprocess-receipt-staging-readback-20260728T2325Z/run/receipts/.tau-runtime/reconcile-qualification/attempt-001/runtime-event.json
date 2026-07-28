@@ -1,0 +1,17 @@
+{
+  "confidence": "PROCESS",
+  "endpoint_lease_sha256": "sha256:87bf72b7ff7a033aa76d49febc70097691f1eef8a6f88c83667c8eeb3ece9f03",
+  "event_id": "local-event:ab4b59618521595e3138602e",
+  "event_type": "RUNTIME_ENDPOINT_EXITED",
+  "liveness": "DEAD",
+  "observation": {
+    "cancelled": false,
+    "returncode": 0,
+    "timed_out": false
+  },
+  "observed_at": "2026-07-28T23:22:37.357006+00:00",
+  "run_id": "durable-repository-qualification-596562978148:generation:1",
+  "schema": "tau.runtime_event.v1",
+  "source": "local",
+  "state": "EXITED"
+}

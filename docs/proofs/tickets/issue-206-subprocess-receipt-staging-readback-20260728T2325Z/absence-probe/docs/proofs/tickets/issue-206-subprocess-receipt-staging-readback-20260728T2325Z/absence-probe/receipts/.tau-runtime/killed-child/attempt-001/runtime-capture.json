@@ -1,0 +1,13 @@
+{
+  "cancelled": false,
+  "command": [
+    "python3",
+    "-c",
+    "import time; time.sleep(5)"
+  ],
+  "returncode": 124,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "timed out after 0.2s",
+  "stdout": "",
+  "timed_out": true
+}

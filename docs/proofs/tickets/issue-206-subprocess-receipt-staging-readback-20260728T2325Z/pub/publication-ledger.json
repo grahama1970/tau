@@ -1,0 +1,11 @@
+{
+  "artifacts": {
+    "durable-repository-qualification.json": "b675c9cef47cd1883bc39f866426f585f5369e20783e00c3c5a08cdeb94b4818",
+    "durable-repository-qualification.md": "92812aa14557d60233bcbe0b439b9f776aecee35f6dc02a7d94fe1fb1b8b1f8d"
+  },
+  "effect_count": 1,
+  "idempotency_key": "6eae5d09b78bfae555597b1e94d0ed521cc69d4a8cec675e25916683b4276a17",
+  "publish_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/pub",
+  "schema": "tau.qualification_publication_ledger.v1",
+  "status": "COMMITTED"
+}

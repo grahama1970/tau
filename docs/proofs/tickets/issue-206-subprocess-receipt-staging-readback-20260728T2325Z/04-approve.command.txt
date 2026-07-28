@@ -1,0 +1,1 @@
+uv run tau workflows approve docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run --approval-packet docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/publication-approval.json

@@ -1,0 +1,17 @@
+{
+  "confidence": "PROCESS",
+  "endpoint_lease_sha256": "sha256:b132e9f03122922821dc8a523968d6030a06e02f9d382d6e8c587564b9f78d13",
+  "event_id": "local-event:9edc6fa0eb173908bdd56adc",
+  "event_type": "RUNTIME_ENDPOINT_EXITED",
+  "liveness": "DEAD",
+  "observation": {
+    "cancelled": false,
+    "returncode": 124,
+    "timed_out": true
+  },
+  "observed_at": "2026-07-28T23:24:44.594883+00:00",
+  "run_id": "run-absence-probe",
+  "schema": "tau.runtime_event.v1",
+  "source": "local",
+  "state": "BLOCKED"
+}

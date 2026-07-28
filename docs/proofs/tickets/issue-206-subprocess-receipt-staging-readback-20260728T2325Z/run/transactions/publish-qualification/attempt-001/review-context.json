@@ -1,0 +1,35 @@
+{
+  "attempt": 1,
+  "attempt_context_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/publish-qualification/attempt-001/attempt-context.json",
+  "attempt_context_sha256": "1be21dfae722cffdfbca741149227a064a66687aba37cf92956ae29f4695658b",
+  "candidate_manifest_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/publish-qualification/attempt-001/candidate-manifest.json",
+  "candidate_manifest_sha256": "8a48d241837234b240942cb1c4e56030e209d1effbcf4fe63f3fab988aa8940c",
+  "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+  "node_id": "publish-qualification",
+  "output_contract": {
+    "review_feedback_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/publish-qualification/attempt-001/review-feedback.json"
+  },
+  "producer_id": "qualification-producer",
+  "reviewer_id": "qualification-reviewer",
+  "run_id": "durable-repository-qualification-596562978148",
+  "schema": "tau.generic_artifact_review_context.v1",
+  "transaction_id": "durable-qualification-publication",
+  "validated_artifacts": [
+    {
+      "artifact_id": "qualification_json",
+      "bytes": 3553,
+      "kind": "qualification_json",
+      "media_type": "application/json",
+      "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transaction-artifacts/qualification/durable-repository-qualification.json",
+      "sha256": "b675c9cef47cd1883bc39f866426f585f5369e20783e00c3c5a08cdeb94b4818"
+    },
+    {
+      "artifact_id": "qualification_markdown",
+      "bytes": 131,
+      "kind": "qualification_markdown",
+      "media_type": "text/markdown",
+      "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transaction-artifacts/qualification/durable-repository-qualification.md",
+      "sha256": "92812aa14557d60233bcbe0b439b9f776aecee35f6dc02a7d94fe1fb1b8b1f8d"
+    }
+  ]
+}

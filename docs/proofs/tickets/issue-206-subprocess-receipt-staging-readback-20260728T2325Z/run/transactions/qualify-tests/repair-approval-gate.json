@@ -1,0 +1,48 @@
+{
+  "approval_packet": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/repair-approval.json",
+  "approval_packet_sha256": "57908e866fa59eba650de25b284a793a4ddabd1c22bf14700ae8fff4a5fc8559",
+  "approved": true,
+  "errors": [],
+  "expected_target": {
+    "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+    "id": "durable-repository-qualification:qualify-tests:sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+    "node_id": "qualify-tests",
+    "workflow_id": "durable-repository-qualification"
+  },
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "packet_summary": {
+    "action": "workflow_repair",
+    "actor_auth_method": "local-signature",
+    "actor_id": "human:test",
+    "approved": true,
+    "authorship": "human_local_signature",
+    "evidence_count": 1,
+    "expires_at": null,
+    "human_id": "human:test",
+    "machine_fabricated": false,
+    "nonce": "6cfee261661d81b380d67d5ecb3547211c4e814646f6d66fdd4aa9e1c0ba8be3",
+    "schema": "tau.human_approval_packet.v1",
+    "signature_present": true,
+    "target_id": "durable-repository-qualification:qualify-tests:sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4"
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "the gated mutation was executed",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "cryptographic signature validity beyond requiring a signature field"
+    ],
+    "proves": [
+      "Tau can fail closed before mutation or closure without a valid human approval packet",
+      "Tau can validate explicit human approval for a requested gated action",
+      "Tau writes a durable approval-gate receipt before any gated mutation command"
+    ]
+  },
+  "requested_action": "workflow_repair",
+  "run_dir": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/qualify-tests",
+  "schema": "tau.approval_gate_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-28T23:22:35Z"
+}

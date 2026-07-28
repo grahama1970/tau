@@ -1,0 +1,29 @@
+{
+  "attempt_id": "attempt-bd0e07174c2d4270f95b015083c97ae4:validator:001",
+  "attempt_number": 1,
+  "backend": "local",
+  "backend_ids": {
+    "pid": null
+  },
+  "backend_session_id": null,
+  "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+  "cleanup_policy": {
+    "kind": "process_group_termination"
+  },
+  "created_at": "2026-07-28T23:22:37.911219+00:00",
+  "dag_id": "generic:durable-repository-qualification-596562978148",
+  "endpoint_id": "local:8568410c91a92cc4fe6e1d09",
+  "execution_token": "[REDACTED]",
+  "expires_at": "2026-07-28T23:24:37.911219+00:00",
+  "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+  "heartbeat_policy": {
+    "kind": "process_poll"
+  },
+  "node_id": "publish-qualification",
+  "owner": "tau",
+  "plan_revision": "sha256:fc69ea0c4dea4011b0ba6c65446a0ba53c3f9e5f6f9d1c25a18ad8cba2ad4ff1",
+  "run_id": "durable-repository-qualification-596562978148:generation:1",
+  "schema": "tau.runtime_endpoint_lease.v1",
+  "scope_id": "durable-repository-qualification-596562978148:generation:1",
+  "work_order_sha256": "sha256:81c15da9c33d80b3268e90662d207ce838cfd688ec7a8d799edbe60b14bd297a"
+}

@@ -1,0 +1,31 @@
+{
+  "artifacts": [
+    {
+      "artifact_id": "qualification_json",
+      "bytes": 3553,
+      "kind": "qualification_json",
+      "media_type": "application/json",
+      "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transaction-artifacts/qualification/durable-repository-qualification.json",
+      "sha256": "b675c9cef47cd1883bc39f866426f585f5369e20783e00c3c5a08cdeb94b4818"
+    },
+    {
+      "artifact_id": "qualification_markdown",
+      "bytes": 131,
+      "kind": "qualification_markdown",
+      "media_type": "text/markdown",
+      "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transaction-artifacts/qualification/durable-repository-qualification.md",
+      "sha256": "92812aa14557d60233bcbe0b439b9f776aecee35f6dc02a7d94fe1fb1b8b1f8d"
+    }
+  ],
+  "attempt": 1,
+  "candidate_manifest_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/publish-qualification/attempt-001/candidate-manifest.json",
+  "candidate_manifest_sha256": "8a48d241837234b240942cb1c4e56030e209d1effbcf4fe63f3fab988aa8940c",
+  "node_id": "publish-qualification",
+  "output_contract": {
+    "validation_receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/publish-qualification/attempt-001/validation-receipt.json"
+  },
+  "run_id": "durable-repository-qualification-596562978148",
+  "schema": "tau.generic_artifact_validation_context.v1",
+  "transaction_id": "durable-qualification-publication",
+  "validator_id": "qualification-validator"
+}

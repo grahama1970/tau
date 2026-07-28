@@ -1,0 +1,981 @@
+{
+  "checkpoint_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/checkpoint.json",
+  "completed_node_count": 7,
+  "cost_accounting": {
+    "budget": {
+      "state": "NOT_CONFIGURED"
+    },
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "estimated_cost_is_billing_truth": false,
+    "estimated_cost_usd": null,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "schema": "tau.generic_dag_cost_accounting.v1",
+    "source": "not_reported",
+    "total_tokens": 0
+  },
+  "current_state_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/current-state.json",
+  "dag_plan_sha256": "sha256:fc69ea0c4dea4011b0ba6c65446a0ba53c3f9e5f6f9d1c25a18ad8cba2ad4ff1",
+  "diagnostics_log_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/tau-diagnostics.jsonl",
+  "durable": true,
+  "events_jsonl": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/events.jsonl",
+  "execution": "local_subprocess_receipt_gated_dag",
+  "lease_epoch": 1,
+  "live": true,
+  "max_observed_concurrency": 3,
+  "mocked": false,
+  "node_count": 7,
+  "nodes": [
+    {
+      "accepted_output": {
+        "artifacts": [
+          {
+            "kind": "repository_capture",
+            "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/repository-capture.json",
+            "sha256": "80197b6c747e8353b70f309dfded516c944588ec19f98e4b6564c24c9f768911"
+          }
+        ],
+        "branch": "main",
+        "head_sha": "1e4ba516185bf5cf2dd555659ea8abf137d3ef22",
+        "repo_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/fixture-repo",
+        "schema": "tau.durable_repository_capture.v1",
+        "summary": "Repository identity and tracked-file snapshot captured.",
+        "tracked_path_count": 3,
+        "tracked_paths": [
+          "README.md",
+          "pyproject.toml",
+          "tests/test_fixture.py"
+        ]
+      },
+      "artifacts": [
+        {
+          "kind": "repository_capture",
+          "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/repository-capture.json",
+          "sha256": "80197b6c747e8353b70f309dfded516c944588ec19f98e4b6564c24c9f768911"
+        }
+      ],
+      "attempt": null,
+      "attempt_count": 0,
+      "command_results": [],
+      "cost_accounting": {
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "cost_estimate": null,
+      "duration_seconds": 0.0,
+      "errors": [],
+      "execution_evidence": {
+        "command_result_sha256": "sha256:500a117bc99c83693c74da882369150fe21e77a72e5d65684065f26a37e13810",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "finished_at": "2026-07-28T23:22:40Z",
+      "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+      "live": true,
+      "mocked": false,
+      "node_id": "capture-repository",
+      "pane_id": null,
+      "provider_live": false,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/capture-repository.json",
+      "resumed": true,
+      "role": "Capture immutable repository identity",
+      "scheduler_attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "status": "PASS",
+          "verdict": "PASS"
+        }
+      ],
+      "started_at": "2026-07-28T23:22:40Z",
+      "status": "PASS",
+      "terminal_id": null,
+      "usage": null,
+      "verdict": "PASS",
+      "visible_log_path": null,
+      "visible_log_sha256": null,
+      "work_order_path": null,
+      "work_order_sha256": null,
+      "workspace_id": null
+    },
+    {
+      "accepted_output": {
+        "artifacts": [
+          {
+            "kind": "documentation",
+            "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/documentation-qualification.json",
+            "sha256": "36db32a8b1aa77bb1dc7a628377b2442658028baefbcf0193cf4502c0b186a95"
+          }
+        ],
+        "head_sha": "1e4ba516185bf5cf2dd555659ea8abf137d3ef22",
+        "matching_path_count": 1,
+        "matching_paths": [
+          "README.md"
+        ],
+        "schema": "tau.documentation_qualification.v1",
+        "status": "PASS",
+        "summary": "qualify-documentation completed against the accepted repository snapshot."
+      },
+      "artifacts": [
+        {
+          "kind": "documentation",
+          "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/documentation-qualification.json",
+          "sha256": "36db32a8b1aa77bb1dc7a628377b2442658028baefbcf0193cf4502c0b186a95"
+        }
+      ],
+      "attempt": null,
+      "attempt_count": 0,
+      "command_results": [],
+      "cost_accounting": {
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "cost_estimate": null,
+      "duration_seconds": 0.0,
+      "errors": [],
+      "execution_evidence": {
+        "command_result_sha256": "sha256:d520139c36d36b22d0e95a3b06f14632c1bd55d2bd23f64f5ca16a5fef8d2069",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "finished_at": "2026-07-28T23:22:40Z",
+      "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+      "live": true,
+      "mocked": false,
+      "node_id": "qualify-documentation",
+      "pane_id": null,
+      "provider_live": false,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-documentation.json",
+      "resumed": true,
+      "role": "Qualify documentation",
+      "scheduler_attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "status": "PASS",
+          "verdict": "PASS"
+        }
+      ],
+      "started_at": "2026-07-28T23:22:40Z",
+      "status": "PASS",
+      "terminal_id": null,
+      "usage": null,
+      "verdict": "PASS",
+      "visible_log_path": null,
+      "visible_log_sha256": null,
+      "work_order_path": null,
+      "work_order_sha256": null,
+      "workspace_id": null
+    },
+    {
+      "accepted_output": {
+        "artifacts": [
+          {
+            "kind": "package",
+            "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/package-qualification.json",
+            "sha256": "d21e763558e63d5be1b49be2a24317a589822c43ec90bdcd19dcc8e058efd0bd"
+          }
+        ],
+        "head_sha": "1e4ba516185bf5cf2dd555659ea8abf137d3ef22",
+        "matching_path_count": 1,
+        "matching_paths": [
+          "pyproject.toml"
+        ],
+        "schema": "tau.package_qualification.v1",
+        "status": "PASS",
+        "summary": "qualify-package completed against the accepted repository snapshot."
+      },
+      "artifacts": [
+        {
+          "kind": "package",
+          "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/package-qualification.json",
+          "sha256": "d21e763558e63d5be1b49be2a24317a589822c43ec90bdcd19dcc8e058efd0bd"
+        }
+      ],
+      "attempt": null,
+      "attempt_count": 0,
+      "command_results": [],
+      "cost_accounting": {
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "cost_estimate": null,
+      "duration_seconds": 0.0,
+      "errors": [],
+      "execution_evidence": {
+        "command_result_sha256": "sha256:59832f092caddb6596b8b5a9ca188302f24d3416da163ca8d5c16066128e9532",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "finished_at": "2026-07-28T23:22:40Z",
+      "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+      "live": true,
+      "mocked": false,
+      "node_id": "qualify-package",
+      "pane_id": null,
+      "provider_live": false,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-package.json",
+      "resumed": true,
+      "role": "Qualify package metadata",
+      "scheduler_attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "status": "PASS",
+          "verdict": "PASS"
+        }
+      ],
+      "started_at": "2026-07-28T23:22:40Z",
+      "status": "PASS",
+      "terminal_id": null,
+      "usage": null,
+      "verdict": "PASS",
+      "visible_log_path": null,
+      "visible_log_sha256": null,
+      "work_order_path": null,
+      "work_order_sha256": null,
+      "workspace_id": null
+    },
+    {
+      "accepted_output": {
+        "artifacts": [
+          {
+            "kind": "test_qualification",
+            "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/test-qualification.json",
+            "sha256": "92f08aaa896e49026450a99af24299d41c13f3a677a8eec3cc5333865b8946df"
+          }
+        ],
+        "head_sha": "1e4ba516185bf5cf2dd555659ea8abf137d3ef22",
+        "repair_applied": true,
+        "schema": "tau.test_qualification.v1",
+        "status": "REPAIRED",
+        "summary": "Test qualification branch was repaired and accepted.",
+        "test_path_count": 1,
+        "test_paths": [
+          "tests/test_fixture.py"
+        ]
+      },
+      "artifacts": [
+        {
+          "kind": "test_qualification",
+          "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/test-qualification.json",
+          "sha256": "92f08aaa896e49026450a99af24299d41c13f3a677a8eec3cc5333865b8946df"
+        }
+      ],
+      "attempt": null,
+      "attempt_count": 0,
+      "command_results": [],
+      "cost_accounting": {
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "cost_estimate": null,
+      "duration_seconds": 0.0,
+      "errors": [],
+      "execution_evidence": {
+        "command_result_sha256": "sha256:5efd5b032704291faae0bd818d5621e039b4b80cc343edc5d6381b8a82310a05",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "finished_at": "2026-07-28T23:22:40Z",
+      "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+      "live": true,
+      "mocked": false,
+      "node_id": "qualify-tests",
+      "pane_id": null,
+      "provider_live": false,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-tests.json",
+      "resumed": true,
+      "role": "Qualify and repair test evidence",
+      "scheduler_attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "status": "PASS",
+          "verdict": "PASS"
+        }
+      ],
+      "started_at": "2026-07-28T23:22:40Z",
+      "status": "PASS",
+      "terminal_id": null,
+      "usage": null,
+      "verdict": "PASS",
+      "visible_log_path": null,
+      "visible_log_sha256": null,
+      "work_order_path": null,
+      "work_order_sha256": null,
+      "workspace_id": null
+    },
+    {
+      "accepted_output": {
+        "artifacts": [
+          {
+            "kind": "reconciled_qualification",
+            "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/repository-qualification.json",
+            "sha256": "97e65be9dd60564e3ece0758b6ae988264bcd467451e64a073b983992b3a50fe"
+          }
+        ],
+        "branches": {
+          "documentation": {
+            "artifacts": [
+              {
+                "kind": "documentation",
+                "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/documentation-qualification.json",
+                "sha256": "36db32a8b1aa77bb1dc7a628377b2442658028baefbcf0193cf4502c0b186a95"
+              }
+            ],
+            "head_sha": "1e4ba516185bf5cf2dd555659ea8abf137d3ef22",
+            "matching_path_count": 1,
+            "matching_paths": [
+              "README.md"
+            ],
+            "schema": "tau.documentation_qualification.v1",
+            "status": "PASS",
+            "summary": "qualify-documentation completed against the accepted repository snapshot."
+          },
+          "package": {
+            "artifacts": [
+              {
+                "kind": "package",
+                "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/package-qualification.json",
+                "sha256": "d21e763558e63d5be1b49be2a24317a589822c43ec90bdcd19dcc8e058efd0bd"
+              }
+            ],
+            "head_sha": "1e4ba516185bf5cf2dd555659ea8abf137d3ef22",
+            "matching_path_count": 1,
+            "matching_paths": [
+              "pyproject.toml"
+            ],
+            "schema": "tau.package_qualification.v1",
+            "status": "PASS",
+            "summary": "qualify-package completed against the accepted repository snapshot."
+          },
+          "tests": {
+            "artifacts": [
+              {
+                "kind": "test_qualification",
+                "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/test-qualification.json",
+                "sha256": "92f08aaa896e49026450a99af24299d41c13f3a677a8eec3cc5333865b8946df"
+              }
+            ],
+            "head_sha": "1e4ba516185bf5cf2dd555659ea8abf137d3ef22",
+            "repair_applied": true,
+            "schema": "tau.test_qualification.v1",
+            "status": "REPAIRED",
+            "summary": "Test qualification branch was repaired and accepted.",
+            "test_path_count": 1,
+            "test_paths": [
+              "tests/test_fixture.py"
+            ]
+          }
+        },
+        "goal": {
+          "completion_criteria": [
+            "Capture the exact requested Git repository without mutation.",
+            "Qualify documentation, tests, and package metadata concurrently.",
+            "Repair only a blocked qualification branch while preserving accepted work.",
+            "Publish one idempotent qualification result after exact human approval."
+          ],
+          "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+          "goal_id": "durable-repository-qualification:596562978148",
+          "goal_version": 1,
+          "summary": "probe"
+        },
+        "repository": {
+          "head_sha": "1e4ba516185bf5cf2dd555659ea8abf137d3ef22",
+          "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/fixture-repo"
+        },
+        "schema": "tau.reconciled_repository_qualification.v1",
+        "status": "QUALIFIED",
+        "summary": "Accepted repository qualification branches were reconciled."
+      },
+      "artifacts": [
+        {
+          "kind": "reconciled_qualification",
+          "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/repository-qualification.json",
+          "sha256": "97e65be9dd60564e3ece0758b6ae988264bcd467451e64a073b983992b3a50fe"
+        }
+      ],
+      "attempt": null,
+      "attempt_count": 0,
+      "command_results": [],
+      "cost_accounting": {
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "cost_estimate": null,
+      "duration_seconds": 0.0,
+      "errors": [],
+      "execution_evidence": {
+        "command_result_sha256": "sha256:a87fe408dbe513e8f7ec401d76233e14cff72076e1a1a3d55e93efc33e35e6df",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "finished_at": "2026-07-28T23:22:40Z",
+      "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+      "live": true,
+      "mocked": false,
+      "node_id": "reconcile-qualification",
+      "pane_id": null,
+      "provider_live": false,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/reconcile-qualification.json",
+      "resumed": true,
+      "role": "Reconcile accepted qualification branches",
+      "scheduler_attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "status": "PASS",
+          "verdict": "PASS"
+        }
+      ],
+      "started_at": "2026-07-28T23:22:40Z",
+      "status": "PASS",
+      "terminal_id": null,
+      "usage": null,
+      "verdict": "PASS",
+      "visible_log_path": null,
+      "visible_log_sha256": null,
+      "work_order_path": null,
+      "work_order_sha256": null,
+      "workspace_id": null
+    },
+    {
+      "accepted_manifest_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/publish-qualification/accepted-manifest.json",
+      "accepted_manifest_sha256": "e32f3a3fac1ecafe36a994e0c498ed5c851b690e774c0261a5a8a7b97aecb30c",
+      "accepted_output": {
+        "accepted_manifest_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/publish-qualification/accepted-manifest.json",
+        "accepted_manifest_sha256": "e32f3a3fac1ecafe36a994e0c498ed5c851b690e774c0261a5a8a7b97aecb30c",
+        "artifacts": [
+          {
+            "artifact_id": "qualification_json",
+            "bytes": 3553,
+            "kind": "qualification_json",
+            "media_type": "application/json",
+            "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transaction-artifacts/qualification/durable-repository-qualification.json",
+            "sha256": "b675c9cef47cd1883bc39f866426f585f5369e20783e00c3c5a08cdeb94b4818"
+          },
+          {
+            "artifact_id": "qualification_markdown",
+            "bytes": 131,
+            "kind": "qualification_markdown",
+            "media_type": "text/markdown",
+            "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transaction-artifacts/qualification/durable-repository-qualification.md",
+            "sha256": "92812aa14557d60233bcbe0b439b9f776aecee35f6dc02a7d94fe1fb1b8b1f8d"
+          }
+        ],
+        "source_node_id": "publish-qualification"
+      },
+      "artifacts": [
+        {
+          "artifact_id": "qualification_json",
+          "bytes": 3553,
+          "kind": "qualification_json",
+          "media_type": "application/json",
+          "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transaction-artifacts/qualification/durable-repository-qualification.json",
+          "sha256": "b675c9cef47cd1883bc39f866426f585f5369e20783e00c3c5a08cdeb94b4818"
+        },
+        {
+          "artifact_id": "qualification_markdown",
+          "bytes": 131,
+          "kind": "qualification_markdown",
+          "media_type": "text/markdown",
+          "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transaction-artifacts/qualification/durable-repository-qualification.md",
+          "sha256": "92812aa14557d60233bcbe0b439b9f776aecee35f6dc02a7d94fe1fb1b8b1f8d"
+        }
+      ],
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "attempt_context_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/publish-qualification/attempt-001/attempt-context.json",
+          "attempt_context_sha256": "1be21dfae722cffdfbca741149227a064a66687aba37cf92956ae29f4695658b",
+          "candidate_manifest_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/publish-qualification/attempt-001/candidate-manifest.json",
+          "candidate_manifest_sha256": "8a48d241837234b240942cb1c4e56030e209d1effbcf4fe63f3fab988aa8940c",
+          "producer_execution_evidence": {
+            "command_result_sha256": "sha256:be4e501316963b7338ab4fcb0c92a98b6797400cf5edc025aa8a57dc0b5da8fb",
+            "kind": "local_subprocess",
+            "returncode": 0,
+            "runtime_artifact_count": 4,
+            "runtime_backend": "local",
+            "runtime_event_state": "EXITED",
+            "runtime_submit_delivery_status": "CONFIRMED"
+          },
+          "producer_live": true,
+          "producer_model": null,
+          "producer_provider": null,
+          "producer_provider_live": false,
+          "review_execution_evidence": {
+            "command_result_sha256": "sha256:2c27bdb3e1379f5641ebf813e24f5139308ce8be50168eb19dfe492002b2c55e",
+            "kind": "local_subprocess",
+            "returncode": 0,
+            "runtime_artifact_count": 4,
+            "runtime_backend": "local",
+            "runtime_event_state": "EXITED",
+            "runtime_submit_delivery_status": "CONFIRMED"
+          },
+          "review_feedback_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/publish-qualification/attempt-001/review-feedback.json",
+          "review_feedback_sha256": "3d9c1d6ee5e9d7aff01d4d9e0e1ca8b1a03e5a3ef50200f8ba2329b0d0f8a06f",
+          "review_live": true,
+          "review_model": null,
+          "review_provider_live": false,
+          "review_verdict": "PASS",
+          "validation_receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/publish-qualification/attempt-001/validation-receipt.json"
+        }
+      ],
+      "command_results": [
+        {
+          "argv": [
+            "/tmp/tau-autocomplete-20260728/.venv/bin/python",
+            "-m",
+            "tau_coding.workflows.nodes.durable_repository_qualification",
+            "publish",
+            "--request",
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/durable-qualification-request.json",
+            "--json-output",
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.json",
+            "--markdown-output",
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.md",
+            "--ledger",
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualification-publication-ledger.json"
+          ],
+          "elapsed_seconds": 0.0,
+          "returncode": 0,
+          "runtime_artifacts": [
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/publish-qualification/runtime/continuation/runtime-endpoint-lease.json",
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/publish-qualification/runtime/continuation/runtime-submit-receipt.json",
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/publish-qualification/runtime/continuation/runtime-event.json",
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/publish-qualification/runtime/continuation/runtime-capture.json"
+          ],
+          "runtime_backend": "local",
+          "runtime_capture": {
+            "cancelled": false,
+            "command": [
+              "/tmp/tau-autocomplete-20260728/.venv/bin/python",
+              "-m",
+              "tau_coding.workflows.nodes.durable_repository_qualification",
+              "publish",
+              "--request",
+              "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/durable-qualification-request.json",
+              "--json-output",
+              "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.json",
+              "--markdown-output",
+              "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.md",
+              "--ledger",
+              "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualification-publication-ledger.json"
+            ],
+            "returncode": 0,
+            "schema": "tau.local_runtime_capture.v1",
+            "stderr": "",
+            "stdout": "",
+            "timed_out": false
+          },
+          "runtime_endpoint_lease": {
+            "attempt_id": "attempt-28057c212a43458a80282ce56ae47b28:continuation:001",
+            "attempt_number": 1,
+            "backend": "local",
+            "backend_ids": {
+              "pid": null
+            },
+            "backend_session_id": null,
+            "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+            "cleanup_policy": {
+              "kind": "process_group_termination"
+            },
+            "created_at": "2026-07-28T23:22:40.582516+00:00",
+            "dag_id": "generic:durable-repository-qualification-596562978148",
+            "endpoint_id": "local:5c7105aa5dae7e316602497b",
+            "execution_token": "[REDACTED]",
+            "expires_at": "2026-07-28T23:24:10.582516+00:00",
+            "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+            "heartbeat_policy": {
+              "kind": "process_poll"
+            },
+            "node_id": "publish-qualification",
+            "owner": "tau",
+            "plan_revision": "sha256:fc69ea0c4dea4011b0ba6c65446a0ba53c3f9e5f6f9d1c25a18ad8cba2ad4ff1",
+            "run_id": "durable-repository-qualification-596562978148:generation:2",
+            "schema": "tau.runtime_endpoint_lease.v1",
+            "scope_id": "durable-repository-qualification-596562978148:generation:2",
+            "work_order_sha256": "sha256:81c15da9c33d80b3268e90662d207ce838cfd688ec7a8d799edbe60b14bd297a"
+          },
+          "runtime_event": {
+            "confidence": "PROCESS",
+            "endpoint_lease_sha256": "sha256:2a873feff83979495e26416f269692aec98ae851fbe8a4d8e2812546d99f8249",
+            "event_id": "local-event:5c7105aa5dae7e316602497b",
+            "event_type": "RUNTIME_ENDPOINT_EXITED",
+            "liveness": "DEAD",
+            "observation": {
+              "cancelled": false,
+              "returncode": 0,
+              "timed_out": false
+            },
+            "observed_at": "2026-07-28T23:22:41.115190+00:00",
+            "run_id": "durable-repository-qualification-596562978148:generation:2",
+            "schema": "tau.runtime_event.v1",
+            "source": "local",
+            "state": "EXITED"
+          },
+          "runtime_submit_receipt": {
+            "backend_acknowledgement": {
+              "process_started": true,
+              "stdin_delivery": "not_requested"
+            },
+            "composer_state_after": "NOT_APPLICABLE",
+            "composer_state_before": "NOT_APPLICABLE",
+            "delivery_status": "CONFIRMED",
+            "endpoint_lease_sha256": "sha256:2a873feff83979495e26416f269692aec98ae851fbe8a4d8e2812546d99f8249",
+            "errors": [],
+            "provider_execution_status": "NOT_APPLICABLE",
+            "schema": "tau.runtime_submit_receipt.v1",
+            "submit_attempt_count": 1,
+            "text_delivery_count": 0,
+            "work_order_sha256": "sha256:81c15da9c33d80b3268e90662d207ce838cfd688ec7a8d799edbe60b14bd297a"
+          },
+          "stderr": "",
+          "stdout": "",
+          "termination_cause": "exited"
+        }
+      ],
+      "cost_accounting": {
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "duration_seconds": 0.538,
+      "errors": [],
+      "finished_at": "2026-07-28T23:22:41Z",
+      "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+      "live": true,
+      "mocked": false,
+      "node_id": "publish-qualification",
+      "producer_provider_live": false,
+      "provider_live": false,
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/publish-qualification.json",
+      "resumed": true,
+      "reviewer_provider_live": false,
+      "role": "Publish exact approved qualification",
+      "scheduler_attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "status": "PASS",
+          "verdict": "PASS"
+        }
+      ],
+      "started_at": "2026-07-28T23:22:40Z",
+      "status": "PASS",
+      "transaction_id": "durable-qualification-publication",
+      "transaction_receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/publish-qualification/transaction-receipt.json",
+      "transaction_state": "CONTINUED",
+      "verdict": "PASS",
+      "work_order_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/qualification-publication-work-order.json",
+      "work_order_sha256": "81c15da9c33d80b3268e90662d207ce838cfd688ec7a8d799edbe60b14bd297a"
+    },
+    {
+      "accepted_output": {
+        "artifacts": [
+          {
+            "kind": "durable_qualification_json",
+            "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.json",
+            "sha256": "b675c9cef47cd1883bc39f866426f585f5369e20783e00c3c5a08cdeb94b4818"
+          },
+          {
+            "kind": "durable_qualification_markdown",
+            "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.md",
+            "sha256": "92812aa14557d60233bcbe0b439b9f776aecee35f6dc02a7d94fe1fb1b8b1f8d"
+          }
+        ],
+        "publish_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/pub",
+        "schema": "tau.durable_repository_qualification.v1",
+        "status": "QUALIFIED",
+        "summary": "Repository qualification published after durable recovery and approval."
+      },
+      "artifacts": [
+        {
+          "kind": "durable_qualification_json",
+          "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.json",
+          "sha256": "b675c9cef47cd1883bc39f866426f585f5369e20783e00c3c5a08cdeb94b4818"
+        },
+        {
+          "kind": "durable_qualification_markdown",
+          "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.md",
+          "sha256": "92812aa14557d60233bcbe0b439b9f776aecee35f6dc02a7d94fe1fb1b8b1f8d"
+        }
+      ],
+      "attempt": null,
+      "attempt_count": 1,
+      "command_results": [
+        {
+          "argv": [
+            "/tmp/tau-autocomplete-20260728/.venv/bin/python",
+            "-m",
+            "tau_coding.workflows.nodes.durable_repository_qualification",
+            "finalize",
+            "--request",
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/durable-qualification-request.json",
+            "--json-output",
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.json",
+            "--receipt",
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/finalize-qualification.json"
+          ],
+          "elapsed_seconds": 0.529,
+          "returncode": 0,
+          "runtime_artifacts": [
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/.tau-runtime/finalize-qualification/attempt-001/runtime-endpoint-lease.json",
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/.tau-runtime/finalize-qualification/attempt-001/runtime-submit-receipt.json",
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/.tau-runtime/finalize-qualification/attempt-001/runtime-event.json",
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/.tau-runtime/finalize-qualification/attempt-001/runtime-capture.json"
+          ],
+          "runtime_backend": "local",
+          "runtime_capture": {
+            "cancelled": false,
+            "command": [
+              "/tmp/tau-autocomplete-20260728/.venv/bin/python",
+              "-m",
+              "tau_coding.workflows.nodes.durable_repository_qualification",
+              "finalize",
+              "--request",
+              "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/durable-qualification-request.json",
+              "--json-output",
+              "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.json",
+              "--receipt",
+              "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/finalize-qualification.json"
+            ],
+            "returncode": 0,
+            "schema": "tau.local_runtime_capture.v1",
+            "stderr": "",
+            "stdout": "",
+            "timed_out": false
+          },
+          "runtime_endpoint_lease": {
+            "attempt_id": "attempt-bf8f5506a0ce7fc0f2e07415a248ebb5",
+            "attempt_number": 1,
+            "backend": "local",
+            "backend_ids": {
+              "pid": null
+            },
+            "backend_session_id": null,
+            "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+            "cleanup_policy": {
+              "kind": "process_group_termination"
+            },
+            "created_at": "2026-07-28T23:22:41.136862+00:00",
+            "dag_id": "generic:durable-repository-qualification-596562978148",
+            "endpoint_id": "local:9da205d4825eb9637cb1462c",
+            "execution_token": "[REDACTED]",
+            "expires_at": "2026-07-28T23:24:11.136862+00:00",
+            "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+            "heartbeat_policy": {
+              "kind": "process_poll"
+            },
+            "node_id": "finalize-qualification",
+            "owner": "tau",
+            "plan_revision": "sha256:fc69ea0c4dea4011b0ba6c65446a0ba53c3f9e5f6f9d1c25a18ad8cba2ad4ff1",
+            "run_id": "durable-repository-qualification-596562978148:generation:2",
+            "schema": "tau.runtime_endpoint_lease.v1",
+            "scope_id": "durable-repository-qualification-596562978148:generation:2",
+            "work_order_sha256": "sha256:33dbdf2045307638d30e6c67f3114ae911cc7a4d25b01bdb325853ffd88d0d06"
+          },
+          "runtime_event": {
+            "confidence": "PROCESS",
+            "endpoint_lease_sha256": "sha256:3f4a84c482645163d8e6c40abb94f62a23e53cfbb482283ec7b2bf1f923e21fd",
+            "event_id": "local-event:9da205d4825eb9637cb1462c",
+            "event_type": "RUNTIME_ENDPOINT_EXITED",
+            "liveness": "DEAD",
+            "observation": {
+              "cancelled": false,
+              "returncode": 0,
+              "timed_out": false
+            },
+            "observed_at": "2026-07-28T23:22:41.664117+00:00",
+            "run_id": "durable-repository-qualification-596562978148:generation:2",
+            "schema": "tau.runtime_event.v1",
+            "source": "local",
+            "state": "EXITED"
+          },
+          "runtime_submit_receipt": {
+            "backend_acknowledgement": {
+              "process_started": true,
+              "stdin_delivery": "not_requested"
+            },
+            "composer_state_after": "NOT_APPLICABLE",
+            "composer_state_before": "NOT_APPLICABLE",
+            "delivery_status": "CONFIRMED",
+            "endpoint_lease_sha256": "sha256:3f4a84c482645163d8e6c40abb94f62a23e53cfbb482283ec7b2bf1f923e21fd",
+            "errors": [],
+            "provider_execution_status": "NOT_APPLICABLE",
+            "schema": "tau.runtime_submit_receipt.v1",
+            "submit_attempt_count": 1,
+            "text_delivery_count": 0,
+            "work_order_sha256": "sha256:33dbdf2045307638d30e6c67f3114ae911cc7a4d25b01bdb325853ffd88d0d06"
+          },
+          "stderr": "",
+          "stdout": "",
+          "termination_cause": "exited"
+        }
+      ],
+      "cost_accounting": {
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "cost_estimate": null,
+      "duration_seconds": 0.531,
+      "errors": [],
+      "execution_evidence": {
+        "command_result_sha256": "sha256:2f5fdf080714ff1d70becd1c5ff24069a652884127b89107b728021cdc5b4811",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "finished_at": "2026-07-28T23:22:41Z",
+      "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+      "live": true,
+      "mocked": false,
+      "node_id": "finalize-qualification",
+      "pane_id": null,
+      "provider_live": false,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/finalize-qualification.json",
+      "resumed": false,
+      "role": "Project durable qualification result",
+      "scheduler_attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "status": "PASS",
+          "verdict": "PASS"
+        }
+      ],
+      "started_at": "2026-07-28T23:22:41Z",
+      "status": "PASS",
+      "terminal_id": null,
+      "usage": null,
+      "verdict": "PASS",
+      "visible_log_path": null,
+      "visible_log_sha256": null,
+      "work_order_path": null,
+      "work_order_sha256": null,
+      "workspace_id": null
+    }
+  ],
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "remote Tailscale monitoring",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "live provider CLI execution",
+      "Herdr pane visibility"
+    ],
+    "proves": [
+      "Tau can validate a generic DAG spec",
+      "Tau can execute local subprocess workers in dependency order",
+      "Tau can gate downstream nodes on schema-valid node receipts",
+      "Tau can resume from existing valid node receipts",
+      "Tau can reject stale work-order receipts when work_order_sha256 no longer matches",
+      "Tau can write durable checkpoint and current-state artifacts",
+      "Tau can fail closed on timeout, non-zero exit, invalid receipt, or blocked verdict"
+    ]
+  },
+  "provider_live": false,
+  "replayed_event_count": 2,
+  "resume_requested": true,
+  "resume_source": {
+    "mode": "spec_path",
+    "spec_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/workflow/dag.json"
+  },
+  "run_dir": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run",
+  "run_id": "durable-repository-qualification-596562978148",
+  "run_store_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/dag-run.sqlite3",
+  "scheduler": "dag_plan_ready_queue",
+  "scheduler_run_id": "durable-repository-qualification-596562978148:generation:2",
+  "schema": "tau.generic_dag_run_receipt.v1",
+  "spec_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/workflow/dag.json",
+  "status": "PASS",
+  "timestamp": "2026-07-28T23:22:41Z",
+  "verdict": "PASS"
+}

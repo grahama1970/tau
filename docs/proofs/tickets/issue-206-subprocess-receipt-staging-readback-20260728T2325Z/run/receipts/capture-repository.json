@@ -1,0 +1,53 @@
+{
+  "accepted_output": {
+    "artifacts": [
+      {
+        "kind": "repository_capture",
+        "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/repository-capture.json",
+        "sha256": "80197b6c747e8353b70f309dfded516c944588ec19f98e4b6564c24c9f768911"
+      }
+    ],
+    "branch": "main",
+    "head_sha": "1e4ba516185bf5cf2dd555659ea8abf137d3ef22",
+    "repo_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/fixture-repo",
+    "schema": "tau.durable_repository_capture.v1",
+    "summary": "Repository identity and tracked-file snapshot captured.",
+    "tracked_path_count": 3,
+    "tracked_paths": [
+      "README.md",
+      "pyproject.toml",
+      "tests/test_fixture.py"
+    ]
+  },
+  "artifacts": [
+    {
+      "kind": "repository_capture",
+      "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/repository-capture.json",
+      "sha256": "80197b6c747e8353b70f309dfded516c944588ec19f98e4b6564c24c9f768911"
+    }
+  ],
+  "commands_run": [
+    "durable-qualification:capture-repository"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:500a117bc99c83693c74da882369150fe21e77a72e5d65684065f26a37e13810",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+  "handoff_summary": "capture-repository accepted output is available.",
+  "live": true,
+  "mocked": false,
+  "node_id": "capture-repository",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "side_effects": [],
+  "status": "PASS",
+  "verdict": "PASS"
+}

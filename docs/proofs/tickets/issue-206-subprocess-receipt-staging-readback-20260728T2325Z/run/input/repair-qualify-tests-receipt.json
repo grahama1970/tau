@@ -1,0 +1,13 @@
+{
+  "approval_gate_receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transactions/qualify-tests/repair-approval-gate.json",
+  "approval_packet_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/repair-approval.json",
+  "errors": [],
+  "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+  "node_id": "qualify-tests",
+  "ok": true,
+  "repair_packet_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/repair-qualify-tests.json",
+  "run_dir": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run",
+  "schema": "tau.workflow_repair_receipt.v1",
+  "status": "PASS",
+  "workflow_id": "durable-repository-qualification"
+}

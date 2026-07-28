@@ -1,0 +1,14 @@
+{
+  "cancelled": false,
+  "command": [
+    "/tmp/tau-autocomplete-20260728/.venv/bin/python",
+    "-m",
+    "tau_coding.workflows.nodes.durable_repository_qualification",
+    "validate-transaction"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "",
+  "timed_out": false
+}

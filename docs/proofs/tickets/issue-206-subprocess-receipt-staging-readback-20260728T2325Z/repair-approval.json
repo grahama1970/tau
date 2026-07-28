@@ -1,0 +1,21 @@
+{
+  "action": "workflow_repair",
+  "actor": {
+    "auth_method": "local-signature",
+    "id": "human:test"
+  },
+  "approved": true,
+  "evidence": [
+    "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-tests.json"
+  ],
+  "nonce": "6cfee261661d81b380d67d5ecb3547211c4e814646f6d66fdd4aa9e1c0ba8be3",
+  "reason": "approve exact targeted repair",
+  "schema": "tau.human_approval_packet.v1",
+  "signature": "local-signature-sha256:052d72fb411b9dc86d28acf46449bb19e4f22a4ba41b7c1ccc8568d49473b5d5",
+  "target": {
+    "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+    "id": "durable-repository-qualification:qualify-tests:sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+    "node_id": "qualify-tests",
+    "workflow_id": "durable-repository-qualification"
+  }
+}

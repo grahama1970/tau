@@ -1,0 +1,21 @@
+{
+  "goal": {
+    "completion_criteria": [
+      "Capture the exact requested Git repository without mutation.",
+      "Qualify documentation, tests, and package metadata concurrently.",
+      "Repair only a blocked qualification branch while preserving accepted work.",
+      "Publish one idempotent qualification result after exact human approval."
+    ],
+    "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+    "goal_id": "durable-repository-qualification:596562978148",
+    "goal_version": 1,
+    "summary": "probe"
+  },
+  "human_goal": "probe",
+  "inject_test_branch_failure": true,
+  "publish_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/pub",
+  "repo_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/fixture-repo",
+  "request_sha256": "sha256:59656297814812bb63f05e7950abc7256660b15f8225cfea08258619debb353f",
+  "schema": "tau.durable_repository_qualification_request.v1",
+  "step_delay_seconds": 0.01
+}

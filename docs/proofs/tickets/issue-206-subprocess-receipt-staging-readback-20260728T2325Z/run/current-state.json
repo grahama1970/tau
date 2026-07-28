@@ -1,0 +1,86 @@
+{
+  "active_node_id": null,
+  "blocked_nodes": [],
+  "completed_nodes": [
+    "capture-repository",
+    "finalize-qualification",
+    "publish-qualification",
+    "qualify-documentation",
+    "qualify-package",
+    "qualify-tests",
+    "reconcile-qualification"
+  ],
+  "events_jsonl": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/events.jsonl",
+  "node_statuses": {
+    "capture-repository": {
+      "attempt_count": 0,
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/capture-repository.json",
+      "resumed": true,
+      "status": "PASS",
+      "verdict": "PASS"
+    },
+    "finalize-qualification": {
+      "attempt_count": 1,
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/finalize-qualification.json",
+      "resumed": false,
+      "status": "PASS",
+      "verdict": "PASS"
+    },
+    "publish-qualification": {
+      "attempt_count": 1,
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/publish-qualification.json",
+      "resumed": true,
+      "status": "PASS",
+      "verdict": "PASS"
+    },
+    "qualify-documentation": {
+      "attempt_count": 0,
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-documentation.json",
+      "resumed": true,
+      "status": "PASS",
+      "verdict": "PASS"
+    },
+    "qualify-package": {
+      "attempt_count": 0,
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-package.json",
+      "resumed": true,
+      "status": "PASS",
+      "verdict": "PASS"
+    },
+    "qualify-tests": {
+      "attempt_count": 0,
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-tests.json",
+      "resumed": true,
+      "status": "PASS",
+      "verdict": "PASS"
+    },
+    "reconcile-qualification": {
+      "attempt_count": 0,
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/reconcile-qualification.json",
+      "resumed": true,
+      "status": "PASS",
+      "verdict": "PASS"
+    }
+  },
+  "ready_nodes": [],
+  "resume": {
+    "enabled_by_default": true,
+    "receipt_paths": {
+      "capture-repository": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/capture-repository.json",
+      "finalize-qualification": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/finalize-qualification.json",
+      "publish-qualification": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/publish-qualification.json",
+      "qualify-documentation": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-documentation.json",
+      "qualify-package": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-package.json",
+      "qualify-tests": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-tests.json",
+      "reconcile-qualification": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/reconcile-qualification.json"
+    },
+    "will_reuse_valid_pass_receipts": true
+  },
+  "run_dir": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run",
+  "run_id": "durable-repository-qualification-596562978148",
+  "schema": "tau.generic_dag_checkpoint.v1",
+  "spec_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/workflow/dag.json",
+  "status": "PASS",
+  "timestamp": "2026-07-28T23:22:41Z",
+  "verdict": "PASS"
+}

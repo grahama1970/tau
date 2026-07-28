@@ -1,0 +1,10 @@
+{
+  "head_sha": "1e4ba516185bf5cf2dd555659ea8abf137d3ef22",
+  "matching_path_count": 1,
+  "matching_paths": [
+    "pyproject.toml"
+  ],
+  "schema": "tau.package_qualification.v1",
+  "status": "PASS",
+  "summary": "qualify-package completed against the accepted repository snapshot."
+}

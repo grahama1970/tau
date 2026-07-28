@@ -1,0 +1,17 @@
+{
+  "artifact_root": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transaction-artifacts/qualification",
+  "goal": {
+    "completion_criteria": [
+      "Capture the exact requested Git repository without mutation.",
+      "Qualify documentation, tests, and package metadata concurrently.",
+      "Repair only a blocked qualification branch while preserving accepted work.",
+      "Publish one idempotent qualification result after exact human approval."
+    ],
+    "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+    "goal_id": "durable-repository-qualification:596562978148",
+    "goal_version": 1,
+    "summary": "probe"
+  },
+  "publish_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/pub",
+  "schema": "tau.qualification_publication_work_order.v1"
+}

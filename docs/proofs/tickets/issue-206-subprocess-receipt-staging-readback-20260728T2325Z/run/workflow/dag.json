@@ -1,0 +1,263 @@
+{
+  "goal": {
+    "completion_criteria": [
+      "Capture the exact requested Git repository without mutation.",
+      "Qualify documentation, tests, and package metadata concurrently.",
+      "Repair only a blocked qualification branch while preserving accepted work.",
+      "Publish one idempotent qualification result after exact human approval."
+    ],
+    "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+    "goal_id": "durable-repository-qualification:596562978148",
+    "goal_version": 1,
+    "summary": "probe"
+  },
+  "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+  "max_concurrency": 3,
+  "nodes": [
+    {
+      "accepted_context_from": [],
+      "command": [
+        "/tmp/tau-autocomplete-20260728/.venv/bin/python",
+        "-m",
+        "tau_coding.workflows.nodes.durable_repository_qualification",
+        "capture",
+        "--request",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/durable-qualification-request.json",
+        "--output",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/repository-capture.json",
+        "--receipt",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/capture-repository.json",
+        "--step-delay-seconds",
+        "0.01"
+      ],
+      "depends_on": [],
+      "max_attempts": 1,
+      "node_id": "capture-repository",
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/capture-repository.json",
+      "role": "Capture immutable repository identity",
+      "timeout_seconds": 30
+    },
+    {
+      "accepted_context_from": [
+        "capture-repository"
+      ],
+      "command": [
+        "/tmp/tau-autocomplete-20260728/.venv/bin/python",
+        "-m",
+        "tau_coding.workflows.nodes.durable_repository_qualification",
+        "documentation",
+        "--request",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/durable-qualification-request.json",
+        "--output",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/documentation-qualification.json",
+        "--receipt",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-documentation.json",
+        "--step-delay-seconds",
+        "0.01"
+      ],
+      "depends_on": [
+        "capture-repository"
+      ],
+      "max_attempts": 1,
+      "node_id": "qualify-documentation",
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-documentation.json",
+      "role": "Qualify documentation",
+      "timeout_seconds": 30
+    },
+    {
+      "accepted_context_from": [
+        "capture-repository"
+      ],
+      "command": [
+        "/tmp/tau-autocomplete-20260728/.venv/bin/python",
+        "-m",
+        "tau_coding.workflows.nodes.durable_repository_qualification",
+        "tests",
+        "--request",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/durable-qualification-request.json",
+        "--repair-packet",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/repair-qualify-tests.json",
+        "--output",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/test-qualification.json",
+        "--receipt",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-tests.json",
+        "--step-delay-seconds",
+        "0.01"
+      ],
+      "depends_on": [
+        "capture-repository"
+      ],
+      "max_attempts": 1,
+      "node_id": "qualify-tests",
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-tests.json",
+      "role": "Qualify and repair test evidence",
+      "timeout_seconds": 30
+    },
+    {
+      "accepted_context_from": [
+        "capture-repository"
+      ],
+      "command": [
+        "/tmp/tau-autocomplete-20260728/.venv/bin/python",
+        "-m",
+        "tau_coding.workflows.nodes.durable_repository_qualification",
+        "package",
+        "--request",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/durable-qualification-request.json",
+        "--output",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/package-qualification.json",
+        "--receipt",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-package.json",
+        "--step-delay-seconds",
+        "0.01"
+      ],
+      "depends_on": [
+        "capture-repository"
+      ],
+      "max_attempts": 1,
+      "node_id": "qualify-package",
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualify-package.json",
+      "role": "Qualify package metadata",
+      "timeout_seconds": 30
+    },
+    {
+      "accepted_context_from": [
+        "qualify-documentation",
+        "qualify-tests",
+        "qualify-package"
+      ],
+      "command": [
+        "/tmp/tau-autocomplete-20260728/.venv/bin/python",
+        "-m",
+        "tau_coding.workflows.nodes.durable_repository_qualification",
+        "reconcile",
+        "--request",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/durable-qualification-request.json",
+        "--output",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/repository-qualification.json",
+        "--receipt",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/reconcile-qualification.json",
+        "--step-delay-seconds",
+        "0.01"
+      ],
+      "depends_on": [
+        "qualify-documentation",
+        "qualify-tests",
+        "qualify-package"
+      ],
+      "max_attempts": 1,
+      "node_id": "reconcile-qualification",
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/reconcile-qualification.json",
+      "role": "Reconcile accepted qualification branches",
+      "timeout_seconds": 30
+    },
+    {
+      "accepted_context_from": [
+        "reconcile-qualification"
+      ],
+      "command": [
+        "/tmp/tau-autocomplete-20260728/.venv/bin/python",
+        "-m",
+        "tau_coding.workflows.nodes.durable_repository_qualification",
+        "produce",
+        "--request",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/durable-qualification-request.json",
+        "--receipt",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/publish-qualification.json"
+      ],
+      "depends_on": [
+        "reconcile-qualification"
+      ],
+      "max_attempts": 1,
+      "node_id": "publish-qualification",
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/publish-qualification.json",
+      "role": "Publish exact approved qualification",
+      "timeout_seconds": 30,
+      "transaction": {
+        "artifact_root": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/transaction-artifacts/qualification",
+        "continuation": {
+          "approval": {
+            "action": "generic_dag_transaction_continue",
+            "packet_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/approval.json"
+          },
+          "command": [
+            "/tmp/tau-autocomplete-20260728/.venv/bin/python",
+            "-m",
+            "tau_coding.workflows.nodes.durable_repository_qualification",
+            "publish",
+            "--request",
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/durable-qualification-request.json",
+            "--json-output",
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.json",
+            "--markdown-output",
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.md",
+            "--ledger",
+            "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/qualification-publication-ledger.json"
+          ],
+          "timeout_seconds": 30
+        },
+        "producer_id": "qualification-producer",
+        "reviewer": {
+          "command": [
+            "/tmp/tau-autocomplete-20260728/.venv/bin/python",
+            "-m",
+            "tau_coding.workflows.nodes.durable_repository_qualification",
+            "review"
+          ],
+          "reviewer_id": "qualification-reviewer",
+          "timeout_seconds": 30
+        },
+        "schema": "tau.generic_artifact_transaction.v1",
+        "transaction_id": "durable-qualification-publication",
+        "validator": {
+          "command": [
+            "/tmp/tau-autocomplete-20260728/.venv/bin/python",
+            "-m",
+            "tau_coding.workflows.nodes.durable_repository_qualification",
+            "validate-transaction"
+          ],
+          "validator_id": "qualification-validator"
+        }
+      },
+      "work_order_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/qualification-publication-work-order.json"
+    },
+    {
+      "accepted_context_from": [
+        "publish-qualification"
+      ],
+      "command": [
+        "/tmp/tau-autocomplete-20260728/.venv/bin/python",
+        "-m",
+        "tau_coding.workflows.nodes.durable_repository_qualification",
+        "finalize",
+        "--request",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/input/durable-qualification-request.json",
+        "--json-output",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/results/durable-repository-qualification.json",
+        "--receipt",
+        "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/finalize-qualification.json"
+      ],
+      "depends_on": [
+        "publish-qualification"
+      ],
+      "max_attempts": 1,
+      "node_id": "finalize-qualification",
+      "receipt_path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/receipts/finalize-qualification.json",
+      "role": "Project durable qualification result",
+      "timeout_seconds": 30
+    }
+  ],
+  "run_dir": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run",
+  "run_id": "durable-repository-qualification-596562978148",
+  "schema": "tau.generic_dag_spec.v1",
+  "workflow": {
+    "result_node_id": "finalize-qualification",
+    "result_schema": "tau.durable_repository_qualification.v1",
+    "schema": "tau.workflow_metadata.v1",
+    "summary": "Qualify concurrent repository evidence, recover interrupted work, repair one affected branch, and publish one idempotent result after exact human approval.",
+    "title": "Durable Repository Qualification",
+    "topology": "DURABLE_MIXED_REPAIR_APPROVAL",
+    "workflow_id": "durable-repository-qualification",
+    "workflow_version": 1
+  }
+}

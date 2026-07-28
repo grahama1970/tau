@@ -1,0 +1,1 @@
+uv run tau workflows repair docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run --node qualify-tests --approval-packet docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/repair-approval.json

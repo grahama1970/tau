@@ -1,0 +1,27 @@
+{
+  "artifacts": [],
+  "commands_run": [
+    "deterministic qualification producer"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:be4e501316963b7338ab4fcb0c92a98b6797400cf5edc025aa8a57dc0b5da8fb",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+  "handoff_summary": "Qualification candidate produced for validation.",
+  "live": true,
+  "mocked": false,
+  "node_id": "publish-qualification",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": "81c15da9c33d80b3268e90662d207ce838cfd688ec7a8d799edbe60b14bd297a"
+}

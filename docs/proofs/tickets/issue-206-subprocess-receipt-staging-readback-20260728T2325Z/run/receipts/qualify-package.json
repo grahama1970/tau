@@ -1,0 +1,50 @@
+{
+  "accepted_output": {
+    "artifacts": [
+      {
+        "kind": "package",
+        "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/package-qualification.json",
+        "sha256": "d21e763558e63d5be1b49be2a24317a589822c43ec90bdcd19dcc8e058efd0bd"
+      }
+    ],
+    "head_sha": "1e4ba516185bf5cf2dd555659ea8abf137d3ef22",
+    "matching_path_count": 1,
+    "matching_paths": [
+      "pyproject.toml"
+    ],
+    "schema": "tau.package_qualification.v1",
+    "status": "PASS",
+    "summary": "qualify-package completed against the accepted repository snapshot."
+  },
+  "artifacts": [
+    {
+      "kind": "package",
+      "path": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/run/intermediate/package-qualification.json",
+      "sha256": "d21e763558e63d5be1b49be2a24317a589822c43ec90bdcd19dcc8e058efd0bd"
+    }
+  ],
+  "commands_run": [
+    "durable-qualification:qualify-package"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:59832f092caddb6596b8b5a9ca188302f24d3416da163ca8d5c16066128e9532",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:7382f58acb7d7630b7e83db651030a1631e42bb3a6f0b293e0e27c186338abb4",
+  "handoff_summary": "qualify-package accepted output is available.",
+  "live": true,
+  "mocked": false,
+  "node_id": "qualify-package",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "side_effects": [],
+  "status": "PASS",
+  "verdict": "PASS"
+}

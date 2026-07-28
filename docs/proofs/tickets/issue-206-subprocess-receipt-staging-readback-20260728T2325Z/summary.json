@@ -1,0 +1,97 @@
+{
+  "absence_probe": {
+    "attempt_rows": [
+      "killed-child|SETTLED|NONE"
+    ],
+    "classifications": [
+      "dag_diagnostic_event_appended|killed-child|attempted_and_swallowed|[124]"
+    ],
+    "command_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/absence-probe/01-timeout-dag-run.command.txt",
+    "exitcode": 1,
+    "receipt_admission_count": 0,
+    "stderr_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/absence-probe/01-timeout-dag-run.stderr.txt",
+    "stdout_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/absence-probe/01-timeout-dag-run.stdout.json"
+  },
+  "commands": [
+    {
+      "command_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/01-run.command.txt",
+      "exitcode": 1,
+      "name": "01-run",
+      "stderr_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/01-run.stderr.txt",
+      "stdout_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/01-run.stdout.json"
+    },
+    {
+      "command_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/02-repair.command.txt",
+      "exitcode": 0,
+      "name": "02-repair",
+      "stderr_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/02-repair.stderr.txt",
+      "stdout_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/02-repair.stdout.json"
+    },
+    {
+      "command_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/03-resume.command.txt",
+      "exitcode": 1,
+      "name": "03-resume",
+      "stderr_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/03-resume.stderr.txt",
+      "stdout_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/03-resume.stdout.json"
+    },
+    {
+      "command_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/04-approve.command.txt",
+      "exitcode": 0,
+      "name": "04-approve",
+      "stderr_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/04-approve.stderr.txt",
+      "stdout_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/04-approve.stdout.json"
+    },
+    {
+      "command_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/05-final-resume.command.txt",
+      "exitcode": 0,
+      "name": "05-final-resume",
+      "stderr_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/05-final-resume.stderr.txt",
+      "stdout_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/05-final-resume.stdout.json"
+    }
+  ],
+  "distinct_admitted_nodes": [
+    "capture-repository",
+    "finalize-qualification",
+    "publish-qualification",
+    "qualify-documentation",
+    "qualify-package",
+    "qualify-tests",
+    "reconcile-qualification"
+  ],
+  "extra_admitted_nodes": [
+    "finalize-qualification"
+  ],
+  "final_ok": true,
+  "final_status": "PASS",
+  "live": true,
+  "mocked": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "human product acceptance for #221",
+      "parent #72 closure"
+    ],
+    "proves": [
+      "real durable-repository-qualification CLI run proceeded through injected branch failure, repair, approval, resume, publication, and final PASS with parent-side receipt admissions",
+      "timeout/kill absence probe classified receipt absence as attempted_and_swallowed with zero receipt admissions, and SIGKILL recovery regressions passed with retained command output"
+    ]
+  },
+  "provider_live": false,
+  "raw_admission_rows_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/06-receipt-admissions-node-ids.txt",
+  "required_six_nodes": [
+    "capture-repository",
+    "publish-qualification",
+    "qualify-documentation",
+    "qualify-package",
+    "qualify-tests",
+    "reconcile-qualification"
+  ],
+  "required_six_nodes_present": true,
+  "schema": "tau.issue_206_subprocess_receipt_staging_proof.v1",
+  "sigkill_regression": {
+    "command_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/09-sigkill-tests.command.txt",
+    "exitcode": 0,
+    "stderr_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/09-sigkill-tests.stderr.txt",
+    "stdout": "...                                                                      [100%]\n3 passed in 40.78s",
+    "stdout_path": "docs/proofs/tickets/issue-206-subprocess-receipt-staging-readback-20260728T2325Z/09-sigkill-tests.stdout.txt"
+  }
+}
