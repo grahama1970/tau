@@ -1,10 +1,26 @@
 {
   "agent_contract": "agents/coder/AGENTS.md",
   "command": [
-    "python3",
-    "/home/graham/workspace/experiments/agent-skills/skills/code-runner/scripts/code_runner_tau_adapter.py"
+    "/home/graham/.local/bin/uv",
+    "run",
+    "tau",
+    "handoff-agent-adapter",
+    "--result-status",
+    "BLOCKED",
+    "--result-summary",
+    "coder has no Tau-native implementation. Tau's coding worker lane is tau scillm-worker-launch (schema tau.executor.scillm_worker.v1, route surface opencode_serve, endpoint /v1/scillm/opencode/runs). A valid work order validates PASS, but --apply returns SciLLM HTTP 404: the OpenCode serve surface is not running. tau doctor agrees: can_run_provider_live_lane is false. Do NOT route this through agent-skills/code-runner; that calls SciLLM directly from a project-agent skill and bypasses Tau's provider boundary.",
+    "--next-agent",
+    "human",
+    "--next-executor",
+    "human",
+    "--next-reason",
+    "A human must bring up the SciLLM OpenCode serve surface or supply a different Tau-owned coder.",
+    "--required-evidence",
+    "SciLLM opencode_serve reachable, or a Tau-native coder adapter that emits changed_files and focused_tests.",
+    "--stop-condition",
+    "Tau can dispatch a coder that produces evidenced changes."
   ],
   "cwd": ".",
   "persona_contract": "agents/coder/persona.yaml",
-  "timeout_s": 1800
+  "timeout_s": 60
 }
