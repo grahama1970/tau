@@ -20,7 +20,7 @@ SKILL_ROUND_RECEIPT_SCHEMA = "tau.skill_round_receipt.v1"
 
 SURF_RUN = agent_skills_root() / "skills/surf/run.sh"
 CREATE_ARCHITECTURE_RUN = Path(
-    "/home/graham/workspace/experiments/agent-skills/skills/create-architecture/run.sh"
+    f"{agent_skills_root()}/skills/create-architecture/run.sh"
 )
 
 

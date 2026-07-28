@@ -24,7 +24,7 @@ SPRITE_PLAYBACK_PROOF_SCHEMA = "tau.sprite_playback_proof.v1"
 SPRITE_RELEASE_BOUNDARY_SCHEMA = "tau.sprite_release_boundary.v1"
 SPRITE_ATLAS = agent_skills_root() / "skills/sprite-atlas/run.sh"
 BATTLE_PROFILE = Path(
-    "/home/graham/workspace/experiments/agent-skills/skills/battle/profiles/"
+    f"{agent_skills_root()}/skills/battle/profiles/"
     "pixijs-runtime-atlas-64.v1.json"
 )
 SPRITE_ID = "battle"

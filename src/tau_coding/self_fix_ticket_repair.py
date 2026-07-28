@@ -12,6 +12,7 @@ from shutil import which
 from typing import Any
 
 from tau_coding.content_trust import format_content_for_model, untrusted_content_block
+from tau_coding.external_workspace import agent_skills_root
 from tau_coding.github_handoff import redact_github_projection
 from tau_coding.self_fix_repair_loop import write_coder_reviewer_repair_loop
 
@@ -24,7 +25,7 @@ _ALLOWED_VERIFICATION_COMMAND_TEMPLATES = (
     ("uv", "run", "python", "-m", "py_compile", "{target_file}"),
 )
 _HELPER = Path(
-    "/home/graham/workspace/experiments/agent-skills/skills/"
+    f"{agent_skills_root()}/skills/"
     "best-practices-github-ticket/scripts/gh-ticket-tools.sh"
 )
 

@@ -493,7 +493,7 @@ def _post_json(
             "body_text": exc.read().decode("utf-8", "replace"),
             "error": str(exc),
         }
-    except (TimeoutError, socket.timeout) as exc:
+    except TimeoutError as exc:
         return {
             "status": "TIMEOUT",
             "http_status": None,

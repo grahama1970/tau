@@ -11,6 +11,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.external_workspace import agent_skills_root
 from tau_coding.herdr_cleanup import resolve_herdr_session
 from tau_coding.provider_lifecycle import (
     build_provider_session_state,
@@ -1257,7 +1258,7 @@ def _resolve_herdr_workstation(path: Path | None) -> Path:
     if path is not None:
         resolved = path.expanduser().resolve()
     else:
-        resolved = Path("/home/graham/workspace/experiments/agent-skills/skills/herdr-workstation")
+        resolved = agent_skills_root() / "skills/herdr-workstation"
     run_sh = resolved / "run.sh"
     if not run_sh.exists():
         raise RuntimeError(f"herdr-workstation run.sh not found: {run_sh}")

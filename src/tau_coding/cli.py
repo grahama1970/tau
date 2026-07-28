@@ -113,6 +113,7 @@ from tau_coding.docker_sandbox import write_docker_sandbox_receipt
 from tau_coding.embry_sparta_demo import run_demo_embry_sparta_airgap
 from tau_coding.evidence_case_skill_adapter import write_evidence_case_skill_adapter_receipt
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
+from tau_coding.external_workspace import agent_skills_root
 from tau_coding.generated_ticket import (
     load_generated_ticket,
     project_agent_handoff,
@@ -6424,7 +6425,7 @@ def _parse_generic_dag_run_cli_args(
     agents_root = Path(
         os.environ.get(
             "TAU_AGENT_REGISTRY_ROOT",
-            "/home/graham/workspace/experiments/agent-skills/agents",
+            str(agent_skills_root() / "agents"),
         )
     )
     command_spec_root: Path | None = None
@@ -11750,7 +11751,7 @@ def _parse_self_fix_cli_args(args: list[str]) -> dict[str, object]:
     repo: str | None = None
     issue: int | None = None
     receipt_dir: Path | None = None
-    agents_root = Path("/home/graham/workspace/experiments/agent-skills/agents")
+    agents_root = agent_skills_root() / "agents"
     command_spec_root: Path | None = None
     active_goal_hash: str | None = None
     memory_base_url = "http://127.0.0.1:8601"
@@ -11890,7 +11891,7 @@ def _parse_self_fix_cli_args(args: list[str]) -> dict[str, object]:
 def _parse_self_fix_poll_cli_args(args: list[str]) -> dict[str, object]:
     repo: str | None = None
     receipt_dir: Path | None = None
-    agents_root = Path("/home/graham/workspace/experiments/agent-skills/agents")
+    agents_root = agent_skills_root() / "agents"
     command_spec_root: Path | None = None
     active_goal_hash: str | None = None
     memory_base_url = "http://127.0.0.1:8601"
@@ -16292,7 +16293,7 @@ def _brave_search_sources(query: str, *, count: str | None) -> list[dict[str, st
         "-lc",
         (
             "source ~/.zshrc >/dev/null 2>&1 || true; "
-            "/home/graham/workspace/experiments/agent-skills/skills/brave-search/run.sh "
+            f"{agent_skills_root()}/skills/brave-search/run.sh "
             f"web {json.dumps(query)} --count {result_count} --json"
         ),
     ]

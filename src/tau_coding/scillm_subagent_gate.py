@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-
 SCILLM_SUBAGENT_GATE_SCHEMA = "tau.scillm_subagent_gate.v1"
 BLOCKED_SUBSTRATE_KINDS = {"blocked_substrate"}
 BLOCKED_SUBSTRATE_REASONS = {

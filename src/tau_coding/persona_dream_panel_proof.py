@@ -16,7 +16,6 @@ from tau_coding.persona_dream_panel_agent import (
     DEFAULT_VISUAL_REVIEW,
 )
 
-
 PERSONA_DREAM_PANEL_PROOF_SCHEMA = "tau.persona_dream_panel_proof.v1"
 DEFAULT_AGENT_REGISTRY_ROOT = agent_skills_root() / "agents"
 DEFAULT_COMMAND_SPEC_ROOT = Path("experiments/goal-locked-subagents/agent-command-specs")

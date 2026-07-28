@@ -131,7 +131,7 @@ def write_persona_dream_packet_loop_proof(
     loop = write_agent_handoff_command_loop_receipt(
         start_payload,
         proof_dir / "command-loop",
-        agent_registry_root=Path("/home/graham/workspace/experiments/agent-skills/agents"),
+        agent_registry_root=agent_skills_root() / "agents",
         command_spec_root=Path("experiments/goal-locked-subagents/agent-command-specs"),
         active_goal_hash=active_goal_hash,
         max_steps=3,
@@ -250,7 +250,7 @@ def write_persona_dream_story_contract_loop_proof(
     loop = write_agent_handoff_command_loop_receipt(
         start_payload,
         proof_dir / "command-loop",
-        agent_registry_root=Path("/home/graham/workspace/experiments/agent-skills/agents"),
+        agent_registry_root=agent_skills_root() / "agents",
         command_spec_root=Path("experiments/goal-locked-subagents/agent-command-specs"),
         active_goal_hash=active_goal_hash,
         max_steps=3,
@@ -367,7 +367,7 @@ def write_persona_dream_storyboard_panel_loop_proof(
     loop = write_agent_handoff_command_loop_receipt(
         start_payload,
         proof_dir / "command-loop",
-        agent_registry_root=Path("/home/graham/workspace/experiments/agent-skills/agents"),
+        agent_registry_root=agent_skills_root() / "agents",
         command_spec_root=Path("experiments/goal-locked-subagents/agent-command-specs"),
         active_goal_hash=active_goal_hash,
         max_steps=3,
@@ -499,7 +499,7 @@ def write_persona_dream_script_contract_loop_proof(
     loop = write_agent_handoff_command_loop_receipt(
         start_payload,
         proof_dir / "command-loop",
-        agent_registry_root=Path("/home/graham/workspace/experiments/agent-skills/agents"),
+        agent_registry_root=agent_skills_root() / "agents",
         command_spec_root=Path("experiments/goal-locked-subagents/agent-command-specs"),
         active_goal_hash=active_goal_hash,
         max_steps=3,

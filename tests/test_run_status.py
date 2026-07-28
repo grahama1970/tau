@@ -1652,7 +1652,12 @@ def test_run_status_reports_dag_viewer_store_schema_skew(tmp_path: Path) -> None
     assert status["dag_viewer"]["status"] == "BLOCKED"
     assert status["dag_viewer"]["source"] == "dag_run_store_schema_mismatch"
     assert status["dag_viewer"]["store_error"] == "dag_run_store_schema_mismatch"
-    assert status["dag_viewer"]["store_error_detail"] == "actual=999 expected=2"
+    from tau_coding.dag_runtime.run_store import STORE_SCHEMA_VERSION
+
+    assert (
+        status["dag_viewer"]["store_error_detail"]
+        == f"actual=999 expected={STORE_SCHEMA_VERSION}"
+    )
 
 
 def test_run_status_summarizes_project_dag_command_policy_rejection(

@@ -9,9 +9,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.external_workspace import agent_skills_root
+
 CODEBASE_INGEST_RECEIPT_SCHEMA = "tau.codebase_ingest_receipt.v1"
 DEFAULT_INGEST_CODE_RUNNER = (
-    "/home/graham/workspace/experiments/agent-skills/skills/ingest-code/run.sh"
+    str(agent_skills_root() / "skills/ingest-code/run.sh")
 )
 
 

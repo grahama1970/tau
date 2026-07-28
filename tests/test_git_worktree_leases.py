@@ -1541,10 +1541,12 @@ def test_failed_allocation_does_not_prune_unrelated_missing_worktree(
     unrelated = tmp_path / "unrelated-worktree"
     _git(repository, "worktree", "add", "--detach", str(unrelated), "HEAD")
     _git(repository, "config", "gc.worktreePruneExpire", "now")
-    # Auto-gc prunes stale worktrees as a side effect of unrelated git commands,
-    # and which commands trigger it varies by git version. Disable it so the
-    # only candidate pruner left is the code under test.
+    # Root cause (ticket #210, container replay): git >= 2.54 spawns DETACHED
+    # background maintenance from `git commit`; with pruneExpire=now it prunes
+    # the stale registration asynchronously, racing later steps - gc.auto=0
+    # does not gate it, maintenance.auto=false does (3/3 preserved in replay).
     _git(repository, "config", "gc.auto", "0")
+    _git(repository, "config", "maintenance.auto", "false")
     shutil.rmtree(unrelated)
     external = tmp_path / "external"
     external.write_text("outside\n", encoding="utf-8")

@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from tau_coding import __version__
+from tau_coding.external_workspace import agent_skills_root
 
 RUNTIME_HANDSHAKE_SCHEMA = "tau.runtime_handshake.v1"
 _DEFAULT_TAU_WRAPPER = Path.home() / "workspace/experiments/agent-skills/skills/tau/run.sh"
@@ -102,10 +103,10 @@ def write_runtime_handshake(output: Path) -> dict[str, Any]:
         },
         "proof_commands": {
             "operator_doctor": (
-                "/home/graham/workspace/experiments/agent-skills/skills/tau/run.sh doctor"
+                f"{agent_skills_root()}/skills/tau/run.sh doctor"
             ),
             "operator_status": (
-                "/home/graham/workspace/experiments/agent-skills/skills/tau/run.sh status"
+                f"{agent_skills_root()}/skills/tau/run.sh status"
             ),
             "runtime_handshake": (
                 "uv run tau runtime-handshake --output "

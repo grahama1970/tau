@@ -24,6 +24,7 @@ from tau_coding.battle_scillm import (
     preflight_battle_scillm_auth,
     resolve_active_scillm_proxy_key,
 )
+from tau_coding.external_workspace import agent_skills_root
 
 
 def produce(
@@ -71,7 +72,7 @@ def produce(
             encoding="utf-8",
         )
         command = [
-            "/home/graham/workspace/experiments/agent-skills/skills/scillm/run.sh",
+            str(agent_skills_root() / "skills/scillm/run.sh"),
             "generate-image",
             "--auth",
             "codex-oauth",

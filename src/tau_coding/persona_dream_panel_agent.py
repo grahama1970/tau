@@ -675,26 +675,25 @@ def _review_panel_image_with_scillm(
         with httpx.Client(
             base_url=str(panel.get("scillm_base_url") or "http://127.0.0.1:4001").rstrip("/"),
             timeout=float(panel.get("scillm_vlm_timeout_s") or 180),
-        ) as client:
-            with client.stream(
-                "POST",
-                "/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {auth['api_key']}",
-                    "X-Caller-Skill": "tau-persona-dream-panel-reviewer",
-                    "Accept": "text/event-stream",
-                },
-                json=payload,
-            ) as response:
-                receipt["http_status"] = response.status_code
-                receipt["duration_seconds"] = round(time.monotonic() - started, 6)
-                receipt["live_call_performed"] = True
-                if response.status_code != 200:
-                    receipt["error"] = f"scillm_http_status_{response.status_code}"
-                    receipt["response_text"] = response.read().decode("utf-8", errors="replace")[:1000]
-                    _write_json(receipt_path, receipt)
-                    return receipt
-                stream_result = _collect_scillm_sse(response.iter_lines(), events_path)
+        ) as client, client.stream(
+            "POST",
+            "/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {auth['api_key']}",
+                "X-Caller-Skill": "tau-persona-dream-panel-reviewer",
+                "Accept": "text/event-stream",
+            },
+            json=payload,
+        ) as response:
+            receipt["http_status"] = response.status_code
+            receipt["duration_seconds"] = round(time.monotonic() - started, 6)
+            receipt["live_call_performed"] = True
+            if response.status_code != 200:
+                receipt["error"] = f"scillm_http_status_{response.status_code}"
+                receipt["response_text"] = response.read().decode("utf-8", errors="replace")[:1000]
+                _write_json(receipt_path, receipt)
+                return receipt
+            stream_result = _collect_scillm_sse(response.iter_lines(), events_path)
     except httpx.HTTPError as exc:
         receipt["error"] = f"scillm_http_error: {exc}"
         receipt["duration_seconds"] = round(time.monotonic() - started, 6)

@@ -358,9 +358,7 @@ def _validate_memory_gate_policy(payload: Mapping[str, Any], *, errors: list[str
             errors.append(f"memory.{key} must be a boolean when present")
     if "min_intent_confidence" in memory:
         confidence = memory.get("min_intent_confidence")
-        if isinstance(confidence, bool) or not isinstance(confidence, (int, float)):
-            errors.append("memory.min_intent_confidence must be a number between 0 and 1")
-        elif confidence < 0 or confidence > 1:
+        if isinstance(confidence, bool) or not isinstance(confidence, (int, float)) or confidence < 0 or confidence > 1:
             errors.append("memory.min_intent_confidence must be a number between 0 and 1")
     if "evidence_case_required_for" in memory and not _is_string_list(
         memory.get("evidence_case_required_for")

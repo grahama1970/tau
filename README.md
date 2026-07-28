@@ -596,7 +596,7 @@ finished global Sparta Chat or production orchestration system.
 Install the project environment:
 
 ```bash
-cd /home/graham/workspace/experiments/tau
+cd tau  # your checkout path
 uv sync
 uv run tau --help
 ```

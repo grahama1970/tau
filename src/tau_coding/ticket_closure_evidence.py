@@ -5,9 +5,9 @@ from __future__ import annotations
 import json
 import time
 import uuid
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from collections.abc import Mapping
 from typing import Any
 
 TICKET_CLOSURE_EVIDENCE_SCHEMA = "agent_skills.ticket_closure_evidence.v1"

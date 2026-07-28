@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import sys
 
-from tau_coding.tui.pty_proof_app import run_pty_proof_app
 from tau_coding.tui.app import run_pty_proof_real_app
+from tau_coding.tui.pty_proof_app import run_pty_proof_app
 
 
 def main() -> None:

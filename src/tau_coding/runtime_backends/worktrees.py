@@ -1662,6 +1662,13 @@ def _git_command(cwd: Path, *args: str) -> list[str]:
     return [
         "git",
         "-c",
+        # git >= 2.54 auto-spawns detached background maintenance from
+        # porcelain commands; with gc.worktreePruneExpire=now it prunes stale
+        # worktree registrations asynchronously (gc.auto=0 does NOT gate it -
+        # proven by container replay, ticket #210). Tau must never cause
+        # mutations it does not own in a user repository.
+        "maintenance.auto=false",
+        "-c",
         "core.fsmonitor=false",
         "-c",
         "core.hooksPath=/dev/null",
