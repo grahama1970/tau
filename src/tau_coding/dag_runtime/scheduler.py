@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import time
 import uuid
 from collections.abc import Callable, Mapping
@@ -1868,6 +1869,17 @@ def _admit_result_receipt(
     try:
         blob = path.read_bytes()
     except OSError:
+        return
+    # S6 validation: never admit bytes that do not parse as a JSON object -
+    # a child SIGKILLed mid-write leaves a torn file, and admitting its hash
+    # would make torn evidence authoritative. Torn/invalid receipts stay
+    # unadmitted and visible on the bypass ledger until enforcement settles
+    # them via system_settlement.
+    try:
+        parsed = json.loads(blob.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        return
+    if not isinstance(parsed, dict):
         return
     digest = f"sha256:{hashlib.sha256(blob).hexdigest()}"
     try:
