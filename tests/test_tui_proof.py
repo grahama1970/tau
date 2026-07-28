@@ -57,3 +57,20 @@ def test_tui_proof_cli_writes_fixture_backed_textual_receipt(tmp_path: Path) -> 
     assert payload["visible_assertions"]["bash_execution_metadata"] is True
     assert (tmp_path / "proof.json").exists()
     assert (tmp_path / "tau-textual-tui-memory-stage.svg").exists()
+
+
+def test_manifest_binds_screenshot_digest(tmp_path: Path) -> None:
+    """#216: the manifest names the screenshot by content hash."""
+    import hashlib
+    import json as _json
+
+    receipt = render_textual_tui_memory_stage_proof(
+        output_dir=tmp_path, prompt="bind test", run_id="run-bind",
+        route="memory_first", next_agent="coder",
+    )
+    svg = Path(str(receipt["screenshot_svg"]))
+    assert receipt["screenshot_sha256"] == f"sha256:{hashlib.sha256(svg.read_bytes()).hexdigest()}"
+    on_disk = _json.loads((tmp_path / "proof.json").read_text())
+    assert on_disk["screenshot_sha256"] == receipt["screenshot_sha256"]
+    assert on_disk["visible_assertions"]["screenshot_present"] is True
+    assert receipt["ok"] is True

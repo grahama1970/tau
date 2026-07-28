@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import AsyncIterator
 from pathlib import Path
@@ -16,6 +17,7 @@ from tau_agent import (
     UserMessage,
 )
 from tau_coding.commands import CommandResult
+from tau_coding.dag_runtime.admission import write_durable_json
 from tau_coding.session import CodingSession, ModelChoice
 from tau_coding.skills import Skill
 from tau_coding.system_prompt import ProjectContextFile
@@ -152,7 +154,20 @@ async def _render_textual_tui_memory_stage_proof(
         app.save_screenshot(str(screenshot_svg))
         text = "\n".join(line.text for line in transcript.lines)
 
+    # Manifest admission (#216): the receipt and screenshot are one logical
+    # artifact set. The manifest binds the screenshot by digest, is written
+    # with the durable primitive, and reports ok only when the screenshot it
+    # names actually exists - a missing half can never look complete.
+    try:
+        screenshot_blob = screenshot_svg.read_bytes()
+        screenshot_sha256: str | None = f"sha256:{hashlib.sha256(screenshot_blob).hexdigest()}"
+        screenshot_bytes: int | None = len(screenshot_blob)
+    except OSError:
+        screenshot_sha256 = None
+        screenshot_bytes = None
+
     assertions = {
+        "screenshot_present": screenshot_sha256 is not None,
         "prompt": prompt in text,
         "accessing_memory": "Accessing Memory..." in text,
         "handoff_schema": "tau.agent_handoff.v1" in text,
@@ -178,6 +193,8 @@ async def _render_textual_tui_memory_stage_proof(
         "route": route,
         "next_agent": next_agent,
         "screenshot_svg": str(screenshot_svg),
+        "screenshot_sha256": screenshot_sha256,
+        "screenshot_bytes": screenshot_bytes,
         "visible_assertions": assertions,
         "does_not_prove": [
             "live provider call",
@@ -188,7 +205,7 @@ async def _render_textual_tui_memory_stage_proof(
             "the requested mutation was executed",
         ],
     }
-    receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    write_durable_json(receipt_path, receipt)
     return receipt
 
 
