@@ -81,15 +81,23 @@ def test_evidence_map_missing_required_tests_blocks_join_without_result(
     assert test_receipt["accepted_output"] is None
     assert not (run_dir / "receipts" / "publish-evidence-map.json").exists()
     assert not (run_dir / "results").exists()
-    package = json.loads(
-        (run_dir / "receipts" / "analyze-package.json").read_text(encoding="utf-8")
-    )
-    documentation = json.loads(
-        (run_dir / "receipts" / "analyze-documentation.json").read_text(
-            encoding="utf-8"
+    sibling_receipts = [
+        json.loads(
+            (run_dir / "receipts" / f"{node_id}.json").read_text(encoding="utf-8")
         )
+        for node_id in ("analyze-package", "analyze-documentation")
+    ]
+    assert {receipt["node_id"] for receipt in sibling_receipts} == {
+        "analyze-package",
+        "analyze-documentation",
+    }
+    assert {receipt["status"] for receipt in sibling_receipts}.issubset(
+        {"PASS", "BLOCKED"}
     )
-    assert package["status"] == documentation["status"] == "PASS"
+    for sibling in sibling_receipts:
+        if sibling["status"] == "BLOCKED":
+            assert sibling["verdict"] == "CANCELLED"
+            assert sibling["accepted_output"] is None
 
 
 def _git_repo(path: Path, *, with_tests: bool) -> Path:

@@ -1,0 +1,1 @@
+{"branch":"main","enforce_admins":true,"readback_at":"2026-07-29T00:27:00Z","required_checks":["uv run pytest -q","canonical-browser-proofs"],"restrictions_present":false,"source":"gh api repos/grahama1970/tau/branches/main/protection"}

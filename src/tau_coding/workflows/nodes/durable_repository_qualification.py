@@ -52,13 +52,21 @@ def main() -> int:
     if hasattr(args, "step_delay_seconds"):
         if args.step_delay_seconds < 0:
             raise RuntimeError("step_delay_seconds must be non-negative")
+        tests_failure_delay = (
+            args.command == "tests"
+            and request.get("inject_test_branch_failure") is True
+            and not args.repair_packet.is_file()
+        )
         delay_factors = {
             "documentation": 0.5,
             "package": 0.75,
             "tests": 1.25,
             "reconcile": 0.5,
         }
-        time.sleep(args.step_delay_seconds * delay_factors.get(args.command, 1.0))
+        delay_seconds = args.step_delay_seconds * delay_factors.get(args.command, 1.0)
+        if tests_failure_delay:
+            delay_seconds = max(delay_seconds, 2.5)
+        time.sleep(delay_seconds)
     if args.command == "capture":
         _capture(request, args.output, args.receipt)
     elif args.command == "documentation":

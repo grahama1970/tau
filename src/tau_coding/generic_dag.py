@@ -214,6 +214,25 @@ def run_generic_dag(
             receipt_path=str(node.receipt_path),
         )
         node_log.info("generic_dag_node_started")
+        legacy_context: tuple[Path, str] | None = None
+        if (
+            node.skill is None
+            and node.browser is None
+            and node.transaction is None
+            and not (resume and node.receipt_path.exists())
+        ):
+            legacy_context = _write_legacy_node_context(
+                node=node,
+                run_id=run_id,
+                run_dir=run_dir,
+                accepted_inputs=list(accepted_inputs),
+            )
+            _append_legacy_node_dispatch_event(
+                node,
+                run_id=run_id,
+                events_path=events_path,
+                attempt=execution.attempt,
+            )
         _write_checkpoint(
             path=checkpoint_path,
             current_state_path=current_state_path,
@@ -249,6 +268,7 @@ def run_generic_dag(
                     "goal": goal_hash or plan.runtime_goal_hash,
                 },
                 cancel_event=execution.cancel_event,
+                legacy_context=legacy_context,
                 progress_sink=lambda node_id, attempt, phase, evidence: record_transaction_progress(
                     execution.attempt,
                     node_id,
@@ -827,6 +847,7 @@ def _run_node(
     scheduler_attempt: int,
     runtime_identity: dict[str, Any],
     cancel_event: Event,
+    legacy_context: tuple[Path, str] | None = None,
     progress_sink: Callable[[str, int, str, dict[str, Any]], None] | None = None,
 ) -> dict[str, Any]:
     if node.skill is not None:
@@ -860,12 +881,15 @@ def _run_node(
             cancel_event=cancel_event,
             progress_sink=progress_sink,
         )
-    context_path, context_sha256 = _write_legacy_node_context(
-        node=node,
-        run_id=run_id,
-        run_dir=run_dir,
-        accepted_inputs=accepted_inputs,
-    )
+    dispatch_recorded = legacy_context is not None
+    if legacy_context is None:
+        legacy_context = _write_legacy_node_context(
+            node=node,
+            run_id=run_id,
+            run_dir=run_dir,
+            accepted_inputs=accepted_inputs,
+        )
+    context_path, context_sha256 = legacy_context
     return _run_legacy_node(
         node,
         run_id=run_id,
@@ -878,6 +902,7 @@ def _run_node(
         attempt=scheduler_attempt,
         runtime_identity=runtime_identity,
         cancel_event=cancel_event,
+        dispatch_recorded=dispatch_recorded,
     )
 
 
@@ -1158,6 +1183,7 @@ def _run_legacy_node(
     attempt: int,
     runtime_identity: dict[str, Any],
     cancel_event: Event,
+    dispatch_recorded: bool = False,
 ) -> dict[str, Any]:
     node_started_at = _utc_stamp()
     node_started_monotonic = time.monotonic()
@@ -1199,17 +1225,13 @@ def _run_legacy_node(
                 duration_seconds=time.monotonic() - node_started_monotonic,
             )
 
-    _append_event(
-        events_path,
-        "node_dispatch",
-        {
-            "run_id": run_id,
-            "node_id": node.node_id,
-            "attempt": attempt,
-            "work_order_path": str(node.work_order_path) if node.work_order_path else None,
-            "receipt_path": str(node.receipt_path),
-        },
-    )
+    if not dispatch_recorded:
+        _append_legacy_node_dispatch_event(
+            node,
+            run_id=run_id,
+            events_path=events_path,
+            attempt=attempt,
+        )
     started_at = time.monotonic()
     result = _run_command(
         node.command,
@@ -1237,7 +1259,7 @@ def _run_legacy_node(
             verdict = "CANCELLED"
         else:
             verdict = "SUBAGENT_ERROR"
-        return _blocked_node_record(
+        blocked = _blocked_node_record(
             node,
             verdict=verdict,
             errors=[_command_error(result)],
@@ -1247,6 +1269,13 @@ def _run_legacy_node(
             finished_at=_utc_stamp(),
             duration_seconds=time.monotonic() - node_started_monotonic,
         )
+        _write_blocked_node_receipt_if_missing(
+            node,
+            blocked,
+            goal_hash=goal_hash,
+            attempt=attempt,
+        )
+        return blocked
     if not node.receipt_path.exists():
         return _blocked_node_record(
             node,
@@ -2370,6 +2399,38 @@ def _blocked_node_record(
     }
 
 
+def _write_blocked_node_receipt_if_missing(
+    node: DagNode,
+    record: dict[str, Any],
+    *,
+    goal_hash: str | None,
+    attempt: int,
+) -> None:
+    if node.receipt_path.exists():
+        return
+    payload = {
+        "schema": GENERIC_DAG_NODE_RECEIPT_SCHEMA,
+        "node_id": node.node_id,
+        "role": node.role,
+        "status": record["status"],
+        "verdict": record["verdict"],
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "goal_hash": goal_hash,
+        "attempt": attempt,
+        "accepted_output": None,
+        "artifacts": [],
+        "commands_run": record.get("command_results", []),
+        "handoff_summary": f"{node.node_id} blocked with verdict {record['verdict']}",
+        "errors": record.get("errors", []),
+        "policy_exceptions": [],
+        "receipt_path": str(node.receipt_path),
+        "timestamp": _utc_stamp(),
+    }
+    write_json(node.receipt_path, payload)
+
+
 def _validate_spec(spec: dict[str, Any], *, spec_path: Path) -> dict[str, DagNode]:
     if spec.get("schema") != GENERIC_DAG_SPEC_SCHEMA:
         raise RuntimeError(f"generic DAG spec schema must be {GENERIC_DAG_SPEC_SCHEMA}")
@@ -2581,8 +2642,19 @@ def _validate_node_receipt(
         errors.append(f"node_id must be {node.node_id}")
     if str(receipt.get("status") or "").upper() not in {"PASS", "BLOCKED"}:
         errors.append("status must be PASS or BLOCKED")
-    if str(receipt.get("verdict") or "").upper() not in {"PASS", "REVISE", "BLOCKED"}:
-        errors.append("verdict must be PASS, REVISE, or BLOCKED")
+    allowed_verdicts = {
+        "PASS",
+        "REVISE",
+        "BLOCKED",
+        "CANCELLED",
+        "SUBAGENT_ERROR",
+        "SUBAGENT_TIMEOUT",
+    }
+    if str(receipt.get("verdict") or "").upper() not in allowed_verdicts:
+        errors.append(
+            "verdict must be PASS, REVISE, BLOCKED, CANCELLED, "
+            "SUBAGENT_ERROR, or SUBAGENT_TIMEOUT"
+        )
     for key in ("artifacts", "commands_run", "errors", "policy_exceptions"):
         if not isinstance(receipt.get(key), list):
             errors.append(f"{key} must be a list")
@@ -3051,6 +3123,26 @@ def _append_event(path: Path, kind: str, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(event, sort_keys=True) + "\n")
+
+
+def _append_legacy_node_dispatch_event(
+    node: DagNode,
+    *,
+    run_id: str,
+    events_path: Path,
+    attempt: int,
+) -> None:
+    _append_event(
+        events_path,
+        "node_dispatch",
+        {
+            "run_id": run_id,
+            "node_id": node.node_id,
+            "attempt": attempt,
+            "work_order_path": str(node.work_order_path) if node.work_order_path else None,
+            "receipt_path": str(node.receipt_path),
+        },
+    )
 
 
 def _read_json_object(path: Path, *, label: str) -> dict[str, Any]:
