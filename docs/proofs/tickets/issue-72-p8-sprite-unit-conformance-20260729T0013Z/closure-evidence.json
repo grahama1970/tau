@@ -1,0 +1,65 @@
+{
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "ticket": "grahama1970/tau#72",
+  "phase": "P8",
+  "title": "Sprite-sheet conformance deterministic unit layer",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "commands": [
+    "uv run pytest -q tests/test_sprite_sheet_conformance.py",
+    "uv run ruff check --select I,F,E501 src/tau_coding/sprite_sheet_conformance.py tests/test_sprite_sheet_conformance.py"
+  ],
+  "command_results": [
+    {
+      "command": "uv run pytest -q tests/test_sprite_sheet_conformance.py",
+      "exit_code": 0,
+      "stdout_summary": "5 passed in 0.46s"
+    },
+    {
+      "command": "uv run ruff check --select I,F,E501 src/tau_coding/sprite_sheet_conformance.py tests/test_sprite_sheet_conformance.py",
+      "exit_code": 0,
+      "stdout_summary": "All checks passed!"
+    }
+  ],
+  "source_files": [
+    "src/tau_coding/sprite_sheet_conformance.py",
+    "tests/test_sprite_sheet_conformance.py"
+  ],
+  "live_conformance_anchor": "docs/proofs/tickets/issue-190-sprite-sheet-conformance-v2-20260727/closure-evidence.json",
+  "conformance_items": [
+    {
+      "requirement": "frame lineage writes the required blocked/killed PNG set with accepted counts and lineage hashes",
+      "status": "MET",
+      "evidence": "tests/test_sprite_sheet_conformance.py::test_frame_lineage_writes_expected_pngs_and_hashes"
+    },
+    {
+      "requirement": "playback proof passes only when manifest animations carry the expected blocked/killed frame counts",
+      "status": "MET",
+      "evidence": "tests/test_sprite_sheet_conformance.py::test_playback_proof_passes_and_blocks_from_manifest_counts"
+    },
+    {
+      "requirement": "release boundary remains human-gated and does not promote the candidate atlas",
+      "status": "MET",
+      "evidence": "tests/test_sprite_sheet_conformance.py::test_release_boundary_is_human_gated_and_non_promoting"
+    },
+    {
+      "requirement": "sprite DAG node ordering is canonical from frame lineage to release boundary",
+      "status": "MET",
+      "evidence": "tests/test_sprite_sheet_conformance.py::test_dag_spec_has_canonical_sprite_conformance_order"
+    },
+    {
+      "requirement": "validation counts only accepted expected animation states",
+      "status": "MET",
+      "evidence": "tests/test_sprite_sheet_conformance.py::test_validation_counts_only_passed_expected_states"
+    }
+  ],
+  "proves": [
+    "Tau now has a deterministic unit-test layer for sprite_sheet_conformance.py in addition to the existing live issue-190 sprite-atlas conformance proof."
+  ],
+  "does_not_prove": [
+    "Battle art direction quality.",
+    "Provider/model semantic quality.",
+    "Human approval to promote the candidate runtime atlas."
+  ]
+}
