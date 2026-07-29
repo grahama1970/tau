@@ -37,18 +37,70 @@ def test_voice_render_posts_versioned_envelope_to_tau_voice_render(tmp_path: Pat
     chunk = env["speakable_chunks"][0]
     assert chunk["text_sha256"] == hashlib.sha256(chunk["text"].encode()).hexdigest()
     assert env["question_text_sha256"] == hashlib.sha256(env["question_text"].encode()).hexdigest()
+    assert receipt["service_live"] is True
+    assert receipt["service_mocked"] is False
+    assert receipt["service_engine"] == "chatterbox_turbo"
+    assert receipt["audio_identity"]["finished_response_audio"] == "stub-audio.wav"
 
 
 def test_build_envelope_carries_lineage_and_no_approval_authority() -> None:
+    snapshot = VoiceRunSnapshot(
+        workflow="Publish qualification",
+        run_id="run-1",
+        state="WAITING_ON_APPROVAL",
+        active_node="release-gate",
+        blocker="operator decision",
+        approval_required=True,
+        required_decision="release approval",
+        attempt_id="attempt-7",
+        scheduler_journal_sequence=42,
+        state_digest="sha256:state",
+        event_type="node_waiting",
+        state_transition="RUNNING->WAITING_ON_APPROVAL",
+        goal_hash="sha256:goal",
+    )
     env = build_voice_render_request(
-        _approval_snapshot(), conversation_id="c", turn_id="t", tone="calm"
+        snapshot,
+        conversation_id="c",
+        turn_id="t",
+        superseded_turn_id="old-t",
+        tone="firm_boundary",
+        intensity=0.55,
+        valence=-0.20,
+        delivery_stage="human_approval_required",
     )
     assert env["memory_route_decision"]["workflow"] == "Publish qualification"
     assert env["external_evidence"]["tau_run_id"] == "run-1"
+    assert env["attempt_id"] == "attempt-7"
+    assert env["scheduler_journal_sequence"] == 42
+    assert env["state_digest"] == "sha256:state"
+    assert env["goal_hash"] == "sha256:goal"
+    assert env["superseded_turn_id"] == "old-t"
+    assert env["voice_delivery"]["tone"] == "firm_boundary"
+    assert env["voice_delivery"]["intensity"] == 0.55
+    assert env["voice_delivery"]["valence"] == -0.20
     assert env["interruptible"] is True
     assert env["voice_delivery"]["approval_required"] is True
     # nothing in the envelope authorizes a side effect
     assert "side_effect_authorized" not in json.dumps(env)
+
+
+def test_routine_progress_announces_without_weighted_affect() -> None:
+    snapshot = VoiceRunSnapshot(
+        workflow="Repository readiness",
+        run_id="run-2",
+        state="RUNNING",
+        active_node="collect-status",
+    )
+    env = build_voice_render_request(snapshot, conversation_id="c", turn_id="t")
+
+    assert env["voice_delivery"]["stage"] == "routine_progress"
+    assert env["voice_delivery"]["tone"] is None
+    assert env["voice_delivery"]["intensity"] is None
+    assert env["voice_delivery"]["valence"] is None
+    assert env["tone"] is None
+    assert env["intensity"] is None
+    assert env["valence"] is None
 
 
 def test_voice_spoken_query_matches_tui_snapshot(tmp_path: Path) -> None:
@@ -83,6 +135,88 @@ def test_voice_turn_controls_hit_real_endpoints(tmp_path: Path) -> None:
     assert "/playback/turn-9/duck" in server.posts
     assert "/playback/turn-9/stop" in server.posts
     assert len(server.posts["/turn/turn-9/cancel"]) == 2  # explicit + alias
+    assert cancel["stale_chunks_should_skip"] is True
+
+
+def test_voice_supersedes_stale_turn_before_new_render(tmp_path: Path) -> None:
+    server = StubVoiceServer(tmp_path, next_text="")
+    server.start()
+    try:
+        surface = VoiceSurface(chatterbox_url=server.url, stt_url=server.url)
+        first = surface.announce_state_change(
+            _approval_snapshot(), conversation_id="conv-1", turn_id="turn-old"
+        )
+        second = surface.announce_state_change(
+            _approval_snapshot(), conversation_id="conv-1", turn_id="turn-new"
+        )
+        lineage = surface.turn_lineage_receipt()
+    finally:
+        server.close()
+
+    assert first["status"] == "PASS"
+    assert second["status"] == "PASS"
+    assert second["superseded_turn_id"] == "turn-old"
+    assert server.posts["/turn/turn-old/cancel"][0]["reason"] == "superseded_by:turn-new"
+    turns = {turn["turn_id"]: turn for turn in lineage["turns"]}
+    assert turns["turn-old"]["superseded_by"] == "turn-new"
+    assert turns["turn-old"]["control_receipt_count"] >= 1
+
+
+def test_voice_rejects_wrong_run_turn_control_without_network_mutation(
+    tmp_path: Path,
+) -> None:
+    server = StubVoiceServer(tmp_path, next_text="")
+    server.start()
+    try:
+        surface = VoiceSurface(chatterbox_url=server.url, stt_url=server.url)
+        surface.announce_state_change(
+            _approval_snapshot(), conversation_id="conv-1", turn_id="turn-1"
+        )
+        blocked = surface.cancel_turn("turn-1", run_id="other-run")
+    finally:
+        server.close()
+
+    assert blocked["status"] == "BLOCKED"
+    assert blocked["reason"] == "wrong_run_for_turn"
+    assert "/turn/turn-1/cancel" not in server.posts
+
+
+def test_voice_malformed_response_degrades_without_crash(tmp_path: Path) -> None:
+    server = StubVoiceServer(tmp_path, next_text="", malformed_render_response=True)
+    server.start()
+    try:
+        surface = VoiceSurface(chatterbox_url=server.url, stt_url=server.url)
+        receipt = surface.announce_state_change(
+            _approval_snapshot(), conversation_id="conv-1", turn_id="turn-1"
+        )
+    finally:
+        server.close()
+
+    assert receipt["status"] == "DEGRADED"
+    assert receipt["degraded_reasons"] == ["voice_render_response_invalid"]
+
+
+def test_voice_unavailable_then_later_new_turn_succeeds(tmp_path: Path) -> None:
+    unavailable = VoiceSurface(chatterbox_url="http://127.0.0.1:9", stt_url=None)
+
+    degraded = unavailable.announce_state_change(
+        _approval_snapshot(), conversation_id="conv-1", turn_id="turn-down"
+    )
+
+    server = StubVoiceServer(tmp_path, next_text="")
+    server.start()
+    try:
+        recovered = VoiceSurface(chatterbox_url=server.url, stt_url=None)
+        receipt = recovered.announce_state_change(
+            _approval_snapshot(), conversation_id="conv-1", turn_id="turn-up"
+        )
+    finally:
+        server.close()
+
+    assert degraded["status"] == "DEGRADED"
+    assert degraded["degraded_reasons"] == ["voice_render_request_failed"]
+    assert receipt["status"] == "PASS"
+    assert server.posts["/tau/voice-render"][0]["turn_id"] == "turn-up"
 
 
 def test_voice_startup_degrades_when_services_absent() -> None:
@@ -120,9 +254,16 @@ def _approval_snapshot() -> VoiceRunSnapshot:
 
 
 class StubVoiceServer:
-    def __init__(self, tmp_path: Path, *, next_text: str) -> None:
+    def __init__(
+        self,
+        tmp_path: Path,
+        *,
+        next_text: str,
+        malformed_render_response: bool = False,
+    ) -> None:
         self.posts: dict[str, list[dict[str, Any]]] = {}
         self.next_text = next_text
+        self.malformed_render_response = malformed_render_response
         handler = self._handler()
         self._server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
         self._server.stub = self  # type: ignore[attr-defined]
@@ -157,7 +298,36 @@ class StubVoiceServer:
                 length = int(self.headers.get("content-length", "0") or "0")
                 payload = json.loads(self.rfile.read(length).decode("utf-8"))
                 stub.posts.setdefault(self.path, []).append(payload)
-                self._write_json({"ok": True})
+                if self.path == "/tau/voice-render":
+                    if stub.malformed_render_response:
+                        self._write_json({"unexpected": "shape"})
+                        return
+                    self._write_json(
+                        {
+                            "ok": True,
+                            "mocked": False,
+                            "live": True,
+                            "engine": "chatterbox_turbo",
+                            "finished_response_audio": "stub-audio.wav",
+                            "answer_text_sha256": payload["question_text_sha256"],
+                            "failed_gates": [],
+                        }
+                    )
+                    return
+                if self.path.startswith("/turn/") and self.path.endswith("/cancel"):
+                    turn_id = self.path.split("/")[2]
+                    self._write_json(
+                        {
+                            "ok": True,
+                            "control": {
+                                "turn_id": turn_id,
+                                "stale_chunks_should_skip": True,
+                                "cancelled": True,
+                            },
+                        }
+                    )
+                    return
+                self._write_json({"ok": True, "control": {"turn_id": payload.get("turn_id")}})
 
             def log_message(self, format: str, *args: object) -> None:
                 return

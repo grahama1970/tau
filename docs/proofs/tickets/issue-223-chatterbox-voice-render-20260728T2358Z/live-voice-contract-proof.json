@@ -1,0 +1,710 @@
+{
+  "chatterbox_url": "http://127.0.0.1:8018",
+  "checks": {
+    "approval_weighted_base": true,
+    "audio_identity_retained": true,
+    "cancel_stale_skip": true,
+    "degraded_without_crash": true,
+    "duck_pass": true,
+    "health_after_live": true,
+    "health_live": true,
+    "later_new_turn_succeeds": true,
+    "routine_turbo": true,
+    "stop_pass": true,
+    "superseded_old_turn": true,
+    "wrong_run_blocked": true
+  },
+  "claims": {
+    "does_not_prove": [
+      "Perceptual emotional quality or speaker authentication.",
+      "A destructive process restart of the shared Chatterbox service; outage/recovery is proven through an unavailable endpoint followed by the still-live service."
+    ],
+    "proves": [
+      "Tau sends real /tau/voice-render requests with lineage, delivery metadata, audio identity, and turn controls to the live Chatterbox service.",
+      "Tau suppresses stale local turn ownership before a new turn, rejects wrong-run control attempts locally, degrades on unavailable Chatterbox without crashing, and succeeds on a later fresh turn."
+    ]
+  },
+  "finished_health": {
+    "device": "cuda",
+    "engine": "chatterbox_turbo",
+    "ignored_turbo_params": [
+      "cfg_weight",
+      "exaggeration",
+      "min_p"
+    ],
+    "live": true,
+    "mocked": false,
+    "model_load_seconds": 8.168,
+    "model_loaded": true,
+    "nvidia_smi": {
+      "cmd": [
+        "nvidia-smi",
+        "--query-gpu=name,memory.total,memory.used,memory.free,driver_version",
+        "--format=csv,noheader"
+      ],
+      "returncode": 255,
+      "stderr": "",
+      "stdout": "Failed to initialize NVML: Unknown Error\n"
+    },
+    "ok": true,
+    "reference_audio_roots": [
+      "/data",
+      "/voices",
+      "/work"
+    ],
+    "stage_preset_affect_status": {
+      "consumer_guidance": "Do not treat STAGE_PRESETS as a reliable affect channel without fresh receipt evidence clearing same-parameter variance.",
+      "evidence": {
+        "duration_s_flat_spread": 1.36,
+        "f0_range_hz_flat_spread": 60.85,
+        "f0_sd_hz_flat_spread": 21.21,
+        "receipt": "/home/graham/workspace/experiments/agent-skills-main/skills/persona-dream/reports/goal_v4/four_arm/four_arm_acoustic_receipt.v2.json"
+      },
+      "schema": "chatterbox.stage_preset_affect_status.v1",
+      "status": "not_validated_as_affect_channel",
+      "summary": "Turbo stage presets are delivery/generation presets; current n=5 four-arm evidence measured preset-driven shifts below same-parameter stochastic spread."
+    },
+    "started_at_utc": "2026-07-27T00:24:41Z",
+    "supported_params": [
+      "norm_loudness",
+      "repetition_penalty",
+      "temperature",
+      "top_k",
+      "top_p"
+    ],
+    "tag_handling": {
+      "accepted_tags": [],
+      "applied_tags": [],
+      "dedicated_tag_channel": "unsupported",
+      "inline_text_tag_behavior": "synthesized_as_literal_text",
+      "schema": "chatterbox.tag_handling.v1",
+      "tags_interpreted": false,
+      "unknown_tag_behavior": "ignored"
+    },
+    "torch": {
+      "cuda_available": true,
+      "cuda_version": "12.4",
+      "device_count": 1,
+      "device_name": "NVIDIA RTX A5000",
+      "version": "2.6.0+cu124"
+    },
+    "voice_conditioning_cache_size": 2
+  },
+  "live": true,
+  "mocked": false,
+  "provider_live": true,
+  "receipts": {
+    "approval": {
+      "action": "voice_render",
+      "approval_gate_satisfied": false,
+      "audio_identity": {
+        "answer_text_sha256": "a8fc4779994ea76a18512c6868a119a768b58bb9460c8d4f470b6d4abeef5952",
+        "finished_response_audio": "/out/tau_tau-issue-223-live_tau-223-approval/finished_response.wav"
+      },
+      "effective_emotion": null,
+      "failed_gates": [],
+      "request_schema": "tau.voice_render_request.v1",
+      "response_identity": {
+        "keys": [
+          "answer_text_sha256",
+          "applied_controls",
+          "asr_verification",
+          "batch_label",
+          "blessed_qra_cache",
+          "cache_key",
+          "cache_material",
+          "chunks",
+          "completion_cue",
+          "crossfade_ms",
+          "delivery_stage",
+          "engine",
+          "failed_gates",
+          "finished_response_audio",
+          "finished_response_metrics",
+          "ignored_turbo_params",
+          "latency_events",
+          "live",
+          "mocked",
+          "normalized_tone",
+          "ok",
+          "render_plan",
+          "requested_delivery_stage",
+          "requested_tone",
+          "source",
+          "stochasticity",
+          "tag_handling",
+          "tau_voice_render_request",
+          "tone",
+          "total_elapsed_ms",
+          "voice_delivery"
+        ],
+        "sha256": "7277b0f19fd4032b424f0402df321a846f7101ae492f7536325755464c05be76"
+      },
+      "schema": "tau.tui_voice_surface_receipt.v1",
+      "service_engine": "chatterbox_base",
+      "service_live": true,
+      "service_mocked": false,
+      "service_ok": true,
+      "status": "PASS",
+      "superseded_turn_id": "tau-223-routine",
+      "turn_id": "tau-223-approval"
+    },
+    "cancel": {
+      "action": "cancel",
+      "schema": "tau.tui_voice_surface_receipt.v1",
+      "service_response": {
+        "control": {
+          "cancelled": true,
+          "events": [
+            {
+              "action": "cancel",
+              "new_turn_id": null,
+              "old_turn_id": null,
+              "reason": "operator_interrupt",
+              "timestamp": "2026-07-29T00:03:50Z"
+            }
+          ],
+          "last_action": "cancel",
+          "stale_chunks_should_skip": true,
+          "turn_id": "tau-223-long",
+          "updated_at": "2026-07-29T00:03:50Z"
+        },
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "turn_id": "tau-223-long"
+      },
+      "stale_chunks_should_skip": true,
+      "status": "PASS",
+      "turn_id": "tau-223-long"
+    },
+    "degraded": {
+      "degraded_reasons": [
+        "voice_render_request_failed"
+      ],
+      "detail": "voice service request failed: <urlopen error [Errno 111] Connection refused>",
+      "schema": "tau.tui_voice_surface_receipt.v1",
+      "status": "DEGRADED",
+      "voice_enabled": false
+    },
+    "duck": {
+      "action": "duck",
+      "schema": "tau.tui_voice_surface_receipt.v1",
+      "service_response": {
+        "control": {
+          "cancelled": true,
+          "ducked": true,
+          "events": [
+            {
+              "action": "cancel",
+              "new_turn_id": null,
+              "old_turn_id": null,
+              "reason": "operator_interrupt",
+              "timestamp": "2026-07-29T00:03:50Z"
+            },
+            {
+              "action": "duck",
+              "new_turn_id": null,
+              "old_turn_id": null,
+              "reason": "operator_duck",
+              "timestamp": "2026-07-29T00:03:50Z"
+            }
+          ],
+          "last_action": "duck",
+          "stale_chunks_should_skip": true,
+          "turn_id": "tau-223-long",
+          "updated_at": "2026-07-29T00:03:50Z"
+        },
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "turn_id": "tau-223-long"
+      },
+      "stale_chunks_should_skip": true,
+      "status": "PASS",
+      "turn_id": "tau-223-long"
+    },
+    "lineage": {
+      "action": "turn_lineage",
+      "schema": "tau.tui_voice_surface_receipt.v1",
+      "status": "PASS",
+      "turns": [
+        {
+          "audio_identity": {
+            "answer_text_sha256": "62b1d86bd7e2d66610443288ca69ab635042ae619461cc4e4edeb50ecd795339",
+            "finished_response_audio": "/out/tau_tau-issue-223-live_tau-223-routine/finished_response.wav"
+          },
+          "control_receipt_count": 2,
+          "conversation_id": "tau-issue-223-live",
+          "run_id": "live-run-223",
+          "status": "PASS",
+          "superseded_by": "tau-223-approval",
+          "turn_id": "tau-223-routine",
+          "workflow": "Tau voice contract live proof"
+        },
+        {
+          "audio_identity": {
+            "answer_text_sha256": "a8fc4779994ea76a18512c6868a119a768b58bb9460c8d4f470b6d4abeef5952",
+            "finished_response_audio": "/out/tau_tau-issue-223-live_tau-223-approval/finished_response.wav"
+          },
+          "control_receipt_count": 0,
+          "conversation_id": "tau-issue-223-live",
+          "run_id": "live-run-223",
+          "status": "PASS",
+          "superseded_by": null,
+          "turn_id": "tau-223-approval",
+          "workflow": "Tau voice contract live proof"
+        },
+        {
+          "audio_identity": {
+            "answer_text_sha256": "6827f1899989325b871618d4f74b389a461abac7ed3691451ceb09bded9f2b83",
+            "finished_response_audio": "/out/tau_tau-issue-223-live-long_tau-223-long/finished_response.wav"
+          },
+          "control_receipt_count": 3,
+          "conversation_id": "tau-issue-223-live-long",
+          "run_id": "live-run-223",
+          "status": "PASS",
+          "superseded_by": null,
+          "turn_id": "tau-223-long",
+          "workflow": "Tau voice contract live proof"
+        },
+        {
+          "audio_identity": {
+            "answer_text_sha256": "35c3712e30cae1242478bff467a72ea0c92028f0a77c92dbce6a91a001e6f17f",
+            "finished_response_audio": "/out/tau_tau-issue-223-supersede_tau-223-old/finished_response.wav"
+          },
+          "control_receipt_count": 2,
+          "conversation_id": "tau-issue-223-supersede",
+          "run_id": "live-run-223",
+          "status": "PASS",
+          "superseded_by": "tau-223-new",
+          "turn_id": "tau-223-old",
+          "workflow": "Tau voice contract live proof"
+        },
+        {
+          "audio_identity": {
+            "answer_text_sha256": "5133ae4b51cd9c584c57a244a155bb76020d1769ccf1df47498e92c6d05d465a",
+            "finished_response_audio": "/out/tau_tau-issue-223-supersede_tau-223-new/finished_response.wav"
+          },
+          "control_receipt_count": 0,
+          "conversation_id": "tau-issue-223-supersede",
+          "run_id": "live-run-223",
+          "status": "PASS",
+          "superseded_by": null,
+          "turn_id": "tau-223-new",
+          "workflow": "Tau voice contract live proof"
+        },
+        {
+          "audio_identity": {
+            "answer_text_sha256": "c5db822af086bd6e19fa81ff616b63cde3bbcb08ecbb5dd9ce7b7d2d649ef518",
+            "finished_response_audio": "/out/tau_tau-issue-223-recovered_tau-223-recovered/finished_response.wav"
+          },
+          "control_receipt_count": 0,
+          "conversation_id": "tau-issue-223-recovered",
+          "run_id": "live-run-223-recovered",
+          "status": "PASS",
+          "superseded_by": null,
+          "turn_id": "tau-223-recovered",
+          "workflow": "Tau voice contract live proof"
+        }
+      ]
+    },
+    "long_turn": {
+      "action": "voice_render",
+      "approval_gate_satisfied": false,
+      "audio_identity": {
+        "answer_text_sha256": "6827f1899989325b871618d4f74b389a461abac7ed3691451ceb09bded9f2b83",
+        "finished_response_audio": "/out/tau_tau-issue-223-live-long_tau-223-long/finished_response.wav"
+      },
+      "effective_emotion": null,
+      "failed_gates": [],
+      "request_schema": "tau.voice_render_request.v1",
+      "response_identity": {
+        "keys": [
+          "answer_text_sha256",
+          "applied_controls",
+          "asr_verification",
+          "batch_label",
+          "blessed_qra_cache",
+          "cache_key",
+          "cache_material",
+          "chunks",
+          "completion_cue",
+          "crossfade_ms",
+          "delivery_stage",
+          "engine",
+          "failed_gates",
+          "finished_response_audio",
+          "finished_response_metrics",
+          "ignored_turbo_params",
+          "latency_events",
+          "live",
+          "mocked",
+          "normalized_tone",
+          "ok",
+          "render_plan",
+          "requested_delivery_stage",
+          "requested_tone",
+          "source",
+          "stochasticity",
+          "tag_handling",
+          "tau_voice_render_request",
+          "tone",
+          "total_elapsed_ms",
+          "voice_delivery"
+        ],
+        "sha256": "f67c5b85cd99a35ceb845a753734b975951a87029e46f843cbced4978497da42"
+      },
+      "schema": "tau.tui_voice_surface_receipt.v1",
+      "service_engine": "chatterbox_base",
+      "service_live": true,
+      "service_mocked": false,
+      "service_ok": true,
+      "status": "PASS",
+      "superseded_turn_id": null,
+      "turn_id": "tau-223-long"
+    },
+    "new": {
+      "action": "voice_render",
+      "approval_gate_satisfied": false,
+      "audio_identity": {
+        "answer_text_sha256": "5133ae4b51cd9c584c57a244a155bb76020d1769ccf1df47498e92c6d05d465a",
+        "finished_response_audio": "/out/tau_tau-issue-223-supersede_tau-223-new/finished_response.wav"
+      },
+      "effective_emotion": null,
+      "failed_gates": [],
+      "request_schema": "tau.voice_render_request.v1",
+      "response_identity": {
+        "keys": [
+          "answer_text_sha256",
+          "applied_controls",
+          "asr_verification",
+          "batch_label",
+          "blessed_qra_cache",
+          "cache_key",
+          "cache_material",
+          "chunks",
+          "completion_cue",
+          "crossfade_ms",
+          "delivery_stage",
+          "engine",
+          "failed_gates",
+          "finished_response_audio",
+          "finished_response_metrics",
+          "ignored_turbo_params",
+          "latency_events",
+          "live",
+          "mocked",
+          "normalized_tone",
+          "ok",
+          "render_plan",
+          "requested_delivery_stage",
+          "requested_tone",
+          "source",
+          "stochasticity",
+          "tag_handling",
+          "tau_voice_render_request",
+          "tone",
+          "total_elapsed_ms",
+          "voice_delivery"
+        ],
+        "sha256": "68c26b5c1def0e9a80b061d74fdf978f57d8f7fd80a53d2a1318ef72ebd070e1"
+      },
+      "schema": "tau.tui_voice_surface_receipt.v1",
+      "service_engine": "chatterbox_base",
+      "service_live": true,
+      "service_mocked": false,
+      "service_ok": true,
+      "status": "PASS",
+      "superseded_turn_id": "tau-223-old",
+      "turn_id": "tau-223-new"
+    },
+    "old": {
+      "action": "voice_render",
+      "approval_gate_satisfied": false,
+      "audio_identity": {
+        "answer_text_sha256": "35c3712e30cae1242478bff467a72ea0c92028f0a77c92dbce6a91a001e6f17f",
+        "finished_response_audio": "/out/tau_tau-issue-223-supersede_tau-223-old/finished_response.wav"
+      },
+      "effective_emotion": null,
+      "failed_gates": [],
+      "request_schema": "tau.voice_render_request.v1",
+      "response_identity": {
+        "keys": [
+          "answer_text_sha256",
+          "applied_controls",
+          "asr_verification",
+          "batch_label",
+          "blessed_qra_cache",
+          "cache_key",
+          "cache_material",
+          "chunks",
+          "completion_cue",
+          "crossfade_ms",
+          "delivery_stage",
+          "engine",
+          "failed_gates",
+          "finished_response_audio",
+          "finished_response_metrics",
+          "ignored_turbo_params",
+          "latency_events",
+          "live",
+          "mocked",
+          "normalized_tone",
+          "ok",
+          "render_plan",
+          "requested_delivery_stage",
+          "requested_tone",
+          "source",
+          "stochasticity",
+          "tag_handling",
+          "tau_voice_render_request",
+          "tone",
+          "total_elapsed_ms",
+          "voice_delivery"
+        ],
+        "sha256": "fa30b4124720927243229c2f32a2c4ab83287afdf010a5bef42b80ff72928727"
+      },
+      "schema": "tau.tui_voice_surface_receipt.v1",
+      "service_engine": "chatterbox_base",
+      "service_live": true,
+      "service_mocked": false,
+      "service_ok": true,
+      "status": "PASS",
+      "superseded_turn_id": null,
+      "turn_id": "tau-223-old"
+    },
+    "recovered": {
+      "action": "voice_render",
+      "approval_gate_satisfied": false,
+      "audio_identity": {
+        "answer_text_sha256": "c5db822af086bd6e19fa81ff616b63cde3bbcb08ecbb5dd9ce7b7d2d649ef518",
+        "finished_response_audio": "/out/tau_tau-issue-223-recovered_tau-223-recovered/finished_response.wav"
+      },
+      "effective_emotion": null,
+      "failed_gates": [],
+      "request_schema": "tau.voice_render_request.v1",
+      "response_identity": {
+        "keys": [
+          "answer_text_sha256",
+          "applied_controls",
+          "asr_verification",
+          "batch_label",
+          "blessed_qra_cache",
+          "cache_key",
+          "cache_material",
+          "chunks",
+          "completion_cue",
+          "crossfade_ms",
+          "delivery_stage",
+          "engine",
+          "failed_gates",
+          "finished_response_audio",
+          "finished_response_metrics",
+          "ignored_turbo_params",
+          "latency_events",
+          "live",
+          "mocked",
+          "normalized_tone",
+          "ok",
+          "render_plan",
+          "requested_delivery_stage",
+          "requested_tone",
+          "source",
+          "stochasticity",
+          "tag_handling",
+          "tau_voice_render_request",
+          "tone",
+          "total_elapsed_ms",
+          "voice_delivery"
+        ],
+        "sha256": "eb41a3c0861194cd1d7ed83d3ad170a776e3e8065da9f3c00c20d9fb1f23184d"
+      },
+      "schema": "tau.tui_voice_surface_receipt.v1",
+      "service_engine": "chatterbox_turbo",
+      "service_live": true,
+      "service_mocked": false,
+      "service_ok": true,
+      "status": "PASS",
+      "superseded_turn_id": null,
+      "turn_id": "tau-223-recovered"
+    },
+    "routine": {
+      "action": "voice_render",
+      "approval_gate_satisfied": false,
+      "audio_identity": {
+        "answer_text_sha256": "62b1d86bd7e2d66610443288ca69ab635042ae619461cc4e4edeb50ecd795339",
+        "finished_response_audio": "/out/tau_tau-issue-223-live_tau-223-routine/finished_response.wav"
+      },
+      "effective_emotion": null,
+      "failed_gates": [],
+      "request_schema": "tau.voice_render_request.v1",
+      "response_identity": {
+        "keys": [
+          "answer_text_sha256",
+          "applied_controls",
+          "asr_verification",
+          "batch_label",
+          "blessed_qra_cache",
+          "cache_key",
+          "cache_material",
+          "chunks",
+          "completion_cue",
+          "crossfade_ms",
+          "delivery_stage",
+          "engine",
+          "failed_gates",
+          "finished_response_audio",
+          "finished_response_metrics",
+          "ignored_turbo_params",
+          "latency_events",
+          "live",
+          "mocked",
+          "normalized_tone",
+          "ok",
+          "render_plan",
+          "requested_delivery_stage",
+          "requested_tone",
+          "source",
+          "stochasticity",
+          "tag_handling",
+          "tau_voice_render_request",
+          "tone",
+          "total_elapsed_ms",
+          "voice_delivery"
+        ],
+        "sha256": "336d92c419635f1310f25e6fc6ab3b1085c2364b1ad227bc890191874625f326"
+      },
+      "schema": "tau.tui_voice_surface_receipt.v1",
+      "service_engine": "chatterbox_turbo",
+      "service_live": true,
+      "service_mocked": false,
+      "service_ok": true,
+      "status": "PASS",
+      "superseded_turn_id": null,
+      "turn_id": "tau-223-routine"
+    },
+    "stop": {
+      "action": "stop",
+      "schema": "tau.tui_voice_surface_receipt.v1",
+      "service_response": {
+        "control": {
+          "cancelled": true,
+          "ducked": true,
+          "events": [
+            {
+              "action": "cancel",
+              "new_turn_id": null,
+              "old_turn_id": null,
+              "reason": "operator_interrupt",
+              "timestamp": "2026-07-29T00:03:50Z"
+            },
+            {
+              "action": "duck",
+              "new_turn_id": null,
+              "old_turn_id": null,
+              "reason": "operator_duck",
+              "timestamp": "2026-07-29T00:03:50Z"
+            },
+            {
+              "action": "stop",
+              "new_turn_id": null,
+              "old_turn_id": null,
+              "reason": "operator_stop",
+              "timestamp": "2026-07-29T00:03:50Z"
+            }
+          ],
+          "last_action": "stop",
+          "stale_chunks_should_skip": true,
+          "stopped": true,
+          "turn_id": "tau-223-long",
+          "updated_at": "2026-07-29T00:03:50Z"
+        },
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "turn_id": "tau-223-long"
+      },
+      "stale_chunks_should_skip": true,
+      "status": "PASS",
+      "turn_id": "tau-223-long"
+    },
+    "wrong_run": {
+      "action": "cancel",
+      "known_run_id": "live-run-223",
+      "reason": "wrong_run_for_turn",
+      "run_id": "other-run",
+      "schema": "tau.tui_voice_surface_receipt.v1",
+      "status": "BLOCKED",
+      "turn_id": "tau-223-new"
+    }
+  },
+  "schema": "tau.issue223.live_voice_contract_proof.v1",
+  "started_health": {
+    "device": "cuda",
+    "engine": "chatterbox_turbo",
+    "ignored_turbo_params": [
+      "cfg_weight",
+      "exaggeration",
+      "min_p"
+    ],
+    "live": true,
+    "mocked": false,
+    "model_load_seconds": 8.168,
+    "model_loaded": true,
+    "nvidia_smi": {
+      "cmd": [
+        "nvidia-smi",
+        "--query-gpu=name,memory.total,memory.used,memory.free,driver_version",
+        "--format=csv,noheader"
+      ],
+      "returncode": 255,
+      "stderr": "",
+      "stdout": "Failed to initialize NVML: Unknown Error\n"
+    },
+    "ok": true,
+    "reference_audio_roots": [
+      "/data",
+      "/voices",
+      "/work"
+    ],
+    "stage_preset_affect_status": {
+      "consumer_guidance": "Do not treat STAGE_PRESETS as a reliable affect channel without fresh receipt evidence clearing same-parameter variance.",
+      "evidence": {
+        "duration_s_flat_spread": 1.36,
+        "f0_range_hz_flat_spread": 60.85,
+        "f0_sd_hz_flat_spread": 21.21,
+        "receipt": "/home/graham/workspace/experiments/agent-skills-main/skills/persona-dream/reports/goal_v4/four_arm/four_arm_acoustic_receipt.v2.json"
+      },
+      "schema": "chatterbox.stage_preset_affect_status.v1",
+      "status": "not_validated_as_affect_channel",
+      "summary": "Turbo stage presets are delivery/generation presets; current n=5 four-arm evidence measured preset-driven shifts below same-parameter stochastic spread."
+    },
+    "started_at_utc": "2026-07-27T00:24:41Z",
+    "supported_params": [
+      "norm_loudness",
+      "repetition_penalty",
+      "temperature",
+      "top_k",
+      "top_p"
+    ],
+    "tag_handling": {
+      "accepted_tags": [],
+      "applied_tags": [],
+      "dedicated_tag_channel": "unsupported",
+      "inline_text_tag_behavior": "synthesized_as_literal_text",
+      "schema": "chatterbox.tag_handling.v1",
+      "tags_interpreted": false,
+      "unknown_tag_behavior": "ignored"
+    },
+    "torch": {
+      "cuda_available": true,
+      "cuda_version": "12.4",
+      "device_count": 1,
+      "device_name": "NVIDIA RTX A5000",
+      "version": "2.6.0+cu124"
+    },
+    "voice_conditioning_cache_size": 2
+  },
+  "status": "PASS"
+}

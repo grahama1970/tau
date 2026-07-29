@@ -14,7 +14,7 @@ import hashlib
 import json
 import urllib.error
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 VOICE_RECEIPT_SCHEMA = "tau.tui_voice_surface_receipt.v1"
@@ -32,7 +32,11 @@ def build_voice_render_request(
     *,
     conversation_id: str,
     turn_id: str,
+    superseded_turn_id: str | None = None,
     tone: str | None = None,
+    intensity: float | None = None,
+    valence: float | None = None,
+    delivery_stage: str | None = None,
 ) -> dict[str, Any]:
     """Project authoritative run state into a tau.voice_render_request.v1 envelope.
 
@@ -49,16 +53,32 @@ def build_voice_render_request(
         "text_sha256": _sha256_text(text),
         "interruptible": True,
     }
+    delivery = _delivery_policy_for(
+        snapshot,
+        tone=tone,
+        intensity=intensity,
+        valence=valence,
+        delivery_stage=delivery_stage,
+    )
     return {
         "schema": VOICE_RENDER_REQUEST_SCHEMA,
+        "workflow": snapshot.workflow,
         "run_id": snapshot.run_id,
+        "node_id": snapshot.active_node,
+        "attempt_id": snapshot.attempt_id,
+        "scheduler_journal_sequence": snapshot.scheduler_journal_sequence,
+        "state_digest": snapshot.state_digest,
+        "event_type": snapshot.event_type,
+        "state_transition": snapshot.state_transition,
+        "goal_hash": snapshot.goal_hash,
         "conversation_id": conversation_id,
         "turn_id": turn_id,
+        "superseded_turn_id": superseded_turn_id,
         "route": "tau_voice_render",
         "question_text": text,
         "question_text_sha256": _sha256_text(text),
         "memory_route_decision": {
-            "source": "tau_run_state",
+            "source": snapshot.memory_route_source,
             "workflow": snapshot.workflow,
             "state": snapshot.state,
             "active_node": snapshot.active_node,
@@ -66,14 +86,23 @@ def build_voice_render_request(
         "voice_delivery": {
             "notable": _should_announce(snapshot),
             "approval_required": snapshot.approval_required,
+            **delivery,
         },
         "speakable_chunks": [chunk],
-        "tone": tone,
+        "tone": delivery["tone"],
+        "intensity": delivery["intensity"],
+        "valence": delivery["valence"],
         "interruptible": True,
+        "turn_controls": {
+            "cancel": f"/turn/{turn_id}/cancel",
+            "duck": f"/playback/{turn_id}/duck",
+            "stop": f"/playback/{turn_id}/stop",
+        },
         "external_evidence": {
             "tau_run_id": snapshot.run_id,
             "blocker": snapshot.blocker,
             "required_decision": snapshot.required_decision,
+            "delivery_policy_source": snapshot.delivery_policy_source,
         },
     }
 
@@ -89,6 +118,14 @@ class VoiceRunSnapshot:
     blocker: str | None = None
     approval_required: bool = False
     required_decision: str | None = None
+    attempt_id: str | None = None
+    scheduler_journal_sequence: int | None = None
+    state_digest: str | None = None
+    event_type: str = "state_change"
+    state_transition: str | None = None
+    goal_hash: str | None = None
+    memory_route_source: str = "tau_run_state"
+    delivery_policy_source: str = "tau_voice_default_policy"
 
     def spoken_summary(self) -> str:
         parts = [
@@ -125,6 +162,20 @@ class VoiceCommandResult:
         }
 
 
+@dataclass(slots=True)
+class VoiceTurnState:
+    """Tau-side ownership record for one audible turn."""
+
+    conversation_id: str
+    run_id: str
+    workflow: str
+    turn_id: str
+    status: str
+    superseded_by: str | None = None
+    control_receipts: list[dict[str, Any]] = field(default_factory=list)
+    audio_identity: dict[str, Any] = field(default_factory=dict)
+
+
 class VoiceSurface:
     """Optional Chatterbox/RealtimeSTT bridge that never owns Tau state."""
 
@@ -138,6 +189,8 @@ class VoiceSurface:
         self.chatterbox_url = _normalize_url(chatterbox_url)
         self.stt_url = _normalize_url(stt_url)
         self.timeout_seconds = timeout_seconds
+        self._active_by_conversation: dict[str, VoiceTurnState] = {}
+        self._turns: dict[str, VoiceTurnState] = {}
 
     def startup_receipt(self) -> dict[str, Any]:
         degraded = []
@@ -168,6 +221,9 @@ class VoiceSurface:
         conversation_id: str,
         turn_id: str,
         tone: str | None = None,
+        intensity: float | None = None,
+        valence: float | None = None,
+        delivery_stage: str | None = None,
     ) -> dict[str, Any]:
         """Render one turn through the real /tau/voice-render contract."""
 
@@ -175,51 +231,139 @@ class VoiceSurface:
             return self._degraded("chatterbox_url_missing")
         if not _should_announce(snapshot):
             return {"schema": VOICE_RECEIPT_SCHEMA, "status": "SKIPPED", "reason": "not_notable"}
+        superseded_turn_id = self._supersede_active_turn(conversation_id, turn_id)
         envelope = build_voice_render_request(
-            snapshot, conversation_id=conversation_id, turn_id=turn_id, tone=tone
+            snapshot,
+            conversation_id=conversation_id,
+            turn_id=turn_id,
+            superseded_turn_id=superseded_turn_id,
+            tone=tone,
+            intensity=intensity,
+            valence=valence,
+            delivery_stage=delivery_stage,
         )
-        response = self._post_json(self.chatterbox_url, "tau/voice-render", envelope)
+        try:
+            response = self._post_json(self.chatterbox_url, "tau/voice-render", envelope)
+        except RuntimeError as exc:
+            return self._degraded("voice_render_request_failed", detail=str(exc))
         # The service verdict is derived from its own gates, not asserted by Tau.
-        service_ok = bool(response.get("ok"))
-        return {
+        service_ok = bool(response.get("ok")) and isinstance(response.get("mocked", False), bool)
+        invalid_schema = "ok" not in response
+        audio_identity = _audio_identity_from_response(response)
+        receipt = {
             "schema": VOICE_RECEIPT_SCHEMA,
-            "status": "PASS" if service_ok else "DEGRADED",
+            "status": "PASS" if service_ok and not invalid_schema else "DEGRADED",
             "action": "voice_render",
             "turn_id": turn_id,
+            "superseded_turn_id": superseded_turn_id,
             "request_schema": VOICE_RENDER_REQUEST_SCHEMA,
             "service_ok": service_ok,
             "service_live": bool(response.get("live")),
             "service_mocked": response.get("mocked"),
+            "service_engine": response.get("engine"),
+            "effective_emotion": response.get("effective_emotion"),
             "failed_gates": response.get("failed_gates", []),
+            "audio_identity": audio_identity,
+            "response_identity": _response_identity(response),
             "approval_gate_satisfied": False,
         }
+        if invalid_schema:
+            receipt["degraded_reasons"] = ["voice_render_response_invalid"]
+        state = VoiceTurnState(
+            conversation_id=conversation_id,
+            run_id=snapshot.run_id,
+            workflow=snapshot.workflow,
+            turn_id=turn_id,
+            status=str(receipt["status"]),
+            superseded_by=None,
+            audio_identity=audio_identity,
+        )
+        self._turns[turn_id] = state
+        self._active_by_conversation[conversation_id] = state
+        return receipt
 
-    def _turn_control(self, action: str, turn_id: str, reason: str | None) -> dict[str, Any]:
+    def _turn_control(
+        self,
+        action: str,
+        turn_id: str,
+        reason: str | None,
+        *,
+        run_id: str | None = None,
+    ) -> dict[str, Any]:
         if self.chatterbox_url is None:
             return self._degraded("chatterbox_url_missing")
+        known = self._turns.get(turn_id)
+        if run_id is not None and known is not None and known.run_id != run_id:
+            return {
+                "schema": VOICE_RECEIPT_SCHEMA,
+                "status": "BLOCKED",
+                "action": action,
+                "turn_id": turn_id,
+                "run_id": run_id,
+                "known_run_id": known.run_id,
+                "reason": "wrong_run_for_turn",
+            }
         path = f"turn/{turn_id}/cancel" if action == "cancel" else f"playback/{turn_id}/{action}"
-        response = self._post_json(self.chatterbox_url, path, {"reason": reason or f"tau_{action}"})
-        return {
+        try:
+            response = self._post_json(
+                self.chatterbox_url, path, {"reason": reason or f"tau_{action}"}
+            )
+        except RuntimeError as exc:
+            return self._degraded(f"{action}_request_failed", detail=str(exc))
+        receipt = {
             "schema": VOICE_RECEIPT_SCHEMA,
-            "status": "PASS",
+            "status": "PASS" if response.get("ok", True) else "DEGRADED",
             "action": action,
             "turn_id": turn_id,
             "service_response": response,
+            "stale_chunks_should_skip": bool(
+                isinstance(response.get("control"), dict)
+                and response["control"].get("stale_chunks_should_skip")
+            ),
         }
+        if known is not None:
+            known.control_receipts.append(receipt)
+        return receipt
 
-    def cancel_turn(self, turn_id: str, *, reason: str | None = None) -> dict[str, Any]:
-        return self._turn_control("cancel", turn_id, reason)
+    def cancel_turn(
+        self, turn_id: str, *, reason: str | None = None, run_id: str | None = None
+    ) -> dict[str, Any]:
+        return self._turn_control("cancel", turn_id, reason, run_id=run_id)
 
-    def duck_playback(self, turn_id: str, *, reason: str | None = None) -> dict[str, Any]:
-        return self._turn_control("duck", turn_id, reason)
+    def duck_playback(
+        self, turn_id: str, *, reason: str | None = None, run_id: str | None = None
+    ) -> dict[str, Any]:
+        return self._turn_control("duck", turn_id, reason, run_id=run_id)
 
-    def stop_playback(self, turn_id: str, *, reason: str | None = None) -> dict[str, Any]:
-        return self._turn_control("stop", turn_id, reason)
+    def stop_playback(
+        self, turn_id: str, *, reason: str | None = None, run_id: str | None = None
+    ) -> dict[str, Any]:
+        return self._turn_control("stop", turn_id, reason, run_id=run_id)
 
     def interrupt_output(self, turn_id: str, *, reason: str | None = None) -> dict[str, Any]:
         """Back-compat alias: interruption maps to a turn cancel."""
 
         return self.cancel_turn(turn_id, reason=reason)
+
+    def turn_lineage_receipt(self) -> dict[str, Any]:
+        return {
+            "schema": VOICE_RECEIPT_SCHEMA,
+            "status": "PASS",
+            "action": "turn_lineage",
+            "turns": [
+                {
+                    "conversation_id": turn.conversation_id,
+                    "run_id": turn.run_id,
+                    "workflow": turn.workflow,
+                    "turn_id": turn.turn_id,
+                    "status": turn.status,
+                    "superseded_by": turn.superseded_by,
+                    "audio_identity": turn.audio_identity,
+                    "control_receipt_count": len(turn.control_receipts),
+                }
+                for turn in self._turns.values()
+            ],
+        }
 
     def poll_spoken_query(self, snapshot: VoiceRunSnapshot) -> VoiceCommandResult:
         if self.stt_url is None:
@@ -256,13 +400,29 @@ class VoiceSurface:
         except (urllib.error.URLError, TimeoutError) as exc:
             raise RuntimeError(f"voice service request failed: {exc}") from exc
 
-    def _degraded(self, reason: str) -> dict[str, Any]:
-        return {
+    def _supersede_active_turn(self, conversation_id: str, new_turn_id: str) -> str | None:
+        previous = self._active_by_conversation.get(conversation_id)
+        if previous is None or previous.turn_id == new_turn_id:
+            return None
+        previous.superseded_by = new_turn_id
+        cancel = self.cancel_turn(
+            previous.turn_id,
+            reason=f"superseded_by:{new_turn_id}",
+            run_id=previous.run_id,
+        )
+        previous.control_receipts.append(cancel)
+        return previous.turn_id
+
+    def _degraded(self, reason: str, *, detail: str | None = None) -> dict[str, Any]:
+        receipt = {
             "schema": VOICE_RECEIPT_SCHEMA,
             "status": "DEGRADED",
             "voice_enabled": False,
             "degraded_reasons": [reason],
         }
+        if detail:
+            receipt["detail"] = detail
+        return receipt
 
 
 def interpret_spoken_command(text: str, snapshot: VoiceRunSnapshot) -> VoiceCommandResult:
@@ -302,7 +462,76 @@ def _announcement_text(snapshot: VoiceRunSnapshot) -> str:
 
 
 def _should_announce(snapshot: VoiceRunSnapshot) -> bool:
-    return snapshot.approval_required or snapshot.state in {"BLOCKED", "COMPLETED", "FAILED"}
+    return snapshot.approval_required or snapshot.state in {
+        "RUNNING",
+        "BLOCKED",
+        "COMPLETED",
+        "FAILED",
+    }
+
+
+def _delivery_policy_for(
+    snapshot: VoiceRunSnapshot,
+    *,
+    tone: str | None,
+    intensity: float | None,
+    valence: float | None,
+    delivery_stage: str | None,
+) -> dict[str, Any]:
+    if tone is not None or intensity is not None or valence is not None:
+        return {
+            "source": snapshot.delivery_policy_source,
+            "stage": delivery_stage or "caller_requested",
+            "tone": tone,
+            "intensity": intensity,
+            "valence": valence,
+        }
+    if snapshot.approval_required:
+        return {
+            "source": snapshot.delivery_policy_source,
+            "stage": delivery_stage or "human_approval_required",
+            "tone": "firm_boundary",
+            "intensity": 0.55,
+            "valence": -0.20,
+        }
+    if snapshot.state == "COMPLETED":
+        return {
+            "source": snapshot.delivery_policy_source,
+            "stage": delivery_stage or "accepted_completion",
+            "tone": "relieved",
+            "intensity": 0.50,
+            "valence": 0.45,
+        }
+    if snapshot.state in {"BLOCKED", "FAILED"}:
+        return {
+            "source": snapshot.delivery_policy_source,
+            "stage": delivery_stage or "recoverable_blocker",
+            "tone": "careful_concerned",
+            "intensity": 0.45,
+            "valence": -0.25,
+        }
+    return {
+        "source": snapshot.delivery_policy_source,
+        "stage": delivery_stage or "routine_progress",
+        "tone": None,
+        "intensity": None,
+        "valence": None,
+    }
+
+
+def _audio_identity_from_response(response: dict[str, Any]) -> dict[str, Any]:
+    identity: dict[str, Any] = {}
+    for key in ("finished_response_audio", "answer_text_sha256", "audio_path", "stream_id"):
+        if key in response:
+            identity[key] = response[key]
+    return identity
+
+
+def _response_identity(response: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "sha256": _sha256_text(json.dumps(response, sort_keys=True)),
+        "keys": sorted(response.keys()),
+    }
 
 
 def _normalize_url(url: str | None) -> str | None:

@@ -9,10 +9,6 @@
   ],
   "open_critical_issues": [
     {
-      "number": 224,
-      "title": "Generate authoritative project-status artifacts and fail CI on stale README/PROJECT_KNOWLEDGE claims"
-    },
-    {
       "number": 223,
       "title": "Bind Tau TUI voice events to Chatterbox `/tau/voice-render` and real turn controls"
     },
@@ -34,6 +30,11 @@
       "closedAt": "2026-07-28T23:52:00Z",
       "number": 225,
       "title": "#72 child: current-head hardening conformance and parent closure audit"
+    },
+    {
+      "closedAt": "2026-07-28T23:56:24Z",
+      "number": 224,
+      "title": "Generate authoritative project-status artifacts and fail CI on stale README/PROJECT_KNOWLEDGE claims"
     },
     {
       "closedAt": "2026-07-28T23:47:43Z",
@@ -174,13 +175,8 @@
       "closedAt": "2026-07-27T16:25:46Z",
       "number": 194,
       "title": "#72 child: signatures, action-bound approvals, audit ledger, API auth, and RBAC"
-    },
-    {
-      "closedAt": "2026-07-27T16:19:08Z",
-      "number": 193,
-      "title": "#72 child: real worker and controlled-data denial/correction demo"
     }
   ],
   "source": "gh api repos/grahama1970/tau (branch protection + issues)",
-  "generated_for": "grahama1970/tau#224 current-head refresh"
+  "generated_for": "current-head ticket refresh after #224 closure"
 }
