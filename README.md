@@ -137,6 +137,13 @@ current target is usable supervision of five canonical real Tau DAGs, from a
 simple linear workflow through durable mixed-topology recovery, in one shared
 React Flow progress viewer.
 
+The current reviewer-ready acceptance readback is
+[`docs/status/immutable-goal-acceptance-20260729T2005Z/acceptance-readback.md`](docs/status/immutable-goal-acceptance-20260729T2005Z/acceptance-readback.md).
+It read back the current-main canonical proof artifact bundle for
+`58507c63c343f0a78ba500e55d8d5f8433691195`: 37 retained artifacts, 10 proof
+receipts, and 16 screenshots. It reports `Immutable Goal: NOT_MET` because
+human acceptance remains criterion 10 and is not recorded by automated proof.
+
 `$ask` is the intended convenience front door for human requests that need
 handler/model collaboration. It should compile the request into a strict
 `tau.dag_contract.v1`, interview the human when required DAG fields are
@@ -248,7 +255,7 @@ copyable example in
 | Browser/CDP proof lane | Implemented for proof surfaces | Not a production chat UI proof. |
 | Tau DAG React Flow viewer | Implemented as a self-contained Tau surface | Read-only journal projection with packaged assets; does not authorize DAG mutation or prove provider/model semantics. |
 | Pi-inspired TUI parity work | Active usability slice | Improves coding-harness ergonomics; does not satisfy GOAL.md by itself. |
-| Five canonical DAG product ladder | Active goal, not established as complete | Requires real workflow runs, shared dynamic viewer proof, resume/recovery, approval, and human acceptance. |
+| Five canonical DAG product ladder | Technical readback generated; immutable goal not accepted | Current-main proof bundle read back 37 artifacts, 10 receipts, and 16 screenshots. Human acceptance remains missing criterion 10. |
 | Proof index | Implemented | Indexes receipt metadata and hashes; does not prove receipt semantic truth. |
 | Route-memory signals | Implemented as local receipts | No approved Memory sync unless explicitly run. |
 | Adaptive DAG expansion | Implemented as validate/policy/apply artifacts | Does not mutate a running DAG silently. |

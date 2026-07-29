@@ -1,0 +1,311 @@
+{
+  "artifact_manifest_path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/artifact-manifest.json",
+  "artifact_manifest_sha256": "sha256:0d291c01cb3e1ca158d6947d015db8971b1f0164726635ae9e3a314f33c4e873",
+  "audit_path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/audit/immutable-goal-audit.json",
+  "audit_sha256": "sha256:994f198dbeca77f5deb6d0efc7b0c07729fa15f7a9626448a57d70260d2d3d82",
+  "checked_artifact_count": 37,
+  "claims": {
+    "does_not_prove": [
+      "Human acceptance of the immutable goal.",
+      "Provider or model semantic quality.",
+      "Production deployment readiness, a formal airgap, or secret absence.",
+      "Automatic recovery from process loss before a result is durably staged.",
+      "Application-level exactly-once publication from SQLite WAL semantics alone."
+    ],
+    "proves": [
+      "The exact source ref was checked out in a detached clean Git worktree.",
+      "A wheel from that ref was installed and imported from a temporary environment.",
+      "The installed public tau command discovered exactly the five locked workflows.",
+      "All five public workflow sequences produced useful results and blocked paths.",
+      "The installed shared viewer served an identified GET manifest for every run.",
+      "Positive and negative browser proofs for all five workflows were retained and hash-bound.",
+      "The durable ledger and repeated resume retained one publication effect."
+    ]
+  },
+  "command_count": 62,
+  "created_at": "2026-07-29T20:01:07.268560Z",
+  "criteria": [
+    {
+      "criterion": 1,
+      "evidence_count": 5,
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 2,
+      "evidence_count": 5,
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 3,
+      "evidence_count": 5,
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 4,
+      "evidence_count": 2,
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 5,
+      "evidence_count": 2,
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 6,
+      "evidence_count": 5,
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 7,
+      "evidence_count": 8,
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 8,
+      "evidence_count": 10,
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 9,
+      "evidence_count": 10,
+      "status": "ESTABLISHED"
+    },
+    {
+      "criterion": 10,
+      "evidence_count": 1,
+      "status": "MISSING"
+    }
+  ],
+  "human_acceptance": {
+    "acceptance_line": "Human acceptance is not recorded by this automated audit.",
+    "accepted": false,
+    "required": true,
+    "status": "MISSING"
+  },
+  "immutable_goal_status": "NOT_MET",
+  "live": true,
+  "mocked": false,
+  "project_state": {
+    "gap_count": null,
+    "path": "/tmp/tau-issue-258-context-20260729T1928Z/project-state.json"
+  },
+  "proof_index": [
+    {
+      "label": "readiness_positive_browser",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/receipts/repository-readiness-positive.json",
+      "provider_live": false,
+      "schema": "tau.repository_readiness_browser_proof.v1",
+      "sha256": "sha256:8dccc25149300415ff06aebd66baa68faecea6f7634dc60c82af0b470d14454b"
+    },
+    {
+      "label": "readiness_negative_browser",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/receipts/repository-readiness-negative.json",
+      "provider_live": false,
+      "schema": "tau.repository_readiness_browser_proof.v1",
+      "sha256": "sha256:f1fa80dfda112817dfd21477ed28de4245d7983e3ea59cce970e73a27041a24d"
+    },
+    {
+      "label": "operator_positive_browser",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/receipts/operator-reference-positive.json",
+      "provider_live": false,
+      "schema": "tau.operator_reference_browser_proof.v1",
+      "sha256": "sha256:632cbcb1d55df964512965b801dad891cda57b73b6bf14627075b3e5c3bac836"
+    },
+    {
+      "label": "operator_negative_browser",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/receipts/operator-reference-negative.json",
+      "provider_live": false,
+      "schema": "tau.operator_reference_browser_proof.v1",
+      "sha256": "sha256:973063768a5d1b72e98ac275f0d89e1031c3ebb0a25b7f8d2ad061c5ca24d4e0"
+    },
+    {
+      "label": "evidence_positive_browser",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/receipts/repository-evidence-map-positive.json",
+      "provider_live": false,
+      "schema": "tau.repository_evidence_map_browser_proof.v1",
+      "sha256": "sha256:fd3d6d2584d9d3d68d264e6d03d811087951eadea06df293ee3974e3f4dc1555"
+    },
+    {
+      "label": "evidence_negative_browser",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/receipts/repository-evidence-map-negative.json",
+      "provider_live": false,
+      "schema": "tau.repository_evidence_map_browser_proof.v1",
+      "sha256": "sha256:e4513649c9497cac1e974db8dbed0aee226e5eb99e8ba7dbd23f3bbbf3c3d9ae"
+    },
+    {
+      "label": "slice04_browser",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/receipts/approved-release-bundle.json",
+      "provider_live": false,
+      "schema": "tau.approved_release_browser_proof.v1",
+      "sha256": "sha256:cfc383de10062ef7f2a69751fd66cbd6ea96d93bc0a96fcc82a16b29cb9843d1"
+    },
+    {
+      "label": "slice04_no_accepted_producer_rerun",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/receipts/approved-release-bundle-rerun.json",
+      "provider_live": false,
+      "schema": "tau.slice04_no_accepted_producer_rerun_verification.v1",
+      "sha256": "sha256:5beeaa690d2b5335f08a3349a4dc93fcdb9e62d6a40f360d66a41cd31158dad1"
+    },
+    {
+      "label": "slice05_browser",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/receipts/durable-repository-qualification.json",
+      "provider_live": false,
+      "schema": "tau.durable_qualification_browser_proof.v1",
+      "sha256": "sha256:a3692c08f20b101ba588631beb79075e77ab8edd33d5353db591118330951b4b"
+    },
+    {
+      "label": "slice05_wheel",
+      "live": true,
+      "mocked": false,
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/receipts/durable-qualification-wheel.json",
+      "provider_live": false,
+      "schema": "tau.durable_qualification_wheel_proof.v1",
+      "sha256": "sha256:c5515da916c4430d3e210a63c4a3708f308c671310a4ddf3eb76b412f696affc"
+    }
+  ],
+  "provider_live": false,
+  "remaining_unmet_criteria": [
+    {
+      "criterion": 10,
+      "evidence": [
+        "Human acceptance is not recorded by this automated audit."
+      ],
+      "status": "MISSING"
+    }
+  ],
+  "schema": "tau.immutable_goal_acceptance_readback.v1",
+  "screenshot_index": [
+    {
+      "bytes": 178007,
+      "kind": "desktop",
+      "label": "readiness_positive_browser",
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/screenshots/repository-readiness-positive-desktop.png",
+      "sha256": "sha256:075ae531f6f7f13dc4d163c05f848a256b5635c0f1b5392199aedf2ac0050786"
+    },
+    {
+      "bytes": 127028,
+      "kind": "mobile",
+      "label": "readiness_positive_browser",
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/screenshots/repository-readiness-positive-mobile.png",
+      "sha256": "sha256:ca1ed67da9422d3b38c47b57627412b5e2aeab9150d7e3b6319900c068b03c5b"
+    },
+    {
+      "bytes": 176383,
+      "kind": "desktop",
+      "label": "readiness_negative_browser",
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/screenshots/repository-readiness-negative-desktop.png",
+      "sha256": "sha256:dfd53367b9e3662743ff26a14385554adbf39ed7a963d5c43c84406e4e2342e6"
+    },
+    {
+      "bytes": 134813,
+      "kind": "mobile",
+      "label": "readiness_negative_browser",
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/screenshots/repository-readiness-negative-mobile.png",
+      "sha256": "sha256:64a1a5dfd001d27b75ac1e9ceefc53b76f54c8cb5274cd67a6bab64ac2e83ac8"
+    },
+    {
+      "bytes": 182557,
+      "kind": "desktop",
+      "label": "operator_positive_browser",
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/screenshots/operator-reference-positive-desktop.png",
+      "sha256": "sha256:b5f7fd1cc8fe2a0692467f68837aaae315975aa84768bb6a95f84934d54debfa"
+    },
+    {
+      "bytes": 125108,
+      "kind": "mobile",
+      "label": "operator_positive_browser",
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/screenshots/operator-reference-positive-mobile.png",
+      "sha256": "sha256:b2d629d2cd98a42a866c426ef580fb669ec8b5e63b4e1755dfb0fd0b4f37d75e"
+    },
+    {
+      "bytes": 183580,
+      "kind": "desktop",
+      "label": "operator_negative_browser",
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/screenshots/operator-reference-negative-desktop.png",
+      "sha256": "sha256:6f7667532702dd06a74e3409d336d95fd4f0bdb88d76b52ac7843f49400d3e40"
+    },
+    {
+      "bytes": 133407,
+      "kind": "mobile",
+      "label": "operator_negative_browser",
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/screenshots/operator-reference-negative-mobile.png",
+      "sha256": "sha256:86e989665e9ca770bb1c31b4da128f5de8d9b2ce391f4678598be5ee03b9e246"
+    },
+    {
+      "bytes": 193401,
+      "kind": "desktop",
+      "label": "evidence_positive_browser",
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/screenshots/repository-evidence-map-positive-desktop.png",
+      "sha256": "sha256:418d8a7e0a1df8f604404632ffab95248186035055bae8a873ac14256fe6c2df"
+    },
+    {
+      "bytes": 126153,
+      "kind": "mobile",
+      "label": "evidence_positive_browser",
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/screenshots/repository-evidence-map-positive-mobile.png",
+      "sha256": "sha256:9b84c1e7372f014fe82e532e545c9cc70c0aeefbe92322cf37251c5fa277e34d"
+    },
+    {
+      "bytes": 187281,
+      "kind": "desktop",
+      "label": "evidence_negative_browser",
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/screenshots/repository-evidence-map-negative-desktop.png",
+      "sha256": "sha256:73fc4c35b9f3f16f7a9f708afd55d4ab68f1c10f54b77db366706348816353d5"
+    },
+    {
+      "bytes": 133182,
+      "kind": "mobile",
+      "label": "evidence_negative_browser",
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/screenshots/repository-evidence-map-negative-mobile.png",
+      "sha256": "sha256:156566f5e54c2902ce0544cdf8b866c484d1b8635529125cba9718923e786609"
+    },
+    {
+      "bytes": 194093,
+      "kind": "desktop",
+      "label": "slice04_browser",
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/screenshots/approved-release-bundle-desktop.png",
+      "sha256": "sha256:0f182205a694948701127fd1ada8e94a6ff4d28a160b82128ba6fad750c134fe"
+    },
+    {
+      "bytes": 147599,
+      "kind": "mobile",
+      "label": "slice04_browser",
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/screenshots/approved-release-bundle-mobile.png",
+      "sha256": "sha256:dcb7b9d693e067c24f1c53726a87c84e11d5d5917731edb70197df47bcae5202"
+    },
+    {
+      "bytes": 200167,
+      "kind": "desktop",
+      "label": "slice05_browser",
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/screenshots/durable-repository-qualification-desktop.png",
+      "sha256": "sha256:6f7c994bd6f28649bcb520a1a13ec477c58961dcf69518ed8dc0b236f9eadc89"
+    },
+    {
+      "bytes": 146895,
+      "kind": "mobile",
+      "label": "slice05_browser",
+      "path": "/tmp/tau-issue-258-main-ci-artifacts-20260729T2000Z/tau-canonical-proofs-30485773678/screenshots/durable-repository-qualification-mobile.png",
+      "sha256": "sha256:0ed1b9888d1fffa35a4065853e2fec34ae0a3051eccdc30e13f6585133cf8943"
+    }
+  ],
+  "source_ref": "58507c63c343f0a78ba500e55d8d5f8433691195",
+  "status": "HUMAN_ACCEPTANCE_REQUIRED"
+}
