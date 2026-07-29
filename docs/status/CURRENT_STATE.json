@@ -10,11 +10,11 @@
     },
     "source": "src/tau_coding/dag_runtime/"
   },
-  "generated_at": "2026-07-29T00:15:10.219067+00:00",
+  "generated_at": "2026-07-29T00:19:35.573762+00:00",
   "generator_version": "1.0.0",
   "git": {
     "clean_tree": false,
-    "commit": "477e1a183440b452d2525b850864be8991d2ecc1"
+    "commit": "bb662aad3f7d8172fd3c262f3f6821697f2c2e4b"
   },
   "github": {
     "branch_protection": {
@@ -196,7 +196,7 @@
       "uv run pytest -q",
       "canonical-browser-proofs"
     ],
-    "snapshot_sha256": "sha256:3844ce33323b9d21c60a15a5133528d6d1fda4e37dcf2dbbc0101785c3bc4e96"
+    "snapshot_sha256": "sha256:a47f96f5a5e8058251562a10573c499b36ed1416cbc02751e29d6a8b475884d5"
   },
   "human_acceptance": {
     "baseline_present": true,
@@ -235,8 +235,8 @@
     "provider_live": false
   },
   "proof_index": {
-    "count": 17,
-    "digest": "sha256:35bb308f6a101288d6b2df5827afc96035ea748e0c98c9e35171331c60909be7",
+    "count": 18,
+    "digest": "sha256:44667de38f69894101fb2cb4915cc7778f7f2d806be6d27a4f54998e8d5bc877",
     "entries": [
       {
         "path": "docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/closure-evidence.json",
@@ -303,18 +303,22 @@
         "sha256": "sha256:963d0ec3c8fef83346bbc70729623da96e51f3b0e53c47ce54ef862d7b751575"
       },
       {
+        "path": "docs/proofs/tickets/issue-72-p11-security-unit-conformance-20260729T0019Z/closure-evidence.json",
+        "sha256": "sha256:a0ff736d4fe4eefbe9a5c42c7550d4c749dfb1f523d108a920d25608228c1d57"
+      },
+      {
         "path": "docs/proofs/tickets/issue-72-p8-sprite-unit-conformance-20260729T0013Z/closure-evidence.json",
         "sha256": "sha256:18d68ecdbf53589d14cd1533bc601f97c2f6d7d37307e16d6f0bcc99c507e781"
       }
     ]
   },
   "schema": "tau.project_status.v1",
-  "semantic_content_digest": "sha256:db9dde86638b2cf2c4dfa3be1957b11152a67e645fd242648821bc33679369fc",
+  "semantic_content_digest": "sha256:e99ef99f2a787fda919eecd4e1e87840bdd9d694158a2c9e6b56a924e6ae97bc",
   "source_digests": {
     "GOAL.md": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
     "acceptance_receipt": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab",
-    "github_snapshot": "sha256:3844ce33323b9d21c60a15a5133528d6d1fda4e37dcf2dbbc0101785c3bc4e96",
-    "proof_index": "sha256:35bb308f6a101288d6b2df5827afc96035ea748e0c98c9e35171331c60909be7",
+    "github_snapshot": "sha256:a47f96f5a5e8058251562a10573c499b36ed1416cbc02751e29d6a8b475884d5",
+    "proof_index": "sha256:44667de38f69894101fb2cb4915cc7778f7f2d806be6d27a4f54998e8d5bc877",
     "pyproject.toml": "sha256:846cfd5812f312395f363db523bf485487f6d72a651644098b92f34565dccb55"
   },
   "workflows": {

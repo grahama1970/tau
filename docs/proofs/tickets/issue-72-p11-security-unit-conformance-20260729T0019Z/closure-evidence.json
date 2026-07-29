@@ -1,0 +1,53 @@
+{
+  "schema": "tau.ticket_closure_evidence.v1",
+  "ticket": 72,
+  "phase": "P11",
+  "phase_title": "Asymmetric signing, audit ledger, API auth, and RBAC",
+  "created_at": "2026-07-29T00:19:05Z",
+  "status": "PROVEN",
+  "mocked": false,
+  "live": false,
+  "provider_live": false,
+  "proof_scope": {
+    "proves": [
+      "Tau's existing RBAC/API mutating-request evaluator accepts only an authorized operator actor with the expected API token, target id, target lineage, action, and PASS approval receipt.",
+      "Tau's existing RBAC/API mutating-request evaluator denies an unauthorized actor without an API token and records both API-auth and RBAC denial reasons without applying mutation.",
+      "Tau's existing RBAC/API mutating-request evaluator denies otherwise-authorized requests when the approval receipt is not PASS.",
+      "Tau's existing RBAC/API mutating-request evaluator denies otherwise-authorized requests when target lineage differs from the protected target lineage.",
+      "Tau's existing audit ledger writer creates sequential hash-chained JSONL entries from genesis through terminal hash.",
+      "Tau's existing audit ledger verifier rejects tampered ledger entries whose event payload no longer matches the recorded entry hash.",
+      "The retained P11 unit layer complements the already-retained live security-audit conformance lane by pinning deterministic failure semantics for audit-ledger, RBAC, and API-auth behavior."
+    ],
+    "does_not_prove": [
+      "Production key custody.",
+      "Network API gateway deployment.",
+      "External identity-provider integration.",
+      "Runtime sandbox isolation.",
+      "Provider/model semantic quality."
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "uv run pytest -q tests/test_security_audit_conformance.py tests/test_security_capability.py tests/test_approval_gate.py tests/test_receipt_signing.py",
+      "exit_code": 0,
+      "stdout_summary": "25 passed in 0.71s"
+    },
+    {
+      "cmd": "uv run ruff check --select I,F,E501 src/tau_coding/security_audit_conformance.py tests/test_security_audit_conformance.py",
+      "exit_code": 0,
+      "stdout_summary": "All checks passed!"
+    }
+  ],
+  "files": [
+    "tests/test_security_audit_conformance.py",
+    "src/tau_coding/security_audit_conformance.py",
+    "tests/test_security_capability.py",
+    "tests/test_approval_gate.py",
+    "tests/test_receipt_signing.py"
+  ],
+  "disposition": "P11_PROVEN_WITH_DETERMINISTIC_UNIT_COVERAGE",
+  "remaining_for_issue_72": [
+    "R4 in-repo runtime_handshake test coverage (P12)",
+    "R5 branch protection decision: enforce_admins=true, or narrow the absolute-invariant claim"
+  ]
+}
