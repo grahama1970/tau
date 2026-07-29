@@ -97,6 +97,10 @@ from tau_coding.pending_decisions import (
     pending_decision_lines,
     pending_decision_report,
 )
+from tau_coding.permission_receipts import (
+    collect_permission_request_views,
+    write_permission_reply_receipt,
+)
 from tau_coding.prompt_templates import PromptTemplate
 from tau_coding.provider_catalog import (
     BUILTIN_PROVIDER_CATALOG,
@@ -4570,6 +4574,7 @@ class CommandOutputScreen(ModalScreen[None]):
 
 
 type ConfigMapAction = Literal["insert_command", "copy_path", "toggle_resource"]
+type PermissionDecisionAction = Literal["approve", "deny"]
 type ConfigMapScope = Literal["all", "project", "user"]
 type ArtifactBrowserAction = Literal["open", "copy"]
 type ArtifactPreviewKind = Literal["image", "markdown", "json", "html"]
@@ -4627,6 +4632,182 @@ class ArtifactBrowserResult:
 
     action: ArtifactBrowserAction
     artifact: VisualArtifact
+
+
+@dataclass(frozen=True, slots=True)
+class PermissionDecisionResult:
+    """Operator action selected for a permission request."""
+
+    action: PermissionDecisionAction
+    request: dict[str, Any]
+
+
+class PermissionRequestScreen(ModalScreen[PermissionDecisionResult | None]):
+    """Read and resolve pending permission requests from authoritative receipts."""
+
+    BINDINGS: ClassVar[list[Binding]] = [
+        Binding("a", "approve_selected", "Approve"),
+        Binding("d", "deny_selected", "Deny"),
+        Binding("r", "refresh_requests", "Refresh"),
+    ]
+
+    def __init__(
+        self,
+        cwd: Path,
+        *,
+        theme: TuiTheme,
+        keybindings: TuiKeybindings | None = None,
+    ) -> None:
+        super().__init__()
+        self.cwd = cwd
+        self.theme = theme
+        self.keybindings = keybindings or TuiKeybindings()
+        self.requests = collect_permission_request_views(cwd)
+
+    def compose(self) -> ComposeResult:
+        """Compose the permission request picker."""
+        with Vertical(id="config-map"):
+            yield Static("Permission Requests", id="config-map-title")
+            yield Static(_permission_request_summary(self.requests), id="artifact-browser-summary")
+            yield ListView(*self._list_items(), id="config-map-list")
+            with VerticalScroll(id="artifact-browser-preview-scroll"):
+                yield Static(self._detail_renderable(0), id="artifact-browser-preview")
+            yield Static(
+                "a approve · d deny · r refresh · enter inspect · escape cancel",
+                id="config-map-help",
+            )
+
+    def on_mount(self) -> None:
+        """Focus the request list."""
+        self.query_one("#config-map-list", ListView).focus()
+        self._refresh_detail()
+
+    def on_key(self, event: Key) -> None:
+        """Route request decision keys."""
+        if _matches_configured_or_default_key(event.key, self.keybindings.select_up, "up"):
+            event.stop()
+            self.action_cursor_up()
+        elif _matches_configured_or_default_key(event.key, self.keybindings.select_down, "down"):
+            event.stop()
+            self.action_cursor_down()
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_page_up,
+            "pageup",
+        ):
+            event.stop()
+            self.action_page(-1)
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_page_down,
+            "pagedown",
+        ):
+            event.stop()
+            self.action_page(1)
+        elif _matches_configured_or_default_key(
+            event.key,
+            self.keybindings.select_cancel,
+            "escape",
+        ):
+            event.stop()
+            self.dismiss(None)
+        elif event.key == "a":
+            event.stop()
+            self.action_approve_selected()
+        elif event.key == "d":
+            event.stop()
+            self.action_deny_selected()
+        elif event.key == "r":
+            event.stop()
+            self.action_refresh_requests()
+
+    def on_list_view_highlighted(self, event: ListView.Highlighted) -> None:
+        """Update the request detail pane."""
+        if event.list_view.id == "config-map-list":
+            self._refresh_detail()
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """Keep Enter as inspect/readback; actions require explicit approve/deny keys."""
+        del event
+        self._refresh_detail()
+
+    def action_cursor_up(self) -> None:
+        """Move to the previous permission row."""
+        self.query_one("#config-map-list", ListView).action_cursor_up()
+        self._refresh_detail()
+
+    def action_cursor_down(self) -> None:
+        """Move to the next permission row."""
+        self.query_one("#config-map-list", ListView).action_cursor_down()
+        self._refresh_detail()
+
+    def action_page(self, direction: int) -> None:
+        """Scroll the permission list by one page."""
+        list_view = self.query_one("#config-map-list", ListView)
+        amount = max(1, self.size.height - 8)
+        if direction < 0:
+            for _ in range(amount):
+                list_view.action_cursor_up()
+        else:
+            for _ in range(amount):
+                list_view.action_cursor_down()
+        self._refresh_detail()
+
+    def action_refresh_requests(self) -> None:
+        """Reload request state from authoritative files."""
+        self.requests = collect_permission_request_views(self.cwd)
+        self._refresh_list()
+
+    def action_approve_selected(self) -> None:
+        """Approve the selected pending request."""
+        self._select("approve")
+
+    def action_deny_selected(self) -> None:
+        """Deny the selected pending request."""
+        self._select("deny")
+
+    def _select(self, action: PermissionDecisionAction) -> None:
+        request = self._selected_request()
+        if request is None:
+            return
+        if request.get("actionable") is not True:
+            self.notify(str(request.get("state_reason") or "request is not actionable"))
+            return
+        self.dismiss(PermissionDecisionResult(action=action, request=request))
+
+    def _selected_request(self) -> dict[str, Any] | None:
+        if not self.requests:
+            return None
+        index = self.query_one("#config-map-list", ListView).index or 0
+        index = max(0, min(index, len(self.requests) - 1))
+        return self.requests[index]
+
+    def _refresh_list(self) -> None:
+        list_view = self.query_one("#config-map-list", ListView)
+        list_view.clear()
+        list_view.extend(self._list_items())
+        self.query_one("#artifact-browser-summary", Static).update(
+            _permission_request_summary(self.requests)
+        )
+        self._refresh_detail()
+
+    def _refresh_detail(self) -> None:
+        index = self.query_one("#config-map-list", ListView).index or 0
+        self.query_one("#artifact-browser-preview", Static).update(self._detail_renderable(index))
+
+    def _list_items(self) -> list[ListItem]:
+        if not self.requests:
+            return [ListItem(Label("No permission requests found"))]
+        return [
+            ListItem(Label(_permission_request_row(request), markup=False))
+            for request in self.requests
+        ]
+
+    def _detail_renderable(self, index: int) -> str:
+        if not self.requests:
+            return "No permission request receipts found."
+        index = max(0, min(index, len(self.requests) - 1))
+        return _permission_request_detail(self.requests[index])
 
 
 class ArtifactBrowserSearchInput(Input):
@@ -7911,6 +8092,9 @@ class TauTuiApp(App[None]):
         if self.startup_resume_picker:
             self.call_after_refresh(self.action_open_session_picker)
             return
+        if _truthy_env("TAU_TUI_PERMISSION_PROOF_OPEN"):
+            self.call_after_refresh(self._open_permission_requests)
+            return
         if self.initial_prompt and self.initial_prompt.strip():
             self._submit_prompt(self.initial_prompt.strip())
 
@@ -8299,6 +8483,8 @@ class TauTuiApp(App[None]):
                 self._open_prompt_template_picker()
             if command.workflow_picker_requested:
                 self._open_workflow_picker()
+            if command.permissions_picker_requested:
+                self._open_permission_requests()
             if command.tools_picker_requested:
                 self._open_tools_reference()
             if command.skills_picker_requested:
@@ -8754,6 +8940,46 @@ class TauTuiApp(App[None]):
             ),
             callback=self._handle_artifact_browser_result,
         )
+
+    def _open_permission_requests(self) -> None:
+        """Open the authoritative pending permission request surface."""
+        self.push_screen(
+            PermissionRequestScreen(
+                self.session.cwd,
+                theme=self.tui_settings.resolved_theme,
+                keybindings=self.tui_settings.keybindings,
+            ),
+            callback=self._handle_permission_decision,
+        )
+
+    def _handle_permission_decision(self, result: PermissionDecisionResult | None) -> None:
+        if result is None:
+            self._notify("Permission request left unchanged.")
+            return
+        reply = "once" if result.action == "approve" else "reject"
+        request_path = Path(str(result.request.get("path") or ""))
+        try:
+            receipt = write_permission_reply_receipt(
+                request_receipt=request_path,
+                reply=reply,
+                actor_id=f"human:tui:{os.environ.get('USER') or 'operator'}",
+                scope=str(result.request.get("requested_scope") or "once"),
+            )
+            refreshed = collect_permission_request_views(self.session.cwd)
+        except Exception as exc:  # noqa: BLE001 - preserve fail-closed TUI feedback
+            self._notify(f"Permission reply failed: {exc}", severity="error")
+            return
+        request_id = receipt.get("request_id") or result.request.get("request_id")
+        state = next(
+            (
+                str(item.get("state"))
+                for item in refreshed
+                if item.get("request_id") == request_id
+            ),
+            str(receipt.get("status") or "UNKNOWN"),
+        )
+        decision = "approved" if result.action == "approve" else "denied"
+        self._notify(f"Permission {decision}; readback state {state} for {request_id}.")
 
     def _handle_artifact_browser_result(self, result: ArtifactBrowserResult | None) -> None:
         if result is None:
@@ -14360,6 +14586,59 @@ def _artifact_browser_summary(artifacts: Sequence[VisualArtifact]) -> str:
         f"{markdown_count} Markdown report(s), {json_count} JSON receipt(s), "
         f"{html_count} HTML export(s)"
     )
+
+
+def _permission_request_summary(requests: Sequence[dict[str, Any]]) -> str:
+    if not requests:
+        return "No permission requests found under this repository."
+    pending = sum(1 for request in requests if request.get("state") == "PENDING")
+    resolved = sum(1 for request in requests if request.get("state") in {"APPROVED", "DENIED"})
+    blocked = len(requests) - pending - resolved
+    return f"{pending} pending · {resolved} resolved · {blocked} non-actionable"
+
+
+def _permission_request_row(request: Mapping[str, Any]) -> str:
+    request_id = str(request.get("request_id") or "unknown")
+    action = str(request.get("action") or "unknown-action")
+    resource = str(request.get("resource") or "unknown-resource")
+    state = str(request.get("state") or "UNKNOWN")
+    return f"{state:<14} {request_id} · {action} · {resource}"
+
+
+def _permission_request_detail(request: Mapping[str, Any]) -> str:
+    resources = request.get("resources")
+    resource_text = (
+        ", ".join(str(item) for item in resources)
+        if isinstance(resources, list)
+        else str(request.get("resource") or "")
+    )
+    fields = [
+        ("state", request.get("state")),
+        ("state_reason", request.get("state_reason")),
+        ("request_id", request.get("request_id")),
+        ("action", request.get("action")),
+        ("resource", resource_text),
+        ("reason", request.get("reason")),
+        ("session_id", request.get("session_id")),
+        ("turn_id", request.get("turn_id")),
+        ("attempt_id", request.get("attempt_id")),
+        ("active_goal", request.get("active_goal")),
+        ("goal_hash", request.get("goal_hash")),
+        ("requested_scope", request.get("requested_scope")),
+        ("expires_at", request.get("expires_at")),
+        ("nonce", request.get("nonce")),
+        ("request_path", request.get("path")),
+        ("reply_path", request.get("reply_path")),
+        ("reply", request.get("reply")),
+        ("reply_status", request.get("reply_status")),
+    ]
+    return "\n".join(f"{label}: {_permission_detail_value(value)}" for label, value in fields)
+
+
+def _permission_detail_value(value: object) -> str:
+    if value is None or value == "":
+        return "missing"
+    return str(value)
 
 
 def _artifact_browser_kind(artifact: VisualArtifact) -> ArtifactBrowserKind:

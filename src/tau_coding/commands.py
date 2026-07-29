@@ -205,6 +205,7 @@ class CommandResult:
     trust_picker_requested: bool = False
     theme_picker_requested: bool = False
     workflow_picker_requested: bool = False
+    permissions_picker_requested: bool = False
     tools_picker_requested: bool = False
     skills_picker_requested: bool = False
     thinking_level: str | None = None
@@ -1023,6 +1024,8 @@ def _hotkeys_command(context: CommandContext) -> CommandResult:
 
 
 def _permissions_command(context: CommandContext) -> CommandResult:
+    if context.async_ui_supported:
+        return CommandResult(handled=True, permissions_picker_requested=True)
     actions = "\n".join(f"- {action}" for action in sorted(ALLOWED_ACTIONS))
     replies = "|".join(ALLOWED_PERMISSION_REPLIES)
     lines = [

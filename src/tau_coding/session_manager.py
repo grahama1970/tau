@@ -279,7 +279,7 @@ def _move_to_trash(path: Path) -> bool:
             text=True,
             timeout=5,
         )
-    except OSError, subprocess.TimeoutExpired:
+    except (OSError, subprocess.TimeoutExpired):
         return False
     return result.returncode == 0 or not path.exists()
 
