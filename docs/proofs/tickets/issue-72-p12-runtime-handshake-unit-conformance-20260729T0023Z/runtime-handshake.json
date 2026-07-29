@@ -1,0 +1,133 @@
+{
+  "capabilities": {
+    "adaptive_revision_conformance": {
+      "available": true,
+      "command": "adaptive-revision-conformance",
+      "status": "AVAILABLE"
+    },
+    "canonical_scheduler_conformance": {
+      "available": true,
+      "command": "canonical-scheduler-conformance",
+      "status": "AVAILABLE"
+    },
+    "dag_run": {
+      "available": true,
+      "command": "dag-run",
+      "status": "AVAILABLE"
+    },
+    "dag_view_capabilities": {
+      "available": true,
+      "command": "dag-view-capabilities",
+      "status": "AVAILABLE"
+    },
+    "doctor": {
+      "available": true,
+      "command": "doctor",
+      "status": "AVAILABLE"
+    },
+    "project_profile_conformance": {
+      "available": true,
+      "command": "project-profile-conformance",
+      "status": "AVAILABLE"
+    },
+    "resource_lease_conformance": {
+      "available": true,
+      "command": "resource-lease-conformance",
+      "status": "AVAILABLE"
+    },
+    "secure_execution_conformance": {
+      "available": true,
+      "command": "secure-execution-conformance",
+      "status": "AVAILABLE"
+    },
+    "security_audit_conformance": {
+      "available": true,
+      "command": "security-audit-conformance",
+      "status": "AVAILABLE"
+    },
+    "sprite_sheet_conformance": {
+      "available": true,
+      "command": "sprite-sheet-conformance",
+      "status": "AVAILABLE"
+    },
+    "targeted_repair_conformance": {
+      "available": true,
+      "command": "targeted-repair-conformance",
+      "status": "AVAILABLE"
+    },
+    "worker_controlled_data_conformance": {
+      "available": true,
+      "command": "worker-controlled-data-conformance",
+      "status": "AVAILABLE"
+    },
+    "workflows_list": {
+      "available": true,
+      "command": "workflows",
+      "status": "AVAILABLE"
+    }
+  },
+  "checked_at": "2026-07-29T00:21:41Z",
+  "checks": {
+    "capabilities_present": true,
+    "no_direct_scillm_project_agent_shortcut": true,
+    "tau_version_present": true,
+    "unsupported_planned_lanes_marked_unavailable": true,
+    "wrapper_path_exists": true,
+    "wrapper_resolves_same_checkout": true
+  },
+  "failed_checks": [],
+  "git": {
+    "head": "af138d3dfd226199c0aefaad433c277f6ecf24e5",
+    "remote_main": "af138d3dfd226199c0aefaad433c277f6ecf24e5\trefs/heads/main",
+    "status_short": [
+      "?? tests/test_runtime_handshake.py"
+    ]
+  },
+  "live": true,
+  "mocked": false,
+  "operator_wrapper": {
+    "exists": true,
+    "path": "/home/graham/workspace/experiments/agent-skills/skills/tau/run.sh",
+    "resolution_source": "cwd",
+    "resolved_tau_root": "/tmp/tau-autocomplete-20260728"
+  },
+  "output": "/tmp/tau-autocomplete-20260728/docs/proofs/tickets/issue-72-p12-runtime-handshake-unit-conformance-20260729T0023Z/runtime-handshake.json",
+  "planned_unsupported_lanes": {
+    "proof_index_build": {
+      "available": false,
+      "command": "proof-index build",
+      "reason": "planned lane is not present in this checkout and is not claimed",
+      "status": "UNAVAILABLE"
+    }
+  },
+  "proof_commands": {
+    "operator_doctor": "/home/graham/workspace/experiments/agent-skills/skills/tau/run.sh doctor",
+    "operator_status": "/home/graham/workspace/experiments/agent-skills/skills/tau/run.sh status",
+    "runtime_handshake": "uv run tau runtime-handshake --output docs/proofs/tickets/<issue>/runtime-handshake.json"
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider/model semantic quality.",
+      "Full #72 program completion.",
+      "Production RBAC deployment.",
+      "Browser UI rendering correctness."
+    ],
+    "proves": [
+      "Tau wrote a live filesystem runtime-handshake receipt from the current checkout.",
+      "The operator wrapper path and checkout binding are explicit.",
+      "Implemented Tau runtime and conformance lanes are discoverable.",
+      "Planned unsupported lanes are marked unavailable rather than claimed.",
+      "Provider/model calls remain behind Tau-owned adapter boundaries."
+    ]
+  },
+  "provider_boundary": {
+    "direct_scillm_project_agent_shortcut": false,
+    "project_agent_instruction": "Project agents express provider/model work as Tau DAG nodes or command specs; Tau-owned adapters may call SciLLM internally and emit receipts.",
+    "scillm_internal_only": true
+  },
+  "provider_live": false,
+  "repo_root": "/tmp/tau-autocomplete-20260728",
+  "schema": "tau.runtime_handshake.v1",
+  "status": "PASS",
+  "tau_version": "0.1.0"
+}

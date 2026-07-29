@@ -1,0 +1,61 @@
+{
+  "schema": "tau.ticket_closure_evidence.v1",
+  "ticket": 72,
+  "phase": "P12",
+  "phase_title": "Tau operator skill v2 / runtime handshake",
+  "created_at": "2026-07-29T00:23:00Z",
+  "status": "PROVEN",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "proof_scope": {
+    "proves": [
+      "Tau has in-repo deterministic runtime-handshake tests for explicit wrapper/TAU_ROOT binding, missing-wrapper fail-closed behavior, wrong-checkout fail-closed behavior, special CLI capability discovery, and cwd checkout resolution.",
+      "Tau generated a fresh live filesystem runtime-handshake receipt from the CLI.",
+      "The fresh runtime-handshake receipt reports all implemented runtime/conformance lanes AVAILABLE.",
+      "The fresh runtime-handshake receipt reports planned unsupported lanes UNAVAILABLE rather than claiming them.",
+      "The fresh runtime-handshake receipt keeps provider/model calls behind Tau-owned adapter boundaries."
+    ],
+    "does_not_prove": [
+      "Provider/model semantic quality.",
+      "Full #72 program completion.",
+      "Production RBAC deployment.",
+      "Browser UI rendering correctness.",
+      "GitHub branch-protection admin enforcement."
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "uv run pytest -q tests/test_runtime_handshake.py tests/test_project_status.py",
+      "exit_code": 0,
+      "stdout_summary": "15 passed in 3.35s"
+    },
+    {
+      "cmd": "uv run ruff check --select I,F,E501 src/tau_coding/runtime_handshake.py tests/test_runtime_handshake.py",
+      "exit_code": 0,
+      "stdout_summary": "All checks passed!"
+    },
+    {
+      "cmd": "uv run tau runtime-handshake --output docs/proofs/tickets/issue-72-p12-runtime-handshake-unit-conformance-20260729T0023Z/runtime-handshake.json",
+      "exit_code": 0,
+      "stdout_summary": "runtime-handshake status PASS"
+    },
+    {
+      "cmd": "jq -e '.schema==\"tau.runtime_handshake.v1\" and .status==\"PASS\" and .mocked==false and .live==true and (.checks.capabilities_present==true) and (.checks.unsupported_planned_lanes_marked_unavailable==true)' docs/proofs/tickets/issue-72-p12-runtime-handshake-unit-conformance-20260729T0023Z/runtime-handshake.json",
+      "exit_code": 0,
+      "stdout_summary": "true"
+    }
+  ],
+  "artifacts": [
+    "docs/proofs/tickets/issue-72-p12-runtime-handshake-unit-conformance-20260729T0023Z/runtime-handshake.json",
+    "docs/proofs/tickets/issue-72-p12-runtime-handshake-unit-conformance-20260729T0023Z/closure-evidence.json"
+  ],
+  "files": [
+    "tests/test_runtime_handshake.py",
+    "src/tau_coding/runtime_handshake.py"
+  ],
+  "disposition": "P12_PROVEN_WITH_IN_REPO_UNIT_AND_LIVE_CLI_HANDSHAKE",
+  "remaining_for_issue_72": [
+    "R5 branch protection decision: enforce_admins=true, or narrow the absolute-invariant claim"
+  ]
+}
