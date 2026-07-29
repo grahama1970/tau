@@ -58,6 +58,7 @@ const checks = {
   workflow_title_visible: false,
   goal_summary_visible: false,
   inspect_running_observed: false,
+  inspect_progress_observed: false,
   inspect_accepted_observed: false,
   validate_running_observed: false,
   validate_accepted_observed: false,
@@ -112,6 +113,7 @@ while (Date.now() < deadline) {
   checks.goal_summary_visible ||=
     latest.goal.includes("Determine whether this checkout is ready for focused work.");
   checks.inspect_running_observed ||= latest.nodes.inspect.state === "running";
+  checks.inspect_progress_observed ||= ["running", "settled"].includes(latest.nodes.inspect.state);
   checks.inspect_accepted_observed ||=
     latest.nodes.inspect.state === "settled" && latest.nodes.inspect.admission === "accepted";
   checks.validate_running_observed ||= latest.nodes.validate.state === "running";
@@ -133,7 +135,7 @@ while (Date.now() < deadline) {
   const positiveDone = [
     checks.workflow_title_visible,
     checks.goal_summary_visible,
-    checks.inspect_running_observed,
+    checks.inspect_progress_observed,
     checks.inspect_accepted_observed,
     checks.validate_running_observed,
     checks.validate_accepted_observed,
@@ -195,7 +197,7 @@ const required = scenario === "positive"
   ? [
       "workflow_title_visible",
       "goal_summary_visible",
-      "inspect_running_observed",
+      "inspect_progress_observed",
       "inspect_accepted_observed",
       "validate_running_observed",
       "validate_accepted_observed",

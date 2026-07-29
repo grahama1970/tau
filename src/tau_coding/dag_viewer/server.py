@@ -38,6 +38,7 @@ from tau_coding.dag_viewer.projection import (
     build_dag_view_state,
     load_dag_replay_result,
 )
+from tau_coding.dag_viewer.project_receipt_projection import ProjectReceiptProjection
 from tau_coding.dag_viewer.query import query_dag_view
 from tau_coding.dag_viewer.receipt_index import ReceiptIndex, build_receipt_index
 from tau_coding.dag_viewer.static_files import read_static_viewer_file
@@ -94,6 +95,24 @@ def _select_default_run(run_dir: Path) -> tuple[LogicalRunIdentity, str]:
 class DagViewerApplication:
     def __init__(self, *, run_dir: Path, run_id: str | None = None) -> None:
         self.run_dir = run_dir.expanduser().resolve()
+        self._project_receipt: ProjectReceiptProjection | None = None
+        project_receipt: ProjectReceiptProjection | None = None
+        if run_id is None:
+            try:
+                project_receipt = ProjectReceiptProjection.load(self.run_dir)
+            except RuntimeError:
+                if not (self.run_dir / "dag-run.sqlite3").is_file():
+                    raise
+        if project_receipt is not None:
+            self._project_receipt = project_receipt
+            self.run_id = project_receipt.run_id
+            self._follow_generations = False
+            self._base_run_id = project_receipt.run_id
+            self.plan_sha256 = project_receipt.plan_sha256
+            self._cursor_key = secrets.token_bytes(32)
+            self._request_lock = threading.RLock()
+            self.receipts = project_receipt.receipt_index
+            return
         if run_id is None:
             identity, expected_plan_sha256 = _select_default_run(self.run_dir)
             selected_run_id = identity.physical_run_id
@@ -130,6 +149,10 @@ class DagViewerApplication:
             return json_response(viewer_capabilities())
         if path == "/api/v1/manifest":
             at_sequence = parse_at_sequence(parsed.query)
+            if self._project_receipt is not None:
+                manifest = self._project_receipt.manifest()
+                manifest["receipt_index"] = self.receipts.public_entries()
+                return json_response(manifest)
             result = self._replay(at_sequence=at_sequence)
             self._refresh_receipts(result.replay.transition_receipts)
             manifest = build_dag_view_manifest(replay=result.replay, run_dir=self.run_dir)
@@ -137,6 +160,21 @@ class DagViewerApplication:
             return json_response(manifest)
         if path == "/api/v1/state":
             at_sequence = parse_at_sequence(parsed.query)
+            if self._project_receipt is not None:
+                snapshot = self._project_receipt.snapshot(at_sequence=at_sequence)
+                etag = f'"{snapshot["snapshot_sha256"]}"'
+                response_headers = {
+                    "ETag": etag,
+                    "X-Tau-Journal-Head-Sequence": str(snapshot["journal_sequence"]),
+                }
+                if if_none_match == etag:
+                    return ViewerHttpResponse(
+                        304,
+                        b"",
+                        "application/json",
+                        {**response_headers, "Cache-Control": "no-store"},
+                    )
+                return with_headers(json_response(snapshot), response_headers)
             result = self._replay(at_sequence=at_sequence)
             self._refresh_receipts(result.replay.transition_receipts)
             snapshot, _ = build_dag_view_state(
@@ -161,6 +199,24 @@ class DagViewerApplication:
             return with_headers(json_response(snapshot), response_headers)
         if path == "/api/v1/events":
             after, before, limit = parse_event_query(parsed.query)
+            if self._project_receipt is not None:
+                events = self._project_receipt.events()
+                selected = tuple(
+                    event
+                    for event in events
+                    if int(event["seq"]) > after
+                    and (before is None or int(event["seq"]) < before)
+                )
+                selected = selected[-limit:] if before is not None else selected[:limit]
+                return json_response(
+                    {
+                        "schema": "tau.dag_live_event.v1",
+                        "run_id": self._project_receipt.run_id,
+                        "after_sequence": after,
+                        "limit": limit,
+                        "events": list(selected),
+                    }
+                )
             result = self._replay()
             replay, events = result.replay, result.events
             selected = tuple(
@@ -238,6 +294,12 @@ class DagViewerApplication:
                 raise RuntimeError("dag_viewer_explanation_not_found")
             kind, subject_id = parts[0].upper(), parts[1]
             at_sequence = parse_at_sequence(parsed.query)
+            if self._project_receipt is not None:
+                return json_response(
+                    self._project_receipt.explanation(
+                        kind, subject_id, at_sequence=at_sequence
+                    )
+                )
             result = self._replay(at_sequence=at_sequence)
             self._refresh_receipts(result.replay.transition_receipts)
             _, causal = build_dag_view_state(

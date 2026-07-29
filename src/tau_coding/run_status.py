@@ -10,6 +10,9 @@ from pathlib import Path
 from typing import Any
 
 from tau_coding.dag_runtime.run_store import DagRunStoreError, SqliteDagRunReader
+from tau_coding.dag_viewer.project_receipt_projection import (
+    project_receipt_projection_available,
+)
 from tau_coding.dag_viewer.projection import load_dag_replay
 
 RUN_STATUS_SCHEMA = "tau.run_status.v1"
@@ -278,7 +281,7 @@ def build_dag_viewer_link(run_dir: Path) -> dict[str, Any]:
         "dag_viewer": summary,
         "proof_scope": {
             "proves": [
-                "Tau can derive a DAG viewer command from the local read-only SQLite journal",
+            "Tau can derive a DAG viewer command from the local read-only DAG state",
                 (
                     "Tau does not mutate the DAG, route, provider state, Herdr state, or "
                     "GitHub state to create the viewer link"
@@ -1478,39 +1481,56 @@ def _dag_viewer_summary(
             run_ids = ()
             store_error = "dag_viewer_store_invalid"
             store_error_detail = None
-    available = store_exists and bool(run_ids) and store_error is None
+    sqlite_available = store_exists and bool(run_ids) and store_error is None
     viewer_run_dir = run_store_path.parent
-    launch_commands = [
-        [
-            "tau",
-            "dag-view",
-            "--run-dir",
-            str(viewer_run_dir),
-            "--run-id",
-            run_id,
-        ]
-        for run_id in run_ids
-    ]
-    single_launch = launch_commands[0] if len(launch_commands) == 1 else None
+    project_receipt_present = project_dag_receipt.get("schema") == "tau.dag_receipt.v1"
     project_receipt_available = (
         contract_exists
         and receipt_exists
-        and project_dag_receipt.get("schema") == "tau.dag_receipt.v1"
+        and project_receipt_present
+        and project_receipt_projection_available(viewer_run_dir)
     )
+    available = project_receipt_available or sqlite_available
+    dag_id = None
+    if project_receipt_available and isinstance(project_dag_receipt.get("dag_id"), str):
+        dag_id = project_dag_receipt["dag_id"]
+    elif sqlite_available and len(run_ids) == 1:
+        dag_id = run_ids[0]
+    if project_receipt_available:
+        launch_commands = [["tau", "dag-view", "--run-dir", str(viewer_run_dir)]]
+    elif sqlite_available:
+        launch_commands = [
+            [
+                "tau",
+                "dag-view",
+                "--run-dir",
+                str(viewer_run_dir),
+                "--run-id",
+                run_id,
+            ]
+            for run_id in run_ids
+        ]
+    else:
+        launch_commands = []
+    single_launch = launch_commands[0] if len(launch_commands) == 1 else None
     return {
         "schema": DAG_VIEWER_LINK_SCHEMA,
         "available": available,
         "status": "PASS" if available else "BLOCKED" if store_error else "MISSING",
-        "source_authority": "tau_sqlite_journal",
+        "source_authority": "tau_project_dag_receipt"
+        if project_receipt_available
+        else "tau_sqlite_journal",
         "self_contained": True,
         "read_only": True,
         "launch_command": single_launch,
         "launch_commands": launch_commands,
-        "run_id_required": len(run_ids) > 1,
+        "run_id_required": not project_receipt_available and sqlite_available and len(run_ids) > 1,
         "run_ids": list(run_ids),
         "external_ux_lab_required": False,
-        "source": "dag-run.sqlite3"
-        if available
+        "source": "dag-receipt.json"
+        if project_receipt_available
+        else "dag-run.sqlite3"
+        if sqlite_available
         else (
             store_error
             if store_error == "dag_run_store_schema_mismatch"
@@ -1530,15 +1550,15 @@ def _dag_viewer_summary(
         "contract_sha256": _file_sha256(contract_path) if contract_exists else None,
         "receipt_path": str(receipt_path) if receipt_exists else None,
         "receipt_sha256": _file_sha256(receipt_path) if receipt_exists else None,
-        "dag_id": project_dag_receipt.get("dag_id") if project_receipt_available else None,
+        "dag_id": dag_id,
         "goal_hash": _project_dag_goal_hash(project_dag_receipt)
-        if project_receipt_available
+        if project_receipt_present
         else None,
         "receipt_status": project_dag_receipt.get("status")
-        if project_receipt_available
+        if project_receipt_present
         else None,
         "receipt_verdict": project_dag_receipt.get("verdict")
-        if project_receipt_available
+        if project_receipt_present
         else None,
         "does_not_prove": [
             "browser rendering",
