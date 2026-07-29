@@ -39,6 +39,7 @@ from tau_coding import (
     github_handoff,
 )
 from tau_coding.cli import app, doctor_command, run_print_mode
+from tau_coding.credentials import FileCredentialStore, OAuthCredential
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import run_dag_plan
@@ -65,6 +66,27 @@ from tau_coding.updater import UpdateResult
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "experiments" / "goal-locked-subagents" / "fixtures"
+
+
+def _set_all_builtin_provider_credentials(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("OPENAI_API_KEY", "openai-key")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "anthropic-key")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "openrouter-key")
+    monkeypatch.setenv("HF_TOKEN", "huggingface-key")
+    monkeypatch.setenv("CHUTES_API_TOKEN", "chutes-key")
+    FileCredentialStore(tmp_path / ".tau" / "credentials.json").set_oauth(
+        "openai-codex",
+        OAuthCredential(
+            access="access-token",
+            refresh="refresh-token",
+            expires=int(time.time() * 1000) + 3_600_000,
+            account_id="account-1",
+        ),
+    )
 
 
 def _loop2_src_for_tests() -> Path:
@@ -749,7 +771,12 @@ def test_doctor_json_option_does_not_fall_through_to_tui() -> None:
     assert "Ask Tau" not in result.output
 
 
-def test_doctor_reports_reachable_external_memory_service(tmp_path: Path) -> None:
+def test_doctor_reports_reachable_external_memory_service(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    _set_all_builtin_provider_credentials(monkeypatch, tmp_path)
+
     class HealthHandler(BaseHTTPRequestHandler):
         def do_GET(self) -> None:
             self.send_response(200 if self.path == "/health" else 404)
@@ -806,7 +833,9 @@ def test_doctor_reports_unreachable_required_service_as_degraded(tmp_path: Path)
 
 def test_doctor_reports_unconfigured_optional_services_without_degrading(
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
+    _set_all_builtin_provider_credentials(monkeypatch, tmp_path)
     monkeypatch.delenv("TAU_SURF_URL", raising=False)
     monkeypatch.delenv("TAU_CHATTERBOX_TTS_URL", raising=False)
     monkeypatch.delenv("TAU_REALTIMESTT_URL", raising=False)
@@ -825,6 +854,111 @@ def test_doctor_reports_unconfigured_optional_services_without_degrading(
     assert payload["status"] == "PASS"
     assert optional["chatterbox_tts"]["state"] == "not_configured"
     assert optional["realtime_stt"]["state"] == "not_configured"
+
+
+def test_doctor_degrades_when_configured_provider_credentials_are_missing(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    for env_name in (
+        "OPENAI_API_KEY",
+        "OPENAI_CODEX_ACCESS_TOKEN",
+        "ANTHROPIC_AUTH_TOKEN",
+        "ANTHROPIC_API_KEY",
+        "OPENROUTER_API_KEY",
+        "HF_TOKEN",
+        "CHUTES_API_TOKEN",
+    ):
+        monkeypatch.delenv(env_name, raising=False)
+
+    payload = doctor_command(
+        repo_root=Path(__file__).resolve().parents[1],
+        memory_url="http://127.0.0.1:8601",
+        service_probe=lambda _url, _timeout: (True, None),
+    )
+
+    assert payload["status"] == "DEGRADED"
+    provider_settings = payload["provider_settings"]
+    unusable = provider_settings["unusable_provider_credentials"]
+    by_name = {item["name"]: item for item in unusable}
+    assert set(by_name) == {
+        "openai",
+        "openai-codex",
+        "anthropic",
+        "openrouter",
+        "huggingface",
+        "chutes",
+    }
+    assert {item["reason_code"] for item in unusable} == {"credential_missing"}
+    assert all(item["name"] in payload["warnings"][0] for item in unusable)
+    providers = {item["name"]: item for item in provider_settings["providers"]}
+    assert providers["openai"]["credential_state"] == "unusable"
+    assert providers["openai"]["credential"] == "missing"
+
+
+def test_doctor_passes_when_every_configured_provider_has_credentials(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    _set_all_builtin_provider_credentials(monkeypatch, tmp_path)
+
+    payload = doctor_command(
+        repo_root=Path(__file__).resolve().parents[1],
+        memory_url="http://127.0.0.1:8601",
+        service_probe=lambda _url, _timeout: (True, None),
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["warnings"] == []
+    provider_settings = payload["provider_settings"]
+    assert provider_settings["unusable_provider_credentials"] == []
+    assert all(
+        item["credential_state"] == "usable"
+        for item in provider_settings["providers"]
+    )
+
+
+def test_doctor_distinguishes_expired_oauth_from_missing_credential(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    for env_name in (
+        "OPENAI_API_KEY",
+        "ANTHROPIC_API_KEY",
+        "OPENROUTER_API_KEY",
+        "HF_TOKEN",
+        "CHUTES_API_TOKEN",
+    ):
+        monkeypatch.setenv(env_name, f"{env_name.lower()}-key")
+    FileCredentialStore(tmp_path / ".tau" / "credentials.json").set_oauth(
+        "openai-codex",
+        OAuthCredential(
+            access="access-token",
+            refresh="refresh-token",
+            expires=1,
+            account_id="account-1",
+        ),
+    )
+
+    payload = doctor_command(
+        repo_root=Path(__file__).resolve().parents[1],
+        memory_url="http://127.0.0.1:8601",
+        service_probe=lambda _url, _timeout: (True, None),
+    )
+
+    assert payload["status"] == "DEGRADED"
+    unusable = payload["provider_settings"]["unusable_provider_credentials"]
+    assert unusable == [
+        {
+            "name": "openai-codex",
+            "kind": "openai-codex",
+            "credential": "oauth_expired:openai-codex",
+            "reason_code": "oauth_expired",
+            "remedy": "run /login openai-codex to refresh OAuth credentials",
+        }
+    ]
 
 
 def test_doctor_rejects_unknown_options() -> None:

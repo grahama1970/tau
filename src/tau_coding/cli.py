@@ -875,7 +875,12 @@ def doctor_command(
 ) -> dict[str, object]:
     """Return a read-only Tau runtime preflight receipt."""
 
-    root = (repo_root or Path(__file__).resolve().parents[2]).resolve()
+    root_override = environ.get("TAU_ROOT")
+    root = (
+        repo_root
+        or (Path(root_override).expanduser() if root_override else None)
+        or Path(__file__).resolve().parents[2]
+    ).resolve()
     pyproject = root / "pyproject.toml"
     cli_path = root / "src" / "tau_coding" / "cli.py"
     proofs_root = root / "experiments" / "goal-locked-subagents" / "proofs"
@@ -905,28 +910,25 @@ def doctor_command(
     try:
         settings = load_provider_settings()
         credential_reader = FileCredentialStore()
+        provider_entries, unusable_provider_credentials = _doctor_provider_credentials(
+            settings,
+            credential_reader=credential_reader,
+        )
         provider_payload = {
             "default_provider": settings.default_provider,
             "provider_count": len(settings.providers),
-            "providers": [
-                {
-                    "name": item.name,
-                    "kind": provider_kind(item),
-                    "credential": _provider_credential_status(
-                        item,
-                        credential_reader=credential_reader,
-                    ),
-                }
-                for item in settings.providers
-            ],
+            "providers": provider_entries,
+            "unusable_provider_credentials": unusable_provider_credentials,
         }
     except Exception as exc:  # pragma: no cover - defensive preflight fallback
         provider_payload = {
             "default_provider": None,
             "provider_count": 0,
             "providers": [],
+            "unusable_provider_credentials": [],
             "error": str(exc),
         }
+        unusable_provider_credentials = []
         warnings.append(f"provider settings could not be loaded: {exc}")
 
     herdr_ready = command_paths["herdr"] is not None
@@ -942,6 +944,15 @@ def doctor_command(
     )
     if degraded:
         warnings.append("one or more required external services are unreachable")
+    provider_degraded = len(unusable_provider_credentials) > 0
+    if provider_degraded:
+        warnings.append(
+            "unusable provider credentials: "
+            + "; ".join(
+                f"{item['name']}={item['reason_code']} ({item['remedy']})"
+                for item in unusable_provider_credentials
+            )
+        )
 
     lanes = {
         "local_cli": {
@@ -992,7 +1003,13 @@ def doctor_command(
     return {
         "schema": "tau.doctor.v1",
         "ok": ok,
-        "status": "PASS" if ok and not degraded else "DEGRADED" if ok else "BLOCKED",
+        "status": (
+            "PASS"
+            if ok and not degraded and not provider_degraded
+            else "DEGRADED"
+            if ok
+            else "BLOCKED"
+        ),
         "mocked": False,
         "live": True,
         "provider_live": False,
@@ -1348,7 +1365,7 @@ async def replacement_harness_sanity_command(
     ]
     session_id = f"replacement-sanity-{run_token}"
 
-    doctor_payload = doctor_command(repo_root=Path(__file__).resolve().parents[2])
+    doctor_payload = doctor_command()
     doctor_path = receipts_dir / "doctor.json"
     _write_receipt_json(doctor_path, doctor_payload)
 
@@ -2355,7 +2372,7 @@ def main(
             _parse_doctor_cli_args(positional_args[1:])
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
-        payload = doctor_command(repo_root=Path(__file__).resolve().parents[2])
+        payload = doctor_command()
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         if not payload.get("ok"):
             raise typer.Exit(1)
@@ -3611,7 +3628,7 @@ def main(
         serve_tau_api(
             host=str(options["host"]),
             port=int(options["port"]),
-            doctor_handler=lambda: doctor_command(repo_root=Path(__file__).resolve().parents[2]),
+            doctor_handler=doctor_command,
         )
         raise typer.Exit()
 
@@ -13021,6 +13038,49 @@ def render_provider_settings(
         )
 
 
+def _doctor_provider_credentials(
+    settings: ProviderSettings,
+    *,
+    credential_reader: CredentialReader,
+) -> tuple[list[dict[str, object]], list[dict[str, str]]]:
+    """Return provider credential entries and fail-closed unusable diagnostics."""
+
+    providers: list[dict[str, object]] = []
+    unusable: list[dict[str, str]] = []
+    for provider in settings.providers:
+        credential_status = _provider_credential_status(
+            provider,
+            credential_reader=credential_reader,
+        )
+        entry: dict[str, object] = {
+            "name": provider.name,
+            "kind": provider_kind(provider),
+            "credential": credential_status,
+            "credential_state": "usable",
+        }
+        reason_code: str | None = None
+        if credential_status == "missing":
+            reason_code = "credential_missing"
+        elif credential_status.startswith("oauth_expired:"):
+            reason_code = "oauth_expired"
+        if reason_code is not None:
+            remedy = _provider_credential_remedy(provider, reason_code=reason_code)
+            entry["credential_state"] = "unusable"
+            entry["reason_code"] = reason_code
+            entry["remedy"] = remedy
+            unusable.append(
+                {
+                    "name": provider.name,
+                    "kind": provider_kind(provider),
+                    "credential": credential_status,
+                    "reason_code": reason_code,
+                    "remedy": remedy,
+                }
+            )
+        providers.append(entry)
+    return providers, unusable
+
+
 def _provider_credential_status(
     provider: ProviderConfig,
     *,
@@ -13029,8 +13089,12 @@ def _provider_credential_status(
     if provider.credential_name and credential_reader is not None:
         if provider_kind(provider) == "openai-codex":
             get_oauth = getattr(credential_reader, "get_oauth", None)
-            if get_oauth is not None and get_oauth(provider.credential_name) is not None:
-                return f"stored:{provider.credential_name}"
+            if get_oauth is not None:
+                credential = get_oauth(provider.credential_name)
+                if credential is not None:
+                    if _oauth_credential_is_expired_for_doctor(credential):
+                        return f"oauth_expired:{provider.credential_name}"
+                    return f"stored:{provider.credential_name}"
         elif credential_reader.get(provider.credential_name):
             return f"stored:{provider.credential_name}"
     if provider_kind(provider) == "anthropic" and environ.get(ANTHROPIC_AUTH_TOKEN_ENV):
@@ -13038,6 +13102,30 @@ def _provider_credential_status(
     if environ.get(provider.api_key_env):
         return f"env:{provider.api_key_env}"
     return "missing"
+
+
+def _oauth_credential_is_expired_for_doctor(credential: object) -> bool:
+    expires = getattr(credential, "expires", None)
+    if not isinstance(expires, int) or isinstance(expires, bool):
+        return True
+    now_ms = int(datetime.now(UTC).timestamp() * 1000)
+    return expires <= now_ms
+
+
+def _provider_credential_remedy(provider: ProviderConfig, *, reason_code: str) -> str:
+    kind = provider_kind(provider)
+    if reason_code == "oauth_expired":
+        return f"run /login {provider.name} to refresh OAuth credentials"
+    if kind == "openai-codex":
+        return f"run /login {provider.name} to create OAuth credentials"
+    if kind == "anthropic":
+        return (
+            f"set {ANTHROPIC_AUTH_TOKEN_ENV} or {provider.api_key_env}"
+            + (f", or run /login {provider.name}" if provider.credential_name else "")
+        )
+    if provider.credential_name:
+        return f"set {provider.api_key_env} or run /login {provider.name}"
+    return f"set {provider.api_key_env}"
 
 
 def serve_loop_receipt_command(
