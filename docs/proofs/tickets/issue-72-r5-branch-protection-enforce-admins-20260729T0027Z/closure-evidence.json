@@ -1,0 +1,46 @@
+{
+  "schema": "tau.ticket_closure_evidence.v1",
+  "ticket": 72,
+  "phase": "R5",
+  "phase_title": "Branch protection admin enforcement",
+  "created_at": "2026-07-29T00:27:00Z",
+  "status": "PROVEN",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "proof_scope": {
+    "proves": [
+      "GitHub branch protection for grahama1970/tau main now reports enforce_admins=true.",
+      "The required status-check contexts remain present after enabling admin enforcement.",
+      "The former #72 R5 branch-protection dependency no longer requires narrowing the absolute-invariant claim."
+    ],
+    "does_not_prove": [
+      "That required checks have already completed for future commits.",
+      "That repository administrators cannot later change branch protection.",
+      "Full product acceptance under #180/#221."
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "gh api --method POST repos/grahama1970/tau/branches/main/protection/enforce_admins --jq '{after_post:{enabled:.enabled,url:.url}}'",
+      "exit_code": 0,
+      "stdout_summary": "{\"after_post\":{\"enabled\":true,\"url\":\"https://api.github.com/repos/grahama1970/tau/branches/main/protection/enforce_admins\"}}"
+    },
+    {
+      "cmd": "gh api repos/grahama1970/tau/branches/main/protection --jq '{after:{enforce_admins:.enforce_admins.enabled, required_checks:(.required_status_checks.contexts // [])}}'",
+      "exit_code": 0,
+      "stdout_summary": "{\"after\":{\"enforce_admins\":true,\"required_checks\":[\"uv run pytest -q\",\"canonical-browser-proofs\"]}}"
+    },
+    {
+      "cmd": "jq -e '.enforce_admins==true and (.required_checks|index(\"uv run pytest -q\")!=null) and (.required_checks|index(\"canonical-browser-proofs\")!=null)' docs/proofs/tickets/issue-72-r5-branch-protection-enforce-admins-20260729T0027Z/branch-protection-readback.json",
+      "exit_code": 0,
+      "stdout_summary": "true"
+    }
+  ],
+  "artifacts": [
+    "docs/proofs/tickets/issue-72-r5-branch-protection-enforce-admins-20260729T0027Z/branch-protection-readback.json",
+    "docs/proofs/tickets/issue-72-r5-branch-protection-enforce-admins-20260729T0027Z/closure-evidence.json"
+  ],
+  "disposition": "R5_PROVEN_ENFORCE_ADMINS_TRUE",
+  "remaining_for_issue_72": []
+}

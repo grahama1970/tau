@@ -1,6 +1,6 @@
 {
   "branch_protection": {
-    "enforce_admins": false,
+    "enforce_admins": true,
     "required_status_checks": true
   },
   "required_checks": [
@@ -178,5 +178,5 @@
     }
   ],
   "source": "gh api repos/grahama1970/tau (branch protection + issues)",
-  "generated_for": "issue-72-p12-runtime-handshake-unit-conformance"
+  "generated_for": "issue-72-r5-branch-protection-enforce-admins"
 }
