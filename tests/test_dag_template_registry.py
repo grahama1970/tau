@@ -262,6 +262,13 @@ def _handoff_response(
     next_agent: str,
     evidence: list[object],
 ) -> dict[str, object]:
+    normalized_evidence: list[object] = []
+    goal_hash = str(_goal()["goal_hash"])
+    for item in evidence:
+        if isinstance(item, dict) and item.get("kind") != "dag_contract" and "goal_hash" not in item:
+            normalized_evidence.append({**item, "goal_hash": goal_hash})
+        else:
+            normalized_evidence.append(item)
     return {
         "schema": "tau.agent_handoff.v1",
         "github": _target(),
@@ -271,7 +278,7 @@ def _handoff_response(
         "result": {
             "status": "PASS",
             "summary": f"{previous} completed.",
-            "evidence": evidence,
+            "evidence": normalized_evidence,
         },
         "rationale": "The DAG template controls the route.",
         "next_agent": {

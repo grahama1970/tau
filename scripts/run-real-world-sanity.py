@@ -226,6 +226,31 @@ def build_checks(
         scenario="non-json",
         goal_hash="sha256:rw-sanity-project-dag-non-json",
     )
+    project_dag_simple_goal_drift = create_project_dag_fixture(
+        run_dir,
+        scenario="simple-goal-drift",
+        goal_hash="sha256:rw-sanity-project-dag-simple-goal-drift",
+    )
+    project_dag_medium_goal_drift = create_project_dag_fixture(
+        run_dir,
+        scenario="medium-goal-drift",
+        goal_hash="sha256:rw-sanity-project-dag-medium-goal-drift",
+    )
+    project_dag_concurrent_goal_drift = create_project_dag_fixture(
+        run_dir,
+        scenario="concurrent-goal-drift",
+        goal_hash="sha256:rw-sanity-project-dag-concurrent-goal-drift",
+    )
+    project_dag_concurrent_timeout_retry_goal_drift = create_project_dag_fixture(
+        run_dir,
+        scenario="concurrent-timeout-retry-goal-drift",
+        goal_hash="sha256:rw-sanity-project-dag-concurrent-timeout-retry-goal-drift",
+    )
+    project_dag_concurrent_non_json_retry_goal_drift = create_project_dag_fixture(
+        run_dir,
+        scenario="concurrent-non-json-retry-goal-drift",
+        goal_hash="sha256:rw-sanity-project-dag-concurrent-non-json-retry-goal-drift",
+    )
     project_dag_max_steps = create_project_dag_fixture(
         run_dir,
         scenario="max-steps",
@@ -1210,6 +1235,117 @@ def build_checks(
             expected_exit_codes=(1,),
             expected_status="BLOCKED",
             expected_verdict="INVALID_COMMAND_JSON",
+        ),
+        Check(
+            check_id="advanced.project_dag_simple_evidence_goal_drift_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau blocks a simple project-agent DAG when a node emits evidence "
+                "with a drifted goal hash."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_simple_goal_drift["contract"]),
+                "--receipt-dir",
+                str(project_dag_simple_goal_drift["run_dir"]),
+                "--agents-root",
+                str(project_dag_simple_goal_drift["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="EVIDENCE_GOAL_HASH_MISMATCH",
+        ),
+        Check(
+            check_id="advanced.project_dag_medium_evidence_goal_drift_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau blocks a multi-step project-agent DAG when a node emits evidence "
+                "with a drifted goal hash."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_medium_goal_drift["contract"]),
+                "--receipt-dir",
+                str(project_dag_medium_goal_drift["run_dir"]),
+                "--agents-root",
+                str(project_dag_medium_goal_drift["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="EVIDENCE_GOAL_HASH_MISMATCH",
+        ),
+        Check(
+            check_id="advanced.project_dag_ready_queue_evidence_goal_drift_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau blocks a fan-out/fan-in ready-queue DAG when one branch emits "
+                "evidence with a drifted goal hash."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_concurrent_goal_drift["contract"]),
+                "--receipt-dir",
+                str(project_dag_concurrent_goal_drift["run_dir"]),
+                "--agents-root",
+                str(project_dag_concurrent_goal_drift["agents_root"]),
+                "--scheduler",
+                "bounded-ready-queue",
+            ],
+            timeout_seconds=120,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="EVIDENCE_GOAL_HASH_MISMATCH",
+        ),
+        Check(
+            check_id="advanced.project_dag_ready_queue_timeout_retry_goal_drift_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau blocks a mixed retry ready-queue DAG when the retry attempt emits "
+                "evidence with a drifted goal hash."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_concurrent_timeout_retry_goal_drift["contract"]),
+                "--receipt-dir",
+                str(project_dag_concurrent_timeout_retry_goal_drift["run_dir"]),
+                "--agents-root",
+                str(project_dag_concurrent_timeout_retry_goal_drift["agents_root"]),
+                "--scheduler",
+                "bounded-ready-queue",
+            ],
+            timeout_seconds=120,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="EVIDENCE_GOAL_HASH_MISMATCH",
+        ),
+        Check(
+            check_id="advanced.project_dag_ready_queue_non_json_retry_goal_drift_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau blocks a recovery ready-queue DAG when the repaired attempt emits "
+                "evidence with a drifted goal hash."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_concurrent_non_json_retry_goal_drift["contract"]),
+                "--receipt-dir",
+                str(project_dag_concurrent_non_json_retry_goal_drift["run_dir"]),
+                "--agents-root",
+                str(project_dag_concurrent_non_json_retry_goal_drift["agents_root"]),
+                "--scheduler",
+                "bounded-ready-queue",
+            ],
+            timeout_seconds=120,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="EVIDENCE_GOAL_HASH_MISMATCH",
         ),
         Check(
             check_id="advanced.project_dag_max_steps_fail_closed",
@@ -2291,8 +2427,11 @@ def create_project_dag_fixture(
 
     concurrent_scenarios = {
         "concurrent",
+        "concurrent-goal-drift",
         "concurrent-timeout-retry",
+        "concurrent-timeout-retry-goal-drift",
         "concurrent-non-json-retry",
+        "concurrent-non-json-retry-goal-drift",
         "concurrent-viewer-link",
         "concurrent-max-retries",
         "concurrent-pointless-test-drift",
@@ -2310,7 +2449,10 @@ def create_project_dag_fixture(
         if scenario == "timeout" and agent == "coder":
             command = ["python3", "-c", "import time; time.sleep(5)"]
             timeout_s = 0.1
-        elif scenario == "concurrent-timeout-retry" and agent == "coder":
+        elif scenario in {
+            "concurrent-timeout-retry",
+            "concurrent-timeout-retry-goal-drift",
+        } and agent == "coder":
             state = command_spec_root / agent / "attempt-count.txt"
             command = [
                 "python3",
@@ -2324,7 +2466,10 @@ def create_project_dag_fixture(
                 ),
             ]
             timeout_s = 1
-        elif scenario == "concurrent-non-json-retry" and agent == "coder":
+        elif scenario in {
+            "concurrent-non-json-retry",
+            "concurrent-non-json-retry-goal-drift",
+        } and agent == "coder":
             state = command_spec_root / agent / "attempt-count.txt"
             command = [
                 "python3",
@@ -4295,11 +4440,16 @@ def coder_response(payload, artifact_dir, scenario):
     prior = reviewer_verdicts(payload)
     attempt = 2 if any(item.get("verdict") == "REVISE" for item in prior) else 1
     artifact = artifact_dir / f"creator-artifact-attempt-{attempt}.json"
+    goal_hash = payload["goal"]["goal_hash"]
+    drift_now = scenario.endswith("goal-drift")
+    if drift_now:
+        goal_hash = "sha256:rw-sanity-drifted-goal"
     artifact_payload = {
         "schema": "tau.creator_artifact.v1",
         "attempt": attempt,
         "scenario": scenario,
-        "goal_hash": payload["goal"]["goal_hash"],
+        "goal_version": payload["goal"].get("goal_version"),
+        "goal_hash": goal_hash,
         "summary": "Creator artifact for real-world project DAG sanity.",
     }
     artifact.write_text(json.dumps(artifact_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -4308,7 +4458,8 @@ def coder_response(payload, artifact_dir, scenario):
             "kind": "creator_artifact",
             "path": str(artifact),
             "attempt": attempt,
-            "goal_hash": payload["goal"]["goal_hash"],
+            "goal_version": payload["goal"].get("goal_version"),
+            "goal_hash": goal_hash,
         }
     ]
     if scenario == "provider-metadata" and provider_metadata_present(payload):
@@ -4338,6 +4489,7 @@ def research_response(payload, artifact_dir, scenario):
     artifact_payload = {
         "schema": "tau.source_summary.v1",
         "scenario": scenario,
+        "goal_version": payload["goal"].get("goal_version"),
         "goal_hash": payload["goal"]["goal_hash"],
         "summary": "Research branch source summary for real-world project DAG sanity.",
     }
@@ -4350,6 +4502,7 @@ def research_response(payload, artifact_dir, scenario):
             {
                 "kind": "source_summary",
                 "path": str(artifact),
+                "goal_version": payload["goal"].get("goal_version"),
                 "goal_hash": payload["goal"]["goal_hash"],
             }
         ],
@@ -4368,7 +4521,7 @@ def reviewer_response(payload, artifact_dir, scenario):
         verdict = "REVISE"
         next_agent = "coder"
         next_executor = "local"
-    elif scenario == "medium" and attempt < 2:
+    elif scenario in {"medium", "medium-goal-drift"} and attempt < 2:
         verdict = "REVISE"
         next_agent = "coder"
         next_executor = "local"
@@ -4383,6 +4536,7 @@ def reviewer_response(payload, artifact_dir, scenario):
         "reviewed_node_id": "coder",
         "creator_artifact_count": len(creator),
         "creator_attempt": attempt,
+        "goal_version": payload["goal"].get("goal_version"),
         "goal_hash": verdict_goal_hash,
         "active_goal_hash": active_goal_hash,
         "goal_matches": verdict_goal_hash == active_goal_hash,
@@ -4395,6 +4549,7 @@ def reviewer_response(payload, artifact_dir, scenario):
             "path": str(artifact),
             "reviewed_node_id": "coder",
             "creator_attempt": attempt,
+            "goal_version": payload["goal"].get("goal_version"),
             "goal_hash": verdict_goal_hash,
             "verdict": verdict,
         }
