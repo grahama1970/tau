@@ -108,6 +108,14 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.handoff.active_goal_hash",
     },
+    "evidence_goal_hash_mismatch": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.evidence_goal_identity",
+    },
+    "evidence_goal_hash_missing": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.evidence_goal_identity",
+    },
     "invalid_provider_receipt": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.provider_receipt.schema_and_binding",
@@ -671,6 +679,8 @@ def run_project_dag_contract(
         "contract_sha256": f"sha256:{_sha256(resolved_contract_path)}",
         "run_dir": str(resolved_receipt_dir),
         "active_goal_hash": contract.goal["goal_hash"],
+        "active_goal_version": contract.goal["goal_version"],
+        "goal_identity": _goal_identity(contract),
         "target": contract.target,
         "entry_node": contract.entry_node,
         "terminal_nodes": list(contract.terminal_nodes),
@@ -1224,6 +1234,14 @@ def fail_closed_registry_payload() -> dict[str, Any]:
                 "Provider/model semantic quality.",
             ],
         },
+    }
+
+
+def _goal_identity(contract: ProjectDagContract) -> dict[str, Any]:
+    return {
+        "goal_id": contract.goal.get("goal_id"),
+        "goal_version": contract.goal.get("goal_version"),
+        "goal_hash": contract.goal.get("goal_hash"),
     }
 
 
@@ -1996,6 +2014,8 @@ def _pre_dispatch_blocked_receipt(
         "contract_sha256": f"sha256:{_sha256(contract_path)}",
         "run_dir": str(receipt_dir),
         "active_goal_hash": contract.goal["goal_hash"],
+        "active_goal_version": contract.goal["goal_version"],
+        "goal_identity": _goal_identity(contract),
         "target": contract.target,
         "entry_node": contract.entry_node,
         "terminal_nodes": list(contract.terminal_nodes),
@@ -2473,6 +2493,7 @@ def _evaluate_loop_against_contract(
         response = _response_payload(dispatch)
         if response is None:
             continue
+        alerts.extend(_evidence_goal_identity_alerts(contract, node, response))
         missing = _missing_required_evidence(node.required_evidence, response)
         if missing:
             alerts.append(
@@ -2548,6 +2569,7 @@ def _node_response_alerts(
     if auth_alert is not None:
         alerts.append(auth_alert)
         return alerts
+    alerts.extend(_evidence_goal_identity_alerts(contract, node, response))
     missing = _missing_required_evidence(node.required_evidence, response)
     if missing:
         alerts.append(
@@ -2561,6 +2583,54 @@ def _node_response_alerts(
     alerts.extend(_referenced_receipt_alerts(node, response))
     if node.reviewer is not None:
         alerts.extend(_reviewer_alerts(contract, node, response))
+    return alerts
+
+
+def _evidence_goal_identity_alerts(
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+    response: dict[str, Any],
+) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    expected_goal_hash = contract.goal["goal_hash"]
+    for index, evidence in enumerate(_result_evidence(response)):
+        if not isinstance(evidence, dict):
+            continue
+        kind = evidence.get("kind")
+        if kind in {"dag_contract", "reviewer_verdict"}:
+            continue
+        if "goal_hash" not in evidence:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "evidence_goal_hash_missing",
+                    "Accepted node evidence omitted the immutable goal hash.",
+                    {
+                        "node_id": node.node_id,
+                        "agent": node.agent,
+                        "evidence_index": index,
+                        "evidence_kind": kind,
+                        "expected_goal_hash": expected_goal_hash,
+                    },
+                )
+            )
+            continue
+        if evidence.get("goal_hash") != expected_goal_hash:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "evidence_goal_hash_mismatch",
+                    "Accepted node evidence changed the immutable goal hash.",
+                    {
+                        "node_id": node.node_id,
+                        "agent": node.agent,
+                        "evidence_index": index,
+                        "evidence_kind": kind,
+                        "expected_goal_hash": expected_goal_hash,
+                        "observed_goal_hash": evidence.get("goal_hash"),
+                    },
+                )
+            )
     return alerts
 
 
@@ -4522,11 +4592,30 @@ def _node_alert_verdict(alert: dict[str, Any]) -> str:
     return str(alert.get("code") or "node_blocked").upper()
 
 
+_PRIMARY_ALERT_CODE_PRIORITY = {
+    "evidence_goal_hash_mismatch": 0,
+    "evidence_goal_hash_missing": 1,
+    "reviewer_goal_hash_mismatch": 2,
+    "reviewer_goal_hash_missing": 3,
+    "semantic_verdict_fail": 4,
+}
+
+
+def _primary_blocking_alert(alerts: list[dict[str, Any]]) -> dict[str, Any] | None:
+    if not alerts:
+        return None
+    return min(
+        alerts,
+        key=lambda alert: _PRIMARY_ALERT_CODE_PRIORITY.get(str(alert.get("code") or ""), 100),
+    )
+
+
 def _ready_queue_blocked_verdict(alerts: list[dict[str, Any]], result_verdict: str) -> str:
     if result_verdict and result_verdict != "PASS":
         return result_verdict.upper()
-    if alerts:
-        return str(alerts[0].get("code") or "dag_blocked").upper()
+    primary = _primary_blocking_alert(alerts)
+    if primary is not None:
+        return str(primary.get("code") or "dag_blocked").upper()
     return "DAG_BLOCKED"
 
 
@@ -4695,6 +4784,8 @@ def _ready_queue_receipt(
         "contract_sha256": f"sha256:{_sha256(contract_path)}",
         "run_dir": str(receipt_dir),
         "active_goal_hash": contract.goal["goal_hash"],
+        "active_goal_version": contract.goal["goal_version"],
+        "goal_identity": _goal_identity(contract),
         "target": contract.target,
         "entry_node": contract.entry_node,
         "terminal_nodes": list(contract.terminal_nodes),
@@ -4818,6 +4909,8 @@ def _write_project_dag_progress(
         "dag_id": contract.dag_id,
         "run_dir": str(receipt_dir),
         "active_goal_hash": contract.goal["goal_hash"],
+        "active_goal_version": contract.goal["goal_version"],
+        "goal_identity": _goal_identity(contract),
         "entry_node": contract.entry_node,
         "terminal_nodes": list(contract.terminal_nodes),
         "node_count": len(contract.nodes),
@@ -4929,7 +5022,7 @@ def _dag_error(
 ) -> dict[str, Any] | None:
     if status == "PASS":
         return None
-    primary = alerts[0] if alerts else {}
+    primary = _primary_blocking_alert(alerts) or {}
     evidence = primary.get("evidence") if isinstance(primary.get("evidence"), dict) else {}
     failure_code = str(primary.get("code") or verdict or "dag_blocked")
     failed_node = _dag_error_node_id(contract, evidence)
@@ -4945,6 +5038,8 @@ def _dag_error(
         "dag_id": contract.dag_id,
         "scheduler": scheduler,
         "active_goal_hash": contract.goal["goal_hash"],
+        "active_goal_version": contract.goal["goal_version"],
+        "goal_identity": _goal_identity(contract),
         "target": contract.target,
         "receipt_path": str(receipt_dir / "dag-receipt.json"),
         "run_dir": str(receipt_dir),
@@ -5037,6 +5132,8 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
         "target_changed",
         "goal_changed",
         "goal_hash_mismatch",
+        "evidence_goal_hash_mismatch",
+        "evidence_goal_hash_missing",
         "unexpected_edge",
         "unexpected_node",
         "entry_node_mismatch",
@@ -5862,8 +5959,9 @@ def _max_steps(contract: ProjectDagContract) -> int:
 
 
 def _blocked_verdict(alerts: list[dict[str, Any]], loop_payload: dict[str, Any]) -> str:
-    if alerts:
-        return str(alerts[0]["code"]).upper()
+    primary = _primary_blocking_alert(alerts)
+    if primary is not None:
+        return str(primary.get("code") or "dag_blocked").upper()
     return str(loop_payload.get("stop_reason") or "COMMAND_LOOP_BLOCKED").upper()
 
 

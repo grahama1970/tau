@@ -3758,6 +3758,7 @@ def _persona_dream_provider_handoff(
     next_agent: str,
     evidence: list[dict],
 ) -> dict:
+    goal_hash = "sha256:phase07-storyboard-panels-accepted-20260705"
     payload = _handoff(previous, next_agent, evidence)
     payload["github"] = {
         "repo": "grahama1970/agent-skills",
@@ -3766,8 +3767,11 @@ def _persona_dream_provider_handoff(
     payload["goal"] = {
         "goal_id": "persona-dream-phase-07-storyboard-panels-accepted",
         "goal_version": 1,
-        "goal_hash": "sha256:phase07-storyboard-panels-accepted-20260705",
+        "goal_hash": goal_hash,
     }
+    for item in payload["result"]["evidence"]:
+        if isinstance(item, dict) and item.get("kind") != "dag_contract":
+            item["goal_hash"] = goal_hash
     return payload
 
 
@@ -4496,6 +4500,12 @@ def _handoff(
     next_agent: str,
     evidence: list[object],
 ) -> dict[str, object]:
+    normalized_evidence: list[object] = []
+    for item in evidence:
+        if isinstance(item, dict) and item.get("kind") != "dag_contract" and "goal_hash" not in item:
+            normalized_evidence.append({**item, "goal_hash": "sha256:active-goal"})
+        else:
+            normalized_evidence.append(item)
     return {
         "schema": "tau.agent_handoff.v1",
         "github": {
@@ -4515,7 +4525,7 @@ def _handoff(
         "result": {
             "status": "PASS",
             "summary": f"{previous_subagent} completed.",
-            "evidence": evidence,
+            "evidence": normalized_evidence,
         },
         "rationale": "The DAG contract controls the next route.",
         "next_agent": {
@@ -4547,7 +4557,13 @@ def _repeated_reviewer_handoff(
 
 
 def _creator_evidence() -> list[object]:
-    return [{"kind": "creator_artifact", "path": "/tmp/creator-artifact.txt"}]
+    return [
+        {
+            "kind": "creator_artifact",
+            "path": "/tmp/creator-artifact.txt",
+            "goal_hash": "sha256:active-goal",
+        }
+    ]
 
 
 def _write_handler_receipt(
@@ -4586,12 +4602,14 @@ def _handler_handoff(
                 "handler": handler,
                 "path": str(receipt_path),
                 "status": "PASS",
+                "goal_hash": "sha256:active-goal",
             },
             {
                 "kind": "normalized_handler_receipt",
                 "node_id": previous_subagent,
                 "handler": handler,
                 "response_path": str(receipt_path.with_suffix(".md")),
+                "goal_hash": "sha256:active-goal",
             },
         ],
     )
@@ -4621,9 +4639,15 @@ def _join_handoff(
                 "kind": "roundtable_join_receipt",
                 "path": str(receipt_path),
                 "status": "PASS",
+                "goal_hash": "sha256:active-goal",
             },
-            {"kind": "handler_response_index", "count": 2, "failures": []},
-            {"kind": "unresolved_gaps", "items": []},
+            {
+                "kind": "handler_response_index",
+                "count": 2,
+                "failures": [],
+                "goal_hash": "sha256:active-goal",
+            },
+            {"kind": "unresolved_gaps", "items": [], "goal_hash": "sha256:active-goal"},
         ],
     )
     payload["github"] = {
