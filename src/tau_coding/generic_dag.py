@@ -1259,7 +1259,7 @@ def _run_legacy_node(
             verdict = "CANCELLED"
         else:
             verdict = "SUBAGENT_ERROR"
-        return _blocked_node_record(
+        blocked = _blocked_node_record(
             node,
             verdict=verdict,
             errors=[_command_error(result)],
@@ -1269,6 +1269,13 @@ def _run_legacy_node(
             finished_at=_utc_stamp(),
             duration_seconds=time.monotonic() - node_started_monotonic,
         )
+        _write_blocked_node_receipt_if_missing(
+            node,
+            blocked,
+            goal_hash=goal_hash,
+            attempt=attempt,
+        )
+        return blocked
     if not node.receipt_path.exists():
         return _blocked_node_record(
             node,
@@ -2392,6 +2399,38 @@ def _blocked_node_record(
     }
 
 
+def _write_blocked_node_receipt_if_missing(
+    node: DagNode,
+    record: dict[str, Any],
+    *,
+    goal_hash: str | None,
+    attempt: int,
+) -> None:
+    if node.receipt_path.exists():
+        return
+    payload = {
+        "schema": GENERIC_DAG_NODE_RECEIPT_SCHEMA,
+        "node_id": node.node_id,
+        "role": node.role,
+        "status": record["status"],
+        "verdict": record["verdict"],
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "goal_hash": goal_hash,
+        "attempt": attempt,
+        "accepted_output": None,
+        "artifacts": [],
+        "commands_run": record.get("command_results", []),
+        "handoff_summary": f"{node.node_id} blocked with verdict {record['verdict']}",
+        "errors": record.get("errors", []),
+        "policy_exceptions": [],
+        "receipt_path": str(node.receipt_path),
+        "timestamp": _utc_stamp(),
+    }
+    write_json(node.receipt_path, payload)
+
+
 def _validate_spec(spec: dict[str, Any], *, spec_path: Path) -> dict[str, DagNode]:
     if spec.get("schema") != GENERIC_DAG_SPEC_SCHEMA:
         raise RuntimeError(f"generic DAG spec schema must be {GENERIC_DAG_SPEC_SCHEMA}")
@@ -2603,8 +2642,19 @@ def _validate_node_receipt(
         errors.append(f"node_id must be {node.node_id}")
     if str(receipt.get("status") or "").upper() not in {"PASS", "BLOCKED"}:
         errors.append("status must be PASS or BLOCKED")
-    if str(receipt.get("verdict") or "").upper() not in {"PASS", "REVISE", "BLOCKED"}:
-        errors.append("verdict must be PASS, REVISE, or BLOCKED")
+    allowed_verdicts = {
+        "PASS",
+        "REVISE",
+        "BLOCKED",
+        "CANCELLED",
+        "SUBAGENT_ERROR",
+        "SUBAGENT_TIMEOUT",
+    }
+    if str(receipt.get("verdict") or "").upper() not in allowed_verdicts:
+        errors.append(
+            "verdict must be PASS, REVISE, BLOCKED, CANCELLED, "
+            "SUBAGENT_ERROR, or SUBAGENT_TIMEOUT"
+        )
     for key in ("artifacts", "commands_run", "errors", "policy_exceptions"):
         if not isinstance(receipt.get(key), list):
             errors.append(f"{key} must be a list")
