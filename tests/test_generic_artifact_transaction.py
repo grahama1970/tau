@@ -205,6 +205,7 @@ def test_transaction_continuation_waits_for_exact_approval_binding(tmp_path: Pat
         "run_id": "run-transaction",
         "node_id": "stage",
         "transaction_id": "tx-stage",
+        "action": "generic_dag_transaction_continue",
         "accepted_manifest_sha256": node["accepted_manifest_sha256"],
         "continuation_command_sha256": canonical_command_sha256(continuation),
     }

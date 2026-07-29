@@ -65,6 +65,12 @@ Receipts include `approval_packet_sha256`, the SHA-256 of the exact approval
 packet file Tau evaluated. Downstream mutation or closure commands can record
 and compare this hash before crossing a gate.
 
+For artifact-transaction continuations, the expected target binds the approval
+to the logical run, node, transaction, action, goal hash, accepted manifest
+hash, continuation command hash, expected filesystem side-effect path,
+side-effect ledger path, result paths, and rollback receipt path when those
+paths are declared by the continuation command.
+
 `tau run-status <run-dir>` exposes the approval packet path plus compact packet
 summary fields: approved action, actor id, actor auth method, target id,
 evidence count, nonce, signature presence, expiration timestamp, and approval
