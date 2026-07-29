@@ -337,6 +337,20 @@ def _publish(
                 },
             )
             raise RuntimeError("post_write_verification_failed")
+        _write_json(
+            publish_path / "publication-ledger.json",
+            {
+                "schema": "tau.approved_release_publication_ledger.v1",
+                "status": "COMMITTED",
+                "effect_count": 1,
+                "publish_path": str(publish_path),
+                "rollback_artifact_path": str(rollback),
+                "artifacts": {
+                    json_output.name: _sha256(source_json),
+                    markdown_output.name: _sha256(source_markdown),
+                },
+            },
+        )
     finally:
         shutil.rmtree(external_stage, ignore_errors=True)
         shutil.rmtree(results_stage, ignore_errors=True)

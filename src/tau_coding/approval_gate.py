@@ -61,7 +61,7 @@ def evaluate_approval_gate(
         "ok": approved,
         "status": "PASS" if approved else "BLOCKED",
         "mocked": False,
-        "live": False,
+        "live": True,
         "requested_action": requested_action,
         "approved": approved,
         "approval_packet": str(resolved_packet),

@@ -2023,6 +2023,69 @@ def _review_revision_signature(feedback: dict[str, Any]) -> str:
     return f"sha256:{hashlib.sha256(encoded).hexdigest()}"
 
 
+def _continuation_arg(command: tuple[str, ...], option: str) -> str | None:
+    for index, item in enumerate(command):
+        if item == option and index + 1 < len(command):
+            return command[index + 1]
+        prefix = f"{option}="
+        if item.startswith(prefix):
+            return item.removeprefix(prefix)
+    return None
+
+
+def _continuation_request(command: tuple[str, ...]) -> dict[str, Any]:
+    request_path = _continuation_arg(command, "--request")
+    if request_path is None:
+        return {}
+    try:
+        payload = json.loads(Path(request_path).expanduser().read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _approval_target_for_continuation(
+    *,
+    run_id: str,
+    node: DagNode,
+    spec: ArtifactTransactionSpec,
+    accepted_manifest_sha256: str,
+    command_sha256: str,
+    action: str,
+    goal_hash: str | None,
+) -> dict[str, str]:
+    command = spec.continuation.command if spec.continuation is not None else ()
+    request = _continuation_request(command)
+    target = {
+        "id": f"generic-dag-transaction:{run_id}:{spec.transaction_id}",
+        "run_id": run_id,
+        "node_id": node.node_id,
+        "transaction_id": spec.transaction_id,
+        "action": action,
+        "accepted_manifest_sha256": accepted_manifest_sha256,
+        "continuation_command_sha256": command_sha256,
+    }
+    if goal_hash is not None:
+        target["goal_hash"] = goal_hash
+    for option, field in (
+        ("--json-output", "result_json_path"),
+        ("--markdown-output", "result_markdown_path"),
+        ("--rollback-receipt", "rollback_artifact_path"),
+        ("--ledger", "side_effect_ledger_path"),
+    ):
+        value = _continuation_arg(command, option)
+        if value is not None:
+            target[field] = str(Path(value).expanduser())
+    publish_path = request.get("publish_path")
+    if isinstance(publish_path, str) and publish_path.strip():
+        target["expected_side_effect_path"] = str(Path(publish_path).expanduser())
+        target.setdefault(
+            "side_effect_ledger_path",
+            str(Path(publish_path).expanduser() / "publication-ledger.json"),
+        )
+    return target
+
+
 def _continue_transaction(
     *,
     node: DagNode,
@@ -2047,16 +2110,15 @@ def _continue_transaction(
     command_sha256 = canonical_command_sha256(continuation.command)
     approval_receipt_path = transaction_receipt_path.parent / "approval-gate-receipt.json"
     if continuation.approval is not None:
-        expected_target = {
-            "id": f"generic-dag-transaction:{run_id}:{spec.transaction_id}",
-            "run_id": run_id,
-            "node_id": node.node_id,
-            "transaction_id": spec.transaction_id,
-            "accepted_manifest_sha256": accepted_manifest_sha256,
-            "continuation_command_sha256": command_sha256,
-        }
-        if goal_hash is not None:
-            expected_target["goal_hash"] = goal_hash
+        expected_target = _approval_target_for_continuation(
+            run_id=run_id,
+            node=node,
+            spec=spec,
+            accepted_manifest_sha256=accepted_manifest_sha256,
+            command_sha256=command_sha256,
+            action=continuation.approval.action,
+            goal_hash=goal_hash,
+        )
         approval = evaluate_approval_gate(
             approval_packet=continuation.approval.packet_path,
             requested_action=continuation.approval.action,

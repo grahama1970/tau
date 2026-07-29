@@ -21,7 +21,7 @@ def test_approval_gate_passes_valid_human_packet(tmp_path: Path) -> None:
     assert receipt["ok"] is True
     assert receipt["status"] == "PASS"
     assert receipt["mocked"] is False
-    assert receipt["live"] is False
+    assert receipt["live"] is True
     assert receipt["approved"] is True
     assert receipt["approval_packet_sha256"] == hashlib.sha256(packet.read_bytes()).hexdigest()
     assert receipt["packet_summary"]["actor_id"] == "human:graham"
