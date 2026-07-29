@@ -51,6 +51,7 @@ from tau_coding.persona_dream_panel_agent import (
 )
 from tau_coding.persona_dream_panel_proof import _panel_context as _persona_panel_context
 from tau_coding.provider_config import (
+    AnthropicProviderConfig,
     OpenAICompatibleProviderConfig,
     ProviderSettings,
     load_provider_settings,
@@ -711,7 +712,21 @@ def test_version_short_flag_prints_version() -> None:
     assert result.stdout.strip() == "tau 0.1.0"
 
 
-def test_doctor_command_reports_read_only_runtime_preflight() -> None:
+def _passing_scillm_sidecar_doctor() -> dict[str, object]:
+    return {
+        "schema": "tau.scillm_sidecar_doctor.v1",
+        "status": "PASS",
+        "ok": True,
+        "mocked": False,
+        "live": True,
+        "reason": "scillm auth and health endpoints are usable",
+    }
+
+
+def test_doctor_command_reports_read_only_runtime_preflight(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(cli, "_scillm_sidecar_doctor", _passing_scillm_sidecar_doctor)
     result = CliRunner().invoke(app, ["doctor"])
     payload = json.loads(result.output)
 
@@ -722,6 +737,7 @@ def test_doctor_command_reports_read_only_runtime_preflight() -> None:
     assert payload["mocked"] is False
     assert payload["live"] is True
     assert payload["provider_live"] is False
+    assert payload["scillm_sidecar_live"] is True
     assert payload["paths"]["pyproject"]["exists"] is True
     assert payload["paths"]["cli"]["exists"] is True
     assert payload["lanes"]["local_cli"]["ready"] is True
@@ -734,12 +750,21 @@ def test_doctor_command_reports_read_only_runtime_preflight() -> None:
     assert payload["modes"]["general"]["permission_default"] == "ask_before_mutation"
     assert isinstance(payload["provider_settings"]["provider_count"], int)
     assert "providers" in payload["provider_settings"]
+    assert "credential_summary" in payload["provider_settings"]
+    if payload["provider_settings"]["credential_summary"]["missing_count"]:
+        assert payload["warnings"]
     assert payload["external_services"][0]["name"] == "memory"
     assert "Herdr pane readiness." in payload["proof_boundary"]["does_not_prove"]
-    assert "Live provider/model semantic quality." in payload["proof_boundary"]["does_not_prove"]
+    assert (
+        "Live provider/model semantic quality beyond one tiny provider-auth smoke."
+        in payload["proof_boundary"]["does_not_prove"]
+    )
 
 
-def test_doctor_json_option_does_not_fall_through_to_tui() -> None:
+def test_doctor_json_option_does_not_fall_through_to_tui(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(cli, "_scillm_sidecar_doctor", _passing_scillm_sidecar_doctor)
     result = CliRunner().invoke(app, ["doctor", "--json"])
     payload = json.loads(result.output)
 
@@ -749,7 +774,13 @@ def test_doctor_json_option_does_not_fall_through_to_tui() -> None:
     assert "Ask Tau" not in result.output
 
 
-def test_doctor_reports_reachable_external_memory_service(tmp_path: Path) -> None:
+def test_doctor_reports_reachable_external_memory_service(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(cli, "_scillm_sidecar_doctor", _passing_scillm_sidecar_doctor)
+    monkeypatch.setattr(cli, "load_provider_settings", lambda: ProviderSettings(providers=()))
+
     class HealthHandler(BaseHTTPRequestHandler):
         def do_GET(self) -> None:
             self.send_response(200 if self.path == "/health" else 404)
@@ -783,7 +814,13 @@ def test_doctor_reports_reachable_external_memory_service(tmp_path: Path) -> Non
     assert memory["endpoint"] == memory_url
 
 
-def test_doctor_reports_unreachable_required_service_as_degraded(tmp_path: Path) -> None:
+def test_doctor_reports_unreachable_required_service_as_degraded(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(cli, "_scillm_sidecar_doctor", _passing_scillm_sidecar_doctor)
+    monkeypatch.setattr(cli, "load_provider_settings", lambda: ProviderSettings(providers=()))
+
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.bind(("127.0.0.1", 0))
         closed_port = sock.getsockname()[1]
@@ -807,6 +844,8 @@ def test_doctor_reports_unreachable_required_service_as_degraded(tmp_path: Path)
 def test_doctor_reports_unconfigured_optional_services_without_degrading(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(cli, "_scillm_sidecar_doctor", _passing_scillm_sidecar_doctor)
+    monkeypatch.setattr(cli, "load_provider_settings", lambda: ProviderSettings(providers=()))
     monkeypatch.delenv("TAU_SURF_URL", raising=False)
     monkeypatch.delenv("TAU_CHATTERBOX_TTS_URL", raising=False)
     monkeypatch.delenv("TAU_REALTIMESTT_URL", raising=False)
@@ -825,6 +864,164 @@ def test_doctor_reports_unconfigured_optional_services_without_degrading(
     assert payload["status"] == "PASS"
     assert optional["chatterbox_tts"]["state"] == "not_configured"
     assert optional["realtime_stt"]["state"] == "not_configured"
+
+
+def test_doctor_degrades_when_provider_credentials_are_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class EmptyCredentials:
+        def get(self, name: str) -> str | None:
+            return None
+
+        def get_oauth(self, name: str) -> None:
+            return None
+
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
+    monkeypatch.setattr(cli, "_scillm_sidecar_doctor", _passing_scillm_sidecar_doctor)
+    monkeypatch.setattr(
+        cli,
+        "load_provider_settings",
+        lambda: ProviderSettings(
+            default_provider="anthropic",
+            providers=(AnthropicProviderConfig(name="anthropic", credential_name="anthropic"),),
+        ),
+    )
+    monkeypatch.setattr(cli, "FileCredentialStore", lambda: EmptyCredentials())
+
+    payload = doctor_command(
+        repo_root=Path(__file__).resolve().parents[1],
+        memory_url="http://127.0.0.1:8601",
+        service_probe=lambda _url, _timeout: (True, None),
+    )
+
+    assert payload["ok"] is True
+    assert payload["status"] == "DEGRADED"
+    assert payload["provider_settings"]["credential_summary"]["missing_count"] == 1
+    assert payload["provider_settings"]["credential_summary"]["missing_providers"] == ["anthropic"]
+    assert payload["provider_settings"]["providers"][0]["credential_usable"] is False
+    assert "provider credentials missing: anthropic" in payload["warnings"]
+
+
+def test_doctor_blocks_when_scillm_auth_is_unusable(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        cli,
+        "_scillm_sidecar_doctor",
+        lambda: {
+            "schema": "tau.scillm_sidecar_doctor.v1",
+            "status": "BLOCKED",
+            "ok": False,
+            "mocked": False,
+            "live": True,
+            "reason": "scillm_proxy_auth_invalid_api_key",
+        },
+    )
+    monkeypatch.setattr(cli, "load_provider_settings", lambda: ProviderSettings(providers=()))
+
+    payload = doctor_command(
+        repo_root=Path(__file__).resolve().parents[1],
+        memory_url="http://127.0.0.1:8601",
+        service_probe=lambda _url, _timeout: (True, None),
+    )
+
+    assert payload["ok"] is False
+    assert payload["status"] == "BLOCKED"
+    assert payload["scillm_sidecar"]["status"] == "BLOCKED"
+    assert any("scillm_proxy_auth_invalid_api_key" in warning for warning in payload["warnings"])
+
+
+def test_scillm_sidecar_doctor_blocks_when_claude_oauth_is_revoked(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class ScillmHandler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            if self.path == "/v1/scillm/auth":
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(
+                    json.dumps(
+                        {
+                            "claude": {
+                                "status": "valid",
+                                "source": "/root/.claude/.credentials.json",
+                                "expires_in_s": 3600,
+                            },
+                            "codex": {"status": "valid"},
+                        }
+                    ).encode()
+                )
+                return
+            if self.path == "/v1/scillm/health":
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(
+                    json.dumps({"status": "ok", "model_groups": [], "circuit_breaker": {}}).encode()
+                )
+                return
+            self.send_response(404)
+            self.end_headers()
+
+        def do_POST(self) -> None:
+            if self.path != "/v1/chat/completions":
+                self.send_response(404)
+                self.end_headers()
+                return
+            self.send_response(401)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(
+                json.dumps(
+                    {
+                        "error": {
+                            "type": "provider_auth_error",
+                            "code": 401,
+                            "message": (
+                                "All groups exhausted for model='claude-sonnet-4-6': "
+                                "Claude API 401: OAuth access token has been revoked."
+                            ),
+                            "details": {
+                                "provider": "anthropic-oauth",
+                                "provider_auth_status": "provider_rejected",
+                                "provider_error_code": "PROVIDER_AUTH_FAILED",
+                                "provider_error_type": "authentication_error",
+                                "provider_status_code": 401,
+                            },
+                        }
+                    }
+                ).encode()
+            )
+
+        def log_message(self, _format: str, *_args: object) -> None:
+            return
+
+    monkeypatch.setattr(
+        cli,
+        "resolve_active_scillm_proxy_key",
+        lambda: ("sk-test", "test:fixture", []),
+    )
+    server = ThreadingHTTPServer(("127.0.0.1", 0), ScillmHandler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        payload = cli._scillm_sidecar_doctor(
+            base_url=f"http://127.0.0.1:{server.server_address[1]}",
+            timeout_seconds=1.0,
+            provider_smoke_timeout_seconds=1.0,
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["ok"] is False
+    assert payload["provider_smoke_attempted"] is True
+    assert payload["provider_smoke_ok"] is False
+    assert payload["provider_smoke"]["provider"] == "anthropic-oauth"
+    assert payload["provider_smoke"]["provider_error_code"] == "PROVIDER_AUTH_FAILED"
+    assert "scillm_provider_auth_invalid" in payload["reason"]
 
 
 def test_doctor_rejects_unknown_options() -> None:
