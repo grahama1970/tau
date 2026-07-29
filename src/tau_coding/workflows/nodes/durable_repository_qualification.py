@@ -60,10 +60,13 @@ def main() -> int:
         delay_factors = {
             "documentation": 0.5,
             "package": 0.75,
-            "tests": 150.0 if tests_failure_delay else 1.25,
+            "tests": 1.25,
             "reconcile": 0.5,
         }
-        time.sleep(args.step_delay_seconds * delay_factors.get(args.command, 1.0))
+        delay_seconds = args.step_delay_seconds * delay_factors.get(args.command, 1.0)
+        if tests_failure_delay:
+            delay_seconds = max(delay_seconds, 2.5)
+        time.sleep(delay_seconds)
     if args.command == "capture":
         _capture(request, args.output, args.receipt)
     elif args.command == "documentation":
