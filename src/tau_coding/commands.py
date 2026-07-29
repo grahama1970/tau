@@ -200,6 +200,7 @@ class CommandResult:
     model_picker_query: str | None = None
     scoped_models_picker_requested: bool = False
     settings_picker_requested: bool = False
+    safe_config_picker_requested: bool = False
     config_picker_requested: bool = False
     images_picker_requested: bool = False
     trust_picker_requested: bool = False
@@ -798,6 +799,12 @@ def _changelog_command(context: CommandContext) -> CommandResult:
 def _config_command(context: CommandContext) -> CommandResult:
     if context.args:
         return CommandResult(handled=True, message="Usage: /config")
+    if context.async_ui_supported:
+        return CommandResult(
+            handled=True,
+            safe_config_picker_requested=True,
+            message=_format_config_map(context.session),
+        )
     return CommandResult(
         handled=True,
         config_picker_requested=True,

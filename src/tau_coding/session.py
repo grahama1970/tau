@@ -114,7 +114,7 @@ from tau_coding.provider_config import (
     provider_thinking_levels,
     provider_thinking_unavailable_reason,
     resolve_provider_selection,
-    save_default_provider_model,
+    save_existing_default_provider_model,
     set_saved_scoped_models,
     toggle_saved_scoped_model,
     upsert_provider,
@@ -1632,7 +1632,7 @@ class CodingSession:
     def _persist_default_model_choice(self) -> None:
         if self._provider_settings is None:
             return
-        self._provider_settings = save_default_provider_model(
+        self._provider_settings = save_existing_default_provider_model(
             provider_name=self.provider_name,
             model=self.model,
             paths=self._resource_paths.paths,
