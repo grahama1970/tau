@@ -53,6 +53,7 @@ from tau_coding.browser_cdp_proof import (
     DEFAULT_SURF_WRAPPER,
     write_browser_cdp_proof,
 )
+from tau_coding.canonical_dags import canonical_dag_catalog, launch_canonical_dag
 from tau_coding.canonical_scheduler_conformance import write_canonical_scheduler_conformance
 from tau_coding.code_patch import apply_code_patch_receipt
 from tau_coding.code_runner_skill_adapter import write_code_runner_skill_adapter_receipt
@@ -2848,6 +2849,26 @@ def main(
     if not print_requested and command in {"dag-run", "run"}:
         try:
             payload = _run_dag_cli_command(positional_args[1:], command_name=str(command))
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "canonical-dags":
+        try:
+            payload = _canonical_dags_cli_command(positional_args[1:])
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "canonical-dag-launch":
+        try:
+            payload = _canonical_dag_launch_cli_command(positional_args[1:])
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -6007,6 +6028,11 @@ def _parse_orchestration_evidence_cli_args(args: list[str]) -> Path:
 
 
 def _run_dag_cli_command(args: list[str], *, command_name: str) -> dict[str, object]:
+    if args and args[0] in {"--help", "-h", "help"}:
+        return _command_help_payload(
+            command_name=command_name,
+            usage=_generic_dag_run_usage(command_name),
+        )
     options = _parse_generic_dag_run_cli_args(args, command_name=command_name)
     spec_path = Path(str(options["spec_path"]))
     if _dag_run_schema(spec_path) == DAG_CONTRACT_SCHEMA:
@@ -6454,11 +6480,7 @@ def _parse_generic_dag_run_cli_args(
     command_name: str = "dag-run",
 ) -> dict[str, object]:
     if not args:
-        raise RuntimeError(
-            f"Usage: tau {command_name} <dag-spec> [--no-resume] "
-            "[--receipt-dir <dir>] [--agents-root <dir>] [--command-spec-root <dir>] "
-            "[--scheduler <handoff-loop|bounded-ready-queue>] [--mode <development|secure>]"
-        )
+        raise RuntimeError(_generic_dag_run_usage(command_name))
     spec_path = Path(args[0])
     resume = True
     receipt_dir: Path | None = None
@@ -6514,6 +6536,99 @@ def _parse_generic_dag_run_cli_args(
         "command_spec_root": command_spec_root,
         "scheduler": scheduler,
         "security_mode": security_mode,
+    }
+
+
+def _canonical_dags_cli_command(args: list[str]) -> dict[str, object]:
+    if args and args[0] in {"--help", "-h", "help"}:
+        return _command_help_payload(
+            command_name="canonical-dags",
+            usage="Usage: tau canonical-dags [--json]",
+        )
+    if args and args != ["--json"]:
+        raise RuntimeError("Usage: tau canonical-dags [--json]")
+    return canonical_dag_catalog()
+
+
+def _canonical_dag_launch_cli_command(args: list[str]) -> dict[str, object]:
+    if args and args[0] in {"--help", "-h", "help"}:
+        return _command_help_payload(
+            command_name="canonical-dag-launch",
+            usage=(
+                "Usage: tau canonical-dag-launch <dag-id> [--run-root <dir>] "
+                "[--repo <dir>] [--uv-bin <uv>] [--timeout-seconds <seconds>]"
+            ),
+        )
+    if not args:
+        raise RuntimeError(
+            "Usage: tau canonical-dag-launch <dag-id> [--run-root <dir>] "
+            "[--repo <dir>] [--uv-bin <uv>] [--timeout-seconds <seconds>]"
+        )
+    dag_id = args[0]
+    run_root: Path | None = None
+    repo: Path | None = None
+    uv_bin = "uv"
+    timeout_seconds = 180
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg == "--run-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--run-root requires a value")
+            run_root = Path(args[index])
+        elif arg.startswith("--run-root="):
+            run_root = Path(arg.partition("=")[2])
+        elif arg == "--repo":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--repo requires a value")
+            repo = Path(args[index])
+        elif arg.startswith("--repo="):
+            repo = Path(arg.partition("=")[2])
+        elif arg == "--uv-bin":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--uv-bin requires a value")
+            uv_bin = args[index]
+        elif arg.startswith("--uv-bin="):
+            uv_bin = arg.partition("=")[2]
+        elif arg == "--timeout-seconds":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--timeout-seconds requires a value")
+            timeout_seconds = int(args[index])
+        elif arg.startswith("--timeout-seconds="):
+            timeout_seconds = int(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown canonical-dag-launch option: {arg}")
+        index += 1
+    return launch_canonical_dag(
+        dag_id,
+        repo=repo,
+        run_root=run_root,
+        uv_bin=uv_bin,
+        timeout_seconds=timeout_seconds,
+    )
+
+
+def _generic_dag_run_usage(command_name: str) -> str:
+    return (
+        f"Usage: tau {command_name} <dag-spec> [--no-resume] "
+        "[--receipt-dir <dir>] [--agents-root <dir>] [--command-spec-root <dir>] "
+        "[--scheduler <handoff-loop|bounded-ready-queue>] [--mode <development|secure>]"
+    )
+
+
+def _command_help_payload(*, command_name: str, usage: str) -> dict[str, object]:
+    return {
+        "schema": "tau.cli_help.v1",
+        "ok": True,
+        "status": "PASS",
+        "mocked": False,
+        "live": False,
+        "command": command_name,
+        "usage": usage,
     }
 
 
