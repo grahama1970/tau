@@ -408,6 +408,40 @@ def test_ready_queue_derives_final_verdict_from_terminal_handler_receipt(
     assert progress["verdict"] == "FAIL"
 
 
+def test_project_dag_ready_queue_blocks_needs_attention_handoff_result(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    blocked = _handoff(
+        "coder",
+        "reviewer",
+        [
+            {
+                "kind": "handler_response_receipt",
+                "status": "NEEDS_ATTENTION",
+                "failure_code": "scillm_provider_route_failed",
+            }
+        ],
+    )
+    blocked["result"]["status"] = "NEEDS_ATTENTION"
+    blocked["result"]["summary"] = "Handler did not produce usable provider output."
+    _write_response_spec(tmp_path, "coder", blocked)
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "SCILLM_PROVIDER_ROUTE_FAILED"
+    assert receipt["alerts"][0]["code"] == "scillm_provider_route_failed"
+    assert receipt["dag_error"]["failure_code"] == "scillm_provider_route_failed"
+
+
 def test_project_dag_durable_replay_preserves_receipt_evidence(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

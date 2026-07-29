@@ -2548,6 +2548,9 @@ def _node_response_alerts(
     if auth_alert is not None:
         alerts.append(auth_alert)
         return alerts
+    result_alert = _node_result_failure_alert(node, response)
+    if result_alert is not None:
+        alerts.append(result_alert)
     missing = _missing_required_evidence(node.required_evidence, response)
     if missing:
         alerts.append(
@@ -2562,6 +2565,41 @@ def _node_response_alerts(
     if node.reviewer is not None:
         alerts.extend(_reviewer_alerts(contract, node, response))
     return alerts
+
+
+def _node_result_failure_alert(
+    node: ProjectDagNode,
+    response: dict[str, Any],
+) -> dict[str, Any] | None:
+    result = response.get("result")
+    if not isinstance(result, dict):
+        return None
+    status = str(result.get("status") or "").strip().upper()
+    if status not in {"NEEDS_ATTENTION", "BLOCKED", "FAILED", "FAIL", "ERROR"}:
+        return None
+    failure_code = _node_result_failure_code(result) or "node_result_not_pass"
+    return _alert(
+        "BLOCK",
+        failure_code,
+        "Node response result was not passable.",
+        {
+            "node_id": node.node_id,
+            "agent": node.agent,
+            "result_status": status,
+            "failure_code": failure_code,
+            "summary": result.get("summary"),
+        },
+    )
+
+
+def _node_result_failure_code(result: dict[str, Any]) -> str | None:
+    for item in result.get("evidence", []):
+        if not isinstance(item, dict):
+            continue
+        failure_code = item.get("failure_code")
+        if isinstance(failure_code, str) and failure_code.strip():
+            return failure_code.strip()
+    return None
 
 
 def _referenced_receipt_alerts(
@@ -2699,10 +2737,14 @@ def _collect_provider_auth_failures(value: Any, *, failures: list[str]) -> None:
         or ("403" in lower and "permission_denied" in lower)
         or "permission denied" in lower
         or "unauthorized" in lower
+        or "token_revoked" in lower
+        or "provider_auth_error" in lower
+        or "provider_auth_failed" in lower
+        or "scillm_auth_invalid_api_key" in lower
         or "leaked api key" in lower
         or "api key leaked" in lower
         or "oauth" in lower
-        and any(marker in lower for marker in ("expired", "stale", "invalid", "auth"))
+        and any(marker in lower for marker in ("expired", "stale", "invalid", "auth", "revoked"))
     )
     if not has_auth_error:
         return
@@ -2716,6 +2758,10 @@ def _collect_provider_auth_failures(value: Any, *, failures: list[str]) -> None:
             "permission_denied",
             "permission denied",
             "unauthorized",
+            "token_revoked",
+            "provider_auth_error",
+            "provider_auth_failed",
+            "scillm_auth_invalid_api_key",
             "leaked api key",
             "api key leaked",
             "oauth",
