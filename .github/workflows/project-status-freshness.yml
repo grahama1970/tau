@@ -61,18 +61,5 @@ jobs:
         run: |
           uv run tau project-status verify \
             --status docs/status/CURRENT_STATE.json \
+            --rendered docs/status/CURRENT_STATE.md \
             --github-snapshot docs/status/github-snapshot.json
-
-      - name: Verify rendered markdown matches the JSON digest
-        run: |
-          uv run python - <<'PY'
-          import json, re, sys
-          from pathlib import Path
-          status = json.loads(Path("docs/status/CURRENT_STATE.json").read_text())
-          md = Path("docs/status/CURRENT_STATE.md").read_text()
-          digest = status["semantic_content_digest"]
-          if digest not in md:
-              print(f"CURRENT_STATE.md does not bind the current JSON digest {digest}")
-              sys.exit(1)
-          print("rendered markdown binds the current semantic-content digest")
-          PY
