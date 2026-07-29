@@ -319,53 +319,61 @@ def run_dag_plan(
                         lease_renewal_interval=lease_renewal_interval,
                     )
                     break
-                if blocked_result is not None and not futures:
+                if blocked_result is not None:
                     break
-                if blocked_result is None:
-                    settle_block = _settle_unrunnable_nodes(
-                        plan=plan,
-                        policy=policy,
-                        nodes=nodes,
-                        resolved=resolved,
-                        scheduled=scheduled,
-                        completed=completed,
+                settle_block = _settle_unrunnable_nodes(
+                    plan=plan,
+                    policy=policy,
+                    nodes=nodes,
+                    resolved=resolved,
+                    scheduled=scheduled,
+                    completed=completed,
+                    results=results,
+                    result_order=result_order,
+                    node_states=node_states,
+                    edge_states=edge_states,
+                    terminal_states=terminal_states,
+                    deadlines=deadlines,
+                    cancel_events=cancel_events,
+                    futures=futures,
+                    transition_receipt_paths=transition_receipt_paths,
+                    event_sink=event_sink,
+                    run_store=run_store,
+                    lease=lease,
+                )
+                if settle_block is not None:
+                    blocked_result = {
+                        "status": "BLOCKED",
+                        "verdict": settle_block.failure_code,
+                        "errors": [settle_block.message],
+                        "transition_evidence": settle_block.evidence,
+                    }
+                    lease = _cancel_and_collect_futures(
+                        futures=futures,
+                        future_attempts=future_attempts,
+                        cancel_events=cancel_events,
                         results=results,
                         result_order=result_order,
                         node_states=node_states,
-                        edge_states=edge_states,
-                        terminal_states=terminal_states,
-                        deadlines=deadlines,
-                        cancel_events=cancel_events,
-                        futures=futures,
-                        transition_receipt_paths=transition_receipt_paths,
+                        resolved=resolved,
                         event_sink=event_sink,
                         run_store=run_store,
                         lease=lease,
+                        lease_ttl_seconds=lease_ttl_seconds,
+                        lease_renewal_interval=lease_renewal_interval,
                     )
-                    if settle_block is not None:
-                        blocked_result = {
-                            "status": "BLOCKED",
-                            "verdict": settle_block.failure_code,
-                            "errors": [settle_block.message],
-                            "transition_evidence": settle_block.evidence,
-                        }
-                        if not futures:
-                            break
-                ready = (
-                    [
-                        node_id
-                        for node_id in sorted(nodes)
-                        if node_id not in resolved
-                        and node_id not in scheduled
-                        and _node_is_ready(
-                            node_id,
-                            incoming_edges=incoming_edges,
-                            edge_states=edge_states,
-                        )
-                    ]
-                    if blocked_result is None
-                    else []
-                )
+                    break
+                ready = [
+                    node_id
+                    for node_id in sorted(nodes)
+                    if node_id not in resolved
+                    and node_id not in scheduled
+                    and _node_is_ready(
+                        node_id,
+                        incoming_edges=incoming_edges,
+                        edge_states=edge_states,
+                    )
+                ]
                 for node_id in ready:
                     if len(futures) >= max_concurrency:
                         break
@@ -498,7 +506,7 @@ def run_dag_plan(
                     if run_store is not None and lease is not None:
                         run_store.record_observed_concurrency(lease, max_observed_concurrency)
 
-                if blocked_result is not None and not futures:
+                if blocked_result is not None:
                     lease = _cancel_and_collect_futures(
                         futures=futures,
                         future_attempts=future_attempts,
@@ -959,9 +967,21 @@ def run_dag_plan(
                         }
                     batch_blocked = True
                 if batch_blocked:
-                    if not futures:
-                        break
-                    continue
+                    lease = _cancel_and_collect_futures(
+                        futures=futures,
+                        future_attempts=future_attempts,
+                        cancel_events=cancel_events,
+                        results=results,
+                        result_order=result_order,
+                        node_states=node_states,
+                        resolved=resolved,
+                        event_sink=event_sink,
+                        run_store=run_store,
+                        lease=lease,
+                        lease_ttl_seconds=lease_ttl_seconds,
+                        lease_renewal_interval=lease_renewal_interval,
+                    )
+                    break
 
     except BaseException as exc:
         _finish_interrupted_run(
