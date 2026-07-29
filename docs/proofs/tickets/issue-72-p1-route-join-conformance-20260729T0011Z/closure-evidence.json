@@ -1,0 +1,71 @@
+{
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "ticket": "grahama1970/tau#72",
+  "phase": "P1",
+  "title": "Conditional routing and join correctness conformance bundle",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "commands": [
+    "uv run pytest -q tests/test_dag_route_decision.py tests/test_dag_join_decision.py tests/test_project_dag_join_policies.py"
+  ],
+  "command_results": [
+    {
+      "command": "uv run pytest -q tests/test_dag_route_decision.py tests/test_dag_join_decision.py tests/test_project_dag_join_policies.py",
+      "exit_code": 0,
+      "stdout_summary": "115 passed in 7.73s"
+    }
+  ],
+  "source_files": [
+    "src/tau_coding/dag_route_decision.py",
+    "src/tau_coding/dag_join_decision.py",
+    "tests/test_dag_route_decision.py",
+    "tests/test_dag_join_decision.py",
+    "tests/test_project_dag_join_policies.py"
+  ],
+  "conformance_items": [
+    {
+      "requirement": "exclusive route selection is deterministic and fail-closed on ambiguity",
+      "status": "MET",
+      "evidence": "tests/test_dag_route_decision.py::test_route_modes_have_closed_deterministic_semantics covers exclusive PASS, exclusive ambiguous BLOCKED, and no-match BLOCKED."
+    },
+    {
+      "requirement": "route conditions evaluate typed receipt/result fields only",
+      "status": "MET",
+      "evidence": "tests/test_dag_route_decision.py::test_route_condition_uses_strict_typed_values and rejection tests for expressions/reserved/untyped forms."
+    },
+    {
+      "requirement": "route receipts are replayable and tamper-evident",
+      "status": "MET",
+      "evidence": "tests/test_dag_route_decision.py::test_route_decision_is_replayable_and_tamper_evident."
+    },
+    {
+      "requirement": "skipped branches contribute terminal state to joins",
+      "status": "MET",
+      "evidence": "tests/test_project_dag_join_policies.py::test_conditional_skip_contributes_and_minimum_join_releases records skipped branch terminal contribution before join release."
+    },
+    {
+      "requirement": "all_success joins block on unselected branches without ready-queue stall",
+      "status": "MET",
+      "evidence": "tests/test_project_dag_join_policies.py::test_all_success_blocks_on_unselected_branch_without_stall."
+    },
+    {
+      "requirement": "join decisions are deterministic, hash-bound, and replayable",
+      "status": "MET",
+      "evidence": "tests/test_dag_join_decision.py validates join decisions, terminal contributions, immutable receipt writes, replay, and failure vocabulary."
+    },
+    {
+      "requirement": "join timeout and late contribution handling are terminal and non-hanging",
+      "status": "MET",
+      "evidence": "tests/test_project_dag_join_policies.py timeout cases prove timed-out/cancelled contributions and late terminal contribution ignore behavior."
+    }
+  ],
+  "proves": [
+    "Tau has a committed P1 conformance bundle for closed typed route semantics, fail-closed ambiguous/no-match routing, skipped-branch terminal contribution, explicit join policies, non-hanging join timeout behavior, and replayable/tamper-evident route/join receipts."
+  ],
+  "does_not_prove": [
+    "Provider or model semantic quality.",
+    "Operating-system isolation.",
+    "Human acceptance of #72 or #180."
+  ]
+}

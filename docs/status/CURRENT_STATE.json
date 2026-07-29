@@ -10,11 +10,11 @@
     },
     "source": "src/tau_coding/dag_runtime/"
   },
-  "generated_at": "2026-07-29T00:09:26.806744+00:00",
+  "generated_at": "2026-07-29T00:12:07.111261+00:00",
   "generator_version": "1.0.0",
   "git": {
     "clean_tree": false,
-    "commit": "7c1cb0b21d240d7f02a5ebe1d8b0dd692dc799d6"
+    "commit": "2284f48fbef586785c278c3bd9aac939158b2e10"
   },
   "github": {
     "branch_protection": {
@@ -196,7 +196,7 @@
       "uv run pytest -q",
       "canonical-browser-proofs"
     ],
-    "snapshot_sha256": "sha256:55c8f005f0781ed4eb2d3d052d28340f745597fab2c69c0bdc1cc219284c1fed"
+    "snapshot_sha256": "sha256:127897bdd9882e8d7ae18f0437fb1dd2311ee9b0cca463b51de2d97cd72eaa49"
   },
   "human_acceptance": {
     "baseline_present": true,
@@ -235,8 +235,8 @@
     "provider_live": false
   },
   "proof_index": {
-    "count": 15,
-    "digest": "sha256:665fe1adef389a2df5853f69cf57a53d70c036fb9ce87d0d0fd372f815d89c10",
+    "count": 16,
+    "digest": "sha256:d5c4e9e73a7b5e6f852741eb85e72561546359618e39c2b36a3077d1d9ec40c3",
     "entries": [
       {
         "path": "docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/closure-evidence.json",
@@ -297,16 +297,20 @@
       {
         "path": "docs/proofs/tickets/issue-225-hardening-conformance-audit-20260728T211301Z/closure-evidence.json",
         "sha256": "sha256:f2c76df5e9ed510cadb5dd47eb7c39ef2af70be42429116d26db37657734988c"
+      },
+      {
+        "path": "docs/proofs/tickets/issue-72-p1-route-join-conformance-20260729T0011Z/closure-evidence.json",
+        "sha256": "sha256:963d0ec3c8fef83346bbc70729623da96e51f3b0e53c47ce54ef862d7b751575"
       }
     ]
   },
   "schema": "tau.project_status.v1",
-  "semantic_content_digest": "sha256:69280b4ce0a6d6aa57a7514feebf9640bc4af963fe07ec5dd44779f9cdd53a4f",
+  "semantic_content_digest": "sha256:62fa45df01192f1398339fe09e5ec49fc7ac61050a31755ce1daa3eb2566cd21",
   "source_digests": {
     "GOAL.md": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
     "acceptance_receipt": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab",
-    "github_snapshot": "sha256:55c8f005f0781ed4eb2d3d052d28340f745597fab2c69c0bdc1cc219284c1fed",
-    "proof_index": "sha256:665fe1adef389a2df5853f69cf57a53d70c036fb9ce87d0d0fd372f815d89c10",
+    "github_snapshot": "sha256:127897bdd9882e8d7ae18f0437fb1dd2311ee9b0cca463b51de2d97cd72eaa49",
+    "proof_index": "sha256:d5c4e9e73a7b5e6f852741eb85e72561546359618e39c2b36a3077d1d9ec40c3",
     "pyproject.toml": "sha256:846cfd5812f312395f363db523bf485487f6d72a651644098b92f34565dccb55"
   },
   "workflows": {

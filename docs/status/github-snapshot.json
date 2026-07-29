@@ -178,5 +178,5 @@
     }
   ],
   "source": "gh api repos/grahama1970/tau (branch protection + issues)",
-  "generated_for": "current-head ticket refresh after #224 closure"
+  "generated_for": "current-head P1 route/join conformance refresh"
 }
