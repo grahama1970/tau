@@ -64,6 +64,7 @@ from tau_coding.coding_worker_adapters import (
     write_scillm_worker_launch_receipt,
     write_scillm_worker_receipt,
 )
+from tau_coding.battle_scillm import resolve_active_scillm_proxy_key
 from tau_coding.commit_plan import write_commit_plan_receipt
 from tau_coding.compliance_package import build_compliance_evidence_package
 from tau_coding.course_correction import write_course_correction_receipt
@@ -906,21 +907,41 @@ def doctor_command(
     try:
         settings = load_provider_settings()
         credential_reader = FileCredentialStore()
-        provider_payload = {
-            "default_provider": settings.default_provider,
-            "provider_count": len(settings.providers),
-            "providers": [
+        provider_entries: list[dict[str, object]] = []
+        missing_provider_names: list[str] = []
+        usable_provider_names: list[str] = []
+        for item in settings.providers:
+            credential_status = _provider_credential_status(
+                item,
+                credential_reader=credential_reader,
+            )
+            provider_entries.append(
                 {
                     "name": item.name,
                     "kind": provider_kind(item),
-                    "credential": _provider_credential_status(
-                        item,
-                        credential_reader=credential_reader,
-                    ),
+                    "credential": credential_status,
+                    "credential_usable": credential_status != "missing",
                 }
-                for item in settings.providers
-            ],
+            )
+            if credential_status == "missing":
+                missing_provider_names.append(item.name)
+            else:
+                usable_provider_names.append(item.name)
+        provider_payload = {
+            "default_provider": settings.default_provider,
+            "provider_count": len(settings.providers),
+            "providers": provider_entries,
+            "credential_summary": {
+                "usable_count": len(usable_provider_names),
+                "missing_count": len(missing_provider_names),
+                "usable_providers": usable_provider_names,
+                "missing_providers": missing_provider_names,
+            },
         }
+        if missing_provider_names:
+            warnings.append(
+                "provider credentials missing: " + ", ".join(sorted(missing_provider_names))
+            )
     except Exception as exc:  # pragma: no cover - defensive preflight fallback
         provider_payload = {
             "default_provider": None,
@@ -937,12 +958,18 @@ def doctor_command(
         memory_url=memory_url or environ.get("TAU_MEMORY_URL") or DEFAULT_MEMORY_URL,
         probe=service_probe,
     )
-    degraded = any(
+    scillm_sidecar = _scillm_sidecar_doctor()
+    if scillm_sidecar.get("status") in {"BLOCKED", "DEGRADED"}:
+        reason = str(scillm_sidecar.get("reason") or "scillm sidecar is not ready")
+        warnings.append(f"scillm sidecar {str(scillm_sidecar['status']).lower()}: {reason}")
+
+    external_degraded = any(
         service.get("required") is True and service.get("state") == "unreachable"
         for service in external_services
     )
-    if degraded:
+    if external_degraded:
         warnings.append("one or more required external services are unreachable")
+    degraded = bool(warnings) or external_degraded
 
     lanes = {
         "local_cli": {
@@ -964,8 +991,11 @@ def doctor_command(
             else "herdr executable not found on PATH",
         },
         "provider_live": {
-            "ready": False,
-            "reason": "doctor does not allocate provider panes or call model providers",
+            "ready": bool(scillm_sidecar.get("provider_smoke_ok")),
+            "reason": str(
+                scillm_sidecar.get("provider_smoke_reason")
+                or "doctor did not receive a passing SciLLM provider auth smoke"
+            ),
         },
         "github_dry_run": {
             "ready": gh_ready,
@@ -989,14 +1019,17 @@ def doctor_command(
         },
     }
 
-    ok = len(errors) == 0
+    scillm_blocked = scillm_sidecar.get("status") == "BLOCKED"
+    ok = len(errors) == 0 and not scillm_blocked
+    status = "BLOCKED" if not ok else "DEGRADED" if degraded else "PASS"
     return {
         "schema": "tau.doctor.v1",
         "ok": ok,
-        "status": "PASS" if ok and not degraded else "DEGRADED" if ok else "BLOCKED",
+        "status": status,
         "mocked": False,
         "live": True,
-        "provider_live": False,
+        "provider_live": bool(scillm_sidecar.get("provider_smoke_attempted")),
+        "scillm_sidecar_live": bool(scillm_sidecar.get("live")),
         "checked_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "version": __version__,
         "repo_root": str(root),
@@ -1011,6 +1044,7 @@ def doctor_command(
         "modes": _doctor_mode_manifest(),
         "external_services": external_services,
         "provider_settings": provider_payload,
+        "scillm_sidecar": scillm_sidecar,
         "errors": errors,
         "warnings": warnings,
         "proof_boundary": {
@@ -1019,12 +1053,14 @@ def doctor_command(
                 "Required local Tau runtime paths were checked.",
                 "Optional local executables for uv, git, gh, and Herdr were detected "
                 "without side effects.",
-                "Configured provider entries were inspected without making provider/model calls.",
+                "Configured provider entries were inspected.",
+                "SciLLM sidecar auth and health endpoints were probed.",
+                "SciLLM Claude OAuth routing was probed with a tiny provider-auth smoke.",
                 "Configured external service endpoints were probed with read-only health checks.",
             ],
             "does_not_prove": [
                 "Herdr pane readiness.",
-                "Live provider/model semantic quality.",
+                "Live provider/model semantic quality beyond one tiny provider-auth smoke.",
                 "Provider DAG execution.",
                 "GitHub live mutation.",
                 "Browser/CDP UI proof; run tau browser-cdp-proof for screenshot artifacts.",
@@ -1033,6 +1069,294 @@ def doctor_command(
             ],
         },
     }
+
+
+_HEALTHY_SCILLM_AUTH_STATUSES = {
+    "authenticated",
+    "configured",
+    "ok",
+    "pass",
+    "ready",
+    "valid",
+}
+
+
+def _scillm_sidecar_doctor(
+    *,
+    base_url: str | None = None,
+    timeout_seconds: float = 5.0,
+    provider_smoke_timeout_seconds: float = 45.0,
+) -> dict[str, object]:
+    """Probe SciLLM auth, health, and bounded provider auth readiness."""
+
+    endpoint = (base_url or environ.get("TAU_SCILLM_BASE_URL") or "http://127.0.0.1:4001").rstrip(
+        "/"
+    )
+    api_key, api_key_source, api_key_errors = resolve_active_scillm_proxy_key()
+    payload: dict[str, object] = {
+        "schema": "tau.scillm_sidecar_doctor.v1",
+        "status": "BLOCKED",
+        "ok": False,
+        "mocked": False,
+        "live": True,
+        "base_url": endpoint,
+        "auth_endpoint": "/v1/scillm/auth",
+        "health_endpoint": "/v1/scillm/health",
+        "api_key_present": bool(api_key),
+        "api_key_source": api_key_source,
+        "api_key_resolution_errors": api_key_errors,
+        "auth": None,
+        "health": None,
+        "provider_smoke": None,
+        "provider_smoke_attempted": False,
+        "provider_smoke_ok": False,
+        "provider_smoke_reason": None,
+        "reason": None,
+    }
+    if not api_key:
+        payload["reason"] = "missing_scillm_proxy_key"
+        return payload
+
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Bearer {api_key}",
+        "X-Caller-Skill": "tau",
+    }
+    try:
+        with httpx.Client(timeout=httpx.Timeout(timeout_seconds, connect=0.5)) as client:
+            auth_response = client.get(f"{endpoint}/v1/scillm/auth", headers=headers)
+            health_response = client.get(f"{endpoint}/v1/scillm/health", headers=headers)
+    except httpx.HTTPError as exc:
+        payload["reason"] = f"scillm_sidecar_unreachable: {exc}"
+        return payload
+
+    auth_body = _json_object_or_none(auth_response)
+    health_body = _json_object_or_none(health_response)
+    payload["auth"] = _scillm_auth_summary(auth_response.status_code, auth_body)
+    payload["health"] = _scillm_health_summary(health_response.status_code, health_body)
+
+    blockers = _scillm_auth_blockers(auth_body)
+    degraded_circuits = _scillm_degraded_circuits(health_body)
+    if auth_response.status_code == 401 or health_response.status_code == 401:
+        payload["reason"] = "scillm_proxy_auth_invalid_api_key"
+        return payload
+    if auth_response.status_code >= 400:
+        payload["reason"] = f"scillm_auth_endpoint_http_{auth_response.status_code}"
+        return payload
+    if health_response.status_code >= 400:
+        payload["reason"] = f"scillm_health_endpoint_http_{health_response.status_code}"
+        return payload
+    if blockers:
+        payload["status"] = "BLOCKED"
+        payload["reason"] = "scillm_provider_auth_unusable: " + ", ".join(blockers)
+        payload["auth_blockers"] = blockers
+        return payload
+
+    provider_smoke = _scillm_claude_provider_auth_smoke(
+        endpoint=endpoint,
+        api_key=api_key,
+        timeout_seconds=provider_smoke_timeout_seconds,
+    )
+    payload["provider_smoke"] = provider_smoke
+    payload["provider_smoke_attempted"] = True
+    payload["provider_smoke_ok"] = provider_smoke.get("ok") is True
+    payload["provider_smoke_reason"] = str(provider_smoke.get("reason") or "")
+    if provider_smoke.get("status") == "BLOCKED":
+        payload["status"] = "BLOCKED"
+        payload["reason"] = str(provider_smoke.get("reason") or "scillm_provider_auth_smoke_failed")
+        return payload
+    if degraded_circuits:
+        payload["status"] = "DEGRADED"
+        payload["ok"] = True
+        payload["reason"] = "scillm_model_circuits_degraded: " + ", ".join(degraded_circuits)
+        payload["degraded_circuits"] = degraded_circuits
+        return payload
+
+    payload["status"] = "PASS"
+    payload["ok"] = True
+    payload["reason"] = "scillm auth, health, and provider auth smoke are usable"
+    return payload
+
+
+def _scillm_claude_provider_auth_smoke(
+    *,
+    endpoint: str,
+    api_key: str,
+    timeout_seconds: float,
+) -> dict[str, object]:
+    """Run one tiny Claude OAuth call so revoked tokens fail closed."""
+
+    payload: dict[str, object] = {
+        "schema": "tau.scillm_provider_auth_smoke.v1",
+        "status": "BLOCKED",
+        "ok": False,
+        "mocked": False,
+        "live": True,
+        "endpoint": "/v1/chat/completions",
+        "model": "claude-sonnet-4-6",
+        "caller_skill": "tau",
+        "status_code": None,
+        "provider": None,
+        "provider_error_code": None,
+        "provider_error_type": None,
+        "response_text": None,
+        "reason": None,
+    }
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "X-Caller-Skill": "tau",
+    }
+    body = {
+        "model": "claude-sonnet-4-6",
+        "messages": [
+            {
+                "role": "user",
+                "content": "Return exactly: tau-claude-auth-smoke",
+            }
+        ],
+        "temperature": 0,
+    }
+    try:
+        with httpx.Client(timeout=httpx.Timeout(timeout_seconds, connect=1.0)) as client:
+            response = client.post(
+                f"{endpoint}/v1/chat/completions",
+                headers=headers,
+                json=body,
+            )
+    except httpx.HTTPError as exc:
+        payload["reason"] = f"scillm_provider_auth_smoke_unreachable: {exc}"
+        return payload
+
+    payload["status_code"] = response.status_code
+    response_body = _json_object_or_none(response)
+    if isinstance(response_body, dict):
+        error = response_body.get("error")
+        if isinstance(error, dict):
+            details = error.get("details")
+            details_body = details if isinstance(details, dict) else {}
+            payload["provider"] = details_body.get("provider")
+            payload["provider_error_code"] = details_body.get("provider_error_code") or error.get(
+                "code"
+            )
+            payload["provider_error_type"] = details_body.get("provider_error_type") or error.get(
+                "type"
+            )
+            payload["response_text"] = str(error.get("message") or "")[:500]
+        else:
+            choices = response_body.get("choices")
+            if isinstance(choices, list) and choices:
+                first_choice = choices[0]
+                if isinstance(first_choice, dict):
+                    message = first_choice.get("message")
+                    if isinstance(message, dict) and isinstance(message.get("content"), str):
+                        payload["response_text"] = message["content"][:500]
+            if payload["response_text"] is None:
+                payload["response_text"] = json.dumps(response_body, sort_keys=True)[:500]
+    else:
+        payload["response_text"] = response.text[:500]
+
+    provider_error_code = str(payload.get("provider_error_code") or "").strip()
+    provider_error_type = str(payload.get("provider_error_type") or "").strip()
+    if response.status_code in {401, 403} or provider_error_code.startswith("PROVIDER_AUTH"):
+        payload["reason"] = (
+            "scillm_provider_auth_invalid: "
+            f"model=claude-sonnet-4-6 status_code={response.status_code} "
+            f"provider={payload.get('provider') or 'unknown'} "
+            f"provider_error_code={provider_error_code or 'missing'} "
+            f"provider_error_type={provider_error_type or 'missing'}"
+        )
+        return payload
+    if response.status_code >= 400:
+        payload["reason"] = f"scillm_provider_auth_smoke_http_{response.status_code}"
+        return payload
+
+    if "tau-claude-auth-smoke" not in str(payload.get("response_text") or ""):
+        payload["status"] = "DEGRADED"
+        payload["reason"] = "scillm_provider_auth_smoke_unexpected_response"
+        return payload
+
+    payload["status"] = "PASS"
+    payload["ok"] = True
+    payload["reason"] = "scillm_provider_auth_smoke_passed"
+    return payload
+
+
+def _json_object_or_none(response: httpx.Response) -> dict[str, object] | None:
+    try:
+        body = response.json()
+    except ValueError:
+        return None
+    return body if isinstance(body, dict) else None
+
+
+def _scillm_auth_summary(
+    status_code: int,
+    body: dict[str, object] | None,
+) -> dict[str, object]:
+    summary: dict[str, object] = {"status_code": status_code, "body_present": body is not None}
+    if not isinstance(body, dict):
+        return summary
+    for provider_name in ("claude", "codex"):
+        provider_body = body.get(provider_name)
+        if isinstance(provider_body, dict):
+            summary[provider_name] = {
+                "status": provider_body.get("status"),
+                "source": provider_body.get("source"),
+                "expires_in_s": provider_body.get("expires_in_s"),
+                "refresh_available": provider_body.get("refresh_available"),
+            }
+    return summary
+
+
+def _scillm_health_summary(
+    status_code: int,
+    body: dict[str, object] | None,
+) -> dict[str, object]:
+    summary: dict[str, object] = {"status_code": status_code, "body_present": body is not None}
+    if not isinstance(body, dict):
+        return summary
+    model_groups = body.get("model_groups")
+    circuit_breaker = body.get("circuit_breaker")
+    summary["status"] = body.get("status")
+    summary["model_group_count"] = len(model_groups) if isinstance(model_groups, list) else 0
+    summary["degraded_circuits"] = _scillm_degraded_circuits(body)
+    summary["circuit_count"] = len(circuit_breaker) if isinstance(circuit_breaker, dict) else 0
+    return summary
+
+
+def _scillm_auth_blockers(body: dict[str, object] | None) -> list[str]:
+    if not isinstance(body, dict):
+        return ["auth_body_missing"]
+    blockers: list[str] = []
+    for provider_name in ("claude", "codex"):
+        provider_body = body.get(provider_name)
+        if not isinstance(provider_body, dict):
+            blockers.append(f"{provider_name}:missing")
+            continue
+        status = str(provider_body.get("status") or "").strip().lower()
+        if status not in _HEALTHY_SCILLM_AUTH_STATUSES:
+            blockers.append(f"{provider_name}:{status or 'status_missing'}")
+    return blockers
+
+
+def _scillm_degraded_circuits(body: dict[str, object] | None) -> list[str]:
+    if not isinstance(body, dict):
+        return []
+    circuit_breaker = body.get("circuit_breaker")
+    if not isinstance(circuit_breaker, dict):
+        return []
+    degraded: list[str] = []
+    for model_group, state_body in sorted(circuit_breaker.items()):
+        if not isinstance(state_body, dict):
+            continue
+        state = str(state_body.get("state") or "").strip().lower()
+        failures = state_body.get("consecutive_failures")
+        failure_count = failures if isinstance(failures, int) and not isinstance(failures, bool) else 0
+        if state in {"open", "half-open"} or failure_count > 0:
+            degraded.append(f"{model_group}:{state or 'state_missing'}:{failure_count}")
+    return degraded
 
 
 def _doctor_external_services(
@@ -1463,8 +1787,17 @@ async def replacement_harness_sanity_command(
         _artifact_record(status_path, kind="status_receipt"),
     ]
     build_output = temp_repo / "build-mode-output.txt"
+    doctor_lanes = doctor_payload.get("lanes")
+    doctor_local_ok = (
+        doctor_payload.get("schema") == "tau.doctor.v1"
+        and isinstance(doctor_lanes, dict)
+        and isinstance(doctor_lanes.get("local_cli"), dict)
+        and isinstance(doctor_lanes.get("local_sanity"), dict)
+        and doctor_lanes["local_cli"].get("ready") is True
+        and doctor_lanes["local_sanity"].get("ready") is True
+    )
     gates = {
-        "doctor": doctor_payload.get("ok") is True,
+        "doctor": doctor_local_ok,
         "plan_mode_denied_without_mutation": (
             plan_permission.get("status") == "BLOCKED" and not plan_target.exists()
         ),
