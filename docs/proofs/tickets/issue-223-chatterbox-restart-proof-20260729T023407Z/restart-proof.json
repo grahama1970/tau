@@ -1,0 +1,350 @@
+{
+  "chatterbox_url": "http://127.0.0.1:8018",
+  "checks": {
+    "after_render_live_pass": true,
+    "after_turn_did_not_reuse_old_turn_id": true,
+    "after_turn_rendered": true,
+    "before_render_live_pass": true,
+    "docker_start_succeeded": true,
+    "docker_stop_succeeded": true,
+    "down_receipt_degraded": true,
+    "down_turn_not_rendered": true,
+    "health_after_restart_live": true,
+    "health_before_live": true,
+    "health_down_unavailable": true
+  },
+  "claims": {
+    "does_not_prove": [
+      "Perceptual quality of requested voice delivery profiles.",
+      "Voice authentication or voice approval authority.",
+      "Arbitrary host audio-device compatibility."
+    ],
+    "proves": [
+      "Tau TUI voice renders through a live Chatterbox service before restart.",
+      "When Chatterbox is stopped, Tau records an explicit degraded receipt and does not block workflow progress.",
+      "After Chatterbox restarts, a later fresh Tau turn succeeds through /tau/voice-render.",
+      "Tau does not replay the down-time turn after restart; only the fresh post-restart turn is rendered."
+    ]
+  },
+  "commands": [
+    {
+      "argv": [
+        "docker",
+        "stop",
+        "e47338c7d28e"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "e47338c7d28e"
+    },
+    {
+      "argv": [
+        "docker",
+        "start",
+        "e47338c7d28e"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "e47338c7d28e"
+    }
+  ],
+  "container": "e47338c7d28e",
+  "finished_at_utc": "20260729T023452Z",
+  "health_after_restart": {
+    "device": "cuda",
+    "engine": "chatterbox_turbo",
+    "ignored_turbo_params": [
+      "cfg_weight",
+      "exaggeration",
+      "min_p"
+    ],
+    "live": true,
+    "mocked": false,
+    "model_load_seconds": 9.848,
+    "model_loaded": true,
+    "nvidia_smi": {
+      "cmd": [
+        "nvidia-smi",
+        "--query-gpu=name,memory.total,memory.used,memory.free,driver_version",
+        "--format=csv,noheader"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "NVIDIA RTX A5000, 24564 MiB, 16122 MiB, 7999 MiB, 570.211.01\n"
+    },
+    "ok": true,
+    "reference_audio_roots": [
+      "/data",
+      "/voices",
+      "/work"
+    ],
+    "stage_preset_affect_status": {
+      "consumer_guidance": "Do not treat STAGE_PRESETS as a reliable affect channel without fresh receipt evidence clearing same-parameter variance.",
+      "evidence": {
+        "duration_s_flat_spread": 1.36,
+        "f0_range_hz_flat_spread": 60.85,
+        "f0_sd_hz_flat_spread": 21.21,
+        "receipt": "/home/graham/workspace/experiments/agent-skills-main/skills/persona-dream/reports/goal_v4/four_arm/four_arm_acoustic_receipt.v2.json"
+      },
+      "schema": "chatterbox.stage_preset_affect_status.v1",
+      "status": "not_validated_as_affect_channel",
+      "summary": "Turbo stage presets are delivery/generation presets; current n=5 four-arm evidence measured preset-driven shifts below same-parameter stochastic spread."
+    },
+    "started_at_utc": "2026-07-29T02:34:15Z",
+    "supported_params": [
+      "norm_loudness",
+      "repetition_penalty",
+      "temperature",
+      "top_k",
+      "top_p"
+    ],
+    "tag_handling": {
+      "accepted_tags": [],
+      "applied_tags": [],
+      "dedicated_tag_channel": "unsupported",
+      "inline_text_tag_behavior": "synthesized_as_literal_text",
+      "schema": "chatterbox.tag_handling.v1",
+      "tags_interpreted": false,
+      "unknown_tag_behavior": "ignored"
+    },
+    "torch": {
+      "cuda_available": true,
+      "cuda_version": "12.4",
+      "device_count": 1,
+      "device_name": "NVIDIA RTX A5000",
+      "version": "2.6.0+cu124"
+    },
+    "voice_conditioning_cache_size": 0
+  },
+  "health_before": {
+    "device": "cuda",
+    "engine": "chatterbox_turbo",
+    "ignored_turbo_params": [
+      "cfg_weight",
+      "exaggeration",
+      "min_p"
+    ],
+    "live": true,
+    "mocked": false,
+    "model_load_seconds": 8.168,
+    "model_loaded": true,
+    "nvidia_smi": {
+      "cmd": [
+        "nvidia-smi",
+        "--query-gpu=name,memory.total,memory.used,memory.free,driver_version",
+        "--format=csv,noheader"
+      ],
+      "returncode": 255,
+      "stderr": "",
+      "stdout": "Failed to initialize NVML: Unknown Error\n"
+    },
+    "ok": true,
+    "reference_audio_roots": [
+      "/data",
+      "/voices",
+      "/work"
+    ],
+    "stage_preset_affect_status": {
+      "consumer_guidance": "Do not treat STAGE_PRESETS as a reliable affect channel without fresh receipt evidence clearing same-parameter variance.",
+      "evidence": {
+        "duration_s_flat_spread": 1.36,
+        "f0_range_hz_flat_spread": 60.85,
+        "f0_sd_hz_flat_spread": 21.21,
+        "receipt": "/home/graham/workspace/experiments/agent-skills-main/skills/persona-dream/reports/goal_v4/four_arm/four_arm_acoustic_receipt.v2.json"
+      },
+      "schema": "chatterbox.stage_preset_affect_status.v1",
+      "status": "not_validated_as_affect_channel",
+      "summary": "Turbo stage presets are delivery/generation presets; current n=5 four-arm evidence measured preset-driven shifts below same-parameter stochastic spread."
+    },
+    "started_at_utc": "2026-07-27T00:24:41Z",
+    "supported_params": [
+      "norm_loudness",
+      "repetition_penalty",
+      "temperature",
+      "top_k",
+      "top_p"
+    ],
+    "tag_handling": {
+      "accepted_tags": [],
+      "applied_tags": [],
+      "dedicated_tag_channel": "unsupported",
+      "inline_text_tag_behavior": "synthesized_as_literal_text",
+      "schema": "chatterbox.tag_handling.v1",
+      "tags_interpreted": false,
+      "unknown_tag_behavior": "ignored"
+    },
+    "torch": {
+      "cuda_available": true,
+      "cuda_version": "12.4",
+      "device_count": 1,
+      "device_name": "NVIDIA RTX A5000",
+      "version": "2.6.0+cu124"
+    },
+    "voice_conditioning_cache_size": 2
+  },
+  "health_while_stopped": {
+    "error": "<urlopen error [Errno 111] Connection refused>",
+    "ok": false
+  },
+  "issue": "grahama1970/tau#223",
+  "live": true,
+  "mocked": false,
+  "receipts": {
+    "after_restart": {
+      "action": "voice_render",
+      "approval_gate_satisfied": false,
+      "audio_identity": {
+        "answer_text_sha256": "eb8338b8e9cf76c3eeae0c076a03d24e2181ab106f7010507069e493af89b287",
+        "finished_response_audio": "/out/tau_tau-issue-223-restart_tau-223-after-restart/finished_response.wav"
+      },
+      "effective_emotion": null,
+      "failed_gates": [],
+      "request_schema": "tau.voice_render_request.v1",
+      "response_identity": {
+        "keys": [
+          "answer_text_sha256",
+          "applied_controls",
+          "asr_verification",
+          "batch_label",
+          "blessed_qra_cache",
+          "cache_key",
+          "cache_material",
+          "chunks",
+          "completion_cue",
+          "crossfade_ms",
+          "delivery_stage",
+          "engine",
+          "failed_gates",
+          "finished_response_audio",
+          "finished_response_metrics",
+          "ignored_turbo_params",
+          "latency_events",
+          "live",
+          "mocked",
+          "normalized_tone",
+          "ok",
+          "render_plan",
+          "requested_delivery_stage",
+          "requested_tone",
+          "source",
+          "stochasticity",
+          "tag_handling",
+          "tau_voice_render_request",
+          "tone",
+          "total_elapsed_ms",
+          "voice_delivery"
+        ],
+        "sha256": "22432544e0d1922be5d577e47eb3c6be473ad141c55669edcef15e3ea43df73f"
+      },
+      "schema": "tau.tui_voice_surface_receipt.v1",
+      "service_engine": "chatterbox_base",
+      "service_live": true,
+      "service_mocked": false,
+      "service_ok": true,
+      "status": "PASS",
+      "superseded_turn_id": "tau-223-before-stop",
+      "turn_id": "tau-223-after-restart"
+    },
+    "before_stop": {
+      "action": "voice_render",
+      "approval_gate_satisfied": false,
+      "audio_identity": {
+        "answer_text_sha256": "eb63790ee89d144da2437251e1072160398011bd8aea2049c7479a9176446fe4",
+        "finished_response_audio": "/out/tau_tau-issue-223-restart_tau-223-before-stop/finished_response.wav"
+      },
+      "effective_emotion": null,
+      "failed_gates": [],
+      "request_schema": "tau.voice_render_request.v1",
+      "response_identity": {
+        "keys": [
+          "answer_text_sha256",
+          "applied_controls",
+          "asr_verification",
+          "batch_label",
+          "blessed_qra_cache",
+          "cache_key",
+          "cache_material",
+          "chunks",
+          "completion_cue",
+          "crossfade_ms",
+          "delivery_stage",
+          "engine",
+          "failed_gates",
+          "finished_response_audio",
+          "finished_response_metrics",
+          "ignored_turbo_params",
+          "latency_events",
+          "live",
+          "mocked",
+          "normalized_tone",
+          "ok",
+          "render_plan",
+          "requested_delivery_stage",
+          "requested_tone",
+          "source",
+          "stochasticity",
+          "tag_handling",
+          "tau_voice_render_request",
+          "tone",
+          "total_elapsed_ms",
+          "voice_delivery"
+        ],
+        "sha256": "04b0ee0e807c9141e6fdac91163adad7b0d98bf73ec0600daeadc1cb71e061ff"
+      },
+      "schema": "tau.tui_voice_surface_receipt.v1",
+      "service_engine": "chatterbox_turbo",
+      "service_live": true,
+      "service_mocked": false,
+      "service_ok": true,
+      "status": "PASS",
+      "superseded_turn_id": null,
+      "turn_id": "tau-223-before-stop"
+    },
+    "lineage": {
+      "action": "turn_lineage",
+      "schema": "tau.tui_voice_surface_receipt.v1",
+      "status": "PASS",
+      "turns": [
+        {
+          "audio_identity": {
+            "answer_text_sha256": "eb63790ee89d144da2437251e1072160398011bd8aea2049c7479a9176446fe4",
+            "finished_response_audio": "/out/tau_tau-issue-223-restart_tau-223-before-stop/finished_response.wav"
+          },
+          "control_receipt_count": 3,
+          "conversation_id": "tau-issue-223-restart",
+          "run_id": "tau-223-restart-20260729T023408Z",
+          "status": "PASS",
+          "superseded_by": "tau-223-after-restart",
+          "turn_id": "tau-223-before-stop",
+          "workflow": "Issue 223 restart proof"
+        },
+        {
+          "audio_identity": {
+            "answer_text_sha256": "eb8338b8e9cf76c3eeae0c076a03d24e2181ab106f7010507069e493af89b287",
+            "finished_response_audio": "/out/tau_tau-issue-223-restart_tau-223-after-restart/finished_response.wav"
+          },
+          "control_receipt_count": 0,
+          "conversation_id": "tau-issue-223-restart",
+          "run_id": "tau-223-restart-20260729T023408Z",
+          "status": "PASS",
+          "superseded_by": null,
+          "turn_id": "tau-223-after-restart",
+          "workflow": "Issue 223 restart proof"
+        }
+      ]
+    },
+    "while_stopped": {
+      "degraded_reasons": [
+        "voice_render_request_failed"
+      ],
+      "detail": "voice service request failed: <urlopen error [Errno 111] Connection refused>",
+      "schema": "tau.tui_voice_surface_receipt.v1",
+      "status": "DEGRADED",
+      "voice_enabled": false
+    }
+  },
+  "schema": "tau.issue_223.tui_voice_restart_proof.v1",
+  "shared_service_stop_start": true,
+  "started_at_utc": "20260729T023408Z",
+  "status": "PASS"
+}

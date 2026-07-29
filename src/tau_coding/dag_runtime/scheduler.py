@@ -671,6 +671,16 @@ def run_dag_plan(
                         )
                         break
                     continue
+                if (
+                    run_store is not None
+                    and lease is not None
+                    and (
+                        time.monotonic() >= next_lease_renewal
+                        or _lease_close_to_expiry(lease, lease_ttl_seconds)
+                    )
+                ):
+                    lease = run_store.renew_lease(lease, ttl_seconds=lease_ttl_seconds)
+                    next_lease_renewal = time.monotonic() + lease_renewal_interval
                 completed_batch: list[tuple[str, DagAttemptIdentity, dict[str, Any]]] = []
                 for future in done:
                     node_id = futures.pop(future)
@@ -1721,6 +1731,12 @@ def _cancel_and_collect_futures(
         _emit(event_sink, {"event": "node_cancelled", "node_id": pending_node_id})
     futures.clear()
     return lease
+
+
+def _lease_close_to_expiry(lease: DagRunLease, lease_ttl_seconds: float) -> bool:
+    ttl_ms = max(1, int(lease_ttl_seconds * 1000))
+    renew_margin_ms = max(100, ttl_ms // 2)
+    return lease.expires_at_ms <= int(time.time() * 1000) + renew_margin_ms
 
 
 def _incoming_edges(plan: DagPlan, *, node_ids: set[str]) -> dict[str, tuple[str, ...]]:
