@@ -15,6 +15,15 @@
 
 ## Current Understanding
 
+- 2026-07-29 immutable-goal acceptance readback generated for current main
+  `58507c63c343f0a78ba500e55d8d5f8433691195`. The bundle at
+  `docs/status/immutable-goal-acceptance-20260729T2005Z/` reads back the
+  canonical CI artifact manifest and audit receipt from run `30485773678`:
+  37 artifacts, 10 proof receipts, and 16 screenshots were hash-checked.
+  `scripts/verify-immutable-goal-acceptance-readback.py` returns PASS for the
+  readback, but the immutable goal remains `NOT_MET` because criterion 10 is
+  explicit human acceptance and the automated audit records it as missing.
+
 - 2026-07-28 CI truth restoration and roundtable-ratified beta plan. CI on
   `main` went 42 -> 38 -> 2 -> 1 -> 0 failures across five pushes
   (`89721cec`..`a7ac544c`); Tests and Canonical Tau proofs are both green, and
