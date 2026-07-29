@@ -378,6 +378,10 @@ def acceptance_bundle_cli_command(
     repo: Annotated[Path, typer.Option("--repo")],
     wheel: Annotated[Path, typer.Option("--wheel")],
     out_dir: Annotated[Path, typer.Option("--out-dir")] = Path(".tmp/acceptance-bundle"),
+    receipt: Annotated[
+        list[Path] | None,
+        typer.Option("--receipt", help="Receipt/artifact path to bind into ACCEPTANCE.json."),
+    ] = None,
 ) -> None:
     """Generate the human-acceptance bundle for rungs 1-5 (#217)."""
 
@@ -387,7 +391,12 @@ def acceptance_bundle_cli_command(
     )
 
     try:
-        result = generate_acceptance_bundle(repo=repo, wheel=wheel, output_dir=out_dir)
+        result = generate_acceptance_bundle(
+            repo=repo,
+            wheel=wheel,
+            output_dir=out_dir,
+            receipt_paths=receipt or [],
+        )
     except AcceptanceBundleError as exc:
         raise typer.BadParameter(str(exc)) from exc
     typer.echo(json.dumps({"bundle_dir": str(result.directory),

@@ -1,0 +1,19 @@
+{
+  "accepted": false,
+  "bundle_digest": "sha256:404a46cfe52e4f3c3467063a260eaa108db19b2572b8a630ae40e84110c15ca8",
+  "commit": "5e54cff6a773d56113f96fc0d675b088c27e43b7",
+  "decision": null,
+  "live": true,
+  "mocked": false,
+  "observations_sha256": "sha256:367b33aa2aeb933e321e13bb862de291890934d583d06c66d02a28d114175d73",
+  "receipt_hashes": [
+    "sha256:349fe174ab2ed1e992ed4d7086425ea7b0c70bcab2b988dee9b4e5522092c75d",
+    "sha256:8406a4ee83fa4c3cf4e81ef7fd0aa121c5beb9d9a41ef31a1458d4ae875e8382",
+    "sha256:fd343b414680a6688c1fa76caf759e2bbbe385d34f647e42a50bbc87b6703fbd"
+  ],
+  "schema": "tau.acceptance_record.v1",
+  "signature": null,
+  "signed_at": null,
+  "signer": null,
+  "wheel_sha256": "sha256:f923748f0d419adec8d707dc2cb0382b1d91e6ab498d3859d98249e291648f7e"
+}

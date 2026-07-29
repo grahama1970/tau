@@ -1,0 +1,22 @@
+{
+  "bound_files": {
+    "ACCEPTANCE.json": "sha256:cdabded3d1c7d006f08d807b36b4e6707e195c3291f0ecf8d490223f3f088a24",
+    "OBSERVATIONS.json": "sha256:367b33aa2aeb933e321e13bb862de291890934d583d06c66d02a28d114175d73",
+    "WALKTHROUGH.md": "sha256:d73f1ebffc7d8158831c6fc0d9b6ec80c30ce57f01801007e0385f3c062fc042",
+    "tau-0.1.0-py3-none-any.whl": "sha256:f923748f0d419adec8d707dc2cb0382b1d91e6ab498d3859d98249e291648f7e",
+    "verify_bundle.sh": "sha256:39e02a4d6e32a80238d809b0cd34e9e354eb4604d4261373a2a52163cdcad8c5"
+  },
+  "bundle_digest": "sha256:404a46cfe52e4f3c3467063a260eaa108db19b2572b8a630ae40e84110c15ca8",
+  "commit": "5e54cff6a773d56113f96fc0d675b088c27e43b7",
+  "retained_wheel": "tau-0.1.0-py3-none-any.whl",
+  "rungs": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "schema": "tau.acceptance_bundle.v1",
+  "source_wheel": "/tmp/tau-issue221-wheel-20260729T030743Z/tau-0.1.0-py3-none-any.whl",
+  "wheel_sha256": "sha256:f923748f0d419adec8d707dc2cb0382b1d91e6ab498d3859d98249e291648f7e"
+}
