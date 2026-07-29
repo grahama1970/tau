@@ -56,7 +56,7 @@ BROWSER_REQUIRED_CHECKS = {
     "readiness_positive_browser": (
         "workflow_title_visible",
         "goal_summary_visible",
-        "inspect_running_observed",
+        "inspect_progress_observed",
         "validate_running_observed",
         "publish_running_observed",
         "publish_accepted_observed",
