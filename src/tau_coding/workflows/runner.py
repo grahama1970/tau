@@ -9,6 +9,7 @@ import threading
 import time
 import webbrowser
 from collections.abc import Callable, Mapping
+from contextlib import suppress
 from pathlib import Path
 from typing import Any
 
@@ -237,6 +238,25 @@ def _approve_transaction(
     approval_packet: Path | None,
 ) -> dict[str, object]:
     gate_path = run_dir / "transactions" / transaction_node_id / "approval-gate-receipt.json"
+    if not gate_path.is_file():
+        with suppress(Exception):
+            resume_packaged_workflow(run_dir=run_dir)
+    if not gate_path.is_file():
+        return _write_workflow_approval_receipt(
+            run_dir=run_dir,
+            workflow_id=workflow_id,
+            status="BLOCKED",
+            ok=False,
+            approval_packet_path=approval_packet.expanduser().resolve()
+            if approval_packet is not None
+            else None,
+            target={
+                "id": f"{workflow_id}:{transaction_node_id}:approval-gate-missing",
+                "workflow_id": workflow_id,
+                "node_id": transaction_node_id,
+            },
+            errors=["approval_gate_receipt_missing"],
+        )
     gate = _read_object(gate_path, "approval gate receipt")
     target = gate.get("expected_target")
     if not isinstance(target, dict):
