@@ -1,6 +1,82 @@
 {
+  "canonicality": "CANONICAL",
   "capabilities": {
     "all_present": true,
+    "digest": "sha256:986071954f7b16f4ee8ef51821dd54ebf176be44a2048aa7642f9ee34ba4371a",
+    "inputs": [
+      {
+        "path": "src/tau_coding/dag_runtime/__init__.py",
+        "sha256": "sha256:912fe6aba55d4a275afd5bd21b7302068c42228ac817aa67bee5036dc4082e06"
+      },
+      {
+        "path": "src/tau_coding/dag_runtime/admission.py",
+        "sha256": "sha256:89cf7fce68622b896411b59a0a22adb4d244c6c391c2ccfc0bec7662affcc1c0"
+      },
+      {
+        "path": "src/tau_coding/dag_runtime/compiler.py",
+        "sha256": "sha256:ba1246e0747f5e7df23a34440db55c05016a6fee421c76be2057fbe9c7a9ad7e"
+      },
+      {
+        "path": "src/tau_coding/dag_runtime/correction.py",
+        "sha256": "sha256:d3694e359468edaf0f123feb853b8c406a9ab8a45f774dc003ac30cae4b0afd7"
+      },
+      {
+        "path": "src/tau_coding/dag_runtime/effects.py",
+        "sha256": "sha256:dbfc3a8a710642b91c0465173f22493fea14c5649350da4bbda4e60c2f6d512b"
+      },
+      {
+        "path": "src/tau_coding/dag_runtime/memory_projection.py",
+        "sha256": "sha256:3d1dfb047f068bf2e071ce710a934894056d0b3b3da7638782fc6130949d8921"
+      },
+      {
+        "path": "src/tau_coding/dag_runtime/model.py",
+        "sha256": "sha256:233030ac2b995f5d3646c689a6fecacfae926585014e075b9c36c7faccba5029"
+      },
+      {
+        "path": "src/tau_coding/dag_runtime/project_transition.py",
+        "sha256": "sha256:6d718367866668f3fa75c34a474d7fa741d410b71a68ae7dcdb073fe8cb6cd0f"
+      },
+      {
+        "path": "src/tau_coding/dag_runtime/reconciliation.py",
+        "sha256": "sha256:2a2bb539a5fc7cd966d79efcccbefd735d8a4fe761de68f64005d8ba487a11ff"
+      },
+      {
+        "path": "src/tau_coding/dag_runtime/replay.py",
+        "sha256": "sha256:545adc20bc8e2ff351137d7ac70e25dd88b492765ff5c96e74b32ca821669f9b"
+      },
+      {
+        "path": "src/tau_coding/dag_runtime/resource_leases.py",
+        "sha256": "sha256:0b0aef0507c5c9ed94e87f1d7f2803fee2a2ac3a1c1ed2d729a6ea8e8f7fc6d9"
+      },
+      {
+        "path": "src/tau_coding/dag_runtime/retention.py",
+        "sha256": "sha256:3fc3bdf8a177115542655bf6e06c8d8f0639e571c8646f991dc024f4e08405fc"
+      },
+      {
+        "path": "src/tau_coding/dag_runtime/run_store.py",
+        "sha256": "sha256:c1aa371080118022b7b90be8165834e50eb51e314679e6e48b1dc97747dc97f8"
+      },
+      {
+        "path": "src/tau_coding/dag_runtime/scheduler.py",
+        "sha256": "sha256:ee8f6c961e71cb038580c99cecd21204412d7ce0bfaa500687aad5196f8d9cb6"
+      },
+      {
+        "path": "src/tau_coding/dag_runtime/subprocess_control.py",
+        "sha256": "sha256:c884e04024edbd7b8be7da60f590fb574da7cd3ea89ec41d20b38892c0f20b6d"
+      },
+      {
+        "path": "src/tau_coding/dag_runtime/system_settlement.py",
+        "sha256": "sha256:e78e851b3af5acc824638b02715bba68002a018269049bfc7191d31ecd79e0e8"
+      },
+      {
+        "path": "src/tau_coding/dag_runtime/transition.py",
+        "sha256": "sha256:73971af30ba8baa7ba832a24f5e540a21d7e7a412ecff5cbb5bbeac829b41bae"
+      },
+      {
+        "path": "src/tau_coding/dag_runtime/write_intent.py",
+        "sha256": "sha256:a54e0f49adc5a2e42eb51351fe0c970a1648b921a19d20be614e925f3a484801"
+      }
+    ],
     "present": {
       "accepted_effect_ledger": true,
       "memory_projection_outbox": true,
@@ -10,11 +86,13 @@
     },
     "source": "src/tau_coding/dag_runtime/"
   },
-  "generated_at": "2026-07-29T00:24:22.523651+00:00",
-  "generator_version": "1.0.0",
+  "generated_at": "2026-07-29T14:06:10.218482+00:00",
+  "generated_from_clean_tree": true,
+  "generated_from_commit": "ae06e112bb0bf1dd4eda9ed8ebf7b74018fc13a2",
+  "generator_version": "1.1.0",
   "git": {
-    "clean_tree": false,
-    "commit": "6e649445c61e087222f803ac548eedf0240a2d5e"
+    "clean_tree": true,
+    "commit": "ae06e112bb0bf1dd4eda9ed8ebf7b74018fc13a2"
   },
   "github": {
     "branch_protection": {
@@ -320,15 +398,54 @@
       }
     ]
   },
+  "rendered_status_digest": "sha256:59304a7fbf47bd9972d4c8c6f3ea7b7772bbf5f654ec0f4f40f2d38f8310d46d",
   "schema": "tau.project_status.v1",
-  "semantic_content_digest": "sha256:2fbf33e4d80fcfa040b7a4eded81142866adebdfc71d8bc8c7fd42cdcee552a0",
+  "semantic_content_digest": "sha256:46bc19bbbe4b1194fe0de08bb7c846e86e5acd1c329b70e803c8a25288f51ab5",
   "source_digests": {
     "GOAL.md": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
     "acceptance_receipt": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab",
+    "dag_runtime_capabilities": "sha256:986071954f7b16f4ee8ef51821dd54ebf176be44a2048aa7642f9ee34ba4371a",
     "github_snapshot": "sha256:ea8408c06533a1111b58ecb56106f8934392dec730fc867a04bff2ac88d3c61a",
+    "project_status_generator": "sha256:1dd01596f41ead7950fffd53afb2101a327555d56427e904b09b211c69ecde66",
     "proof_index": "sha256:43d2629307281346ecf8040069e52dd189826d98d0c28ed97b57fe54a5700833",
-    "pyproject.toml": "sha256:846cfd5812f312395f363db523bf485487f6d72a651644098b92f34565dccb55"
+    "pyproject.toml": "sha256:846cfd5812f312395f363db523bf485487f6d72a651644098b92f34565dccb55",
+    "workflow_catalogue": "sha256:9c442bbf61f4e4f38e7953c40562e46b1ceab717dad5b9a60307c8bbfdaf55bc"
   },
+  "source_input_digest": "sha256:94f85807a441dac91e795e77606a5c8f9fa9795f6a861bea5a52e4254da70076",
+  "source_inputs": [
+    {
+      "name": "GOAL.md",
+      "sha256": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e"
+    },
+    {
+      "name": "pyproject.toml",
+      "sha256": "sha256:846cfd5812f312395f363db523bf485487f6d72a651644098b92f34565dccb55"
+    },
+    {
+      "name": "proof_index",
+      "sha256": "sha256:43d2629307281346ecf8040069e52dd189826d98d0c28ed97b57fe54a5700833"
+    },
+    {
+      "name": "acceptance_receipt",
+      "sha256": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab"
+    },
+    {
+      "name": "workflow_catalogue",
+      "sha256": "sha256:9c442bbf61f4e4f38e7953c40562e46b1ceab717dad5b9a60307c8bbfdaf55bc"
+    },
+    {
+      "name": "dag_runtime_capabilities",
+      "sha256": "sha256:986071954f7b16f4ee8ef51821dd54ebf176be44a2048aa7642f9ee34ba4371a"
+    },
+    {
+      "name": "project_status_generator",
+      "sha256": "sha256:1dd01596f41ead7950fffd53afb2101a327555d56427e904b09b211c69ecde66"
+    },
+    {
+      "name": "github_snapshot",
+      "sha256": "sha256:ea8408c06533a1111b58ecb56106f8934392dec730fc867a04bff2ac88d3c61a"
+    }
+  ],
   "workflows": {
     "all_present": true,
     "available": {
@@ -338,12 +455,35 @@
       "repository-readiness": true,
       "tau-operator-reference": true
     },
+    "digest": "sha256:9c442bbf61f4e4f38e7953c40562e46b1ceab717dad5b9a60307c8bbfdaf55bc",
     "expected": [
       "repository-readiness",
       "tau-operator-reference",
       "repository-evidence-map",
       "approved-release-bundle",
       "durable-repository-qualification"
+    ],
+    "inputs": [
+      {
+        "path": "src/tau_coding/workflows/definitions/approved-release-bundle.json",
+        "sha256": "sha256:b90f16b3ffe9cae06df54ac8511d59d7f2d86c1512050571fb3ddd5289d150d2"
+      },
+      {
+        "path": "src/tau_coding/workflows/definitions/durable-repository-qualification.json",
+        "sha256": "sha256:4404db196faca112de8055612b65b2975948ba5cf2fabbeac6b1e09e14f25b2d"
+      },
+      {
+        "path": "src/tau_coding/workflows/definitions/repository-evidence-map.json",
+        "sha256": "sha256:b791be16dbee77c5bc998be3207c93564b05d2f6b52e833138726bb0ece9eb3e"
+      },
+      {
+        "path": "src/tau_coding/workflows/definitions/repository-readiness.json",
+        "sha256": "sha256:6c37daf034d1b8490d06c56c309133e8ad7d7e76e83e61dd6dd97383c146eaf3"
+      },
+      {
+        "path": "src/tau_coding/workflows/definitions/tau-operator-reference.json",
+        "sha256": "sha256:dd3a43b6e6526fc2995bc3f003f66b7cd4e8c793410b1606d343b9cd07da93ec"
+      }
     ],
     "source": "src/tau_coding/workflows/definitions/"
   }
