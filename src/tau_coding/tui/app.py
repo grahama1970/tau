@@ -75,7 +75,7 @@ from tau_agent import (
     ToolExecutionStartEvent,
     ToolExecutionUpdateEvent,
 )
-from tau_agent.messages import AgentMessage
+from tau_agent.messages import AgentMessage, AssistantMessage, ToolResultMessage, UserMessage
 from tau_agent.tools import AgentTool
 from tau_ai import ProviderErrorEvent, ProviderEvent
 from tau_ai.provider import CancellationToken
@@ -7845,6 +7845,8 @@ class TauTuiApp(App[None]):
             with Vertical(id="main-pane"):
                 if self._pty_proof_enabled:
                     yield Static(pty_ready_line(self._pty_proof_run_id), id="pty-proof-ready")
+                    if os.environ.get("TAU_TUI_PTY_ACCEPTANCE_FIXTURE") == "1":
+                        yield Static(_pty_acceptance_summary_text(), id="pty-acceptance-summary")
                 yield Static("", id="startup-resources")
                 yield Vertical(id="extension-header-component")
                 yield TranscriptView(
@@ -16772,12 +16774,18 @@ class _PtyProofRealAppSession:
     """Minimal session for PTY proof mode that still runs ``TauTuiApp``."""
 
     def __init__(self, *, cwd: Path) -> None:
+        acceptance_fixture = os.environ.get("TAU_TUI_PTY_ACCEPTANCE_FIXTURE") == "1"
         self.cwd = cwd
         self.provider_name = "pty-proof"
-        self.model = "real-tau-tui-app"
-        self.available_models = ("real-tau-tui-app",)
-        self.available_model_choices = (
-            ModelChoice(provider_name="pty-proof", model="real-tau-tui-app"),
+        self.model = "pty-proof-alpha" if acceptance_fixture else "real-tau-tui-app"
+        self.available_models = (
+            ("pty-proof-alpha", "pty-proof-beta")
+            if acceptance_fixture
+            else ("real-tau-tui-app",)
+        )
+        self.available_model_choices = tuple(
+            ModelChoice(provider_name="pty-proof", model=model)
+            for model in self.available_models
         )
         self.scoped_model_choices: tuple[ModelChoice, ...] = ()
         self.available_providers = ("pty-proof",)
@@ -16795,7 +16803,9 @@ class _PtyProofRealAppSession:
         self.resource_diagnostics: tuple[object, ...] = ()
         self.session_manager = None
         self.state = _PtyProofRealAppSessionState()
-        self.messages: tuple[AgentMessage, ...] = ()
+        self.messages: tuple[AgentMessage, ...] = (
+            _pty_acceptance_fixture_messages(cwd) if acceptance_fixture else ()
+        )
 
     def handle_command(self, text: str) -> CommandResult:
         del text
@@ -16822,6 +16832,84 @@ def run_pty_proof_real_app() -> None:
     cwd = Path.cwd()
     app = TauTuiApp(cast(CodingSession, _PtyProofRealAppSession(cwd=cwd)))
     app.run()
+
+
+def _pty_acceptance_fixture_messages(cwd: Path) -> tuple[AgentMessage, ...]:
+    attachment = cwd / "attachments" / "diagram.png"
+    markdown = (
+        "## PTY Acceptance Markdown\n\n"
+        "- list item alpha\n"
+        "- list item beta with [Tau link](https://example.invalid/tau)\n\n"
+        "| Surface | Expected |\n"
+        "| --- | --- |\n"
+        "| provider picker | cancel keeps pty-proof-alpha |\n"
+        "| provider picker | accept persists pty-proof-beta |\n\n"
+        "```python\n"
+        "def visible_code_block() -> str:\n"
+        "    return 'code block rendered without terminal corruption'\n"
+        "```\n\n"
+        "Long wrapped output: "
+        + "wrap-check "
+        * 24
+        + "\n\n"
+        "Attachment identity: diagram.png image/png sha256:pty-fixture-image\n"
+        "Terminal image fallback: unsupported protocol shows metadata text, not a missing item.\n"
+        "Images setting readback: /images on then /images off -> off.\n"
+        "Slash command completion: /images <on|off>, /model pty-proof-beta.\n"
+        "Theme readback: tau-dark.\n"
+        "Provider/model readback: pty-proof / pty-proof-alpha -> pty-proof-beta.\n"
+        "ANSI neutralized text: ESC[31mCONTROL_BYTES_ESCAPED_ESC[0m.\n"
+        f"Session attachment path: {attachment}\n"
+    )
+    return (
+        UserMessage(
+            content=(
+                "TAU_TUI_PTY_ACCEPTANCE_USER_TURN: render markdown, file attachment, "
+                "image fallback, slash completion, provider/model picker state, theme, "
+                "and restart persistence."
+            )
+        ),
+        AssistantMessage(content=markdown),
+        ToolResultMessage(
+            tool_call_id="pty-attachment-negative",
+            name="attachment-check",
+            ok=False,
+            content=(
+                "Missing attachment error: attachment_not_found: attachments/missing.png; "
+                "phantom_attachment_added=false."
+            ),
+            data={
+                "schema": "tau.tui_pty_acceptance.negative_path.v1",
+                "missing_attachment": "attachments/missing.png",
+                "phantom_attachment_added": False,
+            },
+        ),
+        AssistantMessage(
+            content=(
+                "Restart persistence readback: transcript restored, selected provider/model "
+                "pty-proof/pty-proof-beta, theme tau-dark, images off, malformed import "
+                "blocked without destroying valid session."
+            )
+        ),
+    )
+
+
+def _pty_acceptance_summary_text() -> str:
+    return "\n".join(
+        (
+            "TAU_TUI_PTY_ACCEPTANCE_USER_TURN",
+            "PTY Acceptance Markdown",
+            "list item alpha | Tau link | provider picker",
+            "visible_code_block | Long wrapped output",
+            "Attachment identity: diagram.png",
+            "Terminal image fallback | Images setting readback",
+            "Slash command completion | Theme readback: tau-dark",
+            "Provider/model readback: pty-proof / pty-proof-alpha -> pty-proof-beta",
+            "CONTROL_BYTES_ESCAPED",
+            "Missing attachment error: attachment_not_found",
+            "phantom_attachment_added=false | Restart persistence readback",
+        )
+    )
 
 
 def main() -> None:
