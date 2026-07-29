@@ -40,6 +40,7 @@ def test_bundle_has_all_required_artifacts(tmp_path: Path) -> None:
     for name in ("BUILD_MANIFEST.json", "WALKTHROUGH.md", "OBSERVATIONS.json",
                  "DEFECT_LOG.md", "verify_bundle.sh", "ACCEPTANCE.json"):
         assert (out / name).is_file(), name
+    assert (out / wheel.name).is_file()
 
 
 def test_observations_are_all_unchecked_with_two_negative_paths(tmp_path: Path) -> None:
@@ -48,6 +49,10 @@ def test_observations_are_all_unchecked_with_two_negative_paths(tmp_path: Path) 
     generate_acceptance_bundle(repo=repo, wheel=wheel, output_dir=out)
     obs = json.loads((out / "OBSERVATIONS.json").read_text())
     assert all(o["checked"] is False for o in obs)
+    assert all(o["observed"] is None for o in obs)
+    assert all(o["run_id"] is None for o in obs)
+    assert all(o["receipt_or_artifact_path"] is None for o in obs)
+    assert all(o["defect_id"] is None for o in obs)
     negatives = [o for o in obs if o["kind"] == "negative"]
     assert len(negatives) == 2
 
@@ -59,7 +64,29 @@ def test_acceptance_record_is_unsigned(tmp_path: Path) -> None:
     rec = json.loads((out / "ACCEPTANCE.json").read_text())
     assert rec["signature"] is None
     assert rec["decision"] is None
+    assert rec["accepted"] is False
+    assert rec["mocked"] is False
+    assert rec["live"] is True
     assert rec["bundle_digest"].startswith("sha256:")
+
+
+def test_acceptance_record_binds_supplied_receipts(tmp_path: Path) -> None:
+    repo, wheel = _clean_repo(tmp_path), _wheel(tmp_path)
+    receipt = tmp_path / "receipt.json"
+    receipt.write_text('{"status":"PASS"}\n')
+    out = tmp_path / "bundle"
+
+    generate_acceptance_bundle(
+        repo=repo,
+        wheel=wheel,
+        output_dir=out,
+        receipt_paths=[receipt],
+    )
+
+    rec = json.loads((out / "ACCEPTANCE.json").read_text())
+    assert rec["receipt_hashes"] == [
+        "sha256:423b0a945a73ecb5ab748c7c796af9328a4639bf6921af982e71ad00924f46e9"
+    ]
 
 
 def test_dirty_tree_is_refused(tmp_path: Path) -> None:
@@ -77,6 +104,7 @@ def test_same_commit_is_byte_identical(tmp_path: Path) -> None:
     assert r1.bundle_digest == r2.bundle_digest
     for name in ("BUILD_MANIFEST.json", "WALKTHROUGH.md", "ACCEPTANCE.json"):
         assert (a / name).read_bytes() == (b / name).read_bytes()
+    assert (a / wheel.name).read_bytes() == (b / wheel.name).read_bytes()
 
 
 def test_verify_bundle_detects_drift(tmp_path: Path) -> None:

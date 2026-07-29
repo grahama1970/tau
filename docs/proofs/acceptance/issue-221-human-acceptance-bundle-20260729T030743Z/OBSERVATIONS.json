@@ -1,0 +1,93 @@
+[
+  {
+    "checked": false,
+    "defect_id": null,
+    "falsifier": "Any node shows green before its receipt file exists on disk. Log as defect; do not tick.",
+    "kind": "positive",
+    "notes": "",
+    "observe": "Terminal prints status PASS; the viewer shows exactly one node reaching green.",
+    "observed": null,
+    "receipt_or_artifact_path": null,
+    "run_id": null,
+    "rung": 1,
+    "screenshot_or_trace": null
+  },
+  {
+    "checked": false,
+    "defect_id": null,
+    "falsifier": "The negative path SUCCEEDS or fails silently instead of the documented visible failure.",
+    "kind": "negative",
+    "notes": "",
+    "observe": "Omit --goal: the command must EXIT NON-ZERO naming --goal as required.",
+    "observed": null,
+    "receipt_or_artifact_path": null,
+    "run_id": null,
+    "rung": 1,
+    "screenshot_or_trace": null
+  },
+  {
+    "checked": false,
+    "defect_id": null,
+    "falsifier": "A later node greens before its predecessor's receipt is admitted.",
+    "kind": "positive",
+    "notes": "",
+    "observe": "The viewer shows a linear chain of >=2 nodes advancing in order; status PASS.",
+    "observed": null,
+    "receipt_or_artifact_path": null,
+    "run_id": null,
+    "rung": 2,
+    "screenshot_or_trace": null
+  },
+  {
+    "checked": false,
+    "defect_id": null,
+    "falsifier": "The join greens while a sibling receipt is still absent.",
+    "kind": "positive",
+    "notes": "",
+    "observe": "The viewer shows a diamond: parallel nodes fan into one join; status PASS.",
+    "observed": null,
+    "receipt_or_artifact_path": null,
+    "run_id": null,
+    "rung": 3,
+    "screenshot_or_trace": null
+  },
+  {
+    "checked": false,
+    "defect_id": null,
+    "falsifier": "The publish path is written before you approve.",
+    "kind": "positive",
+    "notes": "",
+    "observe": "The run HALTS at an approval gate showing the exact prompt; approving completes it.",
+    "observed": null,
+    "receipt_or_artifact_path": null,
+    "run_id": null,
+    "rung": 4,
+    "screenshot_or_trace": null
+  },
+  {
+    "checked": false,
+    "defect_id": null,
+    "falsifier": "The negative path SUCCEEDS or fails silently instead of the documented visible failure.",
+    "kind": "negative",
+    "notes": "",
+    "observe": "Type 'no' (or decline) at the approval gate: the run must ABORT with nothing published.",
+    "observed": null,
+    "receipt_or_artifact_path": null,
+    "run_id": null,
+    "rung": 4,
+    "screenshot_or_trace": null
+  },
+  {
+    "checked": false,
+    "defect_id": null,
+    "falsifier": "The blocked run silently reports PASS, or resume restarts from step 0, or the publish effect count doubles after repair.",
+    "kind": "positive",
+    "notes": "",
+    "observe": "The run BLOCKS at a deliberate failure; you watch it in the ALREADY-OPEN viewer, run --repair --resume, the resume ENTERS AT THE BLOCKED NODE (not step 0), and the published effect count stays 1 (not doubled).",
+    "observed": null,
+    "receipt_or_artifact_path": null,
+    "run_id": null,
+    "rung": 5,
+    "screenshot_or_trace": null
+  }
+]

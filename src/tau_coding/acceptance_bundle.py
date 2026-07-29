@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -130,6 +131,12 @@ def _observations() -> list[dict[str, object]]:
             "rung": spec["rung"], "kind": "positive",
             "observe": spec["observe"], "falsifier": spec["falsifier"],
             "checked": False,
+            "observed": None,
+            "run_id": None,
+            "receipt_or_artifact_path": None,
+            "screenshot_or_trace": None,
+            "notes": "",
+            "defect_id": None,
         })
         if spec["negative"]:
             rows.append({
@@ -138,6 +145,12 @@ def _observations() -> list[dict[str, object]]:
                 "falsifier": "The negative path SUCCEEDS or fails silently instead of the "
                              "documented visible failure.",
                 "checked": False,
+                "observed": None,
+                "run_id": None,
+                "receipt_or_artifact_path": None,
+                "screenshot_or_trace": None,
+                "notes": "",
+                "defect_id": None,
             })
     return rows
 
@@ -171,8 +184,9 @@ def _walkthrough_markdown() -> str:
         "",
         "    ssh-keygen -Y sign -n tau-acceptance -f ~/.ssh/id_ed25519 ACCEPTANCE.json",
         "",
-        "Then close #180 citing the record path, its bundle_digest, and the",
-        "`ssh-keygen -Y verify` output. #72 closes separately on hardening evidence.",
+        "Then update #221 with the retained record path, its bundle_digest,",
+        "and the `ssh-keygen -Y verify` output. #180 closes only after parent",
+        "reconciliation confirms all children are closed.",
         "",
     ]
     return "\n".join(lines)
@@ -217,11 +231,14 @@ def generate_acceptance_bundle(
         raise AcceptanceBundleError(f"wheel not found: {wheel}")
     commit = _git(repo, "rev-parse", "HEAD")
     output_dir.mkdir(parents=True, exist_ok=True)
+    retained_wheel = output_dir / wheel.name
+    if wheel.resolve() != retained_wheel.resolve():
+        shutil.copy2(wheel, retained_wheel)
 
     walkthrough = _walkthrough_markdown()
     observations = _observations()
     observations_text = json.dumps(observations, indent=2, sort_keys=True) + "\n"
-    wheel_sha = _sha256_file(wheel)
+    wheel_sha = _sha256_file(retained_wheel)
     receipt_hashes = sorted(_sha256_file(p) for p in (receipt_paths or []))
 
     bundle_digest = _sha256_text(
@@ -245,6 +262,9 @@ def generate_acceptance_bundle(
         "receipt_hashes": receipt_hashes,
         "observations_sha256": _sha256_text(observations_text),
         "bundle_digest": bundle_digest,
+        "accepted": False,
+        "mocked": False,
+        "live": True,
         "decision": None,
         "signature": None,
         "signer": None,
@@ -255,12 +275,19 @@ def generate_acceptance_bundle(
     )
     bound = {
         name: _sha256_file(output_dir / name)
-        for name in ("WALKTHROUGH.md", "OBSERVATIONS.json", "verify_bundle.sh", "ACCEPTANCE.json")
+        for name in (
+            "WALKTHROUGH.md",
+            "OBSERVATIONS.json",
+            "verify_bundle.sh",
+            "ACCEPTANCE.json",
+            retained_wheel.name,
+        )
     }
     manifest = {
         "schema": ACCEPTANCE_BUNDLE_SCHEMA,
         "commit": commit,
-        "wheel": str(wheel),
+        "source_wheel": str(wheel),
+        "retained_wheel": retained_wheel.name,
         "wheel_sha256": wheel_sha,
         "bundle_digest": bundle_digest,
         "bound_files": bound,
