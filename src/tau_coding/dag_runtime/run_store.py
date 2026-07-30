@@ -733,13 +733,35 @@ class SqliteDagRunReader:
         ).fetchone()
         return int(row[0])
 
-    def list_admissions(self, run_id: str) -> list[dict[str, Any]]:
-        rows = self._connection.execute(
-            """SELECT * FROM receipt_admissions WHERE run_id = ?
-               ORDER BY node_id, attempt_id, receipt_kind""",
-            (run_id,),
-        ).fetchall()
+    def list_admissions(
+        self,
+        run_id: str,
+        *,
+        receipt_kind: str | None = None,
+    ) -> list[dict[str, Any]]:
+        if receipt_kind is None:
+            rows = self._connection.execute(
+                """SELECT * FROM receipt_admissions WHERE run_id = ?
+                   ORDER BY node_id, attempt_id, receipt_kind""",
+                (run_id,),
+            ).fetchall()
+        else:
+            rows = self._connection.execute(
+                """SELECT * FROM receipt_admissions
+                   WHERE run_id = ? AND receipt_kind = ?
+                   ORDER BY node_id, attempt_id, receipt_kind""",
+                (run_id, receipt_kind),
+            ).fetchall()
         return [dict(row) for row in rows]
+
+    def load_admission(self, run_id: str, admission_id: str) -> dict[str, Any]:
+        row = self._connection.execute(
+            "SELECT * FROM receipt_admissions WHERE run_id = ? AND admission_id = ?",
+            (run_id, admission_id),
+        ).fetchone()
+        if row is None:
+            raise DagRunStoreError("dag_admission_missing", admission_id)
+        return dict(row)
 
     def review_scope_snapshot(
         self,
@@ -1683,13 +1705,35 @@ class SqliteDagRunStore:
                 "duplicate": False,
             }
 
-    def list_admissions(self, run_id: str) -> list[dict[str, Any]]:
-        rows = self._connection.execute(
-            """SELECT * FROM receipt_admissions WHERE run_id = ?
-               ORDER BY node_id, attempt_id, receipt_kind""",
-            (run_id,),
-        ).fetchall()
+    def list_admissions(
+        self,
+        run_id: str,
+        *,
+        receipt_kind: str | None = None,
+    ) -> list[dict[str, Any]]:
+        if receipt_kind is None:
+            rows = self._connection.execute(
+                """SELECT * FROM receipt_admissions WHERE run_id = ?
+                   ORDER BY node_id, attempt_id, receipt_kind""",
+                (run_id,),
+            ).fetchall()
+        else:
+            rows = self._connection.execute(
+                """SELECT * FROM receipt_admissions
+                   WHERE run_id = ? AND receipt_kind = ?
+                   ORDER BY node_id, attempt_id, receipt_kind""",
+                (run_id, receipt_kind),
+            ).fetchall()
         return [dict(row) for row in rows]
+
+    def load_admission(self, run_id: str, admission_id: str) -> dict[str, Any]:
+        row = self._connection.execute(
+            "SELECT * FROM receipt_admissions WHERE run_id = ? AND admission_id = ?",
+            (run_id, admission_id),
+        ).fetchone()
+        if row is None:
+            raise DagRunStoreError("dag_admission_missing", admission_id)
+        return dict(row)
 
     def review_scope_snapshot(
         self,
