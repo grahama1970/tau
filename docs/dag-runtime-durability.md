@@ -45,6 +45,21 @@ while cancelled parallel workers finish. Lease epochs fence stale scheduler
 owners. Direct store takeover must be explicit; the generic and project DAG
 wrappers request takeover only after the previous lease has expired.
 
+## Node completion boundaries
+
+When a node declares `tau.node_completion_boundary.v1` in `required_evidence`,
+the scheduler validates a typed `node_completion_boundary` object before staging
+the terminal result. The boundary must match the run's goal hash, plan hash,
+node id, and attempt id. A missing, malformed, stale, or policy-incomplete
+boundary converts a PASS claim into a blocked node result.
+
+Accepted boundaries are written through the same durable JSON path used for
+admission-grade receipts, then inserted into `receipt_admissions` with
+`receipt_kind = tau.node_completion_boundary.v1`. The run store exposes
+`list_admissions(..., receipt_kind=...)` and `load_admission(...)` so downstream
+bindings and DAG viewers can retrieve the boundary without scraping arbitrary
+worker output.
+
 A committed transition containing a run block remains authoritative if the
 process stops before writing the terminal run outcome. Replay restores that
 block and cannot convert it into a passing run. Committed transition events are

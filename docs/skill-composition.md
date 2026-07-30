@@ -221,6 +221,42 @@ not satisfy gates that supply a current scope.
 This still does not prove the reviewer is correct, the code is semantically
 correct, or reviewer consensus is proof.
 
+## Node Completion Boundary
+
+High-assurance DAG nodes can opt into a typed node-level completion boundary by
+including `tau.node_completion_boundary.v1` in the node `required_evidence`.
+When a node opts in, the scheduler requires the node result to carry
+`node_completion_boundary` before a PASS result can settle.
+
+The boundary binds to the scheduler-owned identity:
+
+- `goal_hash`
+- `plan_sha256`
+- `node_id`
+- `attempt_id`
+
+It also carries typed item lists for `checked_scope`, `not_checked`,
+`assumptions`, `known_unknowns`, `evidence_gaps`, `recommended_followups`,
+`proves`, and `does_not_prove`. Each item must have a stable `id` and
+`statement`; optional `evidence_refs` can cite admitted artifacts by id, path,
+and hash.
+
+Nodes may provide `node_completion_boundary_policy` with schema
+`tau.node_completion_boundary_policy.v1` in the node contract to choose
+`required_sections` and `non_empty_sections`. The scheduler does not infer
+complexity from prose. Missing, malformed, wrong-goal, wrong-plan, wrong-node,
+wrong-attempt, or policy-forbidden empty sections block the node with stable
+`node_completion_boundary_*` alert codes.
+
+When validation passes, Tau writes the canonical boundary to
+`node-completion-boundaries/<attempt_id>.json` beside the DAG run store and
+admits it as receipt kind `tau.node_completion_boundary.v1`. Downstream code and
+the viewer can retrieve it from the admission table by `receipt_kind` or
+`admission_id`.
+
+The boundary is not proof of completeness or correctness. It is an admissible,
+hash-bound declaration of what the node claims it checked and did not check.
+
 ## Evidence-Case Adapter
 
 The evidence-case adapter ingests `create_evidence_case.result.v1`, writes a

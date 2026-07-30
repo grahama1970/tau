@@ -15,6 +15,7 @@ from threading import Event
 from typing import Any
 
 from tau_coding.course_correction import write_course_correction_receipt
+from tau_coding.dag_runtime.admission import write_durable_json
 from tau_coding.dag_runtime.correction import CorrectionStateProjection
 from tau_coding.dag_runtime.model import DagPlan, DagPlanNode, canonical_sha256
 from tau_coding.dag_runtime.replay import apply_transition_state, replay_dag_run
@@ -40,6 +41,11 @@ from tau_coding.dag_runtime.transition import (
     transition_batch_to_payload,
 )
 from tau_coding.diagnostics import tau_logger
+from tau_coding.node_completion_boundary import (
+    NODE_COMPLETION_BOUNDARY_SCHEMA,
+    requires_node_completion_boundary,
+    validate_node_completion_boundary,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -713,6 +719,14 @@ def run_dag_plan(
                 batch_blocked = False
                 for node_id, identity, result in sorted(completed_batch):
                     attempt = attempt_counts[node_id]
+                    result = _enforce_node_completion_boundary(
+                        plan=plan,
+                        node=nodes[node_id],
+                        identity=identity,
+                        result=result,
+                        run_store=run_store,
+                        lease=lease,
+                    )
                     try:
                         validation = _validate_attempt_result(node_id=node_id, result=result)
                     except RuntimeError as exc:
@@ -1543,6 +1557,96 @@ def _validate_attempt_result(*, node_id: str, result: Mapping[str, Any]) -> dict
         "node_id": node_id,
         "result_sha256": canonical_sha256(dict(result)),
     }
+
+
+def _enforce_node_completion_boundary(
+    *,
+    plan: DagPlan,
+    node: DagPlanNode,
+    identity: DagAttemptIdentity,
+    result: Mapping[str, Any],
+    run_store: SqliteDagRunStore | None,
+    lease: DagRunLease | None,
+) -> dict[str, Any]:
+    if not requires_node_completion_boundary(node.required_evidence):
+        return dict(result)
+    source_extensions = node.source_extensions.to_value()
+    policy = (
+        source_extensions.get("node_completion_boundary_policy")
+        if isinstance(source_extensions, dict)
+        else None
+    )
+    validation = validate_node_completion_boundary(
+        result.get("node_completion_boundary"),
+        expected_goal_hash=plan.runtime_goal_hash,
+        expected_plan_sha256=plan.plan_sha256,
+        expected_node_id=node.node_id,
+        expected_attempt_id=identity.attempt_id,
+        policy=policy,
+    )
+    updated = {
+        **dict(result),
+        "node_completion_boundary_validation": validation.to_payload(),
+    }
+    if not validation.ok or validation.boundary is None:
+        return _boundary_blocked_result(updated, validation.alert_codes, validation.errors)
+    updated["node_completion_boundary"] = validation.boundary
+    updated["node_completion_boundary_sha256"] = validation.boundary_sha256
+    if run_store is None or lease is None:
+        return _boundary_blocked_result(
+            updated,
+            ("node_completion_boundary_admission_unavailable",),
+            ("node completion boundary requires a durable run store for admission",),
+        )
+
+    boundary_path = (
+        run_store.path.parent
+        / "node-completion-boundaries"
+        / f"{identity.attempt_id}.json"
+    )
+    try:
+        write_result = write_durable_json(boundary_path, validation.boundary)
+        admission = run_store.admit_receipt(
+            lease,
+            identity.attempt_id,
+            receipt_kind=NODE_COMPLETION_BOUNDARY_SCHEMA,
+            sha256=write_result.sha256,
+            path=str(write_result.path),
+            size_bytes=write_result.size_bytes,
+        )
+    except (OSError, RuntimeError, ValueError, DagRunStoreError) as exc:
+        return _boundary_blocked_result(
+            updated,
+            ("node_completion_boundary_admission_failed",),
+            (str(exc),),
+        )
+    updated["node_completion_boundary_path"] = str(write_result.path)
+    updated["node_completion_boundary_sha256"] = write_result.sha256
+    updated["node_completion_boundary_admission"] = admission
+    return updated
+
+
+def _boundary_blocked_result(
+    result: Mapping[str, Any],
+    alert_codes: tuple[str, ...],
+    errors: tuple[str, ...],
+) -> dict[str, Any]:
+    combined_errors = [
+        *(item for item in result.get("errors", []) if isinstance(item, str)),
+        *errors,
+    ]
+    combined_alerts = [
+        *(item for item in result.get("alert_codes", []) if isinstance(item, str)),
+        *alert_codes,
+    ]
+    updated = dict(result)
+    updated["status"] = "BLOCKED"
+    updated["verdict"] = "NODE_COMPLETION_BOUNDARY_INVALID"
+    updated["retryable"] = False
+    updated["accepted_output"] = None
+    updated["errors"] = list(dict.fromkeys(combined_errors))
+    updated["alert_codes"] = list(dict.fromkeys(combined_alerts))
+    return updated
 
 
 def _completion_to_payload(completion: DagNodeCompletion) -> dict[str, Any]:
