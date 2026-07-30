@@ -36,13 +36,18 @@ from pathlib import Path
 from typing import Any
 
 PROJECT_STATUS_SCHEMA = "tau.project_status.v1"
-GENERATOR_VERSION = "1.0.0"
+GENERATOR_VERSION = "1.1.0"
 
 # Fields excluded from the semantic-content digest so repeated builds from the
-# same sources are semantically identical. ``git`` is self-referential
-# provenance (the commit hash and clean-tree flag change on the very commit that
-# lands the status file); it is informational, not a bound input source.
-_VOLATILE_FIELDS = ("generated_at", "git")
+# same sources are semantically identical. Commit identity is provenance; source
+# freshness is enforced by ``source_input_digest`` instead.
+_VOLATILE_FIELDS = (
+    "generated_at",
+    "git",
+    "generated_from_commit",
+    "rendered_status_digest",
+    "semantic_content_digest",
+)
 
 _FIVE_WORKFLOWS = (
     "repository-readiness",
@@ -92,6 +97,17 @@ def _digest_file(path: Path) -> str | None:
     if not path.is_file():
         return None
     return _sha256_bytes(path.read_bytes())
+
+
+def _digest_tree(repo: Path, root: Path, pattern: str) -> dict[str, Any]:
+    entries: list[dict[str, str]] = []
+    if root.is_dir():
+        for path in sorted(root.glob(pattern)):
+            if path.is_file():
+                entries.append(
+                    {"path": path.relative_to(repo).as_posix(), "sha256": _digest_file(path) or ""}
+                )
+    return {"count": len(entries), "entries": entries, "digest": _sha256_text(_canonical(entries))}
 
 
 def _proof_index(repo: Path) -> dict[str, Any]:
@@ -146,6 +162,7 @@ def _package(repo: Path) -> dict[str, Any]:
 
 def _workflows(repo: Path) -> dict[str, Any]:
     definitions = repo / "src" / "tau_coding" / "workflows" / "definitions"
+    digest = _digest_tree(repo, definitions, "*.json")
     available = {}
     for name in _FIVE_WORKFLOWS:
         candidate = definitions / f"{name}.json"
@@ -155,11 +172,14 @@ def _workflows(repo: Path) -> dict[str, Any]:
         "available": available,
         "all_present": all(available.values()),
         "source": "src/tau_coding/workflows/definitions/",
+        "digest": digest["digest"],
+        "inputs": digest["entries"],
     }
 
 
 def _capabilities(repo: Path) -> dict[str, Any]:
     runtime = repo / "src" / "tau_coding" / "dag_runtime"
+    digest = _digest_tree(repo, runtime, "*.py")
     checks = {
         "receipt_admission": (runtime / "admission.py").is_file()
         and (runtime / "write_intent.py").is_file(),
@@ -169,7 +189,8 @@ def _capabilities(repo: Path) -> dict[str, Any]:
         "memory_projection_outbox": (runtime / "memory_projection.py").is_file(),
     }
     return {"present": checks, "all_present": all(checks.values()),
-            "source": "src/tau_coding/dag_runtime/"}
+            "source": "src/tau_coding/dag_runtime/", "digest": digest["digest"],
+            "inputs": digest["entries"]}
 
 
 def _acceptance(repo: Path) -> dict[str, Any]:
@@ -218,11 +239,43 @@ def _github_block(github_snapshot: dict[str, Any] | None) -> dict[str, Any]:
     }
 
 
+def _source_input_records(
+    *,
+    goal: dict[str, Any],
+    package: dict[str, Any],
+    proof_index: dict[str, Any],
+    workflows: dict[str, Any],
+    capabilities: dict[str, Any],
+    acceptance: dict[str, Any],
+    github_snapshot: dict[str, Any] | None,
+    project_status_source_sha256: str | None,
+) -> list[dict[str, Any]]:
+    records = [
+        {"name": "GOAL.md", "sha256": goal["sha256"]},
+        {"name": "pyproject.toml", "sha256": package["sha256"]},
+        {"name": "proof_index", "sha256": proof_index["digest"]},
+        {"name": "acceptance_receipt", "sha256": acceptance["sha256"]},
+        {"name": "workflow_catalogue", "sha256": workflows["digest"]},
+        {"name": "dag_runtime_capabilities", "sha256": capabilities["digest"]},
+        {"name": "project_status_generator", "sha256": project_status_source_sha256},
+    ]
+    if github_snapshot is not None:
+        records.append({"name": "github_snapshot", "sha256": _sha256_text(_canonical(github_snapshot))})
+    return records
+
+
+def source_input_digest(records: list[dict[str, Any]]) -> str:
+    """Digest every declared source input that may alter generated status."""
+
+    return _sha256_text(_canonical(records))
+
+
 def build_project_status(
     repo: Path,
     *,
     generated_at: str,
     github_snapshot: dict[str, Any] | None = None,
+    canonical: bool = True,
 ) -> dict[str, Any]:
     """Assemble CURRENT_STATE from explicit sources. Never raises on offline."""
 
@@ -230,6 +283,8 @@ def build_project_status(
     commit = _git(repo, "rev-parse", "HEAD")
     porcelain = _git(repo, "status", "--porcelain")
     clean_tree = porcelain == "" if porcelain is not None else None
+    if canonical and clean_tree is not True:
+        raise ProjectStatusError("canonical_status_generated_from_dirty_tree")
 
     goal = _immutable_goal(repo)
     package = _package(repo)
@@ -238,12 +293,26 @@ def build_project_status(
     capabilities = _capabilities(repo)
     acceptance = _acceptance(repo)
     github = _github_block(github_snapshot)
+    project_status_source_sha256 = _digest_file(repo / "src" / "tau_coding" / "project_status.py")
+    source_inputs = _source_input_records(
+        goal=goal,
+        package=package,
+        proof_index=proof_index,
+        workflows=workflows,
+        capabilities=capabilities,
+        acceptance=acceptance,
+        github_snapshot=github_snapshot,
+        project_status_source_sha256=project_status_source_sha256,
+    )
 
     source_digests = {
         "GOAL.md": goal["sha256"],
         "pyproject.toml": package["sha256"],
         "proof_index": proof_index["digest"],
         "acceptance_receipt": acceptance["sha256"],
+        "workflow_catalogue": workflows["digest"],
+        "dag_runtime_capabilities": capabilities["digest"],
+        "project_status_generator": project_status_source_sha256,
     }
     if github_snapshot is not None:
         # Bind the GitHub snapshot so editing docs/status/github-snapshot.json
@@ -253,7 +322,10 @@ def build_project_status(
     status: dict[str, Any] = {
         "schema": PROJECT_STATUS_SCHEMA,
         "generator_version": GENERATOR_VERSION,
+        "canonicality": "CANONICAL" if canonical else "NONCANONICAL",
         "generated_at": generated_at,
+        "generated_from_commit": commit or UNKNOWN,
+        "generated_from_clean_tree": clean_tree,
         "git": {"commit": commit or UNKNOWN, "clean_tree": clean_tree},
         "package": package,
         "immutable_goal": goal,
@@ -262,6 +334,8 @@ def build_project_status(
         "human_acceptance": acceptance,
         "github": github,
         "proof_index": proof_index,
+        "source_inputs": source_inputs,
+        "source_input_digest": source_input_digest(source_inputs),
         "source_digests": source_digests,
         "proof_boundary": {
             "mocked": False,
@@ -284,6 +358,7 @@ def build_project_status(
         },
     }
     status["semantic_content_digest"] = semantic_digest(status)
+    status["rendered_status_digest"] = _sha256_text(render_markdown(status).markdown)
     return status
 
 
@@ -293,7 +368,7 @@ def semantic_digest(status: dict[str, Any]) -> str:
     reduced = {
         key: value
         for key, value in status.items()
-        if key not in _VOLATILE_FIELDS and key != "semantic_content_digest"
+        if key not in _VOLATILE_FIELDS
     }
     return _sha256_text(_canonical(reduced))
 
@@ -303,6 +378,7 @@ def verify_freshness(
     repo: Path,
     *,
     github_snapshot: dict[str, Any] | None = None,
+    rendered_markdown: str | None = None,
 ) -> list[str]:
     """Recompute bound source digests and the semantic digest; report drift.
 
@@ -315,6 +391,10 @@ def verify_freshness(
     if status.get("schema") != PROJECT_STATUS_SCHEMA:
         errors.append(f"schema_mismatch:{status.get('schema')}")
         return errors
+    if status.get("canonicality", "CANONICAL") != "CANONICAL":
+        errors.append("noncanonical_status_not_authoritative")
+    if status.get("generated_from_clean_tree") is not True:
+        errors.append("canonical_status_generated_from_dirty_tree")
 
     recomputed = semantic_digest(status)
     if recomputed != status.get("semantic_content_digest"):
@@ -327,11 +407,32 @@ def verify_freshness(
         repo,
         generated_at=status.get("generated_at", ""),
         github_snapshot=github_snapshot,
+        canonical=False,
     )
+    if fresh.get("source_input_digest") != status.get("source_input_digest"):
+        errors.append(
+            "status_source_input_digest_mismatch:"
+            f"{status.get('source_input_digest')}!={fresh.get('source_input_digest')}"
+        )
+    status_github_digest = status.get("source_digests", {}).get("github_snapshot")
+    current_github_digest = fresh["source_digests"].get("github_snapshot")
+    if status_github_digest != current_github_digest:
+        errors.append(f"github_snapshot_digest_mismatch:{status_github_digest}!={current_github_digest}")
+    if status_github_digest != status.get("github", {}).get("snapshot_sha256"):
+        errors.append(
+            "github_snapshot_digest_mismatch:"
+            f"{status.get('github', {}).get('snapshot_sha256')}!={status_github_digest}"
+        )
     for source, bound in status.get("source_digests", {}).items():
         current = fresh["source_digests"].get(source)
         if current != bound:
-            errors.append(f"source_drift:{source}:{bound}!={current}")
+            if source != "github_snapshot":
+                errors.append(f"status_source_input_digest_mismatch:{source}:{bound}!={current}")
+    if rendered_markdown is not None:
+        expected = render_markdown(status).markdown
+        expected_digest = _sha256_text(expected)
+        if rendered_markdown != expected or status.get("rendered_status_digest") != expected_digest:
+            errors.append("rendered_status_divergence")
     return errors
 
 
@@ -367,6 +468,10 @@ def render_markdown(status: dict[str, Any]) -> RenderResult:
         "",
         f"- **Source commit**: `{status['git']['commit']}` (clean tree: "
         f"{_mark(status['git']['clean_tree'])})",
+        f"- **Generated from**: `{status.get('generated_from_commit', UNKNOWN)}` "
+        f"(clean tree: {_mark(status.get('generated_from_clean_tree'))}, "
+        f"{status.get('canonicality', 'CANONICAL')})",
+        f"- **Source input digest**: `{status.get('source_input_digest', UNKNOWN)}`",
         f"- **Package**: `{status['package']['version']}` — "
         f"{status['package']['description']}",
         f"- **Immutable goal**: {status['immutable_goal']['status']} (GOAL.md)",
@@ -398,6 +503,7 @@ __all__ = [
     "RenderResult",
     "build_project_status",
     "semantic_digest",
+    "source_input_digest",
     "verify_freshness",
     "render_markdown",
 ]

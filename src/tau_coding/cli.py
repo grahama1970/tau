@@ -15090,9 +15090,9 @@ def project_agent_scillm_subagent_gate_command(summary_path: Path) -> bool:
 def project_agent_project_status_command(args: list[str]) -> dict[str, object]:
     """Dispatch `tau project-status build|render|verify` (#224).
 
-    build   --out <status.json> [--github-snapshot <file>] [--repo <dir>]
+    build   --out <status.json> [--github-snapshot <file>] [--repo <dir>] [--noncanonical]
     render  <status.json> --out <status.md>
-    verify  [--status <status.json>] [--github-snapshot <file>] [--repo <dir>]
+    verify  [--status <status.json>] [--rendered <status.md>] [--github-snapshot <file>] [--repo <dir>]
     """
 
     from datetime import UTC, datetime
@@ -15111,6 +15111,9 @@ def project_agent_project_status_command(args: list[str]) -> dict[str, object]:
             return rest[idx + 1]
         return default
 
+    def _has_flag(name: str) -> bool:
+        return name in rest
+
     repo = Path(_opt("--repo", ".") or ".").expanduser().resolve()
     snapshot_path = _opt("--github-snapshot")
     github_snapshot = None
@@ -15121,15 +15124,32 @@ def project_agent_project_status_command(args: list[str]) -> dict[str, object]:
         out = _opt("--out")
         if not out:
             raise RuntimeError("project-status build requires --out <status.json>")
-        generated_at = datetime.now(UTC).isoformat()
-        status = ps.build_project_status(
-            repo, generated_at=generated_at, github_snapshot=github_snapshot
-        )
+        canonical = not _has_flag("--noncanonical")
         out_path = Path(out).expanduser()
+        canonical_status_path = (repo / "docs" / "status" / "CURRENT_STATE.json").resolve()
+        if not canonical and out_path.resolve() == canonical_status_path:
+            return {
+                "status": "FAIL",
+                "action": "build",
+                "failure_code": "noncanonical_status_refuses_canonical_output",
+                "out": str(out_path),
+            }
+        generated_at = datetime.now(UTC).isoformat()
+        try:
+            status = ps.build_project_status(
+                repo,
+                generated_at=generated_at,
+                github_snapshot=github_snapshot,
+                canonical=canonical,
+            )
+        except ps.ProjectStatusError as exc:
+            return {"status": "FAIL", "action": "build", "failure_code": str(exc), "out": str(out_path)}
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(json.dumps(status, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         return {"status": "PASS", "action": "build", "out": str(out_path),
                 "semantic_content_digest": status["semantic_content_digest"],
+                "source_input_digest": status["source_input_digest"],
+                "canonicality": status["canonicality"],
                 "github_freshness": status["github"]["freshness"]}
 
     if action == "render":
@@ -15139,8 +15159,16 @@ def project_agent_project_status_command(args: list[str]) -> dict[str, object]:
         out = _opt("--out")
         if not out:
             raise RuntimeError("project-status render requires --out <status.md>")
-        rendered = ps.render_markdown(status)
         out_path = Path(out).expanduser()
+        canonical_status_md = (repo / "docs" / "status" / "CURRENT_STATE.md").resolve()
+        if status.get("canonicality") == "NONCANONICAL" and out_path.resolve() == canonical_status_md:
+            return {
+                "status": "FAIL",
+                "action": "render",
+                "failure_code": "noncanonical_status_refuses_canonical_output",
+                "out": str(out_path),
+            }
+        rendered = ps.render_markdown(status)
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(rendered.markdown, encoding="utf-8")
         return {"status": "PASS", "action": "render", "out": str(out_path),
@@ -15149,9 +15177,21 @@ def project_agent_project_status_command(args: list[str]) -> dict[str, object]:
     if action == "verify":
         status_path = _opt("--status", "docs/status/CURRENT_STATE.json")
         status = json.loads(Path(status_path).expanduser().read_text(encoding="utf-8"))
-        errors = ps.verify_freshness(status, repo, github_snapshot=github_snapshot)
+        rendered_path = _opt("--rendered", "docs/status/CURRENT_STATE.md")
+        rendered_markdown = None
+        if rendered_path:
+            candidate = Path(rendered_path).expanduser()
+            if candidate.is_file():
+                rendered_markdown = candidate.read_text(encoding="utf-8")
+        errors = ps.verify_freshness(
+            status,
+            repo,
+            github_snapshot=github_snapshot,
+            rendered_markdown=rendered_markdown,
+        )
         return {"status": "PASS" if not errors else "FAIL", "action": "verify",
-                "errors": errors, "checked": status_path}
+                "errors": errors, "checked": status_path,
+                "source_input_digest": status.get("source_input_digest")}
 
     raise RuntimeError(f"unknown project-status subcommand: {action}")
 
