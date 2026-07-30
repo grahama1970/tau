@@ -10,6 +10,7 @@ import pytest
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.run_store import (
     DagRunStoreError,
+    SqliteDagRunReader,
     SqliteDagRunStore,
 )
 
@@ -64,6 +65,40 @@ def test_admit_inserts_row_and_event_in_one_transaction(tmp_path: Path) -> None:
     assert len(rows) == 1
     assert rows[0]["sha256"] == "sha256:abc"
     assert rows[0]["admitted_event_seq"] is not None
+
+
+def test_review_scope_snapshot_reads_plan_attempts_and_admissions(tmp_path: Path) -> None:
+    store, lease, attempt_id = _store_with_attempt(tmp_path)
+    store.admit_receipt(
+        lease,
+        attempt_id,
+        receipt_kind="node_receipt",
+        sha256="sha256:abc",
+        path="/run/receipts/node-a/attempt-1.json",
+        size_bytes=42,
+    )
+
+    scope = store.review_scope_snapshot("run-adm", goal_hash="sha256:goal")
+
+    assert scope["schema"] == "tau.review_scope.v1"
+    assert scope["goal_hash"] == "sha256:goal"
+    assert scope["plan_sha256"] == _plan(tmp_path).plan_sha256
+    assert scope["reviewed_node_ids"] == ["node-a"]
+    assert scope["reviewed_attempt_ids"] == [attempt_id]
+    assert scope["admitted_artifacts"] == [
+        {
+            "schema": "node_receipt",
+            "id": scope["admitted_artifacts"][0]["id"],
+            "path": "/run/receipts/node-a/attempt-1.json",
+            "sha256": "sha256:abc",
+        }
+    ]
+    assert scope["journal_sequence_end"] >= 3
+    store.close()
+
+    with SqliteDagRunReader(tmp_path / "dag-run.sqlite3") as reader:
+        readback = reader.review_scope_snapshot("run-adm", goal_hash="sha256:goal")
+    assert readback == scope
 
 
 def test_duplicate_same_digest_is_suppressed_not_error(tmp_path: Path) -> None:

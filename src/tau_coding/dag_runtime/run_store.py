@@ -733,6 +733,58 @@ class SqliteDagRunReader:
         ).fetchone()
         return int(row[0])
 
+    def list_admissions(self, run_id: str) -> list[dict[str, Any]]:
+        rows = self._connection.execute(
+            """SELECT * FROM receipt_admissions WHERE run_id = ?
+               ORDER BY node_id, attempt_id, receipt_kind""",
+            (run_id,),
+        ).fetchall()
+        return [dict(row) for row in rows]
+
+    def review_scope_snapshot(
+        self,
+        run_id: str,
+        *,
+        goal_hash: str,
+        reviewed_node_ids: tuple[str, ...] | list[str] | None = None,
+        journal_sequence_start: int = 0,
+        through_sequence: int | None = None,
+    ) -> dict[str, Any]:
+        """Return a reviewer-scope snapshot from the durable run store."""
+
+        with self.snapshot():
+            record = self.load_run_record(run_id)
+            sequence_end = (
+                self.latest_sequence(run_id) if through_sequence is None else through_sequence
+            )
+            nodes = set(reviewed_node_ids or ())
+            attempts = [
+                attempt
+                for attempt in self.load_attempts(run_id)
+                if not nodes or attempt.identity.node_id in nodes
+            ]
+            if not nodes:
+                nodes = {attempt.identity.node_id for attempt in attempts}
+            attempt_ids = {attempt.identity.attempt_id for attempt in attempts}
+            artifacts = [
+                _review_scope_admission_descriptor(row)
+                for row in self.list_admissions(run_id)
+                if row.get("attempt_id") in attempt_ids
+            ]
+        return {
+            "schema": "tau.review_scope.v1",
+            "goal_hash": goal_hash,
+            "plan_sha256": record.plan_sha256,
+            "reviewed_node_ids": sorted(nodes),
+            "reviewed_attempt_ids": sorted(attempt_ids),
+            "admitted_artifacts": sorted(
+                artifacts,
+                key=lambda item: json.dumps(item, sort_keys=True, separators=(",", ":")),
+            ),
+            "journal_sequence_start": journal_sequence_start,
+            "journal_sequence_end": sequence_end,
+        }
+
 
 class SqliteDagRunStore:
     """File-backed append-only event journal with transactional projections."""
@@ -1639,6 +1691,55 @@ class SqliteDagRunStore:
         ).fetchall()
         return [dict(row) for row in rows]
 
+    def review_scope_snapshot(
+        self,
+        run_id: str,
+        *,
+        goal_hash: str,
+        reviewed_node_ids: tuple[str, ...] | list[str] | None = None,
+        journal_sequence_start: int = 0,
+        through_sequence: int | None = None,
+    ) -> dict[str, Any]:
+        """Return a reviewer-scope snapshot from the durable run store."""
+
+        record = self.load_run_record(run_id)
+        sequence_end = (
+            self.latest_sequence(run_id) if through_sequence is None else through_sequence
+        )
+        nodes = set(reviewed_node_ids or ())
+        attempts = [
+            attempt
+            for attempt in self.list_attempts(run_id)
+            if not nodes or attempt.identity.node_id in nodes
+        ]
+        if not nodes:
+            nodes = {attempt.identity.node_id for attempt in attempts}
+        attempt_ids = {attempt.identity.attempt_id for attempt in attempts}
+        artifacts = [
+            _review_scope_admission_descriptor(row)
+            for row in self.list_admissions(run_id)
+            if row.get("attempt_id") in attempt_ids
+        ]
+        return {
+            "schema": "tau.review_scope.v1",
+            "goal_hash": goal_hash,
+            "plan_sha256": record.plan_sha256,
+            "reviewed_node_ids": sorted(nodes),
+            "reviewed_attempt_ids": sorted(attempt_ids),
+            "admitted_artifacts": sorted(
+                artifacts,
+                key=lambda item: json.dumps(item, sort_keys=True, separators=(",", ":")),
+            ),
+            "journal_sequence_start": journal_sequence_start,
+            "journal_sequence_end": sequence_end,
+        }
+
+    def latest_sequence(self, run_id: str) -> int:
+        row = self._connection.execute(
+            "SELECT COALESCE(MAX(seq), 0) FROM dag_run_events WHERE run_id = ?", (run_id,)
+        ).fetchone()
+        return int(row[0])
+
     def commit_control_transition(
         self,
         lease: DagRunLease,
@@ -2093,6 +2194,15 @@ def _stored_attempt_to_receipt(attempt: StoredAttempt) -> dict[str, Any]:
         "effect_state": attempt.effect_state,
         "staged_result_present": attempt.staged_result is not None,
         "committed_result_present": attempt.committed_result is not None,
+    }
+
+
+def _review_scope_admission_descriptor(row: Mapping[str, Any]) -> dict[str, str]:
+    return {
+        "schema": str(row["receipt_kind"]),
+        "id": str(row["admission_id"]),
+        "path": str(row["path"]),
+        "sha256": str(row["sha256"]),
     }
 
 

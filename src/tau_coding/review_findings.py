@@ -18,6 +18,7 @@ from tau_coding.policy_profile import (
 )
 
 REVIEW_FINDINGS_SCHEMA = "tau.review_findings.v1"
+REVIEW_SCOPE_SCHEMA = "tau.review_scope.v1"
 
 SEVERITIES = {"P0", "P1", "P2", "P3"}
 VERDICTS = {"PASS", "REVISE", "BLOCKED"}
@@ -31,6 +32,7 @@ def validate_review_findings(
     zero_trust: bool = False,
     policy_profile: dict[str, Any] | None = None,
     data_boundary: dict[str, Any] | None = None,
+    current_review_scope: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Validate structured reviewer findings and derive Tau routing state."""
 
@@ -107,6 +109,14 @@ def validate_review_findings(
             )
         )
 
+    review_scope_receipt = validate_review_scope(
+        payload.get("review_scope"),
+        current_review_scope=current_review_scope,
+        expected_goal_hash=expected_goal_hash,
+    )
+    if review_scope_receipt["status"] == "BLOCKED":
+        alerts.extend(review_scope_receipt["alerts"])
+
     ok = not alerts
     return {
         "schema": REVIEW_FINDINGS_SCHEMA,
@@ -132,6 +142,7 @@ def validate_review_findings(
             1 for finding in normalized_findings if finding.get("required_action") == "revise"
         ),
         "findings": normalized_findings,
+        "review_scope_validation": review_scope_receipt,
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
         "proof_scope": {
@@ -139,6 +150,8 @@ def validate_review_findings(
                 "Tau parsed reviewer output as structured findings.",
                 "Tau derived PASS, REVISE, or BLOCKED routing from severity and required_action.",
                 "Tau blocked high-severity findings without evidence.",
+                "When a current review scope is supplied, Tau compared reviewer scope "
+                "against current DAG state before accepting PASS.",
             ],
             "does_not_prove": [
                 "The reviewer is correct.",
@@ -159,6 +172,7 @@ def write_review_findings_receipt(
     zero_trust: bool = False,
     policy_profile: dict[str, Any] | None = None,
     data_boundary: dict[str, Any] | None = None,
+    current_review_scope: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     read_alerts: list[dict[str, Any]] = []
     payload = _read_json_object(findings_path.expanduser().resolve(), read_alerts)
@@ -168,6 +182,7 @@ def write_review_findings_receipt(
         zero_trust=zero_trust,
         policy_profile=policy_profile,
         data_boundary=data_boundary,
+        current_review_scope=current_review_scope,
     )
     if read_alerts:
         receipt["alerts"] = read_alerts + list(receipt["alerts"])
@@ -194,6 +209,115 @@ def write_review_findings_receipt(
         encoding="utf-8",
     )
     return receipt
+
+
+def build_review_scope(
+    *,
+    goal_hash: str,
+    plan_sha256: str,
+    reviewed_node_ids: list[str] | tuple[str, ...],
+    reviewed_attempt_ids: list[str] | tuple[str, ...],
+    admitted_artifacts: list[Mapping[str, Any]] | tuple[Mapping[str, Any], ...],
+    journal_sequence_start: int,
+    journal_sequence_end: int,
+) -> dict[str, Any]:
+    """Build a canonical review scope that can be compared against run state."""
+
+    scope = {
+        "schema": REVIEW_SCOPE_SCHEMA,
+        "goal_hash": goal_hash,
+        "plan_sha256": plan_sha256,
+        "reviewed_node_ids": sorted(set(reviewed_node_ids)),
+        "reviewed_attempt_ids": sorted(set(reviewed_attempt_ids)),
+        "admitted_artifacts": _normalize_artifact_descriptors(admitted_artifacts),
+        "journal_sequence_start": journal_sequence_start,
+        "journal_sequence_end": journal_sequence_end,
+    }
+    return {**scope, "scope_sha256": review_scope_sha256(scope)}
+
+
+def review_scope_sha256(scope: Mapping[str, Any]) -> str:
+    """Return the stable digest for a normalized review scope."""
+
+    preimage = dict(scope)
+    preimage.pop("scope_sha256", None)
+    return f"sha256:{hashlib.sha256(_canonical_json(preimage).encode('utf-8')).hexdigest()}"
+
+
+def validate_review_scope(
+    declared_scope: object,
+    *,
+    current_review_scope: Mapping[str, Any] | None = None,
+    expected_goal_hash: str | None = None,
+) -> dict[str, Any]:
+    """Validate reviewer scope and fail closed when it is stale."""
+
+    alerts: list[dict[str, Any]] = []
+    normalized_declared, declared_alerts = _normalize_review_scope(
+        declared_scope,
+        label="declared",
+        require_present=current_review_scope is not None,
+    )
+    alerts.extend(declared_alerts)
+    normalized_current: dict[str, Any] | None = None
+    if current_review_scope is not None:
+        normalized_current, current_alerts = _normalize_review_scope(
+            current_review_scope,
+            label="current",
+            require_present=True,
+        )
+        alerts.extend(current_alerts)
+
+    if (
+        expected_goal_hash
+        and normalized_declared is not None
+        and normalized_declared.get("goal_hash") != expected_goal_hash
+    ):
+        alerts.append(
+            _alert("review_scope_goal_hash_mismatch", "review scope goal_hash mismatches expected")
+        )
+
+    stale_reasons: list[dict[str, Any]] = []
+    if normalized_declared is not None and normalized_current is not None:
+        stale_reasons = _review_scope_stale_reasons(normalized_declared, normalized_current)
+        if stale_reasons:
+            alerts.append(
+                _alert(
+                    "review_scope_stale",
+                    "review scope no longer matches current DAG run state",
+                    errors=[reason["code"] for reason in stale_reasons],
+                )
+            )
+
+    ok = not alerts
+    return {
+        "schema": "tau.review_scope_validation.v1",
+        "ok": ok,
+        "status": "PASS" if ok else "BLOCKED",
+        "declared_scope": normalized_declared,
+        "current_scope": normalized_current,
+        "declared_scope_sha256": (
+            normalized_declared.get("scope_sha256") if normalized_declared is not None else None
+        ),
+        "current_scope_sha256": (
+            normalized_current.get("scope_sha256") if normalized_current is not None else None
+        ),
+        "stale_reasons": stale_reasons,
+        "alerts": alerts,
+        "alert_codes": [alert["code"] for alert in alerts],
+        "proof_scope": {
+            "proves": [
+                "Tau compared the reviewer-declared scope to the supplied current run scope.",
+                "Tau fails closed when plan, nodes, attempts, admitted artifacts, "
+                "or journal window changed.",
+            ],
+            "does_not_prove": [
+                "The reviewer is semantically correct.",
+                "The current DAG result is acceptable.",
+                "A live provider or browser reviewed this scope.",
+            ],
+        },
+    }
 
 
 def _validate_finding(
@@ -298,6 +422,208 @@ def _validate_finding(
             )
         )
     return normalized, alerts
+
+
+def _normalize_review_scope(
+    value: object,
+    *,
+    label: str,
+    require_present: bool,
+) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
+    if value is None:
+        if require_present:
+            return None, [_alert("review_scope_missing", f"{label} review scope is required")]
+        return None, []
+    if not isinstance(value, Mapping):
+        return None, [_alert("invalid_review_scope", f"{label} review scope must be an object")]
+    alerts: list[dict[str, Any]] = []
+    if value.get("schema") != REVIEW_SCOPE_SCHEMA:
+        alerts.append(
+            _alert("invalid_review_scope_schema", f"{label} review scope schema is invalid")
+        )
+    goal_hash = _scope_hash_value(value.get("goal_hash"), f"{label}.goal_hash", alerts)
+    plan_sha256 = _scope_hash_value(value.get("plan_sha256"), f"{label}.plan_sha256", alerts)
+    node_ids = _scope_string_set(
+        value.get("reviewed_node_ids"),
+        f"{label}.reviewed_node_ids",
+        alerts,
+    )
+    attempt_ids = _scope_string_set(
+        value.get("reviewed_attempt_ids"),
+        f"{label}.reviewed_attempt_ids",
+        alerts,
+    )
+    artifacts = _normalize_artifact_descriptors(
+        value.get("admitted_artifacts"),
+        field=f"{label}.admitted_artifacts",
+        alerts=alerts,
+    )
+    journal_start = _scope_sequence(
+        value.get("journal_sequence_start"),
+        f"{label}.journal_sequence_start",
+        alerts,
+    )
+    journal_end = _scope_sequence(
+        value.get("journal_sequence_end"),
+        f"{label}.journal_sequence_end",
+        alerts,
+    )
+    if (
+        journal_start is not None
+        and journal_end is not None
+        and journal_end < journal_start
+    ):
+        alerts.append(
+            _alert(
+                "invalid_review_scope",
+                f"{label}.journal_sequence_end must be >= journal_sequence_start",
+            )
+        )
+    normalized = {
+        "schema": REVIEW_SCOPE_SCHEMA,
+        "goal_hash": goal_hash,
+        "plan_sha256": plan_sha256,
+        "reviewed_node_ids": node_ids,
+        "reviewed_attempt_ids": attempt_ids,
+        "admitted_artifacts": artifacts,
+        "journal_sequence_start": journal_start,
+        "journal_sequence_end": journal_end,
+    }
+    normalized["scope_sha256"] = review_scope_sha256(normalized)
+    declared_hash = value.get("scope_sha256")
+    if declared_hash is not None and declared_hash != normalized["scope_sha256"]:
+        alerts.append(
+            _alert("review_scope_hash_mismatch", f"{label} review scope hash does not match")
+        )
+    return normalized, alerts
+
+
+def _review_scope_stale_reasons(
+    declared: Mapping[str, Any],
+    current: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    reasons: list[dict[str, Any]] = []
+    comparisons = [
+        ("goal_hash", "review_scope_goal_changed"),
+        ("plan_sha256", "review_scope_plan_changed"),
+        ("reviewed_node_ids", "review_scope_nodes_changed"),
+        ("reviewed_attempt_ids", "review_scope_attempts_changed"),
+        ("admitted_artifacts", "review_scope_artifacts_changed"),
+        ("journal_sequence_start", "review_scope_journal_start_changed"),
+        ("journal_sequence_end", "review_scope_journal_advanced"),
+    ]
+    for field, code in comparisons:
+        if declared.get(field) != current.get(field):
+            reasons.append(
+                {
+                    "code": code,
+                    "field": field,
+                    "declared": declared.get(field),
+                    "current": current.get(field),
+                }
+            )
+    if declared.get("scope_sha256") != current.get("scope_sha256"):
+        reasons.append(
+            {
+                "code": "review_scope_hash_changed",
+                "field": "scope_sha256",
+                "declared": declared.get("scope_sha256"),
+                "current": current.get("scope_sha256"),
+            }
+        )
+    return reasons
+
+
+def _scope_hash_value(
+    value: object,
+    field: str,
+    alerts: list[dict[str, Any]],
+) -> str | None:
+    if isinstance(value, str) and value.startswith("sha256:"):
+        return value
+    alerts.append(_alert("invalid_review_scope", f"{field} must be a sha256 value"))
+    return None
+
+
+def _scope_string_set(
+    value: object,
+    field: str,
+    alerts: list[dict[str, Any]],
+) -> list[str]:
+    if not isinstance(value, list) or not all(isinstance(item, str) and item for item in value):
+        alerts.append(_alert("invalid_review_scope", f"{field} must be a list of strings"))
+        return []
+    unique = sorted(set(value))
+    if unique != value:
+        alerts.append(_alert("review_scope_not_canonical", f"{field} must be sorted and unique"))
+    return unique
+
+
+def _scope_sequence(
+    value: object,
+    field: str,
+    alerts: list[dict[str, Any]],
+) -> int | None:
+    if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+        return value
+    alerts.append(_alert("invalid_review_scope", f"{field} must be a non-negative integer"))
+    return None
+
+
+def _normalize_artifact_descriptors(
+    value: object,
+    *,
+    field: str = "admitted_artifacts",
+    alerts: list[dict[str, Any]] | None = None,
+) -> list[dict[str, str]]:
+    local_alerts = alerts if alerts is not None else []
+    if not isinstance(value, list | tuple):
+        local_alerts.append(_alert("invalid_review_scope", f"{field} must be a list"))
+        return []
+    descriptors: list[dict[str, str]] = []
+    for index, item in enumerate(value):
+        if not isinstance(item, Mapping):
+            local_alerts.append(
+                _alert("invalid_review_scope", f"{field}[{index}] must be an object")
+            )
+            continue
+        schema = item.get("schema")
+        sha256 = item.get("sha256")
+        path = item.get("path")
+        artifact_id = item.get("id", item.get("artifact_id"))
+        if not isinstance(schema, str) or not schema:
+            local_alerts.append(
+                _alert("invalid_review_scope", f"{field}[{index}].schema is required")
+            )
+            continue
+        if not isinstance(sha256, str) or not sha256.startswith("sha256:"):
+            local_alerts.append(
+                _alert("invalid_review_scope", f"{field}[{index}].sha256 is required")
+            )
+            continue
+        if not isinstance(path, str) and not isinstance(artifact_id, str):
+            local_alerts.append(
+                _alert(
+                    "invalid_review_scope",
+                    f"{field}[{index}] requires path or id",
+                )
+            )
+            continue
+        descriptor = {"schema": schema, "sha256": sha256}
+        if isinstance(path, str) and path:
+            descriptor["path"] = path
+        if isinstance(artifact_id, str) and artifact_id:
+            descriptor["id"] = artifact_id
+        descriptors.append(descriptor)
+    unique = sorted(
+        {tuple(sorted(item.items())) for item in descriptors},
+        key=lambda pairs: json.dumps(dict(pairs), sort_keys=True),
+    )
+    return [dict(item) for item in unique]
+
+
+def _canonical_json(value: object) -> str:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
 def _validate_waiver(

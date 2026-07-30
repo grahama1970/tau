@@ -7,7 +7,11 @@ from typer.testing import CliRunner
 from tau_coding.cli import app
 from tau_coding.review_findings import (
     REVIEW_FINDINGS_SCHEMA,
+    REVIEW_SCOPE_SCHEMA,
+    build_review_scope,
+    review_scope_sha256,
     validate_review_findings,
+    validate_review_scope,
     write_review_findings_receipt,
 )
 
@@ -635,6 +639,109 @@ def test_cli_review_findings_unreadable_writes_blocked_receipt(tmp_path: Path) -
     assert "review_findings_unreadable" in payload["alert_codes"]
 
 
+def test_review_scope_validates_unchanged_scope() -> None:
+    scope = _review_scope()
+    receipt = validate_review_scope(
+        scope,
+        current_review_scope=scope,
+        expected_goal_hash="sha256:goal",
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["declared_scope_sha256"] == scope["scope_sha256"]
+    assert receipt["current_scope_sha256"] == scope["scope_sha256"]
+
+
+def test_review_scope_blocks_required_node_added_after_dispatch() -> None:
+    declared = _review_scope(reviewed_node_ids=["coder"])
+    current = _review_scope(reviewed_node_ids=["coder", "reviewer"])
+
+    receipt = validate_review_scope(declared, current_review_scope=current)
+
+    assert receipt["status"] == "BLOCKED"
+    assert "review_scope_stale" in receipt["alert_codes"]
+    assert "review_scope_nodes_changed" in {
+        reason["code"] for reason in receipt["stale_reasons"]
+    }
+
+
+def test_review_scope_blocks_replaced_admitted_artifact_hash() -> None:
+    declared = _review_scope(admitted_artifacts=[_artifact("review", "sha256:old")])
+    current = _review_scope(admitted_artifacts=[_artifact("review", "sha256:new")])
+
+    receipt = validate_review_scope(declared, current_review_scope=current)
+
+    assert receipt["status"] == "BLOCKED"
+    assert "review_scope_artifacts_changed" in {
+        reason["code"] for reason in receipt["stale_reasons"]
+    }
+
+
+def test_review_scope_blocks_newer_accepted_attempt_for_reviewed_node() -> None:
+    declared = _review_scope(reviewed_attempt_ids=["attempt-coder-001"])
+    current = _review_scope(reviewed_attempt_ids=["attempt-coder-001", "attempt-coder-002"])
+
+    receipt = validate_review_scope(declared, current_review_scope=current)
+
+    assert receipt["status"] == "BLOCKED"
+    assert "review_scope_attempts_changed" in {
+        reason["code"] for reason in receipt["stale_reasons"]
+    }
+
+
+def test_review_scope_canonical_hash_ignores_input_ordering() -> None:
+    first = _review_scope(
+        reviewed_node_ids=["reviewer", "coder"],
+        reviewed_attempt_ids=["attempt-reviewer-001", "attempt-coder-001"],
+        admitted_artifacts=[
+            _artifact("review", "sha256:b", path="b.json"),
+            _artifact("result", "sha256:a", path="a.json"),
+        ],
+    )
+    second = _review_scope(
+        reviewed_node_ids=["coder", "reviewer"],
+        reviewed_attempt_ids=["attempt-coder-001", "attempt-reviewer-001"],
+        admitted_artifacts=[
+            _artifact("result", "sha256:a", path="a.json"),
+            _artifact("review", "sha256:b", path="b.json"),
+        ],
+    )
+
+    assert first["scope_sha256"] == second["scope_sha256"]
+    assert review_scope_sha256(first) == first["scope_sha256"]
+
+
+def test_review_findings_pass_cannot_override_stale_scope() -> None:
+    payload = _payload(verdict="PASS", findings=[])
+    payload["review_scope"] = _review_scope(reviewed_attempt_ids=["attempt-coder-001"])
+    current = _review_scope(reviewed_attempt_ids=["attempt-coder-001", "attempt-coder-002"])
+
+    receipt = validate_review_findings(payload, current_review_scope=current)
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["derived_verdict"] == "BLOCKED"
+    assert "review_scope_stale" in receipt["alert_codes"]
+
+
+def test_unscoped_v1_review_findings_remain_readable_but_unbound() -> None:
+    receipt = validate_review_findings(_payload(verdict="PASS", findings=[]))
+
+    assert receipt["status"] == "PASS"
+    assert receipt["review_scope_validation"]["status"] == "PASS"
+    assert receipt["review_scope_validation"]["declared_scope"] is None
+    assert "The reviewer is correct." in receipt["proof_scope"]["does_not_prove"]
+
+
+def test_scoped_gate_rejects_unscoped_v1_when_current_scope_required() -> None:
+    receipt = validate_review_findings(
+        _payload(verdict="PASS", findings=[]),
+        current_review_scope=_review_scope(),
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "review_scope_missing" in receipt["alert_codes"]
+
+
 def _payload(*, verdict: str, findings: list[dict]) -> dict:
     return {
         "schema": REVIEW_FINDINGS_SCHEMA,
@@ -643,6 +750,29 @@ def _payload(*, verdict: str, findings: list[dict]) -> dict:
         "verdict": verdict,
         "findings": findings,
     }
+
+
+def _review_scope(
+    *,
+    reviewed_node_ids: list[str] | None = None,
+    reviewed_attempt_ids: list[str] | None = None,
+    admitted_artifacts: list[dict[str, str]] | None = None,
+) -> dict:
+    scope = build_review_scope(
+        goal_hash="sha256:goal",
+        plan_sha256="sha256:plan",
+        reviewed_node_ids=reviewed_node_ids or ["coder"],
+        reviewed_attempt_ids=reviewed_attempt_ids or ["attempt-coder-001"],
+        admitted_artifacts=admitted_artifacts or [_artifact("review", "sha256:review")],
+        journal_sequence_start=1,
+        journal_sequence_end=7,
+    )
+    assert scope["schema"] == REVIEW_SCOPE_SCHEMA
+    return scope
+
+
+def _artifact(schema: str, sha256: str, *, path: str = "review.json") -> dict[str, str]:
+    return {"schema": schema, "sha256": sha256, "path": path}
 
 
 def _sha256_file(path: Path) -> str:

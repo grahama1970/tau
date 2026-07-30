@@ -4047,6 +4047,7 @@ def main(
                 zero_trust=bool(options["zero_trust"]),
                 policy_profile=_read_optional_json_object(options.get("policy_profile")),
                 data_boundary=_read_optional_json_object(options.get("data_boundary")),
+                current_review_scope=_read_optional_json_object(options.get("current_review_scope")),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -5411,7 +5412,7 @@ def _manual_command_help(command: str) -> str | None:
         ),
         "review-findings": (
             "Usage: tau review-findings --findings <findings.json> "
-            "[--out <receipt>] [--zero-trust]"
+            "[--out <receipt>] [--current-review-scope <scope.json>] [--zero-trust]"
         ),
         "dag-run": "Usage: tau dag-run <dag-spec> [--no-resume]",
         "run": "Usage: tau run <dag-spec> [--no-resume]",
@@ -5801,11 +5802,11 @@ def _merge_stdin_prompt(prompt: str) -> str:
     try:
         if stdin.isatty():
             return prompt
-    except AttributeError, ValueError:
+    except (AttributeError, ValueError):
         return prompt
     try:
         piped = stdin.read()
-    except OSError, ValueError:
+    except (OSError, ValueError):
         return prompt
     if not piped:
         return prompt
@@ -9159,6 +9160,7 @@ def _parse_review_findings_cli_args(args: list[str]) -> dict[str, object]:
         "zero_trust": False,
         "policy_profile": None,
         "data_boundary": None,
+        "current_review_scope": None,
     }
     index = 0
     while index < len(args):
@@ -9169,6 +9171,7 @@ def _parse_review_findings_cli_args(args: list[str]) -> dict[str, object]:
             "--goal-hash",
             "--policy-profile",
             "--data-boundary",
+            "--current-review-scope",
         }:
             index += 1
             if index >= len(args):
@@ -9185,6 +9188,8 @@ def _parse_review_findings_cli_args(args: list[str]) -> dict[str, object]:
             options["policy_profile"] = arg.partition("=")[2]
         elif arg.startswith("--data-boundary="):
             options["data_boundary"] = arg.partition("=")[2]
+        elif arg.startswith("--current-review-scope="):
+            options["current_review_scope"] = arg.partition("=")[2]
         elif arg == "--zero-trust":
             options["zero_trust"] = True
         else:
