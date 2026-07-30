@@ -197,6 +197,27 @@ The adapter maps review-code verdicts into Tau's `PASS`, `REVISE`, and
 verdict cannot hide blocking findings, and BLOCKED/REVISE outputs emit
 course-correction payloads.
 
+When a review is used to release a scoped DAG gate, the reviewer output must
+also carry `review_scope` with schema `tau.review_scope.v1`. The scope binds the
+reviewer claim to the goal hash, `DagPlan.plan_sha256`, reviewed node IDs,
+reviewed attempt IDs, admitted artifact descriptors, and the journal sequence
+window the reviewer saw. Operators can compare a reviewer artifact against a
+current run snapshot with:
+
+```bash
+uv run tau review-findings \
+  --findings /tmp/review-findings.json \
+  --current-review-scope /tmp/current-review-scope.json \
+  --out /tmp/review-findings-receipt.json \
+  --goal-hash sha256:...
+```
+
+If the plan, reviewed nodes, attempts, admitted artifacts, or journal window
+changed after dispatch, Tau returns `review_scope_stale` and blocks the gate. A
+model-authored `PASS` cannot override that stale-scope failure. Historical
+`tau.review_findings.v1` artifacts remain readable, but unscoped v1 artifacts do
+not satisfy gates that supply a current scope.
+
 This still does not prove the reviewer is correct, the code is semantically
 correct, or reviewer consensus is proof.
 
