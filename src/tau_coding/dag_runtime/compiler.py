@@ -10,6 +10,11 @@ from typing import Any
 
 from tau_coding.dag_join_decision import normalize_join_policy
 from tau_coding.dag_route_decision import normalize_route_condition
+from tau_coding.dag_runtime.execution_profile import (
+    execution_limits_with_profile,
+    resolve_execution_profile,
+    source_extensions_with_profile,
+)
 from tau_coding.dag_runtime.model import (
     DAG_PLAN_SCHEMA,
     DagPlan,
@@ -40,6 +45,8 @@ PROJECT_ROOT_KEYS = {
     "policy_profile",
     "data_boundary",
     "security_mode",
+    "execution_profile",
+    "execution_profile_policy",
     "actor_access_manifest",
     "environment_manifest",
     "memory_intent",
@@ -75,6 +82,10 @@ GENERIC_ROOT_KEYS = {
     "events_jsonl",
     "goal",
     "goal_hash",
+    "max_concurrency",
+    "execution_profile",
+    "execution_profile_policy",
+    "limits",
     "nodes",
 }
 GENERIC_NODE_KEYS = {
@@ -205,6 +216,17 @@ def compile_project_dag_plan(
         incoming_edges=incoming_edges,
         control_edges=control_edges,
     )
+    profile_resolution = resolve_execution_profile(
+        payload=payload,
+        source_family="project_dag",
+        source_schema=str(payload["schema"]),
+        source_limits=contract.limits,
+        source_required_evidence=tuple(contract.required_evidence),
+        source_fail_closed_on=tuple(contract.fail_closed_on),
+        node_count=len(nodes),
+        edge_count=len(control_edges),
+        max_concurrency=_optional_positive_int(contract.limits.get("max_concurrency")),
+    )
     plan = DagPlan(
         schema=DAG_PLAN_SCHEMA,
         plan_id=f"project:{contract.dag_id}",
@@ -235,8 +257,15 @@ def compile_project_dag_plan(
         security_declarations=FrozenJson.from_value(
             _project_security_declarations(contract, source_dir=source_dir)
         ),
-        execution_limits=FrozenJson.from_value(contract.limits),
-        source_extensions=FrozenJson.from_value(_extensions(payload, PROJECT_ROOT_KEYS)),
+        execution_limits=FrozenJson.from_value(
+            execution_limits_with_profile(contract.limits, profile_resolution)
+        ),
+        source_extensions=FrozenJson.from_value(
+            source_extensions_with_profile(
+                _extensions(payload, PROJECT_ROOT_KEYS),
+                profile_resolution,
+            )
+        ),
     ).with_computed_hash()
     _validate_plan(plan)
     return plan
@@ -353,6 +382,18 @@ def compile_generic_dag_plan(payload: dict[str, Any], *, source_path: Path) -> D
         goal_binding = {"kind": "hash_only", "goal_hash": goal_hash}
     else:
         goal_binding = {"kind": "none"}
+    source_limits = payload.get("limits") if isinstance(payload.get("limits"), Mapping) else {}
+    profile_resolution = resolve_execution_profile(
+        payload=payload,
+        source_family="generic_dag",
+        source_schema=str(payload["schema"]),
+        source_limits=source_limits,
+        source_required_evidence=("tau.generic_dag_node_receipt.v1",),
+        source_fail_closed_on=(),
+        node_count=len(nodes),
+        edge_count=len(control_edges),
+        max_concurrency=_optional_positive_int(payload.get("max_concurrency")),
+    )
     plan = DagPlan(
         schema=DAG_PLAN_SCHEMA,
         plan_id=f"generic:{payload['run_id']}",
@@ -379,8 +420,15 @@ def compile_generic_dag_plan(payload: dict[str, Any], *, source_path: Path) -> D
         required_evidence=("tau.generic_dag_node_receipt.v1",),
         fail_closed_on=(),
         security_declarations=FrozenJson.from_value({"security_mode": None, "declarations": []}),
-        execution_limits=FrozenJson.from_value({}),
-        source_extensions=FrozenJson.from_value(_extensions(payload, GENERIC_ROOT_KEYS)),
+        execution_limits=FrozenJson.from_value(
+            execution_limits_with_profile(source_limits, profile_resolution)
+        ),
+        source_extensions=FrozenJson.from_value(
+            source_extensions_with_profile(
+                _extensions(payload, GENERIC_ROOT_KEYS),
+                profile_resolution,
+            )
+        ),
     ).with_computed_hash()
     _validate_plan(plan)
     return plan
@@ -413,6 +461,7 @@ def write_dag_plan(path: Path, *, output_path: Path) -> dict[str, Any]:
     plan = compile_dag_plan_file(resolved_source)
     resolved_output.parent.mkdir(parents=True, exist_ok=True)
     payload = plan.to_payload()
+    profile_resolution = payload["source_extensions"].get("execution_profile_resolution", {})
     resolved_output.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
@@ -430,6 +479,12 @@ def write_dag_plan(path: Path, *, output_path: Path) -> dict[str, Any]:
         "plan_sha256": plan.plan_sha256,
         "node_count": len(plan.nodes),
         "edge_count": len(plan.control_edges),
+        "execution_profile": {
+            "profile_id": profile_resolution.get("profile_id"),
+            "resolution_sha256": profile_resolution.get("resolution_sha256"),
+            "compatibility_default": profile_resolution.get("compatibility_default"),
+            "resolved_controls_sha256": profile_resolution.get("resolved_controls_sha256"),
+        },
         "proof_scope": {
             "proves": [
                 "Tau validated a supported public DAG contract and compiled it into DagPlan.",
@@ -893,6 +948,14 @@ def _optional_positive_float(value: object, *, label: str) -> float | None:
     if number <= 0:
         raise RuntimeError(f"{label} must be positive")
     return number
+
+
+def _optional_positive_int(value: object) -> int | None:
+    if value is None:
+        return None
+    if type(value) is not int or value < 1:
+        raise RuntimeError("execution profile numeric source value must be a positive integer")
+    return value
 
 
 def _file_sha256(path: Path) -> str:

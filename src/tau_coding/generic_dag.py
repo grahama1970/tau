@@ -124,6 +124,8 @@ def run_generic_dag(
     current_state_path = run_dir / "current-state.json"
     nodes_by_id = nodes
     plan = compile_generic_dag_plan(spec, source_path=resolved_spec_path)
+    plan_payload = plan.to_payload()
+    profile_resolution = plan_payload["source_extensions"].get("execution_profile_resolution", {})
     goal_hash = _generic_goal_hash(spec)
     run_store_path = run_dir / "dag-run.sqlite3"
     budget = _dag_budget_from_spec(spec, run_dir=run_dir)
@@ -370,6 +372,12 @@ def run_generic_dag(
         "execution": "local_subprocess_receipt_gated_dag",
         "scheduler": "dag_plan_ready_queue",
         "dag_plan_sha256": plan.plan_sha256,
+        "execution_profile": {
+            "profile_id": profile_resolution.get("profile_id"),
+            "resolution_sha256": profile_resolution.get("resolution_sha256"),
+            "resolved_controls_sha256": profile_resolution.get("resolved_controls_sha256"),
+            "compatibility_default": profile_resolution.get("compatibility_default"),
+        },
         "max_observed_concurrency": scheduler_result.max_observed_concurrency,
         "durable": scheduler_result.durable,
         "run_store_path": str(run_store_path),
@@ -471,6 +479,7 @@ def inspect_generic_dag_run(run_dir: Path) -> dict[str, Any]:
         "resume_source": receipt.get("resume_source"),
         "node_count": receipt.get("node_count"),
         "completed_node_count": receipt.get("completed_node_count"),
+        "execution_profile": receipt.get("execution_profile"),
         "resumed_node_count": len([node for node in nodes if node.get("resumed") is True]),
         "dispatched_node_count": len([node for node in nodes if node.get("attempt_count")]),
         "blocked_node_count": len(
