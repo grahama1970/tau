@@ -1,0 +1,79 @@
+{
+  "artifact_sanitization": {
+    "artifact": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/.loop2/runs/loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb/tau-sanitization.json",
+    "changed_artifacts": [
+      "contract.json",
+      "final-receipt.json",
+      "node-result.json"
+    ],
+    "filtered_changed_files": 8,
+    "ran": true,
+    "redacted_keys": [
+      "contract.scillm.api_key"
+    ],
+    "run_dir": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/.loop2/runs/loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb",
+    "schema": "tau.loop2_delegated_artifact_sanitization.v1"
+  },
+  "checks": [
+    {
+      "command": "PYTHONPATH=src python3 -m pytest tests -q",
+      "elapsed_s": 0.23,
+      "exit_code": 0,
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/.loop2/runs/loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb/checks/01-stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/.loop2/runs/loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb/checks/01-stdout.txt"
+    }
+  ],
+  "contract": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/live-scillm-contract.json",
+  "delegated": true,
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "native_validation": {
+    "checked_artifacts": [
+      "contract",
+      "final_receipt",
+      "node_result",
+      "events",
+      "current_state",
+      "transport_dag_evidence",
+      "artifact_paths",
+      "check_status",
+      "mocked_live",
+      "node_result_parity",
+      "contract_parity",
+      "secret_redaction",
+      "tau_sanitization",
+      "state_status"
+    ],
+    "errors": [],
+    "ok": true
+  },
+  "node_id": "tau-live-sidecar-buggy-math",
+  "node_result": {
+    "changed_files": [
+      "src/buggy_math.py"
+    ],
+    "checks": [
+      {
+        "command": "PYTHONPATH=src python3 -m pytest tests -q",
+        "elapsed_s": 0.23,
+        "exit_code": 0,
+        "stderr_path": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/.loop2/runs/loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb/checks/01-stderr.txt",
+        "stdout_path": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/.loop2/runs/loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb/checks/01-stdout.txt"
+      }
+    ],
+    "events": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/.loop2/runs/loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb/events.jsonl",
+    "final_receipt": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/.loop2/runs/loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb/final-receipt.json",
+    "live": true,
+    "mocked": false,
+    "node_id": "tau-live-sidecar-buggy-math",
+    "run_id": "loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb",
+    "schema": "loop2.node_result.v1",
+    "status": "PASS",
+    "transport_dag_evidence": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/.loop2/runs/loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb/transport-dag-evidence.json"
+  },
+  "ok": true,
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-sidecar-20260626T182740Z/.loop2/runs/loop2-tau-live-sidecar-buggy-math-1782498604-6f19eb",
+  "runner": "/home/graham/workspace/experiments/agent-skills/skills/loop2/run.sh",
+  "schema": "tau.loop2_contract_run.v1"
+}

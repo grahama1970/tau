@@ -1,0 +1,36 @@
+{
+  "checks": [
+    "PYTHONPATH=src python3 -m pytest tests -q"
+  ],
+  "contract": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/bad-auth/live-scillm-contract.json",
+  "contract_preparation": {
+    "auth_source": "contract",
+    "execution_contract": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/bad-auth/live-scillm-contract.json",
+    "ran": false,
+    "redacted_keys": [],
+    "schema": "tau.loop2_contract_preparation.v1"
+  },
+  "delegated": true,
+  "errors": [
+    "Scillm proxy auth preflight failed with HTTP 401"
+  ],
+  "live": true,
+  "mocked": false,
+  "node_id": "tau-live-auth-preflight-bad-auth",
+  "ok": false,
+  "run_dir": "",
+  "runner": "/home/graham/workspace/experiments/agent-skills/skills/loop2/run.sh",
+  "schema": "tau.loop2_contract_run.v1",
+  "scillm_auth_preflight": {
+    "base_url": "http://127.0.0.1:4001",
+    "caller_skill": "tau",
+    "endpoint": "/v1/scillm/loop2/capabilities",
+    "errors": [
+      "Scillm proxy auth preflight failed with HTTP 401"
+    ],
+    "ok": false,
+    "ran": true,
+    "schema": "tau.scillm_proxy_auth_preflight.v1",
+    "status_code": 401
+  }
+}
