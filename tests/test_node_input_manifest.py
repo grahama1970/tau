@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
+from tau_coding.dag_runtime.artifact_reference import (
+    ARTIFACT_REFERENCE_SCHEMA,
+    dereference_artifact_reference,
+)
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import DagPlan, DagPlanNode, canonical_sha256
 from tau_coding.dag_runtime.node_input_manifest import (
@@ -40,6 +45,7 @@ def test_compiled_generic_context_binding_has_explicit_compatibility_defaults(
         "materialization_mode": "by_value",
         "on_missing": "omit",
         "on_invalid": "omit",
+        "max_reference_bytes": None,
     }
 
 
@@ -190,6 +196,398 @@ def test_inactive_context_binding_contributes_no_input(tmp_path: Path) -> None:
     assert resolution.manifest["bindings"][0]["reason"] == "control_edge_inactive"
 
 
+def test_by_reference_binding_passes_hash_addressed_artifact_reference(
+    tmp_path: Path,
+) -> None:
+    plan = _replace_single_binding(
+        _producer_consumer_plan(tmp_path),
+        selector_kind="receipt_by_schema",
+        accepted_source_schemas=("large.report.v1",),
+        materialization_mode="by_reference",
+        on_invalid="block",
+        max_reference_bytes=4096,
+    )
+    observed_inputs: list[dict[str, Any]] = []
+    selected_payload: dict[str, Any] | None = None
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        attempt: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        nonlocal selected_payload
+        if node.node_id == "consumer":
+            observed_inputs.extend(accepted_inputs)
+            selected_payload = dereference_artifact_reference(
+                accepted_inputs[0],
+                run_store_root=tmp_path,
+                selector={"kind": "json_key", "key": "section"},
+            )
+            return {"node_id": node.node_id, "status": "PASS", "verdict": "PASS"}
+        receipt_path = tmp_path / "receipts" / "producer.json"
+        receipt_payload = {
+            "schema": "large.report.v1",
+            "section": {"kept": True},
+            "hidden": "not embedded in context",
+        }
+        digest, size = _write_json_receipt(receipt_path, receipt_payload)
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "receipt_path": str(receipt_path),
+            "accepted_output": {
+                "receipts": [
+                    {
+                        "schema": "large.report.v1",
+                        "path": str(receipt_path),
+                        "sha256": digest,
+                        "size_bytes": size,
+                        "receipt_kind": "node_receipt",
+                    }
+                ]
+            },
+        }
+
+    with SqliteDagRunStore(tmp_path / "dag-run.sqlite3") as store:
+        result = run_dag_plan(
+            plan,
+            execute_node=execute,
+            run_store=store,
+            lease_owner="test-by-reference",
+        )
+
+    assert result.status == "PASS"
+    assert observed_inputs[0]["schema"] == ARTIFACT_REFERENCE_SCHEMA
+    assert observed_inputs[0]["artifact_schema"] == "large.report.v1"
+    assert "hidden" not in observed_inputs[0]
+    assert selected_payload == {
+        "schema": "tau.artifact_reference.selected_json_key.v1",
+        "key": "section",
+        "value": {"kept": True},
+    }
+
+
+def test_by_reference_hash_mismatch_blocks_before_consumer_dispatch(
+    tmp_path: Path,
+) -> None:
+    plan = _replace_single_binding(
+        _producer_consumer_plan(tmp_path),
+        selector_kind="receipt_by_schema",
+        accepted_source_schemas=("large.report.v1",),
+        materialization_mode="by_reference",
+        on_invalid="block",
+    )
+    called: list[str] = []
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        attempt: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        del accepted_inputs, attempt
+        called.append(node.node_id)
+        receipt_path = tmp_path / "receipts" / "producer.json"
+        digest, size = _write_json_receipt(receipt_path, {"schema": "large.report.v1"})
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "receipt_path": str(receipt_path),
+            "accepted_output": {
+                "receipts": [
+                    {
+                        "schema": "large.report.v1",
+                        "path": str(receipt_path),
+                        "sha256": digest,
+                        "size_bytes": size,
+                        "receipt_kind": "node_receipt",
+                    }
+                ]
+            },
+        }
+
+    def mutate_after_producer(event: dict[str, Any]) -> None:
+        if event.get("event") == "node_completed" and event.get("node_id") == "producer":
+            (tmp_path / "receipts" / "producer.json").write_text(
+                '{"schema":"large.report.v1","mutated":true}\n',
+                encoding="utf-8",
+            )
+
+    with SqliteDagRunStore(tmp_path / "dag-run.sqlite3") as store:
+        result = run_dag_plan(
+            plan,
+            execute_node=execute,
+            run_store=store,
+            lease_owner="test-by-reference",
+            event_sink=mutate_after_producer,
+        )
+
+    assert result.status == "BLOCKED"
+    assert result.verdict == "NODE_INPUT_REFERENCE_HASH_MISMATCH"
+    assert called == ["producer"]
+
+
+def test_by_reference_over_budget_blocks_before_consumer_dispatch(
+    tmp_path: Path,
+) -> None:
+    plan = _replace_single_binding(
+        _producer_consumer_plan(tmp_path),
+        selector_kind="receipt_by_schema",
+        accepted_source_schemas=("large.report.v1",),
+        materialization_mode="by_reference",
+        on_invalid="block",
+        max_reference_bytes=10,
+    )
+    called: list[str] = []
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        attempt: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        del accepted_inputs, attempt
+        called.append(node.node_id)
+        receipt_path = tmp_path / "receipts" / "producer.json"
+        digest, size = _write_json_receipt(
+            receipt_path,
+            {"schema": "large.report.v1", "payload": "larger than ten bytes"},
+        )
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "receipt_path": str(receipt_path),
+            "accepted_output": {
+                "receipts": [
+                    {
+                        "schema": "large.report.v1",
+                        "path": str(receipt_path),
+                        "sha256": digest,
+                        "size_bytes": size,
+                        "receipt_kind": "node_receipt",
+                    }
+                ]
+            },
+        }
+
+    with SqliteDagRunStore(tmp_path / "dag-run.sqlite3") as store:
+        result = run_dag_plan(
+            plan,
+            execute_node=execute,
+            run_store=store,
+            lease_owner="test-by-reference",
+        )
+
+    assert result.status == "BLOCKED"
+    assert result.verdict == "NODE_INPUT_REFERENCE_OVER_BUDGET"
+    assert called == ["producer"]
+
+
+def test_by_reference_missing_admission_blocks_before_consumer_dispatch(
+    tmp_path: Path,
+) -> None:
+    plan = _replace_single_binding(
+        _producer_consumer_plan(tmp_path),
+        selector_kind="receipt_by_schema",
+        accepted_source_schemas=("large.report.v1",),
+        materialization_mode="by_reference",
+        on_invalid="block",
+    )
+    called: list[str] = []
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        attempt: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        del accepted_inputs, attempt
+        called.append(node.node_id)
+        receipt_path = tmp_path / "receipts" / "producer.json"
+        digest, size = _write_json_receipt(receipt_path, {"schema": "large.report.v1"})
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "accepted_output": {
+                "receipts": [
+                    {
+                        "schema": "large.report.v1",
+                        "path": str(receipt_path),
+                        "sha256": digest,
+                        "size_bytes": size,
+                        "receipt_kind": "node_receipt",
+                    }
+                ]
+            },
+        }
+
+    with SqliteDagRunStore(tmp_path / "dag-run.sqlite3") as store:
+        result = run_dag_plan(
+            plan,
+            execute_node=execute,
+            run_store=store,
+            lease_owner="test-by-reference",
+        )
+
+    assert result.status == "BLOCKED"
+    assert result.verdict == "NODE_INPUT_REFERENCE_ADMISSION_MISSING"
+    assert called == ["producer"]
+
+
+def test_by_reference_path_escape_blocks_before_consumer_dispatch(tmp_path: Path) -> None:
+    plan = _replace_single_binding(
+        _producer_consumer_plan(tmp_path),
+        selector_kind="receipt_by_schema",
+        accepted_source_schemas=("large.report.v1",),
+        materialization_mode="by_reference",
+        on_invalid="block",
+    )
+    outside_path = tmp_path.parent / f"{tmp_path.name}-outside.json"
+    called: list[str] = []
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        attempt: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        del accepted_inputs, attempt
+        called.append(node.node_id)
+        digest, size = _write_json_receipt(outside_path, {"schema": "large.report.v1"})
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "receipt_path": str(outside_path),
+            "accepted_output": {
+                "receipts": [
+                    {
+                        "schema": "large.report.v1",
+                        "path": str(outside_path),
+                        "sha256": digest,
+                        "size_bytes": size,
+                        "receipt_kind": "node_receipt",
+                    }
+                ]
+            },
+        }
+
+    with SqliteDagRunStore(tmp_path / "dag-run.sqlite3") as store:
+        result = run_dag_plan(
+            plan,
+            execute_node=execute,
+            run_store=store,
+            lease_owner="test-by-reference",
+        )
+
+    assert result.status == "BLOCKED"
+    assert result.verdict == "NODE_INPUT_REFERENCE_PATH_ESCAPE"
+    assert called == ["producer"]
+
+
+def test_by_reference_symlink_escape_blocks_before_consumer_dispatch(tmp_path: Path) -> None:
+    plan = _replace_single_binding(
+        _producer_consumer_plan(tmp_path),
+        selector_kind="receipt_by_schema",
+        accepted_source_schemas=("large.report.v1",),
+        materialization_mode="by_reference",
+        on_invalid="block",
+    )
+    outside_path = tmp_path.parent / f"{tmp_path.name}-outside-symlink-target.json"
+    symlink_path = tmp_path / "receipts" / "producer-link.json"
+    called: list[str] = []
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        attempt: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        del accepted_inputs, attempt
+        called.append(node.node_id)
+        digest, size = _write_json_receipt(outside_path, {"schema": "large.report.v1"})
+        symlink_path.parent.mkdir(parents=True, exist_ok=True)
+        symlink_path.symlink_to(outside_path)
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "receipt_path": str(symlink_path),
+            "accepted_output": {
+                "receipts": [
+                    {
+                        "schema": "large.report.v1",
+                        "path": str(symlink_path),
+                        "sha256": digest,
+                        "size_bytes": size,
+                        "receipt_kind": "node_receipt",
+                    }
+                ]
+            },
+        }
+
+    with SqliteDagRunStore(tmp_path / "dag-run.sqlite3") as store:
+        result = run_dag_plan(
+            plan,
+            execute_node=execute,
+            run_store=store,
+            lease_owner="test-by-reference",
+        )
+
+    assert result.status == "BLOCKED"
+    assert result.verdict == "NODE_INPUT_REFERENCE_PATH_ESCAPE"
+    assert called == ["producer"]
+
+
+def test_by_reference_wrong_schema_blocks_before_consumer_dispatch(tmp_path: Path) -> None:
+    plan = _replace_single_binding(
+        _producer_consumer_plan(tmp_path),
+        selector_kind="receipt_by_schema",
+        accepted_source_schemas=("wanted.report.v1",),
+        materialization_mode="by_reference",
+        on_invalid="block",
+    )
+    called: list[str] = []
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        attempt: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        del accepted_inputs, attempt
+        called.append(node.node_id)
+        receipt_path = tmp_path / "receipts" / "producer.json"
+        digest, size = _write_json_receipt(receipt_path, {"schema": "other.report.v1"})
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "receipt_path": str(receipt_path),
+            "accepted_output": {
+                "receipts": [
+                    {
+                        "schema": "other.report.v1",
+                        "path": str(receipt_path),
+                        "sha256": digest,
+                        "size_bytes": size,
+                        "receipt_kind": "node_receipt",
+                    }
+                ]
+            },
+        }
+
+    with SqliteDagRunStore(tmp_path / "dag-run.sqlite3") as store:
+        result = run_dag_plan(
+            plan,
+            execute_node=execute,
+            run_store=store,
+            lease_owner="test-by-reference",
+        )
+
+    assert result.status == "BLOCKED"
+    assert result.verdict == "NODE_INPUT_SCHEMA_MISMATCH"
+    assert called == ["producer"]
+
+
 def _producer_consumer_plan(tmp_path: Path) -> DagPlan:
     return compile_generic_dag_plan(
         {
@@ -228,3 +626,10 @@ def _node(
         "timeout_seconds": 1,
         "max_attempts": 1,
     }
+
+
+def _write_json_receipt(path: Path, payload: dict[str, Any]) -> tuple[str, int]:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    encoded = (json.dumps(payload, sort_keys=True) + "\n").encode("utf-8")
+    path.write_bytes(encoded)
+    return f"sha256:{hashlib.sha256(encoded).hexdigest()}", len(encoded)

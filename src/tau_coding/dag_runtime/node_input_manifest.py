@@ -13,6 +13,10 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
+from tau_coding.dag_runtime.artifact_reference import (
+    ArtifactReferenceError,
+    build_artifact_reference,
+)
 from tau_coding.dag_runtime.admission import write_durable_json
 from tau_coding.dag_runtime.model import (
     CONTEXT_BINDING_MATERIALIZATION_MODES,
@@ -45,6 +49,7 @@ def resolve_node_input_manifest(
     bindings: tuple[DagPlanContextBinding, ...],
     edge_states: Mapping[str, str],
     results: Mapping[str, Mapping[str, Any]],
+    run_store: SqliteDagRunStore | None = None,
 ) -> NodeInputManifestResolution:
     """Resolve declared context bindings and build a replayable manifest."""
 
@@ -88,6 +93,66 @@ def resolve_node_input_manifest(
             blocked_result = blocked_result or _policy_block(
                 node.node_id, binding.on_invalid, reason
             )
+            continue
+        if binding.materialization_mode == "by_reference":
+            if run_store is None:
+                entry.update(
+                    {
+                        "disposition": "invalid",
+                        "reason": "NODE_INPUT_REFERENCE_REQUIRES_RUN_STORE",
+                    }
+                )
+                entries.append(entry)
+                blocked_result = blocked_result or _blocked_result(
+                    node.node_id, "NODE_INPUT_REFERENCE_REQUIRES_RUN_STORE"
+                )
+                continue
+            source_attempt_id = entry.get("source_attempt_id")
+            if not isinstance(source_attempt_id, str):
+                entry.update(
+                    {
+                        "disposition": "invalid",
+                        "reason": "NODE_INPUT_REFERENCE_SOURCE_ATTEMPT_MISSING",
+                    }
+                )
+                entries.append(entry)
+                blocked_result = blocked_result or _policy_block(
+                    node.node_id,
+                    binding.on_invalid,
+                    "NODE_INPUT_REFERENCE_SOURCE_ATTEMPT_MISSING",
+                )
+                continue
+            try:
+                materialized = build_artifact_reference(
+                    run_store=run_store,
+                    run_id=identity.run_id,
+                    binding=binding,
+                    selected=selected,
+                    source_node_id=binding.source_node_id,
+                    source_attempt_id=source_attempt_id,
+                    target_node_id=node.node_id,
+                )
+            except ArtifactReferenceError as exc:
+                entry.update({"disposition": "invalid", "reason": exc.code})
+                entries.append(entry)
+                blocked_result = blocked_result or _policy_block(
+                    node.node_id, binding.on_invalid, exc.code
+                )
+                continue
+            reference = materialized.reference
+            entry.update(
+                {
+                    "disposition": "referenced",
+                    "reason": "selected_by_reference",
+                    "selected_schema": _optional_str(reference.get("artifact_schema")),
+                    "selected_path": _optional_str(reference.get("path")),
+                    "selected_sha256": _optional_str(reference.get("sha256")),
+                    "admitted_artifact_id": reference["admitted_artifact_id"],
+                    "artifact_reference_sha256": reference["reference_sha256"],
+                }
+            )
+            entries.append(entry)
+            accepted_inputs.append(reference)
             continue
         entry.update(
             {
@@ -167,14 +232,16 @@ def _binding_config_error(binding: DagPlanContextBinding) -> str | None:
         return "NODE_INPUT_BINDING_SELECTOR_INVALID"
     if binding.materialization_mode not in CONTEXT_BINDING_MATERIALIZATION_MODES:
         return "NODE_INPUT_BINDING_MATERIALIZATION_INVALID"
-    if binding.materialization_mode != "by_value":
-        return "NODE_INPUT_BY_REFERENCE_UNSUPPORTED"
     if binding.on_missing not in CONTEXT_BINDING_ON_MISSING:
         return "NODE_INPUT_BINDING_ON_MISSING_INVALID"
     if binding.on_invalid not in CONTEXT_BINDING_ON_INVALID:
         return "NODE_INPUT_BINDING_ON_INVALID_INVALID"
     if not binding.accepted_source_schemas:
         return "NODE_INPUT_BINDING_SCHEMA_SET_EMPTY"
+    if binding.max_reference_bytes is not None and (
+        not isinstance(binding.max_reference_bytes, int) or binding.max_reference_bytes < 1
+    ):
+        return "NODE_INPUT_BINDING_REFERENCE_BUDGET_INVALID"
     return None
 
 

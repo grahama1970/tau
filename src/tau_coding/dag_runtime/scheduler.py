@@ -462,6 +462,7 @@ def run_dag_plan(
                             bindings=context_bindings.get(node_id, ()),
                             edge_states=edge_states,
                             results=results,
+                            run_store=run_store,
                         )
                         input_admission = admit_node_input_manifest(
                             run_store=run_store,
@@ -531,6 +532,7 @@ def run_dag_plan(
                             bindings=context_bindings.get(node_id, ()),
                             edge_states=edge_states,
                             results=results,
+                            run_store=None,
                         )
                         accepted_inputs = input_resolution.accepted_inputs
                         input_admission = None
