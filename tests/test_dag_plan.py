@@ -388,9 +388,10 @@ def test_source_extensions_are_preserved_and_hash_bound(tmp_path: Path) -> None:
     first = compile_generic_dag_plan(first_payload, source_path=tmp_path / "dag.json")
     second = compile_generic_dag_plan(second_payload, source_path=tmp_path / "dag.json")
 
-    assert first.to_payload()["source_extensions"] == {
-        "project_extension": {"revision": 1}
-    }
+    extensions = first.to_payload()["source_extensions"]
+    assert extensions["project_extension"] == {"revision": 1}
+    assert extensions["execution_profile_resolution"]["profile_id"] == "standard"
+    assert extensions["execution_profile_resolution"]["compatibility_default"] is True
     assert first.plan_sha256 != second.plan_sha256
 
 

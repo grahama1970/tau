@@ -209,6 +209,7 @@ DAG_RUN_STATUS_POLL_SECONDS = 0.75
 # can exceed this on a loaded machine, which is a property of the runner rather
 # than of the behaviour under test.
 DOUBLE_ESCAPE_WINDOW_SECONDS = 0.5
+CLEAR_PROMPT_QUIT_WINDOW_SECONDS = 2.0
 TERMINAL_PROGRESS_ACTIVE_SEQUENCE = "\x1b]9;4;3\x07"
 TERMINAL_PROGRESS_CLEAR_SEQUENCE = "\x1b]9;4;0;\x07"
 COMPLETION_MAX_VISIBLE_LINES = DEFAULT_AUTOCOMPLETE_MAX_VISIBLE
@@ -1401,7 +1402,10 @@ class PromptInput(TextArea):
         app = self._completion_target()
         now = monotonic()
         last_clear_at = getattr(app, "_last_clear_prompt_at", None)
-        if last_clear_at is not None and now - last_clear_at <= 0.5:
+        if (
+            last_clear_at is not None
+            and now - last_clear_at <= CLEAR_PROMPT_QUIT_WINDOW_SECONDS
+        ):
             app._last_clear_prompt_at = None
             result = app.action_quit()
             if isawaitable(result):
