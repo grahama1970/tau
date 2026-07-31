@@ -43,6 +43,10 @@ const observed = {
   refresh_reconstructed_state: false,
   read_only_requests: false,
   layout_non_overlapping: false,
+  selected_node_inspector_visible: false,
+  selected_node_sections_visible: false,
+  selected_node_read_only: false,
+  selected_node_no_mutation_controls: false,
 };
 
 await page.click('[data-qid="dag:inspector:source"]');
@@ -79,7 +83,16 @@ while (Date.now() < deadline) {
     state.creatorAdmission === "accepted" && state.creatorClass.includes("tau-node--accepted");
   observed.dependent_released_after_acceptance ||=
     observed.receipt_admission_turned_green && ["ready", "running", "settled"].includes(state.continuationState);
-  if (Object.entries(observed).filter(([key]) => !["dag_plan_tab_visible", "refresh_reconstructed_state", "read_only_requests", "layout_non_overlapping"].includes(key)).every(([, value]) => value)) break;
+  if (Object.entries(observed).filter(([key]) => ![
+    "dag_plan_tab_visible",
+    "refresh_reconstructed_state",
+    "read_only_requests",
+    "layout_non_overlapping",
+    "selected_node_inspector_visible",
+    "selected_node_sections_visible",
+    "selected_node_read_only",
+    "selected_node_no_mutation_controls",
+  ].includes(key)).every(([, value]) => value)) break;
   await new Promise((resolve) => setTimeout(resolve, 100));
 }
 
@@ -135,6 +148,29 @@ observed.layout_non_overlapping = await page.evaluate(() => {
     && contained(proofBoundary, inspector)
     && inspectorContent.bottom <= proofBoundary.top + 1;
 });
+await page.click('[data-qid="dag:node:creator-reviewer"]');
+await page.waitForFunction(() => document.querySelector('[data-qid="dag:inspector:node"]')?.getAttribute("aria-pressed") === "true");
+await page.waitForSelector('[data-qid="dag:selected-node-inspector"]', { timeout: 10000 });
+const selectedNodeInspector = await page.$eval('[data-qid="dag:selected-node-inspector"]', (element) => ({
+  text: element.textContent || "",
+  retryButtons: Array.from(element.querySelectorAll("button")).filter((button) => /retry|repair|approve|mutate/i.test(button.textContent || "")).length,
+}));
+observed.selected_node_inspector_visible = selectedNodeInspector.text.includes("creator-reviewer")
+  && selectedNodeInspector.text.includes("read-only backend projection");
+observed.selected_node_sections_visible = [
+  "Contract",
+  "Accepted Inputs",
+  "Completion Boundary",
+  "Review Scope",
+  "Workspace Freshness",
+  "Worker",
+  "Accepted Evidence and Artifacts",
+  "Diagnostics",
+].every((label) => selectedNodeInspector.text.includes(label));
+observed.selected_node_read_only = selectedNodeInspector.text.includes("read-only backend projection");
+observed.selected_node_no_mutation_controls =
+  selectedNodeInspector.text.includes("mutation controls: 0")
+  && selectedNodeInspector.retryButtons === 0;
 await page.screenshot({ path: screenshotPath, fullPage: viewport.width < 900 });
 await browser.close();
 const screenshotSha256 = `sha256:${createHash("sha256").update(fs.readFileSync(screenshotPath)).digest("hex")}`;

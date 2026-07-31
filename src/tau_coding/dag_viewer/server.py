@@ -26,19 +26,21 @@ from tau_coding.dag_viewer.http import (
     parse_at_sequence,
     parse_compare_query,
     parse_event_query,
+    parse_node_inspector_query,
     parse_view_query,
     public_error_message,
     security_headers,
     viewer_error,
     with_headers,
 )
+from tau_coding.dag_viewer.project_receipt_projection import ProjectReceiptProjection
 from tau_coding.dag_viewer.projection import (
     build_dag_live_events,
     build_dag_view_manifest,
     build_dag_view_state,
+    build_selected_node_inspector,
     load_dag_replay_result,
 )
-from tau_coding.dag_viewer.project_receipt_projection import ProjectReceiptProjection
 from tau_coding.dag_viewer.query import query_dag_view
 from tau_coding.dag_viewer.receipt_index import ReceiptIndex, build_receipt_index
 from tau_coding.dag_viewer.static_files import read_static_viewer_file
@@ -204,8 +206,7 @@ class DagViewerApplication:
                 selected = tuple(
                     event
                     for event in events
-                    if int(event["seq"]) > after
-                    and (before is None or int(event["seq"]) < before)
+                    if int(event["seq"]) > after and (before is None or int(event["seq"]) < before)
                 )
                 selected = selected[-limit:] if before is not None else selected[:limit]
                 return json_response(
@@ -286,6 +287,27 @@ class DagViewerApplication:
                     run_dir=self.run_dir,
                 )
             return json_response(payload)
+        node_inspector_prefix = "/api/v1/nodes/"
+        if path.startswith(node_inspector_prefix) and path.endswith("/inspector"):
+            node_id = path.removeprefix(node_inspector_prefix).removesuffix("/inspector")
+            if not node_id or "/" in node_id or node_id in {".", ".."}:
+                raise RuntimeError("dag_viewer_node_inspector_not_found")
+            at_sequence, attempt = parse_node_inspector_query(parsed.query)
+            if self._project_receipt is not None:
+                raise RuntimeError("dag_viewer_node_inspector_not_found")
+            result = self._replay(at_sequence=at_sequence)
+            self._refresh_receipts(result.replay.transition_receipts)
+            return json_response(
+                build_selected_node_inspector(
+                    replay=result.replay,
+                    recent_events=result.events,
+                    node_id=node_id,
+                    attempt=attempt,
+                    view_mode=result.view_mode,
+                    selected_event_created_at=result.selected_event_created_at,
+                    receipt_index=self.receipts,
+                )
+            )
         explanation_prefix = "/api/v1/explanations/"
         if path.startswith(explanation_prefix):
             remainder = path.removeprefix(explanation_prefix)
@@ -296,9 +318,7 @@ class DagViewerApplication:
             at_sequence = parse_at_sequence(parsed.query)
             if self._project_receipt is not None:
                 return json_response(
-                    self._project_receipt.explanation(
-                        kind, subject_id, at_sequence=at_sequence
-                    )
+                    self._project_receipt.explanation(kind, subject_id, at_sequence=at_sequence)
                 )
             result = self._replay(at_sequence=at_sequence)
             self._refresh_receipts(result.replay.transition_receipts)
@@ -343,8 +363,7 @@ class DagViewerApplication:
 
     def _refresh_receipts(self, receipt_refs: Any) -> None:
         expected = {
-            (str(Path(item.path).expanduser().resolve()), item.file_sha256)
-            for item in receipt_refs
+            (str(Path(item.path).expanduser().resolve()), item.file_sha256) for item in receipt_refs
         }
         current = {(str(item.path), item.sha256) for item in self.receipts.entries}
         if current != expected:

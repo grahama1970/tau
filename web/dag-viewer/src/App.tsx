@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Braces, FileCheck2, FileJson2, GitBranch, RadioTower } from "lucide-react";
-import { classifySnapshotTransition, loadComparison, loadExplanation, loadInitialState, loadJournalSequences, loadMatchingManifest, loadQuery, loadReceipt, pollState } from "./api";
+import { Braces, FileCheck2, FileJson2, GitBranch, RadioTower, SquareDashedMousePointer } from "lucide-react";
+import { classifySnapshotTransition, loadComparison, loadExplanation, loadInitialState, loadJournalSequences, loadMatchingManifest, loadQuery, loadReceipt, loadSelectedNodeInspector, pollState } from "./api";
 import { AttentionRail } from "./components/AttentionRail";
 import { CausalDetails } from "./components/CausalDetails";
 import { DecisionRail } from "./components/DecisionRail";
@@ -12,12 +12,14 @@ import { JsonInspector } from "./components/JsonInspector";
 import { ReceiptInspector } from "./components/ReceiptInspector";
 import { RunOverview } from "./components/RunOverview";
 import { SequenceNavigator } from "./components/SequenceNavigator";
+import { SelectedNodeInspector } from "./components/SelectedNodeInspector";
 import { StatusBanner } from "./components/StatusBanner";
 import { TransactionAttempts } from "./components/TransactionAttempts";
-import type { AttentionItem, CausalExplanation, ComparisonSide, DagComparison, DagManifest, DagQueryResult, DagSnapshot, JournalEvent, JsonValue, QueryItem, ReceiptProjection } from "./types";
+import type { AttentionItem, CausalExplanation, ComparisonSide, DagComparison, DagManifest, DagQueryResult, DagSnapshot, JournalEvent, JsonValue, QueryItem, ReceiptProjection, SelectedNodeInspectorProjection } from "./types";
 
-type InspectorTab = "source" | "plan" | "live" | "cause" | "receipt";
+type InspectorTab = "node" | "source" | "plan" | "live" | "cause" | "receipt";
 const tabs: Array<{ id: InspectorTab; label: string; icon: typeof Braces }> = [
+  { id: "node", label: "Node", icon: SquareDashedMousePointer },
   { id: "source", label: "Source DAG", icon: FileJson2 },
   { id: "plan", label: "DagPlan", icon: Braces },
   { id: "live", label: "Live State", icon: RadioTower },
@@ -38,6 +40,7 @@ export default function App() {
   const etagsRef = useRef(new Map<string, string | null>());
   const requestGenerationRef = useRef(0);
   const explanationGenerationRef = useRef(0);
+  const selectedNodeInspectorGenerationRef = useRef(0);
   const comparisonGenerationRef = useRef(0);
   const receiptGenerationRef = useRef(0);
   const receiptAuthorityRef = useRef("");
@@ -53,6 +56,7 @@ export default function App() {
   const [receipt, setReceipt] = useState<ReceiptProjection | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<{ kind: string; id: string } | null>(null);
   const [explanation, setExplanation] = useState<CausalExplanation | null>(null);
+  const [selectedNodeInspector, setSelectedNodeInspector] = useState<SelectedNodeInspectorProjection | null>(null);
   const [filterDraft, setFilterDraft] = useState<FilterState>(initialFilters);
   const [appliedFilter, setAppliedFilter] = useState<FilterState>(initialFilters);
   const [queryResult, setQueryResult] = useState<DagQueryResult | null>(null);
@@ -150,6 +154,7 @@ export default function App() {
             ) return;
             const nextRequestGeneration = ++requestGenerationRef.current;
             explanationGenerationRef.current += 1;
+            selectedNodeInspectorGenerationRef.current += 1;
             comparisonGenerationRef.current += 1;
             receiptGenerationRef.current += 1;
             receiptAuthorityRef.current = "";
@@ -217,6 +222,42 @@ export default function App() {
     return () => { active = false; };
   }, [selectedSequence, selectedSubject, snapshot?.run_id]);
 
+  const selectedLive = useMemo(() => snapshot?.nodes.find((node) => node.node_id === selectedId) ?? null, [selectedId, snapshot]);
+  const selectedTerminal = useMemo(
+    () => snapshot?.terminals.find((terminal) => terminal.terminal_id === selectedId) ?? null,
+    [selectedId, snapshot],
+  );
+
+  useEffect(() => {
+    const generation = ++selectedNodeInspectorGenerationRef.current;
+    setSelectedNodeInspector(null);
+    if (!selectedLive || !snapshot) return;
+    const expectedRunId = snapshot.run_id;
+    const expectedPlan = snapshot.plan_sha256;
+    const expectedSequence = snapshot.journal_sequence;
+    const expectedNode = selectedLive.node_id;
+    const expectedAttempt = selectedLive.scheduler.attempt || null;
+    let active = true;
+    loadSelectedNodeInspector(expectedNode, expectedAttempt, selectedSequence)
+      .then((value) => {
+        if (
+          active
+          && generation === selectedNodeInspectorGenerationRef.current
+          && value.run_id === expectedRunId
+          && value.plan_sha256 === expectedPlan
+          && value.node_id === expectedNode
+          && value.journal_sequence === expectedSequence
+          && (expectedAttempt === null || value.attempt === expectedAttempt)
+        ) setSelectedNodeInspector(value);
+      })
+      .catch(() => {
+        if (active && generation === selectedNodeInspectorGenerationRef.current) {
+          setSelectedNodeInspector(null);
+        }
+      });
+    return () => { active = false; };
+  }, [selectedLive?.node_id, selectedLive?.scheduler.attempt, selectedSequence, snapshot?.run_id, snapshot?.snapshot_sha256]);
+
   useEffect(() => {
     comparisonGenerationRef.current += 1;
     setComparison(null);
@@ -273,11 +314,6 @@ export default function App() {
     return () => { active = false; };
   }, [appliedFilter, selectedSequence, snapshot?.snapshot_sha256]);
 
-  const selectedLive = useMemo(() => snapshot?.nodes.find((node) => node.node_id === selectedId) ?? null, [selectedId, snapshot]);
-  const selectedTerminal = useMemo(
-    () => snapshot?.terminals.find((terminal) => terminal.terminal_id === selectedId) ?? null,
-    [selectedId, snapshot],
-  );
   const transaction = selectedLive?.transaction ?? snapshot?.nodes.find((node) => node.transaction)?.transaction ?? null;
 
   useEffect(() => {
@@ -318,6 +354,7 @@ export default function App() {
       : "NODE";
     setSelectedId(id);
     setSelectedSubject({ kind, id });
+    if (kind === "NODE") setTab("node");
   };
 
   const selectAttention = (item: AttentionItem) => {
@@ -477,9 +514,11 @@ export default function App() {
         <div className="inspector-content" data-qid="dag:workspace:inspector-content">
           {tab === "receipt"
             ? <ReceiptInspector entries={manifest.receipt_index} selected={receiptId} onSelect={selectReceipt} projection={receipt} />
-            : tab === "cause"
-              ? <CausalDetails explanation={explanation} onReceipt={selectReceipt} />
-              : <JsonInspector value={inspectorValue} label={`${tab} JSON`} />}
+            : tab === "node"
+              ? <SelectedNodeInspector projection={selectedNodeInspector} />
+              : tab === "cause"
+                ? <CausalDetails explanation={explanation} onReceipt={selectReceipt} />
+                : <JsonInspector value={inspectorValue} label={`${tab} JSON`} />}
         </div>
         <footer className="proof-boundary" data-qid="dag:workspace:proof-boundary">
           <div><strong>Proves</strong>{snapshot.proof_scope.proves.map((claim) => <span key={claim}>{claim}</span>)}</div>

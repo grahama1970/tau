@@ -71,7 +71,7 @@ def main() -> int:
             capture_output=True,
             text=True,
             env=env,
-            timeout=35,
+            timeout=60,
         )
         try:
             smoke_stdout, smoke_stderr = smoke.communicate(timeout=20)

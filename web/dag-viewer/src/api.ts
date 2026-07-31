@@ -1,4 +1,4 @@
-import type { CausalExplanation, DagComparison, DagEventPage, DagManifest, DagQueryResult, DagSnapshot, ReceiptProjection } from "./types";
+import type { CausalExplanation, DagComparison, DagEventPage, DagManifest, DagQueryResult, DagSnapshot, ReceiptProjection, SelectedNodeInspectorProjection } from "./types";
 
 export type SnapshotTransition = "SAME_RUN" | "NEWER_GENERATION" | "REJECT";
 
@@ -83,6 +83,22 @@ export function classifySnapshotTransition(current: DagSnapshot, candidate: DagS
 export async function loadReceipt(receiptId: string, sequence: number | null = null): Promise<ReceiptProjection> {
   const result = await getJson<ReceiptProjection>(`/api/v1/receipts/${encodeURIComponent(receiptId)}${sequenceQuery(sequence)}`);
   if (!result.value) throw new Error("viewer_receipt_missing");
+  return result.value;
+}
+
+export async function loadSelectedNodeInspector(
+  nodeId: string,
+  attempt: number | null,
+  sequence: number | null = null,
+): Promise<SelectedNodeInspectorProjection> {
+  const parameters = new URLSearchParams();
+  if (sequence !== null) parameters.set("at_sequence", String(sequence));
+  if (attempt !== null && attempt > 0) parameters.set("attempt", String(attempt));
+  const suffix = parameters.toString() ? `?${parameters.toString()}` : "";
+  const result = await getJson<SelectedNodeInspectorProjection>(
+    `/api/v1/nodes/${encodeURIComponent(nodeId)}/inspector${suffix}`,
+  );
+  if (!result.value) throw new Error("viewer_selected_node_inspector_missing");
   return result.value;
 }
 
