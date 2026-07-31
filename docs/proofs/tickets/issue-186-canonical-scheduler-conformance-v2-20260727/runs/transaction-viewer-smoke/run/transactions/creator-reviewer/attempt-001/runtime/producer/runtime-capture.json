@@ -1,0 +1,20 @@
+{
+  "cancelled": false,
+  "command": [
+    "/tmp/tau-issue186-1785164636/.venv/bin/python",
+    "/tmp/tau-issue186-1785164636/examples/dag-viewer-creator-reviewer/producer.py",
+    "--artifact-root",
+    "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/transaction-viewer-smoke/artifacts",
+    "--receipt",
+    "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/transaction-viewer-smoke/creator-receipt.json",
+    "--work-order",
+    "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/transaction-viewer-smoke/work-order.json",
+    "--step-delay-seconds",
+    "0.25"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "",
+  "timed_out": false
+}

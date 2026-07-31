@@ -1,0 +1,36 @@
+{
+  "attempt": 1,
+  "candidate_manifest_sha256": "efde76dc081bf294a4977581a903d7adda284e6bc7b31922db2f89172d71beaf",
+  "execution_evidence": {
+    "command_result_sha256": "sha256:e7ecfdfbbc90bc2e69837956e87a124eeb157de1725bb1d121e589698f69f01b",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "findings": [
+    {
+      "artifact_ids": [
+        "primary"
+      ],
+      "code": "CONTENT_REVISION_REQUIRED",
+      "finding_id": "revise-1",
+      "message": "The first candidate must be revised.",
+      "revision_instruction": "Produce a distinct second candidate.",
+      "severity": "ERROR"
+    }
+  ],
+  "live": true,
+  "mocked": false,
+  "node_id": "creator-reviewer",
+  "producer_id": "creator",
+  "provider_live": false,
+  "review_context_sha256": "de2248d542ee84e1e7c9a384e46e5d1b62b75897afd10637bd6b31d943d8ffea",
+  "reviewer_id": "deterministic-reviewer",
+  "schema": "tau.generic_artifact_review.v1",
+  "summary": "Revise the first candidate.",
+  "transaction_id": "tx-creator-reviewer",
+  "verdict": "REVISE"
+}

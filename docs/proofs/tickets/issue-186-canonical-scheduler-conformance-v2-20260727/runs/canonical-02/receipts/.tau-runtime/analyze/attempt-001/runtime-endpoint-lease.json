@@ -1,0 +1,29 @@
+{
+  "attempt_id": "attempt-040203bdc21fe59eceacfa21364a6537",
+  "attempt_number": 1,
+  "backend": "local",
+  "backend_ids": {
+    "pid": null
+  },
+  "backend_session_id": null,
+  "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+  "cleanup_policy": {
+    "kind": "process_group_termination"
+  },
+  "created_at": "2026-07-27T15:10:26.909448+00:00",
+  "dag_id": "generic:canonical-02-multi-step-sequential",
+  "endpoint_id": "local:e8257811a7f9d8602e8f863a",
+  "execution_token": "[REDACTED]",
+  "expires_at": "2026-07-27T15:11:56.909448+00:00",
+  "goal_hash": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "heartbeat_policy": {
+    "kind": "process_poll"
+  },
+  "node_id": "analyze",
+  "owner": "tau",
+  "plan_revision": "sha256:59ddd5ebef5acf34d54268b75e5578c0fe52c674919a58f719538b19c5589c75",
+  "run_id": "canonical-02-multi-step-sequential",
+  "schema": "tau.runtime_endpoint_lease.v1",
+  "scope_id": "canonical-02-multi-step-sequential",
+  "work_order_sha256": "sha256:99d3f1a20a21860da57e7e8cd1edf6dfe41e09d7f762a795203506b19416cac8"
+}

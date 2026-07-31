@@ -1,0 +1,46 @@
+{
+  "accepted_output": {
+    "artifacts": [
+      {
+        "bytes": 569,
+        "kind": "goal-summary",
+        "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/canonical-01/artifacts/tau-goal-summary.md",
+        "sha256": "sha256:e382d4c22d835c334944471e9248ddf965fbc033c36f7617c39ae771d1750738"
+      }
+    ],
+    "schema": "tau.canonical_dag_result.v1",
+    "status": "ACCEPTED",
+    "summary": "Validated the goal digest and wrote the human-readable summary."
+  },
+  "artifacts": [
+    {
+      "bytes": 569,
+      "kind": "goal-summary",
+      "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/canonical-01/artifacts/tau-goal-summary.md",
+      "sha256": "sha256:e382d4c22d835c334944471e9248ddf965fbc033c36f7617c39ae771d1750738"
+    }
+  ],
+  "commands_run": [
+    "canonical-dag-01:validate-goal"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:b39c65050736ff04b70f7a75630effcec3f6962262a453e311489b998d54bf4c",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "handoff_summary": "Validated the goal digest and wrote the human-readable summary.",
+  "live": true,
+  "mocked": false,
+  "node_id": "validate-goal",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}

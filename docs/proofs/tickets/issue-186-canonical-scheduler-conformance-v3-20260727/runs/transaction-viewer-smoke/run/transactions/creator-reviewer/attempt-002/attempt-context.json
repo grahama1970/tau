@@ -1,0 +1,37 @@
+{
+  "accepted_inputs": [],
+  "attempt": 2,
+  "max_attempts": 2,
+  "node_id": "creator-reviewer",
+  "output_contract": {
+    "candidate_manifest_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v3-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/attempt-002/candidate-manifest.json",
+    "producer_receipt_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v3-20260727/runs/transaction-viewer-smoke/creator-receipt.json"
+  },
+  "producer_id": "creator",
+  "reviewer_id": "deterministic-reviewer",
+  "revision": {
+    "findings": [
+      {
+        "artifact_ids": [
+          "primary"
+        ],
+        "code": "CONTENT_REVISION_REQUIRED",
+        "finding_id": "revise-1",
+        "message": "The first candidate must be revised.",
+        "revision_instruction": "Produce a distinct second candidate.",
+        "severity": "ERROR"
+      }
+    ],
+    "review_feedback_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v3-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/attempt-001/review-feedback.json",
+    "review_feedback_sha256": "06a4ed0de12a2bba15e9e4a44eb2a08f51a799adf9151b193e74dabf1b9966c1",
+    "source_attempt": 1,
+    "summary": "Revise the first candidate."
+  },
+  "run_id": "dag-viewer-creator-reviewer",
+  "schema": "tau.generic_artifact_attempt_context.v1",
+  "transaction_id": "tx-creator-reviewer",
+  "work_order": {
+    "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v3-20260727/runs/transaction-viewer-smoke/work-order.json",
+    "sha256": "3a5abd129767df2c2730bbe9ad88dea097c8f9a8632785b1c78b4dcfc906e487"
+  }
+}

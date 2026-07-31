@@ -1,0 +1,32 @@
+{
+  "accepted_attempt": 2,
+  "accepted_inputs": [],
+  "artifacts": [
+    {
+      "artifact_id": "primary",
+      "bytes": 20,
+      "kind": "text",
+      "media_type": "text/plain",
+      "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/transaction-viewer-smoke/artifacts/candidate-2.txt",
+      "sha256": "86930f7ce9e07595b1859cced57ee9498e00a168d2a136c689b98bc93eb05f86"
+    }
+  ],
+  "node_id": "creator-reviewer",
+  "review_feedback": {
+    "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/attempt-002/review-feedback.json",
+    "reviewer_id": "deterministic-reviewer",
+    "sha256": "0956adb391fc0c65d78cf585988a267acb516b3ad98a421564ef29c0d1388b93"
+  },
+  "run_id": "dag-viewer-creator-reviewer",
+  "schema": "tau.accepted_artifact_manifest.v1",
+  "source_manifest": {
+    "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/attempt-002/candidate-manifest.json",
+    "sha256": "5c105cd1154f976b9b7a60b926fcffbd02779ad9677dd9969209deb17cd8eeea"
+  },
+  "transaction_id": "tx-creator-reviewer",
+  "validation_receipt": {
+    "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/attempt-002/validation-receipt.json",
+    "sha256": "c9ab0899bd3563f20cb8d87f88f027086a1d8d3d3640040f77935a670a13e569"
+  },
+  "work_order_sha256": "3a5abd129767df2c2730bbe9ad88dea097c8f9a8632785b1c78b4dcfc906e487"
+}

@@ -1,0 +1,26 @@
+{
+  "attempt": 2,
+  "attempt_context_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/attempt-002/attempt-context.json",
+  "attempt_context_sha256": "634c47f62e957d5c443eed4535a5c4cad1134c91f6f109e70e79bc98169bc0b2",
+  "candidate_manifest_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/attempt-002/candidate-manifest.json",
+  "candidate_manifest_sha256": "1a22483598ad19283d3c9fdd15e712ddfb137ec6fad80f7e3d01a0c8948eb987",
+  "node_id": "creator-reviewer",
+  "output_contract": {
+    "review_feedback_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/attempt-002/review-feedback.json"
+  },
+  "producer_id": "creator",
+  "reviewer_id": "deterministic-reviewer",
+  "run_id": "dag-viewer-creator-reviewer",
+  "schema": "tau.generic_artifact_review_context.v1",
+  "transaction_id": "tx-creator-reviewer",
+  "validated_artifacts": [
+    {
+      "artifact_id": "primary",
+      "bytes": 20,
+      "kind": "text",
+      "media_type": "text/plain",
+      "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/transaction-viewer-smoke/artifacts/candidate-2.txt",
+      "sha256": "86930f7ce9e07595b1859cced57ee9498e00a168d2a136c689b98bc93eb05f86"
+    }
+  ]
+}

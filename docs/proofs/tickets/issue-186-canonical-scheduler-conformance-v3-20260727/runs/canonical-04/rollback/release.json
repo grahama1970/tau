@@ -1,0 +1,7 @@
+{
+  "prior_sha256": null,
+  "rollback_action": "delete target",
+  "schema": "tau.canonical_dag_rollback.v1",
+  "target": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v3-20260727/runs/canonical-04/artifacts/release.json",
+  "target_existed_before": false
+}

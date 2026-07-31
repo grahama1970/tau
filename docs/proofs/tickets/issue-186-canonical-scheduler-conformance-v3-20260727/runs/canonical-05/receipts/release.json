@@ -1,0 +1,52 @@
+{
+  "accepted_output": {
+    "artifacts": [
+      {
+        "bytes": 1283,
+        "kind": "human-release",
+        "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v3-20260727/runs/canonical-05/artifacts/release.json",
+        "sha256": "sha256:8f46be15919dee3b7ddc1f0e76aea618080dea28753718f141eda388dc47e9d3"
+      }
+    ],
+    "schema": "tau.canonical_dag_result.v1",
+    "status": "ACCEPTED",
+    "summary": "release produced its accepted human-release artifact."
+  },
+  "artifacts": [
+    {
+      "bytes": 1283,
+      "kind": "human-release",
+      "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v3-20260727/runs/canonical-05/artifacts/release.json",
+      "sha256": "sha256:8f46be15919dee3b7ddc1f0e76aea618080dea28753718f141eda388dc47e9d3"
+    },
+    {
+      "bytes": 303,
+      "kind": "rollback-manifest",
+      "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v3-20260727/runs/canonical-05/rollback/release.json",
+      "sha256": "sha256:e6ac36885180fa7fd860ce16c1bc13319edb5521c4c0d6c1313c79fe51e02b47"
+    }
+  ],
+  "commands_run": [
+    "canonical-worker:release"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:c4d3726082ae60be94fb6f9e2c6db36dfc10da5e867f8b442802af4036fe4301",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "handoff_summary": "release produced its bounded artifact.",
+  "live": true,
+  "mocked": false,
+  "node_id": "release",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}

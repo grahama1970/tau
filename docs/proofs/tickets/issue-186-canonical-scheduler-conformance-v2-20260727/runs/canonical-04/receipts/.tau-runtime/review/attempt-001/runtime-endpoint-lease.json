@@ -1,0 +1,29 @@
+{
+  "attempt_id": "attempt-99b3932776f6b2c7834906b04ca44985",
+  "attempt_number": 1,
+  "backend": "local",
+  "backend_ids": {
+    "pid": null
+  },
+  "backend_session_id": null,
+  "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+  "cleanup_policy": {
+    "kind": "process_group_termination"
+  },
+  "created_at": "2026-07-27T15:10:28.900211+00:00",
+  "dag_id": "generic:canonical-04-mixed-retry-approval",
+  "endpoint_id": "local:80bf1f10989c381c080ee4d8",
+  "execution_token": "[REDACTED]",
+  "expires_at": "2026-07-27T15:11:58.900211+00:00",
+  "goal_hash": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "heartbeat_policy": {
+    "kind": "process_poll"
+  },
+  "node_id": "review",
+  "owner": "tau",
+  "plan_revision": "sha256:4c6187a25aab268448f3500a79bb90b15953251a7b0f1f7eec8f4e3f2cd2a30f",
+  "run_id": "canonical-04-mixed-retry-approval",
+  "schema": "tau.runtime_endpoint_lease.v1",
+  "scope_id": "canonical-04-mixed-retry-approval",
+  "work_order_sha256": "sha256:185443e8a690b04555f43661d116d8d751bf3dd52cd6cd5de7a2a4a09955e3d7"
+}

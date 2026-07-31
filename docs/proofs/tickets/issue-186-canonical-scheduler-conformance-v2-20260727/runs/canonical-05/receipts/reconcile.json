@@ -1,0 +1,46 @@
+{
+  "accepted_output": {
+    "artifacts": [
+      {
+        "bytes": 2873,
+        "kind": "branch-reconciliation",
+        "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/canonical-05/artifacts/reconcile.json",
+        "sha256": "sha256:13598f5d11f84898bbd300585f880216e843b8911e92d222f2d6518ad250f4a5"
+      }
+    ],
+    "schema": "tau.canonical_dag_result.v1",
+    "status": "ACCEPTED",
+    "summary": "reconcile produced its accepted branch-reconciliation artifact."
+  },
+  "artifacts": [
+    {
+      "bytes": 2873,
+      "kind": "branch-reconciliation",
+      "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/canonical-05/artifacts/reconcile.json",
+      "sha256": "sha256:13598f5d11f84898bbd300585f880216e843b8911e92d222f2d6518ad250f4a5"
+    }
+  ],
+  "commands_run": [
+    "canonical-worker:reconcile"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:8150b8c9f70b1c87d5b50d65be4bddab1d17927ecc20f60f7bfc26f57d2a8f0f",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "goal_hash": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "handoff_summary": "reconcile produced its bounded artifact.",
+  "live": true,
+  "mocked": false,
+  "node_id": "reconcile",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}

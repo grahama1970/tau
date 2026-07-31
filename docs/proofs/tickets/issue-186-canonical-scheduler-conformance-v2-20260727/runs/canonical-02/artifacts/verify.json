@@ -1,0 +1,29 @@
+{
+  "accepted_input_artifacts": [
+    {
+      "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/canonical-02/artifacts/draft.json",
+      "sha256": "sha256:f4999e5e503abd38312dd9c055b8112d637111123a924e27f5602bdd4326f3b2"
+    }
+  ],
+  "approval_path": null,
+  "dependency_ids": [
+    {
+      "artifacts": [
+        {
+          "bytes": 1108,
+          "kind": "artifact-draft",
+          "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/canonical-02/artifacts/draft.json",
+          "sha256": "sha256:f4999e5e503abd38312dd9c055b8112d637111123a924e27f5602bdd4326f3b2"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "draft produced its accepted artifact-draft artifact."
+    }
+  ],
+  "goal_sha256": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "node_id": "verify",
+  "repair_authorization_path": null,
+  "role": "deterministic-verification",
+  "schema": "tau.canonical_dag_artifact.v1"
+}

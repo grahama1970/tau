@@ -1,0 +1,14 @@
+{
+  "cancelled": false,
+  "command": [
+    "/tmp/tau-issue186-1785164636/.venv/bin/python",
+    "/tmp/tau-issue186-1785164636/examples/dag-viewer-creator-reviewer/reviewer.py",
+    "--step-delay-seconds",
+    "0.0"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "",
+  "timed_out": false
+}

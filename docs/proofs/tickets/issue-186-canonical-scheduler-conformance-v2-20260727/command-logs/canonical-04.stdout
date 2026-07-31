@@ -1,0 +1,19 @@
+{
+  "completed_node_count": 5,
+  "dag_id": "canonical-04-mixed-retry-approval",
+  "durable": true,
+  "live": true,
+  "max_observed_concurrency": 2,
+  "mocked": false,
+  "node_count": 5,
+  "output_artifact": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/canonical-04/artifacts/release.json",
+  "provider_live": false,
+  "resumed_node_count": 0,
+  "run_dir": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/canonical-04/run",
+  "schema": "tau.canonical_dag_example_result.v1",
+  "status": "PASS",
+  "title": "Mixed topology with retry and human approval",
+  "verdict": "PASS",
+  "viewer_command": "uv run tau dag-view --run-dir /tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/canonical-04/run",
+  "viewer_url": null
+}

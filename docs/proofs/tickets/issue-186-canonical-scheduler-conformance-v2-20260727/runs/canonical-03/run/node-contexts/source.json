@@ -1,0 +1,6 @@
+{
+  "accepted_inputs": [],
+  "node_id": "source",
+  "run_id": "canonical-03-concurrent-fanout-fanin",
+  "schema": "tau.generic_dag_node_context.v1"
+}

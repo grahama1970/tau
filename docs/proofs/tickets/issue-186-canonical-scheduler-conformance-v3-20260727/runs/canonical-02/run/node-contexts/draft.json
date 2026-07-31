@@ -1,0 +1,20 @@
+{
+  "accepted_inputs": [
+    {
+      "artifacts": [
+        {
+          "bytes": 1107,
+          "kind": "goal-analysis",
+          "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v3-20260727/runs/canonical-02/artifacts/analyze.json",
+          "sha256": "sha256:d0c6da090d60d7f79f2a4109bb9a0dcc54b089c3552d7ddc75ea8c0b19d81884"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "analyze produced its accepted goal-analysis artifact."
+    }
+  ],
+  "node_id": "draft",
+  "run_id": "canonical-02-multi-step-sequential",
+  "schema": "tau.generic_dag_node_context.v1"
+}

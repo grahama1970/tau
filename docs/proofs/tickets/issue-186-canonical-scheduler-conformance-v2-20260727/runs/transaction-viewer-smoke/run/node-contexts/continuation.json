@@ -1,0 +1,22 @@
+{
+  "accepted_inputs": [
+    {
+      "accepted_manifest_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/accepted-manifest.json",
+      "accepted_manifest_sha256": "e683833090fec238e3402ea0fda62ee9796403554bc9f44749ecf5013f07db0f",
+      "artifacts": [
+        {
+          "artifact_id": "primary",
+          "bytes": 20,
+          "kind": "text",
+          "media_type": "text/plain",
+          "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v2-20260727/runs/transaction-viewer-smoke/artifacts/candidate-2.txt",
+          "sha256": "86930f7ce9e07595b1859cced57ee9498e00a168d2a136c689b98bc93eb05f86"
+        }
+      ],
+      "source_node_id": "creator-reviewer"
+    }
+  ],
+  "node_id": "continuation",
+  "run_id": "dag-viewer-creator-reviewer",
+  "schema": "tau.generic_dag_node_context.v1"
+}

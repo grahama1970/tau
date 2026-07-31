@@ -1,0 +1,25 @@
+{
+  "attempt": 2,
+  "candidate_manifest_sha256": "1a22483598ad19283d3c9fdd15e712ddfb137ec6fad80f7e3d01a0c8948eb987",
+  "execution_evidence": {
+    "command_result_sha256": "sha256:e4d3a9fd0fbc7644cf75f0d1230d61959a257c30828d03ea81c7a40447a4e1d7",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "findings": [],
+  "live": true,
+  "mocked": false,
+  "node_id": "creator-reviewer",
+  "producer_id": "creator",
+  "provider_live": false,
+  "review_context_sha256": "48bbff6756822e982242a6b397c2bbbfa941a30bcb527eda85d678cce9be502b",
+  "reviewer_id": "deterministic-reviewer",
+  "schema": "tau.generic_artifact_review.v1",
+  "summary": "PASS claim",
+  "transaction_id": "tx-creator-reviewer",
+  "verdict": "PASS"
+}

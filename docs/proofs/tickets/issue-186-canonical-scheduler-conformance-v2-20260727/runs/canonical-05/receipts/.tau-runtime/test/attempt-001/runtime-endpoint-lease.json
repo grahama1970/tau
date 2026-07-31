@@ -1,0 +1,29 @@
+{
+  "attempt_id": "attempt-2462c41d7da77e30e1f5eaa2ed6f8f43",
+  "attempt_number": 1,
+  "backend": "local",
+  "backend_ids": {
+    "pid": null
+  },
+  "backend_session_id": null,
+  "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+  "cleanup_policy": {
+    "kind": "process_group_termination"
+  },
+  "created_at": "2026-07-27T15:10:29.859400+00:00",
+  "dag_id": "generic:canonical-05-durable-resume-repair",
+  "endpoint_id": "local:519d5f721d1bcb53e995c866",
+  "execution_token": "[REDACTED]",
+  "expires_at": "2026-07-27T15:11:59.859400+00:00",
+  "goal_hash": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "heartbeat_policy": {
+    "kind": "process_poll"
+  },
+  "node_id": "test",
+  "owner": "tau",
+  "plan_revision": "sha256:00d65270ad64b3e963e7bdce59df5ba097a7b4e684feb1379dc7723761b32ac9",
+  "run_id": "canonical-05-durable-resume-repair",
+  "schema": "tau.runtime_endpoint_lease.v1",
+  "scope_id": "canonical-05-durable-resume-repair",
+  "work_order_sha256": "sha256:8075f765d910dd0a4916cfaae6338933c0b7fb68c05da9d05c9f1bd430e09142"
+}

@@ -1,0 +1,29 @@
+{
+  "accepted_input_artifacts": [
+    {
+      "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-04/artifacts/review.json",
+      "sha256": "sha256:457f7d84177e545c888eac77118368ae711aa12f7d6afc3144ff5350a0c9f754"
+    }
+  ],
+  "approval_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-04/authorizations/human-release.json",
+  "dependency_ids": [
+    {
+      "artifacts": [
+        {
+          "bytes": 1910,
+          "kind": "typed-review",
+          "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-04/artifacts/review.json",
+          "sha256": "sha256:457f7d84177e545c888eac77118368ae711aa12f7d6afc3144ff5350a0c9f754"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "review produced its accepted typed-review artifact."
+    }
+  ],
+  "goal_sha256": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "node_id": "release",
+  "repair_authorization_path": null,
+  "role": "approval-gated-side-effect",
+  "schema": "tau.canonical_dag_artifact.v1"
+}

@@ -1,0 +1,20 @@
+{
+  "accepted_inputs": [],
+  "attempt": 1,
+  "max_attempts": 2,
+  "node_id": "creator-reviewer",
+  "output_contract": {
+    "candidate_manifest_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v3-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/attempt-001/candidate-manifest.json",
+    "producer_receipt_path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v3-20260727/runs/transaction-viewer-smoke/creator-receipt.json"
+  },
+  "producer_id": "creator",
+  "reviewer_id": "deterministic-reviewer",
+  "revision": null,
+  "run_id": "dag-viewer-creator-reviewer",
+  "schema": "tau.generic_artifact_attempt_context.v1",
+  "transaction_id": "tx-creator-reviewer",
+  "work_order": {
+    "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-v3-20260727/runs/transaction-viewer-smoke/work-order.json",
+    "sha256": "3a5abd129767df2c2730bbe9ad88dea097c8f9a8632785b1c78b4dcfc906e487"
+  }
+}

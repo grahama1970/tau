@@ -1,0 +1,33 @@
+{
+  "accepted_inputs": [
+    {
+      "artifacts": [
+        {
+          "bytes": 1110,
+          "kind": "bounded-implementation",
+          "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-04/artifacts/implement.json",
+          "sha256": "sha256:d88db979f37919a09a27d3e2616179ef3d350430f30f142976b1519837a7c049"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "implement produced its accepted bounded-implementation artifact."
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 1099,
+          "kind": "independent-test",
+          "path": "/tmp/tau-issue186-1785164636/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-04/artifacts/test.json",
+          "sha256": "sha256:7ae9cba96427c985ffa5d79e71de7b14e2c73ce66b4dc6540c40035169644d3f"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "test produced its accepted independent-test artifact."
+    }
+  ],
+  "node_id": "review",
+  "run_id": "canonical-04-mixed-retry-approval",
+  "schema": "tau.generic_dag_node_context.v1"
+}

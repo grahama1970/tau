@@ -1,0 +1,26 @@
+{
+  "artifacts": [],
+  "commands_run": [
+    "deterministic creator"
+  ],
+  "errors": [],
+  "execution_evidence": {
+    "command_result_sha256": "sha256:d42f7b92a65442321e46de1308c60980e9445fa7efe765541649e9b7e0b5aab8",
+    "kind": "local_subprocess",
+    "returncode": 0,
+    "runtime_artifact_count": 4,
+    "runtime_backend": "local",
+    "runtime_event_state": "EXITED",
+    "runtime_submit_delivery_status": "CONFIRMED"
+  },
+  "handoff_summary": "candidate 2 produced",
+  "live": true,
+  "mocked": false,
+  "node_id": "creator-reviewer",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": "3a5abd129767df2c2730bbe9ad88dea097c8f9a8632785b1c78b4dcfc906e487"
+}
