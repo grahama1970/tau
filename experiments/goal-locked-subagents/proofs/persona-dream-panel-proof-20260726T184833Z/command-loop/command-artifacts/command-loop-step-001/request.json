@@ -1,0 +1,27 @@
+{
+  "panel": {
+    "image_generation_receipt": "",
+    "image_path": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png",
+    "panel_id": "panel_001",
+    "panel_prompt": "",
+    "panel_repair_work_order": "",
+    "post_generation_script_coverage": "",
+    "provider_media_probe_receipt": "",
+    "provider_media_url": "",
+    "run_root": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run",
+    "scillm_base_url": "",
+    "scillm_image_auth": "",
+    "scillm_image_model": "",
+    "scillm_image_quality": "",
+    "scillm_image_timeout_s": "",
+    "scillm_live_panel": "",
+    "scillm_vlm_model": "",
+    "scillm_vlm_timeout_s": "",
+    "source_panel": "",
+    "source_panel_summary": "",
+    "source_script_coverage": "",
+    "visual_review_receipt": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/receipts/visual_review_receipt.json",
+    "write_receipts_to_panel_run_root": ""
+  },
+  "role": "panel-creator"
+}

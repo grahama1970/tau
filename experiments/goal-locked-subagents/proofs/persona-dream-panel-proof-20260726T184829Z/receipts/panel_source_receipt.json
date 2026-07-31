@@ -1,0 +1,26 @@
+{
+  "blockers": [
+    "repair_gate_status_not_final_reviewed:BLOCKED_PENDING_INDEPENDENT_VERIFICATION",
+    "script_coverage_status_not_pass:FAIL",
+    "post_generation_script_coverage_status_not_pass:FAIL",
+    "visual_review_status_not_pass:FAIL",
+    "no_overlay_status_not_pass:FAIL",
+    "provider_media_status_not_pass:FAIL",
+    "visual_style_not_photoreal:UNKNOWN",
+    "provider_eligibility_not_true"
+  ],
+  "final_panel_eligible": false,
+  "image_path": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png",
+  "nano_banana_fallback_used": false,
+  "panel_id": "panel_001",
+  "photoreal_status": "UNKNOWN",
+  "producer": {
+    "kind": "subagent",
+    "name": "persona-dream-panel-repair-gate",
+    "receipt": "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184829Z/receipts/panel_repair_gate_receipt.json"
+  },
+  "run_id": "one_scene_kling_dry_run",
+  "schema": "persona_dream.panel_source_receipt.v1",
+  "sha256": "sha256:4e7dfb8fcb858fd282b927980324fe7bcfd32aa35254dd9af0530889b5317c31",
+  "status": "BLOCKED"
+}

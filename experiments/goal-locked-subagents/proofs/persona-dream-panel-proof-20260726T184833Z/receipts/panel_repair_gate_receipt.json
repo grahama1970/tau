@@ -1,0 +1,72 @@
+{
+  "callback_or_polling_plan": "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184833Z/receipts/callback_or_polling_plan.json",
+  "claims": {
+    "does_not_prove": [
+      "provider media URL accessibility",
+      "provider eligibility",
+      "Kling readiness",
+      "public upload"
+    ],
+    "proves": [
+      "Tau emitted a persona-dream-compatible repair gate receipt.",
+      "The receipt preserves the local generated image path and sha256."
+    ]
+  },
+  "cost_estimate": "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184833Z/receipts/cost_estimate.json",
+  "created_at": "2026-07-26T18:48:35Z",
+  "dry_run_one_scene_kling_request": null,
+  "external_task_id": "persona-dream-panel_001",
+  "gemini_fallback_used": false,
+  "generated_image_path": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png",
+  "generation_receipt": "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184833Z/receipts/generation_receipt.json",
+  "kling_api_call_performed": false,
+  "live_call_performed": false,
+  "media_hashes": {
+    "panel_001": "sha256:4e7dfb8fcb858fd282b927980324fe7bcfd32aa35254dd9af0530889b5317c31"
+  },
+  "nano_banana_fallback_used": false,
+  "no_overlay_receipt": "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184833Z/receipts/no_overlay_receipt.json",
+  "no_overlay_status": "FAIL",
+  "paid_call_performed": false,
+  "panel_id": "panel_001",
+  "post_generation_script_coverage_receipt": "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184833Z/receipts/post_generation_script_coverage_receipt.json",
+  "post_generation_script_coverage_status": "FAIL",
+  "provider_eligibility": false,
+  "provider_media_probe_receipt": "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184833Z/receipts/provider_media_probe_receipt.json",
+  "provider_media_sha256": "sha256:4e7dfb8fcb858fd282b927980324fe7bcfd32aa35254dd9af0530889b5317c31",
+  "provider_media_status": "FAIL",
+  "provider_media_urls": [
+    "https://raw.githubusercontent.com/grahama1970/tau/main/provider-media/not-published/panel_001.png"
+  ],
+  "provider_mode": "std",
+  "provider_packet_status": "BLOCKED_PROVIDER_GATE",
+  "provider_resolution": "720p",
+  "provider_voice_ids": {},
+  "public_upload_performed": false,
+  "reference_evidence_status": "PASS",
+  "reference_receipt": "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184833Z/receipts/reference_receipt.json",
+  "remaining_blockers": [
+    "live WebGPT/VLM visual PASS receipt is missing",
+    "real panel-creator generation receipt is missing",
+    "loop final receipt for a panel repair attempt is missing",
+    "script coverage receipt is missing or failed",
+    "post-generation script coverage receipt is missing or failed"
+  ],
+  "requirement_matrix": "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184833Z/receipts/requirement_matrix.json",
+  "run_id": "one_scene_kling_dry_run",
+  "schema": "persona_dream.panel_repair_gate_receipt.v1",
+  "script_coverage_receipt": "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184833Z/receipts/script_coverage_receipt.json",
+  "script_coverage_status": "FAIL",
+  "source_artifacts": [
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run",
+    "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184833Z/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png",
+    "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184833Z/command-loop/command-artifacts/command-loop-step-002/panel_reviewer_receipt.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/receipts/visual_review_receipt.json"
+  ],
+  "status": "BLOCKED_PENDING_INDEPENDENT_VERIFICATION",
+  "visual_review_receipt": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/receipts/visual_review_receipt.json",
+  "visual_review_status": "FAIL",
+  "visual_style_status": "UNKNOWN",
+  "voice_id_status": "SILENT_SCENE"
+}

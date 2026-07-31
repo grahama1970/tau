@@ -1,0 +1,45 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run",
+      "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184829Z/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png"
+    ],
+    "persona_dream_panel": {
+      "image_path": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png",
+      "panel_id": "panel_001",
+      "run_root": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run",
+      "visual_review_receipt": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/receipts/visual_review_receipt.json"
+    },
+    "summary": "Panel Creator locked a one-panel local reference artifact for review."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#27"
+  },
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000027",
+    "goal_id": "goal-tau-issue-27-persona-dream-panel-proof",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "panel-reviewer",
+    "reason": "Panel Reviewer must inspect or fail closed on the creator receipt."
+  },
+  "previous_subagent": "panel-creator",
+  "rationale": "A concrete local panel artifact and creator receipt now exist, so the next bounded step is independent panel review.",
+  "required_evidence": [
+    "Panel Reviewer writes panel_reviewer_receipt.json or visual_review_receipt evidence."
+  ],
+  "result": {
+    "evidence": [
+      "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184829Z/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png sha256:4e7dfb8fcb858fd282b927980324fe7bcfd32aa35254dd9af0530889b5317c31"
+    ],
+    "status": "COMPLETED",
+    "summary": "Panel Creator wrote a local panel_creator_receipt with image artifact path and hash; no public upload or Kling call occurred."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Panel Reviewer emits a Tau handoff with receipt paths."
+}

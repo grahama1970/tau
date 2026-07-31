@@ -1,0 +1,29 @@
+{
+  "attempt_id": "persona-dream-panel-repair-gate:attempt-001",
+  "attempt_number": 1,
+  "backend": "local",
+  "backend_ids": {
+    "pid": null
+  },
+  "backend_session_id": null,
+  "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+  "cleanup_policy": {
+    "kind": "process_group_termination"
+  },
+  "created_at": "2026-07-26T18:48:32.531900+00:00",
+  "dag_id": "handoff-command",
+  "endpoint_id": "local:b439d334c3ffc63a1eff1063",
+  "execution_token": "[REDACTED]",
+  "expires_at": "2026-07-26T18:50:02.531900+00:00",
+  "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000027",
+  "heartbeat_policy": {
+    "kind": "process_poll"
+  },
+  "node_id": "persona-dream-panel-repair-gate",
+  "owner": "tau",
+  "plan_revision": "sha256:84c4e25e0792b3f23dd5b6d627260ba836f3d8c4fc84bc8943e40ebd4cfa0384",
+  "run_id": "handoff-command:43e40ebd4cfa0384",
+  "schema": "tau.runtime_endpoint_lease.v1",
+  "scope_id": "handoff-command:43e40ebd4cfa0384",
+  "work_order_sha256": "sha256:7534173b87d8cb775080d1a8cfc2211074d8849615688cbb3cbe8eec6add6993"
+}

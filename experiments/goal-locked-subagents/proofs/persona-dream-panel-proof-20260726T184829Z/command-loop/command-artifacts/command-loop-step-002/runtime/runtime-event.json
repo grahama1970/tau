@@ -1,0 +1,17 @@
+{
+  "confidence": "PROCESS",
+  "endpoint_lease_sha256": "sha256:ca4b48310ea332bff80eefe15960560b4ac5a9afa4803cea9495c508c8879164",
+  "event_id": "local-event:20c2df420b031ae704245bdb",
+  "event_type": "RUNTIME_ENDPOINT_EXITED",
+  "liveness": "DEAD",
+  "observation": {
+    "cancelled": false,
+    "returncode": 0,
+    "timed_out": false
+  },
+  "observed_at": "2026-07-26T18:48:30.480678+00:00",
+  "run_id": "handoff-command:606aea6e2d08e604",
+  "schema": "tau.runtime_event.v1",
+  "source": "local",
+  "state": "EXITED"
+}

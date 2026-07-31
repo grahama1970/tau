@@ -1,0 +1,6 @@
+{
+  "image_path": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png",
+  "panel_id": "panel_001",
+  "schema": "persona_dream.reference_evidence_receipt.v1",
+  "status": "PASS"
+}

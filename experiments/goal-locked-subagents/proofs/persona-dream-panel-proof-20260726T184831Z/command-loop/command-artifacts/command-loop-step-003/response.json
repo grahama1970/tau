@@ -1,0 +1,51 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run",
+      "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184831Z/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png",
+      "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184831Z/command-loop/command-artifacts/command-loop-step-002/panel_reviewer_receipt.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/receipts/visual_review_receipt.json",
+      "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184831Z/command-loop/command-artifacts/command-loop-step-003/panel_repair_gate_receipt.json",
+      "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184831Z/receipts/panel_repair_gate_receipt.json",
+      "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184831Z/receipts/panel_source_receipt.json"
+    ],
+    "persona_dream_panel": {
+      "image_path": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png",
+      "panel_id": "panel_001",
+      "run_root": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run",
+      "visual_review_receipt": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/receipts/visual_review_receipt.json"
+    },
+    "summary": "Repair gate consolidated persona-dream panel evidence and emitted fail-closed persona-dream receipts."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#27"
+  },
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000027",
+    "goal_id": "goal-tau-issue-27-persona-dream-panel-proof",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "human",
+    "name": "human",
+    "reason": "Human or outer Persona-Dream harness must supply a live one-panel work order with creator, reviewer, and loop receipts before further automation."
+  },
+  "previous_subagent": "persona-dream-panel-repair-gate",
+  "rationale": "The bounded one-panel command chain has produced receipts and reached the first real blocker in the persona-dream serial pipeline.",
+  "required_evidence": [
+    "Concrete one-panel work order plus real creator, visual reviewer, no-overlay, and loop final receipts."
+  ],
+  "result": {
+    "evidence": [
+      "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184831Z/command-loop/command-artifacts/command-loop-step-003/panel_repair_gate_receipt.json",
+      "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184831Z/receipts/panel_repair_gate_receipt.json",
+      "/tmp/tau-main-issue-137.7nchbf/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T184831Z/receipts/panel_source_receipt.json"
+    ],
+    "status": "BLOCKED",
+    "summary": "Persona Dream Panel Repair Gate wrote a terminal blocker receipt with provider_eligibility=false and persona-dream-compatible repair/source receipts; no public upload, Kling call, paid call, or provider-ready claim occurred."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Human provides missing one-panel evidence or routes to a live repair attempt."
+}
