@@ -21,6 +21,7 @@ from tau_coding.dag_runtime.model import (
     DagPlan,
     DagPlanContextBinding,
     DagPlanNode,
+    FrozenJson,
     canonical_sha256,
 )
 from tau_coding.dag_runtime.node_input_manifest import (
@@ -49,6 +50,16 @@ from tau_coding.dag_runtime.transition import (
     DagTransitionView,
     transition_batch_to_payload,
 )
+from tau_coding.dag_runtime.worker_assignment import (
+    WORKER_ASSIGNMENT_RECEIPT_SCHEMA,
+    WorkerAssignmentError,
+    WorkerCapability,
+    WorkerRegistry,
+    compile_worker_requirement,
+    normalize_worker_capabilities,
+    select_worker,
+    worker_resource_requirement,
+)
 from tau_coding.dag_runtime.workspace_reads import (
     initial_workspace_read_set,
     result_workspace_read_set,
@@ -76,6 +87,9 @@ class DagNodeAttempt:
     input_manifest_path: str | None = None
     input_manifest_sha256: str | None = None
     input_manifest_admission_id: str | None = None
+    worker_assignment_path: str | None = None
+    worker_assignment_sha256: str | None = None
+    worker_assignment_admission_id: str | None = None
 
 
 NodeExecutor = Callable[
@@ -133,6 +147,9 @@ def run_dag_plan(
     cancel_requested: Callable[[], bool] | None = None,
     resource_lease_manager: ResourceLeaseManager | None = None,
     resource_lease_ttl_seconds: float = 15.0,
+    worker_registry: (
+        WorkerRegistry | tuple[WorkerCapability | Mapping[str, Any], ...] | None
+    ) = None,
 ) -> DagSchedulerResult:
     """Execute an all-success DagPlan through one bounded ready queue.
 
@@ -142,6 +159,8 @@ def run_dag_plan(
 
     if max_concurrency < 1:
         raise RuntimeError("max_concurrency must be at least 1")
+    if worker_registry is not None and (run_store is None or resource_lease_manager is None):
+        raise RuntimeError("worker assignment requires run_store and resource_lease_manager")
     policy = transition_policy or AllSuccessTransitionPolicy()
     policy.validate_plan(plan)
     effective_run_id = run_id or plan.plan_id
@@ -454,6 +473,7 @@ def run_dag_plan(
                         break
                     if node_id in resolved or node_id in scheduled:
                         continue
+                    worker_admission: dict[str, Any] | None = None
                     if run_store is not None and lease is not None:
                         identity = run_store.reserve_attempt(
                             lease,
@@ -512,6 +532,17 @@ def run_dag_plan(
                             )
                             continue
                         try:
+                            worker_tokens, worker_admission = _assign_worker_for_attempt(
+                                plan=plan,
+                                node=nodes[node_id],
+                                run_id=effective_run_id,
+                                identity=identity,
+                                run_store=run_store,
+                                lease=lease,
+                                resource_lease_manager=resource_lease_manager,
+                                resource_lease_ttl_seconds=resource_lease_ttl_seconds,
+                                worker_registry=worker_registry,
+                            )
                             resource_tokens = (
                                 resource_lease_manager.acquire_for_attempt(
                                     node=nodes[node_id],
@@ -524,7 +555,8 @@ def run_dag_plan(
                                 if resource_lease_manager is not None
                                 else ()
                             )
-                        except ResourceLeaseDenied as exc:
+                            resource_tokens = (*worker_tokens, *resource_tokens)
+                        except (ResourceLeaseDenied, WorkerAssignmentError) as exc:
                             blocked_result = {
                                 "node_id": node_id,
                                 "status": "BLOCKED",
@@ -586,6 +618,21 @@ def run_dag_plan(
                         if isinstance(input_admission, dict)
                         else None
                     )
+                    worker_assignment_path = (
+                        str(worker_admission["path"])
+                        if isinstance(worker_admission, dict)
+                        else None
+                    )
+                    worker_assignment_sha256 = (
+                        str(worker_admission["sha256"])
+                        if isinstance(worker_admission, dict)
+                        else None
+                    )
+                    worker_assignment_admission_id = (
+                        str(worker_admission["admission_id"])
+                        if isinstance(worker_admission, dict)
+                        else None
+                    )
                     future = pool.submit(
                         execute_node,
                         nodes[node_id],
@@ -601,6 +648,9 @@ def run_dag_plan(
                             input_manifest_path=input_manifest_path,
                             input_manifest_sha256=input_manifest_sha256,
                             input_manifest_admission_id=input_manifest_admission_id,
+                            worker_assignment_path=worker_assignment_path,
+                            worker_assignment_sha256=worker_assignment_sha256,
+                            worker_assignment_admission_id=worker_assignment_admission_id,
                         ),
                     )
                     futures[future] = node_id
@@ -2093,6 +2143,84 @@ def _context_bindings_by_target(
 
 def _return_result(result: dict[str, Any]) -> dict[str, Any]:
     return result
+
+
+def _assign_worker_for_attempt(
+    *,
+    plan: DagPlan,
+    node: DagPlanNode,
+    run_id: str,
+    identity: DagAttemptIdentity,
+    run_store: SqliteDagRunStore | None,
+    lease: DagRunLease | None,
+    resource_lease_manager: ResourceLeaseManager | None,
+    resource_lease_ttl_seconds: float,
+    worker_registry: WorkerRegistry | tuple[WorkerCapability | Mapping[str, Any], ...] | None,
+) -> tuple[tuple[ResourceLeaseToken, ...], dict[str, Any] | None]:
+    if worker_registry is None and resource_lease_manager is None:
+        return (), None
+    if run_store is None or lease is None:
+        raise WorkerAssignmentError("worker_assignment_run_store_required", node.node_id)
+    if resource_lease_manager is None:
+        raise WorkerAssignmentError("worker_resource_lease_manager_missing", node.node_id)
+    requirement = compile_worker_requirement(
+        plan=plan,
+        node=node,
+        run_id=run_id,
+        attempt_id=identity.attempt_id,
+        attempt=identity.attempt,
+    )
+    candidates = normalize_worker_capabilities(
+        worker_registry,
+        plan=plan,
+        node=node,
+        run_id=run_id,
+        attempt_id=identity.attempt_id,
+        attempt=identity.attempt,
+    )
+    assignment = select_worker(requirement=requirement, candidates=candidates)
+    worker_node = replace(
+        node,
+        runtime_requirement=FrozenJson.from_value(
+            {"resource_leases": [worker_resource_requirement(assignment)]}
+        ),
+    )
+    worker_tokens = resource_lease_manager.acquire_for_attempt(
+        node=worker_node,
+        run_id=run_id,
+        attempt_id=identity.attempt_id,
+        ttl_seconds=resource_lease_ttl_seconds,
+        run_store=run_store,
+        scheduler_lease=lease,
+    )
+    if not worker_tokens:
+        raise WorkerAssignmentError("worker_resource_lease_missing", node.node_id)
+    try:
+        receipt = assignment.receipt_payload(resource_lease_token=worker_tokens[0].to_payload())
+        written = write_durable_json(
+            run_store.path.parent
+            / "worker-assignments"
+            / node.node_id
+            / f"{identity.attempt_id}.json",
+            receipt,
+        )
+        admission = run_store.admit_receipt(
+            lease,
+            identity.attempt_id,
+            receipt_kind=WORKER_ASSIGNMENT_RECEIPT_SCHEMA,
+            sha256=written.sha256,
+            path=str(written.path),
+            size_bytes=written.size_bytes,
+        )
+    except Exception:
+        resource_lease_manager.release(
+            worker_tokens,
+            run_store=run_store,
+            scheduler_lease=lease,
+            reason="worker_assignment_receipt_failed",
+        )
+        raise
+    return worker_tokens, admission
 
 
 def _node_is_ready(
