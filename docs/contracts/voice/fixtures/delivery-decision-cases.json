@@ -1,0 +1,56 @@
+{
+  "cases": [
+    {
+      "input": {
+        "approval_required": true,
+        "requested": {
+          "intensity": 0.9,
+          "tone": "cheerful",
+          "valence": 0.8
+        },
+        "run_id": "run-288-fixture",
+        "state": "RUNNING",
+        "state_digest": "d1e5f0c0a288"
+      },
+      "name": "approval_override_visible"
+    },
+    {
+      "input": {
+        "approval_required": false,
+        "requested": {
+          "intensity": 0.3,
+          "tone": "cheerful",
+          "valence": 0.1
+        },
+        "run_id": "run-288-fixture",
+        "state": "RUNNING",
+        "state_digest": "d1e5f0c0a288"
+      },
+      "name": "caller_hint_kept_when_unconstrained"
+    },
+    {
+      "input": {
+        "approval_required": false,
+        "requested": null,
+        "run_id": "run-288-fixture",
+        "state": "COMPLETED",
+        "state_digest": null
+      },
+      "name": "policy_fills_missing_fields"
+    },
+    {
+      "input": {
+        "approval_required": false,
+        "requested": {
+          "intensity": 1.7,
+          "tone": "relieved",
+          "valence": -3.0
+        },
+        "run_id": "run-288-fixture",
+        "state": "RUNNING",
+        "state_digest": "d1e5f0c0a288"
+      },
+      "name": "out_of_range_clamped_visibly"
+    }
+  ]
+}

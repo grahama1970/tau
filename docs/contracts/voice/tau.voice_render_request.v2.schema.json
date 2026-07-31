@@ -1,0 +1,384 @@
+{
+  "$defs": {
+    "ControlTarget": {
+      "additionalProperties": false,
+      "description": "Full identity a turn control must present to touch audible work.",
+      "properties": {
+        "conversation_id": {
+          "title": "Conversation Id",
+          "type": "string"
+        },
+        "expected_cancel_epoch": {
+          "minimum": 0,
+          "title": "Expected Cancel Epoch",
+          "type": "integer"
+        },
+        "response_id": {
+          "title": "Response Id",
+          "type": "string"
+        },
+        "turn_id": {
+          "title": "Turn Id",
+          "type": "string"
+        },
+        "turn_revision": {
+          "minimum": 0,
+          "title": "Turn Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "conversation_id",
+        "turn_id",
+        "turn_revision",
+        "response_id",
+        "expected_cancel_epoch"
+      ],
+      "title": "ControlTarget",
+      "type": "object"
+    },
+    "DeliveryDecision": {
+      "additionalProperties": false,
+      "description": "Requested vs effective delivery with every override visible.",
+      "properties": {
+        "effective_delivery": {
+          "$ref": "#/$defs/DeliverySettings"
+        },
+        "evidence_references": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence References",
+          "type": "array"
+        },
+        "overridden_fields": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Overridden Fields",
+          "type": "array"
+        },
+        "override_reasons": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Override Reasons",
+          "type": "object"
+        },
+        "policy_version": {
+          "title": "Policy Version",
+          "type": "string"
+        },
+        "profile_validation_status": {
+          "enum": [
+            "declared_profile",
+            "undeclared_profile",
+            "no_tone"
+          ],
+          "title": "Profile Validation Status",
+          "type": "string"
+        },
+        "requested_delivery": {
+          "$ref": "#/$defs/DeliverySettings"
+        }
+      },
+      "required": [
+        "policy_version",
+        "requested_delivery",
+        "effective_delivery",
+        "profile_validation_status"
+      ],
+      "title": "DeliveryDecision",
+      "type": "object"
+    },
+    "DeliverySettings": {
+      "additionalProperties": false,
+      "description": "One tone/intensity/valence/stage tuple (requested or effective).",
+      "properties": {
+        "intensity": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Intensity"
+        },
+        "stage": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stage"
+        },
+        "tone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tone"
+        },
+        "valence": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valence"
+        }
+      },
+      "title": "DeliverySettings",
+      "type": "object"
+    },
+    "ResponseIdentity": {
+      "additionalProperties": false,
+      "description": "Complete identity for one audible response and its cancellation epoch.",
+      "properties": {
+        "cancel_epoch": {
+          "minimum": 0,
+          "title": "Cancel Epoch",
+          "type": "integer"
+        },
+        "conversation_id": {
+          "title": "Conversation Id",
+          "type": "string"
+        },
+        "request_id": {
+          "title": "Request Id",
+          "type": "string"
+        },
+        "response_id": {
+          "title": "Response Id",
+          "type": "string"
+        },
+        "supersedes_response_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Supersedes Response Id"
+        },
+        "turn_id": {
+          "title": "Turn Id",
+          "type": "string"
+        },
+        "turn_revision": {
+          "minimum": 0,
+          "title": "Turn Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "request_id",
+        "conversation_id",
+        "turn_id",
+        "turn_revision",
+        "response_id",
+        "cancel_epoch"
+      ],
+      "title": "ResponseIdentity",
+      "type": "object"
+    },
+    "Segment": {
+      "additionalProperties": false,
+      "description": "One speakable segment; hash-bound text, always interruptible.",
+      "properties": {
+        "delivery": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DeliverySettings"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "interruptible": {
+          "const": true,
+          "default": true,
+          "title": "Interruptible",
+          "type": "boolean"
+        },
+        "segment_id": {
+          "title": "Segment Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "text_sha256": {
+          "title": "Text Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "segment_id",
+        "text",
+        "text_sha256"
+      ],
+      "title": "Segment",
+      "type": "object"
+    },
+    "SourceLineage": {
+      "additionalProperties": false,
+      "description": "Where in the authoritative Tau run this audible response came from.",
+      "properties": {
+        "attempt_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Attempt Id"
+        },
+        "event_type": {
+          "default": "state_change",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "goal_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Goal Hash"
+        },
+        "node_id": {
+          "title": "Node Id",
+          "type": "string"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "scheduler_journal_sequence": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scheduler Journal Sequence"
+        },
+        "state_digest": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "State Digest"
+        },
+        "state_transition": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "State Transition"
+        },
+        "workflow": {
+          "title": "Workflow",
+          "type": "string"
+        }
+      },
+      "required": [
+        "workflow",
+        "run_id",
+        "node_id"
+      ],
+      "title": "SourceLineage",
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/grahama1970/tau/contracts/tau.voice_render_request.v2.schema.json",
+  "additionalProperties": false,
+  "description": "Typed ``tau.voice_render_request.v2`` block.\n\nCarried inside the wire envelope next to the v1-compatible flat fields;\n``extensions`` is the only place optional future data may live.",
+  "properties": {
+    "control_target": {
+      "$ref": "#/$defs/ControlTarget"
+    },
+    "delivery_decision": {
+      "$ref": "#/$defs/DeliveryDecision"
+    },
+    "extensions": {
+      "additionalProperties": true,
+      "title": "Extensions",
+      "type": "object"
+    },
+    "identity": {
+      "$ref": "#/$defs/ResponseIdentity"
+    },
+    "lineage": {
+      "$ref": "#/$defs/SourceLineage"
+    },
+    "schema": {
+      "title": "Schema",
+      "type": "string"
+    },
+    "segments": {
+      "items": {
+        "$ref": "#/$defs/Segment"
+      },
+      "minItems": 1,
+      "title": "Segments",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema",
+    "identity",
+    "lineage",
+    "delivery_decision",
+    "segments",
+    "control_target"
+  ],
+  "title": "VoiceRenderRequestV2",
+  "type": "object",
+  "x-contract-version": "tau.voice_render_request.v2"
+}
