@@ -1,0 +1,34 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T233214Z-rw-sanity-provider-dag-one-pass",
+  "goal_hash": "sha256:d01450fcac3664deb845e5da1fa432a2c1f3a12cfbed3fa1e98f1af7fc771cac",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "workspace_id": "w6J",
+  "pane_id": "w6J:p5",
+  "terminal_id": "term_655e591737ada747",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/one-pass/20260705T233214Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T233214Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "7b55a7eba2fefe7e8806a1a1c2bc5ad52cfe727fe30d86ed73126fd8a8bb31bc",
+  "work_order_sha256": "3dbc1f27a2814606b5892a6a6f67315ade697e63d80d88244422d92539a2af2a",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/one-pass/20260705T233214Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/one-pass/20260705T233214Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/one-pass/20260705T233214Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json",
+    "pwd && ls -la && sed -n '1,120p' message.txt",
+    "sha256sum /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/one-pass/20260705T233214Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T233214Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt",
+    "sed -n '1,40p' message.txt",
+    "ls -la /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/one-pass/20260705T233214Z-rw-sanity-provider-dag-one-pass/receipts",
+    "jq -e '<receipt field predicates>' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/one-pass/20260705T233214Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json && test \"$(sed -n '1p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/one-pass/20260705T233214Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt)\" = \"Completed implementation for the Tau provider DAG coder node.\""
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/one-pass/20260705T233214Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

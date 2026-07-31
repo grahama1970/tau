@@ -1,0 +1,4 @@
+{"argv":["session","stop","session-rw-sanity-codex"]}
+{"argv":["session","get","session-rw-sanity-codex"]}
+{"argv":["workspace","close","w-rw-sanity-session-cleanup"]}
+{"argv":["workspace","get","w-rw-sanity-session-cleanup"]}

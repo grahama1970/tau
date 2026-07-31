@@ -1,0 +1,12 @@
+{
+  "confidence": 0.91,
+  "goal_hash": "sha256:rw-sanity-project-dag-memory-evidence-valid",
+  "memory_first": true,
+  "route": "ANSWER",
+  "schema": "memory.intent.v1",
+  "summary": "Memory intent routes the DAG to deterministic local execution.",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-memory-evidence-valid"
+  }
+}

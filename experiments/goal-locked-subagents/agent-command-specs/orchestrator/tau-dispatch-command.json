@@ -1,0 +1,26 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "tau",
+    "handoff-agent-adapter",
+    "--result-status",
+    "COMPLETED",
+    "--result-summary",
+    "Orchestrator consumed the Tau handoff and is responsible for executing a planner-created DAG spec with bounded receipt gates.",
+    "--next-agent",
+    "human",
+    "--next-executor",
+    "human",
+    "--next-reason",
+    "Human or project agent reviews the final Tau DAG receipt and any blocked evidence.",
+    "--required-evidence",
+    "A final Tau DAG run receipt, node receipts, provider readiness receipt, events.jsonl, and Herdr pane handles.",
+    "--stop-condition",
+    "Human accepts, redirects, or requests another bounded Tau run."
+  ],
+  "agent_contract": "agents/orchestrator/AGENTS.md",
+  "persona_contract": "agents/orchestrator/persona.yaml",
+  "cwd": ".",
+  "timeout_s": 30
+}

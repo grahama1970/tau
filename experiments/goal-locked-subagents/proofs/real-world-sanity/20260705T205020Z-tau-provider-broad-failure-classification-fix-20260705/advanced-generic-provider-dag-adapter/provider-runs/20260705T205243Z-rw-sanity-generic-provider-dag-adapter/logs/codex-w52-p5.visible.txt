@@ -1,0 +1,38 @@
+    pter-readiness/logs/
+    codex.visible.txt
+
+• Ran python - <<'PY'
+  │ import json
+  │ from pathlib import Path
+  │ … +52 lines
+  └ schema: True
+    … +5 lines (ctrl + t to view
+    transcript)
+    errors_empty: True
+    policy_exceptions_empty: True
+
+• Ran python -m json.tool /home/graham/
+  │ workspace/experiments/tau/
+  │ experiments/
+  │ … +14 lines
+  └ 36 /tmp/
+    attempt-01-coder-json-validated.txt
+
+───────────────────────────────────────
+
+• Verification passed: receipt JSON
+  parsed to 36 formatted lines, target
+  content is the completed message,
+  receipt core fields are True, and the
+  visible-log hash still matches. I’m
+  updating the receipt’s command list
+  to include these verification
+  commands, then I’ll run one final
+  parse/field check.
+
+• Working (1m 55s • esc to interrupt)
+
+
+› Explain this codebase
+
+  gpt-5.5 medium · ~/workspace/experim…

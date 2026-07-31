@@ -1,0 +1,29 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T205723Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:eb6c08b4a8e17215be231fe1c6ecb2acfffa4510c8a7488d9d64ca64c95fd756",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w54",
+  "pane_id": "w54:p6",
+  "terminal_id": "term_655e367ad58c758e",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/max-exhaustion/20260705T205723Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T205723Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "472ffc724529eae4752e0011565d5363aff1d1090173cd4f5d0e168f6f967974",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/max-exhaustion/20260705T205723Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "sha256sum of visible_log_path",
+    "sha256sum - no write operations outside receipt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/max-exhaustion/20260705T205723Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/max-exhaustion/20260705T205723Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "force_revise=true: target_file TODO is removed and coder receipt is schema-valid, but content is minimal. REVISE: 1) message.txt should include a brief summary of what was implemented beyond a single sentence. 2) coder receipt handoff_summary should describe the specific write operation performed. 3) coder receipt commands_run should name the actual script/tool invoked rather than a generic description.",
+  "errors": [],
+  "policy_exceptions": []
+}

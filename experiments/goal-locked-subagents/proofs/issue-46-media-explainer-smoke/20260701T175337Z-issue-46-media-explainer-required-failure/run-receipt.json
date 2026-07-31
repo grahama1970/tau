@@ -1,0 +1,137 @@
+{
+  "asset_count": 2,
+  "asset_receipt_paths": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-46-media-explainer-smoke/20260701T175337Z-issue-46-media-explainer-required-failure/asset-receipts/image-required.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-46-media-explainer-smoke/20260701T175337Z-issue-46-media-explainer-required-failure/asset-receipts/text-required.json"
+  ],
+  "asset_receipts": [
+    {
+      "asset_id": "image-required",
+      "description": null,
+      "errors": [
+        "required image fixture intentionally unavailable"
+      ],
+      "evidence": {
+        "delay_ms": 0,
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-46-media-explainer-smoke/20260701T175337Z-issue-46-media-explainer-required-failure/asset-receipts/image-required.json"
+      },
+      "filepath": null,
+      "live": false,
+      "media_type": "image",
+      "memory_persistence": {
+        "mocked_description_not_persisted_as_live_truth": true,
+        "receipt": null,
+        "status": "SKIPPED_PLACEHOLDER"
+      },
+      "mocked": true,
+      "model_backend": "deterministic_vlm_contract_stub",
+      "required": true,
+      "run_id": "20260701T175337Z-issue-46-media-explainer-required-failure",
+      "schema": "tau.media_explainer_asset_receipt.v1",
+      "source_uri": "file:///fixtures/missing-required.png",
+      "status": "FAILED",
+      "subagent": "image-media-explainer",
+      "tags": [],
+      "timestamp": "2026-07-01T17:53:37Z",
+      "tool_path": "vlm_description"
+    },
+    {
+      "asset_id": "text-required",
+      "description": "Prompt-ready text description for text-required from file:///fixtures/brief.txt.",
+      "errors": [],
+      "evidence": {
+        "delay_ms": 0,
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-46-media-explainer-smoke/20260701T175337Z-issue-46-media-explainer-required-failure/asset-receipts/text-required.json"
+      },
+      "filepath": null,
+      "live": false,
+      "media_type": "text",
+      "memory_persistence": {
+        "mocked_description_not_persisted_as_live_truth": true,
+        "receipt": null,
+        "status": "SKIPPED_PLACEHOLDER"
+      },
+      "mocked": true,
+      "model_backend": "deterministic_text_summary_contract_stub",
+      "required": true,
+      "run_id": "20260701T175337Z-issue-46-media-explainer-required-failure",
+      "schema": "tau.media_explainer_asset_receipt.v1",
+      "source_uri": "file:///fixtures/brief.txt",
+      "status": "READY",
+      "subagent": "text-media-explainer",
+      "tags": [
+        "text",
+        "prompt-ready",
+        "deterministic-contract"
+      ],
+      "timestamp": "2026-07-01T17:53:37Z",
+      "tool_path": "text_summarizer"
+    }
+  ],
+  "completion_order": [
+    "image-required",
+    "text-required"
+  ],
+  "completion_order_differs_from_manifest": false,
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-46-media-explainer-smoke/20260701T175337Z-issue-46-media-explainer-required-failure/events.jsonl",
+  "execution": "local_deterministic_asyncio_as_completed_contract",
+  "live": false,
+  "manifest_order": [
+    "image-required",
+    "text-required"
+  ],
+  "memory_policy": {
+    "live_memory_write_enabled": false,
+    "mocked_descriptions_persisted_as_live_truth": false,
+    "persistence_mode": "placeholder_receipts_only"
+  },
+  "mocked": true,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "live VLM/video/audio/text model quality",
+      "live Memory service writes",
+      "Dream UI integration",
+      "persona memory schema migration",
+      "media-explainer internals"
+    ],
+    "proves": [
+      "Tau accepts a media-explainer work item with linked mixed assets",
+      "Tau routes image, video, audio, and text assets to distinct tool paths",
+      "Tau schedules per-asset explanation work concurrently and records as_completed order",
+      "Tau emits one receipt per asset with ready or failed status",
+      "Tau isolates optional asset failures without blocking Step 02",
+      "Tau computes a Step 02 Story gate from required linked asset readiness",
+      "Tau does not persist mocked media descriptions as live memory truth"
+    ]
+  },
+  "provider_live": false,
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-46-media-explainer-smoke/20260701T175337Z-issue-46-media-explainer-required-failure",
+  "run_id": "20260701T175337Z-issue-46-media-explainer-required-failure",
+  "schema": "tau.media_explainer_run_receipt.v1",
+  "status": "PASS",
+  "status_counts": {
+    "FAILED": 1,
+    "READY": 1
+  },
+  "step02_gate": {
+    "failed_required_asset_ids": [
+      "image-required"
+    ],
+    "optional_failed_asset_ids": [],
+    "phase": "02_story",
+    "ready_required_asset_ids": [
+      "text-required"
+    ],
+    "required_asset_ids": [
+      "image-required",
+      "text-required"
+    ],
+    "required_assets_ready": false,
+    "schema": "tau.media_explainer_step02_gate.v1",
+    "status": "BLOCKED",
+    "waived_asset_ids": []
+  },
+  "timestamp": "2026-07-01T17:53:37Z",
+  "work_item": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-46-media-explainer-smoke/20260701T175337Z-issue-46-media-explainer-required-failure/work-item.json"
+}

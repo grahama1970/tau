@@ -1,0 +1,37 @@
+{
+  "artifact_id": "run_story_contract",
+  "created_at": "2026-07-01T20:27:46Z",
+  "downstream_invalidated": {
+    "panels": true,
+    "provider_packets": true,
+    "reason": "New accepted story contract requires downstream regeneration.",
+    "storyboard": true
+  },
+  "input_idea_contract": "Create a one-panel 10-second Embry OS story contract from Phase 02 prompt payload.",
+  "review_evidence": {
+    "basis": "Derived directly from accepted dream_packet frame prompts and residue ids.",
+    "forbidden_actions_observed": {
+      "kling": false,
+      "paid_provider": false,
+      "panel_generation": false,
+      "public_upload": false
+    },
+    "review_status": "ACCEPTED_AUTOMATED",
+    "reviewed_by": "tau.story-writer",
+    "source_ids": [
+      "embry_media_asset__assets_surfing_embry_surfing_big_island_2024_png"
+    ]
+  },
+  "schema": "persona_dream.story_contract.v1",
+  "seed": "Create a one-panel 10-second story from the supplied Embry/Kai media and interaction matrix.",
+  "source_paths": {
+    "dream_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260701T202745Z/dream_packet.json",
+    "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260701T202745Z/input_story_contract_work_order.json"
+  },
+  "speaking_characters": [
+    "Embry"
+  ],
+  "status": "ACCEPTED_AUTOMATED",
+  "story": "Create a one-panel 10-second story from the supplied Embry/Kai media and interaction matrix.\n\nBeat 1: Embry and Kai fake a sick day to surf the Big Island on a humid June Wednesday.\nLocation: Kahalu\u02bbu Bay, Kona Coast, Wednesday June 2024 daylight surf window\nEnvironment: Humid bright June heat, summer swell, lava rock reef, glare and warm water.\nAuthor: Andy Weir\nInteraction matrix: [{\"id\":\"embry\",\"name\":\"Embry\",\"objects\":\"waxed white shortboard, phone\",\"environment\":\"Humid June heat and shallow lava reef\",\"dynamics\":\"Heat and glare make her choice physical; reef timing punishes hesitation.\",\"note\":\"Show salt, sweat, waxed deck, and restraint.\"}]\nLinked assets: [{\"id\":\"embry_media_asset__assets_surfing_embry_surfing_big_island_2024_png\",\"memoryKey\":\"embry_media_asset__assets_surfing_embry_surfing_big_island_2024_png\",\"title\":\"Embry surfing on the Big Island\",\"url\":\"/api/persona-media?persona=embry&path=assets%2Fsurfing%2Fembry_surfing_big_island_2024.png\",\"description\":\"Embry crouches low on a white surfboard in golden Big Island light, lava rocks and green mountains behind her.\"}]",
+  "target_duration_s": 5.0
+}

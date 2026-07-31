@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T204157Z-tau-advanced-current-code-full-v2/advanced-provider-runs/max-exhaustion/20260703T205131Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work order at attempt-02-reviewer.json",
+    "read coder receipt at attempt-02-coder.json",
+    "read target file at scratch-worktree/message.txt",
+    "ls scratch-worktree/"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T204157Z-tau-advanced-current-code-full-v2/advanced-provider-runs/max-exhaustion/20260703T205131Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T204157Z-tau-advanced-current-code-full-v2/advanced-provider-runs/max-exhaustion/20260703T205131Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "force_revise=true: target file is a status claim ('completed implementation by deterministic visible coder attempt 2') with no demonstrable implementation substance. Coder receipt is schema-valid but the coder used tau-deterministic-visible instead of the opencode provider assigned by the DAG node. For attempt 3: write meaningful implementation output (code, script, or structured evidence) rather than a status line, and use the correct provider_id.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,63 @@
+{
+  "schema": "dream.story.prompt_payload.v1",
+  "metadata": {
+    "phase": "02",
+    "timestamp": "2026-07-01T20:30:00Z",
+    "gate_state": "PASS"
+  },
+  "model": {
+    "provider": "tau",
+    "model": "gpt-5.5",
+    "reasoning_effort": "medium",
+    "temperature": 0.6
+  },
+  "task": {
+    "kind": "one_panel_10_second_story",
+    "duration_seconds": 10,
+    "output_format": "json"
+  },
+  "context": {
+    "core_idea": "Embry and Kai fake a sick day to surf the Big Island on a humid June Wednesday.",
+    "thematic_pivot": "Autonomy vs. Obligation",
+    "location": "Kahaluʻu Bay, Kona Coast, Wednesday June 2024 daylight surf window",
+    "environment": "Humid bright June heat, summer swell, lava rock reef, glare and warm water.",
+    "interaction_rows": [
+      {
+        "id": "embry",
+        "name": "Embry",
+        "objects": "waxed white shortboard, phone",
+        "environment": "Humid June heat and shallow lava reef",
+        "dynamics": "Heat and glare make her choice physical; reef timing punishes hesitation.",
+        "note": "Show salt, sweat, waxed deck, and restraint."
+      }
+    ],
+    "linked_assets": [
+      {
+        "id": "embry_media_asset__assets_surfing_embry_surfing_big_island_2024_png",
+        "memoryKey": "embry_media_asset__assets_surfing_embry_surfing_big_island_2024_png",
+        "title": "Embry surfing on the Big Island",
+        "url": "/api/persona-media?persona=embry&path=assets%2Fsurfing%2Fembry_surfing_big_island_2024.png",
+        "description": "Embry crouches low on a white surfboard in golden Big Island light, lava rocks and green mountains behind her."
+      }
+    ]
+  },
+  "author_profile": {
+    "persona_id": "andy_weir",
+    "persona": "Andy Weir",
+    "persona_context": "Clear physical causality and accessible technical detail.",
+    "creativity_index": 0.6
+  },
+  "response_contract": {
+    "story": "string"
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "Return JSON only."
+    },
+    {
+      "role": "user",
+      "content": "Create a one-panel 10-second story from the supplied Embry/Kai media and interaction matrix."
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+3T202848Z-
+rw-sanity-
+provider-d
+ag-one-pas
+s/receipts
+/
+attempt-01
+-coder.jso
+n
+
+← Write ex
+periments/
+goal-locke
+d-subagent
+s/proofs/r
+eal-world-
+sanity/202
+60703T2027
+51Z-tau-ad
+vanced-cur
+rent-code-
+full/advan
+ced-provid
+er-runs/on
+e-pass/202
+60703T2028
+48Z-rw-san
+ity-provid
+er-dag-one
+-pass/rece
+ipts/attem
+pt-01-revi
+ewer.json
+Wrote file
+ successfu
+lly.

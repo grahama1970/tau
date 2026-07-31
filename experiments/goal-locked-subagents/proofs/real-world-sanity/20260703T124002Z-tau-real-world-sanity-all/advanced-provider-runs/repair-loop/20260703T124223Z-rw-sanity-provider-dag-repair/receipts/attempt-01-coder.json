@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/repair-loop/20260703T124223Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/repair-loop/20260703T124223Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "pwd && sed -n '1,240p' experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/repair-loop/20260703T124223Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-coder.json",
+    "sed -n '1,120p' message.txt",
+    "find . -maxdepth 2 -type f -print",
+    "uv run python -m json.tool /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/repair-loop/20260703T124223Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json >/tmp/tau-attempt-01-coder-jsoncheck.txt && wc -l /tmp/tau-attempt-01-coder-jsoncheck.txt",
+    "sed -n '1,20p' message.txt",
+    "find . -maxdepth 2 -type f -print | sort"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/repair-loop/20260703T124223Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

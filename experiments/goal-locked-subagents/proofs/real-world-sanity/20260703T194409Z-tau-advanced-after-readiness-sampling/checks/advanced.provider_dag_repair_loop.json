@@ -1,0 +1,75 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "attempt_count": 2,
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "schema": "tau.dag_run_receipt.v1",
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/logs/advanced.provider_dag_repair_loop.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/logs/advanced.provider_dag_repair_loop.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.provider_dag_repair_loop",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "provider-dag-poc",
+    "--label",
+    "rw-sanity-provider-dag-repair",
+    "--run-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/advanced-provider-runs/repair-loop",
+    "--max-attempts",
+    "2",
+    "--receipt-timeout-seconds",
+    "90",
+    "--force-reviewer-revise-first",
+    "--herdr-bin",
+    "herdr",
+    "--no-install-integrations"
+  ],
+  "completed_at": "2026-07-03T19:53:09Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "advanced",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "provider_live": true,
+  "purpose": "Live visible provider DAG handles reviewer REVISE, retries coder, then accepts reviewer PASS.",
+  "receipt_summary": {
+    "attempt_count": 2,
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "schema": "tau.dag_run_receipt.v1",
+    "status": "PASS",
+    "verdict": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-03T19:49:30Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/logs/advanced.provider_dag_repair_loop.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/logs/advanced.provider_dag_repair_loop.stdout.txt",
+  "timeout_seconds": 360
+}

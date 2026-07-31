@@ -1,0 +1,18 @@
+{
+  "action": "working_tree_mutation",
+  "actor": {
+    "auth_method": "manual",
+    "id": "human:graham"
+  },
+  "approved": true,
+  "evidence": [
+    "real-world-sanity approval fixture"
+  ],
+  "nonce": "real-world-sanity:working_tree_mutation:github-ticket-closure",
+  "reason": "Intentionally mismatched action for fail-closed sanity proof.",
+  "schema": "tau.human_approval_packet.v1",
+  "signature": "manual-real-world-sanity-fixture",
+  "target": {
+    "id": "github-ticket-closure"
+  }
+}

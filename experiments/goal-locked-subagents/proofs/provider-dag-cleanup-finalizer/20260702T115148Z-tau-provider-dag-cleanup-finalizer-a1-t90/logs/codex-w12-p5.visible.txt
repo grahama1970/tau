@@ -1,0 +1,38 @@
+        n '\"status\": \"PASS\"' /home/graha
+        m/workspace/experiments/tau/experime
+        nts/goal-locked-subagents/proofs/pro
+        vider-dag-cleanup-finalizer/20260702
+        T115148Z-tau-provider-dag-cleanup-fi
+        nalizer-a1-t90/receipts/attempt-01-c
+        oder.json && grep -n '\"verdict\": \
+        "PASS\"' /home/graham/workspace/expe
+        riments/tau/experiments/goal-locked-
+        subagents/proofs/provider-dag-cleanu
+        p-finalizer/20260702T115148Z-tau-pro
+        vider-dag-cleanup-finalizer-a1-t90/r
+        eceipts/attempt-01-coder.json"
+    20    ],
+
+────────────────────────────────────────────
+
+• Receipt command log is updated. The next
+  command validates the receipt JSON parses,
+  confirms the message text, and confirms
+  PASS status/verdict fields.
+
+• Ran python3 -m json.tool /home/graham/
+  │ workspace/experiments/tau/experiments/
+  │ goal-locked-subagents/proofs/
+  │ … +26 lines
+  └ Completed implementation for the Tau
+    provider DAG cleanup finalizer coder
+    node.
+    6:  "status": "PASS",
+    7:  "verdict": "PASS",
+
+• Working (1m 00s • esc to interrupt)
+
+
+› Summarize recent commits
+
+  gpt-5.5 medium · ~/workspace/experiments/…

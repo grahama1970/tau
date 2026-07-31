@@ -1,0 +1,38 @@
+        ttempt-02-coder.json')\n
+        data = json.loads(p.read
+        _text())\nprint('attempt
+        =' + str(data['attempt']
+        ))\nprint('status=' + da
+        ta['status'])\nprint('ve
+        rdict=' + data['verdict'
+        ])\nprint('changed_files
+        _count=' + str(len(data[
+        'changed_files'])))\npri
+        nt('artifact_count=' + s
+        tr(len(data['artifacts']
+        )))\nPY",
+    21 +    "uv run python -m js
+        on.tool /home/graham/wor
+        kspace/experiments/tau/e
+        xperiments/goal-locked-s
+        ubagents/proofs/real-wor
+        ld-sanity/20260703T12512
+        0Z-tau-real-world-sanity
+        -all-provider-live/advan
+        ced-provider-runs/max-ex
+        haustion/20260703T125725
+        Z-rw-sanity-provider-dag
+        -max-exhaustion/receipts
+        /attempt-02-coder.json >
+        /tmp/attempt-02-coder-fi
+        nal-jsoncheck.txt && pri
+        ntf 'final_json_valid=ye
+        s\\n'"
+    22    ],
+
+• Working (2m 33s • esc to inte…
+
+
+› Find and fix a bug in @filena
+
+  gpt-5.5 medium · ~/workspace/…

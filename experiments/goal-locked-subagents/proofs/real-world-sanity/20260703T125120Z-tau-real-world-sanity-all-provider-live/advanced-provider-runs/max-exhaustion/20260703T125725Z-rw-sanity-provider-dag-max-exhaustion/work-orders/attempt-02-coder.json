@@ -1,0 +1,12 @@
+{
+  "attempt": 2,
+  "node_id": "coder",
+  "provider_id": "codex",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/max-exhaustion/20260703T125725Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json",
+  "reviewer_feedback": "REVISE: TODO line removed, receipt schema-valid. But the replacement text is a generic boilerplate sentence with no substance. The message should name what was implemented (e.g., 'Added real-world proof-of-concept: provider DAG with OpenAI GPT-4o, Anthropic Claude, and OpenCode providers completing a 3-node linear DAG'). It should list the providers exercised, the node count, and the DAG topology to make the proof meaningful for downstream consumers.",
+  "run_id": "20260703T125725Z-rw-sanity-provider-dag-max-exhaustion",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/max-exhaustion/20260703T125725Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree",
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/max-exhaustion/20260703T125725Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+  "task": "Modify only target_file. Replace the TODO line with a short completed implementation message. Then write the node receipt JSON exactly at receipt_path."
+}

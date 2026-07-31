@@ -1,0 +1,21 @@
+{
+  "contact_sheet_requirements": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_requirements.json",
+  "created_at": "2026-07-02T21:43:10Z",
+  "live": true,
+  "mocked": false,
+  "provider_calls": {
+    "image_generation": false,
+    "kling": false,
+    "paid": false,
+    "public_upload": false
+  },
+  "provider_live": false,
+  "provider_matrix": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/provider_matrix.json",
+  "reference_asset_manifest": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/reference_asset_manifest.json",
+  "role": "contact-sheet-writer",
+  "run_root": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete",
+  "schema": "tau.persona_dream.contact_sheet_writer_receipt.v1",
+  "status": "COMPLETED",
+  "subagent_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-contact-sheet-ui-dispatch/contact-sheet-dag-loop-prompt-review-20260702T214310Z/command-loop/command-artifacts/command-loop-step-001/contact_sheet_writer_tau_subagent_receipt.json",
+  "visual_entity_context": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/visual_entity_context.json"
+}

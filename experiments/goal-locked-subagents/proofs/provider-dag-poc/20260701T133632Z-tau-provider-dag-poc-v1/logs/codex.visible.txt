@@ -1,0 +1,46 @@
+  message.txt
+  Current artifact: /home/graham/
+  workspace/experiments/tau/
+  experiments/goal-locked-subagents/
+  proofs/provider-dag-
+  poc/20260701T133632Z-tau-provider-
+  dag-poc-v1/receipts/attempt-01-
+  coder.json
+
+  Evidence
+  sed -n '1,20p' .../scratch-worktree/
+  message.txt returned:
+
+  Provider DAG POC coder implementation
+  completed.
+
+  python3 -m json.tool .../receipts/
+  attempt-01-coder.json exited
+  successfully and showed:
+
+  "schema":
+  "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS"
+
+  find .../scratch-worktree -maxdepth 2
+  -type f -print returned 1 file:
+  message.txt.
+
+  Next/Stop Condition
+  Stop condition met: the only target
+  file was modified, the required
+  receipt JSON was written at the exact
+  requested path, and the receipt
+  parses as valid JSON. No further work
+  remains for this work order.
+
+─ Worked for 1m 17s ───────────────────
+
+
+› Implement {feature}
+
+  gpt-5.5 medium · ~/workspace/experim…

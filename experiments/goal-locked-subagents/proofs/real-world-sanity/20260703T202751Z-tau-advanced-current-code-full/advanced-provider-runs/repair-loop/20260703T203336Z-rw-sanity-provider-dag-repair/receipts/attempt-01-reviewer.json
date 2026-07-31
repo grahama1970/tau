@@ -1,0 +1,24 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "git worktree list",
+    "read work-order-json",
+    "read scratch-worktree-dir",
+    "read coder-receipt-json",
+    "read message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "force_revise=true. Target file TODO is gone — content is 'Completed implementation message for the Tau provider DAG POC.' Coder receipt is schema-valid with PASS status. Feedback for next coder attempt: (1) Message is too generic — include what was implemented (e.g., the specific provider DAG node or repair-loop step). (2) Coder commands_run shows only read operations (jq, pwd, sed -n, find) — no edit command is recorded, making it impossible to verify how message.txt was modified. Next coder should record the actual write/edit command. (3) Coder receipt handoff_summary merely restates the action — include a brief rationale or verification note (e.g., 'Confirmed TODO line removed, file contains only the completion message, no remaining placeholders').",
+  "errors": [],
+  "policy_exceptions": []
+}

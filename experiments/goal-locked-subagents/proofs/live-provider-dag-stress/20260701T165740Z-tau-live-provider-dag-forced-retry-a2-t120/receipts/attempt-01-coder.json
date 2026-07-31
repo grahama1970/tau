@@ -1,0 +1,31 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/work-orders/attempt-01-coder.json",
+    "pwd",
+    "sed -n '1,120p' message.txt",
+    "find . -maxdepth 1 -type f -printf '%P\\n' | sort",
+    "apply_patch: replace TODO line in /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/scratch-worktree/message.txt",
+    "sed -n '1,120p' message.txt",
+    "git diff -- message.txt",
+    "test -d /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/receipts",
+    "git status --short -- message.txt",
+    "apply_patch: add /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/receipts/attempt-01-coder.json",
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/receipts/attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a completed implementation message for the Tau provider DAG coder node.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,29 @@
+{
+  "command": [
+    "python3",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T184220Z-tau-course-correction-v1-20260706/concurrent-pointless-test-drift-project-dag/project_dag_worker.py",
+    "--role",
+    "reviewer",
+    "--scenario",
+    "concurrent-pointless-test-drift"
+  ],
+  "tau_dag_node": {
+    "agent": "reviewer",
+    "dag_id": "rw-sanity-project-dag-concurrent-pointless-test-drift",
+    "executor": "local",
+    "goal": {
+      "goal_hash": "sha256:rw-sanity-project-dag-concurrent-pointless-test-drift",
+      "goal_id": "rw-sanity-project-dag-concurrent-pointless-test-drift",
+      "goal_version": 1
+    },
+    "node_id": "reviewer",
+    "required_evidence": [
+      "reviewer_verdict"
+    ],
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-concurrent-pointless-test-drift"
+    }
+  },
+  "timeout_s": 20
+}

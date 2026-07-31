@@ -1,0 +1,21 @@
+aham/workspace/experiments/tau/experiments/goal-locked-suba
+gents/proofs/real-world-sanity/20260705T233138Z-tau-advance
+d-memory-evidence-regression-20260705/advanced-provider-run
+s/invalid-model/20260705T234200Z-rw-sanity-provider-dag-inv
+alid-model\ndag_spec: /home/graham/workspace/experiments/ta
+u/experiments/goal-locked-subagents/proofs/real-world-sanit
+y/20260705T233138Z-tau-advanced-memory-evidence-regression-
+20260705/advanced-provider-runs/invalid-model/20260705T2342
+00Z-rw-sanity-provider-dag-invalid-model/dag-spec.json\npla
+nner_receipt: /home/graham/workspace/experiments/tau/experi
+ments/goal-locked-subagents/proofs/real-world-sanity/202607
+05T233138Z-tau-advanced-memory-evidence-regression-20260705
+/advanced-provider-runs/invalid-model/20260705T234200Z-rw-s
+anity-provider-dag-invalid-model/planner-receipt.json\nfina
+l_receipt: /home/graham/workspace/experiments/tau/experimen
+ts/goal-locked-subagents/proofs/real-world-sanity/20260705T
+233138Z-tau-advanced-memory-evidence-regression-20260705/ad
+vanced-provider-runs/invalid-model/20260705T234200Z-rw-sani
+ty-provider-dag-invalid-model/run-receipt.json\ncanonical t
+ruth: Tau JSON receipts; this pane is human-visible telemet
+ry.\n

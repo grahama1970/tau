@@ -1,0 +1,38 @@
+  narrow: replace the TODO line with a short
+  completed implementation message.
+
+• Explored
+  └ Read message.txt
+    List .
+
+• Ran pwd
+  └ /home/graham/workspace/experiments/tau/
+    experiments/goal-locked-subagents/proofs/
+    … +3 lines (ctrl + t to view transcript)
+    invalid-model/20260703T201623Z-rw-sanity-pro
+    vider-dag-invalid-model/scratch-worktree
+
+────────────────────────────────────────────────
+
+• I’m about to make the single allowed file edit
+  in the scratch worktree: replacing the one
+  TODO line in message.txt. After that I’ll
+  verify the file content and write the receipt.
+
+• Edited experiments/goal-locked-subagents/
+proofs/real-world-sanity/20260703T200015Z-tau-
+advanced-after-timeout-floor/advanced-provider-
+runs/invalid-model/20260703T201623Z-rw-sanity-
+provider-dag-invalid-model/scratch-worktree/
+message.txt (+1 -1)
+    1 -TODO: replace this line with a completed
+       implementation.
+    1 +Completed implementation for the provider
+        DAG invalid-model coder node.
+
+• Working (44s • esc to interrupt)
+
+
+› Implement {feature}
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

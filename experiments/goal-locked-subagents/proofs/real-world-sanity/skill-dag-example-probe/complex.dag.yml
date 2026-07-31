@@ -1,0 +1,75 @@
+schema: tau.dag_contract.v1
+dag_id: tau-feature-with-research-and-code
+goal:
+  goal_id: tau-feature
+  goal_version: 3
+  goal_hash: sha256:active-goal
+target:
+  repo: grahama1970/tau
+  target: issue#123
+entry_node: start
+terminal_nodes:
+  - human
+limits:
+  resume: true
+  default_timeout_seconds: 300
+  max_total_attempts: 6
+nodes:
+  - id: start
+    agent: goal-guardian
+    executor: local
+    max_attempts: 1
+  - id: researcher
+    agent: research-auditor
+    executor: local
+    max_attempts: 1
+    required_evidence:
+      - source_summary
+      - citations_or_local_artifacts
+  - id: coder
+    agent: coder
+    executor: local
+    max_attempts: 2
+    required_evidence:
+      - changed_files
+      - focused_tests
+  - id: join-review
+    agent: reviewer
+    executor: local
+    max_attempts: 1
+    join:
+      requires_completed:
+        - researcher
+        - coder
+      reconciles_evidence: true
+    required_evidence:
+      - review_verdict
+      - test_verification
+      - unresolved_monitor_alerts:none
+  - id: human
+    agent: human
+    executor: human
+edges:
+  - from: start
+    to: researcher
+  - from: start
+    to: coder
+  - from: researcher
+    to: join-review
+  - from: coder
+    to: join-review
+  - from: join-review
+    to: human
+required_evidence:
+  - dag_monitor_receipt
+  - reviewer_join_receipt
+  - no_unresolved_block_or_reroute_alerts
+fail_closed_on:
+  - goal_hash_mismatch
+  - target_changed
+  - unexpected_node
+  - unexpected_edge
+  - missing_required_join
+  - branch_goal_hash_divergence
+  - branch_target_divergence
+  - unresolved_block_alert

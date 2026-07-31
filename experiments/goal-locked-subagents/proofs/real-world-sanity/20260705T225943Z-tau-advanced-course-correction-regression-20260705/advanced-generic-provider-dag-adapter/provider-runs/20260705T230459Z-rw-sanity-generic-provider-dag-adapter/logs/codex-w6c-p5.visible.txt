@@ -1,0 +1,22 @@
+  the receipt in this turn.
+
+  Next/stop condition: stop; requested target file and
+  receipt artifact are complete.
+
+• Stop hook (stopped)
+  warning: Violation blocked: do not end with a 'does not
+  prove' / 'still not proven here' / 'not yet proven' /
+  'specifically unproven' / 'pending, not closed' caveat
+  when actionable work remains. A caveat is not a stopping
+  condition. Continue into the next concrete implementation
+  or verification step, or state a real blocker with
+  Status/Phase, Now, Evidence, mocked/live, and Next/stop
+  condition.
+  stop: Premature unproven-work stop.
+
+─ Worked for 1m 31s ───────────────────────────────────────
+
+
+› Implement {feature}
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

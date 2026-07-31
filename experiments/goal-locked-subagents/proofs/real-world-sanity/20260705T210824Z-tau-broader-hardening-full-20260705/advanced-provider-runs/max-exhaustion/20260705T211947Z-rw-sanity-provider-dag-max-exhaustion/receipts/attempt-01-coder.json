@@ -1,0 +1,29 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/max-exhaustion/20260705T211947Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+  ],
+  "attempt": 1,
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/max-exhaustion/20260705T211947Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "python deterministic visible coder"
+  ],
+  "dag_id": "20260705T211947Z-rw-sanity-provider-dag-max-exhaustion",
+  "errors": [],
+  "goal_hash": "sha256:952dfbc617f3b01330e238e1fefc8b99949cd934795ffdfbd71c4dc90d6d6f54",
+  "handoff_summary": "Deterministic visible coder updated the scratch target file.",
+  "node_id": "coder",
+  "pane_id": "w5B:p5",
+  "policy_exceptions": [],
+  "provider_id": "codex",
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "status": "PASS",
+  "terminal_id": "term_655e3b7c467bb5d0",
+  "verdict": "PASS",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/max-exhaustion/20260705T211947Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T211947Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "a275515b8f8f5d8a98fd9a6f46cfdec14e3bef27202bd93a474a74a426788fbb",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/max-exhaustion/20260705T211947Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-coder.json",
+  "work_order_sha256": "aff366765936773344493b2008810cacf160590ea237c714b958649dd8df1c61",
+  "workspace_id": "w5B"
+}

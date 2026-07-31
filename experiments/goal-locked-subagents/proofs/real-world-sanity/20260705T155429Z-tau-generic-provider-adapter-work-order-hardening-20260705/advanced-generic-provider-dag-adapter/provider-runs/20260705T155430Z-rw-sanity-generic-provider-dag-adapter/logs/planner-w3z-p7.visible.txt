@@ -1,0 +1,37 @@
+260705/advanced-generic-provide
+r-dag-adapter/provider-runs/202
+60705T155430Z-rw-sanity-generic
+-provider-dag-adapter\ndag_spec
+: /home/graham/workspace/experi
+ments/tau/experiments/goal-lock
+ed-subagents/proofs/real-world-
+sanity/20260705T155429Z-tau-gen
+eric-provider-adapter-work-orde
+r-hardening-20260705/advanced-g
+eneric-provider-dag-adapter/pro
+vider-runs/20260705T155430Z-rw-
+sanity-generic-provider-dag-ada
+pter/dag-spec.json\nplanner_rec
+eipt: /home/graham/workspace/ex
+periments/tau/experiments/goal-
+locked-subagents/proofs/real-wo
+rld-sanity/20260705T155429Z-tau
+-generic-provider-adapter-work-
+order-hardening-20260705/advanc
+ed-generic-provider-dag-adapter
+/provider-runs/20260705T155430Z
+-rw-sanity-generic-provider-dag
+-adapter/planner-receipt.json\n
+final_receipt: /home/graham/wor
+kspace/experiments/tau/experime
+nts/goal-locked-subagents/proof
+s/real-world-sanity/20260705T15
+5429Z-tau-generic-provider-adap
+ter-work-order-hardening-202607
+05/advanced-generic-provider-da
+g-adapter/provider-runs/2026070
+5T155430Z-rw-sanity-generic-pro
+vider-dag-adapter/run-receipt.j
+son\ncanonical truth: Tau JSON
+receipts; this pane is human-vi
+sible telemetry.\n

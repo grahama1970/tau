@@ -1,0 +1,35 @@
+│ Run npm install -g @openai/codex to
+│
+│ update.
+│
+│
+│
+│ See full release notes:
+│
+│ https://github.com/openai/codex/releases/latest │
+╰──────────────────────────────────────
+───────────╯
+
+╭──────────────────────────────────────
+───╮
+│ >_ OpenAI Codex (v0.142.4)
+  │
+│
+  │
+│ model:       loading   /model to
+change │
+│ directory:   ~/…/experiments/tau
+  │
+│ permissions: YOLO mode
+  │
+╰──────────────────────────────────────
+───╯
+
+
+›
+  2
+  2
+  2
+
+
+  gpt-5.5 default · ~/workspace/experi…

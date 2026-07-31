@@ -1,0 +1,27 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T180641Z-tau-advanced-live-hard-failure-hunt/advanced-generic-provider-dag-adapter/provider-runs/20260704T181309Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T180641Z-tau-advanced-live-hard-failure-hunt/advanced-generic-provider-dag-adapter/provider-runs/20260704T181309Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "pwd && jq '.' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T180641Z-tau-advanced-live-hard-failure-hunt/advanced-generic-provider-dag-adapter/provider-runs/20260704T181309Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+    "sed -n '1,120p' message.txt",
+    "find . -maxdepth 2 -type f -print | sort",
+    "test -d /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T180641Z-tau-advanced-live-hard-failure-hunt/advanced-generic-provider-dag-adapter/provider-runs/20260704T181309Z-rw-sanity-generic-provider-dag-adapter/receipts && printf 'receipts_dir_exists\\n'",
+    "sed -n '1,40p' message.txt",
+    "jq -e '.schema == \"tau.provider_dag_node_receipt.v1\" and .node_id == \"coder\" and .provider_id == \"codex\" and .attempt == 1 and .status == \"PASS\" and .verdict == \"PASS\" and (.changed_files | length == 1) and (.artifacts | length == 1) and (.errors | length == 0) and (.policy_exceptions | length == 0)' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T180641Z-tau-advanced-live-hard-failure-hunt/advanced-generic-provider-dag-adapter/provider-runs/20260704T181309Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json",
+    "jq -e . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T180641Z-tau-advanced-live-hard-failure-hunt/advanced-generic-provider-dag-adapter/provider-runs/20260704T181309Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json >/dev/null && printf 'receipt_json_valid\\n'"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T180641Z-tau-advanced-live-hard-failure-hunt/advanced-generic-provider-dag-adapter/provider-runs/20260704T181309Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,449 @@
+{
+  "agents": {
+    "argv": [
+      "herdr",
+      "agent",
+      "list"
+    ],
+    "parsed": {
+      "id": "cli:agent:list",
+      "result": {
+        "agents": [
+          {
+            "agent": "codex",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/agent-skills",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/agent-skills",
+            "pane_id": "w1:p1",
+            "revision": 0,
+            "tab_id": "w1:t1",
+            "terminal_id": "term_655803a7731441",
+            "workspace_id": "w1"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T115623Z-tau-visible-dag-poc-held-reviewer",
+            "pane_id": "w6:p6",
+            "revision": 0,
+            "tab_id": "w6:t2",
+            "terminal_id": "term_6558b6185e56f11",
+            "workspace_id": "w6"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T115623Z-tau-visible-dag-poc-held-creator",
+            "pane_id": "w6:p5",
+            "revision": 0,
+            "tab_id": "w6:t2",
+            "terminal_id": "term_6558b61781ef710",
+            "workspace_id": "w6"
+          }
+        ],
+        "type": "agent_list"
+      }
+    },
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\"id\":\"cli:agent:list\",\"result\":{\"agents\":[{\"agent\":\"codex\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/agent-skills\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/agent-skills\",\"pane_id\":\"w1:p1\",\"revision\":0,\"tab_id\":\"w1:t1\",\"terminal_id\":\"term_655803a7731441\",\"workspace_id\":\"w1\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T115623Z-tau-visible-dag-poc-held-reviewer\",\"pane_id\":\"w6:p6\",\"revision\":0,\"tab_id\":\"w6:t2\",\"terminal_id\":\"term_6558b6185e56f11\",\"workspace_id\":\"w6\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T115623Z-tau-visible-dag-poc-held-creator\",\"pane_id\":\"w6:p5\",\"revision\":0,\"tab_id\":\"w6:t2\",\"terminal_id\":\"term_6558b61781ef710\",\"workspace_id\":\"w6\"}],\"type\":\"agent_list\"}}\n"
+  },
+  "manifest": {
+    "agents": {
+      "20260701T115623Z-tau-visible-dag-poc-held-creator": {
+        "command": "'/home/graham/workspace/experiments/tau/.venv/bin/python' '-m' 'tau_coding.visible_dag_worker' '--run-id' '20260701T115623Z-tau-visible-dag-poc-held' '--node-id' 'creator' '--role' 'creator' '--work-order' '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/work-orders/creator.json' '--receipt' '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/receipts/creator.receipt.json' '--events' '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/events.jsonl' '--hold-seconds' '300'",
+        "last_start_result": {
+          "argv": [
+            "herdr",
+            "agent",
+            "start",
+            "20260701T115623Z-tau-visible-dag-poc-held-creator",
+            "--cwd",
+            "/home/graham/workspace/experiments/tau",
+            "--workspace",
+            "w6",
+            "--tab",
+            "w6:t2",
+            "--env",
+            "TAU_ROLE=creator",
+            "--env",
+            "TAU_AGENT_NAME=20260701T115623Z-tau-visible-dag-poc-held-creator",
+            "--env",
+            "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/herdr-workstations/20260701T115623Z-tau-visible-dag-poc-held",
+            "--env",
+            "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/work-orders/creator.json",
+            "--env",
+            "PYTHONPATH=/home/graham/workspace/experiments/tau/src",
+            "--env",
+            "TAU_VISIBLE_DAG_RUN_ID=20260701T115623Z-tau-visible-dag-poc-held",
+            "--env",
+            "TAU_VISIBLE_DAG_NODE_ID=creator",
+            "--no-focus",
+            "--",
+            "/home/graham/workspace/experiments/tau/.venv/bin/python",
+            "-m",
+            "tau_coding.visible_dag_worker",
+            "--run-id",
+            "20260701T115623Z-tau-visible-dag-poc-held",
+            "--node-id",
+            "creator",
+            "--role",
+            "creator",
+            "--work-order",
+            "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/work-orders/creator.json",
+            "--receipt",
+            "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/receipts/creator.receipt.json",
+            "--events",
+            "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/events.jsonl",
+            "--hold-seconds",
+            "300"
+          ],
+          "parsed": {
+            "id": "cli:agent:start",
+            "result": {
+              "agent": {
+                "agent_status": "unknown",
+                "cwd": "/home/graham/workspace/experiments/tau",
+                "focused": false,
+                "foreground_cwd": "/home/graham/workspace/experiments/tau",
+                "name": "20260701T115623Z-tau-visible-dag-poc-held-creator",
+                "pane_id": "w6:p5",
+                "revision": 0,
+                "tab_id": "w6:t2",
+                "terminal_id": "term_6558b61781ef710",
+                "workspace_id": "w6"
+              },
+              "argv": [
+                "/home/graham/workspace/experiments/tau/.venv/bin/python",
+                "-m",
+                "tau_coding.visible_dag_worker",
+                "--run-id",
+                "20260701T115623Z-tau-visible-dag-poc-held",
+                "--node-id",
+                "creator",
+                "--role",
+                "creator",
+                "--work-order",
+                "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/work-orders/creator.json",
+                "--receipt",
+                "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/receipts/creator.receipt.json",
+                "--events",
+                "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/events.jsonl",
+                "--hold-seconds",
+                "300"
+              ],
+              "type": "agent_started"
+            }
+          },
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T115623Z-tau-visible-dag-poc-held-creator\",\"pane_id\":\"w6:p5\",\"revision\":0,\"tab_id\":\"w6:t2\",\"terminal_id\":\"term_6558b61781ef710\",\"workspace_id\":\"w6\"},\"argv\":[\"/home/graham/workspace/experiments/tau/.venv/bin/python\",\"-m\",\"tau_coding.visible_dag_worker\",\"--run-id\",\"20260701T115623Z-tau-visible-dag-poc-held\",\"--node-id\",\"creator\",\"--role\",\"creator\",\"--work-order\",\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/work-orders/creator.json\",\"--receipt\",\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/receipts/creator.receipt.json\",\"--events\",\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/events.jsonl\",\"--hold-seconds\",\"300\"],\"type\":\"agent_started\"}}\n"
+        },
+        "role": "creator",
+        "started_at": "20260701T115624Z",
+        "tab": "agents",
+        "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/work-orders/creator.json"
+      },
+      "20260701T115623Z-tau-visible-dag-poc-held-reviewer": {
+        "command": "'/home/graham/workspace/experiments/tau/.venv/bin/python' '-m' 'tau_coding.visible_dag_worker' '--run-id' '20260701T115623Z-tau-visible-dag-poc-held' '--node-id' 'reviewer' '--role' 'reviewer' '--work-order' '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/work-orders/reviewer.json' '--receipt' '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/receipts/reviewer.receipt.json' '--events' '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/events.jsonl' '--hold-seconds' '300' '--depends-on' '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/receipts/creator.receipt.json'",
+        "last_start_result": {
+          "argv": [
+            "herdr",
+            "agent",
+            "start",
+            "20260701T115623Z-tau-visible-dag-poc-held-reviewer",
+            "--cwd",
+            "/home/graham/workspace/experiments/tau",
+            "--workspace",
+            "w6",
+            "--tab",
+            "w6:t2",
+            "--env",
+            "TAU_ROLE=reviewer",
+            "--env",
+            "TAU_AGENT_NAME=20260701T115623Z-tau-visible-dag-poc-held-reviewer",
+            "--env",
+            "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/herdr-workstations/20260701T115623Z-tau-visible-dag-poc-held",
+            "--env",
+            "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/work-orders/reviewer.json",
+            "--env",
+            "PYTHONPATH=/home/graham/workspace/experiments/tau/src",
+            "--env",
+            "TAU_VISIBLE_DAG_RUN_ID=20260701T115623Z-tau-visible-dag-poc-held",
+            "--env",
+            "TAU_VISIBLE_DAG_NODE_ID=reviewer",
+            "--no-focus",
+            "--split",
+            "right",
+            "--",
+            "/home/graham/workspace/experiments/tau/.venv/bin/python",
+            "-m",
+            "tau_coding.visible_dag_worker",
+            "--run-id",
+            "20260701T115623Z-tau-visible-dag-poc-held",
+            "--node-id",
+            "reviewer",
+            "--role",
+            "reviewer",
+            "--work-order",
+            "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/work-orders/reviewer.json",
+            "--receipt",
+            "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/receipts/reviewer.receipt.json",
+            "--events",
+            "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/events.jsonl",
+            "--hold-seconds",
+            "300",
+            "--depends-on",
+            "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/receipts/creator.receipt.json"
+          ],
+          "parsed": {
+            "id": "cli:agent:start",
+            "result": {
+              "agent": {
+                "agent_status": "unknown",
+                "cwd": "/home/graham/workspace/experiments/tau",
+                "focused": false,
+                "foreground_cwd": "/home/graham/workspace/experiments/tau",
+                "name": "20260701T115623Z-tau-visible-dag-poc-held-reviewer",
+                "pane_id": "w6:p6",
+                "revision": 0,
+                "tab_id": "w6:t2",
+                "terminal_id": "term_6558b6185e56f11",
+                "workspace_id": "w6"
+              },
+              "argv": [
+                "/home/graham/workspace/experiments/tau/.venv/bin/python",
+                "-m",
+                "tau_coding.visible_dag_worker",
+                "--run-id",
+                "20260701T115623Z-tau-visible-dag-poc-held",
+                "--node-id",
+                "reviewer",
+                "--role",
+                "reviewer",
+                "--work-order",
+                "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/work-orders/reviewer.json",
+                "--receipt",
+                "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/receipts/reviewer.receipt.json",
+                "--events",
+                "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/events.jsonl",
+                "--hold-seconds",
+                "300",
+                "--depends-on",
+                "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/receipts/creator.receipt.json"
+              ],
+              "type": "agent_started"
+            }
+          },
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T115623Z-tau-visible-dag-poc-held-reviewer\",\"pane_id\":\"w6:p6\",\"revision\":0,\"tab_id\":\"w6:t2\",\"terminal_id\":\"term_6558b6185e56f11\",\"workspace_id\":\"w6\"},\"argv\":[\"/home/graham/workspace/experiments/tau/.venv/bin/python\",\"-m\",\"tau_coding.visible_dag_worker\",\"--run-id\",\"20260701T115623Z-tau-visible-dag-poc-held\",\"--node-id\",\"reviewer\",\"--role\",\"reviewer\",\"--work-order\",\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/work-orders/reviewer.json\",\"--receipt\",\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/receipts/reviewer.receipt.json\",\"--events\",\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/events.jsonl\",\"--hold-seconds\",\"300\",\"--depends-on\",\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/receipts/creator.receipt.json\"],\"type\":\"agent_started\"}}\n"
+        },
+        "role": "reviewer",
+        "started_at": "20260701T115625Z",
+        "tab": "agents",
+        "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/work-orders/reviewer.json"
+      }
+    },
+    "created_at": "20260701T115624Z",
+    "cwd": "/home/graham/workspace/experiments/tau",
+    "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/herdr-workstations/20260701T115623Z-tau-visible-dag-poc-held/events.jsonl",
+    "kind": "herdr-workstation",
+    "label": "tau-visible-dag-poc-held",
+    "repo": "/home/graham/workspace/experiments/tau",
+    "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/herdr-workstations/20260701T115623Z-tau-visible-dag-poc-held",
+    "run_id": "20260701T115623Z-tau-visible-dag-poc-held",
+    "schema_version": 1,
+    "session": "default",
+    "tabs": {
+      "agents": "w6:t2",
+      "logs": "w6:t3",
+      "receipts": "w6:t4"
+    },
+    "updated_at": "20260701T115625Z",
+    "workspace_id": "w6",
+    "worktree": {
+      "base": null,
+      "branch": null,
+      "enabled": false,
+      "path": null,
+      "raw": null
+    }
+  },
+  "panes": {
+    "argv": [
+      "herdr",
+      "pane",
+      "list",
+      "--workspace",
+      "w6"
+    ],
+    "parsed": {
+      "id": "cli:pane:list",
+      "result": {
+        "panes": [
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w6:p1",
+            "revision": 0,
+            "tab_id": "w6:t1",
+            "terminal_id": "term_6558b6170cc65c",
+            "workspace_id": "w6"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w6:p2",
+            "revision": 0,
+            "tab_id": "w6:t2",
+            "terminal_id": "term_6558b61721ee2d",
+            "workspace_id": "w6"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "label": "20260701T115623Z-tau-visible-dag-poc-held-reviewer",
+            "pane_id": "w6:p6",
+            "revision": 0,
+            "tab_id": "w6:t2",
+            "terminal_id": "term_6558b6185e56f11",
+            "workspace_id": "w6"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "label": "20260701T115623Z-tau-visible-dag-poc-held-creator",
+            "pane_id": "w6:p5",
+            "revision": 0,
+            "tab_id": "w6:t2",
+            "terminal_id": "term_6558b61781ef710",
+            "workspace_id": "w6"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w6:p3",
+            "revision": 0,
+            "tab_id": "w6:t3",
+            "terminal_id": "term_6558b61732dcce",
+            "workspace_id": "w6"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w6:p4",
+            "revision": 0,
+            "tab_id": "w6:t4",
+            "terminal_id": "term_6558b61744964f",
+            "workspace_id": "w6"
+          }
+        ],
+        "type": "pane_list"
+      }
+    },
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\"id\":\"cli:pane:list\",\"result\":{\"panes\":[{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w6:p1\",\"revision\":0,\"tab_id\":\"w6:t1\",\"terminal_id\":\"term_6558b6170cc65c\",\"workspace_id\":\"w6\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w6:p2\",\"revision\":0,\"tab_id\":\"w6:t2\",\"terminal_id\":\"term_6558b61721ee2d\",\"workspace_id\":\"w6\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"label\":\"20260701T115623Z-tau-visible-dag-poc-held-reviewer\",\"pane_id\":\"w6:p6\",\"revision\":0,\"tab_id\":\"w6:t2\",\"terminal_id\":\"term_6558b6185e56f11\",\"workspace_id\":\"w6\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"label\":\"20260701T115623Z-tau-visible-dag-poc-held-creator\",\"pane_id\":\"w6:p5\",\"revision\":0,\"tab_id\":\"w6:t2\",\"terminal_id\":\"term_6558b61781ef710\",\"workspace_id\":\"w6\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w6:p3\",\"revision\":0,\"tab_id\":\"w6:t3\",\"terminal_id\":\"term_6558b61732dcce\",\"workspace_id\":\"w6\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w6:p4\",\"revision\":0,\"tab_id\":\"w6:t4\",\"terminal_id\":\"term_6558b61744964f\",\"workspace_id\":\"w6\"}],\"type\":\"pane_list\"}}\n"
+  },
+  "tabs": {
+    "argv": [
+      "herdr",
+      "tab",
+      "list",
+      "--workspace",
+      "w6"
+    ],
+    "parsed": {
+      "id": "cli:tab:list",
+      "result": {
+        "tabs": [
+          {
+            "agent_status": "unknown",
+            "focused": false,
+            "label": "1",
+            "number": 1,
+            "pane_count": 1,
+            "tab_id": "w6:t1",
+            "workspace_id": "w6"
+          },
+          {
+            "agent_status": "unknown",
+            "focused": false,
+            "label": "agents",
+            "number": 2,
+            "pane_count": 3,
+            "tab_id": "w6:t2",
+            "workspace_id": "w6"
+          },
+          {
+            "agent_status": "unknown",
+            "focused": false,
+            "label": "logs",
+            "number": 3,
+            "pane_count": 1,
+            "tab_id": "w6:t3",
+            "workspace_id": "w6"
+          },
+          {
+            "agent_status": "unknown",
+            "focused": false,
+            "label": "receipts",
+            "number": 4,
+            "pane_count": 1,
+            "tab_id": "w6:t4",
+            "workspace_id": "w6"
+          }
+        ],
+        "type": "tab_list"
+      }
+    },
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\"id\":\"cli:tab:list\",\"result\":{\"tabs\":[{\"agent_status\":\"unknown\",\"focused\":false,\"label\":\"1\",\"number\":1,\"pane_count\":1,\"tab_id\":\"w6:t1\",\"workspace_id\":\"w6\"},{\"agent_status\":\"unknown\",\"focused\":false,\"label\":\"agents\",\"number\":2,\"pane_count\":3,\"tab_id\":\"w6:t2\",\"workspace_id\":\"w6\"},{\"agent_status\":\"unknown\",\"focused\":false,\"label\":\"logs\",\"number\":3,\"pane_count\":1,\"tab_id\":\"w6:t3\",\"workspace_id\":\"w6\"},{\"agent_status\":\"unknown\",\"focused\":false,\"label\":\"receipts\",\"number\":4,\"pane_count\":1,\"tab_id\":\"w6:t4\",\"workspace_id\":\"w6\"}],\"type\":\"tab_list\"}}\n"
+  },
+  "workspace": {
+    "argv": [
+      "herdr",
+      "workspace",
+      "get",
+      "w6"
+    ],
+    "parsed": {
+      "id": "cli:workspace:get",
+      "result": {
+        "type": "workspace_info",
+        "workspace": {
+          "active_tab_id": "w6:t1",
+          "agent_status": "unknown",
+          "focused": false,
+          "label": "tau-visible-dag-poc-held",
+          "number": 5,
+          "pane_count": 6,
+          "tab_count": 4,
+          "workspace_id": "w6"
+        }
+      }
+    },
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\"id\":\"cli:workspace:get\",\"result\":{\"type\":\"workspace_info\",\"workspace\":{\"active_tab_id\":\"w6:t1\",\"agent_status\":\"unknown\",\"focused\":false,\"label\":\"tau-visible-dag-poc-held\",\"number\":5,\"pane_count\":6,\"tab_count\":4,\"workspace_id\":\"w6\"}}}\n"
+  }
+}

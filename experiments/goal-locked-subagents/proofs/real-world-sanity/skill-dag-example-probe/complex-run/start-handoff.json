@@ -1,0 +1,43 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/skill-dag-example-probe/complex.dag.yml"
+    ],
+    "summary": "Dispatch DAG contract tau-feature-with-research-and-code."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#123"
+  },
+  "goal": {
+    "goal_hash": "sha256:active-goal",
+    "goal_id": "tau-feature",
+    "goal_version": 3
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "goal-guardian",
+    "reason": "Entry node for DAG tau-feature-with-research-and-code."
+  },
+  "previous_subagent": "human",
+  "rationale": "The DAG contract is the authoritative workflow and immutable goal boundary.",
+  "required_evidence": [
+    "dag_monitor_receipt",
+    "reviewer_join_receipt",
+    "no_unresolved_block_or_reroute_alerts"
+  ],
+  "result": {
+    "evidence": [
+      {
+        "kind": "dag_contract",
+        "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/skill-dag-example-probe/complex.dag.yml",
+        "schema": "tau.dag_contract.v1",
+        "sha256": "sha256:0fd2271ca2ba56aafd546e48bf9bb1a68760f81a0b39974c3a979ed671064144"
+      }
+    ],
+    "status": "DAG_DISPATCH_REQUESTED",
+    "summary": "Tau is dispatching entry node start."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Stop at a terminal DAG node or any fail-closed invariant violation."
+}

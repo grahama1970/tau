@@ -1,0 +1,37 @@
+\nplanner_receipt:
+ /home/graham/work
+space/experiments/
+tau/experiments/go
+al-locked-subagent
+s/proofs/real-worl
+d-sanity/20260705T
+212848Z-tau-provid
+er-receipt-scope-h
+ardening-20260705/
+advanced-provider-
+runs/max-exhaustio
+n/20260705T213109Z
+-rw-sanity-provide
+r-dag-max-exhausti
+on/planner-receipt
+.json\nfinal_recei
+pt: /home/graham/w
+orkspace/experimen
+ts/tau/experiments
+/goal-locked-subag
+ents/proofs/real-w
+orld-sanity/202607
+05T212848Z-tau-pro
+vider-receipt-scop
+e-hardening-202607
+05/advanced-provid
+er-runs/max-exhaus
+tion/20260705T2131
+09Z-rw-sanity-prov
+ider-dag-max-exhau
+stion/run-receipt.
+json\ncanonical tr
+uth: Tau JSON rece
+ipts; this pane is
+ human-visible tel
+emetry.\n

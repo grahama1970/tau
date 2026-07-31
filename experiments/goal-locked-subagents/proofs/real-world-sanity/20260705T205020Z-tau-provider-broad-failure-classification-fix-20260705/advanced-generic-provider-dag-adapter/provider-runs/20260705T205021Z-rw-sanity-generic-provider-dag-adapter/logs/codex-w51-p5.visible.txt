@@ -1,0 +1,38 @@
+  worktree/message.txt:1. Wrote receipt
+  experiments/goal-locked-subagents/
+  proofs/real-world-
+  sanity/20260705T205020Z-tau-provider-
+  broad-failure-classification-fix-
+  20260705/advanced-generic-provider-
+  dag-adapter/provider-
+  runs/20260705T205021Z-rw-sanity-
+  generic-provider-dag-adapter/
+  receipts/attempt-01-coder.json:1.
+
+  Evidence: Target content is now
+  Completed implementation for the Tau
+  provider DAG adapter coder task.
+  Receipt JSON validation command
+  returned true for schema/status/
+  verdict/work_order_sha256. Current
+  visible log SHA-256 is
+  a65895f180efd6d72d10a7013d36e8d95736e
+  f40d28abee65cc91a8adaea31cf.
+
+  Mocked/live: mocked: no. live: no.
+  This exercised filesystem edits and
+  deterministic receipt validation
+  only.
+
+  Next/stop condition: Stop condition
+  met: target file updated and node
+  receipt written. No Tau repository
+  files, GitHub, or Tailscale were
+  used.
+
+─ Worked for 1m 33s ───────────────────
+
+
+› Run /review on my current changes
+
+  gpt-5.5 medium · ~/workspace/experim…

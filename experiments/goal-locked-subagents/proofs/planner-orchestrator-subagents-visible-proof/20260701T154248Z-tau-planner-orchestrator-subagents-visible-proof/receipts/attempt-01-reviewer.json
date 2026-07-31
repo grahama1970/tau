@@ -1,0 +1,22 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work order",
+    "read target_file (message.txt)",
+    "read coder_receipt_path"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file has no TODO line (reads 'Completed implementation for Tau provider DAG coder proof.'). coder receipt is schema-valid with all required fields present (schema, node_id, provider_id, attempt, status, verdict, work_order_path, changed_files, commands_run, artifacts, handoff_summary, errors, policy_exceptions).",
+  "errors": [],
+  "policy_exceptions": []
+}

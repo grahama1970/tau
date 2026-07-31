@@ -1,0 +1,24 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 3,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/work-orders/attempt-03-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work-orders/attempt-03-reviewer.json",
+    "read receipts/attempt-03-coder.json",
+    "read scratch-worktree/message.txt",
+    "mkdir -p receipts",
+    "write receipts/attempt-03-reviewer.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/receipts/attempt-03-coder.json"
+  ],
+  "handoff_summary": "Force-revise triggered. target_file TODO is clean; coder receipt is schema-valid. Message is a single generic statement — needs to embed run metadata (run_id, attempt, provider chain) and reference the specific work order that produced it to prove provider-DAG awareness.",
+  "errors": [],
+  "policy_exceptions": []
+}

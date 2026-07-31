@@ -1,0 +1,22 @@
+  Final validation passed:
+  receipt_valid=1, message_bytes=65, changed_files_count=1,
+  scratch_file_count=1. Receipt uses the exact work order
+  hash
+  c36eff841cf6b7e71cafca5b734ad6135332060a9c0a8b1156ac69cb4
+  5906bfd and visible log SHA
+  76a278c404ca53dd68f9309ab17c330305e6f9cb6978950bca39a1304
+  0745f1c.
+
+  Proof scope: mocked: no. live: no. Exercised
+  deterministic file content and JSON receipt validation
+  only.
+
+  Next/stop condition: No remaining work for this work
+  order.
+
+─ Worked for 1m 36s ───────────────────────────────────────
+
+
+› Find and fix a bug in @filename
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

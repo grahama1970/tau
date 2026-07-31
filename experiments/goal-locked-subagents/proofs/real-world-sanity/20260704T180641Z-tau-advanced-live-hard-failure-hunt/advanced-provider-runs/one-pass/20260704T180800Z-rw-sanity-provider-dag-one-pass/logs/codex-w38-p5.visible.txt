@@ -1,0 +1,38 @@
+        ty-provider-dag-one-pass/rece
+        ipts/attempt-01-coder.json >/
+        tmp/tau-attempt-01-coder-json
+        check.txt && wc -l /tmp/tau-a
+        ttempt-01-coder-jsoncheck.txt
+        ",
+    18 +    "python - <<'PY'\nimport
+        json\nfrom pathlib import Pat
+        h\np = Path('/home/graham/wor
+        kspace/experiments/tau/experi
+        ments/goal-locked-subagents/p
+        roofs/real-world-sanity/20260
+        704T180641Z-tau-advanced-live
+        -hard-failure-hunt/advanced-p
+        rovider-runs/one-pass/2026070
+        4T180800Z-rw-sanity-provider-
+        dag-one-pass/receipts/attempt
+        -01-coder.json')\ndata = json
+        .loads(p.read_text())\nprint(
+        data['schema'])\nprint(data['
+        node_id'], data['provider_id'
+        ], data['attempt'], data['sta
+        tus'], data['verdict'])\nprin
+        t(len(data['changed_files']),
+         len(data['commands_run']), l
+        en(data['artifacts']), len(da
+        ta['errors']), len(data['poli
+        cy_exceptions']))\nPY"
+    19    ],
+
+─────────────────────────────────────
+
+• Working (1m 15s • esc to interrupt)
+
+
+› Write tests for @filename
+
+  gpt-5.5 medium · ~/workspace/exper…

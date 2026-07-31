@@ -1,0 +1,28 @@
+Tau planner subagent visible monitor\nrun_id: 20
+260703T202519Z-rw-sanity-provider-dag-invalid-mo
+del\nrun_dir: /home/graham/workspace/experiments
+/tau/experiments/goal-locked-subagents/proofs/re
+al-world-sanity/20260703T202223Z-tau-advanced-ne
+gative-deterministic-visible-coder/advanced-prov
+ider-runs/invalid-model/20260703T202519Z-rw-sani
+ty-provider-dag-invalid-model\ndag_spec: /home/g
+raham/workspace/experiments/tau/experiments/goal
+-locked-subagents/proofs/real-world-sanity/20260
+703T202223Z-tau-advanced-negative-deterministic-
+visible-coder/advanced-provider-runs/invalid-mod
+el/20260703T202519Z-rw-sanity-provider-dag-inval
+id-model/dag-spec.json\nplanner_receipt: /home/g
+raham/workspace/experiments/tau/experiments/goal
+-locked-subagents/proofs/real-world-sanity/20260
+703T202223Z-tau-advanced-negative-deterministic-
+visible-coder/advanced-provider-runs/invalid-mod
+el/20260703T202519Z-rw-sanity-provider-dag-inval
+id-model/planner-receipt.json\nfinal_receipt: /h
+ome/graham/workspace/experiments/tau/experiments
+/goal-locked-subagents/proofs/real-world-sanity/
+20260703T202223Z-tau-advanced-negative-determini
+stic-visible-coder/advanced-provider-runs/invali
+d-model/20260703T202519Z-rw-sanity-provider-dag-
+invalid-model/run-receipt.json\ncanonical truth:
+ Tau JSON receipts; this pane is human-visible t
+elemetry.\n

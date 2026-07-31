@@ -1,0 +1,1 @@
+Completed provider DAG adapter proof implementation.

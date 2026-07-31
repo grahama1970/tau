@@ -1,0 +1,21 @@
+locked-subagents/proofs/real
+-world-sanity/20260705T22594
+3Z-tau-advanced-course-corre
+ction-regression-20260705/ad
+vanced-provider-runs/invalid
+-model/20260705T231005Z-rw-s
+anity-provider-dag-invalid-m
+odel/planner-receipt.json\nf
+inal_receipt: /home/graham/w
+orkspace/experiments/tau/exp
+eriments/goal-locked-subagen
+ts/proofs/real-world-sanity/
+20260705T225943Z-tau-advance
+d-course-correction-regressi
+on-20260705/advanced-provide
+r-runs/invalid-model/2026070
+5T231005Z-rw-sanity-provider
+-dag-invalid-model/run-recei
+pt.json\ncanonical truth: Ta
+u JSON receipts; this pane i
+s human-visible telemetry.\n

@@ -1,0 +1,21 @@
+raham/workspace/experiments/tau/experiments/goal-locked-sub
+agents/proofs/real-world-sanity/20260705T224539Z-tau-provid
+er-herdr-binding-regression-20260705/advanced-provider-runs
+/max-exhaustion/20260705T224540Z-rw-sanity-provider-dag-max
+-exhaustion\ndag_spec: /home/graham/workspace/experiments/t
+au/experiments/goal-locked-subagents/proofs/real-world-sani
+ty/20260705T224539Z-tau-provider-herdr-binding-regression-2
+0260705/advanced-provider-runs/max-exhaustion/20260705T2245
+40Z-rw-sanity-provider-dag-max-exhaustion/dag-spec.json\npl
+anner_receipt: /home/graham/workspace/experiments/tau/exper
+iments/goal-locked-subagents/proofs/real-world-sanity/20260
+705T224539Z-tau-provider-herdr-binding-regression-20260705/
+advanced-provider-runs/max-exhaustion/20260705T224540Z-rw-s
+anity-provider-dag-max-exhaustion/planner-receipt.json\nfin
+al_receipt: /home/graham/workspace/experiments/tau/experime
+nts/goal-locked-subagents/proofs/real-world-sanity/20260705
+T224539Z-tau-provider-herdr-binding-regression-20260705/adv
+anced-provider-runs/max-exhaustion/20260705T224540Z-rw-sani
+ty-provider-dag-max-exhaustion/run-receipt.json\ncanonical
+truth: Tau JSON receipts; this pane is human-visible teleme
+try.\n

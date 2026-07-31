@@ -1,0 +1,8 @@
+{
+  "command": [
+    "python3",
+    "-c",
+    "print('not json')"
+  ],
+  "timeout_s": 20
+}

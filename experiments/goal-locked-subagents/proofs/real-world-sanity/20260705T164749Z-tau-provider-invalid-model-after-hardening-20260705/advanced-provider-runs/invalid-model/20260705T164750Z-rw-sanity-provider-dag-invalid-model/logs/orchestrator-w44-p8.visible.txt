@@ -1,0 +1,37 @@
+del-after-hard
+ening-20260705
+/advanced-prov
+ider-runs/inva
+lid-model/2026
+0705T164750Z-r
+w-sanity-provi
+der-dag-invali
+d-model/planne
+r-receipt.json
+\nfinal_receip
+t: /home/graha
+m/workspace/ex
+periments/tau/
+experiments/go
+al-locked-suba
+gents/proofs/r
+eal-world-sani
+ty/20260705T16
+4749Z-tau-prov
+ider-invalid-m
+odel-after-har
+dening-2026070
+5/advanced-pro
+vider-runs/inv
+alid-model/202
+60705T164750Z-
+rw-sanity-prov
+ider-dag-inval
+id-model/run-r
+eceipt.json\nc
+anonical truth
+: Tau JSON rec
+eipts; this pa
+ne is human-vi
+sible telemetr
+y.\n

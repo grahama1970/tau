@@ -1,0 +1,33 @@
+Tau planner subagent visible monitor\nr
+un_id: 20260705T205518Z-rw-sanity-provi
+der-dag-repair\nrun_dir: /home/graham/w
+orkspace/experiments/tau/experiments/go
+al-locked-subagents/proofs/real-world-s
+anity/20260705T205020Z-tau-provider-bro
+ad-failure-classification-fix-20260705/
+advanced-provider-runs/repair-loop/2026
+0705T205518Z-rw-sanity-provider-dag-rep
+air\ndag_spec: /home/graham/workspace/e
+xperiments/tau/experiments/goal-locked-
+subagents/proofs/real-world-sanity/2026
+0705T205020Z-tau-provider-broad-failure
+-classification-fix-20260705/advanced-p
+rovider-runs/repair-loop/20260705T20551
+8Z-rw-sanity-provider-dag-repair/dag-sp
+ec.json\nplanner_receipt: /home/graham/
+workspace/experiments/tau/experiments/g
+oal-locked-subagents/proofs/real-world-
+sanity/20260705T205020Z-tau-provider-br
+oad-failure-classification-fix-20260705
+/advanced-provider-runs/repair-loop/202
+60705T205518Z-rw-sanity-provider-dag-re
+pair/planner-receipt.json\nfinal_receip
+t: /home/graham/workspace/experiments/t
+au/experiments/goal-locked-subagents/pr
+oofs/real-world-sanity/20260705T205020Z
+-tau-provider-broad-failure-classificat
+ion-fix-20260705/advanced-provider-runs
+/repair-loop/20260705T205518Z-rw-sanity
+-provider-dag-repair/run-receipt.json\n
+canonical truth: Tau JSON receipts; thi
+s pane is human-visible telemetry.\n

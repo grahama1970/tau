@@ -1,0 +1,37 @@
+d-sanity/20260
+703T125120Z-ta
+u-real-world-s
+anity-all-prov
+ider-live/adva
+nced-provider-
+runs/one-pass/
+20260703T12520
+5Z-rw-sanity-p
+rovider-dag-on
+e-pass/planner
+-receipt.json\
+nfinal_receipt
+: /home/graham
+/workspace/exp
+eriments/tau/e
+xperiments/goa
+l-locked-subag
+ents/proofs/re
+al-world-sanit
+y/20260703T125
+120Z-tau-real-
+world-sanity-a
+ll-provider-li
+ve/advanced-pr
+ovider-runs/on
+e-pass/2026070
+3T125205Z-rw-s
+anity-provider
+-dag-one-pass/
+run-receipt.js
+on\ncanonical
+truth: Tau JSO
+N receipts; th
+is pane is hum
+an-visible tel
+emetry.\n

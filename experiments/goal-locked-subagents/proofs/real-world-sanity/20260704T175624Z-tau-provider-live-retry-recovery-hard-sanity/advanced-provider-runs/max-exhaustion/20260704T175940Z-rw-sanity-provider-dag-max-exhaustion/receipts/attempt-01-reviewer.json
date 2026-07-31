@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T175624Z-tau-provider-live-retry-recovery-hard-sanity/advanced-provider-runs/max-exhaustion/20260704T175940Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work_order.json",
+    "read target_file (message.txt)",
+    "read coder_receipt (attempt-01-coder.json)",
+    "verify receipts directory exists"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T175624Z-tau-provider-live-retry-recovery-hard-sanity/advanced-provider-runs/max-exhaustion/20260704T175940Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T175624Z-tau-provider-live-retry-recovery-hard-sanity/advanced-provider-runs/max-exhaustion/20260704T175940Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE forced by force_revise flag. target_file is clean: TODO line removed, content reads 'completed implementation by deterministic visible coder attempt 1'. coder receipt is schema-valid (tau.provider_dag_node_receipt.v1, status=PASS, verdict=PASS, all required fields present). No errors or structural issues found. Feedback for next coder: update message.txt to reflect attempt 2 — e.g., change 'attempt 1' to 'attempt 2' and append a sentence demonstrating coder iteration (e.g. 'revised per reviewer feedback').",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,15 @@
+{
+  "action": "working_tree_mutation",
+  "approved": true,
+  "evidence": [
+    "real-world-sanity approval fixture"
+  ],
+  "human": {
+    "id": "human:graham"
+  },
+  "reason": "Intentionally mismatched action for fail-closed sanity proof.",
+  "schema": "tau.human_approval_packet.v1",
+  "target": {
+    "id": "github-ticket-closure"
+  }
+}

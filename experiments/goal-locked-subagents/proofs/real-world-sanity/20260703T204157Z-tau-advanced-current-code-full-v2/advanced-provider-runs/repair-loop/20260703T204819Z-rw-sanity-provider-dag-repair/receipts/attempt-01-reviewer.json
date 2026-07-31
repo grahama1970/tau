@@ -1,0 +1,22 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T204157Z-tau-advanced-current-code-full-v2/advanced-provider-runs/repair-loop/20260703T204819Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work_order JSON",
+    "read target_file scratch-worktree/message.txt",
+    "read coder receipt attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T204157Z-tau-advanced-current-code-full-v2/advanced-provider-runs/repair-loop/20260703T204819Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T204157Z-tau-advanced-current-code-full-v2/advanced-provider-runs/repair-loop/20260703T204819Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "force_revise=true: target_file TODO line is gone (replaced with generic completion text), coder receipt is schema-valid. Verdict REVISE: (1) message.txt content is a bare declaration not a realistic provider DAG artifact — next coder should write structured content demonstrating a working DAG (e.g., a provider chain or pipeline step output). (2) coder receipt commands_run contains a pseudo-command 'python deterministic visible coder' rather than an actual executable command — next coder should log real commands it executed. (3) message.txt should include multiple lines or structured output to prove the provider DAG produced meaningful work.",
+  "errors": [],
+  "policy_exceptions": []
+}

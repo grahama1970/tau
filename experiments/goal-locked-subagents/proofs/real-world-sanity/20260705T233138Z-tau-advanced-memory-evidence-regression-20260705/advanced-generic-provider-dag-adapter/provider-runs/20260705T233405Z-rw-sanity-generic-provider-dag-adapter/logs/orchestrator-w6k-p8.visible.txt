@@ -1,0 +1,21 @@
+33138Z-tau-advanced-memory-e
+vidence-regression-20260705/
+advanced-generic-provider-da
+g-adapter/provider-runs/2026
+0705T233405Z-rw-sanity-gener
+ic-provider-dag-adapter/plan
+ner-receipt.json\nfinal_rece
+ipt: /home/graham/workspace/
+experiments/tau/experiments/
+goal-locked-subagents/proofs
+/real-world-sanity/20260705T
+233138Z-tau-advanced-memory-
+evidence-regression-20260705
+/advanced-generic-provider-d
+ag-adapter/provider-runs/202
+60705T233405Z-rw-sanity-gene
+ric-provider-dag-adapter/run
+-receipt.json\ncanonical tru
+th: Tau JSON receipts; this
+pane is human-visible teleme
+try.\n

@@ -1,0 +1,13 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T214633Z-tau-stress-run-status/medium-dag-stress-status/20260703T214634Z-rw-sanity-dag-stress-status/rungs/03-fanout-fanin-review/scratch/creator-b.txt"
+  ],
+  "attempt": 1,
+  "handoff_summary": "creator-b output",
+  "node_id": "creator-b",
+  "role": "creator",
+  "schema": "tau.dag_stress_node_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-03T21:46:34.277284Z",
+  "verdict": "PASS"
+}

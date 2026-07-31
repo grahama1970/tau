@@ -1,0 +1,118 @@
+{
+  "applied_actions": [
+    {
+      "action": "workspace_close",
+      "applied": true,
+      "pane_ids": [
+        "w2K:p5",
+        "w2K:p6",
+        "w2K:p8",
+        "w2K:p7",
+        "w2K:p9"
+      ],
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "returncode": 0,
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "workspace_id": "w2K"
+    }
+  ],
+  "candidate_count": 1,
+  "candidates": [
+    {
+      "action": "workspace_close",
+      "pane_ids": [
+        "w2K:p5",
+        "w2K:p6",
+        "w2K:p8",
+        "w2K:p7",
+        "w2K:p9"
+      ],
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "workspace_id": "w2K"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "close",
+        "w2K"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    }
+  ],
+  "current_workspace": null,
+  "include_current_workspace": false,
+  "live": true,
+  "mocked": false,
+  "mode": "apply",
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "global regex cleanup of unrelated Herdr resources",
+      "Git worktree deletion",
+      "session deletion for runs that did not record a session id"
+    ],
+    "proves": [
+      "Tau can identify Herdr workspace/session resources recorded by one run",
+      "Tau cleanup defaults to audit/dry-run before mutation",
+      "Tau refuses to close the current Herdr workspace unless explicitly allowed"
+    ]
+  },
+  "resource_count": 1,
+  "resources": [
+    {
+      "kind": "workspace",
+      "pane_ids": [
+        "w2K:p5",
+        "w2K:p6",
+        "w2K:p8",
+        "w2K:p7",
+        "w2K:p9"
+      ],
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "sources": [
+        "provider_sessions",
+        "visible_subagents"
+      ],
+      "terminal_ids": [
+        "term_655bb6d4835ca282",
+        "term_655bb6de5afa3283",
+        "term_655bb71863fc4285",
+        "term_655bb70f07fd2284",
+        "term_655bb74daaeaf286"
+      ],
+      "workspace_id": "w2K"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T211528Z-tau-provider-dag-one-pass-cleanup-apply/advanced-provider-runs/one-pass/20260703T211528Z-rw-sanity-provider-dag-one-pass",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T211528Z-tau-provider-dag-one-pass-cleanup-apply/advanced-provider-runs/one-pass/20260703T211528Z-rw-sanity-provider-dag-one-pass/runtime-manifest.json",
+  "schema": "tau.herdr_cleanup_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-03T21:18:22Z"
+}

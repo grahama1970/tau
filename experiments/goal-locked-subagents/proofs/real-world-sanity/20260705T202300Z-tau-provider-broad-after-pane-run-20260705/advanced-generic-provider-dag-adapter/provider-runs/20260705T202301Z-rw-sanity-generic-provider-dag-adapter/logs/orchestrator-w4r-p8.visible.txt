@@ -1,0 +1,37 @@
+am/workspace/exper
+iments/tau/experim
+ents/goal-locked-s
+ubagents/proofs/re
+al-world-sanity/20
+260705T202300Z-tau
+-provider-broad-af
+ter-pane-run-20260
+705/advanced-gener
+ic-provider-dag-ad
+apter/provider-run
+s/20260705T202301Z
+-rw-sanity-generic
+-provider-dag-adap
+ter/planner-receip
+t.json\nfinal_rece
+ipt: /home/graham/
+workspace/experime
+nts/tau/experiment
+s/goal-locked-suba
+gents/proofs/real-
+world-sanity/20260
+705T202300Z-tau-pr
+ovider-broad-after
+-pane-run-20260705
+/advanced-generic-
+provider-dag-adapt
+er/provider-runs/2
+0260705T202301Z-rw
+-sanity-generic-pr
+ovider-dag-adapter
+/run-receipt.json\
+ncanonical truth:
+Tau JSON receipts;
+ this pane is huma
+n-visible telemetr
+y.\n

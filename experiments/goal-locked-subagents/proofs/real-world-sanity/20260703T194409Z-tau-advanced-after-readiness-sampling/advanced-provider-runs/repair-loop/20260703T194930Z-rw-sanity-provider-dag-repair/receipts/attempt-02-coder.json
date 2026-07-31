@@ -1,0 +1,25 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/advanced-provider-runs/repair-loop/20260703T194930Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/advanced-provider-runs/repair-loop/20260703T194930Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/advanced-provider-runs/repair-loop/20260703T194930Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-coder.json",
+    "pwd && ls -la && sed -n '1,120p' message.txt",
+    "test -e receipts/attempt-02-coder.json; printf 'exists=%s\\n' \"$?\"",
+    "sed -n '1,120p' message.txt",
+    "jq . receipts/attempt-02-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/advanced-provider-runs/repair-loop/20260703T194930Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the generic message with a provider-DAG-specific note about coder/reviewer node chaining and scratch-worktree artifact handoff.",
+  "errors": [],
+  "policy_exceptions": []
+}

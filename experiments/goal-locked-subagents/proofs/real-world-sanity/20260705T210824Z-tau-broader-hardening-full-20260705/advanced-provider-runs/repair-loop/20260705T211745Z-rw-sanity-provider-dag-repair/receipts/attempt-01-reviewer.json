@@ -1,0 +1,32 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T211745Z-rw-sanity-provider-dag-repair",
+  "goal_hash": "sha256:0b588aabf4cdc77847360bb0099e9102688d4272f5812e1ee35ad942f21a4b5a",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w5A",
+  "pane_id": "w5A:p6",
+  "terminal_id": "term_655e3b08b8c865c5",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/repair-loop/20260705T211745Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T211745Z-rw-sanity-provider-dag-repair-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "4270cb94ecb3d05e446498e60912cd9191a4677d0cc8b817ddfb4a53e4abf361",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/repair-loop/20260705T211745Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "sha256sum opencode.visible.txt",
+    "ls scratch-worktree/",
+    "read work-orders/attempt-01-reviewer.json",
+    "read scratch-worktree/message.txt",
+    "read receipts/attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/repair-loop/20260705T211745Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/repair-loop/20260705T211745Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: force_revise flag set. target_file (message.txt) has no remaining TODO line but contains only generic boilerplate text 'completed implementation by deterministic visible coder attempt 1' rather than demonstrating a meaningful transformation. coder receipt is schema-valid but its provider_id is 'codex' while the DAG's provider_id for this node is 'opencode' — cross-provider receipts should be reconciled. Feedback for next coder attempt: (1) write more substantive content to message.txt to prove provider capabilities, (2) ensure receipt provider_id matches the DAG-assigned provider.",
+  "errors": [],
+  "policy_exceptions": []
+}

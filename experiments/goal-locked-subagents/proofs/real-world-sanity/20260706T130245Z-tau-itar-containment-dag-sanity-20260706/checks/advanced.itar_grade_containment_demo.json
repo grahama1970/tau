@@ -1,0 +1,58 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "provider_live": false,
+        "schema": "tau.itar_grade_containment_demo_receipt.v1",
+        "status": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130245Z-tau-itar-containment-dag-sanity-20260706/logs/advanced.itar_grade_containment_demo.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130245Z-tau-itar-containment-dag-sanity-20260706/logs/advanced.itar_grade_containment_demo.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.itar_grade_containment_demo",
+  "command": [
+    "/home/graham/workspace/experiments/tau/examples/itar-grade-containment/run.sh",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130245Z-tau-itar-containment-dag-sanity-20260706/itar-grade-containment-demo"
+  ],
+  "completed_at": "2026-07-06T13:02:50Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "advanced",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130245Z-tau-itar-containment-dag-sanity-20260706/itar-grade-containment-demo/demo-receipt.json",
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau runs the copyable ITAR-grade containment demo that blocks unsafe research, actor access, and Docker policy paths before accepting local-only receipts.",
+  "receipt_summary": {
+    "live": false,
+    "mocked": false,
+    "ok": true,
+    "provider_live": false,
+    "schema": "tau.itar_grade_containment_demo_receipt.v1",
+    "status": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-06T13:02:47Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130245Z-tau-itar-containment-dag-sanity-20260706/logs/advanced.itar_grade_containment_demo.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130245Z-tau-itar-containment-dag-sanity-20260706/logs/advanced.itar_grade_containment_demo.stdout.txt",
+  "timeout_seconds": 120
+}

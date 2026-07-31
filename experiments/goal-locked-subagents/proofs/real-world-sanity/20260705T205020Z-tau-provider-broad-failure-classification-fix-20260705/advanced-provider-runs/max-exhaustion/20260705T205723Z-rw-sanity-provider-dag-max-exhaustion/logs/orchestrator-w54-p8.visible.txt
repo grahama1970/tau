@@ -1,0 +1,37 @@
+ /home/graham/work
+space/experiments/
+tau/experiments/go
+al-locked-subagent
+s/proofs/real-worl
+d-sanity/20260705T
+205020Z-tau-provid
+er-broad-failure-c
+lassification-fix-
+20260705/advanced-
+provider-runs/max-
+exhaustion/2026070
+5T205723Z-rw-sanit
+y-provider-dag-max
+-exhaustion/planne
+r-receipt.json\nfi
+nal_receipt: /home
+/graham/workspace/
+experiments/tau/ex
+periments/goal-loc
+ked-subagents/proo
+fs/real-world-sani
+ty/20260705T205020
+Z-tau-provider-bro
+ad-failure-classif
+ication-fix-202607
+05/advanced-provid
+er-runs/max-exhaus
+tion/20260705T2057
+23Z-rw-sanity-prov
+ider-dag-max-exhau
+stion/run-receipt.
+json\ncanonical tr
+uth: Tau JSON rece
+ipts; this pane is
+ human-visible tel
+emetry.\n

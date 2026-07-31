@@ -1,0 +1,38 @@
+  provider-dag-adapter/scratch-worktree/
+  message.txt (+1 -1)
+    1 -TODO: replace this line with a completed
+       implementation.
+    1 +Completed implementation for the generic
+       provider DAG adapter POC.
+
+────────────────────────────────────────────────
+
+• The target file and receipt are written. I’m
+  doing deterministic verification now: read the
+  target file, parse the receipt JSON, and check
+  the receipt fields match the work order’s
+  target and attempt.
+
+• Explored
+  └ Read message.txt
+
+• Ran python3 -m json.tool /home/graham/
+  │ workspace/experiments/tau/experiments/
+  │ goal-locked-subagents/proofs/
+  │ … +7 lines
+  └ (no output)
+
+• Ran python3 - <<'PY'
+  │ import json
+  │ from pathlib import Path
+  │ … +31 lines
+  └ receipt-ok
+
+────────────────────────────────────────────────
+
+• Working (1m 26s • esc to interrupt)
+
+
+› Use /skills to list available skills
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

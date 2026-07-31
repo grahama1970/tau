@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/repair-loop/20260703T200610Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work order JSON",
+    "read target_file (message.txt)",
+    "read coder receipt (attempt-01-coder.json)",
+    "ls scratch-worktree/ and receipts/ for structural verification"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/repair-loop/20260703T200610Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/repair-loop/20260703T200610Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: force_revise=true. The target_file has no TODO line (good) and the coder receipt is schema-valid. However, the message.txt content is self-referential boilerplate ('Implementation complete: provider DAG coder node updated the target message.'). It should instead describe what the full DAG repair accomplished — include the run_id, state that the coder-receipt was written, and confirm the TODO was removed. Concrete feedback: replace message.txt content with a multi-line message that includes (a) the run_id, (b) confirmation that the TODO was removed, (c) a reference to the coder receipt, and (d) a clear statement that the file was produced by the provider DAG repair loop.",
+  "errors": [],
+  "policy_exceptions": []
+}

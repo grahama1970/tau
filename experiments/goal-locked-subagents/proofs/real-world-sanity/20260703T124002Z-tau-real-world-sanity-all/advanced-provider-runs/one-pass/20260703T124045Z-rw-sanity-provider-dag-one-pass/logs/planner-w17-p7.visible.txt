@@ -1,0 +1,37 @@
+Tau planner subagent visible mon
+itor\nrun_id: 20260703T124045Z-r
+w-sanity-provider-dag-one-pass\n
+run_dir: /home/graham/workspace/
+experiments/tau/experiments/goal
+-locked-subagents/proofs/real-wo
+rld-sanity/20260703T124002Z-tau-
+real-world-sanity-all/advanced-p
+rovider-runs/one-pass/20260703T1
+24045Z-rw-sanity-provider-dag-on
+e-pass\ndag_spec: /home/graham/w
+orkspace/experiments/tau/experim
+ents/goal-locked-subagents/proof
+s/real-world-sanity/20260703T124
+002Z-tau-real-world-sanity-all/a
+dvanced-provider-runs/one-pass/2
+0260703T124045Z-rw-sanity-provid
+er-dag-one-pass/dag-spec.json\np
+lanner_receipt: /home/graham/wor
+kspace/experiments/tau/experimen
+ts/goal-locked-subagents/proofs/
+real-world-sanity/20260703T12400
+2Z-tau-real-world-sanity-all/adv
+anced-provider-runs/one-pass/202
+60703T124045Z-rw-sanity-provider
+-dag-one-pass/planner-receipt.js
+on\nfinal_receipt: /home/graham/
+workspace/experiments/tau/experi
+ments/goal-locked-subagents/proo
+fs/real-world-sanity/20260703T12
+4002Z-tau-real-world-sanity-all/
+advanced-provider-runs/one-pass/
+20260703T124045Z-rw-sanity-provi
+der-dag-one-pass/run-receipt.jso
+n\ncanonical truth: Tau JSON rec
+eipts; this pane is human-visibl
+e telemetry.\n

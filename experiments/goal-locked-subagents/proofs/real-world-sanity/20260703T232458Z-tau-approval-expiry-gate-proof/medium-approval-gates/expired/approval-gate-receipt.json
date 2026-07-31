@@ -1,0 +1,37 @@
+{
+  "approval_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T232458Z-tau-approval-expiry-gate-proof/medium-approval-gates/expired-working-tree-approval.json",
+  "approved": false,
+  "errors": [
+    "approval packet expired"
+  ],
+  "live": false,
+  "mocked": false,
+  "ok": false,
+  "packet_summary": {
+    "action": "working_tree_mutation",
+    "approved": true,
+    "evidence_count": 1,
+    "expires_at": "2000-01-01T00:00:00Z",
+    "human_id": "human:graham",
+    "schema": "tau.human_approval_packet.v1",
+    "target_id": "scratch-working-tree"
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "the gated mutation was executed",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "identity beyond the provided approval packet fields"
+    ],
+    "proves": [
+      "Tau can fail closed before mutation or closure without a valid human approval packet",
+      "Tau can validate explicit human approval for a requested gated action",
+      "Tau writes a durable approval-gate receipt before any gated mutation command"
+    ]
+  },
+  "requested_action": "working_tree_mutation",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T232458Z-tau-approval-expiry-gate-proof/medium-approval-gates/expired",
+  "schema": "tau.approval_gate_receipt.v1",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-03T23:25:00Z"
+}

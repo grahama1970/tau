@@ -1,0 +1,18 @@
+{
+  "action": "working_tree_mutation",
+  "actor": {
+    "auth_method": "manual",
+    "id": "human:graham"
+  },
+  "approved": true,
+  "evidence": [
+    "dag-contract.json"
+  ],
+  "nonce": "rw-sanity-mutating-branch-lock",
+  "reason": "Approve mutating branch lock fixture.",
+  "schema": "tau.human_approval_packet.v1",
+  "signature": "manual-rw-sanity-signature",
+  "target": {
+    "id": "rw-sanity-dag-branch-locks"
+  }
+}

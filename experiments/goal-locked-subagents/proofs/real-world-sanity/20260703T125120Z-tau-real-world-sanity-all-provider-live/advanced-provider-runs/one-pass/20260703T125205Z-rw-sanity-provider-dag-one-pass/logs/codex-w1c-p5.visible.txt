@@ -1,0 +1,38 @@
+        worktree/message.txt",
+    17 +    "python3 -m json.too
+        l /home/graham/workspace
+        /experiments/tau/experim
+        ents/goal-locked-subagen
+        ts/proofs/real-world-san
+        ity/20260703T125120Z-tau
+        -real-world-sanity-all-p
+        rovider-live/advanced-pr
+        ovider-runs/one-pass/202
+        60703T125205Z-rw-sanity-
+        provider-dag-one-pass/re
+        ceipts/attempt-01-coder.
+        json >/tmp/tau-attempt-0
+        1-coder-jsoncheck.txt &&
+         cat /tmp/tau-attempt-01
+        -coder-jsoncheck.txt",
+    18 +    "grep -R \"TODO\" -n
+         /home/graham/workspace/
+        experiments/tau/experime
+        nts/goal-locked-subagent
+        s/proofs/real-world-sani
+        ty/20260703T125120Z-tau-
+        real-world-sanity-all-pr
+        ovider-live/advanced-pro
+        vider-runs/one-pass/2026
+        0703T125205Z-rw-sanity-p
+        rovider-dag-one-pass/scr
+        atch-worktree/message.tx
+        t; test $? -eq 1"
+    19    ],
+
+• Working (1m 19s • esc to inte…
+
+
+› Summarize recent commits
+
+  gpt-5.5 medium · ~/workspace/…

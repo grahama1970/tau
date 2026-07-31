@@ -1,0 +1,37 @@
+planner_receipt: /
+home/graham/worksp
+ace/experiments/ta
+u/experiments/goal
+-locked-subagents/
+proofs/real-world-
+sanity/20260703T22
+4553Z-tau-advanced
+-live-post-cleanup
+-observability/adv
+anced-provider-run
+s/max-exhaustion/2
+0260703T225817Z-rw
+-sanity-provider-d
+ag-max-exhaustion/
+planner-receipt.js
+on\nfinal_receipt:
+ /home/graham/work
+space/experiments/
+tau/experiments/go
+al-locked-subagent
+s/proofs/real-worl
+d-sanity/20260703T
+224553Z-tau-advanc
+ed-live-post-clean
+up-observability/a
+dvanced-provider-r
+uns/max-exhaustion
+/20260703T225817Z-
+rw-sanity-provider
+-dag-max-exhaustio
+n/run-receipt.json
+\ncanonical truth:
+ Tau JSON receipts
+; this pane is hum
+an-visible telemet
+ry.\n

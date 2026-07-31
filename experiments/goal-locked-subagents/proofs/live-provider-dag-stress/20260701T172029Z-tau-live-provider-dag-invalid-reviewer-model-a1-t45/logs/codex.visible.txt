@@ -1,0 +1,46 @@
+  source work:
+  .../scratch-worktree/message.txt
+
+  Wrote required receipt:
+  .../receipts/attempt-01-coder.json
+
+  Evidence: Final validation command
+  exited 0. Output showed:
+
+  Completed implementation for the Tau
+  provider DAG POC coder task.
+  ?? message.txt
+
+  jq -e parsed the receipt successfully
+  inside that same command. Changed
+  files recorded in receipt: 1.
+
+  Verification scope: mocked: no; live:
+  no. Exercised local file edit and
+  JSON receipt validation only. Nothing
+  remains.
+
+• Stop hook (blocked)
+  warning: Prevent false-green closure
+  claims.
+  feedback: Closure claim blocked. This
+  is a high-risk or disputed task, and
+  the final message uses done/fixed/
+  green/verified/closed language
+  without deterministic proof. Either
+  cite concrete proof artifacts and
+  command results, submit an evidence
+  bundle via $surf webgpt.submit with
+  sentinel metadata for external
+  review, or downgrade the conclusion
+  to blocked/pending. WebGPT review is
+  not closure proof by itself; closure
+  still needs deterministic local
+  artifacts. For $hack, raw ledgers/
+  proof artifacts are required before
+  closure claims.
+
+
+› Run /review on my current changes
+
+  gpt-5.5 high · ~/workspace/experimen…

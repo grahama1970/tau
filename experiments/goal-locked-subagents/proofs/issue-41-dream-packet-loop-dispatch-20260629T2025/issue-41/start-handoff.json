@@ -1,0 +1,41 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-dream-packet-loop-dispatch-20260629T2025/issue-41/goal-helper.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-dream-packet-loop-dispatch-20260629T2025/issue-41/memory-intent.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-dream-packet-loop-dispatch-20260629T2025/issue-41/memory-recall.json"
+    ],
+    "summary": "Live GitHub issue #41 was selected for a bounded Tau self-fix intake tick: Tau persona-dream harness needs dream-packet creator/reviewer loop"
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#41",
+    "url": "https://github.com/grahama1970/tau/issues/41"
+  },
+  "goal": {
+    "goal_hash": "sha256:4da692f6f2fb761ba28e36cecea0b6a72ac4bc124498b2dd5368a4c532d4e4fd",
+    "goal_id": "goal-tau-self-fix-issue-41",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "coder",
+    "reason": "Coder should perform the first bounded implementation analysis for the issue."
+  },
+  "previous_subagent": "human",
+  "rationale": "The issue has a self-fix routing label and Memory-first preflight has produced artifacts, so the next bounded actor should be coder.",
+  "required_evidence": [
+    "Coder emits a schema-valid tau.agent_handoff.v1 handoff.",
+    "Reviewer emits a schema-valid tau.agent_handoff.v1 handoff.",
+    "Any code mutation in a later slice starts from a checkpoint commit and records rollback status."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-dream-packet-loop-dispatch-20260629T2025/issue-41/goal-helper.json"
+    ],
+    "status": "REQUESTED",
+    "summary": "Human requested Tau to start the coder/reviewer self-fix loop for this issue."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Stop when reviewer routes to human/PASS, the command-loop hits max steps, or any dispatch fails closed."
+}

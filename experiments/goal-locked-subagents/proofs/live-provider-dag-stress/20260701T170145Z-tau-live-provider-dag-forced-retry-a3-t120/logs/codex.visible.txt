@@ -1,0 +1,46 @@
+  └ {
+    … +26 lines (ctrl + t to view
+    transcript)
+      "policy_exceptions": []
+    }
+
+• Explored
+  └ Read message.txt
+
+───────────────────────────────────────
+
+• Status/Phase: PASS complete for
+  attempt 03.
+
+  Now: Updated experiments/goal-locked-
+  subagents/proofs/live-provider-dag-
+  stress/20260701T170145Z-tau-live-
+  provider-dag-forced-retry-a3-t120/
+  scratch-worktree/message.txt and
+  wrote experiments/goal-locked-
+  subagents/proofs/live-provider-dag-
+  stress/20260701T170145Z-tau-live-
+  provider-dag-forced-retry-a3-t120/
+  receipts/attempt-03-coder.json.
+
+  Evidence: jq -e on the receipt exited
+  0. Final target readback is 4 lines
+  and includes the removed TODO text,
+  concrete change, and DAG edge
+  conditions. Receipt has attempt: 3,
+  status: PASS, verdict: PASS, and one
+  changed file.
+
+  Mocked: no. Live: no. Exercised
+  filesystem edit/readback plus receipt
+  JSON parsing.
+
+  Next/stop condition: Complete;
+  nothing remains for this work order.
+
+───────────────────────────────────────
+
+
+› Write tests for @filename
+
+  gpt-5.5 high · ~/workspace/experimen…

@@ -1,0 +1,7 @@
+{
+  "attempt": 1,
+  "node_id": "creator",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T211201Z-tau-medium-approval-integrated/medium-dag-stress-poc/20260703T211205Z-rw-sanity-dag-stress/rungs/07-subagent-error/receipts/creator-attempt-01.json",
+  "role": "creator",
+  "schema": "tau.dag_stress_work_order.v1"
+}

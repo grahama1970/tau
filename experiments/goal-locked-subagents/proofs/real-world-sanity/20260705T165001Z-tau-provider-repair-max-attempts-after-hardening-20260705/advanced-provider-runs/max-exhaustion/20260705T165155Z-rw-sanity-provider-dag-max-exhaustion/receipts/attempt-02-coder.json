@@ -1,0 +1,27 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T165155Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+  ],
+  "attempt": 2,
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T165155Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "python deterministic visible coder"
+  ],
+  "dag_id": "20260705T165155Z-rw-sanity-provider-dag-max-exhaustion",
+  "errors": [],
+  "goal_hash": "sha256:5a87319778db3d7d25a7c7572e0978a05c781f06b835f7c0960b0042806d0bbc",
+  "handoff_summary": "Deterministic visible coder updated the scratch target file.",
+  "node_id": "coder",
+  "pane_id": "w46:p5",
+  "policy_exceptions": [],
+  "provider_id": "codex",
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "status": "PASS",
+  "terminal_id": "term_655dff9d4bea0460",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T165155Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-coder.json",
+  "work_order_sha256": "d8f5e63233a0ea7ba92ed9519230ea4af34a5d70c794dbe3a6e4098bd9d3bd9d",
+  "workspace_id": "w46"
+}

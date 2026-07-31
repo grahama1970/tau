@@ -1,0 +1,22 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-provider-runs/max-exhaustion/20260703T225817Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read scratch-worktree/message.txt",
+    "read receipts/attempt-01-coder.json",
+    "ls scratch-worktree/"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-provider-runs/max-exhaustion/20260703T225817Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-provider-runs/max-exhaustion/20260703T225817Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: target_file has no remaining TODO line (acceptable), coder receipt is schema-valid. However, force_revise is true. For next coder attempt: 1) Make message.txt content more substantive — include the attempt number and the original content that was replaced to prove transformation. 2) Add a marker line explicitly proving the coder ran (e.g., \"generated_by: tau-deterministic-visible, attempt: 2\"). 3) Preserve a diff-like trace of what changed between attempts to support the max-exhaustion narrative.",
+  "errors": [],
+  "policy_exceptions": []
+}

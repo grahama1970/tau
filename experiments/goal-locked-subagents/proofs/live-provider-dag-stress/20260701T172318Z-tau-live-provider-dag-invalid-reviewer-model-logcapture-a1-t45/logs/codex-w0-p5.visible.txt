@@ -1,0 +1,46 @@
+         and
+         d["artifacts"]==[str(t)];
+         assert
+
+         t.read_text().strip()=="Comple
+         ted
+         implementation for the Tau
+         provider DAG POC coder node.";
+         print("receipt_ok")'
+
+───────────────────────────────────────
+
+• Status/Phase: PASS, complete.
+
+  Now: Updated experiments/goal-locked-
+  subagents/proofs/live-provider-dag-
+  stress/20260701T172318Z-tau-live-
+  provider-dag-invalid-reviewer-model-
+  logcapture-a1-t45/scratch-worktree/
+  message.txt and wrote the receipt at
+  experiments/goal-locked-subagents/
+  proofs/live-provider-dag-
+  stress/20260701T172318Z-tau-live-
+  provider-dag-invalid-reviewer-model-
+  logcapture-a1-t45/receipts/attempt-
+  01-coder.json.
+
+  Evidence: Final validation command
+  exited 0 and printed receipt_ok.
+  Receipt records 1 changed file, 1
+  artifact, 0 errors, and 0 policy
+  exceptions. Mocked: no. Live: no.
+  Exercised: local target-file edit
+  plus receipt schema/status/file-
+  content assertions.
+
+  Next/stop condition: Stop. The work
+  order is fulfilled; no Tau repository
+  files were modified.
+
+─ Worked for 1m 20s ───────────────────
+
+
+› Explain this codebase
+
+  gpt-5.5 high · ~/workspace/experimen…

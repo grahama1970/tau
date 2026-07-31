@@ -1,0 +1,28 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165149Z-tau-live-provider-dag-stress-a1-t90-opencode-run/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165149Z-tau-live-provider-dag-stress-a1-t90-opencode-run/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "pwd",
+    "sed -n '1,240p' /home/graham/.codex/hook-logs/memory-first-20260701T165204Z.json",
+    "sed -n '1,240p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165149Z-tau-live-provider-dag-stress-a1-t90-opencode-run/work-orders/attempt-01-coder.json",
+    "sed -n '1,120p' message.txt",
+    "ls -ld ../receipts && test ! -e ../receipts/attempt-01-coder.json",
+    "sed -n '1,20p' message.txt",
+    "jq -e '.schema == \"tau.provider_dag_node_receipt.v1\" and .node_id == \"coder\" and .provider_id == \"codex\" and .attempt == 1 and .status == \"PASS\" and .verdict == \"PASS\" and (.changed_files | length == 1) and (.errors | length == 0) and (.policy_exceptions | length == 0)' ../receipts/attempt-01-coder.json",
+    "python3 -m json.tool ../receipts/attempt-01-coder.json >/dev/null && test \"$(cat message.txt)\" = \"Completed implementation for the Tau provider DAG coder node.\""
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165149Z-tau-live-provider-dag-stress-a1-t90-opencode-run/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

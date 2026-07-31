@@ -1,0 +1,39 @@
+{
+  "edges": [
+    {
+      "from": "creator",
+      "to": "reviewer"
+    }
+  ],
+  "label": "tau-visible-dag-poc-live",
+  "nodes": [
+    {
+      "depends_on": [],
+      "node_id": "creator",
+      "receipt_required": true,
+      "role": "creator",
+      "stop_conditions": [
+        "receipt_written",
+        "blocked_with_reason"
+      ]
+    },
+    {
+      "depends_on": [
+        "creator"
+      ],
+      "node_id": "reviewer",
+      "receipt_required": true,
+      "role": "reviewer",
+      "stop_conditions": [
+        "receipt_written",
+        "blocked_with_reason"
+      ]
+    }
+  ],
+  "receipt_policy": {
+    "final_receipt_required": true,
+    "per_node_receipt_required": true
+  },
+  "run_id": "20260701T115518Z-tau-visible-dag-poc-live",
+  "schema": "tau.visible_dag_spec.v1"
+}

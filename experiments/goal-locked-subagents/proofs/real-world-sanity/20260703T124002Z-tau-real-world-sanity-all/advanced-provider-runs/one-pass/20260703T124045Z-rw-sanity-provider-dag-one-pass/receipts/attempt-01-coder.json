@@ -1,0 +1,28 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/one-pass/20260703T124045Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/one-pass/20260703T124045Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "pwd && sed -n '1,240p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/one-pass/20260703T124045Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json",
+    "ls -la /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/one-pass/20260703T124045Z-rw-sanity-provider-dag-one-pass",
+    "sed -n '1,120p' message.txt",
+    "find . -maxdepth 2 -type f -print",
+    "sed -n '1,120p' message.txt",
+    "python3 -m json.tool /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/one-pass/20260703T124045Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json >/tmp/tau-attempt-01-coder-jsoncheck.txt && wc -l /tmp/tau-attempt-01-coder-jsoncheck.txt",
+    "python3 - <<'PY'\nimport json\nfrom pathlib import Path\np = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/one-pass/20260703T124045Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json')\ndata = json.loads(p.read_text())\nprint(data['schema'])\nprint(data['node_id'], data['provider_id'], data['attempt'], data['status'], data['verdict'])\nprint(len(data['changed_files']), data['changed_files'][0])\nprint(len(data['errors']), len(data['policy_exceptions']))\nPY",
+    "python3 -m json.tool /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/one-pass/20260703T124045Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json >/tmp/tau-attempt-01-coder-final-jsoncheck.txt && wc -l /tmp/tau-attempt-01-coder-final-jsoncheck.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/one-pass/20260703T124045Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

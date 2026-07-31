@@ -1,0 +1,37 @@
+xperiments/tau/exp
+eriments/goal-lock
+ed-subagents/proof
+s/real-world-sanit
+y/20260705T200935Z
+-tau-generic-provi
+der-delivery-class
+ification-20260705
+/advanced-generic-
+provider-dag-adapt
+er/provider-runs/2
+0260705T200936Z-rw
+-sanity-generic-pr
+ovider-dag-adapter
+/planner-receipt.j
+son\nfinal_receipt
+: /home/graham/wor
+kspace/experiments
+/tau/experiments/g
+oal-locked-subagen
+ts/proofs/real-wor
+ld-sanity/20260705
+T200935Z-tau-gener
+ic-provider-delive
+ry-classification-
+20260705/advanced-
+generic-provider-d
+ag-adapter/provide
+r-runs/20260705T20
+0936Z-rw-sanity-ge
+neric-provider-dag
+-adapter/run-recei
+pt.json\ncanonical
+ truth: Tau JSON r
+eceipts; this pane
+ is human-visible
+telemetry.\n

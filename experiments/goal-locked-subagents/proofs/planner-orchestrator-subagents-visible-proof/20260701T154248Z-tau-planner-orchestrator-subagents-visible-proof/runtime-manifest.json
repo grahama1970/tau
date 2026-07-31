@@ -1,0 +1,112 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "coder_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/receipts/attempt-01-coder.json",
+      "coder_status": "PASS",
+      "coder_verdict": "PASS",
+      "errors": [],
+      "reviewer_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/receipts/attempt-01-reviewer.json",
+      "reviewer_status": "PASS",
+      "reviewer_verdict": "PASS"
+    }
+  ],
+  "dag_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/dag-spec.json",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/events.jsonl",
+  "label": "tau-planner-orchestrator-subagents-visible-proof",
+  "logs_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/logs",
+  "provider_readiness_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/provider-readiness-receipt.json",
+  "provider_sessions": {
+    "codex": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "wP:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/provider-readiness/20260701T154253Z-tau-planner-orchestrator-subagents-visible-proof-readiness/readiness/codex.readiness.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_6558e8b908f8a72",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/provider-readiness/20260701T154253Z-tau-planner-orchestrator-subagents-visible-proof-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "wP"
+    },
+    "opencode": {
+      "foreground_command": "opencode",
+      "pane_id": "wP:p6",
+      "process_alive": true,
+      "provider_id": "opencode",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/provider-readiness/20260701T154253Z-tau-planner-orchestrator-subagents-visible-proof-readiness/readiness/opencode.readiness.json",
+      "ready": true,
+      "role": "reviewer",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_6558e8b97f3eb73",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/provider-readiness/20260701T154253Z-tau-planner-orchestrator-subagents-visible-proof-readiness/logs/opencode.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "wP"
+    }
+  },
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof",
+  "run_id": "20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof",
+  "schema": "tau.provider_dag_runtime_manifest.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/scratch-worktree",
+  "visible_subagents": {
+    "coder": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "wP:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/provider-readiness/20260701T154253Z-tau-planner-orchestrator-subagents-visible-proof-readiness/readiness/codex.readiness.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_6558e8b908f8a72",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/provider-readiness/20260701T154253Z-tau-planner-orchestrator-subagents-visible-proof-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "wP"
+    },
+    "orchestrator": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "wP:p8",
+      "provider_id": "tau",
+      "role": "orchestrator",
+      "tab_id": "wP:t1",
+      "terminal_id": "term_6558e8c226a4975",
+      "visible": true,
+      "workspace_id": "wP"
+    },
+    "planner": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "wP:p7",
+      "provider_id": "tau",
+      "role": "planner",
+      "tab_id": "wP:t1",
+      "terminal_id": "term_6558e8c1cc53374",
+      "visible": true,
+      "workspace_id": "wP"
+    },
+    "reviewer": {
+      "foreground_command": "opencode",
+      "pane_id": "wP:p6",
+      "process_alive": true,
+      "provider_id": "opencode",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/provider-readiness/20260701T154253Z-tau-planner-orchestrator-subagents-visible-proof-readiness/readiness/opencode.readiness.json",
+      "ready": true,
+      "role": "reviewer",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_6558e8b97f3eb73",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/provider-readiness/20260701T154253Z-tau-planner-orchestrator-subagents-visible-proof-readiness/logs/opencode.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "wP"
+    }
+  }
+}

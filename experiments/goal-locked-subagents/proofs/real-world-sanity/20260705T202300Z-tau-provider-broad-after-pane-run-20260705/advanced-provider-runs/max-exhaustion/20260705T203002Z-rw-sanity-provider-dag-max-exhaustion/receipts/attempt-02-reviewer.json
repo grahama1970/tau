@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T203002Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:b8f5ab659d602c284bd87e5ef04376dfcfbadd675a1d2949ea3be4aa9ddb8ef7",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w4V",
+  "pane_id": "w4V:p6",
+  "terminal_id": "term_655e305d9bbf852e",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T202300Z-tau-provider-broad-after-pane-run-20260705/advanced-provider-runs/max-exhaustion/20260705T203002Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T203002Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "7ff7c306a0b58c90234dc5b2a8c755981b8caa5cbb7434957462aa66e1be12e4",
+  "work_order_sha256": "e54ab13a343e57a2640aeb5e86f9dff74395e98d2dfce156dabcc9cbaced85ec",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T202300Z-tau-provider-broad-after-pane-run-20260705/advanced-provider-runs/max-exhaustion/20260705T203002Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["sha256sum visible_log_path", "read work_order", "read target_file", "read coder_receipt", "sha256sum work_order_path"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T202300Z-tau-provider-broad-after-pane-run-20260705/advanced-provider-runs/max-exhaustion/20260705T203002Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T202300Z-tau-provider-broad-after-pane-run-20260705/advanced-provider-runs/max-exhaustion/20260705T203002Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "REVISE due to force_revise flag. target_file exists with TODO line removed; coder receipt is schema-valid with all required fields. Concrete feedback: message.txt content is too sparse ('completed implementation by deterministic visible coder attempt 2') — it states that work was done but conveys nothing about what was implemented or how it relates to the goal. Next coder attempt should write a message that briefly describes what was implemented and optionally links observable output to the goal_hash or goal_id so the meaning is decipherable without cross-referencing the work order.",
+  "errors": [],
+  "policy_exceptions": []
+}

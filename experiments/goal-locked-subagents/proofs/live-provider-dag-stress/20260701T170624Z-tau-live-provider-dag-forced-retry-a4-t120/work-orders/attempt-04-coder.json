@@ -1,0 +1,12 @@
+{
+  "attempt": 4,
+  "node_id": "coder",
+  "provider_id": "codex",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/receipts/attempt-04-coder.json",
+  "reviewer_feedback": "Force-revise triggered. target_file TODO is clean; coder receipt is schema-valid. Message is a single generic statement \u2014 needs to embed run metadata (run_id, attempt, provider chain) and reference the specific work order that produced it to prove provider-DAG awareness.",
+  "run_id": "20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/scratch-worktree",
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/scratch-worktree/message.txt",
+  "task": "Modify only target_file. Replace the TODO line with a short completed implementation message. Then write the node receipt JSON exactly at receipt_path."
+}

@@ -1,0 +1,38 @@
+        eceipts",
+    17 +    "sed -n '1,120p' /home/graham/worksp
+        ace/experiments/tau/experiments/goal-loc
+        ked-subagents/proofs/real-world-sanity/2
+        0260703T202751Z-tau-advanced-current-cod
+        e-full/advanced-provider-runs/one-pass/2
+        0260703T202848Z-rw-sanity-provider-dag-o
+        ne-pass/scratch-worktree/message.txt",
+    18 +    "jq -e '.schema == \"tau.provider_da
+        g_node_receipt.v1\" and .node_id == \"co
+        der\" and .provider_id == \"codex\" and
+        .attempt == 1 and .status == \"PASS\" an
+        d .verdict == \"PASS\" and (.errors | le
+        ngth == 0) and (.policy_exceptions | len
+        gth == 0)' /home/graham/workspace/experi
+        ments/tau/experiments/goal-locked-subage
+        nts/proofs/real-world-sanity/20260703T20
+        2751Z-tau-advanced-current-code-full/adv
+        anced-provider-runs/one-pass/20260703T20
+        2848Z-rw-sanity-provider-dag-one-pass/re
+        ceipts/attempt-01-coder.json",
+    19 +    "jq -r '.changed_files[0], .artifact
+        s[0], .handoff_summary' /home/graham/wor
+        kspace/experiments/tau/experiments/goal-
+        locked-subagents/proofs/real-world-sanit
+        y/20260703T202751Z-tau-advanced-current-
+        code-full/advanced-provider-runs/one-pas
+        s/20260703T202848Z-rw-sanity-provider-da
+        g-one-pass/receipts/attempt-01-coder.jso
+        n"
+    20    ],
+
+• Working (1m 10s • esc to interrupt)
+
+
+› Use /skills to list available skills
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

@@ -1,0 +1,19 @@
+{
+  "advanced_past_dream_packet": true,
+  "created_at": "2026-06-29T20:39:42Z",
+  "live": true,
+  "mocked": false,
+  "pipeline_first_blocker": null,
+  "pipeline_loop_status": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T203937Z/dream-run/receipts/pipeline_loop_status_forward.json",
+  "provider_calls": {
+    "kling": false,
+    "paid": false,
+    "public_upload": false
+  },
+  "role": "dream-reviewer",
+  "schema": "tau.persona_dream.dream_reviewer_receipt.v1",
+  "status": "PASS",
+  "subagent_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T203937Z/command-loop/command-artifacts/command-loop-step-002/dream_reviewer_tau_subagent_receipt.json",
+  "validate_dream_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T203937Z/dream-run/receipts/validate_dream_packet.json",
+  "validation_status": "PASS_DREAM_PACKET"
+}

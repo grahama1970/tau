@@ -1,0 +1,22 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-provider-runs/max-exhaustion/20260703T225817Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "cat work-orders/attempt-02-reviewer.json",
+    "cat scratch-worktree/message.txt",
+    "cat receipts/attempt-02-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-provider-runs/max-exhaustion/20260703T225817Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-provider-runs/max-exhaustion/20260703T225817Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "REVISE: force_revise=true. The TODO line is gone and the coder receipt is schema-valid, but the target_file message.txt is minimal — only a single completion statement. For the next attempt, expand message.txt to include: (1) which specific DAG node and attempt completed, (2) a summary of what changed, and (3) a verification instruction or status indicator. This provides more context for downstream nodes and human inspection without adding verbosity that obscures the signal.",
+  "errors": [],
+  "policy_exceptions": []
+}

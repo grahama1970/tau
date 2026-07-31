@@ -1,0 +1,32 @@
+{
+  "schema": "tau.agent_handoff.v1",
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-creator-reviewer-sanity"
+  },
+  "goal": {
+    "goal_id": "tau-creator-reviewer-sanity",
+    "goal_version": 1,
+    "goal_hash": "sha256:creator-reviewer-sanity"
+  },
+  "previous_subagent": "human",
+  "context": {
+    "summary": "Sanity check that Tau chooses a creator subagent, then a reviewer subagent, from handoff routes.",
+    "artifacts": []
+  },
+  "result": {
+    "status": "COMPLETED",
+    "summary": "Human requested a non-mocked Tau creator-reviewer command-loop sanity check.",
+    "evidence": []
+  },
+  "rationale": "The first selected subagent is coder acting as the creator node.",
+  "next_agent": {
+    "name": "coder",
+    "executor": "local",
+    "reason": "Coder is the creator node and must route to reviewer."
+  },
+  "required_evidence": [
+    "command-loop receipt must show selected agents coder then reviewer"
+  ],
+  "stop_condition": "Reviewer routes to human after validating the creator handoff."
+}

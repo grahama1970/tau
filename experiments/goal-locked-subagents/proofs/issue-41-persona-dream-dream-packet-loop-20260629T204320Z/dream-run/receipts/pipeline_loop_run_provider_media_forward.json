@@ -1,0 +1,57 @@
+{
+  "active_loop": {
+    "blocker": "missing_reviewer_source",
+    "default_repair": "Run the visual review subagent against the real panel image and write the eight-check visual review receipt.",
+    "external_action_required": false,
+    "loop": "panel_review_loop",
+    "path": "receipts/visual_review_receipt.json",
+    "phase": "visual_review_receipt",
+    "validator": "validate-visual-review"
+  },
+  "direction": "forward",
+  "exercised": "serial while-loop controller pass, run-root validation, first-blocker loop mapping, fail-closed stop selection, local receipt installation handlers when applicable",
+  "generated_at": "2026-06-29T22:10:27Z",
+  "iterations": [
+    {
+      "active_loop": {
+        "blocker": "missing_reviewer_source",
+        "default_repair": "Run the visual review subagent against the real panel image and write the eight-check visual review receipt.",
+        "external_action_required": false,
+        "loop": "panel_review_loop",
+        "path": "receipts/visual_review_receipt.json",
+        "phase": "visual_review_receipt",
+        "validator": "validate-visual-review"
+      },
+      "first_blocker": {
+        "path": "receipts/visual_review_receipt.json",
+        "phase": "visual_review_receipt",
+        "reason": "missing_reviewer_source"
+      },
+      "iteration": 1,
+      "phase_count": 12,
+      "repair_action": {
+        "external_action_required": false,
+        "panel_repair_gate_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/panel_repair_gate_receipt.json",
+        "phase": "visual_review_receipt",
+        "reason": "visual_review_receipt_not_pass:missing_panel_id",
+        "status": "BLOCKED"
+      },
+      "status": "BLOCKED",
+      "stop_condition": "No external action performed; repair the active_loop.default_repair, write/refresh receipts, then rerun this command."
+    }
+  ],
+  "live": "no",
+  "mocked": "no",
+  "next_action": "Run the visual review subagent against the real panel image and write the eight-check visual review receipt.",
+  "policy": {
+    "implicit_local_repair_allowed": false,
+    "kling_call_allowed": false,
+    "nano_banana_final_panel_allowed": false,
+    "public_upload_allowed_without_explicit_authorization": false
+  },
+  "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+  "schema": "persona_dream.pipeline_loop_run.v1",
+  "status": "BLOCKED",
+  "stop_reason": "local_repair_blocked",
+  "unverified": "external publication, live panel subagent generation/review, paid Kling submission"
+}

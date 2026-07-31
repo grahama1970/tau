@@ -1,0 +1,37 @@
+-provider-dag-repa
+ir/dag-spec.json\n
+planner_receipt: /
+home/graham/worksp
+ace/experiments/ta
+u/experiments/goal
+-locked-subagents/
+proofs/real-world-
+sanity/20260705T21
+4141Z-tau-broader-
+hardening-regressi
+on-20260705/advanc
+ed-provider-runs/r
+epair-loop/2026070
+5T215031Z-rw-sanit
+y-provider-dag-rep
+air/planner-receip
+t.json\nfinal_rece
+ipt: /home/graham/
+workspace/experime
+nts/tau/experiment
+s/goal-locked-suba
+gents/proofs/real-
+world-sanity/20260
+705T214141Z-tau-br
+oader-hardening-re
+gression-20260705/
+advanced-provider-
+runs/repair-loop/2
+0260705T215031Z-rw
+-sanity-provider-d
+ag-repair/run-rece
+ipt.json\ncanonica
+l truth: Tau JSON
+receipts; this pan
+e is human-visible
+ telemetry.\n

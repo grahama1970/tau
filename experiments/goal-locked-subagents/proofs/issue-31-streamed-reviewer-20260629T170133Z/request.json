@@ -1,0 +1,19 @@
+{
+  "panel": {
+    "image_generation_receipt": "",
+    "image_path": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png",
+    "panel_id": "panel_001",
+    "panel_prompt": "",
+    "run_root": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run",
+    "scillm_base_url": "http://127.0.0.1:4001",
+    "scillm_image_auth": "",
+    "scillm_image_model": "",
+    "scillm_image_quality": "",
+    "scillm_image_timeout_s": "",
+    "scillm_live_panel": "true",
+    "scillm_vlm_model": "gpt-5.5",
+    "scillm_vlm_timeout_s": "180",
+    "visual_review_receipt": "/tmp/not-used.json"
+  },
+  "role": "panel-reviewer"
+}

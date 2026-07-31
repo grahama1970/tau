@@ -1,0 +1,31 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T214802Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:a51007808b90382125d78f966b8d778829b9197fd338ad3ac3e2276b519550fb",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w5K",
+  "pane_id": "w5K:p6",
+  "terminal_id": "term_655e41cd0315c61e",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T214802Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T214802Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "f978010844375921589a787d156487be7bcae1bf418af4e4118695e4f0d784f5",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T214802Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "sha256sum <visible_log_path>",
+    "read target_file (message.txt)",
+    "read coder_receipt_path (attempt-01-coder.json)",
+    "write reviewer receipt (attempt-01-reviewer.json)"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T214802Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T214802Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file (message.txt) has no TODO line — contains clean implementation statement. Coder receipt is schema-valid with all required fields (dag_id, goal_hash, node_id, provider_id, attempt, changed_files, commands_run, artifacts, handoff_summary). force_revise is false. No errors or policy exceptions. Both required evidence checks passed.",
+  "errors": [],
+  "policy_exceptions": []
+}

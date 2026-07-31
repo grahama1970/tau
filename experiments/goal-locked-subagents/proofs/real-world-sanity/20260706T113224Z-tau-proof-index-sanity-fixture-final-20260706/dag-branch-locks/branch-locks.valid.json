@@ -1,0 +1,40 @@
+{
+  "approval_packets": [
+    "provider-approval.json",
+    "mutating-approval.json"
+  ],
+  "dag_id": "rw-sanity-dag-branch-locks",
+  "goal_hash": "sha256:rw-sanity-dag-branch-locks",
+  "locks": [
+    {
+      "actor_identity": "human:graham",
+      "allowed_paths": [
+        "experiments/goal-locked-subagents/proofs/provider/**"
+      ],
+      "approval_packet_sha256": "sha256:a77460ca9e4c91e6d1a40ebb70809ad92a722e5839afcfe5d26546eaaf3d426d",
+      "branch_type": "provider",
+      "expires_at": "2099-01-01T00:00:00Z",
+      "lock_id": "rw-sanity-lock-provider",
+      "node_id": "provider-node",
+      "owner": "goal-guardian",
+      "rollback_policy": "required",
+      "side_effect_class": "provider",
+      "workspace_lease": "rw-sanity-workspace-lease"
+    },
+    {
+      "actor_identity": "human:graham",
+      "allowed_paths": [
+        "src/tau_coding/example.py"
+      ],
+      "approval_packet_sha256": "sha256:1019c744ff5d817b0bce83cd66cdfe5cfa6b85eebb401a426828ebd0677ae507",
+      "branch_type": "mutating",
+      "expires_at": "2099-01-01T00:00:00Z",
+      "lock_id": "rw-sanity-lock-mutating",
+      "node_id": "mutating-node",
+      "owner": "goal-guardian",
+      "rollback_policy": "required",
+      "side_effect_class": "filesystem"
+    }
+  ],
+  "schema": "tau.dag_branch_locks.v1"
+}

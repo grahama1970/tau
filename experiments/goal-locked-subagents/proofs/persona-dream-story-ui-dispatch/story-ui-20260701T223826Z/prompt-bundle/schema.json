@@ -1,0 +1,326 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "title",
+    "logline",
+    "tone",
+    "author_style_directive",
+    "creativity_directive",
+    "main_dramatic_question",
+    "character_arcs",
+    "story_treatment",
+    "interaction_matrix",
+    "asset_usage",
+    "key_visual_motifs",
+    "important_sensory_details",
+    "ending_image",
+    "quality_checks"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Original title for the treatment."
+    },
+    "logline": {
+      "type": "string",
+      "description": "One sentence describing the stolen surf-day conflict."
+    },
+    "tone": {
+      "type": "string",
+      "description": "Concise tone statement."
+    },
+    "author_style_directive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requested_author",
+        "style_policy",
+        "style_summary",
+        "actionable_traits",
+        "application_to_this_story",
+        "prohibited_imitation"
+      ],
+      "properties": {
+        "requested_author": {
+          "type": "string",
+          "const": "Andy Weir"
+        },
+        "style_policy": {
+          "type": "string",
+          "description": "Explains that the author reference is translated into high-level craft traits only, not direct imitation."
+        },
+        "style_summary": {
+          "type": "string"
+        },
+        "actionable_traits": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "type": "string"
+          }
+        },
+        "application_to_this_story": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "type": "string"
+          }
+        },
+        "prohibited_imitation": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "creativity_directive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slider_value",
+        "label",
+        "actionable_interpretation",
+        "allowed_inventions",
+        "limits",
+        "plot_risk_level",
+        "realism_requirement"
+      ],
+      "properties": {
+        "slider_value": {
+          "type": "number",
+          "const": 0.6
+        },
+        "label": {
+          "type": "string",
+          "const": "grounded moderate invention"
+        },
+        "actionable_interpretation": {
+          "type": "string"
+        },
+        "allowed_inventions": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "type": "string"
+          }
+        },
+        "limits": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "type": "string"
+          }
+        },
+        "plot_risk_level": {
+          "type": "string",
+          "enum": [
+            "low",
+            "moderate",
+            "high"
+          ],
+          "const": "moderate"
+        },
+        "realism_requirement": {
+          "type": "string"
+        }
+      }
+    },
+    "main_dramatic_question": {
+      "type": "string",
+      "description": "Question driving the scene."
+    },
+    "character_arcs": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "character",
+          "starting_pressure",
+          "turn",
+          "ending_state"
+        ],
+        "properties": {
+          "character": {
+            "type": "string"
+          },
+          "starting_pressure": {
+            "type": "string"
+          },
+          "turn": {
+            "type": "string"
+          },
+          "ending_state": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "story_treatment": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "beat_id",
+          "heading",
+          "treatment"
+        ],
+        "properties": {
+          "beat_id": {
+            "type": "string",
+            "enum": [
+              "opening_image",
+              "the_lie",
+              "entering_the_water",
+              "failed_or_hesitant_attempt",
+              "kai_restraint",
+              "mid_scene_tension",
+              "decisive_set",
+              "resolution"
+            ]
+          },
+          "heading": {
+            "type": "string"
+          },
+          "treatment": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "interaction_matrix": {
+      "type": "array",
+      "minItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "entity",
+          "objects",
+          "environment_interaction",
+          "story_function",
+          "source_row_id"
+        ],
+        "properties": {
+          "entity": {
+            "type": "string",
+            "description": "Copy from context.interaction_rows[].name."
+          },
+          "objects": {
+            "type": "string",
+            "description": "Physical objects copied or condensed from context.interaction_rows[].objects."
+          },
+          "environment_interaction": {
+            "type": "string",
+            "description": "How heat, humidity, water, reef, light, or fatigue changes this entity or object behavior."
+          },
+          "story_function": {
+            "type": "string",
+            "description": "How this row changes the story treatment."
+          },
+          "source_row_id": {
+            "type": "string",
+            "description": "Copy from context.interaction_rows[].id."
+          }
+        }
+      }
+    },
+    "asset_usage": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "asset_id",
+          "memory_key",
+          "used_for",
+          "source_field"
+        ],
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "description": "Copy from context.linked_assets[].id."
+          },
+          "memory_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Copy from context.linked_assets[].memoryKey or null."
+          },
+          "used_for": {
+            "type": "string",
+            "description": "Specific visual, audio, video, or text grounding role in the story."
+          },
+          "source_field": {
+            "type": "string",
+            "enum": [
+              "description",
+              "title",
+              "url",
+              "mediaType"
+            ]
+          }
+        }
+      }
+    },
+    "key_visual_motifs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "important_sensory_details": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "ending_image": {
+      "type": "string",
+      "description": "Final cinematic image of the treatment."
+    },
+    "quality_checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "every_input_row_has_output_matrix_row",
+        "environment_changes_character_or_object_behavior",
+        "surfboards_include_shape_wax_condition_or_age_when_present",
+        "asset_ids_are_copied_from_context",
+        "all_eight_required_beats_present",
+        "does_not_imitate_living_author"
+      ],
+      "properties": {
+        "every_input_row_has_output_matrix_row": {
+          "type": "boolean"
+        },
+        "environment_changes_character_or_object_behavior": {
+          "type": "boolean"
+        },
+        "surfboards_include_shape_wax_condition_or_age_when_present": {
+          "type": "boolean"
+        },
+        "asset_ids_are_copied_from_context": {
+          "type": "boolean"
+        },
+        "all_eight_required_beats_present": {
+          "type": "boolean"
+        },
+        "does_not_imitate_living_author": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

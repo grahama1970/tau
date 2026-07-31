@@ -1,0 +1,22 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work-orders/attempt-02-reviewer.json",
+    "read scratch-worktree/message.txt",
+    "read receipts/attempt-02-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file (message.txt) has no TODO line — single clean line reads 'Completed coder-node repair-loop update for the Tau provider DAG POC.' Coder receipt is schema-valid (tau.provider_dag_node_receipt.v1) with all required fields present. force_revise is false, so PASS is the correct verdict.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,13 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-dag-stress-campaign/20260705T220107Z-rw-sanity-dag-campaign/suites/20260705T220107Z-rw-sanity-dag-campaign-budget-1-rep-1/rungs/03-fanout-fanin-review/scratch/root-plan.txt"
+  ],
+  "attempt": 1,
+  "handoff_summary": "root plan",
+  "node_id": "root-creator",
+  "role": "creator",
+  "schema": "tau.dag_stress_node_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-05T22:01:07.643138Z",
+  "verdict": "PASS"
+}

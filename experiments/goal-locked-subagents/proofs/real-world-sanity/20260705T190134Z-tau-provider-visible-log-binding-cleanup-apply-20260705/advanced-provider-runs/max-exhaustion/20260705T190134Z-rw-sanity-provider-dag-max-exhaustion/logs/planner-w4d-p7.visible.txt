@@ -1,0 +1,37 @@
+e/experiments/tau/experiments/goa
+l-locked-subagents/proofs/real-wo
+rld-sanity/20260705T190134Z-tau-p
+rovider-visible-log-binding-clean
+up-apply-20260705/advanced-provid
+er-runs/max-exhaustion/20260705T1
+90134Z-rw-sanity-provider-dag-max
+-exhaustion\ndag_spec: /home/grah
+am/workspace/experiments/tau/expe
+riments/goal-locked-subagents/pro
+ofs/real-world-sanity/20260705T19
+0134Z-tau-provider-visible-log-bi
+nding-cleanup-apply-20260705/adva
+nced-provider-runs/max-exhaustion
+/20260705T190134Z-rw-sanity-provi
+der-dag-max-exhaustion/dag-spec.j
+son\nplanner_receipt: /home/graha
+m/workspace/experiments/tau/exper
+iments/goal-locked-subagents/proo
+fs/real-world-sanity/20260705T190
+134Z-tau-provider-visible-log-bin
+ding-cleanup-apply-20260705/advan
+ced-provider-runs/max-exhaustion/
+20260705T190134Z-rw-sanity-provid
+er-dag-max-exhaustion/planner-rec
+eipt.json\nfinal_receipt: /home/g
+raham/workspace/experiments/tau/e
+xperiments/goal-locked-subagents/
+proofs/real-world-sanity/20260705
+T190134Z-tau-provider-visible-log
+-binding-cleanup-apply-20260705/a
+dvanced-provider-runs/max-exhaust
+ion/20260705T190134Z-rw-sanity-pr
+ovider-dag-max-exhaustion/run-rec
+eipt.json\ncanonical truth: Tau J
+SON receipts; this pane is human-
+visible telemetry.\n

@@ -1,0 +1,33 @@
+Tau planner subagent visible monitor\n
+run_id: 20260703T224702Z-rw-sanity-pro
+vider-dag-one-pass\nrun_dir: /home/gra
+ham/workspace/experiments/tau/experime
+nts/goal-locked-subagents/proofs/real-
+world-sanity/20260703T224553Z-tau-adva
+nced-live-post-cleanup-observability/a
+dvanced-provider-runs/one-pass/2026070
+3T224702Z-rw-sanity-provider-dag-one-p
+ass\ndag_spec: /home/graham/workspace/
+experiments/tau/experiments/goal-locke
+d-subagents/proofs/real-world-sanity/2
+0260703T224553Z-tau-advanced-live-post
+-cleanup-observability/advanced-provid
+er-runs/one-pass/20260703T224702Z-rw-s
+anity-provider-dag-one-pass/dag-spec.j
+son\nplanner_receipt: /home/graham/wor
+kspace/experiments/tau/experiments/goa
+l-locked-subagents/proofs/real-world-s
+anity/20260703T224553Z-tau-advanced-li
+ve-post-cleanup-observability/advanced
+-provider-runs/one-pass/20260703T22470
+2Z-rw-sanity-provider-dag-one-pass/pla
+nner-receipt.json\nfinal_receipt: /hom
+e/graham/workspace/experiments/tau/exp
+eriments/goal-locked-subagents/proofs/
+real-world-sanity/20260703T224553Z-tau
+-advanced-live-post-cleanup-observabil
+ity/advanced-provider-runs/one-pass/20
+260703T224702Z-rw-sanity-provider-dag-
+one-pass/run-receipt.json\ncanonical t
+ruth: Tau JSON receipts; this pane is
+human-visible telemetry.\n

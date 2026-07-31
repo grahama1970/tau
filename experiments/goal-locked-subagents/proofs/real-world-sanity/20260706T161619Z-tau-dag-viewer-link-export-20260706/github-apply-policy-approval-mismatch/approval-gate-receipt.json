@@ -1,0 +1,13 @@
+{
+  "approved": true,
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "packet_summary": {
+    "target_id": "grahama1970/tau:issue#999"
+  },
+  "requested_action": "github_apply",
+  "schema": "tau.approval_gate_receipt.v1",
+  "status": "PASS"
+}

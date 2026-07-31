@@ -1,0 +1,37 @@
+-20260705/adva
+nced-generic-p
+rovider-dag-ad
+apter/provider
+-runs/20260705
+T162716Z-rw-sa
+nity-generic-p
+rovider-dag-ad
+apter/planner-
+receipt.json\n
+final_receipt:
+ /home/graham/
+workspace/expe
+riments/tau/ex
+periments/goal
+-locked-subage
+nts/proofs/rea
+l-world-sanity
+/20260705T1627
+15Z-tau-provid
+er-node-receip
+t-binding-2026
+0705/advanced-
+generic-provid
+er-dag-adapter
+/provider-runs
+/20260705T1627
+16Z-rw-sanity-
+generic-provid
+er-dag-adapter
+/run-receipt.j
+son\ncanonical
+ truth: Tau JS
+ON receipts; t
+his pane is hu
+man-visible te
+lemetry.\n

@@ -1,0 +1,192 @@
+{
+  "check_count": 2,
+  "checks": [
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 0,
+          "receipt_summary": {
+            "applied_action_count": 0,
+            "candidate_count": 1,
+            "live": false,
+            "mocked": false,
+            "ok": true,
+            "post_verified_absent_count": 0,
+            "resource_count": 1,
+            "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T235809Z-tau-cleanup-runtime-manifest-sha/medium-herdr-cleanup/runtime-manifest.json",
+            "runtime_manifest_sha256": "fcd569e273294b901efbd6a82bb894e340da083029c68f1d687ea8234820014e",
+            "schema": "tau.herdr_cleanup_receipt.v1",
+            "status": "PASS"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T235809Z-tau-cleanup-runtime-manifest-sha/logs/medium.herdr_cleanup_dry_run.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T235809Z-tau-cleanup-runtime-manifest-sha/logs/medium.herdr_cleanup_dry_run.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "medium.herdr_cleanup_dry_run",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "herdr-cleanup",
+        "dry-run",
+        "--run-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T235809Z-tau-cleanup-runtime-manifest-sha/medium-herdr-cleanup"
+      ],
+      "completed_at": "2026-07-03T23:58:09Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": null,
+      "level": "medium",
+      "live": false,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau identifies run-owned Herdr cleanup candidates without mutating Herdr.",
+      "receipt_summary": {
+        "applied_action_count": 0,
+        "candidate_count": 1,
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "post_verified_absent_count": 0,
+        "resource_count": 1,
+        "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T235809Z-tau-cleanup-runtime-manifest-sha/medium-herdr-cleanup/runtime-manifest.json",
+        "runtime_manifest_sha256": "fcd569e273294b901efbd6a82bb894e340da083029c68f1d687ea8234820014e",
+        "schema": "tau.herdr_cleanup_receipt.v1",
+        "status": "PASS"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-03T23:58:09Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T235809Z-tau-cleanup-runtime-manifest-sha/logs/medium.herdr_cleanup_dry_run.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T235809Z-tau-cleanup-runtime-manifest-sha/logs/medium.herdr_cleanup_dry_run.stdout.txt",
+      "timeout_seconds": 60
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 0,
+          "receipt_summary": {
+            "live": false,
+            "mocked": false,
+            "ok": true,
+            "provider_session_state_count": 0,
+            "runtime_manifest": {
+              "events_jsonl": null,
+              "provider_session_state_count": 0,
+              "readiness_record_count": 0,
+              "run_id": "rw-sanity-herdr-cleanup",
+              "schema": "tau.provider_dag_runtime_manifest.v1"
+            },
+            "schema": "tau.run_status.v1",
+            "status": "PASS"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T235809Z-tau-cleanup-runtime-manifest-sha/logs/medium.herdr_cleanup_status.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T235809Z-tau-cleanup-runtime-manifest-sha/logs/medium.herdr_cleanup_status.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "medium.herdr_cleanup_status",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "run-status",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T235809Z-tau-cleanup-runtime-manifest-sha/medium-herdr-cleanup"
+      ],
+      "completed_at": "2026-07-03T23:58:10Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": null,
+      "level": "medium",
+      "live": false,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau summarizes a standalone Herdr cleanup receipt through the read-only run-status surface.",
+      "receipt_summary": {
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "provider_session_state_count": 0,
+        "runtime_manifest": {
+          "events_jsonl": null,
+          "provider_session_state_count": 0,
+          "readiness_record_count": 0,
+          "run_id": "rw-sanity-herdr-cleanup",
+          "schema": "tau.provider_dag_runtime_manifest.v1"
+        },
+        "schema": "tau.run_status.v1",
+        "status": "PASS"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-03T23:58:09Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T235809Z-tau-cleanup-runtime-manifest-sha/logs/medium.herdr_cleanup_status.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T235809Z-tau-cleanup-runtime-manifest-sha/logs/medium.herdr_cleanup_status.stdout.txt",
+      "timeout_seconds": 60
+    }
+  ],
+  "completed_at": "2026-07-03T23:58:10Z",
+  "failed_check_count": 0,
+  "level_counts": {
+    "medium": {
+      "PASS": 2
+    }
+  },
+  "live": "mixed",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "browser/CDP chat UI rendering",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau CLI and command-spec surfaces execute from the local checkout",
+      "Tau can run a real local handoff command loop",
+      "Tau planner, generic DAG runner, and deterministic scheduler stress surfaces emit non-mocked receipts",
+      "Tau can allocate visible provider panes and run live provider DAG checks when advanced checks pass",
+      "Tau fail-closed negative controls preserve typed BLOCKED receipts"
+    ]
+  },
+  "provider_live": false,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T235809Z-tau-cleanup-runtime-manifest-sha",
+  "run_id": "20260703T235809Z-tau-cleanup-runtime-manifest-sha",
+  "schema": "tau.real_world_sanity_suite_receipt.v1",
+  "selected_levels": [
+    "medium"
+  ],
+  "status": "PASS",
+  "timestamp": "2026-07-03T23:58:10Z"
+}

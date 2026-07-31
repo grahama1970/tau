@@ -1,0 +1,28 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/work-orders/attempt-01-coder.json",
+    "pwd",
+    "sed -n '1,120p' message.txt",
+    "ls -la",
+    "test -e /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/receipts/attempt-01-coder.json; echo $?",
+    "jq -e '.schema == \"tau.provider_dag_node_receipt.v1\" and .status == \"PASS\" and .verdict == \"PASS\" and .attempt == 1' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/receipts/attempt-01-coder.json",
+    "grep -n 'Completed implementation for the Tau generic provider DAG adapter POC.' message.txt",
+    "find . -maxdepth 2 -type f -print"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in the target file with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

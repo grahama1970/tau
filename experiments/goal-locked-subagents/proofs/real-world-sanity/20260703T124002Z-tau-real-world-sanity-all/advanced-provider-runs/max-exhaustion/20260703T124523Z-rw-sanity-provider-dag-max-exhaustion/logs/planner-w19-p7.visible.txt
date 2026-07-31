@@ -1,0 +1,37 @@
+w-sanity-provider-dag-max-exhaus
+tion\nrun_dir: /home/graham/work
+space/experiments/tau/experiment
+s/goal-locked-subagents/proofs/r
+eal-world-sanity/20260703T124002
+Z-tau-real-world-sanity-all/adva
+nced-provider-runs/max-exhaustio
+n/20260703T124523Z-rw-sanity-pro
+vider-dag-max-exhaustion\ndag_sp
+ec: /home/graham/workspace/exper
+iments/tau/experiments/goal-lock
+ed-subagents/proofs/real-world-s
+anity/20260703T124002Z-tau-real-
+world-sanity-all/advanced-provid
+er-runs/max-exhaustion/20260703T
+124523Z-rw-sanity-provider-dag-m
+ax-exhaustion/dag-spec.json\npla
+nner_receipt: /home/graham/works
+pace/experiments/tau/experiments
+/goal-locked-subagents/proofs/re
+al-world-sanity/20260703T124002Z
+-tau-real-world-sanity-all/advan
+ced-provider-runs/max-exhaustion
+/20260703T124523Z-rw-sanity-prov
+ider-dag-max-exhaustion/planner-
+receipt.json\nfinal_receipt: /ho
+me/graham/workspace/experiments/
+tau/experiments/goal-locked-suba
+gents/proofs/real-world-sanity/2
+0260703T124002Z-tau-real-world-s
+anity-all/advanced-provider-runs
+/max-exhaustion/20260703T124523Z
+-rw-sanity-provider-dag-max-exha
+ustion/run-receipt.json\ncanonic
+al truth: Tau JSON receipts; thi
+s pane is human-visible telemetr
+y.\n

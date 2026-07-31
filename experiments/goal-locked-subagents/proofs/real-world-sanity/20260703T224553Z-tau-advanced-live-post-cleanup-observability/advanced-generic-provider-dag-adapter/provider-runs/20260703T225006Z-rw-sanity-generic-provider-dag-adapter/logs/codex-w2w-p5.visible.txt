@@ -1,0 +1,38 @@
+         >/tmp/tau-attempt-01-coder-js
+        oncheck.txt && wc -l /tmp/tau-
+        attempt-01-coder-jsoncheck.txt
+        ",
+    20 +    "grep -n 'TODO' /home/grah
+        am/workspace/experiments/tau/e
+        xperiments/goal-locked-subagen
+        ts/proofs/real-world-sanity/20
+        260703T224553Z-tau-advanced-li
+        ve-post-cleanup-observability/
+        advanced-generic-provider-dag-
+        adapter/provider-runs/20260703
+        T225006Z-rw-sanity-generic-pro
+        vider-dag-adapter/scratch-work
+        tree/message.txt || true",
+    21 +    "sed -n '1,80p' /home/grah
+        am/workspace/experiments/tau/e
+        xperiments/goal-locked-subagen
+        ts/proofs/real-world-sanity/20
+        260703T224553Z-tau-advanced-li
+        ve-post-cleanup-observability/
+        advanced-generic-provider-dag-
+        adapter/provider-runs/20260703
+        T225006Z-rw-sanity-generic-pro
+        vider-dag-adapter/scratch-work
+        tree/message.txt",
+    22 +    "apply_patch update receip
+        t commands_run"
+    23    ],
+
+──────────────────────────────────────
+
+• Working (1m 21s • esc to interrupt)
+
+
+› Summarize recent commits
+
+  gpt-5.5 medium · ~/workspace/experi…

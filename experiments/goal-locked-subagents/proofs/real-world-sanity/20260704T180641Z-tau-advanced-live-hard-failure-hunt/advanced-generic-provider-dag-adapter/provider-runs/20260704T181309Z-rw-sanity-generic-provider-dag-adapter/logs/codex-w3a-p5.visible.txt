@@ -1,0 +1,38 @@
+        nd .provider_id == \"codex\"
+        and .attempt == 1 and .status
+         == \"PASS\" and .verdict ==
+        \"PASS\" and (.changed_files
+        | length == 1) and (.artifact
+        s | length == 1) and (.errors
+         | length == 0) and (.policy_
+        exceptions | length == 0)' /h
+        ome/graham/workspace/experime
+        nts/tau/experiments/goal-lock
+        ed-subagents/proofs/real-worl
+        d-sanity/20260704T180641Z-tau
+        -advanced-live-hard-failure-h
+        unt/advanced-generic-provider
+        -dag-adapter/provider-runs/20
+        260704T181309Z-rw-sanity-gene
+        ric-provider-dag-adapter/rece
+        ipts/attempt-01-coder.json",
+    19 +    "jq -e . /home/graham/wor
+        kspace/experiments/tau/experi
+        ments/goal-locked-subagents/p
+        roofs/real-world-sanity/20260
+        704T180641Z-tau-advanced-live
+        -hard-failure-hunt/advanced-g
+        eneric-provider-dag-adapter/p
+        rovider-runs/20260704T181309Z
+        -rw-sanity-generic-provider-d
+        ag-adapter/receipts/attempt-0
+        1-coder.json >/dev/null && pr
+        intf 'receipt_json_valid\\n'"
+    20    ],
+
+• Working (1m 26s • esc to interrupt)
+
+
+› Explain this codebase
+
+  gpt-5.5 medium · ~/workspace/exper…

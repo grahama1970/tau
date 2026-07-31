@@ -1,0 +1,10 @@
+{
+  "approved": true,
+  "ok": true,
+  "packet_summary": {
+    "target_id": "route-memory:other-dag:tau_route_memory"
+  },
+  "requested_action": "memory_upsert",
+  "schema": "tau.approval_gate_receipt.v1",
+  "status": "PASS"
+}

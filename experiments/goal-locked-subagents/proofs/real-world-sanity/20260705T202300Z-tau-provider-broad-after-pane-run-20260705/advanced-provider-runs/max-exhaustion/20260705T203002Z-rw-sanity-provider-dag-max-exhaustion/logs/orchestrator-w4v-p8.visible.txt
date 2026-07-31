@@ -1,0 +1,37 @@
+ag-spec.json\nplan
+ner_receipt: /home
+/graham/workspace/
+experiments/tau/ex
+periments/goal-loc
+ked-subagents/proo
+fs/real-world-sani
+ty/20260705T202300
+Z-tau-provider-bro
+ad-after-pane-run-
+20260705/advanced-
+provider-runs/max-
+exhaustion/2026070
+5T203002Z-rw-sanit
+y-provider-dag-max
+-exhaustion/planne
+r-receipt.json\nfi
+nal_receipt: /home
+/graham/workspace/
+experiments/tau/ex
+periments/goal-loc
+ked-subagents/proo
+fs/real-world-sani
+ty/20260705T202300
+Z-tau-provider-bro
+ad-after-pane-run-
+20260705/advanced-
+provider-runs/max-
+exhaustion/2026070
+5T203002Z-rw-sanit
+y-provider-dag-max
+-exhaustion/run-re
+ceipt.json\ncanoni
+cal truth: Tau JSO
+N receipts; this p
+ane is human-visib
+le telemetry.\n

@@ -1,0 +1,33 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T205723Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:eb6c08b4a8e17215be231fe1c6ecb2acfffa4510c8a7488d9d64ca64c95fd756",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w54",
+  "pane_id": "w54:p6",
+  "terminal_id": "term_655e367ad58c758e",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/max-exhaustion/20260705T205723Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T205723Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "62d0de433e7cb887113df3e47ec892a42fa3f2e586acf577b7c0584165616f07",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/max-exhaustion/20260705T205723Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work-order at attempt-02-reviewer.json",
+    "read target_file at scratch-worktree/message.txt",
+    "read coder receipt at receipts/attempt-02-coder.json",
+    "read visible log at provider-readiness/.../logs/opencode.visible.txt",
+    "sha256sum visible log",
+    "write reviewer receipt at receipts/attempt-02-reviewer.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/max-exhaustion/20260705T205723Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/max-exhaustion/20260705T205723Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "force_revise=true triggered REVISE. target_file message.txt is syntactically complete (TODO removed, states completion by deterministic visible coder attempt 2) and coder receipt is schema-valid (tau.provider_dag_node_receipt.v1 with all required fields). However, message.txt content is minimal — it states completion without describing what was implemented or providing any substantive output. The coder receipt commands_run is vague (\"python deterministic visible coder\" without script path or args) and handoff_summary is generic. Next coder attempt should: (1) write a more descriptive message.txt that conveys what the implementation produced, (2) populate commands_run with the actual script path and arguments executed, (3) provide a handoff_summary that references specific changes made.",
+  "errors": [],
+  "policy_exceptions": []
+}

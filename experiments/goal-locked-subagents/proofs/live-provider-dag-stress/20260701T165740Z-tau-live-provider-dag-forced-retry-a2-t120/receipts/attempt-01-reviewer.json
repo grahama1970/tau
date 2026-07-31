@@ -1,0 +1,24 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "cat work-orders/attempt-01-reviewer.json",
+    "cat scratch-worktree/message.txt",
+    "cat receipts/attempt-01-coder.json",
+    "cat work-orders/attempt-01-coder.json",
+    "ls -la scratch-worktree/"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "force_revise=true: target_file has TODO replaced (correct structure), coder receipt is schema-valid with no errors, but message.txt content is a generic boilerplate placeholder. Needs concrete provider-DAG implementation detail: describe which provider was invoked, what the DAG step accomplished, and the retry outcome.",
+  "errors": [],
+  "policy_exceptions": []
+}

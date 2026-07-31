@@ -1,0 +1,37 @@
+/proofs/real-world-san
+ity/20260703T200015Z-t
+au-advanced-after-time
+out-floor/advanced-pro
+vider-runs/max-exhaust
+ion/20260703T201015Z-r
+w-sanity-provider-dag-
+max-exhaustion/dag-spe
+c.json\nplanner_receip
+t: /home/graham/worksp
+ace/experiments/tau/ex
+periments/goal-locked-
+subagents/proofs/real-
+world-sanity/20260703T
+200015Z-tau-advanced-a
+fter-timeout-floor/adv
+anced-provider-runs/ma
+x-exhaustion/20260703T
+201015Z-rw-sanity-prov
+ider-dag-max-exhaustio
+n/planner-receipt.json
+\nfinal_receipt: /home
+/graham/workspace/expe
+riments/tau/experiment
+s/goal-locked-subagent
+s/proofs/real-world-sa
+nity/20260703T200015Z-
+tau-advanced-after-tim
+eout-floor/advanced-pr
+ovider-runs/max-exhaus
+tion/20260703T201015Z-
+rw-sanity-provider-dag
+-max-exhaustion/run-re
+ceipt.json\ncanonical
+truth: Tau JSON receip
+ts; this pane is human
+-visible telemetry.\n

@@ -1,0 +1,40 @@
+{
+  "schema": "dream.script.prompt_payload.v1",
+  "metadata": {
+    "phase": "06",
+    "gate_state": "MISSING_EVIDENCE"
+  },
+  "source_context": {
+    "core_idea": "Embry and Kai both faked a sick day at their summer jobs to go surfing on the Big Island on a Wednesday in June of 2024 — Kona Coast, Kahaluʻu Bay, summer swell patterns, lava rock reefs, local surf etiquette.",
+    "story": "Existing Phase 02 story contract placeholder for route smoke.",
+    "location": {
+      "place": "Kahaluʻu Bay",
+      "month": "June",
+      "year": 2024
+    },
+    "environment": {
+      "weather": "hot, humid, bright glare"
+    },
+    "interaction_matrix": [
+      {
+        "source_seed_id": "seed-0",
+        "entity": "Embry"
+      }
+    ],
+    "linked_assets": [
+      {
+        "id": "asset-0",
+        "title": "Embry surfing on the Big Island"
+      }
+    ]
+  },
+  "response_contract": {
+    "type": "object"
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": "Create Phase 06 script JSON."
+    }
+  ]
+}

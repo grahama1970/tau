@@ -1,0 +1,5 @@
+{
+  "goal_hash": "sha256:g",
+  "schema": "tau.memory_intent_gate_receipt.v1",
+  "status": "PASS"
+}

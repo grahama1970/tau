@@ -1,0 +1,37 @@
+eipt: /home/graham
+/workspace/experim
+ents/tau/experimen
+ts/goal-locked-sub
+agents/proofs/real
+-world-sanity/2026
+0705T214141Z-tau-b
+roader-hardening-r
+egression-20260705
+/advanced-generic-
+provider-dag-adapt
+er/provider-runs/2
+0260705T214802Z-rw
+-sanity-generic-pr
+ovider-dag-adapter
+/planner-receipt.j
+son\nfinal_receipt
+: /home/graham/wor
+kspace/experiments
+/tau/experiments/g
+oal-locked-subagen
+ts/proofs/real-wor
+ld-sanity/20260705
+T214141Z-tau-broad
+er-hardening-regre
+ssion-20260705/adv
+anced-generic-prov
+ider-dag-adapter/p
+rovider-runs/20260
+705T214802Z-rw-san
+ity-generic-provid
+er-dag-adapter/run
+-receipt.json\ncan
+onical truth: Tau
+JSON receipts; thi
+s pane is human-vi
+sible telemetry.\n

@@ -1,0 +1,37 @@
+-spec.json\nplanne
+r_receipt: /home/g
+raham/workspace/ex
+periments/tau/expe
+riments/goal-locke
+d-subagents/proofs
+/real-world-sanity
+/20260705T214141Z-
+tau-broader-harden
+ing-regression-202
+60705/advanced-pro
+vider-runs/max-exh
+austion/20260705T2
+15231Z-rw-sanity-p
+rovider-dag-max-ex
+haustion/planner-r
+eceipt.json\nfinal
+_receipt: /home/gr
+aham/workspace/exp
+eriments/tau/exper
+iments/goal-locked
+-subagents/proofs/
+real-world-sanity/
+20260705T214141Z-t
+au-broader-hardeni
+ng-regression-2026
+0705/advanced-prov
+ider-runs/max-exha
+ustion/20260705T21
+5231Z-rw-sanity-pr
+ovider-dag-max-exh
+austion/run-receip
+t.json\ncanonical
+truth: Tau JSON re
+ceipts; this pane
+is human-visible t
+elemetry.\n

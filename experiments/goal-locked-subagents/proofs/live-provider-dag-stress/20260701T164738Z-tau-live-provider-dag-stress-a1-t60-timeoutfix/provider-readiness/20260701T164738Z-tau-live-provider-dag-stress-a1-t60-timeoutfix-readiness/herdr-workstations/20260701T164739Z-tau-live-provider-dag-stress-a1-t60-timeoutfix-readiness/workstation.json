@@ -1,0 +1,156 @@
+{
+  "agents": {
+    "20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness-codex": {
+      "command": "'codex' '--cd' '/home/graham/workspace/experiments/tau'",
+      "last_start_result": {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness-codex",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "wS",
+          "--tab",
+          "wS:t2",
+          "--env",
+          "TAU_ROLE=codex",
+          "--env",
+          "TAU_AGENT_NAME=20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness-codex",
+          "--env",
+          "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix/provider-readiness/20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness/herdr-workstations/20260701T164739Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness",
+          "--env",
+          "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix/provider-readiness/20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness/work-orders/codex.json",
+          "--env",
+          "TAU_PROVIDER_READINESS_RUN_ID=20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness",
+          "--env",
+          "TAU_PROVIDER_READINESS_PROVIDER=codex",
+          "--no-focus",
+          "--",
+          "codex",
+          "--cd",
+          "/home/graham/workspace/experiments/tau"
+        ],
+        "parsed": {
+          "id": "cli:agent:start",
+          "result": {
+            "agent": {
+              "agent_status": "unknown",
+              "cwd": "/home/graham/workspace/experiments/tau",
+              "focused": false,
+              "foreground_cwd": "/home/graham/workspace/experiments/tau",
+              "name": "20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness-codex",
+              "pane_id": "wS:p5",
+              "revision": 0,
+              "tab_id": "wS:t2",
+              "terminal_id": "term_6558f731c648088",
+              "workspace_id": "wS"
+            },
+            "argv": [
+              "codex",
+              "--cd",
+              "/home/graham/workspace/experiments/tau"
+            ],
+            "type": "agent_started"
+          }
+        },
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness-codex\",\"pane_id\":\"wS:p5\",\"revision\":0,\"tab_id\":\"wS:t2\",\"terminal_id\":\"term_6558f731c648088\",\"workspace_id\":\"wS\"},\"argv\":[\"codex\",\"--cd\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+      },
+      "role": "codex",
+      "started_at": "20260701T164740Z",
+      "tab": "providers",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix/provider-readiness/20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness/work-orders/codex.json"
+    },
+    "20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness-opencode": {
+      "command": "'opencode' '/home/graham/workspace/experiments/tau'",
+      "last_start_result": {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness-opencode",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "wS",
+          "--tab",
+          "wS:t2",
+          "--env",
+          "TAU_ROLE=opencode",
+          "--env",
+          "TAU_AGENT_NAME=20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness-opencode",
+          "--env",
+          "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix/provider-readiness/20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness/herdr-workstations/20260701T164739Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness",
+          "--env",
+          "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix/provider-readiness/20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness/work-orders/opencode.json",
+          "--env",
+          "TAU_PROVIDER_READINESS_RUN_ID=20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness",
+          "--env",
+          "TAU_PROVIDER_READINESS_PROVIDER=opencode",
+          "--no-focus",
+          "--split",
+          "right",
+          "--",
+          "opencode",
+          "/home/graham/workspace/experiments/tau"
+        ],
+        "parsed": {
+          "id": "cli:agent:start",
+          "result": {
+            "agent": {
+              "agent_status": "unknown",
+              "cwd": "/home/graham/workspace/experiments/tau",
+              "focused": false,
+              "foreground_cwd": "/home/graham/workspace/experiments/tau",
+              "name": "20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness-opencode",
+              "pane_id": "wS:p6",
+              "revision": 0,
+              "tab_id": "wS:t2",
+              "terminal_id": "term_6558f732886f489",
+              "workspace_id": "wS"
+            },
+            "argv": [
+              "opencode",
+              "/home/graham/workspace/experiments/tau"
+            ],
+            "type": "agent_started"
+          }
+        },
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness-opencode\",\"pane_id\":\"wS:p6\",\"revision\":0,\"tab_id\":\"wS:t2\",\"terminal_id\":\"term_6558f732886f489\",\"workspace_id\":\"wS\"},\"argv\":[\"opencode\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+      },
+      "role": "opencode",
+      "started_at": "20260701T164741Z",
+      "tab": "providers",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix/provider-readiness/20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness/work-orders/opencode.json"
+    }
+  },
+  "created_at": "20260701T164739Z",
+  "cwd": "/home/graham/workspace/experiments/tau",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix/provider-readiness/20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness/herdr-workstations/20260701T164739Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness/events.jsonl",
+  "kind": "herdr-workstation",
+  "label": "tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness",
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix/provider-readiness/20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness/herdr-workstations/20260701T164739Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness",
+  "run_id": "20260701T164739Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness",
+  "schema_version": 1,
+  "session": "default",
+  "tabs": {
+    "logs": "wS:t3",
+    "providers": "wS:t2",
+    "receipts": "wS:t4"
+  },
+  "updated_at": "20260701T164741Z",
+  "workspace_id": "wS",
+  "worktree": {
+    "base": null,
+    "branch": null,
+    "enabled": false,
+    "path": null,
+    "raw": null
+  }
+}

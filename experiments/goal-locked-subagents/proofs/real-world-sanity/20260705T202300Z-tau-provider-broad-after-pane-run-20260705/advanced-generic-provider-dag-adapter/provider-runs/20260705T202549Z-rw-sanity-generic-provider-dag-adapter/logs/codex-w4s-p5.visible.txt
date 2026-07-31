@@ -1,0 +1,38 @@
+  adapter/provider-
+  runs/20260705T202549Z-rw-sanity-
+  generic-provider-dag-adapter/scratch-
+  worktree/message.txt and wrote
+  experiments/goal-locked-subagents/
+  proofs/real-world-
+  sanity/20260705T202300Z-tau-provider-
+  broad-after-pane-run-20260705/
+  advanced-generic-provider-dag-
+  adapter/provider-
+  runs/20260705T202549Z-rw-sanity-
+  generic-provider-dag-adapter/
+  receipts/attempt-01-coder.json.
+
+  Evidence: jq receipt validation
+  returned true; target file check
+  returned target_file_updated; visible
+  log hash check returned
+  visible_log_sha256_matches:3b2a12f32c
+  e9de7f0c574272627d24279ad1d4ae646f25f
+  97a6d988f0186ad32.
+
+  Verification scope: mocked: no; live:
+  no; exercised deterministic file
+  update, JSON receipt parse/fields,
+  and visible-log hash match. No GitHub
+  or Tailscale used. No Tau source
+  files modified.
+
+  Next/stop condition: Nothing remains
+  for this work order.
+
+─ Worked for 1m 35s ───────────────────
+
+
+› Improve documentation in @filename
+
+  gpt-5.5 medium · ~/workspace/experim…

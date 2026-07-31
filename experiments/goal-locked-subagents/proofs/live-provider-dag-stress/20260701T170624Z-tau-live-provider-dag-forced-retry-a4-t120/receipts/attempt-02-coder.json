@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/work-orders/attempt-02-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/work-orders/attempt-02-coder.json",
+    "pwd",
+    "nl -ba message.txt",
+    "ls -la /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/receipts",
+    "jq -e '.schema == \"tau.provider_dag_node_receipt.v1\" and .node_id == \"coder\" and .provider_id == \"codex\" and .attempt == 2 and .status == \"PASS\" and .verdict == \"PASS\" and (.changed_files | length == 1) and (.artifacts | length == 1) and (.errors | length == 0) and (.policy_exceptions | length == 0)' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/receipts/attempt-02-coder.json",
+    "grep -n '^Provider-DAG coder node completed: read the work order with jq, inspected message.txt with nl, and replaced the generic message with forced-retry implementation detail\\.$' message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the generic completion line in message.txt with a provider-DAG coder-node implementation detail message.",
+  "errors": [],
+  "policy_exceptions": []
+}

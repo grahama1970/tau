@@ -1,0 +1,53 @@
+{
+  "check_id": "advanced.provider_dag_repair_loop",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "provider-dag-poc",
+    "--label",
+    "rw-sanity-provider-dag-repair",
+    "--run-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/repair-loop",
+    "--max-attempts",
+    "2",
+    "--receipt-timeout-seconds",
+    "120",
+    "--force-reviewer-revise-first",
+    "--herdr-bin",
+    "herdr",
+    "--no-install-integrations"
+  ],
+  "completed_at": "2026-07-03T12:45:22Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "advanced",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "provider_live": false,
+  "purpose": "Live visible provider DAG handles reviewer REVISE, retries coder, then accepts reviewer PASS.",
+  "receipt_summary": {
+    "attempt_count": 2,
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "schema": "tau.dag_run_receipt.v1",
+    "status": "PASS",
+    "verdict": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-03T12:42:23Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/logs/advanced.provider_dag_repair_loop.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/logs/advanced.provider_dag_repair_loop.stdout.txt",
+  "timeout_seconds": 420
+}

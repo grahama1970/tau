@@ -1,0 +1,22 @@
+  course-correction-regression-20260705/advanced-provider-
+  runs/one-pass/20260705T230019Z-rw-sanity-provider-dag-
+  one-pass/scratch-worktree/message.txt:1
+
+  Receipt written: experiments/goal-locked-subagents/
+  proofs/real-world-sanity/20260705T225943Z-tau-advanced-
+  course-correction-regression-20260705/advanced-provider-
+  runs/one-pass/20260705T230019Z-rw-sanity-provider-dag-
+  one-pass/receipts/attempt-01-coder.json:1
+
+  Evidence
+  message.txt now contains exactly:
+  Completed implementation message from the coder provider
+  DAG node.
+
+  Receipt validation command returned true for schema/
+  status/verdict/work_order_sha256.
+
+
+› Summarize recent commits
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

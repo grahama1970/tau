@@ -1,0 +1,11 @@
+{
+  "case_id": "memory-evidence-clarify-case",
+  "case_sha256": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+  "goal_hash": "sha256:rw-sanity-project-dag-memory-evidence-clarify",
+  "schema": "tau.evidence_case.v1",
+  "support_artifacts": [],
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-memory-evidence-clarify"
+  }
+}

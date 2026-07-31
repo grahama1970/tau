@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T204603Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:b28324d99c0333e8899a37736a4b18f3ea1df55311e3e5e75bbe62337fdc5f93",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w4Z",
+  "pane_id": "w4Z:p6",
+  "terminal_id": "term_655e33f2731ef55a",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T204602Z-tau-provider-failure-classification-fix2-20260705/advanced-provider-runs/max-exhaustion/20260705T204603Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T204603Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "097e405abeda52d0accc263a28a26b2713486524ba9338c0e64a27a5c14fd99b",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T204602Z-tau-provider-failure-classification-fix2-20260705/advanced-provider-runs/max-exhaustion/20260705T204603Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["sha256sum visible_log_path", "read target_file message.txt", "read coder receipt attempt-02-coder.json"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T204602Z-tau-provider-failure-classification-fix2-20260705/advanced-provider-runs/max-exhaustion/20260705T204603Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T204602Z-tau-provider-failure-classification-fix2-20260705/advanced-provider-runs/max-exhaustion/20260705T204603Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "REVISE: target_file is clean (TODO removed, message reads 'completed implementation by deterministic visible coder attempt 2') and coder receipt is schema-valid. However, force_revise=true triggered REVISE. Next coder: expand target_file to include implementation detail (what the implementation does, not just that it completed). Add state context such as outcome of attempt, any remaining edges, and explicit PASS/REVISE reasoning so the DAG can propagate a richer signal to downstream nodes. Note: this is attempt 2 of 2 (max_exhaustion reached on this provider DAG leg).",
+  "errors": [],
+  "policy_exceptions": []
+}

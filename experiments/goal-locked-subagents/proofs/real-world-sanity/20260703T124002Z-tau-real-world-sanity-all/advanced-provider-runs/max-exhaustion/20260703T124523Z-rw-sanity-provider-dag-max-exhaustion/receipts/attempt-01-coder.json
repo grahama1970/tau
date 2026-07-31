@@ -1,0 +1,27 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/max-exhaustion/20260703T124523Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/max-exhaustion/20260703T124523Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "pwd && sed -n '1,220p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/max-exhaustion/20260703T124523Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-coder.json",
+    "sed -n '1,120p' message.txt",
+    "apply_patch update message.txt",
+    "ls -ld /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/max-exhaustion/20260703T124523Z-rw-sanity-provider-dag-max-exhaustion/receipts",
+    "apply_patch add receipts/attempt-01-coder.json",
+    "python3 -m json.tool /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/max-exhaustion/20260703T124523Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json >/dev/null && sed -n '1,20p' message.txt && python3 - <<'PY'\nimport json\np='/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/max-exhaustion/20260703T124523Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json'\nwith open(p) as f:\n    data=json.load(f)\nprint(data['schema'], data['status'], data['verdict'], len(data['changed_files']), len(data['errors']), len(data['policy_exceptions']))\nPY",
+    "apply_patch update receipts/attempt-01-coder.json command log"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/max-exhaustion/20260703T124523Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in the target file with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

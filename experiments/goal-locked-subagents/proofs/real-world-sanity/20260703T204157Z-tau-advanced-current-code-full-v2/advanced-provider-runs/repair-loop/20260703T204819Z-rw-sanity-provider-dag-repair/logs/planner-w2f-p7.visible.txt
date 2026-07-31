@@ -1,0 +1,25 @@
+Tau planner subagent visible monitor\nrun_id: 20
+260703T204819Z-rw-sanity-provider-dag-repair\nru
+n_dir: /home/graham/workspace/experiments/tau/ex
+periments/goal-locked-subagents/proofs/real-worl
+d-sanity/20260703T204157Z-tau-advanced-current-c
+ode-full-v2/advanced-provider-runs/repair-loop/2
+0260703T204819Z-rw-sanity-provider-dag-repair\nd
+ag_spec: /home/graham/workspace/experiments/tau/
+experiments/goal-locked-subagents/proofs/real-wo
+rld-sanity/20260703T204157Z-tau-advanced-current
+-code-full-v2/advanced-provider-runs/repair-loop
+/20260703T204819Z-rw-sanity-provider-dag-repair/
+dag-spec.json\nplanner_receipt: /home/graham/wor
+kspace/experiments/tau/experiments/goal-locked-s
+ubagents/proofs/real-world-sanity/20260703T20415
+7Z-tau-advanced-current-code-full-v2/advanced-pr
+ovider-runs/repair-loop/20260703T204819Z-rw-sani
+ty-provider-dag-repair/planner-receipt.json\nfin
+al_receipt: /home/graham/workspace/experiments/t
+au/experiments/goal-locked-subagents/proofs/real
+-world-sanity/20260703T204157Z-tau-advanced-curr
+ent-code-full-v2/advanced-provider-runs/repair-l
+oop/20260703T204819Z-rw-sanity-provider-dag-repa
+ir/run-receipt.json\ncanonical truth: Tau JSON r
+eceipts; this pane is human-visible telemetry.\n

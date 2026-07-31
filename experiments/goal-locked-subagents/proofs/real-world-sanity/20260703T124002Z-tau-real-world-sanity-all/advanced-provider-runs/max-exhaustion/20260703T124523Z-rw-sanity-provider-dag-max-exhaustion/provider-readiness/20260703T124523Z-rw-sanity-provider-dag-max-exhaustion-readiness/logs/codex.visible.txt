@@ -1,0 +1,24 @@
+
+╭───────────────────────────────
+──────────╮
+│ >_ OpenAI Codex (v0.142.5)
+         │
+│
+         │
+│ model:       loading   /model
+to change │
+│ directory:   ~/…/tau
+         │
+│ permissions: YOLO mode
+         │
+╰───────────────────────────────
+──────────╯
+
+• You have 3 usage limit resets
+available. Run /usage to use
+one.
+
+
+› Explain this codebase
+
+  gpt-5.5 default · ~/workspace…

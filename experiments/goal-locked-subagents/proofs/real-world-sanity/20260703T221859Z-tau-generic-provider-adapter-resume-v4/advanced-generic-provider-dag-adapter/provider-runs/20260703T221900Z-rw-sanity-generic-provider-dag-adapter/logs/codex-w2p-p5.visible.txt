@@ -1,0 +1,38 @@
+
+  Validation commands passed with exit
+  code 0:
+  test "$(cat message.txt)" = "..."
+  python -m json.tool .../receipts/
+  attempt-01-coder.json
+
+  Verification scope: mocked: no;
+  live: no. This exercised
+  deterministic file content and JSON
+  receipt validity.
+
+  Next/stop condition: No remaining
+  work.
+
+─ Worked for 1m 08s ──────────────────
+
+
+  Approaching rate limits
+  Switch to gpt-5.4-mini for lower c
+
+› 1. Switch to gpt-5.4-… Small,
+                         fast, and
+                         cost-
+                         efficient
+                         model for
+                         simpler
+                         coding
+                         tasks.
+  2. Keep current model
+  3. Keep current model… Hide future
+                         rate limit
+                         reminders
+                         about
+                         switching
+                         models.
+
+  Press enter to confirm or esc to go

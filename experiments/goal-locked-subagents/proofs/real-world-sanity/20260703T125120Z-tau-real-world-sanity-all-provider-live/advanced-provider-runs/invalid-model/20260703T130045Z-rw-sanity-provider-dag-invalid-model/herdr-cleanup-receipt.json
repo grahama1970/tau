@@ -1,0 +1,83 @@
+{
+  "applied_actions": [],
+  "candidate_count": 1,
+  "candidates": [
+    {
+      "action": "workspace_close",
+      "pane_ids": [
+        "w1F:p5",
+        "w1F:p6",
+        "w1F:p8",
+        "w1F:p7",
+        "w1F:p9"
+      ],
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "workspace_id": "w1F"
+    }
+  ],
+  "command_results": [],
+  "current_workspace": null,
+  "include_current_workspace": false,
+  "live": false,
+  "mocked": false,
+  "mode": "dry-run",
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "global regex cleanup of unrelated Herdr resources",
+      "Git worktree deletion",
+      "session deletion for runs that did not record a session id"
+    ],
+    "proves": [
+      "Tau can identify Herdr workspace/session resources recorded by one run",
+      "Tau cleanup defaults to audit/dry-run before mutation",
+      "Tau refuses to close the current Herdr workspace unless explicitly allowed"
+    ]
+  },
+  "resource_count": 1,
+  "resources": [
+    {
+      "kind": "workspace",
+      "pane_ids": [
+        "w1F:p5",
+        "w1F:p6",
+        "w1F:p8",
+        "w1F:p7",
+        "w1F:p9"
+      ],
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "sources": [
+        "provider_sessions",
+        "visible_subagents"
+      ],
+      "terminal_ids": [
+        "term_655b4839a2ffb14b",
+        "term_655b483d435cf14c",
+        "term_655b48632a1e714e",
+        "term_655b48605c81d14d",
+        "term_655b48894063b14f"
+      ],
+      "workspace_id": "w1F"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/invalid-model/20260703T130045Z-rw-sanity-provider-dag-invalid-model",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/invalid-model/20260703T130045Z-rw-sanity-provider-dag-invalid-model/runtime-manifest.json",
+  "schema": "tau.herdr_cleanup_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-03T13:02:59Z"
+}

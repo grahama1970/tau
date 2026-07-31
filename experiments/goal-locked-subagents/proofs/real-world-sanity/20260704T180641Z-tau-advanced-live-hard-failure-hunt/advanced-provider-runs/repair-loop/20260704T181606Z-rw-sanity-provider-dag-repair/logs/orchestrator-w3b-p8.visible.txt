@@ -1,0 +1,37 @@
+son\nplanner_rece
+ipt: /home/graham
+/workspace/experi
+ments/tau/experim
+ents/goal-locked-
+subagents/proofs/
+real-world-sanity
+/20260704T180641Z
+-tau-advanced-liv
+e-hard-failure-hu
+nt/advanced-provi
+der-runs/repair-l
+oop/20260704T1816
+06Z-rw-sanity-pro
+vider-dag-repair/
+planner-receipt.j
+son\nfinal_receip
+t: /home/graham/w
+orkspace/experime
+nts/tau/experimen
+ts/goal-locked-su
+bagents/proofs/re
+al-world-sanity/2
+0260704T180641Z-t
+au-advanced-live-
+hard-failure-hunt
+/advanced-provide
+r-runs/repair-loo
+p/20260704T181606
+Z-rw-sanity-provi
+der-dag-repair/ru
+n-receipt.json\nc
+anonical truth: T
+au JSON receipts;
+ this pane is hum
+an-visible teleme
+try.\n

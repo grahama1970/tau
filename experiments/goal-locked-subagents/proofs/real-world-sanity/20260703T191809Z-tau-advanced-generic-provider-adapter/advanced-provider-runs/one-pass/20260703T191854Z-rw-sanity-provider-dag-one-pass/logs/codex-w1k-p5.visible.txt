@@ -1,0 +1,38 @@
+        pass/receipts/attempt-01-coder.json"
+    17 +    "ls -l /home/graham/workspace/experi
+        ments/tau/experiments/goal-locked-subage
+        nts/proofs/real-world-sanity/20260703T19
+        1809Z-tau-advanced-generic-provider-adap
+        ter/advanced-provider-runs/one-pass/2026
+        0703T191854Z-rw-sanity-provider-dag-one-
+        pass/receipts/attempt-01-coder.json",
+    18 +    "python3 -m json.tool /home/graham/w
+        orkspace/experiments/tau/experiments/goa
+        l-locked-subagents/proofs/real-world-san
+        ity/20260703T191809Z-tau-advanced-generi
+        c-provider-adapter/advanced-provider-run
+        s/one-pass/20260703T191854Z-rw-sanity-pr
+        ovider-dag-one-pass/receipts/attempt-01-
+        coder.json >/tmp/tau-attempt-01-coder-js
+        oncheck.txt && wc -l /tmp/tau-attempt-01
+        -coder-jsoncheck.txt",
+    19 +    "sed -n '1,120p' /home/graham/worksp
+        ace/experiments/tau/experiments/goal-loc
+        ked-subagents/proofs/real-world-sanity/2
+        0260703T191809Z-tau-advanced-generic-pro
+        vider-adapter/advanced-provider-runs/one
+        -pass/20260703T191854Z-rw-sanity-provide
+        r-dag-one-pass/receipts/attempt-01-coder
+        .json",
+    20 +    "wc -l message.txt && sed -n '1,120p
+        ' message.txt"
+    21    ],
+
+────────────────────────────────────────────────
+
+• Working (1m 19s • esc to interrupt)
+
+
+› Use /skills to list available skills
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

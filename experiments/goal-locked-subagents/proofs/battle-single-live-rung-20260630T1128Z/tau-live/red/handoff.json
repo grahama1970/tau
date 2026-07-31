@@ -1,0 +1,77 @@
+{
+  "context": {
+    "artifacts": [
+      "/tmp/battle-v1-tau-context-002/context/tau-battle-context-bundle.json",
+      "/tmp/battle-v1-tau-context-002/battle-plan.json",
+      "/tmp/battle-v1-tau-context-002/context/code-context-receipt.json",
+      "/tmp/battle-v1-tau-context-002/context/fast-scan-receipt.json",
+      "/tmp/battle-v1-tau-context-002/context/memory-recall-receipt.json",
+      "/tmp/battle-v1-tau-context-002/context/research-broker-receipt.json",
+      "/tmp/battle-v1-tau-context-002/context/warm-pond-receipt.json"
+    ],
+    "battle": {
+      "battle_id": "battle-003",
+      "combination_id": null,
+      "persona": "brandon-bailey",
+      "run_id": "battle-single-live-rung-20260630T1128Z",
+      "scenario_id": "seeded-sqli-four-party",
+      "team": "red",
+      "worker_id": null
+    },
+    "battle_context": {
+      "artifact_count": 7,
+      "bundle_path": "/tmp/battle-v1-tau-context-002/context/tau-battle-context-bundle.json",
+      "research_broker_passed_lane_count": 5,
+      "research_broker_status": "PASS",
+      "run_receipt_status": "PENDING",
+      "tau_live_manifest_status": "PENDING",
+      "team": "red",
+      "team_summary": {
+        "combination_id": "exploit-sqli-admin-or__defense-parameterized-like",
+        "persona": "brandon-bailey",
+        "research_dispatch": {
+          "dispatch_reason": "research-weighted same-family countermeasure",
+          "first_research_lane": "github_blue",
+          "research_boost": 0.2,
+          "research_sources": [
+            "brave",
+            "dogpile_blue",
+            "dogpile_red",
+            "github_blue",
+            "github_red"
+          ]
+        }
+      },
+      "warm_pond_research_weighted_candidate_count": 6,
+      "warm_pond_status": "PASS"
+    },
+    "summary": "Battle red persona handoff for battle-003. Battle artifact context is attached with 7 artifact reference(s).",
+    "worker_context": null
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#22"
+  },
+  "goal": {
+    "goal_hash": "sha256:179270b7f89c13434da8dc221cbf1c2ba9799ce71b50385fce6595d2c4a84159",
+    "goal_id": "goal-battle-battle-003-tau-live",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "battle-red",
+    "reason": "Run one bounded Battle persona action through Tau/Scillm."
+  },
+  "previous_subagent": "battle-orchestrator",
+  "rationale": "Battle needs Red and Blue Tau receipts before scorekeeper proof.",
+  "required_evidence": [
+    "red/tau-subagent-receipt.json"
+  ],
+  "result": {
+    "evidence": [],
+    "status": "READY",
+    "summary": "Battle requested one bounded Tau/Scillm action-selection turn."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Tau writes a tau.subagent_receipt.v1 or a structured BLOCKED receipt."
+}

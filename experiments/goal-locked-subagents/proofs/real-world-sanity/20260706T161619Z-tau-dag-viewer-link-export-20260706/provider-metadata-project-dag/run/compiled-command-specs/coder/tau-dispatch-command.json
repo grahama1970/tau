@@ -1,0 +1,40 @@
+{
+  "command": [
+    "python3",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/provider-metadata-project-dag/project_dag_worker.py",
+    "--role",
+    "coder",
+    "--scenario",
+    "provider-metadata"
+  ],
+  "tau_dag_node": {
+    "agent": "coder",
+    "dag_id": "rw-sanity-project-dag-provider-metadata",
+    "executor": "local",
+    "goal": {
+      "goal_hash": "sha256:rw-sanity-project-dag-provider-metadata",
+      "goal_id": "rw-sanity-project-dag-provider-metadata",
+      "goal_version": 1
+    },
+    "model_policy": {
+      "auth": "codex-oauth",
+      "model": "gpt-image-2",
+      "provider": "scillm"
+    },
+    "node_id": "coder",
+    "prompt_contract": {
+      "schema": "tau.prompt_contract.v1",
+      "system_prompt": "Stay inside the immutable provider metadata sanity goal.",
+      "user_template": "Use provider route metadata before claiming PASS."
+    },
+    "required_evidence": [
+      "creator_artifact",
+      "provider_route_receipt"
+    ],
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-provider-metadata"
+    }
+  },
+  "timeout_s": 20
+}

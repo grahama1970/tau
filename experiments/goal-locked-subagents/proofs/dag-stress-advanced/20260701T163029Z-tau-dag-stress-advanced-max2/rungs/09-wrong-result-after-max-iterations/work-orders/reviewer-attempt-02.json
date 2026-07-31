@@ -1,0 +1,10 @@
+{
+  "attempt": 2,
+  "depends_on": [
+    "creator"
+  ],
+  "node_id": "reviewer",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-stress-advanced/20260701T163029Z-tau-dag-stress-advanced-max2/rungs/09-wrong-result-after-max-iterations/receipts/reviewer-attempt-02.json",
+  "role": "reviewer",
+  "schema": "tau.dag_stress_work_order.v1"
+}

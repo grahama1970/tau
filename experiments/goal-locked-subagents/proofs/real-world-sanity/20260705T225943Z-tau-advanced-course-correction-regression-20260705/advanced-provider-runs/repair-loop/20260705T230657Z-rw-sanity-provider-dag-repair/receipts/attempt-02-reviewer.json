@@ -1,0 +1,32 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T230657Z-rw-sanity-provider-dag-repair",
+  "goal_hash": "sha256:20a601a6b70a37d62b87484be38b3d5c2ceb035e7f51765201c289396f8fb2fa",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w6D",
+  "pane_id": "w6D:p6",
+  "terminal_id": "term_655e5370b700471a",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225943Z-tau-advanced-course-correction-regression-20260705/advanced-provider-runs/repair-loop/20260705T230657Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T230657Z-rw-sanity-provider-dag-repair-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "57e8d07bca3e583b9d3d27b05d71391cc502bb9da70d264c753f1fb24bf60a8f",
+  "work_order_sha256": "44995aee26fe98c12bb19da952a9dd0eb4e133eccde3f3e8642c9ceb2163398c",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225943Z-tau-advanced-course-correction-regression-20260705/advanced-provider-runs/repair-loop/20260705T230657Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "Read work order attempt-02-reviewer.json",
+    "Read target_file (message.txt) — no TODO line present",
+    "Read coder receipt attempt-02-coder.json — schema-valid JSON",
+    "Read attempt-01 artifacts for context (coder receipt, reviewer receipt, coder work order)",
+    "sha256sum of visible log"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225943Z-tau-advanced-course-correction-regression-20260705/advanced-provider-runs/repair-loop/20260705T230657Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225943Z-tau-advanced-course-correction-regression-20260705/advanced-provider-runs/repair-loop/20260705T230657Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "PASS. force_revise=false. target_file (message.txt) contains 'completed implementation by deterministic visible coder attempt 2' with no TODO line remaining. coder receipt is schema-valid tau.provider_dag_node_receipt.v1 with all required fields, PASS status/verdict, and empty errors list. Reviewer feedback from attempt-01 asking for more meaningful content was not addressed (message remains a one-liner), but work order task for attempt-02 only requires TODO line removal and schema-valid receipt — both satisfied.",
+  "errors": [],
+  "policy_exceptions": []
+}

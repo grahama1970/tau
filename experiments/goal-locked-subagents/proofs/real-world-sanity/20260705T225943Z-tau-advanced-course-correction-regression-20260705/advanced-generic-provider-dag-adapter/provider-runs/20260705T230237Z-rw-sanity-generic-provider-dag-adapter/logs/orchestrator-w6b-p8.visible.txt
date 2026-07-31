@@ -1,0 +1,21 @@
+05T225943Z-tau-advanced-cour
+se-correction-regression-202
+60705/advanced-generic-provi
+der-dag-adapter/provider-run
+s/20260705T230237Z-rw-sanity
+-generic-provider-dag-adapte
+r/planner-receipt.json\nfina
+l_receipt: /home/graham/work
+space/experiments/tau/experi
+ments/goal-locked-subagents/
+proofs/real-world-sanity/202
+60705T225943Z-tau-advanced-c
+ourse-correction-regression-
+20260705/advanced-generic-pr
+ovider-dag-adapter/provider-
+runs/20260705T230237Z-rw-san
+ity-generic-provider-dag-ada
+pter/run-receipt.json\ncanon
+ical truth: Tau JSON receipt
+s; this pane is human-visibl
+e telemetry.\n

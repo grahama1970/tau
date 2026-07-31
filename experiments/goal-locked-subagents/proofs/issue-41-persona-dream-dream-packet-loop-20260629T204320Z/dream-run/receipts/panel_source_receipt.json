@@ -1,0 +1,17 @@
+{
+  "blockers": [],
+  "final_panel_eligible": true,
+  "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/artifacts/panel_01_scillm_panel.png",
+  "nano_banana_fallback_used": false,
+  "panel_id": "panel_01",
+  "photoreal_status": "PASS_PHOTOREAL_CINEMATIC",
+  "producer": {
+    "kind": "subagent",
+    "name": "persona-dream-panel-repair-gate",
+    "receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/panel_repair_gate_receipt.json"
+  },
+  "run_id": "dream-run",
+  "schema": "persona_dream.panel_source_receipt.v1",
+  "sha256": "sha256:2c89628513c4c3c34d2b862673e56c656ce1a40409398fbb13fba6718f53c914",
+  "status": "PASS_PANEL_SOURCE"
+}

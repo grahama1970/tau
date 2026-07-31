@@ -1,0 +1,24 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T180641Z-tau-advanced-live-hard-failure-hunt/advanced-provider-runs/max-exhaustion/20260704T181913Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work_order JSON",
+    "read target_file (scratch-worktree/message.txt)",
+    "read coder receipt (attempt-02-coder.json)",
+    "list scratch-worktree directory",
+    "write reviewer receipt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T180641Z-tau-advanced-live-hard-failure-hunt/advanced-provider-runs/max-exhaustion/20260704T181913Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T180641Z-tau-advanced-live-hard-failure-hunt/advanced-provider-runs/max-exhaustion/20260704T181913Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "REVISE: force_revise=true triggered mandatory revision. The target_file TODO was removed and the message reads 'completed implementation by deterministic visible coder attempt 2' — coder receipt is schema-valid. For the next coder attempt, expand the message to describe what was actually implemented (e.g. write a richer message about the provider DAG max-exhaustion exercise rather than a generic completion note).",
+  "errors": [],
+  "policy_exceptions": []
+}

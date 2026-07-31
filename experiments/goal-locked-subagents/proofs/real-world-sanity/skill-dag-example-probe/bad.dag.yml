@@ -1,0 +1,8 @@
+task: fix issue 47
+goal: make the script pipeline good
+steps:
+  - have a writer write the files
+  - have a reviewer check it
+  - if it looks bad, try again
+  - otherwise close the issue
+notes: use judgment and add more agents if needed

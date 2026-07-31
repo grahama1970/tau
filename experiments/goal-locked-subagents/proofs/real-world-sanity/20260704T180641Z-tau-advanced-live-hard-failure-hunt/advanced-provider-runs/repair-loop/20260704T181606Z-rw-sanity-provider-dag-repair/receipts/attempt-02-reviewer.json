@@ -1,0 +1,15 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T180641Z-tau-advanced-live-hard-failure-hunt/advanced-provider-runs/repair-loop/20260704T181606Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["cat attempt-02-coder.json", "cat message.txt"],
+  "artifacts": ["/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T180641Z-tau-advanced-live-hard-failure-hunt/advanced-provider-runs/repair-loop/20260704T181606Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt", "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T180641Z-tau-advanced-live-hard-failure-hunt/advanced-provider-runs/repair-loop/20260704T181606Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json"],
+  "handoff_summary": "target_file TODO line removed, coder receipt schema-valid. force_revise=false. Verdict PASS.",
+  "errors": [],
+  "policy_exceptions": []
+}

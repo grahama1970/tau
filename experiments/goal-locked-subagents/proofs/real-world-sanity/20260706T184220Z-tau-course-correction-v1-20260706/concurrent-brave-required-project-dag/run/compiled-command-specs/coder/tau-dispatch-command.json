@@ -1,0 +1,26 @@
+{
+  "command": [
+    "python3",
+    "-c",
+    "print('not json')"
+  ],
+  "tau_dag_node": {
+    "agent": "coder",
+    "dag_id": "rw-sanity-project-dag-concurrent-brave-required",
+    "executor": "local",
+    "goal": {
+      "goal_hash": "sha256:rw-sanity-project-dag-concurrent-brave-required",
+      "goal_id": "rw-sanity-project-dag-concurrent-brave-required",
+      "goal_version": 1
+    },
+    "node_id": "coder",
+    "required_evidence": [
+      "creator_artifact"
+    ],
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-concurrent-brave-required"
+    }
+  },
+  "timeout_s": 20
+}

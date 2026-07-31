@@ -1,0 +1,49 @@
+{
+  "active_node_id": null,
+  "blocked_nodes": [],
+  "completed_nodes": [
+    "coder",
+    "planner",
+    "reviewer"
+  ],
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/medium-generic-dag/events.jsonl",
+  "node_statuses": {
+    "coder": {
+      "attempt_count": 1,
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/medium-generic-dag/receipts/coder.json",
+      "resumed": false,
+      "status": "PASS",
+      "verdict": "PASS"
+    },
+    "planner": {
+      "attempt_count": 1,
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/medium-generic-dag/receipts/planner.json",
+      "resumed": false,
+      "status": "PASS",
+      "verdict": "PASS"
+    },
+    "reviewer": {
+      "attempt_count": 1,
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/medium-generic-dag/receipts/reviewer.json",
+      "resumed": false,
+      "status": "PASS",
+      "verdict": "PASS"
+    }
+  },
+  "ready_nodes": [],
+  "resume": {
+    "enabled_by_default": true,
+    "receipt_paths": {
+      "coder": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/medium-generic-dag/receipts/coder.json",
+      "planner": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/medium-generic-dag/receipts/planner.json",
+      "reviewer": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/medium-generic-dag/receipts/reviewer.json"
+    },
+    "will_reuse_valid_pass_receipts": true
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/medium-generic-dag",
+  "run_id": "rw-sanity-generic-dag",
+  "schema": "tau.generic_dag_checkpoint.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-03T23:15:29Z",
+  "verdict": "PASS"
+}

@@ -1,0 +1,192 @@
+{
+  "check_count": 1,
+  "checks": [
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 0,
+          "receipt_summary": {
+            "alert_codes": [],
+            "alert_count": 0,
+            "errors": [],
+            "live": true,
+            "mocked": false,
+            "node_attempts": {
+              "coder": 1,
+              "reviewer": 1
+            },
+            "node_count": 2,
+            "observed_edges": [
+              {
+                "from_agent": "coder",
+                "from_node": "coder",
+                "to_agent": "reviewer",
+                "to_node": "reviewer"
+              },
+              {
+                "from_agent": "reviewer",
+                "from_node": "reviewer",
+                "to_agent": "human",
+                "to_node": "human"
+              }
+            ],
+            "ok": true,
+            "provider_live": false,
+            "reviewer_verdicts": [
+              {
+                "creator_attempt": 1,
+                "goal_hash": "sha256:rw-sanity-project-dag-provider-metadata",
+                "kind": "reviewer_verdict",
+                "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T131543Z-tau-provider-metadata-propagation-final-20260706/provider-metadata-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json",
+                "reviewed_node_id": "coder",
+                "verdict": "PASS"
+              }
+            ],
+            "scheduler": "handoff-loop",
+            "schema": "tau.dag_receipt.v1",
+            "selected_agents": [
+              "coder",
+              "reviewer"
+            ],
+            "status": "PASS",
+            "target": {
+              "repo": "grahama1970/tau",
+              "target": "scratch-project-dag-provider-metadata"
+            },
+            "verdict": "PASS"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T131543Z-tau-provider-metadata-propagation-final-20260706/logs/advanced.project_dag_provider_metadata_propagates.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T131543Z-tau-provider-metadata-propagation-final-20260706/logs/advanced.project_dag_provider_metadata_propagates.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.project_dag_provider_metadata_propagates",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T131543Z-tau-provider-metadata-propagation-final-20260706/provider-metadata-project-dag/dag-contract.json",
+        "--receipt-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T131543Z-tau-provider-metadata-propagation-final-20260706/provider-metadata-project-dag/run",
+        "--agents-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T131543Z-tau-provider-metadata-propagation-final-20260706/provider-metadata-project-dag/agents"
+      ],
+      "completed_at": "2026-07-06T13:15:44Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": "PASS",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T131543Z-tau-provider-metadata-propagation-final-20260706/provider-metadata-project-dag/run/dag-receipt.json",
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau propagates provider-sensitive node model_policy and prompt_contract into the dispatched node handoff so the node can emit provider_route_receipt.",
+      "receipt_summary": {
+        "alert_codes": [],
+        "alert_count": 0,
+        "errors": [],
+        "live": true,
+        "mocked": false,
+        "node_attempts": {
+          "coder": 1,
+          "reviewer": 1
+        },
+        "node_count": 2,
+        "observed_edges": [
+          {
+            "from_agent": "coder",
+            "from_node": "coder",
+            "to_agent": "reviewer",
+            "to_node": "reviewer"
+          },
+          {
+            "from_agent": "reviewer",
+            "from_node": "reviewer",
+            "to_agent": "human",
+            "to_node": "human"
+          }
+        ],
+        "ok": true,
+        "provider_live": false,
+        "reviewer_verdicts": [
+          {
+            "creator_attempt": 1,
+            "goal_hash": "sha256:rw-sanity-project-dag-provider-metadata",
+            "kind": "reviewer_verdict",
+            "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T131543Z-tau-provider-metadata-propagation-final-20260706/provider-metadata-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json",
+            "reviewed_node_id": "coder",
+            "verdict": "PASS"
+          }
+        ],
+        "scheduler": "handoff-loop",
+        "schema": "tau.dag_receipt.v1",
+        "selected_agents": [
+          "coder",
+          "reviewer"
+        ],
+        "status": "PASS",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-provider-metadata"
+        },
+        "verdict": "PASS"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-06T13:15:43Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T131543Z-tau-provider-metadata-propagation-final-20260706/logs/advanced.project_dag_provider_metadata_propagates.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T131543Z-tau-provider-metadata-propagation-final-20260706/logs/advanced.project_dag_provider_metadata_propagates.stdout.txt",
+      "timeout_seconds": 90
+    }
+  ],
+  "completed_at": "2026-07-06T13:15:44Z",
+  "failed_check_count": 0,
+  "level_counts": {
+    "advanced": {
+      "PASS": 1
+    }
+  },
+  "live": "mixed",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "production browser/chat UI rendering",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau CLI and command-spec surfaces execute from the local checkout",
+      "Tau can run a real local handoff command loop",
+      "Tau planner, generic DAG runner, and deterministic scheduler stress surfaces emit non-mocked receipts",
+      "Tau can allocate visible provider panes and run live provider DAG checks when advanced checks pass",
+      "Tau can run Surf-backed browser proof checks when advanced browser checks pass",
+      "Tau fail-closed negative controls preserve typed BLOCKED receipts"
+    ]
+  },
+  "provider_live": false,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T131543Z-tau-provider-metadata-propagation-final-20260706",
+  "run_id": "20260706T131543Z-tau-provider-metadata-propagation-final-20260706",
+  "schema": "tau.real_world_sanity_suite_receipt.v1",
+  "selected_levels": [
+    "advanced"
+  ],
+  "status": "PASS",
+  "timestamp": "2026-07-06T13:15:44Z"
+}

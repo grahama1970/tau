@@ -1,0 +1,38 @@
+    16      "ls -la",
+    17 -    "test -e /home/graham/workspace/expe
+        riments/tau/experiments/goal-locked-suba
+        gents/proofs/generic-provider-dag-adapte
+        r/20260703T1915Z-generic-provider-dag-ad
+        apter-live/provider-runs/20260703T191355
+        Z-tau-generic-provider-dag-adapter-live/
+        receipts/attempt-01-coder.json; echo $?"
+    17 +    "test -e /home/graham/workspace/expe
+        riments/tau/experiments/goal-locked-suba
+        gents/proofs/generic-provider-dag-adapte
+        r/20260703T1915Z-generic-provider-dag-ad
+        apter-live/provider-runs/20260703T191355
+        Z-tau-generic-provider-dag-adapter-live/
+        receipts/attempt-01-coder.json; echo $?"
+        ,
+    18 +    "jq -e '.schema == \"tau.provider_da
+        g_node_receipt.v1\" and .status == \"PAS
+        S\" and .verdict == \"PASS\" and .attemp
+        t == 1' /home/graham/workspace/experimen
+        ts/tau/experiments/goal-locked-subagents
+        /proofs/generic-provider-dag-adapter/202
+        60703T1915Z-generic-provider-dag-adapter
+        -live/provider-runs/20260703T191355Z-tau
+        -generic-provider-dag-adapter-live/recei
+        pts/attempt-01-coder.json",
+    19 +    "grep -n 'Completed implementation f
+        or the Tau generic provider DAG adapter
+        POC.' message.txt",
+    20 +    "find . -maxdepth 2 -type f -print"
+    21    ],
+
+• Working (1m 12s • esc to interrupt)
+
+
+› Summarize recent commits
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

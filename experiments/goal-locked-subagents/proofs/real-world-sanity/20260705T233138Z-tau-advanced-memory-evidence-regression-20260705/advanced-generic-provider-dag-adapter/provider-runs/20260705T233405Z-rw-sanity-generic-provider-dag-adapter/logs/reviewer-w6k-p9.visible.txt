@@ -1,0 +1,20 @@
+rovider-dag-a
+dapter/receip
+ts/attempt-01
+-reviewer.jso
+n
+Wrote file su
+ccessfully.
+
+All checks pa
+ss — the TODO
+ line is gone
+ from `messag
+e.txt`, the c
+oder receipt
+is schema-val
+id, and `forc
+e_revise` is
+false. Writin
+g the reviewe
+r receipt.

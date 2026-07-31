@@ -1,0 +1,22 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T175624Z-tau-provider-live-retry-recovery-hard-sanity/advanced-provider-runs/repair-loop/20260704T175624Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read target_file: scratch-worktree/message.txt",
+    "read coder_receipt_path: receipts/attempt-01-coder.json",
+    "write reviewer receipt: receipts/attempt-01-reviewer.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T175624Z-tau-provider-live-retry-recovery-hard-sanity/advanced-provider-runs/repair-loop/20260704T175624Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T175624Z-tau-provider-live-retry-recovery-hard-sanity/advanced-provider-runs/repair-loop/20260704T175624Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "force_revise: REVISE. target_file content \"completed implementation by deterministic visible coder attempt 1\" is correct (TODO removed) and coder receipt is schema-valid. For next attempt: expand message.txt to include the run_id, a timestamp so multi-attempt output is clearly distinguishable, and a line confirming this is DAG-repair-loop output rather than a standalone edit. The coder receipt should reference the run_id in handoff_summary for traceability.",
+  "errors": [],
+  "policy_exceptions": []
+}

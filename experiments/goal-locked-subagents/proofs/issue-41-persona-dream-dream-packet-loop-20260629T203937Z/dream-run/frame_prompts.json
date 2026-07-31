@@ -1,0 +1,32 @@
+{
+  "frames": [
+    {
+      "frame_id": "frame_01",
+      "negative_prompt": "literal compliance verdict, fake citation, UI screenshot, watermark",
+      "prompt": "Embry dream frame, persona_memory_record, topic: Tau issue 41 dream packet creator reviewer loop, During an early Yale design review, Embry responds competently to a technical challenge but later tells Kai only that the review went fine, beginning a pattern of protecting relati, symbolic, cinematic still, contact sheet frame, bridge tone: Precision",
+      "source_ids": [
+        "embry_age15_19_b01_memory_012"
+      ],
+      "synthetic": true
+    },
+    {
+      "frame_id": "frame_02",
+      "negative_prompt": "literal compliance verdict, fake citation, UI screenshot, watermark",
+      "prompt": "Embry dream frame, persona_memory_record, topic: Tau issue 41 dream packet creator reviewer loop, On the next call, Embry offers a stricter contact schedule while Kai asks for evidence that she wants spontaneous emotional contact.\nEmbry proposes Tuesday and Thursday calls with , symbolic, cinematic still, contact sheet frame, bridge tone: Fragility",
+      "source_ids": [
+        "embry_age19_23_b01_memory_002"
+      ],
+      "synthetic": true
+    },
+    {
+      "frame_id": "frame_03",
+      "negative_prompt": "literal compliance verdict, fake citation, UI screenshot, watermark",
+      "prompt": "Embry dream frame, persona_memory_record, topic: Tau issue 41 dream packet creator reviewer loop, Embry discovers a discrepancy in a SPARTA review trail that may be harmless, procedural, or evidence that someone bypassed a control.\nShe can explain the technical mismatch but not, symbolic, cinematic still, contact sheet frame, bridge tone: Fragility, Precision",
+      "source_ids": [
+        "embry_age23_current_b01_memory_040"
+      ],
+      "synthetic": true
+    }
+  ],
+  "schema": "persona_dream.frame_prompts.v1"
+}

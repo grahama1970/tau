@@ -1,0 +1,4 @@
+Provider DAG repair loop output for run_id 20260703T200610Z-rw-sanity-provider-dag-repair.
+The original TODO line was removed from this target file.
+The coder receipt was written at receipts/attempt-02-coder.json.
+This file was produced by the provider DAG repair loop.

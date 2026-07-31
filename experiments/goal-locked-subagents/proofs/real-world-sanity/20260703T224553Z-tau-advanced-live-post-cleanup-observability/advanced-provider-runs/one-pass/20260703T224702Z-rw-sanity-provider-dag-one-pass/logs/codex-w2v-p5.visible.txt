@@ -1,0 +1,38 @@
+        g-one-pass/receipts/attempt-01
+        -coder.json && sed -n '1,120p'
+         /home/graham/workspace/experi
+        ments/tau/experiments/goal-loc
+        ked-subagents/proofs/real-worl
+        d-sanity/20260703T224553Z-tau-
+        advanced-live-post-cleanup-obs
+        ervability/advanced-provider-r
+        uns/one-pass/20260703T224702Z-
+        rw-sanity-provider-dag-one-pas
+        s/scratch-worktree/message.txt
+        "
+    17    ],
+
+──────────────────────────────────────
+
+• Verification scope now is concrete:
+  parse the receipt JSON with jq and
+  read back the target file content.
+  No repository files are being
+  edited.
+
+• Ran jq . /home/graham/workspace/
+  │ experiments/tau/experiments/
+  │ goal-locked-subagents/proofs/
+  │ … +18 lines
+  └ {
+    … +29 lines (ctrl + t to view
+    transcript)
+    Completed implementation message
+    from the coder node.
+
+• Working (1m 27s • esc to interrupt)
+
+
+› Find and fix a bug in @filename
+
+  gpt-5.5 medium · ~/workspace/experi…

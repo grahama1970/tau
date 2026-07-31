@@ -1,0 +1,37 @@
+runs/max-exhaustion/
+20260704T181913Z-rw-
+sanity-provider-dag-
+max-exhaustion/dag-s
+pec.json\nplanner_re
+ceipt: /home/graham/
+workspace/experiment
+s/tau/experiments/go
+al-locked-subagents/
+proofs/real-world-sa
+nity/20260704T180641
+Z-tau-advanced-live-
+hard-failure-hunt/ad
+vanced-provider-runs
+/max-exhaustion/2026
+0704T181913Z-rw-sani
+ty-provider-dag-max-
+exhaustion/planner-r
+eceipt.json\nfinal_r
+eceipt: /home/graham
+/workspace/experimen
+ts/tau/experiments/g
+oal-locked-subagents
+/proofs/real-world-s
+anity/20260704T18064
+1Z-tau-advanced-live
+-hard-failure-hunt/a
+dvanced-provider-run
+s/max-exhaustion/202
+60704T181913Z-rw-san
+ity-provider-dag-max
+-exhaustion/run-rece
+ipt.json\ncanonical
+truth: Tau JSON rece
+ipts; this pane is h
+uman-visible telemet
+ry.\n

@@ -1,0 +1,38 @@
+
+──────────────────────────────────────
+
+• Status/Phase: Local work-order proof
+  available; no broader repository/
+  task closure claimed.
+
+  Now/current file-command-artifact:
+
+  - Target file: /home/graham/
+    workspace/experiments/tau/
+    experiments/goal-locked-subagents/
+    proofs/real-world-
+    sanity/20260703T222857Z-tau-
+    generic-provider-adapter-resume-
+    cleanup-apply/advanced-generic-
+    provider-dag-adapter/provider-
+    runs/20260703T222858Z-rw-sanity-
+    generic-provider-dag-adapter/
+    scratch-worktree/message.txt
+
+  - Receipt: /home/graham/workspace/
+    experiments/tau/experiments/goal-
+    locked-subagents/proofs/real-
+    world-sanity/20260703T222857Z-tau-
+    generic-provider-adapter-resume-
+    cleanup-apply/advanced-generic-
+    provider-dag-adapter/provider-
+    runs/20260703T222858Z-rw-sanity-
+    generic-provider-dag-adapter/
+    receipts/attempt-01-coder.json
+
+  Evidence:
+
+
+› Explain this codebase
+
+  gpt-5.5 medium · ~/workspace/experi…

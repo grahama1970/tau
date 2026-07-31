@@ -1,0 +1,108 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "coder_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/receipts/attempt-01-coder.json",
+      "coder_status": "PASS",
+      "coder_verdict": "PASS",
+      "errors": [],
+      "reviewer_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/receipts/attempt-01-reviewer.json",
+      "reviewer_status": "PASS",
+      "reviewer_verdict": "PASS"
+    }
+  ],
+  "dag_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/dag-spec.json",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/events.jsonl",
+  "label": "tau-traycer-evidence-live-a1-t90",
+  "logs_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/logs",
+  "provider_readiness_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/provider-readiness-receipt.json",
+  "provider_sessions": {
+    "codex": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "w13:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/provider-readiness/20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness/readiness/codex.readiness.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_655b3d6f75480e0",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/provider-readiness/20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w13"
+    },
+    "opencode": {
+      "foreground_command": "opencode",
+      "pane_id": "w13:p6",
+      "process_alive": true,
+      "provider_id": "opencode",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/provider-readiness/20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness/readiness/opencode.readiness.json",
+      "ready": true,
+      "role": "reviewer",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_655b3d7117d19e1",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/provider-readiness/20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness/logs/opencode.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w13"
+    }
+  },
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90",
+  "run_id": "20260703T121230Z-tau-traycer-evidence-live-a1-t90",
+  "schema": "tau.provider_dag_runtime_manifest.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/scratch-worktree",
+  "visible_subagents": {
+    "coder": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "w13:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/provider-readiness/20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness/readiness/codex.readiness.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_655b3d6f75480e0",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/provider-readiness/20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w13"
+    },
+    "orchestrator": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "w13:p8",
+      "provider_id": "tau",
+      "role": "orchestrator",
+      "tab_id": "w13:t1",
+      "terminal_id": "term_655b3d92056b9e3",
+      "visible": true,
+      "workspace_id": "w13"
+    },
+    "planner": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "w13:p7",
+      "provider_id": "tau",
+      "role": "planner",
+      "tab_id": "w13:t1",
+      "terminal_id": "term_655b3d90cbab7e2",
+      "visible": true,
+      "workspace_id": "w13"
+    },
+    "reviewer": {
+      "command": "opencode run --dir <repo> [--model <reviewer-model>] <reviewer-prompt>",
+      "pane_id": "w13:p9",
+      "provider_id": "opencode",
+      "readiness_pane_id": "w13:p6",
+      "reviewer_model": null,
+      "role": "reviewer",
+      "tab_id": "w13:t1",
+      "terminal_id": "term_655b3db8712cde4",
+      "visible": true,
+      "workspace_id": "w13"
+    }
+  }
+}

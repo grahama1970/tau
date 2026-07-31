@@ -1,0 +1,4 @@
+b3993f508ecd19210581ae38b5afe3170f930460066301800ef7573e7f769428  .codex/archive/tau-dirty-tracked-20260706T173204Z/dirty-tracked.patch
+bcab8f36db4ea633ceee353c46fcd6a77081e3fd5abb0b66767b35531e5492c1  .codex/archive/tau-dirty-tracked-20260706T173204Z/files/src/tau_coding/battle_live_handoff.py
+f32ca2bf7c61c3f665cebe968d26ffc43d5e31fd9ee31f9eec54b66ad2586d51  .codex/archive/tau-dirty-tracked-20260706T173204Z/files/tests/test_battle_live_handoff.py
+308c23ed35943ee7ec5afa0a598cd00ac164ddaa3b6f06cc78b275a0ddee2602  .codex/archive/tau-dirty-tracked-20260706T173204Z/files/tests/test_persona_dream_dream_packet_agent.py

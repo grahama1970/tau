@@ -1,0 +1,21 @@
+
+▀▀▀▀ ▀▀▀▀ ▀▀▀▄ ▀▀▀▀ ▀▀▀▀ ▀▀▀
+▀  ▀ ▀▀▀▀ ▀  ▀ ▀    ▀  ▀ ▀
+▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀
+
+  ┃
+  ┃  Ask anything...
+  ┃  "Fix broken tests"
+  ┃
+  ┃  Bui ·DeepSeek V4  D
+  ┃  ld   Flash        e
+  ┃                    e
+  ╹▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+   tab agentsctrl+p
+             commands
+
+
+
+  ~/workspace/ile:pa1.17.9
+  experiments/
+  tau:main

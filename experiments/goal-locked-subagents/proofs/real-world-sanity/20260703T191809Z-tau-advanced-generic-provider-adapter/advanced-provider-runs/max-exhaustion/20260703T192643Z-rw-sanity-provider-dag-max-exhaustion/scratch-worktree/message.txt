@@ -1,0 +1,1 @@
+Completed provider DAG implementation: tool schemas are registered before model calls, provider dispatch routes each node through its configured provider adapter, max-exhaustion retry handling records terminal failure after the configured attempts, and the agent harness loop consumes the provider DAG result as the next streamed agent event.

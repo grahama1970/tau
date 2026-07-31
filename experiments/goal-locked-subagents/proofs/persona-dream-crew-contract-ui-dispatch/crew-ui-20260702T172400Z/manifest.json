@@ -1,0 +1,32 @@
+{
+  "casting_contract": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/phase_03_producer_writer_director/casting_contract.json",
+  "claims": {
+    "does_not_prove": [
+      "No paid provider call, public upload, or downstream camera/lighting selection was performed.",
+      "Persona quality is limited to the provided candidate pool and source metadata."
+    ],
+    "proves": [
+      "Tau ran a command-spec loop from crew-writer to crew-reviewer.",
+      "Crew-writer created a durable Phase 03 crew contract artifact under the selected run root.",
+      "Crew-reviewer checked required selections, rationales, source coverage, and receipt paths."
+    ]
+  },
+  "command_loop_ok": true,
+  "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-crew-contract-ui-dispatch/crew-ui-20260702T172400Z/command-loop/command-loop-receipt.json",
+  "command_loop_status": "WAITING",
+  "created_at": "2026-07-02T17:23:33Z",
+  "crew_contract": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/phase_03_producer_writer_director/crew_contract.json",
+  "input_work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-crew-contract-ui-dispatch/crew-ui-20260702T172400Z/input_crew_contract_work_order.json",
+  "issue": 45,
+  "live": true,
+  "mocked": false,
+  "prompt_payload_receipt": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/phase_03_producer_writer_director/crew_prompt_payload_receipt.json",
+  "provider_live": false,
+  "run_root": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke",
+  "schema": "tau.persona_dream_crew_contract_loop_proof.v1",
+  "start_handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-crew-contract-ui-dispatch/crew-ui-20260702T172400Z/start-handoff.json",
+  "stop_reason": "next_agent_is_human",
+  "terminal_agent": "human",
+  "validate_crew_contract": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/receipts/validate_crew_contract.json",
+  "validate_crew_contract_status": "PASS_CREW_CONTRACT"
+}

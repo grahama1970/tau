@@ -1,0 +1,24 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "tau",
+    "handoff-agent-adapter",
+    "--result-status",
+    "COMPLETED",
+    "--result-summary",
+    "Coder creator node consumed the handoff and produced a reviewer route.",
+    "--next-agent",
+    "reviewer",
+    "--next-executor",
+    "local",
+    "--next-reason",
+    "Reviewer must independently inspect the creator handoff.",
+    "--required-evidence",
+    "Reviewer command-loop step must run after coder and emit a terminal handoff.",
+    "--stop-condition",
+    "Reviewer routes to human after validating this creator output."
+  ],
+  "cwd": ".",
+  "timeout_s": 30
+}

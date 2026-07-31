@@ -1,0 +1,29 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T204125Z-tau-provider-failure-classification-fix-20260705/advanced-provider-runs/max-exhaustion/20260705T204126Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+  ],
+  "attempt": 2,
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T204125Z-tau-provider-failure-classification-fix-20260705/advanced-provider-runs/max-exhaustion/20260705T204126Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "python deterministic visible coder"
+  ],
+  "dag_id": "20260705T204126Z-rw-sanity-provider-dag-max-exhaustion",
+  "errors": [],
+  "goal_hash": "sha256:87e9e335cb27b132cf3f75bd2b1e0ffad1b202d24f5918da79780eceab299d80",
+  "handoff_summary": "Deterministic visible coder updated the scratch target file.",
+  "node_id": "coder",
+  "pane_id": "w4X:p5",
+  "policy_exceptions": [],
+  "provider_id": "codex",
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "status": "PASS",
+  "terminal_id": "term_655e32e97d90b543",
+  "verdict": "PASS",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T204125Z-tau-provider-failure-classification-fix-20260705/advanced-provider-runs/max-exhaustion/20260705T204126Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T204126Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "5d216c2bfdc64003adb2ff96e687e8a6ad5007b4ef61073b0607a4a5994e70b2",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T204125Z-tau-provider-failure-classification-fix-20260705/advanced-provider-runs/max-exhaustion/20260705T204126Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-coder.json",
+  "work_order_sha256": "7e075b13525d1a2c4e2b3057406bf7ab8bc984cea4b35bc8f297781db2dcdabe",
+  "workspace_id": "w4X"
+}

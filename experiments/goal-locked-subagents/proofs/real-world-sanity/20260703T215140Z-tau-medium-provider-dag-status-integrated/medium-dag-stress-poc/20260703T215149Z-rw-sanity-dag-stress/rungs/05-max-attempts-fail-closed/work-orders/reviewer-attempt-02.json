@@ -1,0 +1,10 @@
+{
+  "attempt": 2,
+  "depends_on": [
+    "creator"
+  ],
+  "node_id": "reviewer",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T215140Z-tau-medium-provider-dag-status-integrated/medium-dag-stress-poc/20260703T215149Z-rw-sanity-dag-stress/rungs/05-max-attempts-fail-closed/receipts/reviewer-attempt-02.json",
+  "role": "reviewer",
+  "schema": "tau.dag_stress_work_order.v1"
+}

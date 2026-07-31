@@ -1,0 +1,50 @@
+{
+  "context": {
+    "actor_type": "tau",
+    "artifacts_read": [
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_requirements.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_memory_recall_evidence.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/blocked_assets.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_generation_prompts.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_build_receipt.json"
+    ],
+    "assumptions": [],
+    "run_id": "contact-sheet-autonomous-prompt-review-20260702T213903Z",
+    "subagent": "contact-sheet-builder",
+    "unknowns": []
+  },
+  "evidence": [
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_requirements.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_memory_recall_evidence.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/blocked_assets.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_generation_prompts.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_build_receipt.json"
+  ],
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000045",
+    "goal_id": "goal-tau-issue-45-persona-dream-contact-sheet-loop",
+    "goal_version": 1,
+    "immutable_goal_preserved": true
+  },
+  "next": {
+    "executor": "local",
+    "reason": "Prompt-reviewer validates provider prompts before any image-generation lane can run.",
+    "subagent": "prompt-reviewer"
+  },
+  "rationale": "This receipt records one bounded Tau persona-dream dream-packet subagent turn.",
+  "result": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_requirements.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_memory_recall_evidence.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/blocked_assets.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_generation_prompts.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_build_receipt.json"
+    ],
+    "live": true,
+    "mocked": false,
+    "status": "BLOCKED",
+    "summary": "Contact-sheet-builder failed closed because required contact sheets were not found in memory."
+  },
+  "schema": "tau.subagent_receipt.v1",
+  "stop_condition": "Prompt-reviewer routes to contact-sheet-build-reviewer."
+}

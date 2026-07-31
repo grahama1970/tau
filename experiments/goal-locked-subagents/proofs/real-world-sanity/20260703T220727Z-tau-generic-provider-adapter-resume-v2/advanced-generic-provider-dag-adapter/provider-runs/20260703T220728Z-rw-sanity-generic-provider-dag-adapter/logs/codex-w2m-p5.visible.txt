@@ -1,0 +1,38 @@
+        d-subagents/proofs/real-world
+        -sanity/20260703T220727Z-tau-
+        generic-provider-adapter-resu
+        me-v2/advanced-generic-provid
+        er-dag-adapter/provider-runs/
+        20260703T220728Z-rw-sanity-ge
+        neric-provider-dag-adapter/re
+        ceipts/attempt-01-coder.json
+        >/tmp/attempt-01-coder-jsonch
+        eck.out",
+    18 +    "sed -n '1,20p' message.t
+        xt",
+    19 +    "sed -n '1,220p' /home/gr
+        aham/workspace/experiments/ta
+        u/experiments/goal-locked-sub
+        agents/proofs/real-world-sani
+        ty/20260703T220727Z-tau-gener
+        ic-provider-adapter-resume-v2
+        /advanced-generic-provider-da
+        g-adapter/provider-runs/20260
+        703T220728Z-rw-sanity-generic
+        -provider-dag-adapter/receipt
+        s/attempt-01-coder.json"
+    20    ],
+
+─────────────────────────────────────
+
+• The receipt now records the
+  verification commands. I’m doing
+  one final schema/content check
+  against the work order values.
+
+• Working (1m 28s • esc to interrupt)
+
+
+› Explain this codebase
+
+  gpt-5.5 medium · ~/workspace/exper…

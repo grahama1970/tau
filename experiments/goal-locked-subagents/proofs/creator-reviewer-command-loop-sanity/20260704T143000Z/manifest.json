@@ -1,0 +1,73 @@
+{
+  "checks": {
+    "exit_codes_zero": true,
+    "live_true": true,
+    "mocked_false": true,
+    "no_errors": true,
+    "no_timeouts": true,
+    "receipt_ok": true,
+    "response_routes_to_reviewer_then_human": true,
+    "runner_command_loop": true,
+    "selected_coder_then_reviewer": true,
+    "start_routes_match_selected": true,
+    "stop_next_agent_is_human": true,
+    "terminal_human": true
+  },
+  "claims": {
+    "does_not_prove": [
+      "Provider/model semantic quality.",
+      "DAG-contract YAML runtime support.",
+      "GitHub mutation or ticket closure.",
+      "Unbounded autonomous operation."
+    ],
+    "proves": [
+      "Tau selected a creator subagent from start.next_agent.",
+      "Tau executed the creator command as a real local subprocess.",
+      "Tau consumed the creator handoff and selected the reviewer subagent.",
+      "Tau executed the reviewer command as a real local subprocess.",
+      "Tau stopped at human after reviewer routed to human."
+    ]
+  },
+  "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/creator-reviewer-command-loop-sanity/20260704T143000Z/command-loop/command-loop-receipt.json",
+  "command_specs": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/creator-reviewer-command-loop-sanity/20260704T143000Z/command-specs/coder/tau-dispatch-command.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/creator-reviewer-command-loop-sanity/20260704T143000Z/command-specs/reviewer/tau-dispatch-command.json"
+  ],
+  "live": true,
+  "mocked": false,
+  "observed": {
+    "exit_codes": [
+      0,
+      0
+    ],
+    "response_next_agents": [
+      "reviewer",
+      "human"
+    ],
+    "selected_agents": [
+      "coder",
+      "reviewer"
+    ],
+    "start_next_agents": [
+      "coder",
+      "reviewer"
+    ],
+    "step_count": 2,
+    "stop_reason": "next_agent_is_human",
+    "terminal_agent": "human",
+    "timed_out": [
+      false,
+      false
+    ]
+  },
+  "ok": true,
+  "provider_live": false,
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/creator-reviewer-command-loop-sanity/20260704T143000Z",
+  "schema": "tau.creator_reviewer_command_loop_sanity_manifest.v1",
+  "start_handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/creator-reviewer-command-loop-sanity/20260704T143000Z/start-handoff.json",
+  "status": "PASS",
+  "step_receipts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/creator-reviewer-command-loop-sanity/20260704T143000Z/command-loop/command-loop-step-001.receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/creator-reviewer-command-loop-sanity/20260704T143000Z/command-loop/command-loop-step-002.receipt.json"
+  ]
+}

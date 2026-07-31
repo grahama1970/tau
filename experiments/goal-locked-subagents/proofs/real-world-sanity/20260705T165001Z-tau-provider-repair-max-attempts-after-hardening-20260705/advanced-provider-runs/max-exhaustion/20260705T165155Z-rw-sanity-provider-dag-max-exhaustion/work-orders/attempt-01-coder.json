@@ -1,0 +1,47 @@
+{
+  "attempt": 1,
+  "dag_id": "20260705T165155Z-rw-sanity-provider-dag-max-exhaustion",
+  "forbidden_actions": [
+    "modify_tau_repository",
+    "github_mutation",
+    "tailscale_access"
+  ],
+  "goal": {
+    "goal_hash": "sha256:5a87319778db3d7d25a7c7572e0978a05c781f06b835f7c0960b0042806d0bbc",
+    "goal_id": "20260705T165155Z-rw-sanity-provider-dag-max-exhaustion",
+    "goal_version": 1
+  },
+  "herdr": {
+    "pane_id": "w46:p5",
+    "terminal_id": "term_655dff9d4bea0460",
+    "workspace_id": "w46"
+  },
+  "max_attempts": 2,
+  "node": {
+    "agent": "coder",
+    "attempt": 1,
+    "max_attempts": 2,
+    "node_id": "coder"
+  },
+  "node_id": "coder",
+  "provider_id": "codex",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T165155Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json",
+  "required_evidence": [
+    "target_file_updated",
+    "node_receipt_written"
+  ],
+  "reviewer_feedback": "",
+  "run_id": "20260705T165155Z-rw-sanity-provider-dag-max-exhaustion",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T165155Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree",
+  "target": {
+    "allowed_paths": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T165155Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+    ],
+    "repo": "/home/graham/workspace/experiments/tau",
+    "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T165155Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree"
+  },
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T165155Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+  "task": "Modify only target_file. Replace the TODO line with a short completed implementation message. Then write the node receipt JSON exactly at receipt_path.",
+  "work_order_sha256": "c8dd167ca5fb79616ade34af34686cadb14a28606596c0edcea261cb589b62f9"
+}

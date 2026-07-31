@@ -1,0 +1,75 @@
+{
+  "api_key_source": "docker:SCILLM_MASTER_KEY",
+  "content_excerpt": "{\"story\":\"Embry\u2019s phone buzzes from the beach bag at the exact unhelpful moment a June set lifts over the dark reef; she squints through glare, salt on her lips, palms re-gripping the rails of the older white shortboard where the wax has gone gummy. Kai, outside on his worn board, lets a local have priority and points once toward the channel. Embry\u2019s arms are cooked, which is apparently when freedom gets its invoice, but she commits to the clean shoulder.\",\"panel_count\":1,\"duration_seconds\":10,\"location\":{\"place\":\"Kahalu\u02bbu Bay, Kona Coast, Big Island\",\"time\":\"Wednesday daylight surf window\",\"month\":\"June\",\"year\":2024,\"description\":\"A public Kona Coast reef break where Embry and Kai\u2019s private sick-day escape is constrained by local etiquette, shared lineup patience, and shallow lava rock.\"},\"environment\":{\"weather_description\":\"Hot, humid coastal air with bright glare, saltwater, summer swell patterns, shallow lava rock reef, softened board wax, and fatigue from paddling.\",\"active_pressures\":[\"sweat\",\"glare\",\"wax softness\",\"saltwater\",\"fatigue\",\"grip changes\",\"footing changes\",\"board control changes\",\"reef caution\",\"social patience\"],\"story_effect\":\"Heat, humidity, glare, and salt m",
+  "created_at": "2026-07-01T23:47:36Z",
+  "duration_seconds": 58.230539,
+  "generated_story": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260701T234736Z/command-loop/command-artifacts/command-loop-step-001/story_writer_generated_story.json",
+  "http_status": 200,
+  "live": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "prompt_payload": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260701T234736Z/prompt-bundle/prompt-payload.json",
+  "request": {
+    "messages": "<redacted-request-messages>",
+    "model": "gpt-5.5",
+    "reasoning_effort": "medium",
+    "response_format": {
+      "type": "json_object"
+    },
+    "scillm_metadata": {
+      "caller": "tau",
+      "item_id": "2026-07-01T23:47:36.090Z",
+      "proof": "persona-dream-story-ui-dispatch",
+      "role": "story-writer"
+    },
+    "temperature": 0.6
+  },
+  "response": {
+    "_hidden_params": {
+      "additional_headers": {
+        "x-scillm-backoff-active": "false",
+        "x-scillm-queue-depth": "0",
+        "x-scillm-queue-wait-ms": "0"
+      }
+    },
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": "<redacted-story-content>"
+      }
+    ],
+    "created": 1782949715,
+    "id": "chatcmpl-codex-edb5629d",
+    "model": "gpt-5.5",
+    "moderation": null,
+    "object": "chat.completion",
+    "scillm_metadata": {
+      "caller": "tau",
+      "item_id": "2026-07-01T23:47:36.090Z",
+      "proof": "persona-dream-story-ui-dispatch",
+      "role": "story-writer"
+    },
+    "scillm_reasoning": {
+      "applied_effort": "medium",
+      "forwarded": true,
+      "ignored_reason": null,
+      "provider_field": "reasoning.effort",
+      "requested_effort": "medium"
+    },
+    "service_tier": null,
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 1578,
+      "completion_tokens_details": null,
+      "prompt_tokens": 6880,
+      "prompt_tokens_details": null,
+      "total_tokens": 8458
+    }
+  },
+  "role": "story-writer",
+  "schema": "tau.persona_dream.story_writer_model_call_receipt.v1",
+  "scillm_base_url": "http://127.0.0.1:4001",
+  "status": "PASS"
+}

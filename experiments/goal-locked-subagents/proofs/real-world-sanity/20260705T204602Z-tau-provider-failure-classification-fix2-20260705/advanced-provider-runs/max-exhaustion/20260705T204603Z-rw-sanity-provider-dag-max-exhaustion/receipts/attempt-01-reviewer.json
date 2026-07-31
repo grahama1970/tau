@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T204603Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:b28324d99c0333e8899a37736a4b18f3ea1df55311e3e5e75bbe62337fdc5f93",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w4Z",
+  "pane_id": "w4Z:p6",
+  "terminal_id": "term_655e33f2731ef55a",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T204602Z-tau-provider-failure-classification-fix2-20260705/advanced-provider-runs/max-exhaustion/20260705T204603Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T204603Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "fc498ca0cb63e78c91b14d8ead523b526b4e1b3c7e6cb6cfdd41843e353b03e4",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T204602Z-tau-provider-failure-classification-fix2-20260705/advanced-provider-runs/max-exhaustion/20260705T204603Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["sha256sum opencode.visible.txt", "ls scratch-worktree/"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T204602Z-tau-provider-failure-classification-fix2-20260705/advanced-provider-runs/max-exhaustion/20260705T204603Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T204602Z-tau-provider-failure-classification-fix2-20260705/advanced-provider-runs/max-exhaustion/20260705T204603Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE forced by work_order.force_revise=true. target_file is present and coder receipt is schema-valid, but message.txt content is a generic placeholder ('completed implementation by deterministic visible coder attempt 1') that does not implement provider failure classification logic. The coder's commands_run field references a stub command ('python deterministic visible coder') rather than executing actual classification or implementation work. For a max-exhaustion scenario on goal tau-provider-failure-classification-fix2, the target should contain actual provider failure classification implementation — classification rules, error pattern detection, retry/fallback logic, or at minimum a structured output that proves the coder engaged with the failure-classification domain.",
+  "errors": [],
+  "policy_exceptions": []
+}

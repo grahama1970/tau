@@ -1,0 +1,25 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T134112Z-tau-provider-dag-poc-v2/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T134112Z-tau-provider-dag-poc-v2/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T134112Z-tau-provider-dag-poc-v2/work-orders/attempt-01-coder.json",
+    "sed -n '1,120p' message.txt",
+    "pwd && find . -maxdepth 2 -type f | sort",
+    "jq -e '.schema == \"tau.provider_dag_node_receipt.v1\" and .status == \"PASS\" and .verdict == \"PASS\" and (.changed_files | length == 1)' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T134112Z-tau-provider-dag-poc-v2/receipts/attempt-01-coder.json",
+    "sed -n '1,20p' message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T134112Z-tau-provider-dag-poc-v2/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

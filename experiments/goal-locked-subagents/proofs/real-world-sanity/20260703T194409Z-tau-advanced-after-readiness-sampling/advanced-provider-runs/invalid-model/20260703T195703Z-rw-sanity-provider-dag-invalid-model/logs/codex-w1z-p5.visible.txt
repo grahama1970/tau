@@ -1,0 +1,38 @@
+  wrote receipt at receipts/attempt-01-
+  coder.json.
+
+  Evidence: Final validation command exited 0
+  and reported:
+
+  - target_bytes 65
+  - receipt_keys 13
+  - commands_recorded 4
+  - validation PASS
+
+  Proof scope: mocked: no; live: no. Exercised
+  local file content and receipt schema/field
+  checks only.
+
+  Next/stop condition: No remaining work for
+  this coder task.
+
+• Stop hook (blocked)
+  warning: Prevent false-green closure claims.
+  feedback: Closure claim blocked. This is a
+  high-risk or disputed task, and the final
+  message uses done/fixed/green/verified/closed
+  language without deterministic proof. Either
+  cite concrete proof artifacts and command
+  results, submit an evidence bundle via $surf
+  webgpt.submit with sentinel metadata for
+  external review, or downgrade the conclusion
+  to blocked/pending. WebGPT review is not
+  closure proof by itself; closure still needs
+  deterministic local artifacts. For $hack, raw
+  ledgers/proof artifacts are required before
+  closure claims.
+
+
+› Summarize recent commits
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

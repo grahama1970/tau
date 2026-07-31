@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/max-exhaustion/20260703T124523Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work-orders/attempt-01-reviewer.json",
+    "read receipts/attempt-01-coder.json",
+    "read scratch-worktree/message.txt",
+    "write receipts/attempt-01-reviewer.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/max-exhaustion/20260703T124523Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/max-exhaustion/20260703T124523Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "force_revise=true requires REVISE verdict. target_file TODO was removed (minimal replacement). coder_receipt is schema-valid. Feedback: include provider_id, attempt number, and original TODO context in the message so the DAG handoff is provably traceable end-to-end.",
+  "errors": [],
+  "policy_exceptions": []
+}

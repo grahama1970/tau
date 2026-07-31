@@ -1,0 +1,37 @@
+90134Z-tau-prov
+ider-visible-lo
+g-binding-clean
+up-apply-202607
+05/advanced-pro
+vider-runs/max-
+exhaustion/2026
+0705T190134Z-rw
+-sanity-provide
+r-dag-max-exhau
+stion/planner-r
+eceipt.json\nfi
+nal_receipt: /h
+ome/graham/work
+space/experimen
+ts/tau/experime
+nts/goal-locked
+-subagents/proo
+fs/real-world-s
+anity/20260705T
+190134Z-tau-pro
+vider-visible-l
+og-binding-clea
+nup-apply-20260
+705/advanced-pr
+ovider-runs/max
+-exhaustion/202
+60705T190134Z-r
+w-sanity-provid
+er-dag-max-exha
+ustion/run-rece
+ipt.json\ncanon
+ical truth: Tau
+ JSON receipts;
+ this pane is h
+uman-visible te
+lemetry.\n

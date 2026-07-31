@@ -1,0 +1,37 @@
+c.json\nplanner_re
+ceipt: /home/graha
+m/workspace/experi
+ments/tau/experime
+nts/goal-locked-su
+bagents/proofs/rea
+l-world-sanity/202
+60705T205020Z-tau-
+provider-broad-fai
+lure-classificatio
+n-fix-20260705/adv
+anced-provider-run
+s/repair-loop/2026
+0705T205518Z-rw-sa
+nity-provider-dag-
+repair/planner-rec
+eipt.json\nfinal_r
+eceipt: /home/grah
+am/workspace/exper
+iments/tau/experim
+ents/goal-locked-s
+ubagents/proofs/re
+al-world-sanity/20
+260705T205020Z-tau
+-provider-broad-fa
+ilure-classificati
+on-fix-20260705/ad
+vanced-provider-ru
+ns/repair-loop/202
+60705T205518Z-rw-s
+anity-provider-dag
+-repair/run-receip
+t.json\ncanonical
+truth: Tau JSON re
+ceipts; this pane
+is human-visible t
+elemetry.\n

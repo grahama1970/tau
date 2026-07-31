@@ -1,0 +1,38 @@
+  boundary.
+
+• Explored
+  └ Read SKILL.md (surf skill)
+
+────────────────────────────────
+
+• I’ve now read the full surf
+  contract. I’m not submitting
+  to WebGPT because this task is
+  a local file-and-receipt work
+  order, and deterministic local
+  artifacts are enough to answer
+  the hook’s closure condition.
+
+• Explored
+  └ Read message.txt
+    List 20260703T124831Z-rw-
+    sanity-
+         provider-dag-invalid-
+         model
+
+• Ran python3 - <<'PY'
+  │ import json
+  │ from pathlib import Path
+  │ … +37 lines
+  └ schema=tau.provider_dag_node
+    … +18 lines (ctrl + t to
+    view transcript)
+    valid-model/receipts/
+    attempt-01-coder.json
+
+• Working (25s • esc to interru…
+
+
+› Improve documentation in @fil
+
+  gpt-5.5 medium · ~/workspace/…

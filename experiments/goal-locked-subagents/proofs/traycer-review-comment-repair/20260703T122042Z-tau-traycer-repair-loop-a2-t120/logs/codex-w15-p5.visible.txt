@@ -1,0 +1,38 @@
+
+────────────────────────────────
+
+• The receipt now records the
+  failed structural check and
+  the corrective edit. I’m
+  running the final validation
+  command exactly as recorded:
+  receipt JSON parse, non-empty
+  target, exact line match, and
+  no TODO token in the target
+  file.
+
+• Ran python3 -m json.tool /
+  │ home/graham/workspace/
+  │ experiments/tau/
+  │ … +45 lines
+  └ Replaced the placeholder
+    line in message.txt with a
+    completion message for the
+    provider DAG coder node.
+
+────────────────────────────────
+
+• The final structural
+  validation exited 0 and
+  printed the exact target line.
+  I’m taking one read-only
+  receipt snapshot for counts
+  and field values before the
+  final status.
+
+• Working (1m 45s • esc to inte…
+
+
+› Summarize recent commits
+
+  gpt-5.5 medium · ~/workspace/…

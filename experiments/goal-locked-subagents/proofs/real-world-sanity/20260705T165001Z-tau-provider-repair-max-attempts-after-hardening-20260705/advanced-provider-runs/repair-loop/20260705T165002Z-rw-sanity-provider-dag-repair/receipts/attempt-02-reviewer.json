@@ -1,0 +1,28 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T165002Z-rw-sanity-provider-dag-repair",
+  "goal_hash": "sha256:b0974c9700c72422bdf5bb71f94da8a6e2c1fa89bc9f4dd2f9aac2501998eca0",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w45",
+  "pane_id": "w45:p6",
+  "terminal_id": "term_655dff315d026455",
+  "work_order_sha256": "10f79eced7313b5a979bb8db933adfd8e40d16fcd034c201165acec865fd986d",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T165002Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work_order.json",
+    "read scratch-worktree/message.txt",
+    "read receipts/attempt-02-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T165002Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T165002Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "PASS. target_file (message.txt) has no TODO line — content reads 'completed implementation by deterministic visible coder attempt 2'. coder_receipt is schema-valid tau.provider_dag_node_receipt.v1 with all required fields, status PASS, verdict PASS, no errors. force_revise is false. Max attempts reached (2/2); no further retry needed.",
+  "errors": [],
+  "policy_exceptions": []
+}

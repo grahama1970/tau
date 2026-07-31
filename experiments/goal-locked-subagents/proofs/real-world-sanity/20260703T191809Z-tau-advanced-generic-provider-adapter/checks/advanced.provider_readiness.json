@@ -1,0 +1,51 @@
+{
+  "check_id": "advanced.provider_readiness",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "provider-readiness-poc",
+    "--label",
+    "rw-sanity-provider-readiness",
+    "--run-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/readiness",
+    "--herdr-bin",
+    "herdr",
+    "--no-install-integrations"
+  ],
+  "completed_at": "2026-07-03T19:18:53Z",
+  "errors": [
+    "exit_code 1 not in expected [0]",
+    "receipt status 'BLOCKED', expected 'PASS'"
+  ],
+  "exit_code": 1,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 2,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "advanced",
+  "live": true,
+  "mocked": false,
+  "ok": false,
+  "output_receipt_path": null,
+  "provider_live": true,
+  "purpose": "Herdr allocates visible Codex and OpenCode provider panes and Tau records structured readiness.",
+  "receipt_summary": {
+    "live": true,
+    "mocked": false,
+    "ok": false,
+    "provider_session_state_count": 2,
+    "schema": "tau.provider_readiness_run_receipt.v1",
+    "status": "BLOCKED"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-03T19:18:09Z",
+  "status": "BLOCKED",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/logs/advanced.provider_readiness.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/logs/advanced.provider_readiness.stdout.txt",
+  "timeout_seconds": 240
+}

@@ -1,0 +1,10 @@
+{
+  "attempt": 1,
+  "depends_on": [
+    "creator"
+  ],
+  "node_id": "reviewer",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/medium-dag-stress-poc/20260703T190024Z-rw-sanity-dag-stress/rungs/02-creator-reviewer-retry/receipts/reviewer-attempt-01.json",
+  "role": "reviewer",
+  "schema": "tau.dag_stress_work_order.v1"
+}

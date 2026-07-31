@@ -1,0 +1,156 @@
+{
+  "agents": {
+    "20260701T121352Z-tau-provider-pane-poc-ready-v4-codex": {
+      "command": "'codex' '--cd' '/home/graham/workspace/experiments/tau'",
+      "last_start_result": {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260701T121352Z-tau-provider-pane-poc-ready-v4-codex",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "wE",
+          "--tab",
+          "wE:t2",
+          "--env",
+          "TAU_ROLE=codex",
+          "--env",
+          "TAU_AGENT_NAME=20260701T121352Z-tau-provider-pane-poc-ready-v4-codex",
+          "--env",
+          "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-pane-poc/20260701T121352Z-tau-provider-pane-poc-ready-v4/herdr-workstations/20260701T121353Z-tau-provider-pane-poc-ready-v4",
+          "--env",
+          "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-pane-poc/20260701T121352Z-tau-provider-pane-poc-ready-v4/work-orders/codex.json",
+          "--env",
+          "TAU_PROVIDER_PANE_RUN_ID=20260701T121352Z-tau-provider-pane-poc-ready-v4",
+          "--env",
+          "TAU_PROVIDER_PANE_PROVIDER=codex",
+          "--no-focus",
+          "--",
+          "codex",
+          "--cd",
+          "/home/graham/workspace/experiments/tau"
+        ],
+        "parsed": {
+          "id": "cli:agent:start",
+          "result": {
+            "agent": {
+              "agent_status": "unknown",
+              "cwd": "/home/graham/workspace/experiments/tau",
+              "focused": false,
+              "foreground_cwd": "/home/graham/workspace/experiments/tau",
+              "name": "20260701T121352Z-tau-provider-pane-poc-ready-v4-codex",
+              "pane_id": "wE:p5",
+              "revision": 0,
+              "tab_id": "wE:t2",
+              "terminal_id": "term_6558ba00d98e040",
+              "workspace_id": "wE"
+            },
+            "argv": [
+              "codex",
+              "--cd",
+              "/home/graham/workspace/experiments/tau"
+            ],
+            "type": "agent_started"
+          }
+        },
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T121352Z-tau-provider-pane-poc-ready-v4-codex\",\"pane_id\":\"wE:p5\",\"revision\":0,\"tab_id\":\"wE:t2\",\"terminal_id\":\"term_6558ba00d98e040\",\"workspace_id\":\"wE\"},\"argv\":[\"codex\",\"--cd\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+      },
+      "role": "codex",
+      "started_at": "20260701T121354Z",
+      "tab": "providers",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-pane-poc/20260701T121352Z-tau-provider-pane-poc-ready-v4/work-orders/codex.json"
+    },
+    "20260701T121352Z-tau-provider-pane-poc-ready-v4-opencode": {
+      "command": "'opencode' '/home/graham/workspace/experiments/tau'",
+      "last_start_result": {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260701T121352Z-tau-provider-pane-poc-ready-v4-opencode",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "wE",
+          "--tab",
+          "wE:t2",
+          "--env",
+          "TAU_ROLE=opencode",
+          "--env",
+          "TAU_AGENT_NAME=20260701T121352Z-tau-provider-pane-poc-ready-v4-opencode",
+          "--env",
+          "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-pane-poc/20260701T121352Z-tau-provider-pane-poc-ready-v4/herdr-workstations/20260701T121353Z-tau-provider-pane-poc-ready-v4",
+          "--env",
+          "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-pane-poc/20260701T121352Z-tau-provider-pane-poc-ready-v4/work-orders/opencode.json",
+          "--env",
+          "TAU_PROVIDER_PANE_RUN_ID=20260701T121352Z-tau-provider-pane-poc-ready-v4",
+          "--env",
+          "TAU_PROVIDER_PANE_PROVIDER=opencode",
+          "--no-focus",
+          "--split",
+          "right",
+          "--",
+          "opencode",
+          "/home/graham/workspace/experiments/tau"
+        ],
+        "parsed": {
+          "id": "cli:agent:start",
+          "result": {
+            "agent": {
+              "agent_status": "unknown",
+              "cwd": "/home/graham/workspace/experiments/tau",
+              "focused": false,
+              "foreground_cwd": "/home/graham/workspace/experiments/tau",
+              "name": "20260701T121352Z-tau-provider-pane-poc-ready-v4-opencode",
+              "pane_id": "wE:p6",
+              "revision": 0,
+              "tab_id": "wE:t2",
+              "terminal_id": "term_6558ba0118bd841",
+              "workspace_id": "wE"
+            },
+            "argv": [
+              "opencode",
+              "/home/graham/workspace/experiments/tau"
+            ],
+            "type": "agent_started"
+          }
+        },
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T121352Z-tau-provider-pane-poc-ready-v4-opencode\",\"pane_id\":\"wE:p6\",\"revision\":0,\"tab_id\":\"wE:t2\",\"terminal_id\":\"term_6558ba0118bd841\",\"workspace_id\":\"wE\"},\"argv\":[\"opencode\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+      },
+      "role": "opencode",
+      "started_at": "20260701T121354Z",
+      "tab": "providers",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-pane-poc/20260701T121352Z-tau-provider-pane-poc-ready-v4/work-orders/opencode.json"
+    }
+  },
+  "created_at": "20260701T121354Z",
+  "cwd": "/home/graham/workspace/experiments/tau",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-pane-poc/20260701T121352Z-tau-provider-pane-poc-ready-v4/herdr-workstations/20260701T121353Z-tau-provider-pane-poc-ready-v4/events.jsonl",
+  "kind": "herdr-workstation",
+  "label": "tau-provider-pane-poc-ready-v4",
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-pane-poc/20260701T121352Z-tau-provider-pane-poc-ready-v4/herdr-workstations/20260701T121353Z-tau-provider-pane-poc-ready-v4",
+  "run_id": "20260701T121353Z-tau-provider-pane-poc-ready-v4",
+  "schema_version": 1,
+  "session": "default",
+  "tabs": {
+    "logs": "wE:t3",
+    "providers": "wE:t2",
+    "receipts": "wE:t4"
+  },
+  "updated_at": "20260701T121354Z",
+  "workspace_id": "wE",
+  "worktree": {
+    "base": null,
+    "branch": null,
+    "enabled": false,
+    "path": null,
+    "raw": null
+  }
+}

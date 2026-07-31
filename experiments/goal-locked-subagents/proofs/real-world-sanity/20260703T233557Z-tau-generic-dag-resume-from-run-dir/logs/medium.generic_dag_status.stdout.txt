@@ -1,0 +1,47 @@
+{
+  "approval_gate": null,
+  "artifacts": {},
+  "checkpoint": null,
+  "cleanup": null,
+  "dag_stress": null,
+  "dag_stress_campaign": null,
+  "detected_type": "unknown",
+  "events": {
+    "count": 0,
+    "path": null
+  },
+  "generic_dag": null,
+  "live": false,
+  "missing_required_artifacts": [
+    "run_receipt",
+    "runtime_manifest"
+  ],
+  "mocked": false,
+  "ok": false,
+  "orchestration_evidence": null,
+  "proof_scope": {
+    "does_not_prove": [
+      "new provider execution",
+      "Herdr workspace cleanup unless a cleanup receipt is present",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "browser/CDP UI rendering"
+    ],
+    "proves": [
+      "Tau can summarize known run artifacts from one run directory",
+      "Tau can expose checkpoint/current-state, lifecycle, cleanup, approval, and evidence status without mutation"
+    ]
+  },
+  "provider_dag": null,
+  "provider_dag_planner": null,
+  "provider_pane": null,
+  "provider_readiness": null,
+  "provider_session_states": [],
+  "real_world_sanity": null,
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T233557Z-tau-generic-dag-resume-from-run-dir/medium-generic-dag",
+  "run_receipt": null,
+  "runtime_manifest": null,
+  "schema": "tau.run_status.v1",
+  "status": "MISSING",
+  "timestamp": "2026-07-03T23:35:58Z"
+}

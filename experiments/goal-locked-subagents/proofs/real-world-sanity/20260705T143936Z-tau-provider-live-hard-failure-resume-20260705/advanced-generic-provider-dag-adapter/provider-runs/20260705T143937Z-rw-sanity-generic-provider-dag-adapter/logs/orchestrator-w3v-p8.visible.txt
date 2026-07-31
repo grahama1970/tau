@@ -1,0 +1,37 @@
+0260705/advanc
+ed-generic-pro
+vider-dag-adap
+ter/provider-r
+uns/20260705T1
+43937Z-rw-sani
+ty-generic-pro
+vider-dag-adap
+ter/planner-re
+ceipt.json\nfi
+nal_receipt: /
+home/graham/wo
+rkspace/experi
+ments/tau/expe
+riments/goal-l
+ocked-subagent
+s/proofs/real-
+world-sanity/2
+0260705T143936
+Z-tau-provider
+-live-hard-fai
+lure-resume-20
+260705/advance
+d-generic-prov
+ider-dag-adapt
+er/provider-ru
+ns/20260705T14
+3937Z-rw-sanit
+y-generic-prov
+ider-dag-adapt
+er/run-receipt
+.json\ncanonic
+al truth: Tau
+JSON receipts;
+ this pane is
+human-visible
+telemetry.\n

@@ -1,0 +1,6 @@
+{
+  "attempt": 1,
+  "node_id": "creator",
+  "schema": "wrong.schema.v1",
+  "verdict": "PASS"
+}

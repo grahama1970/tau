@@ -1,0 +1,28 @@
+{
+  "schema": "dream.story.memory_context.v1",
+  "linked_assets": [
+    {
+      "id": "embry_media_asset__assets_surfing_embry_surfing_big_island_2024_png",
+      "memoryKey": "embry_media_asset__assets_surfing_embry_surfing_big_island_2024_png",
+      "title": "Embry surfing on the Big Island",
+      "url": "/api/persona-media?persona=embry&path=assets%2Fsurfing%2Fembry_surfing_big_island_2024.png",
+      "description": "Embry crouches low on a white surfboard in golden Big Island light, lava rocks and green mountains behind her."
+    }
+  ],
+  "interaction_rows": [
+    {
+      "id": "embry",
+      "name": "Embry",
+      "objects": "waxed white shortboard, phone",
+      "environment": "Humid June heat and shallow lava reef",
+      "dynamics": "Heat and glare make her choice physical; reef timing punishes hesitation.",
+      "note": "Show salt, sweat, waxed deck, and restraint."
+    }
+  ],
+  "author_profile": {
+    "persona_id": "andy_weir",
+    "persona": "Andy Weir",
+    "persona_context": "Clear physical causality and accessible technical detail.",
+    "creativity_index": 0.6
+  }
+}

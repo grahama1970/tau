@@ -1,0 +1,27 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "pwd && sed -n '1,240p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/work-orders/attempt-01-coder.json",
+    "git status --short",
+    "sed -n '1,120p' message.txt",
+    "find . -maxdepth 2 -type f -print | sort",
+    "ls -la /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/receipts",
+    "apply_patch update message.txt and add attempt-01-coder.json",
+    "python3 -m json.tool /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/receipts/attempt-01-coder.json >/tmp/tau-provider-dag-coder-receipt-jsoncheck.txt && sed -n '1,20p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/scratch-worktree/message.txt && grep -n '\"status\": \"PASS\"' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/receipts/attempt-01-coder.json && grep -n '\"verdict\": \"PASS\"' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/receipts/attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

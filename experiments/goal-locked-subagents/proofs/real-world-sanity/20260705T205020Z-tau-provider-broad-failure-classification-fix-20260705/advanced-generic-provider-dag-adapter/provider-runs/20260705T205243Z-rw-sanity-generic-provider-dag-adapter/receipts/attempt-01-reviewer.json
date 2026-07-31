@@ -1,0 +1,31 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T205243Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:681da0dfbefef3aae8dc106e18368e81e71ea7afce81aa54db9b93b737bf05d5",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w52",
+  "pane_id": "w52:p6",
+  "terminal_id": "term_655e356fffe9c579",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T205243Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T205243Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "34645f650b6bf78d93f43ebe4ff6802ce4524ba27e50e636f51efa5cbe8e6cd7",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T205243Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "sha256sum visible_log_path for opencode.visible.txt",
+    "read work order JSON",
+    "read target_file scratch-worktree/message.txt",
+    "read coder receipt attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T205243Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T205243Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file has no TODO line (clean completion message), coder receipt is schema-valid with all required fields. force_revise is false.",
+  "errors": [],
+  "policy_exceptions": []
+}

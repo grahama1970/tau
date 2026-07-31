@@ -1,0 +1,8 @@
+{
+  "command": [
+    "/home/graham/workspace/experiments/agent-skills/.tmp_venv/bin/python3",
+    "-c",
+    "import json; from tau_coding.cli import project_agent_handoff_goal_guardian_adapter_command; print(json.dumps(project_agent_handoff_goal_guardian_adapter_command(next_agent='project-or-harness-verifier', next_executor='local', next_reason='Verifier should inspect preserved-goal receipt.', required_evidence='Verifier posts the next schema-valid route.', stop_condition='Verifier route is posted.')))"
+  ],
+  "timeout_s": 10
+}

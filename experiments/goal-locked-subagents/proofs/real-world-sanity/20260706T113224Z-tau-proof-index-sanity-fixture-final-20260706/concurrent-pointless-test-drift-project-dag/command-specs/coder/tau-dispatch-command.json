@@ -1,0 +1,8 @@
+{
+  "command": [
+    "python3",
+    "-c",
+    "print('============================= test session starts ============================='); print('collected 12 items'); print('tests/test_probe.py ....'); raise SystemExit(1)"
+  ],
+  "timeout_s": 20
+}

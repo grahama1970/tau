@@ -1,0 +1,37 @@
+oal-locked-subagents/proofs/rea
+l-world-sanity/20260705T165001Z
+-tau-provider-repair-max-attemp
+ts-after-hardening-20260705/adv
+anced-provider-runs/repair-loop
+/20260705T165002Z-rw-sanity-pro
+vider-dag-repair\ndag_spec: /ho
+me/graham/workspace/experiments
+/tau/experiments/goal-locked-su
+bagents/proofs/real-world-sanit
+y/20260705T165001Z-tau-provider
+-repair-max-attempts-after-hard
+ening-20260705/advanced-provide
+r-runs/repair-loop/20260705T165
+002Z-rw-sanity-provider-dag-rep
+air/dag-spec.json\nplanner_rece
+ipt: /home/graham/workspace/exp
+eriments/tau/experiments/goal-l
+ocked-subagents/proofs/real-wor
+ld-sanity/20260705T165001Z-tau-
+provider-repair-max-attempts-af
+ter-hardening-20260705/advanced
+-provider-runs/repair-loop/2026
+0705T165002Z-rw-sanity-provider
+-dag-repair/planner-receipt.jso
+n\nfinal_receipt: /home/graham/
+workspace/experiments/tau/exper
+iments/goal-locked-subagents/pr
+oofs/real-world-sanity/20260705
+T165001Z-tau-provider-repair-ma
+x-attempts-after-hardening-2026
+0705/advanced-provider-runs/rep
+air-loop/20260705T165002Z-rw-sa
+nity-provider-dag-repair/run-re
+ceipt.json\ncanonical truth: Ta
+u JSON receipts; this pane is h
+uman-visible telemetry.\n

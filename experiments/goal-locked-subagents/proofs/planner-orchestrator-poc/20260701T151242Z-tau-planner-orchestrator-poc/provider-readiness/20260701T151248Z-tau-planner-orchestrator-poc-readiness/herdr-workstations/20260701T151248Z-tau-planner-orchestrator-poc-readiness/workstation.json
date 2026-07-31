@@ -1,0 +1,156 @@
+{
+  "agents": {
+    "20260701T151248Z-tau-planner-orchestrator-poc-readiness-codex": {
+      "command": "'codex' '--cd' '/home/graham/workspace/experiments/tau'",
+      "last_start_result": {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260701T151248Z-tau-planner-orchestrator-poc-readiness-codex",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "wM",
+          "--tab",
+          "wM:t2",
+          "--env",
+          "TAU_ROLE=codex",
+          "--env",
+          "TAU_AGENT_NAME=20260701T151248Z-tau-planner-orchestrator-poc-readiness-codex",
+          "--env",
+          "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-poc/20260701T151242Z-tau-planner-orchestrator-poc/provider-readiness/20260701T151248Z-tau-planner-orchestrator-poc-readiness/herdr-workstations/20260701T151248Z-tau-planner-orchestrator-poc-readiness",
+          "--env",
+          "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-poc/20260701T151242Z-tau-planner-orchestrator-poc/provider-readiness/20260701T151248Z-tau-planner-orchestrator-poc-readiness/work-orders/codex.json",
+          "--env",
+          "TAU_PROVIDER_READINESS_RUN_ID=20260701T151248Z-tau-planner-orchestrator-poc-readiness",
+          "--env",
+          "TAU_PROVIDER_READINESS_PROVIDER=codex",
+          "--no-focus",
+          "--",
+          "codex",
+          "--cd",
+          "/home/graham/workspace/experiments/tau"
+        ],
+        "parsed": {
+          "id": "cli:agent:start",
+          "result": {
+            "agent": {
+              "agent_status": "unknown",
+              "cwd": "/home/graham/workspace/experiments/tau",
+              "focused": false,
+              "foreground_cwd": "/home/graham/workspace/experiments/tau",
+              "name": "20260701T151248Z-tau-planner-orchestrator-poc-readiness-codex",
+              "pane_id": "wM:p5",
+              "revision": 0,
+              "tab_id": "wM:t2",
+              "terminal_id": "term_6558e1feba75a64",
+              "workspace_id": "wM"
+            },
+            "argv": [
+              "codex",
+              "--cd",
+              "/home/graham/workspace/experiments/tau"
+            ],
+            "type": "agent_started"
+          }
+        },
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T151248Z-tau-planner-orchestrator-poc-readiness-codex\",\"pane_id\":\"wM:p5\",\"revision\":0,\"tab_id\":\"wM:t2\",\"terminal_id\":\"term_6558e1feba75a64\",\"workspace_id\":\"wM\"},\"argv\":[\"codex\",\"--cd\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+      },
+      "role": "codex",
+      "started_at": "20260701T151249Z",
+      "tab": "providers",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-poc/20260701T151242Z-tau-planner-orchestrator-poc/provider-readiness/20260701T151248Z-tau-planner-orchestrator-poc-readiness/work-orders/codex.json"
+    },
+    "20260701T151248Z-tau-planner-orchestrator-poc-readiness-opencode": {
+      "command": "'opencode' '/home/graham/workspace/experiments/tau'",
+      "last_start_result": {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260701T151248Z-tau-planner-orchestrator-poc-readiness-opencode",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "wM",
+          "--tab",
+          "wM:t2",
+          "--env",
+          "TAU_ROLE=opencode",
+          "--env",
+          "TAU_AGENT_NAME=20260701T151248Z-tau-planner-orchestrator-poc-readiness-opencode",
+          "--env",
+          "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-poc/20260701T151242Z-tau-planner-orchestrator-poc/provider-readiness/20260701T151248Z-tau-planner-orchestrator-poc-readiness/herdr-workstations/20260701T151248Z-tau-planner-orchestrator-poc-readiness",
+          "--env",
+          "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-poc/20260701T151242Z-tau-planner-orchestrator-poc/provider-readiness/20260701T151248Z-tau-planner-orchestrator-poc-readiness/work-orders/opencode.json",
+          "--env",
+          "TAU_PROVIDER_READINESS_RUN_ID=20260701T151248Z-tau-planner-orchestrator-poc-readiness",
+          "--env",
+          "TAU_PROVIDER_READINESS_PROVIDER=opencode",
+          "--no-focus",
+          "--split",
+          "right",
+          "--",
+          "opencode",
+          "/home/graham/workspace/experiments/tau"
+        ],
+        "parsed": {
+          "id": "cli:agent:start",
+          "result": {
+            "agent": {
+              "agent_status": "unknown",
+              "cwd": "/home/graham/workspace/experiments/tau",
+              "focused": false,
+              "foreground_cwd": "/home/graham/workspace/experiments/tau",
+              "name": "20260701T151248Z-tau-planner-orchestrator-poc-readiness-opencode",
+              "pane_id": "wM:p6",
+              "revision": 0,
+              "tab_id": "wM:t2",
+              "terminal_id": "term_6558e1ff099c065",
+              "workspace_id": "wM"
+            },
+            "argv": [
+              "opencode",
+              "/home/graham/workspace/experiments/tau"
+            ],
+            "type": "agent_started"
+          }
+        },
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T151248Z-tau-planner-orchestrator-poc-readiness-opencode\",\"pane_id\":\"wM:p6\",\"revision\":0,\"tab_id\":\"wM:t2\",\"terminal_id\":\"term_6558e1ff099c065\",\"workspace_id\":\"wM\"},\"argv\":[\"opencode\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+      },
+      "role": "opencode",
+      "started_at": "20260701T151249Z",
+      "tab": "providers",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-poc/20260701T151242Z-tau-planner-orchestrator-poc/provider-readiness/20260701T151248Z-tau-planner-orchestrator-poc-readiness/work-orders/opencode.json"
+    }
+  },
+  "created_at": "20260701T151249Z",
+  "cwd": "/home/graham/workspace/experiments/tau",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-poc/20260701T151242Z-tau-planner-orchestrator-poc/provider-readiness/20260701T151248Z-tau-planner-orchestrator-poc-readiness/herdr-workstations/20260701T151248Z-tau-planner-orchestrator-poc-readiness/events.jsonl",
+  "kind": "herdr-workstation",
+  "label": "tau-planner-orchestrator-poc-readiness",
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-poc/20260701T151242Z-tau-planner-orchestrator-poc/provider-readiness/20260701T151248Z-tau-planner-orchestrator-poc-readiness/herdr-workstations/20260701T151248Z-tau-planner-orchestrator-poc-readiness",
+  "run_id": "20260701T151248Z-tau-planner-orchestrator-poc-readiness",
+  "schema_version": 1,
+  "session": "default",
+  "tabs": {
+    "logs": "wM:t3",
+    "providers": "wM:t2",
+    "receipts": "wM:t4"
+  },
+  "updated_at": "20260701T151249Z",
+  "workspace_id": "wM",
+  "worktree": {
+    "base": null,
+    "branch": null,
+    "enabled": false,
+    "path": null,
+    "raw": null
+  }
+}

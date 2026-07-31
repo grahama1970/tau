@@ -1,0 +1,51 @@
+{
+  "approval_request": {
+    "agent_default_after_approval": [
+      "Publish the exact staged asset /home/graham/workspace/experiments/agent-skills/skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png to skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png.",
+      "Do not alter image bytes, provider packet status, or panel review status during publication.",
+      "Run next_required_probe_command and require PASS_PROVIDER_MEDIA_URL_PROBE before patching provider media receipts.",
+      "If the URL probe fails, keep provider readiness blocked and record the failed probe receipt."
+    ],
+    "authorization_receipt_template": {
+      "approved_action": "publish_exact_locked_provider_media",
+      "approved_at": "<ISO-8601 timestamp>",
+      "approved_by": "<human-or-authority>",
+      "authorized_sha256": "sha256:3ef0ab7722d6742adf0c4e2b19a325f3e0cdaa761f8459e49329b2737a5d99fa",
+      "authorized_target_repo_path": "skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png",
+      "authorized_url": "https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png",
+      "notes": "No Kling call or provider readiness approval is implied.",
+      "schema": "persona_dream.provider_media_publication_authorization.v1",
+      "status": "AUTHORIZED_PUBLICATION"
+    },
+    "human_role": "Approve, reject, or provide an equivalent stable public media URL for the exact locked asset.",
+    "target_record": {
+      "locked_sha256": "sha256:3ef0ab7722d6742adf0c4e2b19a325f3e0cdaa761f8459e49329b2737a5d99fa",
+      "proposed_url": "https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png",
+      "staged_asset_path": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png",
+      "target_repo_path": "skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png"
+    }
+  },
+  "authorization_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/provider_media_publication_authorization.json",
+  "authorized_at": "2026-06-29T19:18:05Z",
+  "authorized_by": "graham_explicit_chat_authorization_2026-06-29",
+  "does_not_authorize": [
+    "git_push_without_authorization_receipt",
+    "public_upload_without_authorization_receipt",
+    "provider_readiness",
+    "direct_kling_submit",
+    "paid_provider_call"
+  ],
+  "exercised": "preflight receipt parse, authorization boundary, locked URL/hash comparison when an authorization receipt is supplied",
+  "first_blocker": null,
+  "live": "no",
+  "locked_sha256": "sha256:3ef0ab7722d6742adf0c4e2b19a325f3e0cdaa761f8459e49329b2737a5d99fa",
+  "mocked": "no",
+  "next_action": "Publish the exact locked staged asset to the authorized URL, then run next_required_probe_command and require PASS_PROVIDER_MEDIA_URL_PROBE.",
+  "next_required_probe_command": "./run.sh validate-provider-media-url --url https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png --expected-sha256 sha256:3ef0ab7722d6742adf0c4e2b19a325f3e0cdaa761f8459e49329b2737a5d99fa --json",
+  "preflight_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/provider_media_publication_preflight.json",
+  "proposed_url": "https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png",
+  "schema": "persona_dream.provider_media_publication_authorization_validation.v1",
+  "status": "PASS_PROVIDER_MEDIA_PUBLICATION_AUTHORIZATION",
+  "target_repo_path": "skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png",
+  "unverified": "public upload execution, public URL fetch, Kling provider fetch behavior, paid-call approval, Kling submission"
+}

@@ -1,0 +1,6 @@
+{
+  "goal_hash": "sha256:rw-sanity-project-dag-evidence-manifest-goal-drift",
+  "kind": "creator_artifact",
+  "schema": "tau.creator_artifact.v1",
+  "summary": "Preflight evidence manifest creator artifact."
+}

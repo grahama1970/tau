@@ -1,0 +1,882 @@
+{
+  "check_count": 11,
+  "checks": [
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [
+            "exit_code 1 not in expected [0]",
+            "receipt status 'BLOCKED', expected 'PASS'",
+            "receipt verdict 'DAG_CONTRACT_INVALID', expected 'PASS'"
+          ],
+          "exit_code": 1,
+          "receipt_summary": {
+            "live": true,
+            "mocked": false,
+            "ok": false,
+            "provider_live": false,
+            "scheduler": "bounded-ready-queue",
+            "schema": "tau.dag_error.v1",
+            "status": "BLOCKED",
+            "verdict": "DAG_CONTRACT_INVALID"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_timeout_retry_recovery.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_timeout_retry_recovery.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.project_dag_ready_queue_timeout_retry_recovery",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/concurrent-timeout-retry-project-dag/dag-contract.json",
+        "--receipt-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/concurrent-timeout-retry-project-dag/run",
+        "--agents-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/concurrent-timeout-retry-project-dag/agents",
+        "--scheduler",
+        "bounded-ready-queue"
+      ],
+      "completed_at": "2026-07-05T14:29:04Z",
+      "errors": [
+        "exit_code 1 not in expected [0]",
+        "receipt status 'BLOCKED', expected 'PASS'",
+        "receipt verdict 'DAG_CONTRACT_INVALID', expected 'PASS'"
+      ],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": "PASS",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": false,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau retries a timed-out concurrent ready-queue DAG node, preserves the failed attempt evidence, and continues to the reviewer join after the retry passes.",
+      "receipt_summary": {
+        "live": true,
+        "mocked": false,
+        "ok": false,
+        "provider_live": false,
+        "scheduler": "bounded-ready-queue",
+        "schema": "tau.dag_error.v1",
+        "status": "BLOCKED",
+        "verdict": "DAG_CONTRACT_INVALID"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T14:29:03Z",
+      "status": "BLOCKED",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_timeout_retry_recovery.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_timeout_retry_recovery.stdout.txt",
+      "timeout_seconds": 120
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [
+            "exit_code 1 not in expected [0]",
+            "receipt status 'BLOCKED', expected 'PASS'",
+            "receipt verdict 'DAG_CONTRACT_INVALID', expected 'PASS'"
+          ],
+          "exit_code": 1,
+          "receipt_summary": {
+            "live": true,
+            "mocked": false,
+            "ok": false,
+            "provider_live": false,
+            "scheduler": "bounded-ready-queue",
+            "schema": "tau.dag_error.v1",
+            "status": "BLOCKED",
+            "verdict": "DAG_CONTRACT_INVALID"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_non_json_retry_recovery.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_non_json_retry_recovery.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.project_dag_ready_queue_non_json_retry_recovery",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/concurrent-non-json-retry-project-dag/dag-contract.json",
+        "--receipt-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/concurrent-non-json-retry-project-dag/run",
+        "--agents-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/concurrent-non-json-retry-project-dag/agents",
+        "--scheduler",
+        "bounded-ready-queue"
+      ],
+      "completed_at": "2026-07-05T14:29:04Z",
+      "errors": [
+        "exit_code 1 not in expected [0]",
+        "receipt status 'BLOCKED', expected 'PASS'",
+        "receipt verdict 'DAG_CONTRACT_INVALID', expected 'PASS'"
+      ],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": "PASS",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": false,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau retries a concurrent ready-queue DAG node that emits non-JSON once, then continues to the reviewer join after a valid retry response.",
+      "receipt_summary": {
+        "live": true,
+        "mocked": false,
+        "ok": false,
+        "provider_live": false,
+        "scheduler": "bounded-ready-queue",
+        "schema": "tau.dag_error.v1",
+        "status": "BLOCKED",
+        "verdict": "DAG_CONTRACT_INVALID"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T14:29:04Z",
+      "status": "BLOCKED",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_non_json_retry_recovery.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_non_json_retry_recovery.stdout.txt",
+      "timeout_seconds": 120
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [
+            "receipt verdict 'DAG_CONTRACT_INVALID', expected 'INVALID_COMMAND_JSON'"
+          ],
+          "exit_code": 1,
+          "receipt_summary": {
+            "live": true,
+            "mocked": false,
+            "ok": false,
+            "provider_live": false,
+            "scheduler": "bounded-ready-queue",
+            "schema": "tau.dag_error.v1",
+            "status": "BLOCKED",
+            "verdict": "DAG_CONTRACT_INVALID"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_max_retries_fail_closed.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_max_retries_fail_closed.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.project_dag_ready_queue_max_retries_fail_closed",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/concurrent-max-retries-project-dag/dag-contract.json",
+        "--receipt-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/concurrent-max-retries-project-dag/run",
+        "--agents-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/concurrent-max-retries-project-dag/agents",
+        "--scheduler",
+        "bounded-ready-queue"
+      ],
+      "completed_at": "2026-07-05T14:29:05Z",
+      "errors": [
+        "receipt verdict 'DAG_CONTRACT_INVALID', expected 'INVALID_COMMAND_JSON'"
+      ],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": "INVALID_COMMAND_JSON",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": false,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau blocks a concurrent ready-queue DAG node after repeated non-JSON responses exhaust node max_attempts.",
+      "receipt_summary": {
+        "live": true,
+        "mocked": false,
+        "ok": false,
+        "provider_live": false,
+        "scheduler": "bounded-ready-queue",
+        "schema": "tau.dag_error.v1",
+        "status": "BLOCKED",
+        "verdict": "DAG_CONTRACT_INVALID"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T14:29:04Z",
+      "status": "BLOCKED",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_max_retries_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_max_retries_fail_closed.stdout.txt",
+      "timeout_seconds": 120
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [
+            "receipt verdict 'DAG_CONTRACT_INVALID', expected 'REVIEWER_GOAL_HASH_MISMATCH'"
+          ],
+          "exit_code": 1,
+          "receipt_summary": {
+            "live": true,
+            "mocked": false,
+            "ok": false,
+            "provider_live": false,
+            "scheduler": "handoff-loop",
+            "schema": "tau.dag_error.v1",
+            "status": "BLOCKED",
+            "verdict": "DAG_CONTRACT_INVALID"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_reviewer_goal_drift_fail_closed.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_reviewer_goal_drift_fail_closed.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.project_dag_reviewer_goal_drift_fail_closed",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/complex-project-dag/dag-contract.json",
+        "--receipt-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/complex-project-dag/run",
+        "--agents-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/complex-project-dag/agents"
+      ],
+      "completed_at": "2026-07-05T14:29:05Z",
+      "errors": [
+        "receipt verdict 'DAG_CONTRACT_INVALID', expected 'REVIEWER_GOAL_HASH_MISMATCH'"
+      ],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": "REVIEWER_GOAL_HASH_MISMATCH",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": false,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau blocks a project-agent DAG when the reviewer verdict cites a goal hash that does not match the immutable DAG goal.",
+      "receipt_summary": {
+        "live": true,
+        "mocked": false,
+        "ok": false,
+        "provider_live": false,
+        "scheduler": "handoff-loop",
+        "schema": "tau.dag_error.v1",
+        "status": "BLOCKED",
+        "verdict": "DAG_CONTRACT_INVALID"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T14:29:05Z",
+      "status": "BLOCKED",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_reviewer_goal_drift_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_reviewer_goal_drift_fail_closed.stdout.txt",
+      "timeout_seconds": 90
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [
+            "receipt verdict 'DAG_CONTRACT_INVALID', expected 'COMMAND_TIMEOUT'"
+          ],
+          "exit_code": 1,
+          "receipt_summary": {
+            "live": true,
+            "mocked": false,
+            "ok": false,
+            "provider_live": false,
+            "scheduler": "handoff-loop",
+            "schema": "tau.dag_error.v1",
+            "status": "BLOCKED",
+            "verdict": "DAG_CONTRACT_INVALID"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_timeout_fail_closed.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_timeout_fail_closed.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.project_dag_timeout_fail_closed",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/timeout-project-dag/dag-contract.json",
+        "--receipt-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/timeout-project-dag/run",
+        "--agents-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/timeout-project-dag/agents"
+      ],
+      "completed_at": "2026-07-05T14:29:06Z",
+      "errors": [
+        "receipt verdict 'DAG_CONTRACT_INVALID', expected 'COMMAND_TIMEOUT'"
+      ],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": "COMMAND_TIMEOUT",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": false,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau blocks a project-agent DAG when a selected node command times out.",
+      "receipt_summary": {
+        "live": true,
+        "mocked": false,
+        "ok": false,
+        "provider_live": false,
+        "scheduler": "handoff-loop",
+        "schema": "tau.dag_error.v1",
+        "status": "BLOCKED",
+        "verdict": "DAG_CONTRACT_INVALID"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T14:29:05Z",
+      "status": "BLOCKED",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_timeout_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_timeout_fail_closed.stdout.txt",
+      "timeout_seconds": 90
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [
+            "receipt verdict 'DAG_CONTRACT_INVALID', expected 'INVALID_COMMAND_JSON'"
+          ],
+          "exit_code": 1,
+          "receipt_summary": {
+            "live": true,
+            "mocked": false,
+            "ok": false,
+            "provider_live": false,
+            "scheduler": "handoff-loop",
+            "schema": "tau.dag_error.v1",
+            "status": "BLOCKED",
+            "verdict": "DAG_CONTRACT_INVALID"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_non_json_fail_closed.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_non_json_fail_closed.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.project_dag_non_json_fail_closed",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/non-json-project-dag/dag-contract.json",
+        "--receipt-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/non-json-project-dag/run",
+        "--agents-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/non-json-project-dag/agents"
+      ],
+      "completed_at": "2026-07-05T14:29:07Z",
+      "errors": [
+        "receipt verdict 'DAG_CONTRACT_INVALID', expected 'INVALID_COMMAND_JSON'"
+      ],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": "INVALID_COMMAND_JSON",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": false,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau blocks a project-agent DAG when a selected node emits non-JSON stdout.",
+      "receipt_summary": {
+        "live": true,
+        "mocked": false,
+        "ok": false,
+        "provider_live": false,
+        "scheduler": "handoff-loop",
+        "schema": "tau.dag_error.v1",
+        "status": "BLOCKED",
+        "verdict": "DAG_CONTRACT_INVALID"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T14:29:06Z",
+      "status": "BLOCKED",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_non_json_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_non_json_fail_closed.stdout.txt",
+      "timeout_seconds": 90
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [
+            "receipt verdict 'DAG_CONTRACT_INVALID', expected 'MAX_STEPS_EXHAUSTED'"
+          ],
+          "exit_code": 1,
+          "receipt_summary": {
+            "live": true,
+            "mocked": false,
+            "ok": false,
+            "provider_live": false,
+            "scheduler": "handoff-loop",
+            "schema": "tau.dag_error.v1",
+            "status": "BLOCKED",
+            "verdict": "DAG_CONTRACT_INVALID"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_max_steps_fail_closed.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_max_steps_fail_closed.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.project_dag_max_steps_fail_closed",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/max-steps-project-dag/dag-contract.json",
+        "--receipt-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/max-steps-project-dag/run",
+        "--agents-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/max-steps-project-dag/agents"
+      ],
+      "completed_at": "2026-07-05T14:29:07Z",
+      "errors": [
+        "receipt verdict 'DAG_CONTRACT_INVALID', expected 'MAX_STEPS_EXHAUSTED'"
+      ],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": "MAX_STEPS_EXHAUSTED",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": false,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau blocks a project-agent DAG when a reviewer keeps routing back and the DAG max_total_attempts budget is exhausted.",
+      "receipt_summary": {
+        "live": true,
+        "mocked": false,
+        "ok": false,
+        "provider_live": false,
+        "scheduler": "handoff-loop",
+        "schema": "tau.dag_error.v1",
+        "status": "BLOCKED",
+        "verdict": "DAG_CONTRACT_INVALID"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T14:29:07Z",
+      "status": "BLOCKED",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_max_steps_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_max_steps_fail_closed.stdout.txt",
+      "timeout_seconds": 90
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 1,
+          "receipt_summary": {
+            "live": true,
+            "mocked": false,
+            "ok": false,
+            "provider_live": false,
+            "scheduler": "handoff-loop",
+            "schema": "tau.dag_error.v1",
+            "status": "BLOCKED",
+            "verdict": "DAG_CONTRACT_INVALID"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_bad_contract_course_correction.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_bad_contract_course_correction.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.project_dag_bad_contract_course_correction",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/bad-contract-project-dag/dag-contract.json",
+        "--receipt-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/bad-contract-project-dag/run",
+        "--agents-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/bad-contract-project-dag/agents"
+      ],
+      "completed_at": "2026-07-05T14:29:08Z",
+      "errors": [],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": "DAG_CONTRACT_INVALID",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau rejects a malformed project-agent DAG before dispatch and returns a project-agent-readable tau.dag_error.v1 course-correction payload.",
+      "receipt_summary": {
+        "live": true,
+        "mocked": false,
+        "ok": false,
+        "provider_live": false,
+        "scheduler": "handoff-loop",
+        "schema": "tau.dag_error.v1",
+        "status": "BLOCKED",
+        "verdict": "DAG_CONTRACT_INVALID"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T14:29:07Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_bad_contract_course_correction.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_bad_contract_course_correction.stdout.txt",
+      "timeout_seconds": 60
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [
+            "receipt verdict 'DAG_CONTRACT_INVALID', expected 'CYCLE_DETECTED'"
+          ],
+          "exit_code": 1,
+          "receipt_summary": {
+            "live": true,
+            "mocked": false,
+            "ok": false,
+            "provider_live": false,
+            "scheduler": "bounded-ready-queue",
+            "schema": "tau.dag_error.v1",
+            "status": "BLOCKED",
+            "verdict": "DAG_CONTRACT_INVALID"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_cycle_fail_closed.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_cycle_fail_closed.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.project_dag_ready_queue_cycle_fail_closed",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/ready-queue-cycle-project-dag/dag-contract.json",
+        "--receipt-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/ready-queue-cycle-project-dag/run",
+        "--agents-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/ready-queue-cycle-project-dag/agents",
+        "--scheduler",
+        "bounded-ready-queue"
+      ],
+      "completed_at": "2026-07-05T14:29:09Z",
+      "errors": [
+        "receipt verdict 'DAG_CONTRACT_INVALID', expected 'CYCLE_DETECTED'"
+      ],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": "CYCLE_DETECTED",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": false,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau blocks a bounded ready-queue DAG whose declared graph contains a cycle before dispatching node commands.",
+      "receipt_summary": {
+        "live": true,
+        "mocked": false,
+        "ok": false,
+        "provider_live": false,
+        "scheduler": "bounded-ready-queue",
+        "schema": "tau.dag_error.v1",
+        "status": "BLOCKED",
+        "verdict": "DAG_CONTRACT_INVALID"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T14:29:08Z",
+      "status": "BLOCKED",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_cycle_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_cycle_fail_closed.stdout.txt",
+      "timeout_seconds": 60
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [
+            "receipt verdict 'DAG_CONTRACT_INVALID', expected 'MUTATING_NODE_NOT_ALLOWED'"
+          ],
+          "exit_code": 1,
+          "receipt_summary": {
+            "live": true,
+            "mocked": false,
+            "ok": false,
+            "provider_live": false,
+            "scheduler": "bounded-ready-queue",
+            "schema": "tau.dag_error.v1",
+            "status": "BLOCKED",
+            "verdict": "DAG_CONTRACT_INVALID"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_mutating_branch_fail_closed.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_mutating_branch_fail_closed.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.project_dag_ready_queue_mutating_branch_fail_closed",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/ready-queue-mutating-project-dag/dag-contract.json",
+        "--receipt-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/ready-queue-mutating-project-dag/run",
+        "--agents-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/ready-queue-mutating-project-dag/agents",
+        "--scheduler",
+        "bounded-ready-queue"
+      ],
+      "completed_at": "2026-07-05T14:29:10Z",
+      "errors": [
+        "receipt verdict 'DAG_CONTRACT_INVALID', expected 'MUTATING_NODE_NOT_ALLOWED'"
+      ],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": "MUTATING_NODE_NOT_ALLOWED",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": false,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau blocks a bounded ready-queue DAG that marks a branch as mutating before branch locks and mutation policy are present.",
+      "receipt_summary": {
+        "live": true,
+        "mocked": false,
+        "ok": false,
+        "provider_live": false,
+        "scheduler": "bounded-ready-queue",
+        "schema": "tau.dag_error.v1",
+        "status": "BLOCKED",
+        "verdict": "DAG_CONTRACT_INVALID"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T14:29:09Z",
+      "status": "BLOCKED",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_mutating_branch_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_mutating_branch_fail_closed.stdout.txt",
+      "timeout_seconds": 60
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [
+            "receipt verdict 'DAG_CONTRACT_INVALID', expected 'NON_LOCAL_READY_QUEUE_NODE_NOT_ALLOWED'"
+          ],
+          "exit_code": 1,
+          "receipt_summary": {
+            "live": true,
+            "mocked": false,
+            "ok": false,
+            "provider_live": false,
+            "scheduler": "bounded-ready-queue",
+            "schema": "tau.dag_error.v1",
+            "status": "BLOCKED",
+            "verdict": "DAG_CONTRACT_INVALID"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_provider_policy_fail_closed.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_provider_policy_fail_closed.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.project_dag_ready_queue_provider_policy_fail_closed",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/ready-queue-provider-policy-project-dag/dag-contract.json",
+        "--receipt-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/ready-queue-provider-policy-project-dag/run",
+        "--agents-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/ready-queue-provider-policy-project-dag/agents",
+        "--scheduler",
+        "bounded-ready-queue"
+      ],
+      "completed_at": "2026-07-05T14:29:10Z",
+      "errors": [
+        "receipt verdict 'DAG_CONTRACT_INVALID', expected 'NON_LOCAL_READY_QUEUE_NODE_NOT_ALLOWED'"
+      ],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": "NON_LOCAL_READY_QUEUE_NODE_NOT_ALLOWED",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": false,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau blocks provider/non-local ready-queue branches until provider concurrency and branch-lock policy are explicitly supported.",
+      "receipt_summary": {
+        "live": true,
+        "mocked": false,
+        "ok": false,
+        "provider_live": false,
+        "scheduler": "bounded-ready-queue",
+        "schema": "tau.dag_error.v1",
+        "status": "BLOCKED",
+        "verdict": "DAG_CONTRACT_INVALID"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T14:29:10Z",
+      "status": "BLOCKED",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_provider_policy_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/logs/advanced.project_dag_ready_queue_provider_policy_fail_closed.stdout.txt",
+      "timeout_seconds": 60
+    }
+  ],
+  "completed_at": "2026-07-05T14:29:10Z",
+  "failed_check_count": 10,
+  "level_counts": {
+    "advanced": {
+      "BLOCKED": 10,
+      "PASS": 1
+    }
+  },
+  "live": "mixed",
+  "mocked": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "browser/CDP chat UI rendering",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau CLI and command-spec surfaces execute from the local checkout",
+      "Tau can run a real local handoff command loop",
+      "Tau planner, generic DAG runner, and deterministic scheduler stress surfaces emit non-mocked receipts",
+      "Tau can allocate visible provider panes and run live provider DAG checks when advanced checks pass",
+      "Tau fail-closed negative controls preserve typed BLOCKED receipts"
+    ]
+  },
+  "provider_live": false,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705",
+  "run_id": "20260705T142903Z-tau-current-dag-failure-stress-20260705",
+  "schema": "tau.real_world_sanity_suite_receipt.v1",
+  "selected_levels": [
+    "advanced"
+  ],
+  "status": "BLOCKED",
+  "timestamp": "2026-07-05T14:29:10Z"
+}

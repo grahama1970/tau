@@ -1,0 +1,18 @@
+{
+  "action": "herdr_gc_apply",
+  "actor": {
+    "auth_method": "manual",
+    "id": "human:graham"
+  },
+  "approved": true,
+  "evidence": [
+    "real-world-sanity approval fixture"
+  ],
+  "nonce": "real-world-sanity:herdr_gc_apply:herdr-gc:rw-sanity-generic-provider-,rw-sanity-provider-,tau-live-provider-,tau-provider-dag-,tau-generic-provider-,tau-traycer-",
+  "reason": "Authorize fake-Herdr GC apply for real-world sanity proof.",
+  "schema": "tau.human_approval_packet.v1",
+  "signature": "manual-real-world-sanity-fixture",
+  "target": {
+    "id": "herdr-gc:rw-sanity-generic-provider-,rw-sanity-provider-,tau-live-provider-,tau-provider-dag-,tau-generic-provider-,tau-traycer-"
+  }
+}

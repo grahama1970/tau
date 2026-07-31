@@ -1,0 +1,37 @@
+s/real-world-s
+anity/20260703
+T124002Z-tau-r
+eal-world-sani
+ty-all/advance
+d-provider-run
+s/invalid-mode
+l/20260703T124
+831Z-rw-sanity
+-provider-dag-
+invalid-model/
+planner-receip
+t.json\nfinal_
+receipt: /home
+/graham/worksp
+ace/experiment
+s/tau/experime
+nts/goal-locke
+d-subagents/pr
+oofs/real-worl
+d-sanity/20260
+703T124002Z-ta
+u-real-world-s
+anity-all/adva
+nced-provider-
+runs/invalid-m
+odel/20260703T
+124831Z-rw-san
+ity-provider-d
+ag-invalid-mod
+el/run-receipt
+.json\ncanonic
+al truth: Tau
+JSON receipts;
+ this pane is
+human-visible
+telemetry.\n

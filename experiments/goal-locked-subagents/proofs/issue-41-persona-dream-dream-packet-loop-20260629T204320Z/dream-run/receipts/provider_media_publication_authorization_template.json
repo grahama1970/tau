@@ -1,0 +1,50 @@
+{
+  "agent_default_after_approval": [
+    "Publish the exact staged asset /home/graham/workspace/experiments/agent-skills/skills/persona-dream/provider_media/dream-run/panel_01.png to skills/persona-dream/provider_media/dream-run/panel_01.png.",
+    "Do not alter image bytes, provider packet status, or panel review status during publication.",
+    "Run next_required_probe_command and require PASS_PROVIDER_MEDIA_URL_PROBE before patching provider media receipts.",
+    "If the URL probe fails, keep provider readiness blocked and record the failed probe receipt."
+  ],
+  "does_not_authorize": [
+    "git_push_without_authorization_receipt",
+    "public_upload_without_authorization_receipt",
+    "provider_readiness",
+    "direct_kling_submit",
+    "paid_provider_call"
+  ],
+  "exercised": "preflight receipt parse, locked media fact extraction, draft approval packet rendering",
+  "first_blocker": {
+    "phase": "provider_media_publication_authorization",
+    "reason": "authorization_receipt_required"
+  },
+  "human_role": "Approve, reject, or provide an equivalent stable public media URL for the exact locked asset.",
+  "live": "no",
+  "mocked": "no",
+  "operator_instructions": [
+    "Do not use this template file as the authorization receipt.",
+    "If approved, copy suggested_authorization_receipt to a separate JSON file and replace approved_by and approved_at.",
+    "Run validate-provider-media-publication-authorization with --authorization-receipt against that separate approval file.",
+    "Only after PASS_PROVIDER_MEDIA_PUBLICATION_AUTHORIZATION may the exact staged bytes be published."
+  ],
+  "preflight_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/provider_media_publication_preflight.json",
+  "schema": "persona_dream.provider_media_publication_authorization_template.v1",
+  "status": "DRAFT_NOT_AUTHORIZATION",
+  "suggested_authorization_receipt": {
+    "approved_action": "publish_exact_locked_provider_media",
+    "approved_at": "<ISO-8601 timestamp>",
+    "approved_by": "<human-or-authority>",
+    "authorized_sha256": "sha256:2c89628513c4c3c34d2b862673e56c656ce1a40409398fbb13fba6718f53c914",
+    "authorized_target_repo_path": "skills/persona-dream/provider_media/dream-run/panel_01.png",
+    "authorized_url": "https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/dream-run/panel_01.png",
+    "notes": "No Kling call or provider readiness approval is implied.",
+    "schema": "persona_dream.provider_media_publication_authorization.v1",
+    "status": "AUTHORIZED_PUBLICATION"
+  },
+  "target_record": {
+    "locked_sha256": "sha256:2c89628513c4c3c34d2b862673e56c656ce1a40409398fbb13fba6718f53c914",
+    "proposed_url": "https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/dream-run/panel_01.png",
+    "staged_asset_path": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/provider_media/dream-run/panel_01.png",
+    "target_repo_path": "skills/persona-dream/provider_media/dream-run/panel_01.png"
+  },
+  "unverified": "human approval, public upload execution, public URL fetch, provider readiness, Kling submission"
+}

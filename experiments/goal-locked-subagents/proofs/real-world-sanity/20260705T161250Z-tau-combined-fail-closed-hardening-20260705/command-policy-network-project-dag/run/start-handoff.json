@@ -1,0 +1,42 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T161250Z-tau-combined-fail-closed-hardening-20260705/command-policy-network-project-dag/dag-contract.json"
+    ],
+    "summary": "Dispatch DAG contract rw-sanity-project-dag-command-policy-network."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-command-policy-network"
+  },
+  "goal": {
+    "goal_hash": "sha256:rw-sanity-project-dag-command-policy-network",
+    "goal_id": "rw-sanity-project-dag-command-policy-network",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "coder",
+    "reason": "Entry node for DAG rw-sanity-project-dag-command-policy-network using role coder."
+  },
+  "previous_subagent": "human",
+  "rationale": "The DAG contract is the authoritative workflow and immutable goal boundary.",
+  "required_evidence": [
+    "creator_artifact",
+    "reviewer_verdict"
+  ],
+  "result": {
+    "evidence": [
+      {
+        "kind": "dag_contract",
+        "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T161250Z-tau-combined-fail-closed-hardening-20260705/command-policy-network-project-dag/dag-contract.json",
+        "schema": "tau.dag_contract.v1",
+        "sha256": "sha256:47c90dccb20f68d0aeaec67b7c2603e73bbfbdf7a90117c9f0e1e95b85f7ffd9"
+      }
+    ],
+    "status": "DAG_DISPATCH_REQUESTED",
+    "summary": "Tau is dispatching entry node coder."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Stop at a terminal DAG node or any fail-closed invariant violation."
+}

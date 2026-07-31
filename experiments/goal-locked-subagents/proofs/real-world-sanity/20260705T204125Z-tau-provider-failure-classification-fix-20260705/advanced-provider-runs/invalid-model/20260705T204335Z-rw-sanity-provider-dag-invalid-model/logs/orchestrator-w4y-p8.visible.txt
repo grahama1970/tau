@@ -1,0 +1,37 @@
+n\nplanner_receipt
+: /home/graham/wor
+kspace/experiments
+/tau/experiments/g
+oal-locked-subagen
+ts/proofs/real-wor
+ld-sanity/20260705
+T204125Z-tau-provi
+der-failure-classi
+fication-fix-20260
+705/advanced-provi
+der-runs/invalid-m
+odel/20260705T2043
+35Z-rw-sanity-prov
+ider-dag-invalid-m
+odel/planner-recei
+pt.json\nfinal_rec
+eipt: /home/graham
+/workspace/experim
+ents/tau/experimen
+ts/goal-locked-sub
+agents/proofs/real
+-world-sanity/2026
+0705T204125Z-tau-p
+rovider-failure-cl
+assification-fix-2
+0260705/advanced-p
+rovider-runs/inval
+id-model/20260705T
+204335Z-rw-sanity-
+provider-dag-inval
+id-model/run-recei
+pt.json\ncanonical
+ truth: Tau JSON r
+eceipts; this pane
+ is human-visible
+telemetry.\n

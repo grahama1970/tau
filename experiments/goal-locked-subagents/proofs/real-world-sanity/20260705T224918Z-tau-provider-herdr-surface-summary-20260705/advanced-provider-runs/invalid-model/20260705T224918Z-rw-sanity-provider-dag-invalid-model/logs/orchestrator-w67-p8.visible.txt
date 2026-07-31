@@ -1,0 +1,21 @@
+eriments/goal-locked-subagen
+ts/proofs/real-world-sanity/
+20260705T224918Z-tau-provide
+r-herdr-surface-summary-2026
+0705/advanced-provider-runs/
+invalid-model/20260705T22491
+8Z-rw-sanity-provider-dag-in
+valid-model/planner-receipt.
+json\nfinal_receipt: /home/g
+raham/workspace/experiments/
+tau/experiments/goal-locked-
+subagents/proofs/real-world-
+sanity/20260705T224918Z-tau-
+provider-herdr-surface-summa
+ry-20260705/advanced-provide
+r-runs/invalid-model/2026070
+5T224918Z-rw-sanity-provider
+-dag-invalid-model/run-recei
+pt.json\ncanonical truth: Ta
+u JSON receipts; this pane i
+s human-visible telemetry.\n

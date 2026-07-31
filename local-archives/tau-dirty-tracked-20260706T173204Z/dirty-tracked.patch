@@ -1,0 +1,286 @@
+diff --git a/src/tau_coding/battle_live_handoff.py b/src/tau_coding/battle_live_handoff.py
+index ada182ed..a13e117a 100644
+--- a/src/tau_coding/battle_live_handoff.py
++++ b/src/tau_coding/battle_live_handoff.py
+@@ -701,7 +701,9 @@ def _red_contract_error(script: str) -> str | None:
+ 
+     if imports & banned_imports:
+         return "red_artifact_not_local_stdlib_exploit"
+-    if "from app import import_zip" not in script and "import app" not in script:
++    imports_local_app = "from app import import_zip" in script or "import app" in script
++    loads_local_app_file = "spec_from_file_location" in script and "app.py" in script
++    if not imports_local_app and not loads_local_app_file:
+         return "red_artifact_missing_local_app_import"
+     if "import_zip(" not in script:
+         return "red_artifact_does_not_call_import_zip"
+diff --git a/tests/test_battle_live_handoff.py b/tests/test_battle_live_handoff.py
+index e47412d0..db32604f 100644
+--- a/tests/test_battle_live_handoff.py
++++ b/tests/test_battle_live_handoff.py
+@@ -28,6 +28,11 @@ def test_battle_live_subagent_receipt_validates_for_pass() -> None:
+             "schema": "tau.battle_scillm_call_receipt.v1",
+             "status": "PASS",
+             "model": "text",
++            "materialized_artifact": {
++                "status": "PASS",
++                "artifact_type": "red_exploit",
++                "path": "red/red_exploit_submission.py",
++            },
+         },
+         artifacts=["red/handoff.json", "red/scillm-call-receipt.json"],
+     )
+diff --git a/tests/test_persona_dream_dream_packet_agent.py b/tests/test_persona_dream_dream_packet_agent.py
+index a38805e7..c2682576 100644
+--- a/tests/test_persona_dream_dream_packet_agent.py
++++ b/tests/test_persona_dream_dream_packet_agent.py
+@@ -3,8 +3,12 @@ from pathlib import Path
+ 
+ from tau_coding.generated_ticket import validate_agent_handoff
+ from tau_coding.persona_dream_dream_packet_agent import (
++    _compact_memory_recall_item,
++    _contact_sheet_asset_from_recall_item,
+     _pipeline_first_blocker,
++    write_persona_dream_contact_sheet_loop_proof,
+     write_persona_dream_packet_loop_proof,
++    write_persona_dream_script_contract_loop_proof,
+     write_persona_dream_story_contract_loop_proof,
+     write_persona_dream_storyboard_panel_loop_proof,
+ )
+@@ -32,20 +36,50 @@ def test_dreamer_routes_are_valid_and_command_specs_exist() -> None:
+     assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
+     payload["next_agent"]["name"] = "story-writer"
+     assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
++    payload["next_agent"]["name"] = "story-editor"
++    assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
+     payload["next_agent"]["name"] = "story-reviewer"
+     assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
++    payload["next_agent"]["name"] = "script-writer"
++    assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
++    payload["next_agent"]["name"] = "script-reviewer"
++    assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
+     payload["next_agent"]["name"] = "storyboard-writer"
+     assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
+     payload["next_agent"]["name"] = "storyboard-reviewer"
+     assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
++    payload["next_agent"]["name"] = "crew-writer"
++    assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
++    payload["next_agent"]["name"] = "crew-reviewer"
++    assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
++    payload["next_agent"]["name"] = "contact-sheet-writer"
++    assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
++    payload["next_agent"]["name"] = "contact-sheet-reviewer"
++    assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
++    payload["next_agent"]["name"] = "contact-sheet-builder"
++    assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
++    payload["next_agent"]["name"] = "prompt-reviewer"
++    assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
++    payload["next_agent"]["name"] = "contact-sheet-build-reviewer"
++    assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
+ 
+     root = Path("experiments/goal-locked-subagents/agent-command-specs")
+     assert (root / "dreamer" / "tau-dispatch-command.json").is_file()
+     assert (root / "dream-reviewer" / "tau-dispatch-command.json").is_file()
+     assert (root / "story-writer" / "tau-dispatch-command.json").is_file()
++    assert (root / "story-editor" / "tau-dispatch-command.json").is_file()
+     assert (root / "story-reviewer" / "tau-dispatch-command.json").is_file()
++    assert (root / "script-writer" / "tau-dispatch-command.json").is_file()
++    assert (root / "script-reviewer" / "tau-dispatch-command.json").is_file()
+     assert (root / "storyboard-writer" / "tau-dispatch-command.json").is_file()
+     assert (root / "storyboard-reviewer" / "tau-dispatch-command.json").is_file()
++    assert (root / "crew-writer" / "tau-dispatch-command.json").is_file()
++    assert (root / "crew-reviewer" / "tau-dispatch-command.json").is_file()
++    assert (root / "contact-sheet-writer" / "tau-dispatch-command.json").is_file()
++    assert (root / "contact-sheet-reviewer" / "tau-dispatch-command.json").is_file()
++    assert (root / "contact-sheet-builder" / "tau-dispatch-command.json").is_file()
++    assert (root / "prompt-reviewer" / "tau-dispatch-command.json").is_file()
++    assert (root / "contact-sheet-build-reviewer" / "tau-dispatch-command.json").is_file()
+ 
+ 
+ def test_pipeline_first_blocker_accepts_nested_validation_shape() -> None:
+@@ -217,3 +251,186 @@ def test_storyboard_proof_writer_creates_start_handoff_without_running_agents(
+     assert start["context"]["persona_dream_storyboard_panel"]["work_order"].endswith(
+         "input_storyboard_panel_work_order.json"
+     )
++
++
++def test_script_proof_writer_creates_start_handoff_without_running_agents(
++    tmp_path,
++    monkeypatch,
++) -> None:
++    run_root = tmp_path / "dream-run"
++    run_root.mkdir()
++    prompt_payload = tmp_path / "prompt-payload.json"
++    prompt_payload.write_text(
++        json.dumps(
++            {
++                "task": {"scene_count": 1, "target_pages": 1, "duration_seconds": 8},
++                "source_context": {
++                    "core_idea": "Embry and Kai wait out a hot Kona surf window.",
++                    "story": "Embry waits because the local lineup is not ready for her paddle.",
++                    "interaction_matrix": [
++                        {
++                            "source_seed_id": "seed-embry",
++                            "entity": "Embry",
++                            "category": "character",
++                            "environment_interaction": "Heat, salt, and etiquette slow her choice.",
++                            "story_function": "Embry chooses restraint over rushing the wave.",
++                        }
++                    ],
++                    "location": {"place": "Kahalu'u Bay", "time_window": "daylight surf window"},
++                    "environment": {
++                        "description": "Hot, humid Kona surf conditions.",
++                        "active_pressures": ["heat", "saltwater", "local surf etiquette"],
++                    },
++                    "linked_assets": [],
++                },
++            }
++        ),
++        encoding="utf-8",
++    )
++    work_order = tmp_path / "script_contract_work_order.json"
++    work_order.write_text(
++        json.dumps(
++            {
++                "schema": "persona_dream.script_contract_work_order.v1",
++                "status": "READY",
++                "source_paths": {
++                    "run_root": str(run_root),
++                    "prompt_bundle": str(tmp_path),
++                },
++                "prompt_payload_path": str(prompt_payload),
++                "required_outputs": [
++                    "script_contract.json",
++                    "timed_transcript.json",
++                    "timed_beats.json",
++                    "entity_environment_script_table.json",
++                    "script-reviewer-verdict.json",
++                ],
++            }
++        ),
++        encoding="utf-8",
++    )
++
++    class FakeLoop:
++        def as_dict(self) -> dict:
++            return {
++                "ok": True,
++                "status": "WAITING",
++                "terminal_agent": "human",
++                "stop_reason": "next_agent_is_human",
++            }
++
++    def fake_loop(*args, **kwargs) -> FakeLoop:
++        return FakeLoop()
++
++    monkeypatch.setattr(
++        "tau_coding.handoff_dispatch.write_agent_handoff_command_loop_receipt",
++        fake_loop,
++    )
++    manifest = write_persona_dream_script_contract_loop_proof(
++        work_order=work_order,
++        out_dir=tmp_path / "proof",
++        active_goal_hash="sha256:goal",
++    )
++
++    start = json.loads((tmp_path / "proof" / "start-handoff.json").read_text())
++    assert manifest["mocked"] is False
++    assert start["next_agent"]["name"] == "script-writer"
++    assert start["context"]["persona_dream_script_contract"]["work_order"].endswith(
++        "input_script_contract_work_order.json"
++    )
++
++
++def test_contact_sheet_proof_writer_creates_start_handoff_without_running_agents(
++    tmp_path,
++    monkeypatch,
++) -> None:
++    run_root = tmp_path / "dream-run"
++    run_root.mkdir()
++    work_order = tmp_path / "contact_sheet_work_order.json"
++    work_order.write_text(
++        json.dumps(
++            {
++                "schema": "persona_dream.contact_sheet_work_order.v1",
++                "status": "WORK_ORDER_READY_CONTACT_SHEET_REQUIRED",
++                "source_paths": {
++                    "run_root": str(run_root),
++                },
++                "source_context": {
++                    "core_idea": "Embry and Kai surf Kahalu'u Bay.",
++                    "interaction_matrix": [
++                        {
++                            "source_seed_id": "seed-0",
++                            "entity": "Embry",
++                            "category": "character",
++                            "contact_sheet": {
++                                "required": True,
++                                "kind": "character",
++                                "status": "existing",
++                                "send_to_kling": True,
++                                "priority": "required",
++                                "rationale": "Main character continuity.",
++                            },
++                        }
++                    ],
++                    "linked_assets": [
++                        {
++                            "id": "asset-embry-contact",
++                            "title": "Embry character sheet montage",
++                            "url": "/memory/embry_character_sheet.png",
++                        }
++                    ],
++                },
++            }
++        ),
++        encoding="utf-8",
++    )
++
++    class FakeLoop:
++        def as_dict(self) -> dict:
++            return {
++                "ok": True,
++                "status": "WAITING",
++                "terminal_agent": "human",
++                "stop_reason": "next_agent_is_human",
++            }
++
++    def fake_loop(*args, **kwargs) -> FakeLoop:
++        return FakeLoop()
++
++    monkeypatch.setattr(
++        "tau_coding.handoff_dispatch.write_agent_handoff_command_loop_receipt",
++        fake_loop,
++    )
++    manifest = write_persona_dream_contact_sheet_loop_proof(
++        work_order=work_order,
++        out_dir=tmp_path / "proof",
++        active_goal_hash="sha256:goal",
++    )
++
++    start = json.loads((tmp_path / "proof" / "start-handoff.json").read_text())
++    assert manifest["mocked"] is False
++    assert start["next_agent"]["name"] == "contact-sheet-writer"
++    assert start["context"]["persona_dream_contact_sheet_contract"]["work_order"].endswith(
++        "input_contact_sheet_work_order.json"
++    )
++
++
++def test_contact_sheet_recall_item_preserves_exact_visual_asset_fields() -> None:
++    doc = {
++        "_key": "4c4787d389f39cf33d65f19ca4ad7520",
++        "_id": "persona_dream_visual_assets/4c4787d389f39cf33d65f19ca4ad7520",
++        "asset_id": "contact_sheet_embry_surfboard",
++        "entity_id": "contact_sheet_embry_surfboard",
++        "entity_type": "object",
++        "title": "Contact Sheet Embry Surfboard",
++        "image_path": "/mnt/storage12tb/run/artifacts/images/contact_sheet_embry_surfboard.png",
++    }
++
++    compact = _compact_memory_recall_item(doc)
++    asset = _contact_sheet_asset_from_recall_item(compact, ["embry", "surfboard"])
++
++    assert compact["asset_id"] == "contact_sheet_embry_surfboard"
++    assert compact["image_path"].endswith("contact_sheet_embry_surfboard.png")
++    assert asset is not None
++    assert asset["asset_id"] == "contact_sheet_embry_surfboard"
++    assert asset["source"].endswith("contact_sheet_embry_surfboard.png")

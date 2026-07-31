@@ -1,0 +1,29 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T224539Z-tau-provider-herdr-binding-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T224540Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+  ],
+  "attempt": 1,
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T224539Z-tau-provider-herdr-binding-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T224540Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "python deterministic visible coder"
+  ],
+  "dag_id": "20260705T224540Z-rw-sanity-provider-dag-max-exhaustion",
+  "errors": [],
+  "goal_hash": "sha256:daea35922b3dfdbed04ce56fa745f3af0e57efeefb4c71e6f9beb0bff52f1e69",
+  "handoff_summary": "Deterministic visible coder updated the scratch target file.",
+  "node_id": "coder",
+  "pane_id": "w65:p5",
+  "policy_exceptions": [],
+  "provider_id": "codex",
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "status": "PASS",
+  "terminal_id": "term_655e4eadf45736ce",
+  "verdict": "PASS",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T224539Z-tau-provider-herdr-binding-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T224540Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T224540Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "d50231251c655d1cb5d7df4e6f71da43fc6fc30e44268355265857ce1b43c386",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T224539Z-tau-provider-herdr-binding-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T224540Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-coder.json",
+  "work_order_sha256": "822e209ccafa044c8924693659fbd554afb486ad8f184faa04f6b6abc85abd7d",
+  "workspace_id": "w65"
+}

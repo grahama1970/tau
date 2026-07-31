@@ -1,0 +1,83 @@
+{
+  "applied_actions": [],
+  "candidate_count": 1,
+  "candidates": [
+    {
+      "action": "workspace_close",
+      "pane_ids": [
+        "w1K:p5",
+        "w1K:p6",
+        "w1K:p8",
+        "w1K:p7",
+        "w1K:p9"
+      ],
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "workspace_id": "w1K"
+    }
+  ],
+  "command_results": [],
+  "current_workspace": null,
+  "include_current_workspace": false,
+  "live": false,
+  "mocked": false,
+  "mode": "dry-run",
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "global regex cleanup of unrelated Herdr resources",
+      "Git worktree deletion",
+      "session deletion for runs that did not record a session id"
+    ],
+    "proves": [
+      "Tau can identify Herdr workspace/session resources recorded by one run",
+      "Tau cleanup defaults to audit/dry-run before mutation",
+      "Tau refuses to close the current Herdr workspace unless explicitly allowed"
+    ]
+  },
+  "resource_count": 1,
+  "resources": [
+    {
+      "kind": "workspace",
+      "pane_ids": [
+        "w1K:p5",
+        "w1K:p6",
+        "w1K:p8",
+        "w1K:p7",
+        "w1K:p9"
+      ],
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "sources": [
+        "provider_sessions",
+        "visible_subagents"
+      ],
+      "terminal_ids": [
+        "term_655b9cbf15a95169",
+        "term_655b9cc2feccf16a",
+        "term_655b9cea5c3d016c",
+        "term_655b9ce70192416b",
+        "term_655b9d1aa6d8a16d"
+      ],
+      "workspace_id": "w1K"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/one-pass/20260703T191854Z-rw-sanity-provider-dag-one-pass",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/one-pass/20260703T191854Z-rw-sanity-provider-dag-one-pass/runtime-manifest.json",
+  "schema": "tau.herdr_cleanup_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-03T19:21:04Z"
+}

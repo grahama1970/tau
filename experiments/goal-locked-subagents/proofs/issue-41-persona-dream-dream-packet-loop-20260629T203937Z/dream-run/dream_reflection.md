@@ -1,0 +1,1 @@
+I woke with embry, yale, review, evidence still arranged like images rather than answers. The dream was synthetic, but it kept the source traces intact: 4 memory residues and 0 explicit tensions. I should treat this as a reflective lead, not as evidence or a durable identity change.

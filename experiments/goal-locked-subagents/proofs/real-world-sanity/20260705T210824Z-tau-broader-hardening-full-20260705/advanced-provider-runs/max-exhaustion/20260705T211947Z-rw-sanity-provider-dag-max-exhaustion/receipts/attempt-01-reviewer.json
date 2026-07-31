@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T211947Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:952dfbc617f3b01330e238e1fefc8b99949cd934795ffdfbd71c4dc90d6d6f54",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w5B",
+  "pane_id": "w5B:p6",
+  "terminal_id": "term_655e3b7ccf93c5d1",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/max-exhaustion/20260705T211947Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T211947Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "7cef8a9ab84aca0030ce21363eb12305a4f8f8415d40bde8153d065b8edab5ac",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/max-exhaustion/20260705T211947Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["sha256sum opencode.visible.txt", "read target_file", "read coder_receipt"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/max-exhaustion/20260705T211947Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/max-exhaustion/20260705T211947Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: target_file (message.txt) is syntactically clean and the coder receipt is schema-valid, but the message content is generic ('completed implementation by deterministic visible coder attempt 1') — it should describe the specific goal achieved and reference the goal_hash. The coder's commands_run field is vague ('python deterministic visible coder') — next coder should log precise commands. The opencode visible log is empty — next coder should ensure provider activity is captured in the visible log.",
+  "errors": [],
+  "policy_exceptions": []
+}

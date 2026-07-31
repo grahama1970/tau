@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T143936Z-tau-provider-live-hard-failure-resume-20260705/advanced-provider-runs/max-exhaustion/20260705T144319Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work_order_path",
+    "read coder_receipt_path",
+    "read target_file",
+    "ls receipts/"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T143936Z-tau-provider-live-hard-failure-resume-20260705/advanced-provider-runs/max-exhaustion/20260705T144319Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T143936Z-tau-provider-live-hard-failure-resume-20260705/advanced-provider-runs/max-exhaustion/20260705T144319Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: force_revise=true. Target file 'completed implementation by deterministic visible coder attempt 1' — the self-referential metadata text should be replaced with the actual artifact content (e.g., the message the DAG is meant to convey or fulfill the original goal intent). Coder receipt is schema-valid but lists provider_id 'tau-deterministic-visible' while work order expects 'opencode' — this discrepancy should be resolved in next attempt.",
+  "errors": [],
+  "policy_exceptions": []
+}

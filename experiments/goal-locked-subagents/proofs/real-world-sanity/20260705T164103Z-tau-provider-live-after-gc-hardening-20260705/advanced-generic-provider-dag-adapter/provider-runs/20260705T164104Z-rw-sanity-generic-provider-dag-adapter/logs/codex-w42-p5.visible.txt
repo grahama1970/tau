@@ -1,0 +1,38 @@
+  'pending, not closed' caveat
+  when actionable work remains.
+  A caveat is not a stopping
+  condition. Continue into the
+  next concrete implementation
+  or verification step, or
+  state a real blocker with
+  Status/Phase, Now, Evidence,
+  mocked/live, and Next/stop
+  condition.
+  stop: Premature unproven-work
+  stop.
+
+─ Worked for 1m 27s ───────────
+
+
+  Approaching rate limits
+  Switch to gpt-5.4-mini for
+
+› 1. Switch to gpt… Small,
+                    fast, and
+                    cost-
+                    efficient
+                    model for
+                    simpler
+                    coding
+                    tasks.
+  2. Keep current model
+  3. Keep current … Hide
+                    future
+                    rate
+                    limit
+                    reminders
+                    about
+                    switching
+                    models.
+
+  Press enter to confirm or esc

@@ -1,0 +1,5 @@
+{
+  "goal_hash": "sha256:g",
+  "schema": "tau.evidence_case_gate_receipt.v1",
+  "status": "PASS"
+}

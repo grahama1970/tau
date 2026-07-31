@@ -1,0 +1,16 @@
+{
+  "live_provider_call_made": false,
+  "media": [
+    {
+      "id": "panel_01",
+      "local_path": "artifacts/panel_01_scillm_panel.png",
+      "role": "panel_reference_local_only",
+      "sha256": "sha256:2c89628513c4c3c34d2b862673e56c656ce1a40409398fbb13fba6718f53c914",
+      "url_path": "/artifacts/panel_01_scillm_panel.png"
+    }
+  ],
+  "provider_accessible": false,
+  "run_id": "dream-run",
+  "schema": "persona_dream.provider_media_lock_receipt.v1",
+  "status": "LOCAL_MEDIA_LOCK_READY"
+}

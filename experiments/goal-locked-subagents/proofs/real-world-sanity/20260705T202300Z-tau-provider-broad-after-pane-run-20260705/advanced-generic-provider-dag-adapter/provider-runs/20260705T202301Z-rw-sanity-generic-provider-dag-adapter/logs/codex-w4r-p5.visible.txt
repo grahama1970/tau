@@ -1,0 +1,38 @@
+  │ … +11 lines
+  └ (no output)
+
+───────────────────────────────────────
+
+• Status/Phase: PASS, task complete.
+
+  Now/current file-command-artifact:
+  Updated target file only: /scratch-
+  worktree/message.txt. Wrote
+  receipt: .../receipts/attempt-01-
+  coder.json.
+
+  Evidence: message.txt now contains
+  Completed implementation for the
+  generic provider DAG adapter coder
+  node.; rg TODO message.txt returned
+  no matches. Receipt JSON validated
+  with uv run python -m json.tool ...
+  exit code 0. Final visible log SHA-
+  256:
+  0c7867ff26c84ffc99501a068841bf66e9864
+  4587626b6401e07e4a5401b565d.
+
+  Proof scope: mocked: no. live: no.
+  Exercised deterministic file edit,
+  hash check, TODO absence check, and
+  JSON parse. No GitHub or Tailscale
+  used. Stop condition reached: target
+  file updated and node receipt
+  written.
+
+─ Worked for 1m 52s ───────────────────
+
+
+› Find and fix a bug in @filename
+
+  gpt-5.5 medium · ~/workspace/experim…

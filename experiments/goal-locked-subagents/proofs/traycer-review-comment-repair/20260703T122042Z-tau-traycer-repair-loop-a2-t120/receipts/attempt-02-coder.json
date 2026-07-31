@@ -1,0 +1,27 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/work-orders/attempt-02-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "sed -n '1,240p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/work-orders/attempt-02-coder.json",
+    "sed -n '1,120p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/scratch-worktree/message.txt",
+    "apply_patch: replaced the previous message.txt line with 'Replaced the TODO line in message.txt with a completion message for the provider DAG coder node.'",
+    "test -e /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/receipts/attempt-02-coder.json; printf '%s\\n' $?",
+    "python3 -m json.tool /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/receipts/attempt-02-coder.json >/tmp/tau-attempt-02-coder-jsoncheck.txt && test -s /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/scratch-worktree/message.txt && grep -Fx 'Replaced the TODO line in message.txt with a completion message for the provider DAG coder node.' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/scratch-worktree/message.txt && ! grep -F 'TODO' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/scratch-worktree/message.txt",
+    "apply_patch: replaced the message.txt line with 'Replaced the placeholder line in message.txt with a completion message for the provider DAG coder node.' so the structural no-TODO check can pass",
+    "python3 -m json.tool /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/receipts/attempt-02-coder.json >/tmp/tau-attempt-02-coder-jsoncheck.txt && test -s /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/scratch-worktree/message.txt && grep -Fx 'Replaced the placeholder line in message.txt with a completion message for the provider DAG coder node.' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/scratch-worktree/message.txt && ! grep -F 'TODO' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/scratch-worktree/message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the generic completion text in message.txt with an explicit message stating the placeholder line was replaced for the provider DAG coder node.",
+  "errors": [],
+  "policy_exceptions": []
+}

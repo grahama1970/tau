@@ -1,0 +1,29 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/repair-loop/20260705T211745Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "attempt": 2,
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/repair-loop/20260705T211745Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "python deterministic visible coder"
+  ],
+  "dag_id": "20260705T211745Z-rw-sanity-provider-dag-repair",
+  "errors": [],
+  "goal_hash": "sha256:0b588aabf4cdc77847360bb0099e9102688d4272f5812e1ee35ad942f21a4b5a",
+  "handoff_summary": "Deterministic visible coder updated the scratch target file.",
+  "node_id": "coder",
+  "pane_id": "w5A:p5",
+  "policy_exceptions": [],
+  "provider_id": "codex",
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "status": "PASS",
+  "terminal_id": "term_655e3b0833d6b5c4",
+  "verdict": "PASS",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/repair-loop/20260705T211745Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T211745Z-rw-sanity-provider-dag-repair-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "2f044f1ea3359904742d11ae96475e82448eb012ca85a0291fe0028570a55a7c",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/repair-loop/20260705T211745Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-coder.json",
+  "work_order_sha256": "53bc2af7dbc1e7d74c6bfacda2eb1d35cd4770217eda590c862c6cc8c06670c4",
+  "workspace_id": "w5A"
+}

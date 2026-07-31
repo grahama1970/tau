@@ -1,0 +1,26 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "tau",
+    "handoff-agent-adapter",
+    "--result-status",
+    "COMPLETED",
+    "--result-summary",
+    "Planner consumed the Tau handoff and is responsible for emitting a tau.dag_run_spec.v1 before execution.",
+    "--next-agent",
+    "orchestrator",
+    "--next-executor",
+    "local",
+    "--next-reason",
+    "The orchestrator executes the planner-created DAG spec through the Tau harness.",
+    "--required-evidence",
+    "A tau.dag_run_spec.v1 artifact and planner receipt name the nodes, dependencies, policies, and expected receipts.",
+    "--stop-condition",
+    "Orchestrator emits a tau.provider_dag_run_receipt.v1 or fails closed."
+  ],
+  "agent_contract": "agents/planner/AGENTS.md",
+  "persona_contract": "agents/planner/persona.yaml",
+  "cwd": ".",
+  "timeout_s": 30
+}

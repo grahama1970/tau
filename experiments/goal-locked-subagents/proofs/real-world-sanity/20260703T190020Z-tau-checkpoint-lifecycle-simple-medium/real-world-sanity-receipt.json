@@ -1,0 +1,355 @@
+{
+  "check_count": 7,
+  "checks": [
+    {
+      "check_id": "simple.version",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "--version"
+      ],
+      "completed_at": "2026-07-03T19:00:21Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": null,
+      "expected_verdict": null,
+      "level": "simple",
+      "live": "command",
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "provider_live": false,
+      "purpose": "Tau CLI starts from the checked-out project and reports its version.",
+      "receipt_summary": null,
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-03T19:00:20Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/logs/simple.version.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/logs/simple.version.stdout.txt",
+      "timeout_seconds": 60
+    },
+    {
+      "check_id": "simple.command_spec_catalog",
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/.tmp_venv/bin/python3",
+        "-c",
+        "import json; from pathlib import Path; root=Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/agent-command-specs'); roles=('planner', 'orchestrator', 'coder', 'reviewer'); missing=[]; specs=[]; \nfor role in roles:\n    path=root / role / 'tau-dispatch-command.json'\n    if not path.exists(): missing.append(str(path)); continue\n    payload=json.loads(path.read_text(encoding='utf-8'))\n    if not isinstance(payload.get('command'), list): missing.append(str(path)+': command missing')\n    specs.append({'role': role, 'path': str(path), 'command': payload.get('command')})\nreceipt={'schema':'tau.real_world_command_spec_catalog_check.v1','ok':not missing,'status':'PASS' if not missing else 'BLOCKED','mocked':False,'live':False,'checked_roles':roles,'specs':specs,'errors':missing}\nprint(json.dumps(receipt, sort_keys=True))\nraise SystemExit(0 if receipt['ok'] else 1)\n"
+      ],
+      "completed_at": "2026-07-03T19:00:21Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": null,
+      "expected_verdict": null,
+      "level": "simple",
+      "live": false,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "provider_live": false,
+      "purpose": "Planner, orchestrator, coder, and reviewer command specs are real JSON files.",
+      "receipt_summary": {
+        "errors": [],
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "schema": "tau.real_world_command_spec_catalog_check.v1",
+        "status": "PASS"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-03T19:00:21Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/logs/simple.command_spec_catalog.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/logs/simple.command_spec_catalog.stdout.txt",
+      "timeout_seconds": 60
+    },
+    {
+      "check_id": "simple.local_handoff_loop",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "handoff-command-loop",
+        "--start",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/simple-handoff-loop/start-handoff.json",
+        "--agents-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/simple-handoff-loop/agents",
+        "--command-spec-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/simple-handoff-loop/command-specs",
+        "--active-goal-hash",
+        "sha256:active-goal",
+        "--receipt-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/simple-handoff-loop/receipts",
+        "--max-steps",
+        "4"
+      ],
+      "completed_at": "2026-07-03T19:00:23Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "WAITING",
+      "expected_verdict": null,
+      "level": "simple",
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/simple-handoff-loop/receipts/command-loop-receipt.json",
+      "provider_live": false,
+      "purpose": "A real Tau handoff command loop routes goal-guardian to verifier to human.",
+      "receipt_summary": {
+        "errors": [],
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "schema": "tau.agent_handoff_command_loop_receipt.v1",
+        "status": "WAITING"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-03T19:00:21Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/logs/simple.local_handoff_loop.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/logs/simple.local_handoff_loop.stdout.txt",
+      "timeout_seconds": 90
+    },
+    {
+      "check_id": "medium.provider_dag_plan",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "provider-dag-plan",
+        "--label",
+        "rw-sanity-plan",
+        "--run-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/medium-provider-dag-plan",
+        "--max-attempts",
+        "2"
+      ],
+      "completed_at": "2026-07-03T19:00:23Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": null,
+      "level": "medium",
+      "live": false,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "provider_live": false,
+      "purpose": "Tau planner emits a receipt-backed scratch coder/reviewer DAG without providers.",
+      "receipt_summary": {
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "schema": "tau.dag_planner_receipt.v1",
+        "status": "PASS"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-03T19:00:23Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/logs/medium.provider_dag_plan.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/logs/medium.provider_dag_plan.stdout.txt",
+      "timeout_seconds": 90
+    },
+    {
+      "check_id": "medium.generic_dag_run",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/medium-generic-dag/dag-spec.json"
+      ],
+      "completed_at": "2026-07-03T19:00:24Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": null,
+      "level": "medium",
+      "live": false,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "provider_live": false,
+      "purpose": "Tau executes a generic schema-validated local subprocess DAG with planner -> coder -> reviewer dependencies.",
+      "receipt_summary": {
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "schema": "tau.generic_dag_run_receipt.v1",
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-03T19:00:23Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/logs/medium.generic_dag_run.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/logs/medium.generic_dag_run.stdout.txt",
+      "timeout_seconds": 90
+    },
+    {
+      "check_id": "medium.dag_stress_poc",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-stress-poc",
+        "--label",
+        "rw-sanity-dag-stress",
+        "--run-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/medium-dag-stress-poc",
+        "--max-attempts",
+        "4"
+      ],
+      "completed_at": "2026-07-03T19:00:24Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": null,
+      "level": "medium",
+      "live": false,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "provider_live": false,
+      "purpose": "Tau executes simple, retry, fan-out/fan-in, timeout, error, invalid-receipt, wrong-result, and model-missing scheduler rungs.",
+      "receipt_summary": {
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "provider_live": false,
+        "rung_count": 10,
+        "schema": "tau.dag_stress_suite_receipt.v1",
+        "status": "PASS"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-03T19:00:24Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/logs/medium.dag_stress_poc.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/logs/medium.dag_stress_poc.stdout.txt",
+      "timeout_seconds": 120
+    },
+    {
+      "check_id": "medium.dag_stress_campaign",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-stress-campaign",
+        "--label",
+        "rw-sanity-dag-campaign",
+        "--run-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/medium-dag-stress-campaign",
+        "--max-budget",
+        "3",
+        "--repetitions",
+        "2"
+      ],
+      "completed_at": "2026-07-03T19:00:25Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": null,
+      "level": "medium",
+      "live": false,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "provider_live": false,
+      "purpose": "Tau repeats the DAG stress suite across retry budgets for stability.",
+      "receipt_summary": {
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "provider_live": false,
+        "schema": "tau.dag_stress_campaign_receipt.v1",
+        "status": "PASS",
+        "suite_count": 6,
+        "total_rungs": 60
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-03T19:00:24Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/logs/medium.dag_stress_campaign.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium/logs/medium.dag_stress_campaign.stdout.txt",
+      "timeout_seconds": 180
+    }
+  ],
+  "failed_check_count": 0,
+  "level_counts": {
+    "medium": {
+      "PASS": 4
+    },
+    "simple": {
+      "PASS": 3
+    }
+  },
+  "live": "mixed",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "browser/CDP chat UI rendering",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau CLI and command-spec surfaces execute from the local checkout",
+      "Tau can run a real local handoff command loop",
+      "Tau planner, generic DAG runner, and deterministic scheduler stress surfaces emit non-mocked receipts",
+      "Tau can allocate visible provider panes and run live provider DAG checks when advanced checks pass",
+      "Tau fail-closed negative controls preserve typed BLOCKED receipts"
+    ]
+  },
+  "provider_live": false,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T190020Z-tau-checkpoint-lifecycle-simple-medium",
+  "run_id": "20260703T190020Z-tau-checkpoint-lifecycle-simple-medium",
+  "schema": "tau.real_world_sanity_suite_receipt.v1",
+  "selected_levels": [
+    "medium",
+    "simple"
+  ],
+  "status": "PASS",
+  "timestamp": "2026-07-03T19:00:25Z"
+}

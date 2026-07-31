@@ -1,0 +1,38 @@
+
+• Edited experiments/goal-
+locked-subagents/proofs/real-
+world-sanity/20260705T164103Z-
+tau-provider-live-after-gc-
+hardening-20260705/advanced-
+generic-provider-dag-adapter/
+provider-runs/20260705T164307Z-
+rw-sanity-generic-provider-dag-
+adapter/receipts/attempt-01-
+coder.json (+2 -1)
+    20      "sed -n '1,120p' me
+        ssage.txt",
+    21 -    "pwd && find . -max
+        depth 1 -type f -printf
+         '%P\\n'"
+    21 +    "pwd && find . -max
+        depth 1 -type f -printf
+         '%P\\n'",
+    22 +    "python3 - <<'PY' [
+        receipt/message asserti
+        ons] PY"
+    23    ],
+
+───────────────────────────────
+
+• The receipt command log now
+  includes the validation step.
+  I’m doing the final parse and
+  content check without making
+  further source changes.
+
+• Working (1m 10s • esc to int…
+
+
+› Use /skills to list availabl
+
+  gpt-5.5 medium · ~/workspace…

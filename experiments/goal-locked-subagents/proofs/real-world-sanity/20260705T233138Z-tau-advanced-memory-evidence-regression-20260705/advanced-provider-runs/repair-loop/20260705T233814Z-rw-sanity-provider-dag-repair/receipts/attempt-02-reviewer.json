@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T233814Z-rw-sanity-provider-dag-repair",
+  "goal_hash": "sha256:611236a9a98d8b436b3fb9e308c323a0e7fc2fa27c19339f92c00504bd8f9436",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w6N",
+  "pane_id": "w6N:p6",
+  "terminal_id": "term_655e5a6eea05b763",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/repair-loop/20260705T233814Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T233814Z-rw-sanity-provider-dag-repair-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "11b999587ac703d8538da3a1febbbb2e92c9cd6b1dca23b9f22c16a1d264824f",
+  "work_order_sha256": "f2ea9c387e377796faa0fa542602b8e3abf8a245a42e9637d38f955d82523054",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/repair-loop/20260705T233814Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["sha256sum visible_log_path", "read target_file", "read coder_receipt_path"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/repair-loop/20260705T233814Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/repair-loop/20260705T233814Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file has no TODO line (contains 'completed implementation by deterministic visible coder attempt 2'). Coder receipt is schema-valid tau.provider_dag_node_receipt.v1 with status PASS, no errors. force_revise is false. All conditions for PASS met.",
+  "errors": [],
+  "policy_exceptions": []
+}

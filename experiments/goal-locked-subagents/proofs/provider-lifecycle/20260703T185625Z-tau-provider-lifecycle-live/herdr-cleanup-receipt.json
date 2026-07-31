@@ -1,0 +1,94 @@
+{
+  "applied_actions": [
+    {
+      "action": "workspace_close",
+      "applied": true,
+      "pane_ids": [
+        "w1G:p5",
+        "w1G:p6"
+      ],
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "returncode": 0,
+      "roles": [
+        "codex",
+        "opencode"
+      ],
+      "workspace_id": "w1G"
+    }
+  ],
+  "candidate_count": 1,
+  "candidates": [
+    {
+      "action": "workspace_close",
+      "pane_ids": [
+        "w1G:p5",
+        "w1G:p6"
+      ],
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "roles": [
+        "codex",
+        "opencode"
+      ],
+      "workspace_id": "w1G"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "close",
+        "w1G"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    }
+  ],
+  "current_workspace": null,
+  "include_current_workspace": false,
+  "live": true,
+  "mocked": false,
+  "mode": "apply",
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "global regex cleanup of unrelated Herdr resources",
+      "Git worktree deletion",
+      "session deletion for runs that did not record a session id"
+    ],
+    "proves": [
+      "Tau can identify Herdr workspace/session resources recorded by one run",
+      "Tau cleanup defaults to audit/dry-run before mutation",
+      "Tau refuses to close the current Herdr workspace unless explicitly allowed"
+    ]
+  },
+  "resource_count": 1,
+  "resources": [
+    {
+      "kind": "workspace",
+      "pane_ids": [
+        "w1G:p5",
+        "w1G:p6"
+      ],
+      "roles": [
+        "codex",
+        "opencode"
+      ],
+      "sources": [
+        "provider_session_states",
+        "readiness_records"
+      ],
+      "terminal_ids": [
+        "term_655b97b83643e154",
+        "term_655b97bbb97af155"
+      ],
+      "workspace_id": "w1G"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-lifecycle/20260703T185625Z-tau-provider-lifecycle-live",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-lifecycle/20260703T185625Z-tau-provider-lifecycle-live/runtime-manifest.json",
+  "schema": "tau.herdr_cleanup_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-03T19:02:39Z"
+}

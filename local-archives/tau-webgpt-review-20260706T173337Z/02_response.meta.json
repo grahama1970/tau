@@ -1,0 +1,13 @@
+{
+  "status": "missing_sentinel",
+  "output": "/home/graham/workspace/experiments/tau/local-archives/tau-webgpt-review-20260706T173337Z/02_response.md",
+  "raw_output": "/home/graham/workspace/experiments/tau/local-archives/tau-webgpt-review-20260706T173337Z/02_response.raw.md",
+  "stderr_log": "/tmp/surf-webgpt-extract-stderr.ksOd0w.log",
+  "sentinel": "<<<WEBGPT_DONE:20260706T173521Z:f6f1ddf4>>>",
+  "requested_tab_id": "837357899",
+  "controlled_tab_id": "837357899",
+  "raw_contains_sentinel": false,
+  "raw_chars": 2,
+  "started_at": "2026-07-06T17:41:57Z",
+  "finished_at": "2026-07-06T17:41:57Z"
+}

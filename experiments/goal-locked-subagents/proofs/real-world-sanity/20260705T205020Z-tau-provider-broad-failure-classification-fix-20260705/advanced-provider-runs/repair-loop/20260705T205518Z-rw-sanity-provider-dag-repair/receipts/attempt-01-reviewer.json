@@ -1,0 +1,33 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T205518Z-rw-sanity-provider-dag-repair",
+  "goal_hash": "sha256:83aa2dc07634da6081c93053210f0bacd0ad2ac385cc8c8cc2df1e990b26eadc",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w53",
+  "pane_id": "w53:p6",
+  "terminal_id": "term_655e3603cbc65582",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/repair-loop/20260705T205518Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T205518Z-rw-sanity-provider-dag-repair-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "41dd621778e2f7d2154a26a9d067d67823846d46380f2ee2782ae61cb582fb16",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/repair-loop/20260705T205518Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work order JSON",
+    "read target_file (message.txt)",
+    "read coder receipt (attempt-01-coder.json)",
+    "read visible log (opencode.visible.txt)",
+    "sha256sum visible log",
+    "write reviewer receipt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/repair-loop/20260705T205518Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/repair-loop/20260705T205518Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "force_revise=true triggered REVISE. target_file message.txt contains 'completed implementation by deterministic visible coder attempt 1' (TODO line removed, OK). coder receipt is schema-valid (tau.provider_dag_node_receipt.v1) with PASS status, no errors. Concrete feedback: coder receipt visible_log_path references copen.visible.txt but visible log is empty (0 bytes). Coder should produce a non-empty visible log recording the actual deterministic operations performed. Also, the message.txt content is minimal — coder should include the actual implementation details (e.g., the resolved message content after TODO replacement) rather than just a status summary.",
+  "errors": [],
+  "policy_exceptions": []
+}

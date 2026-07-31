@@ -1,0 +1,77 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [
+        "exit_code 1 not in expected [0]",
+        "receipt status 'BLOCKED', expected 'PASS'",
+        "receipt provider_live False, expected True",
+        "resumed node count 0, expected at least 1"
+      ],
+      "exit_code": 1,
+      "receipt_summary": {
+        "completed_node_count": 0,
+        "live": false,
+        "mocked": false,
+        "node_count": 1,
+        "ok": false,
+        "provider_live": false,
+        "resumed_node_count": 0,
+        "schema": "tau.generic_dag_run_receipt.v1",
+        "status": "BLOCKED",
+        "verdict": "INVALID_RECEIPT"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T220727Z-tau-generic-provider-adapter-resume-v2/logs/advanced.generic_provider_dag_adapter_resume.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T220727Z-tau-generic-provider-adapter-resume-v2/logs/advanced.generic_provider_dag_adapter_resume.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.generic_provider_dag_adapter_resume",
+  "command": [
+    "/home/graham/workspace/experiments/agent-skills/.tmp_venv/bin/python3",
+    "-c",
+    "import subprocess, sys\nfirst = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau', 'dag-run', '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T220727Z-tau-generic-provider-adapter-resume-v2/advanced-generic-provider-dag-adapter/dag-spec.json', '--no-resume']\nsecond = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau', 'dag-run', '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T220727Z-tau-generic-provider-adapter-resume-v2/advanced-generic-provider-dag-adapter/dag-spec.json']\nfirst_result = subprocess.run(first, text=True, capture_output=True)\nsys.stderr.write(first_result.stderr)\nif first_result.returncode != 0:\n    sys.stdout.write(first_result.stdout)\n    raise SystemExit(first_result.returncode)\nsecond_result = subprocess.run(second, text=True, capture_output=True)\nsys.stderr.write(second_result.stderr)\nsys.stdout.write(second_result.stdout)\nraise SystemExit(second_result.returncode)"
+  ],
+  "completed_at": "2026-07-03T22:10:20Z",
+  "errors": [
+    "exit_code 1 not in expected [0]",
+    "receipt status 'BLOCKED', expected 'PASS'",
+    "receipt provider_live False, expected True",
+    "resumed node count 0, expected at least 1"
+  ],
+  "exit_code": 1,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "advanced",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": false,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Generic DAG resumes an already-completed live provider-backed adapter node without launching the provider adapter a second time.",
+  "receipt_summary": {
+    "completed_node_count": 0,
+    "live": false,
+    "mocked": false,
+    "node_count": 1,
+    "ok": false,
+    "provider_live": false,
+    "resumed_node_count": 0,
+    "schema": "tau.generic_dag_run_receipt.v1",
+    "status": "BLOCKED",
+    "verdict": "INVALID_RECEIPT"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-03T22:07:27Z",
+  "status": "BLOCKED",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T220727Z-tau-generic-provider-adapter-resume-v2/logs/advanced.generic_provider_dag_adapter_resume.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T220727Z-tau-generic-provider-adapter-resume-v2/logs/advanced.generic_provider_dag_adapter_resume.stdout.txt",
+  "timeout_seconds": 900
+}

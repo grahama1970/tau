@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 3,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/work-orders/attempt-03-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/work-orders/attempt-03-coder.json",
+    "sed -n '1,160p' message.txt",
+    "jq -e . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/receipts/attempt-03-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Expanded message.txt to document the removed TODO, the concrete coder handoff change, and the DAG edge conditions verified for attempt 3.",
+  "errors": [],
+  "policy_exceptions": []
+}

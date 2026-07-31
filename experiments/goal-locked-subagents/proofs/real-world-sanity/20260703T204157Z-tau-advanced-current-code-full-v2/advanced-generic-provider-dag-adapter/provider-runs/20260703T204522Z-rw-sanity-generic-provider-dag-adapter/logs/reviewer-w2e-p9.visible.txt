@@ -1,0 +1,36 @@
+eric-provi
+der-dag-ad
+apter/prov
+ider-runs/
+20260703T2
+04522Z-rw-
+sanity-gen
+eric-provi
+der-dag-ad
+apter/rece
+ipts/attem
+pt-01-revi
+ewer.json
+Wrote file
+ successfu
+lly.
+
+TODO line
+is gone fr
+om `messag
+e.txt`. Co
+der receip
+t is schem
+a-valid (m
+atches `ta
+u.provider
+_dag_node_
+receipt.v1
+`, has req
+uired fiel
+ds, no err
+ors). `for
+ce_revise`
+ is false.
+ Verdict:
+**PASS**.

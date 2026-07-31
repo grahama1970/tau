@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T201837Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:060dc8e7c4dca79927d5437a8b6cc26f6a182416c8314f3e65a2d93a33568a3b",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w4Q",
+  "pane_id": "w4Q:p6",
+  "terminal_id": "term_655e2dd0d6f85507",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T201836Z-tau-generic-provider-pane-run-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T201837Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T201837Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "08552faf6ef2bfdff8de82ed99e9ec25c83c39d88baf85e82bf4f6cf702d504c",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T201836Z-tau-generic-provider-pane-run-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T201837Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["sha256sum visible log", "read target_file", "read coder_receipt"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T201836Z-tau-generic-provider-pane-run-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T201837Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T201836Z-tau-generic-provider-pane-run-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T201837Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file has no TODO line (contains clean completion message). coder receipt is schema-valid tau.provider_dag_node_receipt.v1 with all required fields present. force_revise is false, no revision needed.",
+  "errors": [],
+  "policy_exceptions": []
+}

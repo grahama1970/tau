@@ -1,0 +1,185 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "story",
+    "panel",
+    "interaction_matrix",
+    "asset_usage",
+    "style_application",
+    "quality_checks"
+  ],
+  "properties": {
+    "story": {
+      "type": "string",
+      "description": "A concise, human-written one-panel story beat for a 10-second cinematic moment."
+    },
+    "panel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "shot",
+        "action",
+        "emotional_turn",
+        "dialogue"
+      ],
+      "properties": {
+        "shot": {
+          "type": "string",
+          "description": "Camera/framing for the single panel."
+        },
+        "action": {
+          "type": "string",
+          "description": "What happens in the 10-second moment."
+        },
+        "emotional_turn": {
+          "type": "string",
+          "description": "The visible internal shift."
+        },
+        "dialogue": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "One short line or null."
+        }
+      }
+    },
+    "interaction_matrix": {
+      "type": "array",
+      "minItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_seed_id",
+          "entity",
+          "category",
+          "objects_used",
+          "environment_interaction",
+          "story_function",
+          "visible_in_panel"
+        ],
+        "properties": {
+          "source_seed_id": {
+            "type": "string",
+            "description": "Copy from source_context.interaction_rows[].id."
+          },
+          "entity": {
+            "type": "string",
+            "description": "Copy from source_context.interaction_rows[].name."
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "character",
+              "character_object",
+              "environmental_force",
+              "location_social_system"
+            ]
+          },
+          "objects_used": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "environment_interaction": {
+            "type": "string",
+            "description": "How heat, humidity, water, reef, light, fatigue, or public etiquette changes this entity/object/force."
+          },
+          "story_function": {
+            "type": "string",
+            "description": "Why this row matters to the one-panel story beat."
+          },
+          "visible_in_panel": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "asset_usage": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "asset_id",
+          "used_for",
+          "usage_confidence"
+        ],
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "description": "Copy from source_context.linked_assets[].id."
+          },
+          "used_for": {
+            "type": "string",
+            "description": "Specific visual, audio, video, or text grounding role in the story."
+          },
+          "usage_confidence": {
+            "type": "string",
+            "enum": [
+              "metadata_only",
+              "caption_grounded",
+              "image_grounded",
+              "audio_grounded",
+              "video_grounded"
+            ]
+          }
+        }
+      }
+    },
+    "style_application": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "author_reference_used_as",
+        "creativity_level_used_as"
+      ],
+      "properties": {
+        "author_reference_used_as": {
+          "type": "string"
+        },
+        "creativity_level_used_as": {
+          "type": "string"
+        }
+      }
+    },
+    "quality_checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "covered_seed_ids",
+        "missing_seed_ids",
+        "used_only_provided_context",
+        "no_direct_author_imitation",
+        "valid_one_panel_10_second_moment"
+      ],
+      "properties": {
+        "covered_seed_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "missing_seed_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "used_only_provided_context": {
+          "type": "boolean"
+        },
+        "no_direct_author_imitation": {
+          "type": "boolean"
+        },
+        "valid_one_panel_10_second_moment": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

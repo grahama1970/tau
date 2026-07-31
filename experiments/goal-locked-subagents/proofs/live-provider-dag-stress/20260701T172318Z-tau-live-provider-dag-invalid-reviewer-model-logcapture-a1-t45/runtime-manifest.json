@@ -1,0 +1,110 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "coder_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/receipts/attempt-01-coder.json",
+      "coder_status": "PASS",
+      "coder_verdict": "PASS",
+      "errors": [
+        "receipt did not appear: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/receipts/attempt-01-reviewer.json"
+      ],
+      "reviewer_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/receipts/attempt-01-reviewer.json",
+      "reviewer_status": null,
+      "reviewer_verdict": null
+    }
+  ],
+  "dag_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/dag-spec.json",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/events.jsonl",
+  "label": "tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45",
+  "logs_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/logs",
+  "provider_readiness_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/provider-readiness-receipt.json",
+  "provider_sessions": {
+    "codex": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "w0:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/provider-readiness/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45-readiness/readiness/codex.readiness.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_6558ff2b83935cd",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/provider-readiness/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w0"
+    },
+    "opencode": {
+      "foreground_command": "opencode",
+      "pane_id": "w0:p6",
+      "process_alive": true,
+      "provider_id": "opencode",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/provider-readiness/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45-readiness/readiness/opencode.readiness.json",
+      "ready": true,
+      "role": "reviewer",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_6558ff2d3b100ce",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/provider-readiness/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45-readiness/logs/opencode.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w0"
+    }
+  },
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45",
+  "run_id": "20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45",
+  "schema": "tau.provider_dag_runtime_manifest.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/scratch-worktree",
+  "visible_subagents": {
+    "coder": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "w0:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/provider-readiness/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45-readiness/readiness/codex.readiness.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_6558ff2b83935cd",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/provider-readiness/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w0"
+    },
+    "orchestrator": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "w0:p8",
+      "provider_id": "tau",
+      "role": "orchestrator",
+      "tab_id": "w0:t1",
+      "terminal_id": "term_6558ff4f20a0bd0",
+      "visible": true,
+      "workspace_id": "w0"
+    },
+    "planner": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "w0:p7",
+      "provider_id": "tau",
+      "role": "planner",
+      "tab_id": "w0:t1",
+      "terminal_id": "term_6558ff4da6341cf",
+      "visible": true,
+      "workspace_id": "w0"
+    },
+    "reviewer": {
+      "command": "opencode run --dir <repo> [--model <reviewer-model>] <reviewer-prompt>",
+      "pane_id": "w0:p9",
+      "provider_id": "opencode",
+      "readiness_pane_id": "w0:p6",
+      "reviewer_model": "openai/not-a-real-model-20260701",
+      "role": "reviewer",
+      "tab_id": "w0:t1",
+      "terminal_id": "term_6558ff78bf0c5d1",
+      "visible": true,
+      "workspace_id": "w0"
+    }
+  }
+}

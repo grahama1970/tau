@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T211528Z-tau-provider-dag-one-pass-cleanup-apply/advanced-provider-runs/one-pass/20260703T211528Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T211528Z-tau-provider-dag-one-pass-cleanup-apply/advanced-provider-runs/one-pass/20260703T211528Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "pwd && sed -n '1,220p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T211528Z-tau-provider-dag-one-pass-cleanup-apply/advanced-provider-runs/one-pass/20260703T211528Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json",
+    "sed -n '1,120p' message.txt",
+    "find . -maxdepth 2 -type f -print",
+    "sed -n '1,80p' message.txt",
+    "ls -la /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T211528Z-tau-provider-dag-one-pass-cleanup-apply/advanced-provider-runs/one-pass/20260703T211528Z-rw-sanity-provider-dag-one-pass/receipts",
+    "python3 -m json.tool /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T211528Z-tau-provider-dag-one-pass-cleanup-apply/advanced-provider-runs/one-pass/20260703T211528Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T211528Z-tau-provider-dag-one-pass-cleanup-apply/advanced-provider-runs/one-pass/20260703T211528Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,206 @@
+{
+  "agent": "coder",
+  "alert_codes": [],
+  "alerts": [],
+  "apply_requested": true,
+  "attempt": 1,
+  "dag_id": "live-scillm-worker-schema-probe",
+  "data_boundary": {
+    "classification": "public",
+    "export_controlled": false,
+    "external_provider_allowed": false,
+    "external_research_allowed": false,
+    "foreign_person_access": "allowed",
+    "itar": false,
+    "notes": [
+      "live SciLLM worker probe with public temp data only"
+    ],
+    "public_repo_allowed": false,
+    "schema": "tau.data_boundary.v1",
+    "technical_data": false
+  },
+  "data_boundary_artifact": {
+    "bytes": 365,
+    "exists": true,
+    "label": "inline_data_boundary",
+    "path": null,
+    "sha256": "sha256:382af0f2fa069ed9e7e7cf56a7638d614133c6790c8a8e5c1e58d4e08aeecf80"
+  },
+  "data_boundary_bytes": 365,
+  "data_boundary_sha256": "sha256:382af0f2fa069ed9e7e7cf56a7638d614133c6790c8a8e5c1e58d4e08aeecf80",
+  "dry_run": false,
+  "endpoint": "/v1/scillm/opencode/runs",
+  "error_bytes": null,
+  "error_path": null,
+  "error_sha256": null,
+  "execution_substrate": "docker-sandbox",
+  "expected_worker_result_path": ".tau/receipts/scillm-result.json",
+  "goal_hash": "sha256:live-scillm-worker-schema-probe-goal",
+  "headers": {
+    "authorization": "REDACTED",
+    "authorization_source": "env_file:/home/graham/workspace/experiments/scillm/.env",
+    "content_type": "application/json",
+    "x_caller_skill": "tau"
+  },
+  "herdr_binding": null,
+  "herdr_receipt_path": null,
+  "high_stakes": true,
+  "http_artifacts": [
+    {
+      "bytes": 7969,
+      "exists": true,
+      "label": "response",
+      "path": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-schema-contract-20260707T1906Z/scillm-worker-launch-live-receipt.json.response.json",
+      "sha256": "sha256:73a5bee48b74bbe998ee9691c8d5f78f6eff61f7f25b9ff721d3de31efb21c75"
+    }
+  ],
+  "http_executed": true,
+  "http_status": 200,
+  "launch_skipped": false,
+  "live": true,
+  "mocked": false,
+  "model_provider_route": {
+    "agent": "build",
+    "endpoint": "/v1/scillm/opencode/runs",
+    "skills": [
+      "scillm"
+    ],
+    "surface": "opencode_serve"
+  },
+  "node_id": "coder",
+  "ok": true,
+  "policy_profile": {
+    "default_decision": "deny",
+    "filesystem": {
+      "read_denylist": [
+        "secrets/**"
+      ],
+      "write_allowlist": [
+        ".tau/receipts/**"
+      ]
+    },
+    "github": {
+      "dry_run_projection": "allow",
+      "public_mutation": "deny"
+    },
+    "memory": {
+      "read": "allow",
+      "write": "approval_required"
+    },
+    "network": {
+      "allowed_domains": [],
+      "default": "deny"
+    },
+    "profile_id": "scillm-live-probe-zero-trust",
+    "providers": {
+      "cloud_llm": "deny",
+      "local_model": "allow_with_approval"
+    },
+    "requires_data_boundary": true,
+    "research": {
+      "external_search": "deny",
+      "manual_sanitized_receipt": "allow_with_review"
+    },
+    "schema": "tau.policy_profile.v1"
+  },
+  "policy_profile_artifact": {
+    "bytes": 698,
+    "exists": true,
+    "label": "inline_policy_profile",
+    "path": null,
+    "sha256": "sha256:0269872bc0a0206aa960994827486de1b710ea41ccc8eea6e3e561b27e7a22b7"
+  },
+  "policy_profile_bytes": 698,
+  "policy_profile_sha256": "sha256:0269872bc0a0206aa960994827486de1b710ea41ccc8eea6e3e561b27e7a22b7",
+  "proof_scope": {
+    "does_not_prove": [
+      "The OpenCode worker result is truthful or sufficient for closure.",
+      "The worker result artifact is valid without scillm-worker-validate.",
+      "The worker is trustworthy.",
+      "The code is semantically correct.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau built a bounded SciLLM OpenCode-serve launch request from a work order.",
+      "Tau checked route metadata before any external SciLLM call.",
+      "When apply=true and gates pass, Tau posted the request to the configured SciLLM OpenCode-serve endpoint and captured the response artifact."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-schema-contract-20260707T1906Z/scillm-worker-launch-live-receipt.json",
+  "request_payload": {
+    "agent": "build",
+    "cleanup_session": true,
+    "cwd": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-schema-contract-20260707T1906Z/repo",
+    "prompt": "You are an untrusted coding worker running under Tau.\nTask: Create exactly one JSON file at .tau/receipts/scillm-result.json. Do not edit any other file. The JSON root must have a top-level key named schema with value tau.scillm_worker_result.v1. Do not use $schema. It must also include status PASS, goal_hash sha256:live-scillm-worker-schema-probe-goal, changed_files [], artifacts [], tests_run [], findings [], and next_recommended_route reviewer.\nGoal hash: sha256:live-scillm-worker-schema-probe-goal\nAllowed paths: .tau/receipts/**\nForbidden paths: secrets/**, src/**, tests/**, README.md\nRequired artifacts: (none)\nResult path: .tau/receipts/scillm-result.json\nReceipt path: .tau/receipts/scillm-worker-receipt.json\nWrite a tau.scillm_worker_result.v1 JSON artifact at Result path.\nUse a top-level key named schema; do not use $schema.\nThe result artifact must include status, goal_hash, changed_files, artifacts, tests_run, findings, and next_recommended_route.\nReturn structured evidence for Tau validation; do not claim closure from prose.",
+    "scillm_metadata": {
+      "attempt": 1,
+      "dag_id": "live-scillm-worker-schema-probe",
+      "goal_hash": "sha256:live-scillm-worker-schema-probe-goal",
+      "node_id": "coder",
+      "receipt_path": ".tau/receipts/scillm-worker-receipt.json",
+      "result_path": ".tau/receipts/scillm-result.json",
+      "schema": "tau.executor.scillm_worker.v1"
+    },
+    "skills": [
+      "scillm"
+    ],
+    "timeout_s": 120
+  },
+  "request_timeout_s": 180,
+  "response_artifacts": [
+    ".tau/receipts/scillm-result.json"
+  ],
+  "response_bytes": 7969,
+  "response_path": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-schema-contract-20260707T1906Z/scillm-worker-launch-live-receipt.json.response.json",
+  "response_result_artifact": {
+    "artifact": ".tau/receipts/scillm-result.json",
+    "bytes": 247,
+    "exists": true,
+    "label": "scillm_worker_result",
+    "path": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-schema-contract-20260707T1906Z/repo/.tau/receipts/scillm-result.json",
+    "sha256": "sha256:8ab97495b631cfd926fa73f26dfe4c791ea99e76b5a72e02abfba95a27329a50"
+  },
+  "response_result_bytes": 247,
+  "response_result_path": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-schema-contract-20260707T1906Z/repo/.tau/receipts/scillm-result.json",
+  "response_result_sha256": "sha256:8ab97495b631cfd926fa73f26dfe4c791ea99e76b5a72e02abfba95a27329a50",
+  "response_schema": "scillm.opencode_run.result.v1",
+  "response_sha256": "sha256:73a5bee48b74bbe998ee9691c8d5f78f6eff61f7f25b9ff721d3de31efb21c75",
+  "run_id": "oc-e0d0abc32611",
+  "sandbox_receipt_path": ".tau/receipts/sandbox-run-receipt.json",
+  "schema": "tau.scillm_worker_launch_receipt.v1",
+  "scillm_base_url": "http://localhost:4001",
+  "scillm_run_status": "completed",
+  "session_id": "ses_0c24c9695ffeZVsGOXVJitV2Hy",
+  "status": "PASS",
+  "substrate_receipts": [
+    {
+      "bytes": 517,
+      "exists": true,
+      "label": "sandbox_receipt",
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-schema-contract-20260707T1906Z/repo/.tau/receipts/sandbox-run-receipt.json",
+      "provider_live": false,
+      "schema": "tau.sandbox_run_receipt.v1",
+      "sha256": "sha256:7481f5fc9427ecdcafe426da6a41098c0e48ebdf4d97790fb84bb7fdbda325ec",
+      "status": "PASS"
+    }
+  ],
+  "timed_out": false,
+  "timestamp": "2026-07-07T17:50:11Z",
+  "url": "http://localhost:4001/v1/scillm/opencode/runs",
+  "work_order_artifact": {
+    "bytes": 2567,
+    "exists": true,
+    "label": "work_order",
+    "path": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-schema-contract-20260707T1906Z/work-order.json",
+    "sha256": "sha256:c8d679d3d5b854f42058b02c6b00646321c99175db273f8f9a6aef2ace555d9b"
+  },
+  "work_order_bytes": 2567,
+  "work_order_path": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-schema-contract-20260707T1906Z/work-order.json",
+  "work_order_schema": "tau.executor.scillm_worker.v1",
+  "work_order_sha256": "sha256:c8d679d3d5b854f42058b02c6b00646321c99175db273f8f9a6aef2ace555d9b",
+  "worker_kind": "scillm"
+}

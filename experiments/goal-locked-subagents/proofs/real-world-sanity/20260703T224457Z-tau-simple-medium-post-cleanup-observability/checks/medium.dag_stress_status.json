@@ -1,0 +1,59 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "provider_session_state_count": 0,
+        "schema": "tau.run_status.v1",
+        "status": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224457Z-tau-simple-medium-post-cleanup-observability/logs/medium.dag_stress_status.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224457Z-tau-simple-medium-post-cleanup-observability/logs/medium.dag_stress_status.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.dag_stress_status",
+  "command": [
+    "/home/graham/workspace/experiments/agent-skills/.tmp_venv/bin/python3",
+    "-c",
+    "import json, subprocess, sys; producer = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau', 'dag-stress-poc', '--label', 'rw-sanity-dag-stress-status', '--run-root', '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224457Z-tau-simple-medium-post-cleanup-observability/medium-dag-stress-status', '--max-attempts', '4']; status_prefix = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau', 'run-status']; run_dir_key = 'run_dir'; first = subprocess.run(producer, text=True, capture_output=True); sys.stderr.write(first.stderr); payload = json.loads(first.stdout); run_dir = payload[run_dir_key]; second = subprocess.run([*status_prefix, run_dir], text=True, capture_output=True); sys.stderr.write(second.stderr); sys.stdout.write(second.stdout); raise SystemExit(second.returncode if first.returncode == 0 else first.returncode)"
+  ],
+  "completed_at": "2026-07-03T22:45:11Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "medium",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau summarizes a deterministic DAG stress suite through the read-only run-status surface.",
+  "receipt_summary": {
+    "live": false,
+    "mocked": false,
+    "ok": true,
+    "provider_session_state_count": 0,
+    "schema": "tau.run_status.v1",
+    "status": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-03T22:45:09Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224457Z-tau-simple-medium-post-cleanup-observability/logs/medium.dag_stress_status.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224457Z-tau-simple-medium-post-cleanup-observability/logs/medium.dag_stress_status.stdout.txt",
+  "timeout_seconds": 180
+}

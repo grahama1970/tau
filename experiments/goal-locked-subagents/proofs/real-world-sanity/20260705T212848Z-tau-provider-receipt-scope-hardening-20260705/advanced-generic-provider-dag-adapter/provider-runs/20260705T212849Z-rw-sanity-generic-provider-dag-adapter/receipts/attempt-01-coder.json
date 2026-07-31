@@ -1,0 +1,36 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T212849Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:a379639de8d5b9201adcb08acb0b55b0fa4f93c2fc46bba93521803cb360a137",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "workspace_id": "w5D",
+  "pane_id": "w5D:p5",
+  "terminal_id": "term_655e3d80da8225e6",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T212848Z-tau-provider-receipt-scope-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T212849Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T212849Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "2023192f61a3aacff5e035a5ec44400ad10c841c96497b7b825b70614ab9bddd",
+  "work_order_sha256": "2419ab471d0602a934ff1af27a3db8aa4d5b887ceb9747c2ccd7794cbb49a5c7",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T212848Z-tau-provider-receipt-scope-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T212849Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T212848Z-tau-provider-receipt-scope-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T212849Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "pwd && jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T212848Z-tau-provider-receipt-scope-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T212849Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+    "sed -n '1,120p' message.txt",
+    "find . -maxdepth 2 -type f -print",
+    "apply_patch update message.txt",
+    "sed -n '1,120p' message.txt",
+    "sha256sum /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T212848Z-tau-provider-receipt-scope-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T212849Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T212849Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+    "test -d /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T212848Z-tau-provider-receipt-scope-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T212849Z-rw-sanity-generic-provider-dag-adapter/receipts && printf 'receipt_dir_exists\\n'",
+    "apply_patch add receipts/attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T212848Z-tau-provider-receipt-scope-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T212849Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in the scratch target file with a completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

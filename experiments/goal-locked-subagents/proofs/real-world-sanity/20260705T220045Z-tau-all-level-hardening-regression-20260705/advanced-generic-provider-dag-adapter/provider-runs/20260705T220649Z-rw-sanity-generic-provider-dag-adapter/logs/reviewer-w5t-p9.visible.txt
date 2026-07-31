@@ -1,0 +1,36 @@
+220649Z
+-rw-san
+ity-gen
+eric-pr
+ovider-
+dag-ada
+pter/re
+ceipts/
+attempt
+-01-rev
+iewer.j
+son
+Wrote f
+ile suc
+cessful
+ly.
+
+All che
+cks pas
+s. The
+target
+file ha
+s no TO
+DO line
+, and t
+he code
+r recei
+pt is s
+chema-v
+alid. `
+force_r
+evise`
+is fals
+e, so I
+ return
+ PASS.

@@ -1,0 +1,31 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T233814Z-rw-sanity-provider-dag-repair",
+  "goal_hash": "sha256:611236a9a98d8b436b3fb9e308c323a0e7fc2fa27c19339f92c00504bd8f9436",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w6N",
+  "pane_id": "w6N:p6",
+  "terminal_id": "term_655e5a6eea05b763",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/repair-loop/20260705T233814Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T233814Z-rw-sanity-provider-dag-repair-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "11b999587ac703d8538da3a1febbbb2e92c9cd6b1dca23b9f22c16a1d264824f",
+  "work_order_sha256": "d2a1773f09d8203003cc948394f4d66c3f5086535c141f253c0a482227577b2e",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/repair-loop/20260705T233814Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work_order JSON",
+    "read target_file scratch-worktree/message.txt",
+    "read coder receipt attempt-01-coder.json",
+    "sha256sum visible_log_path"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/repair-loop/20260705T233814Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/repair-loop/20260705T233814Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: target_file message.txt no longer contains any TODO line; the deterministic visible coder replaced it with a clean proof-of-concept message. The coder receipt is schema-valid and contains expected fields (artifacts, changed_files, visible_log, provider_id). However per force_revise=true, the coder should: (1) add a more descriptive message explaining what this scratch proof demonstrates, (2) include a timestamp or version marker in the output so subsequent attempts can detect staleness, and (3) produce a richer artifact that proves the DAG plumbing actually wrote content rather than a static boilerplate string.",
+  "errors": [],
+  "policy_exceptions": []
+}

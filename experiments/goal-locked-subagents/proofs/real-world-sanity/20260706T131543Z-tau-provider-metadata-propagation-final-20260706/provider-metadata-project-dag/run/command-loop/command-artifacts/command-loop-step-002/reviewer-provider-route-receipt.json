@@ -1,0 +1,16 @@
+{
+  "goal_hash": "sha256:rw-sanity-project-dag-provider-metadata",
+  "kind": "provider_route_receipt",
+  "model_policy": {
+    "auth": "codex-oauth",
+    "model": "gpt-image-2",
+    "provider": "scillm"
+  },
+  "prompt_contract": {
+    "schema": "tau.prompt_contract.v1",
+    "system_prompt": "Stay inside the immutable provider metadata sanity goal.",
+    "user_template": "Use provider route metadata before claiming PASS."
+  },
+  "role": "reviewer",
+  "schema": "tau.provider_route_receipt.v1"
+}

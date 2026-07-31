@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T184220Z-tau-course-correction-v1-20260706/containment-missing-itar-project-dag/project_dag_worker.py",
+    "--role",
+    "coder",
+    "--scenario",
+    "containment-missing-itar"
+  ],
+  "timeout_s": 20
+}

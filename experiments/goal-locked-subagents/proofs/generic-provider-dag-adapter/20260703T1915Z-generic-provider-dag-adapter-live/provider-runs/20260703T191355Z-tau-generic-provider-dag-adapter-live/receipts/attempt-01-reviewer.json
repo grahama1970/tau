@@ -1,0 +1,22 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work-orders/attempt-01-reviewer.json",
+    "read receipts/attempt-01-coder.json",
+    "read scratch-worktree/message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: TODO line removed from message.txt, coder receipt is schema-valid. force_revise is false. No issues found.",
+  "errors": [],
+  "policy_exceptions": []
+}

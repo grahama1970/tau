@@ -1,0 +1,41 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T133700Z/input_script_contract_work_order.json"
+    ],
+    "persona_dream_script_contract": {
+      "run_id": "script-ui-20260704T133700Z",
+      "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260703T230932Z/run",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T133700Z/input_script_contract_work_order.json"
+    },
+    "summary": "Run a bounded Tau Phase 06 script-contract creator/reviewer loop."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#47"
+  },
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000046",
+    "goal_id": "goal-tau-issue-47-persona-dream-script-contract-loop",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "script-writer",
+    "reason": "Script-writer must create a durable Phase 06 script contract from the accepted story, interaction matrix, voices, crew, contact sheets, and assets."
+  },
+  "previous_subagent": "human",
+  "rationale": "The first bounded step is a script-writer command.",
+  "required_evidence": [
+    "Script-writer and script-reviewer write Tau receipts and a script contract artifact whose path matches the Dream Phase 06 UI."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T133700Z/input_script_contract_work_order.json"
+    ],
+    "status": "COMPLETED",
+    "summary": "Human requested a Tau script-contract creator/reviewer proof."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Script-reviewer routes to human with PASS evidence or routes one bounded repair attempt."
+}

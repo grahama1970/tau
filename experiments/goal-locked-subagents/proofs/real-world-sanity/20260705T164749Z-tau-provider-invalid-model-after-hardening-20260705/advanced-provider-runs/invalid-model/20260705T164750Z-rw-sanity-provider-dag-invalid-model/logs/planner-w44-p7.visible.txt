@@ -1,0 +1,37 @@
+ofs/real-world-sanity/20260705T
+164749Z-tau-provider-invalid-mo
+del-after-hardening-20260705/ad
+vanced-provider-runs/invalid-mo
+del/20260705T164750Z-rw-sanity-
+provider-dag-invalid-model\ndag
+_spec: /home/graham/workspace/e
+xperiments/tau/experiments/goal
+-locked-subagents/proofs/real-w
+orld-sanity/20260705T164749Z-ta
+u-provider-invalid-model-after-
+hardening-20260705/advanced-pro
+vider-runs/invalid-model/202607
+05T164750Z-rw-sanity-provider-d
+ag-invalid-model/dag-spec.json\
+nplanner_receipt: /home/graham/
+workspace/experiments/tau/exper
+iments/goal-locked-subagents/pr
+oofs/real-world-sanity/20260705
+T164749Z-tau-provider-invalid-m
+odel-after-hardening-20260705/a
+dvanced-provider-runs/invalid-m
+odel/20260705T164750Z-rw-sanity
+-provider-dag-invalid-model/pla
+nner-receipt.json\nfinal_receip
+t: /home/graham/workspace/exper
+iments/tau/experiments/goal-loc
+ked-subagents/proofs/real-world
+-sanity/20260705T164749Z-tau-pr
+ovider-invalid-model-after-hard
+ening-20260705/advanced-provide
+r-runs/invalid-model/20260705T1
+64750Z-rw-sanity-provider-dag-i
+nvalid-model/run-receipt.json\n
+canonical truth: Tau JSON recei
+pts; this pane is human-visible
+ telemetry.\n

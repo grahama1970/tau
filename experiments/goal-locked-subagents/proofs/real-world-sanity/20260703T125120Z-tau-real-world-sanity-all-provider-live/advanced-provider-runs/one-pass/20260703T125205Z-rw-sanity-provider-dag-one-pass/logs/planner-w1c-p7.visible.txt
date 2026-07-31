@@ -1,0 +1,37 @@
+w-sanity-provider-dag-one-pass\n
+run_dir: /home/graham/workspace/
+experiments/tau/experiments/goal
+-locked-subagents/proofs/real-wo
+rld-sanity/20260703T125120Z-tau-
+real-world-sanity-all-provider-l
+ive/advanced-provider-runs/one-p
+ass/20260703T125205Z-rw-sanity-p
+rovider-dag-one-pass\ndag_spec:
+/home/graham/workspace/experimen
+ts/tau/experiments/goal-locked-s
+ubagents/proofs/real-world-sanit
+y/20260703T125120Z-tau-real-worl
+d-sanity-all-provider-live/advan
+ced-provider-runs/one-pass/20260
+703T125205Z-rw-sanity-provider-d
+ag-one-pass/dag-spec.json\nplann
+er_receipt: /home/graham/workspa
+ce/experiments/tau/experiments/g
+oal-locked-subagents/proofs/real
+-world-sanity/20260703T125120Z-t
+au-real-world-sanity-all-provide
+r-live/advanced-provider-runs/on
+e-pass/20260703T125205Z-rw-sanit
+y-provider-dag-one-pass/planner-
+receipt.json\nfinal_receipt: /ho
+me/graham/workspace/experiments/
+tau/experiments/goal-locked-suba
+gents/proofs/real-world-sanity/2
+0260703T125120Z-tau-real-world-s
+anity-all-provider-live/advanced
+-provider-runs/one-pass/20260703
+T125205Z-rw-sanity-provider-dag-
+one-pass/run-receipt.json\ncanon
+ical truth: Tau JSON receipts; t
+his pane is human-visible teleme
+try.\n

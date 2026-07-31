@@ -1,0 +1,19 @@
+{
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/provider-readiness/20260703T191355Z-tau-generic-provider-dag-adapter-live-readiness/events.jsonl",
+  "inspect_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/provider-readiness/20260703T191355Z-tau-generic-provider-dag-adapter-live-readiness/inspect.json",
+  "label": "tau-generic-provider-dag-adapter-live-readiness",
+  "provider_session_states": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/provider-readiness/20260703T191355Z-tau-generic-provider-dag-adapter-live-readiness/readiness/codex.session-state.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/provider-readiness/20260703T191355Z-tau-generic-provider-dag-adapter-live-readiness/readiness/opencode.session-state.json"
+  ],
+  "provider_spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/provider-readiness/20260703T191355Z-tau-generic-provider-dag-adapter-live-readiness/provider-readiness-spec.json",
+  "readiness_records": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/provider-readiness/20260703T191355Z-tau-generic-provider-dag-adapter-live-readiness/readiness/codex.readiness.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/provider-readiness/20260703T191355Z-tau-generic-provider-dag-adapter-live-readiness/readiness/opencode.readiness.json"
+  ],
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/provider-readiness/20260703T191355Z-tau-generic-provider-dag-adapter-live-readiness",
+  "run_id": "20260703T191355Z-tau-generic-provider-dag-adapter-live-readiness",
+  "schema": "tau.provider_readiness_runtime_manifest.v1",
+  "workstation_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/provider-readiness/20260703T191355Z-tau-generic-provider-dag-adapter-live-readiness/herdr-workstations/20260703T191356Z-tau-generic-provider-dag-adapter-live-readiness/workstation.json"
+}

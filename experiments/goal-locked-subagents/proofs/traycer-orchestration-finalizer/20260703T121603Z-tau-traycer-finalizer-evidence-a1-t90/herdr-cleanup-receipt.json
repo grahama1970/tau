@@ -1,0 +1,83 @@
+{
+  "applied_actions": [],
+  "candidate_count": 1,
+  "candidates": [
+    {
+      "action": "workspace_close",
+      "pane_ids": [
+        "w14:p5",
+        "w14:p6",
+        "w14:p8",
+        "w14:p7",
+        "w14:p9"
+      ],
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "workspace_id": "w14"
+    }
+  ],
+  "command_results": [],
+  "current_workspace": null,
+  "include_current_workspace": false,
+  "live": false,
+  "mocked": false,
+  "mode": "dry-run",
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "global regex cleanup of unrelated Herdr resources",
+      "Git worktree deletion",
+      "session deletion for runs that did not record a session id"
+    ],
+    "proves": [
+      "Tau can identify Herdr workspace/session resources recorded by one run",
+      "Tau cleanup defaults to audit/dry-run before mutation",
+      "Tau refuses to close the current Herdr workspace unless explicitly allowed"
+    ]
+  },
+  "resource_count": 1,
+  "resources": [
+    {
+      "kind": "workspace",
+      "pane_ids": [
+        "w14:p5",
+        "w14:p6",
+        "w14:p8",
+        "w14:p7",
+        "w14:p9"
+      ],
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "sources": [
+        "provider_sessions",
+        "visible_subagents"
+      ],
+      "terminal_ids": [
+        "term_655b3e395165be9",
+        "term_655b3e3afa078ea",
+        "term_655b3e5c442c2ec",
+        "term_655b3e5afb792eb",
+        "term_655b3e7b2c3b7ed"
+      ],
+      "workspace_id": "w14"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-finalizer/20260703T121603Z-tau-traycer-finalizer-evidence-a1-t90",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-finalizer/20260703T121603Z-tau-traycer-finalizer-evidence-a1-t90/runtime-manifest.json",
+  "schema": "tau.herdr_cleanup_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-03T12:17:41Z"
+}

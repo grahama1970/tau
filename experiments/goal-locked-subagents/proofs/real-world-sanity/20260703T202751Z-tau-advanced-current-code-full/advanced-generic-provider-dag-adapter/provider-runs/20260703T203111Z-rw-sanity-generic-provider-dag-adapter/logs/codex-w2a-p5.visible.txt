@@ -1,0 +1,38 @@
+    17 +    "python3 -m json.tool /home/graham/w
+        orkspace/experiments/tau/experiments/goa
+        l-locked-subagents/proofs/real-world-san
+        ity/20260703T202751Z-tau-advanced-curren
+        t-code-full/advanced-generic-provider-da
+        g-adapter/provider-runs/20260703T203111Z
+        -rw-sanity-generic-provider-dag-adapter/
+        receipts/attempt-01-coder.json >/tmp/tau
+        -attempt-01-coder-jsoncheck.txt && wc -l
+         /tmp/tau-attempt-01-coder-jsoncheck.txt
+        ",
+    18 +    "python3 - <<'PY'\nimport json\nfrom
+         pathlib import Path\np = Path('/home/gr
+        aham/workspace/experiments/tau/experimen
+        ts/goal-locked-subagents/proofs/real-wor
+        ld-sanity/20260703T202751Z-tau-advanced-
+        current-code-full/advanced-generic-provi
+        der-dag-adapter/provider-runs/20260703T2
+        03111Z-rw-sanity-generic-provider-dag-ad
+        apter/receipts/attempt-01-coder.json')\n
+        data = json.loads(p.read_text())\nprint(
+        data['schema'])\nprint(data['node_id'],
+        data['provider_id'], data['attempt'])\np
+        rint(data['status'], data['verdict'])\np
+        rint(len(data['changed_files']), data['c
+        hanged_files'][0])\nprint(len(data['erro
+        rs']), len(data['policy_exceptions']))\n
+        PY"
+    19    ],
+
+────────────────────────────────────────────────
+
+• Working (1m 10s • esc to interrupt)
+
+
+› Explain this codebase
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

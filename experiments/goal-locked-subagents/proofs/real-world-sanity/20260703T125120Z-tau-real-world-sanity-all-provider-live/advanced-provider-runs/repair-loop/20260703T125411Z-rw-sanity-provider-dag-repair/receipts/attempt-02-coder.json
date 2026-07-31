@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/repair-loop/20260703T125411Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/repair-loop/20260703T125411Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "sed -n '1,240p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/repair-loop/20260703T125411Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-coder.json",
+    "sed -n '1,40p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/repair-loop/20260703T125411Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "perl -0pi -e 's/Completed implementation for the Tau provider DAG proof-of-concept coder node\\./Coder node implementation completed for the Tau provider DAG POC./' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/repair-loop/20260703T125411Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "apply_patch: wrote receipts/attempt-02-coder.json",
+    "jq -e . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/repair-loop/20260703T125411Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json",
+    "sed -n '1,40p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/repair-loop/20260703T125411Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/repair-loop/20260703T125411Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the prior completion sentence in message.txt with a fresh completed implementation message and recorded the file-modifying command.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,6 @@
+{
+  "goal_hash": "sha256:rw-sanity-project-dag-concurrent-non-json-retry",
+  "scenario": "concurrent-non-json-retry",
+  "schema": "tau.source_summary.v1",
+  "summary": "Research branch source summary for real-world project DAG sanity."
+}

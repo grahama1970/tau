@@ -1,0 +1,25 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/max-exhaustion/20260703T192643Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/max-exhaustion/20260703T192643Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "sed -n '1,240p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/max-exhaustion/20260703T192643Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-coder.json",
+    "sed -n '1,120p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/max-exhaustion/20260703T192643Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "test -e /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/max-exhaustion/20260703T192643Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json; printf 'receipt_exists=%s\\n' $?",
+    "uv run python -m json.tool /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/max-exhaustion/20260703T192643Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json",
+    "grep -E 'tool schemas|provider dispatch|max-exhaustion|agent harness loop' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/max-exhaustion/20260703T192643Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/max-exhaustion/20260703T192643Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the generic completion line with a provider DAG implementation summary covering tool schema registration, provider dispatch routing, max-exhaustion retry handling, and agent harness loop integration.",
+  "errors": [],
+  "policy_exceptions": []
+}

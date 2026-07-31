@@ -1,0 +1,25 @@
+╭────────────────────────────────
+────────────────╮
+│ >_ OpenAI Codex (v0.142.5)
+│
+│
+│
+│ model:       gpt-5.5 medium   /
+model to change │
+│ directory:   ~/…/tau
+│
+│ permissions: YOLO mode
+│
+╰────────────────────────────────
+────────────────╯
+
+  Tip: Use /mcp to list
+  configured MCP tools.
+
+• You have 2 usage limit resets
+available. Run /usage to use one.
+
+
+› Summarize recent commits
+
+  gpt-5.5 medium · ~/workspace/e…

@@ -1,0 +1,33 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "No paid provider, Kling, public upload, or voice synthesis call was performed.",
+      "This deterministic local script pass does not prove GPT-5.5/Kimi model quality; it proves the Phase 06 Tau loop and UI artifact contract."
+    ],
+    "proves": [
+      "Tau ran a command-spec loop from script-writer to script-reviewer.",
+      "Script-writer created a durable Phase 06 script_contract.json artifact.",
+      "Script-reviewer checked required source coverage and script fields."
+    ]
+  },
+  "command_loop_ok": true,
+  "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260703T225829Z/command-loop/command-loop-receipt.json",
+  "command_loop_status": "WAITING",
+  "created_at": "2026-07-03T22:58:30Z",
+  "entity_environment_script_table": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260703T225829Z/run/entity_environment_script_table.json",
+  "input_work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260703T225829Z/input_script_contract_work_order.json",
+  "issue": 47,
+  "live": true,
+  "mocked": false,
+  "provider_live": false,
+  "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260703T225829Z/run",
+  "schema": "tau.persona_dream_script_contract_loop_proof.v1",
+  "script_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260703T225829Z/run/script_contract.json",
+  "start_handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260703T225829Z/start-handoff.json",
+  "stop_reason": "next_agent_is_human",
+  "terminal_agent": "human",
+  "timed_beats": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260703T225829Z/run/timed_beats.json",
+  "timed_transcript": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260703T225829Z/run/timed_transcript.json",
+  "validate_script_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260703T225829Z/run/receipts/validate_script_contract.json",
+  "validate_script_contract_status": "PASS_SCRIPT_CONTRACT"
+}

@@ -1,0 +1,36 @@
+ric-provid
+er-dag-ada
+pter/recei
+pts
+(no output
+)
+
+← Write ex
+periments/
+goal-locke
+d-subagent
+s/proofs/r
+eal-world-
+sanity/202
+60703T2027
+51Z-tau-ad
+vanced-cur
+rent-code-
+full/advan
+ced-generi
+c-provider
+-dag-adapt
+er/provide
+r-runs/202
+60703T2031
+11Z-rw-san
+ity-generi
+c-provider
+-dag-adapt
+er/receipt
+s/attempt-
+01-reviewe
+r.json
+Wrote file
+ successfu
+lly.

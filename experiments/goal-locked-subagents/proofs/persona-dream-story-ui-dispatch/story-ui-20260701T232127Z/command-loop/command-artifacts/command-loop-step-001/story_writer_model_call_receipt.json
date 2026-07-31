@@ -1,0 +1,75 @@
+{
+  "api_key_source": "docker:SCILLM_MASTER_KEY",
+  "content_excerpt": "{\n  \"story\": \"Embry\u2019s phone flashes from the beach bag with the kind of timing only a fake sick day could produce; out on the glare-bright water, her tired hands slide on the rails of the older white shortboard where the wax has gone soft, and she chooses one clean paddle stroke toward the shoulder while Kai, waiting outside on his worn board, saves his breath and points two fingers toward the safe channel over the dark lava reef.\",\n  \"panel\": {\n    \"shot\": \"Low waterline three-quarter panel across Kahalu\u02bbu Bay, with Embry foregrounded on the older wax-smeared white shortboard, Kai farther outside on his well-used white board, dark reef shapes visible under clear water, and the public beach compressed in hot glare behind them.\",\n    \"action\": \"A June set begins to stand up over the shallow reef; Embry squints through salt and sunlight, shifts her rail grip, and commits to the paddle despite fatigue and uncertain footing while Kai holds position and gives one economical channel signal instead of taking the wave.\",\n    \"emotional_turn\": \"Embry\u2019s escape from obligation becomes an owned physical choice: not reckless, not rescued, just hers under heat, etiquette, and reef math.\",\n    \"d",
+  "created_at": "2026-07-01T23:21:28Z",
+  "duration_seconds": 61.386728,
+  "generated_story": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260701T232127Z/command-loop/command-artifacts/command-loop-step-001/story_writer_generated_story.json",
+  "http_status": 200,
+  "live": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "prompt_payload": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260701T232127Z/prompt-bundle/prompt-payload.json",
+  "request": {
+    "messages": "<redacted-request-messages>",
+    "model": "gpt-5.5",
+    "reasoning_effort": "medium",
+    "response_format": {
+      "type": "json_object"
+    },
+    "scillm_metadata": {
+      "caller": "tau",
+      "item_id": "2026-07-01T23:21:27.612Z",
+      "proof": "persona-dream-story-ui-dispatch",
+      "role": "story-writer"
+    },
+    "temperature": 0.6
+  },
+  "response": {
+    "_hidden_params": {
+      "additional_headers": {
+        "x-scillm-backoff-active": "false",
+        "x-scillm-queue-depth": "0",
+        "x-scillm-queue-wait-ms": "0"
+      }
+    },
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": "<redacted-story-content>"
+      }
+    ],
+    "created": 1782948149,
+    "id": "chatcmpl-codex-40bb79e2",
+    "model": "gpt-5.5",
+    "moderation": null,
+    "object": "chat.completion",
+    "scillm_metadata": {
+      "caller": "tau",
+      "item_id": "2026-07-01T23:21:27.612Z",
+      "proof": "persona-dream-story-ui-dispatch",
+      "role": "story-writer"
+    },
+    "scillm_reasoning": {
+      "applied_effort": "medium",
+      "forwarded": true,
+      "ignored_reason": null,
+      "provider_field": "reasoning.effort",
+      "requested_effort": "medium"
+    },
+    "service_tier": null,
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 1676,
+      "completion_tokens_details": null,
+      "prompt_tokens": 6127,
+      "prompt_tokens_details": null,
+      "total_tokens": 7803
+    }
+  },
+  "role": "story-writer",
+  "schema": "tau.persona_dream.story_writer_model_call_receipt.v1",
+  "scillm_base_url": "http://127.0.0.1:4001",
+  "status": "PASS"
+}

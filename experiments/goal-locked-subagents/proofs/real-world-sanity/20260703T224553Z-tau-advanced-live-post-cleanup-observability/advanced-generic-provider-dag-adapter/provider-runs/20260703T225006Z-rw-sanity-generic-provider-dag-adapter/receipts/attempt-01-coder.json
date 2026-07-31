@@ -1,0 +1,30 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-generic-provider-dag-adapter/provider-runs/20260703T225006Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-generic-provider-dag-adapter/provider-runs/20260703T225006Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "pwd && sed -n '1,240p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-generic-provider-dag-adapter/provider-runs/20260703T225006Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+    "ls -la /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-generic-provider-dag-adapter/provider-runs/20260703T225006Z-rw-sanity-generic-provider-dag-adapter/receipts",
+    "sed -n '1,120p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-generic-provider-dag-adapter/provider-runs/20260703T225006Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt",
+    "find /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-generic-provider-dag-adapter/provider-runs/20260703T225006Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree -maxdepth 2 -type f -printf '%p\\n'",
+    "apply_patch update message.txt",
+    "apply_patch add receipt attempt-01-coder.json",
+    "uv run python -m json.tool /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-generic-provider-dag-adapter/provider-runs/20260703T225006Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json >/tmp/tau-attempt-01-coder-jsoncheck.txt && wc -l /tmp/tau-attempt-01-coder-jsoncheck.txt",
+    "grep -n 'TODO' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-generic-provider-dag-adapter/provider-runs/20260703T225006Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt || true",
+    "sed -n '1,80p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-generic-provider-dag-adapter/provider-runs/20260703T225006Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt",
+    "apply_patch update receipt commands_run"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-generic-provider-dag-adapter/provider-runs/20260703T225006Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

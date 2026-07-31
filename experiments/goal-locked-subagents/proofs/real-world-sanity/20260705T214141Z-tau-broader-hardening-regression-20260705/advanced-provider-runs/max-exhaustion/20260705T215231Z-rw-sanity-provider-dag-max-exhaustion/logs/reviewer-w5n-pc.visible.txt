@@ -1,0 +1,36 @@
+ visibl
+e coder
+ attemp
+t 2`
+- **cod
+er_rece
+ipt**:
+Schema-
+valid `
+tau.pro
+vider_d
+ag_node
+_receip
+t.v1`,
+all req
+uired f
+ields p
+resent,
+ status
+/verdic
+t both
+`PASS`
+- **for
+ce_revi
+se**: `
+true` →
+ verdic
+t must
+be `REV
+ISE`
+
+Writing
+ the re
+viewer
+receipt
+:

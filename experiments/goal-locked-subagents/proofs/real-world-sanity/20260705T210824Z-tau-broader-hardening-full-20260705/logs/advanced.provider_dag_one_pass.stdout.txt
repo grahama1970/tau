@@ -1,0 +1,397 @@
+{
+  "alerts": [],
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "coder_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json",
+      "coder_status": "PASS",
+      "coder_verdict": "PASS",
+      "errors": [],
+      "reviewer_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-reviewer.json",
+      "reviewer_status": "PASS",
+      "reviewer_verdict": "PASS"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "agent",
+        "start",
+        "20260705T210944Z-rw-sanity-provider-dag-one-pass-planner",
+        "--cwd",
+        "/home/graham/workspace/experiments/tau",
+        "--workspace",
+        "w57",
+        "--no-focus",
+        "--",
+        "bash",
+        "-lc",
+        "printf '%s\\n' \"Tau planner subagent visible monitor\\\\nrun_id: 20260705T210944Z-rw-sanity-provider-dag-one-pass\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/dag-spec.json\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/planner-receipt.json\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/run-receipt.json\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\n\"; exec sleep 86400"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260705T210944Z-rw-sanity-provider-dag-one-pass-planner\",\"pane_id\":\"w57:p7\",\"revision\":0,\"tab_id\":\"w57:t1\",\"terminal_id\":\"term_655e395eed0c55ab\",\"workspace_id\":\"w57\"},\"argv\":[\"bash\",\"-lc\",\"printf '%s\\\\n' \\\"Tau planner subagent visible monitor\\\\\\\\nrun_id: 20260705T210944Z-rw-sanity-provider-dag-one-pass\\\\\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass\\\\\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/dag-spec.json\\\\\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/planner-receipt.json\\\\\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/run-receipt.json\\\\\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\\\\\n\\\"; exec sleep 86400\"],\"type\":\"agent_started\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "agent",
+        "start",
+        "20260705T210944Z-rw-sanity-provider-dag-one-pass-orchestrator",
+        "--cwd",
+        "/home/graham/workspace/experiments/tau",
+        "--workspace",
+        "w57",
+        "--no-focus",
+        "--",
+        "bash",
+        "-lc",
+        "printf '%s\\n' \"Tau orchestrator subagent visible monitor\\\\nrun_id: 20260705T210944Z-rw-sanity-provider-dag-one-pass\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/dag-spec.json\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/planner-receipt.json\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/run-receipt.json\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\n\"; exec sleep 86400"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260705T210944Z-rw-sanity-provider-dag-one-pass-orchestrator\",\"pane_id\":\"w57:p8\",\"revision\":0,\"tab_id\":\"w57:t1\",\"terminal_id\":\"term_655e395f5fb3e5ac\",\"workspace_id\":\"w57\"},\"argv\":[\"bash\",\"-lc\",\"printf '%s\\\\n' \\\"Tau orchestrator subagent visible monitor\\\\\\\\nrun_id: 20260705T210944Z-rw-sanity-provider-dag-one-pass\\\\\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass\\\\\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/dag-spec.json\\\\\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/planner-receipt.json\\\\\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/run-receipt.json\\\\\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\\\\\n\\\"; exec sleep 86400\"],\"type\":\"agent_started\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "run",
+        "w57:p5",
+        "Tau provider DAG POC coder task.\n\nRead this work order JSON:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json\n\nRules:\n- Operate only inside the scratch_worktree named in the work order.\n- Do not modify the Tau repository.\n- Do not use GitHub.\n- Do not use Tailscale.\n- Modify only target_file.\n- Write a JSON receipt exactly here:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json\n- Copy the exact work_order_sha256 field from the work order into the receipt.\n  Do not replace it with sha256sum output for the work-order file.\n\nReceipt JSON shape:\n{\n  \"schema\": \"tau.provider_dag_node_receipt.v1\",\n  \"dag_id\": \"20260705T210944Z-rw-sanity-provider-dag-one-pass\",\n  \"goal_hash\": \"sha256:ce2b8402dc8521fbd005113ccbffdae7e64eed7c07ca9ecfb9f4f161710a2f4d\",\n  \"node_id\": \"coder\",\n  \"provider_id\": \"codex\",\n  \"attempt\": 1,\n  \"workspace_id\": \"w57\",\n  \"pane_id\": \"w57:p5\",\n  \"terminal_id\": \"term_655e393d3ea955a9\",\n  \"visible_log_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt\",\n  \"visible_log_sha256\": \"<sha256 of visible_log_path after your work>\",\n  \"work_order_sha256\": \"709d99631b9aaac9a80bb7ea38a4c2e0d2419b0d4dc054cc8d9518f6e9a9bf27\",\n  \"status\": \"PASS\",\n  \"verdict\": \"PASS\",\n  \"work_order_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json\",\n  \"changed_files\": [\"<target_file>\"],\n  \"commands_run\": [\"<commands you ran>\"],\n  \"artifacts\": [\"<target_file>\"],\n  \"handoff_summary\": \"What changed.\",\n  \"errors\": [],\n  \"policy_exceptions\": []\n}\n"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "agent",
+        "start",
+        "20260705T210944Z-rw-sanity-provider-dag-one-pass-reviewer-attempt-01",
+        "--cwd",
+        "/home/graham/workspace/experiments/tau",
+        "--workspace",
+        "w57",
+        "--no-focus",
+        "--",
+        "opencode",
+        "run",
+        "--dir",
+        "/home/graham/workspace/experiments/tau",
+        "Tau provider DAG POC reviewer task.\n\nRead this work order JSON:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-reviewer.json\n\nRules:\n- Operate only inside the scratch_worktree named in the work order.\n- Do not modify files except the reviewer receipt.\n- Do not use GitHub.\n- Do not use Tailscale.\n- Review target_file and coder_receipt_path.\n- If the work order has \"force_revise\": true, write verdict \"REVISE\" with\n  concrete feedback for the next coder attempt.\n- Write a JSON receipt exactly here:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-reviewer.json\n- Copy the exact work_order_sha256 field from the work order into the receipt.\n  Do not replace it with sha256sum output for the work-order file.\n\nReceipt JSON shape:\n{\n  \"schema\": \"tau.provider_dag_node_receipt.v1\",\n  \"dag_id\": \"20260705T210944Z-rw-sanity-provider-dag-one-pass\",\n  \"goal_hash\": \"sha256:ce2b8402dc8521fbd005113ccbffdae7e64eed7c07ca9ecfb9f4f161710a2f4d\",\n  \"node_id\": \"reviewer\",\n  \"provider_id\": \"opencode\",\n  \"attempt\": 1,\n  \"workspace_id\": \"w57\",\n  \"pane_id\": \"w57:p6\",\n  \"terminal_id\": \"term_655e393dc28de5aa\",\n  \"visible_log_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/logs/opencode.visible.txt\",\n  \"visible_log_sha256\": \"<sha256 of visible_log_path after review>\",\n  \"work_order_sha256\": \"2bc0f778d1af501b1a2603a6e709a2ea6052ebf69e49a9aabea6e346dbf78549\",\n  \"status\": \"PASS\",\n  \"verdict\": \"PASS or REVISE\",\n  \"work_order_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-reviewer.json\",\n  \"changed_files\": [],\n  \"commands_run\": [\"<commands you ran>\"],\n  \"artifacts\": [\"<target_file>\", \"<coder_receipt_path>\"],\n  \"handoff_summary\": \"Review finding or pass rationale.\",\n  \"errors\": [],\n  \"policy_exceptions\": []\n}"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260705T210944Z-rw-sanity-provider-dag-one-pass-reviewer-attempt-01\",\"pane_id\":\"w57:p9\",\"revision\":0,\"tab_id\":\"w57:t1\",\"terminal_id\":\"term_655e39c6dca6a5ad\",\"workspace_id\":\"w57\"},\"argv\":[\"opencode\",\"run\",\"--dir\",\"/home/graham/workspace/experiments/tau\",\"Tau provider DAG POC reviewer task.\\n\\nRead this work order JSON:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-reviewer.json\\n\\nRules:\\n- Operate only inside the scratch_worktree named in the work order.\\n- Do not modify files except the reviewer receipt.\\n- Do not use GitHub.\\n- Do not use Tailscale.\\n- Review target_file and coder_receipt_path.\\n- If the work order has \\\"force_revise\\\": true, write verdict \\\"REVISE\\\" with\\n  concrete feedback for the next coder attempt.\\n- Write a JSON receipt exactly here:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-reviewer.json\\n- Copy the exact work_order_sha256 field from the work order into the receipt.\\n  Do not replace it with sha256sum output for the work-order file.\\n\\nReceipt JSON shape:\\n{\\n  \\\"schema\\\": \\\"tau.provider_dag_node_receipt.v1\\\",\\n  \\\"dag_id\\\": \\\"20260705T210944Z-rw-sanity-provider-dag-one-pass\\\",\\n  \\\"goal_hash\\\": \\\"sha256:ce2b8402dc8521fbd005113ccbffdae7e64eed7c07ca9ecfb9f4f161710a2f4d\\\",\\n  \\\"node_id\\\": \\\"reviewer\\\",\\n  \\\"provider_id\\\": \\\"opencode\\\",\\n  \\\"attempt\\\": 1,\\n  \\\"workspace_id\\\": \\\"w57\\\",\\n  \\\"pane_id\\\": \\\"w57:p6\\\",\\n  \\\"terminal_id\\\": \\\"term_655e393dc28de5aa\\\",\\n  \\\"visible_log_path\\\": \\\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/logs/opencode.visible.txt\\\",\\n  \\\"visible_log_sha256\\\": \\\"<sha256 of visible_log_path after review>\\\",\\n  \\\"work_order_sha256\\\": \\\"2bc0f778d1af501b1a2603a6e709a2ea6052ebf69e49a9aabea6e346dbf78549\\\",\\n  \\\"status\\\": \\\"PASS\\\",\\n  \\\"verdict\\\": \\\"PASS or REVISE\\\",\\n  \\\"work_order_path\\\": \\\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-reviewer.json\\\",\\n  \\\"changed_files\\\": [],\\n  \\\"commands_run\\\": [\\\"<commands you ran>\\\"],\\n  \\\"artifacts\\\": [\\\"<target_file>\\\", \\\"<coder_receipt_path>\\\"],\\n  \\\"handoff_summary\\\": \\\"Review finding or pass rationale.\\\",\\n  \\\"errors\\\": [],\\n  \\\"policy_exceptions\\\": []\\n}\"],\"type\":\"agent_started\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w57:p9",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w57:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "  target still contains exactly the\n  completed message.\n\n\u2022 Ran jq -e '.schema ==\n  \u2502 \"tau.provider_dag_node_receipt.v1\n  \u2502 \" and .status == \"PASS\"\n  \u2502 \u2026 +15 lines\n  \u2514 true\n\n\u2022 Ran test \"$(jq -r\n  \u2502 '.visible_log_sha256' /home/\n  \u2502 graham/workspace/experiments/tau/\n  \u2502 \u2026 +23 lines\n  \u2514 visible log hash matches receipt\n\n\u2022 Ran test \"$(sed -n '1p' message.txt)\"\n  \u2502 = \"Completed implementation for\n  \u2502 Tau provider DAG POC coder node.\"\n  \u2502 \u2026 +3 lines\n  \u2514 target content verified\n\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\u2022 The receipt schema and target checks\n  passed. I noticed the receipt\u2019s\n  commands_run did not include the\n  post-write validation commands, so\n  I\u2019m updating only the receipt\u2019s\n  command list for a more accurate\n  audit trail, then I\u2019ll rerun the same\n  checks.\n\n\u2022 Working (2m 25s \u2022 esc to interrupt)\n\n\n\u203a Find and fix a bug in @filename\n\n  gpt-5.5 medium \u00b7 ~/workspace/experim\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w57:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w57:p7",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "Tau planner subagent visible monitor\\nr\nun_id: 20260705T210944Z-rw-sanity-provi\nder-dag-one-pass\\nrun_dir: /home/graham\n/workspace/experiments/tau/experiments/\ngoal-locked-subagents/proofs/real-world\n-sanity/20260705T210824Z-tau-broader-ha\nrdening-full-20260705/advanced-provider\n-runs/one-pass/20260705T210944Z-rw-sani\nty-provider-dag-one-pass\\ndag_spec: /ho\nme/graham/workspace/experiments/tau/exp\neriments/goal-locked-subagents/proofs/r\neal-world-sanity/20260705T210824Z-tau-b\nroader-hardening-full-20260705/advanced\n-provider-runs/one-pass/20260705T210944\nZ-rw-sanity-provider-dag-one-pass/dag-s\npec.json\\nplanner_receipt: /home/graham\n/workspace/experiments/tau/experiments/\ngoal-locked-subagents/proofs/real-world\n-sanity/20260705T210824Z-tau-broader-ha\nrdening-full-20260705/advanced-provider\n-runs/one-pass/20260705T210944Z-rw-sani\nty-provider-dag-one-pass/planner-receip\nt.json\\nfinal_receipt: /home/graham/wor\nkspace/experiments/tau/experiments/goal\n-locked-subagents/proofs/real-world-san\nity/20260705T210824Z-tau-broader-harden\ning-full-20260705/advanced-provider-run\ns/one-pass/20260705T210944Z-rw-sanity-p\nrovider-dag-one-pass/run-receipt.json\\n\ncanonical truth: Tau JSON receipts; thi\ns pane is human-visible telemetry.\\n\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w57:p8",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "nity-provider-dag-\none-pass/dag-spec.\njson\\nplanner_rece\nipt: /home/graham/\nworkspace/experime\nnts/tau/experiment\ns/goal-locked-suba\ngents/proofs/real-\nworld-sanity/20260\n705T210824Z-tau-br\noader-hardening-fu\nll-20260705/advanc\ned-provider-runs/o\nne-pass/20260705T2\n10944Z-rw-sanity-p\nrovider-dag-one-pa\nss/planner-receipt\n.json\\nfinal_recei\npt: /home/graham/w\norkspace/experimen\nts/tau/experiments\n/goal-locked-subag\nents/proofs/real-w\norld-sanity/202607\n05T210824Z-tau-bro\nader-hardening-ful\nl-20260705/advance\nd-provider-runs/on\ne-pass/20260705T21\n0944Z-rw-sanity-pr\novider-dag-one-pas\ns/run-receipt.json\n\\ncanonical truth:\n Tau JSON receipts\n; this pane is hum\nan-visible telemet\nry.\\n\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w57:p9",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "ments/g\noal-loc\nked-sub\nagents/\nproofs/\nreal-wo\nrld-san\nity/202\n60705T2\n10824Z-\ntau-bro\nader-ha\nrdening\n-full-2\n0260705\n/advanc\ned-prov\nider-ru\nns/one-\npass/20\n260705T\n210944Z\n-rw-san\nity-pro\nvider-d\nag-one-\npass/re\nceipts/\nattempt\n-01-rev\niewer.j\nson\nWrote f\nile suc\ncessful\nly.\n"
+    }
+  ],
+  "dag_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/dag-spec.json",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/events.jsonl",
+  "herdr_cleanup": {
+    "applied_action_count": 1,
+    "candidate_count": 1,
+    "live": true,
+    "mocked": false,
+    "mode": "apply",
+    "ok": true,
+    "post_verified_absent_count": 1,
+    "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/herdr-cleanup-receipt.json",
+    "resource_count": 1,
+    "status": "PASS",
+    "workspace_lease": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/herdr-workspace-lease.json",
+    "workspace_lease_sha256": "ee73eb37a86c46d868abf4898f826d75e887fb04c57cb1cf87ab338f819dfcb2"
+  },
+  "herdr_cleanup_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/herdr-cleanup-receipt.json",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "orchestration_evidence": {
+    "errors": [],
+    "feature_counts": {
+      "agent_lineage": 4,
+      "agent_messages": 2,
+      "doctor": 1,
+      "execution_timeline": 6,
+      "provider_capabilities": 2,
+      "review_comments": 1,
+      "worktree_session_bindings": 4
+    },
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "provider_live": true,
+    "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/orchestration-evidence-receipt.json",
+    "status": "PASS"
+  },
+  "orchestration_evidence_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/orchestration-evidence-receipt.json",
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "general semantic coding quality beyond the scratch fixture task",
+      "unbounded autonomous repair",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau orchestrator can consume a planner-created tau.dag_run_spec.v1",
+      "Tau exposes planner, orchestrator, coder, and reviewer roles as Herdr-visible subagents",
+      "Tau requires structured provider readiness before dispatch",
+      "Tau can dispatch a bounded coder work order to Codex in a Herdr pane",
+      "Tau waits for and validates a canonical coder node receipt",
+      "Tau dispatches the reviewer only after the coder receipt validates",
+      "Tau waits for and validates a canonical reviewer node receipt",
+      "Tau stops the while loop on reviewer PASS, failure, or max attempts"
+    ]
+  },
+  "provider_readiness_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness-receipt.json",
+  "provider_sessions": {
+    "codex": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "w57:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/readiness/codex.readiness.json",
+      "provider_session_state": {
+        "auth_status": "unknown",
+        "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+        "interstitial_kind": null,
+        "interstitial_present": false,
+        "observed_at": "2026-07-05T21:09:50Z",
+        "pane_id": "w57:p5",
+        "process_alive": true,
+        "provider_api_available": false,
+        "provider_event_log_path": null,
+        "provider_id": "codex",
+        "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/readiness/codex.readiness.json",
+        "ready": true,
+        "schema": "tau.provider_session_state.v1",
+        "source": "herdr_process_info",
+        "state": "ready",
+        "terminal_id": "term_655e393d3ea955a9",
+        "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt",
+        "workspace_id": "w57"
+      },
+      "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/readiness/codex.session-state.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_655e393d3ea955a9",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w57"
+    },
+    "opencode": {
+      "foreground_command": "opencode",
+      "pane_id": "w57:p6",
+      "process_alive": true,
+      "provider_id": "opencode",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/readiness/opencode.readiness.json",
+      "provider_session_state": {
+        "auth_status": "unknown",
+        "foreground_command": "opencode",
+        "interstitial_kind": null,
+        "interstitial_present": false,
+        "observed_at": "2026-07-05T21:10:20Z",
+        "pane_id": "w57:p6",
+        "process_alive": true,
+        "provider_api_available": false,
+        "provider_event_log_path": null,
+        "provider_id": "opencode",
+        "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/readiness/opencode.readiness.json",
+        "ready": true,
+        "schema": "tau.provider_session_state.v1",
+        "source": "herdr_process_info",
+        "state": "ready",
+        "terminal_id": "term_655e393dc28de5aa",
+        "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/logs/opencode.visible.txt",
+        "workspace_id": "w57"
+      },
+      "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/readiness/opencode.session-state.json",
+      "ready": true,
+      "role": "reviewer",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_655e393dc28de5aa",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/logs/opencode.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w57"
+    }
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass",
+  "run_id": "20260705T210944Z-rw-sanity-provider-dag-one-pass",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/runtime-manifest.json",
+  "schema": "tau.dag_run_receipt.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/scratch-worktree",
+  "status": "PASS",
+  "timestamp": "2026-07-05T21:12:48Z",
+  "verdict": "PASS",
+  "visible_subagents": {
+    "coder": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "w57:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/readiness/codex.readiness.json",
+      "provider_session_state": {
+        "auth_status": "unknown",
+        "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+        "interstitial_kind": null,
+        "interstitial_present": false,
+        "observed_at": "2026-07-05T21:09:50Z",
+        "pane_id": "w57:p5",
+        "process_alive": true,
+        "provider_api_available": false,
+        "provider_event_log_path": null,
+        "provider_id": "codex",
+        "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/readiness/codex.readiness.json",
+        "ready": true,
+        "schema": "tau.provider_session_state.v1",
+        "source": "herdr_process_info",
+        "state": "ready",
+        "terminal_id": "term_655e393d3ea955a9",
+        "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt",
+        "workspace_id": "w57"
+      },
+      "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/readiness/codex.session-state.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_655e393d3ea955a9",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T210824Z-tau-broader-hardening-full-20260705/advanced-provider-runs/one-pass/20260705T210944Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T210944Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w57"
+    },
+    "orchestrator": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "w57:p8",
+      "provider_id": "tau",
+      "role": "orchestrator",
+      "tab_id": "w57:t1",
+      "terminal_id": "term_655e395f5fb3e5ac",
+      "visible": true,
+      "workspace_id": "w57"
+    },
+    "planner": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "w57:p7",
+      "provider_id": "tau",
+      "role": "planner",
+      "tab_id": "w57:t1",
+      "terminal_id": "term_655e395eed0c55ab",
+      "visible": true,
+      "workspace_id": "w57"
+    },
+    "reviewer": {
+      "command": "opencode run --dir <repo> [--model <reviewer-model>] <reviewer-prompt>",
+      "pane_id": "w57:p9",
+      "provider_id": "opencode",
+      "readiness_pane_id": "w57:p6",
+      "reviewer_model": null,
+      "role": "reviewer",
+      "tab_id": "w57:t1",
+      "terminal_id": "term_655e39c6dca6a5ad",
+      "visible": true,
+      "workspace_id": "w57"
+    }
+  }
+}

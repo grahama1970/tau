@@ -1,0 +1,22 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/repair-loop/20260703T192323Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/repair-loop/20260703T192323Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "sed -n '1,240p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/repair-loop/20260703T192323Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-coder.json",
+    "sed -n '1,160p' message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/repair-loop/20260703T192323Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the placeholder coder output with a multi-line provider DAG status summary containing run_id, target file path, coder node ID, attempt number, provider ID, and DAG node purpose.",
+  "errors": [],
+  "policy_exceptions": []
+}

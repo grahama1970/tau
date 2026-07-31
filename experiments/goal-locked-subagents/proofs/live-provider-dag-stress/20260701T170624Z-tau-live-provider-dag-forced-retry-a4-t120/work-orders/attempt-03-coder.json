@@ -1,0 +1,12 @@
+{
+  "attempt": 3,
+  "node_id": "coder",
+  "provider_id": "codex",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/receipts/attempt-03-coder.json",
+  "reviewer_feedback": "REVISE per force_revise=true. Coder receipt is schema-valid (all fields present, types correct). target_file TODO is replaced. However, message.txt content 'Provider-DAG coder node completed: read the work order with jq, inspected message.txt with nl, and replaced the generic message with forced-retry implementation detail.' reads as a procedural log, not a provider-DAG implementation artifact. A genuine provider-DAG coder node should describe how it resolved onto the scratch-worktree, parsed work-order fields, wrote its node receipt, and validated its own output. For next attempt: write a message that proves provider-DAG awareness \u2014 reference the specific work-order fields (target_file, scratch_worktree, receipt_path) and how the coder used them.",
+  "run_id": "20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/scratch-worktree",
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/scratch-worktree/message.txt",
+  "task": "Modify only target_file. Replace the TODO line with a short completed implementation message. Then write the node receipt JSON exactly at receipt_path."
+}

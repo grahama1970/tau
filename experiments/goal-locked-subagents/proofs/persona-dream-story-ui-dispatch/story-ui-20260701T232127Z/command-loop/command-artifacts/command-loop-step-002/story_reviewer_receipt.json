@@ -1,0 +1,23 @@
+{
+  "advanced_past_story_contract": true,
+  "created_at": "2026-07-01T23:22:30Z",
+  "live": true,
+  "mocked": false,
+  "pipeline_first_blocker": {
+    "path": "dream_packet.json | artifacts/dream_packet.json",
+    "phase": "dream_packet",
+    "reason": "missing_artifact"
+  },
+  "pipeline_loop_status": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260701T232127Z/run/receipts/pipeline_loop_status_story_forward.json",
+  "provider_calls": {
+    "kling": false,
+    "paid": false,
+    "public_upload": false
+  },
+  "role": "story-reviewer",
+  "schema": "tau.persona_dream.story_reviewer_receipt.v1",
+  "status": "PASS",
+  "subagent_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260701T232127Z/command-loop/command-artifacts/command-loop-step-002/story_reviewer_tau_subagent_receipt.json",
+  "validate_story_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260701T232127Z/run/receipts/validate_story_contract.json",
+  "validation_status": "PASS_STORY_CONTRACT"
+}

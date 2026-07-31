@@ -1,0 +1,27 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-coder.json",
+    "pwd",
+    "sed -n '1,120p' message.txt",
+    "find . -maxdepth 2 -type f | sort",
+    "sed -n '1,120p' message.txt",
+    "jq -e '.schema == \"tau.provider_dag_node_receipt.v1\" and .node_id == \"coder\" and .provider_id == \"codex\" and .attempt == 1 and .status == \"PASS\" and .verdict == \"PASS\" and (.errors | length == 0) and (.policy_exceptions | length == 0)' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json",
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "jq . work-orders/attempt-01-reviewer.json",
+    "jq . receipts/attempt-01-coder.json",
+    "cat scratch-worktree/message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE per force_revise flag. target_file is acceptable (TODO removed, replaced with completed message). coder receipt is schema-valid (all fields present, correct types). For next attempt: extend message.txt to include implementation detail — describe the specific provider-DAG coder-node logic (e.g., which commands were chosen and why) rather than a generic completion statement. The current message is too thin to distinguish genuine provider-DAG logic from a no-op.",
+  "errors": [],
+  "policy_exceptions": []
+}

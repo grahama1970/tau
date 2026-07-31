@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/repair-loop/20260703T192323Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "git worktree list",
+    "read work order JSON",
+    "read target_file (message.txt)",
+    "read coder receipt (attempt-01-coder.json)"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/repair-loop/20260703T192323Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/repair-loop/20260703T192323Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: force_revise=true in work order. Target file is clean (TODO removed, placeholder message written) and coder receipt is schema-valid. For next iteration: populate message.txt with a meaningful multi-line status summary of the provider DAG — include the run_id, target file path, coder node ID, attempt number, and the actual content or purpose of the DAG node (e.g. which provider adapter was exercised). The current one-liner 'Implementation completed by the coder node.' is technically sufficient but lacks diagnostic value for downstream consumers.",
+  "errors": [],
+  "policy_exceptions": []
+}

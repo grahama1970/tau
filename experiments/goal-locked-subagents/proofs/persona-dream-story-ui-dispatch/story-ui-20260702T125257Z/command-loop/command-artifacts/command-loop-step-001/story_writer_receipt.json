@@ -1,0 +1,42 @@
+{
+  "created_at": "2026-07-02T12:54:18Z",
+  "dream_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260702T125257Z/dream_packet.json",
+  "live": true,
+  "mocked": false,
+  "model_call_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260702T125257Z/command-loop/command-artifacts/command-loop-step-001/story_writer_model_call_receipt.json",
+  "provider_calls": {
+    "kling": false,
+    "paid": false,
+    "public_upload": false,
+    "story_writer": true
+  },
+  "role": "story-writer",
+  "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260702T125257Z/run",
+  "schema": "tau.persona_dream.story_writer_receipt.v1",
+  "status": "COMPLETED",
+  "story_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260702T125257Z/run/story_contract.json",
+  "story_contract_md": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260702T125257Z/run/story_contract.md",
+  "subagent_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260702T125257Z/command-loop/command-artifacts/command-loop-step-001/story_writer_tau_subagent_receipt.json",
+  "work_order": {
+    "created_at": "2026-07-02T12:52:57.576Z",
+    "prompt_payload_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260702T125257Z/prompt-bundle/prompt-payload.json",
+    "provider_intent": {
+      "reviewer": {
+        "model": "moonshotai/Kimi-K2.6-TEE",
+        "provider": "chutes"
+      },
+      "writer": {
+        "auth": "codex-oauth",
+        "model": "gpt-5.5",
+        "reasoning_effort": "medium"
+      }
+    },
+    "purpose": "Create a one-panel 10-second Embry OS story contract from Phase 02 prompt payload.",
+    "schema": "persona_dream.story_contract_work_order.v1",
+    "source_paths": {
+      "dream_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260702T125257Z/dream_packet.json",
+      "prompt_bundle": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260702T125257Z/prompt-bundle",
+      "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260702T125257Z/run"
+    }
+  }
+}

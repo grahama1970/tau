@@ -1,0 +1,6 @@
+{
+  "node_id": "provider_task",
+  "purpose": "Exercise generic DAG -> provider adapter -> visible provider DAG -> generic node receipt.",
+  "schema": "tau.generic_provider_adapter_work_order.v1",
+  "work_order_sha256": "490dbb9fcc8ecd0e9b9827320e1935e38fac263ebc407565ebeff721d6292470"
+}

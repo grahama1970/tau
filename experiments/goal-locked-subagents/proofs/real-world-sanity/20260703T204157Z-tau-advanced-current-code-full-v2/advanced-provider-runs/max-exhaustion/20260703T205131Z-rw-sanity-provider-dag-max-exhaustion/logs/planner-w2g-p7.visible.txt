@@ -1,0 +1,27 @@
+Tau planner subagent visible monitor\nrun_id: 20
+260703T205131Z-rw-sanity-provider-dag-max-exhaus
+tion\nrun_dir: /home/graham/workspace/experiment
+s/tau/experiments/goal-locked-subagents/proofs/r
+eal-world-sanity/20260703T204157Z-tau-advanced-c
+urrent-code-full-v2/advanced-provider-runs/max-e
+xhaustion/20260703T205131Z-rw-sanity-provider-da
+g-max-exhaustion\ndag_spec: /home/graham/workspa
+ce/experiments/tau/experiments/goal-locked-subag
+ents/proofs/real-world-sanity/20260703T204157Z-t
+au-advanced-current-code-full-v2/advanced-provid
+er-runs/max-exhaustion/20260703T205131Z-rw-sanit
+y-provider-dag-max-exhaustion/dag-spec.json\npla
+nner_receipt: /home/graham/workspace/experiments
+/tau/experiments/goal-locked-subagents/proofs/re
+al-world-sanity/20260703T204157Z-tau-advanced-cu
+rrent-code-full-v2/advanced-provider-runs/max-ex
+haustion/20260703T205131Z-rw-sanity-provider-dag
+-max-exhaustion/planner-receipt.json\nfinal_rece
+ipt: /home/graham/workspace/experiments/tau/expe
+riments/goal-locked-subagents/proofs/real-world-
+sanity/20260703T204157Z-tau-advanced-current-cod
+e-full-v2/advanced-provider-runs/max-exhaustion/
+20260703T205131Z-rw-sanity-provider-dag-max-exha
+ustion/run-receipt.json\ncanonical truth: Tau JS
+ON receipts; this pane is human-visible telemetr
+y.\n

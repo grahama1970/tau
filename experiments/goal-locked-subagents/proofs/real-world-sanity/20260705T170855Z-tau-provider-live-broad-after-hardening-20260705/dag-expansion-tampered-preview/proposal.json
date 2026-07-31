@@ -1,0 +1,29 @@
+{
+  "goal_hash": "sha256:rw-sanity-dag-expansion",
+  "new_edges": [
+    {
+      "from": "coder",
+      "to": "validator"
+    },
+    {
+      "from": "validator",
+      "to": "reviewer"
+    }
+  ],
+  "new_nodes": [
+    {
+      "agent": "validator",
+      "executor": "local",
+      "id": "validator",
+      "max_attempts": 1,
+      "required_evidence": [
+        "validation_receipt"
+      ]
+    }
+  ],
+  "parent_dag_id": "rw-sanity-dag-expansion",
+  "proposal_id": "rw-sanity-expansion-proposal",
+  "proposed_by": "reviewer",
+  "reason": "Add deterministic validator before reviewer continuation.",
+  "schema": "tau.dag_expansion_proposal.v1"
+}

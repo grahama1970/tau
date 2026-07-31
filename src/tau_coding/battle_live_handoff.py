@@ -1165,6 +1165,88 @@ def _materialize_red(*, team_dir: Path, parsed: dict[str, Any]) -> dict[str, Any
     }
 
 
+def _dotted_name(node: ast.AST) -> str | None:
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        parent = _dotted_name(node.value)
+        return f"{parent}.{node.attr}" if parent else None
+    return None
+
+
+def _script_mentions_local_app(tree: ast.AST) -> bool:
+    """True if the script contains a string constant naming the local app module
+    (``"app"`` or a path ending in ``app.py``)."""
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            value = node.value.strip()
+            if value == "app" or value.endswith("app.py"):
+                return True
+    return False
+
+
+def _loads_import_zip_from_local_app(tree: ast.AST) -> bool:
+    direct_import = any(
+        isinstance(node, ast.ImportFrom)
+        and node.module == "app"
+        and any(alias.name == "import_zip" for alias in node.names)
+        for node in ast.walk(tree)
+    )
+    app_module_import = any(
+        isinstance(node, ast.Import)
+        and any(alias.name == "app" for alias in node.names)
+        for node in ast.walk(tree)
+    )
+    app_module_call = any(
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and isinstance(node.func.value, ast.Name)
+        and node.func.value.id == "app"
+        and node.func.attr == "import_zip"
+        for node in ast.walk(tree)
+    )
+    if direct_import or (app_module_import and app_module_call):
+        return True
+
+    # importlib.import_module("app") + getattr(module, "import_zip") / module.import_zip
+    # is a legitimate local-app load produced by a method_replace mutation.
+    import_module_app = any(
+        isinstance(node, ast.Call)
+        and _dotted_name(node.func) in {"importlib.import_module", "import_module"}
+        and node.args
+        and isinstance(node.args[0], ast.Constant)
+        and node.args[0].value == "app"
+        for node in ast.walk(tree)
+    )
+    retrieves_import_zip_attr = any(
+        (isinstance(node, ast.Attribute) and node.attr == "import_zip")
+        or (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "getattr"
+            and len(node.args) >= 2
+            and isinstance(node.args[1], ast.Constant)
+            and node.args[1].value == "import_zip"
+        )
+        for node in ast.walk(tree)
+    )
+    if import_module_app and retrieves_import_zip_attr:
+        return True
+
+    # importlib.util.spec_from_file_location(...) loading a local app.py, then
+    # retrieving import_zip.
+    loads_via_spec = any(
+        isinstance(node, ast.Call)
+        and _dotted_name(node.func) == "importlib.util.spec_from_file_location"
+        for node in ast.walk(tree)
+    )
+    return (
+        loads_via_spec
+        and retrieves_import_zip_attr
+        and _script_mentions_local_app(tree)
+    )
+
+
 def _red_contract_error(script: str) -> str | None:
     """Return a fail-closed materialization reason for non-Judge-compatible Red code."""
     banned_imports = {
@@ -1190,7 +1272,7 @@ def _red_contract_error(script: str) -> str | None:
 
     if imports & banned_imports:
         return "red_artifact_not_local_stdlib_exploit"
-    if "from app import import_zip" not in script and "import app" not in script:
+    if not _loads_import_zip_from_local_app(tree):
         return "red_artifact_missing_local_app_import"
     if "import_zip(" not in script:
         return "red_artifact_does_not_call_import_zip"

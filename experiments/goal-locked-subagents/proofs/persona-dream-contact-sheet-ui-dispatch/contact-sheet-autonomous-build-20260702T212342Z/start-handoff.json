@@ -1,0 +1,41 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-contact-sheet-ui-dispatch/contact-sheet-autonomous-build-20260702T212342Z/input_contact_sheet_work_order.json"
+    ],
+    "persona_dream_contact_sheet_contract": {
+      "run_id": "contact-sheet-autonomous-build-20260702T212342Z",
+      "run_root": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-contact-sheet-ui-dispatch/contact-sheet-autonomous-build-20260702T212342Z/input_contact_sheet_work_order.json"
+    },
+    "summary": "Run a bounded Tau Phase 04 contact-sheet creator/reviewer loop."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#45"
+  },
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000045",
+    "goal_id": "goal-tau-issue-45-persona-dream-contact-sheet-loop",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "contact-sheet-writer",
+    "reason": "Contact-sheet-writer must create durable Phase 04 reference requirements from the accepted story interaction matrix."
+  },
+  "previous_subagent": "human",
+  "rationale": "The first bounded step is a contact-sheet-writer command.",
+  "required_evidence": [
+    "Contact-sheet-writer and contact-sheet-reviewer write Tau receipts and Phase 04 artifacts whose paths match the Dream backend gate."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-contact-sheet-ui-dispatch/contact-sheet-autonomous-build-20260702T212342Z/input_contact_sheet_work_order.json"
+    ],
+    "status": "COMPLETED",
+    "summary": "Project agent requested a Tau contact-sheet contract proof."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Contact-sheet-build-reviewer routes to human with PASS or BLOCKED evidence."
+}

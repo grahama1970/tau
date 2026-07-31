@@ -1,0 +1,46 @@
+  1:Provider-DAG run 20260701T170624Z-
+  tau-live-provider-dag-forced-retry-
+  a4-t120 attempt=4
+  provider_chain=coder/codex completed
+  from work-orders/attempt-04-
+  coder.json.
+
+  Receipt validation command returned:
+  true.
+
+  Receipt field/count validation
+  covered: attempt=4, status=PASS,
+  verdict=PASS, changed_files=1,
+  artifacts=1, errors=0,
+  policy_exceptions=0.
+
+  Next/Stop Condition
+  Stop condition reached. No remaining
+  work: message.txt contains the
+  attempt 04 metadata message, and
+  attempt-04-coder.json exists at the
+  required receipt path with a
+  validated PASS receipt.
+
+• Stop hook (stopped)
+  warning: Status response blocked as
+  too vague. Answer status requests
+  with an operational snapshot: Status/
+  Phase, Now/current file-command-
+  artifact, Evidence with concrete
+  counts or command results, and Next/
+  stop condition. Include exact paths,
+  command names, or artifact names when
+  work has touched files or tools. Do
+  not answer with only conclusions such
+  as done, fixed, checking, working, or
+  making progress.
+  stop: Status response lacks
+  operational detail.
+
+─ Worked for 1m 09s ───────────────────
+
+
+› Summarize recent commits
+
+  gpt-5.5 high · ~/workspace/experimen…

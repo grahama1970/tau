@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/max-exhaustion/20260703T192643Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work_order",
+    "read target_file scratch-worktree/message.txt",
+    "read coder_receipt receipts/attempt-02-coder.json",
+    "read dag-spec.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/max-exhaustion/20260703T192643Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T191809Z-tau-advanced-generic-provider-adapter/advanced-provider-runs/max-exhaustion/20260703T192643Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "The target_file TODO is removed and the coder receipt is schema-valid, but the summary content lacks concrete implementation detail: no actual provider adapter code structure, no tool schema registration example, no provider dispatch routing logic, no max-exhaustion counter or terminal-failure record shape, and no agent harness integration point. The next coder should include inline code snippets or structural outlines demonstrating each of the four requirements: (1) tool schema registration before model invocation, (2) provider dispatch with routing by configured provider_id, (3) max-exhaustion retry with counter increment and terminal-failure receipt emission, and (4) provider DAG result consumption in the harness loop as an agent event.",
+  "errors": [],
+  "policy_exceptions": []
+}

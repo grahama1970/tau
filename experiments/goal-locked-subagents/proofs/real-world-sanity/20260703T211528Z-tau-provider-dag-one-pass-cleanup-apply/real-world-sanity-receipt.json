@@ -1,0 +1,117 @@
+{
+  "check_count": 1,
+  "checks": [
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 0,
+          "receipt_summary": {
+            "attempt_count": 1,
+            "live": true,
+            "mocked": false,
+            "ok": true,
+            "schema": "tau.dag_run_receipt.v1",
+            "status": "PASS",
+            "verdict": "PASS"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T211528Z-tau-provider-dag-one-pass-cleanup-apply/logs/advanced.provider_dag_one_pass.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T211528Z-tau-provider-dag-one-pass-cleanup-apply/logs/advanced.provider_dag_one_pass.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.provider_dag_one_pass",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "provider-dag-poc",
+        "--label",
+        "rw-sanity-provider-dag-one-pass",
+        "--run-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T211528Z-tau-provider-dag-one-pass-cleanup-apply/advanced-provider-runs/one-pass",
+        "--max-attempts",
+        "1",
+        "--receipt-timeout-seconds",
+        "300",
+        "--herdr-bin",
+        "herdr",
+        "--no-install-integrations",
+        "--cleanup-mode",
+        "apply"
+      ],
+      "completed_at": "2026-07-03T21:18:22Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": null,
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": true,
+      "purpose": "Live visible Codex coder and OpenCode reviewer complete a one-pass scratch DAG.",
+      "receipt_summary": {
+        "attempt_count": 1,
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "schema": "tau.dag_run_receipt.v1",
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-03T21:15:28Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T211528Z-tau-provider-dag-one-pass-cleanup-apply/logs/advanced.provider_dag_one_pass.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T211528Z-tau-provider-dag-one-pass-cleanup-apply/logs/advanced.provider_dag_one_pass.stdout.txt",
+      "timeout_seconds": 480
+    }
+  ],
+  "completed_at": "2026-07-03T21:18:22Z",
+  "failed_check_count": 0,
+  "level_counts": {
+    "advanced": {
+      "PASS": 1
+    }
+  },
+  "live": "mixed",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "browser/CDP chat UI rendering",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau CLI and command-spec surfaces execute from the local checkout",
+      "Tau can run a real local handoff command loop",
+      "Tau planner, generic DAG runner, and deterministic scheduler stress surfaces emit non-mocked receipts",
+      "Tau can allocate visible provider panes and run live provider DAG checks when advanced checks pass",
+      "Tau fail-closed negative controls preserve typed BLOCKED receipts"
+    ]
+  },
+  "provider_live": true,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T211528Z-tau-provider-dag-one-pass-cleanup-apply",
+  "run_id": "20260703T211528Z-tau-provider-dag-one-pass-cleanup-apply",
+  "schema": "tau.real_world_sanity_suite_receipt.v1",
+  "selected_levels": [
+    "advanced"
+  ],
+  "status": "PASS",
+  "timestamp": "2026-07-03T21:18:22Z"
+}

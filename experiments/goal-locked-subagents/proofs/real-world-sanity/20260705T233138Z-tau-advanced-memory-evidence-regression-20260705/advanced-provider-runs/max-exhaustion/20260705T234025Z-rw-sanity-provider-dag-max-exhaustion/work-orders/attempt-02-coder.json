@@ -1,0 +1,48 @@
+{
+  "attempt": 2,
+  "dag_id": "20260705T234025Z-rw-sanity-provider-dag-max-exhaustion",
+  "forbidden_actions": [
+    "modify_tau_repository",
+    "github_mutation",
+    "tailscale_access"
+  ],
+  "goal": {
+    "goal_hash": "sha256:d7af2e7fee11dc8399dcf06b2241749b050fccf88c17a7d2a01eb58ac9effee1",
+    "goal_id": "20260705T234025Z-rw-sanity-provider-dag-max-exhaustion",
+    "goal_version": 1
+  },
+  "herdr": {
+    "pane_id": "w6P:p5",
+    "terminal_id": "term_655e5aeb311dd76e",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T234025Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T234025Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/codex.visible.txt",
+    "workspace_id": "w6P"
+  },
+  "max_attempts": 2,
+  "node": {
+    "agent": "coder",
+    "attempt": 2,
+    "max_attempts": 2,
+    "node_id": "coder"
+  },
+  "node_id": "coder",
+  "provider_id": "codex",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T234025Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json",
+  "required_evidence": [
+    "target_file_updated",
+    "node_receipt_written"
+  ],
+  "reviewer_feedback": "REVISE: force_revise=true. Target file message.txt has no TODO line (PASS criterion met). Coder receipt is schema-valid. Concrete feedback for next coder attempt: (1) commands_run field contains a description 'python deterministic visible coder' instead of an actual executable shell command \u2014 should be a concrete command that can be replayed, e.g., 'echo \"...\" > message.txt' or 'python -c \"...\"'; (2) handoff_summary is generic ('updated the scratch target file') \u2014 should specify exactly what was written to the file.",
+  "run_id": "20260705T234025Z-rw-sanity-provider-dag-max-exhaustion",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T234025Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree",
+  "target": {
+    "allowed_paths": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T234025Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+    ],
+    "repo": "/home/graham/workspace/experiments/tau",
+    "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T234025Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree"
+  },
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T234025Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+  "task": "Modify only target_file. Replace the TODO line with a short completed implementation message. Then write the node receipt JSON exactly at receipt_path.",
+  "work_order_sha256": "e63736b948a6e9d8ee3267e9f8428a8715ab4cb09cc73c2aa5757ef7efc98a01"
+}

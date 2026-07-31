@@ -1,0 +1,18 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["read work_order JSON", "read target_file", "read coder_receipt_path", "write reviewer receipt"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file has no remaining TODO line (message is complete). Coder receipt is schema-valid with all required fields. force_revise is false, no revision needed.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,37 @@
+ts/goal-locked-subagen
+ts/proofs/real-world-s
+anity/20260703T202751Z
+-tau-advanced-current-
+code-full/advanced-pro
+vider-runs/one-pass/20
+260703T202848Z-rw-sani
+ty-provider-dag-one-pa
+ss/dag-spec.json\nplan
+ner_receipt: /home/gra
+ham/workspace/experime
+nts/tau/experiments/go
+al-locked-subagents/pr
+oofs/real-world-sanity
+/20260703T202751Z-tau-
+advanced-current-code-
+full/advanced-provider
+-runs/one-pass/2026070
+3T202848Z-rw-sanity-pr
+ovider-dag-one-pass/pl
+anner-receipt.json\nfi
+nal_receipt: /home/gra
+ham/workspace/experime
+nts/tau/experiments/go
+al-locked-subagents/pr
+oofs/real-world-sanity
+/20260703T202751Z-tau-
+advanced-current-code-
+full/advanced-provider
+-runs/one-pass/2026070
+3T202848Z-rw-sanity-pr
+ovider-dag-one-pass/ru
+n-receipt.json\ncanoni
+cal truth: Tau JSON re
+ceipts; this pane is h
+uman-visible telemetry
+.\n

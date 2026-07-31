@@ -1,0 +1,37 @@
+dvanced-provider-run
+s/invalid-model/2026
+0704T182252Z-rw-sani
+ty-provider-dag-inva
+lid-model/dag-spec.j
+son\nplanner_receipt
+: /home/graham/works
+pace/experiments/tau
+/experiments/goal-lo
+cked-subagents/proof
+s/real-world-sanity/
+20260704T180641Z-tau
+-advanced-live-hard-
+failure-hunt/advance
+d-provider-runs/inva
+lid-model/20260704T1
+82252Z-rw-sanity-pro
+vider-dag-invalid-mo
+del/planner-receipt.
+json\nfinal_receipt:
+ /home/graham/worksp
+ace/experiments/tau/
+experiments/goal-loc
+ked-subagents/proofs
+/real-world-sanity/2
+0260704T180641Z-tau-
+advanced-live-hard-f
+ailure-hunt/advanced
+-provider-runs/inval
+id-model/20260704T18
+2252Z-rw-sanity-prov
+ider-dag-invalid-mod
+el/run-receipt.json\
+ncanonical truth: Ta
+u JSON receipts; thi
+s pane is human-visi
+ble telemetry.\n

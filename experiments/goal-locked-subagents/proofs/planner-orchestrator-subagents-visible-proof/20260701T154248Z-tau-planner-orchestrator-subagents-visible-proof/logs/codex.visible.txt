@@ -1,0 +1,46 @@
+receipts/attempt-01-coder.json (+2 -1)
+    13      "pwd && sed -n '1,240p' /ho
+        me/graham/workspace/experiments
+        /tau/experiments/goal-locked-su
+        bagents/proofs/planner-orchestr
+        ator-subagents-visible-proof/20
+        260701T154248Z-tau-planner-orch
+        estrator-subagents-visible-proo
+        f/work-orders/attempt-01-coder.
+        json",
+    14 -    "sed -n '1,80p' message.txt
+        "
+    14 +    "sed -n '1,80p' message.txt
+        ",
+    15 +    "printf 'target=' && sed -n
+         '1,20p' message.txt && printf
+        'receipt_status=' && jq -r '.st
+        atus + \"/\" + .verdict + \" at
+        tempt=\" + (.attempt|tostring)
+        + \" changed_files=\" + (.chang
+        ed_files|length|tostring)' /hom
+        e/graham/workspace/experiments/
+        tau/experiments/goal-locked-sub
+        agents/proofs/planner-orchestra
+        tor-subagents-visible-proof/202
+        60701T154248Z-tau-planner-orche
+        strator-subagents-visible-proof
+        /receipts/attempt-01-coder.json
+        "
+    16    ],
+
+───────────────────────────────────────
+
+• The receipt now records three shell
+  commands: work-order read, target-
+  file read, and target/receipt
+  validation. I’m running the recorded
+  validation command again as the final
+  proof.
+
+• Working (51s • esc to interrupt)
+
+
+› Use /skills to list available skills
+
+  gpt-5.5 medium · ~/workspace/experim…

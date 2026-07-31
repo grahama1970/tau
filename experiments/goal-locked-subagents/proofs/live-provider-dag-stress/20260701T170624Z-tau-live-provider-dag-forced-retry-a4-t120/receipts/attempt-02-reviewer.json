@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "jq . attempt-02-reviewer.json",
+    "jq . attempt-02-coder.json",
+    "read target_file message.txt",
+    "jq -e schema validation on attempt-02-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "REVISE per force_revise=true. Coder receipt is schema-valid (all fields present, types correct). target_file TODO is replaced. However, message.txt content 'Provider-DAG coder node completed: read the work order with jq, inspected message.txt with nl, and replaced the generic message with forced-retry implementation detail.' reads as a procedural log, not a provider-DAG implementation artifact. A genuine provider-DAG coder node should describe how it resolved onto the scratch-worktree, parsed work-order fields, wrote its node receipt, and validated its own output. For next attempt: write a message that proves provider-DAG awareness — reference the specific work-order fields (target_file, scratch_worktree, receipt_path) and how the coder used them.",
+  "errors": [],
+  "policy_exceptions": []
+}

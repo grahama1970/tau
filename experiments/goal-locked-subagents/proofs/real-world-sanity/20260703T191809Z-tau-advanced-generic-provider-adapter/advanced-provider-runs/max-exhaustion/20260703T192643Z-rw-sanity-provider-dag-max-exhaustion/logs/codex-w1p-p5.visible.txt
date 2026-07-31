@@ -1,0 +1,38 @@
+        oder.json; printf 'receipt_exists=%s\\n'
+         $?"
+    15 +    "test -e /home/graham/workspace/expe
+        riments/tau/experiments/goal-locked-suba
+        gents/proofs/real-world-sanity/20260703T
+        191809Z-tau-advanced-generic-provider-ad
+        apter/advanced-provider-runs/max-exhaust
+        ion/20260703T192643Z-rw-sanity-provider-
+        dag-max-exhaustion/receipts/attempt-02-c
+        oder.json; printf 'receipt_exists=%s\\n'
+         $?",
+    16 +    "uv run python -m json.tool /home/gr
+        aham/workspace/experiments/tau/experimen
+        ts/goal-locked-subagents/proofs/real-wor
+        ld-sanity/20260703T191809Z-tau-advanced-
+        generic-provider-adapter/advanced-provid
+        er-runs/max-exhaustion/20260703T192643Z-
+        rw-sanity-provider-dag-max-exhaustion/re
+        ceipts/attempt-02-coder.json",
+    17 +    "grep -E 'tool schemas|provider disp
+        atch|max-exhaustion|agent harness loop'
+        /home/graham/workspace/experiments/tau/e
+        xperiments/goal-locked-subagents/proofs/
+        real-world-sanity/20260703T191809Z-tau-a
+        dvanced-generic-provider-adapter/advance
+        d-provider-runs/max-exhaustion/20260703T
+        192643Z-rw-sanity-provider-dag-max-exhau
+        stion/scratch-worktree/message.txt"
+    18    ],
+
+────────────────────────────────────────────────
+
+• Working (3m 08s • esc to interrupt)
+
+
+› Write tests for @filename
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

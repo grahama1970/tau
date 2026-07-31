@@ -1,0 +1,37 @@
+anner_receipt: /ho
+me/graham/workspac
+e/experiments/tau/
+experiments/goal-l
+ocked-subagents/pr
+oofs/real-world-sa
+nity/20260705T2200
+45Z-tau-all-level-
+hardening-regressi
+on-20260705/advanc
+ed-provider-runs/m
+ax-exhaustion/2026
+0705T221106Z-rw-sa
+nity-provider-dag-
+max-exhaustion/pla
+nner-receipt.json\
+nfinal_receipt: /h
+ome/graham/workspa
+ce/experiments/tau
+/experiments/goal-
+locked-subagents/p
+roofs/real-world-s
+anity/20260705T220
+045Z-tau-all-level
+-hardening-regress
+ion-20260705/advan
+ced-provider-runs/
+max-exhaustion/202
+60705T221106Z-rw-s
+anity-provider-dag
+-max-exhaustion/ru
+n-receipt.json\nca
+nonical truth: Tau
+ JSON receipts; th
+is pane is human-v
+isible telemetry.\
+n

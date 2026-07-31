@@ -1,0 +1,22 @@
+evidence-a1-t90/receipts/attempt-01-coder.json (+3 -1)
+    15      "apply_patch: replace TODO line in target_file",
+    16 -    "apply_patch: add receipt JSON"
+    16 +    "apply_patch: add receipt JSON",
+    17 +    "sed -n '1,40p' message.txt && python3 - <<'PY' ... receip
+        t and target assertions ... PY",
+    18 +    "apply_patch: update receipt commands_run with verificatio
+        n command"
+    19    ],
+
+──────────────────────────────────────────────────────────────────────
+
+• The receipt now records the verification command. I’m doing one
+  final parse and field check; this is the stop condition for the
+  coder task.
+
+• Working (58s • esc to interrupt)
+
+
+› Explain this codebase
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

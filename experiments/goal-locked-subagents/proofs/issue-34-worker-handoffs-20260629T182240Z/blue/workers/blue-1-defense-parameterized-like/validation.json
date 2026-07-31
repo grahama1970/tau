@@ -1,0 +1,6 @@
+{
+  "errors": [],
+  "next_subagent": "battle-scorekeeper",
+  "ok": true,
+  "schema": "tau.subagent_receipt_validation.v1"
+}

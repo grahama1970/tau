@@ -1,0 +1,38 @@
+
+• Ran uv run python -m
+  │ json.tool /home/graham/
+  │ workspace/experiments/tau/
+  │ … +16 lines
+  └ 25 /tmp/
+    tau-attempt-02-coder-jsonche
+    ck.txt
+
+────────────────────────────────
+
+• Status/Phase: PASS, attempt 02
+  coder task complete.
+
+  Now/current file-command-
+  artifact: Updated only
+  scratch-worktree/message.txt;
+  wrote receipt receipts/
+  attempt-02-coder.json.
+
+  Evidence: message.txt
+  contains:
+  Provider DAG POC wired coder,
+  reviewer, and receipt nodes
+  into a repair loop with
+  artifact-backed PASS/REVISE
+  handoff status.
+
+  Scratch worktree file count/
+  list:
+  ./message.txt
+
+  Final receipt JSON parse:
+
+
+› Run /review on my current cha
+
+  gpt-5.5 medium · ~/workspace/…

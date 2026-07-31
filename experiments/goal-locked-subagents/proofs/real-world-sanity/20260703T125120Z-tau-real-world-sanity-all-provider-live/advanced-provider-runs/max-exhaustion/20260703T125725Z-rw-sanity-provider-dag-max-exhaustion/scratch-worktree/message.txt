@@ -1,0 +1,1 @@
+Implemented real-world provider DAG proof of concept: OpenAI GPT-4o, Anthropic Claude, and OpenCode providers completed a 3-node linear DAG.

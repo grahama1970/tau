@@ -1,0 +1,31 @@
+{
+  "default_decision": "deny",
+  "filesystem": {
+    "read_denylist": [],
+    "write_allowlist": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130327Z-tau-itar-containment-dag-sanity-final-20260706/itar-grade-containment-demo/redteam/fixtures"
+    ]
+  },
+  "github": {
+    "dry_run_projection": "allow",
+    "public_mutation": "deny"
+  },
+  "memory": {
+    "read": "allow",
+    "write": "approval_required"
+  },
+  "network": {
+    "default": "deny"
+  },
+  "profile_id": "zero-trust-redteam",
+  "providers": {
+    "cloud_llm": "deny",
+    "local_model": "allow"
+  },
+  "requires_data_boundary": true,
+  "research": {
+    "external_search": "allow_with_approval",
+    "manual_sanitized_receipt": "allow"
+  },
+  "schema": "tau.policy_profile.v1"
+}

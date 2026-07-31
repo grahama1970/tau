@@ -1,0 +1,37 @@
+/real-world-sanity/202
+60704T175624Z-tau-prov
+ider-live-retry-recove
+ry-hard-sanity/advance
+d-provider-runs/repair
+-loop/20260704T175624Z
+-rw-sanity-provider-da
+g-repair/dag-spec.json
+\nplanner_receipt: /ho
+me/graham/workspace/ex
+periments/tau/experime
+nts/goal-locked-subage
+nts/proofs/real-world-
+sanity/20260704T175624
+Z-tau-provider-live-re
+try-recovery-hard-sani
+ty/advanced-provider-r
+uns/repair-loop/202607
+04T175624Z-rw-sanity-p
+rovider-dag-repair/pla
+nner-receipt.json\nfin
+al_receipt: /home/grah
+am/workspace/experimen
+ts/tau/experiments/goa
+l-locked-subagents/pro
+ofs/real-world-sanity/
+20260704T175624Z-tau-p
+rovider-live-retry-rec
+overy-hard-sanity/adva
+nced-provider-runs/rep
+air-loop/20260704T1756
+24Z-rw-sanity-provider
+-dag-repair/run-receip
+t.json\ncanonical trut
+h: Tau JSON receipts;
+this pane is human-vis
+ible telemetry.\n

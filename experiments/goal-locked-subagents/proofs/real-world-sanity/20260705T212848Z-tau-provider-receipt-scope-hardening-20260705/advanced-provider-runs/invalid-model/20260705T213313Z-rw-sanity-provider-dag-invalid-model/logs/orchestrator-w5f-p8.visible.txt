@@ -1,0 +1,37 @@
+dag-spec.json\npla
+nner_receipt: /hom
+e/graham/workspace
+/experiments/tau/e
+xperiments/goal-lo
+cked-subagents/pro
+ofs/real-world-san
+ity/20260705T21284
+8Z-tau-provider-re
+ceipt-scope-harden
+ing-20260705/advan
+ced-provider-runs/
+invalid-model/2026
+0705T213313Z-rw-sa
+nity-provider-dag-
+invalid-model/plan
+ner-receipt.json\n
+final_receipt: /ho
+me/graham/workspac
+e/experiments/tau/
+experiments/goal-l
+ocked-subagents/pr
+oofs/real-world-sa
+nity/20260705T2128
+48Z-tau-provider-r
+eceipt-scope-harde
+ning-20260705/adva
+nced-provider-runs
+/invalid-model/202
+60705T213313Z-rw-s
+anity-provider-dag
+-invalid-model/run
+-receipt.json\ncan
+onical truth: Tau
+JSON receipts; thi
+s pane is human-vi
+sible telemetry.\n

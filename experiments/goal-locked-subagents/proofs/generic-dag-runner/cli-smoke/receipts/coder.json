@@ -1,0 +1,1 @@
+{"artifacts": [], "commands_run": ["python inline receipt writer"], "errors": [], "handoff_summary": "coder completed by CLI smoke worker", "node_id": "coder", "policy_exceptions": [], "schema": "tau.generic_dag_node_receipt.v1", "status": "PASS", "verdict": "PASS"}

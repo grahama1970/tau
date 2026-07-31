@@ -1,0 +1,28 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T165155Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:5a87319778db3d7d25a7c7572e0978a05c781f06b835f7c0960b0042806d0bbc",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w46",
+  "pane_id": "w46:p6",
+  "terminal_id": "term_655dff9dda90f461",
+  "work_order_sha256": "e960b0709227e729592f81a5eb35f4a99c1d82e5457c82f57a5d0dd0e919a212",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T165155Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work-order attempt-01-reviewer.json",
+    "read scratch-worktree/message.txt",
+    "read receipts/attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T165155Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T165155Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "force_revise=true: VERDICT REVISE. Target file TODO line removed, file reads 'completed implementation by deterministic visible coder attempt 1'. Coder receipt is schema-valid. Concrete feedback for next attempt: (1) coder commands_run field should list an actual executable command, not a prose description; (2) target_file content should include more specific evidence of what was implemented (e.g., actual provider routing logic output); (3) handoff_summary should detail the specific changes made to target_file.",
+  "errors": [],
+  "policy_exceptions": []
+}

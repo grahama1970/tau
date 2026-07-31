@@ -1,0 +1,22 @@
+  └ {
+        "schema": "tau.provider_dag_node_receipt.v1",
+    … +24 lines (ctrl + t to view transcript)
+        "policy_exceptions": []
+    }
+
+• Ran python3 - <<'PY'
+  │ import json
+  │ from pathlib import Path
+  │ … +16 lines
+  └ missing= []
+    schema= tau.provider_dag_node_receipt.v1
+    status= PASS
+    changed_files_count= 1
+    artifacts_count= 1
+
+• Working (1m 01s • esc to interrupt)
+
+
+› Use /skills to list available skills
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

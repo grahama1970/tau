@@ -1,0 +1,253 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "coder_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/receipts/attempt-01-coder.json",
+      "coder_status": "PASS",
+      "coder_verdict": "PASS",
+      "errors": [
+        "receipt did not appear: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/receipts/attempt-01-reviewer.json"
+      ],
+      "reviewer_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/receipts/attempt-01-reviewer.json",
+      "reviewer_status": null,
+      "reviewer_verdict": null
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "agent",
+        "start",
+        "20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45-planner",
+        "--cwd",
+        "/home/graham/workspace/experiments/tau",
+        "--workspace",
+        "wZ",
+        "--no-focus",
+        "--",
+        "bash",
+        "-lc",
+        "printf '%s\\n' \"Tau planner subagent visible monitor\\\\nrun_id: 20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/dag-spec.json\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/planner-receipt.json\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/run-receipt.json\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\n\"; exec sleep 86400"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45-planner\",\"pane_id\":\"wZ:p7\",\"revision\":0,\"tab_id\":\"wZ:t1\",\"terminal_id\":\"term_6558feac80f75c6\",\"workspace_id\":\"wZ\"},\"argv\":[\"bash\",\"-lc\",\"printf '%s\\\\n' \\\"Tau planner subagent visible monitor\\\\\\\\nrun_id: 20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45\\\\\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45\\\\\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/dag-spec.json\\\\\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/planner-receipt.json\\\\\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/run-receipt.json\\\\\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\\\\\n\\\"; exec sleep 86400\"],\"type\":\"agent_started\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "agent",
+        "start",
+        "20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45-orchestrator",
+        "--cwd",
+        "/home/graham/workspace/experiments/tau",
+        "--workspace",
+        "wZ",
+        "--no-focus",
+        "--",
+        "bash",
+        "-lc",
+        "printf '%s\\n' \"Tau orchestrator subagent visible monitor\\\\nrun_id: 20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/dag-spec.json\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/planner-receipt.json\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/run-receipt.json\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\n\"; exec sleep 86400"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45-orchestrator\",\"pane_id\":\"wZ:p8\",\"revision\":0,\"tab_id\":\"wZ:t1\",\"terminal_id\":\"term_6558feadd1324c7\",\"workspace_id\":\"wZ\"},\"argv\":[\"bash\",\"-lc\",\"printf '%s\\\\n' \\\"Tau orchestrator subagent visible monitor\\\\\\\\nrun_id: 20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45\\\\\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45\\\\\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/dag-spec.json\\\\\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/planner-receipt.json\\\\\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/run-receipt.json\\\\\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\\\\\n\\\"; exec sleep 86400\"],\"type\":\"agent_started\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "send-text",
+        "wZ:p5",
+        "Tau provider DAG POC coder task.\n\nRead this work order JSON:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/work-orders/attempt-01-coder.json\n\nRules:\n- Operate only inside the scratch_worktree named in the work order.\n- Do not modify the Tau repository.\n- Do not use GitHub.\n- Do not use Tailscale.\n- Modify only target_file.\n- Write a JSON receipt exactly here:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/receipts/attempt-01-coder.json\n\nReceipt JSON shape:\n{\n  \"schema\": \"tau.provider_dag_node_receipt.v1\",\n  \"node_id\": \"coder\",\n  \"provider_id\": \"codex\",\n  \"attempt\": <attempt number>,\n  \"status\": \"PASS\",\n  \"verdict\": \"PASS\",\n  \"work_order_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/work-orders/attempt-01-coder.json\",\n  \"changed_files\": [\"<target_file>\"],\n  \"commands_run\": [\"<commands you ran>\"],\n  \"artifacts\": [\"<target_file>\"],\n  \"handoff_summary\": \"What changed.\",\n  \"errors\": [],\n  \"policy_exceptions\": []\n}\n"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "send-keys",
+        "wZ:p5",
+        "enter"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "agent",
+        "start",
+        "20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45-reviewer-attempt-01",
+        "--cwd",
+        "/home/graham/workspace/experiments/tau",
+        "--workspace",
+        "wZ",
+        "--no-focus",
+        "--",
+        "opencode",
+        "run",
+        "--dir",
+        "/home/graham/workspace/experiments/tau",
+        "--model",
+        "openai/not-a-real-model-20260701",
+        "Tau provider DAG POC reviewer task.\n\nRead this work order JSON:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/work-orders/attempt-01-reviewer.json\n\nRules:\n- Operate only inside the scratch_worktree named in the work order.\n- Do not modify files except the reviewer receipt.\n- Do not use GitHub.\n- Do not use Tailscale.\n- Review target_file and coder_receipt_path.\n- If the work order has \"force_revise\": true, write verdict \"REVISE\" with\n  concrete feedback for the next coder attempt.\n- Write a JSON receipt exactly here:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/receipts/attempt-01-reviewer.json\n\nReceipt JSON shape:\n{\n  \"schema\": \"tau.provider_dag_node_receipt.v1\",\n  \"node_id\": \"reviewer\",\n  \"provider_id\": \"opencode\",\n  \"attempt\": <attempt number>,\n  \"status\": \"PASS\",\n  \"verdict\": \"PASS or REVISE\",\n  \"work_order_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/work-orders/attempt-01-reviewer.json\",\n  \"changed_files\": [],\n  \"commands_run\": [\"<commands you ran>\"],\n  \"artifacts\": [\"<target_file>\", \"<coder_receipt_path>\"],\n  \"handoff_summary\": \"Review finding or pass rationale.\",\n  \"errors\": [],\n  \"policy_exceptions\": []\n}"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45-reviewer-attempt-01\",\"pane_id\":\"wZ:p9\",\"revision\":0,\"tab_id\":\"wZ:t1\",\"terminal_id\":\"term_6558fed2708c8c8\",\"workspace_id\":\"wZ\"},\"argv\":[\"opencode\",\"run\",\"--dir\",\"/home/graham/workspace/experiments/tau\",\"--model\",\"openai/not-a-real-model-20260701\",\"Tau provider DAG POC reviewer task.\\n\\nRead this work order JSON:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/work-orders/attempt-01-reviewer.json\\n\\nRules:\\n- Operate only inside the scratch_worktree named in the work order.\\n- Do not modify files except the reviewer receipt.\\n- Do not use GitHub.\\n- Do not use Tailscale.\\n- Review target_file and coder_receipt_path.\\n- If the work order has \\\"force_revise\\\": true, write verdict \\\"REVISE\\\" with\\n  concrete feedback for the next coder attempt.\\n- Write a JSON receipt exactly here:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/receipts/attempt-01-reviewer.json\\n\\nReceipt JSON shape:\\n{\\n  \\\"schema\\\": \\\"tau.provider_dag_node_receipt.v1\\\",\\n  \\\"node_id\\\": \\\"reviewer\\\",\\n  \\\"provider_id\\\": \\\"opencode\\\",\\n  \\\"attempt\\\": <attempt number>,\\n  \\\"status\\\": \\\"PASS\\\",\\n  \\\"verdict\\\": \\\"PASS or REVISE\\\",\\n  \\\"work_order_path\\\": \\\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/work-orders/attempt-01-reviewer.json\\\",\\n  \\\"changed_files\\\": [],\\n  \\\"commands_run\\\": [\\\"<commands you ran>\\\"],\\n  \\\"artifacts\\\": [\\\"<target_file>\\\", \\\"<coder_receipt_path>\\\"],\\n  \\\"handoff_summary\\\": \\\"Review finding or pass rationale.\\\",\\n  \\\"errors\\\": [],\\n  \\\"policy_exceptions\\\": []\\n}\"],\"type\":\"agent_started\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "wZ:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "  source work:\n  .../scratch-worktree/message.txt\n\n  Wrote required receipt:\n  .../receipts/attempt-01-coder.json\n\n  Evidence: Final validation command\n  exited 0. Output showed:\n\n  Completed implementation for the Tau\n  provider DAG POC coder task.\n  ?? message.txt\n\n  jq -e parsed the receipt successfully\n  inside that same command. Changed\n  files recorded in receipt: 1.\n\n  Verification scope: mocked: no; live:\n  no. Exercised local file edit and\n  JSON receipt validation only. Nothing\n  remains.\n\n\u2022 Stop hook (blocked)\n  warning: Prevent false-green closure\n  claims.\n  feedback: Closure claim blocked. This\n  is a high-risk or disputed task, and\n  the final message uses done/fixed/\n  green/verified/closed language\n  without deterministic proof. Either\n  cite concrete proof artifacts and\n  command results, submit an evidence\n  bundle via $surf webgpt.submit with\n  sentinel metadata for external\n  review, or downgrade the conclusion\n  to blocked/pending. WebGPT review is\n  not closure proof by itself; closure\n  still needs deterministic local\n  artifacts. For $hack, raw ledgers/\n  proof artifacts are required before\n  closure claims.\n\n\n\u203a Run /review on my current changes\n\n  gpt-5.5 high \u00b7 ~/workspace/experimen\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "wZ:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    }
+  ],
+  "dag_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/dag-spec.json",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/events.jsonl",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "general semantic coding quality beyond the scratch fixture task",
+      "unbounded autonomous repair",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau orchestrator can consume a planner-created tau.dag_run_spec.v1",
+      "Tau exposes planner, orchestrator, coder, and reviewer roles as Herdr-visible subagents",
+      "Tau requires structured provider readiness before dispatch",
+      "Tau can dispatch a bounded coder work order to Codex in a Herdr pane",
+      "Tau waits for and validates a canonical coder node receipt",
+      "Tau dispatches the reviewer only after the coder receipt validates"
+    ]
+  },
+  "provider_readiness_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/provider-readiness-receipt.json",
+  "provider_sessions": {
+    "codex": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "wZ:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/provider-readiness/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45-readiness/readiness/codex.readiness.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_6558fe8ad0ddac4",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/provider-readiness/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "wZ"
+    },
+    "opencode": {
+      "foreground_command": "opencode",
+      "pane_id": "wZ:p6",
+      "process_alive": true,
+      "provider_id": "opencode",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/provider-readiness/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45-readiness/readiness/opencode.readiness.json",
+      "ready": true,
+      "role": "reviewer",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_6558fe8c778efc5",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/provider-readiness/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45-readiness/logs/opencode.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "wZ"
+    }
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45",
+  "run_id": "20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/runtime-manifest.json",
+  "schema": "tau.dag_run_receipt.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/scratch-worktree",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-01T17:22:32Z",
+  "verdict": "REVIEWER_RECEIPT_INVALID",
+  "visible_subagents": {
+    "coder": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "wZ:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/provider-readiness/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45-readiness/readiness/codex.readiness.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_6558fe8ad0ddac4",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/provider-readiness/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "wZ"
+    },
+    "orchestrator": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "wZ:p8",
+      "provider_id": "tau",
+      "role": "orchestrator",
+      "tab_id": "wZ:t1",
+      "terminal_id": "term_6558feadd1324c7",
+      "visible": true,
+      "workspace_id": "wZ"
+    },
+    "planner": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "wZ:p7",
+      "provider_id": "tau",
+      "role": "planner",
+      "tab_id": "wZ:t1",
+      "terminal_id": "term_6558feac80f75c6",
+      "visible": true,
+      "workspace_id": "wZ"
+    },
+    "reviewer": {
+      "command": "opencode run --dir <repo> [--model <reviewer-model>] <reviewer-prompt>",
+      "pane_id": "wZ:p9",
+      "provider_id": "opencode",
+      "readiness_pane_id": "wZ:p6",
+      "reviewer_model": "openai/not-a-real-model-20260701",
+      "role": "reviewer",
+      "tab_id": "wZ:t1",
+      "terminal_id": "term_6558fed2708c8c8",
+      "visible": true,
+      "workspace_id": "wZ"
+    }
+  }
+}

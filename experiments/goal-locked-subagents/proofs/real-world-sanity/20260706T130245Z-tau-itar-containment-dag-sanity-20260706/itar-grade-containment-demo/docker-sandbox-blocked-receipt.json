@@ -1,0 +1,66 @@
+{
+  "alert_codes": [
+    "docker_socket_mount_requested"
+  ],
+  "alerts": [
+    {
+      "code": "docker_socket_mount_requested",
+      "evidence": {},
+      "message": "Docker socket mount is forbidden.",
+      "severity": "BLOCK"
+    }
+  ],
+  "backend": {
+    "image": "python@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "image_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "name": "docker"
+  },
+  "command": [
+    "python",
+    "--version"
+  ],
+  "command_executed": false,
+  "docker_command": [],
+  "live": false,
+  "mocked": false,
+  "ok": false,
+  "policy": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "docker_socket_mounted": true,
+    "host_network": false,
+    "mounts": [
+      "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock"
+    ],
+    "network": "none",
+    "no_new_privileges": true,
+    "privileged": false,
+    "read_only_rootfs": true,
+    "user": "65532:65532"
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "Runtime sandbox isolation.",
+      "Docker daemon availability.",
+      "Docker Sandboxes microVM availability.",
+      "The agent command executed successfully.",
+      "ITAR compliance."
+    ],
+    "proves": [
+      "Tau inspected Docker sandbox policy before container execution.",
+      "Tau blocked unsafe Docker settings before building an executable command.",
+      "No Docker command was executed by this first-slice gate."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130245Z-tau-itar-containment-dag-sanity-20260706/itar-grade-containment-demo/docker-sandbox-blocked-receipt.json",
+  "recommended_action": {
+    "next_agent": "goal-guardian",
+    "reason": "Repair Docker sandbox policy before executing any agent command.",
+    "type": "repair_sandbox_policy"
+  },
+  "schema": "tau.sandbox_run_receipt.v1",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-06T13:02:48Z"
+}

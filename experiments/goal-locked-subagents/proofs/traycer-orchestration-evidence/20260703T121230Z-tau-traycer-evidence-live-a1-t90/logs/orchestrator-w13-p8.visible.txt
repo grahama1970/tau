@@ -1,0 +1,21 @@
+-tau-traycer-evidence-live-a1-t90\
+ndag_spec: /home/graham/workspace/
+experiments/tau/experiments/goal-l
+ocked-subagents/proofs/traycer-orc
+hestration-evidence/20260703T12123
+0Z-tau-traycer-evidence-live-a1-t9
+0/dag-spec.json\nplanner_receipt:
+/home/graham/workspace/experiments
+/tau/experiments/goal-locked-subag
+ents/proofs/traycer-orchestration-
+evidence/20260703T121230Z-tau-tray
+cer-evidence-live-a1-t90/planner-r
+eceipt.json\nfinal_receipt: /home/
+graham/workspace/experiments/tau/e
+xperiments/goal-locked-subagents/p
+roofs/traycer-orchestration-eviden
+ce/20260703T121230Z-tau-traycer-ev
+idence-live-a1-t90/run-receipt.jso
+n\ncanonical truth: Tau JSON recei
+pts; this pane is human-visible te
+lemetry.\n

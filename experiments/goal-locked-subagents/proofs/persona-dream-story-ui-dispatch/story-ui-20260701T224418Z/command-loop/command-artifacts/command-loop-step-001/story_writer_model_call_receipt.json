@@ -1,0 +1,75 @@
+{
+  "api_key_source": "docker:SCILLM_MASTER_KEY",
+  "content_excerpt": "{\n  \"title\": \"Soft Wax Wednesday\",\n  \"logline\": \"On a stolen sick day at Kahalu\u02bbu Bay, Embry and Kai have to make one clean surf session work under phones, heat, softened wax, local etiquette, summer swell timing, and a lava reef that does not care about personal growth.\",\n  \"tone\": \"Grounded, sun-baked, technically observant, tense in practical ways, with dry humor kept close to the physical stakes.\",\n  \"author_style_directive\": {\n    \"requested_author\": \"Andy Weir\",\n    \"style_policy\": \"The author reference is translated into high-level craft traits only: procedural problem-solving, clear physical causality, technical specificity, and understated humor without direct imitation of prose, cadence, plots, or signature devices.\",\n    \"style_summary\": \"Original prose using practical problem-solving energy, dry observational humor, clear cause-and-effect logic, and grounded technical detail.\",\n    \"actionable_traits\": [\n      \"practical problem-solving under physical constraints\",\n      \"clear cause-and-effect scene logic\",\n      \"dry, understated observational humor\",\n      \"technical specificity that changes character choices\",\n      \"characters thinking through immediate problems st",
+  "created_at": "2026-07-01T22:44:19Z",
+  "duration_seconds": 138.65362,
+  "generated_story": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260701T224418Z/command-loop/command-artifacts/command-loop-step-001/story_writer_generated_story.json",
+  "http_status": 200,
+  "live": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "prompt_payload": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260701T224418Z/prompt-bundle/prompt-payload.json",
+  "request": {
+    "messages": "<redacted-request-messages>",
+    "model": "gpt-5.5",
+    "reasoning_effort": "medium",
+    "response_format": {
+      "type": "json_object"
+    },
+    "scillm_metadata": {
+      "caller": "tau",
+      "item_id": "2026-07-01T22:44:18.799Z",
+      "proof": "persona-dream-story-ui-dispatch",
+      "role": "story-writer"
+    },
+    "temperature": 0.6
+  },
+  "response": {
+    "_hidden_params": {
+      "additional_headers": {
+        "x-scillm-backoff-active": "false",
+        "x-scillm-queue-depth": "0",
+        "x-scillm-queue-wait-ms": "0"
+      }
+    },
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": "<redacted-story-content>"
+      }
+    ],
+    "created": 1782943830,
+    "id": "chatcmpl-codex-6e63822b",
+    "model": "gpt-5.5",
+    "moderation": null,
+    "object": "chat.completion",
+    "scillm_metadata": {
+      "caller": "tau",
+      "item_id": "2026-07-01T22:44:18.799Z",
+      "proof": "persona-dream-story-ui-dispatch",
+      "role": "story-writer"
+    },
+    "scillm_reasoning": {
+      "applied_effort": "medium",
+      "forwarded": true,
+      "ignored_reason": null,
+      "provider_field": "reasoning.effort",
+      "requested_effort": "medium"
+    },
+    "service_tier": null,
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 3963,
+      "completion_tokens_details": null,
+      "prompt_tokens": 7576,
+      "prompt_tokens_details": null,
+      "total_tokens": 11539
+    }
+  },
+  "role": "story-writer",
+  "schema": "tau.persona_dream.story_writer_model_call_receipt.v1",
+  "scillm_base_url": "http://127.0.0.1:4001",
+  "status": "PASS"
+}

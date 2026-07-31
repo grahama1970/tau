@@ -1,0 +1,21 @@
+
+▀▀▀▀ ▀▀▀▀ ▀▀▀▄ ▀▀▀▀ ▀▀▀▀ ▀▀▀
+▀  ▀ ▀▀▀▀ ▀  ▀ ▀    ▀  ▀ ▀
+▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀
+
+  ┃
+
+   Update Available   esc
+
+   A new release v1.17.
+   13 is available.
+   Would you like to
+   update now?
+
+
+           Skip  Confirm
+
+
+  ~/workspace/      1.17.9
+  experiments/
+  tau:maine plugins to

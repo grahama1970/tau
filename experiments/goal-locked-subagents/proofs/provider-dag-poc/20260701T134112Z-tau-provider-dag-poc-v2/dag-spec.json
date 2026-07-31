@@ -1,0 +1,27 @@
+{
+  "forbidden": [
+    "ticket_closure",
+    "tailscale_proof",
+    "real_repo_mutation"
+  ],
+  "label": "tau-provider-dag-poc-v2",
+  "max_attempts": 2,
+  "nodes": [
+    {
+      "depends_on": [],
+      "node_id": "coder",
+      "provider_id": "codex"
+    },
+    {
+      "depends_on": [
+        "coder"
+      ],
+      "node_id": "reviewer",
+      "provider_id": "opencode"
+    }
+  ],
+  "run_id": "20260701T134112Z-tau-provider-dag-poc-v2",
+  "schema": "tau.provider_dag_spec.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T134112Z-tau-provider-dag-poc-v2/scratch-worktree",
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T134112Z-tau-provider-dag-poc-v2/scratch-worktree/message.txt"
+}

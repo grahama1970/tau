@@ -1,0 +1,37 @@
+subagents/proofs/real-
+world-sanity/20260703T
+194409Z-tau-advanced-a
+fter-readiness-samplin
+g/advanced-provider-ru
+ns/one-pass/20260703T1
+94457Z-rw-sanity-provi
+der-dag-one-pass/dag-s
+pec.json\nplanner_rece
+ipt: /home/graham/work
+space/experiments/tau/
+experiments/goal-locke
+d-subagents/proofs/rea
+l-world-sanity/2026070
+3T194409Z-tau-advanced
+-after-readiness-sampl
+ing/advanced-provider-
+runs/one-pass/20260703
+T194457Z-rw-sanity-pro
+vider-dag-one-pass/pla
+nner-receipt.json\nfin
+al_receipt: /home/grah
+am/workspace/experimen
+ts/tau/experiments/goa
+l-locked-subagents/pro
+ofs/real-world-sanity/
+20260703T194409Z-tau-a
+dvanced-after-readines
+s-sampling/advanced-pr
+ovider-runs/one-pass/2
+0260703T194457Z-rw-san
+ity-provider-dag-one-p
+ass/run-receipt.json\n
+canonical truth: Tau J
+SON receipts; this pan
+e is human-visible tel
+emetry.\n

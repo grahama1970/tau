@@ -1,0 +1,37 @@
+son\nplanner_rece
+ipt: /home/graham
+/workspace/experi
+ments/tau/experim
+ents/goal-locked-
+subagents/proofs/
+real-world-sanity
+/20260704T180641Z
+-tau-advanced-liv
+e-hard-failure-hu
+nt/advanced-provi
+der-runs/one-pass
+/20260704T180800Z
+-rw-sanity-provid
+er-dag-one-pass/p
+lanner-receipt.js
+on\nfinal_receipt
+: /home/graham/wo
+rkspace/experimen
+ts/tau/experiment
+s/goal-locked-sub
+agents/proofs/rea
+l-world-sanity/20
+260704T180641Z-ta
+u-advanced-live-h
+ard-failure-hunt/
+advanced-provider
+-runs/one-pass/20
+260704T180800Z-rw
+-sanity-provider-
+dag-one-pass/run-
+receipt.json\ncan
+onical truth: Tau
+ JSON receipts; t
+his pane is human
+-visible telemetr
+y.\n

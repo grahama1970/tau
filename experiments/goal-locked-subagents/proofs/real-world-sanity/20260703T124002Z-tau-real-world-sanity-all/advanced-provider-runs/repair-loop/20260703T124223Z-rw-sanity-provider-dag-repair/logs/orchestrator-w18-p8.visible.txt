@@ -1,0 +1,37 @@
+d-subagents/pr
+oofs/real-worl
+d-sanity/20260
+703T124002Z-ta
+u-real-world-s
+anity-all/adva
+nced-provider-
+runs/repair-lo
+op/20260703T12
+4223Z-rw-sanit
+y-provider-dag
+-repair/planne
+r-receipt.json
+\nfinal_receip
+t: /home/graha
+m/workspace/ex
+periments/tau/
+experiments/go
+al-locked-suba
+gents/proofs/r
+eal-world-sani
+ty/20260703T12
+4002Z-tau-real
+-world-sanity-
+all/advanced-p
+rovider-runs/r
+epair-loop/202
+60703T124223Z-
+rw-sanity-prov
+ider-dag-repai
+r/run-receipt.
+json\ncanonica
+l truth: Tau J
+SON receipts;
+this pane is h
+uman-visible t
+elemetry.\n

@@ -1,0 +1,157 @@
+{
+  "apply_github": true,
+  "artifacts": {
+    "dispatch_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-story-contract-loop-dispatch-20260629T2052/issue-43/self-fix-receipt.json",
+    "dispatch_receipt_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-story-contract-loop-dispatch-20260629T2052/issue-43",
+    "open_issues": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-story-contract-loop-dispatch-20260629T2052/open-issues.json"
+  },
+  "candidate_issues": [
+    {
+      "eligibility": {
+        "eligible": true,
+        "issue_labels": [
+          "agent-work",
+          "agent:coder",
+          "route:backend_python_or_skill_runtime",
+          "type:feature"
+        ],
+        "matched_labels": [
+          "agent-work",
+          "agent:coder",
+          "route:backend_python_or_skill_runtime"
+        ],
+        "policy": "any_required_label_match",
+        "reason": "issue has at least one configured self-fix routing label",
+        "required_labels_any": [
+          "agent-work",
+          "agent:coder",
+          "route:backend_python_or_skill_runtime",
+          "tau-harness"
+        ]
+      },
+      "labels": [
+        "agent-work",
+        "agent:coder",
+        "route:backend_python_or_skill_runtime",
+        "type:feature"
+      ],
+      "number": 43,
+      "state": "OPEN",
+      "title": "Tau persona-dream harness needs story-contract creator/reviewer loop",
+      "updated_at": "2026-06-29T20:52:08Z",
+      "url": "https://github.com/grahama1970/tau/issues/43"
+    },
+    {
+      "eligibility": {
+        "eligible": true,
+        "issue_labels": [
+          "agent:coder",
+          "maintainer-active",
+          "route:backend_python_or_skill_runtime",
+          "type:bug"
+        ],
+        "matched_labels": [
+          "agent:coder",
+          "route:backend_python_or_skill_runtime"
+        ],
+        "policy": "any_required_label_match",
+        "reason": "issue has at least one configured self-fix routing label",
+        "required_labels_any": [
+          "agent-work",
+          "agent:coder",
+          "route:backend_python_or_skill_runtime",
+          "tau-harness"
+        ]
+      },
+      "labels": [
+        "agent:coder",
+        "maintainer-active",
+        "route:backend_python_or_skill_runtime",
+        "type:bug"
+      ],
+      "number": 42,
+      "state": "OPEN",
+      "title": "Tau Battle live handoff blocks at 128 worker fanout with scillm_http_error",
+      "updated_at": "2026-06-29T20:48:03Z",
+      "url": "https://github.com/grahama1970/tau/issues/42"
+    }
+  ],
+  "claims": {
+    "does_not_prove": [
+      "Unbounded autonomous operation."
+    ],
+    "proves": [
+      "Tau can poll the live GitHub issue queue through gh.",
+      "Tau can apply the configured one-ticket eligibility rule.",
+      "Tau dispatches exactly one selected eligible issue.",
+      "Tau can route the selected issue into the contract-backed repair path."
+    ]
+  },
+  "dispatch_requested": true,
+  "eligible_issue_count": 2,
+  "issue_fetch": {
+    "command": [
+      "/usr/bin/gh",
+      "issue",
+      "list",
+      "--repo",
+      "grahama1970/tau",
+      "--state",
+      "open",
+      "--limit",
+      "20",
+      "--json",
+      "number,title,body,state,labels,comments,url,createdAt,updatedAt,author"
+    ],
+    "duration_seconds": 0.561357,
+    "exit_code": 0,
+    "issue_count": 2,
+    "ok": true,
+    "stderr": ""
+  },
+  "issue_limit": 20,
+  "live": true,
+  "mocked": false,
+  "ok": false,
+  "open_issue_count": 2,
+  "repair_requested": true,
+  "repo": "grahama1970/tau",
+  "schema": "tau.self_fix_poll_receipt.v1",
+  "selected_issue": {
+    "eligibility": {
+      "eligible": true,
+      "issue_labels": [
+        "agent-work",
+        "agent:coder",
+        "route:backend_python_or_skill_runtime",
+        "type:feature"
+      ],
+      "matched_labels": [
+        "agent-work",
+        "agent:coder",
+        "route:backend_python_or_skill_runtime"
+      ],
+      "policy": "any_required_label_match",
+      "reason": "issue has at least one configured self-fix routing label",
+      "required_labels_any": [
+        "agent-work",
+        "agent:coder",
+        "route:backend_python_or_skill_runtime",
+        "tau-harness"
+      ]
+    },
+    "labels": [
+      "agent-work",
+      "agent:coder",
+      "route:backend_python_or_skill_runtime",
+      "type:feature"
+    ],
+    "number": 43,
+    "state": "OPEN",
+    "title": "Tau persona-dream harness needs story-contract creator/reviewer loop",
+    "updated_at": "2026-06-29T20:52:08Z",
+    "url": "https://github.com/grahama1970/tau/issues/43"
+  },
+  "skipped_issues": [],
+  "status": "DISPATCHED"
+}

@@ -1,0 +1,14 @@
+{
+  "result": {
+    "workspaces": [
+      {
+        "agent_status": "done",
+        "focused": false,
+        "label": "rw-sanity-provider-readiness-gc",
+        "pane_count": 2,
+        "tab_count": 1,
+        "workspace_id": "w-rw-sanity-gc-wrong-target"
+      }
+    ]
+  }
+}

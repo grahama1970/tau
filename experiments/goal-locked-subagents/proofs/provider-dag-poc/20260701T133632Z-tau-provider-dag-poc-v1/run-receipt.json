@@ -1,0 +1,102 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "coder_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T133632Z-tau-provider-dag-poc-v1/receipts/attempt-01-coder.json",
+      "coder_status": "PASS",
+      "coder_verdict": "PASS",
+      "errors": [],
+      "reviewer_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T133632Z-tau-provider-dag-poc-v1/receipts/attempt-01-reviewer.json",
+      "reviewer_status": "PASS",
+      "reviewer_verdict": "PASS"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "send-text",
+        "wJ:p5",
+        "Tau provider DAG POC coder task.\n\nRead this work order JSON:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T133632Z-tau-provider-dag-poc-v1/work-orders/attempt-01-coder.json\n\nRules:\n- Operate only inside the scratch_worktree named in the work order.\n- Do not modify the Tau repository.\n- Do not use GitHub.\n- Do not use Tailscale.\n- Modify only target_file.\n- Write a JSON receipt exactly here:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T133632Z-tau-provider-dag-poc-v1/receipts/attempt-01-coder.json\n\nReceipt JSON shape:\n{\n  \"schema\": \"tau.provider_dag_node_receipt.v1\",\n  \"node_id\": \"coder\",\n  \"provider_id\": \"codex\",\n  \"attempt\": <attempt number>,\n  \"status\": \"PASS\",\n  \"verdict\": \"PASS\",\n  \"work_order_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T133632Z-tau-provider-dag-poc-v1/work-orders/attempt-01-coder.json\",\n  \"changed_files\": [\"<target_file>\"],\n  \"commands_run\": [\"<commands you ran>\"],\n  \"artifacts\": [\"<target_file>\"],\n  \"handoff_summary\": \"What changed.\",\n  \"errors\": [],\n  \"policy_exceptions\": []\n}\n"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "send-text",
+        "wJ:p6",
+        "Tau provider DAG POC reviewer task.\n\nRead this work order JSON:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T133632Z-tau-provider-dag-poc-v1/work-orders/attempt-01-reviewer.json\n\nRules:\n- Operate only inside the scratch_worktree named in the work order.\n- Do not modify files except the reviewer receipt.\n- Do not use GitHub.\n- Do not use Tailscale.\n- Review target_file and coder_receipt_path.\n- Write a JSON receipt exactly here:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T133632Z-tau-provider-dag-poc-v1/receipts/attempt-01-reviewer.json\n\nReceipt JSON shape:\n{\n  \"schema\": \"tau.provider_dag_node_receipt.v1\",\n  \"node_id\": \"reviewer\",\n  \"provider_id\": \"opencode\",\n  \"attempt\": <attempt number>,\n  \"status\": \"PASS\",\n  \"verdict\": \"PASS or REVISE\",\n  \"work_order_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T133632Z-tau-provider-dag-poc-v1/work-orders/attempt-01-reviewer.json\",\n  \"changed_files\": [],\n  \"commands_run\": [\"<commands you ran>\"],\n  \"artifacts\": [\"<target_file>\", \"<coder_receipt_path>\"],\n  \"handoff_summary\": \"Review finding or pass rationale.\",\n  \"errors\": [],\n  \"policy_exceptions\": []\n}\n"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "wJ:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "  message.txt\n  Current artifact: /home/graham/\n  workspace/experiments/tau/\n  experiments/goal-locked-subagents/\n  proofs/provider-dag-\n  poc/20260701T133632Z-tau-provider-\n  dag-poc-v1/receipts/attempt-01-\n  coder.json\n\n  Evidence\n  sed -n '1,20p' .../scratch-worktree/\n  message.txt returned:\n\n  Provider DAG POC coder implementation\n  completed.\n\n  python3 -m json.tool .../receipts/\n  attempt-01-coder.json exited\n  successfully and showed:\n\n  \"schema\":\n  \"tau.provider_dag_node_receipt.v1\",\n  \"node_id\": \"coder\",\n  \"provider_id\": \"codex\",\n  \"attempt\": 1,\n  \"status\": \"PASS\",\n  \"verdict\": \"PASS\"\n\n  find .../scratch-worktree -maxdepth 2\n  -type f -print returned 1 file:\n  message.txt.\n\n  Next/Stop Condition\n  Stop condition met: the only target\n  file was modified, the required\n  receipt JSON was written at the exact\n  requested path, and the receipt\n  parses as valid JSON. No further work\n  remains for this work order.\n\n\u2500 Worked for 1m 17s \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\n\u203a Implement {feature}\n\n  gpt-5.5 medium \u00b7 ~/workspace/experim\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "wJ:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "  \u2503       ith a\n  \u2503       ll re\n  \u2503       quire\n  \u2503       d fie\n  \u2503       lds p\n  \u2503       resen\n  \u2503       t and\n  \u2503        no e\n  \u2503       rrors\n  \u2503       .\",\n  \u2503    21\n  \u2503       \"erro\n  \u2503       rs\":\n  \u2503       [],\n  \u2503    22\n  \u2503       \"poli\n  \u2503       cy_ex\n  \u2503       cepti\n  \u2503       ons\":\n  \u2503        []\n  \u2503    23 }\n  \u2503    24\n  \u2503\n\n     \u25a3  Build \u00b7\n     DeepSeek\n     V4 Flash\n\n  \u2503\n  \u2503\n  \u2503\n  \u2503  Bu\u00b7DeepS D\n  \u2503  il eek V e\n  \u2503  d  4 Fla e\n  \u2503     sh    p\n  \u2503           S\n  \u2579\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\n   \u25a0\u25a0\u25a0\u25a0\u2b1d\u2b1d\u2b1d\u2b1d. etr\n             s+p\n             cco\n             mma\n             ids\n             n\n             t\n             e\n"
+    }
+  ],
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T133632Z-tau-provider-dag-poc-v1/events.jsonl",
+  "live": true,
+  "max_attempts": 2,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "general semantic coding quality beyond the scratch fixture task",
+      "unbounded autonomous repair",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau requires structured provider readiness before dispatch",
+      "Tau can dispatch a bounded coder work order to Codex in a Herdr pane",
+      "Tau waits for and validates a canonical coder node receipt",
+      "Tau dispatches the reviewer only after the coder receipt validates",
+      "Tau waits for and validates a canonical reviewer node receipt",
+      "Tau stops the while loop on reviewer PASS, failure, or max attempts"
+    ]
+  },
+  "provider_readiness_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T133632Z-tau-provider-dag-poc-v1/provider-readiness-receipt.json",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T133632Z-tau-provider-dag-poc-v1",
+  "run_id": "20260701T133632Z-tau-provider-dag-poc-v1",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T133632Z-tau-provider-dag-poc-v1/runtime-manifest.json",
+  "schema": "tau.provider_dag_run_receipt.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T133632Z-tau-provider-dag-poc-v1/scratch-worktree",
+  "status": "PASS",
+  "timestamp": "2026-07-01T13:40:39Z",
+  "verdict": "PASS"
+}

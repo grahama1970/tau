@@ -1,0 +1,30 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/work-orders/attempt-01-coder.json",
+    "pwd",
+    "sed -n '1,80p' message.txt",
+    "apply_patch: replace TODO line in target_file",
+    "apply_patch: add receipt JSON",
+    "sed -n '1,80p' message.txt",
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/receipts/attempt-01-coder.json",
+    "git status --short -- message.txt",
+    "apply_patch: update receipt commands_run",
+    "sed -n '1,80p' message.txt && jq -e . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/receipts/attempt-01-coder.json >/dev/null && git status --short -- message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

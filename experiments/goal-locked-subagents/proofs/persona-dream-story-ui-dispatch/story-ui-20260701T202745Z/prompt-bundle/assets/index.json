@@ -1,0 +1,12 @@
+{
+  "schema": "dream.story.asset_index.v1",
+  "assets": [
+    {
+      "id": "embry_media_asset__assets_surfing_embry_surfing_big_island_2024_png",
+      "memoryKey": "embry_media_asset__assets_surfing_embry_surfing_big_island_2024_png",
+      "title": "Embry surfing on the Big Island",
+      "url": "/api/persona-media?persona=embry&path=assets%2Fsurfing%2Fembry_surfing_big_island_2024.png",
+      "description": "Embry crouches low on a white surfboard in golden Big Island light, lava rocks and green mountains behind her."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "pwd && sed -n '1,240p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/work-orders/attempt-01-coder.json",
+    "sed -n '1,80p' message.txt",
+    "printf 'target=' && sed -n '1,20p' message.txt && printf 'receipt_status=' && jq -r '.status + \"/\" + .verdict + \" attempt=\" + (.attempt|tostring) + \" changed_files=\" + (.changed_files|length|tostring)' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/receipts/attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/20260701T154248Z-tau-planner-orchestrator-subagents-visible-proof/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

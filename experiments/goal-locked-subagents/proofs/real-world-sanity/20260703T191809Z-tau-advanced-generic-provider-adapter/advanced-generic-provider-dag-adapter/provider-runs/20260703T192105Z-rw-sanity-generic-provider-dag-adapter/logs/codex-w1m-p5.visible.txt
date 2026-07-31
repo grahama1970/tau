@@ -1,0 +1,38 @@
+        vider-adapter/advanced-generic-provider-
+        dag-adapter/provider-runs/20260703T19210
+        5Z-rw-sanity-generic-provider-dag-adapte
+        r/scratch-worktree/message.txt",
+    15 -    "ls -ld /home/graham/workspace/exper
+        iments/tau/experiments/goal-locked-subag
+        ents/proofs/real-world-sanity/20260703T1
+        91809Z-tau-advanced-generic-provider-ada
+        pter/advanced-generic-provider-dag-adapt
+        er/provider-runs/20260703T192105Z-rw-san
+        ity-generic-provider-dag-adapter/receipt
+        s"
+    15 +    "ls -ld /home/graham/workspace/exper
+        iments/tau/experiments/goal-locked-subag
+        ents/proofs/real-world-sanity/20260703T1
+        91809Z-tau-advanced-generic-provider-ada
+        pter/advanced-generic-provider-dag-adapt
+        er/provider-runs/20260703T192105Z-rw-san
+        ity-generic-provider-dag-adapter/receipt
+        s",
+    16 +    "jq -e . /home/graham/workspace/expe
+        riments/tau/experiments/goal-locked-suba
+        gents/proofs/real-world-sanity/20260703T
+        191809Z-tau-advanced-generic-provider-ad
+        apter/advanced-generic-provider-dag-adap
+        ter/provider-runs/20260703T192105Z-rw-sa
+        nity-generic-provider-dag-adapter/receip
+        ts/attempt-01-coder.json >/dev/null"
+    17    ],
+
+────────────────────────────────────────────────
+
+• Working (1m 23s • esc to interrupt)
+
+
+› Write tests for @filename
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

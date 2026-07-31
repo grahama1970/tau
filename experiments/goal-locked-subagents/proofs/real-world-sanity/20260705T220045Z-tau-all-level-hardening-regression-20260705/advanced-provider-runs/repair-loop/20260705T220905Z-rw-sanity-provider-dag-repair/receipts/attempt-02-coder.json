@@ -1,0 +1,29 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/repair-loop/20260705T220905Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "attempt": 2,
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/repair-loop/20260705T220905Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "python deterministic visible coder"
+  ],
+  "dag_id": "20260705T220905Z-rw-sanity-provider-dag-repair",
+  "errors": [],
+  "goal_hash": "sha256:a4080761cc9d6e7bb31bfd638a1bd793f2ee10a022c7d579c5983d70cd7066fd",
+  "handoff_summary": "Deterministic visible coder updated the scratch target file.",
+  "node_id": "coder",
+  "pane_id": "w5V:p5",
+  "policy_exceptions": [],
+  "provider_id": "codex",
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "status": "PASS",
+  "terminal_id": "term_655e468137342669",
+  "verdict": "PASS",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/repair-loop/20260705T220905Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T220905Z-rw-sanity-provider-dag-repair-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "e8e608f0a69df8127bc9d055a87bb767d2ce9e7a648bd9ed53b424c2b1a890a8",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/repair-loop/20260705T220905Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-coder.json",
+  "work_order_sha256": "4ea954cbd1aca4baec3f9728922af79a13cb7d475c4f1f6b0e689dfcd484d6a3",
+  "workspace_id": "w5V"
+}

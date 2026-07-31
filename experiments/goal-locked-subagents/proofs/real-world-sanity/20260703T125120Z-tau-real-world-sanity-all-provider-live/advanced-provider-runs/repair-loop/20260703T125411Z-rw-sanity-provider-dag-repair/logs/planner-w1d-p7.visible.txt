@@ -1,0 +1,37 @@
+w-sanity-provider-dag-repair\nru
+n_dir: /home/graham/workspace/ex
+periments/tau/experiments/goal-l
+ocked-subagents/proofs/real-worl
+d-sanity/20260703T125120Z-tau-re
+al-world-sanity-all-provider-liv
+e/advanced-provider-runs/repair-
+loop/20260703T125411Z-rw-sanity-
+provider-dag-repair\ndag_spec: /
+home/graham/workspace/experiment
+s/tau/experiments/goal-locked-su
+bagents/proofs/real-world-sanity
+/20260703T125120Z-tau-real-world
+-sanity-all-provider-live/advanc
+ed-provider-runs/repair-loop/202
+60703T125411Z-rw-sanity-provider
+-dag-repair/dag-spec.json\nplann
+er_receipt: /home/graham/workspa
+ce/experiments/tau/experiments/g
+oal-locked-subagents/proofs/real
+-world-sanity/20260703T125120Z-t
+au-real-world-sanity-all-provide
+r-live/advanced-provider-runs/re
+pair-loop/20260703T125411Z-rw-sa
+nity-provider-dag-repair/planner
+-receipt.json\nfinal_receipt: /h
+ome/graham/workspace/experiments
+/tau/experiments/goal-locked-sub
+agents/proofs/real-world-sanity/
+20260703T125120Z-tau-real-world-
+sanity-all-provider-live/advance
+d-provider-runs/repair-loop/2026
+0703T125411Z-rw-sanity-provider-
+dag-repair/run-receipt.json\ncan
+onical truth: Tau JSON receipts;
+ this pane is human-visible tele
+metry.\n

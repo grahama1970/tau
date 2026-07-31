@@ -1,0 +1,13 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-stress-advanced/20260701T163029Z-tau-dag-stress-advanced-max4/rungs/02-creator-reviewer-retry/scratch/artifact.txt"
+  ],
+  "attempt": 1,
+  "handoff_summary": "draft implementation",
+  "node_id": "creator",
+  "role": "creator",
+  "schema": "tau.dag_stress_node_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-01T16:30:29.589112Z",
+  "verdict": "PASS"
+}

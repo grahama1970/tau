@@ -1,0 +1,5 @@
+{
+  "goal_hash": "sha256:g",
+  "schema": "tau.zero_trust_preflight_receipt.v1",
+  "status": "PASS"
+}

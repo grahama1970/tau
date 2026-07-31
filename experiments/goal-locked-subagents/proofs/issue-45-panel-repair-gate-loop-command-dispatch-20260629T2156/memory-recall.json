@@ -1,0 +1,194 @@
+{
+  "confidence": 0.8,
+  "errors": [],
+  "found": true,
+  "items": [
+    {
+      "_key": "5d0d521134d6ec49",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Current Understanding (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 1.0,
+        "dense": 0.48746163,
+        "freshness": 0.9810279372591428,
+        "graph": 0.0
+      },
+      "section": "Current Understanding",
+      "section_slug": "current-understanding",
+      "solution": "- Project initialized, knowledge tracking started\n- Tau is a fork of alejandro-ao/tau being hardened into a goal-locked agentic harness. Current local slices add Loop2-compatible run receipts plus minimal model-facing contracts for subagent receipts, generated tickets, handoffs, and human-only goal changes. Tau derives GitHub labels deterministically instead of asking model agents to duplicate label/projection fields.",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:current-understanding"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "6500ad5b6398c1f1",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Key Files (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.8,
+        "dense": 0.5047937,
+        "freshness": 0.9810279372591428,
+        "graph": 0.0
+      },
+      "section": "Key Files",
+      "section_slug": "key-files",
+      "solution": "| File | Purpose |\n|------|---------|\n| PROJECT_KNOWLEDGE.md | Shared project knowledge |\n| README.md | Human-facing project overview and current harness notes |\n| src/tau_coding/subagent_receipt.py | Validates common subagent receipt envelopes |\n| src/tau_coding/generated_ticket.py | Validates minimal generated-ticket drafts and derives GitHub labels |\n| src/tau_coding/human_goal_change.py | Validates trusted-human-only immutable goal changes |\n| experiments/goal-locked-subagents/ | Schema artifacts and fixtures for the harness contracts |\n| tests/test_subagent_receipt.py | Focused subagent receipt contract tests |\n| tests/test_generated_ticket.py | Focused generated-ticket projection tests |\n| tests/test_human_goal_change.py | Focused human goal-change tests |",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:key-files"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "d2ab664248780d4c",
+      "_source": "project_knowledge",
+      "decisions": "| Date | Decision | Why |\n|------|----------|-----|\n| 2026-06-27 | Initialize project knowledge | Enable shared human/agent context |\n| 2026-06-27 | Use a fork at grahama1970/tau rather than a new unrelated repo | The project already has upstream history at alejandro-ao/tau, so a fork preserves attribution and makes future upstream comparison/pull possible. |\n| 2026-06-27 | Keep GitHub mutation out of the first harness slices | Current proof is schema, validator, fixture, and deterministic projection only; live issue creation should come after the contracts are accepted. |",
+      "doc_type": "aggregate",
+      "key_files": "| File | Purpose |\n|------|---------|\n| PROJECT_KNOWLEDGE.md | Shared project knowledge |\n| README.md | Human-facing project overview and current harness notes |\n| src/tau_coding/subagent_receipt.py | Validates common subagent receipt envelopes |\n| src/tau_coding/generated_ticket.py | Validates minimal generated-ticket drafts and derives GitHub labels |\n| src/tau_coding/human_goal_change.py | Validates trusted-human-only immutable goal changes |\n| experiments/goal-locked-subagents/ | Schema artifacts and fixtures for the harness contracts |\n| tests/test_subagent_receipt.py | Focused subagent receipt contract tests |\n| tests/test_generated_ticket.py | Focused generated-ticket projection tests |\n| tests/test_human_goal_change.py | Focused human goal-change tests |",
+      "open_questions": "- [ ] What are the key architectural decisions?\n- [ ] What are the known issues?",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.6,
+        "dense": 0.3894905,
+        "freshness": 0.9810279372591428,
+        "graph": 0.0
+      },
+      "tags": [
+        "project_knowledge",
+        "project:tau"
+      ],
+      "understanding": "- Project initialized, knowledge tracking started\n- Tau is a fork of alejandro-ao/tau being hardened into a goal-locked agentic harness. Current local slices add Loop2-compatible run receipts plus minimal model-facing contracts for subagent receipts, generated tickets, handoffs, and human-only goal changes. Tau derives GitHub labels deterministically instead of asking model agents to duplicate label/projection fields.",
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "6147631fbe310e2b",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Recent Decisions (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.4,
+        "dense": 0.4077227,
+        "freshness": 0.9810279372591428,
+        "graph": 0.0
+      },
+      "section": "Recent Decisions",
+      "section_slug": "recent-decisions",
+      "solution": "| Date | Decision | Why |\n|------|----------|-----|\n| 2026-06-27 | Initialize project knowledge | Enable shared human/agent context |\n| 2026-06-27 | Use a fork at grahama1970/tau rather than a new unrelated repo | The project already has upstream history at alejandro-ao/tau, so a fork preserves attribution and makes future upstream comparison/pull possible. |\n| 2026-06-27 | Keep GitHub mutation out of the first harness slices | Current proof is schema, validator, fixture, and deterministic projection only; live issue creation should come after the contracts are accepted. |",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:recent-decisions"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "9cf6139faffa4260",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Infrastructure State (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.2,
+        "dense": 0.36492616,
+        "freshness": 0.9810279372591428,
+        "graph": 0.0
+      },
+      "section": "Infrastructure State",
+      "section_slug": "infrastructure-state",
+      "solution": "<!-- Auto-populated from /project-state --quick -->",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:infrastructure-state"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    }
+  ],
+  "meta": {
+    "k": 5,
+    "memory_first": true,
+    "q": "title: Tau persona-dream harness needs panel-repair-gate creator/reviewer loop\nstate: OPEN\n\n## Type\n\nfeature\n\n## Target\n\n/home/graham/workspace/experiments/tau\n\n## Current state\n\nThe serial persona-dream pipeline now reaches panel_repair_gate with a valid persona_dream.panel_repair_work_order.v1, but Tau has no ticketed loop that consumes this work order from the current dream/story/storyboard run and writes receipts/panel_repair_gate_receipt.json.\n\n## Requested outcome\n\nConsume the panel repair work order through Tau harness using panel-creator, panel-reviewer, and persona-dream-panel-repair-gate, generating a real Scillm/GPT image panel and canonical persona-dream repair receipts without Kling or paid provider submission.\n\n## Required proof\n\nfocused Tau tests plus persona-dream validate-panel-repair-work-order, validate-panel-repair-gate, and pipeline-loop-status artifacts from the issue-41 dream-run root\n\n## Route\n\nunknown\n\n## Requested repair agent\n\nNot specified.\n\n## Non-goals\n\nNo unrelated refactors or scope expansion.\n\n## Ticket type details\n\n- **Current limitation:** The serial persona-dream pipeline now reaches panel_repair_gate with a valid persona_dream.panel_repair_work_order.v1, but Tau has no ticketed loop that consumes this work order from the current dream/story/storyboard run and writes receipts/panel_repair_gate_receipt.json.\n- **Proposed capability:** Consume the panel repair work order through Tau harness using panel-creator, panel-reviewer, and persona-dream-panel-repair-gate, generating a real Scillm/GPT image panel and canonical persona-dream repair receipts without Kling or paid provider submission.\n- **User workflow unlocked:** Start from /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/panel_repair_work_order.json; run the serial subagent loop; write receipts/panel_repair_gate_receipt.json and referenced generation, script coverage, visual review, no-overlay, and status-transition artifacts; rerun persona-dream validators and pipeline-loop-status --direction forward.\n- **Acceptance criteria:** validate-panel-repair-work-order returns PASS_PANEL_REPAIR_WORK_ORDER; Tau consumes persona_dream.panel_repair_work_order.v1; panel image is generated through Scillm/GPT image lane and not Nano Banana/Gemini final imagery; panel-reviewer writes independent visual review receipt; validate-panel-repair-gate reports the first honest blocker or PASS without Kling; pipeline-loop-status --direction forward advances past panel_repair_gate to panel_source_receipt or later; no Kling call, no direct paid provider call, no unreceipted image generation.\n\n<!-- ticket-skill\ntype: feature\ntarget: /home/graham/workspace/experiments/tau\nroute: unknown\nagent: unspecified\n-->\n\nThis ticket must be resolved under `best-practices-github-ticket`. Closure requires deterministic proof; WebGPT review or CI green alone is not closure proof.\n\n\nrecent_comments:\n- grahama1970: <!-- agent-lease\nagent: codex\nlease_id: 20260629T215107Z-codex-45\nissue: 45\n-->\n\nLease: maintainer-active by codex.\nScope: one ticket.\nClosure requirement: deterministic proof comment before close.",
+    "runtime_pressure": {
+      "active_workloads": [],
+      "checked_at": 1782769944,
+      "level": "normal",
+      "recommended_action": "No active persisted runtime pressure detected.",
+      "slow_query_risk": false,
+      "sources": []
+    },
+    "scope": "tau",
+    "threshold": 0.3,
+    "took_ms": 976,
+    "used_dense": true,
+    "used_reranker": false
+  },
+  "should_scan": false,
+  "skill_route": {
+    "bonds": [],
+    "capabilities": [],
+    "compositions": [],
+    "skills": [
+      {
+        "composability_score": 0.122,
+        "has_run_sh": true,
+        "name": "review-persona",
+        "provides": [
+          "review-persona"
+        ]
+      },
+      {
+        "composability_score": 0.087,
+        "has_run_sh": true,
+        "name": "review-code",
+        "provides": [
+          "code-review"
+        ]
+      },
+      {
+        "composability_score": 0.0,
+        "has_run_sh": true,
+        "name": "review-persona",
+        "provides": []
+      },
+      {
+        "composability_score": 0.111,
+        "has_run_sh": true,
+        "name": "sparta-qra-validator-gpt",
+        "provides": [
+          "sparta-qra-validator-gpt"
+        ]
+      },
+      {
+        "composability_score": 0.122,
+        "has_run_sh": true,
+        "name": "review-persona",
+        "provides": [
+          "review-persona"
+        ]
+      }
+    ],
+    "suggested_chain": null
+  }
+}

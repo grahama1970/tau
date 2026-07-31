@@ -1,0 +1,30 @@
+⚠ Heads up, you have less than 25% of
+  your weekly limit left. Run /status
+  for a breakdown.
+
+╭──────────────────────────────────────
+──────────╮
+│ >_ OpenAI Codex (v0.142.5)
+│
+│
+│
+│ model:       gpt-5.5 medium   /model
+to change │
+│ directory:   ~/…/experiments/tau
+│
+│ permissions: YOLO mode
+│
+╰──────────────────────────────────────
+──────────╯
+
+  Tip: New Use /fast to enable our
+  fastest inference with increased plan
+  usage.
+
+• You have 2 usage limit resets
+available. Run /usage to use one.
+
+
+› Find and fix a bug in @filename
+
+  gpt-5.5 medium · ~/workspace/experim…

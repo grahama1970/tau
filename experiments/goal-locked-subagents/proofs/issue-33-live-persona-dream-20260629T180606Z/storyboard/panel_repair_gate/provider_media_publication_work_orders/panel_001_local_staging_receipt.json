@@ -1,0 +1,28 @@
+{
+  "bytes": 2182458,
+  "created_at": "2026-06-29T18:23:39Z",
+  "created_by": "project_agent",
+  "does_not_authorize": [
+    "git_push",
+    "public_upload",
+    "provider_readiness",
+    "direct_kling_submit",
+    "paid_provider_call"
+  ],
+  "exercised": "local copy of locked provider-media bytes and sha256 comparison",
+  "live": "no",
+  "mocked": "no",
+  "next_required_probe_command": "./run.sh validate-provider-media-url --url https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png --expected-sha256 sha256:3ef0ab7722d6742adf0c4e2b19a325f3e0cdaa761f8459e49329b2737a5d99fa --json",
+  "panel_id": "panel_001",
+  "proposed_url": "https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png",
+  "run_id": "issue-33-live-persona-dream-20260629T180606Z",
+  "schema": "persona_dream.provider_media_local_staging_receipt.v1",
+  "source_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/scillm-panel/panel_001.png",
+  "source_sha256": "sha256:3ef0ab7722d6742adf0c4e2b19a325f3e0cdaa761f8459e49329b2737a5d99fa",
+  "staged_asset_path": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png",
+  "staged_sha256": "sha256:3ef0ab7722d6742adf0c4e2b19a325f3e0cdaa761f8459e49329b2737a5d99fa",
+  "status": "PASS_PROVIDER_MEDIA_LOCAL_STAGING",
+  "target_repo_path": "skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png",
+  "unverified": "public URL fetch, GitHub raw availability, Kling provider fetch behavior, paid-call authorization, Kling submission",
+  "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/storyboard/panel_repair_gate/provider_media_publication_work_orders/panel_001_publication_request.json"
+}

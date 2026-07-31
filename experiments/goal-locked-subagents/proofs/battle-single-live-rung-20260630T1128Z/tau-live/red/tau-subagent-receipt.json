@@ -1,0 +1,53 @@
+{
+  "context": {
+    "actor_type": "tau",
+    "artifacts_read": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/tau-live/red/handoff.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/tau-live/red/scillm-call-receipt.json"
+    ],
+    "assumptions": [
+      "Battle owns Docker execution and scorekeeping; Tau owns this handoff receipt."
+    ],
+    "battle": {
+      "battle_id": "battle-003",
+      "persona": "brandon-bailey",
+      "scenario_id": "seeded-sqli-four-party",
+      "team": "red",
+      "worker": null
+    },
+    "run_id": "battle-single-live-rung-20260630T1128Z",
+    "subagent": "battle-red",
+    "unknowns": []
+  },
+  "evidence": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/tau-live/red/handoff.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/tau-live/red/scillm-call-receipt.json"
+  ],
+  "goal": {
+    "goal_hash": "sha256:179270b7f89c13434da8dc221cbf1c2ba9799ce71b50385fce6595d2c4a84159",
+    "goal_id": "goal-battle-battle-003-tau-live",
+    "goal_version": 1,
+    "immutable_goal_preserved": true
+  },
+  "next": {
+    "executor": "local",
+    "reason": "Scillm handoff receipt is ready for Battle scorekeeper.",
+    "subagent": "battle-scorekeeper"
+  },
+  "rationale": "Battle requested one bounded Tau/Scillm handoff receipt before Docker scorekeeping.",
+  "result": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/tau-live/red/handoff.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/tau-live/red/scillm-call-receipt.json"
+    ],
+    "commands_run": [],
+    "live": true,
+    "mocked": false,
+    "model": "gpt-5.5",
+    "status": "PASS",
+    "summary": "Battle red persona brandon-bailey produced a live Scillm response.",
+    "surface": "scillm.chat_completions"
+  },
+  "schema": "tau.subagent_receipt.v1",
+  "stop_condition": "Battle scorekeeper consumes Red/Blue receipts."
+}

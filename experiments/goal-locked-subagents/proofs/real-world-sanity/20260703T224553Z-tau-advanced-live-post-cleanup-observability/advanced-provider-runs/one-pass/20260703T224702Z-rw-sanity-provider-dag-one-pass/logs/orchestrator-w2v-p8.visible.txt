@@ -1,0 +1,37 @@
+one-pass/dag-spec.
+json\nplanner_rece
+ipt: /home/graham/
+workspace/experime
+nts/tau/experiment
+s/goal-locked-suba
+gents/proofs/real-
+world-sanity/20260
+703T224553Z-tau-ad
+vanced-live-post-c
+leanup-observabili
+ty/advanced-provid
+er-runs/one-pass/2
+0260703T224702Z-rw
+-sanity-provider-d
+ag-one-pass/planne
+r-receipt.json\nfi
+nal_receipt: /home
+/graham/workspace/
+experiments/tau/ex
+periments/goal-loc
+ked-subagents/proo
+fs/real-world-sani
+ty/20260703T224553
+Z-tau-advanced-liv
+e-post-cleanup-obs
+ervability/advance
+d-provider-runs/on
+e-pass/20260703T22
+4702Z-rw-sanity-pr
+ovider-dag-one-pas
+s/run-receipt.json
+\ncanonical truth:
+ Tau JSON receipts
+; this pane is hum
+an-visible telemet
+ry.\n

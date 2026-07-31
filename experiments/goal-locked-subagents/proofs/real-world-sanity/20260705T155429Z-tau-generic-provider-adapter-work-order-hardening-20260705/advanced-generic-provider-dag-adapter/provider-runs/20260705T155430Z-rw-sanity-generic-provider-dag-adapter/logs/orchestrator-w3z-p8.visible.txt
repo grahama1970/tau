@@ -1,0 +1,37 @@
+eric-provider-
+dag-adapter/pr
+ovider-runs/20
+260705T155430Z
+-rw-sanity-gen
+eric-provider-
+dag-adapter/pl
+anner-receipt.
+json\nfinal_re
+ceipt: /home/g
+raham/workspac
+e/experiments/
+tau/experiment
+s/goal-locked-
+subagents/proo
+fs/real-world-
+sanity/2026070
+5T155429Z-tau-
+generic-provid
+er-adapter-wor
+k-order-harden
+ing-20260705/a
+dvanced-generi
+c-provider-dag
+-adapter/provi
+der-runs/20260
+705T155430Z-rw
+-sanity-generi
+c-provider-dag
+-adapter/run-r
+eceipt.json\nc
+anonical truth
+: Tau JSON rec
+eipts; this pa
+ne is human-vi
+sible telemetr
+y.\n

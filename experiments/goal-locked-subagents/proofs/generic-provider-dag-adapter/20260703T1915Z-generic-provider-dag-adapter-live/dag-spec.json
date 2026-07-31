@@ -1,0 +1,42 @@
+{
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/events.jsonl",
+  "nodes": [
+    {
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "generic-provider-dag-node",
+        "--node-id",
+        "provider_task",
+        "--receipt-path",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/receipts/provider-task.json",
+        "--provider-run-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs",
+        "--repo",
+        "/home/graham/workspace/experiments/tau",
+        "--label",
+        "tau-generic-provider-dag-adapter-live",
+        "--max-attempts",
+        "1",
+        "--receipt-timeout-seconds",
+        "90",
+        "--no-install-integrations",
+        "--cleanup-mode",
+        "dry-run"
+      ],
+      "depends_on": [],
+      "max_attempts": 1,
+      "node_id": "provider_task",
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/receipts/provider-task.json",
+      "role": "provider_dag_adapter",
+      "timeout_seconds": 180,
+      "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/work-orders/provider-task.json"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live",
+  "run_id": "20260703T1915Z-generic-provider-dag-adapter-live",
+  "schema": "tau.generic_dag_spec.v1"
+}

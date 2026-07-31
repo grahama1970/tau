@@ -1,0 +1,31 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/work-orders/attempt-02-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/work-orders/attempt-02-coder.json",
+    "pwd",
+    "sed -n '1,120p' message.txt",
+    "git status --short -- message.txt",
+    "apply_patch: update /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/scratch-worktree/message.txt",
+    "sed -n '1,120p' message.txt",
+    "git status --short -- message.txt",
+    "test -d /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/receipts",
+    "test ! -e /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/receipts/attempt-02-coder.json",
+    "apply_patch: add /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/receipts/attempt-02-coder.json",
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/receipts/attempt-02-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the generic coder-node message with concrete provider-DAG detail: Codex executed the coder step, updated message.txt, and attempt 2 passed after the forced retry.",
+  "errors": [],
+  "policy_exceptions": []
+}

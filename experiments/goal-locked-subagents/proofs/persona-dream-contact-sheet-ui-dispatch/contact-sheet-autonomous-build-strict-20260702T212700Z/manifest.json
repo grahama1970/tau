@@ -1,0 +1,38 @@
+{
+  "blocked_assets": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/blocked_assets.json",
+  "claims": {
+    "does_not_prove": [
+      "No paid provider call, public upload, or Kling submission was performed.",
+      "Missing contact sheets remain blocked if no persisted memory asset was found and no image-generation backend was authorized."
+    ],
+    "proves": [
+      "Tau ran a command-spec loop from contact-sheet-writer through contact-sheet-build-reviewer.",
+      "Phase 04 contact-sheet requirements were derived from the story interaction matrix.",
+      "Builder attempted to attach persisted memory-backed contact-sheet assets before routing to review.",
+      "Reviewer checked durable Phase 04 build artifacts and missing asset receipts under the selected run root."
+    ]
+  },
+  "command_loop_ok": true,
+  "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-contact-sheet-ui-dispatch/contact-sheet-autonomous-build-strict-20260702T212700Z/command-loop/command-loop-receipt.json",
+  "command_loop_status": "WAITING",
+  "contact_sheet_build_receipt": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_build_receipt.json",
+  "contact_sheet_requirements": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_requirements.json",
+  "created_at": "2026-07-02T21:27:04Z",
+  "input_work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-contact-sheet-ui-dispatch/contact-sheet-autonomous-build-strict-20260702T212700Z/input_contact_sheet_work_order.json",
+  "issue": 45,
+  "live": true,
+  "mocked": false,
+  "provider_live": false,
+  "provider_matrix": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/provider_matrix.json",
+  "reference_asset_manifest": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/reference_asset_manifest.json",
+  "run_root": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete",
+  "schema": "tau.persona_dream_contact_sheet_loop_proof.v1",
+  "start_handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-contact-sheet-ui-dispatch/contact-sheet-autonomous-build-strict-20260702T212700Z/start-handoff.json",
+  "stop_reason": "next_agent_is_human",
+  "terminal_agent": "human",
+  "validate_contact_sheet_build": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/receipts/validate_contact_sheet_build.json",
+  "validate_contact_sheet_build_status": "BLOCKED_CONTACT_SHEET_BUILD",
+  "validate_contact_sheet_contract": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/receipts/validate_contact_sheet_contract.json",
+  "validate_contact_sheet_contract_status": "PASS_CONTACT_SHEET_CONTRACT",
+  "visual_entity_context": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/visual_entity_context.json"
+}

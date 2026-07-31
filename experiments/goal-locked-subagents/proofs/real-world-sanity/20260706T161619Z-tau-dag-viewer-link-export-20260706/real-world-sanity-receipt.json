@@ -1,0 +1,102 @@
+{
+  "check_count": 1,
+  "checks": [
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 0,
+          "receipt_summary": {
+            "live": true,
+            "mocked": false,
+            "ok": true,
+            "provider_session_state_count": 0,
+            "runtime_manifest": null,
+            "schema": "tau.run_status.v1",
+            "status": "PASS"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/logs/advanced.project_dag_viewer_link_exports.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/logs/advanced.project_dag_viewer_link_exports.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.project_dag_viewer_link_exports",
+      "command": [
+        "/home/graham/workspace/experiments/tau/.venv/bin/python3",
+        "-c",
+        "import json, subprocess, sys\nproducer = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau', 'dag-run', '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/provider-metadata-project-dag/dag-contract.json', '--receipt-dir', '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/provider-metadata-project-dag/run', '--agents-root', '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/provider-metadata-project-dag/agents']\nstatus_prefix = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau', 'run-status']\nviewer_prefix = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau', 'dag-viewer-link']\nfirst = subprocess.run(producer, text=True, capture_output=True)\nsys.stderr.write(first.stderr)\nif first.returncode != 0:\n    sys.stdout.write(first.stdout)\n    raise SystemExit(first.returncode)\ndag_payload = json.loads(first.stdout)\nrun_dir = dag_payload.get('run_dir')\nif not isinstance(run_dir, str) or not run_dir:\n    print(json.dumps({'schema': 'tau.real_world_sanity_dag_viewer_check.v1', 'status': 'BLOCKED', 'mocked': False, 'live': True, 'provider_live': False, 'errors': ['dag-run output did not include run_dir']}))\n    raise SystemExit(1)\nstatus_result = subprocess.run([*status_prefix, run_dir], text=True, capture_output=True)\nsys.stderr.write(status_result.stderr)\nif status_result.returncode != 0:\n    sys.stdout.write(status_result.stdout)\n    raise SystemExit(status_result.returncode)\nstatus_payload = json.loads(status_result.stdout)\nlink_result = subprocess.run([*viewer_prefix, run_dir], text=True, capture_output=True)\nsys.stderr.write(link_result.stderr)\nif link_result.returncode != 0:\n    sys.stdout.write(link_result.stdout)\n    raise SystemExit(link_result.returncode)\nlink_payload = json.loads(link_result.stdout)\nerrors = []\nstatus_viewer = status_payload.get('dag_viewer') if isinstance(status_payload, dict) else None\nlink_viewer = link_payload.get('dag_viewer') if isinstance(link_payload, dict) else None\nif not isinstance(status_viewer, dict) or status_viewer.get('available') is not True:\n    errors.append('run-status dag_viewer.available was not true')\nif not isinstance(link_viewer, dict) or link_viewer.get('available') is not True:\n    errors.append('dag-viewer-link dag_viewer.available was not true')\nif isinstance(status_viewer, dict) and isinstance(link_viewer, dict):\n    for key in ('url', 'contract_sha256', 'receipt_sha256', 'dag_id', 'goal_hash', 'receipt_status'):\n        if status_viewer.get(key) != link_viewer.get(key):\n            errors.append(f'dag viewer {key} mismatch: {status_viewer.get(key)!r} != {link_viewer.get(key)!r}')\n    if not str(status_viewer.get('url') or '').startswith('http://localhost:3002/#tau/dag?run='):\n        errors.append('viewer URL did not use the Tau DAG route')\n    if not status_viewer.get('contract_sha256'):\n        errors.append('contract_sha256 missing')\n    if not status_viewer.get('receipt_sha256'):\n        errors.append('receipt_sha256 missing')\nif status_payload.get('detected_type') != 'project_dag':\n    errors.append(f\"run-status detected_type {status_payload.get('detected_type')!r}, expected 'project_dag'\")\nif errors:\n    print(json.dumps({'schema': 'tau.real_world_sanity_dag_viewer_check.v1', 'status': 'BLOCKED', 'mocked': False, 'live': True, 'provider_live': False, 'errors': errors, 'run_status': status_payload, 'dag_viewer_link': link_payload}, sort_keys=True))\n    raise SystemExit(1)\nsys.stdout.write(json.dumps(status_payload, indent=2, sort_keys=True))"
+      ],
+      "completed_at": "2026-07-06T16:16:21Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": null,
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau exports a read-only DAG viewer link from a real local project-DAG contract and receipt, with artifact hashes and non-claims.",
+      "receipt_summary": {
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "provider_session_state_count": 0,
+        "runtime_manifest": null,
+        "schema": "tau.run_status.v1",
+        "status": "PASS"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-06T16:16:19Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/logs/advanced.project_dag_viewer_link_exports.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/logs/advanced.project_dag_viewer_link_exports.stdout.txt",
+      "timeout_seconds": 120
+    }
+  ],
+  "completed_at": "2026-07-06T16:16:21Z",
+  "failed_check_count": 0,
+  "level_counts": {
+    "advanced": {
+      "PASS": 1
+    }
+  },
+  "live": "mixed",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "production browser/chat UI rendering",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau CLI and command-spec surfaces execute from the local checkout",
+      "Tau can run a real local handoff command loop",
+      "Tau planner, generic DAG runner, and deterministic scheduler stress surfaces emit non-mocked receipts",
+      "Tau can allocate visible provider panes and run live provider DAG checks when advanced checks pass",
+      "Tau can run Surf-backed browser proof checks when advanced browser checks pass",
+      "Tau fail-closed negative controls preserve typed BLOCKED receipts"
+    ]
+  },
+  "provider_live": false,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706",
+  "run_id": "20260706T161619Z-tau-dag-viewer-link-export-20260706",
+  "schema": "tau.real_world_sanity_suite_receipt.v1",
+  "selected_levels": [
+    "advanced"
+  ],
+  "status": "PASS",
+  "timestamp": "2026-07-06T16:16:21Z"
+}

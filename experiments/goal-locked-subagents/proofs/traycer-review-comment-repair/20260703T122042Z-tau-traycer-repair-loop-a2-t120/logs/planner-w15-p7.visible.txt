@@ -1,0 +1,29 @@
+Tau planner subagent visible mon
+itor\nrun_id: 20260703T122042Z-t
+au-traycer-repair-loop-a2-t120\n
+run_dir: /home/graham/workspace/
+experiments/tau/experiments/goal
+-locked-subagents/proofs/traycer
+-review-comment-repair/20260703T
+122042Z-tau-traycer-repair-loop-
+a2-t120\ndag_spec: /home/graham/
+workspace/experiments/tau/experi
+ments/goal-locked-subagents/proo
+fs/traycer-review-comment-repair
+/20260703T122042Z-tau-traycer-re
+pair-loop-a2-t120/dag-spec.json\
+nplanner_receipt: /home/graham/w
+orkspace/experiments/tau/experim
+ents/goal-locked-subagents/proof
+s/traycer-review-comment-repair/
+20260703T122042Z-tau-traycer-rep
+air-loop-a2-t120/planner-receipt
+.json\nfinal_receipt: /home/grah
+am/workspace/experiments/tau/exp
+eriments/goal-locked-subagents/p
+roofs/traycer-review-comment-rep
+air/20260703T122042Z-tau-traycer
+-repair-loop-a2-t120/run-receipt
+.json\ncanonical truth: Tau JSON
+ receipts; this pane is human-vi
+sible telemetry.\n

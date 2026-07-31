@@ -1,0 +1,127 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "coder_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/receipts/attempt-01-coder.json",
+      "coder_status": "PASS",
+      "coder_verdict": "PASS",
+      "errors": [],
+      "reviewer_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/receipts/attempt-01-reviewer.json",
+      "reviewer_status": "PASS",
+      "reviewer_verdict": "REVISE"
+    },
+    {
+      "attempt": 2,
+      "coder_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/receipts/attempt-02-coder.json",
+      "coder_status": "PASS",
+      "coder_verdict": "PASS",
+      "errors": [],
+      "reviewer_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/receipts/attempt-02-reviewer.json",
+      "reviewer_status": "PASS",
+      "reviewer_verdict": "REVISE"
+    },
+    {
+      "attempt": 3,
+      "coder_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/receipts/attempt-03-coder.json",
+      "coder_status": "PASS",
+      "coder_verdict": "PASS",
+      "errors": [],
+      "reviewer_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/receipts/attempt-03-reviewer.json",
+      "reviewer_status": "PASS",
+      "reviewer_verdict": "PASS"
+    }
+  ],
+  "dag_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/dag-spec.json",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/events.jsonl",
+  "label": "tau-live-provider-dag-forced-retry-a3-t120",
+  "logs_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/logs",
+  "provider_readiness_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/provider-readiness-receipt.json",
+  "provider_sessions": {
+    "codex": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "wW:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/provider-readiness/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120-readiness/readiness/codex.readiness.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_6558fa59f8455a3",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/provider-readiness/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "wW"
+    },
+    "opencode": {
+      "foreground_command": "opencode",
+      "pane_id": "wW:p6",
+      "process_alive": true,
+      "provider_id": "opencode",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/provider-readiness/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120-readiness/readiness/opencode.readiness.json",
+      "ready": true,
+      "role": "reviewer",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_6558fa5b2047ea4",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/provider-readiness/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120-readiness/logs/opencode.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "wW"
+    }
+  },
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120",
+  "run_id": "20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120",
+  "schema": "tau.provider_dag_runtime_manifest.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/scratch-worktree",
+  "visible_subagents": {
+    "coder": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "wW:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/provider-readiness/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120-readiness/readiness/codex.readiness.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_6558fa59f8455a3",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/provider-readiness/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "wW"
+    },
+    "orchestrator": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "wW:p8",
+      "provider_id": "tau",
+      "role": "orchestrator",
+      "tab_id": "wW:t1",
+      "terminal_id": "term_6558fa7b55fa7a6",
+      "visible": true,
+      "workspace_id": "wW"
+    },
+    "planner": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "wW:p7",
+      "provider_id": "tau",
+      "role": "planner",
+      "tab_id": "wW:t1",
+      "terminal_id": "term_6558fa7a57d4aa5",
+      "visible": true,
+      "workspace_id": "wW"
+    },
+    "reviewer": {
+      "command": "opencode run --dir <repo> <reviewer-prompt>",
+      "pane_id": "wW:pB",
+      "provider_id": "opencode",
+      "readiness_pane_id": "wW:p6",
+      "role": "reviewer",
+      "tab_id": "wW:t1",
+      "terminal_id": "term_6558fb3c31221a9",
+      "visible": true,
+      "workspace_id": "wW"
+    }
+  }
+}

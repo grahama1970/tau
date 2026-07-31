@@ -1,0 +1,38 @@
+           sanity-
+           generic-provider-dag-adapter
+
+• Ran python3 -m json.tool /home/
+  │ graham/workspace/experiments/tau/
+  │ experiments/
+  │ … +13 lines
+  └ 34 /tmp/
+    attempt-01-coder-jsoncheck.out
+
+• Ran python3 - <<'PY'
+  │ import json
+  │ from pathlib import Path
+  │ … +50 lines
+  └ {
+    … +5 lines (ctrl + t to view
+    transcript)
+      "verdict": true
+    }
+
+───────────────────────────────────────
+
+• Evidence: JSON parsing produced a 34-
+  line normalized receipt, and the
+  focused Python check returned true
+  for schema, PASS status, PASS
+  verdict, changed_files, artifacts,
+  and target_text. I’m updating the
+  receipt’s command list to include
+  those verification commands, then
+  I’ll do one final parse.
+
+• Working (1m 46s • esc to interrupt)
+
+
+› Implement {feature}
+
+  gpt-5.5 medium · ~/workspace/experim…

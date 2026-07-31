@@ -1,0 +1,12 @@
+{
+  "confidence": 0.91,
+  "goal_hash": "sha256:rw-sanity-project-dag-memory-evidence-clarify",
+  "memory_first": true,
+  "route": "CLARIFY",
+  "schema": "memory.intent.v1",
+  "summary": "Memory needs human clarification before execution.",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-memory-evidence-clarify"
+  }
+}

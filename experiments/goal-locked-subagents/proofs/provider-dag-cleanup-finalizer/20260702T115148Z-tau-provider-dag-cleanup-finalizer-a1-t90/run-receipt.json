@@ -1,0 +1,307 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "coder_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/receipts/attempt-01-coder.json",
+      "coder_status": "PASS",
+      "coder_verdict": "PASS",
+      "errors": [],
+      "reviewer_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/receipts/attempt-01-reviewer.json",
+      "reviewer_status": "PASS",
+      "reviewer_verdict": "PASS"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "agent",
+        "start",
+        "20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90-planner",
+        "--cwd",
+        "/home/graham/workspace/experiments/tau",
+        "--workspace",
+        "w12",
+        "--no-focus",
+        "--",
+        "bash",
+        "-lc",
+        "printf '%s\\n' \"Tau planner subagent visible monitor\\\\nrun_id: 20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/dag-spec.json\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/planner-receipt.json\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/run-receipt.json\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\n\"; exec sleep 86400"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90-planner\",\"pane_id\":\"w12:p7\",\"revision\":0,\"tab_id\":\"w12:t1\",\"terminal_id\":\"term_6559f70089eb9d9\",\"workspace_id\":\"w12\"},\"argv\":[\"bash\",\"-lc\",\"printf '%s\\\\n' \\\"Tau planner subagent visible monitor\\\\\\\\nrun_id: 20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90\\\\\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90\\\\\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/dag-spec.json\\\\\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/planner-receipt.json\\\\\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/run-receipt.json\\\\\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\\\\\n\\\"; exec sleep 86400\"],\"type\":\"agent_started\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "agent",
+        "start",
+        "20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90-orchestrator",
+        "--cwd",
+        "/home/graham/workspace/experiments/tau",
+        "--workspace",
+        "w12",
+        "--no-focus",
+        "--",
+        "bash",
+        "-lc",
+        "printf '%s\\n' \"Tau orchestrator subagent visible monitor\\\\nrun_id: 20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/dag-spec.json\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/planner-receipt.json\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/run-receipt.json\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\n\"; exec sleep 86400"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90-orchestrator\",\"pane_id\":\"w12:p8\",\"revision\":0,\"tab_id\":\"w12:t1\",\"terminal_id\":\"term_6559f7027110fda\",\"workspace_id\":\"w12\"},\"argv\":[\"bash\",\"-lc\",\"printf '%s\\\\n' \\\"Tau orchestrator subagent visible monitor\\\\\\\\nrun_id: 20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90\\\\\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90\\\\\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/dag-spec.json\\\\\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/planner-receipt.json\\\\\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/run-receipt.json\\\\\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\\\\\n\\\"; exec sleep 86400\"],\"type\":\"agent_started\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "send-text",
+        "w12:p5",
+        "Tau provider DAG POC coder task.\n\nRead this work order JSON:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/work-orders/attempt-01-coder.json\n\nRules:\n- Operate only inside the scratch_worktree named in the work order.\n- Do not modify the Tau repository.\n- Do not use GitHub.\n- Do not use Tailscale.\n- Modify only target_file.\n- Write a JSON receipt exactly here:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/receipts/attempt-01-coder.json\n\nReceipt JSON shape:\n{\n  \"schema\": \"tau.provider_dag_node_receipt.v1\",\n  \"node_id\": \"coder\",\n  \"provider_id\": \"codex\",\n  \"attempt\": <attempt number>,\n  \"status\": \"PASS\",\n  \"verdict\": \"PASS\",\n  \"work_order_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/work-orders/attempt-01-coder.json\",\n  \"changed_files\": [\"<target_file>\"],\n  \"commands_run\": [\"<commands you ran>\"],\n  \"artifacts\": [\"<target_file>\"],\n  \"handoff_summary\": \"What changed.\",\n  \"errors\": [],\n  \"policy_exceptions\": []\n}\n"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "send-keys",
+        "w12:p5",
+        "enter"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "agent",
+        "start",
+        "20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90-reviewer-attempt-01",
+        "--cwd",
+        "/home/graham/workspace/experiments/tau",
+        "--workspace",
+        "w12",
+        "--no-focus",
+        "--",
+        "opencode",
+        "run",
+        "--dir",
+        "/home/graham/workspace/experiments/tau",
+        "Tau provider DAG POC reviewer task.\n\nRead this work order JSON:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/work-orders/attempt-01-reviewer.json\n\nRules:\n- Operate only inside the scratch_worktree named in the work order.\n- Do not modify files except the reviewer receipt.\n- Do not use GitHub.\n- Do not use Tailscale.\n- Review target_file and coder_receipt_path.\n- If the work order has \"force_revise\": true, write verdict \"REVISE\" with\n  concrete feedback for the next coder attempt.\n- Write a JSON receipt exactly here:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/receipts/attempt-01-reviewer.json\n\nReceipt JSON shape:\n{\n  \"schema\": \"tau.provider_dag_node_receipt.v1\",\n  \"node_id\": \"reviewer\",\n  \"provider_id\": \"opencode\",\n  \"attempt\": <attempt number>,\n  \"status\": \"PASS\",\n  \"verdict\": \"PASS or REVISE\",\n  \"work_order_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/work-orders/attempt-01-reviewer.json\",\n  \"changed_files\": [],\n  \"commands_run\": [\"<commands you ran>\"],\n  \"artifacts\": [\"<target_file>\", \"<coder_receipt_path>\"],\n  \"handoff_summary\": \"Review finding or pass rationale.\",\n  \"errors\": [],\n  \"policy_exceptions\": []\n}"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90-reviewer-attempt-01\",\"pane_id\":\"w12:p9\",\"revision\":0,\"tab_id\":\"w12:t1\",\"terminal_id\":\"term_6559f722f2a5fdb\",\"workspace_id\":\"w12\"},\"argv\":[\"opencode\",\"run\",\"--dir\",\"/home/graham/workspace/experiments/tau\",\"Tau provider DAG POC reviewer task.\\n\\nRead this work order JSON:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/work-orders/attempt-01-reviewer.json\\n\\nRules:\\n- Operate only inside the scratch_worktree named in the work order.\\n- Do not modify files except the reviewer receipt.\\n- Do not use GitHub.\\n- Do not use Tailscale.\\n- Review target_file and coder_receipt_path.\\n- If the work order has \\\"force_revise\\\": true, write verdict \\\"REVISE\\\" with\\n  concrete feedback for the next coder attempt.\\n- Write a JSON receipt exactly here:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/receipts/attempt-01-reviewer.json\\n\\nReceipt JSON shape:\\n{\\n  \\\"schema\\\": \\\"tau.provider_dag_node_receipt.v1\\\",\\n  \\\"node_id\\\": \\\"reviewer\\\",\\n  \\\"provider_id\\\": \\\"opencode\\\",\\n  \\\"attempt\\\": <attempt number>,\\n  \\\"status\\\": \\\"PASS\\\",\\n  \\\"verdict\\\": \\\"PASS or REVISE\\\",\\n  \\\"work_order_path\\\": \\\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/work-orders/attempt-01-reviewer.json\\\",\\n  \\\"changed_files\\\": [],\\n  \\\"commands_run\\\": [\\\"<commands you ran>\\\"],\\n  \\\"artifacts\\\": [\\\"<target_file>\\\", \\\"<coder_receipt_path>\\\"],\\n  \\\"handoff_summary\\\": \\\"Review finding or pass rationale.\\\",\\n  \\\"errors\\\": [],\\n  \\\"policy_exceptions\\\": []\\n}\"],\"type\":\"agent_started\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w12:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "        n '\\\"status\\\": \\\"PASS\\\"' /home/graha\n        m/workspace/experiments/tau/experime\n        nts/goal-locked-subagents/proofs/pro\n        vider-dag-cleanup-finalizer/20260702\n        T115148Z-tau-provider-dag-cleanup-fi\n        nalizer-a1-t90/receipts/attempt-01-c\n        oder.json && grep -n '\\\"verdict\\\": \\\n        \"PASS\\\"' /home/graham/workspace/expe\n        riments/tau/experiments/goal-locked-\n        subagents/proofs/provider-dag-cleanu\n        p-finalizer/20260702T115148Z-tau-pro\n        vider-dag-cleanup-finalizer-a1-t90/r\n        eceipts/attempt-01-coder.json\"\n    20    ],\n\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\u2022 Receipt command log is updated. The next\n  command validates the receipt JSON parses,\n  confirms the message text, and confirms\n  PASS status/verdict fields.\n\n\u2022 Ran python3 -m json.tool /home/graham/\n  \u2502 workspace/experiments/tau/experiments/\n  \u2502 goal-locked-subagents/proofs/\n  \u2502 \u2026 +26 lines\n  \u2514 Completed implementation for the Tau\n    provider DAG cleanup finalizer coder\n    node.\n    6:  \"status\": \"PASS\",\n    7:  \"verdict\": \"PASS\",\n\n\u2022 Working (1m 00s \u2022 esc to interrupt)\n\n\n\u203a Summarize recent commits\n\n  gpt-5.5 medium \u00b7 ~/workspace/experiments/\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w12:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "\n\n\n \u2580\u2580\u2580\u2580 \u2580\u2580\u2580\u2584 \u2580\u2580\u2580\u2580 \u2580\u2580\u2580\u2580\n \u2580\u2580\u2580\u2580 \u2580  \u2580 \u2580    \u2580  \u2580\n \u2580\u2580\u2580\u2580 \u2580\u2580\u2580\u2580 \u2580\u2580\u2580\u2580 \u2580\u2580\u2580\u2580\n\n  \u2503\n  \u2503  Ask\n  \u2503  anything...\n  \u2503   \"What is\n  \u2503  the tech\n  \u2503  stack of\n  \u2503  this\n  \u2503  project?\"\n  \u2503\n  \u2503  Bu \u00b7DeepSee D\n  \u2503  il  k V4 Fl e\n  \u2503  d   ash     e\n  \u2503              p\n  \u2503              S\n  \u2579\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\n   tab    ctrl+p\n   agents commands\n\n\n\n\n  \u25cf Tip Tool\n        definition\n\n  ~/        1.17.9\n  worksp\n  ace/ex\n  perime\n  nts/ta\n  u:main\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w12:p7",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "Tau planner subagent visible monitor\\nrun_id\n: 20260702T115148Z-tau-provider-dag-cleanup-\nfinalizer-a1-t90\\nrun_dir: /home/graham/work\nspace/experiments/tau/experiments/goal-locke\nd-subagents/proofs/provider-dag-cleanup-fina\nlizer/20260702T115148Z-tau-provider-dag-clea\nnup-finalizer-a1-t90\\ndag_spec: /home/graham\n/workspace/experiments/tau/experiments/goal-\nlocked-subagents/proofs/provider-dag-cleanup\n-finalizer/20260702T115148Z-tau-provider-dag\n-cleanup-finalizer-a1-t90/dag-spec.json\\npla\nnner_receipt: /home/graham/workspace/experim\nents/tau/experiments/goal-locked-subagents/p\nroofs/provider-dag-cleanup-finalizer/2026070\n2T115148Z-tau-provider-dag-cleanup-finalizer\n-a1-t90/planner-receipt.json\\nfinal_receipt:\n /home/graham/workspace/experiments/tau/expe\nriments/goal-locked-subagents/proofs/provide\nr-dag-cleanup-finalizer/20260702T115148Z-tau\n-provider-dag-cleanup-finalizer-a1-t90/run-r\neceipt.json\\ncanonical truth: Tau JSON recei\npts; this pane is human-visible telemetry.\\n\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w12:p8",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "115148Z-tau-provider\n-dag-cleanup-finaliz\ner-a1-t90\\ndag_spec:\n /home/graham/worksp\nace/experiments/tau/\nexperiments/goal-loc\nked-subagents/proofs\n/provider-dag-cleanu\np-finalizer/20260702\nT115148Z-tau-provide\nr-dag-cleanup-finali\nzer-a1-t90/dag-spec.\njson\\nplanner_receip\nt: /home/graham/work\nspace/experiments/ta\nu/experiments/goal-l\nocked-subagents/proo\nfs/provider-dag-clea\nnup-finalizer/202607\n02T115148Z-tau-provi\nder-dag-cleanup-fina\nlizer-a1-t90/planner\n-receipt.json\\nfinal\n_receipt: /home/grah\nam/workspace/experim\nents/tau/experiments\n/goal-locked-subagen\nts/proofs/provider-d\nag-cleanup-finalizer\n/20260702T115148Z-ta\nu-provider-dag-clean\nup-finalizer-a1-t90/\nrun-receipt.json\\nca\nnonical truth: Tau J\nSON receipts; this p\nane is human-visible\n telemetry.\\n\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w12:p9",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "-dag-clea\nnup-final\nizer/2026\n0702T1151\n48Z-tau-p\nrovider-d\nag-cleanu\np-finaliz\ner-a1-t90\n/receipts\n(no outpu\nt)\n\n\u2190 Write e\nxperiment\ns/goal-lo\ncked-suba\ngents/pro\nofs/provi\nder-dag-c\nleanup-fi\nnalizer/2\n0260702T1\n15148Z-ta\nu-provide\nr-dag-cle\nanup-fina\nlizer-a1-\nt90/recei\npts/attem\npt-01-rev\niewer.jso\nn\nWrote fil\ne success\nfully.\n"
+    }
+  ],
+  "dag_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/dag-spec.json",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/events.jsonl",
+  "herdr_cleanup": {
+    "candidate_count": 1,
+    "live": false,
+    "mocked": false,
+    "mode": "dry-run",
+    "ok": true,
+    "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/herdr-cleanup-receipt.json",
+    "resource_count": 1,
+    "status": "PASS"
+  },
+  "herdr_cleanup_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/herdr-cleanup-receipt.json",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "general semantic coding quality beyond the scratch fixture task",
+      "unbounded autonomous repair",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau orchestrator can consume a planner-created tau.dag_run_spec.v1",
+      "Tau exposes planner, orchestrator, coder, and reviewer roles as Herdr-visible subagents",
+      "Tau requires structured provider readiness before dispatch",
+      "Tau can dispatch a bounded coder work order to Codex in a Herdr pane",
+      "Tau waits for and validates a canonical coder node receipt",
+      "Tau dispatches the reviewer only after the coder receipt validates",
+      "Tau waits for and validates a canonical reviewer node receipt",
+      "Tau stops the while loop on reviewer PASS, failure, or max attempts"
+    ]
+  },
+  "provider_readiness_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/provider-readiness-receipt.json",
+  "provider_sessions": {
+    "codex": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "w12:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/provider-readiness/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90-readiness/readiness/codex.readiness.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_6559f6f12ca7dd7",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/provider-readiness/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w12"
+    },
+    "opencode": {
+      "foreground_command": "opencode",
+      "pane_id": "w12:p6",
+      "process_alive": true,
+      "provider_id": "opencode",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/provider-readiness/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90-readiness/readiness/opencode.readiness.json",
+      "ready": true,
+      "role": "reviewer",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_6559f6f34dcb0d8",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/provider-readiness/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90-readiness/logs/opencode.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w12"
+    }
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90",
+  "run_id": "20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/runtime-manifest.json",
+  "schema": "tau.dag_run_receipt.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/scratch-worktree",
+  "status": "PASS",
+  "timestamp": "2026-07-02T11:53:11Z",
+  "verdict": "PASS",
+  "visible_subagents": {
+    "coder": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "w12:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/provider-readiness/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90-readiness/readiness/codex.readiness.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_6559f6f12ca7dd7",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/provider-readiness/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w12"
+    },
+    "orchestrator": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "w12:p8",
+      "provider_id": "tau",
+      "role": "orchestrator",
+      "tab_id": "w12:t1",
+      "terminal_id": "term_6559f7027110fda",
+      "visible": true,
+      "workspace_id": "w12"
+    },
+    "planner": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "w12:p7",
+      "provider_id": "tau",
+      "role": "planner",
+      "tab_id": "w12:t1",
+      "terminal_id": "term_6559f70089eb9d9",
+      "visible": true,
+      "workspace_id": "w12"
+    },
+    "reviewer": {
+      "command": "opencode run --dir <repo> [--model <reviewer-model>] <reviewer-prompt>",
+      "pane_id": "w12:p9",
+      "provider_id": "opencode",
+      "readiness_pane_id": "w12:p6",
+      "reviewer_model": null,
+      "role": "reviewer",
+      "tab_id": "w12:t1",
+      "terminal_id": "term_6559f722f2a5fdb",
+      "visible": true,
+      "workspace_id": "w12"
+    }
+  }
+}

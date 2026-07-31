@@ -1,0 +1,37 @@
+rovider-dag-one-pa
+ss/dag-spec.json\n
+planner_receipt: /
+home/graham/worksp
+ace/experiments/ta
+u/experiments/goal
+-locked-subagents/
+proofs/real-world-
+sanity/20260705T21
+4141Z-tau-broader-
+hardening-regressi
+on-20260705/advanc
+ed-provider-runs/o
+ne-pass/20260705T2
+14301Z-rw-sanity-p
+rovider-dag-one-pa
+ss/planner-receipt
+.json\nfinal_recei
+pt: /home/graham/w
+orkspace/experimen
+ts/tau/experiments
+/goal-locked-subag
+ents/proofs/real-w
+orld-sanity/202607
+05T214141Z-tau-bro
+ader-hardening-reg
+ression-20260705/a
+dvanced-provider-r
+uns/one-pass/20260
+705T214301Z-rw-san
+ity-provider-dag-o
+ne-pass/run-receip
+t.json\ncanonical
+truth: Tau JSON re
+ceipts; this pane
+is human-visible t
+elemetry.\n

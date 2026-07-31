@@ -1,0 +1,50 @@
+{
+  "auth": {
+    "method": "unknown",
+    "status": "unknown"
+  },
+  "diagnostics": {
+    "pane_agent_status": "idle",
+    "pane_label": "20260705t221106z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode",
+    "readiness_state": "ready",
+    "visible_prompt_is_gate": false,
+    "visible_prompt_observed": false
+  },
+  "evidence": {
+    "provider_event_log_path": null,
+    "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T221106Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T221106Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/opencode.readiness.json",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T221106Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T221106Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt"
+  },
+  "interstitial": {
+    "kind": null,
+    "present": false,
+    "safe_actions": []
+  },
+  "observed_at": "2026-07-05T22:11:41Z",
+  "pane_id": "w5W:p6",
+  "process": {
+    "alive": true,
+    "argv": [
+      "opencode",
+      "/home/graham/workspace/experiments/tau"
+    ],
+    "command": "opencode",
+    "cwd": "/home/graham/workspace/experiments/tau",
+    "foreground": true,
+    "pid": 2386296
+  },
+  "provider_api": {
+    "available": false,
+    "endpoint": "none",
+    "last_event_type": null
+  },
+  "provider_id": "opencode",
+  "provider_session_id": null,
+  "ready": true,
+  "run_id": "20260705T221106Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+  "schema": "tau.provider_session_state.v1",
+  "source": "herdr_process_info",
+  "state": "ready",
+  "terminal_id": "term_655e46f4d79e8676",
+  "workspace_id": "w5W"
+}

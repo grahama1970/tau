@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T214524Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:cd41e9b043a9da6c055fc06c97cd48ff40a6e630c820101c79e62d9275385282",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w5J",
+  "pane_id": "w5J:p6",
+  "terminal_id": "term_655e4136a8998615",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T214524Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T214524Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "611336f56cbedbcf61975015bd0633a83c1eba2f84febf5a4002aa41b09b850b",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T214524Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["sha256sum visible_log_path", "read target_file", "read coder_receipt_path"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T214524Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T214524Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file has no TODO line (contains 'Completed implementation for the generic provider DAG adapter scratch target.'). Coder receipt is schema-valid with all required fields present (schema, dag_id, goal_hash, node_id, provider_id, attempt, workspace_id, pane_id, terminal_id, visible_log_path, visible_log_sha256, work_order_sha256, status, verdict, work_order_path, changed_files, commands_run, artifacts, handoff_summary, errors, policy_exceptions). force_revise is false — no revision needed.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,32 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T221106Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:faab49cde5600df347007774d0a2b10d1d17646099337d82c395cbb3a9f43f14",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w5W",
+  "pane_id": "w5W:p6",
+  "terminal_id": "term_655e46f4d79e8676",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T221106Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T221106Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "86b59bf03f8d5a04ad5282a20e9ec9acb5ee34d8c2454af587edae853989d34c",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T221106Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work order json",
+    "read target_file (message.txt)",
+    "read coder_receipt (attempt-02-coder.json)",
+    "stat visible log path",
+    "sha256sum visible log"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T221106Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T221106Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "force_revise=true: sending REVISE. target_file contains the completion statement but is underspecified (single vague line, no structured fields). coder_receipt is schema-valid but commands_run and handoff_summary lack detail. Next coder should produce structured output with provenance metadata.",
+  "errors": [],
+  "policy_exceptions": []
+}

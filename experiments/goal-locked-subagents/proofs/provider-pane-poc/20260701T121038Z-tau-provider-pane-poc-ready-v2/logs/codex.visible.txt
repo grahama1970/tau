@@ -1,0 +1,42 @@
+╭──────────────────────────────────────
+───────────╮
+│ ✨ Update available! 0.142.4 ->
+│
+│ 0.142.5
+│
+│ Run npm install -g @openai/codex to
+│
+│ update.
+│
+│
+│
+│ See full release notes:
+│
+│ https://github.com/openai/codex/relea
+ses/latest │
+╰──────────────────────────────────────
+───────────╯
+
+╭──────────────────────────────────────
+───╮
+│ >_ OpenAI Codex (v0.142.4)
+  │
+│
+  │
+│ model:       loading   /model to
+change │
+│ directory:   ~/…/experiments/tau
+  │
+│ permissions: YOLO mode
+  │
+╰──────────────────────────────────────
+───╯
+
+• You have 2 usage limit resets
+available. Run /usage to use one.
+
+
+›
+
+
+  gpt-5.5 default · ~/workspace/experi…

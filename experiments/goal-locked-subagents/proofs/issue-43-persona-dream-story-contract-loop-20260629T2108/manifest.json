@@ -1,0 +1,31 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "No Kling call, paid provider call, public upload, or panel generation was performed.",
+      "This does not claim full persona-dream pipeline readiness beyond the next blocker."
+    ],
+    "proves": [
+      "Tau ran a command-spec loop from story-writer to story-reviewer.",
+      "Story-writer created story_contract.json from the existing dream packet.",
+      "Story-reviewer ran persona-dream validators and recorded JSON outputs."
+    ]
+  },
+  "command_loop_ok": false,
+  "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2108/command-loop/command-loop-receipt.json",
+  "command_loop_status": "BLOCKED",
+  "created_at": "2026-06-29T21:07:50Z",
+  "input_work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2108/input_story_contract_work_order.json",
+  "issue": 43,
+  "live": true,
+  "mocked": false,
+  "pipeline_first_blocker": null,
+  "pipeline_loop_status": null,
+  "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+  "schema": "tau.persona_dream_story_contract_loop_proof.v1",
+  "start_handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2108/start-handoff.json",
+  "stop_reason": "command_failed",
+  "story_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/story_contract.json",
+  "terminal_agent": "story-writer",
+  "validate_story_contract": null,
+  "validate_story_contract_status": null
+}

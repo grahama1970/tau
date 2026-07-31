@@ -1,0 +1,31 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T215231Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:0a043692f39d7b31ccfbf95cfe3cb885e4ad516d9a1309d9baf3955571dd4cfa",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w5N",
+  "pane_id": "w5N:p6",
+  "terminal_id": "term_655e42cd895ce633",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T215231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T215231Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "32b6bdb4976fa72a8972129411a751dea5a964e18ae6f033bbcbf336326b5214",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T215231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work order JSON",
+    "read target_file (scratch-worktree/message.txt)",
+    "read coder receipt JSON (attempt-01-coder.json)",
+    "sha256sum on opencode.visible.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T215231Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T215231Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: force_revise=true triggered. The target_file (message.txt) contains only a bare completion marker ('completed implementation by deterministic visible coder attempt 1') with no substantive content. The coder receipt is schema-valid and well-formed, but the implementation output is insufficient — the next attempt must replace the placeholder with meaningful content that advances toward the goal. The TODO line (if present in the original) should be replaced with an actual message demonstrating the implementation scope rather than a self-referential completion claim.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,48 @@
+{
+  "attempt": 1,
+  "dag_id": "20260705T205936Z-rw-sanity-provider-dag-invalid-model",
+  "forbidden_actions": [
+    "modify_tau_repository",
+    "github_mutation",
+    "tailscale_access"
+  ],
+  "goal": {
+    "goal_hash": "sha256:8f0c1183ec9130c80e04fde30f99d7e9d36b73cfc79435d06eea5544a439dd84",
+    "goal_id": "20260705T205936Z-rw-sanity-provider-dag-invalid-model",
+    "goal_version": 1
+  },
+  "herdr": {
+    "pane_id": "w55:p5",
+    "terminal_id": "term_655e36f94d7ce599",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/invalid-model/20260705T205936Z-rw-sanity-provider-dag-invalid-model/provider-readiness/20260705T205936Z-rw-sanity-provider-dag-invalid-model-readiness/logs/codex.visible.txt",
+    "workspace_id": "w55"
+  },
+  "max_attempts": 1,
+  "node": {
+    "agent": "coder",
+    "attempt": 1,
+    "max_attempts": 1,
+    "node_id": "coder"
+  },
+  "node_id": "coder",
+  "provider_id": "codex",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/invalid-model/20260705T205936Z-rw-sanity-provider-dag-invalid-model/receipts/attempt-01-coder.json",
+  "required_evidence": [
+    "target_file_updated",
+    "node_receipt_written"
+  ],
+  "reviewer_feedback": "",
+  "run_id": "20260705T205936Z-rw-sanity-provider-dag-invalid-model",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/invalid-model/20260705T205936Z-rw-sanity-provider-dag-invalid-model/scratch-worktree",
+  "target": {
+    "allowed_paths": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/invalid-model/20260705T205936Z-rw-sanity-provider-dag-invalid-model/scratch-worktree/message.txt"
+    ],
+    "repo": "/home/graham/workspace/experiments/tau",
+    "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/invalid-model/20260705T205936Z-rw-sanity-provider-dag-invalid-model/scratch-worktree"
+  },
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-provider-runs/invalid-model/20260705T205936Z-rw-sanity-provider-dag-invalid-model/scratch-worktree/message.txt",
+  "task": "Modify only target_file. Replace the TODO line with a short completed implementation message. Then write the node receipt JSON exactly at receipt_path.",
+  "work_order_sha256": "83fb94fd99c142d660a5a0482fff7649e93836b8959e97f50722a084f6d10a83"
+}

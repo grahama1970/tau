@@ -1,0 +1,48 @@
+{
+  "attempt": 2,
+  "dag_id": "20260705T185713Z-rw-sanity-provider-dag-max-exhaustion",
+  "forbidden_actions": [
+    "modify_tau_repository",
+    "github_mutation",
+    "tailscale_access"
+  ],
+  "goal": {
+    "goal_hash": "sha256:7890358d4bc2471c75f5fd48e9a2606f4ffe2ac3157c5ba6c7d34a549ef2088e",
+    "goal_id": "20260705T185713Z-rw-sanity-provider-dag-max-exhaustion",
+    "goal_version": 1
+  },
+  "herdr": {
+    "pane_id": "w4C:p5",
+    "terminal_id": "term_655e1b9df98774a0",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T185712Z-tau-provider-visible-log-binding-20260705/advanced-provider-runs/max-exhaustion/20260705T185713Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T185713Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/codex.visible.txt",
+    "workspace_id": "w4C"
+  },
+  "max_attempts": 2,
+  "node": {
+    "agent": "coder",
+    "attempt": 2,
+    "max_attempts": 2,
+    "node_id": "coder"
+  },
+  "node_id": "coder",
+  "provider_id": "codex",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T185712Z-tau-provider-visible-log-binding-20260705/advanced-provider-runs/max-exhaustion/20260705T185713Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json",
+  "required_evidence": [
+    "target_file_updated",
+    "node_receipt_written"
+  ],
+  "reviewer_feedback": "REVISE: The cader attempt 1 wrote message.txt with a basic completion string and produced a schema-valid receipt. However, the message.txt content is minimal \u2014 it states completion but does not include the goal_hash, dag_id, or any provenance linking it to the specific DAG run. For a provider DAG max-exhaustion proof, the target file should embed structured provenance (goal_hash, dag_id, attempt number) to demonstrate durable cross-node traceability. The visible log at the opencode pane confirms this reviewer process ran. Next coder attempt should rewrite message.txt with structured content including the goal_hash, dag_id, and a clear statement that this is a deterministic visible coder output for the provider DAG POC.",
+  "run_id": "20260705T185713Z-rw-sanity-provider-dag-max-exhaustion",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T185712Z-tau-provider-visible-log-binding-20260705/advanced-provider-runs/max-exhaustion/20260705T185713Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree",
+  "target": {
+    "allowed_paths": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T185712Z-tau-provider-visible-log-binding-20260705/advanced-provider-runs/max-exhaustion/20260705T185713Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+    ],
+    "repo": "/home/graham/workspace/experiments/tau",
+    "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T185712Z-tau-provider-visible-log-binding-20260705/advanced-provider-runs/max-exhaustion/20260705T185713Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree"
+  },
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T185712Z-tau-provider-visible-log-binding-20260705/advanced-provider-runs/max-exhaustion/20260705T185713Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+  "task": "Modify only target_file. Replace the TODO line with a short completed implementation message. Then write the node receipt JSON exactly at receipt_path.",
+  "work_order_sha256": "5d08da611c55094ce3c1ee87088758691889c494973be9350f1436e61de37c52"
+}

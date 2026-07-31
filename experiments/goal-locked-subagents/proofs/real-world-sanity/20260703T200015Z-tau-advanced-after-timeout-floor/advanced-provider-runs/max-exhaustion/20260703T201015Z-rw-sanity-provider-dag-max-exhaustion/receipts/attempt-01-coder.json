@@ -1,0 +1,25 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/max-exhaustion/20260703T201015Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/max-exhaustion/20260703T201015Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "sed -n '1,220p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/max-exhaustion/20260703T201015Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-coder.json",
+    "sed -n '1,120p' message.txt",
+    "pwd && rg --files -g 'message.txt' -g 'pyproject.toml' -g 'README*'",
+    "sed -n '1,40p' message.txt",
+    "python3 -m json.tool /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/max-exhaustion/20260703T201015Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json >/tmp/tau-attempt-01-coder-receipt-jsoncheck.txt && sed -n '1,40p' message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/max-exhaustion/20260703T201015Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

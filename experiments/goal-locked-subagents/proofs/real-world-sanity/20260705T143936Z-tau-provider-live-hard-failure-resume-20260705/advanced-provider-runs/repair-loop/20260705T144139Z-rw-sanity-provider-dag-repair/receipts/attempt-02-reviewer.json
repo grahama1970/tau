@@ -1,0 +1,22 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T143936Z-tau-provider-live-hard-failure-resume-20260705/advanced-provider-runs/repair-loop/20260705T144139Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work_order JSON",
+    "read target_file (message.txt)",
+    "read coder_receipt (attempt-02-coder.json)"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T143936Z-tau-provider-live-hard-failure-resume-20260705/advanced-provider-runs/repair-loop/20260705T144139Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T143936Z-tau-provider-live-hard-failure-resume-20260705/advanced-provider-runs/repair-loop/20260705T144139Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "PASS. target_file has no TODO line (clean 'completed implementation by deterministic visible coder attempt 2'). coder_receipt is schema-valid tau.provider_dag_node_receipt.v1 with status PASS, no errors, and correct artifact paths.",
+  "errors": [],
+  "policy_exceptions": []
+}

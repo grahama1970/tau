@@ -1,0 +1,38 @@
+  "verdict": "PASS"
+
+  Evidence scope:
+  mocked: no
+  live: no
+  Exercised: deterministic file
+  content replacement and
+  receipt JSON parse/shape
+  inspection.
+  Not exercised: broader Tau
+  tests, GitHub, Tailscale, or
+  repository-wide validation.
+
+• Stop hook (stopped)
+  warning: Status response
+  blocked as too vague. Answer
+  status requests with an
+  operational snapshot: Status/
+  Phase, Now/current file-
+  command-artifact, Evidence
+  with concrete counts or
+  command results, and Next/stop
+  condition. Include exact
+  paths, command names, or
+  artifact names when work has
+  touched files or tools. Do not
+  answer with only conclusions
+  such as done, fixed, checking,
+  working, or making progress.
+  stop: Status response lacks
+  operational detail.
+
+─ Worked for 1m 19s ────────────
+
+
+› Explain this codebase
+
+  gpt-5.5 medium · ~/workspace/…

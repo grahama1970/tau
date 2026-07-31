@@ -1,0 +1,32 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T212849Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:a379639de8d5b9201adcb08acb0b55b0fa4f93c2fc46bba93521803cb360a137",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w5D",
+  "pane_id": "w5D:p6",
+  "terminal_id": "term_655e3d8163af05e7",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T212848Z-tau-provider-receipt-scope-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T212849Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T212849Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "7c57233c03999c2206434456e61e8d6352c40f4ce3b9f173c0d7b40419725da0",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T212848Z-tau-provider-receipt-scope-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T212849Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work order JSON",
+    "read target_file message.txt",
+    "read coder receipt attempt-01-coder.json",
+    "sha256sum visible log",
+    "verify scratch worktree exists"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T212848Z-tau-provider-receipt-scope-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T212849Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T212848Z-tau-provider-receipt-scope-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T212849Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS. target_file (message.txt) has no TODO line — reads 'Completed implementation: generic provider DAG adapter scratch target updated.' coder receipt is schema-valid with all required fields, empty errors/policy_exceptions, and changed_files confined to allowed path. No force_revise. No modification needed.",
+  "errors": [],
+  "policy_exceptions": []
+}

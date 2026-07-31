@@ -1,0 +1,38 @@
+  experiments/goal-locked-subagents/proofs/real-
+  world-sanity/20260703T191809Z-tau-advanced-
+  generic-provider-adapter/advanced-provider-
+  runs/invalid-model/20260703T193046Z-rw-sanity-
+  provider-dag-invalid-model/receipts/attempt-
+  01-coder.json
+
+  Evidence: Ran:
+
+  python -m json.tool .../receipts/attempt-01-
+  coder.json >/tmp/tau-provider-dag-attempt-01-
+  coder-jsoncheck.txt && sed -n '1,80p'
+  message.txt && wc -l message.txt
+
+  Result:
+
+  Completed implementation for the Tau provider
+  DAG POC coder task.
+  1 message.txt
+
+  This proves the receipt is parseable JSON and
+  the target file contains exactly one line with
+  the replacement message.
+
+  Scope: mocked: no; live: no; exercised
+  deterministic filesystem edit plus JSON parse.
+  No Tau repo files, GitHub, or Tailscale were
+  used.
+
+  Next/stop condition: No remaining work from
+  the work order.
+
+─ Worked for 1m 18s ────────────────────────────
+
+
+› Explain this codebase
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

@@ -1,0 +1,37 @@
+548Z-rw-sanity-pro
+vider-dag-one-pass
+/dag-spec.json\npl
+anner_receipt: /ho
+me/graham/workspac
+e/experiments/tau/
+experiments/goal-l
+ocked-subagents/pr
+oofs/real-world-sa
+nity/20260703T2305
+48Z-tau-provider-d
+ag-cleanup-counts/
+advanced-provider-
+runs/one-pass/2026
+0703T230548Z-rw-sa
+nity-provider-dag-
+one-pass/planner-r
+eceipt.json\nfinal
+_receipt: /home/gr
+aham/workspace/exp
+eriments/tau/exper
+iments/goal-locked
+-subagents/proofs/
+real-world-sanity/
+20260703T230548Z-t
+au-provider-dag-cl
+eanup-counts/advan
+ced-provider-runs/
+one-pass/20260703T
+230548Z-rw-sanity-
+provider-dag-one-p
+ass/run-receipt.js
+on\ncanonical trut
+h: Tau JSON receip
+ts; this pane is h
+uman-visible telem
+etry.\n

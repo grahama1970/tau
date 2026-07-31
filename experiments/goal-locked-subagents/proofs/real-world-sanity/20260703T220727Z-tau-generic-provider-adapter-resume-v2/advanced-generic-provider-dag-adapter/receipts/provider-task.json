@@ -1,0 +1,48 @@
+{
+  "artifacts": [
+    {
+      "kind": "run_dir",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T220727Z-tau-generic-provider-adapter-resume-v2/advanced-generic-provider-dag-adapter/provider-runs/20260703T220728Z-rw-sanity-generic-provider-dag-adapter"
+    },
+    {
+      "kind": "runtime_manifest",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T220727Z-tau-generic-provider-adapter-resume-v2/advanced-generic-provider-dag-adapter/provider-runs/20260703T220728Z-rw-sanity-generic-provider-dag-adapter/runtime-manifest.json"
+    },
+    {
+      "kind": "events_jsonl",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T220727Z-tau-generic-provider-adapter-resume-v2/advanced-generic-provider-dag-adapter/provider-runs/20260703T220728Z-rw-sanity-generic-provider-dag-adapter/events.jsonl"
+    },
+    {
+      "kind": "dag_spec",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T220727Z-tau-generic-provider-adapter-resume-v2/advanced-generic-provider-dag-adapter/provider-runs/20260703T220728Z-rw-sanity-generic-provider-dag-adapter/dag-spec.json"
+    },
+    {
+      "kind": "provider_readiness_receipt",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T220727Z-tau-generic-provider-adapter-resume-v2/advanced-generic-provider-dag-adapter/provider-runs/20260703T220728Z-rw-sanity-generic-provider-dag-adapter/provider-readiness-receipt.json"
+    },
+    {
+      "kind": "herdr_cleanup_receipt",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T220727Z-tau-generic-provider-adapter-resume-v2/advanced-generic-provider-dag-adapter/provider-runs/20260703T220728Z-rw-sanity-generic-provider-dag-adapter/herdr-cleanup-receipt.json"
+    },
+    {
+      "kind": "orchestration_evidence_receipt",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T220727Z-tau-generic-provider-adapter-resume-v2/advanced-generic-provider-dag-adapter/provider-runs/20260703T220728Z-rw-sanity-generic-provider-dag-adapter/orchestration-evidence-receipt.json"
+    }
+  ],
+  "commands_run": [
+    "tau provider-dag-poc via tau generic-provider-dag-node"
+  ],
+  "errors": [],
+  "handoff_summary": "Provider DAG subrun passed and was translated into a generic DAG node receipt.",
+  "live": true,
+  "mocked": false,
+  "node_id": "provider_task",
+  "policy_exceptions": [],
+  "provider_live": true,
+  "provider_status": "PASS",
+  "provider_verdict": "PASS",
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-03T22:10:20Z",
+  "verdict": "PASS"
+}

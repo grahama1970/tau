@@ -1,0 +1,36 @@
+
+$ ls
+attempt-01
+-coder.jso
+n
+
+← Write ex
+periments/
+goal-locke
+d-subagent
+s/proofs/r
+eal-world-
+sanity/202
+60703T1944
+09Z-tau-ad
+vanced-aft
+er-readine
+ss-samplin
+g/advanced
+-generic-p
+rovider-da
+g-adapter/
+provider-r
+uns/202607
+03T194725Z
+-rw-sanity
+-generic-p
+rovider-da
+g-adapter/
+receipts/a
+ttempt-01-
+reviewer.j
+son
+Wrote file
+ successfu
+lly.

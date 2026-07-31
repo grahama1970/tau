@@ -1,0 +1,27 @@
+⚠ Heads up, you have less than
+  5% of your 5h limit left.
+  Run /status for a breakdown.
+
+╭──────────────────────────────
+───────────╮
+│ >_ OpenAI Codex (v0.142.5)
+          │
+│
+          │
+│ model:       loading   /model
+to change │
+│ directory:   ~/…/tau
+          │
+│ permissions: YOLO mode
+          │
+╰──────────────────────────────
+───────────╯
+
+• You have 2 usage limit resets
+available. Run /usage to use
+one.
+
+
+› Improve documentation in @fi
+
+  gpt-5.5 default · ~/workspac…

@@ -1,0 +1,24 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work-orders/attempt-01-reviewer.json",
+    "read scratch-worktree/message.txt",
+    "read receipts/attempt-01-coder.json",
+    "read work-orders/attempt-01-coder.json",
+    "ls scratch-worktree/"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: message.txt content is too generic ('Completed implementation for the Tau provider DAG coder node.') for a max-exhaustion live-provider-dag stress test. It describes no actual implementation detail, references no DAG nodes/providers, and contains no evidence that provider DAG logic was touched. The coder receipt shows no Python files were created or modified. Next attempt should write a substantive message that includes: (1) which provider DAG nodes were involved, (2) the actual implementation or connection made, (3) provider_id and node_id metadata, and (4) a one-line status of the DAG edge. The scratch worktree contains only message.txt with no Python implementation — for a live-provider-dag scenario, the coder should also produce at minimum a Python script or module that exercises the provider DAG pattern.",
+  "errors": [],
+  "policy_exceptions": []
+}

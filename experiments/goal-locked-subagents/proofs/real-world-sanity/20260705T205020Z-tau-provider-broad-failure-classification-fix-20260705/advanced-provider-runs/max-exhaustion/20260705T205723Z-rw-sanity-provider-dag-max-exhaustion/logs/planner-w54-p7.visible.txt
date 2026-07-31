@@ -1,0 +1,35 @@
+Tau planner subagent visible monitor\nr
+un_id: 20260705T205723Z-rw-sanity-provi
+der-dag-max-exhaustion\nrun_dir: /home/
+graham/workspace/experiments/tau/experi
+ments/goal-locked-subagents/proofs/real
+-world-sanity/20260705T205020Z-tau-prov
+ider-broad-failure-classification-fix-2
+0260705/advanced-provider-runs/max-exha
+ustion/20260705T205723Z-rw-sanity-provi
+der-dag-max-exhaustion\ndag_spec: /home
+/graham/workspace/experiments/tau/exper
+iments/goal-locked-subagents/proofs/rea
+l-world-sanity/20260705T205020Z-tau-pro
+vider-broad-failure-classification-fix-
+20260705/advanced-provider-runs/max-exh
+austion/20260705T205723Z-rw-sanity-prov
+ider-dag-max-exhaustion/dag-spec.json\n
+planner_receipt: /home/graham/workspace
+/experiments/tau/experiments/goal-locke
+d-subagents/proofs/real-world-sanity/20
+260705T205020Z-tau-provider-broad-failu
+re-classification-fix-20260705/advanced
+-provider-runs/max-exhaustion/20260705T
+205723Z-rw-sanity-provider-dag-max-exha
+ustion/planner-receipt.json\nfinal_rece
+ipt: /home/graham/workspace/experiments
+/tau/experiments/goal-locked-subagents/
+proofs/real-world-sanity/20260705T20502
+0Z-tau-provider-broad-failure-classific
+ation-fix-20260705/advanced-provider-ru
+ns/max-exhaustion/20260705T205723Z-rw-s
+anity-provider-dag-max-exhaustion/run-r
+eceipt.json\ncanonical truth: Tau JSON
+receipts; this pane is human-visible te
+lemetry.\n

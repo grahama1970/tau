@@ -1,0 +1,38 @@
+
+
+› sanity/20260705T200935Z-tau-generic-
+  provider-delivery-classification-
+  20260705/advanced-generic-provider-
+  dag-adapter/provider-
+  runs/20260705T200936Z-rw-sanity-
+  generic-provider-dag-adapter/work-
+  orders/attempt-01-coder.json
+
+  Rules:
+  - Operate only inside the
+  scratch_worktree named in the work
+  order.
+  - Do not modify the Tau repository.
+  - Do not use GitHub.
+  - Do not use Tailscale.
+  - Modify only target_file.
+  - Write a JSON receipt exactly here:
+  /home/graham/workspace/experiments/
+  tau/experiments/goal-locked-
+  subagents/proofs/real-world-
+  sanity/20260705T200935Z-tau-generic-
+  provider-delivery-classification-
+  20260705/advanced-generic-provider-
+  dag-adapter/provider-
+  runs/20260705T200936Z-rw-sanity-
+  generic-provider-dag-adapter/
+  receipts/attempt-01-coder.json
+
+  Receipt JSON shape:
+  {
+    "schema":
+  "tau.provider_dag_node_receipt.v1",
+    "dag_id": "20260705T200936Z-rw-
+  sanity-generic-prov
+
+  gpt-5.5 medium · ~/workspace/experim…

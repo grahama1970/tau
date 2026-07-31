@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work-orders/attempt-01-reviewer.json",
+    "read receipts/attempt-01-coder.json",
+    "read scratch-worktree/message.txt",
+    "read work-orders/attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: force_revise=true. target_file message.txt was updated from a TODO to a completion message. coder receipt is schema-valid. Specific feedback for next attempt: (1) The message content is generic ('Completed implementation...') — include what was actually implemented (e.g., 'Replaced TODO line in message.txt with a completion message for the provider DAG coder node'). (2) The coder commands_run lists only read-only commands (sed -n, pwd, test -e) with no visible write/edit commands — future coder receipts should capture the actual mutation commands (e.g., the edit/write tool invocation) for audit traceability. (3) If the loop goes beyond attempt 1, consider expanding the test to verify the file content structurally (e.g., check the file is non-empty and does not contain 'TODO').",
+  "errors": [],
+  "policy_exceptions": []
+}

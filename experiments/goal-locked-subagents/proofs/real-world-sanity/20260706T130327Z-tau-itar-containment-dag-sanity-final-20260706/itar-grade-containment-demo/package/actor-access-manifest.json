@@ -1,0 +1,14 @@
+{
+  "schema": "tau.actor_access_manifest.v1",
+  "actor_id": "human:demo",
+  "actor_type": "human",
+  "roles": ["approver"],
+  "trusted": true,
+  "verified": true,
+  "eligibility": {
+    "us_person": "verified",
+    "foreign_person": false,
+    "export_control_training_current": true,
+    "approved_for_boundary": ["ITAR"]
+  }
+}

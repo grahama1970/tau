@@ -1,0 +1,47 @@
+{
+  "attempt": 2,
+  "dag_id": "20260705T165002Z-rw-sanity-provider-dag-repair",
+  "forbidden_actions": [
+    "modify_tau_repository",
+    "github_mutation",
+    "tailscale_access"
+  ],
+  "goal": {
+    "goal_hash": "sha256:b0974c9700c72422bdf5bb71f94da8a6e2c1fa89bc9f4dd2f9aac2501998eca0",
+    "goal_id": "20260705T165002Z-rw-sanity-provider-dag-repair",
+    "goal_version": 1
+  },
+  "herdr": {
+    "pane_id": "w45:p5",
+    "terminal_id": "term_655dff30c0ac5454",
+    "workspace_id": "w45"
+  },
+  "max_attempts": 2,
+  "node": {
+    "agent": "coder",
+    "attempt": 2,
+    "max_attempts": 2,
+    "node_id": "coder"
+  },
+  "node_id": "coder",
+  "provider_id": "codex",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T165002Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json",
+  "required_evidence": [
+    "target_file_updated",
+    "node_receipt_written"
+  ],
+  "reviewer_feedback": "REVISE: force_revise=true. target_file message.txt has no TODO line and coder receipt is schema-valid, but message content is generic (no provider_id or goal reference), commands_run is a description not an invocation, and handoff_summary lacks provider specificity. Next coder should (1) update message.txt to include provider_id and goal_hash, (2) use a concrete executable command string in commands_run, and (3) name the specific provider in handoff_summary.",
+  "run_id": "20260705T165002Z-rw-sanity-provider-dag-repair",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T165002Z-rw-sanity-provider-dag-repair/scratch-worktree",
+  "target": {
+    "allowed_paths": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T165002Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+    ],
+    "repo": "/home/graham/workspace/experiments/tau",
+    "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T165002Z-rw-sanity-provider-dag-repair/scratch-worktree"
+  },
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T165002Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+  "task": "Modify only target_file. Replace the TODO line with a short completed implementation message. Then write the node receipt JSON exactly at receipt_path.",
+  "work_order_sha256": "5dee593501f4f7b3ecce7c8fd8b4973675e1951845f5a4104a1866b36c9cf982"
+}

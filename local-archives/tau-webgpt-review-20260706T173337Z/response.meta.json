@@ -1,0 +1,69 @@
+{
+  "status": "missing_sentinel",
+  "failure": "missing_sentinel",
+  "input": "/home/graham/workspace/experiments/tau/local-archives/tau-webgpt-review-20260706T173337Z/request.webgpt.md",
+  "submitted_output": "/home/graham/workspace/experiments/tau/local-archives/tau-webgpt-review-20260706T173337Z/submitted.md",
+  "output": "/home/graham/workspace/experiments/tau/local-archives/tau-webgpt-review-20260706T173337Z/response.md",
+  "raw_output": "/home/graham/workspace/experiments/tau/local-archives/tau-webgpt-review-20260706T173337Z/response.raw.md",
+  "stderr_log": "/tmp/surf-webgpt-submit-stderr.tNmZqD.log",
+  "sentinel": "<<<WEBGPT_DONE:20260706T173521Z:f6f1ddf4>>>",
+  "requested_tab_id": "837357899",
+  "requested_url": null,
+  "requested_model": null,
+  "requested_reasoning": "Pro",
+  "tab_identity_preflight": {
+    "ok": true,
+    "error": null,
+    "tab_id": "837357899",
+    "tab": {
+      "id": "837357899",
+      "title": "ChatGPT",
+      "url": "https://chatgpt.com/"
+    },
+    "chatgpt_tabs_count": 16,
+    "expected_url": null,
+    "expected_title": null,
+    "source": "create-tab",
+    "checks": [
+      {
+        "name": "tab_id_valid",
+        "ok": true,
+        "detail": "837357899"
+      },
+      {
+        "name": "tab_open_chatgpt",
+        "ok": true,
+        "detail": "ok"
+      },
+      {
+        "name": "tab_identity_verified_or_allowed",
+        "ok": true,
+        "detail": "allowed"
+      }
+    ]
+  },
+  "roundtrip_preflight_required": false,
+  "roundtrip_preflight_exit_code": 0,
+  "roundtrip_preflight_output_dir": null,
+  "roundtrip_preflight": null,
+  "controlled_tab_id": "837357899",
+  "conversation_url": null,
+  "response_source": null,
+  "response_timed_out": null,
+  "timeout_error": null,
+  "raw_contains_sentinel": false,
+  "clean_contains_sentinel": false,
+  "raw_chars": 2,
+  "clean_chars": 2,
+  "raw_response_advisory": true,
+  "extract_fallback_used": false,
+  "extract_fallback_reason": "missing_sentinel",
+  "extract_fallback_raw": null,
+  "extract_fallback_meta": null,
+  "started_at": "2026-07-06T17:35:25Z",
+  "finished_at": "2026-07-06T17:39:51Z",
+  "proof_status": "submitted_no_response_proof",
+  "agent_diagnosis": "Surf captured response text, but it did not contain the current completion sentinel in assistant output.",
+  "agent_action": "Do not use output as proof. If ChatGPT visibly completed, run webgpt.extract with the exact sentinel; otherwise resubmit to a clean verified tab.",
+  "submitted_to_chatgpt": true
+}

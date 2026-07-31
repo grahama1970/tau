@@ -1,0 +1,36 @@
+ messag
+e. ✓
+- **Cod
+er rece
+ipt**:
+Valid J
+SON wit
+h schem
+a `tau.
+provide
+r_dag_n
+ode_rec
+eipt.v1
+`, has
+all req
+uired f
+ields.
+✓
+- **`fo
+rce_rev
+ise`**:
+ `false
+` — no
+forced
+revisio
+n neede
+d.
+
+Both co
+ndition
+s per t
+ask are
+ met. V
+erdict:
+ **PASS
+**.

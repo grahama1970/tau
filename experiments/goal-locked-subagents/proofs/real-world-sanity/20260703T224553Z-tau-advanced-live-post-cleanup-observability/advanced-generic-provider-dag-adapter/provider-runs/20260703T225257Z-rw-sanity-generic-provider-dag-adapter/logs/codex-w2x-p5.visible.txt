@@ -1,0 +1,38 @@
+• The receipt now includes the
+  validation commands as well. I’m
+  doing one final parse check after
+  that metadata update.
+
+• Explored
+  └ Read message.txt
+
+• Ran python -m json.tool ../receipts/
+  │ attempt-01-coder.json >/tmp/
+  │ tau-attempt-01-coder-jsoncheck-f
+  │ … +3 lines
+  └ 27 /tmp/
+    tau-attempt-01-coder-jsoncheck-fin
+    al.txt
+
+──────────────────────────────────────
+
+• Status/Phase
+  PASS. Coder task completed inside
+  the specified scratch run area; Tau
+  repo source files were not modified.
+
+  Now
+  Current target file: experiments/
+  goal-locked-subagents/proofs/real-
+  world-sanity/20260703T224553Z-tau-
+  advanced-live-post-cleanup-
+  observability/advanced-generic-
+  provider-dag-adapter/provider-
+  runs/20260703T225257Z-rw-sanity-
+  generic-provider-dag-adapter/
+  scratch-worktree/message.txt
+
+
+› Summarize recent commits
+
+  gpt-5.5 medium · ~/workspace/experi…

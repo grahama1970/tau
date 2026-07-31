@@ -1,0 +1,11 @@
+{
+  "approved_action": "publish_exact_locked_provider_media",
+  "approved_at": "2026-06-29T22:16:06Z",
+  "approved_by": "grahama1970 conversation authorization: \"you have 100% authorized permission\"",
+  "authorized_sha256": "sha256:2c89628513c4c3c34d2b862673e56c656ce1a40409398fbb13fba6718f53c914",
+  "authorized_target_repo_path": "skills/persona-dream/provider_media/dream-run/panel_01.png",
+  "authorized_url": "https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/dream-run/panel_01.png",
+  "notes": "Authorizes only publication of this exact locked provider-media PNG. Does not authorize Kling, paid provider calls, provider readiness without URL probe, or byte changes.",
+  "schema": "persona_dream.provider_media_publication_authorization.v1",
+  "status": "AUTHORIZED_PUBLICATION"
+}

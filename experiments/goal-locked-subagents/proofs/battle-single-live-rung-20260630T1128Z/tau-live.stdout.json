@@ -1,0 +1,134 @@
+{
+  "battle_context": {
+    "artifact_count": 7,
+    "bundle_path": "/tmp/battle-v1-tau-context-002/context/tau-battle-context-bundle.json",
+    "research_broker_passed_lane_count": 5,
+    "research_broker_status": "PASS",
+    "run_receipt_status": "PENDING",
+    "schema": "tau.battle_context_bundle.v1",
+    "tau_live_manifest_status": "PENDING",
+    "teams": {
+      "blue": {
+        "combination_id": "exploit-sqli-admin-or__defense-parameterized-like",
+        "persona": "coder",
+        "research_dispatch": {
+          "dispatch_reason": "research-weighted same-family countermeasure",
+          "first_research_lane": "github_blue",
+          "research_boost": 0.2,
+          "research_sources": [
+            "brave",
+            "dogpile_blue",
+            "dogpile_red",
+            "github_blue",
+            "github_red"
+          ]
+        }
+      },
+      "red": {
+        "combination_id": "exploit-sqli-admin-or__defense-parameterized-like",
+        "persona": "brandon-bailey",
+        "research_dispatch": {
+          "dispatch_reason": "research-weighted same-family countermeasure",
+          "first_research_lane": "github_blue",
+          "research_boost": 0.2,
+          "research_sources": [
+            "brave",
+            "dogpile_blue",
+            "dogpile_red",
+            "github_blue",
+            "github_red"
+          ]
+        }
+      }
+    },
+    "warm_pond_research_weighted_candidate_count": 6,
+    "warm_pond_status": "PASS"
+  },
+  "battle_id": "battle-003",
+  "claims": {
+    "does_not_prove": [
+      "Battle Docker scorekeeper PASS unless Battle consumes this manifest.",
+      "Unbounded Battle swarm execution.",
+      "Scillm delegate/batch/tool execution; this rung uses chat completions."
+    ],
+    "proves": [
+      "Tau consumed Battle handoffs at team granularity.",
+      "Tau attempted streaming Scillm chat-completions calls for each scheduled handoff.",
+      "Tau wrote tau.subagent_receipt.v1 artifacts for each scheduled handoff."
+    ]
+  },
+  "live": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "run_id": "battle-single-live-rung-20260630T1128Z",
+  "scenario_id": "seeded-sqli-four-party",
+  "scheduling": {
+    "completion_order": [
+      {
+        "combination_id": null,
+        "completed_at_seconds": 5.806342,
+        "persona": "coder",
+        "team": "blue",
+        "worker_id": null
+      },
+      {
+        "combination_id": null,
+        "completed_at_seconds": 12.515286,
+        "persona": "brandon-bailey",
+        "team": "red",
+        "worker_id": null
+      }
+    ],
+    "granularity": "team",
+    "handoff_count": 2,
+    "mode": "asyncio.as_completed",
+    "team_count": 2,
+    "worker_count": 0
+  },
+  "schema": "tau.battle_live_handoff_proof.v1",
+  "scillm_base_url": "http://localhost:4001",
+  "status": "PASS",
+  "surface": "scillm.chat_completions",
+  "teams": [
+    {
+      "combination_id": null,
+      "completed_at_seconds": 5.806342,
+      "duration_seconds": 5.772353,
+      "error": null,
+      "events": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/tau-live/blue/scillm-events.jsonl",
+      "handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/tau-live/blue/handoff.json",
+      "http_status": 200,
+      "model": "gpt-5.5",
+      "persona": "coder",
+      "scillm_call": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/tau-live/blue/scillm-call-receipt.json",
+      "started_at_seconds": 0.0,
+      "status": "PASS",
+      "subagent_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/tau-live/blue/tau-subagent-receipt.json",
+      "surface": "scillm.chat_completions",
+      "team": "blue",
+      "validation": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/tau-live/blue/validation.json",
+      "validation_ok": true,
+      "worker_id": null
+    },
+    {
+      "combination_id": null,
+      "completed_at_seconds": 12.515286,
+      "duration_seconds": 12.5143,
+      "error": null,
+      "events": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/tau-live/red/scillm-events.jsonl",
+      "handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/tau-live/red/handoff.json",
+      "http_status": 200,
+      "model": "gpt-5.5",
+      "persona": "brandon-bailey",
+      "scillm_call": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/tau-live/red/scillm-call-receipt.json",
+      "started_at_seconds": 0.0,
+      "status": "PASS",
+      "subagent_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/tau-live/red/tau-subagent-receipt.json",
+      "surface": "scillm.chat_completions",
+      "team": "red",
+      "validation": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/tau-live/red/validation.json",
+      "validation_ok": true,
+      "worker_id": null
+    }
+  ]
+}

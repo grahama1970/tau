@@ -1,0 +1,37 @@
+aham/workspace/exp
+eriments/tau/exper
+iments/goal-locked
+-subagents/proofs/
+real-world-sanity/
+20260705T195438Z-t
+au-generic-provide
+r-loading-guard-20
+260705/advanced-ge
+neric-provider-dag
+-adapter/provider-
+runs/20260705T1954
+39Z-rw-sanity-gene
+ric-provider-dag-a
+dapter/planner-rec
+eipt.json\nfinal_r
+eceipt: /home/grah
+am/workspace/exper
+iments/tau/experim
+ents/goal-locked-s
+ubagents/proofs/re
+al-world-sanity/20
+260705T195438Z-tau
+-generic-provider-
+loading-guard-2026
+0705/advanced-gene
+ric-provider-dag-a
+dapter/provider-ru
+ns/20260705T195439
+Z-rw-sanity-generi
+c-provider-dag-ada
+pter/run-receipt.j
+son\ncanonical tru
+th: Tau JSON recei
+pts; this pane is
+human-visible tele
+metry.\n

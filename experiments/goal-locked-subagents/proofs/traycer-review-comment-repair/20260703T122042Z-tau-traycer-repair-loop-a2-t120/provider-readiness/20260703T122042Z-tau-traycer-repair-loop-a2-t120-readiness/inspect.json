@@ -1,0 +1,1031 @@
+{
+  "agents": {
+    "argv": [
+      "herdr",
+      "agent",
+      "list"
+    ],
+    "parsed": {
+      "id": "cli:agent:list",
+      "result": {
+        "agents": [
+          {
+            "agent": "codex",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/agent-skills",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/agent-skills",
+            "pane_id": "w1:p1",
+            "revision": 0,
+            "tab_id": "w1:t1",
+            "terminal_id": "term_655803a7731441",
+            "workspace_id": "w1"
+          },
+          {
+            "agent": "codex",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w6:p1",
+            "revision": 0,
+            "tab_id": "w6:t1",
+            "terminal_id": "term_6558b6170cc65c",
+            "workspace_id": "w6"
+          },
+          {
+            "agent": "opencode",
+            "agent_session": {
+              "agent": "opencode",
+              "kind": "id",
+              "source": "herdr:opencode",
+              "value": "ses_0e215a2f4ffexsfpDjWxKRCh23"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T134112Z-tau-provider-dag-poc-v2-readiness-opencode",
+            "pane_id": "wK:p6",
+            "revision": 0,
+            "screen_detection_skipped": true,
+            "tab_id": "wK:t2",
+            "terminal_id": "term_6558cd85df3c35f",
+            "workspace_id": "wK"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f1de9-951b-7c61-a5a8-6aaab3c33be5"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T134112Z-tau-provider-dag-poc-v2-readiness-codex",
+            "pane_id": "wK:p5",
+            "revision": 0,
+            "tab_id": "wK:t2",
+            "terminal_id": "term_6558cd859c70c5e",
+            "workspace_id": "wK"
+          },
+          {
+            "agent": "opencode",
+            "agent_session": {
+              "agent": "opencode",
+              "kind": "id",
+              "source": "herdr:opencode",
+              "value": "ses_0e1c1d045ffedGc5xn8A4NuuEN"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T151248Z-tau-planner-orchestrator-poc-readiness-opencode",
+            "pane_id": "wM:p6",
+            "revision": 0,
+            "screen_detection_skipped": true,
+            "tab_id": "wM:t2",
+            "terminal_id": "term_6558e1ff099c065",
+            "workspace_id": "wM"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f1e3d-6e72-7701-a0e2-760338aa7724"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T151248Z-tau-planner-orchestrator-poc-readiness-codex",
+            "pane_id": "wM:p5",
+            "revision": 0,
+            "tab_id": "wM:t2",
+            "terminal_id": "term_6558e1feba75a64",
+            "workspace_id": "wM"
+          },
+          {
+            "agent": "opencode",
+            "agent_session": {
+              "agent": "opencode",
+              "kind": "id",
+              "source": "herdr:opencode",
+              "value": "ses_0e1b1cf70ffeRJqWja7I04kEAx"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T153011Z-tau-planner-orchestrator-visible-poc-readiness-opencode",
+            "pane_id": "wN:p6",
+            "revision": 0,
+            "screen_detection_skipped": true,
+            "tab_id": "wN:t2",
+            "terminal_id": "term_6558e5e1fadf46b",
+            "workspace_id": "wN"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f1e4d-5a7c-7d23-b39e-026f09eec4c0"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T153011Z-tau-planner-orchestrator-visible-poc-readiness-codex",
+            "pane_id": "wN:p5",
+            "revision": 0,
+            "tab_id": "wN:t2",
+            "terminal_id": "term_6558e5e1932c86a",
+            "workspace_id": "wN"
+          },
+          {
+            "agent": "opencode",
+            "agent_session": {
+              "agent": "opencode",
+              "kind": "id",
+              "source": "herdr:opencode",
+              "value": "ses_0e1a657b5ffer3mx4snJJjZTCK"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T154253Z-tau-planner-orchestrator-subagents-visible-proof-readiness-opencode",
+            "pane_id": "wP:p6",
+            "revision": 0,
+            "screen_detection_skipped": true,
+            "tab_id": "wP:t2",
+            "terminal_id": "term_6558e8b97f3eb73",
+            "workspace_id": "wP"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f1e58-fb69-7490-93ca-257e4df73d78"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T154253Z-tau-planner-orchestrator-subagents-visible-proof-readiness-codex",
+            "pane_id": "wP:p5",
+            "revision": 0,
+            "tab_id": "wP:t2",
+            "terminal_id": "term_6558e8b908f8a72",
+            "workspace_id": "wP"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T164233Z-tau-live-provider-readiness-stress-opencode",
+            "pane_id": "wQ:p6",
+            "revision": 0,
+            "tab_id": "wQ:t2",
+            "terminal_id": "term_6558f60f9feb67b",
+            "workspace_id": "wQ"
+          },
+          {
+            "agent": "codex",
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T164233Z-tau-live-provider-readiness-stress-codex",
+            "pane_id": "wQ:p5",
+            "revision": 0,
+            "tab_id": "wQ:t2",
+            "terminal_id": "term_6558f60f171707a",
+            "workspace_id": "wQ"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T164323Z-tau-live-provider-dag-stress-a1-t60-readiness-opencode",
+            "pane_id": "wR:p6",
+            "revision": 0,
+            "tab_id": "wR:t2",
+            "terminal_id": "term_6558f63f37a2881",
+            "workspace_id": "wR"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f1e90-5e1a-7a63-a98d-05e5b9fa8eb3"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T164323Z-tau-live-provider-dag-stress-a1-t60-readiness-codex",
+            "pane_id": "wR:p5",
+            "revision": 0,
+            "tab_id": "wR:t2",
+            "terminal_id": "term_6558f63e9c2ba80",
+            "workspace_id": "wR"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness-opencode",
+            "pane_id": "wS:p6",
+            "revision": 0,
+            "tab_id": "wS:t2",
+            "terminal_id": "term_6558f732886f489",
+            "workspace_id": "wS"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f1e94-436b-7701-9290-ca0d3563a6a4"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness-codex",
+            "pane_id": "wS:p5",
+            "revision": 0,
+            "tab_id": "wS:t2",
+            "terminal_id": "term_6558f731c648088",
+            "workspace_id": "wS"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T165149Z-tau-live-provider-dag-stress-a1-t90-opencode-run-readiness-opencode",
+            "pane_id": "wT:p6",
+            "revision": 0,
+            "tab_id": "wT:t2",
+            "terminal_id": "term_6558f8223b8bb91",
+            "workspace_id": "wT"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f1e98-1918-7c30-a954-700168b468ec"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T165149Z-tau-live-provider-dag-stress-a1-t90-opencode-run-readiness-codex",
+            "pane_id": "wT:p5",
+            "revision": 0,
+            "tab_id": "wT:t2",
+            "terminal_id": "term_6558f8212fe2590",
+            "workspace_id": "wT"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120-readiness-opencode",
+            "pane_id": "wV:p6",
+            "revision": 0,
+            "tab_id": "wV:t2",
+            "terminal_id": "term_6558f9717e4819a",
+            "workspace_id": "wV"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f1e9d-73c9-7421-9ae2-512276da05b6"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120-readiness-codex",
+            "pane_id": "wV:p5",
+            "revision": 0,
+            "tab_id": "wV:t2",
+            "terminal_id": "term_6558f97060ed299",
+            "workspace_id": "wV"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120-readiness-opencode",
+            "pane_id": "wW:p6",
+            "revision": 0,
+            "tab_id": "wW:t2",
+            "terminal_id": "term_6558fa5b2047ea4",
+            "workspace_id": "wW"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f1ea1-31a5-7d11-8816-a4397d049239"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120-readiness-codex",
+            "pane_id": "wW:p5",
+            "revision": 0,
+            "tab_id": "wW:t2",
+            "terminal_id": "term_6558fa59f8455a3",
+            "workspace_id": "wW"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120-readiness-opencode",
+            "pane_id": "wX:p6",
+            "revision": 0,
+            "tab_id": "wX:t2",
+            "terminal_id": "term_6558fb65d097baf",
+            "workspace_id": "wX"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f1ea5-7570-7ac2-8a07-98abf6a8d4ce"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120-readiness-codex",
+            "pane_id": "wX:p5",
+            "revision": 0,
+            "tab_id": "wX:t2",
+            "terminal_id": "term_6558fb6460afcae",
+            "workspace_id": "wX"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120-readiness-opencode",
+            "pane_id": "wY:p6",
+            "revision": 0,
+            "tab_id": "wY:t2",
+            "terminal_id": "term_6558fd00f6820bb",
+            "workspace_id": "wY"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f1eac-0936-7763-a67d-4b9a5192d9d7"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120-readiness-codex",
+            "pane_id": "wY:p5",
+            "revision": 0,
+            "tab_id": "wY:t2",
+            "terminal_id": "term_6558fcff7cdcfba",
+            "workspace_id": "wY"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45-readiness-opencode",
+            "pane_id": "wZ:p6",
+            "revision": 0,
+            "tab_id": "wZ:t2",
+            "terminal_id": "term_6558fe8c778efc5",
+            "workspace_id": "wZ"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f1eb2-5cd4-75d3-89bf-e15191d7cd29"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45-readiness-codex",
+            "pane_id": "wZ:p5",
+            "revision": 0,
+            "tab_id": "wZ:t2",
+            "terminal_id": "term_6558fe8ad0ddac4",
+            "workspace_id": "wZ"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45-readiness-opencode",
+            "pane_id": "w0:p6",
+            "revision": 0,
+            "tab_id": "w0:t2",
+            "terminal_id": "term_6558ff2d3b100ce",
+            "workspace_id": "w0"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f1eb4-ee6e-7d73-a183-d44174eb2ede"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45-readiness-codex",
+            "pane_id": "w0:p5",
+            "revision": 0,
+            "tab_id": "w0:t2",
+            "terminal_id": "term_6558ff2b83935cd",
+            "workspace_id": "w0"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f2275-2c9f-73c0-bdd2-ae759d861c49"
+            },
+            "agent_status": "working",
+            "cwd": "/home/graham/workspace/experiments/chatterbox",
+            "focused": true,
+            "foreground_cwd": "/home/graham/workspace/experiments/chatterbox",
+            "pane_id": "w11:p1",
+            "revision": 0,
+            "tab_id": "w11:t1",
+            "terminal_id": "term_6559e98b5ff98d2",
+            "workspace_id": "w11"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90-readiness-opencode",
+            "pane_id": "w12:p6",
+            "revision": 0,
+            "tab_id": "w12:t2",
+            "terminal_id": "term_6559f6f34dcb0d8",
+            "workspace_id": "w12"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f22ab-ccf4-7b42-a9e4-f531a98184f8"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90-readiness-codex",
+            "pane_id": "w12:p5",
+            "revision": 0,
+            "tab_id": "w12:t2",
+            "terminal_id": "term_6559f6f12ca7dd7",
+            "workspace_id": "w12"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260703T121230Z-tau-traycer-evidence-live-a1-t90-orchestrator",
+            "pane_id": "w13:p8",
+            "revision": 0,
+            "tab_id": "w13:t1",
+            "terminal_id": "term_655b3d92056b9e3",
+            "workspace_id": "w13"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260703T121230Z-tau-traycer-evidence-live-a1-t90-planner",
+            "pane_id": "w13:p7",
+            "revision": 0,
+            "tab_id": "w13:t1",
+            "terminal_id": "term_655b3d90cbab7e2",
+            "workspace_id": "w13"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness-opencode",
+            "pane_id": "w13:p6",
+            "revision": 0,
+            "tab_id": "w13:t2",
+            "terminal_id": "term_655b3d7117d19e1",
+            "workspace_id": "w13"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f27e5-1fbc-77b1-bf43-a13c08b674b3"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness-codex",
+            "pane_id": "w13:p5",
+            "revision": 0,
+            "tab_id": "w13:t2",
+            "terminal_id": "term_655b3d6f75480e0",
+            "workspace_id": "w13"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260703T121603Z-tau-traycer-finalizer-evidence-a1-t90-orchestrator",
+            "pane_id": "w14:p8",
+            "revision": 0,
+            "tab_id": "w14:t1",
+            "terminal_id": "term_655b3e5c442c2ec",
+            "workspace_id": "w14"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260703T121603Z-tau-traycer-finalizer-evidence-a1-t90-planner",
+            "pane_id": "w14:p7",
+            "revision": 0,
+            "tab_id": "w14:t1",
+            "terminal_id": "term_655b3e5afb792eb",
+            "workspace_id": "w14"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260703T121603Z-tau-traycer-finalizer-evidence-a1-t90-readiness-opencode",
+            "pane_id": "w14:p6",
+            "revision": 0,
+            "tab_id": "w14:t2",
+            "terminal_id": "term_655b3e3afa078ea",
+            "workspace_id": "w14"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f27e8-58aa-73c0-bbeb-0c66929043b2"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260703T121603Z-tau-traycer-finalizer-evidence-a1-t90-readiness-codex",
+            "pane_id": "w14:p5",
+            "revision": 0,
+            "tab_id": "w14:t2",
+            "terminal_id": "term_655b3e395165be9",
+            "workspace_id": "w14"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-opencode",
+            "pane_id": "w15:p6",
+            "revision": 0,
+            "tab_id": "w15:t2",
+            "terminal_id": "term_655b3f4571fa9f3",
+            "workspace_id": "w15"
+          },
+          {
+            "agent": "codex",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-codex",
+            "pane_id": "w15:p5",
+            "revision": 0,
+            "tab_id": "w15:t2",
+            "terminal_id": "term_655b3f43c6492f2",
+            "workspace_id": "w15"
+          }
+        ],
+        "type": "agent_list"
+      }
+    },
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\"id\":\"cli:agent:list\",\"result\":{\"agents\":[{\"agent\":\"codex\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/agent-skills\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/agent-skills\",\"pane_id\":\"w1:p1\",\"revision\":0,\"tab_id\":\"w1:t1\",\"terminal_id\":\"term_655803a7731441\",\"workspace_id\":\"w1\"},{\"agent\":\"codex\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w6:p1\",\"revision\":0,\"tab_id\":\"w6:t1\",\"terminal_id\":\"term_6558b6170cc65c\",\"workspace_id\":\"w6\"},{\"agent\":\"opencode\",\"agent_session\":{\"agent\":\"opencode\",\"kind\":\"id\",\"source\":\"herdr:opencode\",\"value\":\"ses_0e215a2f4ffexsfpDjWxKRCh23\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T134112Z-tau-provider-dag-poc-v2-readiness-opencode\",\"pane_id\":\"wK:p6\",\"revision\":0,\"screen_detection_skipped\":true,\"tab_id\":\"wK:t2\",\"terminal_id\":\"term_6558cd85df3c35f\",\"workspace_id\":\"wK\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f1de9-951b-7c61-a5a8-6aaab3c33be5\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T134112Z-tau-provider-dag-poc-v2-readiness-codex\",\"pane_id\":\"wK:p5\",\"revision\":0,\"tab_id\":\"wK:t2\",\"terminal_id\":\"term_6558cd859c70c5e\",\"workspace_id\":\"wK\"},{\"agent\":\"opencode\",\"agent_session\":{\"agent\":\"opencode\",\"kind\":\"id\",\"source\":\"herdr:opencode\",\"value\":\"ses_0e1c1d045ffedGc5xn8A4NuuEN\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T151248Z-tau-planner-orchestrator-poc-readiness-opencode\",\"pane_id\":\"wM:p6\",\"revision\":0,\"screen_detection_skipped\":true,\"tab_id\":\"wM:t2\",\"terminal_id\":\"term_6558e1ff099c065\",\"workspace_id\":\"wM\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f1e3d-6e72-7701-a0e2-760338aa7724\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T151248Z-tau-planner-orchestrator-poc-readiness-codex\",\"pane_id\":\"wM:p5\",\"revision\":0,\"tab_id\":\"wM:t2\",\"terminal_id\":\"term_6558e1feba75a64\",\"workspace_id\":\"wM\"},{\"agent\":\"opencode\",\"agent_session\":{\"agent\":\"opencode\",\"kind\":\"id\",\"source\":\"herdr:opencode\",\"value\":\"ses_0e1b1cf70ffeRJqWja7I04kEAx\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T153011Z-tau-planner-orchestrator-visible-poc-readiness-opencode\",\"pane_id\":\"wN:p6\",\"revision\":0,\"screen_detection_skipped\":true,\"tab_id\":\"wN:t2\",\"terminal_id\":\"term_6558e5e1fadf46b\",\"workspace_id\":\"wN\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f1e4d-5a7c-7d23-b39e-026f09eec4c0\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T153011Z-tau-planner-orchestrator-visible-poc-readiness-codex\",\"pane_id\":\"wN:p5\",\"revision\":0,\"tab_id\":\"wN:t2\",\"terminal_id\":\"term_6558e5e1932c86a\",\"workspace_id\":\"wN\"},{\"agent\":\"opencode\",\"agent_session\":{\"agent\":\"opencode\",\"kind\":\"id\",\"source\":\"herdr:opencode\",\"value\":\"ses_0e1a657b5ffer3mx4snJJjZTCK\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T154253Z-tau-planner-orchestrator-subagents-visible-proof-readiness-opencode\",\"pane_id\":\"wP:p6\",\"revision\":0,\"screen_detection_skipped\":true,\"tab_id\":\"wP:t2\",\"terminal_id\":\"term_6558e8b97f3eb73\",\"workspace_id\":\"wP\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f1e58-fb69-7490-93ca-257e4df73d78\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T154253Z-tau-planner-orchestrator-subagents-visible-proof-readiness-codex\",\"pane_id\":\"wP:p5\",\"revision\":0,\"tab_id\":\"wP:t2\",\"terminal_id\":\"term_6558e8b908f8a72\",\"workspace_id\":\"wP\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T164233Z-tau-live-provider-readiness-stress-opencode\",\"pane_id\":\"wQ:p6\",\"revision\":0,\"tab_id\":\"wQ:t2\",\"terminal_id\":\"term_6558f60f9feb67b\",\"workspace_id\":\"wQ\"},{\"agent\":\"codex\",\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T164233Z-tau-live-provider-readiness-stress-codex\",\"pane_id\":\"wQ:p5\",\"revision\":0,\"tab_id\":\"wQ:t2\",\"terminal_id\":\"term_6558f60f171707a\",\"workspace_id\":\"wQ\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T164323Z-tau-live-provider-dag-stress-a1-t60-readiness-opencode\",\"pane_id\":\"wR:p6\",\"revision\":0,\"tab_id\":\"wR:t2\",\"terminal_id\":\"term_6558f63f37a2881\",\"workspace_id\":\"wR\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f1e90-5e1a-7a63-a98d-05e5b9fa8eb3\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T164323Z-tau-live-provider-dag-stress-a1-t60-readiness-codex\",\"pane_id\":\"wR:p5\",\"revision\":0,\"tab_id\":\"wR:t2\",\"terminal_id\":\"term_6558f63e9c2ba80\",\"workspace_id\":\"wR\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness-opencode\",\"pane_id\":\"wS:p6\",\"revision\":0,\"tab_id\":\"wS:t2\",\"terminal_id\":\"term_6558f732886f489\",\"workspace_id\":\"wS\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f1e94-436b-7701-9290-ca0d3563a6a4\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T164738Z-tau-live-provider-dag-stress-a1-t60-timeoutfix-readiness-codex\",\"pane_id\":\"wS:p5\",\"revision\":0,\"tab_id\":\"wS:t2\",\"terminal_id\":\"term_6558f731c648088\",\"workspace_id\":\"wS\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T165149Z-tau-live-provider-dag-stress-a1-t90-opencode-run-readiness-opencode\",\"pane_id\":\"wT:p6\",\"revision\":0,\"tab_id\":\"wT:t2\",\"terminal_id\":\"term_6558f8223b8bb91\",\"workspace_id\":\"wT\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f1e98-1918-7c30-a954-700168b468ec\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T165149Z-tau-live-provider-dag-stress-a1-t90-opencode-run-readiness-codex\",\"pane_id\":\"wT:p5\",\"revision\":0,\"tab_id\":\"wT:t2\",\"terminal_id\":\"term_6558f8212fe2590\",\"workspace_id\":\"wT\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120-readiness-opencode\",\"pane_id\":\"wV:p6\",\"revision\":0,\"tab_id\":\"wV:t2\",\"terminal_id\":\"term_6558f9717e4819a\",\"workspace_id\":\"wV\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f1e9d-73c9-7421-9ae2-512276da05b6\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T165740Z-tau-live-provider-dag-forced-retry-a2-t120-readiness-codex\",\"pane_id\":\"wV:p5\",\"revision\":0,\"tab_id\":\"wV:t2\",\"terminal_id\":\"term_6558f97060ed299\",\"workspace_id\":\"wV\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120-readiness-opencode\",\"pane_id\":\"wW:p6\",\"revision\":0,\"tab_id\":\"wW:t2\",\"terminal_id\":\"term_6558fa5b2047ea4\",\"workspace_id\":\"wW\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f1ea1-31a5-7d11-8816-a4397d049239\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120-readiness-codex\",\"pane_id\":\"wW:p5\",\"revision\":0,\"tab_id\":\"wW:t2\",\"terminal_id\":\"term_6558fa59f8455a3\",\"workspace_id\":\"wW\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120-readiness-opencode\",\"pane_id\":\"wX:p6\",\"revision\":0,\"tab_id\":\"wX:t2\",\"terminal_id\":\"term_6558fb65d097baf\",\"workspace_id\":\"wX\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f1ea5-7570-7ac2-8a07-98abf6a8d4ce\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120-readiness-codex\",\"pane_id\":\"wX:p5\",\"revision\":0,\"tab_id\":\"wX:t2\",\"terminal_id\":\"term_6558fb6460afcae\",\"workspace_id\":\"wX\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120-readiness-opencode\",\"pane_id\":\"wY:p6\",\"revision\":0,\"tab_id\":\"wY:t2\",\"terminal_id\":\"term_6558fd00f6820bb\",\"workspace_id\":\"wY\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f1eac-0936-7763-a67d-4b9a5192d9d7\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120-readiness-codex\",\"pane_id\":\"wY:p5\",\"revision\":0,\"tab_id\":\"wY:t2\",\"terminal_id\":\"term_6558fcff7cdcfba\",\"workspace_id\":\"wY\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45-readiness-opencode\",\"pane_id\":\"wZ:p6\",\"revision\":0,\"tab_id\":\"wZ:t2\",\"terminal_id\":\"term_6558fe8c778efc5\",\"workspace_id\":\"wZ\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f1eb2-5cd4-75d3-89bf-e15191d7cd29\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T172029Z-tau-live-provider-dag-invalid-reviewer-model-a1-t45-readiness-codex\",\"pane_id\":\"wZ:p5\",\"revision\":0,\"tab_id\":\"wZ:t2\",\"terminal_id\":\"term_6558fe8ad0ddac4\",\"workspace_id\":\"wZ\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45-readiness-opencode\",\"pane_id\":\"w0:p6\",\"revision\":0,\"tab_id\":\"w0:t2\",\"terminal_id\":\"term_6558ff2d3b100ce\",\"workspace_id\":\"w0\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f1eb4-ee6e-7d73-a183-d44174eb2ede\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45-readiness-codex\",\"pane_id\":\"w0:p5\",\"revision\":0,\"tab_id\":\"w0:t2\",\"terminal_id\":\"term_6558ff2b83935cd\",\"workspace_id\":\"w0\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f2275-2c9f-73c0-bdd2-ae759d861c49\"},\"agent_status\":\"working\",\"cwd\":\"/home/graham/workspace/experiments/chatterbox\",\"focused\":true,\"foreground_cwd\":\"/home/graham/workspace/experiments/chatterbox\",\"pane_id\":\"w11:p1\",\"revision\":0,\"tab_id\":\"w11:t1\",\"terminal_id\":\"term_6559e98b5ff98d2\",\"workspace_id\":\"w11\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90-readiness-opencode\",\"pane_id\":\"w12:p6\",\"revision\":0,\"tab_id\":\"w12:t2\",\"terminal_id\":\"term_6559f6f34dcb0d8\",\"workspace_id\":\"w12\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f22ab-ccf4-7b42-a9e4-f531a98184f8\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90-readiness-codex\",\"pane_id\":\"w12:p5\",\"revision\":0,\"tab_id\":\"w12:t2\",\"terminal_id\":\"term_6559f6f12ca7dd7\",\"workspace_id\":\"w12\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T121230Z-tau-traycer-evidence-live-a1-t90-orchestrator\",\"pane_id\":\"w13:p8\",\"revision\":0,\"tab_id\":\"w13:t1\",\"terminal_id\":\"term_655b3d92056b9e3\",\"workspace_id\":\"w13\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T121230Z-tau-traycer-evidence-live-a1-t90-planner\",\"pane_id\":\"w13:p7\",\"revision\":0,\"tab_id\":\"w13:t1\",\"terminal_id\":\"term_655b3d90cbab7e2\",\"workspace_id\":\"w13\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness-opencode\",\"pane_id\":\"w13:p6\",\"revision\":0,\"tab_id\":\"w13:t2\",\"terminal_id\":\"term_655b3d7117d19e1\",\"workspace_id\":\"w13\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f27e5-1fbc-77b1-bf43-a13c08b674b3\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness-codex\",\"pane_id\":\"w13:p5\",\"revision\":0,\"tab_id\":\"w13:t2\",\"terminal_id\":\"term_655b3d6f75480e0\",\"workspace_id\":\"w13\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T121603Z-tau-traycer-finalizer-evidence-a1-t90-orchestrator\",\"pane_id\":\"w14:p8\",\"revision\":0,\"tab_id\":\"w14:t1\",\"terminal_id\":\"term_655b3e5c442c2ec\",\"workspace_id\":\"w14\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T121603Z-tau-traycer-finalizer-evidence-a1-t90-planner\",\"pane_id\":\"w14:p7\",\"revision\":0,\"tab_id\":\"w14:t1\",\"terminal_id\":\"term_655b3e5afb792eb\",\"workspace_id\":\"w14\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T121603Z-tau-traycer-finalizer-evidence-a1-t90-readiness-opencode\",\"pane_id\":\"w14:p6\",\"revision\":0,\"tab_id\":\"w14:t2\",\"terminal_id\":\"term_655b3e3afa078ea\",\"workspace_id\":\"w14\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f27e8-58aa-73c0-bbeb-0c66929043b2\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T121603Z-tau-traycer-finalizer-evidence-a1-t90-readiness-codex\",\"pane_id\":\"w14:p5\",\"revision\":0,\"tab_id\":\"w14:t2\",\"terminal_id\":\"term_655b3e395165be9\",\"workspace_id\":\"w14\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-opencode\",\"pane_id\":\"w15:p6\",\"revision\":0,\"tab_id\":\"w15:t2\",\"terminal_id\":\"term_655b3f4571fa9f3\",\"workspace_id\":\"w15\"},{\"agent\":\"codex\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-codex\",\"pane_id\":\"w15:p5\",\"revision\":0,\"tab_id\":\"w15:t2\",\"terminal_id\":\"term_655b3f43c6492f2\",\"workspace_id\":\"w15\"}],\"type\":\"agent_list\"}}\n"
+  },
+  "manifest": {
+    "agents": {
+      "20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-codex": {
+        "command": "'codex' '--cd' '/home/graham/workspace/experiments/tau'",
+        "last_start_result": {
+          "argv": [
+            "herdr",
+            "agent",
+            "start",
+            "20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-codex",
+            "--cwd",
+            "/home/graham/workspace/experiments/tau",
+            "--workspace",
+            "w15",
+            "--tab",
+            "w15:t2",
+            "--env",
+            "TAU_ROLE=codex",
+            "--env",
+            "TAU_AGENT_NAME=20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-codex",
+            "--env",
+            "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/provider-readiness/20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness/herdr-workstations/20260703T122043Z-tau-traycer-repair-loop-a2-t120-readiness",
+            "--env",
+            "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/provider-readiness/20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness/work-orders/codex.json",
+            "--env",
+            "TAU_PROVIDER_READINESS_RUN_ID=20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness",
+            "--env",
+            "TAU_PROVIDER_READINESS_PROVIDER=codex",
+            "--no-focus",
+            "--",
+            "codex",
+            "--cd",
+            "/home/graham/workspace/experiments/tau"
+          ],
+          "parsed": {
+            "id": "cli:agent:start",
+            "result": {
+              "agent": {
+                "agent_status": "unknown",
+                "cwd": "/home/graham/workspace/experiments/tau",
+                "focused": false,
+                "foreground_cwd": "/home/graham/workspace/experiments/tau",
+                "name": "20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-codex",
+                "pane_id": "w15:p5",
+                "revision": 0,
+                "tab_id": "w15:t2",
+                "terminal_id": "term_655b3f43c6492f2",
+                "workspace_id": "w15"
+              },
+              "argv": [
+                "codex",
+                "--cd",
+                "/home/graham/workspace/experiments/tau"
+              ],
+              "type": "agent_started"
+            }
+          },
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-codex\",\"pane_id\":\"w15:p5\",\"revision\":0,\"tab_id\":\"w15:t2\",\"terminal_id\":\"term_655b3f43c6492f2\",\"workspace_id\":\"w15\"},\"argv\":[\"codex\",\"--cd\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+        },
+        "role": "codex",
+        "started_at": "20260703T122045Z",
+        "tab": "providers",
+        "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/provider-readiness/20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness/work-orders/codex.json"
+      },
+      "20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-opencode": {
+        "command": "'opencode' '/home/graham/workspace/experiments/tau'",
+        "last_start_result": {
+          "argv": [
+            "herdr",
+            "agent",
+            "start",
+            "20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-opencode",
+            "--cwd",
+            "/home/graham/workspace/experiments/tau",
+            "--workspace",
+            "w15",
+            "--tab",
+            "w15:t2",
+            "--env",
+            "TAU_ROLE=opencode",
+            "--env",
+            "TAU_AGENT_NAME=20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-opencode",
+            "--env",
+            "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/provider-readiness/20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness/herdr-workstations/20260703T122043Z-tau-traycer-repair-loop-a2-t120-readiness",
+            "--env",
+            "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/provider-readiness/20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness/work-orders/opencode.json",
+            "--env",
+            "TAU_PROVIDER_READINESS_RUN_ID=20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness",
+            "--env",
+            "TAU_PROVIDER_READINESS_PROVIDER=opencode",
+            "--no-focus",
+            "--split",
+            "right",
+            "--",
+            "opencode",
+            "/home/graham/workspace/experiments/tau"
+          ],
+          "parsed": {
+            "id": "cli:agent:start",
+            "result": {
+              "agent": {
+                "agent_status": "unknown",
+                "cwd": "/home/graham/workspace/experiments/tau",
+                "focused": false,
+                "foreground_cwd": "/home/graham/workspace/experiments/tau",
+                "name": "20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-opencode",
+                "pane_id": "w15:p6",
+                "revision": 0,
+                "tab_id": "w15:t2",
+                "terminal_id": "term_655b3f4571fa9f3",
+                "workspace_id": "w15"
+              },
+              "argv": [
+                "opencode",
+                "/home/graham/workspace/experiments/tau"
+              ],
+              "type": "agent_started"
+            }
+          },
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-opencode\",\"pane_id\":\"w15:p6\",\"revision\":0,\"tab_id\":\"w15:t2\",\"terminal_id\":\"term_655b3f4571fa9f3\",\"workspace_id\":\"w15\"},\"argv\":[\"opencode\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+        },
+        "role": "opencode",
+        "started_at": "20260703T122047Z",
+        "tab": "providers",
+        "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/provider-readiness/20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness/work-orders/opencode.json"
+      }
+    },
+    "created_at": "20260703T122043Z",
+    "cwd": "/home/graham/workspace/experiments/tau",
+    "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/provider-readiness/20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness/herdr-workstations/20260703T122043Z-tau-traycer-repair-loop-a2-t120-readiness/events.jsonl",
+    "kind": "herdr-workstation",
+    "label": "tau-traycer-repair-loop-a2-t120-readiness",
+    "repo": "/home/graham/workspace/experiments/tau",
+    "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/provider-readiness/20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness/herdr-workstations/20260703T122043Z-tau-traycer-repair-loop-a2-t120-readiness",
+    "run_id": "20260703T122043Z-tau-traycer-repair-loop-a2-t120-readiness",
+    "schema_version": 1,
+    "session": "default",
+    "tabs": {
+      "logs": "w15:t3",
+      "providers": "w15:t2",
+      "receipts": "w15:t4"
+    },
+    "updated_at": "20260703T122047Z",
+    "workspace_id": "w15",
+    "worktree": {
+      "base": null,
+      "branch": null,
+      "enabled": false,
+      "path": null,
+      "raw": null
+    }
+  },
+  "panes": {
+    "argv": [
+      "herdr",
+      "pane",
+      "list",
+      "--workspace",
+      "w15"
+    ],
+    "parsed": {
+      "id": "cli:pane:list",
+      "result": {
+        "panes": [
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w15:p1",
+            "revision": 0,
+            "tab_id": "w15:t1",
+            "terminal_id": "term_655b3f41eb50cee",
+            "workspace_id": "w15"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w15:p2",
+            "revision": 0,
+            "tab_id": "w15:t2",
+            "terminal_id": "term_655b3f41ffd4fef",
+            "workspace_id": "w15"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "label": "20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-opencode",
+            "pane_id": "w15:p6",
+            "revision": 0,
+            "tab_id": "w15:t2",
+            "terminal_id": "term_655b3f4571fa9f3",
+            "workspace_id": "w15"
+          },
+          {
+            "agent": "codex",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "label": "20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-codex",
+            "pane_id": "w15:p5",
+            "revision": 0,
+            "tab_id": "w15:t2",
+            "terminal_id": "term_655b3f43c6492f2",
+            "workspace_id": "w15"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w15:p3",
+            "revision": 0,
+            "tab_id": "w15:t3",
+            "terminal_id": "term_655b3f4214e56f0",
+            "workspace_id": "w15"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w15:p4",
+            "revision": 0,
+            "tab_id": "w15:t4",
+            "terminal_id": "term_655b3f422a1d1f1",
+            "workspace_id": "w15"
+          }
+        ],
+        "type": "pane_list"
+      }
+    },
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\"id\":\"cli:pane:list\",\"result\":{\"panes\":[{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w15:p1\",\"revision\":0,\"tab_id\":\"w15:t1\",\"terminal_id\":\"term_655b3f41eb50cee\",\"workspace_id\":\"w15\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w15:p2\",\"revision\":0,\"tab_id\":\"w15:t2\",\"terminal_id\":\"term_655b3f41ffd4fef\",\"workspace_id\":\"w15\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"label\":\"20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-opencode\",\"pane_id\":\"w15:p6\",\"revision\":0,\"tab_id\":\"w15:t2\",\"terminal_id\":\"term_655b3f4571fa9f3\",\"workspace_id\":\"w15\"},{\"agent\":\"codex\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"label\":\"20260703T122042Z-tau-traycer-repair-loop-a2-t120-readiness-codex\",\"pane_id\":\"w15:p5\",\"revision\":0,\"tab_id\":\"w15:t2\",\"terminal_id\":\"term_655b3f43c6492f2\",\"workspace_id\":\"w15\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w15:p3\",\"revision\":0,\"tab_id\":\"w15:t3\",\"terminal_id\":\"term_655b3f4214e56f0\",\"workspace_id\":\"w15\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w15:p4\",\"revision\":0,\"tab_id\":\"w15:t4\",\"terminal_id\":\"term_655b3f422a1d1f1\",\"workspace_id\":\"w15\"}],\"type\":\"pane_list\"}}\n"
+  },
+  "tabs": {
+    "argv": [
+      "herdr",
+      "tab",
+      "list",
+      "--workspace",
+      "w15"
+    ],
+    "parsed": {
+      "id": "cli:tab:list",
+      "result": {
+        "tabs": [
+          {
+            "agent_status": "unknown",
+            "focused": false,
+            "label": "1",
+            "number": 1,
+            "pane_count": 1,
+            "tab_id": "w15:t1",
+            "workspace_id": "w15"
+          },
+          {
+            "agent_status": "idle",
+            "focused": false,
+            "label": "providers",
+            "number": 2,
+            "pane_count": 3,
+            "tab_id": "w15:t2",
+            "workspace_id": "w15"
+          },
+          {
+            "agent_status": "unknown",
+            "focused": false,
+            "label": "logs",
+            "number": 3,
+            "pane_count": 1,
+            "tab_id": "w15:t3",
+            "workspace_id": "w15"
+          },
+          {
+            "agent_status": "unknown",
+            "focused": false,
+            "label": "receipts",
+            "number": 4,
+            "pane_count": 1,
+            "tab_id": "w15:t4",
+            "workspace_id": "w15"
+          }
+        ],
+        "type": "tab_list"
+      }
+    },
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\"id\":\"cli:tab:list\",\"result\":{\"tabs\":[{\"agent_status\":\"unknown\",\"focused\":false,\"label\":\"1\",\"number\":1,\"pane_count\":1,\"tab_id\":\"w15:t1\",\"workspace_id\":\"w15\"},{\"agent_status\":\"idle\",\"focused\":false,\"label\":\"providers\",\"number\":2,\"pane_count\":3,\"tab_id\":\"w15:t2\",\"workspace_id\":\"w15\"},{\"agent_status\":\"unknown\",\"focused\":false,\"label\":\"logs\",\"number\":3,\"pane_count\":1,\"tab_id\":\"w15:t3\",\"workspace_id\":\"w15\"},{\"agent_status\":\"unknown\",\"focused\":false,\"label\":\"receipts\",\"number\":4,\"pane_count\":1,\"tab_id\":\"w15:t4\",\"workspace_id\":\"w15\"}],\"type\":\"tab_list\"}}\n"
+  },
+  "workspace": {
+    "argv": [
+      "herdr",
+      "workspace",
+      "get",
+      "w15"
+    ],
+    "parsed": {
+      "id": "cli:workspace:get",
+      "result": {
+        "type": "workspace_info",
+        "workspace": {
+          "active_tab_id": "w15:t1",
+          "agent_status": "idle",
+          "focused": false,
+          "label": "tau-traycer-repair-loop-a2-t120-readiness",
+          "number": 21,
+          "pane_count": 6,
+          "tab_count": 4,
+          "workspace_id": "w15"
+        }
+      }
+    },
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\"id\":\"cli:workspace:get\",\"result\":{\"type\":\"workspace_info\",\"workspace\":{\"active_tab_id\":\"w15:t1\",\"agent_status\":\"idle\",\"focused\":false,\"label\":\"tau-traycer-repair-loop-a2-t120-readiness\",\"number\":21,\"pane_count\":6,\"tab_count\":4,\"workspace_id\":\"w15\"}}}\n"
+  }
+}

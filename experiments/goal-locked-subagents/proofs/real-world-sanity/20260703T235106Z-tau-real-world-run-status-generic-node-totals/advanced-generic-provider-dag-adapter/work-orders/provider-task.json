@@ -1,0 +1,4 @@
+{
+  "purpose": "Exercise generic DAG -> provider adapter -> visible provider DAG -> generic node receipt.",
+  "schema": "tau.generic_provider_adapter_work_order.v1"
+}

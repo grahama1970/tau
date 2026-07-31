@@ -1,0 +1,17 @@
+{
+  "schema": "tau.persona_dream_story_contract_loop_proof.v1",
+  "mocked": false,
+  "live": true,
+  "issue": 43,
+  "command_loop_status": "WAITING",
+  "command_loop_ok": true,
+  "terminal_agent": "human",
+  "stop_reason": "next_agent_is_human",
+  "validate_story_contract_status": "PASS_STORY_CONTRACT",
+  "pipeline_first_blocker": {
+    "path": "receipts/storyboard_panel_receipt.json | artifacts/panel_001.json | panel_001.json | storyboard.json",
+    "phase": "storyboard_panel",
+    "reason": "missing_artifact"
+  },
+  "story_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/story_contract.json"
+}

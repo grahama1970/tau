@@ -1,0 +1,13 @@
+{
+  "schema": "tau.persona_dream_story_contract_loop_proof.v1",
+  "mocked": false,
+  "live": true,
+  "issue": 43,
+  "command_loop_status": "BLOCKED",
+  "command_loop_ok": false,
+  "terminal_agent": "story-writer",
+  "stop_reason": "command_failed",
+  "validate_story_contract_status": null,
+  "pipeline_first_blocker": null,
+  "story_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/story_contract.json"
+}

@@ -1,0 +1,46 @@
+        periments/goal-locked-subagents
+        /proofs/provider-dag-poc/202607
+        01T134112Z-tau-provider-dag-poc
+        -v2/receipts/attempt-01-coder.j
+        son",
+    17 +    "sed -n '1,20p' message.txt
+        "
+    18    ],
+
+───────────────────────────────────────
+
+• Status/Phase: PASS, coder node
+  complete.
+
+  Now: Modified only target file:
+  /home/graham/workspace/experiments/
+  tau/experiments/goal-locked-
+  subagents/proofs/provider-dag-
+  poc/20260701T134112Z-tau-provider-
+  dag-poc-v2/scratch-worktree/
+  message.txt
+
+  Receipt written:
+  /home/graham/workspace/experiments/
+  tau/experiments/goal-locked-
+  subagents/proofs/provider-dag-
+  poc/20260701T134112Z-tau-provider-
+  dag-poc-v2/receipts/attempt-01-
+  coder.json
+
+  Evidence: message.txt now contains
+  exactly:
+  Completed implementation for the Tau
+  provider DAG POC coder node.
+
+  Receipt JSON validation command
+  returned true for schema/status/
+  verdict/changed file count.
+
+  mocked: no
+  live: no
+
+
+› Summarize recent commits
+
+  gpt-5.5 medium · ~/workspace/experim…

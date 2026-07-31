@@ -1,0 +1,24 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "tau",
+    "handoff-agent-adapter",
+    "--result-status",
+    "PASS",
+    "--result-summary",
+    "Reviewer node consumed the coder handoff and accepted the bounded creator-reviewer route.",
+    "--next-agent",
+    "human",
+    "--next-executor",
+    "human",
+    "--next-reason",
+    "Human receives the terminal sanity receipt.",
+    "--required-evidence",
+    "Command-loop receipt shows coder then reviewer selected by Tau.",
+    "--stop-condition",
+    "Stop at human with non-mocked command-loop evidence."
+  ],
+  "cwd": ".",
+  "timeout_s": 30
+}

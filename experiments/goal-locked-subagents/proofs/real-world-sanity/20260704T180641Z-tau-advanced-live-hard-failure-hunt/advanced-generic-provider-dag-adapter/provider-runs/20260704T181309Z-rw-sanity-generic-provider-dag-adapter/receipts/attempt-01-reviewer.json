@@ -1,0 +1,24 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T180641Z-tau-advanced-live-hard-failure-hunt/advanced-generic-provider-dag-adapter/provider-runs/20260704T181309Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work order attempt-01-reviewer.json",
+    "read target_file scratch-worktree/message.txt",
+    "read coder receipt attempt-01-coder.json",
+    "verify scratch worktree exists",
+    "verify receipts directory exists"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T180641Z-tau-advanced-live-hard-failure-hunt/advanced-generic-provider-dag-adapter/provider-runs/20260704T181309Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T180641Z-tau-advanced-live-hard-failure-hunt/advanced-generic-provider-dag-adapter/provider-runs/20260704T181309Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file message.txt has no TODO line (contains completed implementation message). Coder receipt is schema-valid tau.provider_dag_node_receipt.v1 with all required fields, correct paths, no errors. force_revise is false.",
+  "errors": [],
+  "policy_exceptions": []
+}

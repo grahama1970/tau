@@ -1,0 +1,37 @@
+80339Z-tau-provider-li
+ve-invalid-model-hard-
+sanity/advanced-provid
+er-runs/invalid-model/
+20260704T180340Z-rw-sa
+nity-provider-dag-inva
+lid-model/dag-spec.jso
+n\nplanner_receipt: /h
+ome/graham/workspace/e
+xperiments/tau/experim
+ents/goal-locked-subag
+ents/proofs/real-world
+-sanity/20260704T18033
+9Z-tau-provider-live-i
+nvalid-model-hard-sani
+ty/advanced-provider-r
+uns/invalid-model/2026
+0704T180340Z-rw-sanity
+-provider-dag-invalid-
+model/planner-receipt.
+json\nfinal_receipt: /
+home/graham/workspace/
+experiments/tau/experi
+ments/goal-locked-suba
+gents/proofs/real-worl
+d-sanity/20260704T1803
+39Z-tau-provider-live-
+invalid-model-hard-san
+ity/advanced-provider-
+runs/invalid-model/202
+60704T180340Z-rw-sanit
+y-provider-dag-invalid
+-model/run-receipt.jso
+n\ncanonical truth: Ta
+u JSON receipts; this
+pane is human-visible
+telemetry.\n

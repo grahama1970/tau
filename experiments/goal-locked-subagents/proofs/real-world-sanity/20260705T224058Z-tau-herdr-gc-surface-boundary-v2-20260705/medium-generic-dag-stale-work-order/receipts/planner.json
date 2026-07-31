@@ -1,0 +1,14 @@
+{
+  "artifacts": [],
+  "commands_run": [
+    "preexisting stale planner receipt for resume guard proof"
+  ],
+  "errors": [],
+  "handoff_summary": "planner receipt was written before the work order changed",
+  "node_id": "planner",
+  "policy_exceptions": [],
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": "c8d759de94de3cdf1b332913b7a8e75a242acf7e95e5d3c28246b39d0e383708"
+}

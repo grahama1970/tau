@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/advanced-provider-runs/repair-loop/20260703T194930Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/advanced-provider-runs/repair-loop/20260703T194930Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/advanced-provider-runs/repair-loop/20260703T194930Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-coder.json",
+    "pwd && ls -la && sed -n '1,120p' message.txt",
+    "find . -maxdepth 2 -type f -print",
+    "test -e receipts/attempt-01-coder.json; printf 'exists=%s\\n' \"$?\"",
+    "sed -n '1,120p' message.txt",
+    "jq . receipts/attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/advanced-provider-runs/repair-loop/20260703T194930Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

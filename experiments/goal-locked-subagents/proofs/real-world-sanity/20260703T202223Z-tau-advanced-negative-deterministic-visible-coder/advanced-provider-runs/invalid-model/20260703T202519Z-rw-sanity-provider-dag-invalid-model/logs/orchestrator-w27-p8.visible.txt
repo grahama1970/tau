@@ -1,0 +1,37 @@
+ced-negative-determini
+stic-visible-coder/adv
+anced-provider-runs/in
+valid-model/20260703T2
+02519Z-rw-sanity-provi
+der-dag-invalid-model/
+dag-spec.json\nplanner
+_receipt: /home/graham
+/workspace/experiments
+/tau/experiments/goal-
+locked-subagents/proof
+s/real-world-sanity/20
+260703T202223Z-tau-adv
+anced-negative-determi
+nistic-visible-coder/a
+dvanced-provider-runs/
+invalid-model/20260703
+T202519Z-rw-sanity-pro
+vider-dag-invalid-mode
+l/planner-receipt.json
+\nfinal_receipt: /home
+/graham/workspace/expe
+riments/tau/experiment
+s/goal-locked-subagent
+s/proofs/real-world-sa
+nity/20260703T202223Z-
+tau-advanced-negative-
+deterministic-visible-
+coder/advanced-provide
+r-runs/invalid-model/2
+0260703T202519Z-rw-san
+ity-provider-dag-inval
+id-model/run-receipt.j
+son\ncanonical truth:
+Tau JSON receipts; thi
+s pane is human-visibl
+e telemetry.\n

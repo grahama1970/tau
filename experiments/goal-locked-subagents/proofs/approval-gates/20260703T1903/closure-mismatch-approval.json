@@ -1,0 +1,15 @@
+{
+  "action": "working_tree_mutation",
+  "approved": true,
+  "evidence": [
+    "experiments/goal-locked-subagents/proofs/generic-dag-runner/cli-smoke/run-receipt.json"
+  ],
+  "human": {
+    "id": "human:graham"
+  },
+  "reason": "Approve bounded scratch mutation proof only; ticket closure remains disabled.",
+  "schema": "tau.human_approval_packet.v1",
+  "target": {
+    "id": "scratch-generic-dag-run"
+  }
+}

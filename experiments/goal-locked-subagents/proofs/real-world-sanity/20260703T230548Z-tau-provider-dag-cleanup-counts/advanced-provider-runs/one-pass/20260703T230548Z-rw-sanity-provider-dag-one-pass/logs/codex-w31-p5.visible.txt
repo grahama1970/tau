@@ -1,0 +1,38 @@
+  └ Read message.txt
+
+• Ran python3 - <<'PY'
+  │ import json
+  │ from pathlib import Path
+  │ … +46 lines
+  └ receipt_ok target_ok
+    changed_files=1 artifacts=1
+    errors=0 policy_exceptions=0
+
+• Ran python3 -m json.tool /home/
+  │ graham/workspace/experiments/
+  │ tau/experiments/
+  │ … +11 lines
+  └ {
+    … +29 lines (ctrl + t to view
+    transcript)
+    scratch-worktree/message.txt"
+        ],
+
+──────────────────────────────────────
+
+• The checks passed: the target has
+  the completed message, and the
+  receipt parsed with changed_files=1,
+  artifacts=1, errors=0,
+  policy_exceptions=0. I’m adding the
+  verification commands to the
+  receipt’s command list so the
+  handoff records the proof commands
+  too.
+
+• Working (1m 06s • esc to interrupt)
+
+
+› Summarize recent commits
+
+  gpt-5.5 medium · ~/workspace/experi…

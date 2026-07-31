@@ -1,0 +1,151 @@
+{
+  "check_count": 1,
+  "checks": [
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 0,
+          "receipt_summary": {
+            "error_count": 0,
+            "errors": [],
+            "indexed_receipt_count": 22,
+            "live": false,
+            "mocked": false,
+            "ok": true,
+            "output_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T112747Z-tau-proof-index-sanity-20260706/medium-proof-index/proof-index.jsonl",
+            "output_sha256": "sha256:38961268b9701f875b7e2b468dc7fbff344f5b18395f2cb1e720af43ce63a0f5",
+            "provider_live": false,
+            "schema": "tau.proof_index_build_receipt.v1",
+            "schema_counts": {
+              "tau.agent_handoff_projection_receipt.v1": 6,
+              "tau.approval_gate_receipt.v1": 5,
+              "tau.dag_run_receipt.v1": 1,
+              "tau.dag_signal_receipt.v1": 1,
+              "tau.generic_dag_node_receipt.v1": 2,
+              "tau.github_projection_redaction_receipt.v1": 3,
+              "tau.orchestration_evidence_receipt.v1": 1,
+              "tau.provider_pane_run_receipt.v1": 1,
+              "tau.provider_readiness_run_receipt.v1": 2
+            },
+            "status": "PASS",
+            "status_counts": {
+              "BLOCKED": 1,
+              "PASS": 21
+            },
+            "warning_count": 0
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T112747Z-tau-proof-index-sanity-20260706/logs/medium.proof_index_build.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T112747Z-tau-proof-index-sanity-20260706/logs/medium.proof_index_build.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "medium.proof_index_build",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "proof-index",
+        "build",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T112747Z-tau-proof-index-sanity-20260706",
+        "--out",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T112747Z-tau-proof-index-sanity-20260706/medium-proof-index/proof-index.jsonl",
+        "--receipt",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T112747Z-tau-proof-index-sanity-20260706/medium-proof-index/proof-index-build-receipt.json"
+      ],
+      "completed_at": "2026-07-06T11:27:48Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": null,
+      "level": "medium",
+      "live": false,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T112747Z-tau-proof-index-sanity-20260706/medium-proof-index/proof-index-build-receipt.json",
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau builds a machine-readable proof index over the current sanity run directory and writes a proof-index build receipt.",
+      "receipt_summary": {
+        "error_count": 0,
+        "errors": [],
+        "indexed_receipt_count": 22,
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "output_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T112747Z-tau-proof-index-sanity-20260706/medium-proof-index/proof-index.jsonl",
+        "output_sha256": "sha256:38961268b9701f875b7e2b468dc7fbff344f5b18395f2cb1e720af43ce63a0f5",
+        "provider_live": false,
+        "schema": "tau.proof_index_build_receipt.v1",
+        "schema_counts": {
+          "tau.agent_handoff_projection_receipt.v1": 6,
+          "tau.approval_gate_receipt.v1": 5,
+          "tau.dag_run_receipt.v1": 1,
+          "tau.dag_signal_receipt.v1": 1,
+          "tau.generic_dag_node_receipt.v1": 2,
+          "tau.github_projection_redaction_receipt.v1": 3,
+          "tau.orchestration_evidence_receipt.v1": 1,
+          "tau.provider_pane_run_receipt.v1": 1,
+          "tau.provider_readiness_run_receipt.v1": 2
+        },
+        "status": "PASS",
+        "status_counts": {
+          "BLOCKED": 1,
+          "PASS": 21
+        },
+        "warning_count": 0
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-06T11:27:47Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T112747Z-tau-proof-index-sanity-20260706/logs/medium.proof_index_build.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T112747Z-tau-proof-index-sanity-20260706/logs/medium.proof_index_build.stdout.txt",
+      "timeout_seconds": 120
+    }
+  ],
+  "completed_at": "2026-07-06T11:27:48Z",
+  "failed_check_count": 0,
+  "level_counts": {
+    "medium": {
+      "PASS": 1
+    }
+  },
+  "live": "mixed",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "production browser/chat UI rendering",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau CLI and command-spec surfaces execute from the local checkout",
+      "Tau can run a real local handoff command loop",
+      "Tau planner, generic DAG runner, and deterministic scheduler stress surfaces emit non-mocked receipts",
+      "Tau can allocate visible provider panes and run live provider DAG checks when advanced checks pass",
+      "Tau can run Surf-backed browser proof checks when advanced browser checks pass",
+      "Tau fail-closed negative controls preserve typed BLOCKED receipts"
+    ]
+  },
+  "provider_live": false,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T112747Z-tau-proof-index-sanity-20260706",
+  "run_id": "20260706T112747Z-tau-proof-index-sanity-20260706",
+  "schema": "tau.real_world_sanity_suite_receipt.v1",
+  "selected_levels": [
+    "medium"
+  ],
+  "status": "PASS",
+  "timestamp": "2026-07-06T11:27:48Z"
+}

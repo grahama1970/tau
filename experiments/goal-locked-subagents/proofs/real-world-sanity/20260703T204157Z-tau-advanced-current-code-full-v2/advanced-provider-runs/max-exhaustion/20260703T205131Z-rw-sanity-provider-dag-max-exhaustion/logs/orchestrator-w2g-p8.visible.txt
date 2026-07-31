@@ -1,0 +1,37 @@
+nity/20260703T204157Z-
+tau-advanced-current-c
+ode-full-v2/advanced-p
+rovider-runs/max-exhau
+stion/20260703T205131Z
+-rw-sanity-provider-da
+g-max-exhaustion/dag-s
+pec.json\nplanner_rece
+ipt: /home/graham/work
+space/experiments/tau/
+experiments/goal-locke
+d-subagents/proofs/rea
+l-world-sanity/2026070
+3T204157Z-tau-advanced
+-current-code-full-v2/
+advanced-provider-runs
+/max-exhaustion/202607
+03T205131Z-rw-sanity-p
+rovider-dag-max-exhaus
+tion/planner-receipt.j
+son\nfinal_receipt: /h
+ome/graham/workspace/e
+xperiments/tau/experim
+ents/goal-locked-subag
+ents/proofs/real-world
+-sanity/20260703T20415
+7Z-tau-advanced-curren
+t-code-full-v2/advance
+d-provider-runs/max-ex
+haustion/20260703T2051
+31Z-rw-sanity-provider
+-dag-max-exhaustion/ru
+n-receipt.json\ncanoni
+cal truth: Tau JSON re
+ceipts; this pane is h
+uman-visible telemetry
+.\n

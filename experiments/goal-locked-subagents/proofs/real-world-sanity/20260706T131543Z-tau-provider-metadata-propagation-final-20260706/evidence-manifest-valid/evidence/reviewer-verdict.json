@@ -1,0 +1,7 @@
+{
+  "goal_hash": "sha256:rw-sanity-evidence-manifest-valid",
+  "kind": "reviewer_verdict",
+  "reviewed_node_id": "coder",
+  "schema": "tau.reviewer_verdict.v1",
+  "verdict": "PASS"
+}

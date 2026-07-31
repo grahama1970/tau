@@ -1,0 +1,36 @@
+ceipts/
+attempt
+-01-rev
+iewer.j
+son
+Wrote f
+ile suc
+cessful
+ly.
+
+Both fi
+les pas
+s revie
+w. The
+TODO li
+ne is g
+one fro
+m `mess
+age.txt
+`, and
+the cod
+er rece
+ipt is
+schema-
+valid w
+ith all
+ requir
+ed fiel
+ds. `fo
+rce_rev
+ise` is
+ `false
+`, so v
+erdict
+is PASS
+.

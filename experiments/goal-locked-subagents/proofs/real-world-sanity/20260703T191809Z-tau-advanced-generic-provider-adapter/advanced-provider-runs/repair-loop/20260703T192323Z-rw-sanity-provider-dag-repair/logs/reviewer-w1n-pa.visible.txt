@@ -1,0 +1,36 @@
+6 Jul  3 1
+5:24 ..
+-rw-rw-r--
+ 1 graham
+graham  51
+4 Jul  3 1
+5:25 messa
+ge.txt
+
+← Write ex
+periments/
+goal-locke
+d-subagent
+s/proofs/r
+eal-world-
+sanity/202
+60703T1918
+09Z-tau-ad
+vanced-gen
+eric-provi
+der-adapte
+r/advanced
+-provider-
+runs/repai
+r-loop/202
+60703T1923
+23Z-rw-san
+ity-provid
+er-dag-rep
+air/receip
+ts/attempt
+-02-review
+er.json
+Wrote file
+ successfu
+lly.

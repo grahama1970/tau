@@ -1,0 +1,21 @@
+18Z-rw-sanity-provider-dag-invalid-model\nrun_dir: /home/gr
+aham/workspace/experiments/tau/experiments/goal-locked-suba
+gents/proofs/real-world-sanity/20260705T224918Z-tau-provide
+r-herdr-surface-summary-20260705/advanced-provider-runs/inv
+alid-model/20260705T224918Z-rw-sanity-provider-dag-invalid-
+model\ndag_spec: /home/graham/workspace/experiments/tau/exp
+eriments/goal-locked-subagents/proofs/real-world-sanity/202
+60705T224918Z-tau-provider-herdr-surface-summary-20260705/a
+dvanced-provider-runs/invalid-model/20260705T224918Z-rw-san
+ity-provider-dag-invalid-model/dag-spec.json\nplanner_recei
+pt: /home/graham/workspace/experiments/tau/experiments/goal
+-locked-subagents/proofs/real-world-sanity/20260705T224918Z
+-tau-provider-herdr-surface-summary-20260705/advanced-provi
+der-runs/invalid-model/20260705T224918Z-rw-sanity-provider-
+dag-invalid-model/planner-receipt.json\nfinal_receipt: /hom
+e/graham/workspace/experiments/tau/experiments/goal-locked-
+subagents/proofs/real-world-sanity/20260705T224918Z-tau-pro
+vider-herdr-surface-summary-20260705/advanced-provider-runs
+/invalid-model/20260705T224918Z-rw-sanity-provider-dag-inva
+lid-model/run-receipt.json\ncanonical truth: Tau JSON recei
+pts; this pane is human-visible telemetry.\n

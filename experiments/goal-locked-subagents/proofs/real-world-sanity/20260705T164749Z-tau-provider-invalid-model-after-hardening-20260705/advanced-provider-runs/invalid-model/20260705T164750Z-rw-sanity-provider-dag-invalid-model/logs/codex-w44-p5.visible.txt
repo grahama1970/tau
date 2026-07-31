@@ -1,0 +1,31 @@
+⚠ Heads up, you have less than
+  5% of your 5h limit left.
+  Run /status for a breakdown.
+
+╭──────────────────────────────
+──────────────────╮
+│ >_ OpenAI Codex (v0.142.5)
+│
+│
+│
+│ model:       gpt-5.5
+medium   /model to change │
+│ directory:   ~/…/tau
+│
+│ permissions: YOLO mode
+│
+╰──────────────────────────────
+──────────────────╯
+
+  Tip: Use /copy or press
+  Ctrl+O to copy the latest
+  agent response as Markdown.
+
+• You have 2 usage limit resets
+available. Run /usage to use
+one.
+
+
+› Run /review on my current ch
+
+  gpt-5.5 medium · ~/workspace…

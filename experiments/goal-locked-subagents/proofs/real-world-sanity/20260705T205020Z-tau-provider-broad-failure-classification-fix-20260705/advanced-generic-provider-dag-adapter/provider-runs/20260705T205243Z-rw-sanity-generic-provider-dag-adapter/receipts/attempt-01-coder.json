@@ -1,0 +1,36 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T205243Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:681da0dfbefef3aae8dc106e18368e81e71ea7afce81aa54db9b93b737bf05d5",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "workspace_id": "w52",
+  "pane_id": "w52:p5",
+  "terminal_id": "term_655e356f76775578",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T205243Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T205243Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "9a4dc66844fc100b06d1acc23fc83468bb1aaf36f5607da933fc51827ad98e52",
+  "work_order_sha256": "03b451f8602747422e4d2c2ef56542f8c5bd88cdd0996ac665bdc272f36e6202",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T205243Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T205243Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "sed -n '1,240p' /home/graham/workspace/experiments/agent-skills/skills/tau/SKILL.md",
+    "sed -n '241,520p' /home/graham/workspace/experiments/agent-skills/skills/tau/SKILL.md",
+    "sed -n '521,920p' /home/graham/workspace/experiments/agent-skills/skills/tau/SKILL.md",
+    "sed -n '1,240p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T205243Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+    "sed -n '1,120p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T205243Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt",
+    "test -e /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T205243Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json && sed -n '1,160p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T205243Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json || true",
+    "ls -la /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T205243Z-rw-sanity-generic-provider-dag-adapter/receipts",
+    "sha256sum /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T205243Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T205243Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T205020Z-tau-provider-broad-failure-classification-fix-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T205243Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in the target file with a completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

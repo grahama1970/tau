@@ -1,0 +1,32 @@
+{
+  "schema": "persona_dream.script_contract_work_order.v1",
+  "created_at": "2026-07-03T22:55:30.343Z",
+  "status": "READY",
+  "purpose": "Create Phase 06 screenplay script JSON from accepted persona-dream artifacts.",
+  "source_paths": {
+    "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260703T225530Z/run",
+    "prompt_bundle": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260703T225530Z/prompt-bundle"
+  },
+  "provider_intent": {
+    "writer": {
+      "agent": "script-writer",
+      "model": "gpt-5.5",
+      "reasoning_effort": "medium",
+      "auth": "codex-oauth"
+    },
+    "reviewer": {
+      "agent": "script-reviewer",
+      "provider": "chutes",
+      "model": "moonshotai/Kimi-K2.6-TEE"
+    },
+    "max_iterations": 2
+  },
+  "prompt_payload_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260703T225530Z/prompt-bundle/prompt-payload.json",
+  "required_outputs": [
+    "script_contract.json",
+    "timed_transcript.json",
+    "timed_beats.json",
+    "entity_environment_script_table.json",
+    "script-reviewer-verdict.json"
+  ]
+}

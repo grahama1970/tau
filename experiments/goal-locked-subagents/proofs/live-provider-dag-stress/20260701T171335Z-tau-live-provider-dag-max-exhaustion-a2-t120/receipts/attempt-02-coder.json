@@ -1,0 +1,30 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120/work-orders/attempt-02-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "sed -n '1,240p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120/work-orders/attempt-02-coder.json",
+    "pwd",
+    "sed -n '1,120p' message.txt",
+    "find . -maxdepth 2 -type f -print",
+    "apply_patch: replace prior generic completion line in message.txt",
+    "sed -n '1,120p' message.txt",
+    "find . -maxdepth 2 -type f -print",
+    "test -e /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120/receipts/attempt-02-coder.json; printf '%s\\n' $?",
+    "python3 -m json.tool /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120/receipts/attempt-02-coder.json >/dev/null",
+    "find . -maxdepth 2 -type f -print | wc -l"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the generic completion line with a substantive provider DAG POC handoff message naming node_id=coder, provider_id=codex, the coder-to-reviewer edge, and PASS edge status.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,37 @@
+ents/tau/experime
+nts/goal-locked-s
+ubagents/proofs/r
+eal-world-sanity/
+20260703T221207Z-
+tau-generic-provi
+der-adapter-resum
+e-v3/advanced-gen
+eric-provider-dag
+-adapter/provider
+-runs/20260703T22
+1208Z-rw-sanity-g
+eneric-provider-d
+ag-adapter/planne
+r-receipt.json\nf
+inal_receipt: /ho
+me/graham/workspa
+ce/experiments/ta
+u/experiments/goa
+l-locked-subagent
+s/proofs/real-wor
+ld-sanity/2026070
+3T221207Z-tau-gen
+eric-provider-ada
+pter-resume-v3/ad
+vanced-generic-pr
+ovider-dag-adapte
+r/provider-runs/2
+0260703T221208Z-r
+w-sanity-generic-
+provider-dag-adap
+ter/run-receipt.j
+son\ncanonical tr
+uth: Tau JSON rec
+eipts; this pane
+is human-visible
+telemetry.\n

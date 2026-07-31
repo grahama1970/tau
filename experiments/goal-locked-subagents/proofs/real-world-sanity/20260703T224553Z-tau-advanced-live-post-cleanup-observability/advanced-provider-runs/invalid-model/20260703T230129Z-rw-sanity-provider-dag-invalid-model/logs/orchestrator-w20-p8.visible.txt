@@ -1,0 +1,37 @@
+g-spec.json\nplann
+er_receipt: /home/
+graham/workspace/e
+xperiments/tau/exp
+eriments/goal-lock
+ed-subagents/proof
+s/real-world-sanit
+y/20260703T224553Z
+-tau-advanced-live
+-post-cleanup-obse
+rvability/advanced
+-provider-runs/inv
+alid-model/2026070
+3T230129Z-rw-sanit
+y-provider-dag-inv
+alid-model/planner
+-receipt.json\nfin
+al_receipt: /home/
+graham/workspace/e
+xperiments/tau/exp
+eriments/goal-lock
+ed-subagents/proof
+s/real-world-sanit
+y/20260703T224553Z
+-tau-advanced-live
+-post-cleanup-obse
+rvability/advanced
+-provider-runs/inv
+alid-model/2026070
+3T230129Z-rw-sanit
+y-provider-dag-inv
+alid-model/run-rec
+eipt.json\ncanonic
+al truth: Tau JSON
+ receipts; this pa
+ne is human-visibl
+e telemetry.\n

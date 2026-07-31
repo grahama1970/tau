@@ -1,0 +1,27 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-generic-provider-dag-adapter/provider-runs/20260703T200339Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-generic-provider-dag-adapter/provider-runs/20260703T200339Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "pwd",
+    "sed -n '1,240p' experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-generic-provider-dag-adapter/provider-runs/20260703T200339Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+    "sed -n '1,80p' message.txt",
+    "ls -la",
+    "sed -n '1,40p' message.txt",
+    "python3 -m json.tool /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-generic-provider-dag-adapter/provider-runs/20260703T200339Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json",
+    "python3 - <<'PY'\nimport json\nfrom pathlib import Path\nbase = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-generic-provider-dag-adapter/provider-runs/20260703T200339Z-rw-sanity-generic-provider-dag-adapter')\nreceipt = json.loads((base/'receipts/attempt-01-coder.json').read_text())\nwork = json.loads((base/'work-orders/attempt-01-coder.json').read_text())\nassert receipt['schema'] == 'tau.provider_dag_node_receipt.v1'\nassert receipt['node_id'] == 'coder'\nassert receipt['provider_id'] == 'codex'\nassert receipt['attempt'] == work['attempt'] == 1\nassert receipt['status'] == receipt['verdict'] == 'PASS'\nassert receipt['work_order_path'] == str(base/'work-orders/attempt-01-coder.json')\nassert receipt['changed_files'] == [work['target_file']]\nassert receipt['artifacts'] == [work['target_file']]\nassert receipt['errors'] == []\nassert receipt['policy_exceptions'] == []\nprint('receipt-ok')\nPY"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-generic-provider-dag-adapter/provider-runs/20260703T200339Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

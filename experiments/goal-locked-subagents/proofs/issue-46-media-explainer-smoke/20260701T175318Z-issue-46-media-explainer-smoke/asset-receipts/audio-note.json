@@ -1,0 +1,32 @@
+{
+  "asset_id": "audio-note",
+  "description": "Prompt-ready audio description for audio-note from file:///fixtures/note.wav.",
+  "errors": [],
+  "evidence": {
+    "delay_ms": 20,
+    "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-46-media-explainer-smoke/20260701T175318Z-issue-46-media-explainer-smoke/asset-receipts/audio-note.json"
+  },
+  "filepath": null,
+  "live": false,
+  "media_type": "audio",
+  "memory_persistence": {
+    "mocked_description_not_persisted_as_live_truth": true,
+    "receipt": null,
+    "status": "SKIPPED_PLACEHOLDER"
+  },
+  "mocked": true,
+  "model_backend": "deterministic_audio_caption_contract_stub",
+  "required": true,
+  "run_id": "20260701T175318Z-issue-46-media-explainer-smoke",
+  "schema": "tau.media_explainer_asset_receipt.v1",
+  "source_uri": "file:///fixtures/note.wav",
+  "status": "READY",
+  "subagent": "audio-media-explainer",
+  "tags": [
+    "audio",
+    "prompt-ready",
+    "deterministic-contract"
+  ],
+  "timestamp": "2026-07-01T17:53:18Z",
+  "tool_path": "audio_caption_service"
+}

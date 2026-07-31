@@ -1,0 +1,64 @@
+{
+  "acceptance_criteria": [
+    "story_contract.status is one of ACCEPTED_AUTOMATED, ACCEPTED_MANUAL, PASS_STORY_CONTRACT, or STORY_READY",
+    "story contract has review/regeneration evidence tied to the current upstream idea/memory revision",
+    "downstream artifacts are either regenerated from the accepted story or explicitly marked stale",
+    "validate-story-contract returns PASS_STORY_CONTRACT",
+    "validate-run-root --direction backward advances to the next blocker"
+  ],
+  "blocking_validation": {
+    "command": "./run.sh validate-story-contract <story_contract> --run-root <run_root> --json",
+    "first_blocker": {
+      "path": "story_contract.json | artifacts/story_contract.json",
+      "phase": "story_contract",
+      "reason": "missing_artifact"
+    },
+    "status": "BLOCKED"
+  },
+  "created_at": "2026-06-29T20:51:01Z",
+  "created_by": "project_agent",
+  "current_contract": {
+    "artifact_id": null,
+    "exists": false,
+    "schema": null,
+    "speaking_characters": [],
+    "status": "MISSING",
+    "story_chars": 0,
+    "target_duration_s": null
+  },
+  "exercised": "local story contract parse, story contract validator execution, source path packaging, review handoff policy",
+  "forbidden_actions": [
+    "mark_story_accepted_without_review",
+    "rewrite_status_only_to_bypass_gate",
+    "rewrite_panel_or_provider_receipts_to_hide_story_staleness",
+    "accept_downstream_panels_from_stale_story",
+    "direct_kling_submit",
+    "direct_paid_provider_call"
+  ],
+  "live": "no",
+  "mocked": "no",
+  "owner_subagent": "dreamer",
+  "purpose": "Review or regenerate the story contract from the current upstream idea/memory revision before any downstream storyboard, panel, provider, or Kling claim.",
+  "required_default_action": {
+    "steps": [
+      "Re-read the current idea, memory residue, story contract, SKILL.md, and PROJECT_KNOWLEDGE.md.",
+      "If the current story is semantically acceptable, write a reviewed accepted story contract plus review receipt; do not edit only the status field without review evidence.",
+      "If the story is not acceptable or upstream revisions are stale, regenerate the story contract from the current upstream idea/memory revision.",
+      "Mark downstream storyboard, panel, provider packet, panel source, and report artifacts stale unless a migration receipt proves they still derive from the accepted story.",
+      "Run validate-story-contract, then validate-run-root --direction backward, and report the next first blocker."
+    ],
+    "summary": "Run a bounded story review/regeneration pass before any storyboard or panel acceptance."
+  },
+  "run_id": "dream-run",
+  "schema": "persona_dream.story_contract_work_order.v1",
+  "source_paths": {
+    "dream_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/dream_packet.json",
+    "dreamer_agent_contract": "/home/graham/workspace/experiments/agent-skills/agents/dreamer/AGENTS.md",
+    "persona_dream_skill_contract": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/SKILL.md",
+    "project_knowledge": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/PROJECT_KNOWLEDGE.md",
+    "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+    "story_contract": "missing:story_contract.json | artifacts/story_contract.json"
+  },
+  "status": "WORK_ORDER_READY_STORY_REVIEW_REQUIRED",
+  "unverified": "semantic story acceptance, live memory grounding, dreamer subagent execution, downstream regeneration, panel review, provider/Kling execution"
+}

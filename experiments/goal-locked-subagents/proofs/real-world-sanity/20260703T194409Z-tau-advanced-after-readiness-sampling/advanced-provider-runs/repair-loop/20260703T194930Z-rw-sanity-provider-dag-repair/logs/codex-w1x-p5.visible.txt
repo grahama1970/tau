@@ -1,0 +1,38 @@
+
+  Current content:
+
+  The provider DAG POC demonstrates coder and
+  reviewer provider nodes chaining through a
+  scratch-worktree artifact handoff in a repair
+  loop.
+
+  Receipt written at:
+  /home/graham/.../receipts/attempt-02-
+  coder.json
+
+  Evidence:
+  sed -n '1,120p' message.txt returned the exact
+  line above.
+  jq . receipts/attempt-02-coder.json exited 0
+  and parsed JSON with
+  schema=tau.provider_dag_node_receipt.v1,
+  node_id=coder, provider_id=codex, attempt=2,
+  status=PASS, verdict=PASS.
+
+  mocked: no
+  live: no
+  Exercised: deterministic file edit and JSON
+  receipt parse only.
+  Unverified: live provider DAG behavior was not
+  exercised.
+
+  Next/Stop Condition: No further local action
+  remains for this work order unless a reviewer
+  requests another revision.
+
+────────────────────────────────────────────────
+
+
+› Find and fix a bug in @filename
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

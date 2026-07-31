@@ -1,0 +1,22 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "jq . attempt-02-reviewer.json",
+    "cat message.txt",
+    "jq . receipts/attempt-02-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "force_revise=true: target_file message.txt is a 2-line generic note that says 'replaced the placeholder' but does not document what the original placeholder contained, what concrete changes were made, or what invariants the DAG expects. The coder receipt is schema-valid and lists changed files/commands. Next coder should expand message.txt to include: (1) the original TODO content that was removed, (2) a concrete description of what implementation was done, and (3) the DAG edge conditions verified.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,21 @@
+raham/workspace/experiments/tau/experiments/goal-locked-sub
+agents/proofs/real-world-sanity/20260705T225943Z-tau-advanc
+ed-course-correction-regression-20260705/advanced-provider-
+runs/max-exhaustion/20260705T230835Z-rw-sanity-provider-dag
+-max-exhaustion\ndag_spec: /home/graham/workspace/experimen
+ts/tau/experiments/goal-locked-subagents/proofs/real-world-
+sanity/20260705T225943Z-tau-advanced-course-correction-regr
+ession-20260705/advanced-provider-runs/max-exhaustion/20260
+705T230835Z-rw-sanity-provider-dag-max-exhaustion/dag-spec.
+json\nplanner_receipt: /home/graham/workspace/experiments/t
+au/experiments/goal-locked-subagents/proofs/real-world-sani
+ty/20260705T225943Z-tau-advanced-course-correction-regressi
+on-20260705/advanced-provider-runs/max-exhaustion/20260705T
+230835Z-rw-sanity-provider-dag-max-exhaustion/planner-recei
+pt.json\nfinal_receipt: /home/graham/workspace/experiments/
+tau/experiments/goal-locked-subagents/proofs/real-world-san
+ity/20260705T225943Z-tau-advanced-course-correction-regress
+ion-20260705/advanced-provider-runs/max-exhaustion/20260705
+T230835Z-rw-sanity-provider-dag-max-exhaustion/run-receipt.
+json\ncanonical truth: Tau JSON receipts; this pane is huma
+n-visible telemetry.\n

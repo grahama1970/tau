@@ -1,0 +1,21 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 4,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/work-orders/attempt-04-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "jq -e '.' receipts/attempt-04-coder.json",
+    "grep -c 'TODO' scratch-worktree/message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/receipts/attempt-04-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file has no TODO line; coder receipt is valid JSON with schema tau.provider_dag_node_receipt.v1, status PASS, no errors or policy_exceptions. force_revise is false, no issues found.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,37 @@
+anity/20260703T191809Z
+-tau-advanced-generic-
+provider-adapter/advan
+ced-provider-runs/inva
+lid-model/20260703T193
+046Z-rw-sanity-provide
+r-dag-invalid-model/da
+g-spec.json\nplanner_r
+eceipt: /home/graham/w
+orkspace/experiments/t
+au/experiments/goal-lo
+cked-subagents/proofs/
+real-world-sanity/2026
+0703T191809Z-tau-advan
+ced-generic-provider-a
+dapter/advanced-provid
+er-runs/invalid-model/
+20260703T193046Z-rw-sa
+nity-provider-dag-inva
+lid-model/planner-rece
+ipt.json\nfinal_receip
+t: /home/graham/worksp
+ace/experiments/tau/ex
+periments/goal-locked-
+subagents/proofs/real-
+world-sanity/20260703T
+191809Z-tau-advanced-g
+eneric-provider-adapte
+r/advanced-provider-ru
+ns/invalid-model/20260
+703T193046Z-rw-sanity-
+provider-dag-invalid-m
+odel/run-receipt.json\
+ncanonical truth: Tau
+JSON receipts; this pa
+ne is human-visible te
+lemetry.\n

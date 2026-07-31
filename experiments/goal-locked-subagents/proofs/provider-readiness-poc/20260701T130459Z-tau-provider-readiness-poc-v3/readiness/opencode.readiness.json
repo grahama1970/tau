@@ -1,0 +1,34 @@
+{
+  "diagnostics": {
+    "interstitial_visible": false,
+    "readiness_actions": [],
+    "visible_prompt_is_gate": false,
+    "visible_prompt_observed": true
+  },
+  "evidence": {
+    "foreground_argv": [
+      "opencode",
+      "/home/graham/workspace/experiments/tau"
+    ],
+    "foreground_command": "opencode",
+    "foreground_cwd": "/home/graham/workspace/experiments/tau",
+    "foreground_pid": 3655841,
+    "pane_agent_status": "idle",
+    "pane_cwd": "/home/graham/workspace/experiments/tau",
+    "pane_label": "20260701T130459Z-tau-provider-readiness-poc-v3-opencode",
+    "process_alive": true,
+    "provider_event_log_path": null,
+    "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-readiness-poc/20260701T130459Z-tau-provider-readiness-poc-v3/readiness/opencode.readiness.json",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-readiness-poc/20260701T130459Z-tau-provider-readiness-poc-v3/logs/opencode.visible.txt"
+  },
+  "observed_at": "2026-07-01T13:05:08Z",
+  "pane_id": "wH:p6",
+  "provider_id": "opencode",
+  "ready": true,
+  "run_id": "20260701T130459Z-tau-provider-readiness-poc-v3",
+  "schema": "tau.provider_readiness.v1",
+  "source": "herdr_process_info",
+  "state": "ready",
+  "terminal_id": "term_6558c56d64f3153",
+  "workspace_id": "wH"
+}

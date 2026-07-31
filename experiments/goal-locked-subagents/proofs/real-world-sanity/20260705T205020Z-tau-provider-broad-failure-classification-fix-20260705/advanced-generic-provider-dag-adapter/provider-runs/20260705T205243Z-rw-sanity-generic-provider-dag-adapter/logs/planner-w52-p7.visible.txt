@@ -1,0 +1,36 @@
+Tau planner subagent visible monitor\nr
+un_id: 20260705T205243Z-rw-sanity-gener
+ic-provider-dag-adapter\nrun_dir: /home
+/graham/workspace/experiments/tau/exper
+iments/goal-locked-subagents/proofs/rea
+l-world-sanity/20260705T205020Z-tau-pro
+vider-broad-failure-classification-fix-
+20260705/advanced-generic-provider-dag-
+adapter/provider-runs/20260705T205243Z-
+rw-sanity-generic-provider-dag-adapter\
+ndag_spec: /home/graham/workspace/exper
+iments/tau/experiments/goal-locked-suba
+gents/proofs/real-world-sanity/20260705
+T205020Z-tau-provider-broad-failure-cla
+ssification-fix-20260705/advanced-gener
+ic-provider-dag-adapter/provider-runs/2
+0260705T205243Z-rw-sanity-generic-provi
+der-dag-adapter/dag-spec.json\nplanner_
+receipt: /home/graham/workspace/experim
+ents/tau/experiments/goal-locked-subage
+nts/proofs/real-world-sanity/20260705T2
+05020Z-tau-provider-broad-failure-class
+ification-fix-20260705/advanced-generic
+-provider-dag-adapter/provider-runs/202
+60705T205243Z-rw-sanity-generic-provide
+r-dag-adapter/planner-receipt.json\nfin
+al_receipt: /home/graham/workspace/expe
+riments/tau/experiments/goal-locked-sub
+agents/proofs/real-world-sanity/2026070
+5T205020Z-tau-provider-broad-failure-cl
+assification-fix-20260705/advanced-gene
+ric-provider-dag-adapter/provider-runs/
+20260705T205243Z-rw-sanity-generic-prov
+ider-dag-adapter/run-receipt.json\ncano
+nical truth: Tau JSON receipts; this pa
+ne is human-visible telemetry.\n

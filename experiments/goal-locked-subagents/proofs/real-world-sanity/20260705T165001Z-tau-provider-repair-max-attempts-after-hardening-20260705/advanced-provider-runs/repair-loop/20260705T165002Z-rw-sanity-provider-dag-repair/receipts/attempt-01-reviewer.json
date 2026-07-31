@@ -1,0 +1,28 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T165002Z-rw-sanity-provider-dag-repair",
+  "goal_hash": "sha256:b0974c9700c72422bdf5bb71f94da8a6e2c1fa89bc9f4dd2f9aac2501998eca0",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w45",
+  "pane_id": "w45:p6",
+  "terminal_id": "term_655dff315d026455",
+  "work_order_sha256": "ff9a6c03f40392c865e55b833cafcb733b076c43fcf1287c9807e7274a5645b6",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T165002Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work_order attempt-01-reviewer.json",
+    "read target_file scratch-worktree/message.txt",
+    "read coder_receipt receipts/attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T165002Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T165001Z-tau-provider-repair-max-attempts-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T165002Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: force_revise=true. target_file message.txt has no TODO line and coder receipt is schema-valid, but message content is generic (no provider_id or goal reference), commands_run is a description not an invocation, and handoff_summary lacks provider specificity. Next coder should (1) update message.txt to include provider_id and goal_hash, (2) use a concrete executable command string in commands_run, and (3) name the specific provider in handoff_summary.",
+  "errors": [],
+  "policy_exceptions": []
+}

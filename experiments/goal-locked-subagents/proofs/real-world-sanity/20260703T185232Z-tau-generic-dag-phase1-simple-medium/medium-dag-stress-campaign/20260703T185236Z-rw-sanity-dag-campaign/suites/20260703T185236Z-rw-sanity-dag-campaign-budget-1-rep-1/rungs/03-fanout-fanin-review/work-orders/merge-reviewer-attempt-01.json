@@ -1,0 +1,13 @@
+{
+  "attempt": 1,
+  "depends_on": [
+    "root-creator",
+    "creator-a",
+    "creator-b",
+    "creator-c"
+  ],
+  "node_id": "merge-reviewer",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T185232Z-tau-generic-dag-phase1-simple-medium/medium-dag-stress-campaign/20260703T185236Z-rw-sanity-dag-campaign/suites/20260703T185236Z-rw-sanity-dag-campaign-budget-1-rep-1/rungs/03-fanout-fanin-review/receipts/merge-reviewer-attempt-01.json",
+  "role": "reviewer",
+  "schema": "tau.dag_stress_work_order.v1"
+}

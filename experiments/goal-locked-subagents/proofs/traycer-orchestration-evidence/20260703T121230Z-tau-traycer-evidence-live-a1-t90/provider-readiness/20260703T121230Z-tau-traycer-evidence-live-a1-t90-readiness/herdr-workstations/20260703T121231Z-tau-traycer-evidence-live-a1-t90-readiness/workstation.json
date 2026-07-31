@@ -1,0 +1,156 @@
+{
+  "agents": {
+    "20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness-codex": {
+      "command": "'codex' '--cd' '/home/graham/workspace/experiments/tau'",
+      "last_start_result": {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness-codex",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "w13",
+          "--tab",
+          "w13:t2",
+          "--env",
+          "TAU_ROLE=codex",
+          "--env",
+          "TAU_AGENT_NAME=20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness-codex",
+          "--env",
+          "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/provider-readiness/20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness/herdr-workstations/20260703T121231Z-tau-traycer-evidence-live-a1-t90-readiness",
+          "--env",
+          "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/provider-readiness/20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness/work-orders/codex.json",
+          "--env",
+          "TAU_PROVIDER_READINESS_RUN_ID=20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness",
+          "--env",
+          "TAU_PROVIDER_READINESS_PROVIDER=codex",
+          "--no-focus",
+          "--",
+          "codex",
+          "--cd",
+          "/home/graham/workspace/experiments/tau"
+        ],
+        "parsed": {
+          "id": "cli:agent:start",
+          "result": {
+            "agent": {
+              "agent_status": "unknown",
+              "cwd": "/home/graham/workspace/experiments/tau",
+              "focused": false,
+              "foreground_cwd": "/home/graham/workspace/experiments/tau",
+              "name": "20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness-codex",
+              "pane_id": "w13:p5",
+              "revision": 0,
+              "tab_id": "w13:t2",
+              "terminal_id": "term_655b3d6f75480e0",
+              "workspace_id": "w13"
+            },
+            "argv": [
+              "codex",
+              "--cd",
+              "/home/graham/workspace/experiments/tau"
+            ],
+            "type": "agent_started"
+          }
+        },
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness-codex\",\"pane_id\":\"w13:p5\",\"revision\":0,\"tab_id\":\"w13:t2\",\"terminal_id\":\"term_655b3d6f75480e0\",\"workspace_id\":\"w13\"},\"argv\":[\"codex\",\"--cd\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+      },
+      "role": "codex",
+      "started_at": "20260703T121234Z",
+      "tab": "providers",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/provider-readiness/20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness/work-orders/codex.json"
+    },
+    "20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness-opencode": {
+      "command": "'opencode' '/home/graham/workspace/experiments/tau'",
+      "last_start_result": {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness-opencode",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "w13",
+          "--tab",
+          "w13:t2",
+          "--env",
+          "TAU_ROLE=opencode",
+          "--env",
+          "TAU_AGENT_NAME=20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness-opencode",
+          "--env",
+          "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/provider-readiness/20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness/herdr-workstations/20260703T121231Z-tau-traycer-evidence-live-a1-t90-readiness",
+          "--env",
+          "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/provider-readiness/20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness/work-orders/opencode.json",
+          "--env",
+          "TAU_PROVIDER_READINESS_RUN_ID=20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness",
+          "--env",
+          "TAU_PROVIDER_READINESS_PROVIDER=opencode",
+          "--no-focus",
+          "--split",
+          "right",
+          "--",
+          "opencode",
+          "/home/graham/workspace/experiments/tau"
+        ],
+        "parsed": {
+          "id": "cli:agent:start",
+          "result": {
+            "agent": {
+              "agent_status": "unknown",
+              "cwd": "/home/graham/workspace/experiments/tau",
+              "focused": false,
+              "foreground_cwd": "/home/graham/workspace/experiments/tau",
+              "name": "20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness-opencode",
+              "pane_id": "w13:p6",
+              "revision": 0,
+              "tab_id": "w13:t2",
+              "terminal_id": "term_655b3d7117d19e1",
+              "workspace_id": "w13"
+            },
+            "argv": [
+              "opencode",
+              "/home/graham/workspace/experiments/tau"
+            ],
+            "type": "agent_started"
+          }
+        },
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness-opencode\",\"pane_id\":\"w13:p6\",\"revision\":0,\"tab_id\":\"w13:t2\",\"terminal_id\":\"term_655b3d7117d19e1\",\"workspace_id\":\"w13\"},\"argv\":[\"opencode\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+      },
+      "role": "opencode",
+      "started_at": "20260703T121236Z",
+      "tab": "providers",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/provider-readiness/20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness/work-orders/opencode.json"
+    }
+  },
+  "created_at": "20260703T121232Z",
+  "cwd": "/home/graham/workspace/experiments/tau",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/provider-readiness/20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness/herdr-workstations/20260703T121231Z-tau-traycer-evidence-live-a1-t90-readiness/events.jsonl",
+  "kind": "herdr-workstation",
+  "label": "tau-traycer-evidence-live-a1-t90-readiness",
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/20260703T121230Z-tau-traycer-evidence-live-a1-t90/provider-readiness/20260703T121230Z-tau-traycer-evidence-live-a1-t90-readiness/herdr-workstations/20260703T121231Z-tau-traycer-evidence-live-a1-t90-readiness",
+  "run_id": "20260703T121231Z-tau-traycer-evidence-live-a1-t90-readiness",
+  "schema_version": 1,
+  "session": "default",
+  "tabs": {
+    "logs": "w13:t3",
+    "providers": "w13:t2",
+    "receipts": "w13:t4"
+  },
+  "updated_at": "20260703T121236Z",
+  "workspace_id": "w13",
+  "worktree": {
+    "base": null,
+    "branch": null,
+    "enabled": false,
+    "path": null,
+    "raw": null
+  }
+}

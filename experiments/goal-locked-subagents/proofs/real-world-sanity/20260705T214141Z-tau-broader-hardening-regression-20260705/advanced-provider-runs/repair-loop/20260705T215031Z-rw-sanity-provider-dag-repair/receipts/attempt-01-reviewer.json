@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T215031Z-rw-sanity-provider-dag-repair",
+  "goal_hash": "sha256:5768c91e558a5f94ac68a50734d34488d81d3cf0fa69b735808234e8f16ffb17",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w5M",
+  "pane_id": "w5M:p6",
+  "terminal_id": "term_655e425b2c163627",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-provider-runs/repair-loop/20260705T215031Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T215031Z-rw-sanity-provider-dag-repair-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "039dae63734377e65fa1ee393e6f4baf7e565acd70b7d1bc0f40f477b07031b8",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-provider-runs/repair-loop/20260705T215031Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["read target_file", "read coder_receipt", "sha256sum visible_log"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-provider-runs/repair-loop/20260705T215031Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-provider-runs/repair-loop/20260705T215031Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "force_revise=true: verdict REVISE. target_file no longer contains TODO line, reads 'completed implementation by deterministic visible coder attempt 1' — acceptable content. coder_receipt is schema-valid (tau.provider_dag_node_receipt.v1), all required fields present, dag_id and goal_hash match work order. Feedback for next attempt: vary message content with a timestamp or implementation-specific detail to prove the coder is genuinely re-executing rather than producing cached/static output. Also consider including evidence of file-modification verification (e.g., before/after diff summary) in the coder receipt handoff_summary.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,5 @@
+{
+  "goal_hash": "sha256:g",
+  "profile_id": "redteam",
+  "schema": "tau.policy_profile.v1"
+}

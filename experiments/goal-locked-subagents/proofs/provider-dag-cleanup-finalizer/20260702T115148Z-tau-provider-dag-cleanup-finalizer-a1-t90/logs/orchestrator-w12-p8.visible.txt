@@ -1,0 +1,37 @@
+115148Z-tau-provider
+-dag-cleanup-finaliz
+er-a1-t90\ndag_spec:
+ /home/graham/worksp
+ace/experiments/tau/
+experiments/goal-loc
+ked-subagents/proofs
+/provider-dag-cleanu
+p-finalizer/20260702
+T115148Z-tau-provide
+r-dag-cleanup-finali
+zer-a1-t90/dag-spec.
+json\nplanner_receip
+t: /home/graham/work
+space/experiments/ta
+u/experiments/goal-l
+ocked-subagents/proo
+fs/provider-dag-clea
+nup-finalizer/202607
+02T115148Z-tau-provi
+der-dag-cleanup-fina
+lizer-a1-t90/planner
+-receipt.json\nfinal
+_receipt: /home/grah
+am/workspace/experim
+ents/tau/experiments
+/goal-locked-subagen
+ts/proofs/provider-d
+ag-cleanup-finalizer
+/20260702T115148Z-ta
+u-provider-dag-clean
+up-finalizer-a1-t90/
+run-receipt.json\nca
+nonical truth: Tau J
+SON receipts; this p
+ane is human-visible
+ telemetry.\n

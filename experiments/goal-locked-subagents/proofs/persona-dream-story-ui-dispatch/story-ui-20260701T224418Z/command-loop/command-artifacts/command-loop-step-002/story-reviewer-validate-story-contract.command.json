@@ -1,0 +1,15 @@
+{
+  "command": [
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/run.sh",
+    "validate-story-contract",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260701T224418Z/run/story_contract.json",
+    "--run-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260701T224418Z/run",
+    "--json"
+  ],
+  "command_json_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260701T224418Z/command-loop/command-artifacts/command-loop-step-002/story-reviewer-validate-story-contract.command.json",
+  "duration_seconds": 0.1131740091368556,
+  "returncode": 0,
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260701T224418Z/command-loop/command-artifacts/command-loop-step-002/story-reviewer-validate-story-contract.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/story-ui-20260701T224418Z/command-loop/command-artifacts/command-loop-step-002/story-reviewer-validate-story-contract.stdout.txt"
+}

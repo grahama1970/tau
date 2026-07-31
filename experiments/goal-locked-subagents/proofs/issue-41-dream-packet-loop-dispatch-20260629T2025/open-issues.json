@@ -1,0 +1,38 @@
+[
+  {
+    "author": {
+      "id": "U_kgDOCRK7qw",
+      "is_bot": false,
+      "login": "grahama1970",
+      "name": "Graham"
+    },
+    "body": "## Type\nfeature\n\n## Target\n`/home/graham/workspace/experiments/tau`\n\nConcrete areas likely involved:\n- `experiments/goal-locked-subagents/agent-command-specs/`\n- `src/tau_coding/cli.py`\n- `src/tau_coding/persona_dream_panel_proof.py` or a new persona-dream pipeline proof module\n- persona-dream work order artifact: `/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/receipts/dream_packet_work_order.json`\n\n## Current State\nPersona-dream full-pipeline validation now prioritizes upstream pipeline health over Kling. The existing Tau persona-dream lane only has panel command specs:\n\n```text\npanel-creator\npanel-reviewer\npersona-dream-panel-repair-gate\n```\n\nThere is no Tau `dreamer` command spec or creator/reviewer loop that consumes `persona_dream.dream_packet_work_order.v1` and emits a validated `dream_packet.json`.\n\nLocal evidence from agent-skills persona-dream:\n\n```text\n./run.sh pipeline-loop-status /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z --direction forward --json\n# status: BLOCKED\n# first_blocker.phase: dream_packet\n# first_blocker.reason: missing_artifact\n# active_loop.loop: dream_packet_loop\n# active_loop.default_repair: Generate or repair the dream packet from current memory residue, contact sheet, frame prompts, and reflection receipts.\n\n./run.sh pipeline-loop-run /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z --direction forward --max-iterations 1 --output /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/receipts/pipeline_loop_run_forward.json --json\n# status: BLOCKED\n# stop_reason: work_order_written\n# repair_action.status: WROTE_DREAM_PACKET_WORK_ORDER\n# repair_action.owner_subagent: dreamer\n# repair_action.output: .../receipts/dream_packet_work_order.json\n\n./run.sh validate-dream-packet-work-order /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/receipts/dream_packet_work_order.json --json\n# status: PASS_DREAM_PACKET_WORK_ORDER\n# first_blocker: null\n# owner_subagent: dreamer\n```\n\n## Requested Outcome\nAdd a Tau persona-dream dream-packet creator/reviewer while-loop path that consumes `persona_dream.dream_packet_work_order.v1`, dispatches through `tau.agent_handoff.v1`, and emits a source-grounded `dream_packet.json` plus receipts that pass persona-dream validation.\n\nThe first implementation may be bounded to one run root and one dream packet. It must not call Kling, make paid provider calls, or fabricate memory residue.\n\n## Acceptance Criteria\n- Add a routable Tau `dreamer` or equivalent creator/reviewer command spec for `persona_dream.dream_packet_work_order.v1`.\n- The command loop writes `tau.agent_handoff.v1` and `tau.subagent_receipt.v1` artifacts for creator and reviewer or an explicit fail-closed reviewer.\n- The generated `dream_packet.json` is derived from real memory/residue or fails closed with `no_dream`; fixture residue must be clearly marked as fixture and not used for live proof closure.\n- `skills/persona-dream/run.sh validate-dream-packet <dream_packet> --run-root <run_root> --json` returns `PASS_DREAM_PACKET` for the live proof, or a deterministic fail-closed blocker if memory residue is unavailable.\n- `skills/persona-dream/run.sh pipeline-loop-status <run_root> --direction forward --json` advances past `dream_packet` to `story_contract` or a later blocker.\n- No Kling call, paid provider call, or public upload is performed.\n\n## Required Proof\nAttach a proof root under:\n\n```text\nexperiments/goal-locked-subagents/proofs/<issue-id>-persona-dream-dream-packet-loop-<timestamp>/\n```\n\nRequired artifacts:\n- input `dream_packet_work_order.json`\n- start `tau.agent_handoff.v1`\n- creator/reviewer Tau receipts\n- resulting `dream_packet.json` or fail-closed receipt\n- persona-dream `validate-dream-packet` output\n- persona-dream `pipeline-loop-status --direction forward` output showing the next blocker\n- focused Tau tests for the new command spec/CLI\n\n## Non-goals\n- Do not call Kling.\n- Do not claim full pipeline readiness.\n- Do not solve story, storyboard, provider media, or public URL gates in this ticket except as needed to prove the dream-packet loop advances to the next blocker.\n- Do not use Nano Banana/Gemini fallback imagery as final panel evidence.\n\n## Route\nroute:backend_python_or_skill_runtime\nagent:coder\n",
+    "comments": [],
+    "createdAt": "2026-06-29T20:24:54Z",
+    "labels": [
+      {
+        "color": "0e8a16",
+        "description": "New capability or changed behavior request",
+        "id": "LA_kwDOTG11HM8AAAACpRFAQQ",
+        "name": "type:feature"
+      },
+      {
+        "color": "1d76db",
+        "description": "Python CLIs, runtime, harness, and skill integration route",
+        "id": "LA_kwDOTG11HM8AAAACpRFbZw",
+        "name": "route:backend_python_or_skill_runtime"
+      },
+      {
+        "color": "5319e7",
+        "description": "Requested repair agent: coder",
+        "id": "LA_kwDOTG11HM8AAAACpVklOg",
+        "name": "agent:coder"
+      }
+    ],
+    "number": 41,
+    "state": "OPEN",
+    "title": "Tau persona-dream harness needs dream-packet creator/reviewer loop",
+    "updatedAt": "2026-06-29T20:24:54Z",
+    "url": "https://github.com/grahama1970/tau/issues/41"
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work order JSON",
+    "read target_file scratch-worktree/message.txt",
+    "read coder receipt attempt-01-coder.json",
+    "write reviewer receipt attempt-01-reviewer.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/20260702T115148Z-tau-provider-dag-cleanup-finalizer-a1-t90/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file contains no TODO line — it was replaced with a completed message. Coder receipt is schema-valid (all required fields present). force_revise is false. No issues found.",
+  "errors": [],
+  "policy_exceptions": []
+}

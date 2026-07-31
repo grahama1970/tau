@@ -1,0 +1,21 @@
+ubagents/proofs/real-world-s
+anity/20260705T224539Z-tau-p
+rovider-herdr-binding-regres
+sion-20260705/advanced-provi
+der-runs/invalid-model/20260
+705T224738Z-rw-sanity-provid
+er-dag-invalid-model/planner
+-receipt.json\nfinal_receipt
+: /home/graham/workspace/exp
+eriments/tau/experiments/goa
+l-locked-subagents/proofs/re
+al-world-sanity/20260705T224
+539Z-tau-provider-herdr-bind
+ing-regression-20260705/adva
+nced-provider-runs/invalid-m
+odel/20260705T224738Z-rw-san
+ity-provider-dag-invalid-mod
+el/run-receipt.json\ncanonic
+al truth: Tau JSON receipts;
+ this pane is human-visible
+telemetry.\n

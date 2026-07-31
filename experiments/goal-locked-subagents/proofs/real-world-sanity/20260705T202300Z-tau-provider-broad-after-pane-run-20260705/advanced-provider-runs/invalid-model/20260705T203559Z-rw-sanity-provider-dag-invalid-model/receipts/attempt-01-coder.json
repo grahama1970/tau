@@ -1,0 +1,29 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T202300Z-tau-provider-broad-after-pane-run-20260705/advanced-provider-runs/invalid-model/20260705T203559Z-rw-sanity-provider-dag-invalid-model/scratch-worktree/message.txt"
+  ],
+  "attempt": 1,
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T202300Z-tau-provider-broad-after-pane-run-20260705/advanced-provider-runs/invalid-model/20260705T203559Z-rw-sanity-provider-dag-invalid-model/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "python deterministic visible coder"
+  ],
+  "dag_id": "20260705T203559Z-rw-sanity-provider-dag-invalid-model",
+  "errors": [],
+  "goal_hash": "sha256:2fb4f29d65cf14a021650f8168bb60b619c375bf3623d5d2db6c8aeba6eda9ef",
+  "handoff_summary": "Deterministic visible coder updated the scratch target file.",
+  "node_id": "coder",
+  "pane_id": "w4W:p5",
+  "policy_exceptions": [],
+  "provider_id": "codex",
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "status": "PASS",
+  "terminal_id": "term_655e31b1ebb9d539",
+  "verdict": "PASS",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T202300Z-tau-provider-broad-after-pane-run-20260705/advanced-provider-runs/invalid-model/20260705T203559Z-rw-sanity-provider-dag-invalid-model/provider-readiness/20260705T203559Z-rw-sanity-provider-dag-invalid-model-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "a5ce09345438e8080c14ee1529fda6496a53d77f3abf6adcc0d3c84655e9db2f",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T202300Z-tau-provider-broad-after-pane-run-20260705/advanced-provider-runs/invalid-model/20260705T203559Z-rw-sanity-provider-dag-invalid-model/work-orders/attempt-01-coder.json",
+  "work_order_sha256": "242c2b969aa2b96ca2f553f5d6b596c5344bb03d98227b27854f475ac2d2da8b",
+  "workspace_id": "w4W"
+}

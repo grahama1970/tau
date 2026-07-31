@@ -1,0 +1,71 @@
+{
+  "alert_codes": [],
+  "alerts": [],
+  "backend": {
+    "image": "python@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "image_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "name": "docker"
+  },
+  "command": [
+    "python",
+    "--version"
+  ],
+  "command_executed": false,
+  "docker_command": [
+    "docker",
+    "run",
+    "--rm",
+    "--network",
+    "none",
+    "--user",
+    "65532:65532",
+    "--read-only",
+    "--cap-drop",
+    "ALL",
+    "--security-opt",
+    "no-new-privileges:true",
+    "python@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "python",
+    "--version"
+  ],
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "policy": {
+    "cap_drop": [
+      "ALL"
+    ],
+    "docker_socket_mounted": false,
+    "host_network": false,
+    "mounts": [],
+    "network": "none",
+    "no_new_privileges": true,
+    "privileged": false,
+    "read_only_rootfs": true,
+    "user": "65532:65532"
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "Runtime sandbox isolation.",
+      "Docker daemon availability.",
+      "Docker Sandboxes microVM availability.",
+      "The agent command executed successfully.",
+      "ITAR compliance."
+    ],
+    "proves": [
+      "Tau inspected Docker sandbox policy before container execution.",
+      "Tau blocked unsafe Docker settings before building an executable command.",
+      "No Docker command was executed by this first-slice gate."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130327Z-tau-itar-containment-dag-sanity-final-20260706/itar-grade-containment-demo/sandbox-run-receipt.json",
+  "recommended_action": {
+    "next_agent": "orchestrator",
+    "reason": "Docker sandbox policy passed; a separate execution rung may run it.",
+    "type": "continue"
+  },
+  "schema": "tau.sandbox_run_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-06T13:03:31Z"
+}

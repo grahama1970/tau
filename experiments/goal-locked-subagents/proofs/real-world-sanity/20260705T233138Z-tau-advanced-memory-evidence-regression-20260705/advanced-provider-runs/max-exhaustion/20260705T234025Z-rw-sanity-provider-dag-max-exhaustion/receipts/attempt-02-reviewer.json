@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T234025Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:d7af2e7fee11dc8399dcf06b2241749b050fccf88c17a7d2a01eb58ac9effee1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w6P",
+  "pane_id": "w6P:p6",
+  "terminal_id": "term_655e5aeb98b1776f",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T234025Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T234025Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "276efa3ff80089fe641043298834eef40fbc0aeb73c84948a28c58d87b6090cf",
+  "work_order_sha256": "d2cb535631cc21585319686f3a37e9d92de16f9ef52919e55794233f54ae46e2",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T234025Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["read work_order", "read target_file", "read coder_receipt", "sha256sum visible_log"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T234025Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T234025Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "force_revise=true: coder completed the target (TODO line removed, message.txt updated to 'completed implementation by deterministic visible coder attempt 2') and coder receipt is schema-valid with all required fields present. REVISE because force_revise is true. Feedback for next coder: target_file looks acceptable but the content is minimal — consider adding more detail to the message (e.g., which step was implemented, evidence of completion). The coder receipt correctly references its artifacts, but could include a more descriptive handoff_summary.",
+  "errors": [],
+  "policy_exceptions": []
+}

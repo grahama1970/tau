@@ -1,0 +1,24 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T164104Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:8727e3cdb4543c9b1568ea4752738ca12173cdd530dfe51d5ed2b5d565ce7844",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w42",
+  "pane_id": "w42:p6",
+  "terminal_id": "term_655dfd30250e8439",
+  "work_order_sha256": "139e8c5fc1684c2dd1967bb425588d26c8504d41fdf5e75d932be7be814ad0e1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T164103Z-tau-provider-live-after-gc-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T164104Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["jq . work-orders/attempt-01-reviewer.json", "cat scratch-worktree/message.txt", "jq . receipts/attempt-01-coder.json"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T164103Z-tau-provider-live-after-gc-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T164104Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T164103Z-tau-provider-live-after-gc-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T164104Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS — target_file message.txt has no TODO line (content: 'Completed implementation for the Tau provider DAG adapter POC.'), coder receipt is schema-valid with all required fields present. force_revise is false, no issues found.",
+  "errors": [],
+  "policy_exceptions": []
+}

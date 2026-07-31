@@ -1,0 +1,22 @@
+    26 +    "jq -e '<receipt field predicates>' /home/graha
+        m/workspace/experiments/tau/experiments/goal-locked
+        -subagents/proofs/real-world-sanity/20260705T233138
+        Z-tau-advanced-memory-evidence-regression-20260705/
+        advanced-provider-runs/one-pass/20260705T233214Z-rw
+        -sanity-provider-dag-one-pass/receipts/attempt-01-c
+        oder.json && test \"$(sed -n '1p' /home/graham/work
+        space/experiments/tau/experiments/goal-locked-subag
+        ents/proofs/real-world-sanity/20260705T233138Z-tau-
+        advanced-memory-evidence-regression-20260705/advanc
+        ed-provider-runs/one-pass/20260705T233214Z-rw-sanit
+        y-provider-dag-one-pass/scratch-worktree/message.tx
+        t)\" = \"Completed implementation for the Tau provi
+        der DAG coder node.\""
+    27    ],
+
+• Working (1m 34s • esc to interrupt)
+
+
+› Find and fix a bug in @filename
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

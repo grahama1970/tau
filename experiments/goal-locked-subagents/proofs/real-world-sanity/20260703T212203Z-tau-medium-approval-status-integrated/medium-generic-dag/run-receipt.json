@@ -1,0 +1,128 @@
+{
+  "checkpoint_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T212203Z-tau-medium-approval-status-integrated/medium-generic-dag/checkpoint.json",
+  "completed_node_count": 3,
+  "current_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T212203Z-tau-medium-approval-status-integrated/medium-generic-dag/current-state.json",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T212203Z-tau-medium-approval-status-integrated/medium-generic-dag/events.jsonl",
+  "execution": "local_subprocess_receipt_gated_dag",
+  "live": false,
+  "mocked": false,
+  "node_count": 3,
+  "nodes": [
+    {
+      "artifacts": [],
+      "attempt_count": 1,
+      "command_results": [
+        {
+          "argv": [
+            "python3",
+            "-c",
+            "import json; from pathlib import Path; path=Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T212203Z-tau-medium-approval-status-integrated/medium-generic-dag/receipts/planner.json'); path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps({'schema': 'tau.generic_dag_node_receipt.v1', 'node_id': 'planner', 'status': 'PASS', 'verdict': 'PASS', 'artifacts': [], 'commands_run': ['python3 inline receipt writer'], 'handoff_summary': 'planner completed by real-world sanity worker', 'errors': [], 'policy_exceptions': []}, sort_keys=True), encoding='utf-8')"
+          ],
+          "elapsed_seconds": 0.023,
+          "returncode": 0,
+          "stderr": "",
+          "stdout": ""
+        }
+      ],
+      "errors": [],
+      "live": null,
+      "mocked": null,
+      "node_id": "planner",
+      "provider_live": null,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T212203Z-tau-medium-approval-status-integrated/medium-generic-dag/receipts/planner.json",
+      "resumed": false,
+      "role": "planner",
+      "status": "PASS",
+      "verdict": "PASS",
+      "work_order_path": null
+    },
+    {
+      "artifacts": [],
+      "attempt_count": 1,
+      "command_results": [
+        {
+          "argv": [
+            "python3",
+            "-c",
+            "import json; from pathlib import Path; path=Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T212203Z-tau-medium-approval-status-integrated/medium-generic-dag/receipts/coder.json'); path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps({'schema': 'tau.generic_dag_node_receipt.v1', 'node_id': 'coder', 'status': 'PASS', 'verdict': 'PASS', 'artifacts': [], 'commands_run': ['python3 inline receipt writer'], 'handoff_summary': 'coder completed by real-world sanity worker', 'errors': [], 'policy_exceptions': []}, sort_keys=True), encoding='utf-8')"
+          ],
+          "elapsed_seconds": 0.024,
+          "returncode": 0,
+          "stderr": "",
+          "stdout": ""
+        }
+      ],
+      "errors": [],
+      "live": null,
+      "mocked": null,
+      "node_id": "coder",
+      "provider_live": null,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T212203Z-tau-medium-approval-status-integrated/medium-generic-dag/receipts/coder.json",
+      "resumed": false,
+      "role": "coder",
+      "status": "PASS",
+      "verdict": "PASS",
+      "work_order_path": null
+    },
+    {
+      "artifacts": [],
+      "attempt_count": 1,
+      "command_results": [
+        {
+          "argv": [
+            "python3",
+            "-c",
+            "import json; from pathlib import Path; path=Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T212203Z-tau-medium-approval-status-integrated/medium-generic-dag/receipts/reviewer.json'); path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps({'schema': 'tau.generic_dag_node_receipt.v1', 'node_id': 'reviewer', 'status': 'PASS', 'verdict': 'PASS', 'artifacts': [], 'commands_run': ['python3 inline receipt writer'], 'handoff_summary': 'reviewer completed by real-world sanity worker', 'errors': [], 'policy_exceptions': []}, sort_keys=True), encoding='utf-8')"
+          ],
+          "elapsed_seconds": 0.024,
+          "returncode": 0,
+          "stderr": "",
+          "stdout": ""
+        }
+      ],
+      "errors": [],
+      "live": null,
+      "mocked": null,
+      "node_id": "reviewer",
+      "provider_live": null,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T212203Z-tau-medium-approval-status-integrated/medium-generic-dag/receipts/reviewer.json",
+      "resumed": false,
+      "role": "reviewer",
+      "status": "PASS",
+      "verdict": "PASS",
+      "work_order_path": null
+    }
+  ],
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "remote Tailscale monitoring",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "live provider CLI execution",
+      "Herdr pane visibility"
+    ],
+    "proves": [
+      "Tau can validate a generic DAG spec",
+      "Tau can execute local subprocess workers in dependency order",
+      "Tau can gate downstream nodes on schema-valid node receipts",
+      "Tau can resume from existing valid node receipts",
+      "Tau can write durable checkpoint and current-state artifacts",
+      "Tau can fail closed on timeout, non-zero exit, invalid receipt, or blocked verdict"
+    ]
+  },
+  "provider_live": false,
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T212203Z-tau-medium-approval-status-integrated/medium-generic-dag",
+  "run_id": "rw-sanity-generic-dag",
+  "schema": "tau.generic_dag_run_receipt.v1",
+  "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T212203Z-tau-medium-approval-status-integrated/medium-generic-dag/dag-spec.json",
+  "status": "PASS",
+  "timestamp": "2026-07-03T21:22:04Z",
+  "verdict": "PASS"
+}

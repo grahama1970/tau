@@ -1,0 +1,45 @@
+01T172318Z-tau-liv
+e-provider-dag-inv
+alid-reviewer-mode
+l-logcapture-a1-t4
+5\ndag_spec: /home
+/graham/workspace/
+experiments/tau/ex
+periments/goal-loc
+ked-subagents/proo
+fs/live-provider-d
+ag-stress/20260701
+T172318Z-tau-live-
+provider-dag-inval
+id-reviewer-model-
+logcapture-a1-t45/
+dag-spec.json\npla
+nner_receipt: /hom
+e/graham/workspace
+/experiments/tau/e
+xperiments/goal-lo
+cked-subagents/pro
+ofs/live-provider-
+dag-stress/2026070
+1T172318Z-tau-live
+-provider-dag-inva
+lid-reviewer-model
+-logcapture-a1-t45
+/planner-receipt.j
+son\nfinal_receipt
+: /home/graham/wor
+kspace/experiments
+/tau/experiments/g
+oal-locked-subagen
+ts/proofs/live-pro
+vider-dag-stress/2
+0260701T172318Z-ta
+u-live-provider-da
+g-invalid-reviewer
+-model-logcapture-
+a1-t45/run-receipt
+.json\ncanonical t
+ruth: Tau JSON rec
+eipts; this pane i
+s human-visible te
+lemetry.\n

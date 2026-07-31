@@ -1,0 +1,46 @@
+        "policy_exceptions": []
+    }
+
+───────────────────────────────────────
+
+• Status/Phase: PASS, coder task
+  complete.
+
+  Now: Edited experiments/goal-locked-
+  subagents/proofs/live-provider-dag-
+  stress/20260701T164738Z-tau-live-
+  provider-dag-stress-a1-t60-
+  timeoutfix/scratch-worktree/
+  message.txt:1 and wrote the required
+  receipt at experiments/goal-locked-
+  subagents/proofs/live-provider-dag-
+  stress/20260701T164738Z-tau-live-
+  provider-dag-stress-a1-t60-
+  timeoutfix/receipts/attempt-01-
+  coder.json:1.
+
+  Evidence: message.txt now contains 1
+  completed implementation line.
+  python3 -m json.tool .../receipts/
+  attempt-01-coder.json exited 0, so
+  the receipt is valid JSON with
+  status: PASS, verdict: PASS, and one
+  changed file.
+
+  Proof scope: mocked: no. live: no.
+  Exercised file content edit, direct
+  content readback, and receipt JSON
+  parsing. No runtime/provider behavior
+  was exercised because the work order
+  only required a file edit and
+  receipt.
+
+  Next/stop condition: No remaining
+  work for this work order.
+
+─ Worked for 1m 03s ───────────────────
+
+
+› Improve documentation in @filename
+
+  gpt-5.5 high · ~/workspace/experimen…

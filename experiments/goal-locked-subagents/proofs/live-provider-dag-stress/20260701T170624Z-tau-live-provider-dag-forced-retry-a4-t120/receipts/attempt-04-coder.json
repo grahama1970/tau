@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 4,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/work-orders/attempt-04-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/work-orders/attempt-04-coder.json",
+    "pwd",
+    "nl -ba message.txt",
+    "ls -la /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/receipts",
+    "jq -e '.schema == \"tau.provider_dag_node_receipt.v1\" and .node_id == \"coder\" and .provider_id == \"codex\" and .attempt == 4 and .status == \"PASS\" and .verdict == \"PASS\" and (.changed_files | length == 1) and (.artifacts | length == 1) and (.errors | length == 0) and (.policy_exceptions | length == 0)' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/receipts/attempt-04-coder.json",
+    "grep -n '^Provider-DAG run 20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120 attempt=4 provider_chain=coder/codex completed from work-orders/attempt-04-coder.json\\.$' message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170624Z-tau-live-provider-dag-forced-retry-a4-t120/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the attempt 03 provider-DAG message with an attempt 04 message embedding run_id, attempt number, provider chain, and source work order.",
+  "errors": [],
+  "policy_exceptions": []
+}

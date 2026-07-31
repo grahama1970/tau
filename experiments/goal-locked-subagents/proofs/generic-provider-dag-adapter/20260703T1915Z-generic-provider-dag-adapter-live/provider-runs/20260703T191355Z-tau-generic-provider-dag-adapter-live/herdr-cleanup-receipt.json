@@ -1,0 +1,83 @@
+{
+  "applied_actions": [],
+  "candidate_count": 1,
+  "candidates": [
+    {
+      "action": "workspace_close",
+      "pane_ids": [
+        "w1H:p5",
+        "w1H:p6",
+        "w1H:p8",
+        "w1H:p7",
+        "w1H:p9"
+      ],
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "workspace_id": "w1H"
+    }
+  ],
+  "command_results": [],
+  "current_workspace": null,
+  "include_current_workspace": false,
+  "live": false,
+  "mocked": false,
+  "mode": "dry-run",
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "global regex cleanup of unrelated Herdr resources",
+      "Git worktree deletion",
+      "session deletion for runs that did not record a session id"
+    ],
+    "proves": [
+      "Tau can identify Herdr workspace/session resources recorded by one run",
+      "Tau cleanup defaults to audit/dry-run before mutation",
+      "Tau refuses to close the current Herdr workspace unless explicitly allowed"
+    ]
+  },
+  "resource_count": 1,
+  "resources": [
+    {
+      "kind": "workspace",
+      "pane_ids": [
+        "w1H:p5",
+        "w1H:p6",
+        "w1H:p8",
+        "w1H:p7",
+        "w1H:p9"
+      ],
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "sources": [
+        "provider_sessions",
+        "visible_subagents"
+      ],
+      "terminal_ids": [
+        "term_655b9ba23cf4e15a",
+        "term_655b9ba5e500b15b",
+        "term_655b9bccebe6815d",
+        "term_655b9bc996c8315c",
+        "term_655b9bf7b208815e"
+      ],
+      "workspace_id": "w1H"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/runtime-manifest.json",
+  "schema": "tau.herdr_cleanup_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-03T19:15:58Z"
+}

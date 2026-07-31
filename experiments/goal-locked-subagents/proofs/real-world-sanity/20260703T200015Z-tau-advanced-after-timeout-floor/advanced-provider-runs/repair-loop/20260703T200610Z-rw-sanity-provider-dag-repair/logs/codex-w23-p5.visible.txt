@@ -1,0 +1,38 @@
+  (.changed_files | length == 1) and (.artifacts
+  | length == 1) and (.errors | length == 0) and
+  (.policy_exceptions | length == 0)' /home/
+  graham/workspace/experiments/tau/experiments/
+  goal-locked-subagents/proofs/real-world-
+  sanity/20260703T200015Z-tau-advanced-after-
+  timeout-floor/advanced-provider-runs/repair-
+  loop/20260703T200610Z-rw-sanity-provider-dag-
+  repair/receipts/attempt-02-coder.json
+
+  Scope
+  mocked: no
+  live: no
+  exercised: local target file edit, four-line
+  content check, receipt JSON validation
+  unverified: no external reviewer acceptance
+  has been obtained.
+
+• Stop hook (stopped)
+  warning: Status response blocked as too vague.
+  Answer status requests with an operational
+  snapshot: Status/Phase, Now/current file-
+  command-artifact, Evidence with concrete
+  counts or command results, and Next/stop
+  condition. Include exact paths, command names,
+  or artifact names when work has touched files
+  or tools. Do not answer with only conclusions
+  such as done, fixed, checking, working, or
+  making progress.
+  stop: Status response lacks operational
+  detail.
+
+─ Worked for 1m 25s ────────────────────────────
+
+
+› Improve documentation in @filename
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

@@ -1,0 +1,36 @@
+atemen
+t. Sin
+gle li
+ne, no
+ error
+s.
+- **co
+der_re
+ceipt*
+*: Sch
+ema-va
+lid (`
+tau.pr
+ovider
+_dag_n
+ode_re
+ceipt.
+v1`),
+status
+ PASS,
+ no er
+rors.
+- **fo
+rce_re
+vise**
+: `tru
+e` → v
+erdict
+ must
+be REV
+ISE.
+
+Now wr
+iting
+the re
+ceipt.

@@ -1,0 +1,38 @@
+        sible.txt"
+    26 +  ],
+    27 +  "artifacts": [
+    28 +    "/home/graham/workspace/exp
+        eriments/tau/experiments/goal-l
+        ocked-subagents/proofs/real-wor
+        ld-sanity/20260705T210824Z-tau-
+        broader-hardening-full-20260705
+        /advanced-generic-provider-dag-
+        adapter/provider-runs/20260705T
+        211527Z-rw-sanity-generic-provi
+        der-dag-adapter/scratch-worktre
+        e/message.txt"
+    29 +  ],
+    30 +  "handoff_summary": "Replaced
+        the target file TODO line with
+        a completed implementation mess
+        age.",
+    31 +  "errors": [],
+    32 +  "policy_exceptions": []
+    33 +}
+
+───────────────────────────────────────
+
+• The receipt file has been written at
+  the required path with the work-order
+  SHA copied verbatim from the work
+  order. I’m doing one final
+  deterministic validation now: parse
+  the receipt JSON and re-check the two
+  required artifact fields.
+
+• Working (1m 38s • esc to interrupt)
+
+
+› Find and fix a bug in @filename
+
+  gpt-5.5 medium · ~/workspace/experim…

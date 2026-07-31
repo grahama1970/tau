@@ -1,0 +1,41 @@
+{
+  "context": {
+    "actor_type": "tau",
+    "artifacts_read": [
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/phase_03_producer_writer_director/crew_contract.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/receipts/validate_crew_contract.json"
+    ],
+    "assumptions": [],
+    "run_id": "crew-ui-20260702T184400Z",
+    "subagent": "crew-reviewer",
+    "unknowns": []
+  },
+  "evidence": [
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/phase_03_producer_writer_director/crew_contract.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/receipts/validate_crew_contract.json"
+  ],
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000041",
+    "goal_id": "goal-tau-issue-45-persona-dream-crew-contract-loop",
+    "goal_version": 1,
+    "immutable_goal_preserved": true
+  },
+  "next": {
+    "executor": "human",
+    "reason": "Human or ticket resolver reviews the proof.",
+    "subagent": "human"
+  },
+  "rationale": "This receipt records one bounded Tau persona-dream dream-packet subagent turn.",
+  "result": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/phase_03_producer_writer_director/crew_contract.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/receipts/validate_crew_contract.json"
+    ],
+    "live": true,
+    "mocked": false,
+    "status": "PASS",
+    "summary": "Crew-reviewer accepted the Phase 03 crew contract."
+  },
+  "schema": "tau.subagent_receipt.v1",
+  "stop_condition": "Issue resolver comments proof and closes or files the next blocker."
+}

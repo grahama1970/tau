@@ -1,0 +1,9 @@
+{
+  "schema": "dream.script.asset_index.v1",
+  "assets": [
+    {
+      "id": "asset-0",
+      "title": "Embry surfing on the Big Island"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "artifacts": [],
+  "command_results": [
+    {
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "-m",
+        "tau_coding.persona_dream_dream_packet_agent",
+        "--role",
+        "story-writer"
+      ],
+      "exit_code": 1,
+      "stderr": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"/home/graham/workspace/experiments/tau/src/tau_coding/persona_dream_dream_packet_agent.py\", line 1175, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/home/graham/workspace/experiments/tau/src/tau_coding/persona_dream_dream_packet_agent.py\", line 1169, in main\n    payload = run_persona_dream_packet_agent(args.role)\n  File \"/home/graham/workspace/experiments/tau/src/tau_coding/persona_dream_dream_packet_agent.py\", line 30, in run_persona_dream_packet_agent\n    context = _dream_packet_context(start_payload, artifact_dir)\n  File \"/home/graham/workspace/experiments/tau/src/tau_coding/persona_dream_dream_packet_agent.py\", line 798, in _dream_packet_context\n    work_order = _find_work_order(start_payload, raw)\n  File \"/home/graham/workspace/experiments/tau/src/tau_coding/persona_dream_dream_packet_agent.py\", line 856, in _find_work_order\n    raise RuntimeError(f\"{label} work order path is required\")\nRuntimeError: dream packet work order path is required\n",
+      "stdout": "",
+      "timed_out": false,
+      "timeout_s": 240.0
+    }
+  ],
+  "errors": [
+    "command exited 1"
+  ],
+  "live": false,
+  "loop_step": 1,
+  "mocked": true,
+  "ok": false,
+  "receipt_dir": null,
+  "response_projection": null,
+  "runner": "command",
+  "schema": "tau.agent_handoff_dispatch_receipt.v1",
+  "selected_agent": "story-writer",
+  "start_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `COMPLETED`\n- Summary: Human requested a Tau story-contract creator/reviewer proof.\n- Next agent: `story-writer`\n- Executor: `local`\n- Stop condition: Story-reviewer routes to human with PASS or BLOCKED evidence.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2108/input_story_contract_work_order.json\"\n    ],\n    \"persona_dream_story_contract\": {\n      \"run_id\": \"issue-43-persona-dream-story-contract-loop-20260629T2108\",\n      \"run_root\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run\",\n      \"work_order\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2108/input_story_contract_work_order.json\"\n    },\n    \"summary\": \"Run a bounded Tau story-contract creator/reviewer loop.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#43\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000043\",\n    \"goal_id\": \"goal-tau-issue-43-persona-dream-story-contract-loop\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"story-writer\",\n    \"reason\": \"Story-writer must create story_contract.json from the accepted dream packet.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The first bounded step is a story-writer command.\",\n  \"required_evidence\": [\n    \"Story-writer and story-reviewer write Tau receipts and persona-dream validation receipts.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2108/input_story_contract_work_order.json\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Human requested a Tau story-contract creator/reviewer proof.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Story-reviewer routes to human with PASS or BLOCKED evidence.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:story-writer",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "story-writer",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#43"
+    }
+  },
+  "status": "BLOCKED",
+  "stop_reason": "command_failed"
+}

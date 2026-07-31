@@ -1,0 +1,145 @@
+{
+  "approval_gate": null,
+  "artifacts": {
+    "checkpoint": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T233757Z-tau-generic-dag-resume-from-run-dir-final2/medium-generic-dag/checkpoint.json",
+    "current_state": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T233757Z-tau-generic-dag-resume-from-run-dir-final2/medium-generic-dag/current-state.json",
+    "run_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T233757Z-tau-generic-dag-resume-from-run-dir-final2/medium-generic-dag/run-receipt.json"
+  },
+  "checkpoint": {
+    "active_node_id": null,
+    "blocked_nodes": [],
+    "completed_nodes": [
+      "coder",
+      "planner",
+      "reviewer"
+    ],
+    "ready_nodes": [],
+    "schema": "tau.generic_dag_checkpoint.v1",
+    "status": "PASS",
+    "verdict": "PASS"
+  },
+  "cleanup": null,
+  "dag_stress": null,
+  "dag_stress_campaign": null,
+  "detected_type": "generic_dag",
+  "events": {
+    "count": 8,
+    "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T233757Z-tau-generic-dag-resume-from-run-dir-final2/medium-generic-dag/events.jsonl"
+  },
+  "generic_dag": {
+    "blocked_node_count": 0,
+    "completed_node_count": 3,
+    "dispatched_node_count": 3,
+    "live": false,
+    "mocked": false,
+    "node_count": 3,
+    "nodes": [
+      {
+        "artifact_count": 0,
+        "artifacts": {},
+        "attempt_count": 1,
+        "duration_seconds": 0.023,
+        "finished_at": "2026-07-03T23:37:58Z",
+        "live": null,
+        "node_id": "planner",
+        "provider_live": null,
+        "provider_status": null,
+        "provider_verdict": null,
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T233757Z-tau-generic-dag-resume-from-run-dir-final2/medium-generic-dag/receipts/planner.json",
+        "resumed": false,
+        "role": "planner",
+        "started_at": "2026-07-03T23:37:58Z",
+        "status": "PASS",
+        "verdict": "PASS",
+        "work_order_path": null,
+        "work_order_sha256": null
+      },
+      {
+        "artifact_count": 0,
+        "artifacts": {},
+        "attempt_count": 1,
+        "duration_seconds": 0.023,
+        "finished_at": "2026-07-03T23:37:58Z",
+        "live": null,
+        "node_id": "coder",
+        "provider_live": null,
+        "provider_status": null,
+        "provider_verdict": null,
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T233757Z-tau-generic-dag-resume-from-run-dir-final2/medium-generic-dag/receipts/coder.json",
+        "resumed": false,
+        "role": "coder",
+        "started_at": "2026-07-03T23:37:58Z",
+        "status": "PASS",
+        "verdict": "PASS",
+        "work_order_path": null,
+        "work_order_sha256": null
+      },
+      {
+        "artifact_count": 0,
+        "artifacts": {},
+        "attempt_count": 1,
+        "duration_seconds": 0.023,
+        "finished_at": "2026-07-03T23:37:58Z",
+        "live": null,
+        "node_id": "reviewer",
+        "provider_live": null,
+        "provider_status": null,
+        "provider_verdict": null,
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T233757Z-tau-generic-dag-resume-from-run-dir-final2/medium-generic-dag/receipts/reviewer.json",
+        "resumed": false,
+        "role": "reviewer",
+        "started_at": "2026-07-03T23:37:58Z",
+        "status": "PASS",
+        "verdict": "PASS",
+        "work_order_path": null,
+        "work_order_sha256": null
+      }
+    ],
+    "ok": true,
+    "provider_live": false,
+    "resumed_node_count": 0,
+    "schema": "tau.generic_dag_run_receipt.v1",
+    "status": "PASS",
+    "verdict": "PASS"
+  },
+  "live": false,
+  "missing_required_artifacts": [],
+  "mocked": false,
+  "ok": true,
+  "orchestration_evidence": null,
+  "proof_scope": {
+    "does_not_prove": [
+      "new provider execution",
+      "Herdr workspace cleanup unless a cleanup receipt is present",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "browser/CDP UI rendering"
+    ],
+    "proves": [
+      "Tau can summarize known run artifacts from one run directory",
+      "Tau can expose checkpoint/current-state, lifecycle, cleanup, approval, and evidence status without mutation"
+    ]
+  },
+  "provider_dag": null,
+  "provider_dag_planner": null,
+  "provider_pane": null,
+  "provider_readiness": null,
+  "provider_session_states": [],
+  "real_world_sanity": null,
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T233757Z-tau-generic-dag-resume-from-run-dir-final2/medium-generic-dag",
+  "run_receipt": {
+    "completed_node_count": 3,
+    "live": false,
+    "mocked": false,
+    "node_count": 3,
+    "ok": true,
+    "run_id": "rw-sanity-generic-dag",
+    "schema": "tau.generic_dag_run_receipt.v1",
+    "status": "PASS",
+    "verdict": "PASS"
+  },
+  "runtime_manifest": null,
+  "schema": "tau.run_status.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-03T23:37:58Z"
+}

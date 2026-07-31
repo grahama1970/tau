@@ -1,0 +1,33 @@
+{
+  "blocking_findings": [],
+  "checks": {
+    "characters": "PASS",
+    "creatures": "PASS",
+    "effects": "PASS",
+    "environment": "PASS",
+    "motion_cues": "PASS",
+    "props": "PASS",
+    "scale": "PASS",
+    "script_dialogue": "PASS"
+  },
+  "dimensions": {
+    "height": 941,
+    "width": 1672
+  },
+  "hash": "sha256:2c89628513c4c3c34d2b862673e56c656ce1a40409398fbb13fba6718f53c914",
+  "panel_id": "panel_01",
+  "passed_entities": [
+    "single primary human subject",
+    "consistent indoor office setting",
+    "coherent cinematic lighting",
+    "clear tabletop investigation materials",
+    "background city/bridge environment",
+    "no obvious multi-scene collage or temporal split",
+    "suitable for a dry-run one-scene Kling request"
+  ],
+  "reviewed_image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/artifacts/panel_01_scillm_panel.png",
+  "reviewer_source": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-45-persona-dream-panel-repair-gate-loop-20260629T221536Z/command-loop/command-artifacts/command-loop-step-002/visual_review_receipt.json",
+  "schema": "persona_dream.visual_review_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-06-29T22:21:37Z"
+}

@@ -1,0 +1,1 @@
+{"artifacts": [], "commands_run": ["python3 inline receipt writer"], "errors": [], "handoff_summary": "planner completed by real-world sanity worker", "node_id": "planner", "policy_exceptions": [], "schema": "tau.generic_dag_node_receipt.v1", "status": "PASS", "verdict": "PASS"}

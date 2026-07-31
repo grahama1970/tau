@@ -1,0 +1,65 @@
+{
+  "acceptance_criteria": [
+    "dream_packet.json exists at run root or declared artifact path",
+    "validate-dream-packet returns PASS_DREAM_PACKET",
+    "residue_items are nonempty and each item has a nonempty source_id",
+    "contact_sheet points to an existing PNG with a PNG signature",
+    "memory_write_receipt is skipped unless write-memory was explicitly requested",
+    "validate-run-root --direction backward advances to story_contract or a later concrete blocker"
+  ],
+  "blocking_validation": {
+    "command": "./run.sh validate-dream-packet <dream_packet> --run-root <run_root> --json",
+    "first_blocker": {
+      "path": "dream_packet.json | artifacts/dream_packet.json",
+      "phase": "dream_packet",
+      "reason": "missing_artifact"
+    },
+    "status": "BLOCKED"
+  },
+  "created_at": "2026-06-29T20:23:17Z",
+  "created_by": "project_agent",
+  "current_packet": {
+    "exists": false,
+    "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/dream_packet.json"
+  },
+  "delegated_subagents": [
+    "memory"
+  ],
+  "exercised": "local run-root packaging, optional dream packet validator execution, missing-packet blocker capture, repair handoff policy",
+  "forbidden_actions": [
+    "fabricate_residue_source_ids",
+    "treat_about_text_as_residue_without_memory_source",
+    "write_memory_without_explicit_authorization",
+    "mark_dream_packet_pass_without_contact_sheet_png",
+    "rewrite_downstream_story_or_panel_receipts_to_hide_missing_packet",
+    "direct_kling_submit",
+    "direct_paid_provider_call"
+  ],
+  "live": "no",
+  "mocked": "no",
+  "owner_subagent": "dreamer",
+  "purpose": "Generate or repair the beginning-of-pipeline dream packet from real recalled residue and local receipt-backed artifacts before story, storyboard, panel, provider, or Kling claims.",
+  "required_default_action": {
+    "steps": [
+      "Recall or load real persona residue; if no residue exists, block with no_dream instead of fabricating source ids.",
+      "Write residue_links.json and contradiction_report.json preserving source_id, scope, and recall metadata.",
+      "Create dream_prompt.txt, frame_prompts.json, contact_sheet.png, and dream_reflection.md as local artifacts.",
+      "Write dream_packet.json with schema persona_dream.packet.v1, mode, persona id, residue_items, dream_prompt, frame_prompts, contact_sheet, and reflection.",
+      "Keep memory_write_receipt.json skipped unless explicit write-memory authorization is present.",
+      "Run validate-dream-packet, then validate-run-root --direction backward, and report the next first blocker."
+    ],
+    "summary": "Create a receipt-backed dream packet from current persona memory residue and local contact-sheet evidence."
+  },
+  "run_id": "issue-39-provider-eligible-final-20260629T195500Z",
+  "schema": "persona_dream.dream_packet_work_order.v1",
+  "source_paths": {
+    "dream_packet_candidate": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/dream_packet.json",
+    "dreamer_agent_contract": "/home/graham/workspace/experiments/agent-skills/agents/dreamer/AGENTS.md",
+    "memory_agent_contract": "/home/graham/workspace/experiments/agent-skills/agents/memory/AGENTS.md",
+    "persona_dream_skill_contract": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/SKILL.md",
+    "project_knowledge": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/PROJECT_KNOWLEDGE.md",
+    "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z"
+  },
+  "status": "WORK_ORDER_READY_DREAM_PACKET_REQUIRED",
+  "unverified": "live memory recall, residue semantic grounding, dreamer subagent execution, contact sheet generation quality, story/panel/provider/Kling execution"
+}

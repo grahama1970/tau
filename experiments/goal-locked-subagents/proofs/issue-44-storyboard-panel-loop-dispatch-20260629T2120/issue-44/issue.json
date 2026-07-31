@@ -1,0 +1,42 @@
+{
+  "author": {
+    "id": "U_kgDOCRK7qw",
+    "is_bot": false,
+    "login": "grahama1970",
+    "name": "Graham"
+  },
+  "body": "## Type\nfeature\n\n## Target\n`/home/graham/workspace/experiments/tau`\n\nLikely areas:\n- `experiments/goal-locked-subagents/agent-command-specs/`\n- `src/tau_coding/persona_dream_dream_packet_agent.py` or a new storyboard agent module\n- `src/tau_coding/generated_ticket.py` route registry\n- focused Tau tests for the storyboard-panel loop\n\n## Current State\nThe persona-dream pipeline has advanced past `dream_packet` and `story_contract`. The next forward blocker is now `storyboard_panel`:\n\n```text\nrun_root: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run\nfirst_blocker.phase: storyboard_panel\nfirst_blocker.reason: missing_artifact\nactive_loop.loop: storyboard_loop\n```\n\nPersona-dream now writes a validated storyboard-panel work order:\n\n```text\nwork_order: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/storyboard_panel_work_order.json\nvalidation: PASS_STORYBOARD_PANEL_WORK_ORDER\nschema: persona_dream.storyboard_panel_work_order.v1\nstatus: WORK_ORDER_READY_STORYBOARD_PANEL_REQUIRED\nowner_subagent: dreamer\n```\n\nThe work order requires continuity checking, not just a loose panel stub:\n\n```text\n- write a panel work order with timing, beat, entities, props, environment, and dynamic behaviors\n- write a continuity ledger that explicitly checks story-to-panel continuity before image generation\n- validate-storyboard-panel must pass\n```\n\n## Requested Outcome\nAdd a bounded Tau storyboard-panel creator/reviewer loop that consumes `persona_dream.storyboard_panel_work_order.v1`, writes the first storyboard panel receipt and required continuity artifacts, and independently validates the result.\n\nThe loop should be serial and receipt-backed, for example:\n\n```text\nhuman -> storyboard-writer -> storyboard-reviewer -> human\n```\n\n## Acceptance Criteria\n- Tau has routable command specs for the storyboard-panel creator/reviewer path, or extends existing persona-dream roles without breaking dream-packet and story-contract paths.\n- The loop consumes the validated work order at `.../receipts/storyboard_panel_work_order.json`.\n- The creator writes `receipts/storyboard_panel_receipt.json` plus referenced `continuity_ledger` and `work_order` artifacts under the run root.\n- The continuity ledger explicitly checks story-to-panel continuity; do not skip this.\n- The reviewer runs persona-dream `validate-storyboard-panel` and records JSON receipts.\n- `skills/persona-dream/run.sh validate-storyboard-panel <receipt> --run-root <run_root> --json` returns `PASS_STORYBOARD_PANEL`.\n- `skills/persona-dream/run.sh pipeline-loop-status <run_root> --direction forward --json` advances past `storyboard_panel` to `panel_repair_gate` or a later blocker.\n- No Kling call, paid provider call, public upload, or provider video call is performed for this ticket.\n\n## Required Proof\nAttach a proof root under:\n\n```text\nexperiments/goal-locked-subagents/proofs/<issue-id>-persona-dream-storyboard-panel-loop-<timestamp>/\n```\n\nRequired artifacts:\n- input `storyboard_panel_work_order.json`\n- start `tau.agent_handoff.v1`\n- creator/reviewer Tau receipts\n- resulting `receipts/storyboard_panel_receipt.json`\n- referenced continuity ledger and panel work order\n- persona-dream `validate-storyboard-panel` output\n- persona-dream `pipeline-loop-status --direction forward` output showing the next blocker\n- focused Tau tests for the new command spec/CLI\n\n## Non-goals\n- Do not call Kling.\n- Do not claim full pipeline readiness.\n- Do not solve panel repair, provider media, public URL, or Kling gates in this ticket except as needed to prove storyboard advances to the next blocker.\n- Do not use Nano Banana/Gemini fallback imagery as final panel evidence.\n\n## Route\nroute:backend_python_or_skill_runtime\nagent:coder\n",
+  "comments": [],
+  "createdAt": "2026-06-29T21:20:31Z",
+  "labels": [
+    {
+      "color": "5319e7",
+      "description": "Tau agent harness work item",
+      "id": "LA_kwDOTG11HM8AAAACpOWQ-w",
+      "name": "agent-work"
+    },
+    {
+      "color": "0e8a16",
+      "description": "New capability or changed behavior request",
+      "id": "LA_kwDOTG11HM8AAAACpRFAQQ",
+      "name": "type:feature"
+    },
+    {
+      "color": "1d76db",
+      "description": "Python CLIs, runtime, harness, and skill integration route",
+      "id": "LA_kwDOTG11HM8AAAACpRFbZw",
+      "name": "route:backend_python_or_skill_runtime"
+    },
+    {
+      "color": "5319e7",
+      "description": "Requested repair agent: coder",
+      "id": "LA_kwDOTG11HM8AAAACpVklOg",
+      "name": "agent:coder"
+    }
+  ],
+  "number": 44,
+  "state": "OPEN",
+  "title": "Tau persona-dream harness needs storyboard-panel creator/reviewer loop",
+  "updatedAt": "2026-06-29T21:20:31Z",
+  "url": "https://github.com/grahama1970/tau/issues/44"
+}

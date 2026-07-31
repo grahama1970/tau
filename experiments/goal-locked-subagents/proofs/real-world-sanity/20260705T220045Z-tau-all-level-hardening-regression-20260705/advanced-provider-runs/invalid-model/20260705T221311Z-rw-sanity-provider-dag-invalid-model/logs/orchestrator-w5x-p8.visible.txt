@@ -1,0 +1,37 @@
+spec.json\nplanner
+_receipt: /home/gr
+aham/workspace/exp
+eriments/tau/exper
+iments/goal-locked
+-subagents/proofs/
+real-world-sanity/
+20260705T220045Z-t
+au-all-level-harde
+ning-regression-20
+260705/advanced-pr
+ovider-runs/invali
+d-model/20260705T2
+21311Z-rw-sanity-p
+rovider-dag-invali
+d-model/planner-re
+ceipt.json\nfinal_
+receipt: /home/gra
+ham/workspace/expe
+riments/tau/experi
+ments/goal-locked-
+subagents/proofs/r
+eal-world-sanity/2
+0260705T220045Z-ta
+u-all-level-harden
+ing-regression-202
+60705/advanced-pro
+vider-runs/invalid
+-model/20260705T22
+1311Z-rw-sanity-pr
+ovider-dag-invalid
+-model/run-receipt
+.json\ncanonical t
+ruth: Tau JSON rec
+eipts; this pane i
+s human-visible te
+lemetry.\n

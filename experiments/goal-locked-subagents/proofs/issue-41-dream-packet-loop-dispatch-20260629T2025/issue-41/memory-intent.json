@@ -1,0 +1,387 @@
+{
+  "action": "QUERY",
+  "allowed_tools": [],
+  "candidate_intents": [],
+  "classifier_source": "deterministic_problem_query",
+  "confidence": 0.85,
+  "content_type": "markdown",
+  "depth": 1,
+  "disallowed_tools": [],
+  "entities": [],
+  "entity_context": {
+    "agent_contract": {
+      "authoritative_paths": [
+        "proof_packet.assertions",
+        "nodes.anchors",
+        "nodes.validated_context",
+        "nodes.suppressed"
+      ],
+      "ignore_for_grounding": [
+        "display_summary",
+        "candidate_nodes",
+        "guess_nodes",
+        "rationale.summary"
+      ],
+      "llm_generated_fields_are_never_authoritative": true,
+      "use_for_grounding": [
+        "proof_packet.assertions"
+      ]
+    },
+    "agent_decision": {
+      "grounding_source": "proof_packet.assertions",
+      "needs_clarification": true,
+      "needs_retry": true,
+      "primary_entity_id": null,
+      "reason": "fabricated_id",
+      "safe_to_answer": false,
+      "suggested_action": "clarify_or_repair"
+    },
+    "candidate_nodes": {
+      "controls": [],
+      "not_usable_for": [
+        "grounding",
+        "proof",
+        "approval",
+        "answer_authority",
+        "evidence_gate"
+      ],
+      "proof_role": "none",
+      "qras": [],
+      "requires_user_confirmation": true,
+      "status": "candidate_only",
+      "usable_for": [
+        "suggestions",
+        "related_results",
+        "did_you_mean"
+      ]
+    },
+    "counts": {
+      "anchors": 0,
+      "candidate_controls": 0,
+      "candidate_qras": 0,
+      "context_terms": 2,
+      "media_timecodes": 0,
+      "suppressed": 0,
+      "unsupported": 4,
+      "validated_context": 0
+    },
+    "executed_by": "intent_always_on",
+    "grounding_ok": false,
+    "media_timecodes": [],
+    "nodes": {
+      "anchors": [],
+      "context_terms": [
+        {
+          "id": "domain:graham_workspace_experiments",
+          "mention": "graham workspace experiments",
+          "metadata": {
+            "exists": true,
+            "grounded": true,
+            "name": "graham workspace experiments",
+            "type": "domain_term"
+          },
+          "node_kind": "domain_term",
+          "proof_role": "query_context",
+          "status": "extracted"
+        },
+        {
+          "id": "domain:agent",
+          "mention": "agent",
+          "metadata": {
+            "exists": true,
+            "grounded": true,
+            "name": "agent",
+            "type": "domain_term"
+          },
+          "node_kind": "domain_term",
+          "proof_role": "query_context",
+          "span": [
+            218,
+            223
+          ],
+          "status": "extracted"
+        }
+      ],
+      "suppressed": [],
+      "unsupported": [
+        {
+          "id": "unsupported:tau_persona_dream_harness",
+          "mention": "Tau persona dream harness",
+          "metadata": {
+            "exists": false,
+            "grounded": false,
+            "name": "Tau persona dream harness",
+            "reason": "out_of_domain",
+            "type": "noun_phrase"
+          },
+          "node_kind": "unsupported_term",
+          "proof_role": "none",
+          "span": [
+            0,
+            0
+          ],
+          "status": "unsupported"
+        },
+        {
+          "id": "unsupported:dream_packet_creator_reviewer_loop_state",
+          "mention": "dream packet creator reviewer loop state",
+          "metadata": {
+            "exists": false,
+            "grounded": false,
+            "name": "dream packet creator reviewer loop state",
+            "reason": "out_of_domain",
+            "type": "noun_phrase"
+          },
+          "node_kind": "unsupported_term",
+          "proof_role": "none",
+          "span": [
+            0,
+            0
+          ],
+          "status": "unsupported"
+        },
+        {
+          "id": "unsupported:tau_concrete_areas",
+          "mention": "tau Concrete areas",
+          "metadata": {
+            "exists": false,
+            "grounded": false,
+            "name": "tau Concrete areas",
+            "reason": "out_of_domain",
+            "type": "noun_phrase"
+          },
+          "node_kind": "unsupported_term",
+          "proof_role": "none",
+          "span": [
+            0,
+            0
+          ],
+          "status": "unsupported"
+        },
+        {
+          "id": "unsupported:new_persona_dream_pipeline_proof_module_persona_dream_work_order_artifact",
+          "mention": "new persona dream pipeline proof module persona dream work order artifact",
+          "metadata": {
+            "exists": false,
+            "grounded": false,
+            "name": "new persona dream pipeline proof module persona dream work order artifact",
+            "reason": "out_of_domain",
+            "type": "noun_phrase"
+          },
+          "node_kind": "unsupported_term",
+          "proof_role": "none",
+          "span": [
+            0,
+            0
+          ],
+          "status": "unsupported"
+        }
+      ],
+      "validated_context": []
+    },
+    "ok": true,
+    "proof_packet": {
+      "assertions": [
+        {
+          "evidence": {
+            "mention": "Tau persona dream harness",
+            "normalized_text": "tau persona dream harness",
+            "reason": "out_of_domain",
+            "span": [
+              0,
+              0
+            ]
+          },
+          "id": "assert:unsupported_tau_persona_dream_harness_unsupported",
+          "object": "sparta_controls",
+          "predicate": "is_not_grounded_to",
+          "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+          "status": "failed",
+          "subject": "unsupported:tau_persona_dream_harness"
+        },
+        {
+          "evidence": {
+            "mention": "dream packet creator reviewer loop state",
+            "normalized_text": "dream packet creator reviewer loop state",
+            "reason": "out_of_domain",
+            "span": [
+              0,
+              0
+            ]
+          },
+          "id": "assert:unsupported_dream_packet_creator_reviewer_loop_state_unsupported",
+          "object": "sparta_controls",
+          "predicate": "is_not_grounded_to",
+          "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+          "status": "failed",
+          "subject": "unsupported:dream_packet_creator_reviewer_loop_state"
+        },
+        {
+          "evidence": {
+            "mention": "tau Concrete areas",
+            "normalized_text": "tau concrete area",
+            "reason": "out_of_domain",
+            "span": [
+              0,
+              0
+            ]
+          },
+          "id": "assert:unsupported_tau_concrete_areas_unsupported",
+          "object": "sparta_controls",
+          "predicate": "is_not_grounded_to",
+          "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+          "status": "failed",
+          "subject": "unsupported:tau_concrete_areas"
+        },
+        {
+          "evidence": {
+            "mention": "new persona dream pipeline proof module persona dream work order artifact",
+            "normalized_text": "new persona dream pipeline proof module persona dream work order artifact",
+            "reason": "out_of_domain",
+            "span": [
+              0,
+              0
+            ]
+          },
+          "id": "assert:unsupported_new_persona_dream_pipeline_proof_module_persona_dream_work_order_artifact_unsupported",
+          "object": "sparta_controls",
+          "predicate": "is_not_grounded_to",
+          "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+          "status": "failed",
+          "subject": "unsupported:new_persona_dream_pipeline_proof_module_persona_dream_work_order_artifact"
+        }
+      ],
+      "authoritative": true,
+      "generated_by": "deterministic_extractor",
+      "llm_used": false,
+      "primary_entity_id": null,
+      "query_text": "title: Tau persona-dream harness needs dream-packet creator/reviewer loop\nstate: OPEN\n\n## Type\nfeature\n\n## Target\n`/home/graham/workspace/experiments/tau`\n\nConcrete areas likely involved:\n- `experiments/goal-locked-subagents/agent-command-specs/`\n- `src/tau_coding/cli.py`\n- `src/tau_coding/persona_dream_panel_proof.py` or a new persona-dream pipeline proof module\n- persona-dream work order artifact: `/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/receipts/dream_packet_work_order.json`\n\n## Current State\nPersona-dream full-pipeline validation now prioritizes upstream pipeline health over Kling. The existing Tau persona-dream lane only has panel command specs:\n\n```text\npanel-creator\npanel-reviewer\npersona-dream-panel-repair-gate\n```\n\nThere is no Tau `dreamer` command spec or creator/reviewer loop that consumes `persona_dream.dream_packet_work_order.v1` and emits a validated `dream_packet.json`.\n\nLocal evidence from agent-skills persona-dream:\n\n```text\n./run.sh pipeline-loop-status /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z --direction forward --json\n# status: BLOCKED\n# first_blocker.phase: dream_packet\n# first_blocker.reason: missing_artifact\n# active_loop.loop: dream_packet_loop\n# active_loop.default_repair: Generate or repair the dream packet from current memory residue, contact sheet, frame prompts, and reflection receipts.\n\n./run.sh pipeline-loop-run /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z --direction forward --max-iterations 1 --output /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/receipts/pipeline_loop_run_forward.json --json\n# status: BLOCKED\n# stop_reason: work_order_written\n# repair_action.status: WROTE_DREAM_PACKET_WORK_ORDER\n# repair_action.owner_subagent: dreamer\n# repair_action.output: .../receipts/dream_packet_work_order.json\n\n./run.sh validate-dream-packet-work-order /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/receipts/dream_packet_work_order.json --json\n# status: PASS_DREAM_PACKET_WORK_ORDER\n# first_blocker: null\n# owner_subagent: dreamer\n```\n\n## Requested Outcome\nAdd a Tau persona-dream dream-packet creator/reviewer while-loop path that consumes `persona_dream.dream_packet_work_order.v1`, dispatches through `tau.agent_handoff.v1`, and emits a source-grounded `dream_packet.json` plus receipts that pass persona-dream validation.\n\nThe first implementation may be bounded to one run root and one dream packet. It must not call Kling, make paid provider calls, or fabricate memory residue.\n\n## Acceptance Criteria\n- Add a routable Tau `dreamer` or equivalent creator/reviewer command spec for `persona_dream.dream_packet_work_order.v1`.\n- The command loop writes `tau.agent_handoff.v1` and `tau.subagent_receipt.v1` artifacts for creator and reviewer or an explicit fail-closed reviewer.\n- The generated `dream_packet.json` is derived from real memory/residue or fails closed with `no_dream`; fixture residue must be clearly marked as fixture and not used for live proof closure.\n- `skills/persona-dream/run.sh validate-dream-packet <dream_packet> --run-root <run_root> --json` returns `PASS_DREAM_PACKET` for the live proof, or a deterministic fail-closed blocker if memory residue is unavailable.\n- `skills/persona-dream/run.sh pipeline-loop-status <run_root> --direction forward --json` advances past `dream_packet` to `story_contract` or a later blocker.\n- No Kling call, paid provider call, or public upload is performed.\n\n## Required Proof\nAttach a proof root under:\n\n```text\nexperiments/goal-locked-subagents/proofs/<issue-id>-persona-dream-dream-packet-loop-<timestamp>/\n```\n\nRequired artifacts:\n- input `dream_pa"
+    },
+    "query_text": "title: Tau persona-dream harness needs dream-packet creator/reviewer loop\nstate: OPEN\n\n## Type\nfeature\n\n## Target\n`/home/graham/workspace/experiments/tau`\n\nConcrete areas likely involved:\n- `experiments/goal-locked-subagents/agent-command-specs/`\n- `src/tau_coding/cli.py`\n- `src/tau_coding/persona_dream_panel_proof.py` or a new persona-dream pipeline proof module\n- persona-dream work order artifact: `/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/receipts/dream_packet_work_order.json`\n\n## Current State\nPersona-dream full-pipeline validation now prioritizes upstream pipeline health over Kling. The existing Tau persona-dream lane only has panel command specs:\n\n```text\npanel-creator\npanel-reviewer\npersona-dream-panel-repair-gate\n```\n\nThere is no Tau `dreamer` command spec or creator/reviewer loop that consumes `persona_dream.dream_packet_work_order.v1` and emits a validated `dream_packet.json`.\n\nLocal evidence from agent-skills persona-dream:\n\n```text\n./run.sh pipeline-loop-status /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z --direction forward --json\n# status: BLOCKED\n# first_blocker.phase: dream_packet\n# first_blocker.reason: missing_artifact\n# active_loop.loop: dream_packet_loop\n# active_loop.default_repair: Generate or repair the dream packet from current memory residue, contact sheet, frame prompts, and reflection receipts.\n\n./run.sh pipeline-loop-run /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z --direction forward --max-iterations 1 --output /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/receipts/pipeline_loop_run_forward.json --json\n# status: BLOCKED\n# stop_reason: work_order_written\n# repair_action.status: WROTE_DREAM_PACKET_WORK_ORDER\n# repair_action.owner_subagent: dreamer\n# repair_action.output: .../receipts/dream_packet_work_order.json\n\n./run.sh validate-dream-packet-work-order /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/receipts/dream_packet_work_order.json --json\n# status: PASS_DREAM_PACKET_WORK_ORDER\n# first_blocker: null\n# owner_subagent: dreamer\n```\n\n## Requested Outcome\nAdd a Tau persona-dream dream-packet creator/reviewer while-loop path that consumes `persona_dream.dream_packet_work_order.v1`, dispatches through `tau.agent_handoff.v1`, and emits a source-grounded `dream_packet.json` plus receipts that pass persona-dream validation.\n\nThe first implementation may be bounded to one run root and one dream packet. It must not call Kling, make paid provider calls, or fabricate memory residue.\n\n## Acceptance Criteria\n- Add a routable Tau `dreamer` or equivalent creator/reviewer command spec for `persona_dream.dream_packet_work_order.v1`.\n- The command loop writes `tau.agent_handoff.v1` and `tau.subagent_receipt.v1` artifacts for creator and reviewer or an explicit fail-closed reviewer.\n- The generated `dream_packet.json` is derived from real memory/residue or fails closed with `no_dream`; fixture residue must be clearly marked as fixture and not used for live proof closure.\n- `skills/persona-dream/run.sh validate-dream-packet <dream_packet> --run-root <run_root> --json` returns `PASS_DREAM_PACKET` for the live proof, or a deterministic fail-closed blocker if memory residue is unavailable.\n- `skills/persona-dream/run.sh pipeline-loop-status <run_root> --direction forward --json` advances past `dream_packet` to `story_contract` or a later blocker.\n- No Kling call, paid provider call, or public upload is performed.\n\n## Required Proof\nAttach a proof root under:\n\n```text\nexperiments/goal-locked-subagents/proofs/<issue-id>-persona-dream-dream-packet-loop-<timestamp>/\n```\n\nRequired artifacts:\n- input `dream_pa",
+    "route": "/extract-entities",
+    "view": "agent"
+  },
+  "evidence_case": null,
+  "expand_hops": 1,
+  "frameworks": [],
+  "grounding": null,
+  "invalid_terms": [],
+  "k": 8,
+  "keywords": [],
+  "lanes": [
+    "bm25",
+    "dense"
+  ],
+  "matched_persona_aliases": [],
+  "perspective": null,
+  "planner_only": false,
+  "query_plan": {
+    "extracted_entities": [],
+    "max_hops": null,
+    "start_node": null,
+    "steps": [
+      {
+        "endpoint": "/list",
+        "params": {
+          "collection": "sparta_controls",
+          "filters": {
+            "source_framework": "NIST"
+          },
+          "limit": 50
+        }
+      }
+    ],
+    "strategy": "filtered_listing"
+  },
+  "query_type": "knowledge",
+  "question_domains": [
+    "procedural_memory"
+  ],
+  "question_kind": "procedural_project_memory_question",
+  "reason": null,
+  "recall_profile": "procedural_memory",
+  "recall_profile_confidence": 0.85,
+  "recall_profile_source": "deterministic_procedural",
+  "recall_profile_spec": {
+    "clarify_policy": "default",
+    "collections": [
+      "lessons",
+      "skill_chains",
+      "sanity_scripts",
+      "checkpoints"
+    ],
+    "depth": 1,
+    "description": "Project-agent troubleshooting, prior implementation, skills, and checkpoint recall.",
+    "hard_filters": null,
+    "k": 8,
+    "min_grounding": 0.7,
+    "name": "procedural_memory",
+    "required_artifacts": [
+      "lesson"
+    ],
+    "reranker_mode": "off",
+    "weights": {
+      "bm25": 0.2,
+      "freshness": 0.15,
+      "graph_multihop": 0.2,
+      "semantic": 0.35,
+      "skill_chain": 0.1
+    }
+  },
+  "recommended_skills": [
+    "memory"
+  ],
+  "render_style_id": "plain_answer",
+  "required_artifacts": [
+    "lesson"
+  ],
+  "reranker_mode": "off",
+  "response_mode": "memory_grounded_answer",
+  "rewritten_query": "title: Tau persona-dream harness needs dream-packet creator/reviewer loop\nstate: OPEN\n\n## Type\nfeature\n\n## Target\n`/home/graham/workspace/experiments/tau`\n\nConcrete areas likely involved:\n- `experiments/goal-locked-subagents/agent-command-specs/`\n- `src/tau_coding/cli.py`\n- `src/tau_coding/persona_dream_panel_proof.py` or a new persona-dream pipeline proof module\n- persona-dream work order artifact: `/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/receipts/dream_packet_work_order.json`\n\n## Current State\nPersona-dream full-pipeline validation now prioritizes upstream pipeline health over Kling. The existing Tau persona-dream lane only has panel command specs:\n\n```text\npanel-creator\npanel-reviewer\npersona-dream-panel-repair-gate\n```\n\nThere is no Tau `dreamer` command spec or creator/reviewer loop that consumes `persona_dream.dream_packet_work_order.v1` and emits a validated `dream_packet.json`.\n\nLocal evidence from agent-skills persona-dream:\n\n```text\n./run.sh pipeline-loop-status /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z --direction forward --json\n# status: BLOCKED\n# first_blocker.phase: dream_packet\n# first_blocker.reason: missing_artifact\n# active_loop.loop: dream_packet_loop\n# active_loop.default_repair: Generate or repair the dream packet from current memory residue, contact sheet, frame prompts, and reflection receipts.\n\n./run.sh pipeline-loop-run /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z --direction forward --max-iterations 1 --output /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/receipts/pipeline_loop_run_forward.json --json\n# status: BLOCKED\n# stop_reason: work_order_written\n# repair_action.status: WROTE_DREAM_PACKET_WORK_ORDER\n# repair_action.owner_subagent: dreamer\n# repair_action.output: .../receipts/dream_packet_work_order.json\n\n./run.sh validate-dream-packet-work-order /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/receipts/dream_packet_work_order.json --json\n# status: PASS_DREAM_PACKET_WORK_ORDER\n# first_blocker: null\n# owner_subagent: dreamer\n```\n\n## Requested Outcome\nAdd a Tau persona-dream dream-packet creator/reviewer while-loop path that consumes `persona_dream.dream_packet_work_order.v1`, dispatches through `tau.agent_handoff.v1`, and emits a source-grounded `dream_packet.json` plus receipts that pass persona-dream validation.\n\nThe first implementation may be bounded to one run root and one dream packet. It must not call Kling, make paid provider calls, or fabricate memory residue.\n\n## Acceptance Criteria\n- Add a routable Tau `dreamer` or equivalent creator/reviewer command spec for `persona_dream.dream_packet_work_order.v1`.\n- The command loop writes `tau.agent_handoff.v1` and `tau.subagent_receipt.v1` artifacts for creator and reviewer or an explicit fail-closed reviewer.\n- The generated `dream_packet.json` is derived from real memory/residue or fails closed with `no_dream`; fixture residue must be clearly marked as fixture and not used for live proof closure.\n- `skills/persona-dream/run.sh validate-dream-packet <dream_packet> --run-root <run_root> --json` returns `PASS_DREAM_PACKET` for the live proof, or a deterministic fail-closed blocker if memory residue is unavailable.\n- `skills/persona-dream/run.sh pipeline-loop-status <run_root> --direction forward --json` advances past `dream_packet` to `story_contract` or a later blocker.\n- No Kling call, paid provider call, or public upload is performed.\n\n## Required Proof\nAttach a proof root under:\n\n```text\nexperiments/goal-locked-subagents/proofs/<issue-id>-persona-dream-dream-packet-loop-<timestamp>/\n```\n\nRequired artifacts:\n- input `dream_pa",
+  "scene_action_id": null,
+  "scope": "brandon_bailey",
+  "skill_chain": [
+    "memory"
+  ],
+  "slots": {
+    "arango_data_requested": false,
+    "document_name": "home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/receipts/dream_packet_work_order.json",
+    "page": null,
+    "page_image_requested": false,
+    "payload_reference": false,
+    "proof_requested": false,
+    "qdrant_similarity_requested": false,
+    "requested_artifacts": [
+      "table"
+    ],
+    "similarity_scope": null,
+    "table_requested": true
+  },
+  "suggestions": [],
+  "target_node_id": null,
+  "tier1": [],
+  "tool_calls": [
+    {
+      "arguments": {
+        "collection": "sparta_controls",
+        "filters": {
+          "source_framework": "NIST"
+        },
+        "limit": 50
+      },
+      "blocking": true,
+      "depends_on": [],
+      "domain": null,
+      "endpoint": "/list",
+      "function": null,
+      "id": "step_0",
+      "required_for_answer": true,
+      "skill": null,
+      "type": "endpoint",
+      "when": null
+    }
+  ],
+  "top_intents": [],
+  "ui_action": null,
+  "valid_entities": []
+}

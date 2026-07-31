@@ -1,0 +1,29 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T224918Z-tau-provider-herdr-surface-summary-20260705/advanced-provider-runs/invalid-model/20260705T224918Z-rw-sanity-provider-dag-invalid-model/scratch-worktree/message.txt"
+  ],
+  "attempt": 1,
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T224918Z-tau-provider-herdr-surface-summary-20260705/advanced-provider-runs/invalid-model/20260705T224918Z-rw-sanity-provider-dag-invalid-model/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "python deterministic visible coder"
+  ],
+  "dag_id": "20260705T224918Z-rw-sanity-provider-dag-invalid-model",
+  "errors": [],
+  "goal_hash": "sha256:d864f91a279068a6e81bee63a3729d5e847f9d4cf4d989f67609ec8efabf45ea",
+  "handoff_summary": "Deterministic visible coder updated the scratch target file.",
+  "node_id": "coder",
+  "pane_id": "w67:p5",
+  "policy_exceptions": [],
+  "provider_id": "codex",
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "status": "PASS",
+  "terminal_id": "term_655e4f7e602766e4",
+  "verdict": "PASS",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T224918Z-tau-provider-herdr-surface-summary-20260705/advanced-provider-runs/invalid-model/20260705T224918Z-rw-sanity-provider-dag-invalid-model/provider-readiness/20260705T224918Z-rw-sanity-provider-dag-invalid-model-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "cdb5ceee8d9831ca0f829e26c4ae015d995bd6bc8aaadce40b869c2bd2eef6b4",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T224918Z-tau-provider-herdr-surface-summary-20260705/advanced-provider-runs/invalid-model/20260705T224918Z-rw-sanity-provider-dag-invalid-model/work-orders/attempt-01-coder.json",
+  "work_order_sha256": "6b9754d5da3fc6c5e558d3651c900eaa16d4490b2dfd2182b8293888c3e2f137",
+  "workspace_id": "w67"
+}

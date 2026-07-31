@@ -1,0 +1,21 @@
+al-locked-subagents/proofs/r
+eal-world-sanity/20260705T22
+5943Z-tau-advanced-course-co
+rrection-regression-20260705
+/advanced-provider-runs/one-
+pass/20260705T230019Z-rw-san
+ity-provider-dag-one-pass/pl
+anner-receipt.json\nfinal_re
+ceipt: /home/graham/workspac
+e/experiments/tau/experiment
+s/goal-locked-subagents/proo
+fs/real-world-sanity/2026070
+5T225943Z-tau-advanced-cours
+e-correction-regression-2026
+0705/advanced-provider-runs/
+one-pass/20260705T230019Z-rw
+-sanity-provider-dag-one-pas
+s/run-receipt.json\ncanonica
+l truth: Tau JSON receipts;
+this pane is human-visible t
+elemetry.\n

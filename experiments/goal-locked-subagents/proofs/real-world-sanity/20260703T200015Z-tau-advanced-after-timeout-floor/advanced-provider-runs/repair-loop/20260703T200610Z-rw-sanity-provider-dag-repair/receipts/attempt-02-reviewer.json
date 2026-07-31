@@ -1,0 +1,24 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/repair-loop/20260703T200610Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "Read work order JSON",
+    "Read target_file message.txt",
+    "Read coder receipt attempt-02-coder.json",
+    "Verify TODO line is absent from message.txt",
+    "Verify coder receipt schema validity"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/repair-loop/20260703T200610Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/repair-loop/20260703T200610Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file has 4 lines, no TODO line present, contains run_id and repair provenance. Coder receipt is schema-valid (tau.provider_dag_node_receipt.v1) with all required fields. force_revise is false. Both conditions for PASS are met.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,21 @@
+bagents/proofs/real-world-sanity/20260705T225943Z-tau-advan
+ced-course-correction-regression-20260705/advanced-generic-
+provider-dag-adapter/provider-runs/20260705T230237Z-rw-sani
+ty-generic-provider-dag-adapter\ndag_spec: /home/graham/wor
+kspace/experiments/tau/experiments/goal-locked-subagents/pr
+oofs/real-world-sanity/20260705T225943Z-tau-advanced-course
+-correction-regression-20260705/advanced-generic-provider-d
+ag-adapter/provider-runs/20260705T230237Z-rw-sanity-generic
+-provider-dag-adapter/dag-spec.json\nplanner_receipt: /home
+/graham/workspace/experiments/tau/experiments/goal-locked-s
+ubagents/proofs/real-world-sanity/20260705T225943Z-tau-adva
+nced-course-correction-regression-20260705/advanced-generic
+-provider-dag-adapter/provider-runs/20260705T230237Z-rw-san
+ity-generic-provider-dag-adapter/planner-receipt.json\nfina
+l_receipt: /home/graham/workspace/experiments/tau/experimen
+ts/goal-locked-subagents/proofs/real-world-sanity/20260705T
+225943Z-tau-advanced-course-correction-regression-20260705/
+advanced-generic-provider-dag-adapter/provider-runs/2026070
+5T230237Z-rw-sanity-generic-provider-dag-adapter/run-receip
+t.json\ncanonical truth: Tau JSON receipts; this pane is hu
+man-visible telemetry.\n

@@ -1,0 +1,38 @@
+  Now
+  Current artifact touched:
+  /home/graham/workspace/experiments/tau/
+  experiments/goal-locked-subagents/proofs/real-
+  world-sanity/20260703T200015Z-tau-advanced-
+  after-timeout-floor/advanced-provider-runs/
+  one-pass/20260703T200108Z-rw-sanity-provider-
+  dag-one-pass/scratch-worktree/message.txt
+
+  Receipt written:
+  /home/graham/workspace/experiments/tau/
+  experiments/goal-locked-subagents/proofs/real-
+  world-sanity/20260703T200015Z-tau-advanced-
+  after-timeout-floor/advanced-provider-runs/
+  one-pass/20260703T200108Z-rw-sanity-provider-
+  dag-one-pass/receipts/attempt-01-coder.json
+
+  Evidence
+  sed -n '1,80p' message.txt returned:
+  Completed implementation: provider DAG coder
+  node updated the target file.
+
+  jq -e '.schema ==
+  "tau.provider_dag_node_receipt.v1" and .status
+  == "PASS" and .verdict == "PASS" and
+  (.changed_files | length == 1)' .../receipts/
+  attempt-01-coder.json returned:
+  true
+
+  Receipt checks:
+
+  - changed_files: 1
+  - errors: 0
+
+
+› Explain this codebase
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

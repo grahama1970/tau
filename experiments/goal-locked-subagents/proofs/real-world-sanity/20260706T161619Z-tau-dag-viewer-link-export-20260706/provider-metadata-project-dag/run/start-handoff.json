@@ -1,0 +1,85 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/provider-metadata-project-dag/dag-contract.json"
+    ],
+    "dag_agent_role": "coder",
+    "dag_node_id": "coder",
+    "model_policy": {
+      "auth": "codex-oauth",
+      "model": "gpt-image-2",
+      "provider": "scillm"
+    },
+    "prompt_contract": {
+      "schema": "tau.prompt_contract.v1",
+      "system_prompt": "Stay inside the immutable provider metadata sanity goal.",
+      "user_template": "Use provider route metadata before claiming PASS."
+    },
+    "summary": "Dispatch DAG contract rw-sanity-project-dag-provider-metadata.",
+    "tau_dag_node": {
+      "agent": "coder",
+      "context": {},
+      "dag_id": "rw-sanity-project-dag-provider-metadata",
+      "executor": "local",
+      "goal": {
+        "goal_hash": "sha256:rw-sanity-project-dag-provider-metadata",
+        "goal_id": "rw-sanity-project-dag-provider-metadata",
+        "goal_version": 1
+      },
+      "model_policy": {
+        "auth": "codex-oauth",
+        "model": "gpt-image-2",
+        "provider": "scillm"
+      },
+      "node_id": "coder",
+      "prompt_contract": {
+        "schema": "tau.prompt_contract.v1",
+        "system_prompt": "Stay inside the immutable provider metadata sanity goal.",
+        "user_template": "Use provider route metadata before claiming PASS."
+      },
+      "required_evidence": [
+        "creator_artifact",
+        "provider_route_receipt"
+      ],
+      "target": {
+        "repo": "grahama1970/tau",
+        "target": "scratch-project-dag-provider-metadata"
+      }
+    }
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-provider-metadata"
+  },
+  "goal": {
+    "goal_hash": "sha256:rw-sanity-project-dag-provider-metadata",
+    "goal_id": "rw-sanity-project-dag-provider-metadata",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "coder",
+    "reason": "Entry node for DAG rw-sanity-project-dag-provider-metadata using role coder."
+  },
+  "previous_subagent": "human",
+  "rationale": "The DAG contract is the authoritative workflow and immutable goal boundary.",
+  "required_evidence": [
+    "creator_artifact",
+    "reviewer_verdict",
+    "provider_route_receipt"
+  ],
+  "result": {
+    "evidence": [
+      {
+        "kind": "dag_contract",
+        "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/provider-metadata-project-dag/dag-contract.json",
+        "schema": "tau.dag_contract.v1",
+        "sha256": "sha256:473acd515bf99d4ca5dcd203ec6087467194f36975c20b4df5937f14c95f322f"
+      }
+    ],
+    "status": "DAG_DISPATCH_REQUESTED",
+    "summary": "Tau is dispatching entry node coder."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Stop at a terminal DAG node or any fail-closed invariant violation."
+}

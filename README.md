@@ -117,6 +117,30 @@ These are containment and review mechanisms. They do not prove ITAR
 compliance, legal sufficiency, model safety, future route correctness, or that
 an agent DAG is trustworthy.
 
+## Current Product Target
+
+The active product goal is recorded in [GOAL.md](GOAL.md). Tau is not finished
+because the TUI resembles Pi or because receipts exist in the repository. The
+current target is usable supervision of five canonical real Tau DAGs, from a
+simple linear workflow through durable mixed-topology recovery, in one shared
+React Flow progress viewer.
+
+`$ask` is the intended convenience front door for human requests that need
+handler/model collaboration. It should compile the request into a strict
+`tau.dag_contract.v1`, interview the human when required DAG fields are
+missing, emit the final DAG before execution, and let Tau execute and expose
+live progress. Tau owns dispatch and receipts; browser handlers such as WebGPT
+and WebClaude route through Surf/browser-oracle command specs, while API model
+handlers route through Tau-owned SciLLM adapters.
+
+Pi TUI parity remains useful because it makes Tau a less hobbled coding
+harness: terminal image previews, markdown/table/code rendering, settings,
+session controls, extension UI, OAuth progress, and usable transcript controls
+matter for daily use. Those ports must not replace Tau-specific behavior:
+Memory-first routing, SciLLM provider containment, DAG contracts, typed
+evidence, fail-closed reviewer gates, Herdr/monitor integration, and
+human-owned goal boundaries remain the control plane.
+
 The policy/data-boundary gate is documented in
 [Zero-Trust Policy/Data-Boundary Preflight](docs/zero-trust-policy.md).
 The adversarial model is documented in
@@ -208,6 +232,8 @@ copyable example in
 | GitHub apply policy | Implemented as a local gate | Does not itself post to GitHub. |
 | Browser/CDP proof lane | Implemented for proof surfaces | Not a production chat UI proof. |
 | Tau DAG React Flow viewer | Implemented as UX Lab integration surface | Static fixtures prove renderability only; not live DAG execution. |
+| Pi-inspired TUI parity work | Active usability slice | Improves coding-harness ergonomics; does not satisfy GOAL.md by itself. |
+| Five canonical DAG product ladder | Active goal, not established as complete | Requires real workflow runs, shared dynamic viewer proof, resume/recovery, approval, and human acceptance. |
 | Proof index | Implemented | Indexes receipt metadata and hashes; does not prove receipt semantic truth. |
 | Route-memory signals | Implemented as local receipts | No approved Memory sync unless explicitly run. |
 | Adaptive DAG expansion | Implemented as validate/policy/apply artifacts | Does not mutate a running DAG silently. |

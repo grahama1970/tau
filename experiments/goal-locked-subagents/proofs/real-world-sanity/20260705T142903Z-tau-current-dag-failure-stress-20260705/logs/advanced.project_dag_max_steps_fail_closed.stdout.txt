@@ -1,0 +1,52 @@
+{
+  "contract_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/max-steps-project-dag/dag-contract.json",
+  "dag_id": null,
+  "evidence": {
+    "alert_codes": [
+      "dag_contract_invalid"
+    ],
+    "alert_count": 1,
+    "errors": [
+      "fail_closed_on contains unknown invariant code(s): reviewer_goal_hash_mismatch. Known codes: branch_goal_hash_divergence, branch_target_divergence, cleanup_apply_without_absence_proof, goal_hash_mismatch, invalid_provider_receipt, malformed_handoff, max_attempts_exceeded, missing_required_evidence, missing_required_join, missing_work_order_sha256, target_changed, unexpected_edge, unexpected_node, unresolved_block_alert"
+    ],
+    "primary_alert": {
+      "code": "dag_contract_invalid",
+      "evidence": {
+        "contract_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/max-steps-project-dag/dag-contract.json",
+        "scheduler": "handoff-loop"
+      },
+      "message": "fail_closed_on contains unknown invariant code(s): reviewer_goal_hash_mismatch. Known codes: branch_goal_hash_divergence, branch_target_divergence, cleanup_apply_without_absence_proof, goal_hash_mismatch, invalid_provider_receipt, malformed_handoff, max_attempts_exceeded, missing_required_evidence, missing_required_join, missing_work_order_sha256, target_changed, unexpected_edge, unexpected_node, unresolved_block_alert",
+      "severity": "BLOCK"
+    }
+  },
+  "failure_code": "dag_contract_invalid",
+  "live": true,
+  "message": "fail_closed_on contains unknown invariant code(s): reviewer_goal_hash_mismatch. Known codes: branch_goal_hash_divergence, branch_target_divergence, cleanup_apply_without_absence_proof, goal_hash_mismatch, invalid_provider_receipt, malformed_handoff, max_attempts_exceeded, missing_required_evidence, missing_required_join, missing_work_order_sha256, target_changed, unexpected_edge, unexpected_node, unresolved_block_alert",
+  "mocked": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "The repaired DAG contract will pass.",
+      "Any subagent or provider command was executed.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau rejected a malformed or incomplete DAG contract before dispatch.",
+      "Tau packaged the contract failure as a project-agent course-correction payload.",
+      "No DAG route, goal, target, command, or handoff was executed."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/max-steps-project-dag/run/dag-receipt.json",
+  "recommended_action": {
+    "next_agent": "goal-guardian",
+    "reason": "Repair the DAG contract so it satisfies tau.dag_contract.v1 before dispatch.",
+    "type": "repair_then_retry_or_reroute"
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T142903Z-tau-current-dag-failure-stress-20260705/max-steps-project-dag/run",
+  "scheduler": "handoff-loop",
+  "schema": "tau.dag_error.v1",
+  "severity": "BLOCK",
+  "status": "BLOCKED",
+  "verdict": "DAG_CONTRACT_INVALID"
+}

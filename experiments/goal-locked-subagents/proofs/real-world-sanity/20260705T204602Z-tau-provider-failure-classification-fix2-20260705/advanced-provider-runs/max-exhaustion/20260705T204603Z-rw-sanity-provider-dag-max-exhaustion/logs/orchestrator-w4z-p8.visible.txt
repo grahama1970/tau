@@ -1,0 +1,37 @@
+receipt: /home/gra
+ham/workspace/expe
+riments/tau/experi
+ments/goal-locked-
+subagents/proofs/r
+eal-world-sanity/2
+0260705T204602Z-ta
+u-provider-failure
+-classification-fi
+x2-20260705/advanc
+ed-provider-runs/m
+ax-exhaustion/2026
+0705T204603Z-rw-sa
+nity-provider-dag-
+max-exhaustion/pla
+nner-receipt.json\
+nfinal_receipt: /h
+ome/graham/workspa
+ce/experiments/tau
+/experiments/goal-
+locked-subagents/p
+roofs/real-world-s
+anity/20260705T204
+602Z-tau-provider-
+failure-classifica
+tion-fix2-20260705
+/advanced-provider
+-runs/max-exhausti
+on/20260705T204603
+Z-rw-sanity-provid
+er-dag-max-exhaust
+ion/run-receipt.js
+on\ncanonical trut
+h: Tau JSON receip
+ts; this pane is h
+uman-visible telem
+etry.\n

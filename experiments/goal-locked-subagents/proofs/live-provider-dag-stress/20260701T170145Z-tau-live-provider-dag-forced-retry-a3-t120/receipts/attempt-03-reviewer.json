@@ -1,0 +1,22 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 3,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/work-orders/attempt-03-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "jq . work-orders/attempt-03-reviewer.json",
+    "cat scratch-worktree/message.txt",
+    "jq . receipts/attempt-03-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/receipts/attempt-03-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file (message.txt) has no remaining TODO, coder_receipt_path is schema-valid (tau.provider_dag_node_receipt.v1) with all required fields, and force_revise is false. No revision needed.",
+  "errors": [],
+  "policy_exceptions": []
+}

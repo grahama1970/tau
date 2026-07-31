@@ -1,9 +1,25 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-13 10:37 by agent
+**Last updated:** 2026-07-26 10:45 by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-26 operating target reset: the recent Pi TUI parity work is a
+  separate coding-harness usability slice; it does not satisfy the broader
+  `GOAL.md` product outcome by itself. The active immutable product goal is
+  still the five canonical real Tau DAG ladder with one shared React Flow
+  progress viewer, truthful accepted evidence, blockers, human decisions,
+  live/resume behavior, and clean-checkout launch documentation. Agents should
+  preserve Tau-specific architecture while improving usability: Memory-first
+  routing, SciLLM as Tau's internal provider boundary, DAG contracts, typed
+  receipts, fail-closed evidence gates, Herdr/monitor surfaces, `$ask` as a
+  convenience compiler to `tau.dag_contract.v1`, and Tau-owned dynamic progress
+  state must not be overwritten by Pi feature ports. Current proof boundary:
+  prior TUI parity commits and screenshots demonstrate terminal-harness
+  renderability for selected features, but the five-DAG product ladder remains
+  `NOT_ESTABLISHED` until the real workflows and shared dynamic viewer are run
+  and inspected against `GOAL.md`.
 
 - 2026-07-13 issue #74 ready-queue condition safety slice: bounded-ready-queue
   now rejects every supplied non-empty edge `condition`, including malformed

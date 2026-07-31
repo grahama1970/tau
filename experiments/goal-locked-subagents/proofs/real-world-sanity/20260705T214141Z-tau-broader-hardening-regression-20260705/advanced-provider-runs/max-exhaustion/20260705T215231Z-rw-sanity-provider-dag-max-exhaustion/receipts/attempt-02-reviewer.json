@@ -1,0 +1,32 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T215231Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:0a043692f39d7b31ccfbf95cfe3cb885e4ad516d9a1309d9baf3955571dd4cfa",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w5N",
+  "pane_id": "w5N:p6",
+  "terminal_id": "term_655e42cd895ce633",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T215231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T215231Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "a2f7d28d0b3b1ab816440af912ffcc2772bd2ffd32f6e615071d340e0d3ba176",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T215231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work-order JSON",
+    "read target_file (message.txt)",
+    "read coder receipt (attempt-02-coder.json)",
+    "sha256sum opencode.visible.txt",
+    "ls scratch-worktree/ contents"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T215231Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T215231Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "REVISE: target_file is clean (TODO removed, one-liner present) and coder receipt is schema-valid with all required fields. However the content is minimal — a single sentence. A richer output with structured sections, implementation details, or exercise-specific metadata would better demonstrate provider-DAG capability in this max-exhaustion scenario.",
+  "errors": [],
+  "policy_exceptions": []
+}

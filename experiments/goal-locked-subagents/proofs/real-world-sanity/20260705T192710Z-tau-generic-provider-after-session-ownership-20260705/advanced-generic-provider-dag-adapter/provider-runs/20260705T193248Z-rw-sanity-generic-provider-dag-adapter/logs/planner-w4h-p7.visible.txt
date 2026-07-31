@@ -1,0 +1,36 @@
+Tau planner subagent visible monitor\nr
+un_id: 20260705T193248Z-rw-sanity-gener
+ic-provider-dag-adapter\nrun_dir: /home
+/graham/workspace/experiments/tau/exper
+iments/goal-locked-subagents/proofs/rea
+l-world-sanity/20260705T192710Z-tau-gen
+eric-provider-after-session-ownership-2
+0260705/advanced-generic-provider-dag-a
+dapter/provider-runs/20260705T193248Z-r
+w-sanity-generic-provider-dag-adapter\n
+dag_spec: /home/graham/workspace/experi
+ments/tau/experiments/goal-locked-subag
+ents/proofs/real-world-sanity/20260705T
+192710Z-tau-generic-provider-after-sess
+ion-ownership-20260705/advanced-generic
+-provider-dag-adapter/provider-runs/202
+60705T193248Z-rw-sanity-generic-provide
+r-dag-adapter/dag-spec.json\nplanner_re
+ceipt: /home/graham/workspace/experimen
+ts/tau/experiments/goal-locked-subagent
+s/proofs/real-world-sanity/20260705T192
+710Z-tau-generic-provider-after-session
+-ownership-20260705/advanced-generic-pr
+ovider-dag-adapter/provider-runs/202607
+05T193248Z-rw-sanity-generic-provider-d
+ag-adapter/planner-receipt.json\nfinal_
+receipt: /home/graham/workspace/experim
+ents/tau/experiments/goal-locked-subage
+nts/proofs/real-world-sanity/20260705T1
+92710Z-tau-generic-provider-after-sessi
+on-ownership-20260705/advanced-generic-
+provider-dag-adapter/provider-runs/2026
+0705T193248Z-rw-sanity-generic-provider
+-dag-adapter/run-receipt.json\ncanonica
+l truth: Tau JSON receipts; this pane i
+s human-visible telemetry.\n

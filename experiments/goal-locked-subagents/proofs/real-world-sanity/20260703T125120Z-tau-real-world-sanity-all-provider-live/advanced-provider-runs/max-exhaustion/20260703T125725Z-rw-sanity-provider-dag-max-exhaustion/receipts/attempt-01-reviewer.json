@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/max-exhaustion/20260703T125725Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work-order JSON",
+    "read target_file message.txt",
+    "read coder receipt attempt-01-coder.json",
+    "write reviewer receipt attempt-01-reviewer.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/max-exhaustion/20260703T125725Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/max-exhaustion/20260703T125725Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: TODO line removed, receipt schema-valid. But the replacement text is a generic boilerplate sentence with no substance. The message should name what was implemented (e.g., 'Added real-world proof-of-concept: provider DAG with OpenAI GPT-4o, Anthropic Claude, and OpenCode providers completing a 3-node linear DAG'). It should list the providers exercised, the node count, and the DAG topology to make the proof meaningful for downstream consumers.",
+  "errors": [],
+  "policy_exceptions": []
+}

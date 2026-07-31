@@ -1,0 +1,29 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T202300Z-tau-provider-broad-after-pane-run-20260705/advanced-provider-runs/repair-loop/20260705T202810Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "attempt": 1,
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T202300Z-tau-provider-broad-after-pane-run-20260705/advanced-provider-runs/repair-loop/20260705T202810Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "python deterministic visible coder"
+  ],
+  "dag_id": "20260705T202810Z-rw-sanity-provider-dag-repair",
+  "errors": [],
+  "goal_hash": "sha256:7d7e0d5280181b3faa36d69ee11b1750bdfeb211f4fb63f824c6cee9009ee359",
+  "handoff_summary": "Deterministic visible coder updated the scratch target file.",
+  "node_id": "coder",
+  "pane_id": "w4T:p5",
+  "policy_exceptions": [],
+  "provider_id": "codex",
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "status": "PASS",
+  "terminal_id": "term_655e2ff27899e521",
+  "verdict": "PASS",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T202300Z-tau-provider-broad-after-pane-run-20260705/advanced-provider-runs/repair-loop/20260705T202810Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T202810Z-rw-sanity-provider-dag-repair-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "f7f8ba005d5ede698ad10de72524eaf580d556012ad575587440183a2724297b",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T202300Z-tau-provider-broad-after-pane-run-20260705/advanced-provider-runs/repair-loop/20260705T202810Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-coder.json",
+  "work_order_sha256": "0b6d1d1eb84098f09866e0c3b0f33a33502451dbc3e938e103518ccdc5b4511c",
+  "workspace_id": "w4T"
+}

@@ -1,0 +1,36 @@
+SON, al
+l requi
+red fie
+lds pre
+sent (`
+schema`
+, `node
+_id`, `
+provide
+r_id`,
+`attemp
+t`, `st
+atus`,
+`verdic
+t`, `co
+mmands_
+run`, `
+artifac
+ts`, `h
+andoff_
+summary
+`, `err
+ors`).
+- **for
+ce_revi
+se**: `
+false`
+— no fo
+rced re
+vision
+needed.
+
+Writing
+ the PA
+SS rece
+ipt.

@@ -1,0 +1,64 @@
+{
+  "api_key_source": "env:SCILLM_API_KEY",
+  "blocking_findings": [],
+  "created_at": "2026-06-29T22:21:26Z",
+  "duration_seconds": 0.061373,
+  "events_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-45-persona-dream-panel-repair-gate-loop-20260629T221536Z/command-loop/command-artifacts/command-loop-step-002/panel_reviewer_events.jsonl",
+  "http_status": 200,
+  "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/artifacts/panel_01_scillm_panel.png",
+  "live": true,
+  "live_call_performed": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "parsed_response": {
+    "blocking_findings": [],
+    "passed_entities": [
+      "single primary human subject",
+      "consistent indoor office setting",
+      "coherent cinematic lighting",
+      "clear tabletop investigation materials",
+      "background city/bridge environment",
+      "no obvious multi-scene collage or temporal split",
+      "suitable for a dry-run one-scene Kling request"
+    ],
+    "status": "PASS",
+    "summary": "Coherent single cinematic panel: a woman in a dark, modern investigative office studies photographs and documents on a desk at night, with a steaming tea cup, task lamp, monitors, and city/bridge imagery through glass in the background."
+  },
+  "passed_entities": [
+    "single primary human subject",
+    "consistent indoor office setting",
+    "coherent cinematic lighting",
+    "clear tabletop investigation materials",
+    "background city/bridge environment",
+    "no obvious multi-scene collage or temporal split",
+    "suitable for a dry-run one-scene Kling request"
+  ],
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-45-persona-dream-panel-repair-gate-loop-20260629T221536Z/command-loop/command-artifacts/command-loop-step-002/visual_review_receipt.json",
+  "request": {
+    "messages": "<redacted-image-url-request>",
+    "model": "gpt-5.5",
+    "response_format": {
+      "type": "json_object"
+    },
+    "scillm_metadata": {
+      "caller": "tau",
+      "proof": "persona-dream-panel-review",
+      "role": "panel-reviewer"
+    },
+    "stream": true,
+    "stream_heartbeat_s": 15.0,
+    "stream_progress_events": true,
+    "temperature": 0
+  },
+  "response_content": "{\n  \"status\": \"PASS\",\n  \"summary\": \"Coherent single cinematic panel: a woman in a dark, modern investigative office studies photographs and documents on a desk at night, with a steaming tea cup, task lamp, monitors, and city/bridge imagery through glass in the background.\",\n  \"blocking_findings\": [],\n  \"passed_entities\": [\n    \"single primary human subject\",\n    \"consistent indoor office setting\",\n    \"coherent cinematic lighting\",\n    \"clear tabletop investigation materials\",\n    \"background city/bridge environment\",\n    \"no obvious multi-scene collage or temporal split\",\n    \"suitable for a dry-run one-scene Kling request\"\n  ]\n}",
+  "role": "panel-reviewer",
+  "schema": "tau.persona_dream.scillm_vlm_review_receipt.v1",
+  "status": "PASS",
+  "stream": true,
+  "stream_done_seen": true,
+  "stream_event_count": 141,
+  "stream_heartbeat_count": 0,
+  "stream_last_event_type": "done",
+  "summary": "Coherent single cinematic panel: a woman in a dark, modern investigative office studies photographs and documents on a desk at night, with a steaming tea cup, task lamp, monitors, and city/bridge imagery through glass in the background.",
+  "surface": "scillm.chat_completions.image_url"
+}

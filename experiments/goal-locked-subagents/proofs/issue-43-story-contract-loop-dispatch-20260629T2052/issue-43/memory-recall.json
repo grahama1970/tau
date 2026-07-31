@@ -1,0 +1,194 @@
+{
+  "confidence": 0.8,
+  "errors": [],
+  "found": true,
+  "items": [
+    {
+      "_key": "6500ad5b6398c1f1",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Key Files (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 1.0,
+        "dense": 0.5193581,
+        "freshness": 0.9813424511814147,
+        "graph": 0.0
+      },
+      "section": "Key Files",
+      "section_slug": "key-files",
+      "solution": "| File | Purpose |\n|------|---------|\n| PROJECT_KNOWLEDGE.md | Shared project knowledge |\n| README.md | Human-facing project overview and current harness notes |\n| src/tau_coding/subagent_receipt.py | Validates common subagent receipt envelopes |\n| src/tau_coding/generated_ticket.py | Validates minimal generated-ticket drafts and derives GitHub labels |\n| src/tau_coding/human_goal_change.py | Validates trusted-human-only immutable goal changes |\n| experiments/goal-locked-subagents/ | Schema artifacts and fixtures for the harness contracts |\n| tests/test_subagent_receipt.py | Focused subagent receipt contract tests |\n| tests/test_generated_ticket.py | Focused generated-ticket projection tests |\n| tests/test_human_goal_change.py | Focused human goal-change tests |",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:key-files"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "5d0d521134d6ec49",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Current Understanding (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.8,
+        "dense": 0.52300334,
+        "freshness": 0.9813424511814147,
+        "graph": 0.0
+      },
+      "section": "Current Understanding",
+      "section_slug": "current-understanding",
+      "solution": "- Project initialized, knowledge tracking started\n- Tau is a fork of alejandro-ao/tau being hardened into a goal-locked agentic harness. Current local slices add Loop2-compatible run receipts plus minimal model-facing contracts for subagent receipts, generated tickets, handoffs, and human-only goal changes. Tau derives GitHub labels deterministically instead of asking model agents to duplicate label/projection fields.",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:current-understanding"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "d2ab664248780d4c",
+      "_source": "project_knowledge",
+      "decisions": "| Date | Decision | Why |\n|------|----------|-----|\n| 2026-06-27 | Initialize project knowledge | Enable shared human/agent context |\n| 2026-06-27 | Use a fork at grahama1970/tau rather than a new unrelated repo | The project already has upstream history at alejandro-ao/tau, so a fork preserves attribution and makes future upstream comparison/pull possible. |\n| 2026-06-27 | Keep GitHub mutation out of the first harness slices | Current proof is schema, validator, fixture, and deterministic projection only; live issue creation should come after the contracts are accepted. |",
+      "doc_type": "aggregate",
+      "key_files": "| File | Purpose |\n|------|---------|\n| PROJECT_KNOWLEDGE.md | Shared project knowledge |\n| README.md | Human-facing project overview and current harness notes |\n| src/tau_coding/subagent_receipt.py | Validates common subagent receipt envelopes |\n| src/tau_coding/generated_ticket.py | Validates minimal generated-ticket drafts and derives GitHub labels |\n| src/tau_coding/human_goal_change.py | Validates trusted-human-only immutable goal changes |\n| experiments/goal-locked-subagents/ | Schema artifacts and fixtures for the harness contracts |\n| tests/test_subagent_receipt.py | Focused subagent receipt contract tests |\n| tests/test_generated_ticket.py | Focused generated-ticket projection tests |\n| tests/test_human_goal_change.py | Focused human goal-change tests |",
+      "open_questions": "- [ ] What are the key architectural decisions?\n- [ ] What are the known issues?",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.6,
+        "dense": 0.37181777,
+        "freshness": 0.9813424511814147,
+        "graph": 0.0
+      },
+      "tags": [
+        "project_knowledge",
+        "project:tau"
+      ],
+      "understanding": "- Project initialized, knowledge tracking started\n- Tau is a fork of alejandro-ao/tau being hardened into a goal-locked agentic harness. Current local slices add Loop2-compatible run receipts plus minimal model-facing contracts for subagent receipts, generated tickets, handoffs, and human-only goal changes. Tau derives GitHub labels deterministically instead of asking model agents to duplicate label/projection fields.",
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "6147631fbe310e2b",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Recent Decisions (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.4,
+        "dense": 0.40801954,
+        "freshness": 0.9813424511814147,
+        "graph": 0.0
+      },
+      "section": "Recent Decisions",
+      "section_slug": "recent-decisions",
+      "solution": "| Date | Decision | Why |\n|------|----------|-----|\n| 2026-06-27 | Initialize project knowledge | Enable shared human/agent context |\n| 2026-06-27 | Use a fork at grahama1970/tau rather than a new unrelated repo | The project already has upstream history at alejandro-ao/tau, so a fork preserves attribution and makes future upstream comparison/pull possible. |\n| 2026-06-27 | Keep GitHub mutation out of the first harness slices | Current proof is schema, validator, fixture, and deterministic projection only; live issue creation should come after the contracts are accepted. |",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:recent-decisions"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "9cf6139faffa4260",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Infrastructure State (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.2,
+        "dense": 0.36351192,
+        "freshness": 0.9813424511814147,
+        "graph": 0.0
+      },
+      "section": "Infrastructure State",
+      "section_slug": "infrastructure-state",
+      "solution": "<!-- Auto-populated from /project-state --quick -->",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:infrastructure-state"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    }
+  ],
+  "meta": {
+    "k": 5,
+    "memory_first": true,
+    "q": "title: Tau persona-dream harness needs story-contract creator/reviewer loop\nstate: OPEN\n\n## Type\nfeature\n\n## Target\n`/home/graham/workspace/experiments/tau`\n\nLikely areas:\n- `experiments/goal-locked-subagents/agent-command-specs/`\n- `src/tau_coding/persona_dream_dream_packet_agent.py` or a new story-contract agent module\n- `src/tau_coding/generated_ticket.py` route registry\n- focused Tau tests for the new story-contract loop\n\n## Current State\nThe persona-dream pipeline has advanced past `dream_packet` using issue #41. The next forward blocker is now `story_contract`:\n\n```text\nrun_root: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run\nfirst_blocker.phase: story_contract\nfirst_blocker.reason: missing_artifact\nactive_loop.loop: story_loop\n```\n\nPersona-dream now writes a validated story-contract work order for the missing-story case:\n\n```text\nwork_order: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/story_contract_work_order.json\nvalidation: PASS_STORY_CONTRACT_WORK_ORDER\nschema: persona_dream.story_contract_work_order.v1\nstatus: WORK_ORDER_READY_STORY_REVIEW_REQUIRED\nowner_subagent: dreamer\ncurrent_contract.status: MISSING\nsource_paths.dream_packet: .../dream-run/dream_packet.json\n```\n\nTau currently has `dreamer` and `dream-reviewer` command specs, but the code only accepts `persona_dream.dream_packet_work_order.v1`:\n\n```text\nsrc/tau_coding/persona_dream_dream_packet_agent.py rejects any work order whose schema is not persona_dream.dream_packet_work_order.v1.\n```\n\n## Requested Outcome\nAdd a bounded Tau story-contract creator/reviewer loop that consumes `persona_dream.story_contract_work_order.v1`, creates or fails closed on `story_contract.json` from the current accepted `dream_packet.json`, and independently validates the result.\n\nThe loop should be serial and receipt-backed, matching the current pattern:\n\n```text\nhuman -> story-writer/dreamer -> story-reviewer -> human\n```\n\n## Acceptance Criteria\n- Tau has routable command specs for the story contract creator/reviewer path, or extends the existing `dreamer`/`dream-reviewer` roles without breaking the dream-packet path.\n- The loop consumes the validated work order at `.../receipts/story_contract_work_order.json`.\n- The creator writes `story_contract.json` under the run root or fails closed with a deterministic blocker.\n- The reviewer runs persona-dream `validate-story-contract` and records JSON receipts.\n- `skills/persona-dream/run.sh validate-story-contract <story_contract> --run-root <run_root> --json` returns `PASS_STORY_CONTRACT`.\n- `skills/persona-dream/run.sh pipeline-loop-status <run_root> --direction forward --json` advances past `story_contract` to `storyboard_panel` or a later blocker.\n- No Kling call, paid provider call, public upload, or panel image generation is performed for this ticket.\n\n## Required Proof\nAttach a proof root under:\n\n```text\nexperiments/goal-locked-subagents/proofs/<issue-id>-persona-dream-story-contract-loop-<timestamp>/\n```\n\nRequired artifacts:\n- input `story_contract_work_order.json`\n- start `tau.agent_handoff.v1`\n- creator/reviewer Tau receipts\n- resulting `story_contract.json` or fail-closed receipt\n- persona-dream `validate-story-contract` output\n- persona-dream `pipeline-loop-status --direction forward` output showing the next blocker\n- focused Tau tests for the new command spec/CLI\n\n## Non-goals\n- Do not call Kling.\n- Do not claim full pipeline readiness.\n- Do not solve storyboard, panel, provider media, or public URL gates in this ticket except as needed to prove the story loop advances to the next blocker.\n- Do not use Nano Banana/Gemini fallback imagery as final panel evidence.\n\n## Route\nroute:backend_python_or_skill_runtime\nagent:coder",
+    "runtime_pressure": {
+      "active_workloads": [],
+      "checked_at": 1782766348,
+      "level": "normal",
+      "recommended_action": "No active persisted runtime pressure detected.",
+      "slow_query_risk": false,
+      "sources": []
+    },
+    "scope": "tau",
+    "threshold": 0.3,
+    "took_ms": 3104,
+    "used_dense": true,
+    "used_reranker": false
+  },
+  "should_scan": false,
+  "skill_route": {
+    "bonds": [],
+    "capabilities": [
+      {
+        "best_provider": "review-story",
+        "capability": "review-story",
+        "providers": [
+          "review-story"
+        ]
+      }
+    ],
+    "compositions": [],
+    "skills": [
+      {
+        "composability_score": 0.106,
+        "has_run_sh": true,
+        "name": "review-story",
+        "provides": [
+          "review-story"
+        ]
+      },
+      {
+        "composability_score": 0.106,
+        "has_run_sh": true,
+        "name": "review-story",
+        "provides": [
+          "review-story"
+        ]
+      },
+      {
+        "composability_score": 0.0,
+        "has_run_sh": true,
+        "name": "review-story",
+        "provides": []
+      },
+      {
+        "composability_score": 0.088,
+        "has_run_sh": true,
+        "name": "create-story",
+        "provides": [
+          "create-story"
+        ]
+      }
+    ],
+    "suggested_chain": null
+  }
+}

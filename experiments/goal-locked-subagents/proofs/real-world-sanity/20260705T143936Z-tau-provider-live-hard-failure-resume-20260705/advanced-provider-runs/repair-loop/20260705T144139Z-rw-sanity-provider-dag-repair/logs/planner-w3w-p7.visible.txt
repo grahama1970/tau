@@ -1,0 +1,37 @@
+e/experiments/tau/experiments/g
+oal-locked-subagents/proofs/rea
+l-world-sanity/20260705T143936Z
+-tau-provider-live-hard-failure
+-resume-20260705/advanced-provi
+der-runs/repair-loop/20260705T1
+44139Z-rw-sanity-provider-dag-r
+epair\ndag_spec: /home/graham/w
+orkspace/experiments/tau/experi
+ments/goal-locked-subagents/pro
+ofs/real-world-sanity/20260705T
+143936Z-tau-provider-live-hard-
+failure-resume-20260705/advance
+d-provider-runs/repair-loop/202
+60705T144139Z-rw-sanity-provide
+r-dag-repair/dag-spec.json\npla
+nner_receipt: /home/graham/work
+space/experiments/tau/experimen
+ts/goal-locked-subagents/proofs
+/real-world-sanity/20260705T143
+936Z-tau-provider-live-hard-fai
+lure-resume-20260705/advanced-p
+rovider-runs/repair-loop/202607
+05T144139Z-rw-sanity-provider-d
+ag-repair/planner-receipt.json\
+nfinal_receipt: /home/graham/wo
+rkspace/experiments/tau/experim
+ents/goal-locked-subagents/proo
+fs/real-world-sanity/20260705T1
+43936Z-tau-provider-live-hard-f
+ailure-resume-20260705/advanced
+-provider-runs/repair-loop/2026
+0705T144139Z-rw-sanity-provider
+-dag-repair/run-receipt.json\nc
+anonical truth: Tau JSON receip
+ts; this pane is human-visible
+telemetry.\n

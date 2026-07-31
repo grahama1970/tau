@@ -1,0 +1,46 @@
+  - source files modified by task: 1
+  - receipt files written: 1
+  - errors recorded in receipt: 0
+  - policy exceptions recorded in
+    receipt: 0
+
+  mocked: no
+  live: no
+  actually exercised: scratch-worktree
+  file edit, file-content verification,
+  receipt JSON parsing
+  remaining unverified: Tau runtime
+  behavior and test suite were not run
+  because the work order only allowed
+  modifying target_file and writing the
+  receipt.
+
+  Next/Stop Condition
+  Stop condition reached. No remaining
+  coder-task work: the target file has
+  the concrete provider-DAG retry
+  message, and the attempt-02 receipt
+  exists at the exact requested path.
+
+• Stop hook (stopped)
+  warning: Status response blocked as
+  too vague. Answer status requests
+  with an operational snapshot: Status/
+  Phase, Now/current file-command-
+  artifact, Evidence with concrete
+  counts or command results, and Next/
+  stop condition. Include exact paths,
+  command names, or artifact names when
+  work has touched files or tools. Do
+  not answer with only conclusions such
+  as done, fixed, checking, working, or
+  making progress.
+  stop: Status response lacks
+  operational detail.
+
+─ Worked for 1m 24s ───────────────────
+
+
+› Implement {feature}
+
+  gpt-5.5 high · ~/workspace/experimen…

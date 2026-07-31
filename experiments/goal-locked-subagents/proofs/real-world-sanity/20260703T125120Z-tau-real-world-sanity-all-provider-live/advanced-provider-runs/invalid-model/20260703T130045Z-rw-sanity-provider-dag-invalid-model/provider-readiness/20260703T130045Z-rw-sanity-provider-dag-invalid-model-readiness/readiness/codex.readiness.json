@@ -1,0 +1,35 @@
+{
+  "diagnostics": {
+    "interstitial_visible": false,
+    "readiness_actions": [],
+    "visible_prompt_is_gate": false,
+    "visible_prompt_observed": true
+  },
+  "evidence": {
+    "foreground_argv": [
+      "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "--cd",
+      "/home/graham/workspace/experiments/tau"
+    ],
+    "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+    "foreground_cwd": "/home/graham/workspace/experiments/tau",
+    "foreground_pid": 3946488,
+    "pane_agent_status": "idle",
+    "pane_cwd": "/home/graham/workspace/experiments/tau",
+    "pane_label": "20260703T130045Z-rw-sanity-provider-dag-invalid-model-readiness-codex",
+    "process_alive": true,
+    "provider_event_log_path": null,
+    "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/invalid-model/20260703T130045Z-rw-sanity-provider-dag-invalid-model/provider-readiness/20260703T130045Z-rw-sanity-provider-dag-invalid-model-readiness/readiness/codex.readiness.json",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/invalid-model/20260703T130045Z-rw-sanity-provider-dag-invalid-model/provider-readiness/20260703T130045Z-rw-sanity-provider-dag-invalid-model-readiness/logs/codex.visible.txt"
+  },
+  "observed_at": "2026-07-03T13:00:54Z",
+  "pane_id": "w1F:p5",
+  "provider_id": "codex",
+  "ready": true,
+  "run_id": "20260703T130045Z-rw-sanity-provider-dag-invalid-model-readiness",
+  "schema": "tau.provider_readiness.v1",
+  "source": "herdr_process_info",
+  "state": "ready",
+  "terminal_id": "term_655b4839a2ffb14b",
+  "workspace_id": "w1F"
+}

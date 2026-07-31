@@ -1,0 +1,37 @@
+ubagents/proofs/real-w
+orld-sanity/20260703T1
+94409Z-tau-advanced-af
+ter-readiness-sampling
+/advanced-provider-run
+s/repair-loop/20260703
+T194930Z-rw-sanity-pro
+vider-dag-repair/dag-s
+pec.json\nplanner_rece
+ipt: /home/graham/work
+space/experiments/tau/
+experiments/goal-locke
+d-subagents/proofs/rea
+l-world-sanity/2026070
+3T194409Z-tau-advanced
+-after-readiness-sampl
+ing/advanced-provider-
+runs/repair-loop/20260
+703T194930Z-rw-sanity-
+provider-dag-repair/pl
+anner-receipt.json\nfi
+nal_receipt: /home/gra
+ham/workspace/experime
+nts/tau/experiments/go
+al-locked-subagents/pr
+oofs/real-world-sanity
+/20260703T194409Z-tau-
+advanced-after-readine
+ss-sampling/advanced-p
+rovider-runs/repair-lo
+op/20260703T194930Z-rw
+-sanity-provider-dag-r
+epair/run-receipt.json
+\ncanonical truth: Tau
+ JSON receipts; this p
+ane is human-visible t
+elemetry.\n

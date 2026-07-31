@@ -1,0 +1,371 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "coder_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json",
+      "coder_status": "PASS",
+      "coder_verdict": "PASS",
+      "errors": [],
+      "reviewer_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-reviewer.json",
+      "reviewer_status": "PASS",
+      "reviewer_verdict": "PASS"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "agent",
+        "start",
+        "20260703T222858Z-rw-sanity-generic-provider-dag-adapter-planner",
+        "--cwd",
+        "/home/graham/workspace/experiments/tau",
+        "--workspace",
+        "w2Q",
+        "--no-focus",
+        "--",
+        "bash",
+        "-lc",
+        "printf '%s\\n' \"Tau planner subagent visible monitor\\\\nrun_id: 20260703T222858Z-rw-sanity-generic-provider-dag-adapter\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/dag-spec.json\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/planner-receipt.json\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/run-receipt.json\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\n\"; exec sleep 86400"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T222858Z-rw-sanity-generic-provider-dag-adapter-planner\",\"pane_id\":\"w2Q:p7\",\"revision\":0,\"tab_id\":\"w2Q:t1\",\"terminal_id\":\"term_655bc77df48e02a7\",\"workspace_id\":\"w2Q\"},\"argv\":[\"bash\",\"-lc\",\"printf '%s\\\\n' \\\"Tau planner subagent visible monitor\\\\\\\\nrun_id: 20260703T222858Z-rw-sanity-generic-provider-dag-adapter\\\\\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter\\\\\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/dag-spec.json\\\\\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/planner-receipt.json\\\\\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/run-receipt.json\\\\\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\\\\\n\\\"; exec sleep 86400\"],\"type\":\"agent_started\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "agent",
+        "start",
+        "20260703T222858Z-rw-sanity-generic-provider-dag-adapter-orchestrator",
+        "--cwd",
+        "/home/graham/workspace/experiments/tau",
+        "--workspace",
+        "w2Q",
+        "--no-focus",
+        "--",
+        "bash",
+        "-lc",
+        "printf '%s\\n' \"Tau orchestrator subagent visible monitor\\\\nrun_id: 20260703T222858Z-rw-sanity-generic-provider-dag-adapter\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/dag-spec.json\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/planner-receipt.json\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/run-receipt.json\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\n\"; exec sleep 86400"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T222858Z-rw-sanity-generic-provider-dag-adapter-orchestrator\",\"pane_id\":\"w2Q:p8\",\"revision\":0,\"tab_id\":\"w2Q:t1\",\"terminal_id\":\"term_655bc78837f292a8\",\"workspace_id\":\"w2Q\"},\"argv\":[\"bash\",\"-lc\",\"printf '%s\\\\n' \\\"Tau orchestrator subagent visible monitor\\\\\\\\nrun_id: 20260703T222858Z-rw-sanity-generic-provider-dag-adapter\\\\\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter\\\\\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/dag-spec.json\\\\\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/planner-receipt.json\\\\\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/run-receipt.json\\\\\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\\\\\n\\\"; exec sleep 86400\"],\"type\":\"agent_started\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "send-text",
+        "w2Q:p5",
+        "Tau provider DAG POC coder task.\n\nRead this work order JSON:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json\n\nRules:\n- Operate only inside the scratch_worktree named in the work order.\n- Do not modify the Tau repository.\n- Do not use GitHub.\n- Do not use Tailscale.\n- Modify only target_file.\n- Write a JSON receipt exactly here:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json\n\nReceipt JSON shape:\n{\n  \"schema\": \"tau.provider_dag_node_receipt.v1\",\n  \"node_id\": \"coder\",\n  \"provider_id\": \"codex\",\n  \"attempt\": <attempt number>,\n  \"status\": \"PASS\",\n  \"verdict\": \"PASS\",\n  \"work_order_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json\",\n  \"changed_files\": [\"<target_file>\"],\n  \"commands_run\": [\"<commands you ran>\"],\n  \"artifacts\": [\"<target_file>\"],\n  \"handoff_summary\": \"What changed.\",\n  \"errors\": [],\n  \"policy_exceptions\": []\n}\n"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "send-keys",
+        "w2Q:p5",
+        "enter"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "agent",
+        "start",
+        "20260703T222858Z-rw-sanity-generic-provider-dag-adapter-reviewer-attempt-01",
+        "--cwd",
+        "/home/graham/workspace/experiments/tau",
+        "--workspace",
+        "w2Q",
+        "--no-focus",
+        "--",
+        "opencode",
+        "run",
+        "--dir",
+        "/home/graham/workspace/experiments/tau",
+        "Tau provider DAG POC reviewer task.\n\nRead this work order JSON:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-reviewer.json\n\nRules:\n- Operate only inside the scratch_worktree named in the work order.\n- Do not modify files except the reviewer receipt.\n- Do not use GitHub.\n- Do not use Tailscale.\n- Review target_file and coder_receipt_path.\n- If the work order has \"force_revise\": true, write verdict \"REVISE\" with\n  concrete feedback for the next coder attempt.\n- Write a JSON receipt exactly here:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-reviewer.json\n\nReceipt JSON shape:\n{\n  \"schema\": \"tau.provider_dag_node_receipt.v1\",\n  \"node_id\": \"reviewer\",\n  \"provider_id\": \"opencode\",\n  \"attempt\": <attempt number>,\n  \"status\": \"PASS\",\n  \"verdict\": \"PASS or REVISE\",\n  \"work_order_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-reviewer.json\",\n  \"changed_files\": [],\n  \"commands_run\": [\"<commands you ran>\"],\n  \"artifacts\": [\"<target_file>\", \"<coder_receipt_path>\"],\n  \"handoff_summary\": \"Review finding or pass rationale.\",\n  \"errors\": [],\n  \"policy_exceptions\": []\n}"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T222858Z-rw-sanity-generic-provider-dag-adapter-reviewer-attempt-01\",\"pane_id\":\"w2Q:p9\",\"revision\":0,\"tab_id\":\"w2Q:t1\",\"terminal_id\":\"term_655bc7b7b7ddd2a9\",\"workspace_id\":\"w2Q\"},\"argv\":[\"opencode\",\"run\",\"--dir\",\"/home/graham/workspace/experiments/tau\",\"Tau provider DAG POC reviewer task.\\n\\nRead this work order JSON:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-reviewer.json\\n\\nRules:\\n- Operate only inside the scratch_worktree named in the work order.\\n- Do not modify files except the reviewer receipt.\\n- Do not use GitHub.\\n- Do not use Tailscale.\\n- Review target_file and coder_receipt_path.\\n- If the work order has \\\"force_revise\\\": true, write verdict \\\"REVISE\\\" with\\n  concrete feedback for the next coder attempt.\\n- Write a JSON receipt exactly here:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-reviewer.json\\n\\nReceipt JSON shape:\\n{\\n  \\\"schema\\\": \\\"tau.provider_dag_node_receipt.v1\\\",\\n  \\\"node_id\\\": \\\"reviewer\\\",\\n  \\\"provider_id\\\": \\\"opencode\\\",\\n  \\\"attempt\\\": <attempt number>,\\n  \\\"status\\\": \\\"PASS\\\",\\n  \\\"verdict\\\": \\\"PASS or REVISE\\\",\\n  \\\"work_order_path\\\": \\\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-reviewer.json\\\",\\n  \\\"changed_files\\\": [],\\n  \\\"commands_run\\\": [\\\"<commands you ran>\\\"],\\n  \\\"artifacts\\\": [\\\"<target_file>\\\", \\\"<coder_receipt_path>\\\"],\\n  \\\"handoff_summary\\\": \\\"Review finding or pass rationale.\\\",\\n  \\\"errors\\\": [],\\n  \\\"policy_exceptions\\\": []\\n}\"],\"type\":\"agent_started\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w2Q:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\u2022 Status/Phase: Local work-order proof\n  available; no broader repository/\n  task closure claimed.\n\n  Now/current file-command-artifact:\n\n  - Target file: /home/graham/\n    workspace/experiments/tau/\n    experiments/goal-locked-subagents/\n    proofs/real-world-\n    sanity/20260703T222857Z-tau-\n    generic-provider-adapter-resume-\n    cleanup-apply/advanced-generic-\n    provider-dag-adapter/provider-\n    runs/20260703T222858Z-rw-sanity-\n    generic-provider-dag-adapter/\n    scratch-worktree/message.txt\n\n  - Receipt: /home/graham/workspace/\n    experiments/tau/experiments/goal-\n    locked-subagents/proofs/real-\n    world-sanity/20260703T222857Z-tau-\n    generic-provider-adapter-resume-\n    cleanup-apply/advanced-generic-\n    provider-dag-adapter/provider-\n    runs/20260703T222858Z-rw-sanity-\n    generic-provider-dag-adapter/\n    receipts/attempt-01-coder.json\n\n  Evidence:\n\n\n\u203a Explain this codebase\n\n  gpt-5.5 medium \u00b7 ~/workspace/experi\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w2Q:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w2Q:p7",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "Tau planner subagent visible monitor\\n\nrun_id: 20260703T222858Z-rw-sanity-gen\neric-provider-dag-adapter\\nrun_dir: /h\nome/graham/workspace/experiments/tau/e\nxperiments/goal-locked-subagents/proof\ns/real-world-sanity/20260703T222857Z-t\nau-generic-provider-adapter-resume-cle\nanup-apply/advanced-generic-provider-d\nag-adapter/provider-runs/20260703T2228\n58Z-rw-sanity-generic-provider-dag-ada\npter\\ndag_spec: /home/graham/workspace\n/experiments/tau/experiments/goal-lock\ned-subagents/proofs/real-world-sanity/\n20260703T222857Z-tau-generic-provider-\nadapter-resume-cleanup-apply/advanced-\ngeneric-provider-dag-adapter/provider-\nruns/20260703T222858Z-rw-sanity-generi\nc-provider-dag-adapter/dag-spec.json\\n\nplanner_receipt: /home/graham/workspac\ne/experiments/tau/experiments/goal-loc\nked-subagents/proofs/real-world-sanity\n/20260703T222857Z-tau-generic-provider\n-adapter-resume-cleanup-apply/advanced\n-generic-provider-dag-adapter/provider\n-runs/20260703T222858Z-rw-sanity-gener\nic-provider-dag-adapter/planner-receip\nt.json\\nfinal_receipt: /home/graham/wo\nrkspace/experiments/tau/experiments/go\nal-locked-subagents/proofs/real-world-\nsanity/20260703T222857Z-tau-generic-pr\novider-adapter-resume-cleanup-apply/ad\nvanced-generic-provider-dag-adapter/pr\novider-runs/20260703T222858Z-rw-sanity\n-generic-provider-dag-adapter/run-rece\nipt.json\\ncanonical truth: Tau JSON re\nceipts; this pane is human-visible tel\nemetry.\\n\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w2Q:p8",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "orkspace/experimen\nts/tau/experiments\n/goal-locked-subag\nents/proofs/real-w\norld-sanity/202607\n03T222857Z-tau-gen\neric-provider-adap\nter-resume-cleanup\n-apply/advanced-ge\nneric-provider-dag\n-adapter/provider-\nruns/20260703T2228\n58Z-rw-sanity-gene\nric-provider-dag-a\ndapter/planner-rec\neipt.json\\nfinal_r\neceipt: /home/grah\nam/workspace/exper\niments/tau/experim\nents/goal-locked-s\nubagents/proofs/re\nal-world-sanity/20\n260703T222857Z-tau\n-generic-provider-\nadapter-resume-cle\nanup-apply/advance\nd-generic-provider\n-dag-adapter/provi\nder-runs/20260703T\n222858Z-rw-sanity-\ngeneric-provider-d\nag-adapter/run-rec\neipt.json\\ncanonic\nal truth: Tau JSON\n receipts; this pa\nne is human-visibl\ne telemetry.\\n\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w2Q:p9",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "60703T2\n22858Z-\nrw-sani\nty-gene\nric-pro\nvider-d\nag-adap\nter/rec\neipts/a\nttempt-\n01-revi\newer.js\non\nWrote f\nile suc\ncessful\nly.\n\nThe TOD\nO line\nis gone\n from `\nmessage\n.txt` a\nnd the\ncoder r\neceipt\nis sche\nma-vali\nd. `for\nce_revi\nse` is\n`false`\n. Verdi\nct: PAS\nS.\n"
+    }
+  ],
+  "dag_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/dag-spec.json",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/events.jsonl",
+  "herdr_cleanup": {
+    "candidate_count": 1,
+    "live": true,
+    "mocked": false,
+    "mode": "apply",
+    "ok": true,
+    "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/herdr-cleanup-receipt.json",
+    "resource_count": 1,
+    "status": "PASS"
+  },
+  "herdr_cleanup_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/herdr-cleanup-receipt.json",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "orchestration_evidence": {
+    "errors": [],
+    "feature_counts": {
+      "agent_lineage": 4,
+      "agent_messages": 2,
+      "doctor": 1,
+      "execution_timeline": 6,
+      "provider_capabilities": 2,
+      "review_comments": 1,
+      "worktree_session_bindings": 4
+    },
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "provider_live": true,
+    "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/orchestration-evidence-receipt.json",
+    "status": "PASS"
+  },
+  "orchestration_evidence_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/orchestration-evidence-receipt.json",
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "general semantic coding quality beyond the scratch fixture task",
+      "unbounded autonomous repair",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau orchestrator can consume a planner-created tau.dag_run_spec.v1",
+      "Tau exposes planner, orchestrator, coder, and reviewer roles as Herdr-visible subagents",
+      "Tau requires structured provider readiness before dispatch",
+      "Tau can dispatch a bounded coder work order to Codex in a Herdr pane",
+      "Tau waits for and validates a canonical coder node receipt",
+      "Tau dispatches the reviewer only after the coder receipt validates",
+      "Tau waits for and validates a canonical reviewer node receipt",
+      "Tau stops the while loop on reviewer PASS, failure, or max attempts"
+    ]
+  },
+  "provider_readiness_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/provider-readiness-receipt.json",
+  "provider_sessions": {
+    "codex": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "w2Q:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T222858Z-rw-sanity-generic-provider-dag-adapter-readiness/readiness/codex.readiness.json",
+      "provider_session_state": {
+        "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+        "pane_id": "w2Q:p5",
+        "process_alive": true,
+        "provider_id": "codex",
+        "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T222858Z-rw-sanity-generic-provider-dag-adapter-readiness/readiness/codex.readiness.json",
+        "ready": true,
+        "schema": "tau.provider_session_state.v1",
+        "source": "herdr_process_info",
+        "state": "ready",
+        "terminal_id": "term_655bc74224d7d2a5",
+        "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T222858Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+        "workspace_id": "w2Q"
+      },
+      "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T222858Z-rw-sanity-generic-provider-dag-adapter-readiness/readiness/codex.session-state.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_655bc74224d7d2a5",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T222858Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w2Q"
+    },
+    "opencode": {
+      "foreground_command": "opencode",
+      "pane_id": "w2Q:p6",
+      "process_alive": true,
+      "provider_id": "opencode",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T222858Z-rw-sanity-generic-provider-dag-adapter-readiness/readiness/opencode.readiness.json",
+      "provider_session_state": {
+        "foreground_command": "opencode",
+        "pane_id": "w2Q:p6",
+        "process_alive": true,
+        "provider_id": "opencode",
+        "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T222858Z-rw-sanity-generic-provider-dag-adapter-readiness/readiness/opencode.readiness.json",
+        "ready": true,
+        "schema": "tau.provider_session_state.v1",
+        "source": "herdr_process_info",
+        "state": "ready",
+        "terminal_id": "term_655bc74c93b9c2a6",
+        "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T222858Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/opencode.visible.txt",
+        "workspace_id": "w2Q"
+      },
+      "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T222858Z-rw-sanity-generic-provider-dag-adapter-readiness/readiness/opencode.session-state.json",
+      "ready": true,
+      "role": "reviewer",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_655bc74c93b9c2a6",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T222858Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/opencode.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w2Q"
+    }
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter",
+  "run_id": "20260703T222858Z-rw-sanity-generic-provider-dag-adapter",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/runtime-manifest.json",
+  "schema": "tau.dag_run_receipt.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree",
+  "status": "PASS",
+  "timestamp": "2026-07-03T22:31:39Z",
+  "verdict": "PASS",
+  "visible_subagents": {
+    "coder": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "w2Q:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T222858Z-rw-sanity-generic-provider-dag-adapter-readiness/readiness/codex.readiness.json",
+      "provider_session_state": {
+        "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+        "pane_id": "w2Q:p5",
+        "process_alive": true,
+        "provider_id": "codex",
+        "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T222858Z-rw-sanity-generic-provider-dag-adapter-readiness/readiness/codex.readiness.json",
+        "ready": true,
+        "schema": "tau.provider_session_state.v1",
+        "source": "herdr_process_info",
+        "state": "ready",
+        "terminal_id": "term_655bc74224d7d2a5",
+        "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T222858Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+        "workspace_id": "w2Q"
+      },
+      "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T222858Z-rw-sanity-generic-provider-dag-adapter-readiness/readiness/codex.session-state.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_655bc74224d7d2a5",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T222857Z-tau-generic-provider-adapter-resume-cleanup-apply/advanced-generic-provider-dag-adapter/provider-runs/20260703T222858Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T222858Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w2Q"
+    },
+    "orchestrator": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "w2Q:p8",
+      "provider_id": "tau",
+      "role": "orchestrator",
+      "tab_id": "w2Q:t1",
+      "terminal_id": "term_655bc78837f292a8",
+      "visible": true,
+      "workspace_id": "w2Q"
+    },
+    "planner": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "w2Q:p7",
+      "provider_id": "tau",
+      "role": "planner",
+      "tab_id": "w2Q:t1",
+      "terminal_id": "term_655bc77df48e02a7",
+      "visible": true,
+      "workspace_id": "w2Q"
+    },
+    "reviewer": {
+      "command": "opencode run --dir <repo> [--model <reviewer-model>] <reviewer-prompt>",
+      "pane_id": "w2Q:p9",
+      "provider_id": "opencode",
+      "readiness_pane_id": "w2Q:p6",
+      "reviewer_model": null,
+      "role": "reviewer",
+      "tab_id": "w2Q:t1",
+      "terminal_id": "term_655bc7b7b7ddd2a9",
+      "visible": true,
+      "workspace_id": "w2Q"
+    }
+  }
+}

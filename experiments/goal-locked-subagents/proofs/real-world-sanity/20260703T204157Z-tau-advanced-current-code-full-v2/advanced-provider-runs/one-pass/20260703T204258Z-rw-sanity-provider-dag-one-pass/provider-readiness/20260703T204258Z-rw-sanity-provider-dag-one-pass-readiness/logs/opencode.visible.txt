@@ -1,0 +1,37 @@
+
+
+
+
+▀ ▀▀▀▀ ▀▀▀▄ ▀▀▀▀ ▀▀▀▀
+▀ ▀▀▀▀ ▀  ▀ ▀    ▀  ▀
+▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀
+
+  ┃
+  ┃  Ask anything.
+  ┃  .. "What is
+  ┃  the tech
+  ┃  stack of
+  ┃  this project?
+  ┃  "
+  ┃
+  ┃  Bu ·DeepSeek  D
+  ┃  il  V4 Flash  e
+  ┃  d             e
+  ┃                p
+  ┃                S
+  ╹▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+   tab     ctrl+p
+   agents  commands
+
+
+
+  ● Tip Use
+        patterns
+        like "git
+        *": "allow"
+
+  ~/          1.17.9
+  workspac
+  e/experi
+  ments/ta
+  u:main

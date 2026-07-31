@@ -1,0 +1,50 @@
+{
+  "schema": "dream.story.asset_index.v1",
+  "assets": [
+    {
+      "id": "embry_media_asset__assets_surfing_embry_surfing_big_island_2024_png",
+      "title": "Embry surfing on the Big Island",
+      "url": "/api/persona-media?persona=embry&path=assets%2Fsurfing%2Fembry_surfing_big_island_2024.png",
+      "description": "Embry, a young woman in a navy surf top, crouches low on a white surfboard carving across a small wave, one hand brushing the water as spray bursts around her. Golden light hits the Big Island coastline behind her, with palm trees, dark lava rocks, green mountains, and low clouds creating a dramatic tropical backdrop for Kai to spot her ride or call out from nearby.",
+      "source": "embry_media_asset__assets_surfing_embry_surfing_big_island_2024_png",
+      "memoryKey": "embry_media_asset__assets_surfing_embry_surfing_big_island_2024_png",
+      "mediaType": "png"
+    },
+    {
+      "id": "embry_media_asset__assets_character_sheet_montage_jpg",
+      "title": "Embry image media asset character sheet montage (assets). Asset path /mnt/storage12tb/media/personas/embry/assets/character sheet montage.jpg Relative path assets/character sheet montage.jpg Media",
+      "url": "/api/persona-media?persona=embry&path=assets%2Fcharacter_sheet_montage.jpg",
+      "description": "Embry is a young woman with brown hair tied back, expressive green-brown eyes, and a navy polo, shown in multiple reference poses: neutral, focused at a computer, explaining with her hand raised, tired in a hoodie, smiling outdoors, and working at a multi-monitor desk with notes, mugs, and office items. The settings alternate between bright office interiors and warm coastal balcony/beach views with palm trees, ocean, and golden sunlight, establishing her as a thoughtful tech-savvy character ready to enter a 10-second Embry/Kai surfing story.",
+      "source": "embry_media_asset__assets_character_sheet_montage_jpg",
+      "memoryKey": "embry_media_asset__assets_character_sheet_montage_jpg",
+      "mediaType": "jpg"
+    },
+    {
+      "id": "embry_media_asset__assets_surfing_embry_barrel_wave_big_island_2024_png",
+      "title": "Embry barrel wave surfing reference",
+      "url": "/api/persona-media?persona=embry&path=assets%2Fsurfing%2Fembry_barrel_wave_big_island_2024.png",
+      "description": "Embry/Kai is a young surfer in a dark blue shirt crouched low on a white surfboard, riding inside a curling turquoise barrel wave with one hand skimming the water for balance. Warm golden light hits her focused face as spray arcs overhead, with tropical palms, green mountains, rocky shore, and partly cloudy sky visible beyond the wave.",
+      "source": "embry_media_asset__assets_surfing_embry_barrel_wave_big_island_2024_png",
+      "memoryKey": "embry_media_asset__assets_surfing_embry_barrel_wave_big_island_2024_png",
+      "mediaType": "png"
+    },
+    {
+      "id": "kai_akana_media_asset__assets_surfing_kai_surfing_big_island_2024_png",
+      "title": "Kai Akana surfing on the Big Island",
+      "url": "/api/persona-media?persona=kai_akana&path=assets%2Fsurfing%2Fkai_surfing_big_island_2024.png",
+      "description": "Kai Akana, a young surfer in a black rash guard and board shorts, carves low on a small glassy wave as spray bursts around his white surfboard. Behind him, the Big Island coastline shows dark lava rocks, palm trees, and steep green mountains under warm golden light with low clouds, setting up a focused surfing moment for Embry/Kai.",
+      "source": "kai_akana_media_asset__assets_surfing_kai_surfing_big_island_2024_png",
+      "memoryKey": "kai_akana_media_asset__assets_surfing_kai_surfing_big_island_2024_png",
+      "mediaType": "png"
+    },
+    {
+      "id": "kai_akana_media_asset__assets_contact_sheets_kai_akana_character_sheet_png",
+      "title": "Kai Akana character sheet",
+      "url": "/api/persona-media?persona=kai_akana&path=assets%2Fcontact_sheets%2Fkai_akana_character_sheet.png",
+      "description": "Kai Akana is a young Hawaiian/Norwegian/Japanese surfer with tan skin, curly dark hair, athletic build, and expressive brown eyes, shown in navy tees, a black wetsuit, and post-surf shirtless with a white surfboard. Use him on a bright tropical beach with blue ocean, green mountains, palms, and warm sun, actively carrying or steadying his board after a surf session while looking toward Embry with an easy, engaged smile.",
+      "source": "kai_akana_media_asset__assets_contact_sheets_kai_akana_character_sheet_png",
+      "memoryKey": "kai_akana_media_asset__assets_contact_sheets_kai_akana_character_sheet_png",
+      "mediaType": "png"
+    }
+  ]
+}

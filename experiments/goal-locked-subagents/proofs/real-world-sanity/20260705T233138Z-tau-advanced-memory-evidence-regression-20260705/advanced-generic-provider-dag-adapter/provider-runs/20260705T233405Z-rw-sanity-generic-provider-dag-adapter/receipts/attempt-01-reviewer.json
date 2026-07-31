@@ -1,0 +1,32 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T233405Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:6fca2e3bf378eccf381147e42d75857a97d4703df1de88606f9e825baaa82470",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w6K",
+  "pane_id": "w6K:p6",
+  "terminal_id": "term_655e59817c3e2751",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T233405Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T233405Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "f3e817f41a8739c0fb12a8807606fc365f06e257faa2a5409250f5c1983c2f4c",
+  "work_order_sha256": "b9a3cd0262d28dfd74fe5f06d54b2b171c8aa637e9e898d6fc0cde8598b3bae0",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T233405Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work_order attempt-01-reviewer.json",
+    "read target_file scratch-worktree/message.txt",
+    "read coder_receipt receipts/attempt-01-coder.json",
+    "sha256sum provider-readiness/.../logs/opencode.visible.txt",
+    "ls scratch-worktree/"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T233405Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T233405Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: TODO line removed from message.txt. Coder receipt is schema-valid (all required fields present). force_revise is false. No errors or policy exceptions.",
+  "errors": [],
+  "policy_exceptions": []
+}

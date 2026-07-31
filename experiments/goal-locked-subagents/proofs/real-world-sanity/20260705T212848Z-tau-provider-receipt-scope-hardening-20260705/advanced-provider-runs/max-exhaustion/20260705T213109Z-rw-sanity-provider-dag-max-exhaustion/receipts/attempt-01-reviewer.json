@@ -1,0 +1,29 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T213109Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:a6ee48eef442e638a579b854a2c22c45ecda9d58720720b180d88ddc6153aa02",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w5E",
+  "pane_id": "w5E:p6",
+  "terminal_id": "term_655e3e0737af05f0",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T212848Z-tau-provider-receipt-scope-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T213109Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T213109Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "cc3d3bb51a17a8836eb608bdd6ae151aedcc70ec363c4322396deaae447b6ba7",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T212848Z-tau-provider-receipt-scope-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T213109Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "sha256sum opencode.visible.txt",
+    "ls scratch-worktree/"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T212848Z-tau-provider-receipt-scope-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T213109Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T212848Z-tau-provider-receipt-scope-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T213109Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "force_revise=true triggered REVISE. target_file is acceptable (TODO removed, single clean line). coder_receipt is schema-valid with all required fields. For next attempt: (1) Expand message.txt with implementation details beyond the generic completion statement. (2) Make commands_run in coder receipt more specific than 'python deterministic visible coder'. (3) Add explicit verification step to coder workflow.",
+  "errors": [],
+  "policy_exceptions": []
+}

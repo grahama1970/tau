@@ -1,0 +1,34 @@
+{
+  "diagnostics": {
+    "interstitial_visible": false,
+    "readiness_actions": [],
+    "visible_prompt_is_gate": false,
+    "visible_prompt_observed": false
+  },
+  "evidence": {
+    "foreground_argv": [
+      "opencode",
+      "/home/graham/workspace/experiments/tau"
+    ],
+    "foreground_command": "opencode",
+    "foreground_cwd": "/home/graham/workspace/experiments/tau",
+    "foreground_pid": 3904076,
+    "pane_agent_status": "idle",
+    "pane_cwd": "/home/graham/workspace/experiments/tau",
+    "pane_label": "20260703T125411Z-rw-sanity-provider-dag-repair-readiness-opencode",
+    "process_alive": true,
+    "provider_event_log_path": null,
+    "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/repair-loop/20260703T125411Z-rw-sanity-provider-dag-repair/provider-readiness/20260703T125411Z-rw-sanity-provider-dag-repair-readiness/readiness/opencode.readiness.json",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/repair-loop/20260703T125411Z-rw-sanity-provider-dag-repair/provider-readiness/20260703T125411Z-rw-sanity-provider-dag-repair-readiness/logs/opencode.visible.txt"
+  },
+  "observed_at": "2026-07-03T12:54:52Z",
+  "pane_id": "w1D:p6",
+  "provider_id": "opencode",
+  "ready": true,
+  "run_id": "20260703T125411Z-rw-sanity-provider-dag-repair-readiness",
+  "schema": "tau.provider_readiness.v1",
+  "source": "herdr_process_info",
+  "state": "ready",
+  "terminal_id": "term_655b46c40bfc3138",
+  "workspace_id": "w1D"
+}

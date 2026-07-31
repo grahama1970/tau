@@ -1,0 +1,117 @@
+{
+  "active_loop": {
+    "blocker": "provider_media_probe_receipt: provider media probe receipt status must be PASS_PROVIDER_MEDIA_URL_PROBE;provider_media_probe_receipt: provider media probe URL is not listed in provider_media_urls;provider_media_probe_receipt: provider media probe expected_sha256 is not listed in media_hashes;provider_media_probe_receipt: provider media probe http_status must be 200;provider_media_probe_receipt: provider media probe must be a live public HTTP(S) fetch;--require-provider-eligible requires provider_eligibility=true;receipt is not provider eligible",
+    "default_repair": "Run the panel subagent repair loop; reject Nano Banana/Gemini final imagery, repair the exact visual/text blocker, and write a provider-eligible receipt.",
+    "external_action_required": false,
+    "loop": "panel_review_loop",
+    "path": "receipts/panel_repair_gate_receipt.json",
+    "phase": "panel_repair_gate",
+    "validator": "validate-panel-repair-gate --require-provider-eligible"
+  },
+  "direction": "forward",
+  "exercised": "local run-root validation, first-blocker to serial-loop mapping, fail-closed repair action selection",
+  "generated_at": "2026-06-29T22:22:09Z",
+  "live": "no",
+  "loop_backlog": [
+    {
+      "blocker": "provider_media_probe_receipt: provider media probe receipt status must be PASS_PROVIDER_MEDIA_URL_PROBE;provider_media_probe_receipt: provider media probe URL is not listed in provider_media_urls;provider_media_probe_receipt: provider media probe expected_sha256 is not listed in media_hashes;provider_media_probe_receipt: provider media probe http_status must be 200;provider_media_probe_receipt: provider media probe must be a live public HTTP(S) fetch;--require-provider-eligible requires provider_eligibility=true;receipt is not provider eligible",
+      "default_repair": "Run the panel subagent repair loop; reject Nano Banana/Gemini final imagery, repair the exact visual/text blocker, and write a provider-eligible receipt.",
+      "external_action_required": false,
+      "loop": "panel_review_loop",
+      "path": "receipts/panel_repair_gate_receipt.json",
+      "phase": "panel_repair_gate",
+      "sequence": 1,
+      "validator": "validate-panel-repair-gate --require-provider-eligible"
+    },
+    {
+      "blocker": "panel_source_not_pass:BLOCKED:repair_gate_status_not_final_reviewed:BLOCKED_PROVIDER_MEDIA_URLS;provider_media_status_not_pass:FAIL;provider_eligibility_not_true",
+      "default_repair": "Regenerate panel_source_receipt.json from a provider-eligible panel repair gate receipt.",
+      "external_action_required": false,
+      "loop": "panel_source_loop",
+      "path": "receipts/panel_source_receipt.json",
+      "phase": "panel_source_receipt",
+      "sequence": 2,
+      "validator": "validate-panel-source"
+    }
+  ],
+  "loop_model": {
+    "rule": "validate phase, repair first blocker, write receipt, rebuild report, repeat; convert to DAG only after serial loops are proven.",
+    "shape": "serial_pipeline_of_fail_closed_while_loops"
+  },
+  "mocked": "no",
+  "policy": {
+    "kling_call_allowed": false,
+    "nano_banana_final_panel_allowed": false,
+    "public_upload_allowed_without_explicit_authorization": false
+  },
+  "run_root": "experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+  "schema": "persona_dream.pipeline_loop_status.v1",
+  "status": "BLOCKED",
+  "stop_condition": "No external action performed; repair the active_loop.default_repair, write/refresh receipts, then rerun this command.",
+  "unverified": "actual repair execution, public media hosting if blocked there, live panel subagent generation/review, paid Kling submission",
+  "validation": {
+    "direction": "forward",
+    "exercised": "local run-root files, JSON parse, Kling scene packet schema, dream packet gate, story contract gate, storyboard panel gate, panel repair provider-eligibility gate, panel source provenance gate, provider media publication work-order gate, provider media local staging gate, provider media publication authorization gate, visual review gate, provider URL/hash gate",
+    "first_blocker": {
+      "path": "receipts/panel_repair_gate_receipt.json",
+      "phase": "panel_repair_gate",
+      "reason": "provider_media_probe_receipt: provider media probe receipt status must be PASS_PROVIDER_MEDIA_URL_PROBE;provider_media_probe_receipt: provider media probe URL is not listed in provider_media_urls;provider_media_probe_receipt: provider media probe expected_sha256 is not listed in media_hashes;provider_media_probe_receipt: provider media probe http_status must be 200;provider_media_probe_receipt: provider media probe must be a live public HTTP(S) fetch;--require-provider-eligible requires provider_eligibility=true;receipt is not provider eligible"
+    },
+    "live": "no",
+    "mocked": "no",
+    "phases": [
+      {
+        "blocker": null,
+        "path": "dream_packet.json",
+        "phase": "dream_packet",
+        "status": "PASS"
+      },
+      {
+        "blocker": null,
+        "path": "story_contract.json",
+        "phase": "story_contract",
+        "status": "PASS"
+      },
+      {
+        "blocker": null,
+        "path": "receipts/storyboard_panel_receipt.json",
+        "phase": "storyboard_panel",
+        "status": "PASS"
+      },
+      {
+        "blocker": "provider_media_probe_receipt: provider media probe receipt status must be PASS_PROVIDER_MEDIA_URL_PROBE;provider_media_probe_receipt: provider media probe URL is not listed in provider_media_urls;provider_media_probe_receipt: provider media probe expected_sha256 is not listed in media_hashes;provider_media_probe_receipt: provider media probe http_status must be 200;provider_media_probe_receipt: provider media probe must be a live public HTTP(S) fetch;--require-provider-eligible requires provider_eligibility=true;receipt is not provider eligible",
+        "path": "receipts/panel_repair_gate_receipt.json",
+        "phase": "panel_repair_gate",
+        "status": "BLOCKED"
+      },
+      {
+        "blocker": "panel_source_not_pass:BLOCKED:repair_gate_status_not_final_reviewed:BLOCKED_PROVIDER_MEDIA_URLS;provider_media_status_not_pass:FAIL;provider_eligibility_not_true",
+        "path": "receipts/panel_source_receipt.json",
+        "phase": "panel_source_receipt",
+        "status": "BLOCKED"
+      },
+      {
+        "blocker": null,
+        "path": "receipts/visual_review_receipt.json",
+        "phase": "visual_review_receipt",
+        "status": "PASS"
+      },
+      {
+        "blocker": null,
+        "path": "receipts/kling_scene_packet.json",
+        "phase": "provider_media_lock",
+        "status": "PASS"
+      },
+      {
+        "blocker": null,
+        "path": "receipts/kling_scene_packet.json",
+        "phase": "kling_scene_packet",
+        "status": "PASS"
+      }
+    ],
+    "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+    "schema": "persona_dream.run_root_pipeline_validation.v1",
+    "status": "BLOCKED",
+    "unverified": "live memory, Look Lock/Script DNA execution, live panel image generation/review, provider media hosting reachability, paid approval, Kling task submission"
+  }
+}

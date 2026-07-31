@@ -1,0 +1,33 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T220207Z-rw-sanity-provider-dag-one-pass",
+  "goal_hash": "sha256:4af89d5e22ff851bc307895971eb7854170c4d156e9cd3054cbe26f83e318c97",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "workspace_id": "w5R",
+  "pane_id": "w5R:p5",
+  "terminal_id": "term_655e44f211eb264e",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/one-pass/20260705T220207Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T220207Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "13a65bdbc33e6a24eeac6e551cf0636be9a0ab167750b604ca358615fe4ff762",
+  "work_order_sha256": "949defbb50cdcadee7206c1f5404f74210d576b45fb11708990abb4e97aec9b0",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/one-pass/20260705T220207Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/one-pass/20260705T220207Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "sed -n '1,240p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/one-pass/20260705T220207Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json",
+    "sed -n '1,120p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/one-pass/20260705T220207Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt",
+    "ls -la /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/one-pass/20260705T220207Z-rw-sanity-provider-dag-one-pass/receipts",
+    "sha256sum /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/one-pass/20260705T220207Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T220207Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt",
+    "sed -n '1,40p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/one-pass/20260705T220207Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/one-pass/20260705T220207Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in the target scratch-worktree message file with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

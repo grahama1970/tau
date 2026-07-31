@@ -1,0 +1,304 @@
+{
+  "acceptance_gate": {
+    "blocked_asset_count": 0,
+    "must_write": [
+      "contact_sheet_build_receipt.json",
+      "reference_asset_manifest.json",
+      "memory_upsert_receipt.json or memory insert receipt per asset",
+      "qdrant_upsert_receipt.json or Qdrant upsert receipt per asset"
+    ],
+    "required_attached_entities": [
+      "Embry",
+      "Kai",
+      "Embry surfboard",
+      "Kai surfboard",
+      "June Swell",
+      "Lava Reef",
+      "Kona Coast"
+    ],
+    "required_status": "PASS_CONTACT_SHEET_BUILD"
+  },
+  "created_at": "2026-07-03T12:50:50Z",
+  "dag_contract": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/phase_04_contact_sheet_tau_dag_contract.json",
+  "live": true,
+  "mocked": false,
+  "provider_live": false,
+  "required_missing_assets": [
+    {
+      "entity": "Kai surfboard",
+      "entity_type": "prop",
+      "reason": "no_persisted_memory_contact_sheet_asset_found",
+      "required_action": "Dispatch a contact-sheet image creation lane with an approved image backend, then run persona-dream contact-sheet indexing.",
+      "requirement_id": "contact_sheet_kai_surfboard"
+    },
+    {
+      "entity": "June Swell",
+      "entity_type": "environment",
+      "reason": "no_persisted_memory_contact_sheet_asset_found",
+      "required_action": "Dispatch a contact-sheet image creation lane with an approved image backend, then run persona-dream contact-sheet indexing.",
+      "requirement_id": "contact_sheet_june_swell"
+    },
+    {
+      "entity": "Lava Reef",
+      "entity_type": "environment",
+      "reason": "no_persisted_memory_contact_sheet_asset_found",
+      "required_action": "Dispatch a contact-sheet image creation lane with an approved image backend, then run persona-dream contact-sheet indexing.",
+      "requirement_id": "contact_sheet_lava_reef"
+    },
+    {
+      "entity": "Kona Coast",
+      "entity_type": "environment",
+      "reason": "no_persisted_memory_contact_sheet_asset_found",
+      "required_action": "Dispatch a contact-sheet image creation lane with an approved image backend, then run persona-dream contact-sheet indexing.",
+      "requirement_id": "contact_sheet_kona_coast"
+    }
+  ],
+  "schema": "persona_dream.contact_sheet_work_order.v1",
+  "source_context": {
+    "core_idea": "Embry and Kai both faked a sick day at their summer jobs to go surfing on the Big Island on a Wednesday in June of 2024 \u2014 Kona Coast, Kahalu\u02bbu Bay, summer swell patterns, lava rock reefs, local surf etiquette.",
+    "duration_seconds": 10,
+    "environment": {
+      "active_pressures": [
+        "sweat",
+        "glare",
+        "wax softness",
+        "saltwater",
+        "fatigue",
+        "grip changes",
+        "footing changes",
+        "board control changes",
+        "reef caution",
+        "social patience"
+      ],
+      "story_effect": "Heat, glare, fatigue, and softened wax turn the incoming set into a practical timing problem, while the reef and local lineup rules force Embry and Kai to choose restraint before commitment.",
+      "weather_description": "Hot, humid coastal air with summer swell patterns, harsh glare, saltwater, softened wax, fatigue, and clear water over shallow lava reef."
+    },
+    "interaction_matrix": [
+      {
+        "category": "character",
+        "contact_sheet": {
+          "kind": "character",
+          "priority": "required",
+          "rationale": "Character identity continuity must be locked before Kling scene generation.",
+          "required": true,
+          "send_to_kling": true,
+          "status": "existing_or_required"
+        },
+        "description": "Embry: Heat and humidity make her physically exposed: sweat, glare, and tired paddling turn autonomy into a bodily choice, not just an idea. Script/panels should show sweat, squinting, salt on skin, careful hand placement, and fatigue in her paddle cadence before dialogue explains anything.",
+        "entity": "Embry",
+        "environment_interaction": "Heat and humidity put sweat and salt on her skin, glare narrows her sightline to the wave face, fatigue limits her paddle strokes, and the reef makes her rail grip and timing matter.",
+        "id": "seed-0",
+        "objects_used": [
+          "navy rashguard",
+          "phone",
+          "family obligations",
+          "borrowed/older shortboard"
+        ],
+        "source_seed_id": "seed-0",
+        "story_function": "Embry carries the autonomy-versus-obligation pivot by ignoring the buzzing phone long enough to make a careful, competent surf decision.",
+        "visible_in_panel": true
+      },
+      {
+        "category": "character",
+        "contact_sheet": {
+          "kind": "character",
+          "priority": "required",
+          "rationale": "Character identity continuity must be locked before Kling scene generation.",
+          "required": true,
+          "send_to_kling": true,
+          "status": "existing_or_required"
+        },
+        "description": "Kai: Reads the swell while managing heat, glare, and patience; his competence shows in conserving effort instead of forcing the moment. Stage Kai as physically adapted to the heat: calm breathing, economical paddling, shaded glances at the reef line, and small gestures that guide Embry without lecturing.",
+        "entity": "Kai",
+        "environment_interaction": "Kai reads the glare, swell angle, reef line, and lineup pressure without wasting motion; heat and fatigue make his restraint more useful than a lecture.",
+        "id": "seed-1",
+        "objects_used": [
+          "black rashguard",
+          "phone call",
+          "surf ritual",
+          "familiar shortboard"
+        ],
+        "source_seed_id": "seed-1",
+        "story_function": "Kai demonstrates competence by yielding to a local, conserving energy, and giving one practical channel cue rather than taking over Embry\u2019s choice.",
+        "visible_in_panel": true
+      },
+      {
+        "category": "character_object",
+        "contact_sheet": {
+          "kind": "prop",
+          "priority": "conditional",
+          "rationale": "Visually specific props or wardrobe affect staging; include a reference sheet when visible in the panel.",
+          "required": true,
+          "send_to_kling": true,
+          "status": "missing"
+        },
+        "description": "Embry surfboard: Humidity and sun soften wax and make footing less certain; the board forces Embry to commit cleanly despite tired arms and slick contact points. Panel details should include wax smears, sun glare on the deck, hands gripping rails, and foot placement uncertainty as the board reacts to chop and reef proximity.",
+        "entity": "Embry surfboard",
+        "environment_interaction": "Sun and humidity soften the wax on the older white performance shortboard, so Embry\u2019s palm slips and her rail pressure must be reset before the wave reaches the reef.",
+        "id": "seed-2",
+        "objects_used": [
+          "White shortboard",
+          "performance shape",
+          "visibly waxed deck",
+          "likely older/borrowed",
+          "rail pressure matters over shallow reef."
+        ],
+        "source_seed_id": "seed-2",
+        "story_function": "The board converts heat and reef caution into visible mechanics: grip, balance, and commitment are not abstract feelings.",
+        "visible_in_panel": true
+      },
+      {
+        "category": "character_object",
+        "contact_sheet": {
+          "kind": "prop",
+          "priority": "conditional",
+          "rationale": "Visually specific props or wardrobe affect staging; include a reference sheet when visible in the panel.",
+          "required": true,
+          "send_to_kling": true,
+          "status": "missing"
+        },
+        "description": "Kai surfboard: A waxed, familiar board lets Kai compensate for heat, chop, and glare; restraint is visible when he waits rather than wasting energy. Use the board as proof of familiarity: worn rail marks, confident trim angle, efficient turns, and quick corrections under humid, high-glare conditions.",
+        "entity": "Kai surfboard",
+        "environment_interaction": "The well-used waxed board lets Kai trim efficiently under glare and chop, making small corrections while he waits outside the danger line.",
+        "id": "seed-3",
+        "objects_used": [
+          "White shortboard with darker underside/rail marks",
+          "well-used and waxed",
+          "familiar enough for quick reef-line decisions."
+        ],
+        "source_seed_id": "seed-3",
+        "story_function": "Kai\u2019s familiar board makes his restraint legible as skill: he can move quickly, but chooses patience and positioning.",
+        "visible_in_panel": true
+      },
+      {
+        "category": "environmental_force",
+        "contact_sheet": {
+          "kind": "environment",
+          "priority": "recommended",
+          "rationale": "Stable scene geometry should use a compact environment reference when it anchors the panel.",
+          "required": true,
+          "send_to_kling": true,
+          "status": "missing"
+        },
+        "description": "June Swell: Creates the timing pressure that makes hesitation and trust visible. Panels need repeating set rhythm: quiet water, approaching lump, glare on the face, then a fast decision point.",
+        "entity": "June Swell",
+        "environment_interaction": "The summer set rhythm creates a brief decision window: quiet water becomes a silver-glared wave face, forcing Embry to decide before fatigue costs her the takeoff.",
+        "id": "seed-4",
+        "objects_used": [
+          "sets",
+          "tide window",
+          "wave face"
+        ],
+        "source_seed_id": "seed-4",
+        "story_function": "The swell supplies the ten-second clock and turns hesitation, etiquette, and trust into immediate action.",
+        "visible_in_panel": true
+      },
+      {
+        "category": "environmental_force",
+        "contact_sheet": {
+          "kind": "environment",
+          "priority": "recommended",
+          "rationale": "Stable scene geometry should use a compact environment reference when it anchors the panel.",
+          "required": true,
+          "send_to_kling": true,
+          "status": "missing"
+        },
+        "description": "Lava Reef: Turns the environment into a hard boundary rather than background scenery. Show the reef as a physical rule: dark shapes below clear water, shallow consequences, and characters adjusting line and timing around it.",
+        "entity": "Lava Reef",
+        "environment_interaction": "Dark lava shapes under clear saltwater mark a shallow hard boundary; Embry and Kai adjust line, paddle timing, and channel choice around it.",
+        "id": "seed-5",
+        "objects_used": [
+          "sharp rock",
+          "shallow line",
+          "safe channel"
+        ],
+        "source_seed_id": "seed-5",
+        "story_function": "The reef prevents generic surf action by making every movement accountable to a visible physical consequence.",
+        "visible_in_panel": true
+      },
+      {
+        "category": "location_social_system",
+        "contact_sheet": {
+          "kind": "environment",
+          "priority": "recommended",
+          "rationale": "Stable scene geometry should use a compact environment reference when it anchors the panel.",
+          "required": true,
+          "send_to_kling": true,
+          "status": "missing"
+        },
+        "description": "Kona Coast: Holds the scene inside a public place where local rules shape private choices. Script beats should include public beach pressure, waiting turns, reading locals, and the contrast between private escape and shared water.",
+        "entity": "Kona Coast",
+        "environment_interaction": "The public bay and reef break require waiting turns and reading locals; heat and crowded patience make Kai\u2019s yield and Embry\u2019s timing socially as well as physically necessary.",
+        "id": "seed-6",
+        "objects_used": [
+          "bay",
+          "local etiquette",
+          "reef break"
+        ],
+        "source_seed_id": "seed-6",
+        "story_function": "The location makes their private sick-day escape depend on shared-water rules, preventing reckless or isolated decision-making.",
+        "visible_in_panel": true
+      }
+    ],
+    "linked_assets": [
+      {
+        "description": "Embry, a young woman in a navy surf top, crouches low on a white surfboard carving across a small wave, one hand brushing the water as spray bursts around her. Golden light hits the Big Island coastline behind her, with palm trees, dark lava rocks, green mountains, and low clouds creating a dramatic tropical backdrop for Kai to spot her ride or call out from nearby.",
+        "id": "embry_media_asset__assets_surfing_embry_surfing_big_island_2024_png",
+        "media_type": "image",
+        "memory_key": "embry_media_asset__assets_surfing_embry_surfing_big_island_2024_png",
+        "source": "story_asset_usage",
+        "title": "Embry surfing on the Big Island",
+        "visibility": "caption_grounded"
+      },
+      {
+        "description": "Kai Akana, a young surfer in a black rash guard and board shorts, carves low on a small glassy wave as spray bursts around his white surfboard. Behind him, the Big Island coastline shows dark lava rocks, palm trees, and steep green mountains under warm golden light with low clouds, setting up a focused surfing moment for Embry/Kai.",
+        "id": "kai_akana_media_asset__assets_surfing_kai_surfing_big_island_2024_png",
+        "media_type": "image",
+        "memory_key": "kai_akana_media_asset__assets_surfing_kai_surfing_big_island_2024_png",
+        "source": "story_asset_usage",
+        "title": "Kai Akana surfing on the Big Island",
+        "visibility": "caption_grounded"
+      },
+      {
+        "description": "Embry image media asset: character sheet montage (assets).\nAsset path: /mnt/storage12tb/media/personas/embry/assets/character_sheet_montage.jpg\nRelative path: assets/character_sheet_montage.jpg\nMedia type: image. MIME: image/jpeg. Embry persona visual/audio/video asset for casting, voice, reference, teaser, or persona-dream workflows. has frames field for image_mm multimodal embedding\nLive VLM description (persona_dream_live_media_descriptions_20260701T1838Z): Embry is a young woman with brown hair tied back, expressive green-brown eyes, and a navy polo, shown in multiple reference poses: neutral, focused at a computer, explaining with her hand raised, tired in a hoodie, smiling outdoors, and working at a multi-monitor desk with notes, mugs, and office items. The settings alternate between bright office interiors and warm coastal balcony/beach views with palm trees, ocean, and golden sunlight, establishing her as a thoughtful tech-savvy character ready to enter a 10-second Embry/Kai surfing story.",
+        "id": "embry_media_asset__assets_character_sheet_montage_jpg",
+        "media_type": "image",
+        "memory_key": "embry_media_asset__assets_character_sheet_montage_jpg",
+        "source": "/mnt/storage12tb/media/personas/embry/assets/character_sheet_montage.jpg",
+        "title": "Embry image media asset: character sheet montage (assets).",
+        "url": "/mnt/storage12tb/media/personas/embry/assets/character_sheet_montage.jpg",
+        "visibility": "caption_grounded"
+      },
+      {
+        "description": "Persona media asset key: kai_akana_media_asset__assets_contact_sheets_kai_akana_character_sheet_png\nTitle: Kai Akana character sheet\nAliases and filenames: kai_akana_contact_sheet.png, Kai Character Sheet, Kai Akana contact sheet\nClassification: character_sheet synthetic image for persona-dream memory residue recall.\nDescription: Synthetic Kai Akana character sheet showing Hawaiian, Norwegian, and Japanese heritage across portrait, ocean, casual, remote-work, evening, and candid expressions.\nPersonas: kai_akana, kai.\nScene context: Embry and Kai, Big Island, Kona Coast, Kahalu'u Bay, June 2024 surfing memory residue, waves, lava rock reef, surf etiquette.\nAsset path: /mnt/storage12tb/media/personas/kai_akana/assets/contact_sheets/kai_akana_character_sheet.png\nRelative path: assets/contact_sheets/kai_akana_character_sheet.png\nOriginal source file: /home/graham/Desktop/kai_akana_contact_sheet.png\nMedia type: image. MIME: image/png. Width: 1200. Height: 1311. SHA256: 692cf37c5e7915f8b4ebceabd03b5d01ff69c9d428e94333bc1a01ac5e497700.\nUse this record when recalling images that should appear in the Pinterest-style Memory Residue board. This is synthetic imagery, not factual documentary ev",
+        "id": "kai_akana_media_asset__assets_contact_sheets_kai_akana_character_sheet_png",
+        "media_type": "image",
+        "memory_key": "kai_akana_media_asset__assets_contact_sheets_kai_akana_character_sheet_png",
+        "source": "/mnt/storage12tb/media/personas/kai_akana/assets/contact_sheets/kai_akana_character_sheet.png",
+        "title": "Synthetic Kai Akana character sheet showing Hawaiian, Norwegian, and Japanese heritage across portrait, ocean, casual, remote-work, evening, and candid expressions.",
+        "url": "/mnt/storage12tb/media/personas/kai_akana/assets/contact_sheets/kai_akana_character_sheet.png",
+        "visibility": "metadata_only"
+      }
+    ],
+    "location": {
+      "description": "A public Kona Coast reef break where a stolen sick-day surf session is constrained by local etiquette, shared water, and shallow lava rock.",
+      "month": "June",
+      "place": "Kahalu\u02bbu Bay, Kona Coast, Big Island",
+      "time": "Wednesday daylight surf window",
+      "year": 2024
+    },
+    "panel_count": 1,
+    "story_text": "Embry\u2019s phone buzzes on the beach bag like obligation had learned echolocation. Ten yards out, a clean June lump lifts over the dark lava reef; glare turns the face silver, and her older white shortboard\u2019s softened wax lets one palm skid. Kai, outside on his familiar board, doesn\u2019t call her in. He waits, trims aside for a local, then points two fingers at the safe channel. Embry resets her rail grip, saves three tired strokes, and chooses the wave."
+  },
+  "source_paths": {
+    "blocked_assets": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/blocked_assets.json",
+    "build_receipt": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_build_receipt.json",
+    "contact_sheet_requirements": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_requirements.json",
+    "memory_recall_evidence": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_memory_recall_evidence.json",
+    "phase_dir": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets",
+    "reference_asset_manifest": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/reference_asset_manifest.json",
+    "run_root": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete",
+    "visual_entity_context": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/visual_entity_context.json"
+  },
+  "status": "WORK_ORDER_READY_CONTACT_SHEET_REQUIRED"
+}

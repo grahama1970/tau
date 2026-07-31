@@ -1,0 +1,66 @@
+{
+  "active_loop": {
+    "blocker": "missing_artifact",
+    "default_repair": "Repair or regenerate the story contract from the current upstream idea/memory revision and mark downstream artifacts stale as needed.",
+    "external_action_required": false,
+    "loop": "story_loop",
+    "path": "story_contract.json | artifacts/story_contract.json",
+    "phase": "story_contract",
+    "validator": "validate-story-contract"
+  },
+  "direction": "forward",
+  "exercised": "serial while-loop controller pass, run-root validation, first-blocker loop mapping, fail-closed stop selection, local receipt installation handlers when applicable",
+  "generated_at": "2026-06-29T20:51:01Z",
+  "iterations": [
+    {
+      "active_loop": {
+        "blocker": "missing_artifact",
+        "default_repair": "Repair or regenerate the story contract from the current upstream idea/memory revision and mark downstream artifacts stale as needed.",
+        "external_action_required": false,
+        "loop": "story_loop",
+        "path": "story_contract.json | artifacts/story_contract.json",
+        "phase": "story_contract",
+        "validator": "validate-story-contract"
+      },
+      "first_blocker": {
+        "path": "story_contract.json | artifacts/story_contract.json",
+        "phase": "story_contract",
+        "reason": "missing_artifact"
+      },
+      "iteration": 1,
+      "phase_count": 8,
+      "repair_action": {
+        "blocker": {
+          "path": "story_contract.json | artifacts/story_contract.json",
+          "phase": "story_contract",
+          "reason": "missing_artifact"
+        },
+        "current_status": "MISSING",
+        "external_action_required": false,
+        "output": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/story_contract_work_order.json",
+        "owner_subagent": "dreamer",
+        "phase": "story_contract",
+        "status": "WROTE_STORY_CONTRACT_WORK_ORDER",
+        "stop_after_action": true,
+        "story_contract": "None",
+        "unverified": "semantic story acceptance, dreamer subagent execution, downstream regeneration, panel/provider/Kling readiness"
+      },
+      "status": "BLOCKED",
+      "stop_condition": "No external action performed; repair the active_loop.default_repair, write/refresh receipts, then rerun this command."
+    }
+  ],
+  "live": "no",
+  "mocked": "no",
+  "next_action": "Repair or regenerate the story contract from the current upstream idea/memory revision and mark downstream artifacts stale as needed.",
+  "policy": {
+    "implicit_local_repair_allowed": false,
+    "kling_call_allowed": false,
+    "nano_banana_final_panel_allowed": false,
+    "public_upload_allowed_without_explicit_authorization": false
+  },
+  "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+  "schema": "persona_dream.pipeline_loop_run.v1",
+  "status": "BLOCKED",
+  "stop_reason": "work_order_written",
+  "unverified": "external publication, live panel subagent generation/review, paid Kling submission"
+}

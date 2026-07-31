@@ -1,0 +1,37 @@
+eriments/goal-locked-s
+ubagents/proofs/generi
+c-provider-dag-adapter
+/20260703T1915Z-generi
+c-provider-dag-adapter
+-live/provider-runs/20
+260703T191355Z-tau-gen
+eric-provider-dag-adap
+ter-live/dag-spec.json
+\nplanner_receipt: /ho
+me/graham/workspace/ex
+periments/tau/experime
+nts/goal-locked-subage
+nts/proofs/generic-pro
+vider-dag-adapter/2026
+0703T1915Z-generic-pro
+vider-dag-adapter-live
+/provider-runs/2026070
+3T191355Z-tau-generic-
+provider-dag-adapter-l
+ive/planner-receipt.js
+on\nfinal_receipt: /ho
+me/graham/workspace/ex
+periments/tau/experime
+nts/goal-locked-subage
+nts/proofs/generic-pro
+vider-dag-adapter/2026
+0703T1915Z-generic-pro
+vider-dag-adapter-live
+/provider-runs/2026070
+3T191355Z-tau-generic-
+provider-dag-adapter-l
+ive/run-receipt.json\n
+canonical truth: Tau J
+SON receipts; this pan
+e is human-visible tel
+emetry.\n

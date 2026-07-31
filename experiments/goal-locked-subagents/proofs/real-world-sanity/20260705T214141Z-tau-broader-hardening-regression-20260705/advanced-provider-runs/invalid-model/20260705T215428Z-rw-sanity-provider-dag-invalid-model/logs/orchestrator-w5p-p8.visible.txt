@@ -1,0 +1,37 @@
+.json\nplanner_rec
+eipt: /home/graham
+/workspace/experim
+ents/tau/experimen
+ts/goal-locked-sub
+agents/proofs/real
+-world-sanity/2026
+0705T214141Z-tau-b
+roader-hardening-r
+egression-20260705
+/advanced-provider
+-runs/invalid-mode
+l/20260705T215428Z
+-rw-sanity-provide
+r-dag-invalid-mode
+l/planner-receipt.
+json\nfinal_receip
+t: /home/graham/wo
+rkspace/experiment
+s/tau/experiments/
+goal-locked-subage
+nts/proofs/real-wo
+rld-sanity/2026070
+5T214141Z-tau-broa
+der-hardening-regr
+ession-20260705/ad
+vanced-provider-ru
+ns/invalid-model/2
+0260705T215428Z-rw
+-sanity-provider-d
+ag-invalid-model/r
+un-receipt.json\nc
+anonical truth: Ta
+u JSON receipts; t
+his pane is human-
+visible telemetry.
+\n

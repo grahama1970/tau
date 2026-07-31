@@ -1,0 +1,37 @@
+del\nrun_dir: /home/graham/works
+pace/experiments/tau/experiments
+/goal-locked-subagents/proofs/re
+al-world-sanity/20260703T125120Z
+-tau-real-world-sanity-all-provi
+der-live/advanced-provider-runs/
+invalid-model/20260703T130045Z-r
+w-sanity-provider-dag-invalid-mo
+del\ndag_spec: /home/graham/work
+space/experiments/tau/experiment
+s/goal-locked-subagents/proofs/r
+eal-world-sanity/20260703T125120
+Z-tau-real-world-sanity-all-prov
+ider-live/advanced-provider-runs
+/invalid-model/20260703T130045Z-
+rw-sanity-provider-dag-invalid-m
+odel/dag-spec.json\nplanner_rece
+ipt: /home/graham/workspace/expe
+riments/tau/experiments/goal-loc
+ked-subagents/proofs/real-world-
+sanity/20260703T125120Z-tau-real
+-world-sanity-all-provider-live/
+advanced-provider-runs/invalid-m
+odel/20260703T130045Z-rw-sanity-
+provider-dag-invalid-model/plann
+er-receipt.json\nfinal_receipt:
+/home/graham/workspace/experimen
+ts/tau/experiments/goal-locked-s
+ubagents/proofs/real-world-sanit
+y/20260703T125120Z-tau-real-worl
+d-sanity-all-provider-live/advan
+ced-provider-runs/invalid-model/
+20260703T130045Z-rw-sanity-provi
+der-dag-invalid-model/run-receip
+t.json\ncanonical truth: Tau JSO
+N receipts; this pane is human-v
+isible telemetry.\n

@@ -1,0 +1,37 @@
+anced-after-timeout-fl
+oor/advanced-generic-p
+rovider-dag-adapter/pr
+ovider-runs/20260703T2
+00339Z-rw-sanity-gener
+ic-provider-dag-adapte
+r/dag-spec.json\nplann
+er_receipt: /home/grah
+am/workspace/experimen
+ts/tau/experiments/goa
+l-locked-subagents/pro
+ofs/real-world-sanity/
+20260703T200015Z-tau-a
+dvanced-after-timeout-
+floor/advanced-generic
+-provider-dag-adapter/
+provider-runs/20260703
+T200339Z-rw-sanity-gen
+eric-provider-dag-adap
+ter/planner-receipt.js
+on\nfinal_receipt: /ho
+me/graham/workspace/ex
+periments/tau/experime
+nts/goal-locked-subage
+nts/proofs/real-world-
+sanity/20260703T200015
+Z-tau-advanced-after-t
+imeout-floor/advanced-
+generic-provider-dag-a
+dapter/provider-runs/2
+0260703T200339Z-rw-san
+ity-generic-provider-d
+ag-adapter/run-receipt
+.json\ncanonical truth
+: Tau JSON receipts; t
+his pane is human-visi
+ble telemetry.\n

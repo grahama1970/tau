@@ -1,0 +1,32 @@
+{
+  "context": {
+    "artifacts": [],
+    "summary": "Real-world sanity runner created a bounded handoff."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "local-sanity"
+  },
+  "goal": {
+    "goal_hash": "sha256:active-goal",
+    "goal_id": "goal-real-world-sanity",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "goal-guardian",
+    "reason": "Goal preservation should be checked first."
+  },
+  "previous_subagent": "human",
+  "rationale": "The next local agent should inspect the receipt.",
+  "required_evidence": [
+    "schema-valid handoff response"
+  ],
+  "result": {
+    "evidence": [],
+    "status": "COMPLETED",
+    "summary": "The route is ready for the next local agent."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Next agent posts a schema-valid route."
+}

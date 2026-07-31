@@ -1,0 +1,25 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-visible-poc/20260701T153005Z-tau-planner-orchestrator-visible-poc/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-visible-poc/20260701T153005Z-tau-planner-orchestrator-visible-poc/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-visible-poc/20260701T153005Z-tau-planner-orchestrator-visible-poc/work-orders/attempt-01-coder.json",
+    "pwd && ls -la && nl -ba message.txt",
+    "find /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-visible-poc/20260701T153005Z-tau-planner-orchestrator-visible-poc -maxdepth 2 -type f | sort",
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-visible-poc/20260701T153005Z-tau-planner-orchestrator-visible-poc/receipts/attempt-01-coder.json",
+    "nl -ba message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-visible-poc/20260701T153005Z-tau-planner-orchestrator-visible-poc/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

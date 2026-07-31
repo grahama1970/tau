@@ -1,0 +1,138 @@
+{
+  "applied_actions": [
+    {
+      "action": "workspace_close",
+      "applied": true,
+      "pane_ids": [
+        "w2Z:p5",
+        "w2Z:p6",
+        "w2Z:pB",
+        "w2Z:p8",
+        "w2Z:p7",
+        "w2Z:pC"
+      ],
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "returncode": 0,
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "workspace_id": "w2Z"
+    }
+  ],
+  "candidate_count": 1,
+  "candidates": [
+    {
+      "action": "workspace_close",
+      "pane_ids": [
+        "w2Z:p5",
+        "w2Z:p6",
+        "w2Z:pB",
+        "w2Z:p8",
+        "w2Z:p7",
+        "w2Z:pC"
+      ],
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "workspace_id": "w2Z"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "close",
+        "w2Z"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "get",
+        "w2Z"
+      ],
+      "returncode": 1,
+      "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w2Z not found\"},\"id\":\"cli:workspace:get\"}\n",
+      "stdout": ""
+    }
+  ],
+  "current_workspace": null,
+  "include_current_workspace": false,
+  "live": true,
+  "mocked": false,
+  "mode": "apply",
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "global regex cleanup of unrelated Herdr resources",
+      "Git worktree deletion",
+      "session deletion for runs that did not record a session id"
+    ],
+    "proves": [
+      "Tau can identify Herdr workspace/session resources recorded by one run",
+      "Tau cleanup defaults to audit/dry-run before mutation",
+      "Tau refuses to close the current Herdr workspace unless explicitly allowed",
+      "Tau verifies applied workspace cleanup by requiring Herdr workspace get to report workspace_not_found"
+    ]
+  },
+  "resource_count": 1,
+  "resources": [
+    {
+      "kind": "workspace",
+      "pane_ids": [
+        "w2Z:p5",
+        "w2Z:p6",
+        "w2Z:pB",
+        "w2Z:p8",
+        "w2Z:p7",
+        "w2Z:pC"
+      ],
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "sources": [
+        "provider_sessions",
+        "visible_subagents"
+      ],
+      "terminal_ids": [
+        "term_655bcdcfb2df42e7",
+        "term_655bcdda2ab402e8",
+        "term_655bce503805e2ed",
+        "term_655bce147d9bb2ea",
+        "term_655bce0acff572e9",
+        "term_655bce5b164222ee"
+      ],
+      "workspace_id": "w2Z"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-provider-runs/max-exhaustion/20260703T225817Z-rw-sanity-provider-dag-max-exhaustion",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-provider-runs/max-exhaustion/20260703T225817Z-rw-sanity-provider-dag-max-exhaustion/runtime-manifest.json",
+  "schema": "tau.herdr_cleanup_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-03T23:01:29Z"
+}

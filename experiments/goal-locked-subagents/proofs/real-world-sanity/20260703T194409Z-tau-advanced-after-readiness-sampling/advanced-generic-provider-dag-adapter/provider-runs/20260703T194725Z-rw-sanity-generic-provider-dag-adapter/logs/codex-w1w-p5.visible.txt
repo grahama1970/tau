@@ -1,0 +1,38 @@
+  receipt key values.
+
+• Explored
+  └ Read message.txt
+
+• Ran python -m json.tool /home/graham/
+  │ workspace/experiments/tau/experiments/
+  │ goal-locked-subagents/proofs/
+  │ … +9 lines
+  └ 24 /tmp/tau-attempt-01-coder-json-verify.txt
+
+• Ran python - <<'PY'
+  │ import json
+  │ from pathlib import Path
+  │ … +19 lines
+  └ tau.provider_dag_node_receipt.v1
+    coder codex 1 PASS PASS
+    … +14 lines (ctrl + t to view transcript)
+    eric-provider-dag-adapter/scratch-worktree/
+    message.txt
+
+────────────────────────────────────────────────
+
+• Verification succeeded: message.txt contains
+  the completed message, and the receipt parses
+  as JSON with schema
+  tau.provider_dag_node_receipt.v1, status PASS,
+  verdict PASS, one changed file, and one
+  artifact. I’m updating the receipt’s command
+  list to include the verification commands that
+  were actually run.
+
+• Working (1m 05s • esc to interrupt)
+
+
+› Use /skills to list available skills
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

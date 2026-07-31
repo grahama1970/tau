@@ -1,0 +1,14 @@
+{
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-stress-campaign/20260701T164103Z-tau-dag-stress-campaign-1000/suites/20260701T164103Z-tau-dag-stress-campaign-1000-budget-5-rep-5/rungs/05-max-attempts-fail-closed/events.jsonl",
+  "expected_status": "BLOCKED",
+  "max_attempts": 5,
+  "policy": {
+    "max_attempts": 5,
+    "orchestrator_owns_loop": true,
+    "subagents_one_bounded_turn": true
+  },
+  "receipt_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-stress-campaign/20260701T164103Z-tau-dag-stress-campaign-1000/suites/20260701T164103Z-tau-dag-stress-campaign-1000-budget-5-rep-5/rungs/05-max-attempts-fail-closed/receipts",
+  "rung_id": "05-max-attempts-fail-closed",
+  "schema": "tau.dag_stress_spec.v1",
+  "work_order_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-stress-campaign/20260701T164103Z-tau-dag-stress-campaign-1000/suites/20260701T164103Z-tau-dag-stress-campaign-1000-budget-5-rep-5/rungs/05-max-attempts-fail-closed/work-orders"
+}

@@ -1,0 +1,165 @@
+{
+  "agent": "coder",
+  "alert_codes": [],
+  "alerts": [],
+  "attempt": 1,
+  "changed_files": [],
+  "course_correction": null,
+  "course_correction_artifacts": [],
+  "course_correction_path": null,
+  "dag_id": "live-scillm-worker-schema-probe",
+  "data_boundary": {
+    "classification": "public",
+    "export_controlled": false,
+    "external_provider_allowed": false,
+    "external_research_allowed": false,
+    "foreign_person_access": "allowed",
+    "itar": false,
+    "notes": [
+      "live SciLLM worker probe with public temp data only"
+    ],
+    "public_repo_allowed": false,
+    "schema": "tau.data_boundary.v1",
+    "technical_data": false
+  },
+  "data_boundary_artifact": {
+    "bytes": 365,
+    "exists": true,
+    "label": "inline_data_boundary",
+    "path": null,
+    "sha256": "sha256:382af0f2fa069ed9e7e7cf56a7638d614133c6790c8a8e5c1e58d4e08aeecf80"
+  },
+  "data_boundary_bytes": 365,
+  "data_boundary_sha256": "sha256:382af0f2fa069ed9e7e7cf56a7638d614133c6790c8a8e5c1e58d4e08aeecf80",
+  "execution_substrate": "docker-sandbox",
+  "goal_hash": "sha256:live-scillm-worker-schema-probe-goal",
+  "herdr_binding": null,
+  "herdr_receipt_path": null,
+  "high_stakes": true,
+  "live": true,
+  "mocked": false,
+  "model_provider_route": {
+    "agent": "build",
+    "endpoint": "/v1/scillm/opencode/runs",
+    "skills": [
+      "scillm"
+    ],
+    "surface": "opencode_serve"
+  },
+  "next_recommended_route": "reviewer",
+  "node_id": "coder",
+  "normalized_changed_files": [],
+  "normalized_result_artifacts": [],
+  "ok": true,
+  "policy_profile": {
+    "default_decision": "deny",
+    "filesystem": {
+      "read_denylist": [
+        "secrets/**"
+      ],
+      "write_allowlist": [
+        ".tau/receipts/**"
+      ]
+    },
+    "github": {
+      "dry_run_projection": "allow",
+      "public_mutation": "deny"
+    },
+    "memory": {
+      "read": "allow",
+      "write": "approval_required"
+    },
+    "network": {
+      "allowed_domains": [],
+      "default": "deny"
+    },
+    "profile_id": "scillm-live-probe-zero-trust",
+    "providers": {
+      "cloud_llm": "deny",
+      "local_model": "allow_with_approval"
+    },
+    "requires_data_boundary": true,
+    "research": {
+      "external_search": "deny",
+      "manual_sanitized_receipt": "allow_with_review"
+    },
+    "schema": "tau.policy_profile.v1"
+  },
+  "policy_profile_artifact": {
+    "bytes": 698,
+    "exists": true,
+    "label": "inline_policy_profile",
+    "path": null,
+    "sha256": "sha256:0269872bc0a0206aa960994827486de1b710ea41ccc8eea6e3e561b27e7a22b7"
+  },
+  "policy_profile_bytes": 698,
+  "policy_profile_sha256": "sha256:0269872bc0a0206aa960994827486de1b710ea41ccc8eea6e3e561b27e7a22b7",
+  "proof_scope": {
+    "does_not_prove": [
+      "The worker is trustworthy.",
+      "The code is semantically correct.",
+      "Tests passed unless durable logs are present.",
+      "Provider/model semantic quality.",
+      "The worker was launched by Tau."
+    ],
+    "proves": [
+      "Tau inspected an external coding worker result before accepting it.",
+      "Tau recorded hashes for the validated work order and worker result.",
+      "Tau checked goal hash, changed paths, required artifacts, test logs, mutation claims, and research claims.",
+      "Tau emitted a bounded course-correction receipt when worker output was blocked."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-schema-contract-20260707T1906Z/repo/.tau/receipts/scillm-worker-receipt.json",
+  "required_artifact_descriptors": [],
+  "required_artifacts": [],
+  "research_receipts": [],
+  "result_artifact_descriptors": [],
+  "result_artifacts": [],
+  "result_bytes": 247,
+  "result_path": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-schema-contract-20260707T1906Z/repo/.tau/receipts/scillm-result.json",
+  "result_schema": "tau.scillm_worker_result.v1",
+  "result_sha256": "sha256:8ab97495b631cfd926fa73f26dfe4c791ea99e76b5a72e02abfba95a27329a50",
+  "sandbox_receipt_path": ".tau/receipts/sandbox-run-receipt.json",
+  "schema": "tau.scillm_worker_receipt.v1",
+  "side_effect_receipts": [],
+  "status": "PASS",
+  "substrate_receipts": [
+    {
+      "bytes": 517,
+      "exists": true,
+      "label": "sandbox_receipt",
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "path": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-schema-contract-20260707T1906Z/repo/.tau/receipts/sandbox-run-receipt.json",
+      "provider_live": false,
+      "schema": "tau.sandbox_run_receipt.v1",
+      "sha256": "sha256:7481f5fc9427ecdcafe426da6a41098c0e48ebdf4d97790fb84bb7fdbda325ec",
+      "status": "PASS"
+    }
+  ],
+  "test_log_artifacts": [],
+  "timestamp": "2026-07-07T17:50:12Z",
+  "validated_artifacts": [
+    {
+      "bytes": 2567,
+      "exists": true,
+      "label": "work_order",
+      "path": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-schema-contract-20260707T1906Z/work-order.json",
+      "sha256": "sha256:c8d679d3d5b854f42058b02c6b00646321c99175db273f8f9a6aef2ace555d9b"
+    },
+    {
+      "bytes": 247,
+      "exists": true,
+      "label": "worker_result",
+      "path": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-schema-contract-20260707T1906Z/repo/.tau/receipts/scillm-result.json",
+      "sha256": "sha256:8ab97495b631cfd926fa73f26dfe4c791ea99e76b5a72e02abfba95a27329a50"
+    }
+  ],
+  "work_order_bytes": 2567,
+  "work_order_path": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-schema-contract-20260707T1906Z/work-order.json",
+  "work_order_schema": "tau.executor.scillm_worker.v1",
+  "work_order_sha256": "sha256:c8d679d3d5b854f42058b02c6b00646321c99175db273f8f9a6aef2ace555d9b",
+  "worker_kind": "scillm"
+}

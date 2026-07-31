@@ -1,0 +1,5 @@
+{
+  "goal_hash": "sha256:g",
+  "schema": "tau.sandbox_run_receipt.v1",
+  "status": "PASS"
+}

@@ -1,0 +1,38 @@
+  based on local deterministic artifact checks.
+
+  Now/current file-command-artifact: Updated
+  target file:
+  /home/graham/.../scratch-worktree/message.txt
+
+  Wrote receipt:
+  /home/graham/.../receipts/attempt-02-
+  coder.json
+
+  Evidence: Read-only validation command exited
+  0. It checked 17 receipt/message conditions;
+  all_passed: true. The target message has 7
+  lines and includes run_id, node_id,
+  provider_id, attempt: 2, full target path, and
+  provider adapter DAG purpose. Receipt has
+  attempt: 2, status: PASS, verdict: PASS, exact
+  work_order_path, exact changed_files, exact
+  artifacts, and empty errors /
+  policy_exceptions.
+
+  mocked: no
+  live: no
+  Exercised: filesystem artifact edit plus JSON
+  receipt parse/field validation.
+  Unverified: no external provider service or
+  DAG runner was invoked.
+
+  Next/stop condition: No remaining coder-node
+  file work for attempt 02 under the provided
+  work order.
+
+─ Worked for 2m 14s ────────────────────────────
+
+
+› Implement {feature}
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

@@ -1,0 +1,33 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T234025Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:d7af2e7fee11dc8399dcf06b2241749b050fccf88c17a7d2a01eb58ac9effee1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w6P",
+  "pane_id": "w6P:p6",
+  "terminal_id": "term_655e5aeb98b1776f",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T234025Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T234025Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "276efa3ff80089fe641043298834eef40fbc0aeb73c84948a28c58d87b6090cf",
+  "work_order_sha256": "3114f6b766e5c568cbc808f1f926e7abbe00091f3709f3dd371a970bee4fa282",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T234025Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work order JSON",
+    "read target_file (message.txt)",
+    "read coder receipt (attempt-01-coder.json)",
+    "sha256sum visible log (opencode.visible.txt)",
+    "ls scratch-worktree",
+    "ls receipts"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T234025Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T234025Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: force_revise=true. Target file message.txt has no TODO line (PASS criterion met). Coder receipt is schema-valid. Concrete feedback for next coder attempt: (1) commands_run field contains a description 'python deterministic visible coder' instead of an actual executable shell command — should be a concrete command that can be replayed, e.g., 'echo \"...\" > message.txt' or 'python -c \"...\"'; (2) handoff_summary is generic ('updated the scratch target file') — should specify exactly what was written to the file.",
+  "errors": [],
+  "policy_exceptions": []
+}

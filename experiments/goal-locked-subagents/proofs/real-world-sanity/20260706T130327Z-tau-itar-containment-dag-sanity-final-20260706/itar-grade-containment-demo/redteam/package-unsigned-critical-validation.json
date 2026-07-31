@@ -1,0 +1,125 @@
+{
+  "alert_codes": [
+    "critical_receipt_not_pass"
+  ],
+  "alerts": [
+    {
+      "code": "critical_receipt_not_pass",
+      "evidence": {
+        "artifact": "signed-receipt-verification.json",
+        "status": "BLOCKED"
+      },
+      "message": "signed-receipt-verification.json is not a passing critical receipt.",
+      "severity": "BLOCK"
+    }
+  ],
+  "artifact_count": 12,
+  "artifacts": {
+    "actor_manifest": {
+      "exists": true,
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130327Z-tau-itar-containment-dag-sanity-final-20260706/itar-grade-containment-demo/redteam/package-unsigned-critical/actor-access-manifest.json",
+      "schema": "tau.actor_access_manifest.v1",
+      "sha256": "sha256:9a4ae3b1e8d07d75e071515838f344047a40bd8a249ca892fad81435f6a75844"
+    },
+    "data_boundary": {
+      "exists": true,
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130327Z-tau-itar-containment-dag-sanity-final-20260706/itar-grade-containment-demo/redteam/package-unsigned-critical/data-boundary.json",
+      "schema": "tau.data_boundary.v1",
+      "sha256": "sha256:bbc5704ab1065ebbbdf5fd39880a42dbc4f8506253e41b3a76b8ec8a56e72c21"
+    },
+    "environment_manifest": {
+      "exists": true,
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130327Z-tau-itar-containment-dag-sanity-final-20260706/itar-grade-containment-demo/redteam/package-unsigned-critical/environment-manifest.json",
+      "schema": "tau.environment_manifest.v1",
+      "sha256": "sha256:e25bfb4e6817152b06734c82abb0530543173df34a8b7e15bed0ba4bd34d4412"
+    },
+    "evidence_case_gate": {
+      "exists": true,
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130327Z-tau-itar-containment-dag-sanity-final-20260706/itar-grade-containment-demo/redteam/package-unsigned-critical/evidence-case-gate-receipt.json",
+      "schema": "tau.evidence_case_gate_receipt.v1",
+      "sha256": "sha256:45682723c26f501695c4af78fc096ae9720d379deb6b587bdf3106f8b4b5982f"
+    },
+    "evidence_validation": {
+      "exists": true,
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130327Z-tau-itar-containment-dag-sanity-final-20260706/itar-grade-containment-demo/redteam/package-unsigned-critical/evidence-validation-receipt.json",
+      "schema": "tau.evidence_validation_receipt.v1",
+      "sha256": "sha256:f9bf59d25a5c8ebae75fb37d7f5a6002113771b3f7f6797a8d10e436ea655f49"
+    },
+    "itar_access_preflight": {
+      "exists": true,
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130327Z-tau-itar-containment-dag-sanity-final-20260706/itar-grade-containment-demo/redteam/package-unsigned-critical/itar-access-preflight-receipt.json",
+      "schema": "tau.itar_access_preflight_receipt.v1",
+      "sha256": "sha256:d4e978c7f865e67f5be09ed5c4e961bcd770de0225871898773d7f27adafb885"
+    },
+    "memory_intent_gate": {
+      "exists": true,
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130327Z-tau-itar-containment-dag-sanity-final-20260706/itar-grade-containment-demo/redteam/package-unsigned-critical/memory-intent-gate-receipt.json",
+      "schema": "tau.memory_intent_gate_receipt.v1",
+      "sha256": "sha256:a5f59d54f8d49ca197796b065522a995bb48c7217d0345ddac8909f6b47f4807"
+    },
+    "non_claims": {
+      "exists": true,
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130327Z-tau-itar-containment-dag-sanity-final-20260706/itar-grade-containment-demo/redteam/package-unsigned-critical/non-claims.md",
+      "sha256": "sha256:46dd61feda48ee37de75399ce3f375268b721b3539c60838a37aeaa85e75d9c6"
+    },
+    "policy_profile": {
+      "exists": true,
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130327Z-tau-itar-containment-dag-sanity-final-20260706/itar-grade-containment-demo/redteam/package-unsigned-critical/policy-profile.json",
+      "schema": "tau.policy_profile.v1",
+      "sha256": "sha256:ef422b29c8e31a4f0b02d03ae1cebae5a30f4a4745b26c053e4ede65898c6c29"
+    },
+    "sandbox_run": {
+      "exists": true,
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130327Z-tau-itar-containment-dag-sanity-final-20260706/itar-grade-containment-demo/redteam/package-unsigned-critical/sandbox-run-receipt.json",
+      "schema": "tau.sandbox_run_receipt.v1",
+      "sha256": "sha256:f6d08d4abd4b82425448097df7581e5ee61e8e307e191878387e8f5aab6da552"
+    },
+    "signed_receipt_verification": {
+      "exists": true,
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130327Z-tau-itar-containment-dag-sanity-final-20260706/itar-grade-containment-demo/redteam/package-unsigned-critical/signed-receipt-verification.json",
+      "schema": "tau.signed_receipt_verification.v1",
+      "sha256": "sha256:fe858f89faa2652b3dd4ae6cf401021e284e51dd4e82ab8dd9001d07deef5517"
+    },
+    "zero_trust_preflight": {
+      "exists": true,
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130327Z-tau-itar-containment-dag-sanity-final-20260706/itar-grade-containment-demo/redteam/package-unsigned-critical/zero-trust-preflight-receipt.json",
+      "schema": "tau.zero_trust_preflight_receipt.v1",
+      "sha256": "sha256:6a870f3caca28b043e7e9745ee40249935a26115082d6059860442ebb01f71bc"
+    }
+  },
+  "checked_at": "2026-07-06T13:03:32Z",
+  "compliant": "NOT_CLAIMED",
+  "data_boundary_hashes": [],
+  "goal_hashes": [
+    "sha256:g"
+  ],
+  "live": false,
+  "mocked": false,
+  "ok": false,
+  "package_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130327Z-tau-itar-containment-dag-sanity-final-20260706/itar-grade-containment-demo/redteam/package-unsigned-critical",
+  "policy": "itar-local-only",
+  "proof_scope": {
+    "does_not_prove": [
+      "ITAR compliance.",
+      "Export-control legal sufficiency.",
+      "Legal identity proof.",
+      "Truth of the package contents.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau inspected a compliance evidence package for review readiness.",
+      "Required artifacts, schemas, critical receipt statuses, non-claim language, and hash consistency were checked deterministically.",
+      "Tau did not claim legal compliance."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130327Z-tau-itar-containment-dag-sanity-final-20260706/itar-grade-containment-demo/redteam/package-unsigned-critical-validation.json",
+  "recommended_action": {
+    "next_agent": "goal-guardian",
+    "reason": "Repair missing, blocked, mismatched, or underdocumented package artifacts.",
+    "type": "repair_package"
+  },
+  "review_ready": false,
+  "schema": "tau.compliance_package_validation_receipt.v1",
+  "status": "BLOCKED"
+}

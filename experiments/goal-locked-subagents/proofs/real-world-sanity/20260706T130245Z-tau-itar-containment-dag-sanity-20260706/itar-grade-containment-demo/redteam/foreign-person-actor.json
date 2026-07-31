@@ -1,0 +1,18 @@
+{
+  "actor_id": "human:graham",
+  "actor_type": "human",
+  "eligibility": {
+    "approved_for_boundary": [
+      "ITAR"
+    ],
+    "export_control_training_current": true,
+    "foreign_person": true,
+    "us_person": "verified"
+  },
+  "roles": [
+    "approver"
+  ],
+  "schema": "tau.actor_access_manifest.v1",
+  "trusted": true,
+  "verified": true
+}

@@ -1,0 +1,37 @@
+ider-repair-ma
+x-attempts-aft
+er-hardening-2
+0260705/advanc
+ed-provider-ru
+ns/repair-loop
+/20260705T1650
+02Z-rw-sanity-
+provider-dag-r
+epair/planner-
+receipt.json\n
+final_receipt:
+ /home/graham/
+workspace/expe
+riments/tau/ex
+periments/goal
+-locked-subage
+nts/proofs/rea
+l-world-sanity
+/20260705T1650
+01Z-tau-provid
+er-repair-max-
+attempts-after
+-hardening-202
+60705/advanced
+-provider-runs
+/repair-loop/2
+0260705T165002
+Z-rw-sanity-pr
+ovider-dag-rep
+air/run-receip
+t.json\ncanoni
+cal truth: Tau
+ JSON receipts
+; this pane is
+ human-visible
+ telemetry.\n

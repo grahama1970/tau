@@ -1,0 +1,21 @@
+l-world-sanity/20260705T2331
+38Z-tau-advanced-memory-evid
+ence-regression-20260705/adv
+anced-provider-runs/max-exha
+ustion/20260705T234025Z-rw-s
+anity-provider-dag-max-exhau
+stion/planner-receipt.json\n
+final_receipt: /home/graham/
+workspace/experiments/tau/ex
+periments/goal-locked-subage
+nts/proofs/real-world-sanity
+/20260705T233138Z-tau-advanc
+ed-memory-evidence-regressio
+n-20260705/advanced-provider
+-runs/max-exhaustion/2026070
+5T234025Z-rw-sanity-provider
+-dag-max-exhaustion/run-rece
+ipt.json\ncanonical truth: T
+au JSON receipts; this pane
+is human-visible telemetry.\
+n

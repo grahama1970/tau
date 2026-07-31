@@ -1,0 +1,50 @@
+{
+  "auth": {
+    "method": "unknown",
+    "status": "unknown"
+  },
+  "diagnostics": {
+    "pane_agent_status": "idle",
+    "pane_label": "20260703T201623Z-rw-sanity-provider-dag-invalid-model-readiness-opencode",
+    "readiness_state": "ready",
+    "visible_prompt_is_gate": false,
+    "visible_prompt_observed": false
+  },
+  "evidence": {
+    "provider_event_log_path": null,
+    "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/invalid-model/20260703T201623Z-rw-sanity-provider-dag-invalid-model/provider-readiness/20260703T201623Z-rw-sanity-provider-dag-invalid-model-readiness/readiness/opencode.readiness.json",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/invalid-model/20260703T201623Z-rw-sanity-provider-dag-invalid-model/provider-readiness/20260703T201623Z-rw-sanity-provider-dag-invalid-model-readiness/logs/opencode.visible.txt"
+  },
+  "interstitial": {
+    "kind": null,
+    "present": false,
+    "safe_actions": []
+  },
+  "observed_at": "2026-07-03T20:17:11Z",
+  "pane_id": "w25:p6",
+  "process": {
+    "alive": true,
+    "argv": [
+      "opencode",
+      "/home/graham/workspace/experiments/tau"
+    ],
+    "command": "opencode",
+    "cwd": "/home/graham/workspace/experiments/tau",
+    "foreground": true,
+    "pid": 1767418
+  },
+  "provider_api": {
+    "available": false,
+    "endpoint": "none",
+    "last_event_type": null
+  },
+  "provider_id": "opencode",
+  "provider_session_id": null,
+  "ready": true,
+  "run_id": "20260703T201623Z-rw-sanity-provider-dag-invalid-model-readiness",
+  "schema": "tau.provider_session_state.v1",
+  "source": "herdr_process_info",
+  "state": "ready",
+  "terminal_id": "term_655ba9a4e5d72203",
+  "workspace_id": "w25"
+}

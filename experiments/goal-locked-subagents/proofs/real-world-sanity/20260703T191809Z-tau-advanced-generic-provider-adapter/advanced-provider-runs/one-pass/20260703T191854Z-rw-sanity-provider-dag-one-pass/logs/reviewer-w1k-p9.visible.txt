@@ -1,0 +1,36 @@
+eplaced —
+just `"Com
+pleted imp
+lementatio
+n for the
+Tau provid
+er DAG pro
+of-of-conc
+ept coder
+node."` —
+clean pass
+.
+2. **coder
+_receipt**
+: Schema `
+tau.provid
+er_dag_nod
+e_receipt.
+v1` is val
+id, all re
+quired fie
+lds presen
+t, no erro
+rs, `statu
+s`/`verdic
+t` both PA
+SS, `hando
+ff_summary
+` describe
+s the work
+ done.
+
+Writing th
+e reviewer
+ receipt n
+ow.

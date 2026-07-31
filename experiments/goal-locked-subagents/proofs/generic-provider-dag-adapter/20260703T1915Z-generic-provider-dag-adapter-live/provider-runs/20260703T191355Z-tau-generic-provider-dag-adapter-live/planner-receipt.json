@@ -1,0 +1,34 @@
+{
+  "dag_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/dag-spec.json",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/events.jsonl",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "proof_controls": {
+    "allow_final_forced_revise": false,
+    "force_reviewer_revise_attempts": [],
+    "reviewer_model": null
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider readiness",
+      "Provider execution",
+      "Node receipt validation",
+      "GitHub ticket closure",
+      "remote Tailscale monitoring"
+    ],
+    "proves": [
+      "Tau planner can emit a tau.dag_run_spec.v1 scratch coder/reviewer DAG",
+      "Planner output names DAG nodes, dependencies, policies, and artifact paths"
+    ]
+  },
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live",
+  "run_id": "20260703T191355Z-tau-generic-provider-dag-adapter-live",
+  "schema": "tau.dag_planner_receipt.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/scratch-worktree",
+  "status": "PASS",
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/generic-provider-dag-adapter/20260703T1915Z-generic-provider-dag-adapter-live/provider-runs/20260703T191355Z-tau-generic-provider-dag-adapter-live/scratch-worktree/message.txt",
+  "timestamp": "2026-07-03T19:13:55Z"
+}

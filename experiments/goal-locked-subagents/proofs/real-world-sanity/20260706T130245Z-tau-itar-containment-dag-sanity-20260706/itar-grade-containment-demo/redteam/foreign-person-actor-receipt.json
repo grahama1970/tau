@@ -1,0 +1,69 @@
+{
+  "actor": {
+    "actor_id": "human:graham",
+    "actor_type": "human",
+    "approved_for_boundary": [
+      "ITAR"
+    ],
+    "foreign_person": true,
+    "roles": [
+      "approver"
+    ],
+    "trusted": true,
+    "us_person": "verified",
+    "verified": true
+  },
+  "actor_manifest": {
+    "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130245Z-tau-itar-containment-dag-sanity-20260706/itar-grade-containment-demo/redteam/foreign-person-actor.json",
+    "schema": "tau.actor_access_manifest.v1",
+    "sha256": "sha256:c14c75fbef1784c98159a9e54704d25926a7bae35c4cabe7256a499e00e98c8c"
+  },
+  "alert_codes": [
+    "foreign_person_actor_blocked"
+  ],
+  "alerts": [
+    {
+      "code": "foreign_person_actor_blocked",
+      "evidence": {
+        "actor_id": "human:graham"
+      },
+      "message": "Data boundary prohibits foreign-person access.",
+      "severity": "BLOCK"
+    }
+  ],
+  "approval_packet": null,
+  "checked_at": "2026-07-06T13:02:50Z",
+  "data_boundary": {
+    "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130245Z-tau-itar-containment-dag-sanity-20260706/itar-grade-containment-demo/redteam/fixtures/data-boundary.json",
+    "schema": "tau.data_boundary.v1",
+    "sha256": "sha256:3134e3ba62c4c3f461efe0ff7870521610d41ea8f1f07d066e3a1f09bd78f51f"
+  },
+  "live": false,
+  "mocked": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "ITAR compliance.",
+      "Export-control legal sufficiency.",
+      "Legal identity proof.",
+      "U.S.-person status truth beyond declared verified metadata.",
+      "Human identity non-repudiation.",
+      "Runtime sandbox enforcement."
+    ],
+    "proves": [
+      "Tau inspected declared actor/access metadata before controlled-boundary work.",
+      "Tau checked data-boundary, actor verification, U.S.-person declaration, foreign-person access, and approval actor consistency deterministically.",
+      "No provider, GitHub, Memory, research, browser, or filesystem mutation was executed."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T130245Z-tau-itar-containment-dag-sanity-20260706/itar-grade-containment-demo/redteam/foreign-person-actor-receipt.json",
+  "recommended_action": {
+    "next_agent": "human",
+    "reason": "Provide verified actor/access metadata and a matching human approval packet before controlled-boundary work proceeds.",
+    "type": "repair_actor_access"
+  },
+  "required_boundary": "ITAR",
+  "schema": "tau.itar_access_preflight_receipt.v1",
+  "status": "BLOCKED"
+}

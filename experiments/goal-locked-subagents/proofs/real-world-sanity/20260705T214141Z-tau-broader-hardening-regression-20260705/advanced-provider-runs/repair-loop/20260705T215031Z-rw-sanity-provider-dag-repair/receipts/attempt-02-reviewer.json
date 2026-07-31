@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T215031Z-rw-sanity-provider-dag-repair",
+  "goal_hash": "sha256:5768c91e558a5f94ac68a50734d34488d81d3cf0fa69b735808234e8f16ffb17",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w5M",
+  "pane_id": "w5M:p6",
+  "terminal_id": "term_655e425b2c163627",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-provider-runs/repair-loop/20260705T215031Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T215031Z-rw-sanity-provider-dag-repair-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "4333d9e3ef10995e2f685fc96bc84a645e5c2b1987bc67b273685a604bddd85d",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-provider-runs/repair-loop/20260705T215031Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["sha256sum opencode.visible.txt", "mkdir -p receipts"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-provider-runs/repair-loop/20260705T215031Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/advanced-provider-runs/repair-loop/20260705T215031Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file (scratch-worktree/message.txt) has no TODO line — content is 'completed implementation by deterministic visible coder attempt 2'. coder receipt is schema-valid tau.provider_dag_node_receipt.v1 with PASS status and all required fields present. force_revise is false.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,27 @@
+╭────────────────────────────────
+────────────────╮
+│ >_ OpenAI Codex (v0.142.5)
+│
+│
+│
+│ model:       gpt-5.5 medium   /
+model to change │
+│ directory:   ~/…/tau
+│
+│ permissions: YOLO mode
+│
+╰────────────────────────────────
+────────────────╯
+
+  Tip: When the composer is
+  empty, press Esc to step back
+  and edit your last message;
+  Enter confirms.
+
+• You have 2 usage limit resets
+available. Run /usage to use one.
+
+
+› Run /review on my current chan
+
+  gpt-5.5 medium · ~/workspace/e…

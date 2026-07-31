@@ -1,0 +1,40 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T230237Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:3e59ae9502bcacfdd538deed52383700049e7c2060667c9f0655411ee651816d",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "workspace_id": "w6B",
+  "pane_id": "w6B:p5",
+  "terminal_id": "term_655e5278a5320707",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225943Z-tau-advanced-course-correction-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T230237Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T230237Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "414296995e4c00c0cda4b4e43aa7bc45b5c5e21393fd11b4b2333c67455167f9",
+  "work_order_sha256": "fc23e0ef6f6985e6ef897aa1fdfa4817fef01efbf61c670b5b2d7ff51be86c2b",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225943Z-tau-advanced-course-correction-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T230237Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225943Z-tau-advanced-course-correction-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T230237Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "pwd && sed -n '1,240p' experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225943Z-tau-advanced-course-correction-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T230237Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+    "git status --short",
+    "sed -n '1,80p' message.txt",
+    "find . -maxdepth 2 -type f -print",
+    "test -f /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225943Z-tau-advanced-course-correction-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T230237Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json; echo receipt_exists=$?",
+    "apply_patch: replace TODO line in scratch-worktree/message.txt",
+    "sed -n '1,20p' message.txt",
+    "if grep -n 'TODO' message.txt; then exit 1; else echo 'TODO_absent'; fi",
+    "sha256sum /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225943Z-tau-advanced-course-correction-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T230237Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T230237Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+    "apply_patch: add receipts/attempt-01-coder.json",
+    "python3 -m json.tool /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225943Z-tau-advanced-course-correction-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T230237Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json >/tmp/attempt-01-coder-jsoncheck.txt",
+    "python3 - <<'PY'\nimport json\nfrom pathlib import Path\nreceipt = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225943Z-tau-advanced-course-correction-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T230237Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json')\ndata = json.loads(receipt.read_text())\nassert data['work_order_sha256'] == 'fc23e0ef6f6985e6ef897aa1fdfa4817fef01efbf61c670b5b2d7ff51be86c2b'\nassert data['status'] == data['verdict'] == 'PASS'\nassert len(data['changed_files']) == 1\nprint('receipt_valid')\nPY"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225943Z-tau-advanced-course-correction-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T230237Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in the target file with a completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

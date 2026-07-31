@@ -1,0 +1,50 @@
+{
+  "context": {
+    "actor_type": "tau",
+    "artifacts_read": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-contact-sheet-ui-dispatch/contact-sheet-ui-pipeline-complete-corrected-20260702T203345Z/input_contact_sheet_work_order.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_requirements.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/visual_entity_context.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/reference_asset_manifest.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/provider_matrix.json"
+    ],
+    "assumptions": [],
+    "run_id": "contact-sheet-ui-pipeline-complete-corrected-20260702T203345Z",
+    "subagent": "contact-sheet-writer",
+    "unknowns": []
+  },
+  "evidence": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-contact-sheet-ui-dispatch/contact-sheet-ui-pipeline-complete-corrected-20260702T203345Z/input_contact_sheet_work_order.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_requirements.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/visual_entity_context.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/reference_asset_manifest.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/provider_matrix.json"
+  ],
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000041",
+    "goal_id": "goal-tau-issue-45-persona-dream-contact-sheet-loop",
+    "goal_version": 1,
+    "immutable_goal_preserved": true
+  },
+  "next": {
+    "executor": "local",
+    "reason": "Contact-sheet-reviewer must validate the Phase 04 reference requirements.",
+    "subagent": "contact-sheet-reviewer"
+  },
+  "rationale": "This receipt records one bounded Tau persona-dream dream-packet subagent turn.",
+  "result": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-contact-sheet-ui-dispatch/contact-sheet-ui-pipeline-complete-corrected-20260702T203345Z/input_contact_sheet_work_order.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_requirements.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/visual_entity_context.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/reference_asset_manifest.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/provider_matrix.json"
+    ],
+    "live": true,
+    "mocked": false,
+    "status": "COMPLETED",
+    "summary": "Contact-sheet-writer created Phase 04 contact-sheet requirement artifacts from the interaction matrix."
+  },
+  "schema": "tau.subagent_receipt.v1",
+  "stop_condition": "Contact-sheet-reviewer emits validation receipts and routes to human."
+}

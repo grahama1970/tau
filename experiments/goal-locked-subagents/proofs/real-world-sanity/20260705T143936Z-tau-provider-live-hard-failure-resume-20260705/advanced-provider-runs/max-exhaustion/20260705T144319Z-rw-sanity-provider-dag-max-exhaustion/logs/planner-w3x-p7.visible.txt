@@ -1,0 +1,37 @@
+oofs/real-world-sanity/20260705
+T143936Z-tau-provider-live-hard
+-failure-resume-20260705/advanc
+ed-provider-runs/max-exhaustion
+/20260705T144319Z-rw-sanity-pro
+vider-dag-max-exhaustion\ndag_s
+pec: /home/graham/workspace/exp
+eriments/tau/experiments/goal-l
+ocked-subagents/proofs/real-wor
+ld-sanity/20260705T143936Z-tau-
+provider-live-hard-failure-resu
+me-20260705/advanced-provider-r
+uns/max-exhaustion/20260705T144
+319Z-rw-sanity-provider-dag-max
+-exhaustion/dag-spec.json\nplan
+ner_receipt: /home/graham/works
+pace/experiments/tau/experiment
+s/goal-locked-subagents/proofs/
+real-world-sanity/20260705T1439
+36Z-tau-provider-live-hard-fail
+ure-resume-20260705/advanced-pr
+ovider-runs/max-exhaustion/2026
+0705T144319Z-rw-sanity-provider
+-dag-max-exhaustion/planner-rec
+eipt.json\nfinal_receipt: /home
+/graham/workspace/experiments/t
+au/experiments/goal-locked-suba
+gents/proofs/real-world-sanity/
+20260705T143936Z-tau-provider-l
+ive-hard-failure-resume-2026070
+5/advanced-provider-runs/max-ex
+haustion/20260705T144319Z-rw-sa
+nity-provider-dag-max-exhaustio
+n/run-receipt.json\ncanonical t
+ruth: Tau JSON receipts; this p
+ane is human-visible telemetry.
+\n

@@ -1,0 +1,18 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T143936Z-tau-provider-live-hard-failure-resume-20260705/advanced-provider-runs/repair-loop/20260705T144139Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T143936Z-tau-provider-live-hard-failure-resume-20260705/advanced-provider-runs/repair-loop/20260705T144139Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T143936Z-tau-provider-live-hard-failure-resume-20260705/advanced-provider-runs/repair-loop/20260705T144139Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: force_revise=true in work order. Target file message.txt exists with content 'completed implementation by deterministic visible coder attempt 1' — minimal but functional. Coder receipt is schema-valid (tau.provider_dag_node_receipt.v1). For next attempt: 1) Expand message.txt content to include more descriptive implementation detail beyond the single-line boilerplate. 2) Populate commands_run in coder receipt with actual commands executed rather than a generic label. 3) Increase handoff_summary specificity to describe what was produced and how.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,40 @@
+{
+  "dag_spec": {
+    "inputs_required": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/work-orders/creator.json"
+    ],
+    "mode": "single_node",
+    "receipts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/receipts/creator.receipt.json"
+    ],
+    "stop_conditions": [
+      "receipt_written",
+      "blocked_with_reason"
+    ]
+  },
+  "dependency_receipts": [],
+  "does_not_own": [
+    "global project completion",
+    "ticket closure",
+    "semantic LLM review quality"
+  ],
+  "node_id": "creator",
+  "owns": [
+    "write one node receipt"
+  ],
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115623Z-tau-visible-dag-poc-held/receipts/creator.receipt.json",
+  "role": "creator",
+  "run_id": "20260701T115623Z-tau-visible-dag-poc-held",
+  "schema": "tau.visible_dag_work_order.v1",
+  "status_reporting": {
+    "heartbeat_interval_seconds": 30,
+    "recipient": "tau-project-agent",
+    "required": true,
+    "stale_after_seconds": 120,
+    "stream_modes": [
+      "jsonl_event_stream",
+      "final_response_json"
+    ]
+  },
+  "summary": "Fixture creator node for visible Tau+Herdr DAG POC."
+}

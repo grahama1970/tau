@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T221106Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:faab49cde5600df347007774d0a2b10d1d17646099337d82c395cbb3a9f43f14",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w5W",
+  "pane_id": "w5W:p6",
+  "terminal_id": "term_655e46f4d79e8676",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T221106Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T221106Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "c1cd3da0a022419260fd8ee473453ae424d91ea4872d20e93a031c7f3e180840",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T221106Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["sha256sum visible log", "read target_file", "read coder_receipt", "list scratch_worktree"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T221106Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T221106Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "force_revise=true triggered REVISE. target_file (message.txt) contains only a single-line completion status ('completed implementation by deterministic visible coder attempt 1') with no structured evidence of goal work. coder_receipt is schema-valid tau.provider_dag_node_receipt.v1 and correctly references the target file. For next coder attempt: populate message.txt with structured progress — enumerate completed subtasks, remaining items, any blockers found, or a step-by-step work log. A flat status line does not satisfy the requirement for inspectable evidence of provider DAG work.",
+  "errors": [],
+  "policy_exceptions": []
+}

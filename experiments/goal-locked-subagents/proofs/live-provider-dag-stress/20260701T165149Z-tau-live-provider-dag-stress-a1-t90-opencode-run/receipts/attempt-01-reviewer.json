@@ -1,0 +1,21 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165149Z-tau-live-provider-dag-stress-a1-t90-opencode-run/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "cat message.txt",
+    "cat receipts/attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165149Z-tau-live-provider-dag-stress-a1-t90-opencode-run/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T165149Z-tau-live-provider-dag-stress-a1-t90-opencode-run/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file has no remaining TODO line (content: 'Completed implementation for the Tau provider DAG coder node.'). coder receipt is schema-valid (schema, node_id, provider_id, attempt, status, verdict all correct; changed_files contains target_file; errors and policy_exceptions are empty).",
+  "errors": [],
+  "policy_exceptions": []
+}

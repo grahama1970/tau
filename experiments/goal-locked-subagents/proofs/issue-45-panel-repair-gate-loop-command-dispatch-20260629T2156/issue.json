@@ -1,0 +1,70 @@
+{
+  "author": {
+    "id": "U_kgDOCRK7qw",
+    "is_bot": false,
+    "login": "grahama1970",
+    "name": "Graham"
+  },
+  "body": "## Type\n\nfeature\n\n## Target\n\n/home/graham/workspace/experiments/tau\n\n## Current state\n\nThe serial persona-dream pipeline now reaches panel_repair_gate with a valid persona_dream.panel_repair_work_order.v1, but Tau has no ticketed loop that consumes this work order from the current dream/story/storyboard run and writes receipts/panel_repair_gate_receipt.json.\n\n## Requested outcome\n\nConsume the panel repair work order through Tau harness using panel-creator, panel-reviewer, and persona-dream-panel-repair-gate, generating a real Scillm/GPT image panel and canonical persona-dream repair receipts without Kling or paid provider submission.\n\n## Required proof\n\nfocused Tau tests plus persona-dream validate-panel-repair-work-order, validate-panel-repair-gate, and pipeline-loop-status artifacts from the issue-41 dream-run root\n\n## Route\n\nunknown\n\n## Requested repair agent\n\nNot specified.\n\n## Non-goals\n\nNo unrelated refactors or scope expansion.\n\n## Ticket type details\n\n- **Current limitation:** The serial persona-dream pipeline now reaches panel_repair_gate with a valid persona_dream.panel_repair_work_order.v1, but Tau has no ticketed loop that consumes this work order from the current dream/story/storyboard run and writes receipts/panel_repair_gate_receipt.json.\n- **Proposed capability:** Consume the panel repair work order through Tau harness using panel-creator, panel-reviewer, and persona-dream-panel-repair-gate, generating a real Scillm/GPT image panel and canonical persona-dream repair receipts without Kling or paid provider submission.\n- **User workflow unlocked:** Start from /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/panel_repair_work_order.json; run the serial subagent loop; write receipts/panel_repair_gate_receipt.json and referenced generation, script coverage, visual review, no-overlay, and status-transition artifacts; rerun persona-dream validators and pipeline-loop-status --direction forward.\n- **Acceptance criteria:** validate-panel-repair-work-order returns PASS_PANEL_REPAIR_WORK_ORDER; Tau consumes persona_dream.panel_repair_work_order.v1; panel image is generated through Scillm/GPT image lane and not Nano Banana/Gemini final imagery; panel-reviewer writes independent visual review receipt; validate-panel-repair-gate reports the first honest blocker or PASS without Kling; pipeline-loop-status --direction forward advances past panel_repair_gate to panel_source_receipt or later; no Kling call, no direct paid provider call, no unreceipted image generation.\n\n<!-- ticket-skill\ntype: feature\ntarget: /home/graham/workspace/experiments/tau\nroute: unknown\nagent: unspecified\n-->\n\nThis ticket must be resolved under `best-practices-github-ticket`. Closure requires deterministic proof; WebGPT review or CI green alone is not closure proof.\n",
+  "comments": [
+    {
+      "author": {
+        "login": "grahama1970"
+      },
+      "authorAssociation": "OWNER",
+      "body": "<!-- agent-lease\nagent: codex\nlease_id: 20260629T215107Z-codex-45\nissue: 45\n-->\n\nLease: maintainer-active by codex.\nScope: one ticket.\nClosure requirement: deterministic proof comment before close.",
+      "createdAt": "2026-06-29T21:51:10Z",
+      "id": "IC_kwDOTG11HM8AAAABIFW56A",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [],
+      "url": "https://github.com/grahama1970/tau/issues/45#issuecomment-4837456360",
+      "viewerDidAuthor": true
+    }
+  ],
+  "createdAt": "2026-06-29T21:50:54Z",
+  "labels": [
+    {
+      "color": "5319e7",
+      "description": "Tau agent harness work item",
+      "id": "LA_kwDOTG11HM8AAAACpOWQ-w",
+      "name": "agent-work"
+    },
+    {
+      "color": "0e8a16",
+      "description": "New capability or changed behavior request",
+      "id": "LA_kwDOTG11HM8AAAACpRFAQQ",
+      "name": "type:feature"
+    },
+    {
+      "color": "0052cc",
+      "description": "Agent has leased this ticket",
+      "id": "LA_kwDOTG11HM8AAAACpRFBcg",
+      "name": "maintainer-active"
+    },
+    {
+      "color": "1d76db",
+      "description": "Python CLIs, runtime, harness, and skill integration route",
+      "id": "LA_kwDOTG11HM8AAAACpRFbZw",
+      "name": "route:backend_python_or_skill_runtime"
+    },
+    {
+      "color": "5319e7",
+      "description": "Requested repair agent: coder",
+      "id": "LA_kwDOTG11HM8AAAACpVklOg",
+      "name": "agent:coder"
+    },
+    {
+      "color": "0052cc",
+      "description": "Tau harness and handoff contract",
+      "id": "LA_kwDOTG11HM8AAAACpVkmUw",
+      "name": "tau-harness"
+    }
+  ],
+  "number": 45,
+  "state": "OPEN",
+  "title": "Tau persona-dream harness needs panel-repair-gate creator/reviewer loop",
+  "updatedAt": "2026-06-29T21:51:39Z",
+  "url": "https://github.com/grahama1970/tau/issues/45"
+}

@@ -1,0 +1,115 @@
+{
+  "aspect_ratio": "16:9",
+  "audio_strategy": "silent/native ambient prompt only for this blocked one-scene review packet",
+  "callback_url": null,
+  "cost_estimate": {
+    "currency": "credits",
+    "docs_checked": [
+      "skills/persona-dream/SKILL.md provider planning note; no current provider pricing proof in this transaction"
+    ],
+    "duration_s": 5.0,
+    "estimated_credits": 45,
+    "formula": "duration_s * rate_credits_per_s",
+    "rate_credits_per_s": 9,
+    "selected_mode": "std",
+    "status": "DRY_RUN_ESTIMATE_ONLY_PROVIDER_PRICING_VALIDATION_REQUIRED"
+  },
+  "duration_s": 5.0,
+  "image_list": [
+    {
+      "hash": "sha256:2c89628513c4c3c34d2b862673e56c656ce1a40409398fbb13fba6718f53c914",
+      "path": "artifacts/panel_01_scillm_panel.png",
+      "role": "panel_01_reference",
+      "status": "LOCAL_MEDIA_LOCK_ONLY_NOT_PROVIDER_ACCESSIBLE",
+      "token": "<<<image_1>>>"
+    }
+  ],
+  "live_call_block_reason": "Blocked one-scene review packet only: Panel 01 has provider-accessible media, but paid_call_authorized is false and no live Kling call is authorized.",
+  "mode": "std",
+  "model": "kling-v3-omni",
+  "multi_prompt": [
+    {
+      "cinematography": {
+        "atmosphere": "preserve_panel_atmosphere",
+        "camera_mount": "dolly",
+        "camera_movement": "slow_push_in",
+        "color_grade": "preserve_panel_grade",
+        "composition": "single_panel_reference",
+        "director_note": "Review packet is blocked until panel/source/provider gates pass.",
+        "environment_lock": "preserve_panel_environment",
+        "focus_behavior": "deep_focus",
+        "lens": "35mm_cinematic",
+        "lighting": "preserve_panel_lighting",
+        "shot_size": "medium",
+        "temporal_pacing": "slow"
+      },
+      "dialogue": [],
+      "duration_s": 5.0,
+      "image_status": "PROVIDER_MEDIA_READY_PAID_CALL_BLOCKED",
+      "index": 0,
+      "prompt": "Panel 01 one-scene Kling review packet. Preserve the accepted photorealistic reference image composition, character, desk evidence cards, laptop glow, tea steam, and quiet cinematic mood. No dialogue, no text overlays, no live submission from this packet.",
+      "provider_text": "Dry-run provider payload only. The image URL is provider-accessible and hash-probed; do not submit until explicit paid-call approval is granted.",
+      "visual_anchor": "artifacts/panel_01_scillm_panel.png",
+      "voice_status": "NO_DIALOGUE"
+    }
+  ],
+  "negative_prompt": [
+    "Nano Banana fallback final panel",
+    "Gemini fallback final panel",
+    "unreceipted image generation",
+    "live Kling submission",
+    "provider readiness by prose-only rewrite"
+  ],
+  "paid_call_authorized": false,
+  "polling_plan": "No live call. On future approval, persist provider task_id and poll with bounded backoff.",
+  "provider": "kling",
+  "provider_dry_run_fields": {
+    "aspect_ratio": "16:9",
+    "callback_url": null,
+    "external_task_id": "dream-run-panel_01-blocked-review",
+    "image_list": [
+      {
+        "image": "https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/dream-run/panel_01.png"
+      }
+    ],
+    "mode": "std",
+    "model": "kling-v3-omni",
+    "multi_prompt": [
+      {
+        "duration": 5,
+        "index": 0,
+        "prompt": "Blocked dry-run only. Do not submit until provider media URL and panel gates pass."
+      }
+    ],
+    "multi_shot": false,
+    "shot_type": "customize",
+    "sound": "off",
+    "voice_list": []
+  },
+  "retry_policy": "No retry is allowed before provider eligibility and explicit paid-call approval.",
+  "run_id": "dream-run",
+  "schema": "kling.scene_packet.v1",
+  "source_artifacts": {
+    "panel_repair_gate_receipt": "receipts/panel_repair_gate_receipt.json",
+    "panel_source_receipt": "receipts/panel_source_receipt.json"
+  },
+  "status": "BLOCKED",
+  "storage_plan": {
+    "download_output_to": "provider_packet/panel_01_kling_output.mp4",
+    "ffprobe_json": "provider_packet/panel_01_ffprobe.json",
+    "frame_contact_sheet": "provider_packet/panel_01_frame_contact_sheet.jpg",
+    "raw_response_json": "provider_packet/panel_01_provider_response.json"
+  },
+  "voice_examples": [],
+  "voice_list": [],
+  "work_backwards_chain": [
+    "kling.scene_packet.v1 blocked review packet",
+    "local provider media lock receipt",
+    "panel_source_receipt",
+    "panel_repair_gate_receipt",
+    "visual_review_receipt",
+    "storyboard panel receipt",
+    "story contract",
+    "dream packet"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "command_results": [
+    {
+      "argv": [
+        "/home/graham/workspace/experiments/agent-skills/skills/herdr-workstation/run.sh",
+        "doctor",
+        "--json",
+        "--herdr-bin",
+        "herdr"
+      ],
+      "returncode": 0,
+      "stderr": "warning: `VIRTUAL_ENV=.venv` does not match the project environment path `/home/graham/workspace/experiments/agent-skills/skills/herdr-workstation/.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "stdout": "{\n  \"herdr_bin\": \"/home/graham/.local/bin/herdr\",\n  \"ok\": true,\n  \"status\": {\n    \"argv\": [\n      \"herdr\",\n      \"status\"\n    ],\n    \"parsed\": \"client:\\n  version: 0.7.1\\n  channel: stable\\n  protocol: 14\\n\\nserver:\\n  status: running\\n  version: 0.7.1\\n  protocol: 14\\n  compatible: yes\\n  socket: /home/graham/.config/herdr/herdr.sock\\n\\nupdate:\\n  restart_needed: no\",\n    \"returncode\": 0,\n    \"stderr\": \"\",\n    \"stdout\": \"client:\\n  version: 0.7.1\\n  channel: stable\\n  protocol: 14\\n\\nserver:\\n  status: running\\n  version: 0.7.1\\n  protocol: 14\\n  compatible: yes\\n  socket: /home/graham/.config/herdr/herdr.sock\\n\\nupdate:\\n  restart_needed: no\\n\"\n  },\n  \"version\": {\n    \"argv\": [\n      \"herdr\",\n      \"--version\"\n    ],\n    \"parsed\": \"herdr 0.7.1\",\n    \"returncode\": 0,\n    \"stderr\": \"\",\n    \"stdout\": \"herdr 0.7.1\\n\"\n  }\n}\n"
+    },
+    {
+      "argv": [
+        "/home/graham/workspace/experiments/agent-skills/skills/herdr-workstation/run.sh",
+        "workstation",
+        "create",
+        "--repo",
+        "/home/graham/workspace/experiments/tau",
+        "--label",
+        "tau-visible-dag-poc-live",
+        "--run-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115434Z-tau-visible-dag-poc-live/herdr-workstations",
+        "--herdr-bin",
+        "herdr",
+        "--tab",
+        "agents",
+        "--tab",
+        "logs",
+        "--tab",
+        "receipts",
+        "--json"
+      ],
+      "returncode": 1,
+      "stderr": "warning: `VIRTUAL_ENV=.venv` does not match the project environment path `/home/graham/workspace/experiments/agent-skills/skills/herdr-workstation/.venv` and will be ignored; use `--active` to target the active environment instead\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Traceback (most recent call last) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\n\u2502 /home/graham/workspace/experiments/agent-skills/skills/herdr-workstation/scr \u2502\n\u2502 ipts/cli.py:157 in workstation_create                                        \u2502\n\u2502                                                                              \u2502\n\u2502   154 \u2502   else:                                                              \u2502\n\u2502   155 \u2502   \u2502   workspace_id = create_workspace(label=label, cwd=repo,         \u2502\n\u2502       session=session, herdr_bin=herdr_bin, env_values=env_values,           \u2502\n\u2502       dry_run=dry_run)                                                       \u2502\n\u2502   156 \u2502   tab_ids = {                                                        \u2502\n\u2502 \u2771 157 \u2502   \u2502   tab_label: create_tab(                                         \u2502\n\u2502   158 \u2502   \u2502   \u2502   workspace_id=workspace_id,                                 \u2502\n\u2502   159 \u2502   \u2502   \u2502   label=tab_label,                                           \u2502\n\u2502   160 \u2502   \u2502   \u2502   cwd=actual_cwd,                                            \u2502\n\u2502                                                                              \u2502\n\u2502 /home/graham/workspace/experiments/agent-skills/skills/herdr-workstation/scr \u2502\n\u2502 ipts/herdr_workstation_core.py:242 in create_tab                             \u2502\n\u2502                                                                              \u2502\n\u2502   239 \u2502   args = [\"tab\", \"create\", \"--workspace\", workspace_id, \"--cwd\",     \u2502\n\u2502       str(cwd), \"--label\", label, \"--no-focus\"]                              \u2502\n\u2502   240 \u2502   for env_value in env_values:                                       \u2502\n\u2502   241 \u2502   \u2502   args.extend([\"--env\", env_value])                              \u2502\n\u2502 \u2771 242 \u2502   result = run_herdr(args, herdr_bin=herdr_bin, session=session,     \u2502\n\u2502       dry_run=dry_run)                                                       \u2502\n\u2502   243 \u2502   if dry_run:                                                        \u2502\n\u2502   244 \u2502   \u2502   return f\"dry-tab-{slugify(label)}\"                             \u2502\n\u2502   245 \u2502   return require_id(\"tab\", result.parsed, (\"tab_id\", \"id\"))          \u2502\n\u2502                                                                              \u2502\n\u2502 /home/graham/workspace/experiments/agent-skills/skills/herdr-workstation/scr \u2502\n\u2502 ipts/herdr_workstation_core.py:142 in run_herdr                              \u2502\n\u2502                                                                              \u2502\n\u2502   139 \u2502   \u2502   parsed=parse_output(proc.stdout),                              \u2502\n\u2502   140 \u2502   )                                                                  \u2502\n\u2502   141 \u2502   if check and proc.returncode != 0:                                 \u2502\n\u2502 \u2771 142 \u2502   \u2502   raise RuntimeError(                                            \u2502\n\u2502   143 \u2502   \u2502   \u2502   \"Herdr command failed\\n\"                                   \u2502\n\u2502   144 \u2502   \u2502   \u2502   f\"command: {shlex.join(argv)}\\n\"                           \u2502\n\u2502   145 \u2502   \u2502   \u2502   f\"exit: {proc.returncode}\\n\"                               \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\nRuntimeError: Herdr command failed\ncommand: herdr tab create --workspace cli:workspace:create --cwd \n/home/graham/workspace/experiments/tau --label agents --no-focus\nexit: 1\nstdout:\n\nstderr:\n{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace cli:workspace:create\nnot found\"},\"id\":\"cli:tab:create\"}\n\n\n",
+      "stdout": ""
+    }
+  ],
+  "errors": [
+    "workstation create failed"
+  ],
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115434Z-tau-visible-dag-poc-live/events.jsonl",
+  "live": true,
+  "mocked": true,
+  "node_receipts": [],
+  "ok": false,
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/visible-dag-poc/20260701T115434Z-tau-visible-dag-poc-live",
+  "run_id": "20260701T115434Z-tau-visible-dag-poc-live",
+  "schema": "tau.visible_dag_run_receipt.v1",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-01T11:54:35Z"
+}

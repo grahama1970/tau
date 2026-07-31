@@ -1,0 +1,12 @@
+{
+  "attempt": 2,
+  "node_id": "coder",
+  "provider_id": "codex",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/repair-loop/20260703T200610Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json",
+  "reviewer_feedback": "REVISE: force_revise=true. The target_file has no TODO line (good) and the coder receipt is schema-valid. However, the message.txt content is self-referential boilerplate ('Implementation complete: provider DAG coder node updated the target message.'). It should instead describe what the full DAG repair accomplished \u2014 include the run_id, state that the coder-receipt was written, and confirm the TODO was removed. Concrete feedback: replace message.txt content with a multi-line message that includes (a) the run_id, (b) confirmation that the TODO was removed, (c) a reference to the coder receipt, and (d) a clear statement that the file was produced by the provider DAG repair loop.",
+  "run_id": "20260703T200610Z-rw-sanity-provider-dag-repair",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/repair-loop/20260703T200610Z-rw-sanity-provider-dag-repair/scratch-worktree",
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/repair-loop/20260703T200610Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+  "task": "Modify only target_file. Replace the TODO line with a short completed implementation message. Then write the node receipt JSON exactly at receipt_path."
+}

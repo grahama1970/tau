@@ -1,0 +1,24 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "pwd && sed -n '1,240p' experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/work-orders/attempt-01-coder.json",
+    "sed -n '1,120p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/scratch-worktree/message.txt",
+    "test -e /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/receipts/attempt-01-coder.json; printf '%s\\n' $?",
+    "python3 -m json.tool /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/receipts/attempt-01-coder.json >/tmp/tau-attempt-01-coder-jsoncheck.txt && grep -Fx 'Completed implementation for the Tau provider DAG coder node.' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/scratch-worktree/message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/20260703T122042Z-tau-traycer-repair-loop-a2-t120/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,38 @@
+         f -print | sort"
+    16 +    "find . -maxdepth 2 -type
+         f -print | sort",
+    17 +    "uv run python -m json.to
+        ol /home/graham/workspace/exp
+        eriments/tau/experiments/goal
+        -locked-subagents/proofs/real
+        -world-sanity/20260704T180641
+        Z-tau-advanced-live-hard-fail
+        ure-hunt/advanced-generic-pro
+        vider-dag-adapter/provider-ru
+        ns/20260704T181044Z-rw-sanity
+        -generic-provider-dag-adapter
+        /receipts/attempt-01-coder.js
+        on >/tmp/attempt-01-coder-jso
+        n-tool.out && wc -c /tmp/atte
+        mpt-01-coder-json-tool.out",
+    18 +    "find /home/graham/worksp
+        ace/experiments/tau/experimen
+        ts/goal-locked-subagents/proo
+        fs/real-world-sanity/20260704
+        T180641Z-tau-advanced-live-ha
+        rd-failure-hunt/advanced-gene
+        ric-provider-dag-adapter/prov
+        ider-runs/20260704T181044Z-rw
+        -sanity-generic-provider-dag-
+        adapter -type f \\( -path '*/
+        scratch-worktree/*' -o -path
+        '*/receipts/*' \\) -print | s
+        ort"
+    19    ],
+
+• Working (1m 18s • esc to interrupt)
+
+
+› Explain this codebase
+
+  gpt-5.5 medium · ~/workspace/exper…

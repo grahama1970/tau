@@ -1,0 +1,10 @@
+{
+  "all_provider_structured_ready": false,
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "provider_live": false,
+  "run_id": "rw-sanity-provider-lifecycle",
+  "schema": "tau.provider_readiness_run_receipt.v1",
+  "status": "PASS"
+}

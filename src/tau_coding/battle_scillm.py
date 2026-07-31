@@ -350,7 +350,7 @@ def _codex_auth_problem(body: Any, *, model: str) -> str | None:
     if not isinstance(codex, dict):
         return "scillm_codex_auth_missing"
     status = str(codex.get("status") or "").strip().lower()
-    if status in {"ok", "pass", "valid", "ready", "authenticated"}:
+    if status in {"ok", "pass", "valid", "ready", "authenticated", "configured"}:
         return None
     if not status:
         return "scillm_codex_auth_status_missing"

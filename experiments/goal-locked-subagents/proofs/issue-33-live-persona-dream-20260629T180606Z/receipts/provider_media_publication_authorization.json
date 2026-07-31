@@ -1,0 +1,11 @@
+{
+  "approved_action": "publish_exact_locked_provider_media",
+  "approved_at": "2026-06-29T19:18:05Z",
+  "approved_by": "graham_explicit_chat_authorization_2026-06-29",
+  "authorized_sha256": "sha256:3ef0ab7722d6742adf0c4e2b19a325f3e0cdaa761f8459e49329b2737a5d99fa",
+  "authorized_target_repo_path": "skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png",
+  "authorized_url": "https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png",
+  "notes": "Human explicitly authorized publication/push of this exact locked provider-media PNG. No Kling call, provider readiness approval, or paid call is implied.",
+  "schema": "persona_dream.provider_media_publication_authorization.v1",
+  "status": "AUTHORIZED_PUBLICATION"
+}

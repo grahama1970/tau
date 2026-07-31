@@ -1,0 +1,36 @@
+ metad
+ata ra
+ther t
+han me
+aningf
+ul con
+tent,
+and th
+e code
+r rece
+ipt st
+ill ha
+s `pro
+vider_
+id: ta
+u-dete
+rminis
+tic-vi
+sible`
+ inste
+ad of
+the ex
+pected
+ `open
+code`
+— both
+ issue
+s from
+ the a
+ttempt
+-1 rev
+iew we
+re not
+ fully
+ addre
+ssed.

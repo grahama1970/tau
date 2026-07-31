@@ -1,0 +1,3 @@
+{"kind": "stress_spec_created", "rung_id": "07-subagent-error", "schema": "tau.dag_stress_event.v1", "timestamp": "2026-07-01T16:34:55.571930Z"}
+{"attempt": 1, "kind": "creator_dispatch", "node_id": "creator", "schema": "tau.dag_stress_event.v1", "timestamp": "2026-07-01T16:34:55.572065Z", "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-stress-campaign/20260701T163455Z-tau-dag-stress-campaign-250/suites/20260701T163455Z-tau-dag-stress-campaign-250-budget-5-rep-2/rungs/07-subagent-error/work-orders/creator-attempt-01.json"}
+{"attempt": 1, "exit_code": 2, "kind": "subagent_error", "node_id": "creator", "schema": "tau.dag_stress_event.v1", "stderr": "simulated worker error", "timestamp": "2026-07-01T16:34:55.572103Z"}

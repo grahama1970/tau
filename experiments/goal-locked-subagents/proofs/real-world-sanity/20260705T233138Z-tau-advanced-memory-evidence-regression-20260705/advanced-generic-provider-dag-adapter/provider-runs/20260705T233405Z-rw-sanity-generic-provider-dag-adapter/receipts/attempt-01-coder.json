@@ -1,0 +1,36 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T233405Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:6fca2e3bf378eccf381147e42d75857a97d4703df1de88606f9e825baaa82470",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "workspace_id": "w6K",
+  "pane_id": "w6K:p5",
+  "terminal_id": "term_655e598114400750",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T233405Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T233405Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "76a278c404ca53dd68f9309ab17c330305e6f9cb6978950bca39a13040745f1c",
+  "work_order_sha256": "c36eff841cf6b7e71cafca5b734ad6135332060a9c0a8b1156ac69cb45906bfd",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T233405Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T233405Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "pwd",
+    "sed -n '1,240p' experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T233405Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+    "sed -n '1,120p' message.txt",
+    "find . -maxdepth 2 -type f -print",
+    "sed -n '1,20p' message.txt",
+    "sha256sum /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T233405Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T233405Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+    "test $(find . -maxdepth 2 -type f | wc -l) -eq 1 && find . -maxdepth 2 -type f -print",
+    "ls -la /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T233405Z-rw-sanity-generic-provider-dag-adapter/receipts"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T233138Z-tau-advanced-memory-evidence-regression-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T233405Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

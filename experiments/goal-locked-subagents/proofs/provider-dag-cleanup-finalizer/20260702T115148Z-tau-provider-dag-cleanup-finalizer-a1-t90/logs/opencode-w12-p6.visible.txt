@@ -1,0 +1,37 @@
+
+
+
+ ▀▀▀▀ ▀▀▀▄ ▀▀▀▀ ▀▀▀▀
+ ▀▀▀▀ ▀  ▀ ▀    ▀  ▀
+ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀
+
+  ┃
+  ┃  Ask
+  ┃  anything...
+  ┃   "What is
+  ┃  the tech
+  ┃  stack of
+  ┃  this
+  ┃  project?"
+  ┃
+  ┃  Bu ·DeepSee D
+  ┃  il  k V4 Fl e
+  ┃  d   ash     e
+  ┃              p
+  ┃              S
+  ╹▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+   tab    ctrl+p
+   agents commands
+
+
+
+
+  ● Tip Tool
+        definition
+
+  ~/        1.17.9
+  worksp
+  ace/ex
+  perime
+  nts/ta
+  u:main

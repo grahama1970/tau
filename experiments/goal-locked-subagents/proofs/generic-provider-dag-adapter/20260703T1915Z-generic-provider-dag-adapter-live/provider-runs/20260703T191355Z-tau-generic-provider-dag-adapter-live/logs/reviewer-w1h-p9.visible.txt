@@ -1,0 +1,36 @@
+ns/2026070
+3T191355Z-
+tau-generi
+c-provider
+-dag-adapt
+er-live/re
+ceipts
+(no output
+)
+
+← Write ex
+periments/
+goal-locke
+d-subagent
+s/proofs/g
+eneric-pro
+vider-dag-
+adapter/20
+260703T191
+5Z-generic
+-provider-
+dag-adapte
+r-live/pro
+vider-runs
+/20260703T
+191355Z-ta
+u-generic-
+provider-d
+ag-adapter
+-live/rece
+ipts/attem
+pt-01-revi
+ewer.json
+Wrote file
+ successfu
+lly.

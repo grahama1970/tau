@@ -1,0 +1,22 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/advanced-provider-runs/repair-loop/20260703T194930Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work_order, target_file, coder_receipt",
+    "verified target_file has no TODO line",
+    "verified coder receipt schema is tau.provider_dag_node_receipt.v1 with all required fields"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/advanced-provider-runs/repair-loop/20260703T194930Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/advanced-provider-runs/repair-loop/20260703T194930Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file (message.txt) has no remaining TODO line — contains clean provider-DAG prose. coder receipt is schema-valid (tau.provider_dag_node_receipt.v1) with all required fields, status PASS, no errors. force_revise is false. No revision needed.",
+  "errors": [],
+  "policy_exceptions": []
+}

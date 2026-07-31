@@ -1,0 +1,23 @@
+{
+  "assets": [
+    {
+      "asset_id": "image-required",
+      "failure_reason": "required image fixture intentionally unavailable",
+      "media_type": "image",
+      "required": true,
+      "simulate_failure": true,
+      "source_uri": "file:///fixtures/missing-required.png"
+    },
+    {
+      "asset_id": "text-required",
+      "media_type": "text",
+      "required": true,
+      "source_uri": "file:///fixtures/brief.txt"
+    }
+  ],
+  "context": "Required asset failure gate smoke for Tau issue #46.",
+  "idea": "Step 02 should block when a required linked asset fails.",
+  "persona_id": "persona-smoke",
+  "phase": "01_idea",
+  "schema": "tau.media_explainer_work_item.v1"
+}

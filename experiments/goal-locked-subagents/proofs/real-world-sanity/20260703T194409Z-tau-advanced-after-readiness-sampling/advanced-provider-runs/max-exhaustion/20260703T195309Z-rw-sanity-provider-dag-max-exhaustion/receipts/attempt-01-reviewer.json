@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/advanced-provider-runs/max-exhaustion/20260703T195309Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work-orders/attempt-01-reviewer.json",
+    "read scratch-worktree/message.txt",
+    "read receipts/attempt-01-coder.json",
+    "read work-orders/attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/advanced-provider-runs/max-exhaustion/20260703T195309Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T194409Z-tau-advanced-after-readiness-sampling/advanced-provider-runs/max-exhaustion/20260703T195309Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: target_file content is self-referential meta-commentary rather than a grounded completion message. The text 'Completed implementation for the provider DAG coder node.' describes the process of implementing rather than being the completed output itself. Replace with a message that directly reflects the task content (e.g., include what the coder actually wrote or achieved, not that it wrote something). Coder receipt is schema-valid and commands are documented correctly, but the artifact substance needs improvement.",
+  "errors": [],
+  "policy_exceptions": []
+}

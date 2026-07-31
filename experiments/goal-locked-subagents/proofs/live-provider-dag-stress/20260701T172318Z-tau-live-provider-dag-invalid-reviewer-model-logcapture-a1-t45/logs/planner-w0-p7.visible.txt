@@ -1,0 +1,27 @@
+Tau planner subagent visible monitor\nr
+un_id: 20260701T172318Z-tau-live-provid
+er-dag-invalid-reviewer-model-logcaptur
+e-a1-t45\nrun_dir: /home/graham/workspa
+ce/experiments/tau/experiments/goal-loc
+ked-subagents/proofs/live-provider-dag-
+stress/20260701T172318Z-tau-live-provid
+er-dag-invalid-reviewer-model-logcaptur
+e-a1-t45\ndag_spec: /home/graham/worksp
+ace/experiments/tau/experiments/goal-lo
+cked-subagents/proofs/live-provider-dag
+-stress/20260701T172318Z-tau-live-provi
+der-dag-invalid-reviewer-model-logcaptu
+re-a1-t45/dag-spec.json\nplanner_receip
+t: /home/graham/workspace/experiments/t
+au/experiments/goal-locked-subagents/pr
+oofs/live-provider-dag-stress/20260701T
+172318Z-tau-live-provider-dag-invalid-r
+eviewer-model-logcapture-a1-t45/planner
+-receipt.json\nfinal_receipt: /home/gra
+ham/workspace/experiments/tau/experimen
+ts/goal-locked-subagents/proofs/live-pr
+ovider-dag-stress/20260701T172318Z-tau-
+live-provider-dag-invalid-reviewer-mode
+l-logcapture-a1-t45/run-receipt.json\nc
+anonical truth: Tau JSON receipts; this
+ pane is human-visible telemetry.\n

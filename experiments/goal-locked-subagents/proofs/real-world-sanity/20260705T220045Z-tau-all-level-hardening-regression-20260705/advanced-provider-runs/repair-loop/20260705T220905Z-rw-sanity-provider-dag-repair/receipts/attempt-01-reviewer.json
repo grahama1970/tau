@@ -1,0 +1,32 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T220905Z-rw-sanity-provider-dag-repair",
+  "goal_hash": "sha256:a4080761cc9d6e7bb31bfd638a1bd793f2ee10a022c7d579c5983d70cd7066fd",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w5V",
+  "pane_id": "w5V:p6",
+  "terminal_id": "term_655e4681b7fd266a",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/repair-loop/20260705T220905Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T220905Z-rw-sanity-provider-dag-repair-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "1314fd2c128198583b9430ad65b683a177080b375c3fb44ab5bb276a15520a1e",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/repair-loop/20260705T220905Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work_order attempt-01-reviewer.json",
+    "read scratch-worktree/message.txt",
+    "read receipts/attempt-01-coder.json",
+    "sha256sum opencode.visible.txt",
+    "write receipts/attempt-01-reviewer.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/repair-loop/20260705T220905Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/repair-loop/20260705T220905Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "force_revise is true. Target file message.txt has been written (TODO line replaced) and coder receipt is schema-valid. Concrete feedback: (1) message.txt content is minimal — add a timestamp and attempt metadata for traceability across repair iterations. (2) Coder receipt uses provider_id 'codex' but this reviewer runs as 'opencode' — ensure the cross-provider visible log path exists and is populated by the next coder run. (3) Consider verifying the target file was modified via the scratch worktree's git status to confirm it was the only change.",
+  "errors": [],
+  "policy_exceptions": []
+}

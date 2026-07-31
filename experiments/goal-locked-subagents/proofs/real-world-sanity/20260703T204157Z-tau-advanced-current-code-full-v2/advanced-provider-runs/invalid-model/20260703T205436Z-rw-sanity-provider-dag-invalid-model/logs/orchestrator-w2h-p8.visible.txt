@@ -1,0 +1,37 @@
+roofs/real-world-sanit
+y/20260703T204157Z-tau
+-advanced-current-code
+-full-v2/advanced-prov
+ider-runs/invalid-mode
+l/20260703T205436Z-rw-
+sanity-provider-dag-in
+valid-model/dag-spec.j
+son\nplanner_receipt:
+/home/graham/workspace
+/experiments/tau/exper
+iments/goal-locked-sub
+agents/proofs/real-wor
+ld-sanity/20260703T204
+157Z-tau-advanced-curr
+ent-code-full-v2/advan
+ced-provider-runs/inva
+lid-model/20260703T205
+436Z-rw-sanity-provide
+r-dag-invalid-model/pl
+anner-receipt.json\nfi
+nal_receipt: /home/gra
+ham/workspace/experime
+nts/tau/experiments/go
+al-locked-subagents/pr
+oofs/real-world-sanity
+/20260703T204157Z-tau-
+advanced-current-code-
+full-v2/advanced-provi
+der-runs/invalid-model
+/20260703T205436Z-rw-s
+anity-provider-dag-inv
+alid-model/run-receipt
+.json\ncanonical truth
+: Tau JSON receipts; t
+his pane is human-visi
+ble telemetry.\n

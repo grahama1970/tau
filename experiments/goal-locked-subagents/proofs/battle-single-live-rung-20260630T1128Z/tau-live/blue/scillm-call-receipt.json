@@ -1,0 +1,43 @@
+{
+  "api_key_source": "docker:scillm-proxy:SCILLM_MASTER_KEY",
+  "combination_id": null,
+  "duration_seconds": 5.772353,
+  "events_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/tau-live/blue/scillm-events.jsonl",
+  "http_status": 200,
+  "live": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "persona": "coder",
+  "request": {
+    "messages": "<redacted-request-messages>",
+    "model": "gpt-5.5",
+    "scillm_metadata": {
+      "caller": "tau",
+      "combination_id": null,
+      "persona": "coder",
+      "proof": "battle-live-handoff",
+      "team": "blue",
+      "worker_id": null
+    },
+    "stream": true,
+    "stream_heartbeat_s": 15,
+    "stream_progress_events": true,
+    "temperature": 0
+  },
+  "response": {
+    "elapsed_ms": 5757,
+    "model": "gpt-5.5"
+  },
+  "response_content": "Blue action: implement/verify SQL injection defense for issue #22 by replacing string-concatenated `LIKE` query construction with parameterized placeholders and escaped wildcard input handling. Target evidence: produce `blue/tau-subagent-receipt.json` documenting the bounded change, rationale, touched files, and validation performed.",
+  "schema": "tau.battle_scillm_call_receipt.v1",
+  "scillm_base_url": "http://localhost:4001",
+  "started_at_seconds": 0.0,
+  "status": "PASS",
+  "stream": true,
+  "stream_done_seen": true,
+  "stream_event_count": 67,
+  "stream_heartbeat_count": 0,
+  "stream_last_event_type": "done",
+  "team": "blue",
+  "worker_id": null
+}

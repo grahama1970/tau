@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T133632Z-tau-provider-dag-poc-v1/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work_order_path",
+    "read coder_receipt_path",
+    "read target_file",
+    "ls receipts/"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T133632Z-tau-provider-dag-poc-v1/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-dag-poc/20260701T133632Z-tau-provider-dag-poc-v1/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS. target_file (message.txt) has no TODO line — contains only 'Provider DAG POC coder implementation completed.' Coder receipt is schema-valid tau.provider_dag_node_receipt.v1 with all required fields present and no errors.",
+  "errors": [],
+  "policy_exceptions": []
+}

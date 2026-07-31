@@ -1,0 +1,28 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "sed -n '1,240p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120/work-orders/attempt-01-coder.json",
+    "pwd",
+    "sed -n '1,80p' message.txt",
+    "find . -maxdepth 2 -type f -print",
+    "apply_patch: replace TODO line in message.txt",
+    "sed -n '1,80p' message.txt",
+    "find . -maxdepth 2 -type f -print",
+    "test -e /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120/receipts/attempt-01-coder.json; printf '%s\\n' $?"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

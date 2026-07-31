@@ -1,0 +1,19 @@
+{
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-lifecycle/20260703T185625Z-tau-provider-lifecycle-live/events.jsonl",
+  "inspect_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-lifecycle/20260703T185625Z-tau-provider-lifecycle-live/inspect.json",
+  "label": "tau-provider-lifecycle-live",
+  "provider_session_states": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-lifecycle/20260703T185625Z-tau-provider-lifecycle-live/readiness/codex.session-state.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-lifecycle/20260703T185625Z-tau-provider-lifecycle-live/readiness/opencode.session-state.json"
+  ],
+  "provider_spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-lifecycle/20260703T185625Z-tau-provider-lifecycle-live/provider-readiness-spec.json",
+  "readiness_records": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-lifecycle/20260703T185625Z-tau-provider-lifecycle-live/readiness/codex.readiness.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-lifecycle/20260703T185625Z-tau-provider-lifecycle-live/readiness/opencode.readiness.json"
+  ],
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-lifecycle/20260703T185625Z-tau-provider-lifecycle-live",
+  "run_id": "20260703T185625Z-tau-provider-lifecycle-live",
+  "schema": "tau.provider_readiness_runtime_manifest.v1",
+  "workstation_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/provider-lifecycle/20260703T185625Z-tau-provider-lifecycle-live/herdr-workstations/20260703T185625Z-tau-provider-lifecycle-live/workstation.json"
+}

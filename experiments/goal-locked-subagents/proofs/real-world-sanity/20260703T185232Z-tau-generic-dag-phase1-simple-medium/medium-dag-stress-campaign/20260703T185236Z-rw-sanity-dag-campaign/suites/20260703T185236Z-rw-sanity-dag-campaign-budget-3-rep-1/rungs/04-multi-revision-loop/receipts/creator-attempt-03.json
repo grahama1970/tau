@@ -1,0 +1,13 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T185232Z-tau-generic-dag-phase1-simple-medium/medium-dag-stress-campaign/20260703T185236Z-rw-sanity-dag-campaign/suites/20260703T185236Z-rw-sanity-dag-campaign-budget-3-rep-1/rungs/04-multi-revision-loop/scratch/artifact.txt"
+  ],
+  "attempt": 3,
+  "handoff_summary": "attempt 3",
+  "node_id": "creator",
+  "role": "creator",
+  "schema": "tau.dag_stress_node_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-03T18:52:36.613460Z",
+  "verdict": "PASS"
+}

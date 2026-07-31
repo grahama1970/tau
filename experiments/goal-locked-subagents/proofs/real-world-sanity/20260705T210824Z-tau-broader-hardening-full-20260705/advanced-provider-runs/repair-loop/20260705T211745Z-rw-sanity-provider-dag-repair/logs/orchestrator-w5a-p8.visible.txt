@@ -1,0 +1,37 @@
+sanity-provider-da
+g-repair/dag-spec.
+json\nplanner_rece
+ipt: /home/graham/
+workspace/experime
+nts/tau/experiment
+s/goal-locked-suba
+gents/proofs/real-
+world-sanity/20260
+705T210824Z-tau-br
+oader-hardening-fu
+ll-20260705/advanc
+ed-provider-runs/r
+epair-loop/2026070
+5T211745Z-rw-sanit
+y-provider-dag-rep
+air/planner-receip
+t.json\nfinal_rece
+ipt: /home/graham/
+workspace/experime
+nts/tau/experiment
+s/goal-locked-suba
+gents/proofs/real-
+world-sanity/20260
+705T210824Z-tau-br
+oader-hardening-fu
+ll-20260705/advanc
+ed-provider-runs/r
+epair-loop/2026070
+5T211745Z-rw-sanit
+y-provider-dag-rep
+air/run-receipt.js
+on\ncanonical trut
+h: Tau JSON receip
+ts; this pane is h
+uman-visible telem
+etry.\n

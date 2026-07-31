@@ -1,0 +1,156 @@
+{
+  "agents": {
+    "20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness-codex": {
+      "command": "'codex' '--cd' '/home/graham/workspace/experiments/tau'",
+      "last_start_result": {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness-codex",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "w2P",
+          "--tab",
+          "w2P:t2",
+          "--env",
+          "TAU_ROLE=codex",
+          "--env",
+          "TAU_AGENT_NAME=20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness-codex",
+          "--env",
+          "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T221859Z-tau-generic-provider-adapter-resume-v4/advanced-generic-provider-dag-adapter/provider-runs/20260703T221900Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness/herdr-workstations/20260703T221901Z-rw-sanity-generic-provider-dag-adapter-readiness",
+          "--env",
+          "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T221859Z-tau-generic-provider-adapter-resume-v4/advanced-generic-provider-dag-adapter/provider-runs/20260703T221900Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness/work-orders/codex.json",
+          "--env",
+          "TAU_PROVIDER_READINESS_RUN_ID=20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness",
+          "--env",
+          "TAU_PROVIDER_READINESS_PROVIDER=codex",
+          "--no-focus",
+          "--",
+          "codex",
+          "--cd",
+          "/home/graham/workspace/experiments/tau"
+        ],
+        "parsed": {
+          "id": "cli:agent:start",
+          "result": {
+            "agent": {
+              "agent_status": "unknown",
+              "cwd": "/home/graham/workspace/experiments/tau",
+              "focused": false,
+              "foreground_cwd": "/home/graham/workspace/experiments/tau",
+              "name": "20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness-codex",
+              "pane_id": "w2P:p5",
+              "revision": 0,
+              "tab_id": "w2P:t2",
+              "terminal_id": "term_655bc508164a129c",
+              "workspace_id": "w2P"
+            },
+            "argv": [
+              "codex",
+              "--cd",
+              "/home/graham/workspace/experiments/tau"
+            ],
+            "type": "agent_started"
+          }
+        },
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness-codex\",\"pane_id\":\"w2P:p5\",\"revision\":0,\"tab_id\":\"w2P:t2\",\"terminal_id\":\"term_655bc508164a129c\",\"workspace_id\":\"w2P\"},\"argv\":[\"codex\",\"--cd\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+      },
+      "role": "codex",
+      "started_at": "20260703T221913Z",
+      "tab": "providers",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T221859Z-tau-generic-provider-adapter-resume-v4/advanced-generic-provider-dag-adapter/provider-runs/20260703T221900Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness/work-orders/codex.json"
+    },
+    "20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness-opencode": {
+      "command": "'opencode' '/home/graham/workspace/experiments/tau'",
+      "last_start_result": {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness-opencode",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "w2P",
+          "--tab",
+          "w2P:t2",
+          "--env",
+          "TAU_ROLE=opencode",
+          "--env",
+          "TAU_AGENT_NAME=20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness-opencode",
+          "--env",
+          "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T221859Z-tau-generic-provider-adapter-resume-v4/advanced-generic-provider-dag-adapter/provider-runs/20260703T221900Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness/herdr-workstations/20260703T221901Z-rw-sanity-generic-provider-dag-adapter-readiness",
+          "--env",
+          "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T221859Z-tau-generic-provider-adapter-resume-v4/advanced-generic-provider-dag-adapter/provider-runs/20260703T221900Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness/work-orders/opencode.json",
+          "--env",
+          "TAU_PROVIDER_READINESS_RUN_ID=20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness",
+          "--env",
+          "TAU_PROVIDER_READINESS_PROVIDER=opencode",
+          "--no-focus",
+          "--split",
+          "right",
+          "--",
+          "opencode",
+          "/home/graham/workspace/experiments/tau"
+        ],
+        "parsed": {
+          "id": "cli:agent:start",
+          "result": {
+            "agent": {
+              "agent_status": "unknown",
+              "cwd": "/home/graham/workspace/experiments/tau",
+              "focused": false,
+              "foreground_cwd": "/home/graham/workspace/experiments/tau",
+              "name": "20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness-opencode",
+              "pane_id": "w2P:p6",
+              "revision": 0,
+              "tab_id": "w2P:t2",
+              "terminal_id": "term_655bc5126b27929d",
+              "workspace_id": "w2P"
+            },
+            "argv": [
+              "opencode",
+              "/home/graham/workspace/experiments/tau"
+            ],
+            "type": "agent_started"
+          }
+        },
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness-opencode\",\"pane_id\":\"w2P:p6\",\"revision\":0,\"tab_id\":\"w2P:t2\",\"terminal_id\":\"term_655bc5126b27929d\",\"workspace_id\":\"w2P\"},\"argv\":[\"opencode\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+      },
+      "role": "opencode",
+      "started_at": "20260703T221924Z",
+      "tab": "providers",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T221859Z-tau-generic-provider-adapter-resume-v4/advanced-generic-provider-dag-adapter/provider-runs/20260703T221900Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness/work-orders/opencode.json"
+    }
+  },
+  "created_at": "20260703T221902Z",
+  "cwd": "/home/graham/workspace/experiments/tau",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T221859Z-tau-generic-provider-adapter-resume-v4/advanced-generic-provider-dag-adapter/provider-runs/20260703T221900Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness/herdr-workstations/20260703T221901Z-rw-sanity-generic-provider-dag-adapter-readiness/events.jsonl",
+  "kind": "herdr-workstation",
+  "label": "rw-sanity-generic-provider-dag-adapter-readiness",
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T221859Z-tau-generic-provider-adapter-resume-v4/advanced-generic-provider-dag-adapter/provider-runs/20260703T221900Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260703T221900Z-rw-sanity-generic-provider-dag-adapter-readiness/herdr-workstations/20260703T221901Z-rw-sanity-generic-provider-dag-adapter-readiness",
+  "run_id": "20260703T221901Z-rw-sanity-generic-provider-dag-adapter-readiness",
+  "schema_version": 1,
+  "session": "default",
+  "tabs": {
+    "logs": "w2P:t3",
+    "providers": "w2P:t2",
+    "receipts": "w2P:t4"
+  },
+  "updated_at": "20260703T221924Z",
+  "workspace_id": "w2P",
+  "worktree": {
+    "base": null,
+    "branch": null,
+    "enabled": false,
+    "path": null,
+    "raw": null
+  }
+}

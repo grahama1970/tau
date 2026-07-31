@@ -1,0 +1,12 @@
+{
+  "attempt": 2,
+  "node_id": "coder",
+  "provider_id": "codex",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-provider-runs/repair-loop/20260703T225513Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json",
+  "reviewer_feedback": "REVISE \u2014 target_file TODO line is removed and coder receipt is schema-valid, but two issues need fixing: (1) commands_run contains 'python deterministic visible coder' which is a description not a real shell command \u2014 log the actual CLI invocation; (2) handoff_summary is generic ('updated the scratch target file') \u2014 describe the concrete change: TODO line removed, content replaced with completion message.",
+  "run_id": "20260703T225513Z-rw-sanity-provider-dag-repair",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-provider-runs/repair-loop/20260703T225513Z-rw-sanity-provider-dag-repair/scratch-worktree",
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-provider-runs/repair-loop/20260703T225513Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+  "task": "Modify only target_file. Replace the TODO line with a short completed implementation message. Then write the node receipt JSON exactly at receipt_path."
+}

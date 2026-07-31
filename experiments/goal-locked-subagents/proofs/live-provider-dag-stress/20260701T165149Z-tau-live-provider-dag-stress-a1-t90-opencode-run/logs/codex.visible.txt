@@ -1,0 +1,46 @@
+
+───────────────────────────────────────
+
+• Validation so far: message.txt now
+  contains exactly one completed
+  implementation line, and jq returned
+  true for the required receipt fields.
+  I’m updating the receipt’s command
+  log to include those verification
+  commands.
+
+• Edited experiments/goal-locked-
+subagents/proofs/live-provider-dag-
+stress/20260701T165149Z-tau-live-
+provider-dag-stress-a1-t90-opencode-
+run/receipts/attempt-01-coder.json (+3
+-1)
+    16      "sed -n '1,120p' message.tx
+        t",
+    17 -    "ls -ld ../receipts && test
+         ! -e ../receipts/attempt-01-co
+        der.json"
+    17 +    "ls -ld ../receipts && test
+         ! -e ../receipts/attempt-01-co
+        der.json",
+    18 +    "sed -n '1,20p' message.txt
+        ",
+    19 +    "jq -e '.schema == \"tau.pr
+        ovider_dag_node_receipt.v1\" an
+        d .node_id == \"coder\" and .pr
+        ovider_id == \"codex\" and .att
+        empt == 1 and .status == \"PASS
+        \" and .verdict == \"PASS\" and
+         (.changed_files | length == 1)
+         and (.errors | length == 0) an
+        d (.policy_exceptions | length
+        == 0)' ../receipts/attempt-01-c
+        oder.json"
+    20    ],
+
+• Working (1m 17s • esc to interrupt)
+
+
+› Use /skills to list available skills
+
+  gpt-5.5 high · ~/workspace/experimen…

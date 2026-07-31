@@ -1,0 +1,24 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "sed -n '1,240p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/work-orders/attempt-01-coder.json",
+    "sed -n '1,120p' message.txt",
+    "ls -la /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/receipts",
+    "python3 -c 'import json, pathlib; r=pathlib.Path(\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/receipts/attempt-01-coder.json\"); d=json.loads(r.read_text()); t=pathlib.Path(\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/scratch-worktree/message.txt\"); assert d[\"schema\"]==\"tau.provider_dag_node_receipt.v1\" and d[\"status\"]==\"PASS\" and d[\"verdict\"]==\"PASS\"; assert d[\"changed_files\"]==[str(t)] and d[\"artifacts\"]==[str(t)]; assert t.read_text().strip()==\"Completed implementation for the Tau provider DAG POC coder node.\"; print(\"receipt_ok\")'"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T172318Z-tau-live-provider-dag-invalid-reviewer-model-logcapture-a1-t45/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

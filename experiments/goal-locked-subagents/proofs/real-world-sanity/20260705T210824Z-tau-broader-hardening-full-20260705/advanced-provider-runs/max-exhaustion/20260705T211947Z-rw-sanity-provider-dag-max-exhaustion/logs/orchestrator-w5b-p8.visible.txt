@@ -1,0 +1,37 @@
+on/dag-spec.json\n
+planner_receipt: /
+home/graham/worksp
+ace/experiments/ta
+u/experiments/goal
+-locked-subagents/
+proofs/real-world-
+sanity/20260705T21
+0824Z-tau-broader-
+hardening-full-202
+60705/advanced-pro
+vider-runs/max-exh
+austion/20260705T2
+11947Z-rw-sanity-p
+rovider-dag-max-ex
+haustion/planner-r
+eceipt.json\nfinal
+_receipt: /home/gr
+aham/workspace/exp
+eriments/tau/exper
+iments/goal-locked
+-subagents/proofs/
+real-world-sanity/
+20260705T210824Z-t
+au-broader-hardeni
+ng-full-20260705/a
+dvanced-provider-r
+uns/max-exhaustion
+/20260705T211947Z-
+rw-sanity-provider
+-dag-max-exhaustio
+n/run-receipt.json
+\ncanonical truth:
+ Tau JSON receipts
+; this pane is hum
+an-visible telemet
+ry.\n

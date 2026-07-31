@@ -1,0 +1,18 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202223Z-tau-advanced-negative-deterministic-visible-coder/advanced-provider-runs/max-exhaustion/20260703T202223Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["read work_order", "read target_file message.txt", "read coder_receipt attempt-02-coder.json", "write attempt-02-reviewer.json"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202223Z-tau-advanced-negative-deterministic-visible-coder/advanced-provider-runs/max-exhaustion/20260703T202223Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202223Z-tau-advanced-negative-deterministic-visible-coder/advanced-provider-runs/max-exhaustion/20260703T202223Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "REVISE: force_revise=true. Two concrete issues for next coder attempt: (1) message.txt content is generic boilerplate (\"completed implementation by deterministic visible coder attempt 2\") — it should describe the actual implementation outcome, the specific changes made, or the state of the artifact after modification. (2) coder commands_run is opaque (\"python deterministic visible coder\") — the next attempt should log the actual command invocation and any key flags/arguments so the invocation is auditable from the receipt alone. The schema and structure of both files are otherwise valid.",
+  "errors": [],
+  "policy_exceptions": []
+}

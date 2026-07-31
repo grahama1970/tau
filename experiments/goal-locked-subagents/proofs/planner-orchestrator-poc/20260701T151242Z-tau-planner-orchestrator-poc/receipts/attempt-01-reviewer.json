@@ -1,0 +1,22 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-poc/20260701T151242Z-tau-planner-orchestrator-poc/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "jq . work-orders/attempt-01-reviewer.json",
+    "cat scratch-worktree/message.txt",
+    "jq . receipts/attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-poc/20260701T151242Z-tau-planner-orchestrator-poc/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/planner-orchestrator-poc/20260701T151242Z-tau-planner-orchestrator-poc/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "Review PASS: target_file has no TODO line (contains only 'Completed implementation message from the coder node.'). Coder receipt is schema-valid with all required fields present and correct types.",
+  "errors": [],
+  "policy_exceptions": []
+}

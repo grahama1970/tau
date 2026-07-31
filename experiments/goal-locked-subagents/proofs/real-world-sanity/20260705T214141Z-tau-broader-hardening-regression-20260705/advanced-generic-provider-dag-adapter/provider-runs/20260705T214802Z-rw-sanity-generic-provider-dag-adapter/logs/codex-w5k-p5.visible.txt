@@ -1,0 +1,38 @@
+    29 +    "sha256sum /home/graham/wor
+        kspace/experiments/tau/experime
+        nts/goal-locked-subagents/proof
+        s/real-world-sanity/20260705T21
+        4141Z-tau-broader-hardening-reg
+        ression-20260705/advanced-gener
+        ic-provider-dag-adapter/provide
+        r-runs/20260705T214802Z-rw-sani
+        ty-generic-provider-dag-adapter
+        /provider-readiness/20260705T21
+        4802Z-rw-sanity-generic-provide
+        r-dag-adapter-readiness/logs/co
+        dex.visible.txt && sed -n '1,5p
+        ' /home/graham/workspace/experi
+        ments/tau/experiments/goal-lock
+        ed-subagents/proofs/real-world-
+        sanity/20260705T214141Z-tau-bro
+        ader-hardening-regression-20260
+        705/advanced-generic-provider-d
+        ag-adapter/provider-runs/202607
+        05T214802Z-rw-sanity-generic-pr
+        ovider-dag-adapter/scratch-work
+        tree/message.txt",
+    30 +    "python3 - <<'PY' ... recei
+        pt field inspection ... PY",
+    31 +    "apply_patch updating recei
+        pts/attempt-01-coder.json comma
+        nds_run"
+    32    ],
+
+───────────────────────────────────────
+
+• Working (1m 48s • esc to interrupt)
+
+
+› Explain this codebase
+
+  gpt-5.5 medium · ~/workspace/experim…

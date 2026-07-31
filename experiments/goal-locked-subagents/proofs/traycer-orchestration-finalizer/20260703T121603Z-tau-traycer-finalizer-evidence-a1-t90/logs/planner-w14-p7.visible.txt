@@ -1,0 +1,14 @@
+Tau planner subagent visible monitor\nrun_id: 20260703T121603Z-tau-tra
+ycer-finalizer-evidence-a1-t90\nrun_dir: /home/graham/workspace/experi
+ments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestrati
+on-finalizer/20260703T121603Z-tau-traycer-finalizer-evidence-a1-t90\nd
+ag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locke
+d-subagents/proofs/traycer-orchestration-finalizer/20260703T121603Z-ta
+u-traycer-finalizer-evidence-a1-t90/dag-spec.json\nplanner_receipt: /h
+ome/graham/workspace/experiments/tau/experiments/goal-locked-subagents
+/proofs/traycer-orchestration-finalizer/20260703T121603Z-tau-traycer-f
+inalizer-evidence-a1-t90/planner-receipt.json\nfinal_receipt: /home/gr
+aham/workspace/experiments/tau/experiments/goal-locked-subagents/proof
+s/traycer-orchestration-finalizer/20260703T121603Z-tau-traycer-finaliz
+er-evidence-a1-t90/run-receipt.json\ncanonical truth: Tau JSON receipt
+s; this pane is human-visible telemetry.\n

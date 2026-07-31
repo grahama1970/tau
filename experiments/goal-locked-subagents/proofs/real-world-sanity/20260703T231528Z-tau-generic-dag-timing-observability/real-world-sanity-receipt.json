@@ -1,0 +1,379 @@
+{
+  "check_count": 5,
+  "checks": [
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 0,
+          "receipt_summary": {
+            "completed_node_count": 3,
+            "live": false,
+            "mocked": false,
+            "node_count": 3,
+            "ok": true,
+            "provider_live": false,
+            "resumed_node_count": 0,
+            "schema": "tau.generic_dag_run_receipt.v1",
+            "status": "PASS",
+            "verdict": "PASS"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_run.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_run.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "medium.generic_dag_run",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/medium-generic-dag/dag-spec.json"
+      ],
+      "completed_at": "2026-07-03T23:15:29Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": null,
+      "level": "medium",
+      "live": false,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau executes a generic schema-validated local subprocess DAG with planner -> coder -> reviewer dependencies.",
+      "receipt_summary": {
+        "completed_node_count": 3,
+        "live": false,
+        "mocked": false,
+        "node_count": 3,
+        "ok": true,
+        "provider_live": false,
+        "resumed_node_count": 0,
+        "schema": "tau.generic_dag_run_receipt.v1",
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-03T23:15:28Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_run.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_run.stdout.txt",
+      "timeout_seconds": 90
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 0,
+          "receipt_summary": {
+            "live": false,
+            "mocked": false,
+            "ok": true,
+            "provider_session_state_count": 0,
+            "schema": "tau.run_status.v1",
+            "status": "PASS"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_status.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_status.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "medium.generic_dag_status",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "run-status",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/medium-generic-dag"
+      ],
+      "completed_at": "2026-07-03T23:15:29Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": null,
+      "level": "medium",
+      "live": false,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau summarizes a generic DAG run through the read-only run-status surface.",
+      "receipt_summary": {
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "provider_session_state_count": 0,
+        "schema": "tau.run_status.v1",
+        "status": "PASS"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-03T23:15:29Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_status.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_status.stdout.txt",
+      "timeout_seconds": 60
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 0,
+          "receipt_summary": {
+            "completed_node_count": 2,
+            "live": false,
+            "mocked": false,
+            "node_count": 2,
+            "ok": true,
+            "provider_live": false,
+            "resumed_node_count": 1,
+            "schema": "tau.generic_dag_run_receipt.v1",
+            "status": "PASS",
+            "verdict": "PASS"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_resume.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_resume.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "medium.generic_dag_resume",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/medium-generic-dag-resume/dag-spec.json"
+      ],
+      "completed_at": "2026-07-03T23:15:30Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": null,
+      "level": "medium",
+      "live": false,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau resumes a generic DAG from an existing valid node receipt and does not rerun that node command.",
+      "receipt_summary": {
+        "completed_node_count": 2,
+        "live": false,
+        "mocked": false,
+        "node_count": 2,
+        "ok": true,
+        "provider_live": false,
+        "resumed_node_count": 1,
+        "schema": "tau.generic_dag_run_receipt.v1",
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-03T23:15:29Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_resume.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_resume.stdout.txt",
+      "timeout_seconds": 90
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 1,
+          "receipt_summary": {
+            "completed_node_count": 0,
+            "live": false,
+            "mocked": false,
+            "node_count": 1,
+            "ok": false,
+            "provider_live": false,
+            "resumed_node_count": 0,
+            "schema": "tau.generic_dag_run_receipt.v1",
+            "status": "BLOCKED",
+            "verdict": "SUBAGENT_ERROR"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_stale_work_order_blocks.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_stale_work_order_blocks.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "medium.generic_dag_stale_work_order_blocks",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/medium-generic-dag-stale-work-order/dag-spec.json"
+      ],
+      "completed_at": "2026-07-03T23:15:31Z",
+      "errors": [],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": "SUBAGENT_ERROR",
+      "level": "medium",
+      "live": false,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau refuses to resume a generic DAG node from a stale work-order receipt and blocks when rerun fails.",
+      "receipt_summary": {
+        "completed_node_count": 0,
+        "live": false,
+        "mocked": false,
+        "node_count": 1,
+        "ok": false,
+        "provider_live": false,
+        "resumed_node_count": 0,
+        "schema": "tau.generic_dag_run_receipt.v1",
+        "status": "BLOCKED",
+        "verdict": "SUBAGENT_ERROR"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-03T23:15:30Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_stale_work_order_blocks.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_stale_work_order_blocks.stdout.txt",
+      "timeout_seconds": 90
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 1,
+          "receipt_summary": {
+            "live": false,
+            "mocked": false,
+            "ok": false,
+            "provider_session_state_count": 0,
+            "schema": "tau.run_status.v1",
+            "status": "BLOCKED"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_stale_work_order_status.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_stale_work_order_status.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "medium.generic_dag_stale_work_order_status",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "run-status",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/medium-generic-dag-stale-work-order"
+      ],
+      "completed_at": "2026-07-03T23:15:31Z",
+      "errors": [],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": null,
+      "level": "medium",
+      "live": false,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau summarizes a stale work-order blocked generic DAG through the read-only run-status surface without requiring provider artifacts.",
+      "receipt_summary": {
+        "live": false,
+        "mocked": false,
+        "ok": false,
+        "provider_session_state_count": 0,
+        "schema": "tau.run_status.v1",
+        "status": "BLOCKED"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-03T23:15:31Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_stale_work_order_status.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability/logs/medium.generic_dag_stale_work_order_status.stdout.txt",
+      "timeout_seconds": 60
+    }
+  ],
+  "completed_at": "2026-07-03T23:15:31Z",
+  "failed_check_count": 0,
+  "level_counts": {
+    "medium": {
+      "PASS": 5
+    }
+  },
+  "live": "mixed",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "browser/CDP chat UI rendering",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau CLI and command-spec surfaces execute from the local checkout",
+      "Tau can run a real local handoff command loop",
+      "Tau planner, generic DAG runner, and deterministic scheduler stress surfaces emit non-mocked receipts",
+      "Tau can allocate visible provider panes and run live provider DAG checks when advanced checks pass",
+      "Tau fail-closed negative controls preserve typed BLOCKED receipts"
+    ]
+  },
+  "provider_live": false,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T231528Z-tau-generic-dag-timing-observability",
+  "run_id": "20260703T231528Z-tau-generic-dag-timing-observability",
+  "schema": "tau.real_world_sanity_suite_receipt.v1",
+  "selected_levels": [
+    "medium"
+  ],
+  "status": "PASS",
+  "timestamp": "2026-07-03T23:15:31Z"
+}

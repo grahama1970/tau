@@ -1,0 +1,20 @@
+ipts/attempt-
+02-reviewer.j
+son
+Wrote file su
+ccessfully.
+
+Now I'll writ
+e the reviewe
+r receipt. Th
+e TODO line i
+s gone from `
+message.txt`,
+ the coder re
+ceipt is sche
+ma-valid, and
+ `force_revis
+e` is `false`
+ — all condit
+ions for PASS
+.

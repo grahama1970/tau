@@ -1,0 +1,38 @@
+        '1,20p' message.txt && p
+        ython3 - <<'PY'\nimport
+        json\np='/home/graham/wo
+        rkspace/experiments/tau/
+        experiments/goal-locked-
+        subagents/proofs/real-wo
+        rld-sanity/20260703T1240
+        02Z-tau-real-world-sanit
+        y-all/advanced-provider-
+        runs/max-exhaustion/2026
+        0703T124523Z-rw-sanity-p
+        rovider-dag-max-exhausti
+        on/receipts/attempt-02-c
+        oder.json'\nwith open(p)
+         as f:\n    data=json.lo
+        ad(f)\nprint(data['schem
+        a'], data['status'], dat
+        a['verdict'], data['atte
+        mpt'], len(data['changed
+        _files']), len(data['err
+        ors']), len(data['policy
+        _exceptions']))\nPY"
+    19    ],
+
+────────────────────────────────
+
+• The final receipt command log
+  is set. I’m running the listed
+  validation now: JSON parse,
+  target-file readback, and key
+  receipt field counts.
+
+• Working (2m 23s • esc to inte…
+
+
+› Explain this codebase
+
+  gpt-5.5 medium · ~/workspace/…

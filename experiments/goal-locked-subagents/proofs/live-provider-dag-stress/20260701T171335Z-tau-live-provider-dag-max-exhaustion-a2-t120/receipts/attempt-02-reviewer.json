@@ -1,0 +1,25 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work-orders/attempt-02-reviewer.json",
+    "read scratch-worktree/message.txt",
+    "read receipts/attempt-02-coder.json",
+    "read receipts/attempt-01-reviewer.json",
+    "read receipts/attempt-01-coder.json",
+    "ls receipts/"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T171335Z-tau-live-provider-dag-max-exhaustion-a2-t120/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "REVISE (force_revise=true). The message.txt content improved vs attempt 1 — now includes node_id=coder, provider_id=codex, and DAG edge status PASS. However: (1) the scratch worktree still contains only message.txt with no Python code exercising the provider DAG pattern, despite this being a live-provider-dag stress test; (2) the message does not describe which other DAG nodes exist in the chain or how this coder node connects to them — it only describes itself; (3) for attempt 3, the coder should produce at minimum a Python module or script in scratch-worktree/ that demonstrates provider DAG node connection logic (e.g. instantiating nodes by provider_id, running a DAG edge, handling exhaustion/max-retry), and the message.txt should enumerate the full DAG node chain with edge statuses for each hop.",
+  "errors": [],
+  "policy_exceptions": []
+}

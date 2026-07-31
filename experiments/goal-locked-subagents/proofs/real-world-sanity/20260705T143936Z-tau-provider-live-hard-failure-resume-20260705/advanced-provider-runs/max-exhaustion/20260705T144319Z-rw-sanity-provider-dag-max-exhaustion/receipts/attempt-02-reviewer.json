@@ -1,0 +1,25 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T143936Z-tau-provider-live-hard-failure-resume-20260705/advanced-provider-runs/max-exhaustion/20260705T144319Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work_order_path",
+    "read coder_receipt_path",
+    "read target_file",
+    "ls scratch-worktree/",
+    "ls receipts/",
+    "read previous reviewer receipt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T143936Z-tau-provider-live-hard-failure-resume-20260705/advanced-provider-runs/max-exhaustion/20260705T144319Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T143936Z-tau-provider-live-hard-failure-resume-20260705/advanced-provider-runs/max-exhaustion/20260705T144319Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "REVISE (force_revise=true). Two issues remain from attempt-1 review: (1) target_file still contains self-referential metadata ('completed implementation by deterministic visible coder attempt 2') instead of meaningful content fulfilling the original goal — needs actual message payload. (2) coder receipt provider_id is 'tau-deterministic-visible' while work order expects 'opencode' — the provider_id should match the agent contract. Both issues were flagged in attempt-1 and need resolution.",
+  "errors": [],
+  "policy_exceptions": []
+}

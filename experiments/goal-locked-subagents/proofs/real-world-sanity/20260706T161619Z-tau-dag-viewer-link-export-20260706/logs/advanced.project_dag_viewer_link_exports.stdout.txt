@@ -1,0 +1,127 @@
+{
+  "approval_gate": null,
+  "artifacts": {
+    "project_dag_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/provider-metadata-project-dag/dag-contract.json",
+    "project_dag_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/provider-metadata-project-dag/run/dag-receipt.json"
+  },
+  "browser_cdp_proof": null,
+  "checkpoint": null,
+  "cleanup": null,
+  "dag_expansion": null,
+  "dag_stress": null,
+  "dag_stress_campaign": null,
+  "dag_viewer": {
+    "available": true,
+    "contract_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/provider-metadata-project-dag/dag-contract.json",
+    "contract_sha256": "473acd515bf99d4ca5dcd203ec6087467194f36975c20b4df5937f14c95f322f",
+    "dag_id": "rw-sanity-project-dag-provider-metadata",
+    "does_not_prove": [
+      "browser rendering",
+      "provider/model semantic quality",
+      "future route correctness",
+      "GitHub mutation"
+    ],
+    "goal_hash": "sha256:rw-sanity-project-dag-provider-metadata",
+    "live": true,
+    "mocked": false,
+    "provider_live": false,
+    "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/provider-metadata-project-dag/run/dag-receipt.json",
+    "receipt_sha256": "07c51075232471d82478a5fd7d04b379c7a856a418076641ef7bde16b2b2d84f",
+    "receipt_status": "PASS",
+    "receipt_verdict": "PASS",
+    "run_query": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/provider-metadata-project-dag/run",
+    "schema": "tau.dag_viewer_link.v1",
+    "source": "dag-contract.json + dag-receipt.json",
+    "url": "http://localhost:3002/#tau/dag?run=%2Fhome%2Fgraham%2Fworkspace%2Fexperiments%2Ftau%2Fexperiments%2Fgoal-locked-subagents%2Fproofs%2Freal-world-sanity%2F20260706T161619Z-tau-dag-viewer-link-export-20260706%2Fprovider-metadata-project-dag%2Frun",
+    "viewer_route": "http://localhost:3002/#tau/dag"
+  },
+  "detected_type": "project_dag",
+  "events": {
+    "count": 0,
+    "path": null
+  },
+  "evidence_validation": null,
+  "generic_dag": null,
+  "github_apply_policy": null,
+  "github_handoff_transport": null,
+  "herdr_gc": null,
+  "live": true,
+  "missing_required_artifacts": [],
+  "mocked": false,
+  "ok": true,
+  "orchestration_evidence": null,
+  "project_dag": {
+    "alert_count": 0,
+    "alerts": [],
+    "blocking_alert_count": 0,
+    "course_correction_path": null,
+    "dag_id": "rw-sanity-project-dag-provider-metadata",
+    "entry_node": "coder",
+    "error_count": 0,
+    "errors": [],
+    "goal_hash": "sha256:rw-sanity-project-dag-provider-metadata",
+    "live": true,
+    "missing_required_evidence": null,
+    "mocked": false,
+    "node_attempt_count": 2,
+    "node_attempts": {
+      "coder": 1,
+      "reviewer": 1
+    },
+    "observed_edge_count": 2,
+    "observed_edges": [
+      {
+        "from_agent": "coder",
+        "from_node": "coder",
+        "to_agent": "reviewer",
+        "to_node": "reviewer"
+      },
+      {
+        "from_agent": "reviewer",
+        "from_node": "reviewer",
+        "to_agent": "human",
+        "to_node": "human"
+      }
+    ],
+    "ok": true,
+    "schema": "tau.dag_receipt.v1",
+    "status": "PASS",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-provider-metadata"
+    },
+    "terminal_nodes": [
+      "human"
+    ],
+    "unexpected_edges": null,
+    "verdict": "PASS"
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "new provider execution",
+      "Herdr workspace cleanup unless a cleanup receipt is present",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "production browser/chat UI rendering"
+    ],
+    "proves": [
+      "Tau can summarize known run artifacts from one run directory",
+      "Tau can expose checkpoint/current-state, lifecycle, cleanup, approval, and evidence status without mutation",
+      "Tau can expose project DAG dag-receipt.json failures without requiring provider runtime manifests"
+    ]
+  },
+  "provider_dag": null,
+  "provider_dag_planner": null,
+  "provider_pane": null,
+  "provider_readiness": null,
+  "provider_session_states": [],
+  "real_world_sanity": null,
+  "research_source": null,
+  "route_memory": null,
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/provider-metadata-project-dag/run",
+  "run_receipt": null,
+  "runtime_manifest": null,
+  "schema": "tau.run_status.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-06T16:16:20Z"
+}

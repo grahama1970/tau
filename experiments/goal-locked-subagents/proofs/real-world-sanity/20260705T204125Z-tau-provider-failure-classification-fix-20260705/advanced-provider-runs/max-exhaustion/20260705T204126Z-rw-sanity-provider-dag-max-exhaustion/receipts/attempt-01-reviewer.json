@@ -1,0 +1,33 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T204126Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:87e9e335cb27b132cf3f75bd2b1e0ffad1b202d24f5918da79780eceab299d80",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w4X",
+  "pane_id": "w4X:p6",
+  "terminal_id": "term_655e32ea10310544",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T204125Z-tau-provider-failure-classification-fix-20260705/advanced-provider-runs/max-exhaustion/20260705T204126Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T204126Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "50f1618b42f3d8c13ec8fe203d3ed191ecfa87846ad1dad7378188d54c2e87eb",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T204125Z-tau-provider-failure-classification-fix-20260705/advanced-provider-runs/max-exhaustion/20260705T204126Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work_order JSON",
+    "read target_file message.txt",
+    "read coder_receipt attempt-01-coder.json",
+    "read opencode visible log",
+    "sha256sum opencode.visible.txt",
+    "write reviewer receipt attempt-01-reviewer.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T204125Z-tau-provider-failure-classification-fix-20260705/advanced-provider-runs/max-exhaustion/20260705T204126Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T204125Z-tau-provider-failure-classification-fix-20260705/advanced-provider-runs/max-exhaustion/20260705T204126Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "force_revise=true mandated REVISE. Target file has no TODO line (PASS on content) but content is overly minimal — only a stub string, not a real provider-failure-classification implementation. Coder receipt is schema-valid but claims codex provider while the target content reads as written by a deterministic visible coder stub, creating a provider-identity mismatch. The visible log for opencode is empty. Next coder attempt should write a substantive provider-failure-classification implementation to the target file (e.g., classify exhaustion vs timeout vs auth vs rate-limit failures with provider-specific reasoning) and ensure the provider_id in the receipt matches the actual execution mechanism.",
+  "errors": [],
+  "policy_exceptions": []
+}

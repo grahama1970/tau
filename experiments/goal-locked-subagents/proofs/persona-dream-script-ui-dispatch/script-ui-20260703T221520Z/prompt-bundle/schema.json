@@ -1,0 +1,181 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "script",
+    "scene_count",
+    "target_pages",
+    "dialogue_blocks",
+    "action_blocks",
+    "environment_continuity",
+    "voice_direction",
+    "asset_usage",
+    "interaction_matrix_coverage",
+    "quality_checks"
+  ],
+  "properties": {
+    "script": {
+      "type": "string",
+      "description": "Screenplay-formatted script text for the requested scene/page count."
+    },
+    "scene_count": {
+      "type": "number"
+    },
+    "target_pages": {
+      "type": "number"
+    },
+    "dialogue_blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "character",
+          "line",
+          "tone",
+          "source_context"
+        ],
+        "properties": {
+          "character": {
+            "type": "string"
+          },
+          "line": {
+            "type": "string"
+          },
+          "tone": {
+            "type": "string"
+          },
+          "source_context": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "action_blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "beat",
+          "physical_action",
+          "environment_driver"
+        ],
+        "properties": {
+          "beat": {
+            "type": "string"
+          },
+          "physical_action": {
+            "type": "string"
+          },
+          "environment_driver": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "environment_continuity": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "voice_direction": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "character",
+          "delivery",
+          "pause_or_tone_note"
+        ],
+        "properties": {
+          "character": {
+            "type": "string"
+          },
+          "delivery": {
+            "type": "string"
+          },
+          "pause_or_tone_note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "asset_usage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "asset_id",
+          "used_for",
+          "script_continuity_note"
+        ],
+        "properties": {
+          "asset_id": {
+            "type": "string"
+          },
+          "used_for": {
+            "type": "string"
+          },
+          "script_continuity_note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "interaction_matrix_coverage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_seed_id",
+          "covered_in_script",
+          "script_function"
+        ],
+        "properties": {
+          "source_seed_id": {
+            "type": "string"
+          },
+          "covered_in_script": {
+            "type": "boolean"
+          },
+          "script_function": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "quality_checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uses_phase02_story",
+        "covers_interaction_matrix",
+        "uses_contact_sheet_context",
+        "uses_voice_context",
+        "does_not_invent_unprovided_assets"
+      ],
+      "properties": {
+        "uses_phase02_story": {
+          "type": "boolean"
+        },
+        "covers_interaction_matrix": {
+          "type": "boolean"
+        },
+        "uses_contact_sheet_context": {
+          "type": "boolean"
+        },
+        "uses_voice_context": {
+          "type": "boolean"
+        },
+        "does_not_invent_unprovided_assets": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

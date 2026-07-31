@@ -1,0 +1,28 @@
+{
+  "bytes": 1777579,
+  "created_at": "2026-06-29T22:07:17Z",
+  "created_by": "project_agent",
+  "does_not_authorize": [
+    "git_push",
+    "public_upload",
+    "provider_readiness",
+    "direct_kling_submit",
+    "paid_provider_call"
+  ],
+  "exercised": "local copy of locked provider-media bytes and sha256 comparison",
+  "live": "no",
+  "mocked": "no",
+  "next_required_probe_command": "./run.sh validate-provider-media-url --url https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/dream-run/panel_01.png --expected-sha256 sha256:2c89628513c4c3c34d2b862673e56c656ce1a40409398fbb13fba6718f53c914 --json",
+  "panel_id": "panel_01",
+  "proposed_url": "https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/dream-run/panel_01.png",
+  "run_id": "dream-run",
+  "schema": "persona_dream.provider_media_local_staging_receipt.v1",
+  "source_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/artifacts/panel_01_scillm_panel.png",
+  "source_sha256": "sha256:2c89628513c4c3c34d2b862673e56c656ce1a40409398fbb13fba6718f53c914",
+  "staged_asset_path": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/provider_media/dream-run/panel_01.png",
+  "staged_sha256": "sha256:2c89628513c4c3c34d2b862673e56c656ce1a40409398fbb13fba6718f53c914",
+  "status": "PASS_PROVIDER_MEDIA_LOCAL_STAGING",
+  "target_repo_path": "skills/persona-dream/provider_media/dream-run/panel_01.png",
+  "unverified": "public URL fetch, GitHub raw availability, Kling provider fetch behavior, paid-call authorization, Kling submission",
+  "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/storyboard/panel_repair_gate/provider_media_publication_work_orders/panel_01_publication_request.json"
+}

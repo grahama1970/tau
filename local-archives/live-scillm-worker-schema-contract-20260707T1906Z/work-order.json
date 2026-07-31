@@ -1,0 +1,83 @@
+{
+  "agent": "coder",
+  "allowed_paths": [
+    ".tau/receipts/**"
+  ],
+  "attempt": 1,
+  "dag_id": "live-scillm-worker-schema-probe",
+  "data_boundary": {
+    "classification": "public",
+    "export_controlled": false,
+    "external_provider_allowed": false,
+    "external_research_allowed": false,
+    "foreign_person_access": "allowed",
+    "itar": false,
+    "notes": [
+      "live SciLLM worker probe with public temp data only"
+    ],
+    "public_repo_allowed": false,
+    "schema": "tau.data_boundary.v1",
+    "technical_data": false
+  },
+  "execution_substrate": "docker-sandbox",
+  "forbidden_paths": [
+    "secrets/**",
+    "src/**",
+    "tests/**",
+    "README.md"
+  ],
+  "goal_hash": "sha256:live-scillm-worker-schema-probe-goal",
+  "high_stakes": true,
+  "model_provider_route": {
+    "agent": "build",
+    "endpoint": "/v1/scillm/opencode/runs",
+    "skills": [
+      "scillm"
+    ],
+    "surface": "opencode_serve"
+  },
+  "node_id": "coder",
+  "policy_profile": {
+    "default_decision": "deny",
+    "filesystem": {
+      "read_denylist": [
+        "secrets/**"
+      ],
+      "write_allowlist": [
+        ".tau/receipts/**"
+      ]
+    },
+    "github": {
+      "dry_run_projection": "allow",
+      "public_mutation": "deny"
+    },
+    "memory": {
+      "read": "allow",
+      "write": "approval_required"
+    },
+    "network": {
+      "allowed_domains": [],
+      "default": "deny"
+    },
+    "profile_id": "scillm-live-probe-zero-trust",
+    "providers": {
+      "cloud_llm": "deny",
+      "local_model": "allow_with_approval"
+    },
+    "requires_data_boundary": true,
+    "research": {
+      "external_search": "deny",
+      "manual_sanitized_receipt": "allow_with_review"
+    },
+    "schema": "tau.policy_profile.v1"
+  },
+  "receipt_path": ".tau/receipts/scillm-worker-receipt.json",
+  "repo": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-schema-contract-20260707T1906Z/repo",
+  "required_artifacts": [],
+  "result_path": ".tau/receipts/scillm-result.json",
+  "sandbox_receipt_path": ".tau/receipts/sandbox-run-receipt.json",
+  "schema": "tau.executor.scillm_worker.v1",
+  "task": "Create exactly one JSON file at .tau/receipts/scillm-result.json. Do not edit any other file. The JSON root must have a top-level key named schema with value tau.scillm_worker_result.v1. Do not use $schema. It must also include status PASS, goal_hash sha256:live-scillm-worker-schema-probe-goal, changed_files [], artifacts [], tests_run [], findings [], and next_recommended_route reviewer.",
+  "timeout_s": 120,
+  "zero_trust": true
+}

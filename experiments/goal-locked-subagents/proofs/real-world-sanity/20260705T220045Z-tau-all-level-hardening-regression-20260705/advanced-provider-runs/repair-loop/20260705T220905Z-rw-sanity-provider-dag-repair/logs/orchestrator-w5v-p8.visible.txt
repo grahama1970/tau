@@ -1,0 +1,37 @@
+repair/dag-spec.js
+on\nplanner_receip
+t: /home/graham/wo
+rkspace/experiment
+s/tau/experiments/
+goal-locked-subage
+nts/proofs/real-wo
+rld-sanity/2026070
+5T220045Z-tau-all-
+level-hardening-re
+gression-20260705/
+advanced-provider-
+runs/repair-loop/2
+0260705T220905Z-rw
+-sanity-provider-d
+ag-repair/planner-
+receipt.json\nfina
+l_receipt: /home/g
+raham/workspace/ex
+periments/tau/expe
+riments/goal-locke
+d-subagents/proofs
+/real-world-sanity
+/20260705T220045Z-
+tau-all-level-hard
+ening-regression-2
+0260705/advanced-p
+rovider-runs/repai
+r-loop/20260705T22
+0905Z-rw-sanity-pr
+ovider-dag-repair/
+run-receipt.json\n
+canonical truth: T
+au JSON receipts;
+this pane is human
+-visible telemetry
+.\n

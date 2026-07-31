@@ -1,0 +1,32 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T220207Z-rw-sanity-provider-dag-one-pass",
+  "goal_hash": "sha256:4af89d5e22ff851bc307895971eb7854170c4d156e9cd3054cbe26f83e318c97",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w5R",
+  "pane_id": "w5R:p6",
+  "terminal_id": "term_655e44f293b9e64f",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/one-pass/20260705T220207Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260705T220207Z-rw-sanity-provider-dag-one-pass-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "ad3980175664c4b890232b586c1a9b2b4fff480cdb747d769ce7ee085d2ddbbb",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/one-pass/20260705T220207Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work order JSON at attempt-01-reviewer.json",
+    "read target_file scratch-worktree/message.txt",
+    "read coder receipt at attempt-01-coder.json",
+    "read visible log at opencode.visible.txt",
+    "sha256sum opencode.visible.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/one-pass/20260705T220207Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/advanced-provider-runs/one-pass/20260705T220207Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file has no TODO line (clean single line: 'Completed implementation for the provider DAG coder proof of concept.'). Coder receipt is schema-valid tau.provider_dag_node_receipt.v1 with PASS verdict, no errors, and required fields present. force_revise is false.",
+  "errors": [],
+  "policy_exceptions": []
+}

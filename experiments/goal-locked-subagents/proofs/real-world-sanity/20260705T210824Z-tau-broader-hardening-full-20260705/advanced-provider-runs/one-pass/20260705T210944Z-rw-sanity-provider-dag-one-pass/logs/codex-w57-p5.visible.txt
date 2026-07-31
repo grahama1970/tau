@@ -1,0 +1,38 @@
+  target still contains exactly the
+  completed message.
+
+• Ran jq -e '.schema ==
+  │ "tau.provider_dag_node_receipt.v1
+  │ " and .status == "PASS"
+  │ … +15 lines
+  └ true
+
+• Ran test "$(jq -r
+  │ '.visible_log_sha256' /home/
+  │ graham/workspace/experiments/tau/
+  │ … +23 lines
+  └ visible log hash matches receipt
+
+• Ran test "$(sed -n '1p' message.txt)"
+  │ = "Completed implementation for
+  │ Tau provider DAG POC coder node."
+  │ … +3 lines
+  └ target content verified
+
+───────────────────────────────────────
+
+• The receipt schema and target checks
+  passed. I noticed the receipt’s
+  commands_run did not include the
+  post-write validation commands, so
+  I’m updating only the receipt’s
+  command list for a more accurate
+  audit trail, then I’ll rerun the same
+  checks.
+
+• Working (2m 25s • esc to interrupt)
+
+
+› Find and fix a bug in @filename
+
+  gpt-5.5 medium · ~/workspace/experim…

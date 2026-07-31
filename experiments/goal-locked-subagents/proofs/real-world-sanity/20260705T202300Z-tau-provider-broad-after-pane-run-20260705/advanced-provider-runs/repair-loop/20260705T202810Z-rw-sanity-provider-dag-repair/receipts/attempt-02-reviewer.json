@@ -1,0 +1,29 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T202810Z-rw-sanity-provider-dag-repair",
+  "goal_hash": "sha256:7d7e0d5280181b3faa36d69ee11b1750bdfeb211f4fb63f824c6cee9009ee359",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w4T",
+  "pane_id": "w4T:p6",
+  "terminal_id": "term_655e2ff3172ec522",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T202300Z-tau-provider-broad-after-pane-run-20260705/advanced-provider-runs/repair-loop/20260705T202810Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T202810Z-rw-sanity-provider-dag-repair-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "169623dcb6086aec667260ee5e52341bbfd8719b2a20367cce4fcc827051bba9",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T202300Z-tau-provider-broad-after-pane-run-20260705/advanced-provider-runs/repair-loop/20260705T202810Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "sha256sum of visible_log_path",
+    "read target_file and coder_receipt_path"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T202300Z-tau-provider-broad-after-pane-run-20260705/advanced-provider-runs/repair-loop/20260705T202810Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T202300Z-tau-provider-broad-after-pane-run-20260705/advanced-provider-runs/repair-loop/20260705T202810Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file (message.txt) has no TODO line, coder receipt is schema-valid. force_revise is false. No errors.",
+  "errors": [],
+  "policy_exceptions": []
+}

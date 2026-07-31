@@ -1,0 +1,37 @@
+vanced-current-code-fu
+ll-v2/advanced-generic
+-provider-dag-adapter/
+provider-runs/20260703
+T204522Z-rw-sanity-gen
+eric-provider-dag-adap
+ter/dag-spec.json\npla
+nner_receipt: /home/gr
+aham/workspace/experim
+ents/tau/experiments/g
+oal-locked-subagents/p
+roofs/real-world-sanit
+y/20260703T204157Z-tau
+-advanced-current-code
+-full-v2/advanced-gene
+ric-provider-dag-adapt
+er/provider-runs/20260
+703T204522Z-rw-sanity-
+generic-provider-dag-a
+dapter/planner-receipt
+.json\nfinal_receipt:
+/home/graham/workspace
+/experiments/tau/exper
+iments/goal-locked-sub
+agents/proofs/real-wor
+ld-sanity/20260703T204
+157Z-tau-advanced-curr
+ent-code-full-v2/advan
+ced-generic-provider-d
+ag-adapter/provider-ru
+ns/20260703T204522Z-rw
+-sanity-generic-provid
+er-dag-adapter/run-rec
+eipt.json\ncanonical t
+ruth: Tau JSON receipt
+s; this pane is human-
+visible telemetry.\n

@@ -1,0 +1,35 @@
+{
+  "diagnostics": {
+    "interstitial_visible": false,
+    "readiness_actions": [],
+    "visible_prompt_is_gate": false,
+    "visible_prompt_observed": true
+  },
+  "evidence": {
+    "foreground_argv": [
+      "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "--cd",
+      "/home/graham/workspace/experiments/tau"
+    ],
+    "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+    "foreground_cwd": "/home/graham/workspace/experiments/tau",
+    "foreground_pid": 3872746,
+    "pane_agent_status": "idle",
+    "pane_cwd": "/home/graham/workspace/experiments/tau",
+    "pane_label": "20260703T125124Z-rw-sanity-provider-readiness-codex",
+    "process_alive": true,
+    "provider_event_log_path": null,
+    "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/readiness/20260703T125124Z-rw-sanity-provider-readiness/readiness/codex.readiness.json",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/readiness/20260703T125124Z-rw-sanity-provider-readiness/logs/codex.visible.txt"
+  },
+  "observed_at": "2026-07-03T12:51:31Z",
+  "pane_id": "w1B:p5",
+  "provider_id": "codex",
+  "ready": true,
+  "run_id": "20260703T125124Z-rw-sanity-provider-readiness",
+  "schema": "tau.provider_readiness.v1",
+  "source": "herdr_process_info",
+  "state": "ready",
+  "terminal_id": "term_655b46212252c128",
+  "workspace_id": "w1B"
+}

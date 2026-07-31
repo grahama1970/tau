@@ -1,0 +1,38 @@
+  acceptance and any Tau runtime
+  behavior
+
+  Next/Stop Condition
+  Local stop condition reached
+  for the coder work order:
+  target file changed and
+  receipt written. Remaining
+  step, if required by the
+  repair loop, is reviewer
+  evaluation of attempt-02-
+  coder.json.
+
+• Stop hook (stopped)
+  warning: Status response
+  blocked as too vague. Answer
+  status requests with an
+  operational snapshot: Status/
+  Phase, Now/current file-
+  command-artifact, Evidence
+  with concrete counts or
+  command results, and Next/stop
+  condition. Include exact
+  paths, command names, or
+  artifact names when work has
+  touched files or tools. Do not
+  answer with only conclusions
+  such as done, fixed, checking,
+  working, or making progress.
+  stop: Status response lacks
+  operational detail.
+
+─ Worked for 2m 19s ────────────
+
+
+› Implement {feature}
+
+  gpt-5.5 medium · ~/workspace/…

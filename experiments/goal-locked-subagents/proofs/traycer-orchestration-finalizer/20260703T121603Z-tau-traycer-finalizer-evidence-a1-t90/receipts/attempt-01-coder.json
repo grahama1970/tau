@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-finalizer/20260703T121603Z-tau-traycer-finalizer-evidence-a1-t90/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-finalizer/20260703T121603Z-tau-traycer-finalizer-evidence-a1-t90/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "pwd && sed -n '1,240p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-finalizer/20260703T121603Z-tau-traycer-finalizer-evidence-a1-t90/work-orders/attempt-01-coder.json",
+    "sed -n '1,120p' message.txt",
+    "apply_patch: replace TODO line in target_file",
+    "apply_patch: add receipt JSON",
+    "sed -n '1,40p' message.txt && python3 - <<'PY' ... receipt and target assertions ... PY",
+    "apply_patch: update receipt commands_run with verification command"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/traycer-orchestration-finalizer/20260703T121603Z-tau-traycer-finalizer-evidence-a1-t90/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

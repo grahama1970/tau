@@ -1,0 +1,4 @@
+Completed the Tau provider DAG coder node update for attempt 3.
+Original placeholder removed: "TODO: replace this line with a completed implementation."
+Concrete change: message.txt now records the coder implementation handoff instead of a placeholder.
+DAG edge conditions verified: work stayed in the named scratch worktree, only the target file content was changed, and the receipt path is ready for the coder PASS artifact.

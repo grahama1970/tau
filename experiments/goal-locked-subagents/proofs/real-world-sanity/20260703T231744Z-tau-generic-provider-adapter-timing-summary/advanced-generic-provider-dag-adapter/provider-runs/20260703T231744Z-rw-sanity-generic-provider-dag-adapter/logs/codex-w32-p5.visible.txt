@@ -1,0 +1,38 @@
+        /attempt-01-coder.json"
+    19 +    "apply_patch: add receipts
+        /attempt-01-coder.json",
+    20 +    "uv run python - <<'PY' ..
+        . validate receipt fields and
+        target content ... PY",
+    21 +    "apply_patch: update recei
+        pts/attempt-01-coder.json comm
+        ands_run"
+    22    ],
+
+──────────────────────────────────────
+
+• The receipt now records the proof
+  command. I’ll do one final read-only
+  validation of the finished target
+  and receipt before stopping.
+
+• Explored
+  └ List .
+    Read message.txt
+
+• Ran uv run python -m json.tool /
+  │ home/graham/workspace/
+  │ experiments/tau/experiments/
+  │ … +16 lines
+  └ 29 /tmp/
+    … +34 lines (ctrl + t to view
+    transcript)
+        "policy_exceptions": []
+    }
+
+• Working (1m 22s • esc to interrupt)
+
+
+› Run /review on my current changes
+
+  gpt-5.5 medium · ~/workspace/experi…

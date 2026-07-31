@@ -1,0 +1,22 @@
+  generic-provider-dag-adapter/provider-
+  runs/20260705T233606Z-rw-sanity-generic-provider-dag-
+  adapter/receipts/attempt-01-coder.json.
+
+  Evidence: Receipt JSON parsed successfully. Assertions
+  passed for schema, exact work_order_sha256, PASS status/
+  verdict, changed_files count 1, and artifacts count 1.
+  Visible log SHA256 recorded as
+  1bdde90cc91e9b9eeb7fb2b24db4a790fd4efd07ba10170e558118aee
+  7ac6ea7.
+
+  Next/stop condition: Stop. Required target update and
+  receipt are complete.
+  mocked: no, live: no; this was deterministic filesystem
+  work only.
+
+─ Worked for 1m 45s ───────────────────────────────────────
+
+
+› Run /review on my current changes
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

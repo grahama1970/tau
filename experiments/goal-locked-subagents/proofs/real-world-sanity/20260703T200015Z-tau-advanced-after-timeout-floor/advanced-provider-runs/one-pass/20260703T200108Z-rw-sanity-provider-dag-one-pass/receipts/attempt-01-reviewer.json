@@ -1,0 +1,24 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/one-pass/20260703T200108Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "jq . <work_order>",
+    "cat <target_file>",
+    "cat <coder_receipt>",
+    "ls -la <scratch_worktree>",
+    "write <reviewer_receipt>"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/one-pass/20260703T200108Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T200015Z-tau-advanced-after-timeout-floor/advanced-provider-runs/one-pass/20260703T200108Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file has no TODO line (replaced with implementation message). Coder receipt is schema-valid tau.provider_dag_node_receipt.v1 with status PASS, 1 changed file matching target_file, no errors. force_revise was false. All conditions met for PASS.",
+  "errors": [],
+  "policy_exceptions": []
+}

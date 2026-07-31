@@ -1,0 +1,6 @@
+{
+  "goal_hash": "sha256:stale-rw-sanity-reviewer-goal",
+  "reviewed_node_id": "coder",
+  "schema": "tau.reviewer_verdict.v1",
+  "verdict": "PASS"
+}

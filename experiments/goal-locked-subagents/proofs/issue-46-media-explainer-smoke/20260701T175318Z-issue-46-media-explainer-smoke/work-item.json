@@ -1,0 +1,60 @@
+{
+  "assets": [
+    {
+      "asset_id": "image-hero",
+      "delay_ms": 40,
+      "failure_reason": null,
+      "filepath": null,
+      "media_type": "image",
+      "required": true,
+      "simulate_failure": false,
+      "source_uri": "file:///fixtures/hero.png"
+    },
+    {
+      "asset_id": "video-loop",
+      "delay_ms": 30,
+      "failure_reason": null,
+      "filepath": null,
+      "media_type": "video",
+      "required": true,
+      "simulate_failure": false,
+      "source_uri": "file:///fixtures/loop.mp4"
+    },
+    {
+      "asset_id": "audio-note",
+      "delay_ms": 20,
+      "failure_reason": null,
+      "filepath": null,
+      "media_type": "audio",
+      "required": true,
+      "simulate_failure": false,
+      "source_uri": "file:///fixtures/note.wav"
+    },
+    {
+      "asset_id": "text-brief",
+      "delay_ms": 10,
+      "failure_reason": null,
+      "filepath": null,
+      "media_type": "text",
+      "required": true,
+      "simulate_failure": false,
+      "source_uri": "file:///fixtures/brief.txt"
+    },
+    {
+      "asset_id": "optional-audio-broken",
+      "delay_ms": 5,
+      "failure_reason": "optional fixture intentionally unavailable",
+      "filepath": null,
+      "media_type": "audio",
+      "required": false,
+      "simulate_failure": true,
+      "source_uri": "file:///fixtures/missing.wav"
+    }
+  ],
+  "context": "Deterministic mixed-asset smoke for Tau issue #46.",
+  "idea": "Explain linked media before Step 02 Story generation.",
+  "persona_id": "persona-smoke",
+  "phase": "01_idea",
+  "run_id": "20260701T175318Z-issue-46-media-explainer-smoke",
+  "schema": "tau.media_explainer_work_item.v1"
+}

@@ -1,0 +1,37 @@
+ments/goal-locked-suba
+gents/proofs/real-worl
+d-sanity/20260703T2041
+57Z-tau-advanced-curre
+nt-code-full-v2/advanc
+ed-provider-runs/one-p
+ass/20260703T204258Z-r
+w-sanity-provider-dag-
+one-pass/dag-spec.json
+\nplanner_receipt: /ho
+me/graham/workspace/ex
+periments/tau/experime
+nts/goal-locked-subage
+nts/proofs/real-world-
+sanity/20260703T204157
+Z-tau-advanced-current
+-code-full-v2/advanced
+-provider-runs/one-pas
+s/20260703T204258Z-rw-
+sanity-provider-dag-on
+e-pass/planner-receipt
+.json\nfinal_receipt:
+/home/graham/workspace
+/experiments/tau/exper
+iments/goal-locked-sub
+agents/proofs/real-wor
+ld-sanity/20260703T204
+157Z-tau-advanced-curr
+ent-code-full-v2/advan
+ced-provider-runs/one-
+pass/20260703T204258Z-
+rw-sanity-provider-dag
+-one-pass/run-receipt.
+json\ncanonical truth:
+ Tau JSON receipts; th
+is pane is human-visib
+le telemetry.\n

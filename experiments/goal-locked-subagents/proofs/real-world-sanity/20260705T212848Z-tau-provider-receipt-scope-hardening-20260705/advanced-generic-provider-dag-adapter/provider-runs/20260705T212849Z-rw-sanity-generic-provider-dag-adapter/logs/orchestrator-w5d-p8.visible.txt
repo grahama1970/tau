@@ -1,0 +1,37 @@
+e/graham/workspace
+/experiments/tau/e
+xperiments/goal-lo
+cked-subagents/pro
+ofs/real-world-san
+ity/20260705T21284
+8Z-tau-provider-re
+ceipt-scope-harden
+ing-20260705/advan
+ced-generic-provid
+er-dag-adapter/pro
+vider-runs/2026070
+5T212849Z-rw-sanit
+y-generic-provider
+-dag-adapter/plann
+er-receipt.json\nf
+inal_receipt: /hom
+e/graham/workspace
+/experiments/tau/e
+xperiments/goal-lo
+cked-subagents/pro
+ofs/real-world-san
+ity/20260705T21284
+8Z-tau-provider-re
+ceipt-scope-harden
+ing-20260705/advan
+ced-generic-provid
+er-dag-adapter/pro
+vider-runs/2026070
+5T212849Z-rw-sanit
+y-generic-provider
+-dag-adapter/run-r
+eceipt.json\ncanon
+ical truth: Tau JS
+ON receipts; this
+pane is human-visi
+ble telemetry.\n

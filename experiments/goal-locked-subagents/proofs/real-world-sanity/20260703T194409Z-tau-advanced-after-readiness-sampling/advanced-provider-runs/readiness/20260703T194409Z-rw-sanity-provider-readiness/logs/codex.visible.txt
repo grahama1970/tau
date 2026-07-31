@@ -1,0 +1,36 @@
+  breakdown.
+
+⚠ Skipped loading 1 skill(s) due to invalid
+  SKILL.md files.
+
+⚠ /home/graham/workspace/experiments/agent-
+  skills/skills/ask/SKILL.md: invalid YAML:
+  could not find expected ':' at line 6 column
+  1, while scanning a simple key at line 3
+  column 1
+
+╭───────────────────────────────────────────────
+─╮
+│ >_ OpenAI Codex (v0.142.5)
+│
+│
+│
+│ model:       gpt-5.5 medium   /model to change
+│
+│ directory:   ~/workspace/experiments/tau
+│
+│ permissions: YOLO mode
+│
+╰───────────────────────────────────────────────
+─╯
+
+  Tip: Start a fresh idea with /new; the
+  previous session stays in history.
+
+• You have 3 usage limit resets available. Run /
+usage to use one.
+
+
+› Improve documentation in @filename
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

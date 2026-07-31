@@ -1,0 +1,22 @@
+{
+  "action": "herdr_gc_apply",
+  "actor": {
+    "auth_method": "manual",
+    "id": "human:graham"
+  },
+  "approved": true,
+  "evidence": [
+    {
+      "path": "experiments/goal-locked-subagents/proofs/herdr-gc-after-failed-generic-provider-20260705/herdr-gc-receipt.json",
+      "statement": "Dry-run GC identified stale Tau-owned workspace w4J and skipped focused workspace w4C."
+    }
+  ],
+  "expires_at": "2026-07-06T00:00:00Z",
+  "nonce": "tau-herdr-gc-after-failed-generic-provider-20260705",
+  "reason": "Clean up stale Tau-owned Herdr workspace left by failed generic provider sanity run.",
+  "schema": "tau.human_approval_packet.v1",
+  "signature": "manual-approval-recorded-by-codex",
+  "target": {
+    "id": "herdr-workspace:w4J"
+  }
+}

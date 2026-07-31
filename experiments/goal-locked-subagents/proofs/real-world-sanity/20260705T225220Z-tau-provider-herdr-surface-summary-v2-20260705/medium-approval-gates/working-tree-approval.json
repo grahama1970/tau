@@ -1,0 +1,18 @@
+{
+  "action": "working_tree_mutation",
+  "actor": {
+    "auth_method": "manual",
+    "id": "human:graham"
+  },
+  "approved": true,
+  "evidence": [
+    "real-world-sanity approval fixture"
+  ],
+  "nonce": "real-world-sanity:working_tree_mutation:scratch-working-tree",
+  "reason": "Approve a bounded scratch working-tree mutation gate for sanity proof.",
+  "schema": "tau.human_approval_packet.v1",
+  "signature": "manual-real-world-sanity-fixture",
+  "target": {
+    "id": "scratch-working-tree"
+  }
+}

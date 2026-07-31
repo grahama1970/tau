@@ -1,0 +1,11 @@
+{
+  "active_goal_hash": "sha256:rw-sanity-project-dag-medium",
+  "creator_artifact_count": 1,
+  "creator_attempt": 2,
+  "goal_hash": "sha256:rw-sanity-project-dag-medium",
+  "goal_matches": true,
+  "reviewed_node_id": "coder",
+  "scenario": "medium",
+  "schema": "tau.reviewer_verdict.v1",
+  "verdict": "PASS"
+}

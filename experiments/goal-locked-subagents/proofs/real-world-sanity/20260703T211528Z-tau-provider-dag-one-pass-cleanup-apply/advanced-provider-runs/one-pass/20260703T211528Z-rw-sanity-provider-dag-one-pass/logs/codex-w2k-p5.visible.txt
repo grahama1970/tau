@@ -1,0 +1,38 @@
+  modified and the required receipt JSON was
+  written and parsed successfully.
+
+• Stop hook (stopped)
+  warning: Status response blocked as too vague.
+  Answer status requests with an operational
+  snapshot: Status/Phase, Now/current file-
+  command-artifact, Evidence with concrete
+  counts or command results, and Next/stop
+  condition. Include exact paths, command names,
+  or artifact names when work has touched files
+  or tools. Do not answer with only conclusions
+  such as done, fixed, checking, working, or
+  making progress.
+  stop: Status response lacks operational
+  detail.
+
+─ Worked for 1m 24s ────────────────────────────
+
+
+  Approaching rate limits
+  Switch to gpt-5.4-mini for lower credit usag
+
+› 1. Switch to gpt-5.4-mini     Small, fast,
+                                and cost-
+                                efficient
+                                model for
+                                simpler coding
+                                tasks.
+  2. Keep current model
+  3. Keep current model (never… Hide future
+                                rate limit
+                                reminders
+                                about
+                                switching
+                                models.
+
+  Press enter to confirm or esc to go back

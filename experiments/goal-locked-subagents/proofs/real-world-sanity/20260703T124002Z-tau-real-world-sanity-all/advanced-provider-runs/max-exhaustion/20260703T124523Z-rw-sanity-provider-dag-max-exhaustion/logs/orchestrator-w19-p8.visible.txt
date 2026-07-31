@@ -1,0 +1,37 @@
+rld-sanity/202
+60703T124002Z-
+tau-real-world
+-sanity-all/ad
+vanced-provide
+r-runs/max-exh
+austion/202607
+03T124523Z-rw-
+sanity-provide
+r-dag-max-exha
+ustion/planner
+-receipt.json\
+nfinal_receipt
+: /home/graham
+/workspace/exp
+eriments/tau/e
+xperiments/goa
+l-locked-subag
+ents/proofs/re
+al-world-sanit
+y/20260703T124
+002Z-tau-real-
+world-sanity-a
+ll/advanced-pr
+ovider-runs/ma
+x-exhaustion/2
+0260703T124523
+Z-rw-sanity-pr
+ovider-dag-max
+-exhaustion/ru
+n-receipt.json
+\ncanonical tr
+uth: Tau JSON
+receipts; this
+ pane is human
+-visible telem
+etry.\n

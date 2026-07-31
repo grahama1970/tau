@@ -1,0 +1,11 @@
+{
+  "active_goal_hash": "sha256:rw-sanity-project-dag-containment-all-gates",
+  "creator_artifact_count": 1,
+  "creator_attempt": 1,
+  "goal_hash": "sha256:rw-sanity-project-dag-containment-all-gates",
+  "goal_matches": true,
+  "reviewed_node_id": "coder",
+  "scenario": "containment-all-gates",
+  "schema": "tau.reviewer_verdict.v1",
+  "verdict": "PASS"
+}

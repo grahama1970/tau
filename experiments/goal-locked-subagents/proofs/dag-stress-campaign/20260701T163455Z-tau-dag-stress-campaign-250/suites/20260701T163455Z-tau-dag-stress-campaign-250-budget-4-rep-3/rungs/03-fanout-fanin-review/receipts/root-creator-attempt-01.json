@@ -1,0 +1,13 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-stress-campaign/20260701T163455Z-tau-dag-stress-campaign-250/suites/20260701T163455Z-tau-dag-stress-campaign-250-budget-4-rep-3/rungs/03-fanout-fanin-review/scratch/root-plan.txt"
+  ],
+  "attempt": 1,
+  "handoff_summary": "root plan",
+  "node_id": "root-creator",
+  "role": "creator",
+  "schema": "tau.dag_stress_node_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-01T16:34:55.616138Z",
+  "verdict": "PASS"
+}

@@ -1,0 +1,47 @@
+{
+  "context": {
+    "actor_type": "tau",
+    "artifacts_read": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-crew-contract-ui-dispatch/crew-ui-20260702T184400Z/input_crew_contract_work_order.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/phase_03_producer_writer_director/crew_contract.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/phase_03_producer_writer_director/casting_contract.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/phase_03_producer_writer_director/crew_prompt_payload_receipt.json"
+    ],
+    "assumptions": [],
+    "run_id": "crew-ui-20260702T184400Z",
+    "subagent": "crew-writer",
+    "unknowns": []
+  },
+  "evidence": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-crew-contract-ui-dispatch/crew-ui-20260702T184400Z/input_crew_contract_work_order.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/phase_03_producer_writer_director/crew_contract.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/phase_03_producer_writer_director/casting_contract.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/phase_03_producer_writer_director/crew_prompt_payload_receipt.json"
+  ],
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000041",
+    "goal_id": "goal-tau-issue-45-persona-dream-crew-contract-loop",
+    "goal_version": 1,
+    "immutable_goal_preserved": true
+  },
+  "next": {
+    "executor": "local",
+    "reason": "Crew-reviewer must independently check the Phase 03 contract fields.",
+    "subagent": "crew-reviewer"
+  },
+  "rationale": "This receipt records one bounded Tau persona-dream dream-packet subagent turn.",
+  "result": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-crew-contract-ui-dispatch/crew-ui-20260702T184400Z/input_crew_contract_work_order.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/phase_03_producer_writer_director/crew_contract.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/phase_03_producer_writer_director/casting_contract.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/multiscene-live-smoke/phase_03_producer_writer_director/crew_prompt_payload_receipt.json"
+    ],
+    "live": true,
+    "mocked": false,
+    "status": "COMPLETED",
+    "summary": "Crew-writer created Phase 03 crew_contract.json from story context and persona candidates."
+  },
+  "schema": "tau.subagent_receipt.v1",
+  "stop_condition": "Crew-reviewer emits validation receipts and routes to human."
+}

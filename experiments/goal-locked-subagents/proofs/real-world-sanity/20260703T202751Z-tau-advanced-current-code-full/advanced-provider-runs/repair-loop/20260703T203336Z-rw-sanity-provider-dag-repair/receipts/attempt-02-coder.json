@@ -1,0 +1,27 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-coder.json",
+    "sed -n '1,120p' message.txt",
+    "wc -l message.txt",
+    "apply_patch: replaced the single line in scratch-worktree/message.txt and added receipts/attempt-02-coder.json",
+    "sed -n '1,120p' message.txt",
+    "wc -l message.txt && ! rg -n 'TODO|placeholder|replace this line' message.txt",
+    "jq -e '.schema == \"tau.provider_dag_node_receipt.v1\" and .node_id == \"coder\" and .provider_id == \"codex\" and .attempt == 2 and .status == \"PASS\" and .verdict == \"PASS\" and .work_order_path == \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-coder.json\" and .changed_files == [\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt\"] and .artifacts == [\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt\"] and (.errors | length == 0) and (.policy_exceptions | length == 0)' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T202751Z-tau-advanced-current-code-full/advanced-provider-runs/repair-loop/20260703T203336Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the generic completion text with a specific coder-node repair-loop update. Confirmed before editing that the target file was one line and the prior TODO was already removed; validation commands should confirm the final file remains one line with no placeholder text.",
+  "errors": [],
+  "policy_exceptions": []
+}

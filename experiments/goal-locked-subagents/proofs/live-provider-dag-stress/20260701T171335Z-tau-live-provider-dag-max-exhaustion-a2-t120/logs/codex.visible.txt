@@ -1,0 +1,46 @@
+  target_file-only receipt evidence.
+
+  Scratch worktree file count verified
+  with find . -maxdepth 2 -type f
+  -print | wc -l: 1
+
+  Receipt JSON syntax verified with:
+  python3 -m json.tool /home/graham/
+  workspace/experiments/tau/
+  experiments/goal-locked-subagents/
+  proofs/live-provider-dag-
+  stress/20260701T171335Z-tau-live-
+  provider-dag-max-exhaustion-a2-t120/
+  receipts/attempt-02-coder.json >/dev/
+  null
+  Exit code: 0
+
+  Next/Stop Condition
+  Stop condition reached: target file
+  modified, scratch worktree contains
+  only message.txt, and attempt-02-
+  coder.json receipt exists and parses
+  as JSON.
+
+• Stop hook (stopped)
+  warning: Status response blocked as
+  too vague. Answer status requests
+  with an operational snapshot: Status/
+  Phase, Now/current file-command-
+  artifact, Evidence with concrete
+  counts or command results, and Next/
+  stop condition. Include exact paths,
+  command names, or artifact names when
+  work has touched files or tools. Do
+  not answer with only conclusions such
+  as done, fixed, checking, working, or
+  making progress.
+  stop: Status response lacks
+  operational detail.
+
+─ Worked for 3m 00s ───────────────────
+
+
+› Use /skills to list available skills
+
+  gpt-5.5 high · ~/workspace/experimen…

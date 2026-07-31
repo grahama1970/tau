@@ -1,0 +1,333 @@
+{
+  "checked_at": "2026-07-03T12:39:02Z",
+  "live": "mixed",
+  "mocked": "mixed",
+  "ok": true,
+  "required_next_for_ui_claims": [
+    "Run browser/CDP screenshot verification against the host chat route.",
+    "Inspect screenshot for visible Memory stage trace and content rendering."
+  ],
+  "sanity": {
+    "checked_at": "2026-07-03T12:39:01Z",
+    "commands": [
+      {
+        "command": [
+          "/home/graham/.local/bin/uv",
+          "run",
+          "--project",
+          "/home/graham/workspace/experiments/tau",
+          "pytest",
+          "-q",
+          "tests/test_subagent_receipt.py",
+          "tests/test_agent_harness.py",
+          "tests/test_tui_adapter.py",
+          "tests/test_live_memory_chat_command_loop_proofs.py"
+        ],
+        "cwd": "/home/graham/workspace/experiments/tau",
+        "exit_code": 0,
+        "stderr": "warning: `VIRTUAL_ENV=/home/graham/workspace/experiments/agent-skills/skills/tau/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+        "stdout": ".............................................                            [100%]\n45 passed in 0.64s\n"
+      }
+    ],
+    "json_checks": [
+      {
+        "error": null,
+        "ok": true,
+        "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/agent-command-specs/coder/tau-dispatch-command.json"
+      }
+    ],
+    "live": "mixed",
+    "mocked": "mixed",
+    "ok": true,
+    "proof_boundary": {
+      "does_not_prove": [
+        "fresh browser chat UI rendering",
+        "fresh live provider semantics",
+        "production Sparta Chat readiness"
+      ],
+      "proves": [
+        "targeted Tau receipt, harness, TUI adapter, and proof-manifest checks run",
+        "coder command-spec JSON is readable"
+      ]
+    },
+    "schema": "agent_skills.tau.sanity_receipt.v1"
+  },
+  "schema": "agent_skills.tau.e2e_receipt.v1",
+  "status": {
+    "checked_at": "2026-07-03T12:39:02Z",
+    "git": {
+      "head": "e8502f5 (HEAD -> main, grahama1970/main) Install persona dream visual review receipt",
+      "remote_main": "e8502f5fd6506563535716f6cd08f0a8fed1fa01\trefs/heads/main",
+      "status_short": [
+        " M PROJECT_KNOWLEDGE.md",
+        " M experiments/goal-locked-subagents/agent-command-specs/coder/tau-dispatch-command.json",
+        " M experiments/goal-locked-subagents/agent-command-specs/reviewer/tau-dispatch-command.json",
+        " M src/tau_coding/battle_live_handoff.py",
+        " M src/tau_coding/battle_scillm.py",
+        " M src/tau_coding/cli.py",
+        " M src/tau_coding/generated_ticket.py",
+        " M src/tau_coding/persona_dream_dream_packet_agent.py",
+        " M tests/test_battle_live_handoff.py",
+        " M tests/test_persona_dream_dream_packet_agent.py",
+        "?? agents/",
+        "?? docs/herdr-inspired-orchestration-requirements.md",
+        "?? docs/review-bundles/",
+        "?? docs/tau-planner-orchestrator-visible-proof-plan.md",
+        "?? docs/traycer-ideas-for-tau-requirements.md",
+        "?? experiments/goal-locked-subagents/agent-command-specs/contact-sheet-build-reviewer/",
+        "?? experiments/goal-locked-subagents/agent-command-specs/contact-sheet-builder/",
+        "?? experiments/goal-locked-subagents/agent-command-specs/contact-sheet-reviewer/",
+        "?? experiments/goal-locked-subagents/agent-command-specs/contact-sheet-writer/",
+        "?? experiments/goal-locked-subagents/agent-command-specs/crew-reviewer/",
+        "?? experiments/goal-locked-subagents/agent-command-specs/crew-writer/",
+        "?? experiments/goal-locked-subagents/agent-command-specs/orchestrator/",
+        "?? experiments/goal-locked-subagents/agent-command-specs/planner/",
+        "?? experiments/goal-locked-subagents/agent-command-specs/prompt-reviewer/",
+        "?? experiments/goal-locked-subagents/agent-command-specs/story-editor/",
+        "?? experiments/goal-locked-subagents/proofs/battle-single-live-rung-20260630T1128Z/",
+        "?? experiments/goal-locked-subagents/proofs/dag-stress-advanced/",
+        "?? experiments/goal-locked-subagents/proofs/dag-stress-campaign/",
+        "?? experiments/goal-locked-subagents/proofs/dag-stress-matrix/",
+        "?? experiments/goal-locked-subagents/proofs/dag-stress-poc/",
+        "?? experiments/goal-locked-subagents/proofs/issue-31-codex-oauth-image-20260629T171303Z/",
+        "?? experiments/goal-locked-subagents/proofs/issue-31-scillm-owned-panel-20260629T164644Z/",
+        "?? experiments/goal-locked-subagents/proofs/issue-31-scillm-owned-panel-20260629T164806Z/",
+        "?? experiments/goal-locked-subagents/proofs/issue-31-scillm-owned-panel-20260629T165001Z-codex/",
+        "?? experiments/goal-locked-subagents/proofs/issue-31-streamed-reviewer-20260629T170133Z/",
+        "?? experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174429Z/",
+        "?? experiments/goal-locked-subagents/proofs/issue-33-contract-smoke-20260629T180053Z/",
+        "?? experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/provider_media_publication_authorization.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/provider_media_publication_authorization_validation.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/provider_media_publication_preflight.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/storyboard/panel_repair_gate/provider_media_publication_work_orders/panel_001_local_staging_receipt.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-34-worker-handoffs-20260629T182240Z/",
+        "?? experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/receipts/dream_packet_work_order.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/receipts/pipeline_loop_run_forward.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-dream-packet-loop-dispatch-20260629T2025/",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T203937Z/",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/artifacts/panel_01_scillm_panel.png",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/callback_or_polling_plan.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/cost_estimate.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/generation_receipt.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/kling_scene_packet.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/no_overlay_receipt.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/panel_repair_gate_receipt.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/panel_repair_work_order.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/panel_source_receipt.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/pipeline_loop_run_panel_repair_forward.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/pipeline_loop_run_panel_repair_work_order_forward.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/pipeline_loop_run_provider_media_forward.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/pipeline_loop_run_story_forward.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/pipeline_loop_run_storyboard_forward.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/post_generation_script_coverage_receipt.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/provider_media_lock_receipt.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/provider_media_probe_receipt.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/provider_media_publication_authorization.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/provider_media_publication_authorization_template.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/provider_media_publication_authorization_validation.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/provider_media_publication_preflight.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/reference_receipt.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/requirement_matrix.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/script_coverage_receipt.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/story_contract_work_order.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/storyboard_panel_work_order.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/visual_review_receipt.json",
+        "?? experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/storyboard/",
+        "?? experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2108/",
+        "?? experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2111/",
+        "?? experiments/goal-locked-subagents/proofs/issue-43-story-contract-loop-dispatch-20260629T2052/",
+        "?? experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213138Z/",
+        "?? experiments/goal-locked-subagents/proofs/issue-44-storyboard-panel-loop-dispatch-20260629T2120/",
+        "?? experiments/goal-locked-subagents/proofs/issue-45-panel-repair-gate-loop-command-dispatch-20260629T2156/",
+        "?? experiments/goal-locked-subagents/proofs/issue-45-panel-repair-gate-loop-dispatch-20260629T2153/",
+        "?? experiments/goal-locked-subagents/proofs/issue-45-persona-dream-panel-repair-gate-loop-20260629T2200/",
+        "?? experiments/goal-locked-subagents/proofs/issue-45-persona-dream-panel-repair-gate-loop-20260629T2204/",
+        "?? experiments/goal-locked-subagents/proofs/issue-45-persona-dream-panel-repair-gate-loop-20260629T221536Z/",
+        "?? experiments/goal-locked-subagents/proofs/issue-46-media-explainer-smoke/",
+        "?? experiments/goal-locked-subagents/proofs/live-provider-dag-stress/",
+        "?? experiments/goal-locked-subagents/proofs/live-provider-readiness-stress/",
+        "?? experiments/goal-locked-subagents/proofs/persona-dream-contact-sheet-ui-dispatch/",
+        "?? experiments/goal-locked-subagents/proofs/persona-dream-crew-contract-ui-dispatch/",
+        "?? experiments/goal-locked-subagents/proofs/persona-dream-story-ui-dispatch/",
+        "?? experiments/goal-locked-subagents/proofs/planner-orchestrator-poc/",
+        "?? experiments/goal-locked-subagents/proofs/planner-orchestrator-subagents-visible-proof/",
+        "?? experiments/goal-locked-subagents/proofs/planner-orchestrator-visible-poc/",
+        "?? experiments/goal-locked-subagents/proofs/provider-dag-cleanup-finalizer/",
+        "?? experiments/goal-locked-subagents/proofs/provider-dag-poc/",
+        "?? experiments/goal-locked-subagents/proofs/provider-pane-poc/",
+        "?? experiments/goal-locked-subagents/proofs/provider-readiness-poc/",
+        "?? experiments/goal-locked-subagents/proofs/real-world-sanity/",
+        "?? experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T183952Z/",
+        "?? experiments/goal-locked-subagents/proofs/traycer-orchestration-evidence/",
+        "?? experiments/goal-locked-subagents/proofs/traycer-orchestration-finalizer/",
+        "?? experiments/goal-locked-subagents/proofs/traycer-review-comment-repair/",
+        "?? experiments/goal-locked-subagents/proofs/visible-dag-poc/",
+        "?? scripts/",
+        "?? src/tau_coding/dag_stress_poc.py",
+        "?? src/tau_coding/herdr_cleanup.py",
+        "?? src/tau_coding/media_explainer_orchestration.py",
+        "?? src/tau_coding/orchestration_evidence.py",
+        "?? src/tau_coding/provider_dag_poc.py",
+        "?? src/tau_coding/provider_pane_poc.py",
+        "?? src/tau_coding/visible_dag_poc.py",
+        "?? src/tau_coding/visible_dag_worker.py",
+        "?? tests/test_dag_stress_poc.py",
+        "?? tests/test_herdr_cleanup.py",
+        "?? tests/test_media_explainer_orchestration.py",
+        "?? tests/test_orchestration_evidence.py",
+        "?? tests/test_provider_pane_poc.py",
+        "?? tests/test_visible_dag_poc.py"
+      ]
+    },
+    "github_open_issues": [],
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "proofs": {
+      "chat_contract": "/home/graham/workspace/experiments/tau/ui/tau-chat-contract.json",
+      "chat_contract_exists": true,
+      "manifest_count": 12,
+      "manifests": [
+        {
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-live-source-panel-generation-20260629T194000Z/manifest.json",
+          "schema": "tau.persona_dream_panel_proof.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/manifest.json",
+          "schema": "tau.persona_dream_panel_proof.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": null,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T203937Z/manifest.json",
+          "schema": "tau.persona_dream_dream_packet_loop_proof.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": null,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/manifest.json",
+          "schema": "tau.persona_dream_dream_packet_loop_proof.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": null,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2108/manifest.json",
+          "schema": "tau.persona_dream_story_contract_loop_proof.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": null,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2111/manifest.json",
+          "schema": "tau.persona_dream_story_contract_loop_proof.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": null,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/manifest.json",
+          "schema": "tau.persona_dream_story_contract_loop_proof.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": null,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213138Z/manifest.json",
+          "schema": "tau.persona_dream_storyboard_panel_loop_proof.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": null,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/manifest.json",
+          "schema": "tau.persona_dream_storyboard_panel_loop_proof.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-45-persona-dream-panel-repair-gate-loop-20260629T2200/manifest.json",
+          "schema": "tau.persona_dream_panel_proof.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-45-persona-dream-panel-repair-gate-loop-20260629T2204/manifest.json",
+          "schema": "tau.persona_dream_panel_proof.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-45-persona-dream-panel-repair-gate-loop-20260629T221536Z/manifest.json",
+          "schema": "tau.persona_dream_panel_proof.v1"
+        }
+      ],
+      "proofs_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs",
+      "schema": "agent_skills.tau.latest_proofs.v1"
+    },
+    "schema": "agent_skills.tau.status.v1",
+    "tau_root": "/home/graham/workspace/experiments/tau",
+    "watchdog": {
+      "cron_installed": true,
+      "cron_log": "/home/graham/.local/state/project-watchdog/logs/cron.log",
+      "event_log": "/home/graham/.local/state/project-watchdog/logs/project-watchdog.log",
+      "latest_receipts": [
+        {
+          "handled_count": null,
+          "ok": true,
+          "path": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260703T123501Z/receipt.json",
+          "run_id": "project-watchdog-20260703T123501Z",
+          "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+          "status": "NOOP"
+        },
+        {
+          "handled_count": null,
+          "ok": true,
+          "path": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260703T123601Z/receipt.json",
+          "run_id": "project-watchdog-20260703T123601Z",
+          "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+          "status": "NOOP"
+        },
+        {
+          "handled_count": null,
+          "ok": true,
+          "path": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260703T123701Z/receipt.json",
+          "run_id": "project-watchdog-20260703T123701Z",
+          "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+          "status": "NOOP"
+        },
+        {
+          "handled_count": null,
+          "ok": true,
+          "path": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260703T123801Z/receipt.json",
+          "run_id": "project-watchdog-20260703T123801Z",
+          "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+          "status": "NOOP"
+        },
+        {
+          "handled_count": null,
+          "ok": true,
+          "path": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260703T123901Z/receipt.json",
+          "run_id": "project-watchdog-20260703T123901Z",
+          "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+          "status": "NOOP"
+        }
+      ],
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "schema": "agent_skills.tau.watchdog_status.v1"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T155135Z-tau-policy-evidence-hardening-20260705-rerun/concurrent-project-dag/project_dag_worker.py",
+    "--role",
+    "research-auditor",
+    "--scenario",
+    "concurrent"
+  ],
+  "timeout_s": 20
+}

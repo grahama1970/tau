@@ -1,0 +1,28 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T185713Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:7890358d4bc2471c75f5fd48e9a2606f4ffe2ac3157c5ba6c7d34a549ef2088e",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w4C",
+  "pane_id": "w4C:p6",
+  "terminal_id": "term_655e1b9e6725a4a1",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T185712Z-tau-provider-visible-log-binding-20260705/advanced-provider-runs/max-exhaustion/20260705T185713Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T185713Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "8e5b8400e419cb345bc53685e61a8bb79699f811fca457a255839441dfffd9fd",
+  "work_order_sha256": "0343944e63268f2ebc7a8ab7748f1743ab86acbfbbe2852c08d69510b4ebacb8",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T185712Z-tau-provider-visible-log-binding-20260705/advanced-provider-runs/max-exhaustion/20260705T185713Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "sha256sum opencode.visible.txt to compute visible_log_sha256"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T185712Z-tau-provider-visible-log-binding-20260705/advanced-provider-runs/max-exhaustion/20260705T185713Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T185712Z-tau-provider-visible-log-binding-20260705/advanced-provider-runs/max-exhaustion/20260705T185713Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: The cader attempt 1 wrote message.txt with a basic completion string and produced a schema-valid receipt. However, the message.txt content is minimal — it states completion but does not include the goal_hash, dag_id, or any provenance linking it to the specific DAG run. For a provider DAG max-exhaustion proof, the target file should embed structured provenance (goal_hash, dag_id, attempt number) to demonstrate durable cross-node traceability. The visible log at the opencode pane confirms this reviewer process ran. Next coder attempt should rewrite message.txt with structured content including the goal_hash, dag_id, and a clear statement that this is a deterministic visible coder output for the provider DAG POC.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,8 @@
+{
+  "command": [
+    "python3",
+    "-c",
+    "import time; time.sleep(5)"
+  ],
+  "timeout_s": 0.1
+}

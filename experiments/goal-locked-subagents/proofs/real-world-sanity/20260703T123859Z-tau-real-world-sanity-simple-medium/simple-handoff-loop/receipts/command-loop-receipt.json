@@ -1,0 +1,73 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T123859Z-tau-real-world-sanity-simple-medium/simple-handoff-loop/receipts/command-loop-step-001.receipt.json"
+  ],
+  "dispatches": [
+    {
+      "artifacts": [],
+      "command_results": [
+        {
+          "command": [
+            "/home/graham/workspace/experiments/agent-skills/.tmp_venv/bin/python3",
+            "-c",
+            "import json; from tau_coding.cli import project_agent_handoff_goal_guardian_adapter_command; print(json.dumps(project_agent_handoff_goal_guardian_adapter_command(next_agent='project-or-harness-verifier', next_executor='local', next_reason='Verifier should inspect preserved-goal receipt.', required_evidence='Verifier posts the next schema-valid route.', stop_condition='Verifier route is posted.')))"
+          ],
+          "exit_code": 1,
+          "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n    import json; from tau_coding.cli import project_agent_handoff_goal_guardian_adapter_command; print(json.dumps(project_agent_handoff_goal_guardian_adapter_command(next_agent='project-or-harness-verifier', next_executor='local', next_reason='Verifier should inspect preserved-goal receipt.', required_evidence='Verifier posts the next schema-valid route.', stop_condition='Verifier route is posted.')))\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nModuleNotFoundError: No module named 'tau_coding'\n",
+          "stdout": "",
+          "timed_out": false,
+          "timeout_s": 10.0
+        }
+      ],
+      "errors": [
+        "command exited 1"
+      ],
+      "live": false,
+      "loop_step": 1,
+      "mocked": true,
+      "ok": false,
+      "receipt_dir": null,
+      "response_projection": null,
+      "runner": "command",
+      "schema": "tau.agent_handoff_dispatch_receipt.v1",
+      "selected_agent": "goal-guardian",
+      "start_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `COMPLETED`\n- Summary: The route is ready for the next local agent.\n- Next agent: `goal-guardian`\n- Executor: `local`\n- Stop condition: Next agent posts a schema-valid route.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [],\n    \"summary\": \"Real-world sanity runner created a bounded handoff.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"local-sanity\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:active-goal\",\n    \"goal_id\": \"goal-real-world-sanity\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"goal-guardian\",\n    \"reason\": \"Goal preservation should be checked first.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The next local agent should inspect the receipt.\",\n  \"required_evidence\": [\n    \"schema-valid handoff response\"\n  ],\n  \"result\": {\n    \"evidence\": [],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"The route is ready for the next local agent.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Next agent posts a schema-valid route.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:goal-guardian",
+            "executor:local"
+          ],
+          "remove": []
+        },
+        "next_agent": "goal-guardian",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "local-sanity"
+        }
+      },
+      "status": "BLOCKED",
+      "stop_reason": "command_failed"
+    }
+  ],
+  "errors": [
+    "command exited 1"
+  ],
+  "live": true,
+  "mocked": false,
+  "ok": false,
+  "receipt_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T123859Z-tau-real-world-sanity-simple-medium/simple-handoff-loop/receipts",
+  "runner": "agent-registry-command-loop",
+  "schema": "tau.agent_handoff_command_loop_receipt.v1",
+  "status": "BLOCKED",
+  "step_count": 1,
+  "stop_reason": "command_failed",
+  "terminal_agent": "goal-guardian"
+}

@@ -1,0 +1,62 @@
+{
+  "api_key_source": "docker:scillm-proxy:SCILLM_MASTER_KEY",
+  "blocking_findings": [],
+  "created_at": "2026-06-29T21:59:16Z",
+  "duration_seconds": 0.081969,
+  "events_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-45-persona-dream-panel-repair-gate-loop-20260629T2200/command-loop/command-artifacts/command-loop-step-002/panel_reviewer_events.jsonl",
+  "http_status": 200,
+  "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/artifacts/panel_01_scillm_panel.png",
+  "live": true,
+  "live_call_performed": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "parsed_response": {
+    "blocking_findings": [],
+    "passed_entities": [
+      "single primary human subject",
+      "consistent indoor investigative workspace",
+      "coherent cinematic lighting",
+      "clear foreground action: examining photograph/documents",
+      "supporting props: desk papers, mug with steam, lamp, monitor, pinned notes",
+      "stable one-scene composition with no obvious scene fragmentation"
+    ],
+    "status": "PASS",
+    "summary": "Coherent single cinematic panel showing one woman at a detective-style desk examining photos, with a moody nighttime investigative setting, consistent lighting, and unified composition suitable for a dry-run one-scene Kling request."
+  },
+  "passed_entities": [
+    "single primary human subject",
+    "consistent indoor investigative workspace",
+    "coherent cinematic lighting",
+    "clear foreground action: examining photograph/documents",
+    "supporting props: desk papers, mug with steam, lamp, monitor, pinned notes",
+    "stable one-scene composition with no obvious scene fragmentation"
+  ],
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-45-persona-dream-panel-repair-gate-loop-20260629T2200/command-loop/command-artifacts/command-loop-step-002/visual_review_receipt.json",
+  "request": {
+    "messages": "<redacted-image-url-request>",
+    "model": "gpt-5.5",
+    "response_format": {
+      "type": "json_object"
+    },
+    "scillm_metadata": {
+      "caller": "tau",
+      "proof": "persona-dream-panel-review",
+      "role": "panel-reviewer"
+    },
+    "stream": true,
+    "stream_heartbeat_s": 15.0,
+    "stream_progress_events": true,
+    "temperature": 0
+  },
+  "response_content": "{\n  \"status\": \"PASS\",\n  \"summary\": \"Coherent single cinematic panel showing one woman at a detective-style desk examining photos, with a moody nighttime investigative setting, consistent lighting, and unified composition suitable for a dry-run one-scene Kling request.\",\n  \"blocking_findings\": [],\n  \"passed_entities\": [\n    \"single primary human subject\",\n    \"consistent indoor investigative workspace\",\n    \"coherent cinematic lighting\",\n    \"clear foreground action: examining photograph/documents\",\n    \"supporting props: desk papers, mug with steam, lamp, monitor, pinned notes\",\n    \"stable one-scene composition with no obvious scene fragmentation\"\n  ]\n}",
+  "role": "panel-reviewer",
+  "schema": "tau.persona_dream.scillm_vlm_review_receipt.v1",
+  "status": "PASS",
+  "stream": true,
+  "stream_done_seen": true,
+  "stream_event_count": 138,
+  "stream_heartbeat_count": 0,
+  "stream_last_event_type": "done",
+  "summary": "Coherent single cinematic panel showing one woman at a detective-style desk examining photos, with a moody nighttime investigative setting, consistent lighting, and unified composition suitable for a dry-run one-scene Kling request.",
+  "surface": "scillm.chat_completions.image_url"
+}

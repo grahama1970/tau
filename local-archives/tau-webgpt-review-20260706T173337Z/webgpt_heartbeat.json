@@ -1,0 +1,13 @@
+{
+  "schema": "surf.webgpt_heartbeat.v1",
+  "updated_at": "2026-07-06T17:39:51Z",
+  "submitted_at": "2026-07-06T17:35:25Z",
+  "last_browser_observation_at": "2026-07-06T17:39:51Z",
+  "phase": "completed",
+  "page_state": "response_detected",
+  "last_artifact_written": "/home/graham/workspace/experiments/tau/local-archives/tau-webgpt-review-20260706T173337Z/response.raw.md",
+  "next_expected_artifact": "/home/graham/workspace/experiments/tau/local-archives/tau-webgpt-review-20260706T173337Z/response.meta.json",
+  "timeout_remaining_seconds": 0,
+  "sentinel": "<<<WEBGPT_DONE:20260706T173521Z:f6f1ddf4>>>",
+  "prepared_prompt_is_transport_proof": false
+}

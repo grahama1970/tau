@@ -1,0 +1,70 @@
+{
+  "agent": "coder",
+  "alert_codes": [],
+  "alerts": [],
+  "allowed_next_routes": [
+    "retry_node",
+    "goal-guardian",
+    "human"
+  ],
+  "attempt": 1,
+  "code": "worker_result_missing",
+  "dag_id": "live-scillm-worker-probe",
+  "errors": [
+    "invalid_result_schema"
+  ],
+  "forbidden_next_routes": [
+    "parse_worker_prose",
+    "continue_without_worker_receipt"
+  ],
+  "goal_hash": "sha256:live-scillm-worker-probe-goal",
+  "input_valid": true,
+  "known_coding_trigger": true,
+  "live": true,
+  "mocked": false,
+  "next_allowed": false,
+  "node_id": "coder",
+  "observed_artifact": {
+    "bytes": 241,
+    "exists": true,
+    "label": "observed_evidence",
+    "path": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-prompt-contract-20260707T1902Z/repo/.tau/receipts/scillm-result.json",
+    "sha256": "sha256:45c65a80a8b03721ee03129061142d54b1bae95745bd40a6b71e177067495211"
+  },
+  "observed_state": {
+    "alert_codes": [
+      "invalid_result_schema"
+    ],
+    "work_order_path": "/home/graham/workspace/experiments/tau/local-archives/live-scillm-worker-prompt-contract-20260707T1902Z/work-order.json",
+    "worker_kind": "scillm"
+  },
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "The agent is truthful.",
+      "The task is complete.",
+      "The proposed correction is semantically sufficient.",
+      "The required next action has been executed."
+    ],
+    "proves": [
+      "Tau classified a blocked or drifting orchestration state.",
+      "Tau selected a bounded next action from the course-correction policy.",
+      "Tau did not mutate the DAG, goal, route, work order, or provider state."
+    ]
+  },
+  "provider_live": false,
+  "reason": "The coding worker did not return a structured result artifact.",
+  "required_evidence_before_retry": [
+    "worker_stdout_stderr",
+    "fresh_worker_work_order"
+  ],
+  "required_next_action": "retry_node_or_route_goal_guardian",
+  "run_id": null,
+  "schema": "tau.course_correction.v1",
+  "status": "REQUIRED",
+  "stop_reason": "worker_result_missing",
+  "target": {},
+  "timestamp": "2026-07-07T17:48:36Z",
+  "trigger": "worker_result_missing",
+  "why_normal_retry_is_unsafe": "The coding worker did not return a structured result artifact."
+}

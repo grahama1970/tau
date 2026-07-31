@@ -1,0 +1,65 @@
+{
+  "active_loop": {
+    "blocker": "missing_artifact",
+    "default_repair": "Generate or repair the dream packet from current memory residue, contact sheet, frame prompts, and reflection receipts.",
+    "external_action_required": false,
+    "loop": "dream_packet_loop",
+    "path": "dream_packet.json | artifacts/dream_packet.json",
+    "phase": "dream_packet",
+    "validator": "validate-dream-packet"
+  },
+  "direction": "forward",
+  "exercised": "serial while-loop controller pass, run-root validation, first-blocker loop mapping, fail-closed stop selection, local receipt installation handlers when applicable",
+  "generated_at": "2026-06-29T20:23:17Z",
+  "iterations": [
+    {
+      "active_loop": {
+        "blocker": "missing_artifact",
+        "default_repair": "Generate or repair the dream packet from current memory residue, contact sheet, frame prompts, and reflection receipts.",
+        "external_action_required": false,
+        "loop": "dream_packet_loop",
+        "path": "dream_packet.json | artifacts/dream_packet.json",
+        "phase": "dream_packet",
+        "validator": "validate-dream-packet"
+      },
+      "first_blocker": {
+        "path": "dream_packet.json | artifacts/dream_packet.json",
+        "phase": "dream_packet",
+        "reason": "missing_artifact"
+      },
+      "iteration": 1,
+      "phase_count": 8,
+      "repair_action": {
+        "blocker": {
+          "path": "dream_packet.json | artifacts/dream_packet.json",
+          "phase": "dream_packet",
+          "reason": "missing_artifact"
+        },
+        "external_action_required": false,
+        "output": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z/receipts/dream_packet_work_order.json",
+        "owner_subagent": "dreamer",
+        "packet_exists": false,
+        "phase": "dream_packet",
+        "status": "WROTE_DREAM_PACKET_WORK_ORDER",
+        "stop_after_action": true,
+        "unverified": "live memory recall, residue grounding, dreamer subagent execution, contact sheet generation, story/panel/provider/Kling readiness"
+      },
+      "status": "BLOCKED",
+      "stop_condition": "No external action performed; repair the active_loop.default_repair, write/refresh receipts, then rerun this command."
+    }
+  ],
+  "live": "no",
+  "mocked": "no",
+  "next_action": "Generate or repair the dream packet from current memory residue, contact sheet, frame prompts, and reflection receipts.",
+  "policy": {
+    "implicit_local_repair_allowed": false,
+    "kling_call_allowed": false,
+    "nano_banana_final_panel_allowed": false,
+    "public_upload_allowed_without_explicit_authorization": false
+  },
+  "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-provider-eligible-final-20260629T195500Z",
+  "schema": "persona_dream.pipeline_loop_run.v1",
+  "status": "BLOCKED",
+  "stop_reason": "work_order_written",
+  "unverified": "external publication, live panel subagent generation/review, paid Kling submission"
+}

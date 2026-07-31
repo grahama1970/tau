@@ -1,0 +1,48 @@
+{
+  "attempt": 2,
+  "dag_id": "20260705T192238Z-rw-sanity-provider-dag-max-exhaustion",
+  "forbidden_actions": [
+    "modify_tau_repository",
+    "github_mutation",
+    "tailscale_access"
+  ],
+  "goal": {
+    "goal_hash": "sha256:21d828e918fda47d57aba2c64ebe57c7a3e21ece1e1fda721c0eb421324f342b",
+    "goal_id": "20260705T192238Z-rw-sanity-provider-dag-max-exhaustion",
+    "goal_version": 1
+  },
+  "herdr": {
+    "pane_id": "w4F:p5",
+    "terminal_id": "term_655e214d12f894c4",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T192040Z-tau-provider-cleanup-after-session-ownership-20260705/advanced-provider-runs/max-exhaustion/20260705T192238Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T192238Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/codex.visible.txt",
+    "workspace_id": "w4F"
+  },
+  "max_attempts": 2,
+  "node": {
+    "agent": "coder",
+    "attempt": 2,
+    "max_attempts": 2,
+    "node_id": "coder"
+  },
+  "node_id": "coder",
+  "provider_id": "codex",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T192040Z-tau-provider-cleanup-after-session-ownership-20260705/advanced-provider-runs/max-exhaustion/20260705T192238Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json",
+  "required_evidence": [
+    "target_file_updated",
+    "node_receipt_written"
+  ],
+  "reviewer_feedback": "force_revise=true triggered REVISE. target_file TODO line is gone (pass). coder_receipt is schema-valid tau.provider_dag_node_receipt.v1 (pass). Three issues for next attempt: (1) target_file content is a bare completion claim with no structured proof or actual output data; (2) opencode.visible.txt is empty \u2014 no opencode session evidence was captured for this node; (3) coder receipt provider_id is 'codex' but visible_log_path points to opencode.visible.txt \u2014 provider provenance mismatch.",
+  "run_id": "20260705T192238Z-rw-sanity-provider-dag-max-exhaustion",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T192040Z-tau-provider-cleanup-after-session-ownership-20260705/advanced-provider-runs/max-exhaustion/20260705T192238Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree",
+  "target": {
+    "allowed_paths": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T192040Z-tau-provider-cleanup-after-session-ownership-20260705/advanced-provider-runs/max-exhaustion/20260705T192238Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+    ],
+    "repo": "/home/graham/workspace/experiments/tau",
+    "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T192040Z-tau-provider-cleanup-after-session-ownership-20260705/advanced-provider-runs/max-exhaustion/20260705T192238Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree"
+  },
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T192040Z-tau-provider-cleanup-after-session-ownership-20260705/advanced-provider-runs/max-exhaustion/20260705T192238Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+  "task": "Modify only target_file. Replace the TODO line with a short completed implementation message. Then write the node receipt JSON exactly at receipt_path.",
+  "work_order_sha256": "62499f10ef101063448593360ba39e3d2ae787f26a7e104af8672698abf9aa72"
+}

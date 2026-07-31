@@ -1,0 +1,10 @@
+{
+  "goal_hash": "sha256:rw-sanity-project-dag-containment-all-gates",
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T184220Z-tau-course-correction-v1-20260706/containment-all-gates-project-dag/sandbox-run-receipt.json",
+  "schema": "tau.sandbox_run_receipt.v1",
+  "status": "PASS"
+}

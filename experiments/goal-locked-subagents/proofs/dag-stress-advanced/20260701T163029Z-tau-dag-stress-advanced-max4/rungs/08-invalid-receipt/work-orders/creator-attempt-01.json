@@ -1,0 +1,7 @@
+{
+  "attempt": 1,
+  "node_id": "creator",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-stress-advanced/20260701T163029Z-tau-dag-stress-advanced-max4/rungs/08-invalid-receipt/receipts/creator-attempt-01.json",
+  "role": "creator",
+  "schema": "tau.dag_stress_work_order.v1"
+}

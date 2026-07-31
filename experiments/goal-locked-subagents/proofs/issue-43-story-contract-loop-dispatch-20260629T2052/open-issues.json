@@ -1,0 +1,102 @@
+[
+  {
+    "author": {
+      "id": "U_kgDOCRK7qw",
+      "is_bot": false,
+      "login": "grahama1970",
+      "name": "Graham"
+    },
+    "body": "## Type\nfeature\n\n## Target\n`/home/graham/workspace/experiments/tau`\n\nLikely areas:\n- `experiments/goal-locked-subagents/agent-command-specs/`\n- `src/tau_coding/persona_dream_dream_packet_agent.py` or a new story-contract agent module\n- `src/tau_coding/generated_ticket.py` route registry\n- focused Tau tests for the new story-contract loop\n\n## Current State\nThe persona-dream pipeline has advanced past `dream_packet` using issue #41. The next forward blocker is now `story_contract`:\n\n```text\nrun_root: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run\nfirst_blocker.phase: story_contract\nfirst_blocker.reason: missing_artifact\nactive_loop.loop: story_loop\n```\n\nPersona-dream now writes a validated story-contract work order for the missing-story case:\n\n```text\nwork_order: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/story_contract_work_order.json\nvalidation: PASS_STORY_CONTRACT_WORK_ORDER\nschema: persona_dream.story_contract_work_order.v1\nstatus: WORK_ORDER_READY_STORY_REVIEW_REQUIRED\nowner_subagent: dreamer\ncurrent_contract.status: MISSING\nsource_paths.dream_packet: .../dream-run/dream_packet.json\n```\n\nTau currently has `dreamer` and `dream-reviewer` command specs, but the code only accepts `persona_dream.dream_packet_work_order.v1`:\n\n```text\nsrc/tau_coding/persona_dream_dream_packet_agent.py rejects any work order whose schema is not persona_dream.dream_packet_work_order.v1.\n```\n\n## Requested Outcome\nAdd a bounded Tau story-contract creator/reviewer loop that consumes `persona_dream.story_contract_work_order.v1`, creates or fails closed on `story_contract.json` from the current accepted `dream_packet.json`, and independently validates the result.\n\nThe loop should be serial and receipt-backed, matching the current pattern:\n\n```text\nhuman -> story-writer/dreamer -> story-reviewer -> human\n```\n\n## Acceptance Criteria\n- Tau has routable command specs for the story contract creator/reviewer path, or extends the existing `dreamer`/`dream-reviewer` roles without breaking the dream-packet path.\n- The loop consumes the validated work order at `.../receipts/story_contract_work_order.json`.\n- The creator writes `story_contract.json` under the run root or fails closed with a deterministic blocker.\n- The reviewer runs persona-dream `validate-story-contract` and records JSON receipts.\n- `skills/persona-dream/run.sh validate-story-contract <story_contract> --run-root <run_root> --json` returns `PASS_STORY_CONTRACT`.\n- `skills/persona-dream/run.sh pipeline-loop-status <run_root> --direction forward --json` advances past `story_contract` to `storyboard_panel` or a later blocker.\n- No Kling call, paid provider call, public upload, or panel image generation is performed for this ticket.\n\n## Required Proof\nAttach a proof root under:\n\n```text\nexperiments/goal-locked-subagents/proofs/<issue-id>-persona-dream-story-contract-loop-<timestamp>/\n```\n\nRequired artifacts:\n- input `story_contract_work_order.json`\n- start `tau.agent_handoff.v1`\n- creator/reviewer Tau receipts\n- resulting `story_contract.json` or fail-closed receipt\n- persona-dream `validate-story-contract` output\n- persona-dream `pipeline-loop-status --direction forward` output showing the next blocker\n- focused Tau tests for the new command spec/CLI\n\n## Non-goals\n- Do not call Kling.\n- Do not claim full pipeline readiness.\n- Do not solve storyboard, panel, provider media, or public URL gates in this ticket except as needed to prove the story loop advances to the next blocker.\n- Do not use Nano Banana/Gemini fallback imagery as final panel evidence.\n\n## Route\nroute:backend_python_or_skill_runtime\nagent:coder\n",
+    "comments": [],
+    "createdAt": "2026-06-29T20:52:08Z",
+    "labels": [
+      {
+        "color": "5319e7",
+        "description": "Tau agent harness work item",
+        "id": "LA_kwDOTG11HM8AAAACpOWQ-w",
+        "name": "agent-work"
+      },
+      {
+        "color": "0e8a16",
+        "description": "New capability or changed behavior request",
+        "id": "LA_kwDOTG11HM8AAAACpRFAQQ",
+        "name": "type:feature"
+      },
+      {
+        "color": "1d76db",
+        "description": "Python CLIs, runtime, harness, and skill integration route",
+        "id": "LA_kwDOTG11HM8AAAACpRFbZw",
+        "name": "route:backend_python_or_skill_runtime"
+      },
+      {
+        "color": "5319e7",
+        "description": "Requested repair agent: coder",
+        "id": "LA_kwDOTG11HM8AAAACpVklOg",
+        "name": "agent:coder"
+      }
+    ],
+    "number": 43,
+    "state": "OPEN",
+    "title": "Tau persona-dream harness needs story-contract creator/reviewer loop",
+    "updatedAt": "2026-06-29T20:52:08Z",
+    "url": "https://github.com/grahama1970/tau/issues/43"
+  },
+  {
+    "author": {
+      "id": "U_kgDOCRK7qw",
+      "is_bot": false,
+      "login": "grahama1970",
+      "name": "Graham"
+    },
+    "body": "## Type\n\nbug\n\n## Target\n\ntau_coding.battle_live_handoff and experiments/tau/experiments Battle handoff harness\n\n## Current state\n\nBattle live proof rung produced 128 Tau worker handoffs from /tmp/battle-v1-generated-tau-064/context/tau-battle-context-bundle.json. Tau consumed all handoffs and wrote per-worker artifacts, but tau-live/manifest.json ended status=BLOCKED with process exit_code=2: 80 workers PASS, 48 workers BLOCKED, each blocked worker showing error 'scillm_http_error: ' with http_status null around 90 seconds.\n\n## Requested outcome\n\nTau should either complete all bounded worker handoffs or return a structured throttling/backpressure receipt that lets Battle degrade to a smaller safe fanout; raw blank scillm_http_error at 128 workers should not be the only failure signal.\n\n## Required proof\n\nArtifacts: /tmp/battle-v1-generated-tau-064/run-receipt.json has status=BLOCKED reason=tau_live_handoff_failed; /tmp/battle-v1-generated-tau-064/tau-live/manifest.json has handoff_count=128 worker_count=128 status=BLOCKED; extraction showed status_counts PASS=80 BLOCKED=48 and error_counts {'scillm_http_error: ': 48}; process exit_code=2 duration_seconds=98.665392 timeout_expired=false. Prior Battle rung /tmp/battle-v1-generated-no-tau-002 passed BATTLE_V1_OPERATIONAL_ACCEPTANCE_PASS with generated candidates and Docker replay.\n\n## Route\n\nbackend_python_or_skill_runtime\n\n## Requested repair agent\n\ncoder\n\n## Non-goals\n\nDo not change Battle's Docker scorekeeper or fixture contract in this Tau ticket. Do not claim unbounded swarm support; acceptance is bounded 128-worker handoff behavior or explicit structured backpressure.\n\n## Ticket type details\n\n- **Observed failure:** Battle live proof rung produced 128 Tau worker handoffs from /tmp/battle-v1-generated-tau-064/context/tau-battle-context-bundle.json. Tau consumed all handoffs and wrote per-worker artifacts, but tau-live/manifest.json ended status=BLOCKED with process exit_code=2: 80 workers PASS, 48 workers BLOCKED, each blocked worker showing error 'scillm_http_error: ' with http_status null around 90 seconds.\n- **Expected behavior:** Tau should either complete all bounded worker handoffs or return a structured throttling/backpressure receipt that lets Battle degrade to a smaller safe fanout; raw blank scillm_http_error at 128 workers should not be the only failure signal.\n- **Reproduction or artifact:** From agent-skills commit with Battle battle-005 fixture: cd /home/graham/workspace/experiments/agent-skills/skills/battle && ./run.sh battle-v1-operational battle-005 --out /tmp/battle-v1-generated-tau-064 --red-workers 64 --blue-workers 64 --max-attempts 64 --require-memory --research-broker --tau-live\n\n<!-- ticket-skill\ntype: bug\ntarget: tau_coding.battle_live_handoff and experiments/tau/experiments Battle handoff harness\nroute: backend_python_or_skill_runtime\nagent: coder\n-->\n\nThis ticket must be resolved under `best-practices-github-ticket`. Closure requires deterministic proof; WebGPT review or CI green alone is not closure proof.\n",
+    "comments": [
+      {
+        "author": {
+          "login": "grahama1970"
+        },
+        "authorAssociation": "OWNER",
+        "body": "<!-- agent-lease\nagent: codex\nlease_id: 20260629T204800Z-codex-42\nissue: 42\n-->\n\nLease: maintainer-active by codex.\nScope: one ticket.\nClosure requirement: deterministic proof comment before close.",
+        "createdAt": "2026-06-29T20:48:03Z",
+        "id": "IC_kwDOTG11HM8AAAABIEzwXQ",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/grahama1970/tau/issues/42#issuecomment-4836880477",
+        "viewerDidAuthor": true
+      }
+    ],
+    "createdAt": "2026-06-29T20:45:14Z",
+    "labels": [
+      {
+        "color": "d73a4a",
+        "description": "Defect or regression",
+        "id": "LA_kwDOTG11HM8AAAACpRFAJA",
+        "name": "type:bug"
+      },
+      {
+        "color": "0052cc",
+        "description": "Agent has leased this ticket",
+        "id": "LA_kwDOTG11HM8AAAACpRFBcg",
+        "name": "maintainer-active"
+      },
+      {
+        "color": "1d76db",
+        "description": "Python CLIs, runtime, harness, and skill integration route",
+        "id": "LA_kwDOTG11HM8AAAACpRFbZw",
+        "name": "route:backend_python_or_skill_runtime"
+      },
+      {
+        "color": "5319e7",
+        "description": "Requested repair agent: coder",
+        "id": "LA_kwDOTG11HM8AAAACpVklOg",
+        "name": "agent:coder"
+      }
+    ],
+    "number": 42,
+    "state": "OPEN",
+    "title": "Tau Battle live handoff blocks at 128 worker fanout with scillm_http_error",
+    "updatedAt": "2026-06-29T20:48:03Z",
+    "url": "https://github.com/grahama1970/tau/issues/42"
+  }
+]

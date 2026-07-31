@@ -1,0 +1,41 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-crew-contract-ui-dispatch/crew-ui-pipeline-complete-20260702T191500Z/input_crew_contract_work_order.json"
+    ],
+    "persona_dream_crew_contract": {
+      "run_id": "crew-ui-pipeline-complete-20260702T191500Z",
+      "run_root": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-crew-contract-ui-dispatch/crew-ui-pipeline-complete-20260702T191500Z/input_crew_contract_work_order.json"
+    },
+    "summary": "Run a bounded Tau Phase 03 crew-contract creator/reviewer loop."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#45"
+  },
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000041",
+    "goal_id": "goal-tau-issue-45-persona-dream-crew-contract-loop",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "crew-writer",
+    "reason": "Crew-writer must create a durable Phase 03 crew contract from the accepted story, interaction matrix, linked assets, and persona candidates."
+  },
+  "previous_subagent": "human",
+  "rationale": "The first bounded step is a crew-writer command.",
+  "required_evidence": [
+    "Crew-writer and crew-reviewer write Tau receipts and a crew contract artifact whose path matches the Dream Phase 03 backend gate."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-crew-contract-ui-dispatch/crew-ui-pipeline-complete-20260702T191500Z/input_crew_contract_work_order.json"
+    ],
+    "status": "COMPLETED",
+    "summary": "Human requested a Tau crew-contract creator/reviewer proof."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Crew-reviewer routes to human with PASS or BLOCKED evidence."
+}

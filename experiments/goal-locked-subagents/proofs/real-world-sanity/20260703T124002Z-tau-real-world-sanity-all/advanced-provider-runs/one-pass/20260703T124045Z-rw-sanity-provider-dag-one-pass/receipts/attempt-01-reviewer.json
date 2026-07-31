@@ -1,0 +1,15 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/one-pass/20260703T124045Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["read work_order", "read target_file (message.txt)", "read coder receipt (attempt-01-coder.json)"],
+  "artifacts": ["/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/one-pass/20260703T124045Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt", "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T124002Z-tau-real-world-sanity-all/advanced-provider-runs/one-pass/20260703T124045Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json"],
+  "handoff_summary": "PASS: target_file has no TODO line (clean completion message). Coder receipt is schema-valid with all required fields. force_revise is false.",
+  "errors": [],
+  "policy_exceptions": []
+}

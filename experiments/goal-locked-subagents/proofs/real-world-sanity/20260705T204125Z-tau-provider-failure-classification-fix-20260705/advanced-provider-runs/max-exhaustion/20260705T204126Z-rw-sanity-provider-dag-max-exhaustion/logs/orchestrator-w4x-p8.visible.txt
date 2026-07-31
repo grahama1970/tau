@@ -1,0 +1,37 @@
+ceipt: /home/graha
+m/workspace/experi
+ments/tau/experime
+nts/goal-locked-su
+bagents/proofs/rea
+l-world-sanity/202
+60705T204125Z-tau-
+provider-failure-c
+lassification-fix-
+20260705/advanced-
+provider-runs/max-
+exhaustion/2026070
+5T204126Z-rw-sanit
+y-provider-dag-max
+-exhaustion/planne
+r-receipt.json\nfi
+nal_receipt: /home
+/graham/workspace/
+experiments/tau/ex
+periments/goal-loc
+ked-subagents/proo
+fs/real-world-sani
+ty/20260705T204125
+Z-tau-provider-fai
+lure-classificatio
+n-fix-20260705/adv
+anced-provider-run
+s/max-exhaustion/2
+0260705T204126Z-rw
+-sanity-provider-d
+ag-max-exhaustion/
+run-receipt.json\n
+canonical truth: T
+au JSON receipts;
+this pane is human
+-visible telemetry
+.\n

@@ -1,0 +1,8 @@
+{
+  "artifact_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-stress-campaign/20260701T164103Z-tau-dag-stress-campaign-1000/suites/20260701T164104Z-tau-dag-stress-campaign-1000-budget-10-rep-7/rungs/02-creator-reviewer-retry/scratch/artifact.txt",
+  "attempt": 1,
+  "node_id": "creator",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-stress-campaign/20260701T164103Z-tau-dag-stress-campaign-1000/suites/20260701T164104Z-tau-dag-stress-campaign-1000-budget-10-rep-7/rungs/02-creator-reviewer-retry/receipts/creator-attempt-01.json",
+  "role": "creator",
+  "schema": "tau.dag_stress_work_order.v1"
+}

@@ -1,0 +1,18 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-provider-runs/repair-loop/20260703T225513Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["read work order JSON", "read target_file (message.txt)", "read coder receipt (attempt-01-coder.json)", "write reviewer receipt"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-provider-runs/repair-loop/20260703T225513Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T224553Z-tau-advanced-live-post-cleanup-observability/advanced-provider-runs/repair-loop/20260703T225513Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE — target_file TODO line is removed and coder receipt is schema-valid, but two issues need fixing: (1) commands_run contains 'python deterministic visible coder' which is a description not a real shell command — log the actual CLI invocation; (2) handoff_summary is generic ('updated the scratch target file') — describe the concrete change: TODO line removed, content replaced with completion message.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,20 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "hidden chain-of-thought correctness"
+    ],
+    "proves": [
+      "fixture monitor receipt is indexable"
+    ]
+  },
+  "dag_id": "rw-sanity-proof-index",
+  "goal": {
+    "goal_hash": "sha256:rw-sanity-proof-index"
+  },
+  "live": false,
+  "mocked": false,
+  "ok": false,
+  "provider_live": false,
+  "schema": "tau.monitor_receipt.v1",
+  "status": "REVIEW"
+}

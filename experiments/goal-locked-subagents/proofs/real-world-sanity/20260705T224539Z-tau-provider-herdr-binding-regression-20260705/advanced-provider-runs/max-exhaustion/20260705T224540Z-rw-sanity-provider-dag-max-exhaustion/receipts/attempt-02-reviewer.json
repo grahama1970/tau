@@ -1,0 +1,33 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T224540Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:daea35922b3dfdbed04ce56fa745f3af0e57efeefb4c71e6f9beb0bff52f1e69",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w65",
+  "pane_id": "w65:p6",
+  "terminal_id": "term_655e4eae5ca516cf",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T224539Z-tau-provider-herdr-binding-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T224540Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T224540Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "a24757754d41451ec730c2b80a003a0c113ddecafd6d4d03979a7f12cd929951",
+  "work_order_sha256": "164bfcf3319481d0f579d708f5d4fdce5b1222118604efc905775d35decd32d0",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T224539Z-tau-provider-herdr-binding-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T224540Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work-order JSON",
+    "read target_file (message.txt)",
+    "read coder receipt (attempt-02-coder.json)",
+    "read attempt-01-reviewer.json for prior context",
+    "sha256sum opencode.visible.txt",
+    "write reviewer receipt (attempt-02-reviewer.json)"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T224539Z-tau-provider-herdr-binding-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T224540Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T224539Z-tau-provider-herdr-binding-regression-20260705/advanced-provider-runs/max-exhaustion/20260705T224540Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "force_revise: true triggers REVISE verdict. TODO line is removed from target_file — basic requirement met. coder_receipt is schema-valid (all required fields present). However, the feedback from attempt-01-reviewer was not addressed: handoff_summary remains identical ('Deterministic visible coder updated the scratch target file') rather than describing specific implementation steps; target_file remains a bare completion statement with no implementation detail, evidence, or structure; no evidence artifact (diff, log, or configuration output) was produced. max_attempts=2 has been reached, so no further coder attempts will fire. The DAG's max-exhaustion boundary was correctly exercised: attempt 1 flagged the same shortcomings and attempt 2 repeated the same pattern without improvement.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,101 +1,117 @@
 # Handoff Report: Tau
 
-**Timestamp**: 2026-07-16T20:45:02Z
+**Timestamp**: 2026-07-27T19:12:45Z
 **Active Agent**: Codex
-
-**Resolution Update**: 2026-07-17T11:33:19Z - The compliance-package CLI test
-blocker recorded below was fixed by updating stale CLI test fixtures to use the
-current full policy-profile and data-boundary schemas. Current deterministic
-proof: `timeout 240 uv run pytest -q` -> `1834 passed in 86.07s`.
 
 ## 1. Project Overview
 
-- **Ecosystem**: Python package managed with `uv`; source lives under `src/`; tests under `tests/`.
-- **Core Purpose**: Tau is an experimental zero-trust containment harness for agent work. The current README frames it as the control plane for Embry-OS and Sparta Explorer, with policy/data-boundary gates, DAG contracts, typed receipts, evidence validators, bounded subagent dispatch, provider checks, and human approval gates.
+- **Ecosystem**: Python package managed with `uv`; source under `src/`; tests under `tests/`; CLI entrypoint is `tau = tau_coding.cli:app`.
+- **Core Purpose**: Tau is a memory-first, zero-trust containment harness for untrusted agent work. It coordinates policy/data-boundary gates, DAG contracts, typed receipts, evidence validators, bounded subagent dispatch, SciLLM/provider checks, Herdr/monitor integration, and human approval boundaries.
+- **Current Immutable Product Goal**: `GOAL.md` says Tau must let a human choose and run five canonical real DAGs, from simple linear to durable mixed-topology recovery, with a shared dynamic React Flow progress viewer that shows truthful progress, accepted evidence, blockers, and required human decisions.
 
 ## 2. Current State (Doc-Code Alignment)
 
 - **Documented Features**:
-  - Package layers: `tau_ai`, `tau_agent`, and `tau_coding`.
-  - Roadmap says phases 0 through 20.4, 22, and 23 are implemented and documented; phase 21 extensions are deferred.
-  - README lists zero-trust gates, evidence manifests, coding receipts, compliance package validation, command-spec policy, Herdr/provider lanes, persistent subagent surfaces, GitHub apply policy, browser/CDP proofs, proof index, route-memory signals, adaptive DAG expansion, memory/evidence-case gates, and `tau run`.
+  - README frames Tau as the zero-trust control plane for Embry-OS and Sparta Explorer.
+  - Current README explicitly says the five canonical DAG ladder and shared dynamic viewer are active goals, not complete proof.
+  - README documents a Textual TUI, Memory-first routing, SciLLM/provider containment, typed receipts, Herdr-visible provider lanes, browser/CDP proof lanes, DAG viewer contracts, coding-evidence receipts, secure execution, resource leases, adaptive DAG revision, sprite conformance, project profile authority, audit/signing/RBAC, and `$tau` runtime handshake.
+  - `pyproject.toml` still describes Tau narrowly as "A Python implementation of a minimalist Pi-style coding-agent harness."
 - **Implemented Reality**:
-  - The source tree contains the expected core layers plus a large `tau_coding` surface implementing many receipt, DAG, policy, provider, Herdr, compliance, proof-index, run-status, TUI, and adapter modules.
-  - The test suite is broad: the latest run executed 1834 tests total.
+  - Source tree has the intended layers: `tau_ai`, `tau_agent`, and a large `tau_coding` control plane.
+  - Current source inventory found 165 Python source files under `src/tau_ai`, `src/tau_agent`, and `src/tau_coding`.
+  - Current test inventory found 127 `tests/test_*.py` files.
+  - Recent commits are focused on Pi-style TUI parity and session controls: command cancellation, overlapping terminal-command guards, relevance-sort session picker, Pi-style session picker search, hotkeys, key aliases, bindable session actions, and project trust for local resources.
 - **Drift/Misalignments**:
-  - README positioning is now much broader than `pyproject.toml` description, which still says "A Python implementation of a minimalist Pi-style coding-agent harness."
-  - Compliance package CLI behavior and its test fixture are misaligned: the test uses a minimal policy/data-boundary payload, while current validation requires additional fields.
-  - The repo has a very large untracked `experiments/` proof tree and several untracked docs outside it; a new agent should avoid treating untracked files as disposable.
+  - `CONTEXT.md` and `0N_TASKS.md` are missing, despite the handoff skill expecting them when present.
+  - `.pi/skills/handoff/run.sh` is missing or not executable in this checkout, so this handoff was produced by manual assessment rather than the automated handoff helper.
+  - `pyproject.toml` understates the project compared with README and current code.
+  - The local checkout is not clean and is on `issue-117-generated-ticket-dedupe`, not `main`.
+  - README says the DAG React Flow viewer is an integration/inspection surface, while `GOAL.md` requires a shared dynamic progress viewer driven by authoritative live run state. Treat that as an active product gap unless a fresh receipt proves otherwise.
 
 ## 3. What is Working Well
 
-- Core layering remains visible in the source tree: `tau_ai` for provider streaming, `tau_agent` for reusable harness/session primitives, and `tau_coding` for CLI/resources/tools/UI.
-- Full deterministic pytest run nearly passes: `1833 passed, 1 failed in 85.05s`.
-- The project has extensive documentation under `docs/architecture/` and focused topic docs for zero-trust policy, provider lifecycle, compliance packaging, run reports, proof index, Herdr cleanup, and related surfaces.
+- The core package structure is coherent: provider/model code in `tau_ai`, reusable agent/session primitives in `tau_agent`, and CLI/TUI/resources/harness behavior in `tau_coding`.
+- Tau has substantial receipt and policy surfaces already present in code and docs: secure executor, resource leases, project profile/spine, worker controlled-data conformance, receipt signing, runtime handshake, DAG runtime scheduler, run store/replay, TUI app, session manager, and command registry.
+- The full deterministic test suite mostly runs: `timeout 240 uv run pytest -q` reached completion with `1937 passed, 1 skipped, 3 failed in 133.97s`.
+- GitHub issue state was recently reconciled: #186-#195, the #72 child tranche for canonical scheduler/security/resource/adaptive/sprite/profile/controlled-data/audit/runtime-handshake criteria, are closed with retained proof artifacts on main.
 
 ## 4. What is Currently Broken
 
 - **Failed Tests**:
-  - **Resolved 2026-07-17**: the failure below no longer reproduces after
-    updating `tests/test_cli.py`.
-  - Command: `timeout 180 uv run pytest -q`
-  - Result: `1 failed, 1833 passed in 85.05s`
-  - Failing test: `tests/test_cli.py::test_cli_compliance_package_writes_review_bundle`
-  - Failure: `tau compliance-package <run-dir> --out <package-dir>` exits with code `1` for the test fixture instead of `0`.
-  - Reproduced CLI output reports `status: BLOCKED` and errors including:
-    - `invalid_policy_profile: requires_data_boundary must be a boolean`
-    - `invalid_policy_profile: network/providers/research/memory/github/filesystem must be objects`
-    - `invalid_data_boundary: external_provider_allowed/external_research_allowed/public_repo_allowed must be booleans`
-    - `invalid_data_boundary: foreign_person_access must be one of ['allowed', 'restricted', 'prohibited']`
+  - Command: `timeout 240 uv run pytest -q`
+  - Result: `3 failed, 1937 passed, 1 skipped in 133.97s`
+  - Skip: `tests/test_persona_dream_text_reasoning_agent.py:104` requires `TAU_TEXT_REASONING_LIVE=1`.
+  - Failures:
+    - `tests/test_tui_autocomplete.py::test_command_completion_suggests_registered_commands`
+      - Expected `["/session"]`; actual `["/session", "/settings"]`.
+    - `tests/test_tui_autocomplete.py::test_command_completion_matches_search_terms_with_canonical_replacement`
+      - Expected `["/new"]`; actual `["/clone", "/copy", "/new"]` for `/cl`.
+    - `tests/test_tui_autocomplete.py::test_command_completion_prioritizes_direct_matches_over_search_terms`
+      - Expected first two `["/resume", "/new"]`; actual `["/resume", "/import"]`.
+  - Diagnosis: this looks like TUI autocomplete expectation drift after Pi-style commands/settings/import/clone/copy were added. The next agent should decide whether the new suggestions are correct and update tests, or adjust ranking/filtering if the intended UX is narrower.
 - **Known Issues**:
-  - TODO scan found one intentional fixture-style TODO in `src/tau_coding/provider_dag_poc.py` where a generated target file starts with `TODO: replace this line with a completed implementation.`
-  - There is no project-local `.pi/skills/handoff/run.sh`; this report was produced by manual handoff assessment using the skill contract.
-- **Recent Regressions**:
-  - Recent commits are centered on ready-queue condition blocking, Battle context/reflection, WebGPT recovery, and DAG incident preservation. The current failing compliance-package fixture likely relates to stricter policy/data-boundary validation rather than those commit subjects directly.
+  - Open GitHub issues from live readback:
+    - `#72` OPEN, labels `type:feature`, `maintainer-blocked`, `route:backend_python_or_skill_runtime`: program epic for durable, secure, adaptive Tau DAG runtime hardening.
+    - `#180` OPEN, labels `type:feature`, `maintainer-blocked`, `dag`, `route:ops_or_scheduler`, `ease-of-use`, `memory`, `viewer`: productize Tau DAG templates and authoritative viewer UX.
+  - `needs-human` was removed from #72 and #180 on 2026-07-27; both remain `maintainer-blocked`.
+  - The repo has a very large untracked proof and experiment corpus. Do not clean, reset, or broadly stage it.
+  - `rg TODO/FIXME` found intentional placeholder/stub language in `src/tau_coding/provider_dag_poc.py` and `src/tau_coding/media_explainer_orchestration.py`; review before treating these as bugs because some are fixture/demo contracts.
+- **Recent Regressions / Risk Areas**:
+  - TUI autocomplete is currently red and directly connected to recent Pi-parity session/control changes.
+  - Current branch `issue-117-generated-ticket-dedupe` contains pre-existing modifications to `PROJECT_KNOWLEDGE.md`, `README.md`, `src/tau_coding/battle_live_handoff.py`, and `src/tau_coding/battle_scillm.py`.
+  - Large untracked docs/proof paths include `docs/proofs/`, `docs/review-bundles/`, `docs/herdr-inspired-orchestration-requirements.md`, `docs/tau-planner-orchestrator-visible-proof-plan.md`, `docs/traycer-ideas-for-tau-requirements.md`, many `experiments/goal-locked-subagents/...` paths, `local-archives/`, and `run/`.
 
 ## 5. Next Steps
 
-1. Fix `tests/test_cli.py::test_cli_compliance_package_writes_review_bundle` by aligning the fixture with the current policy/data-boundary schema, or by intentionally accepting minimal policy/data-boundary inputs in the compliance package command. The safer first check is to inspect current schema defaults in `src/tau_coding/policy_profile.py`, `src/tau_coding/itar_boundary.py`, and `src/tau_coding/compliance_package.py`.
-2. Re-run `uv run pytest tests/test_cli.py::test_cli_compliance_package_writes_review_bundle -q`, then the full `uv run pytest -q`.
-3. Reconcile docs metadata: update `pyproject.toml` description or README positioning so the package summary does not understate the current zero-trust control-plane scope.
-4. Inventory and classify untracked project docs before committing anything: `docs/herdr-inspired-orchestration-requirements.md`, `docs/review-bundles/tau-herdr-provider-pane-poc-webgpt-review.md`, `docs/tau-planner-orchestrator-visible-proof-plan.md`, and `docs/traycer-ideas-for-tau-requirements.md`.
+1. Fix the three failing TUI autocomplete tests or the autocomplete ranking behavior:
+   - inspect `src/tau_coding/tui/autocomplete.py`, `src/tau_coding/commands.py`, and `tests/test_tui_autocomplete.py`;
+   - preserve the new Pi-parity commands unless they are demonstrably wrong;
+   - run `uv run pytest -q tests/test_tui_autocomplete.py`.
+2. Re-run the full baseline after the focused fix: `timeout 240 uv run pytest -q`.
+3. For #72 and #180, because `needs-human` is removed but `maintainer-blocked` remains, perform a ticket-runtime readback before any closure attempt. Do not close either epic unless the parent acceptance criteria and retained proof artifacts satisfy the issue body.
+4. Continue Tau/Pi TUI parity work only after the red autocomplete baseline is addressed. The user explicitly wants Pi parity but also explicitly does not want Tau-specific features overwritten.
+5. Keep the immutable goal centered: five canonical real DAGs plus a shared dynamic React Flow progress viewer. Do not treat issue closure, static receipts, or unit tests as product-goal completion.
 
 ## 6. Project Context for Success
 
 - **Key Files**:
-  - `README.md`
-  - `pyproject.toml`
-  - `docs/00-roadmap.md`
-  - `docs/01-architecture.md`
-  - `src/tau_agent/harness.py`
-  - `src/tau_agent/loop.py`
-  - `src/tau_ai/provider.py`
-  - `src/tau_coding/cli.py`
-  - `src/tau_coding/compliance_package.py`
-  - `src/tau_coding/policy_profile.py`
-  - `src/tau_coding/itar_boundary.py`
-  - `tests/test_cli.py`
+  - `GOAL.md` - active immutable product goal and completion criteria.
+  - `README.md` - current positioning, non-claims, and feature surface.
+  - `pyproject.toml` - package metadata, dependencies, Python `>=3.14`.
+  - `src/tau_coding/cli.py` - main CLI.
+  - `src/tau_coding/commands.py` - slash command registry and command semantics.
+  - `src/tau_coding/tui/app.py` - Textual TUI application.
+  - `src/tau_coding/tui/autocomplete.py` - current failing autocomplete behavior.
+  - `tests/test_tui_autocomplete.py` - current red test file.
+  - `src/tau_coding/dag_runtime/` - scheduler/runtime internals.
+  - `src/tau_coding/secure_executor.py`, `src/tau_coding/resource_lease.py`, `src/tau_coding/project_profile.py`, `src/tau_coding/runtime_handshake.py` - recent #72 hardening surfaces.
+  - `docs/proofs/tickets/issue-186-*` through `docs/proofs/tickets/issue-195-*` - retained proof artifacts for the #72 child tranche.
 - **Recent Changes**:
-  - `a3e316a7 tau: isolate Battle team-specific context`
-  - `c33db84d docs(knowledge): record issue 74 acceptance proof`
-  - `30219a27 fix(dag): reject malformed ready-queue conditions`
-  - `d04b6392 fix(dag): block unsupported ready-queue conditions`
-  - `84c06e63 docs: record bounded WebGPT clarification proof`
+  - `b00cf5b0 Cancel terminal commands through session signal`
+  - `8a63db3a Guard overlapping terminal commands in TUI`
+  - `e7f87744 Add relevance sort to session picker`
+  - `1336ef1e Add Pi-style session picker search`
+  - `4b76135b Update hotkeys for Pi session controls`
+  - `eecbc003 Add Pi session picker key aliases`
+  - `c0bb25d3 Add Pi-style bindable session actions`
+  - `5b4ee601 Enforce project trust for local resources`
 - **Git State Notes**:
-  - Current branch: `issue-74-ready-queue-condition-block`, ahead of `grahama1970/issue-74-ready-queue-condition-block` by 1 commit.
-  - Visible untracked docs outside `experiments/` and `local-archives/`: four docs/review-bundle paths listed in Next Steps.
-  - There are many untracked files under `experiments/goal-locked-subagents/proofs/`; do not clean or reset them without explicit human direction.
+  - Current branch: `issue-117-generated-ticket-dedupe`.
+  - Current HEAD: `b00cf5b0e3ff58e253ce9346b8ebbf7d3e3d867d`.
+  - Worktree is dirty before this handoff. Preserve unrelated changes.
+  - This handoff intentionally updates only `local/HANDOFF.md`.
 
 ## 7. Evidence
 
 - **mocked**: no
-- **live**: no
+- **live**: yes for local filesystem/git/test/GitHub readback; no provider-live or browser-live lane was exercised.
 - **Actually exercised**:
-  - Read the current `handoff` skill contract.
-  - Checked the memory-first recall hook output; it was unrelated to Tau and was not used as evidence.
-  - Read `README.md`, `pyproject.toml`, `docs/00-roadmap.md`, `docs/01-architecture.md`, source/test file inventory, recent git commits, and TODO markers.
-  - Ran `timeout 180 uv run pytest -q`.
-  - Reproduced the failing compliance-package CLI path with `uv run python` and `typer.testing.CliRunner`.
+  - Read the installed `handoff` skill at `/home/graham/workspace/experiments/agent-skills/skills/handoff/SKILL.md`.
+  - Attempted the skill helper: `.pi/skills/handoff/run.sh` was missing or not executable.
+  - Read `README.md`, `GOAL.md`, `pyproject.toml`, existing `local/HANDOFF.md`, source/test inventory, TODO markers, recent commits, and focused TUI autocomplete snippets.
+  - Ran `timeout 240 uv run pytest -q`; result was `3 failed, 1937 passed, 1 skipped in 133.97s`.
+  - Read open GitHub issue state for `grahama1970/tau`: #72 and #180 are open and `maintainer-blocked`, with `needs-human` removed.
 - **What remains unverified**:
-  - No live provider, Herdr, browser/CDP, GitHub, Memory, or external service lane was exercised.
-  - The passing tests do not prove semantic correctness, legal/compliance sufficiency, provider/model quality, or full production readiness.
+  - No live provider/SciLLM, Herdr, Memory, browser/CDP, or dynamic React Flow viewer proof was run during this handoff.
+  - Passing tests do not prove semantic correctness, model quality, legal/compliance sufficiency, or completion of `GOAL.md`.
+  - The dirty worktree means this handoff is a state snapshot, not a clean-release assertion.

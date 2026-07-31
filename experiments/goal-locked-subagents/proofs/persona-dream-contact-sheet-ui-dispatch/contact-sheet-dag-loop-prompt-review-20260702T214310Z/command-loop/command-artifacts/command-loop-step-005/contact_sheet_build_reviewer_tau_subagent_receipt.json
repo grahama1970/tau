@@ -1,0 +1,53 @@
+{
+  "context": {
+    "actor_type": "tau",
+    "artifacts_read": [
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_requirements.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_build_receipt.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/blocked_assets.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_memory_recall_evidence.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_prompt_review.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/receipts/validate_contact_sheet_build.json"
+    ],
+    "assumptions": [],
+    "run_id": "contact-sheet-dag-loop-prompt-review-20260702T214310Z",
+    "subagent": "contact-sheet-build-reviewer",
+    "unknowns": []
+  },
+  "evidence": [
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_requirements.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_build_receipt.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/blocked_assets.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_memory_recall_evidence.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_prompt_review.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/receipts/validate_contact_sheet_build.json"
+  ],
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000045",
+    "goal_id": "goal-tau-issue-45-persona-dream-contact-sheet-loop",
+    "goal_version": 1,
+    "immutable_goal_preserved": true
+  },
+  "next": {
+    "executor": "human",
+    "reason": "Human or ticket resolver reviews the proof or authorizes provider generation.",
+    "subagent": "human"
+  },
+  "rationale": "This receipt records one bounded Tau persona-dream dream-packet subagent turn.",
+  "result": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_requirements.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_build_receipt.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/blocked_assets.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_memory_recall_evidence.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_prompt_review.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/receipts/validate_contact_sheet_build.json"
+    ],
+    "live": true,
+    "mocked": false,
+    "status": "BLOCKED",
+    "summary": "Contact-sheet-build-reviewer failed closed with exact missing contact-sheet assets."
+  },
+  "schema": "tau.subagent_receipt.v1",
+  "stop_condition": "Issue resolver comments proof and closes or authorizes the provider build lane."
+}

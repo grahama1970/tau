@@ -1,0 +1,19 @@
+{
+  "command_executed": true,
+  "data_boundary": {
+    "schema": "tau.data_boundary.v1"
+  },
+  "goal_hash": "sha256:live-scillm-worker-probe-goal",
+  "live": true,
+  "mocked": false,
+  "network_egress": "denied",
+  "ok": true,
+  "policy_profile": {
+    "schema": "tau.policy_profile.v1"
+  },
+  "provider_access": "denied",
+  "provider_live": false,
+  "schema": "tau.sandbox_run_receipt.v1",
+  "status": "PASS",
+  "work_order_sha256": "sha256:2efa9d4fd681d4dc3a2ec8f43b7cf9eeaa75034d78d725e145d2054c6db3ee39"
+}

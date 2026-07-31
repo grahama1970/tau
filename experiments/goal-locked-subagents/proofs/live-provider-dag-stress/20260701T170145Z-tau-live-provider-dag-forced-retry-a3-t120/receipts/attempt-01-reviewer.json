@@ -1,0 +1,22 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "cat /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/work-orders/attempt-01-reviewer.json",
+    "cat /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/scratch-worktree/message.txt",
+    "cat /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/receipts/attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-provider-dag-stress/20260701T170145Z-tau-live-provider-dag-forced-retry-a3-t120/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "force_revise=true: target_file TODO is gone and coder receipt is schema-valid. However, the message content is too minimal — a single vague sentence. Also coder commands_run includes duplicate sed calls and irrelevant jq/pwd. Next coder should write a more substantive message describing what was implemented and include only relevant commands in the receipt.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,37 @@
+ced-current-code-full/
+advanced-generic-provi
+der-dag-adapter/provid
+er-runs/20260703T20311
+1Z-rw-sanity-generic-p
+rovider-dag-adapter/da
+g-spec.json\nplanner_r
+eceipt: /home/graham/w
+orkspace/experiments/t
+au/experiments/goal-lo
+cked-subagents/proofs/
+real-world-sanity/2026
+0703T202751Z-tau-advan
+ced-current-code-full/
+advanced-generic-provi
+der-dag-adapter/provid
+er-runs/20260703T20311
+1Z-rw-sanity-generic-p
+rovider-dag-adapter/pl
+anner-receipt.json\nfi
+nal_receipt: /home/gra
+ham/workspace/experime
+nts/tau/experiments/go
+al-locked-subagents/pr
+oofs/real-world-sanity
+/20260703T202751Z-tau-
+advanced-current-code-
+full/advanced-generic-
+provider-dag-adapter/p
+rovider-runs/20260703T
+203111Z-rw-sanity-gene
+ric-provider-dag-adapt
+er/run-receipt.json\nc
+anonical truth: Tau JS
+ON receipts; this pane
+ is human-visible tele
+metry.\n

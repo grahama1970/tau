@@ -1,0 +1,17 @@
+{
+  "created_at": "2026-07-03T22:58:30Z",
+  "live": true,
+  "mocked": false,
+  "provider_calls": {
+    "kling": false,
+    "paid": false,
+    "script_reviewer_model": false
+  },
+  "role": "script-reviewer",
+  "schema": "tau.persona_dream.script_reviewer_receipt.v1",
+  "status": "PASS",
+  "subagent_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260703T225829Z/command-loop/command-artifacts/command-loop-step-002/script_reviewer_tau_subagent_receipt.json",
+  "validate_script_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260703T225829Z/run/receipts/validate_script_contract.json",
+  "validation_status": "PASS_SCRIPT_CONTRACT",
+  "verdict": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260703T225829Z/run/script-reviewer-verdict.json"
+}

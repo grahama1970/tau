@@ -1,0 +1,70 @@
+{
+  "active_loop": {
+    "blocker": "missing_artifact",
+    "default_repair": "Run the panel subagent repair loop; reject Nano Banana/Gemini final imagery, repair the exact visual/text blocker, and write a provider-eligible receipt.",
+    "external_action_required": false,
+    "loop": "panel_review_loop",
+    "path": "receipts/panel_repair_gate_receipt.json | panel_repair_gate_receipt.json",
+    "phase": "panel_repair_gate",
+    "validator": "validate-panel-repair-gate --require-provider-eligible"
+  },
+  "direction": "forward",
+  "exercised": "serial while-loop controller pass, run-root validation, first-blocker loop mapping, fail-closed stop selection, local receipt installation handlers when applicable",
+  "generated_at": "2026-06-29T21:49:56Z",
+  "iterations": [
+    {
+      "active_loop": {
+        "blocker": "missing_artifact",
+        "default_repair": "Run the panel subagent repair loop; reject Nano Banana/Gemini final imagery, repair the exact visual/text blocker, and write a provider-eligible receipt.",
+        "external_action_required": false,
+        "loop": "panel_review_loop",
+        "path": "receipts/panel_repair_gate_receipt.json | panel_repair_gate_receipt.json",
+        "phase": "panel_repair_gate",
+        "validator": "validate-panel-repair-gate --require-provider-eligible"
+      },
+      "first_blocker": {
+        "path": "receipts/panel_repair_gate_receipt.json | panel_repair_gate_receipt.json",
+        "phase": "panel_repair_gate",
+        "reason": "missing_artifact"
+      },
+      "iteration": 1,
+      "phase_count": 8,
+      "repair_action": {
+        "delegated_subagents": [
+          "panel-creator",
+          "panel-reviewer"
+        ],
+        "external_action_required": false,
+        "final_gate_errors": [
+          "panel_repair_gate_receipt_missing",
+          "real_panel_generation_and_visual_review_required",
+          "provider_eligibility_not_yet_established"
+        ],
+        "final_gate_status": "FAIL",
+        "output": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/panel_repair_work_order.json",
+        "owner_subagent": "persona-dream-panel-repair-gate",
+        "panel_id": "panel_01",
+        "phase": "panel_repair_gate",
+        "status": "WROTE_PANEL_REPAIR_WORK_ORDER",
+        "stop_after_action": true,
+        "unverified": "panel subagent execution, live image generation, independent visual review, provider media hosting, Kling submission"
+      },
+      "status": "BLOCKED",
+      "stop_condition": "No external action performed; repair the active_loop.default_repair, write/refresh receipts, then rerun this command."
+    }
+  ],
+  "live": "no",
+  "mocked": "no",
+  "next_action": "Run the panel subagent repair loop; reject Nano Banana/Gemini final imagery, repair the exact visual/text blocker, and write a provider-eligible receipt.",
+  "policy": {
+    "implicit_local_repair_allowed": false,
+    "kling_call_allowed": false,
+    "nano_banana_final_panel_allowed": false,
+    "public_upload_allowed_without_explicit_authorization": false
+  },
+  "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+  "schema": "persona_dream.pipeline_loop_run.v1",
+  "status": "BLOCKED",
+  "stop_reason": "work_order_written",
+  "unverified": "external publication, live panel subagent generation/review, paid Kling submission"
+}

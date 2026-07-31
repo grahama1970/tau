@@ -1,0 +1,20 @@
+essfully.
+
+Both conditions
+ pass:
+- `target_file`
+ has no TODO li
+ne (it reads "C
+ompleted implem
+entation for th
+e Tau provider
+DAG POC coder n
+ode.")
+- `coder_receip
+t` is schema-va
+lid with all re
+quired fields p
+resent.
+
+Writing the rev
+iewer receipt.

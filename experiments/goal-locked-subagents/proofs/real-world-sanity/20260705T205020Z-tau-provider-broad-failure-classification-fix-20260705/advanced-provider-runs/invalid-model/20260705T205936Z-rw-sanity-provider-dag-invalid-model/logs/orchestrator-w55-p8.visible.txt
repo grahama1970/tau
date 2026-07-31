@@ -1,0 +1,37 @@
+nner_receipt: /hom
+e/graham/workspace
+/experiments/tau/e
+xperiments/goal-lo
+cked-subagents/pro
+ofs/real-world-san
+ity/20260705T20502
+0Z-tau-provider-br
+oad-failure-classi
+fication-fix-20260
+705/advanced-provi
+der-runs/invalid-m
+odel/20260705T2059
+36Z-rw-sanity-prov
+ider-dag-invalid-m
+odel/planner-recei
+pt.json\nfinal_rec
+eipt: /home/graham
+/workspace/experim
+ents/tau/experimen
+ts/goal-locked-sub
+agents/proofs/real
+-world-sanity/2026
+0705T205020Z-tau-p
+rovider-broad-fail
+ure-classification
+-fix-20260705/adva
+nced-provider-runs
+/invalid-model/202
+60705T205936Z-rw-s
+anity-provider-dag
+-invalid-model/run
+-receipt.json\ncan
+onical truth: Tau
+JSON receipts; thi
+s pane is human-vi
+sible telemetry.\n

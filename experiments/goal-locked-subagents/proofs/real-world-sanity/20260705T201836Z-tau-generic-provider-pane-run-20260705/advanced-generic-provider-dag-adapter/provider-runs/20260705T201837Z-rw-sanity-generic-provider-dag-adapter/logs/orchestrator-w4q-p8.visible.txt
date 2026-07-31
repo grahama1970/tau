@@ -1,0 +1,37 @@
+/home/graham/works
+pace/experiments/t
+au/experiments/goa
+l-locked-subagents
+/proofs/real-world
+-sanity/20260705T2
+01836Z-tau-generic
+-provider-pane-run
+-20260705/advanced
+-generic-provider-
+dag-adapter/provid
+er-runs/20260705T2
+01837Z-rw-sanity-g
+eneric-provider-da
+g-adapter/planner-
+receipt.json\nfina
+l_receipt: /home/g
+raham/workspace/ex
+periments/tau/expe
+riments/goal-locke
+d-subagents/proofs
+/real-world-sanity
+/20260705T201836Z-
+tau-generic-provid
+er-pane-run-202607
+05/advanced-generi
+c-provider-dag-ada
+pter/provider-runs
+/20260705T201837Z-
+rw-sanity-generic-
+provider-dag-adapt
+er/run-receipt.jso
+n\ncanonical truth
+: Tau JSON receipt
+s; this pane is hu
+man-visible teleme
+try.\n

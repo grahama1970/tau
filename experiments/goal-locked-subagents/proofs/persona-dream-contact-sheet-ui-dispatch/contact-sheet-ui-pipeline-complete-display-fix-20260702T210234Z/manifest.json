@@ -1,0 +1,33 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "No new image generation, paid provider call, public upload, or Kling submission was performed.",
+      "Missing contact sheets remain requirements until a later image-generation/indexing lane creates them."
+    ],
+    "proves": [
+      "Tau ran a command-spec loop from contact-sheet-writer to contact-sheet-reviewer.",
+      "Phase 04 contact-sheet requirements were derived from the story interaction matrix.",
+      "Reviewer checked that durable Phase 04 contact-sheet artifacts exist under the selected run root."
+    ]
+  },
+  "command_loop_ok": true,
+  "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-contact-sheet-ui-dispatch/contact-sheet-ui-pipeline-complete-display-fix-20260702T210234Z/command-loop/command-loop-receipt.json",
+  "command_loop_status": "WAITING",
+  "contact_sheet_requirements": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/contact_sheet_requirements.json",
+  "created_at": "2026-07-02T21:02:36Z",
+  "input_work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-contact-sheet-ui-dispatch/contact-sheet-ui-pipeline-complete-display-fix-20260702T210234Z/input_contact_sheet_work_order.json",
+  "issue": 45,
+  "live": true,
+  "mocked": false,
+  "provider_live": false,
+  "provider_matrix": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/provider_matrix.json",
+  "reference_asset_manifest": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/reference_asset_manifest.json",
+  "run_root": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete",
+  "schema": "tau.persona_dream_contact_sheet_loop_proof.v1",
+  "start_handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/persona-dream-contact-sheet-ui-dispatch/contact-sheet-ui-pipeline-complete-display-fix-20260702T210234Z/start-handoff.json",
+  "stop_reason": "next_agent_is_human",
+  "terminal_agent": "human",
+  "validate_contact_sheet_contract": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/receipts/validate_contact_sheet_contract.json",
+  "validate_contact_sheet_contract_status": "PASS_CONTACT_SHEET_CONTRACT",
+  "visual_entity_context": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/reports/pipeline-complete/phase_04_contact_sheets/visual_entity_context.json"
+}

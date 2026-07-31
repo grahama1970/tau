@@ -1,0 +1,36 @@
+dapter/
+receipt
+s/attem
+pt-01-r
+eviewer
+.json
+Wrote f
+ile suc
+cessful
+ly.
+
+The TOD
+O line
+is gone
+ (messa
+ge.txt
+has the
+ comple
+tion te
+xt), th
+e coder
+ receip
+t has a
+ll requ
+ired fi
+elds an
+d is sc
+hema-va
+lid, an
+d `forc
+e_revis
+e` is `
+false`.
+ Verdic
+t: **PA
+SS**.

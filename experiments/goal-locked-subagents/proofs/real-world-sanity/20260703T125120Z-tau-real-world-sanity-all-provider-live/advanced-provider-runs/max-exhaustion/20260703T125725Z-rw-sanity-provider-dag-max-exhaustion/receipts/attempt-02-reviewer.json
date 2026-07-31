@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/max-exhaustion/20260703T125725Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work-orders/attempt-02-reviewer.json",
+    "read receipts/attempt-02-coder.json",
+    "read scratch-worktree/message.txt",
+    "ls scratch-worktree/"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/max-exhaustion/20260703T125725Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260703T125120Z-tau-real-world-sanity-all-provider-live/advanced-provider-runs/max-exhaustion/20260703T125725Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "REVISE per force_revise. File has no TODO line and coder receipt is schema-valid, but message omits the run_id (20260703T125725Z-rw-sanity-provider-dag-max-exhaustion) and does not identify which provider occupied which DAG node role. For the next attempt: include run_id, label each node with its provider_id (dispatcher=opencode, coder=codex, reviewer=opencode), and mention the max-exhaustion mode so the artifact self-documents as a proof-of-concept receipt rather than a static sentence.",
+  "errors": [],
+  "policy_exceptions": []
+}

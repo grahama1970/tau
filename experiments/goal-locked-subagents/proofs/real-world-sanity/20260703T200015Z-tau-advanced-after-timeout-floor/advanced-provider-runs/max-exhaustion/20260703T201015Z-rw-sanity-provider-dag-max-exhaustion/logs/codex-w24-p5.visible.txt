@@ -1,0 +1,38 @@
+    "handoff_summary": "What changed.",
+    "errors": [],
+    "policy_exceptions": []
+  }
+
+
+⚠ Exceeded skills context budget of 2%. All
+  skill descriptions were removed and 10
+  additional skills were not included in the
+  model-visible skills list.
+
+• UserPromptSubmit hook (completed)
+  hook context: For this status request, answer
+  with a concrete operational snapshot. Include:
+  Status/Phase, Now/current file-command-
+  artifact, Evidence with specific counts or
+  command results, and Next/stop condition. If
+  work is not actually finished, say exactly
+  what remains. Avoid vague progress phrases
+  such as checking, working, should be, almost,
+  or making progress unless paired with exact
+  command/artifact evidence.
+
+• I’ll read the work order first, then constrain
+  all edits and checks to the scratch worktree
+  and the single target file it names.
+
+• Explored
+  └ Read attempt-01-coder.json
+
+────────────────────────────────────────────────
+
+• Working (4m 59s • esc to interrupt)
+
+
+› Summarize recent commits
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

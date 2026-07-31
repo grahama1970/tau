@@ -1,0 +1,38 @@
+
+• Status/Phase: PASS, complete.
+
+  Now: Updated experiments/goal-locked-
+  subagents/proofs/real-world-
+  sanity/20260703T194409Z-tau-advanced-after-
+  readiness-sampling/advanced-provider-runs/max-
+  exhaustion/20260703T195309Z-rw-sanity-
+  provider-dag-max-exhaustion/scratch-worktree/
+  message.txt and wrote experiments/goal-locked-
+  subagents/proofs/real-world-
+  sanity/20260703T194409Z-tau-advanced-after-
+  readiness-sampling/advanced-provider-runs/max-
+  exhaustion/20260703T195309Z-rw-sanity-
+  provider-dag-max-exhaustion/receipts/attempt-
+  02-coder.json.
+
+  Evidence: message.txt now contains Provider
+  DAG max-exhaustion retry now has a grounded
+  completion note. Scratch worktree file count
+  remained 1: ./message.txt. Receipt parsed with
+  python3 -m json.tool; assertion script printed
+  validated attempt-02 receipt and target file.
+
+  Proof scope: mocked: no. live: no. Exercised
+  deterministic filesystem edit and JSON
+  validation only.
+
+  Next/stop condition: Nothing remains for
+  attempt 2. No Tau repository files, GitHub, or
+  Tailscale were used.
+
+─ Worked for 1m 10s ────────────────────────────
+
+
+› Improve documentation in @filename
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

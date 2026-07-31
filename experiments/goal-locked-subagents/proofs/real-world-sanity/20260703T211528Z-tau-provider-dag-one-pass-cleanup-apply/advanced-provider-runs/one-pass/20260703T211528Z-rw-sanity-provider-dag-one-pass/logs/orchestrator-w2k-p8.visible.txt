@@ -1,0 +1,37 @@
+d-subagents/proofs/rea
+l-world-sanity/2026070
+3T211528Z-tau-provider
+-dag-one-pass-cleanup-
+apply/advanced-provide
+r-runs/one-pass/202607
+03T211528Z-rw-sanity-p
+rovider-dag-one-pass/d
+ag-spec.json\nplanner_
+receipt: /home/graham/
+workspace/experiments/
+tau/experiments/goal-l
+ocked-subagents/proofs
+/real-world-sanity/202
+60703T211528Z-tau-prov
+ider-dag-one-pass-clea
+nup-apply/advanced-pro
+vider-runs/one-pass/20
+260703T211528Z-rw-sani
+ty-provider-dag-one-pa
+ss/planner-receipt.jso
+n\nfinal_receipt: /hom
+e/graham/workspace/exp
+eriments/tau/experimen
+ts/goal-locked-subagen
+ts/proofs/real-world-s
+anity/20260703T211528Z
+-tau-provider-dag-one-
+pass-cleanup-apply/adv
+anced-provider-runs/on
+e-pass/20260703T211528
+Z-rw-sanity-provider-d
+ag-one-pass/run-receip
+t.json\ncanonical trut
+h: Tau JSON receipts;
+this pane is human-vis
+ible telemetry.\n

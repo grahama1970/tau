@@ -1,0 +1,17 @@
+{
+  "live": false,
+  "mocked": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "structured provider readiness"
+    ],
+    "proves": [
+      "provider-pane allocation artifacts can fail closed"
+    ]
+  },
+  "provider_live": false,
+  "run_id": "rw-sanity-provider-pane-status",
+  "schema": "tau.provider_pane_run_receipt.v1",
+  "status": "BLOCKED"
+}
