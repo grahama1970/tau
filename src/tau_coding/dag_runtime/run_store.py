@@ -573,6 +573,11 @@ def _plan_context_binding_from_payload(item: Mapping[str, Any]) -> DagPlanContex
         materialization_mode=str(item.get("materialization_mode", "by_value")),
         on_missing=str(item.get("on_missing", "omit")),
         on_invalid=str(item.get("on_invalid", "omit")),
+        max_reference_bytes=(
+            int(item["max_reference_bytes"])
+            if item.get("max_reference_bytes") is not None
+            else None
+        ),
     )
 
 

@@ -94,6 +94,7 @@ class DagPlanContextBinding:
     materialization_mode: str = "by_value"
     on_missing: str = "omit"
     on_invalid: str = "omit"
+    max_reference_bytes: int | None = None
 
     def to_payload(self) -> dict[str, Any]:
         return {
@@ -109,6 +110,7 @@ class DagPlanContextBinding:
             "materialization_mode": self.materialization_mode,
             "on_missing": self.on_missing,
             "on_invalid": self.on_invalid,
+            "max_reference_bytes": self.max_reference_bytes,
         }
 
 
