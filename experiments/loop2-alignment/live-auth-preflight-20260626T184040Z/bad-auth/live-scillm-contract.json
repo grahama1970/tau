@@ -1,0 +1,20 @@
+{
+  "schema": "loop2.repair_node_contract.v1",
+  "node_id": "tau-live-auth-preflight-bad-auth",
+  "objective": "Fix src/buggy_math.py so add(a, b) returns the mathematical sum and the pytest command passes. Only edit src/buggy_math.py. Do not edit tests.",
+  "repo": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/bad-auth/repo",
+  "allowed_globs": ["src/buggy_math.py"],
+  "checks": ["PYTHONPATH=src python3 -m pytest tests -q"],
+  "max_attempts": 1,
+  "backend": "scillm",
+  "run_root": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/bad-auth/.loop2/runs",
+  "scillm": {
+    "base_url": "http://127.0.0.1:4001",
+    "api_key": "bad-scillm-key",
+    "agent_id": "",
+    "agent": "build",
+    "mode": "workspace_write",
+    "model": "opencode-go/kimi-k2.6",
+    "timeout_s": 900
+  }
+}

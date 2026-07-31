@@ -1,0 +1,98 @@
+{
+  "artifact_sanitization": {
+    "artifact": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/.loop2/runs/loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62/tau-sanitization.json",
+    "changed_artifacts": [
+      "contract.json",
+      "final-receipt.json",
+      "node-result.json"
+    ],
+    "filtered_changed_files": 8,
+    "ran": true,
+    "redacted_keys": [
+      "contract.scillm.api_key"
+    ],
+    "run_dir": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/.loop2/runs/loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62",
+    "schema": "tau.loop2_delegated_artifact_sanitization.v1"
+  },
+  "checks": [
+    {
+      "command": "PYTHONPATH=src python3 -m pytest tests -q",
+      "elapsed_s": 0.222,
+      "exit_code": 0,
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/.loop2/runs/loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62/checks/01-stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/.loop2/runs/loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62/checks/01-stdout.txt"
+    }
+  ],
+  "contract": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/live-scillm-contract.json",
+  "contract_preparation": {
+    "auth_source": "env:SCILLM_API_KEY",
+    "execution_contract": "/tmp/tau-loop2-contract-z7x0ucxo/live-scillm-contract.json",
+    "ran": true,
+    "redacted_keys": [
+      "contract.scillm.api_key"
+    ],
+    "schema": "tau.loop2_contract_preparation.v1"
+  },
+  "delegated": true,
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "native_validation": {
+    "checked_artifacts": [
+      "contract",
+      "final_receipt",
+      "node_result",
+      "events",
+      "current_state",
+      "transport_dag_evidence",
+      "artifact_paths",
+      "check_status",
+      "mocked_live",
+      "node_result_parity",
+      "contract_parity",
+      "secret_redaction",
+      "tau_sanitization",
+      "state_status"
+    ],
+    "errors": [],
+    "ok": true
+  },
+  "node_id": "tau-live-auth-preflight-good-auth",
+  "node_result": {
+    "changed_files": [
+      "src/buggy_math.py"
+    ],
+    "checks": [
+      {
+        "command": "PYTHONPATH=src python3 -m pytest tests -q",
+        "elapsed_s": 0.222,
+        "exit_code": 0,
+        "stderr_path": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/.loop2/runs/loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62/checks/01-stderr.txt",
+        "stdout_path": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/.loop2/runs/loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62/checks/01-stdout.txt"
+      }
+    ],
+    "events": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/.loop2/runs/loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62/events.jsonl",
+    "final_receipt": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/.loop2/runs/loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62/final-receipt.json",
+    "live": true,
+    "mocked": false,
+    "node_id": "tau-live-auth-preflight-good-auth",
+    "run_id": "loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62",
+    "schema": "loop2.node_result.v1",
+    "status": "PASS",
+    "transport_dag_evidence": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/.loop2/runs/loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62/transport-dag-evidence.json"
+  },
+  "ok": true,
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/good-auth/.loop2/runs/loop2-tau-live-auth-preflight-good-auth-1782499271-6f7d62",
+  "runner": "/home/graham/workspace/experiments/agent-skills/skills/loop2/run.sh",
+  "schema": "tau.loop2_contract_run.v1",
+  "scillm_auth_preflight": {
+    "base_url": "http://127.0.0.1:4001",
+    "caller_skill": "tau",
+    "endpoint": "/v1/scillm/loop2/capabilities",
+    "errors": [],
+    "ok": true,
+    "ran": true,
+    "schema": "tau.scillm_proxy_auth_preflight.v1",
+    "status_code": 200
+  }
+}
