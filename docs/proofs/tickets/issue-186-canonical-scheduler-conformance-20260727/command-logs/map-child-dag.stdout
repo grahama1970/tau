@@ -1,0 +1,217 @@
+{
+  "checkpoint_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/parent-run/checkpoint.json",
+  "completed_node_count": 0,
+  "cost_accounting": {
+    "budget": {
+      "state": "NOT_CONFIGURED"
+    },
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "estimated_cost_is_billing_truth": false,
+    "estimated_cost_usd": null,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "schema": "tau.generic_dag_cost_accounting.v1",
+    "source": "not_reported",
+    "total_tokens": 0
+  },
+  "current_state_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/parent-run/current-state.json",
+  "dag_plan_sha256": "sha256:177fb5f682bc388e7485410d5efd778a84da7f6074b4b9335157f7b11bd89f27",
+  "diagnostics_log_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/parent-run/tau-diagnostics.jsonl",
+  "durable": true,
+  "events_jsonl": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/parent-run/events.jsonl",
+  "execution": "local_subprocess_receipt_gated_dag",
+  "lease_epoch": 1,
+  "live": false,
+  "max_observed_concurrency": 1,
+  "mocked": false,
+  "node_count": 1,
+  "nodes": [
+    {
+      "accepted_output": null,
+      "artifacts": [],
+      "attempt_count": 1,
+      "command_results": [
+        {
+          "argv": [
+            "/tmp/tau-issue189-1785166987/.venv/bin/python",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map_child_runner.py",
+            "--repo-root",
+            "/tmp/tau-issue189-1785166987",
+            "--root",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run",
+            "--receipt",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-node-receipt.json",
+            "--goal-hash",
+            "sha256:canonical-scheduler-conformance"
+          ],
+          "elapsed_seconds": 2.492,
+          "returncode": 2,
+          "runtime_artifacts": [
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/.tau-runtime/map-items/attempt-001/runtime-endpoint-lease.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/.tau-runtime/map-items/attempt-001/runtime-submit-receipt.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/.tau-runtime/map-items/attempt-001/runtime-event.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/.tau-runtime/map-items/attempt-001/runtime-capture.json"
+          ],
+          "runtime_backend": "local",
+          "runtime_capture": {
+            "cancelled": false,
+            "command": [
+              "/tmp/tau-issue189-1785166987/.venv/bin/python",
+              "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map_child_runner.py",
+              "--repo-root",
+              "/tmp/tau-issue189-1785166987",
+              "--root",
+              "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run",
+              "--receipt",
+              "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-node-receipt.json",
+              "--goal-hash",
+              "sha256:canonical-scheduler-conformance"
+            ],
+            "returncode": 2,
+            "schema": "tau.local_runtime_capture.v1",
+            "stderr": "",
+            "stdout": "{\n  \"child_dag\": {\n    \"all_children_passed\": false,\n    \"child_count\": 3,\n    \"child_receipts\": [\n      {\n        \"child_id\": \"child-alpha\",\n        \"exit_code\": 1,\n        \"item_id\": \"alpha\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/receipt.json\",\n        \"receipt_sha256\": null,\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag.json\",\n        \"status\": \"BLOCKED\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag-run.stdout\"\n      },\n      {\n        \"child_id\": \"child-bravo\",\n        \"exit_code\": 1,\n        \"item_id\": \"bravo\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/receipt.json\",\n        \"receipt_sha256\": null,\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag.json\",\n        \"status\": \"BLOCKED\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag-run.stdout\"\n      },\n      {\n        \"child_id\": \"child-charlie\",\n        \"exit_code\": 1,\n        \"item_id\": \"charlie\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/receipt.json\",\n        \"receipt_sha256\": null,\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag.json\",\n        \"status\": \"BLOCKED\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag-run.stdout\"\n      }\n    ]\n  },\n  \"commands_run\": [\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag.json\",\n      \"--no-resume\"\n    ],\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag.json\",\n      \"--no-resume\"\n    ],\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag.json\",\n      \"--no-resume\"\n    ]\n  ],\n  \"errors\": [\n    \"child-alpha:child_dag_failed:1:BLOCKED\",\n    \"child-bravo:child_dag_failed:1:BLOCKED\",\n    \"child-charlie:child_dag_failed:1:BLOCKED\",\n    \"child_dag_pass_contract_failed\"\n  ],\n  \"live\": true,\n  \"map_node\": {\n    \"deterministic_child_ids\": [\n      \"child-alpha\",\n      \"child-bravo\",\n      \"child-charlie\"\n    ],\n    \"exact_join_cardinality\": true,\n    \"item_count\": 3\n  },\n  \"mocked\": false,\n  \"provider_live\": false,\n  \"schema\": \"tau.map_child_dag_conformance.v1\",\n  \"status\": \"BLOCKED\"\n}\n",
+            "timed_out": false
+          },
+          "runtime_endpoint_lease": {
+            "attempt_id": "attempt-f007dd36220680770a514a33c777aca1",
+            "attempt_number": 1,
+            "backend": "local",
+            "backend_ids": {
+              "pid": null
+            },
+            "backend_session_id": null,
+            "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+            "cleanup_policy": {
+              "kind": "process_group_termination"
+            },
+            "created_at": "2026-07-27T16:49:19.695702+00:00",
+            "dag_id": "generic:canonical-map-child-dag",
+            "endpoint_id": "local:3329264ee69de345c0844d1f",
+            "execution_token": "[REDACTED]",
+            "expires_at": "2026-07-27T16:52:19.695702+00:00",
+            "goal_hash": "sha256:3013b32f9c31e643513fe0ed4f028fc5b0985a4811acbf2cbf4c8be6cd992721",
+            "heartbeat_policy": {
+              "kind": "process_poll"
+            },
+            "node_id": "map-items",
+            "owner": "tau",
+            "plan_revision": "sha256:177fb5f682bc388e7485410d5efd778a84da7f6074b4b9335157f7b11bd89f27",
+            "run_id": "canonical-map-child-dag",
+            "schema": "tau.runtime_endpoint_lease.v1",
+            "scope_id": "canonical-map-child-dag",
+            "work_order_sha256": "sha256:7e267b069dea8eb2eb72b6de260bd5f337b235525b83a68a149acb4a589e533c"
+          },
+          "runtime_event": {
+            "confidence": "PROCESS",
+            "endpoint_lease_sha256": "sha256:e626549c86ff52dacca1c3d05098185d85794715b887fa94f224b011b204c9c7",
+            "event_id": "local-event:3329264ee69de345c0844d1f",
+            "event_type": "RUNTIME_ENDPOINT_EXITED",
+            "liveness": "DEAD",
+            "observation": {
+              "cancelled": false,
+              "returncode": 2,
+              "timed_out": false
+            },
+            "observed_at": "2026-07-27T16:49:22.183428+00:00",
+            "run_id": "canonical-map-child-dag",
+            "schema": "tau.runtime_event.v1",
+            "source": "local",
+            "state": "CRASHED"
+          },
+          "runtime_submit_receipt": {
+            "backend_acknowledgement": {
+              "process_started": true,
+              "stdin_delivery": "not_requested"
+            },
+            "composer_state_after": "NOT_APPLICABLE",
+            "composer_state_before": "NOT_APPLICABLE",
+            "delivery_status": "CONFIRMED",
+            "endpoint_lease_sha256": "sha256:e626549c86ff52dacca1c3d05098185d85794715b887fa94f224b011b204c9c7",
+            "errors": [],
+            "provider_execution_status": "NOT_APPLICABLE",
+            "schema": "tau.runtime_submit_receipt.v1",
+            "submit_attempt_count": 1,
+            "text_delivery_count": 0,
+            "work_order_sha256": "sha256:7e267b069dea8eb2eb72b6de260bd5f337b235525b83a68a149acb4a589e533c"
+          },
+          "stderr": "",
+          "stdout": "{\n  \"child_dag\": {\n    \"all_children_passed\": false,\n    \"child_count\": 3,\n    \"child_receipts\": [\n      {\n        \"child_id\": \"child-alpha\",\n        \"exit_code\": 1,\n        \"item_id\": \"alpha\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/receipt.json\",\n        \"receipt_sha256\": null,\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag.json\",\n        \"status\": \"BLOCKED\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag-run.stdout\"\n      },\n      {\n        \"child_id\": \"child-bravo\",\n        \"exit_code\": 1,\n        \"item_id\": \"bravo\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/receipt.json\",\n        \"receipt_sha256\": null,\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag.json\",\n        \"status\": \"BLOCKED\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag-run.stdout\"\n      },\n      {\n        \"child_id\": \"child-charlie\",\n        \"exit_code\": 1,\n        \"item_id\": \"charlie\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/receipt.json\",\n        \"receipt_sha256\": null,\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag.json\",\n        \"status\": \"BLOCKED\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag-run.stdout\"\n      }\n    ]\n  },\n  \"commands_run\": [\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag.json\",\n      \"--no-resume\"\n    ],\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag.json\",\n      \"--no-resume\"\n    ],\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag.json\",\n      \"--no-resume\"\n    ]\n  ],\n  \"errors\": [\n    \"child-alpha:child_dag_failed:1:BLOCKED\",\n    \"child-bravo:child_dag_failed:1:BLOCKED\",\n    \"child-charlie:child_dag_failed:1:BLOCKED\",\n    \"child_dag_pass_contract_failed\"\n  ],\n  \"live\": true,\n  \"map_node\": {\n    \"deterministic_child_ids\": [\n      \"child-alpha\",\n      \"child-bravo\",\n      \"child-charlie\"\n    ],\n    \"exact_join_cardinality\": true,\n    \"item_count\": 3\n  },\n  \"mocked\": false,\n  \"provider_live\": false,\n  \"schema\": \"tau.map_child_dag_conformance.v1\",\n  \"status\": \"BLOCKED\"\n}\n",
+          "termination_cause": "exited"
+        }
+      ],
+      "cost_accounting": {
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "duration_seconds": 2.492,
+      "errors": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python /tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map_child_runner.py --repo-root /tmp/tau-issue189-1785166987 --root /tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run --receipt /tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-node-receipt.json --goal-hash sha256:canonical-scheduler-conformance exited 2: {\n  \"child_dag\": {\n    \"all_children_passed\": false,\n    \"child_count\": 3,\n    \"child_receipts\": [\n      {\n        \"child_id\": \"child-alpha\",\n        \"exit_code\": 1,\n        \"item_id\": \"alpha\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/receipt.json\",\n        \"receipt_sha256\": null,\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag.json\",\n        \"status\": \"BLOCKED\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag-run.stdout\"\n      },\n      {\n        \"child_id\": \"child-bravo\",\n        \"exit_code\": 1,\n        \"item_id\": \"bravo\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/receipt.json\",\n        \"receipt_sha256\": null,\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag.json\",\n        \"status\": \"BLOCKED\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag-run.stdout\"\n      },\n      {\n        \"child_id\": \"child-charlie\",\n        \"exit_code\": 1,\n        \"item_id\": \"charlie\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/receipt.json\",\n        \"receipt_sha256\": null,\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag.json\",\n        \"status\": \"BLOCKED\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag-run.stdout\"\n      }\n    ]\n  },\n  \"commands_run\": [\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag.json\",\n      \"--no-resume\"\n    ],\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag.json\",\n      \"--no-resume\"\n    ],\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag.json\",\n      \"--no-resume\"\n    ]\n  ],\n  \"errors\": [\n    \"child-alpha:child_dag_failed:1:BLOCKED\",\n    \"child-bravo:child_dag_failed:1:BLOCKED\",\n    \"child-charlie:child_dag_failed:1:BLOCKED\",\n    \"child_dag_pass_contract_failed\"\n  ],\n  \"live\": true,\n  \"map_node\": {\n    \"deterministic_child_ids\": [\n      \"child-alpha\",\n      \"child-bravo\",\n      \"child-charlie\"\n    ],\n    \"exact_join_cardinality\": true,\n    \"item_count\": 3\n  },\n  \"mocked\": false,\n  \"provider_live\": false,\n  \"schema\": \"tau.map_child_dag_conformance.v1\",\n  \"status\": \"BLOCKED\"\n}"
+      ],
+      "finished_at": "2026-07-27T16:49:22Z",
+      "node_id": "map-items",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-node-receipt.json",
+      "resumed": false,
+      "role": "map-items",
+      "scheduler_attempts": [
+        {
+          "attempt": 1,
+          "errors": [
+            "/tmp/tau-issue189-1785166987/.venv/bin/python /tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map_child_runner.py --repo-root /tmp/tau-issue189-1785166987 --root /tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run --receipt /tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-node-receipt.json --goal-hash sha256:canonical-scheduler-conformance exited 2: {\n  \"child_dag\": {\n    \"all_children_passed\": false,\n    \"child_count\": 3,\n    \"child_receipts\": [\n      {\n        \"child_id\": \"child-alpha\",\n        \"exit_code\": 1,\n        \"item_id\": \"alpha\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/receipt.json\",\n        \"receipt_sha256\": null,\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag.json\",\n        \"status\": \"BLOCKED\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag-run.stdout\"\n      },\n      {\n        \"child_id\": \"child-bravo\",\n        \"exit_code\": 1,\n        \"item_id\": \"bravo\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/receipt.json\",\n        \"receipt_sha256\": null,\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag.json\",\n        \"status\": \"BLOCKED\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag-run.stdout\"\n      },\n      {\n        \"child_id\": \"child-charlie\",\n        \"exit_code\": 1,\n        \"item_id\": \"charlie\",\n        \"receipt_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/receipt.json\",\n        \"receipt_sha256\": null,\n        \"spec_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag.json\",\n        \"status\": \"BLOCKED\",\n        \"stderr_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag-run.stderr\",\n        \"stdout_path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag-run.stdout\"\n      }\n    ]\n  },\n  \"commands_run\": [\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag.json\",\n      \"--no-resume\"\n    ],\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag.json\",\n      \"--no-resume\"\n    ],\n    [\n      \"uv\",\n      \"run\",\n      \"tau\",\n      \"dag-run\",\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag.json\",\n      \"--no-resume\"\n    ]\n  ],\n  \"errors\": [\n    \"child-alpha:child_dag_failed:1:BLOCKED\",\n    \"child-bravo:child_dag_failed:1:BLOCKED\",\n    \"child-charlie:child_dag_failed:1:BLOCKED\",\n    \"child_dag_pass_contract_failed\"\n  ],\n  \"live\": true,\n  \"map_node\": {\n    \"deterministic_child_ids\": [\n      \"child-alpha\",\n      \"child-bravo\",\n      \"child-charlie\"\n    ],\n    \"exact_join_cardinality\": true,\n    \"item_count\": 3\n  },\n  \"mocked\": false,\n  \"provider_live\": false,\n  \"schema\": \"tau.map_child_dag_conformance.v1\",\n  \"status\": \"BLOCKED\"\n}"
+          ],
+          "status": "BLOCKED",
+          "verdict": "SUBAGENT_ERROR"
+        }
+      ],
+      "started_at": "2026-07-27T16:49:19Z",
+      "status": "BLOCKED",
+      "verdict": "SUBAGENT_ERROR",
+      "work_order_path": null,
+      "work_order_sha256": null
+    }
+  ],
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "remote Tailscale monitoring",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "live provider CLI execution",
+      "Herdr pane visibility"
+    ],
+    "proves": [
+      "Tau can validate a generic DAG spec",
+      "Tau can execute local subprocess workers in dependency order",
+      "Tau can gate downstream nodes on schema-valid node receipts",
+      "Tau can resume from existing valid node receipts",
+      "Tau can reject stale work-order receipts when work_order_sha256 no longer matches",
+      "Tau can write durable checkpoint and current-state artifacts",
+      "Tau can fail closed on timeout, non-zero exit, invalid receipt, or blocked verdict"
+    ]
+  },
+  "provider_live": false,
+  "replayed_event_count": 2,
+  "resume_requested": false,
+  "resume_source": {
+    "mode": "spec_path",
+    "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-child-parent.json"
+  },
+  "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/parent-run",
+  "run_id": "canonical-map-child-dag",
+  "run_store_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/parent-run/dag-run.sqlite3",
+  "scheduler": "dag_plan_ready_queue",
+  "scheduler_run_id": "canonical-map-child-dag",
+  "schema": "tau.generic_dag_run_receipt.v1",
+  "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-child-parent.json",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-27T16:49:22Z",
+  "verdict": "SUBAGENT_ERROR"
+}

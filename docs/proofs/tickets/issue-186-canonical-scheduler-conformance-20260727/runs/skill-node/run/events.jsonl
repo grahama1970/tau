@@ -1,0 +1,2 @@
+{"kind": "dag_started", "resume": false, "resume_source": null, "run_id": "canonical-skill-node", "schema": "tau.generic_dag_event.v1", "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/skill-node/skill-node.json", "timestamp": "2026-07-27T16:49:17Z"}
+{"kind": "dag_finished", "run_id": "canonical-skill-node", "schema": "tau.generic_dag_event.v1", "status": "PASS", "timestamp": "2026-07-27T16:49:18Z", "verdict": "PASS"}

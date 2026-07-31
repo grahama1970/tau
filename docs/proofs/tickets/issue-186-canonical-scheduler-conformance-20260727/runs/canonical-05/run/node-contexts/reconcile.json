@@ -1,0 +1,46 @@
+{
+  "accepted_inputs": [
+    {
+      "artifacts": [
+        {
+          "bytes": 1117,
+          "kind": "bounded-build",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-05/artifacts/build.json",
+          "sha256": "sha256:bc135cfe7f3411508aa811fa5b02889e8432e750ee3f4a7f924a9e26e8c2e602"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "build produced its accepted bounded-build artifact."
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 1119,
+          "kind": "independent-test",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-05/artifacts/test.json",
+          "sha256": "sha256:9eaac4b70ae8ab29b9dc747a00a4f40f1677b478a2e7c80c6cbe094d6fe69726"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "test produced its accepted independent-test artifact."
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 1129,
+          "kind": "operator-documentation",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-05/artifacts/document.json",
+          "sha256": "sha256:6f9e4484e3082c2d10c2b292182dae1447dabc3c7041483b45bed12141248161"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "document produced its accepted operator-documentation artifact."
+    }
+  ],
+  "node_id": "reconcile",
+  "run_id": "canonical-05-durable-resume-repair",
+  "schema": "tau.generic_dag_node_context.v1"
+}

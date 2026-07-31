@@ -1,0 +1,87 @@
+{
+  "child_dag": {
+    "all_children_passed": false,
+    "child_count": 3,
+    "child_receipts": [
+      {
+        "child_id": "child-alpha",
+        "exit_code": 1,
+        "item_id": "alpha",
+        "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/receipt.json",
+        "receipt_sha256": null,
+        "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag.json",
+        "status": "BLOCKED",
+        "stderr_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag-run.stderr",
+        "stdout_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag-run.stdout"
+      },
+      {
+        "child_id": "child-bravo",
+        "exit_code": 1,
+        "item_id": "bravo",
+        "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/receipt.json",
+        "receipt_sha256": null,
+        "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag.json",
+        "status": "BLOCKED",
+        "stderr_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag-run.stderr",
+        "stdout_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag-run.stdout"
+      },
+      {
+        "child_id": "child-charlie",
+        "exit_code": 1,
+        "item_id": "charlie",
+        "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/receipt.json",
+        "receipt_sha256": null,
+        "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag.json",
+        "status": "BLOCKED",
+        "stderr_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag-run.stderr",
+        "stdout_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag-run.stdout"
+      }
+    ]
+  },
+  "commands_run": [
+    [
+      "uv",
+      "run",
+      "tau",
+      "dag-run",
+      "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag.json",
+      "--no-resume"
+    ],
+    [
+      "uv",
+      "run",
+      "tau",
+      "dag-run",
+      "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag.json",
+      "--no-resume"
+    ],
+    [
+      "uv",
+      "run",
+      "tau",
+      "dag-run",
+      "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag.json",
+      "--no-resume"
+    ]
+  ],
+  "errors": [
+    "child-alpha:child_dag_failed:1:BLOCKED",
+    "child-bravo:child_dag_failed:1:BLOCKED",
+    "child-charlie:child_dag_failed:1:BLOCKED",
+    "child_dag_pass_contract_failed"
+  ],
+  "live": true,
+  "map_node": {
+    "deterministic_child_ids": [
+      "child-alpha",
+      "child-bravo",
+      "child-charlie"
+    ],
+    "exact_join_cardinality": true,
+    "item_count": 3
+  },
+  "mocked": false,
+  "provider_live": false,
+  "schema": "tau.map_child_dag_conformance.v1",
+  "status": "BLOCKED"
+}

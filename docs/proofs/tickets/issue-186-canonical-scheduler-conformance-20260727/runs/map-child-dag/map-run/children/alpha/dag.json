@@ -1,0 +1,18 @@
+{
+  "goal_hash": "sha256:canonical-scheduler-conformance",
+  "nodes": [
+    {
+      "command": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python",
+        "-c",
+        "import json\nfrom pathlib import Path\nreceipt_path = Path(\"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/receipt.json\")\npayload = {\"schema\": \"tau.generic_dag_node_receipt.v1\", \"node_id\": \"child-alpha\", \"status\": \"PASS\", \"verdict\": \"PASS\", \"mocked\": false, \"live\": true, \"provider_live\": false, \"goal_hash\": \"sha256:canonical-scheduler-conformance\", \"accepted_output\": {\"item_id\": \"alpha\", \"value\": 1, \"result\": 2}, \"artifacts\": [], \"commands_run\": [], \"errors\": [], \"policy_exceptions\": [], \"handoff_summary\": \"Processed map item alpha\"}\nreceipt_path.parent.mkdir(parents=True, exist_ok=True)\nreceipt_path.write_text(\n    json.dumps(payload, indent=2, sort_keys=True) + '\\n',\n    encoding='utf-8',\n)\nprint(json.dumps(payload, sort_keys=True))\n"
+      ],
+      "node_id": "child-alpha",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/receipt.json",
+      "timeout_seconds": 30
+    }
+  ],
+  "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/run",
+  "run_id": "child-alpha",
+  "schema": "tau.generic_dag_spec.v1"
+}

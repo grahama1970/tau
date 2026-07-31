@@ -1,0 +1,32 @@
+{
+  "cancelled": false,
+  "command": [
+    "/tmp/tau-issue189-1785166987/.venv/bin/python",
+    "/tmp/tau-issue189-1785166987/examples/canonical-dags/worker.py",
+    "--node-id",
+    "reconcile",
+    "--role",
+    "branch-reconciliation",
+    "--output",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-05/artifacts/reconcile.json",
+    "--receipt",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-05/receipts/reconcile.json",
+    "--goal",
+    "/tmp/tau-issue189-1785166987/GOAL.md",
+    "--delay",
+    "0.0",
+    "--repair-authorization",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-05/authorizations/targeted-repair.json",
+    "--input",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-05/artifacts/build.json",
+    "--input",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-05/artifacts/test.json",
+    "--input",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-05/artifacts/document.json"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "",
+  "timed_out": false
+}

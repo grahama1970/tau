@@ -1,0 +1,74 @@
+{
+  "collected_failures": [],
+  "computed_success_threshold": 2,
+  "contributions": [
+    {
+      "attempt": 1,
+      "contribution_payload_sha256": "sha256:3b17385c9c32bfca3a194a940f66cbf87856a932eb8a0d70e1b1a0675709d8b1",
+      "contribution_sha256": "sha256:f24c0086066d01f8e6259d3408a999b43150eb3e98a76cfb7f9e615f5be409e6",
+      "edge_index": 3,
+      "reason_code": "source_passed",
+      "source_node_id": "accept",
+      "state": "success"
+    },
+    {
+      "attempt": 1,
+      "contribution_payload_sha256": "sha256:d73979c8435fd6a7a7544cd12c45a9dd915a7e6c599676f72ae175802adb7188",
+      "contribution_sha256": "sha256:31ca4ad02dcb706b9d1edb2e9b26f1a295ccbfb51e1111fc568490abee0e9bcf",
+      "edge_index": 4,
+      "reason_code": "source_passed",
+      "source_node_id": "revise",
+      "state": "success"
+    }
+  ],
+  "contributions_sha256": "sha256:d55997ee7064d759da0ff2a77710051e07028ef95a016575f008d8710df2c427",
+  "counts": {
+    "blocked": 0,
+    "cancelled": 0,
+    "failed": 0,
+    "pending": 0,
+    "skipped": 0,
+    "success": 2,
+    "timed_out": 0,
+    "total": 2
+  },
+  "dag_id": "canonical-project-route-join",
+  "decision": "release",
+  "decision_sha256": "sha256:a17110e98808bb037964c0ca08732187f28528f572159befb08e91e2af97686d",
+  "goal_hash": "sha256:canonical-scheduler-conformance",
+  "incoming_edges": [
+    {
+      "edge_index": 3,
+      "source_node_id": "accept",
+      "target_node_id": "join"
+    },
+    {
+      "edge_index": 4,
+      "source_node_id": "revise",
+      "target_node_id": "join"
+    }
+  ],
+  "incoming_edges_sha256": "sha256:ce1ce7b8383d668c7974c1ef909cbebd32c941d05bc019a84fe3c61a1092fcdc",
+  "join_node_id": "join",
+  "join_policy": {
+    "policy": "minimum_success_count",
+    "required_successes": 2,
+    "schema": "tau.dag_join_policy.v1",
+    "timeout_seconds": 30
+  },
+  "join_policy_sha256": "sha256:e759d929bc5d24177f28009de47decf4c5a8062b981c8b932b439c4681991271",
+  "proof_scope": {
+    "does_not_prove": [
+      "Any successful branch result is semantically true.",
+      "Operating-system isolation or durable restart recovery.",
+      "Provider or model quality."
+    ],
+    "proves": [
+      "Tau evaluated the closed join policy over ordered terminal contributions.",
+      "Tau hash-bound the terminal join decision to its policy and contributions."
+    ]
+  },
+  "reason_code": "join_minimum_success_count_met",
+  "schema": "tau.dag_join_decision.v1",
+  "status": "PASS"
+}

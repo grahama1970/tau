@@ -1,0 +1,161 @@
+{
+  "artifacts": [
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-capture.json",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-endpoint-lease.json",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-event.json",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-submit-receipt.json"
+  ],
+  "command_results": [
+    {
+      "command": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python",
+        "-c",
+        "import json; print(\"{\\\"schema\\\": \\\"tau.agent_handoff.v1\\\", \\\"github\\\": {\\\"repo\\\": \\\"grahama1970/tau\\\", \\\"target\\\": \\\"canonical-scheduler-conformance\\\"}, \\\"goal\\\": {\\\"goal_id\\\": \\\"canonical-scheduler-conformance\\\", \\\"goal_version\\\": 1, \\\"goal_hash\\\": \\\"sha256:canonical-scheduler-conformance\\\"}, \\\"previous_subagent\\\": \\\"accept\\\", \\\"context\\\": {\\\"summary\\\": \\\"accept node response.\\\", \\\"artifacts\\\": []}, \\\"result\\\": {\\\"status\\\": \\\"PASS\\\", \\\"summary\\\": \\\"accept completed.\\\", \\\"evidence\\\": [{\\\"kind\\\": \\\"creator_artifact\\\", \\\"summary\\\": \\\"Canonical scheduler conformance fixture artifact.\\\"}]}, \\\"rationale\\\": \\\"The DAG contract controls the next route.\\\", \\\"next_agent\\\": {\\\"name\\\": \\\"join\\\", \\\"executor\\\": \\\"local\\\", \\\"reason\\\": \\\"Continue along the DAG route.\\\"}, \\\"required_evidence\\\": [\\\"creator_artifact\\\"], \\\"stop_condition\\\": \\\"Stop at human.\\\"}\")"
+      ],
+      "command_spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/project-route-join/run/compiled-command-specs/accept/tau-dispatch-command.json",
+      "command_spec_sha256": "sha256:788804046427f52c56d5e54904caf6a0a94ae6c4bab1b1b553529d47e2c5ede2",
+      "exit_code": 0,
+      "runtime_artifacts": [
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-endpoint-lease.json",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-submit-receipt.json",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-event.json",
+        "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/project-route-join/run/ready-queue/accept/attempt-001/runtime/runtime-capture.json"
+      ],
+      "runtime_backend": "local",
+      "runtime_capture": {
+        "cancelled": false,
+        "command": [
+          "/tmp/tau-issue189-1785166987/.venv/bin/python",
+          "-c",
+          "import json; print(\"{\\\"schema\\\": \\\"tau.agent_handoff.v1\\\", \\\"github\\\": {\\\"repo\\\": \\\"grahama1970/tau\\\", \\\"target\\\": \\\"canonical-scheduler-conformance\\\"}, \\\"goal\\\": {\\\"goal_id\\\": \\\"canonical-scheduler-conformance\\\", \\\"goal_version\\\": 1, \\\"goal_hash\\\": \\\"sha256:canonical-scheduler-conformance\\\"}, \\\"previous_subagent\\\": \\\"accept\\\", \\\"context\\\": {\\\"summary\\\": \\\"accept node response.\\\", \\\"artifacts\\\": []}, \\\"result\\\": {\\\"status\\\": \\\"PASS\\\", \\\"summary\\\": \\\"accept completed.\\\", \\\"evidence\\\": [{\\\"kind\\\": \\\"creator_artifact\\\", \\\"summary\\\": \\\"Canonical scheduler conformance fixture artifact.\\\"}]}, \\\"rationale\\\": \\\"The DAG contract controls the next route.\\\", \\\"next_agent\\\": {\\\"name\\\": \\\"join\\\", \\\"executor\\\": \\\"local\\\", \\\"reason\\\": \\\"Continue along the DAG route.\\\"}, \\\"required_evidence\\\": [\\\"creator_artifact\\\"], \\\"stop_condition\\\": \\\"Stop at human.\\\"}\")"
+        ],
+        "returncode": 0,
+        "schema": "tau.local_runtime_capture.v1",
+        "stderr": "",
+        "stdout": "{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"canonical-scheduler-conformance\"}, \"goal\": {\"goal_id\": \"canonical-scheduler-conformance\", \"goal_version\": 1, \"goal_hash\": \"sha256:canonical-scheduler-conformance\"}, \"previous_subagent\": \"accept\", \"context\": {\"summary\": \"accept node response.\", \"artifacts\": []}, \"result\": {\"status\": \"PASS\", \"summary\": \"accept completed.\", \"evidence\": [{\"kind\": \"creator_artifact\", \"summary\": \"Canonical scheduler conformance fixture artifact.\"}]}, \"rationale\": \"The DAG contract controls the next route.\", \"next_agent\": {\"name\": \"join\", \"executor\": \"local\", \"reason\": \"Continue along the DAG route.\"}, \"required_evidence\": [\"creator_artifact\"], \"stop_condition\": \"Stop at human.\"}\n",
+        "timed_out": false
+      },
+      "runtime_endpoint_lease": {
+        "attempt_id": "attempt-541ce4d0ab5c72c9f94ef2b78b5c4730",
+        "attempt_number": 1,
+        "backend": "local",
+        "backend_ids": {
+          "pid": null
+        },
+        "backend_session_id": null,
+        "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+        "cleanup_policy": {
+          "kind": "process_group_termination"
+        },
+        "created_at": "2026-07-27T16:49:16.555263+00:00",
+        "dag_id": "canonical-project-route-join",
+        "endpoint_id": "local:472a82d259463e44b97890ef",
+        "execution_token": "[REDACTED]",
+        "expires_at": "2026-07-27T16:50:21.555263+00:00",
+        "goal_hash": "sha256:3013b32f9c31e643513fe0ed4f028fc5b0985a4811acbf2cbf4c8be6cd992721",
+        "heartbeat_policy": {
+          "kind": "process_poll"
+        },
+        "node_id": "accept",
+        "owner": "tau",
+        "plan_revision": "sha256:c8111d5fb5eee8a697719e6ebedd3b93476ad881ff35e85c6590b178ffd81ea9",
+        "run_id": "canonical-project-route-join",
+        "schema": "tau.runtime_endpoint_lease.v1",
+        "scope_id": "canonical-project-route-join",
+        "work_order_sha256": "sha256:3a31550fd8a5918bb6d11543638c6bc0a1f3d66dcc2dcc3e46292b952a76e822"
+      },
+      "runtime_event": {
+        "confidence": "PROCESS",
+        "endpoint_lease_sha256": "sha256:0bfcf4e04c79e41df649b4ce78f73ddecf9d47617de9a1f1137626b9d3596f67",
+        "event_id": "local-event:472a82d259463e44b97890ef",
+        "event_type": "RUNTIME_ENDPOINT_EXITED",
+        "liveness": "DEAD",
+        "observation": {
+          "cancelled": false,
+          "returncode": 0,
+          "timed_out": false
+        },
+        "observed_at": "2026-07-27T16:49:16.574849+00:00",
+        "run_id": "canonical-project-route-join",
+        "schema": "tau.runtime_event.v1",
+        "source": "local",
+        "state": "EXITED"
+      },
+      "runtime_submit_receipt": {
+        "backend_acknowledgement": {
+          "process_started": true,
+          "stdin_delivery": "confirmed"
+        },
+        "composer_state_after": "NOT_APPLICABLE",
+        "composer_state_before": "NOT_APPLICABLE",
+        "delivery_status": "CONFIRMED",
+        "endpoint_lease_sha256": "sha256:0bfcf4e04c79e41df649b4ce78f73ddecf9d47617de9a1f1137626b9d3596f67",
+        "errors": [],
+        "provider_execution_status": "NOT_APPLICABLE",
+        "schema": "tau.runtime_submit_receipt.v1",
+        "submit_attempt_count": 1,
+        "text_delivery_count": 1,
+        "work_order_sha256": "sha256:3a31550fd8a5918bb6d11543638c6bc0a1f3d66dcc2dcc3e46292b952a76e822"
+      },
+      "stderr": "",
+      "stdout": "{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"canonical-scheduler-conformance\"}, \"goal\": {\"goal_id\": \"canonical-scheduler-conformance\", \"goal_version\": 1, \"goal_hash\": \"sha256:canonical-scheduler-conformance\"}, \"previous_subagent\": \"accept\", \"context\": {\"summary\": \"accept node response.\", \"artifacts\": []}, \"result\": {\"status\": \"PASS\", \"summary\": \"accept completed.\", \"evidence\": [{\"kind\": \"creator_artifact\", \"summary\": \"Canonical scheduler conformance fixture artifact.\"}]}, \"rationale\": \"The DAG contract controls the next route.\", \"next_agent\": {\"name\": \"join\", \"executor\": \"local\", \"reason\": \"Continue along the DAG route.\"}, \"required_evidence\": [\"creator_artifact\"], \"stop_condition\": \"Stop at human.\"}\n",
+      "timed_out": false,
+      "timeout_s": 5.0,
+      "timeout_s_source": "command_spec"
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": null,
+  "response_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: accept completed.\n- Next agent: `join`\n- Executor: `local`\n- Stop condition: Stop at human.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [],\n    \"summary\": \"accept node response.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"canonical-scheduler-conformance\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:canonical-scheduler-conformance\",\n    \"goal_id\": \"canonical-scheduler-conformance\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"join\",\n    \"reason\": \"Continue along the DAG route.\"\n  },\n  \"previous_subagent\": \"accept\",\n  \"rationale\": \"The DAG contract controls the next route.\",\n  \"required_evidence\": [\n    \"creator_artifact\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"creator_artifact\",\n        \"summary\": \"Canonical scheduler conformance fixture artifact.\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"accept completed.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:join",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "join",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "canonical-scheduler-conformance"
+    }
+  },
+  "runner": "command",
+  "schema": "tau.agent_handoff_dispatch_receipt.v1",
+  "selected_agent": "accept",
+  "start_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `DAG_NODE_READY`\n- Summary: Dependencies are satisfied for DAG node accept.\n- Next agent: `accept`\n- Executor: `local`\n- Stop condition: Stop at a terminal DAG node or any fail-closed invariant violation.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/project-route-join/project-route-join.json\"\n    ],\n    \"dag_agent_role\": \"accept\",\n    \"dag_node_id\": \"accept\",\n    \"summary\": \"Dispatch ready DAG node accept.\",\n    \"tau_dag_node\": {\n      \"agent\": \"accept\",\n      \"dag_id\": \"canonical-project-route-join\",\n      \"executor\": \"local\",\n      \"goal\": {\n        \"goal_hash\": \"sha256:canonical-scheduler-conformance\",\n        \"goal_id\": \"canonical-scheduler-conformance\",\n        \"goal_version\": 1\n      },\n      \"node_id\": \"accept\",\n      \"required_evidence\": [\n        \"creator_artifact\"\n      ],\n      \"target\": {\n        \"repo\": \"grahama1970/tau\",\n        \"target\": \"canonical-scheduler-conformance\"\n      }\n    }\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"canonical-scheduler-conformance\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:canonical-scheduler-conformance\",\n    \"goal_id\": \"canonical-scheduler-conformance\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"accept\",\n    \"reason\": \"Ready DAG node accept in canonical-project-route-join.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The DAG contract is the authoritative workflow and immutable goal boundary.\",\n  \"required_evidence\": [\n    \"creator_artifact\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"dag_contract\",\n        \"path\": \"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/project-route-join/project-route-join.json\",\n        \"schema\": \"tau.dag_contract.v1\",\n        \"sha256\": \"sha256:0323c690cd8facd0f9dd381103266c5898c23c4065c0a41d26eafdc821db3f39\"\n      },\n      {\n        \"kind\": \"creator_artifact\",\n        \"summary\": \"Canonical scheduler conformance fixture artifact.\"\n      }\n    ],\n    \"status\": \"DAG_NODE_READY\",\n    \"summary\": \"Dependencies are satisfied for DAG node accept.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at a terminal DAG node or any fail-closed invariant violation.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:accept",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "accept",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "canonical-scheduler-conformance"
+    }
+  },
+  "status": "COMPLETED",
+  "stop_reason": "response_consumed"
+}

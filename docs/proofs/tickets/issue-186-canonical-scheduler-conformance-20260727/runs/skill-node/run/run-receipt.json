@@ -1,0 +1,134 @@
+{
+  "checkpoint_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/skill-node/run/checkpoint.json",
+  "completed_node_count": 1,
+  "cost_accounting": {
+    "budget": {
+      "state": "NOT_CONFIGURED"
+    },
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "estimated_cost_is_billing_truth": false,
+    "estimated_cost_usd": null,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "schema": "tau.generic_dag_cost_accounting.v1",
+    "source": "not_reported",
+    "total_tokens": 0
+  },
+  "current_state_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/skill-node/run/current-state.json",
+  "dag_plan_sha256": "sha256:5325beed4e231f78df49ee2f3b71dad7ca0c92852a209bc40e74d10481ecb0ca",
+  "diagnostics_log_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/skill-node/run/tau-diagnostics.jsonl",
+  "durable": true,
+  "events_jsonl": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/skill-node/run/events.jsonl",
+  "execution": "local_subprocess_receipt_gated_dag",
+  "lease_epoch": 1,
+  "live": true,
+  "max_observed_concurrency": 1,
+  "mocked": false,
+  "node_count": 1,
+  "nodes": [
+    {
+      "accepted_output": {
+        "artifacts": [
+          {
+            "bytes": 4595,
+            "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/skill-node/skill-output/runtime-handshake.json",
+            "schema": "tau.runtime_handshake.v1",
+            "sha256": "1d424d262a2688bdea34146685166f6d9921b7a4b1951bdb1577a095ad88d924"
+          }
+        ],
+        "capability": "runtime_handshake",
+        "skill_provider": "tau",
+        "source_node_id": "tau-runtime-handshake-skill"
+      },
+      "artifacts": [
+        {
+          "bytes": 4595,
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/skill-node/skill-output/runtime-handshake.json",
+          "schema": "tau.runtime_handshake.v1",
+          "sha256": "1d424d262a2688bdea34146685166f6d9921b7a4b1951bdb1577a095ad88d924"
+        }
+      ],
+      "attempt_count": 1,
+      "capability": "runtime_handshake",
+      "command_results": [],
+      "cost_accounting": {
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "cost_estimate": null,
+      "duration_seconds": 1.544,
+      "errors": [],
+      "finished_at": "2026-07-27T16:49:18Z",
+      "live": true,
+      "max_rounds": 1,
+      "mocked": false,
+      "node_id": "tau-runtime-handshake-skill",
+      "provider_live": false,
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/skill-node/skill-node-receipt.json",
+      "resumed": false,
+      "role": "tau-runtime-handshake-skill",
+      "round_number": 1,
+      "scheduler_attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "status": "PASS",
+          "verdict": "PASS"
+        }
+      ],
+      "skill_live": true,
+      "skill_provider": "tau",
+      "started_at": "2026-07-27T16:49:17Z",
+      "status": "PASS",
+      "usage": null,
+      "verdict": "PASS",
+      "work_order_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/skill-node/skill-work-order.json",
+      "work_order_sha256": "50d3c2d116176fcbcb4d25176ece51fd46f4900faa58e7985350b0699615a50e"
+    }
+  ],
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "remote Tailscale monitoring",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "skill output semantic correctness",
+      "future skill route correctness"
+    ],
+    "proves": [
+      "Tau can validate a generic DAG spec",
+      "Tau can execute local subprocess workers in dependency order",
+      "Tau can gate downstream nodes on schema-valid node receipts",
+      "Tau can resume from existing valid node receipts",
+      "Tau can reject stale work-order receipts when work_order_sha256 no longer matches",
+      "Tau can write durable checkpoint and current-state artifacts",
+      "Tau can fail closed on timeout, non-zero exit, invalid receipt, or blocked verdict",
+      "Tau can invoke a registered skill capability and hash-bind its returned artifacts"
+    ]
+  },
+  "provider_live": false,
+  "replayed_event_count": 2,
+  "resume_requested": false,
+  "resume_source": {
+    "mode": "spec_path",
+    "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/skill-node/skill-node.json"
+  },
+  "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/skill-node/run",
+  "run_id": "canonical-skill-node",
+  "run_store_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/skill-node/run/dag-run.sqlite3",
+  "scheduler": "dag_plan_ready_queue",
+  "scheduler_run_id": "canonical-skill-node",
+  "schema": "tau.generic_dag_run_receipt.v1",
+  "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/skill-node/skill-node.json",
+  "status": "PASS",
+  "timestamp": "2026-07-27T16:49:18Z",
+  "verdict": "PASS"
+}

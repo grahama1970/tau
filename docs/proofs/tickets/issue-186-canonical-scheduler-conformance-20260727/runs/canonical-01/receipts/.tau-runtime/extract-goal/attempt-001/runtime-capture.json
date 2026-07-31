@@ -1,0 +1,21 @@
+{
+  "cancelled": false,
+  "command": [
+    "/tmp/tau-issue189-1785166987/.venv/bin/python",
+    "/tmp/tau-issue189-1785166987/examples/canonical-dags/01-simple-linear/workflow.py",
+    "extract-goal",
+    "--goal",
+    "/tmp/tau-issue189-1785166987/GOAL.md",
+    "--output",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-01/artifacts/tau-goal-digest.json",
+    "--receipt",
+    "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-01/receipts/extract-goal.json",
+    "--delay",
+    "0.0"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "",
+  "timed_out": false
+}

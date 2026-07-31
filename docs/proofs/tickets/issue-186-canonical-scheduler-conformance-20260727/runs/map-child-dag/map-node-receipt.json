@@ -1,0 +1,52 @@
+{
+  "artifacts": [
+    {
+      "bytes": 4062,
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/map-child-dag-conformance.json",
+      "schema": "tau.map_child_dag_conformance.v1",
+      "sha256": "55ecd787471f37a725370de6aa2c6756665f5d195549b2df6f3eef515148477d"
+    }
+  ],
+  "commands_run": [
+    [
+      "uv",
+      "run",
+      "tau",
+      "dag-run",
+      "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/alpha/dag.json",
+      "--no-resume"
+    ],
+    [
+      "uv",
+      "run",
+      "tau",
+      "dag-run",
+      "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag.json",
+      "--no-resume"
+    ],
+    [
+      "uv",
+      "run",
+      "tau",
+      "dag-run",
+      "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/charlie/dag.json",
+      "--no-resume"
+    ]
+  ],
+  "errors": [
+    "child-alpha:child_dag_failed:1:BLOCKED",
+    "child-bravo:child_dag_failed:1:BLOCKED",
+    "child-charlie:child_dag_failed:1:BLOCKED",
+    "child_dag_pass_contract_failed"
+  ],
+  "goal_hash": "sha256:canonical-scheduler-conformance",
+  "handoff_summary": "Mapped 3 items into 3 child DAGs with exact cardinality True",
+  "live": true,
+  "mocked": false,
+  "node_id": "map-items",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "BLOCKED",
+  "verdict": "BLOCKED"
+}

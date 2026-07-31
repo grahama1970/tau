@@ -1,0 +1,17 @@
+{
+  "confidence": "PROCESS",
+  "endpoint_lease_sha256": "sha256:17c9d9b04dbc9fdc589f5f50db225d325d2b9023003891efdcd28a71149921ba",
+  "event_id": "local-event:73495222cf1b294fa219018c",
+  "event_type": "RUNTIME_ENDPOINT_EXITED",
+  "liveness": "DEAD",
+  "observation": {
+    "cancelled": false,
+    "returncode": 1,
+    "timed_out": false
+  },
+  "observed_at": "2026-07-27T16:49:20.382607+00:00",
+  "run_id": "child-alpha",
+  "schema": "tau.runtime_event.v1",
+  "source": "local",
+  "state": "CRASHED"
+}

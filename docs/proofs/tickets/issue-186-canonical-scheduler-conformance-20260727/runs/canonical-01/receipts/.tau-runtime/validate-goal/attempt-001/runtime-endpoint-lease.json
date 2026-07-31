@@ -1,0 +1,29 @@
+{
+  "attempt_id": "attempt-40744541aa7eff2855e601a8f623e48f",
+  "attempt_number": 1,
+  "backend": "local",
+  "backend_ids": {
+    "pid": null
+  },
+  "backend_session_id": null,
+  "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+  "cleanup_policy": {
+    "kind": "process_group_termination"
+  },
+  "created_at": "2026-07-27T16:49:05.006223+00:00",
+  "dag_id": "generic:canonical-01-simple-linear",
+  "endpoint_id": "local:58f0fb419a518b53cb373b51",
+  "execution_token": "[REDACTED]",
+  "expires_at": "2026-07-27T16:50:35.006223+00:00",
+  "goal_hash": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "heartbeat_policy": {
+    "kind": "process_poll"
+  },
+  "node_id": "validate-goal",
+  "owner": "tau",
+  "plan_revision": "sha256:925f86bd1b9f0a2e1dfb8ea51c94f18385485bbc7f297e3404cf6dcb442fdcf5",
+  "run_id": "canonical-01-simple-linear",
+  "schema": "tau.runtime_endpoint_lease.v1",
+  "scope_id": "canonical-01-simple-linear",
+  "work_order_sha256": "sha256:005fe7d38abf376086a79602b14a6deb55bcffd47c08477ce199dbf01710eae4"
+}

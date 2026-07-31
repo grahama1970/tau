@@ -1,0 +1,32 @@
+{
+  "active_node_id": null,
+  "blocked_nodes": [
+    "child-bravo"
+  ],
+  "completed_nodes": [],
+  "events_jsonl": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/run/events.jsonl",
+  "node_statuses": {
+    "child-bravo": {
+      "attempt_count": 1,
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/receipt.json",
+      "resumed": false,
+      "status": "BLOCKED",
+      "verdict": "SUBAGENT_ERROR"
+    }
+  },
+  "ready_nodes": [],
+  "resume": {
+    "enabled_by_default": true,
+    "receipt_paths": {
+      "child-bravo": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/receipt.json"
+    },
+    "will_reuse_valid_pass_receipts": true
+  },
+  "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/run",
+  "run_id": "child-bravo",
+  "schema": "tau.generic_dag_checkpoint.v1",
+  "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag.json",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-27T16:49:21Z",
+  "verdict": "SUBAGENT_ERROR"
+}

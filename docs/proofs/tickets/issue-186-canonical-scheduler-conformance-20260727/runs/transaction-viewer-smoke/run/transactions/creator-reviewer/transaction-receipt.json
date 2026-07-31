@@ -1,0 +1,91 @@
+{
+  "accepted_manifest_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/accepted-manifest.json",
+  "accepted_manifest_sha256": "8d24b4af9f4946171493ea0a96accbdd469b5d67adea6dc893fff4e1c3c49c22",
+  "approval_gate_receipt_path": null,
+  "attempt_count": 2,
+  "attempts": [
+    {
+      "attempt": 1,
+      "attempt_context_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/attempt-001/attempt-context.json",
+      "attempt_context_sha256": "63c7270f1d49bb59160b0f4d277d5c4bdc6051f55ce8880dfea26ba3d54cdf89",
+      "candidate_manifest_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/attempt-001/candidate-manifest.json",
+      "candidate_manifest_sha256": "3e6863ca0a7da20c81926c23aabddd2303370bf4098ee1c31a906681331cd892",
+      "producer_execution_evidence": {
+        "command_result_sha256": "sha256:d63dfe733563b6067c2c2da9fd9a78d93f0a37e678360e974b60644ac7f94a3b",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "producer_live": true,
+      "producer_model": null,
+      "producer_provider": null,
+      "producer_provider_live": false,
+      "review_execution_evidence": {
+        "command_result_sha256": "sha256:21b1ff69c61aadba9a85d7a51c05564e8da5c73db7135fa27befdc7b27221877",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "review_feedback_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/attempt-001/review-feedback.json",
+      "review_feedback_sha256": "75ab67d5c851d8c919a2bfe7c7227911e5d56cd7e4413b9ff50326d224c50024",
+      "review_live": true,
+      "review_model": null,
+      "review_provider_live": false,
+      "review_revision_signature": "sha256:1824b9815aff1a34685320580a0172290f5169ece549143603cc0c060feca331",
+      "review_verdict": "REVISE",
+      "validation_receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/attempt-001/validation-receipt.json"
+    },
+    {
+      "attempt": 2,
+      "attempt_context_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/attempt-002/attempt-context.json",
+      "attempt_context_sha256": "31ea29e8afeedbec83f7d29c842d649029186db26c282f31f3045da36f39eaaf",
+      "candidate_manifest_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/attempt-002/candidate-manifest.json",
+      "candidate_manifest_sha256": "7ad334e0dbddc82e6d67a86ab3c79c34d321f468f84e70d2de5c5d67197edc03",
+      "producer_execution_evidence": {
+        "command_result_sha256": "sha256:80702fb2c91e657fdee2531d260cb32bf5eeb8950c50386273b04c763baa4e98",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "producer_live": true,
+      "producer_model": null,
+      "producer_provider": null,
+      "producer_provider_live": false,
+      "review_execution_evidence": {
+        "command_result_sha256": "sha256:205be022cc908cc7a3c6c4323222e526831829af3b9b97c2e7d553ba6710433e",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "review_feedback_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/attempt-002/review-feedback.json",
+      "review_feedback_sha256": "975b9a9c4fe00c1fd642a7572cefa326406449f597670538cfedf7cb15e815cf",
+      "review_live": true,
+      "review_model": null,
+      "review_provider_live": false,
+      "review_verdict": "PASS",
+      "validation_receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/transaction-viewer-smoke/run/transactions/creator-reviewer/attempt-002/validation-receipt.json"
+    }
+  ],
+  "continuation": null,
+  "errors": [],
+  "goal_hash": null,
+  "node_id": "creator-reviewer",
+  "run_id": "dag-viewer-creator-reviewer",
+  "schema": "tau.generic_artifact_transaction_receipt.v1",
+  "state": "ACCEPTED",
+  "status": "PASS",
+  "transaction_id": "tx-creator-reviewer",
+  "work_order_sha256": "3a5abd129767df2c2730bbe9ad88dea097c8f9a8632785b1c78b4dcfc906e487"
+}

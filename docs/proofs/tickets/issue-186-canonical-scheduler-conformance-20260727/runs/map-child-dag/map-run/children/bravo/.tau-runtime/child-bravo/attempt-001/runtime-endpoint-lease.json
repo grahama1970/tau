@@ -1,0 +1,29 @@
+{
+  "attempt_id": "attempt-a8c61e6c0a822aa8181b0c9b3c072997",
+  "attempt_number": 1,
+  "backend": "local",
+  "backend_ids": {
+    "pid": null
+  },
+  "backend_session_id": null,
+  "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+  "cleanup_policy": {
+    "kind": "process_group_termination"
+  },
+  "created_at": "2026-07-27T16:49:21.181289+00:00",
+  "dag_id": "generic:child-bravo",
+  "endpoint_id": "local:ce048b963d7f27ac58bcf071",
+  "execution_token": "[REDACTED]",
+  "expires_at": "2026-07-27T16:50:51.181289+00:00",
+  "goal_hash": "sha256:3013b32f9c31e643513fe0ed4f028fc5b0985a4811acbf2cbf4c8be6cd992721",
+  "heartbeat_policy": {
+    "kind": "process_poll"
+  },
+  "node_id": "child-bravo",
+  "owner": "tau",
+  "plan_revision": "sha256:02f78e1ad03a654540efd2f4d16efb04d39225d4fd99aa3350546c24b81d53f8",
+  "run_id": "child-bravo",
+  "schema": "tau.runtime_endpoint_lease.v1",
+  "scope_id": "child-bravo",
+  "work_order_sha256": "sha256:71b60c3e7c3f1d65e7ff9d0f0686b93239479d1409ec435ab5266353551eb89c"
+}

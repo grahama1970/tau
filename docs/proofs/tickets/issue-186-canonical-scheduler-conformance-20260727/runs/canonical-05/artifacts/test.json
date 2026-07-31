@@ -1,0 +1,29 @@
+{
+  "accepted_input_artifacts": [
+    {
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-05/artifacts/discover.json",
+      "sha256": "sha256:eed249e8f64e434b0530756faf9e552d68baf78d2c398d0d5556c7f78fb1f153"
+    }
+  ],
+  "approval_path": null,
+  "dependency_ids": [
+    {
+      "artifacts": [
+        {
+          "bytes": 319,
+          "kind": "goal-and-source-lock",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-05/artifacts/discover.json",
+          "sha256": "sha256:eed249e8f64e434b0530756faf9e552d68baf78d2c398d0d5556c7f78fb1f153"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "discover produced its accepted goal-and-source-lock artifact."
+    }
+  ],
+  "goal_sha256": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
+  "node_id": "test",
+  "repair_authorization_path": null,
+  "role": "independent-test",
+  "schema": "tau.canonical_dag_artifact.v1"
+}

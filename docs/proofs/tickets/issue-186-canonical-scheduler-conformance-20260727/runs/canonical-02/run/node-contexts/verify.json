@@ -1,0 +1,20 @@
+{
+  "accepted_inputs": [
+    {
+      "artifacts": [
+        {
+          "bytes": 1102,
+          "kind": "artifact-draft",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-02/artifacts/draft.json",
+          "sha256": "sha256:52db41fc012a83b6f18e37c3ae66ea1bc6993df740cac9fe025a1ce66fc28b5b"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "draft produced its accepted artifact-draft artifact."
+    }
+  ],
+  "node_id": "verify",
+  "run_id": "canonical-02-multi-step-sequential",
+  "schema": "tau.generic_dag_node_context.v1"
+}

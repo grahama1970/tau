@@ -1,0 +1,203 @@
+{
+  "checkpoint_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/run/checkpoint.json",
+  "completed_node_count": 0,
+  "cost_accounting": {
+    "budget": {
+      "state": "NOT_CONFIGURED"
+    },
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "estimated_cost_is_billing_truth": false,
+    "estimated_cost_usd": null,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "schema": "tau.generic_dag_cost_accounting.v1",
+    "source": "not_reported",
+    "total_tokens": 0
+  },
+  "current_state_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/run/current-state.json",
+  "dag_plan_sha256": "sha256:02f78e1ad03a654540efd2f4d16efb04d39225d4fd99aa3350546c24b81d53f8",
+  "diagnostics_log_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/run/tau-diagnostics.jsonl",
+  "durable": true,
+  "events_jsonl": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/run/events.jsonl",
+  "execution": "local_subprocess_receipt_gated_dag",
+  "lease_epoch": 1,
+  "live": false,
+  "max_observed_concurrency": 1,
+  "mocked": false,
+  "node_count": 1,
+  "nodes": [
+    {
+      "accepted_output": null,
+      "artifacts": [],
+      "attempt_count": 1,
+      "command_results": [
+        {
+          "argv": [
+            "/tmp/tau-issue189-1785166987/.venv/bin/python",
+            "-c",
+            "import json\nfrom pathlib import Path\nreceipt_path = Path(\"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/receipt.json\")\npayload = {\"schema\": \"tau.generic_dag_node_receipt.v1\", \"node_id\": \"child-bravo\", \"status\": \"PASS\", \"verdict\": \"PASS\", \"mocked\": false, \"live\": true, \"provider_live\": false, \"goal_hash\": \"sha256:canonical-scheduler-conformance\", \"accepted_output\": {\"item_id\": \"bravo\", \"value\": 2, \"result\": 4}, \"artifacts\": [], \"commands_run\": [], \"errors\": [], \"policy_exceptions\": [], \"handoff_summary\": \"Processed map item bravo\"}\nreceipt_path.parent.mkdir(parents=True, exist_ok=True)\nreceipt_path.write_text(\n    json.dumps(payload, indent=2, sort_keys=True) + '\\n',\n    encoding='utf-8',\n)\nprint(json.dumps(payload, sort_keys=True))\n"
+          ],
+          "elapsed_seconds": 0.039,
+          "returncode": 1,
+          "runtime_artifacts": [
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/.tau-runtime/child-bravo/attempt-001/runtime-endpoint-lease.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/.tau-runtime/child-bravo/attempt-001/runtime-submit-receipt.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/.tau-runtime/child-bravo/attempt-001/runtime-event.json",
+            "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/.tau-runtime/child-bravo/attempt-001/runtime-capture.json"
+          ],
+          "runtime_backend": "local",
+          "runtime_capture": {
+            "cancelled": false,
+            "command": [
+              "/tmp/tau-issue189-1785166987/.venv/bin/python",
+              "-c",
+              "import json\nfrom pathlib import Path\nreceipt_path = Path(\"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/receipt.json\")\npayload = {\"schema\": \"tau.generic_dag_node_receipt.v1\", \"node_id\": \"child-bravo\", \"status\": \"PASS\", \"verdict\": \"PASS\", \"mocked\": false, \"live\": true, \"provider_live\": false, \"goal_hash\": \"sha256:canonical-scheduler-conformance\", \"accepted_output\": {\"item_id\": \"bravo\", \"value\": 2, \"result\": 4}, \"artifacts\": [], \"commands_run\": [], \"errors\": [], \"policy_exceptions\": [], \"handoff_summary\": \"Processed map item bravo\"}\nreceipt_path.parent.mkdir(parents=True, exist_ok=True)\nreceipt_path.write_text(\n    json.dumps(payload, indent=2, sort_keys=True) + '\\n',\n    encoding='utf-8',\n)\nprint(json.dumps(payload, sort_keys=True))\n"
+            ],
+            "returncode": 1,
+            "schema": "tau.local_runtime_capture.v1",
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 4, in <module>\n    payload = {\"schema\": \"tau.generic_dag_node_receipt.v1\", \"node_id\": \"child-bravo\", \"status\": \"PASS\", \"verdict\": \"PASS\", \"mocked\": false, \"live\": true, \"provider_live\": false, \"goal_hash\": \"sha256:canonical-scheduler-conformance\", \"accepted_output\": {\"item_id\": \"bravo\", \"value\": 2, \"result\": 4}, \"artifacts\": [], \"commands_run\": [], \"errors\": [], \"policy_exceptions\": [], \"handoff_summary\": \"Processed map item bravo\"}\n                                                                                                                                     ^^^^^\nNameError: name 'false' is not defined. Did you mean: 'False'?\n",
+            "stdout": "",
+            "timed_out": false
+          },
+          "runtime_endpoint_lease": {
+            "attempt_id": "attempt-a8c61e6c0a822aa8181b0c9b3c072997",
+            "attempt_number": 1,
+            "backend": "local",
+            "backend_ids": {
+              "pid": null
+            },
+            "backend_session_id": null,
+            "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+            "cleanup_policy": {
+              "kind": "process_group_termination"
+            },
+            "created_at": "2026-07-27T16:49:21.181289+00:00",
+            "dag_id": "generic:child-bravo",
+            "endpoint_id": "local:ce048b963d7f27ac58bcf071",
+            "execution_token": "[REDACTED]",
+            "expires_at": "2026-07-27T16:50:51.181289+00:00",
+            "goal_hash": "sha256:3013b32f9c31e643513fe0ed4f028fc5b0985a4811acbf2cbf4c8be6cd992721",
+            "heartbeat_policy": {
+              "kind": "process_poll"
+            },
+            "node_id": "child-bravo",
+            "owner": "tau",
+            "plan_revision": "sha256:02f78e1ad03a654540efd2f4d16efb04d39225d4fd99aa3350546c24b81d53f8",
+            "run_id": "child-bravo",
+            "schema": "tau.runtime_endpoint_lease.v1",
+            "scope_id": "child-bravo",
+            "work_order_sha256": "sha256:71b60c3e7c3f1d65e7ff9d0f0686b93239479d1409ec435ab5266353551eb89c"
+          },
+          "runtime_event": {
+            "confidence": "PROCESS",
+            "endpoint_lease_sha256": "sha256:5232b496ac7f237db3ccb44b4832ed65b798e87f4c366e173da478e007316a7d",
+            "event_id": "local-event:ce048b963d7f27ac58bcf071",
+            "event_type": "RUNTIME_ENDPOINT_EXITED",
+            "liveness": "DEAD",
+            "observation": {
+              "cancelled": false,
+              "returncode": 1,
+              "timed_out": false
+            },
+            "observed_at": "2026-07-27T16:49:21.218889+00:00",
+            "run_id": "child-bravo",
+            "schema": "tau.runtime_event.v1",
+            "source": "local",
+            "state": "CRASHED"
+          },
+          "runtime_submit_receipt": {
+            "backend_acknowledgement": {
+              "process_started": true,
+              "stdin_delivery": "not_requested"
+            },
+            "composer_state_after": "NOT_APPLICABLE",
+            "composer_state_before": "NOT_APPLICABLE",
+            "delivery_status": "CONFIRMED",
+            "endpoint_lease_sha256": "sha256:5232b496ac7f237db3ccb44b4832ed65b798e87f4c366e173da478e007316a7d",
+            "errors": [],
+            "provider_execution_status": "NOT_APPLICABLE",
+            "schema": "tau.runtime_submit_receipt.v1",
+            "submit_attempt_count": 1,
+            "text_delivery_count": 0,
+            "work_order_sha256": "sha256:71b60c3e7c3f1d65e7ff9d0f0686b93239479d1409ec435ab5266353551eb89c"
+          },
+          "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 4, in <module>\n    payload = {\"schema\": \"tau.generic_dag_node_receipt.v1\", \"node_id\": \"child-bravo\", \"status\": \"PASS\", \"verdict\": \"PASS\", \"mocked\": false, \"live\": true, \"provider_live\": false, \"goal_hash\": \"sha256:canonical-scheduler-conformance\", \"accepted_output\": {\"item_id\": \"bravo\", \"value\": 2, \"result\": 4}, \"artifacts\": [], \"commands_run\": [], \"errors\": [], \"policy_exceptions\": [], \"handoff_summary\": \"Processed map item bravo\"}\n                                                                                                                                     ^^^^^\nNameError: name 'false' is not defined. Did you mean: 'False'?\n",
+          "stdout": "",
+          "termination_cause": "exited"
+        }
+      ],
+      "cost_accounting": {
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "duration_seconds": 0.039,
+      "errors": [
+        "/tmp/tau-issue189-1785166987/.venv/bin/python -c import json\nfrom pathlib import Path\nreceipt_path = Path(\"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/receipt.json\")\npayload = {\"schema\": \"tau.generic_dag_node_receipt.v1\", \"node_id\": \"child-bravo\", \"status\": \"PASS\", \"verdict\": \"PASS\", \"mocked\": false, \"live\": true, \"provider_live\": false, \"goal_hash\": \"sha256:canonical-scheduler-conformance\", \"accepted_output\": {\"item_id\": \"bravo\", \"value\": 2, \"result\": 4}, \"artifacts\": [], \"commands_run\": [], \"errors\": [], \"policy_exceptions\": [], \"handoff_summary\": \"Processed map item bravo\"}\nreceipt_path.parent.mkdir(parents=True, exist_ok=True)\nreceipt_path.write_text(\n    json.dumps(payload, indent=2, sort_keys=True) + '\\n',\n    encoding='utf-8',\n)\nprint(json.dumps(payload, sort_keys=True))\n exited 1: Traceback (most recent call last):\n  File \"<string>\", line 4, in <module>\n    payload = {\"schema\": \"tau.generic_dag_node_receipt.v1\", \"node_id\": \"child-bravo\", \"status\": \"PASS\", \"verdict\": \"PASS\", \"mocked\": false, \"live\": true, \"provider_live\": false, \"goal_hash\": \"sha256:canonical-scheduler-conformance\", \"accepted_output\": {\"item_id\": \"bravo\", \"value\": 2, \"result\": 4}, \"artifacts\": [], \"commands_run\": [], \"errors\": [], \"policy_exceptions\": [], \"handoff_summary\": \"Processed map item bravo\"}\n                                                                                                                                     ^^^^^\nNameError: name 'false' is not defined. Did you mean: 'False'?"
+      ],
+      "finished_at": "2026-07-27T16:49:21Z",
+      "node_id": "child-bravo",
+      "receipt_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/receipt.json",
+      "resumed": false,
+      "role": "child-bravo",
+      "scheduler_attempts": [
+        {
+          "attempt": 1,
+          "errors": [
+            "/tmp/tau-issue189-1785166987/.venv/bin/python -c import json\nfrom pathlib import Path\nreceipt_path = Path(\"/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/receipt.json\")\npayload = {\"schema\": \"tau.generic_dag_node_receipt.v1\", \"node_id\": \"child-bravo\", \"status\": \"PASS\", \"verdict\": \"PASS\", \"mocked\": false, \"live\": true, \"provider_live\": false, \"goal_hash\": \"sha256:canonical-scheduler-conformance\", \"accepted_output\": {\"item_id\": \"bravo\", \"value\": 2, \"result\": 4}, \"artifacts\": [], \"commands_run\": [], \"errors\": [], \"policy_exceptions\": [], \"handoff_summary\": \"Processed map item bravo\"}\nreceipt_path.parent.mkdir(parents=True, exist_ok=True)\nreceipt_path.write_text(\n    json.dumps(payload, indent=2, sort_keys=True) + '\\n',\n    encoding='utf-8',\n)\nprint(json.dumps(payload, sort_keys=True))\n exited 1: Traceback (most recent call last):\n  File \"<string>\", line 4, in <module>\n    payload = {\"schema\": \"tau.generic_dag_node_receipt.v1\", \"node_id\": \"child-bravo\", \"status\": \"PASS\", \"verdict\": \"PASS\", \"mocked\": false, \"live\": true, \"provider_live\": false, \"goal_hash\": \"sha256:canonical-scheduler-conformance\", \"accepted_output\": {\"item_id\": \"bravo\", \"value\": 2, \"result\": 4}, \"artifacts\": [], \"commands_run\": [], \"errors\": [], \"policy_exceptions\": [], \"handoff_summary\": \"Processed map item bravo\"}\n                                                                                                                                     ^^^^^\nNameError: name 'false' is not defined. Did you mean: 'False'?"
+          ],
+          "status": "BLOCKED",
+          "verdict": "SUBAGENT_ERROR"
+        }
+      ],
+      "started_at": "2026-07-27T16:49:21Z",
+      "status": "BLOCKED",
+      "verdict": "SUBAGENT_ERROR",
+      "work_order_path": null,
+      "work_order_sha256": null
+    }
+  ],
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "remote Tailscale monitoring",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "live provider CLI execution",
+      "Herdr pane visibility"
+    ],
+    "proves": [
+      "Tau can validate a generic DAG spec",
+      "Tau can execute local subprocess workers in dependency order",
+      "Tau can gate downstream nodes on schema-valid node receipts",
+      "Tau can resume from existing valid node receipts",
+      "Tau can reject stale work-order receipts when work_order_sha256 no longer matches",
+      "Tau can write durable checkpoint and current-state artifacts",
+      "Tau can fail closed on timeout, non-zero exit, invalid receipt, or blocked verdict"
+    ]
+  },
+  "provider_live": false,
+  "replayed_event_count": 2,
+  "resume_requested": false,
+  "resume_source": {
+    "mode": "spec_path",
+    "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag.json"
+  },
+  "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/run",
+  "run_id": "child-bravo",
+  "run_store_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/run/dag-run.sqlite3",
+  "scheduler": "dag_plan_ready_queue",
+  "scheduler_run_id": "child-bravo",
+  "schema": "tau.generic_dag_run_receipt.v1",
+  "spec_path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/map-child-dag/map-run/children/bravo/dag.json",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-27T16:49:21Z",
+  "verdict": "SUBAGENT_ERROR"
+}

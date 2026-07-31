@@ -1,0 +1,36 @@
+{
+  "artifacts": [
+    {
+      "bytes": 4595,
+      "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/skill-node/skill-output/runtime-handshake.json",
+      "schema": "tau.runtime_handshake.v1",
+      "sha256": "1d424d262a2688bdea34146685166f6d9921b7a4b1951bdb1577a095ad88d924"
+    }
+  ],
+  "capability": "runtime_handshake",
+  "commands_run": [
+    [
+      "uv",
+      "run",
+      "tau",
+      "runtime-handshake",
+      "--output",
+      "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/skill-node/skill-output/runtime-handshake.json"
+    ]
+  ],
+  "errors": [],
+  "goal_hash": "sha256:canonical-scheduler-conformance",
+  "handoff_summary": "Tau runtime handshake skill node passed for canonical-skill-node",
+  "live": true,
+  "max_rounds": 1,
+  "mocked": false,
+  "node_id": "tau-runtime-handshake-skill",
+  "policy_exceptions": [],
+  "provider_live": false,
+  "round_number": 1,
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "skill_provider": "tau",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_sha256": "50d3c2d116176fcbcb4d25176ece51fd46f4900faa58e7985350b0699615a50e"
+}

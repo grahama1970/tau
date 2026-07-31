@@ -1,0 +1,28 @@
+{
+  "checks": {
+    "accepted_only_after_receipt": true,
+    "creator_attempt_1_visible": true,
+    "creator_attempt_2_visible": true,
+    "dependent_released_after_acceptance": true,
+    "page_refresh_reconstructed_state": true,
+    "reviewer_revise_visible": true
+  },
+  "live": true,
+  "mocked": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider or model semantic quality.",
+      "Production deployment readiness."
+    ],
+    "proves": [
+      "A real local creator-reviewer transaction was observed through Tau snapshots.",
+      "The dependent node was released only after committed Tau admission."
+    ]
+  },
+  "provider_live": false,
+  "run_dir": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/transaction-viewer-smoke/run",
+  "run_id": "dag-viewer-creator-reviewer",
+  "schema": "tau.dag_viewer_live_smoke_receipt.v1",
+  "snapshot_count": 93,
+  "status": "PASS"
+}

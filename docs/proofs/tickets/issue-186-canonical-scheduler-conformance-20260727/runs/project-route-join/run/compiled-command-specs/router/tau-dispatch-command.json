@@ -1,0 +1,27 @@
+{
+  "command": [
+    "/tmp/tau-issue189-1785166987/.venv/bin/python",
+    "-c",
+    "import json; print(\"{\\\"schema\\\": \\\"tau.agent_handoff.v1\\\", \\\"github\\\": {\\\"repo\\\": \\\"grahama1970/tau\\\", \\\"target\\\": \\\"canonical-scheduler-conformance\\\"}, \\\"goal\\\": {\\\"goal_id\\\": \\\"canonical-scheduler-conformance\\\", \\\"goal_version\\\": 1, \\\"goal_hash\\\": \\\"sha256:canonical-scheduler-conformance\\\"}, \\\"previous_subagent\\\": \\\"router\\\", \\\"context\\\": {\\\"summary\\\": \\\"router node response.\\\", \\\"artifacts\\\": []}, \\\"result\\\": {\\\"status\\\": \\\"PASS\\\", \\\"summary\\\": \\\"router completed.\\\", \\\"evidence\\\": [{\\\"kind\\\": \\\"creator_artifact\\\", \\\"summary\\\": \\\"Canonical scheduler conformance fixture artifact.\\\"}], \\\"route\\\": \\\"BOTH\\\"}, \\\"rationale\\\": \\\"The DAG contract controls the next route.\\\", \\\"next_agent\\\": {\\\"name\\\": \\\"accept\\\", \\\"executor\\\": \\\"local\\\", \\\"reason\\\": \\\"Continue along the DAG route.\\\"}, \\\"required_evidence\\\": [\\\"creator_artifact\\\"], \\\"stop_condition\\\": \\\"Stop at human.\\\"}\")"
+  ],
+  "cwd": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/project-route-join",
+  "tau_dag_node": {
+    "agent": "router",
+    "dag_id": "canonical-project-route-join",
+    "executor": "local",
+    "goal": {
+      "goal_hash": "sha256:canonical-scheduler-conformance",
+      "goal_id": "canonical-scheduler-conformance",
+      "goal_version": 1
+    },
+    "node_id": "router",
+    "required_evidence": [
+      "creator_artifact"
+    ],
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "canonical-scheduler-conformance"
+    }
+  },
+  "timeout_s": 5
+}

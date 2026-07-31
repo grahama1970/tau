@@ -1,0 +1,17 @@
+{
+  "confidence": "PROCESS",
+  "endpoint_lease_sha256": "sha256:5232b496ac7f237db3ccb44b4832ed65b798e87f4c366e173da478e007316a7d",
+  "event_id": "local-event:ce048b963d7f27ac58bcf071",
+  "event_type": "RUNTIME_ENDPOINT_EXITED",
+  "liveness": "DEAD",
+  "observation": {
+    "cancelled": false,
+    "returncode": 1,
+    "timed_out": false
+  },
+  "observed_at": "2026-07-27T16:49:21.218889+00:00",
+  "run_id": "child-bravo",
+  "schema": "tau.runtime_event.v1",
+  "source": "local",
+  "state": "CRASHED"
+}

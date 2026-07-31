@@ -1,0 +1,20 @@
+{
+  "accepted_inputs": [
+    {
+      "artifacts": [
+        {
+          "bytes": 311,
+          "kind": "goal-locked-plan",
+          "path": "/tmp/tau-issue189-1785166987/docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727/runs/canonical-04/artifacts/plan.json",
+          "sha256": "sha256:239b74187616a47cd47ff0e727c33ecfd5e4a4eac516c6994a818451a502f029"
+        }
+      ],
+      "schema": "tau.canonical_dag_result.v1",
+      "status": "ACCEPTED",
+      "summary": "plan produced its accepted goal-locked-plan artifact."
+    }
+  ],
+  "node_id": "test",
+  "run_id": "canonical-04-mixed-retry-approval",
+  "schema": "tau.generic_dag_node_context.v1"
+}
