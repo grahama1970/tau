@@ -1361,7 +1361,7 @@ class SqliteDagRunStore:
     def renew_lease(self, lease: DagRunLease, *, ttl_seconds: float = 15.0) -> DagRunLease:
         expires_at_ms = _now_ms() + max(1, int(ttl_seconds * 1000))
         with self._transaction():
-            self._assert_lease(lease)
+            self._assert_lease(lease, allow_expired=True)
             self._connection.execute(
                 "UPDATE dag_runs SET lease_expires_at_ms = ?, updated_at = ? WHERE run_id = ?",
                 (expires_at_ms, _now_iso(), lease.run_id),
