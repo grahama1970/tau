@@ -1,0 +1,105 @@
+{
+  "agent": "flaky",
+  "alert_codes": [],
+  "alerts": [],
+  "allowed_next_routes": [
+    "goal-guardian",
+    "research-auditor",
+    "human"
+  ],
+  "attempt": 2,
+  "blocked_report_required": {
+    "fields": [
+      "blocker_summary",
+      "attempt_count",
+      "repeated_failure_signature",
+      "searches_performed",
+      "searches_not_performed"
+    ],
+    "required": true
+  },
+  "code": "brave_search_required_after_two_attempts",
+  "dag_id": "generic:scheduler-test",
+  "errors": [
+    "two consecutive failed attempts had the same error signature; normal retry blocked before a third same-context attempt"
+  ],
+  "forbidden_next_routes": [
+    "retry_without_research_receipt"
+  ],
+  "goal_hash": "sha256:2ff9cdff091aef6faf5f29ea2e9d90021c8046bb62ad5a5591d615403ad52203",
+  "input_valid": true,
+  "known_coding_trigger": false,
+  "live": false,
+  "mocked": false,
+  "next_allowed": false,
+  "node_id": "flaky",
+  "observed_artifact": null,
+  "observed_state": {
+    "advisory_only": true,
+    "attempt_count": 2,
+    "repeated_failure_signature": "sha256:ce55a70d38c8d8f2fae2c923f6cd3771b7a9df1a93a1ad87b702fcbd8687e10b",
+    "search_ladder_budget": {
+      "brave_search": 1,
+      "dogpile": 1,
+      "github_search": 1,
+      "memory_recall": 1
+    },
+    "searches_not_performed": [
+      "memory_recall",
+      "registered_dependency_docs",
+      "brave_search",
+      "github_search",
+      "dogpile"
+    ],
+    "searches_performed": []
+  },
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "The agent is truthful.",
+      "The task is complete.",
+      "The proposed correction is semantically sufficient.",
+      "The required next action has been executed."
+    ],
+    "proves": [
+      "Tau classified a blocked or drifting orchestration state.",
+      "Tau selected a bounded next action from the course-correction policy.",
+      "Tau did not mutate the DAG, goal, route, work order, or provider state."
+    ]
+  },
+  "provider_live": false,
+  "reason": "The same node failure signature repeated across two attempts; advisory research or a new plan is required before another retry.",
+  "required_action": {
+    "advisory_evidence_only": true,
+    "does_not_satisfy_acceptance_gate": true,
+    "ladder": [
+      "memory_recall",
+      "registered_dependency_docs",
+      "brave_search",
+      "github_search",
+      "dogpile",
+      "human"
+    ],
+    "skill": "brave-search",
+    "skill_reference": "$brave-search",
+    "type": "advisory_escalation_required"
+  },
+  "required_evidence_before_retry": [
+    "brave_search_receipt",
+    "blocked_report"
+  ],
+  "required_next_action": "run_brave_search_then_retry",
+  "run_id": "generic:scheduler-test",
+  "schema": "tau.course_correction.v1",
+  "status": "REQUIRED",
+  "stop_reason": "brave_search_required_after_two_attempts",
+  "target": {
+    "adapter_kind": "generic_command",
+    "executor": "local",
+    "kind": "dag_node_attempt",
+    "node_id": "flaky"
+  },
+  "timestamp": "2026-07-27T12:06:57Z",
+  "trigger": "brave_search_required_after_two_attempts",
+  "why_normal_retry_is_unsafe": "The same blocker survived repeated attempts; external research is required."
+}
