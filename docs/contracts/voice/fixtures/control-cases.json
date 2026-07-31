@@ -1,0 +1,119 @@
+{
+  "cases": [
+    {
+      "action": "cancel",
+      "expect": {
+        "accepted": false,
+        "reason": "stale_cancel_epoch"
+      },
+      "name": "stale_cancel_epoch",
+      "target": {
+        "conversation_id": "conv-288",
+        "expected_cancel_epoch": 2,
+        "response_id": "resp-288-0002",
+        "turn_id": "turn-288-02",
+        "turn_revision": 2
+      }
+    },
+    {
+      "action": "cancel",
+      "expect": {
+        "accepted": false,
+        "reason": "stale_turn_revision"
+      },
+      "name": "stale_turn_revision",
+      "target": {
+        "conversation_id": "conv-288",
+        "expected_cancel_epoch": 3,
+        "response_id": "resp-288-0002",
+        "turn_id": "turn-288-02",
+        "turn_revision": 1
+      }
+    },
+    {
+      "action": "cancel",
+      "expect": {
+        "accepted": false,
+        "reason": "unknown_conversation"
+      },
+      "name": "wrong_conversation",
+      "target": {
+        "conversation_id": "conv-other",
+        "expected_cancel_epoch": 3,
+        "response_id": "resp-288-0002",
+        "turn_id": "turn-288-02",
+        "turn_revision": 2
+      }
+    },
+    {
+      "action": "cancel",
+      "expect": {
+        "accepted": false,
+        "reason": "stale_response_id"
+      },
+      "name": "stale_response_id",
+      "target": {
+        "conversation_id": "conv-288",
+        "expected_cancel_epoch": 3,
+        "response_id": "resp-288-0001",
+        "turn_id": "turn-288-02",
+        "turn_revision": 2
+      }
+    },
+    {
+      "action": "cancel",
+      "expect": {
+        "accepted": false,
+        "reason": "stale_turn"
+      },
+      "name": "stale_turn",
+      "target": {
+        "conversation_id": "conv-288",
+        "expected_cancel_epoch": 3,
+        "response_id": "resp-288-0002",
+        "turn_id": "turn-288-01",
+        "turn_revision": 2
+      }
+    },
+    {
+      "action": "cancel",
+      "expect": {
+        "accepted": true,
+        "reason": "current_response"
+      },
+      "name": "current_cancel_accepted",
+      "target": {
+        "conversation_id": "conv-288",
+        "expected_cancel_epoch": 3,
+        "response_id": "resp-288-0002",
+        "turn_id": "turn-288-02",
+        "turn_revision": 2
+      }
+    },
+    {
+      "action": "cancel",
+      "expect": {
+        "accepted": true,
+        "idempotent": true,
+        "reason": "already_cancelled"
+      },
+      "name": "duplicate_cancel_idempotent",
+      "target": {
+        "conversation_id": "conv-288",
+        "expected_cancel_epoch": 4,
+        "response_id": "resp-288-0002",
+        "turn_id": "turn-288-02",
+        "turn_revision": 2
+      }
+    }
+  ],
+  "registered_response": {
+    "cancel_epoch": 3,
+    "conversation_id": "conv-288",
+    "request_id": "req-288-0002",
+    "response_id": "resp-288-0002",
+    "supersedes_response_id": null,
+    "turn_id": "turn-288-02",
+    "turn_revision": 2
+  }
+}

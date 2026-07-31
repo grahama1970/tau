@@ -17,6 +17,17 @@ import urllib.request
 from dataclasses import dataclass, field
 from typing import Any
 
+from tau_coding.voice_contract import (
+    VOICE_RENDER_REQUEST_SCHEMA_V2,
+    ControlTarget,
+    DeliverySettings,
+    ResponseControlRegistry,
+    ResponseIdentity,
+    decide_delivery,
+    parse_voice_render_request_v2,
+    request_lineage_digest,
+)
+
 VOICE_RECEIPT_SCHEMA = "tau.tui_voice_surface_receipt.v1"
 VOICE_RENDER_REQUEST_SCHEMA = "tau.voice_render_request.v1"
 
@@ -107,6 +118,100 @@ def build_voice_render_request(
     }
 
 
+def build_voice_render_request_v2(
+    snapshot: VoiceRunSnapshot,
+    *,
+    request_id: str,
+    conversation_id: str,
+    turn_id: str,
+    turn_revision: int,
+    response_id: str,
+    cancel_epoch: int,
+    supersedes_response_id: str | None = None,
+    tone: str | None = None,
+    intensity: float | None = None,
+    valence: float | None = None,
+    delivery_stage: str | None = None,
+) -> dict[str, Any]:
+    """Project run state into a tau.voice_render_request.v2 wire envelope.
+
+    The envelope keeps every v1 flat field (same route, permissive v1
+    consumers keep working during migration) and adds a strict ``v2`` block
+    carrying response identity, source lineage, the requested-vs-effective
+    delivery decision, hash-bound segments, and the control target template.
+    The result round-trips through :func:`parse_voice_render_request_v2`.
+    """
+
+    envelope = build_voice_render_request(
+        snapshot,
+        conversation_id=conversation_id,
+        turn_id=turn_id,
+        superseded_turn_id=None,
+        tone=tone,
+        intensity=intensity,
+        valence=valence,
+        delivery_stage=delivery_stage,
+    )
+    text = _announcement_text(snapshot)
+    requested = DeliverySettings(
+        tone=tone, intensity=intensity, valence=valence, stage=delivery_stage
+    )
+    decision = decide_delivery(
+        state=snapshot.state,
+        approval_required=snapshot.approval_required,
+        requested=requested,
+        run_id=snapshot.run_id,
+        state_digest=snapshot.state_digest,
+    )
+    identity = ResponseIdentity(
+        request_id=request_id,
+        conversation_id=conversation_id,
+        turn_id=turn_id,
+        turn_revision=turn_revision,
+        response_id=response_id,
+        cancel_epoch=cancel_epoch,
+        supersedes_response_id=supersedes_response_id,
+    )
+    control_target = ControlTarget(
+        conversation_id=conversation_id,
+        turn_id=turn_id,
+        turn_revision=turn_revision,
+        response_id=response_id,
+        expected_cancel_epoch=cancel_epoch,
+    )
+    envelope["schema"] = VOICE_RENDER_REQUEST_SCHEMA_V2
+    envelope["v2"] = {
+        "identity": identity.model_dump(),
+        "lineage": {
+            "workflow": snapshot.workflow,
+            "run_id": snapshot.run_id,
+            "node_id": snapshot.active_node,
+            "attempt_id": snapshot.attempt_id,
+            "scheduler_journal_sequence": snapshot.scheduler_journal_sequence,
+            "state_digest": snapshot.state_digest,
+            "goal_hash": snapshot.goal_hash,
+            "event_type": snapshot.event_type,
+            "state_transition": snapshot.state_transition,
+        },
+        "delivery_decision": decision.model_dump(),
+        "segments": [
+            {
+                "segment_id": f"{response_id}-000",
+                "text": text,
+                "text_sha256": _sha256_text(text),
+                "delivery": decision.effective_delivery.model_dump(),
+                "interruptible": True,
+            }
+        ],
+        "control_target": control_target.model_dump(),
+        "extensions": {},
+    }
+    # Fail-closed self check: the producer never emits an envelope its own
+    # strict parser would reject.
+    parse_voice_render_request_v2(envelope)
+    return envelope
+
+
 @dataclass(frozen=True, slots=True)
 class VoiceRunSnapshot:
     """Authoritative run state projected from the TUI/run-status layer."""
@@ -191,6 +296,8 @@ class VoiceSurface:
         self.timeout_seconds = timeout_seconds
         self._active_by_conversation: dict[str, VoiceTurnState] = {}
         self._turns: dict[str, VoiceTurnState] = {}
+        self._response_registry = ResponseControlRegistry()
+        self._response_digests: dict[str, str] = {}
 
     def startup_receipt(self) -> dict[str, Any]:
         degraded = []
@@ -281,6 +388,110 @@ class VoiceSurface:
         self._turns[turn_id] = state
         self._active_by_conversation[conversation_id] = state
         return receipt
+
+    def announce_response_v2(
+        self,
+        snapshot: VoiceRunSnapshot,
+        *,
+        request_id: str,
+        conversation_id: str,
+        turn_id: str,
+        turn_revision: int,
+        response_id: str,
+        cancel_epoch: int = 0,
+        supersedes_response_id: str | None = None,
+        tone: str | None = None,
+        intensity: float | None = None,
+        valence: float | None = None,
+        delivery_stage: str | None = None,
+    ) -> dict[str, Any]:
+        """Render one response through the v2 contract on the same route.
+
+        The receipt retains ``request_lineage_digest`` (the digest the
+        Chatterbox consumer proof must echo, chatterbox#11) and the response
+        identity registered for control fencing.
+        """
+
+        if self.chatterbox_url is None:
+            return self._degraded("chatterbox_url_missing")
+        if not _should_announce(snapshot):
+            return {"schema": VOICE_RECEIPT_SCHEMA, "status": "SKIPPED", "reason": "not_notable"}
+        envelope = build_voice_render_request_v2(
+            snapshot,
+            request_id=request_id,
+            conversation_id=conversation_id,
+            turn_id=turn_id,
+            turn_revision=turn_revision,
+            response_id=response_id,
+            cancel_epoch=cancel_epoch,
+            supersedes_response_id=supersedes_response_id,
+            tone=tone,
+            intensity=intensity,
+            valence=valence,
+            delivery_stage=delivery_stage,
+        )
+        identity = ResponseIdentity.model_validate(envelope["v2"]["identity"])
+        registration = self._response_registry.register_response(identity)
+        if not registration["accepted"]:
+            return {
+                "schema": VOICE_RECEIPT_SCHEMA,
+                "status": "BLOCKED",
+                "action": "voice_render_v2",
+                "reason": registration["reason"],
+                "response_id": response_id,
+            }
+        digest = request_lineage_digest(envelope)
+        self._response_digests[response_id] = digest
+        try:
+            response = self._post_json(self.chatterbox_url, "tau/voice-render", envelope)
+        except RuntimeError as exc:
+            return self._degraded("voice_render_request_failed", detail=str(exc))
+        service_ok = bool(response.get("ok")) and isinstance(response.get("mocked", False), bool)
+        invalid_schema = "ok" not in response
+        receipt = {
+            "schema": VOICE_RECEIPT_SCHEMA,
+            "status": "PASS" if service_ok and not invalid_schema else "DEGRADED",
+            "action": "voice_render_v2",
+            "request_schema": VOICE_RENDER_REQUEST_SCHEMA_V2,
+            "request_id": request_id,
+            "response_id": response_id,
+            "turn_id": turn_id,
+            "turn_revision": turn_revision,
+            "cancel_epoch": cancel_epoch,
+            "request_lineage_digest": digest,
+            "consumer_lineage_digest": response.get("request_lineage_digest"),
+            "consumer_digest_matches": response.get("request_lineage_digest") == digest,
+            "service_ok": service_ok,
+            "service_live": bool(response.get("live")),
+            "service_mocked": response.get("mocked"),
+            "delivery_decision": envelope["v2"]["delivery_decision"],
+            "approval_gate_satisfied": False,
+        }
+        if invalid_schema:
+            receipt["degraded_reasons"] = ["voice_render_response_invalid"]
+        return receipt
+
+    def control_response_v2(
+        self, target: ControlTarget, *, action: str, reason: str | None = None
+    ) -> dict[str, Any]:
+        """Apply a fenced v2 turn control; stale identity never reaches the wire."""
+
+        verdict = self._response_registry.evaluate_control(target, action=action)
+        receipt = {
+            "schema": VOICE_RECEIPT_SCHEMA,
+            "action": f"{action}_v2",
+            "control_verdict": verdict,
+            "approval_gate_satisfied": False,
+        }
+        if not verdict["accepted"]:
+            return {**receipt, "status": "BLOCKED"}
+        if verdict.get("idempotent"):
+            return {**receipt, "status": "PASS"}
+        wire = self._turn_control(action, target.turn_id, reason)
+        return {**receipt, "status": wire.get("status", "DEGRADED"), "wire_receipt": wire}
+
+    def response_lineage_digest(self, response_id: str) -> str | None:
+        return self._response_digests.get(response_id)
 
     def _turn_control(
         self,

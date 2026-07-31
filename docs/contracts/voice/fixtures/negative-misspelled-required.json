@@ -1,0 +1,127 @@
+{
+  "envelope": {
+    "attempt_id": "attempt-1",
+    "conversation_id": "conv-288",
+    "event_type": "state_change",
+    "external_evidence": {
+      "blocker": "waiting on reviewer verdict",
+      "delivery_policy_source": "tau_voice_default_policy",
+      "required_decision": null,
+      "tau_run_id": "run-288-fixture"
+    },
+    "goal_hash": "goalhash288",
+    "intensity": 0.45,
+    "interruptible": true,
+    "memory_route_decision": {
+      "active_node": "review",
+      "source": "tau_run_state",
+      "state": "BLOCKED",
+      "workflow": "issue-288-voice-v2"
+    },
+    "node_id": "review",
+    "question_text": "Workflow issue-288-voice-v2, run run-288-fixture, is BLOCKED, at node review, blocked by waiting on reviewer verdict.",
+    "question_text_sha256": "ded3daa7a74038fc6a9172a4195fd380a378831bae1c76017266340491abc946",
+    "route": "tau_voice_render",
+    "run_id": "run-288-fixture",
+    "scheduler_journal_sequence": 42,
+    "schema": "tau.voice_render_request.v2",
+    "speakable_chunks": [
+      {
+        "chunk_id": "turn-288-01-000",
+        "interruptible": true,
+        "text": "Workflow issue-288-voice-v2, run run-288-fixture, is BLOCKED, at node review, blocked by waiting on reviewer verdict.",
+        "text_sha256": "ded3daa7a74038fc6a9172a4195fd380a378831bae1c76017266340491abc946"
+      }
+    ],
+    "state_digest": "d1e5f0c0a288",
+    "state_transition": "RUNNING->BLOCKED",
+    "superseded_turn_id": null,
+    "tone": "careful_concerned",
+    "turn_controls": {
+      "cancel": "/turn/turn-288-01/cancel",
+      "duck": "/playback/turn-288-01/duck",
+      "stop": "/playback/turn-288-01/stop"
+    },
+    "turn_id": "turn-288-01",
+    "v2": {
+      "control_target": {
+        "conversation_id": "conv-288",
+        "expected_cancel_epoch": 0,
+        "response_id": "resp-288-0001",
+        "turn_id": "turn-288-01",
+        "turn_revision": 1
+      },
+      "delivery_decision": {
+        "effective_delivery": {
+          "intensity": 0.45,
+          "stage": "recoverable_blocker",
+          "tone": "careful_concerned",
+          "valence": -0.25
+        },
+        "evidence_references": [
+          "tau_run:run-288-fixture",
+          "state_digest:d1e5f0c0a288",
+          "authoritative_state:BLOCKED"
+        ],
+        "overridden_fields": [],
+        "override_reasons": {},
+        "policy_version": "tau.voice_delivery_policy.v1",
+        "profile_validation_status": "declared_profile",
+        "requested_delivery": {
+          "intensity": null,
+          "stage": null,
+          "tone": null,
+          "valence": null
+        }
+      },
+      "extensions": {},
+      "identity": {
+        "cancel_epoch": 0,
+        "conversation_id": "conv-288",
+        "request_id": "req-288-0001",
+        "respons_id": "resp-288-0001",
+        "supersedes_response_id": null,
+        "turn_id": "turn-288-01",
+        "turn_revision": 1
+      },
+      "lineage": {
+        "attempt_id": "attempt-1",
+        "event_type": "state_change",
+        "goal_hash": "goalhash288",
+        "node_id": "review",
+        "run_id": "run-288-fixture",
+        "scheduler_journal_sequence": 42,
+        "state_digest": "d1e5f0c0a288",
+        "state_transition": "RUNNING->BLOCKED",
+        "workflow": "issue-288-voice-v2"
+      },
+      "segments": [
+        {
+          "delivery": {
+            "intensity": 0.45,
+            "stage": "recoverable_blocker",
+            "tone": "careful_concerned",
+            "valence": -0.25
+          },
+          "interruptible": true,
+          "segment_id": "resp-288-0001-000",
+          "text": "Workflow issue-288-voice-v2, run run-288-fixture, is BLOCKED, at node review, blocked by waiting on reviewer verdict.",
+          "text_sha256": "ded3daa7a74038fc6a9172a4195fd380a378831bae1c76017266340491abc946"
+        }
+      ]
+    },
+    "valence": -0.25,
+    "voice_delivery": {
+      "approval_required": false,
+      "intensity": 0.45,
+      "notable": true,
+      "source": "tau_voice_default_policy",
+      "stage": "recoverable_blocker",
+      "tone": "careful_concerned",
+      "valence": -0.25
+    },
+    "workflow": "issue-288-voice-v2"
+  },
+  "expect": "rejected",
+  "reason": "invalid_v2_block"
+}
