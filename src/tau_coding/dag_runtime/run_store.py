@@ -319,8 +319,6 @@ def _migrate_store_v1_to_v2(connection: sqlite3.Connection) -> None:
     )
 
 
-
-
 def _migrate_store_v2_to_v3(connection: sqlite3.Connection) -> None:
     connection.executescript(
         """
@@ -350,6 +348,7 @@ def _migrate_store_v2_to_v3(connection: sqlite3.Connection) -> None:
         END;
         """
     )
+
 
 _STORE_MIGRATIONS = {1: _migrate_store_v1_to_v2, 2: _migrate_store_v2_to_v3}
 
@@ -492,8 +491,7 @@ def _plan_from_payload(payload: dict[str, Any]) -> DagPlan:
             nodes=tuple(_plan_node_from_payload(item) for item in payload["nodes"]),
             control_edges=tuple(_plan_edge_from_payload(item) for item in payload["control_edges"]),
             context_bindings=tuple(
-                DagPlanContextBinding(**{key: str(value) for key, value in item.items()})
-                for item in payload["context_bindings"]
+                _plan_context_binding_from_payload(item) for item in payload["context_bindings"]
             ),
             runtime_bindings=tuple(
                 FrozenJson.from_value(item) for item in payload["runtime_bindings"]
@@ -551,6 +549,30 @@ def _plan_edge_from_payload(item: Mapping[str, Any]) -> DagPlanEdge:
         if item["condition"] is not None
         else None,
         source_ordinal=int(item["source_ordinal"]) if item["source_ordinal"] is not None else None,
+    )
+
+
+def _plan_context_binding_from_payload(item: Mapping[str, Any]) -> DagPlanContextBinding:
+    accepted_schemas = item.get("accepted_source_schemas", ("*",))
+    if isinstance(accepted_schemas, str):
+        accepted_source_schemas = (accepted_schemas,)
+    elif isinstance(accepted_schemas, list | tuple):
+        accepted_source_schemas = tuple(str(value) for value in accepted_schemas)
+    else:
+        accepted_source_schemas = ("*",)
+    return DagPlanContextBinding(
+        binding_id=str(item["binding_id"]),
+        source_node_id=str(item["source_node_id"]),
+        target_node_id=str(item["target_node_id"]),
+        control_edge_id=str(item["control_edge_id"]),
+        projection=str(item["projection"]),
+        activation=str(item["activation"]),
+        origin=str(item["origin"]),
+        accepted_source_schemas=accepted_source_schemas or ("*",),
+        selector_kind=str(item.get("selector_kind", "accepted_output")),
+        materialization_mode=str(item.get("materialization_mode", "by_value")),
+        on_missing=str(item.get("on_missing", "omit")),
+        on_invalid=str(item.get("on_invalid", "omit")),
     )
 
 
@@ -834,9 +856,7 @@ class SqliteDagRunStore:
             if hasattr(self, "_connection"):
                 with suppress(Exception):
                     self._connection.close()
-            raise DagRunStoreError(
-                "dag_run_store_open_failed", f"{self.path}:{exc}"
-            ) from exc
+            raise DagRunStoreError("dag_run_store_open_failed", f"{self.path}:{exc}") from exc
 
     def execution_run_id(self, base_run_id: str) -> str:
         """Return an unfinished generation or allocate a clean invocation."""
@@ -1560,9 +1580,7 @@ class SqliteDagRunStore:
             )
             self._observe_admission_gap(lease, attempt_id, str(attempt["node_id"]))
 
-    def _observe_admission_gap(
-        self, lease: DagRunLease, attempt_id: str, node_id: str
-    ) -> None:
+    def _observe_admission_gap(self, lease: DagRunLease, attempt_id: str, node_id: str) -> None:
         """Shadow-mode invariant (#202): record, never block.
 
         Every terminal settlement without an admission row is appended to a
@@ -1634,9 +1652,7 @@ class SqliteDagRunStore:
             ).fetchone()
             if existing is not None:
                 if existing["sha256"] != sha256:
-                    raise DagRunStoreError(
-                        "dag_admission_conflict", f"{attempt_id}:{receipt_kind}"
-                    )
+                    raise DagRunStoreError("dag_admission_conflict", f"{attempt_id}:{receipt_kind}")
                 self._append_event(
                     lease,
                     event_key=f"admission:{attempt_id}:{receipt_kind}:duplicate",
@@ -1930,9 +1946,7 @@ class SqliteDagRunStore:
             dict[str, Any], redact_for_storage(dict(journal_payload)).value
         )
         _refresh_runtime_journal_hashes(redacted_journal_payload)
-        stored_identity_sha256 = str(
-            redacted_journal_payload["runtime_event_identity_sha256"]
-        )
+        stored_identity_sha256 = str(redacted_journal_payload["runtime_event_identity_sha256"])
         with self._transaction():
             if deadline is not None and datetime.now(UTC) >= deadline:
                 raise DagRunStoreError("runtime_event_deadline_exceeded", event.event_id)
@@ -1940,10 +1954,7 @@ class SqliteDagRunStore:
             existing = self._event_by_key(lease.run_id, event_key)
             if existing is not None:
                 existing_payload = _decoded_runtime_journal_payload(existing)
-                if (
-                    existing_payload.get("runtime_event_identity_sha256")
-                    != stored_identity_sha256
-                ):
+                if existing_payload.get("runtime_event_identity_sha256") != stored_identity_sha256:
                     raise DagRunStoreError("runtime_event_conflict", event.event_id)
                 existing_event = _runtime_event_from_journal_row(
                     existing, expected_run_id=lease.run_id

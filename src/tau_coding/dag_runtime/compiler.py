@@ -160,17 +160,13 @@ def compile_project_dag_plan(
                     )
                 ),
                 source_extensions=FrozenJson.from_value(_extensions(raw, PROJECT_NODE_KEYS)),
-                runtime_requirement=FrozenJson.from_value(
-                    runtime_requirement.to_payload()
-                ),
+                runtime_requirement=FrozenJson.from_value(runtime_requirement.to_payload()),
             )
         )
 
     control_edges = tuple(
         DagPlanEdge(
-            edge_id=(
-                f"project-edge:{edge.edge_index}:{edge.source}:{edge.target}"
-            ),
+            edge_id=(f"project-edge:{edge.edge_index}:{edge.source}:{edge.target}"),
             source_node_id=edge.source,
             target_id=edge.target,
             target_kind="node" if edge.target in contract.nodes else "terminal",
@@ -193,6 +189,11 @@ def compile_project_dag_plan(
             projection="activated_predecessor_evidence_and_artifacts",
             activation="after_route_activation",
             origin="project_handoff_default",
+            accepted_source_schemas=("*",),
+            selector_kind="accepted_output",
+            materialization_mode="by_value",
+            on_missing="omit",
+            on_invalid="omit",
         )
         for edge in contract.edges
         if edge.target in contract.nodes
@@ -285,6 +286,11 @@ def compile_generic_dag_plan(payload: dict[str, Any], *, source_path: Path) -> D
                 if "accepted_context_from" in raw_nodes[target]
                 else "default_all_dependencies"
             ),
+            accepted_source_schemas=("*",),
+            selector_kind="accepted_output",
+            materialization_mode="by_value",
+            on_missing="omit",
+            on_invalid="omit",
         )
         for target in sorted(typed_nodes)
         for source in typed_nodes[target].accepted_context_from
@@ -372,9 +378,7 @@ def compile_generic_dag_plan(payload: dict[str, Any], *, source_path: Path) -> D
         join_contracts=(),
         required_evidence=("tau.generic_dag_node_receipt.v1",),
         fail_closed_on=(),
-        security_declarations=FrozenJson.from_value(
-            {"security_mode": None, "declarations": []}
-        ),
+        security_declarations=FrozenJson.from_value({"security_mode": None, "declarations": []}),
         execution_limits=FrozenJson.from_value({}),
         source_extensions=FrozenJson.from_value(_extensions(payload, GENERIC_ROOT_KEYS)),
     ).with_computed_hash()
@@ -395,8 +399,7 @@ def compile_dag_plan_file(path: Path) -> DagPlan:
     if schema == "tau.generic_dag_spec.v1":
         return compile_generic_dag_plan(payload, source_path=resolved)
     raise RuntimeError(
-        "DAG plan compiler supports only tau.dag_contract.v1 and "
-        "tau.generic_dag_spec.v1"
+        "DAG plan compiler supports only tau.dag_contract.v1 and tau.generic_dag_spec.v1"
     )
 
 
@@ -656,7 +659,7 @@ def _generic_source_bindings(
             declared_path=str(raw["receipt_path"]),
             source_dir=source_dir,
             require_exists=False,
-        )
+        ),
     ]
     if isinstance(raw.get("work_order_path"), str):
         bindings.append(
@@ -813,9 +816,7 @@ def _generic_events_binding(payload: Mapping[str, Any]) -> dict[str, Any]:
 def _portable_config(value: Any, *, source_dir: Path, key: str = "") -> Any:
     if isinstance(value, Mapping):
         return {
-            str(child_key): _portable_config(
-                child_value, source_dir=source_dir, key=str(child_key)
-            )
+            str(child_key): _portable_config(child_value, source_dir=source_dir, key=str(child_key))
             for child_key, child_value in sorted(value.items())
         }
     if isinstance(value, list):

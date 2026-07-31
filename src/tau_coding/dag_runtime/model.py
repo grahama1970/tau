@@ -8,6 +8,12 @@ from dataclasses import dataclass, replace
 from typing import Any
 
 DAG_PLAN_SCHEMA = "tau.dag_plan.v1"
+CONTEXT_BINDING_SELECTOR_KINDS = frozenset(
+    {"accepted_output", "artifact_by_schema", "receipt_by_schema"}
+)
+CONTEXT_BINDING_MATERIALIZATION_MODES = frozenset({"by_value", "by_reference"})
+CONTEXT_BINDING_ON_MISSING = frozenset({"omit", "block", "fail"})
+CONTEXT_BINDING_ON_INVALID = frozenset({"omit", "block", "fail"})
 
 
 def canonical_json(value: object) -> str:
@@ -83,8 +89,13 @@ class DagPlanContextBinding:
     projection: str
     activation: str
     origin: str
+    accepted_source_schemas: tuple[str, ...] = ("*",)
+    selector_kind: str = "accepted_output"
+    materialization_mode: str = "by_value"
+    on_missing: str = "omit"
+    on_invalid: str = "omit"
 
-    def to_payload(self) -> dict[str, str]:
+    def to_payload(self) -> dict[str, Any]:
         return {
             "binding_id": self.binding_id,
             "source_node_id": self.source_node_id,
@@ -93,6 +104,11 @@ class DagPlanContextBinding:
             "projection": self.projection,
             "activation": self.activation,
             "origin": self.origin,
+            "accepted_source_schemas": list(self.accepted_source_schemas),
+            "selector_kind": self.selector_kind,
+            "materialization_mode": self.materialization_mode,
+            "on_missing": self.on_missing,
+            "on_invalid": self.on_invalid,
         }
 
 

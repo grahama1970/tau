@@ -17,7 +17,16 @@ from typing import Any
 from tau_coding.course_correction import write_course_correction_receipt
 from tau_coding.dag_runtime.admission import write_durable_json
 from tau_coding.dag_runtime.correction import CorrectionStateProjection
-from tau_coding.dag_runtime.model import DagPlan, DagPlanNode, canonical_sha256
+from tau_coding.dag_runtime.model import (
+    DagPlan,
+    DagPlanContextBinding,
+    DagPlanNode,
+    canonical_sha256,
+)
+from tau_coding.dag_runtime.node_input_manifest import (
+    admit_node_input_manifest,
+    resolve_node_input_manifest,
+)
 from tau_coding.dag_runtime.replay import apply_transition_state, replay_dag_run
 from tau_coding.dag_runtime.resource_leases import (
     ResourceLeaseDenied,
@@ -57,6 +66,9 @@ class DagNodeAttempt:
     attempt_id: str
     idempotency_key: str
     recovered: bool = False
+    input_manifest_path: str | None = None
+    input_manifest_sha256: str | None = None
+    input_manifest_admission_id: str | None = None
 
 
 NodeExecutor = Callable[
@@ -161,7 +173,7 @@ def run_dag_plan(
         node.node_id: node for node in plan.nodes if node.node_id not in declared_terminal_nodes
     }
     incoming_edges = _incoming_edges(plan, node_ids=set(nodes))
-    context_edges = _context_edges(plan)
+    context_bindings = _context_bindings_by_target(plan)
     edge_states: dict[str, str] = {}
     terminal_states: dict[str, str] = {}
     node_states = {node_id: "pending" for node_id in nodes}
@@ -443,6 +455,41 @@ def run_dag_plan(
                             attempt=attempt,
                         )
                         _inject_fault(fault_injector, "after_attempt_reserved", identity)
+                        input_resolution = resolve_node_input_manifest(
+                            plan=plan,
+                            node=nodes[node_id],
+                            identity=identity,
+                            bindings=context_bindings.get(node_id, ()),
+                            edge_states=edge_states,
+                            results=results,
+                        )
+                        input_admission = admit_node_input_manifest(
+                            run_store=run_store,
+                            lease=lease,
+                            identity=identity,
+                            manifest=input_resolution.manifest,
+                        )
+                        _inject_fault(fault_injector, "after_input_manifest_admitted", identity)
+                        accepted_inputs = input_resolution.accepted_inputs
+                        if input_resolution.blocked_result is not None:
+                            run_store.mark_dispatched(lease, identity.attempt_id)
+                            future = pool.submit(_return_result, input_resolution.blocked_result)
+                            futures[future] = node_id
+                            future_attempts[future] = identity
+                            future_resource_leases[future] = ()
+                            scheduled.add(node_id)
+                            node_states[node_id] = "running"
+                            _emit(
+                                event_sink,
+                                {
+                                    "event": "node_input_blocked",
+                                    "node_id": node_id,
+                                    "attempt": attempt,
+                                    "verdict": input_resolution.blocked_result["verdict"],
+                                    "input_manifest_sha256": input_admission["sha256"],
+                                },
+                            )
+                            continue
                         try:
                             resource_tokens = (
                                 resource_lease_manager.acquire_for_attempt(
@@ -477,11 +524,45 @@ def run_dag_plan(
                             idempotency_key=f"{effective_run_id}:{node_id}:{attempt}:effect",
                         )
                         resource_tokens = ()
-                    accepted_inputs = tuple(
-                        results[source]["accepted_output"]
-                        for source, edge_id in context_edges.get(node_id, ())
-                        if edge_states.get(edge_id) == "success"
-                        and isinstance(results.get(source, {}).get("accepted_output"), dict)
+                        input_resolution = resolve_node_input_manifest(
+                            plan=plan,
+                            node=nodes[node_id],
+                            identity=identity,
+                            bindings=context_bindings.get(node_id, ()),
+                            edge_states=edge_states,
+                            results=results,
+                        )
+                        accepted_inputs = input_resolution.accepted_inputs
+                        input_admission = None
+                        if input_resolution.blocked_result is not None:
+                            future = pool.submit(_return_result, input_resolution.blocked_result)
+                            futures[future] = node_id
+                            future_attempts[future] = identity
+                            future_resource_leases[future] = ()
+                            scheduled.add(node_id)
+                            node_states[node_id] = "running"
+                            _emit(
+                                event_sink,
+                                {
+                                    "event": "node_input_blocked",
+                                    "node_id": node_id,
+                                    "attempt": attempt,
+                                    "verdict": input_resolution.blocked_result["verdict"],
+                                },
+                            )
+                            continue
+                    input_manifest_path = (
+                        str(input_admission["path"]) if isinstance(input_admission, dict) else None
+                    )
+                    input_manifest_sha256 = (
+                        str(input_admission["sha256"])
+                        if isinstance(input_admission, dict)
+                        else None
+                    )
+                    input_manifest_admission_id = (
+                        str(input_admission["admission_id"])
+                        if isinstance(input_admission, dict)
+                        else None
                     )
                     future = pool.submit(
                         execute_node,
@@ -495,6 +576,9 @@ def run_dag_plan(
                             attempt_id=identity.attempt_id,
                             idempotency_key=identity.idempotency_key,
                             recovered=identity.recovered,
+                            input_manifest_path=input_manifest_path,
+                            input_manifest_sha256=input_manifest_sha256,
+                            input_manifest_admission_id=input_manifest_admission_id,
                         ),
                     )
                     futures[future] = node_id
@@ -603,9 +687,7 @@ def run_dag_plan(
                 if run_store is not None and lease is not None:
                     lease_wait = max(0.0, next_lease_renewal - time.monotonic())
                     wait_timeout = (
-                        lease_wait
-                        if wait_timeout is None
-                        else min(wait_timeout, lease_wait)
+                        lease_wait if wait_timeout is None else min(wait_timeout, lease_wait)
                     )
                 if cancel_requested is not None:
                     wait_timeout = 0.05 if wait_timeout is None else min(wait_timeout, 0.05)
@@ -743,10 +825,7 @@ def run_dag_plan(
                         current=result,
                         prior_results=attempt_history[node_id],
                     )
-                    if (
-                        repeated_signature is not None
-                        and attempt < nodes[node_id].max_attempts
-                    ):
+                    if repeated_signature is not None and attempt < nodes[node_id].max_attempts:
                         result = _with_same_failure_course_correction(
                             result,
                             plan=plan,
@@ -766,6 +845,8 @@ def run_dag_plan(
                         attempt=attempt,
                         prior_results=attempt_history[node_id],
                     )
+                    result.setdefault("scheduler_attempt_id", identity.attempt_id)
+                    result.setdefault("scheduler_attempt", identity.attempt)
                     attempt_history[node_id].append(raw_attempt_result)
                     retryable = result.get("retryable") is not False
                     scheduler_cancelled = cancel_events[node_id].is_set()
@@ -1411,9 +1492,7 @@ def _recover_incomplete_attempts(
             event_sink=event_sink,
         )
         will_retry = (
-            retryable
-            and correction_allows_retry
-            and identity.attempt < nodes[node_id].max_attempts
+            retryable and correction_allows_retry and identity.attempt < nodes[node_id].max_attempts
         )
         if stored.state != "OUTPUT_COMMITTED" and failed and will_retry:
             run_store.schedule_retry(lease, identity.attempt_id, next_attempt=identity.attempt + 1)
@@ -1600,9 +1679,7 @@ def _enforce_node_completion_boundary(
         )
 
     boundary_path = (
-        run_store.path.parent
-        / "node-completion-boundaries"
-        / f"{identity.attempt_id}.json"
+        run_store.path.parent / "node-completion-boundaries" / f"{identity.attempt_id}.json"
     )
     try:
         write_result = write_durable_json(boundary_path, validation.boundary)
@@ -1851,13 +1928,17 @@ def _incoming_edges(plan: DagPlan, *, node_ids: set[str]) -> dict[str, tuple[str
     return {node_id: tuple(sorted(edge_ids)) for node_id, edge_ids in incoming.items()}
 
 
-def _context_edges(plan: DagPlan) -> Mapping[str, tuple[tuple[str, str], ...]]:
-    values: dict[str, list[tuple[str, str]]] = {}
+def _context_bindings_by_target(
+    plan: DagPlan,
+) -> Mapping[str, tuple[DagPlanContextBinding, ...]]:
+    values: dict[str, list[DagPlanContextBinding]] = {}
     for binding in plan.context_bindings:
-        values.setdefault(binding.target_node_id, []).append(
-            (binding.source_node_id, binding.control_edge_id)
-        )
-    return {target: tuple(sources) for target, sources in values.items()}
+        values.setdefault(binding.target_node_id, []).append(binding)
+    return {target: tuple(bindings) for target, bindings in values.items()}
+
+
+def _return_result(result: dict[str, Any]) -> dict[str, Any]:
+    return result
 
 
 def _node_is_ready(
@@ -2016,7 +2097,7 @@ def _admit_result_receipt(
     # them via system_settlement.
     try:
         parsed = json.loads(blob.decode("utf-8"))
-    except (UnicodeDecodeError, ValueError):
+    except UnicodeDecodeError, ValueError:
         return False
     if not isinstance(parsed, dict):
         return False
@@ -2054,11 +2135,11 @@ def _classify_unadmitted_result(
     """
 
     command_results = result.get("command_results")
-    returncodes = [
-        r.get("returncode")
-        for r in command_results
-        if isinstance(r, dict)
-    ] if isinstance(command_results, list) else []
+    returncodes = (
+        [r.get("returncode") for r in command_results if isinstance(r, dict)]
+        if isinstance(command_results, list)
+        else []
+    )
     if not returncodes:
         return
     terminated = any(rc in (-9, -15, 124, 130) for rc in returncodes)

@@ -120,22 +120,34 @@ def test_duplicate_same_digest_is_suppressed_not_error(tmp_path: Path) -> None:
 def test_conflicting_digest_raises(tmp_path: Path) -> None:
     store, lease, attempt_id = _store_with_attempt(tmp_path)
     store.admit_receipt(
-        lease, attempt_id, receipt_kind="node_receipt",
-        sha256="sha256:abc", path="/p.json", size_bytes=1,
+        lease,
+        attempt_id,
+        receipt_kind="node_receipt",
+        sha256="sha256:abc",
+        path="/p.json",
+        size_bytes=1,
     )
 
     with pytest.raises(DagRunStoreError, match="dag_admission_conflict"):
         store.admit_receipt(
-            lease, attempt_id, receipt_kind="node_receipt",
-            sha256="sha256:DIFFERENT", path="/p.json", size_bytes=1,
+            lease,
+            attempt_id,
+            receipt_kind="node_receipt",
+            sha256="sha256:DIFFERENT",
+            path="/p.json",
+            size_bytes=1,
         )
 
 
 def test_admission_rows_are_append_only(tmp_path: Path) -> None:
     store, lease, attempt_id = _store_with_attempt(tmp_path)
     store.admit_receipt(
-        lease, attempt_id, receipt_kind="node_receipt",
-        sha256="sha256:abc", path="/p.json", size_bytes=1,
+        lease,
+        attempt_id,
+        receipt_kind="node_receipt",
+        sha256="sha256:abc",
+        path="/p.json",
+        size_bytes=1,
     )
 
     raw = sqlite3.connect(tmp_path / "dag-run.sqlite3")
@@ -161,9 +173,7 @@ def test_v2_store_migrates_to_v3_with_admissions_table(tmp_path: Path) -> None:
     reopened = SqliteDagRunStore(db)
     tables = {
         row[0]
-        for row in reopened._connection.execute(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-        )
+        for row in reopened._connection.execute("SELECT name FROM sqlite_master WHERE type='table'")
     }
     assert "receipt_admissions" in tables
     migrations = reopened._connection.execute(
@@ -181,9 +191,7 @@ def test_settlement_without_admission_lands_in_bypass_ledger(tmp_path: Path) -> 
     store.stage_result(lease, attempt_id, {"ok": True})
     store.validate_result(lease, attempt_id, {"valid": True})
     store.commit_output(lease, attempt_id)
-    store.commit_transition(
-        lease, attempt_id, completion={}, result={}, transition={}
-    )
+    store.commit_transition(lease, attempt_id, completion={}, result={}, transition={})
 
     ledger = tmp_path / "admission-bypass-ledger.jsonl"
     entries = [_json.loads(line) for line in ledger.read_text().splitlines()]
@@ -194,16 +202,18 @@ def test_settlement_without_admission_lands_in_bypass_ledger(tmp_path: Path) -> 
 def test_settlement_with_admission_stays_off_the_ledger(tmp_path: Path) -> None:
     store, lease, attempt_id = _store_with_attempt(tmp_path)
     store.admit_receipt(
-        lease, attempt_id, receipt_kind="node_receipt",
-        sha256="sha256:abc", path="/p.json", size_bytes=1,
+        lease,
+        attempt_id,
+        receipt_kind="node_receipt",
+        sha256="sha256:abc",
+        path="/p.json",
+        size_bytes=1,
     )
     store.mark_dispatched(lease, attempt_id)
     store.stage_result(lease, attempt_id, {"ok": True})
     store.validate_result(lease, attempt_id, {"valid": True})
     store.commit_output(lease, attempt_id)
-    store.commit_transition(
-        lease, attempt_id, completion={}, result={}, transition={}
-    )
+    store.commit_transition(lease, attempt_id, completion={}, result={}, transition={})
 
     assert not (tmp_path / "admission-bypass-ledger.jsonl").exists()
 
@@ -224,12 +234,18 @@ def test_enforcement_blocks_pass_claim_with_torn_receipt(tmp_path: Path) -> None
             "schema": "tau.generic_dag_spec.v1",
             "run_id": "run-enforce",
             "run_dir": str(tmp_path / "run"),
-            "nodes": [{
-                "node_id": "liar", "role": "liar", "command": ["true"],
-                "depends_on": [], "accepted_context_from": [],
-                "receipt_path": str(torn),
-                "timeout_seconds": 5, "max_attempts": 1,
-            }],
+            "nodes": [
+                {
+                    "node_id": "liar",
+                    "role": "liar",
+                    "command": ["true"],
+                    "depends_on": [],
+                    "accepted_context_from": [],
+                    "receipt_path": str(torn),
+                    "timeout_seconds": 5,
+                    "max_attempts": 1,
+                }
+            ],
         },
         source_path=tmp_path / "dag.json",
     )
@@ -253,7 +269,10 @@ def test_enforcement_blocks_pass_claim_with_torn_receipt(tmp_path: Path) -> None
     )
 
     rows = store.list_admissions("run-enforce")
-    assert [r["receipt_kind"] for r in rows] == ["system_settlement"]
+    assert [r["receipt_kind"] for r in rows] == [
+        "system_settlement",
+        "tau.node_input_manifest.v1",
+    ]
     node_result = next(r for r in outcome.node_results if r["node_id"] == "liar")
     assert node_result["status"] == "BLOCKED"
     assert node_result["verdict"] == "RECEIPT_NOT_ADMITTED"
