@@ -52,6 +52,7 @@ from tau_coding.dag_runtime.transition import (
 )
 from tau_coding.dag_runtime.worker_assignment import (
     WORKER_ASSIGNMENT_RECEIPT_SCHEMA,
+    WorkerAssignment,
     WorkerAssignmentError,
     WorkerCapability,
     WorkerRegistry,
@@ -334,6 +335,9 @@ def run_dag_plan(
             future_resource_leases: dict[
                 Future[dict[str, Any]], tuple[ResourceLeaseToken, ...]
             ] = {}
+            future_worker_bindings: dict[
+                Future[dict[str, Any]], tuple[object, str, tuple[dict[str, Any], ...]]
+            ] = {}
             while len(resolved) < len(nodes):
                 if (
                     run_store is not None
@@ -474,6 +478,7 @@ def run_dag_plan(
                     if node_id in resolved or node_id in scheduled:
                         continue
                     worker_admission: dict[str, Any] | None = None
+                    worker_binding: tuple[object, str, tuple[dict[str, Any], ...]] | None = None
                     if run_store is not None and lease is not None:
                         identity = run_store.reserve_attempt(
                             lease,
@@ -532,7 +537,11 @@ def run_dag_plan(
                             )
                             continue
                         try:
-                            worker_tokens, worker_admission = _assign_worker_for_attempt(
+                            (
+                                worker_tokens,
+                                worker_admission,
+                                worker_binding,
+                            ) = _assign_worker_for_attempt(
                                 plan=plan,
                                 node=nodes[node_id],
                                 run_id=effective_run_id,
@@ -656,6 +665,8 @@ def run_dag_plan(
                     futures[future] = node_id
                     future_attempts[future] = identity
                     future_resource_leases[future] = resource_tokens
+                    if worker_binding is not None:
+                        future_worker_bindings[future] = worker_binding
                     scheduled.add(node_id)
                     node_states[node_id] = "running"
                     _emit(
@@ -846,6 +857,7 @@ def run_dag_plan(
                     node_id = futures.pop(future)
                     identity = future_attempts.pop(future)
                     resource_tokens = future_resource_leases.pop(future, ())
+                    worker_binding = future_worker_bindings.pop(future, None)
                     try:
                         result = future.result()
                     except Exception as exc:  # pragma: no cover - defensive adapter boundary.
@@ -862,6 +874,24 @@ def run_dag_plan(
                             "verdict": "ADAPTER_EXECUTION_FAILED",
                             "errors": [str(exc)],
                         }
+                    if worker_binding is not None and run_store is not None and lease is not None:
+                        try:
+                            result = _complete_worker_for_attempt(
+                                worker_binding=worker_binding,
+                                run_store=run_store,
+                                lease=lease,
+                                identity=identity,
+                                node_id=node_id,
+                                result=result,
+                            )
+                        except WorkerAssignmentError as exc:
+                            result = {
+                                "node_id": node_id,
+                                "status": "BLOCKED",
+                                "verdict": exc.code.upper(),
+                                "errors": [str(exc)],
+                                "retryable": False,
+                            }
                     if resource_lease_manager is not None and resource_tokens:
                         resource_lease_manager.release(
                             resource_tokens,
@@ -2156,9 +2186,13 @@ def _assign_worker_for_attempt(
     resource_lease_manager: ResourceLeaseManager | None,
     resource_lease_ttl_seconds: float,
     worker_registry: WorkerRegistry | tuple[WorkerCapability | Mapping[str, Any], ...] | None,
-) -> tuple[tuple[ResourceLeaseToken, ...], dict[str, Any] | None]:
+) -> tuple[
+    tuple[ResourceLeaseToken, ...],
+    dict[str, Any] | None,
+    tuple[object, str, tuple[dict[str, Any], ...]] | None,
+]:
     if worker_registry is None and resource_lease_manager is None:
-        return (), None
+        return (), None, None
     if run_store is None or lease is None:
         raise WorkerAssignmentError("worker_assignment_run_store_required", node.node_id)
     if resource_lease_manager is None:
@@ -2196,6 +2230,10 @@ def _assign_worker_for_attempt(
     if not worker_tokens:
         raise WorkerAssignmentError("worker_resource_lease_missing", node.node_id)
     try:
+        lifecycle_receipts = _claim_worker_lifecycle(
+            worker_registry=worker_registry,
+            assignment=assignment,
+        )
         receipt = assignment.receipt_payload(resource_lease_token=worker_tokens[0].to_payload())
         written = write_durable_json(
             run_store.path.parent
@@ -2212,6 +2250,13 @@ def _assign_worker_for_attempt(
             path=str(written.path),
             size_bytes=written.size_bytes,
         )
+        for lifecycle_receipt in lifecycle_receipts:
+            _admit_worker_scheduler_receipt(
+                run_store=run_store,
+                lease=lease,
+                attempt_id=identity.attempt_id,
+                payload=lifecycle_receipt,
+            )
     except Exception:
         resource_lease_manager.release(
             worker_tokens,
@@ -2220,7 +2265,97 @@ def _assign_worker_for_attempt(
             reason="worker_assignment_receipt_failed",
         )
         raise
-    return worker_tokens, admission
+    binding = (
+        worker_registry,
+        assignment.selected.worker_id,
+        lifecycle_receipts,
+    )
+    return worker_tokens, admission, binding
+
+
+def _claim_worker_lifecycle(
+    *,
+    worker_registry: object,
+    assignment: WorkerAssignment,
+) -> tuple[dict[str, Any], ...]:
+    claim = getattr(worker_registry, "claim_worker", None)
+    if not callable(claim):
+        return ()
+    receipt = claim(assignment)
+    if not isinstance(receipt, Mapping):
+        raise WorkerAssignmentError(
+            "worker_lifecycle_receipt_invalid",
+            assignment.selected.worker_id,
+        )
+    return (dict(receipt),)
+
+
+def _complete_worker_for_attempt(
+    *,
+    worker_binding: tuple[object, str, tuple[dict[str, Any], ...]],
+    run_store: SqliteDagRunStore,
+    lease: DagRunLease,
+    identity: DagAttemptIdentity,
+    node_id: str,
+    result: dict[str, Any],
+) -> dict[str, Any]:
+    worker_registry, worker_id, _claim_receipts = worker_binding
+    complete = getattr(worker_registry, "complete_worker_attempt", None)
+    if not callable(complete):
+        return result
+    receipt = complete(
+        worker_id=worker_id,
+        run_id=identity.run_id,
+        node_id=node_id,
+        attempt_id=identity.attempt_id,
+        result=result,
+    )
+    if not isinstance(receipt, Mapping):
+        raise WorkerAssignmentError("worker_reset_receipt_invalid", worker_id)
+    reset_receipt = dict(receipt)
+    _admit_worker_scheduler_receipt(
+        run_store=run_store,
+        lease=lease,
+        attempt_id=identity.attempt_id,
+        payload=reset_receipt,
+    )
+    if reset_receipt.get("status") != "PASS":
+        return {
+            "node_id": node_id,
+            "status": "BLOCKED",
+            "verdict": "WORKER_RESET_FAILED",
+            "errors": list(reset_receipt.get("errors") or ["worker reset failed"]),
+            "retryable": False,
+            "worker_reset_receipt": reset_receipt,
+        }
+    return result
+
+
+def _admit_worker_scheduler_receipt(
+    *,
+    run_store: SqliteDagRunStore,
+    lease: DagRunLease,
+    attempt_id: str,
+    payload: Mapping[str, Any],
+) -> dict[str, Any]:
+    receipt_kind = str(payload.get("schema") or "")
+    if not receipt_kind:
+        raise WorkerAssignmentError("worker_lifecycle_receipt_schema_missing", attempt_id)
+    written = write_durable_json(
+        run_store.path.parent
+        / "worker-lifecycle"
+        / str(payload.get("node_id") or "worker")
+        / f"{attempt_id}-{receipt_kind}.json",
+        dict(payload),
+    )
+    return run_store.admit_receipt(
+        lease,
+        attempt_id,
+        receipt_kind=receipt_kind,
+        sha256=written.sha256,
+        path=str(written.path),
+        size_bytes=written.size_bytes,
+    )
 
 
 def _node_is_ready(
