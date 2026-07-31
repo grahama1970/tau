@@ -33,10 +33,13 @@ RUNTIME_EVENT_JOURNAL_ENTRY_SCHEMA = "tau.runtime_event_journal_entry.v1"
 DIAGNOSTIC_EVENT_SCHEMA = "tau.dag_diagnostic_event.v1"
 CORRECTION_JOURNAL_ENTRY_SCHEMA = "tau.correction_journal_entry.v1"
 MAX_DIAGNOSTIC_EVENT_BYTES = 64 * 1024
-STORE_SCHEMA_VERSION = 3
-STORE_COMPATIBLE_READ_VERSIONS = frozenset({1, STORE_SCHEMA_VERSION})
+STORE_SCHEMA_VERSION = 4
+STORE_COMPATIBLE_READ_VERSIONS = frozenset({1, 3, STORE_SCHEMA_VERSION})
 DAG_RUN_RECONCILIATION_DECISION_SCHEMA = "tau.dag_run_reconciliation_decision.v1"
 DAG_RUN_STALE_LEASE_CLEAR_SCHEMA = "tau.dag_run_stale_lease_clear.v1"
+WORKSPACE_READ_SET_SCHEMA = "tau.workspace_read_set.v1"
+WORKSPACE_CHANGE_SIGNAL_SCHEMA = "tau.workspace_change_signal.v1"
+STALE_READ_RECONCILIATION_SCHEMA = "tau.stale_read_reconciliation.v1"
 
 
 class DagRunStoreError(RuntimeError):
@@ -243,6 +246,60 @@ BEFORE DELETE ON dag_run_events
 BEGIN
     SELECT RAISE(ABORT, 'dag_run_events is append-only');
 END;
+
+CREATE TABLE IF NOT EXISTS workspace_read_sets (
+    read_set_id TEXT PRIMARY KEY,
+    run_id TEXT NOT NULL REFERENCES dag_runs(run_id),
+    node_id TEXT NOT NULL,
+    attempt_id TEXT NOT NULL REFERENCES dag_node_attempts(attempt_id),
+    read_set_json TEXT NOT NULL,
+    read_set_sha256 TEXT NOT NULL,
+    policy TEXT NOT NULL,
+    recorded_event_seq INTEGER NOT NULL,
+    recorded_at TEXT NOT NULL,
+    UNIQUE(run_id, attempt_id, read_set_sha256)
+);
+
+CREATE INDEX IF NOT EXISTS idx_workspace_read_sets_attempt
+ON workspace_read_sets(run_id, attempt_id, recorded_event_seq);
+
+CREATE TABLE IF NOT EXISTS workspace_change_signals (
+    signal_id TEXT PRIMARY KEY,
+    run_id TEXT NOT NULL REFERENCES dag_runs(run_id),
+    writer_attempt_id TEXT NOT NULL REFERENCES dag_node_attempts(attempt_id),
+    reader_attempt_id TEXT NOT NULL REFERENCES dag_node_attempts(attempt_id),
+    repository_id TEXT NOT NULL,
+    worktree_id TEXT NOT NULL,
+    path TEXT NOT NULL,
+    prior_sha256 TEXT NOT NULL,
+    new_sha256 TEXT NOT NULL,
+    writer_event_seq INTEGER NOT NULL,
+    signal_event_seq INTEGER NOT NULL,
+    resolved_by_reconciliation_id TEXT,
+    created_at TEXT NOT NULL,
+    UNIQUE(
+        run_id, writer_attempt_id, reader_attempt_id, repository_id,
+        worktree_id, path, new_sha256
+    )
+);
+
+CREATE INDEX IF NOT EXISTS idx_workspace_change_signals_reader
+ON workspace_change_signals(run_id, reader_attempt_id, resolved_by_reconciliation_id);
+
+CREATE TABLE IF NOT EXISTS stale_read_reconciliations (
+    reconciliation_id TEXT PRIMARY KEY,
+    run_id TEXT NOT NULL REFERENCES dag_runs(run_id),
+    attempt_id TEXT NOT NULL REFERENCES dag_node_attempts(attempt_id),
+    signal_id TEXT NOT NULL REFERENCES workspace_change_signals(signal_id),
+    disposition TEXT NOT NULL,
+    reconciliation_json TEXT NOT NULL,
+    reconciliation_sha256 TEXT NOT NULL,
+    accepted INTEGER NOT NULL,
+    rejection_code TEXT,
+    event_seq INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE(run_id, attempt_id, signal_id, reconciliation_sha256)
+);
 """
 
 
@@ -350,7 +407,69 @@ def _migrate_store_v2_to_v3(connection: sqlite3.Connection) -> None:
     )
 
 
-_STORE_MIGRATIONS = {1: _migrate_store_v1_to_v2, 2: _migrate_store_v2_to_v3}
+def _workspace_read_schema_sql() -> str:
+    return """
+        CREATE TABLE IF NOT EXISTS workspace_read_sets (
+            read_set_id TEXT PRIMARY KEY,
+            run_id TEXT NOT NULL REFERENCES dag_runs(run_id),
+            node_id TEXT NOT NULL,
+            attempt_id TEXT NOT NULL REFERENCES dag_node_attempts(attempt_id),
+            read_set_json TEXT NOT NULL,
+            read_set_sha256 TEXT NOT NULL,
+            policy TEXT NOT NULL,
+            recorded_event_seq INTEGER NOT NULL,
+            recorded_at TEXT NOT NULL,
+            UNIQUE(run_id, attempt_id, read_set_sha256)
+        );
+        CREATE INDEX IF NOT EXISTS idx_workspace_read_sets_attempt
+        ON workspace_read_sets(run_id, attempt_id, recorded_event_seq);
+        CREATE TABLE IF NOT EXISTS workspace_change_signals (
+            signal_id TEXT PRIMARY KEY,
+            run_id TEXT NOT NULL REFERENCES dag_runs(run_id),
+            writer_attempt_id TEXT NOT NULL REFERENCES dag_node_attempts(attempt_id),
+            reader_attempt_id TEXT NOT NULL REFERENCES dag_node_attempts(attempt_id),
+            repository_id TEXT NOT NULL,
+            worktree_id TEXT NOT NULL,
+            path TEXT NOT NULL,
+            prior_sha256 TEXT NOT NULL,
+            new_sha256 TEXT NOT NULL,
+            writer_event_seq INTEGER NOT NULL,
+            signal_event_seq INTEGER NOT NULL,
+            resolved_by_reconciliation_id TEXT,
+            created_at TEXT NOT NULL,
+            UNIQUE(
+                run_id, writer_attempt_id, reader_attempt_id, repository_id,
+                worktree_id, path, new_sha256
+            )
+        );
+        CREATE INDEX IF NOT EXISTS idx_workspace_change_signals_reader
+        ON workspace_change_signals(run_id, reader_attempt_id, resolved_by_reconciliation_id);
+        CREATE TABLE IF NOT EXISTS stale_read_reconciliations (
+            reconciliation_id TEXT PRIMARY KEY,
+            run_id TEXT NOT NULL REFERENCES dag_runs(run_id),
+            attempt_id TEXT NOT NULL REFERENCES dag_node_attempts(attempt_id),
+            signal_id TEXT NOT NULL REFERENCES workspace_change_signals(signal_id),
+            disposition TEXT NOT NULL,
+            reconciliation_json TEXT NOT NULL,
+            reconciliation_sha256 TEXT NOT NULL,
+            accepted INTEGER NOT NULL,
+            rejection_code TEXT,
+            event_seq INTEGER NOT NULL,
+            created_at TEXT NOT NULL,
+            UNIQUE(run_id, attempt_id, signal_id, reconciliation_sha256)
+        );
+        """
+
+
+def _migrate_store_v3_to_v4(connection: sqlite3.Connection) -> None:
+    connection.executescript(_workspace_read_schema_sql())
+
+
+_STORE_MIGRATIONS = {
+    1: _migrate_store_v1_to_v2,
+    2: _migrate_store_v2_to_v3,
+    3: _migrate_store_v3_to_v4,
+}
 
 
 def _refresh_runtime_journal_hashes(payload: dict[str, Any]) -> None:
@@ -1726,6 +1845,324 @@ class SqliteDagRunStore:
                 "duplicate": False,
             }
 
+    def record_workspace_read_set(
+        self,
+        lease: DagRunLease,
+        attempt_id: str,
+        read_set: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        """Persist one hash-bound attempt workspace read set."""
+
+        value = dict(read_set)
+        if value.get("schema") != WORKSPACE_READ_SET_SCHEMA:
+            raise DagRunStoreError("workspace_read_set_schema_invalid", attempt_id)
+        if value.get("attempt_id") != attempt_id or value.get("run_id") != lease.run_id:
+            raise DagRunStoreError("workspace_read_set_attempt_mismatch", attempt_id)
+        read_set_sha256 = str(value.get("read_set_sha256") or "")
+        if (
+            canonical_sha256({k: v for k, v in value.items() if k != "read_set_sha256"})
+            != read_set_sha256
+        ):
+            raise DagRunStoreError("workspace_read_set_hash_mismatch", attempt_id)
+        entries = value.get("entries")
+        if not isinstance(entries, list):
+            raise DagRunStoreError("workspace_read_set_entries_invalid", attempt_id)
+        with self._transaction():
+            self._assert_lease(lease)
+            attempt = self._attempt_row(attempt_id)
+            if attempt["run_id"] != lease.run_id:
+                raise DagRunStoreError("workspace_read_set_attempt_mismatch", attempt_id)
+            existing = self._connection.execute(
+                """SELECT * FROM workspace_read_sets
+                   WHERE run_id = ? AND attempt_id = ? AND read_set_sha256 = ?""",
+                (lease.run_id, attempt_id, read_set_sha256),
+            ).fetchone()
+            if existing is not None:
+                return {**dict(existing), "duplicate": True}
+            event_seq = self._append_event(
+                lease,
+                event_key=f"workspace-read-set:{attempt_id}:{read_set_sha256}",
+                event_type="workspace_read_set_recorded",
+                entity_type="attempt",
+                entity_id=attempt_id,
+                attempt_id=attempt_id,
+                payload=value,
+            )
+            read_set_id = canonical_sha256(
+                {
+                    "schema": "tau.workspace_read_set_identity.v1",
+                    "run_id": lease.run_id,
+                    "attempt_id": attempt_id,
+                    "read_set_sha256": read_set_sha256,
+                    "event_seq": event_seq,
+                }
+            ).removeprefix("sha256:")[:32]
+            recorded_at = _now_iso()
+            self._connection.execute(
+                """INSERT INTO workspace_read_sets(
+                    read_set_id, run_id, node_id, attempt_id, read_set_json,
+                    read_set_sha256, policy, recorded_event_seq, recorded_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    read_set_id,
+                    lease.run_id,
+                    str(attempt["node_id"]),
+                    attempt_id,
+                    canonical_json(value),
+                    read_set_sha256,
+                    str(value.get("policy") or "observe"),
+                    event_seq,
+                    recorded_at,
+                ),
+            )
+            return {
+                "read_set_id": read_set_id,
+                "run_id": lease.run_id,
+                "node_id": str(attempt["node_id"]),
+                "attempt_id": attempt_id,
+                "read_set_sha256": read_set_sha256,
+                "policy": str(value.get("policy") or "observe"),
+                "recorded_event_seq": event_seq,
+                "recorded_at": recorded_at,
+                "duplicate": False,
+            }
+
+    def record_workspace_changes(
+        self,
+        lease: DagRunLease,
+        writer_attempt_id: str,
+        changes: tuple[Mapping[str, Any], ...] | list[Mapping[str, Any]],
+    ) -> tuple[dict[str, Any], ...]:
+        """Record accepted workspace changes and emit stale-read signals."""
+
+        emitted: list[dict[str, Any]] = []
+        with self._transaction():
+            self._assert_lease(lease)
+            writer_attempt = self._attempt_row(writer_attempt_id)
+            if writer_attempt["run_id"] != lease.run_id:
+                raise DagRunStoreError("workspace_change_attempt_mismatch", writer_attempt_id)
+            latest_reads = self._latest_workspace_read_sets_locked(lease.run_id)
+            active_reader_attempts = self._active_reader_attempt_ids_locked(lease.run_id)
+            for index, raw_change in enumerate(changes):
+                change = dict(raw_change)
+                if str(change.get("previous_sha256")) == str(change.get("new_sha256")):
+                    continue
+                change_sha256 = canonical_sha256(change)
+                writer_event_seq = self._append_event(
+                    lease,
+                    event_key=f"workspace-change:{writer_attempt_id}:{index}:{change_sha256}",
+                    event_type="workspace_change_recorded",
+                    entity_type="attempt",
+                    entity_id=writer_attempt_id,
+                    attempt_id=writer_attempt_id,
+                    payload=change,
+                )
+                for read_set in latest_reads:
+                    reader_attempt_id = str(read_set["attempt_id"])
+                    if (
+                        reader_attempt_id == writer_attempt_id
+                        or reader_attempt_id not in active_reader_attempts
+                    ):
+                        continue
+                    for entry in read_set["entries"]:
+                        if not _workspace_read_entry_matches_change(entry, change):
+                            continue
+                        signal_payload_without_hash = {
+                            "schema": WORKSPACE_CHANGE_SIGNAL_SCHEMA,
+                            "run_id": lease.run_id,
+                            "writer_attempt_id": writer_attempt_id,
+                            "writer_node_id": str(writer_attempt["node_id"]),
+                            "reader_attempt_id": reader_attempt_id,
+                            "reader_node_id": str(read_set["node_id"]),
+                            "repository_id": str(change["repository_id"]),
+                            "worktree_id": str(change["worktree_id"]),
+                            "path": str(change["path"]),
+                            "prior_sha256": str(change["previous_sha256"]),
+                            "new_sha256": str(change["new_sha256"]),
+                            "reader_observed_sha256": str(entry["blob_sha256"]),
+                            "writer_event_seq": writer_event_seq,
+                        }
+                        signal_sha256 = canonical_sha256(signal_payload_without_hash)
+                        signal_id = signal_sha256.removeprefix("sha256:")[:32]
+                        existing = self._connection.execute(
+                            "SELECT * FROM workspace_change_signals WHERE signal_id = ?",
+                            (signal_id,),
+                        ).fetchone()
+                        if existing is not None:
+                            emitted.append(dict(existing))
+                            continue
+                        signal_payload = {
+                            **signal_payload_without_hash,
+                            "signal_id": signal_id,
+                            "signal_sha256": signal_sha256,
+                        }
+                        signal_event_seq = self._append_event(
+                            lease,
+                            event_key=f"workspace-change-signal:{signal_id}",
+                            event_type="workspace_change_signal_recorded",
+                            entity_type="attempt",
+                            entity_id=reader_attempt_id,
+                            attempt_id=reader_attempt_id,
+                            payload=signal_payload,
+                        )
+                        created_at = _now_iso()
+                        self._connection.execute(
+                            """INSERT INTO workspace_change_signals(
+                                signal_id, run_id, writer_attempt_id, reader_attempt_id,
+                                repository_id, worktree_id, path, prior_sha256,
+                                new_sha256, writer_event_seq, signal_event_seq,
+                                resolved_by_reconciliation_id, created_at
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)""",
+                            (
+                                signal_id,
+                                lease.run_id,
+                                writer_attempt_id,
+                                reader_attempt_id,
+                                str(change["repository_id"]),
+                                str(change["worktree_id"]),
+                                str(change["path"]),
+                                str(change["previous_sha256"]),
+                                str(change["new_sha256"]),
+                                writer_event_seq,
+                                signal_event_seq,
+                                created_at,
+                            ),
+                        )
+                        emitted.append(
+                            {
+                                **signal_payload,
+                                "signal_event_seq": signal_event_seq,
+                                "created_at": created_at,
+                            }
+                        )
+        return tuple(emitted)
+
+    def record_stale_read_reconciliations(
+        self,
+        lease: DagRunLease,
+        attempt_id: str,
+        reconciliations: tuple[Mapping[str, Any], ...] | list[Mapping[str, Any]],
+    ) -> tuple[dict[str, Any], ...]:
+        """Persist and apply stale-read reconciliations for one affected attempt."""
+
+        receipts: list[dict[str, Any]] = []
+        with self._transaction():
+            self._assert_lease(lease)
+            self._attempt_row(attempt_id)
+            latest_reads = self._latest_workspace_read_sets_locked(lease.run_id)
+            latest_for_attempt = next(
+                (read_set for read_set in latest_reads if read_set["attempt_id"] == attempt_id),
+                None,
+            )
+            for raw in reconciliations:
+                reconciliation = dict(raw)
+                if reconciliation.get("schema") not in {None, STALE_READ_RECONCILIATION_SCHEMA}:
+                    raise DagRunStoreError("stale_read_reconciliation_schema_invalid", attempt_id)
+                signal_id = str(reconciliation.get("signal_id") or "")
+                signal = self._connection.execute(
+                    "SELECT * FROM workspace_change_signals WHERE run_id = ? AND signal_id = ?",
+                    (lease.run_id, signal_id),
+                ).fetchone()
+                if signal is None or str(signal["reader_attempt_id"]) != attempt_id:
+                    raise DagRunStoreError("stale_read_signal_missing", signal_id)
+                disposition = str(reconciliation.get("disposition") or "")
+                accepted, rejection_code = self._evaluate_stale_read_reconciliation_locked(
+                    signal=dict(signal),
+                    reconciliation=reconciliation,
+                    latest_read_set=latest_for_attempt,
+                )
+                payload_without_hash = {
+                    "schema": STALE_READ_RECONCILIATION_SCHEMA,
+                    "run_id": lease.run_id,
+                    "attempt_id": attempt_id,
+                    "signal_id": signal_id,
+                    "disposition": disposition,
+                    "accepted": accepted,
+                    "rejection_code": rejection_code,
+                    "evidence": reconciliation.get("evidence"),
+                    "observed_sha256": reconciliation.get("observed_sha256"),
+                }
+                reconciliation_sha256 = canonical_sha256(payload_without_hash)
+                reconciliation_id = reconciliation_sha256.removeprefix("sha256:")[:32]
+                existing = self._connection.execute(
+                    "SELECT * FROM stale_read_reconciliations WHERE reconciliation_id = ?",
+                    (reconciliation_id,),
+                ).fetchone()
+                if existing is not None:
+                    receipts.append(dict(existing))
+                    continue
+                payload = {
+                    **payload_without_hash,
+                    "reconciliation_id": reconciliation_id,
+                    "reconciliation_sha256": reconciliation_sha256,
+                }
+                event_seq = self._append_event(
+                    lease,
+                    event_key=f"stale-read-reconciliation:{reconciliation_id}",
+                    event_type="stale_read_reconciliation_recorded",
+                    entity_type="attempt",
+                    entity_id=attempt_id,
+                    attempt_id=attempt_id,
+                    payload=payload,
+                )
+                created_at = _now_iso()
+                self._connection.execute(
+                    """INSERT INTO stale_read_reconciliations(
+                        reconciliation_id, run_id, attempt_id, signal_id,
+                        disposition, reconciliation_json, reconciliation_sha256,
+                        accepted, rejection_code, event_seq, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (
+                        reconciliation_id,
+                        lease.run_id,
+                        attempt_id,
+                        signal_id,
+                        disposition,
+                        canonical_json(payload),
+                        reconciliation_sha256,
+                        1 if accepted else 0,
+                        rejection_code,
+                        event_seq,
+                        created_at,
+                    ),
+                )
+                if accepted:
+                    self._connection.execute(
+                        """UPDATE workspace_change_signals
+                           SET resolved_by_reconciliation_id = ?
+                           WHERE signal_id = ? AND resolved_by_reconciliation_id IS NULL""",
+                        (reconciliation_id, signal_id),
+                    )
+                receipts.append(
+                    {
+                        **payload,
+                        "event_seq": event_seq,
+                        "created_at": created_at,
+                    }
+                )
+        return tuple(receipts)
+
+    def unresolved_workspace_change_signals(
+        self,
+        run_id: str,
+        attempt_id: str,
+    ) -> tuple[dict[str, Any], ...]:
+        rows = self._connection.execute(
+            """SELECT * FROM workspace_change_signals
+               WHERE run_id = ? AND reader_attempt_id = ?
+               AND resolved_by_reconciliation_id IS NULL
+               ORDER BY signal_event_seq, signal_id""",
+            (run_id, attempt_id),
+        ).fetchall()
+        return tuple(dict(row) for row in rows)
+
+    def list_workspace_change_signals(self, run_id: str) -> tuple[dict[str, Any], ...]:
+        rows = self._connection.execute(
+            "SELECT * FROM workspace_change_signals WHERE run_id = ? ORDER BY signal_event_seq",
+            (run_id,),
+        ).fetchall()
+        return tuple(dict(row) for row in rows)
+
     def list_admissions(
         self,
         run_id: str,
@@ -2053,6 +2490,86 @@ class SqliteDagRunStore:
                 return cursor
         return latest.event_id
 
+    def _latest_workspace_read_sets_locked(self, run_id: str) -> tuple[dict[str, Any], ...]:
+        rows = self._connection.execute(
+            """SELECT wrs.* FROM workspace_read_sets wrs
+               JOIN (
+                   SELECT attempt_id, MAX(recorded_event_seq) AS max_seq
+                   FROM workspace_read_sets WHERE run_id = ? GROUP BY attempt_id
+               ) latest
+               ON latest.attempt_id = wrs.attempt_id
+               AND latest.max_seq = wrs.recorded_event_seq
+               WHERE wrs.run_id = ?
+               ORDER BY wrs.recorded_event_seq, wrs.attempt_id""",
+            (run_id, run_id),
+        ).fetchall()
+        read_sets: list[dict[str, Any]] = []
+        for row in rows:
+            payload = json.loads(row["read_set_json"])
+            expected_hash = canonical_sha256(
+                {key: value for key, value in payload.items() if key != "read_set_sha256"}
+            )
+            if expected_hash != row["read_set_sha256"]:
+                raise DagRunStoreError("workspace_read_set_hash_mismatch", str(row["attempt_id"]))
+            entries = payload.get("entries")
+            if not isinstance(entries, list):
+                raise DagRunStoreError("workspace_read_set_entries_invalid", str(row["attempt_id"]))
+            read_sets.append(
+                {
+                    "read_set_id": str(row["read_set_id"]),
+                    "run_id": str(row["run_id"]),
+                    "node_id": str(row["node_id"]),
+                    "attempt_id": str(row["attempt_id"]),
+                    "policy": str(row["policy"]),
+                    "entries": entries,
+                    "read_set_sha256": str(row["read_set_sha256"]),
+                    "recorded_event_seq": int(row["recorded_event_seq"]),
+                }
+            )
+        return tuple(read_sets)
+
+    def _active_reader_attempt_ids_locked(self, run_id: str) -> set[str]:
+        rows = self._connection.execute(
+            """SELECT attempt_id FROM dag_node_attempts
+               WHERE run_id = ?
+               AND state IN ('RESERVED', 'DISPATCHED', 'STAGED', 'VALIDATED', 'OUTPUT_COMMITTED')
+               ORDER BY attempt_no, node_id""",
+            (run_id,),
+        ).fetchall()
+        return {str(row["attempt_id"]) for row in rows}
+
+    def _evaluate_stale_read_reconciliation_locked(
+        self,
+        *,
+        signal: Mapping[str, Any],
+        reconciliation: Mapping[str, Any],
+        latest_read_set: Mapping[str, Any] | None,
+    ) -> tuple[bool, str | None]:
+        disposition = str(reconciliation.get("disposition") or "")
+        if disposition == "reread_bound_new_hash":
+            observed = reconciliation.get("observed_sha256") or reconciliation.get("new_sha256")
+            if observed != signal["new_sha256"]:
+                return False, "STALE_READ_RECONCILIATION_HASH_MISMATCH"
+            if latest_read_set is None:
+                return False, "STALE_READ_RECONCILIATION_READ_SET_MISSING"
+            for entry in latest_read_set.get("entries", []):
+                if _workspace_read_entry_matches_signal(entry, signal):
+                    return True, None
+            return False, "STALE_READ_RECONCILIATION_REREAD_MISSING"
+        if disposition == "outside_checked_scope":
+            evidence = reconciliation.get("evidence")
+            if not isinstance(evidence, Mapping) or not evidence:
+                return False, "STALE_READ_RECONCILIATION_EVIDENCE_MISSING"
+            if evidence.get("kind") == "model_statement":
+                return False, "STALE_READ_RECONCILIATION_MODEL_STATEMENT_ONLY"
+            evidence_sha256 = reconciliation.get("evidence_sha256")
+            if evidence_sha256 != canonical_sha256(dict(evidence)):
+                return False, "STALE_READ_RECONCILIATION_EVIDENCE_HASH_MISMATCH"
+            return True, None
+        if disposition == "stop_replan":
+            return True, None
+        return False, "STALE_READ_RECONCILIATION_DISPOSITION_INVALID"
+
     def _change_attempt_state(
         self,
         lease: DagRunLease,
@@ -2255,6 +2772,31 @@ def _stored_attempt_to_receipt(attempt: StoredAttempt) -> dict[str, Any]:
         "staged_result_present": attempt.staged_result is not None,
         "committed_result_present": attempt.committed_result is not None,
     }
+
+
+def _workspace_read_entry_matches_change(
+    entry: Mapping[str, Any],
+    change: Mapping[str, Any],
+) -> bool:
+    return (
+        entry.get("repository_id") == change.get("repository_id")
+        and entry.get("worktree_id") == change.get("worktree_id")
+        and entry.get("path") == change.get("path")
+        and entry.get("blob_sha256") == change.get("previous_sha256")
+        and change.get("previous_sha256") != change.get("new_sha256")
+    )
+
+
+def _workspace_read_entry_matches_signal(
+    entry: Mapping[str, Any],
+    signal: Mapping[str, Any],
+) -> bool:
+    return (
+        entry.get("repository_id") == signal.get("repository_id")
+        and entry.get("worktree_id") == signal.get("worktree_id")
+        and entry.get("path") == signal.get("path")
+        and entry.get("blob_sha256") == signal.get("new_sha256")
+    )
 
 
 def _review_scope_admission_descriptor(row: Mapping[str, Any]) -> dict[str, str]:

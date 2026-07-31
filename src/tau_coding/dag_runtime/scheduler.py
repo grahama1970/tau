@@ -49,6 +49,13 @@ from tau_coding.dag_runtime.transition import (
     DagTransitionView,
     transition_batch_to_payload,
 )
+from tau_coding.dag_runtime.workspace_reads import (
+    initial_workspace_read_set,
+    result_workspace_read_set,
+    stale_read_policy,
+    stale_read_reconciliations_from_result,
+    workspace_changes_from_result,
+)
 from tau_coding.diagnostics import tau_logger
 from tau_coding.node_completion_boundary import (
     NODE_COMPLETION_BOUNDARY_SCHEMA,
@@ -455,6 +462,19 @@ def run_dag_plan(
                             attempt=attempt,
                         )
                         _inject_fault(fault_injector, "after_attempt_reserved", identity)
+                        initial_read_set = initial_workspace_read_set(
+                            plan=plan,
+                            node=nodes[node_id],
+                            run_id=effective_run_id,
+                            attempt_id=identity.attempt_id,
+                            attempt=identity.attempt,
+                        )
+                        if initial_read_set["entry_count"]:
+                            run_store.record_workspace_read_set(
+                                lease,
+                                identity.attempt_id,
+                                initial_read_set,
+                            )
                         input_resolution = resolve_node_input_manifest(
                             plan=plan,
                             node=nodes[node_id],
@@ -810,6 +830,20 @@ def run_dag_plan(
                         result=result,
                         run_store=run_store,
                         lease=lease,
+                    )
+                    result = _apply_workspace_stale_read_observations(
+                        plan=plan,
+                        node=nodes[node_id],
+                        identity=identity,
+                        result=result,
+                        run_store=run_store,
+                        lease=lease,
+                    )
+                    result = _enforce_workspace_stale_read_policy(
+                        node=nodes[node_id],
+                        identity=identity,
+                        result=result,
+                        run_store=run_store,
                     )
                     try:
                         validation = _validate_attempt_result(node_id=node_id, result=result)
@@ -1638,6 +1672,124 @@ def _validate_attempt_result(*, node_id: str, result: Mapping[str, Any]) -> dict
         "node_id": node_id,
         "result_sha256": canonical_sha256(dict(result)),
     }
+
+
+def _apply_workspace_stale_read_observations(
+    *,
+    plan: DagPlan,
+    node: DagPlanNode,
+    identity: DagAttemptIdentity,
+    result: Mapping[str, Any],
+    run_store: SqliteDagRunStore | None,
+    lease: DagRunLease | None,
+) -> dict[str, Any]:
+    updated = dict(result)
+    if run_store is None or lease is None:
+        return updated
+    try:
+        read_set = result_workspace_read_set(
+            plan=plan,
+            node=node,
+            run_id=identity.run_id,
+            attempt_id=identity.attempt_id,
+            attempt=identity.attempt,
+            result=result,
+        )
+        if read_set is not None:
+            updated["workspace_read_set_record"] = run_store.record_workspace_read_set(
+                lease,
+                identity.attempt_id,
+                read_set,
+            )
+        reconciliations = stale_read_reconciliations_from_result(result)
+        if reconciliations:
+            updated["stale_read_reconciliation_records"] = [
+                dict(item)
+                for item in run_store.record_stale_read_reconciliations(
+                    lease,
+                    identity.attempt_id,
+                    reconciliations,
+                )
+            ]
+        changes = workspace_changes_from_result(result)
+        if changes:
+            updated["workspace_change_signals"] = [
+                dict(item)
+                for item in run_store.record_workspace_changes(
+                    lease,
+                    identity.attempt_id,
+                    changes,
+                )
+            ]
+    except (RuntimeError, DagRunStoreError) as exc:
+        return _workspace_stale_read_blocked_result(
+            updated,
+            verdict="WORKSPACE_READ_EVIDENCE_INVALID",
+            errors=(str(exc),),
+            signals=(),
+        )
+    return updated
+
+
+def _enforce_workspace_stale_read_policy(
+    *,
+    node: DagPlanNode,
+    identity: DagAttemptIdentity,
+    result: Mapping[str, Any],
+    run_store: SqliteDagRunStore | None,
+) -> dict[str, Any]:
+    updated = dict(result)
+    if run_store is None:
+        return updated
+    unresolved = run_store.unresolved_workspace_change_signals(
+        identity.run_id,
+        identity.attempt_id,
+    )
+    updated["workspace_stale_read_state"] = {
+        "schema": "tau.workspace_stale_read_state.v1",
+        "policy": stale_read_policy(node),
+        "unresolved_signal_count": len(unresolved),
+        "unresolved_signal_ids": [str(item["signal_id"]) for item in unresolved],
+    }
+    if not unresolved or result.get("status") != "PASS" or result.get("verdict") != "PASS":
+        return updated
+    policy = stale_read_policy(node)
+    if policy == "observe":
+        return updated
+    verdict = (
+        "STALE_WORKSPACE_READ_BLOCKED"
+        if policy == "block"
+        else "STALE_WORKSPACE_READ_RECONCILIATION_REQUIRED"
+    )
+    return _workspace_stale_read_blocked_result(
+        updated,
+        verdict=verdict,
+        errors=(
+            "workspace read set is stale relative to an admitted concurrent change; "
+            "reread or supply deterministic stale-read reconciliation evidence"
+        ),
+        signals=unresolved,
+    )
+
+
+def _workspace_stale_read_blocked_result(
+    result: Mapping[str, Any],
+    *,
+    verdict: str,
+    errors: tuple[str, ...],
+    signals: tuple[Mapping[str, Any], ...],
+) -> dict[str, Any]:
+    updated = dict(result)
+    updated["status"] = "BLOCKED"
+    updated["verdict"] = verdict
+    updated["retryable"] = False
+    updated["accepted_output"] = None
+    updated["errors"] = [
+        *(item for item in result.get("errors", []) if isinstance(item, str)),
+        *errors,
+    ]
+    updated["stale_read_signals"] = [dict(item) for item in signals]
+    return updated
 
 
 def _enforce_node_completion_boundary(
