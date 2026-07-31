@@ -289,7 +289,7 @@
     "status": "Active"
   },
   "package": {
-    "description": "A local-first, zero-trust DAG admission and supervision plane for goal-locked agent workflows, with a Pi-inspired coding surface as a secondary layer.",
+    "description": "mutated semantic claim",
     "sha256": "sha256:846cfd5812f312395f363db523bf485487f6d72a651644098b92f34565dccb55",
     "source": "pyproject.toml",
     "version": "0.1.0"
