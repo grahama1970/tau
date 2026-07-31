@@ -48,6 +48,7 @@ from tau_coding import __version__
 from tau_coding.adaptive_revision_conformance import write_adaptive_revision_conformance
 from tau_coding.airgap_no_egress import write_airgap_no_egress_receipt
 from tau_coding.approval_gate import evaluate_approval_gate
+from tau_coding.battle_scillm import resolve_active_scillm_proxy_key
 from tau_coding.browser_cdp_proof import (
     DEFAULT_BROWSER_PROOF_RUN_ID,
     DEFAULT_SURF_WRAPPER,
@@ -64,7 +65,6 @@ from tau_coding.coding_worker_adapters import (
     write_scillm_worker_launch_receipt,
     write_scillm_worker_receipt,
 )
-from tau_coding.battle_scillm import resolve_active_scillm_proxy_key
 from tau_coding.commit_plan import write_commit_plan_receipt
 from tau_coding.compliance_package import build_compliance_evidence_package
 from tau_coding.course_correction import write_course_correction_receipt
@@ -116,6 +116,8 @@ from tau_coding.embry_sparta_demo import run_demo_embry_sparta_airgap
 from tau_coding.evidence_case_skill_adapter import write_evidence_case_skill_adapter_receipt
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.external_workspace import agent_skills_root
+from tau_coding.gap_expansion import write_gap_expansion_bridge_receipt
+from tau_coding.gap_expansion_conformance import write_gap_expansion_conformance
 from tau_coding.generated_ticket import (
     load_generated_ticket,
     project_agent_handoff,
@@ -401,8 +403,9 @@ def acceptance_bundle_cli_command(
         )
     except AcceptanceBundleError as exc:
         raise typer.BadParameter(str(exc)) from exc
-    typer.echo(json.dumps({"bundle_dir": str(result.directory),
-                           "bundle_digest": result.bundle_digest}))
+    typer.echo(
+        json.dumps({"bundle_dir": str(result.directory), "bundle_digest": result.bundle_digest})
+    )
 
 
 @app.command("tui-proof")
@@ -1353,7 +1356,9 @@ def _scillm_degraded_circuits(body: dict[str, object] | None) -> list[str]:
             continue
         state = str(state_body.get("state") or "").strip().lower()
         failures = state_body.get("consecutive_failures")
-        failure_count = failures if isinstance(failures, int) and not isinstance(failures, bool) else 0
+        failure_count = (
+            failures if isinstance(failures, int) and not isinstance(failures, bool) else 0
+        )
         if state in {"open", "half-open"} or failure_count > 0:
             degraded.append(f"{model_group}:{state or 'state_missing'}:{failure_count}")
     return degraded
@@ -3380,6 +3385,25 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if not print_requested and command == "gap-expansion-bridge":
+        try:
+            options = _parse_gap_expansion_bridge_cli_args(positional_args[1:])
+            payload = write_gap_expansion_bridge_receipt(
+                dag_contract_path=Path(str(options["dag_contract"])),
+                boundary_path=Path(str(options["boundary"])),
+                envelope_path=Path(str(options["envelope"])),
+                receipt_path=Path(str(options["receipt"])),
+                proposals_dir=Path(str(options["proposals_dir"])),
+                source_run_id=str(options["source_run_id"]),
+                existing_lineages=tuple(options["existing_lineages"]),
+                approved_lineages=tuple(options["approved_lineages"]),
+                used_budget=int(options["used_budget"]),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit()
+
     if not print_requested and command == "dag-branch-locks-validate":
         try:
             options = _parse_dag_branch_locks_validate_cli_args(positional_args[1:])
@@ -4047,7 +4071,9 @@ def main(
                 zero_trust=bool(options["zero_trust"]),
                 policy_profile=_read_optional_json_object(options.get("policy_profile")),
                 data_boundary=_read_optional_json_object(options.get("data_boundary")),
-                current_review_scope=_read_optional_json_object(options.get("current_review_scope")),
+                current_review_scope=_read_optional_json_object(
+                    options.get("current_review_scope")
+                ),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -5088,6 +5114,17 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if not print_requested and command == "gap-expansion-conformance":
+        try:
+            options = _parse_gap_expansion_conformance_cli_args(positional_args[1:])
+            payload = project_agent_gap_expansion_conformance_command(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("status") != "PASS":
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if not print_requested and command == "sprite-sheet-conformance":
         try:
             options = _parse_sprite_sheet_conformance_cli_args(positional_args[1:])
@@ -5802,11 +5839,11 @@ def _merge_stdin_prompt(prompt: str) -> str:
     try:
         if stdin.isatty():
             return prompt
-    except (AttributeError, ValueError):
+    except AttributeError, ValueError:
         return prompt
     try:
         piped = stdin.read()
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return prompt
     if not piped:
         return prompt
@@ -6438,8 +6475,7 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
             run_dir = Path(positional[0])
         else:
             raise RuntimeError(
-                "Usage: tau workflows approve <run-dir>|--last "
-                "[--approval-packet <approval.json>]"
+                "Usage: tau workflows approve <run-dir>|--last [--approval-packet <approval.json>]"
             )
         payload = approve_packaged_workflow(
             run_dir=run_dir,
@@ -7330,6 +7366,69 @@ def _parse_dag_expansion_apply_cli_args(args: list[str]) -> dict[str, object]:
     return options
 
 
+def _parse_gap_expansion_bridge_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "dag_contract": None,
+        "boundary": None,
+        "envelope": None,
+        "receipt": None,
+        "proposals_dir": None,
+        "source_run_id": None,
+        "existing_lineages": [],
+        "approved_lineages": [],
+        "used_budget": 0,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--dag-contract",
+            "--boundary",
+            "--envelope",
+            "--receipt",
+            "--proposals-dir",
+            "--source-run-id",
+            "--existing-lineage",
+            "--approved-lineage",
+            "--used-budget",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            if arg == "--existing-lineage":
+                options["existing_lineages"].append(args[index])
+            elif arg == "--approved-lineage":
+                options["approved_lineages"].append(args[index])
+            elif arg == "--used-budget":
+                options["used_budget"] = int(args[index])
+            else:
+                key = arg.removeprefix("--").replace("-", "_")
+                options[key] = Path(args[index]) if key not in {"source_run_id"} else args[index]
+        else:
+            raise RuntimeError(f"unknown gap-expansion-bridge option: {arg}")
+        index += 1
+    missing = [
+        key
+        for key in (
+            "dag_contract",
+            "boundary",
+            "envelope",
+            "receipt",
+            "proposals_dir",
+            "source_run_id",
+        )
+        if options[key] is None
+    ]
+    if missing:
+        raise RuntimeError(
+            "Usage: tau gap-expansion-bridge --dag-contract <dag.json> "
+            "--boundary <boundary.json> --envelope <envelope.json> "
+            "--receipt <bridge-receipt.json> --proposals-dir <dir> "
+            "--source-run-id <run-id>"
+        )
+    return options
+
+
 def _parse_dag_branch_locks_validate_cli_args(args: list[str]) -> dict[str, object]:
     options: dict[str, object] = {
         "dag_contract": None,
@@ -7797,9 +7896,7 @@ def _parse_dag_retention_expire_cli_args(args: list[str]) -> dict[str, object]:
         else:
             raise RuntimeError(f"unexpected dag-retention-expire argument: {arg}")
         index += 1
-    if not _optional_str(options.get("root")) or not _optional_str(
-        options.get("archive_dir")
-    ):
+    if not _optional_str(options.get("root")) or not _optional_str(options.get("archive_dir")):
         raise RuntimeError(
             "Usage: tau dag-retention-expire --root <dir> --archive-dir <dir> "
             "[--keep-count N] [--older-than-days DAYS] [--receipt <path>] [--dry-run]"
@@ -10391,9 +10488,7 @@ def _parse_dag_view_cli_args(args: list[str], *, command: str) -> dict[str, obje
     if options["last"]:
         options["run_dir"] = _resolve_last_run_dir()
     if options["run_dir"] is None:
-        raise RuntimeError(
-            f"Usage: tau {command} --run-dir <run-dir>|--last [--run-id <run-id>]"
-        )
+        raise RuntimeError(f"Usage: tau {command} --run-dir <run-dir>|--last [--run-id <run-id>]")
     if int(options["after_sequence"]) < 0 or not 1 <= int(options["limit"]) <= 5000:
         raise RuntimeError("dag_viewer_event_range_invalid")
     return options
@@ -10446,9 +10541,7 @@ def _parse_dag_view_serve_cli_args(
     if options["last"]:
         options["run_dir"] = _resolve_last_run_dir()
     if options["run_dir"] is None:
-        raise RuntimeError(
-            f"Usage: tau {command} --run-dir <run-dir>|--last [--run-id <run-id>]"
-        )
+        raise RuntimeError(f"Usage: tau {command} --run-dir <run-dir>|--last [--run-id <run-id>]")
     return options
 
 
@@ -12932,6 +13025,32 @@ def _parse_adaptive_revision_conformance_cli_args(args: list[str]) -> dict[str, 
     }
 
 
+def _parse_gap_expansion_conformance_cli_args(args: list[str]) -> dict[str, Path | bool]:
+    output: Path | None = None
+    allow_live_filesystem = False
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--output":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--output requires a value")
+            output = Path(args[index])
+        elif arg.startswith("--output="):
+            output = Path(arg.partition("=")[2])
+        elif arg == "--allow-live-filesystem":
+            allow_live_filesystem = True
+        else:
+            raise RuntimeError(f"Unknown gap-expansion-conformance option: {arg}")
+        index += 1
+    if output is None:
+        raise RuntimeError("gap-expansion-conformance requires --output <proof.json>")
+    return {
+        "output": output,
+        "allow_live_filesystem": allow_live_filesystem,
+    }
+
+
 def _parse_sprite_sheet_conformance_cli_args(args: list[str]) -> dict[str, Path | bool]:
     output: Path | None = None
     allow_live_filesystem = False
@@ -15133,9 +15252,13 @@ def project_agent_project_status_command(args: list[str]) -> dict[str, object]:
         out_path = Path(out).expanduser()
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(json.dumps(status, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        return {"status": "PASS", "action": "build", "out": str(out_path),
-                "semantic_content_digest": status["semantic_content_digest"],
-                "github_freshness": status["github"]["freshness"]}
+        return {
+            "status": "PASS",
+            "action": "build",
+            "out": str(out_path),
+            "semantic_content_digest": status["semantic_content_digest"],
+            "github_freshness": status["github"]["freshness"],
+        }
 
     if action == "render":
         if not rest or rest[0].startswith("--"):
@@ -15148,15 +15271,23 @@ def project_agent_project_status_command(args: list[str]) -> dict[str, object]:
         out_path = Path(out).expanduser()
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(rendered.markdown, encoding="utf-8")
-        return {"status": "PASS", "action": "render", "out": str(out_path),
-                "semantic_content_digest": rendered.semantic_content_digest}
+        return {
+            "status": "PASS",
+            "action": "render",
+            "out": str(out_path),
+            "semantic_content_digest": rendered.semantic_content_digest,
+        }
 
     if action == "verify":
         status_path = _opt("--status", "docs/status/CURRENT_STATE.json")
         status = json.loads(Path(status_path).expanduser().read_text(encoding="utf-8"))
         errors = ps.verify_freshness(status, repo, github_snapshot=github_snapshot)
-        return {"status": "PASS" if not errors else "FAIL", "action": "verify",
-                "errors": errors, "checked": status_path}
+        return {
+            "status": "PASS" if not errors else "FAIL",
+            "action": "verify",
+            "errors": errors,
+            "checked": status_path,
+        }
 
     raise RuntimeError(f"unknown project-status subcommand: {action}")
 
@@ -15266,6 +15397,19 @@ def project_agent_adaptive_revision_conformance_command(
     """Write the adaptive graph revision conformance receipt."""
 
     return write_adaptive_revision_conformance(
+        output,
+        allow_live_filesystem=allow_live_filesystem,
+    )
+
+
+def project_agent_gap_expansion_conformance_command(
+    *,
+    output: Path,
+    allow_live_filesystem: bool,
+) -> dict[str, object]:
+    """Write the evidence-gap expansion conformance receipt."""
+
+    return write_gap_expansion_conformance(
         output,
         allow_live_filesystem=allow_live_filesystem,
     )

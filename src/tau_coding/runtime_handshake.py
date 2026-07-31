@@ -22,6 +22,7 @@ _PROVEN_RUNTIME_COMMANDS = {
     "secure_execution_conformance": "secure-execution-conformance",
     "resource_lease_conformance": "resource-lease-conformance",
     "adaptive_revision_conformance": "adaptive-revision-conformance",
+    "gap_expansion_conformance": "gap-expansion-conformance",
     "sprite_sheet_conformance": "sprite-sheet-conformance",
     "targeted_repair_conformance": "targeted-repair-conformance",
     "project_profile_conformance": "project-profile-conformance",
@@ -102,12 +103,8 @@ def write_runtime_handshake(output: Path) -> dict[str, Any]:
             ),
         },
         "proof_commands": {
-            "operator_doctor": (
-                f"{agent_skills_root()}/skills/tau/run.sh doctor"
-            ),
-            "operator_status": (
-                f"{agent_skills_root()}/skills/tau/run.sh status"
-            ),
+            "operator_doctor": (f"{agent_skills_root()}/skills/tau/run.sh doctor"),
+            "operator_status": (f"{agent_skills_root()}/skills/tau/run.sh status"),
             "runtime_handshake": (
                 "uv run tau runtime-handshake --output "
                 "docs/proofs/tickets/<issue>/runtime-handshake.json"
@@ -138,7 +135,7 @@ def write_runtime_handshake(output: Path) -> dict[str, Any]:
 
 def _command_capability(*, name: str, command: str, cli_text: str) -> dict[str, Any]:
     if name == "workflows_list":
-        available = "@workflows_app.command(\"list\")" in cli_text
+        available = '@workflows_app.command("list")' in cli_text
     elif name == "dag_run":
         available = '"dag-run"' in cli_text and "run_generic_dag" in cli_text
     else:
@@ -194,7 +191,7 @@ def _run_text(command: list[str], *, cwd: Path) -> str:
             timeout=20,
             check=False,
         )
-    except (FileNotFoundError, subprocess.TimeoutExpired):
+    except FileNotFoundError, subprocess.TimeoutExpired:
         return ""
     if completed.returncode != 0:
         return ""

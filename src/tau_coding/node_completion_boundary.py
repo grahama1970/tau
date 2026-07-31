@@ -22,6 +22,18 @@ BOUNDARY_SECTIONS: tuple[str, ...] = (
     "does_not_prove",
 )
 
+BOUNDARY_ITEM_DECLARED_FACT_KEYS: tuple[str, ...] = (
+    "proposed_node",
+    "requested_paths",
+    "requested_capabilities",
+    "requested_resources",
+    "data_classes",
+    "side_effect_class",
+    "budget",
+    "scope_claim",
+    "requires_human_approval",
+)
+
 
 @dataclass(frozen=True, slots=True)
 class NodeCompletionBoundaryValidation:
@@ -87,10 +99,7 @@ def validate_node_completion_boundary(
 
     if raw_boundary.get("schema") != NODE_COMPLETION_BOUNDARY_SCHEMA:
         alerts.append("node_completion_boundary_malformed")
-        errors.append(
-            "node_completion_boundary.schema must be "
-            f"{NODE_COMPLETION_BOUNDARY_SCHEMA}"
-        )
+        errors.append(f"node_completion_boundary.schema must be {NODE_COMPLETION_BOUNDARY_SCHEMA}")
 
     identity_checks = (
         ("goal_hash", expected_goal_hash, "node_completion_boundary_goal_mismatch"),
@@ -209,7 +218,9 @@ def _section_tuple(value: object, *, field: str) -> tuple[tuple[str, ...], list[
     return tuple(dict.fromkeys(sections)), errors
 
 
-def _normalize_typed_items(value: object, *, section: str) -> tuple[list[dict[str, Any]], list[str]]:
+def _normalize_typed_items(
+    value: object, *, section: str
+) -> tuple[list[dict[str, Any]], list[str]]:
     if not isinstance(value, list):
         return [], [f"{section} must be a list of typed items"]
     errors: list[str] = []
@@ -247,9 +258,29 @@ def _normalize_typed_items(value: object, *, section: str) -> tuple[list[dict[st
             normalized_item["severity"] = item["severity"]
         if isinstance(item.get("followup"), str) and item["followup"].strip():
             normalized_item["followup"] = item["followup"]
+        for fact_key in BOUNDARY_ITEM_DECLARED_FACT_KEYS:
+            if fact_key in item:
+                normalized_item[fact_key] = _canonical_json_value(item[fact_key])
         seen.add(item_id)
         normalized.append(normalized_item)
     return sorted(normalized, key=lambda entry: entry["id"]), errors
+
+
+def _canonical_json_value(value: object) -> object:
+    """Keep producer-declared facts JSON-safe and hash-stable."""
+
+    if isinstance(value, Mapping):
+        return {
+            str(key): _canonical_json_value(value[key])
+            for key in sorted(value, key=lambda item: str(item))
+        }
+    if isinstance(value, list):
+        return [_canonical_json_value(item) for item in value]
+    if isinstance(value, tuple):
+        return [_canonical_json_value(item) for item in value]
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    return str(value)
 
 
 def _normalize_evidence_refs(
@@ -267,14 +298,10 @@ def _normalize_evidence_refs(
         kind = ref.get("kind")
         ref_id = ref.get("id")
         if not isinstance(kind, str) or not kind.strip():
-            errors.append(
-                f"{section}[{index}].evidence_refs[{ref_index}].kind must be a string"
-            )
+            errors.append(f"{section}[{index}].evidence_refs[{ref_index}].kind must be a string")
             continue
         if not isinstance(ref_id, str) or not ref_id.strip():
-            errors.append(
-                f"{section}[{index}].evidence_refs[{ref_index}].id must be a string"
-            )
+            errors.append(f"{section}[{index}].evidence_refs[{ref_index}].id must be a string")
             continue
         normalized = {"kind": kind, "id": ref_id}
         if isinstance(ref.get("sha256"), str):
