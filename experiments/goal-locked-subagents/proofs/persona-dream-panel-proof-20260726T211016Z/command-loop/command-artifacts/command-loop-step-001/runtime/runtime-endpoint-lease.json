@@ -1,0 +1,29 @@
+{
+  "attempt_id": "panel-creator:attempt-001",
+  "attempt_number": 1,
+  "backend": "local",
+  "backend_ids": {
+    "pid": null
+  },
+  "backend_session_id": null,
+  "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+  "cleanup_policy": {
+    "kind": "process_group_termination"
+  },
+  "created_at": "2026-07-26T21:10:16.096452+00:00",
+  "dag_id": "handoff-command",
+  "endpoint_id": "local:ed07c902fafba3aeb5a3d48b",
+  "execution_token": "[REDACTED]",
+  "expires_at": "2026-07-26T21:26:16.096452+00:00",
+  "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000027",
+  "heartbeat_policy": {
+    "kind": "process_poll"
+  },
+  "node_id": "panel-creator",
+  "owner": "tau",
+  "plan_revision": "sha256:e130d6c6f05f46402f03703f001bfbeaa34fac8f8252343af3f2fee604a4290c",
+  "run_id": "handoff-command:f3f2fee604a4290c",
+  "schema": "tau.runtime_endpoint_lease.v1",
+  "scope_id": "handoff-command:f3f2fee604a4290c",
+  "work_order_sha256": "sha256:aed509e4b3d225a521ec3f5d7407941307c56ca6b81967d4b726cb93fffeb20b"
+}

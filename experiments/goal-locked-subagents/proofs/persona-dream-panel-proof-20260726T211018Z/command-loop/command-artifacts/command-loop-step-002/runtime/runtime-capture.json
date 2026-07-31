@@ -1,0 +1,17 @@
+{
+  "cancelled": false,
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "-m",
+    "tau_coding.persona_dream_panel_agent",
+    "--role",
+    "panel-reviewer"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run\",\n      \"/tmp/tau-issue-179.4VMywm/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T211018Z/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json\",\n      \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png\",\n      \"/tmp/tau-issue-179.4VMywm/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T211018Z/command-loop/command-artifacts/command-loop-step-002/panel_reviewer_receipt.json\",\n      \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/receipts/visual_review_receipt.json\"\n    ],\n    \"persona_dream_panel\": {\n      \"image_path\": \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png\",\n      \"panel_id\": \"panel_001\",\n      \"run_root\": \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run\",\n      \"visual_review_receipt\": \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/receipts/visual_review_receipt.json\"\n    },\n    \"summary\": \"Panel Reviewer consumed the creator artifact and review source.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#27\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000027\",\n    \"goal_id\": \"goal-tau-issue-27-persona-dream-panel-proof\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"persona-dream-panel-repair-gate\",\n    \"reason\": \"Repair gate must consolidate creator/reviewer evidence and fail closed.\"\n  },\n  \"previous_subagent\": \"panel-reviewer\",\n  \"rationale\": \"The repair gate owns terminal panel eligibility and must consume this reviewer evidence before any provider readiness claim.\",\n  \"required_evidence\": [\n    \"Repair gate writes panel_repair_gate_receipt.json with provider_eligibility=false unless every subgate passes.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"/tmp/tau-issue-179.4VMywm/experiments/goal-locked-subagents/proofs/persona-dream-panel-proof-20260726T211018Z/command-loop/command-artifacts/command-loop-step-002/panel_reviewer_receipt.json\",\n      \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/receipts/visual_review_receipt.json\"\n    ],\n    \"status\": \"INSUFFICIENT_EVIDENCE\",\n    \"summary\": \"Panel Reviewer wrote a read-only receipt and failed closed because the available visual review source is not a live PASS verdict.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Repair gate emits a terminal Tau handoff with receipt paths.\"\n}\n",
+  "timed_out": false
+}
