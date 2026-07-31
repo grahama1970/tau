@@ -227,6 +227,40 @@ export type ReceiptProjection = {
   receipt: JsonValue;
 };
 
+export type InspectorSection = {
+  status: string;
+  schema?: string;
+  reason?: string;
+  value?: JsonValue;
+  [key: string]: JsonValue | undefined;
+};
+
+export type SelectedNodeInspectorProjection = {
+  schema: "tau.selected_node_inspector_projection.v1";
+  run_id: string;
+  plan_id: string;
+  plan_sha256: string;
+  node_id: string;
+  attempt: number;
+  attempt_id: string | null;
+  journal_sequence: number;
+  projection_key: string;
+  projection_sha256: string;
+  view: { mode: "LIVE" | "HISTORICAL"; sequence: number; sequence_created_at: string | null };
+  contract: InspectorSection;
+  accepted_inputs: InspectorSection;
+  completion_boundary: InspectorSection;
+  review_scope: InspectorSection;
+  workspace_freshness: InspectorSection;
+  worker: InspectorSection;
+  accepted_evidence_and_artifacts: InspectorSection;
+  diagnostics: InspectorSection;
+  attention: Array<{ severity: string; code: string; section: string; items?: JsonValue }>;
+  read_only: boolean;
+  mutation_controls: JsonValue[];
+  proof_scope: { proves: string[]; does_not_prove: string[] };
+};
+
 export type QueryItem = {
   entity_kind: string;
   entity_id: string;

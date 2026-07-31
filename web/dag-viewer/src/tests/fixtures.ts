@@ -1,4 +1,4 @@
-import type { CausalExplanation, DagManifest, DagSnapshot } from "../types";
+import type { CausalExplanation, DagManifest, DagSnapshot, SelectedNodeInspectorProjection } from "../types";
 
 export const manifest: DagManifest = {
   schema: "tau.dag_view_manifest.v1",
@@ -102,4 +102,48 @@ export const explanation: CausalExplanation = {
   ],
   chain: [{ step: 1, relation: "CAUSED_BY", reference_id: "journal:6" }],
   proof_scope: { proves: ["prefix-derived"], does_not_prove: ["semantic correctness"] },
+};
+
+export const nodeInspector: SelectedNodeInspectorProjection = {
+  schema: "tau.selected_node_inspector_projection.v1",
+  run_id: "run-1",
+  plan_id: "plan-1",
+  plan_sha256: "sha256:plan",
+  node_id: "creator",
+  attempt: 1,
+  attempt_id: "attempt-creator-1",
+  journal_sequence: 8,
+  projection_key: "sha256:selected-node-key",
+  projection_sha256: "sha256:selected-node",
+  view: { mode: "LIVE", sequence: 8, sequence_created_at: "2026-01-01T00:00:00Z" },
+  contract: { status: "available", role: "producer", adapter: { kind: "command" }, required_evidence: ["tau.node_completion_boundary.v1"] },
+  accepted_inputs: { status: "not_available", schema: "tau.node_input_manifest.v1", reason: "no_input_bindings_declared", bindings: [], omissions: [] },
+  completion_boundary: {
+    status: "available",
+    schema: "tau.node_completion_boundary.v1",
+    value: {
+      checked_scope: [{ id: "scope", statement: "repo inspected" }],
+      evidence_gaps: [{ id: "gap-1", statement: "follow-up validator needed" }],
+      proves: [{ id: "prove-1", statement: "local artifact exists" }],
+      does_not_prove: [{ id: "does-not", statement: "semantic quality" }],
+    },
+  },
+  review_scope: { status: "available", schema: "tau.review_scope.v1", value: { state: "stale", reviewer_verdict: "FAIL", reviewed_nodes: ["creator"] } },
+  workspace_freshness: { status: "available", schema: "tau.workspace_freshness.v1", value: { state: "unresolved", read_set: ["src/a.py"] } },
+  worker: { status: "available", schema: "tau.worker_assignment.v1", value: { state: "quarantined", generation: 2 } },
+  accepted_evidence_and_artifacts: {
+    status: "available",
+    items: [{ kind: "accepted_output", schema: "tau.node_completion_boundary.v1", sha256: "sha256:accepted" }],
+    receipts: [{ receipt_id: "receipt-1", schema: "tau.test_receipt.v1", path_display: "receipts/test.json", sha256: "sha256:receipt", available: true }],
+    missing_required_evidence: [],
+  },
+  diagnostics: { status: "available", authority: "diagnostic_only", can_settle_node: false, events: [{ seq: 7, event_type: "dag_diagnostic_event_appended" }] },
+  attention: [
+    { severity: "ACTION_REQUIRED", code: "stale_review", section: "review_scope" },
+    { severity: "BLOCKER", code: "unresolved_stale_read", section: "workspace_freshness" },
+    { severity: "BLOCKER", code: "quarantined_worker", section: "worker" },
+  ],
+  read_only: true,
+  mutation_controls: [],
+  proof_scope: { proves: ["backend projection"], does_not_prove: ["diagnostics settle nodes"] },
 };

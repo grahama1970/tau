@@ -141,9 +141,7 @@ def test_server_is_loopback_read_only_and_serves_declared_contracts(
     assert "default-src 'self'" in headers["Content-Security-Policy"]
     asset_match = re.search(rb'href="(/assets/[^"]+\.css)"', body)
     assert asset_match is not None
-    asset_status, asset_headers, asset_body = _request(
-        server, "GET", asset_match.group(1).decode()
-    )
+    asset_status, asset_headers, asset_body = _request(server, "GET", asset_match.group(1).decode())
     assert asset_status == 200
     assert asset_headers["Content-Type"].startswith("text/css")
     assert asset_body
@@ -151,6 +149,10 @@ def test_server_is_loopback_read_only_and_serves_declared_contracts(
         ("/api/v1/capabilities", "tau.dag_viewer_capabilities.v1"),
         ("/api/v1/manifest", "tau.dag_view_manifest.v1"),
         ("/api/v1/state", "tau.dag_view_snapshot.v2"),
+        (
+            "/api/v1/nodes/worker/inspector",
+            "tau.selected_node_inspector_projection.v1",
+        ),
         ("/api/v1/events?after_sequence=0&limit=20", "tau.dag_live_event.v1"),
     ):
         status, headers, body = _request(server, "GET", path)
@@ -167,6 +169,49 @@ def test_server_is_loopback_read_only_and_serves_declared_contracts(
         after = connection.execute(
             "SELECT (SELECT COUNT(*) FROM dag_run_events), lease_owner, lease_epoch "
             "FROM dag_runs WHERE run_id = 'viewer-run'"
+        ).fetchone()
+    assert after == before
+
+
+def test_selected_node_inspector_is_backend_projected_and_read_only(
+    viewer_server: tuple[RunningDagViewerServer, threading.Thread],
+) -> None:
+    server, _ = viewer_server
+    database = server.application.run_dir / "dag-run.sqlite3"
+    with sqlite3.connect(database) as connection:
+        before = connection.execute(
+            "SELECT COUNT(*), MAX(seq) FROM dag_run_events WHERE run_id = 'viewer-run'"
+        ).fetchone()
+
+    status, headers, body = _request(server, "GET", "/api/v1/nodes/worker/inspector")
+    payload = _json(body)
+    assert status == 200
+    assert headers["Cache-Control"] == "no-store"
+    assert payload["schema"] == "tau.selected_node_inspector_projection.v1"
+    assert payload["run_id"] == "viewer-run"
+    assert payload["node_id"] == "worker"
+    assert payload["attempt"] == 1
+    assert payload["journal_sequence"] > 0
+    assert payload["projection_key"].startswith("sha256:")
+    assert payload["projection_sha256"].startswith("sha256:")
+    assert payload["read_only"] is True
+    assert payload["mutation_controls"] == []
+    assert payload["contract"]["status"] == "available"
+    assert payload["accepted_inputs"]["status"] == "not_available"
+    assert payload["completion_boundary"]["status"] == "not_available"
+    assert payload["review_scope"]["status"] == "not_enforced"
+    assert payload["workspace_freshness"]["status"] == "not_enforced"
+    assert payload["worker"]["status"] == "not_enforced"
+    assert payload["diagnostics"]["authority"] == "diagnostic_only"
+    assert payload["diagnostics"]["can_settle_node"] is False
+    assert payload["accepted_evidence_and_artifacts"]["receipts"][0]["schema"] == (
+        "tau.worker_receipt.v1"
+    )
+    assert "Accepted evidence" not in json.dumps(payload["diagnostics"])
+
+    with sqlite3.connect(database) as connection:
+        after = connection.execute(
+            "SELECT COUNT(*), MAX(seq) FROM dag_run_events WHERE run_id = 'viewer-run'"
         ).fetchone()
     assert after == before
 

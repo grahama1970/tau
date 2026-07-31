@@ -1,0 +1,37 @@
+{
+  "schema": "tau.dag_viewer_browser_proof.v1",
+  "status": "PASS",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "url": "http://127.0.0.1:35395/",
+  "viewport": {
+    "width": 1440,
+    "height": 1000,
+    "deviceScaleFactor": 1
+  },
+  "screenshot": "/tmp/tau-issue277-selected-node-inspector-20260731T0507Z/selected-node-inspector.png",
+  "screenshot_sha256": "sha256:1df46c1efcbbd18641ebfa2b0d3628a8e0e9b2a05b88dfd3ca70629706c8e683",
+  "request_methods": [
+    "GET"
+  ],
+  "checks": {
+    "graph_rendered": true,
+    "source_dag_visible": true,
+    "dag_plan_tab_visible": true,
+    "creator_attempt_1_visible": true,
+    "reviewer_revise_visible": true,
+    "revision_overlay_visible": true,
+    "creator_attempt_2_visible": true,
+    "reviewer_pass_remained_unaccepted": true,
+    "receipt_admission_turned_green": true,
+    "dependent_released_after_acceptance": true,
+    "refresh_reconstructed_state": true,
+    "read_only_requests": true,
+    "layout_non_overlapping": true,
+    "selected_node_inspector_visible": true,
+    "selected_node_sections_visible": true,
+    "selected_node_read_only": true,
+    "selected_node_no_mutation_controls": true
+  }
+}

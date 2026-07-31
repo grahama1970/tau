@@ -88,6 +88,31 @@ def parse_at_sequence(query: str) -> int | None:
     return sequence
 
 
+def parse_node_inspector_query(query: str) -> tuple[int | None, int | None]:
+    values = parse_qs(query, keep_blank_values=True, strict_parsing=False)
+    if set(values) - {"at_sequence", "attempt"} or any(
+        len(items) != 1 for items in values.values()
+    ):
+        raise RuntimeError("dag_viewer_node_inspector_query_invalid")
+    at_sequence: int | None = None
+    if "at_sequence" in values:
+        try:
+            at_sequence = int(values["at_sequence"][0])
+        except (TypeError, ValueError) as exc:
+            raise RuntimeError("dag_viewer_node_inspector_query_invalid") from exc
+        if at_sequence < 1:
+            raise RuntimeError("dag_viewer_node_inspector_query_invalid")
+    attempt: int | None = None
+    if "attempt" in values:
+        try:
+            attempt = int(values["attempt"][0])
+        except (TypeError, ValueError) as exc:
+            raise RuntimeError("dag_viewer_node_inspector_query_invalid") from exc
+        if attempt < 1:
+            raise RuntimeError("dag_viewer_node_inspector_query_invalid")
+    return at_sequence, attempt
+
+
 def parse_view_query(query: str) -> DagViewQuery:
     values = parse_qs(query, keep_blank_values=True, strict_parsing=False)
     allowed = {
@@ -255,6 +280,12 @@ def public_error_message(code: str) -> str:
         "dag_viewer_comparison_cross_run": "Comparison sides must belong to one run.",
         "dag_viewer_comparison_future_sequence": (
             "Comparison sides cannot exceed the authoritative journal prefix."
+        ),
+        "dag_viewer_node_inspector_query_invalid": (
+            "The selected-node inspector query is invalid."
+        ),
+        "dag_viewer_node_inspector_not_found": (
+            "The selected DAG node or attempt is not projected."
         ),
         "dag_viewer_comparison_too_large": "The bounded comparison exceeds its size limit.",
         "dag_viewer_receipt_sequence_missing": (

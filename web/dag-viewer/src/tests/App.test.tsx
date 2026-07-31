@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import App from "../App";
-import { explanation, manifest, snapshot } from "./fixtures";
+import { explanation, manifest, nodeInspector, snapshot } from "./fixtures";
 
 afterEach(() => {
   cleanup();
@@ -26,13 +26,15 @@ test("filters bounded projections and renders exactly-two comparison", async () 
           right: { run_id: "run-1", reference: { kind: "SEQUENCE", sequence: 8 }, sequence: 8, projection: {}, truncated: false },
           changes: [{ field: "$.nodes", change: "CHANGED", left: [], right: [] }], truncated: false, comparison_sha256: "sha256:comparison",
         }
-        : url.includes("manifest")
-          ? manifest
-          : url.includes("explanations")
-            ? explanation
-            : url.includes("events")
-              ? { schema: "tau.dag_live_event.v1", run_id: "run-1", after_sequence: 0, events: [{ ...snapshot.recent_events[0], seq: 1 }, snapshot.recent_events[0]] }
-              : snapshot;
+          : url.includes("manifest")
+            ? manifest
+            : url.includes("nodes/creator/inspector")
+              ? nodeInspector
+              : url.includes("explanations")
+                ? explanation
+                : url.includes("events")
+                  ? { schema: "tau.dag_live_event.v1", run_id: "run-1", after_sequence: 0, events: [{ ...snapshot.recent_events[0], seq: 1 }, snapshot.recent_events[0]] }
+                  : snapshot;
     return new Response(JSON.stringify(payload), { status: 200, headers: { ETag: '"one"' } });
   });
   vi.stubGlobal("fetch", fetchMock);
@@ -47,6 +49,70 @@ test("filters bounded projections and renders exactly-two comparison", async () 
   await waitFor(() => expect(screen.getByText("1 changes")).toBeInTheDocument());
   expect(fetchMock.mock.calls.some(([value]) => String(value).includes("kind=SEQUENCE_PAIR"))).toBe(true);
   expect(fetchMock.mock.calls.some(([value]) => String(value).includes("at_sequence=8"))).toBe(true);
+});
+
+test("selected node inspector renders backend projection and stable copy controls", async () => {
+  vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    const payload = url.includes("manifest")
+      ? manifest
+      : url.includes("nodes/creator/inspector")
+        ? nodeInspector
+        : url.includes("explanations")
+          ? explanation
+          : url.includes("events")
+            ? { schema: "tau.dag_live_event.v1", run_id: "run-1", after_sequence: 0, events: [] }
+            : snapshot;
+    return new Response(JSON.stringify(payload), { status: 200, headers: { ETag: '"one"', "Content-Type": "application/json" } });
+  }));
+  render(<App />);
+
+  await waitFor(() => expect(screen.getByLabelText("creator, running, awaiting_receipt")).toBeInTheDocument());
+  fireEvent.click(screen.getByLabelText("creator, running, awaiting_receipt"));
+  await waitFor(() => expect(screen.getByText("Completion Boundary")).toBeInTheDocument());
+  expect(screen.getByRole("button", { name: "Node" })).toHaveAttribute("aria-pressed", "true");
+  expect(screen.getByText("ACTION_REQUIRED · stale_review")).toBeInTheDocument();
+  expect(screen.getByText("BLOCKER · unresolved_stale_read")).toBeInTheDocument();
+  expect(screen.getByText("mutation controls: 0")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Copy Projection" })).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: /retry/i })).not.toBeInTheDocument();
+});
+
+test("out-of-order selected-node inspector response cannot replace newer node state", async () => {
+  const inspectorResolvers: Array<(response: Response) => void> = [];
+  vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes("/api/v1/nodes/")) {
+      return new Promise<Response>((resolve) => inspectorResolvers.push(resolve));
+    }
+    const payload = url.includes("manifest")
+      ? manifest
+      : url.includes("explanations")
+        ? explanation
+        : url.includes("events")
+          ? { schema: "tau.dag_live_event.v1", run_id: "run-1", after_sequence: 0, events: [] }
+          : snapshot;
+    return Promise.resolve(new Response(JSON.stringify(payload), { status: 200, headers: { ETag: '"one"' } }));
+  }));
+  render(<App />);
+  await waitFor(() => expect(inspectorResolvers).toHaveLength(1));
+
+  fireEvent.click(screen.getByLabelText("publish, pending, not_started"));
+  await waitFor(() => expect(inspectorResolvers).toHaveLength(2));
+
+  await act(async () => inspectorResolvers[0](new Response(JSON.stringify(nodeInspector), { status: 200 })));
+  expect(screen.queryByText("attempt 1 · journal 8")).not.toBeInTheDocument();
+  await act(async () => inspectorResolvers[1](new Response(JSON.stringify({
+    ...nodeInspector,
+    node_id: "publish",
+    attempt: 0,
+    attempt_id: null,
+    attention: [],
+    projection_key: "sha256:publish-key",
+    projection_sha256: "sha256:publish",
+  }), { status: 200 })));
+  await waitFor(() => expect(document.querySelector('[data-qid="dag:selected-node-inspector"] header strong')).toHaveTextContent("publish"));
+  expect(screen.getByText("attempt not started · journal 8")).toBeInTheDocument();
 });
 
 test("stale comparison response cannot replace a newer request", async () => {
@@ -350,7 +416,10 @@ test("live polling reinitializes an exact successor and invalidates stale eviden
   fireEvent.click(screen.getByRole("button", { name: "Receipt" }));
   fireEvent.change(screen.getByLabelText("Committed receipt"), { target: { value: "base-receipt" } });
   await waitFor(() => expect(resolveReceipt).not.toBeNull());
-  await waitFor(() => expect(screen.getByText(successorRunId)).toBeInTheDocument(), { timeout: 2500 });
+  await waitFor(() => {
+    expect(document.querySelector('[data-qid="dag:status:logical-run-id"]')).toHaveTextContent("run-1");
+    expect(document.querySelector('[data-qid="dag:status:physical-generation"]')).toHaveTextContent("generation 1 · journal 15");
+  }, { timeout: 2500 });
   expect(window.location.href).toBe(initialLocation);
   expect(screen.getByRole("button", { name: "Why" })).toHaveAttribute("aria-pressed", "true");
   expect(screen.queryByRole("option", { name: "base-receipt.json" })).not.toBeInTheDocument();
