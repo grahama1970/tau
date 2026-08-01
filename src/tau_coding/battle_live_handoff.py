@@ -1380,9 +1380,9 @@ def _name_assignments(tree: ast.AST) -> dict[str, ast.AST]:
         if isinstance(node, ast.Assign):
             for target in node.targets:
                 if isinstance(target, ast.Name):
-                    assignments[target.id] = node.value
+                    assignments.setdefault(target.id, node.value)
         elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
-            assignments[node.target.id] = node.value
+            assignments.setdefault(node.target.id, node.value)
     return assignments
 
 
