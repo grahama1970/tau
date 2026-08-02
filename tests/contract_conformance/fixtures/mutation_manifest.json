@@ -1,0 +1,95 @@
+{
+  "schema": "tau.contract_conformance_manifest.v1",
+  "seed": 29820260802,
+  "categories": [
+    "source_contract_graph_identity",
+    "source_contract_numeric_boolean_nonfinite_unknown",
+    "route_join_context_binding",
+    "attempt_result_admission",
+    "transition_effect_receipt_deadline",
+    "artifact_reference_provenance_policy_boundary",
+    "source_alias_and_exported_payload_mutation",
+    "serialized_plan_journal_replay_determinism",
+    "validator_sensitivity"
+  ],
+  "cases": [
+    {
+      "id": "project_duplicate_node_id",
+      "category": "source_contract_graph_identity",
+      "boundary": "project_dag.validate_dag_contract",
+      "expected": "duplicate node id"
+    },
+    {
+      "id": "generic_numeric_string_timeout",
+      "category": "source_contract_numeric_boolean_nonfinite_unknown",
+      "boundary": "generic_dag.validate_generic_dag_spec",
+      "expected": "positive finite number"
+    },
+    {
+      "id": "generic_unknown_node_field",
+      "category": "source_contract_numeric_boolean_nonfinite_unknown",
+      "boundary": "public_dag_contracts.validate_generic_dag_public_boundary",
+      "expected": "not allowed outside extensions"
+    },
+    {
+      "id": "generic_nonfinite_timeout",
+      "category": "source_contract_numeric_boolean_nonfinite_unknown",
+      "boundary": "public_dag_contracts.validate_generic_dag_public_boundary",
+      "expected": "NaN or Infinity"
+    },
+    {
+      "id": "project_join_source_nonexclusive",
+      "category": "route_join_context_binding",
+      "boundary": "dag_runtime.compiler.compile_project_dag_plan",
+      "expected": "join_source_outgoing_not_exclusive"
+    },
+    {
+      "id": "context_binding_hash_mismatch",
+      "category": "route_join_context_binding",
+      "boundary": "dag_runtime.node_input_manifest.resolve_node_input_manifest",
+      "expected": "NODE_INPUT_DECLARED_HASH_MISMATCH"
+    },
+    {
+      "id": "attempt_result_pass_fail_mismatch",
+      "category": "attempt_result_admission",
+      "boundary": "dag_runtime.attempt_result.admit_dag_attempt_result",
+      "expected": "dag_attempt_result_pass_verdict_mismatch"
+    },
+    {
+      "id": "transition_unknown_edge",
+      "category": "transition_effect_receipt_deadline",
+      "boundary": "dag_runtime.transition.transition_batch_from_payload",
+      "expected": "dag_transition_unknown_edge"
+    },
+    {
+      "id": "transition_bad_deadline",
+      "category": "transition_effect_receipt_deadline",
+      "boundary": "dag_runtime.transition.transition_batch_from_payload",
+      "expected": "dag_transition_deadline_due_invalid"
+    },
+    {
+      "id": "artifact_reference_admission_missing",
+      "category": "artifact_reference_provenance_policy_boundary",
+      "boundary": "dag_runtime.artifact_reference.dereference_artifact_reference",
+      "expected": "ARTIFACT_REFERENCE_ADMISSION_MISSING"
+    },
+    {
+      "id": "source_alias_exported_payload_mutation",
+      "category": "source_alias_and_exported_payload_mutation",
+      "boundary": "project_dag.validate_dag_contract + DagPlan.to_payload",
+      "expected": "mutation_isolated"
+    },
+    {
+      "id": "replay_repeated_determinism",
+      "category": "serialized_plan_journal_replay_determinism",
+      "boundary": "dag_runtime.replay.replay_dag_run",
+      "expected": "stable_replay"
+    },
+    {
+      "id": "monkeypatched_public_validator_sensitivity",
+      "category": "validator_sensitivity",
+      "boundary": "public_dag_contracts.validate_generic_dag_public_boundary",
+      "expected": "mutant_survives_when_validator_disabled"
+    }
+  ]
+}
