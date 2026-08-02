@@ -129,6 +129,43 @@ def test_dag_plan_scheduler_blocks_downstream_after_adapter_failure(tmp_path: Pa
     assert called == ["producer"]
 
 
+def test_scheduler_blocks_downstream_after_malformed_attempt_result(tmp_path: Path) -> None:
+    plan = compile_generic_dag_plan(
+        _generic_spec(
+            tmp_path,
+            [
+                _node(tmp_path, "producer"),
+                _node(tmp_path, "consumer", depends_on=["producer"]),
+            ],
+        ),
+        source_path=tmp_path / "dag.json",
+    )
+    called: list[str] = []
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        execution: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        del accepted_inputs, execution
+        called.append(node.node_id)
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "FAIL",
+            "accepted_output": {"source_node_id": node.node_id},
+        }
+
+    result = run_dag_plan(plan, execute_node=execute)
+
+    assert called == ["producer"]
+    assert result.status == "BLOCKED"
+    assert result.verdict == "DAG_ATTEMPT_RESULT_INVALID"
+    assert result.completed_node_ids == ()
+    assert result.node_results[0]["status"] == "BLOCKED"
+    assert result.node_results[0]["errors"] == ["dag_attempt_result_pass_verdict_mismatch"]
+
+
 def test_dag_plan_scheduler_signals_running_sibling_after_failure(tmp_path: Path) -> None:
     plan = compile_generic_dag_plan(
         _generic_spec(tmp_path, [_node(tmp_path, "fail"), _node(tmp_path, "sibling")]),

@@ -7,7 +7,9 @@ from pathlib import Path
 
 import pytest
 
+from tau_coding.dag_runtime.attempt_result import DAG_ATTEMPT_RESULT_VALIDATION_SCHEMA
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
+from tau_coding.dag_runtime.model import canonical_sha256
 from tau_coding.dag_runtime.run_store import (
     DagRunStoreError,
     SqliteDagRunReader,
@@ -188,8 +190,7 @@ def test_settlement_without_admission_lands_in_bypass_ledger(tmp_path: Path) -> 
 
     store, lease, attempt_id = _store_with_attempt(tmp_path)
     store.mark_dispatched(lease, attempt_id)
-    store.stage_result(lease, attempt_id, {"ok": True})
-    store.validate_result(lease, attempt_id, {"valid": True})
+    _stage_and_validate_pass(store, lease, attempt_id)
     store.commit_output(lease, attempt_id)
     store.commit_transition(lease, attempt_id, completion={}, result={}, transition={})
 
@@ -210,12 +211,38 @@ def test_settlement_with_admission_stays_off_the_ledger(tmp_path: Path) -> None:
         size_bytes=1,
     )
     store.mark_dispatched(lease, attempt_id)
-    store.stage_result(lease, attempt_id, {"ok": True})
-    store.validate_result(lease, attempt_id, {"valid": True})
+    _stage_and_validate_pass(store, lease, attempt_id)
     store.commit_output(lease, attempt_id)
     store.commit_transition(lease, attempt_id, completion={}, result={}, transition={})
 
     assert not (tmp_path / "admission-bypass-ledger.jsonl").exists()
+
+
+def _stage_and_validate_pass(store: SqliteDagRunStore, lease: object, attempt_id: str) -> None:
+    staged = store.stage_result(
+        lease,
+        attempt_id,
+        {
+            "node_id": "node-a",
+            "status": "PASS",
+            "verdict": "PASS",
+            "accepted_output": {"ok": True},
+        },
+    )
+    store.validate_result(
+        lease,
+        attempt_id,
+        {
+            "schema": DAG_ATTEMPT_RESULT_VALIDATION_SCHEMA,
+            "status": "PASS",
+            "run_id": staged["run_id"],
+            "plan_sha256": staged["plan_sha256"],
+            "node_id": staged["node_id"],
+            "attempt_id": staged["attempt_id"],
+            "attempt": staged["attempt"],
+            "result_sha256": canonical_sha256(staged),
+        },
+    )
 
 
 def test_enforcement_blocks_pass_claim_with_torn_receipt(tmp_path: Path) -> None:

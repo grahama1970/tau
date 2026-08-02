@@ -12,6 +12,9 @@ from typing import Any
 
 import pytest
 
+from tau_coding.dag_runtime.attempt_result import (
+    DAG_ATTEMPT_RESULT_VALIDATION_SCHEMA,
+)
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import DagPlan, DagPlanNode, canonical_sha256
 from tau_coding.dag_runtime.run_store import (
@@ -304,8 +307,18 @@ def test_store_deduplicates_identical_result_and_blocks_conflicting_result(
         store.mark_dispatched(lease, identity.attempt_id)
         result = _pass_result("producer")
 
-        assert store.stage_result(lease, identity.attempt_id, result) == result
-        assert store.stage_result(lease, identity.attempt_id, result) == result
+        staged = store.stage_result(lease, identity.attempt_id, result)
+        assert staged["schema"] == "tau.dag_attempt_result.v1"
+        assert staged["run_id"] == "run-1"
+        assert staged["plan_sha256"] == plan.plan_sha256
+        assert staged["node_id"] == "producer"
+        assert staged["attempt_id"] == identity.attempt_id
+        assert staged["attempt"] == 1
+        assert staged["status"] == "PASS"
+        assert staged["verdict"] == "PASS"
+        assert staged["retryable"] is False
+        assert staged["accepted_output"] == {"source_node_id": "producer"}
+        assert store.stage_result(lease, identity.attempt_id, result) == staged
         with pytest.raises(DagRunStoreError, match="dag_attempt_result_conflict"):
             store.stage_result(
                 lease,
@@ -318,6 +331,67 @@ def test_store_deduplicates_identical_result_and_blocks_conflicting_result(
             if event["event_type"] == "attempt_result_staged"
         ]
         assert len(staged) == 1
+
+
+def test_store_rejects_malformed_attempt_result_without_staging(tmp_path: Path) -> None:
+    plan = _plan(tmp_path, ["producer"])
+    database = tmp_path / "run.sqlite3"
+    with SqliteDagRunStore(database) as store:
+        lease = store.acquire_run(plan=plan, run_id="run-1", owner_id="owner-a")
+        identity = store.reserve_attempt(
+            lease,
+            plan_sha256=plan.plan_sha256,
+            node_id="producer",
+            attempt=1,
+        )
+        store.mark_dispatched(lease, identity.attempt_id)
+        with pytest.raises(DagRunStoreError, match="dag_attempt_result_status_invalid"):
+            store.stage_result(
+                lease,
+                identity.attempt_id,
+                {"node_id": "producer", "status": True, "verdict": "PASS"},
+            )
+
+    with sqlite3.connect(database) as connection:
+        row = connection.execute("SELECT COUNT(*) FROM dag_attempt_outputs").fetchone()
+    assert row is not None
+    assert row[0] == 0
+
+
+def test_store_rejects_validation_not_bound_to_normalized_result(tmp_path: Path) -> None:
+    plan = _plan(tmp_path, ["producer"])
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(plan=plan, run_id="run-1", owner_id="owner-a")
+        identity = store.reserve_attempt(
+            lease,
+            plan_sha256=plan.plan_sha256,
+            node_id="producer",
+            attempt=1,
+        )
+        store.mark_dispatched(lease, identity.attempt_id)
+        raw = _pass_result("producer")
+        store.stage_result(lease, identity.attempt_id, raw)
+
+        with pytest.raises(
+            DagRunStoreError,
+            match="dag_attempt_result_validation_result_sha256_mismatch",
+        ):
+            store.validate_result(
+                lease,
+                identity.attempt_id,
+                {
+                    "schema": DAG_ATTEMPT_RESULT_VALIDATION_SCHEMA,
+                    "status": "PASS",
+                    "run_id": "run-1",
+                    "plan_sha256": plan.plan_sha256,
+                    "node_id": "producer",
+                    "attempt_id": identity.attempt_id,
+                    "attempt": 1,
+                    "result_sha256": canonical_sha256(raw),
+                },
+            )
+        with pytest.raises(DagRunStoreError, match="dag_attempt_state_invalid"):
+            store.commit_output(lease, identity.attempt_id)
 
 
 @pytest.mark.parametrize("projection", ["staged", "committed"])
@@ -334,15 +408,19 @@ def test_store_blocks_tampered_output_projection(tmp_path: Path, projection: str
         )
         store.mark_dispatched(lease, identity.attempt_id)
         result = _pass_result("producer")
-        store.stage_result(lease, identity.attempt_id, result)
+        staged = store.stage_result(lease, identity.attempt_id, result)
         store.validate_result(
             lease,
             identity.attempt_id,
             {
-                "schema": "tau.dag_attempt_validation.v1",
+                "schema": DAG_ATTEMPT_RESULT_VALIDATION_SCHEMA,
                 "status": "PASS",
+                "run_id": "run-1",
+                "plan_sha256": plan.plan_sha256,
                 "node_id": "producer",
-                "result_sha256": canonical_sha256(result),
+                "attempt_id": identity.attempt_id,
+                "attempt": 1,
+                "result_sha256": canonical_sha256(staged),
             },
         )
         if projection == "committed":

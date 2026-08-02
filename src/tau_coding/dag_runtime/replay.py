@@ -6,6 +6,10 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
+from tau_coding.dag_runtime.attempt_result import (
+    DagAttemptResultAdmissionError,
+    admit_dag_attempt_result,
+)
 from tau_coding.dag_runtime.model import DagPlan, canonical_sha256, require_valid_dag_plan
 from tau_coding.dag_runtime.run_store import (
     RUNTIME_EVENT_JOURNAL_ENTRY_SCHEMA,
@@ -110,7 +114,11 @@ def replay_dag_run_at_sequence(
     events = tuple(event.to_mapping() for event in journal_events)
     plan = reader.load_plan(run_id)
     run_record = _run_record_from_prefix(plan=plan, run_id=run_id, events=events)
-    attempts = _attempts_from_prefix(run_id=run_id, events=events)
+    attempts = _attempts_from_prefix(
+        run_id=run_id,
+        plan_sha256=plan.plan_sha256,
+        events=events,
+    )
     runtime_projections = _runtime_projections_from_prefix(run_id=run_id, events=events)
     replay = replay_dag_run(
         plan=plan,
@@ -187,7 +195,10 @@ def _run_record_from_prefix(
 
 
 def _attempts_from_prefix(
-    *, run_id: str, events: tuple[dict[str, Any], ...]
+    *,
+    run_id: str,
+    plan_sha256: str,
+    events: tuple[dict[str, Any], ...],
 ) -> tuple[StoredAttempt, ...]:
     attempts: dict[str, dict[str, Any]] = {}
     states = {
@@ -235,6 +246,17 @@ def _attempts_from_prefix(
             result = dict(payload["result"])
             if canonical_sha256(result) != payload.get("result_sha256"):
                 raise DagRunStoreError("dag_attempt_result_conflict", attempt_id)
+            try:
+                admission = admit_dag_attempt_result(
+                    plan_sha256=plan_sha256,
+                    identity=attempt["identity"],
+                    node_id=attempt["identity"].node_id,
+                    result=result,
+                )
+            except DagAttemptResultAdmissionError as exc:
+                raise DagRunStoreError("dag_attempt_result_invalid", exc.code) from exc
+            if admission.normalized != result:
+                raise DagRunStoreError("dag_attempt_result_invalid", attempt_id)
             attempt["staged_result"] = result
         elif event_type == "attempt_output_committed":
             staged = attempt["staged_result"]
