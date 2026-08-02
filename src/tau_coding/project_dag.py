@@ -15,6 +15,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path, PureWindowsPath
+from types import MappingProxyType
 from typing import Any
 
 from tau_coding.battle_scillm import (
@@ -72,7 +73,10 @@ from tau_coding.provider_config import (
     load_provider_settings,
     provider_model_knowledge_cutoff,
 )
-from tau_coding.public_dag_contracts import validate_project_dag_public_boundary
+from tau_coding.public_dag_contracts import (
+    immutable_json,
+    validate_project_dag_public_boundary,
+)
 from tau_coding.runtime_backends.contracts import RuntimeRequirement
 from tau_coding.security_capability import (
     compile_capability_decision,
@@ -303,9 +307,9 @@ class ProjectDagNode:
     max_attempts: int
     command_spec: str | None
     required_evidence: tuple[str, ...]
-    reviewer: dict[str, Any] | None
-    context: dict[str, Any]
-    requested_capabilities: tuple[dict[str, Any], ...]
+    reviewer: Mapping[str, Any] | None
+    context: Mapping[str, Any]
+    requested_capabilities: tuple[Mapping[str, Any], ...]
     route_mode: str | None
 
 
@@ -319,27 +323,27 @@ class ProjectDagEdge:
 
 @dataclass(frozen=True, slots=True)
 class ProjectDagContract:
-    payload: dict[str, Any]
+    payload: Mapping[str, Any]
     dag_id: str
-    goal: dict[str, Any]
-    target: dict[str, Any]
+    goal: Mapping[str, Any]
+    target: Mapping[str, Any]
     entry_node: str
     terminal_nodes: tuple[str, ...]
-    nodes: dict[str, ProjectDagNode]
+    nodes: Mapping[str, ProjectDagNode]
     edges: tuple[ProjectDagEdge, ...]
-    limits: dict[str, Any]
-    context: dict[str, Any]
+    limits: Mapping[str, Any]
+    context: Mapping[str, Any]
     required_evidence: tuple[str, ...]
     fail_closed_on: tuple[str, ...]
     evidence_manifest: str | None
     command_policy: str | None
-    policy_profile: str | dict[str, Any] | None
-    data_boundary: str | dict[str, Any] | None
+    policy_profile: str | Mapping[str, Any] | None
+    data_boundary: str | Mapping[str, Any] | None
     security_mode: str | None
-    actor_access_manifest: str | dict[str, Any] | None
-    environment_manifest: str | dict[str, Any] | None
-    memory_intent: str | dict[str, Any] | None
-    evidence_case: str | dict[str, Any] | None
+    actor_access_manifest: str | Mapping[str, Any] | None
+    environment_manifest: str | Mapping[str, Any] | None
+    memory_intent: str | Mapping[str, Any] | None
+    evidence_case: str | Mapping[str, Any] | None
     research_query_safety_receipt: str | None
     itar_access_preflight_receipt: str | None
     sandbox_run_receipt: str | None
@@ -1194,27 +1198,43 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
     if errors:
         raise RuntimeError("; ".join(errors))
     return ProjectDagContract(
-        payload=payload,
+        payload=immutable_json(payload),
         dag_id=dag_id,
-        goal=goal,
-        target=target,
+        goal=immutable_json(goal),
+        target=immutable_json(target),
         entry_node=entry_node,
         terminal_nodes=tuple(terminal_nodes),
-        nodes=nodes,
+        nodes=MappingProxyType(dict(nodes)),
         edges=tuple(edges),
-        limits=limits,
-        context=context,
+        limits=immutable_json(limits),
+        context=immutable_json(context),
         required_evidence=tuple(required_evidence),
         fail_closed_on=tuple(fail_closed_on),
         evidence_manifest=evidence_manifest,
         command_policy=command_policy,
-        policy_profile=policy_profile,
-        data_boundary=data_boundary,
+        policy_profile=(
+            immutable_json(policy_profile) if isinstance(policy_profile, dict) else policy_profile
+        ),
+        data_boundary=(
+            immutable_json(data_boundary) if isinstance(data_boundary, dict) else data_boundary
+        ),
         security_mode=security_mode,
-        actor_access_manifest=actor_access_manifest,
-        environment_manifest=environment_manifest,
-        memory_intent=memory_intent,
-        evidence_case=evidence_case,
+        actor_access_manifest=(
+            immutable_json(actor_access_manifest)
+            if isinstance(actor_access_manifest, dict)
+            else actor_access_manifest
+        ),
+        environment_manifest=(
+            immutable_json(environment_manifest)
+            if isinstance(environment_manifest, dict)
+            else environment_manifest
+        ),
+        memory_intent=(
+            immutable_json(memory_intent) if isinstance(memory_intent, dict) else memory_intent
+        ),
+        evidence_case=(
+            immutable_json(evidence_case) if isinstance(evidence_case, dict) else evidence_case
+        ),
         research_query_safety_receipt=research_query_safety_receipt,
         itar_access_preflight_receipt=itar_access_preflight_receipt,
         sandbox_run_receipt=sandbox_run_receipt,
@@ -2209,7 +2229,7 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
             errors,
         )
         requested_capabilities_value = item.get("requested_capabilities", [])
-        requested_capabilities: list[dict[str, Any]] = []
+        requested_capabilities: list[Mapping[str, Any]] = []
         if not isinstance(requested_capabilities_value, list):
             errors.append(f"nodes[{index}].requested_capabilities must be a list")
         else:
@@ -2221,7 +2241,7 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
                     )
                 )
                 if isinstance(declaration, dict):
-                    requested_capabilities.append(dict(declaration))
+                    requested_capabilities.append(immutable_json(declaration))
         _validate_persistent_subagent_declaration(
             item.get("persistent_subagent"),
             node_label=f"nodes[{index}]",
@@ -2238,8 +2258,8 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
             max_attempts=max_attempts,
             command_spec=str(command_spec) if isinstance(command_spec, str) else None,
             required_evidence=tuple(required_evidence),
-            reviewer=reviewer,
-            context=context,
+            reviewer=immutable_json(reviewer) if reviewer is not None else None,
+            context=immutable_json(context),
             requested_capabilities=tuple(requested_capabilities),
             route_mode=(
                 item["route"]["mode"]

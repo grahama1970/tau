@@ -1,0 +1,58 @@
+{
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "issue": 297,
+  "ticket": "https://github.com/grahama1970/tau/issues/297",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "primary_receipt": "docs/proofs/tickets/issue-297-deep-immutability/live-readback.json",
+  "proof_markdown": "docs/proofs/tickets/issue-297-deep-immutability/issue-297-close-proof.md",
+  "unit": {
+    "command": "uv run pytest -q",
+    "exit_code": 0,
+    "passed": 3545
+  },
+  "e2e": {
+    "command": "uv run python docs/proofs/tickets/issue-297-deep-immutability/issue-297-live-readback.py",
+    "exit_code": 0,
+    "mocked": false,
+    "live": true,
+    "artifact": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-297-deep-immutability/live-readback.json"
+  },
+  "commands": [
+    {
+      "cmd": "uv run python docs/proofs/tickets/issue-297-deep-immutability/issue-297-live-readback.py",
+      "result": "PASS; wrote docs/proofs/tickets/issue-297-deep-immutability/live-readback.json"
+    },
+    {
+      "cmd": "uv run pytest -q tests/test_dag_contract_immutability.py",
+      "result": "5 passed in 0.64s"
+    },
+    {
+      "cmd": "uv run pytest -q tests/test_dag_contract_immutability.py tests/test_public_dag_contracts.py tests/test_generic_dag.py tests/test_project_dag.py tests/test_dag_plan.py tests/test_dag_transition_validation.py tests/test_node_input_manifest.py tests/test_node_completion_boundary.py",
+      "result": "213 passed in 16.67s"
+    },
+    {
+      "cmd": "uv run pytest -q",
+      "result": "3545 passed in 549.92s (0:09:09)"
+    },
+    {
+      "cmd": "uv run ruff check docs/proofs/tickets/issue-297-deep-immutability/issue-297-live-readback.py tests/test_dag_contract_immutability.py src/tau_coding/public_dag_contracts.py src/tau_coding/project_dag.py src/tau_coding/generic_dag.py src/tau_coding/dag_runtime/transition.py src/tau_coding/dag_runtime/node_input_manifest.py src/tau_coding/node_completion_boundary.py",
+      "result": "All checks passed!"
+    }
+  ],
+  "live_readback_checks": {
+    "project_contract_immutable_after_source_mutation": true,
+    "project_contract_nested_mutation_blocked": true,
+    "project_plan_to_payload_isolated": true,
+    "project_plan_hash_round_trip": true,
+    "generic_command_tuple_immutable_after_source_mutation": true,
+    "generic_live_local_dag_passed": true,
+    "transition_completion_raw_result_immutable": true,
+    "transition_completion_nested_mutation_blocked": true
+  },
+  "does_not_prove": [
+    "paid provider behavior",
+    "every possible future DAG field"
+  ]
+}

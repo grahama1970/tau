@@ -9,9 +9,11 @@ import time
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Protocol
 
 from tau_coding.dag_runtime.model import DagPlan, canonical_sha256
+from tau_coding.public_dag_contracts import immutable_json
 
 TRANSITION_BATCH_SCHEMA = "tau.dag_transition_batch.v1"
 _SHA256_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
@@ -41,19 +43,36 @@ class DagNodeCompletion:
     status: str
     verdict: str
     retryable: bool
-    raw_result: dict[str, Any]
+    raw_result: Mapping[str, Any]
     terminal_state: str = "success"
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "raw_result", immutable_json(self.raw_result))
 
 
 @dataclass(frozen=True, slots=True)
 class DagTransitionView:
     plan: DagPlan
-    node_states: dict[str, str]
-    edge_states: dict[str, str]
-    terminal_states: dict[str, str]
+    node_states: Mapping[str, str]
+    edge_states: Mapping[str, str]
+    terminal_states: Mapping[str, str]
     running_node_ids: frozenset[str]
-    deadline_monotonic: dict[str, float]
+    deadline_monotonic: Mapping[str, float]
     now_monotonic: float
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "node_states", MappingProxyType(dict(self.node_states)))
+        object.__setattr__(self, "edge_states", MappingProxyType(dict(self.edge_states)))
+        object.__setattr__(
+            self,
+            "terminal_states",
+            MappingProxyType(dict(self.terminal_states)),
+        )
+        object.__setattr__(
+            self,
+            "deadline_monotonic",
+            MappingProxyType(dict(self.deadline_monotonic)),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -87,7 +106,10 @@ class DagDeadlineArm:
 class DagRunBlock:
     failure_code: str
     message: str
-    evidence: dict[str, Any]
+    evidence: Mapping[str, Any]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "evidence", immutable_json(self.evidence))
 
 
 @dataclass(frozen=True, slots=True)
@@ -98,8 +120,15 @@ class DagTransitionBatch:
     deadline_arms: tuple[DagDeadlineArm, ...] = ()
     deadline_cancellations: tuple[str, ...] = ()
     receipt_paths: tuple[str, ...] = ()
-    events: tuple[dict[str, Any], ...] = ()
+    events: tuple[Mapping[str, Any], ...] = ()
     block_run: DagRunBlock | None = None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "events",
+            tuple(immutable_json(event) for event in self.events),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -111,9 +140,18 @@ class DagCommittedReceipt:
 @dataclass(frozen=True, slots=True)
 class DagPolicyReplayState:
     committed_receipts: tuple[DagCommittedReceipt, ...]
-    node_states: dict[str, str]
-    edge_states: dict[str, str]
-    terminal_states: dict[str, str]
+    node_states: Mapping[str, str]
+    edge_states: Mapping[str, str]
+    terminal_states: Mapping[str, str]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "node_states", MappingProxyType(dict(self.node_states)))
+        object.__setattr__(self, "edge_states", MappingProxyType(dict(self.edge_states)))
+        object.__setattr__(
+            self,
+            "terminal_states",
+            MappingProxyType(dict(self.terminal_states)),
+        )
 
 
 def transition_batch_to_payload(batch: DagTransitionBatch) -> dict[str, Any]:

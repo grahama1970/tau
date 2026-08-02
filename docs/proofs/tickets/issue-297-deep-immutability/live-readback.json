@@ -1,0 +1,28 @@
+{
+  "artifacts": {
+    "generic_node_receipt": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-297-deep-immutability/live-readback-work/receipts/one.json",
+    "generic_run_receipt": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-297-deep-immutability/live-readback-work/generic-run/dag-receipt.json",
+    "generic_spec": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-297-deep-immutability/live-readback-work/generic.dag.json",
+    "project_spec": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-297-deep-immutability/live-readback-work/project.dag.json"
+  },
+  "checks": {
+    "generic_command_tuple_immutable_after_source_mutation": true,
+    "generic_live_local_dag_passed": true,
+    "project_contract_immutable_after_source_mutation": true,
+    "project_contract_nested_mutation_blocked": true,
+    "project_plan_hash_round_trip": true,
+    "project_plan_to_payload_isolated": true,
+    "transition_completion_nested_mutation_blocked": true,
+    "transition_completion_raw_result_immutable": true
+  },
+  "does_not_prove": [
+    "paid provider behavior",
+    "every possible future DAG field"
+  ],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "provider_live": false,
+  "schema": "tau.issue_297_deep_immutability_readback.v1",
+  "status": "PASS"
+}

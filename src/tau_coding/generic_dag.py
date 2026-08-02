@@ -9,7 +9,7 @@ import signal
 import subprocess
 import tempfile
 import time
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -83,7 +83,7 @@ GENERIC_DAG_COST_ACCOUNTING_SCHEMA = "tau.generic_dag_cost_accounting.v1"
 class DagNode:
     node_id: str
     role: str
-    command: list[str]
+    command: tuple[str, ...]
     depends_on: tuple[str, ...]
     accepted_context_from: tuple[str, ...]
     receipt_path: Path
@@ -2642,7 +2642,7 @@ def _parse_node(raw_node: dict[str, Any], *, base_dir: Path) -> DagNode:
         raise RuntimeError(
             f"node {node_id} must declare exactly one of command, skill, browser, transaction"
         )
-    command = command if isinstance(command, list) else []
+    command = tuple(command) if isinstance(command, list) else ()
     depends_on = raw_node.get("depends_on", [])
     if not isinstance(depends_on, list) or not all(isinstance(dep, str) for dep in depends_on):
         raise RuntimeError(f"node {node_id} depends_on must be a string list")
@@ -3076,7 +3076,7 @@ def _spec_path_from_run_metadata(run_dir: Path) -> tuple[Path, Path]:
 
 
 def _run_command(
-    command: list[str],
+    command: Sequence[str],
     *,
     cwd: Path,
     timeout_seconds: float,
@@ -3096,7 +3096,7 @@ def _run_command(
     backend = LocalRuntimeBackend()
     return backend.execute(
         local_runtime_request(
-            command=command,
+        command=tuple(command),
             run_id=str(identity.get("run_id") or f"local:{identity_hash[-16:]}"),
             plan_revision=str(identity.get("plan_revision") or identity_hash),
             dag_id=str(identity.get("dag_id") or "generic-local-command"),

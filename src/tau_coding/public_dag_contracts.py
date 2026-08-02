@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import copy
 import math
 from collections.abc import Mapping, Sequence
-from typing import Any
+from typing import Any, cast
 
 PROJECT_DAG_ROOT_KEYS = frozenset(
     {
@@ -159,6 +160,147 @@ GENERIC_DAG_NODE_KEYS = frozenset(
         "extensions",
     }
 )
+
+
+class ImmutableJsonDict(dict[str, Any]):
+    """Dict-compatible immutable JSON object for validated public contracts."""
+
+    _locked: bool
+
+    def __init__(self, value: Mapping[str, Any]) -> None:
+        dict.__init__(self)
+        for key, nested in value.items():
+            if not isinstance(key, str):
+                raise RuntimeError("JSON object keys must be strings")
+            dict.__setitem__(self, key, immutable_json(nested))
+        self._locked = True
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        if getattr(self, "_locked", False):
+            raise TypeError("validated Tau contract JSON is immutable")
+        dict.__setitem__(self, key, value)
+
+    def __delitem__(self, key: str) -> None:
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def clear(self) -> None:
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def pop(self, key: str, default: Any = None) -> Any:
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def popitem(self) -> tuple[str, Any]:
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def setdefault(self, key: str, default: Any = None) -> Any:
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def __ior__(self, other: object) -> ImmutableJsonDict:  # type: ignore[override]
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> dict[str, Any]:
+        copied = thaw_json(self)
+        memo[id(self)] = copied
+        return cast(dict[str, Any], copied)
+
+    def copy(self) -> dict[str, Any]:
+        return cast(dict[str, Any], thaw_json(self))
+
+
+class ImmutableJsonList(list[Any]):
+    """List-compatible immutable JSON array for validated public contracts."""
+
+    _locked: bool
+
+    def __init__(self, value: Sequence[Any]) -> None:
+        list.__init__(self)
+        for nested in value:
+            list.append(self, immutable_json(nested))
+        self._locked = True
+
+    def __setitem__(self, index: Any, value: Any) -> None:
+        if getattr(self, "_locked", False):
+            raise TypeError("validated Tau contract JSON is immutable")
+        list.__setitem__(self, index, value)
+
+    def __delitem__(self, index: Any) -> None:
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def append(self, item: Any) -> None:
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def clear(self) -> None:
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def extend(self, other: Any) -> None:
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def insert(self, index: int, item: Any) -> None:
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def pop(self, index: int = -1) -> Any:
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def remove(self, item: Any) -> None:
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def reverse(self) -> None:
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def sort(self, *args: Any, **kwargs: Any) -> None:
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def __iadd__(self, other: Any) -> ImmutableJsonList:
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def __imul__(self, other: Any) -> ImmutableJsonList:
+        raise TypeError("validated Tau contract JSON is immutable")
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> list[Any]:
+        copied = thaw_json(self)
+        memo[id(self)] = copied
+        return cast(list[Any], copied)
+
+    def copy(self) -> list[Any]:
+        return cast(list[Any], thaw_json(self))
+
+
+def immutable_json(value: Any) -> Any:
+    """Return an immutable, JSON-only clone with no aliases to caller-owned data."""
+
+    if value is None or isinstance(value, (str, bool)):
+        return value
+    if isinstance(value, int) and not isinstance(value, bool):
+        return value
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise RuntimeError("JSON numbers must be finite")
+        return value
+    if isinstance(value, Mapping):
+        return ImmutableJsonDict(value)
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return ImmutableJsonList(value)
+    return ImmutableJsonDict(
+        {
+            "unsupported_json_type": type(value).__name__,
+            "value": str(value),
+        }
+    )
+
+
+def thaw_json(value: Any) -> Any:
+    """Return fresh mutable JSON values from immutable contract data."""
+
+    if isinstance(value, Mapping):
+        return {str(key): thaw_json(nested) for key, nested in value.items()}
+    if isinstance(value, list):
+        return [thaw_json(item) for item in value]
+    if isinstance(value, tuple):
+        return [thaw_json(item) for item in value]
+    return copy.deepcopy(value)
 
 
 def validate_project_dag_public_boundary(payload: Mapping[str, Any], errors: list[str]) -> None:

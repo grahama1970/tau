@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from tau_coding.dag_runtime.model import canonical_sha256
+from tau_coding.public_dag_contracts import immutable_json
 
 NODE_COMPLETION_BOUNDARY_SCHEMA = "tau.node_completion_boundary.v1"
 NODE_COMPLETION_BOUNDARY_POLICY_SCHEMA = "tau.node_completion_boundary_policy.v1"
@@ -38,12 +39,16 @@ BOUNDARY_ITEM_DECLARED_FACT_KEYS: tuple[str, ...] = (
 @dataclass(frozen=True, slots=True)
 class NodeCompletionBoundaryValidation:
     ok: bool
-    boundary: dict[str, Any] | None
+    boundary: Mapping[str, Any] | None
     boundary_sha256: str | None
     alert_codes: tuple[str, ...]
     errors: tuple[str, ...]
     required_sections: tuple[str, ...]
     non_empty_sections: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if self.boundary is not None:
+            object.__setattr__(self, "boundary", immutable_json(self.boundary))
 
     def to_payload(self) -> dict[str, Any]:
         return {

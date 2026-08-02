@@ -30,6 +30,7 @@ from tau_coding.dag_runtime.model import (
     canonical_sha256,
 )
 from tau_coding.dag_runtime.run_store import DagAttemptIdentity, DagRunLease, SqliteDagRunStore
+from tau_coding.public_dag_contracts import immutable_json
 
 NODE_INPUT_MANIFEST_SCHEMA = "tau.node_input_manifest.v1"
 SHA256_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
@@ -37,10 +38,22 @@ SHA256_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 @dataclass(frozen=True, slots=True)
 class NodeInputManifestResolution:
-    accepted_inputs: tuple[dict[str, Any], ...]
-    manifest: dict[str, Any]
-    blocked_result: dict[str, Any] | None = None
-    admission: dict[str, Any] | None = None
+    accepted_inputs: tuple[Mapping[str, Any], ...]
+    manifest: Mapping[str, Any]
+    blocked_result: Mapping[str, Any] | None = None
+    admission: Mapping[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "accepted_inputs",
+            tuple(immutable_json(item) for item in self.accepted_inputs),
+        )
+        object.__setattr__(self, "manifest", immutable_json(self.manifest))
+        if self.blocked_result is not None:
+            object.__setattr__(self, "blocked_result", immutable_json(self.blocked_result))
+        if self.admission is not None:
+            object.__setattr__(self, "admission", immutable_json(self.admission))
 
 
 def resolve_node_input_manifest(
