@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import json
 import hashlib
+import json
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
@@ -102,10 +102,153 @@ def test_scheduler_persists_manifest_and_exposes_attempt_boundary(
     assert entry["disposition"] == "included"
     assert entry["source_node_id"] == "producer"
     assert entry["source_attempt_id"] is not None
+    assert entry["selected_sha256"] == canonical_sha256(
+        {"schema": "source.output.v1", "source_node_id": "producer"}
+    )
     expected_hash = canonical_sha256(
         {key: value for key, value in consumer_manifest.items() if key != "canonical_manifest_hash"}
     )
     assert consumer_manifest["canonical_manifest_hash"] == expected_hash
+
+
+def test_by_value_declared_hash_mismatch_blocks_before_consumer_dispatch(
+    tmp_path: Path,
+) -> None:
+    plan = _replace_single_binding(_producer_consumer_plan(tmp_path), on_invalid="omit")
+    called: list[str] = []
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        attempt: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        del accepted_inputs, attempt
+        called.append(node.node_id)
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "accepted_output": {
+                "schema": "source.output.v1",
+                "value": "tampered",
+                "sha256": "sha256:" + "0" * 64,
+            },
+        }
+
+    result = run_dag_plan(plan, execute_node=execute)
+
+    assert result.status == "BLOCKED"
+    assert result.verdict == "NODE_INPUT_DECLARED_HASH_MISMATCH"
+    assert called == ["producer"]
+
+
+def test_by_value_declared_hash_malformed_blocks_before_consumer_dispatch(
+    tmp_path: Path,
+) -> None:
+    plan = _producer_consumer_plan(tmp_path)
+    called: list[str] = []
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        attempt: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        del accepted_inputs, attempt
+        called.append(node.node_id)
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "accepted_output": {
+                "schema": "source.output.v1",
+                "value": "bad-declaration",
+                "sha256": "sha256:not-a-real-digest",
+            },
+        }
+
+    result = run_dag_plan(plan, execute_node=execute)
+
+    assert result.status == "BLOCKED"
+    assert result.verdict == "NODE_INPUT_DECLARED_HASH_MALFORMED"
+    assert called == ["producer"]
+
+
+def test_by_value_declared_hash_match_passes_and_records_computed_hash(
+    tmp_path: Path,
+) -> None:
+    plan = _producer_consumer_plan(tmp_path)
+    observed_inputs: list[dict[str, Any]] = []
+    observed_manifest_paths: list[str] = []
+    payload_without_hash = {"schema": "source.output.v1", "value": "trusted"}
+    declared_hash = canonical_sha256(payload_without_hash)
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        attempt: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        if node.node_id == "consumer":
+            observed_inputs.extend(accepted_inputs)
+            assert attempt.input_manifest_path is not None
+            observed_manifest_paths.append(attempt.input_manifest_path)
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "accepted_output": {**payload_without_hash, "sha256": declared_hash},
+        }
+
+    with SqliteDagRunStore(tmp_path / "dag-run.sqlite3") as store:
+        result = run_dag_plan(
+            plan,
+            execute_node=execute,
+            run_store=store,
+            lease_owner="test-declared-hash",
+        )
+
+    assert result.status == "PASS"
+    assert observed_inputs == [{**payload_without_hash, "sha256": declared_hash}]
+    manifest = json.loads(Path(observed_manifest_paths[0]).read_text(encoding="utf-8"))
+    assert manifest["bindings"][0]["selected_sha256"] == declared_hash
+    assert manifest["canonical_manifest_hash"] == canonical_sha256(
+        {key: value for key, value in manifest.items() if key != "canonical_manifest_hash"}
+    )
+
+
+def test_node_input_manifest_hashes_are_stable_across_replay_resolution(
+    tmp_path: Path,
+) -> None:
+    plan = _producer_consumer_plan(tmp_path)
+    binding = plan.context_bindings[0]
+    consumer = next(node for node in plan.nodes if node.node_id == "consumer")
+    identity = DagAttemptIdentity(
+        run_id="stable-manifest-test",
+        node_id="consumer",
+        attempt=1,
+        attempt_id="attempt-consumer-1",
+        idempotency_key="attempt-consumer-1:effect",
+    )
+    kwargs = {
+        "plan": plan,
+        "node": consumer,
+        "identity": identity,
+        "bindings": (binding,),
+        "edge_states": {binding.control_edge_id: "success"},
+        "results": {
+            "producer": {
+                "scheduler_attempt_id": "attempt-producer-1",
+                "accepted_output": {"schema": "source.output.v1", "value": "stable"},
+            }
+        },
+    }
+
+    first = resolve_node_input_manifest(**kwargs).manifest
+    second = resolve_node_input_manifest(**kwargs).manifest
+
+    assert second == first
+    assert first["bindings"][0]["selected_sha256"] == canonical_sha256(
+        {"schema": "source.output.v1", "value": "stable"}
+    )
 
 
 def test_schema_projection_exposes_only_selected_artifact(tmp_path: Path) -> None:

@@ -9,15 +9,16 @@ adapter is called.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
+from tau_coding.dag_runtime.admission import write_durable_json
 from tau_coding.dag_runtime.artifact_reference import (
     ArtifactReferenceError,
     build_artifact_reference,
 )
-from tau_coding.dag_runtime.admission import write_durable_json
 from tau_coding.dag_runtime.model import (
     CONTEXT_BINDING_MATERIALIZATION_MODES,
     CONTEXT_BINDING_ON_INVALID,
@@ -31,6 +32,7 @@ from tau_coding.dag_runtime.model import (
 from tau_coding.dag_runtime.run_store import DagAttemptIdentity, DagRunLease, SqliteDagRunStore
 
 NODE_INPUT_MANIFEST_SCHEMA = "tau.node_input_manifest.v1"
+SHA256_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -154,13 +156,28 @@ def resolve_node_input_manifest(
             entries.append(entry)
             accepted_inputs.append(reference)
             continue
+        selected_sha256, hash_error = _selected_hash(selected)
+        if hash_error is not None:
+            entry.update(
+                {
+                    "disposition": "invalid",
+                    "reason": hash_error,
+                    "selected_schema": _optional_str(selected.get("schema")),
+                    "selected_path": _optional_str(selected.get("path")),
+                    "selected_sha256": selected_sha256,
+                    "declared_sha256": _optional_str(selected.get("sha256")),
+                }
+            )
+            entries.append(entry)
+            blocked_result = blocked_result or _blocked_result(node.node_id, hash_error)
+            continue
         entry.update(
             {
                 "disposition": "included",
                 "reason": "selected",
                 "selected_schema": _optional_str(selected.get("schema")),
                 "selected_path": _optional_str(selected.get("path")),
-                "selected_sha256": _selected_hash(selected),
+                "selected_sha256": selected_sha256,
             }
         )
         entries.append(entry)
@@ -288,11 +305,18 @@ def _blocked_result(node_id: str, code: str) -> dict[str, Any]:
     }
 
 
-def _selected_hash(value: Mapping[str, Any]) -> str:
-    sha = value.get("sha256")
-    return (
-        sha if isinstance(sha, str) and sha.startswith("sha256:") else canonical_sha256(dict(value))
-    )
+def _selected_hash(value: Mapping[str, Any]) -> tuple[str, str | None]:
+    selected = dict(value)
+    declared = selected.get("sha256")
+    hash_payload = {key: item for key, item in selected.items() if key != "sha256"}
+    computed = canonical_sha256(hash_payload)
+    if declared is None:
+        return computed, None
+    if not isinstance(declared, str) or not SHA256_RE.fullmatch(declared):
+        return computed, "NODE_INPUT_DECLARED_HASH_MALFORMED"
+    if declared != computed:
+        return computed, "NODE_INPUT_DECLARED_HASH_MISMATCH"
+    return computed, None
 
 
 def _optional_str(value: object) -> str | None:

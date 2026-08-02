@@ -1,0 +1,26 @@
+{
+  "cases": [
+    {
+      "calls": [],
+      "name": "lineage_mismatch",
+      "ok": true,
+      "status": "BLOCKED",
+      "verdict": "dag_context_binding_edge_mismatch"
+    },
+    {
+      "calls": [
+        "producer"
+      ],
+      "computed_sha256": "sha256:b97af0a367c7d5fc0c200548a7747ec1bc03ab6d34c922199ff4208d6f047886",
+      "name": "declared_hash_mismatch",
+      "ok": true,
+      "status": "BLOCKED",
+      "verdict": "NODE_INPUT_DECLARED_HASH_MISMATCH"
+    }
+  ],
+  "live": true,
+  "mocked": false,
+  "provider_live": false,
+  "schema": "tau.issue_292_live_readback.v1",
+  "status": "PASS"
+}

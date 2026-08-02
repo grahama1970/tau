@@ -10,11 +10,11 @@
     },
     "source": "src/tau_coding/dag_runtime/"
   },
-  "generated_at": "2026-08-02T15:39:33.657248+00:00",
+  "generated_at": "2026-08-02T16:08:32.282107+00:00",
   "generator_version": "1.0.0",
   "git": {
     "clean_tree": false,
-    "commit": "19c1728f988a1535abe069f0688a593f34ec9fd2"
+    "commit": "c93e851eff221b7b68cc875beacee418bbf935ed"
   },
   "github": {
     "branch_protection": {
@@ -235,8 +235,8 @@
     "provider_live": false
   },
   "proof_index": {
-    "count": 21,
-    "digest": "sha256:38bb5f34ddb7304f4a1972ddc09b8b8f9ff74d2d29d5a955db9a6532036acca7",
+    "count": 22,
+    "digest": "sha256:681393e338bbc1d7d3a7daae7cd16be6bdec6f8a1423a92d5d84e7544d1e8187",
     "entries": [
       {
         "path": "docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/closure-evidence.json",
@@ -303,6 +303,10 @@
         "sha256": "sha256:7055cb306007e8d22d3f83e86d75d5162e307a14da2c1bec075808b096ef8ff5"
       },
       {
+        "path": "docs/proofs/tickets/issue-292-context-lineage-hashes/closure-evidence.json",
+        "sha256": "sha256:cec7926f72bccfe66ea8bd97fc099bc3b228d79d3dbdfc1239974cf032a29a2a"
+      },
+      {
         "path": "docs/proofs/tickets/issue-72-p1-route-join-conformance-20260729T0011Z/closure-evidence.json",
         "sha256": "sha256:963d0ec3c8fef83346bbc70729623da96e51f3b0e53c47ce54ef862d7b751575"
       },
@@ -325,12 +329,12 @@
     ]
   },
   "schema": "tau.project_status.v1",
-  "semantic_content_digest": "sha256:d5b247e9e93847aaae564d59fea3ca38796e201ca269d086877a29607c318ec5",
+  "semantic_content_digest": "sha256:22fa70fb94b7b9f601e0806a83953fde9ae1c3074271e1899b476ae41a6e6567",
   "source_digests": {
     "GOAL.md": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
     "acceptance_receipt": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab",
     "github_snapshot": "sha256:ea8408c06533a1111b58ecb56106f8934392dec730fc867a04bff2ac88d3c61a",
-    "proof_index": "sha256:38bb5f34ddb7304f4a1972ddc09b8b8f9ff74d2d29d5a955db9a6532036acca7",
+    "proof_index": "sha256:681393e338bbc1d7d3a7daae7cd16be6bdec6f8a1423a92d5d84e7544d1e8187",
     "pyproject.toml": "sha256:846cfd5812f312395f363db523bf485487f6d72a651644098b92f34565dccb55"
   },
   "workflows": {
