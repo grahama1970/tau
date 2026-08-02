@@ -453,25 +453,45 @@ def _validate_context_bindings(
         path = f"$.context_bindings[{index}]"
         if binding.source_node_id not in node_ids:
             issues.append(
-                DagPlanValidationIssue("binding_source_missing", f"{path}.source_node_id")
+                DagPlanValidationIssue(
+                    "dag_context_binding_source_missing",
+                    f"{path}.source_node_id",
+                )
             )
         if binding.target_node_id not in node_ids:
             issues.append(
-                DagPlanValidationIssue("binding_target_missing", f"{path}.target_node_id")
+                DagPlanValidationIssue(
+                    "dag_context_binding_target_missing",
+                    f"{path}.target_node_id",
+                )
             )
         edge = edges_by_id.get(binding.control_edge_id)
         if edge is None:
             issues.append(
-                DagPlanValidationIssue("binding_control_edge_missing", f"{path}.control_edge_id")
+                DagPlanValidationIssue(
+                    "dag_context_binding_control_edge_missing",
+                    f"{path}.control_edge_id",
+                )
             )
             continue
+        if edge.target_kind != "node":
+            issues.append(
+                DagPlanValidationIssue(
+                    "dag_context_binding_target_not_node",
+                    f"{path}.control_edge_id",
+                    edge.edge_id,
+                )
+            )
         if (
             edge.source_node_id != binding.source_node_id
-            or edge.target_kind != "node"
             or edge.target_id != binding.target_node_id
         ):
             issues.append(
-                DagPlanValidationIssue("binding_edge_mismatch", f"{path}.control_edge_id")
+                DagPlanValidationIssue(
+                    "dag_context_binding_edge_mismatch",
+                    f"{path}.control_edge_id",
+                    edge.edge_id,
+                )
             )
         if binding.selector_kind not in CONTEXT_BINDING_SELECTOR_KINDS:
             issues.append(DagPlanValidationIssue("binding_selector_kind_invalid", path))

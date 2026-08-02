@@ -164,6 +164,108 @@ def test_nested_field_local_invariants_raise_stable_codes(
     assert exc.value.validation.codes == (expected_code,)
 
 
+@pytest.mark.parametrize(
+    ("case_name", "mutate", "expected_code"),
+    [
+        (
+            "source_mismatch",
+            lambda plan: replace(
+                plan,
+                context_bindings=(
+                    replace(plan.context_bindings[0], source_node_id="reviewer"),
+                ),
+            ),
+            "dag_context_binding_edge_mismatch",
+        ),
+        (
+            "target_mismatch",
+            lambda plan: replace(
+                plan,
+                context_bindings=(
+                    replace(plan.context_bindings[0], target_node_id="reviewer"),
+                ),
+            ),
+            "dag_context_binding_edge_mismatch",
+        ),
+        (
+            "terminal_control_edge",
+            lambda plan: replace(
+                plan,
+                control_edges=(
+                    replace(
+                        plan.control_edges[0],
+                        target_kind="terminal",
+                        target_id="done",
+                    ),
+                    *plan.control_edges[1:],
+                ),
+                terminal_endpoints=(
+                    *plan.terminal_endpoints,
+                    DagPlanTerminal("done", "external", "declared"),
+                ),
+            ),
+            "dag_context_binding_target_not_node",
+        ),
+        (
+            "missing_source",
+            lambda plan: replace(
+                plan,
+                context_bindings=(
+                    replace(plan.context_bindings[0], source_node_id="missing-source"),
+                ),
+            ),
+            "dag_context_binding_source_missing",
+        ),
+        (
+            "missing_target",
+            lambda plan: replace(
+                plan,
+                context_bindings=(
+                    replace(plan.context_bindings[0], target_node_id="missing-target"),
+                ),
+            ),
+            "dag_context_binding_target_missing",
+        ),
+        (
+            "missing_control_edge",
+            lambda plan: replace(
+                plan,
+                context_bindings=(
+                    replace(plan.context_bindings[0], control_edge_id="missing-edge"),
+                ),
+            ),
+            "dag_context_binding_control_edge_missing",
+        ),
+        (
+            "duplicate_binding_id",
+            lambda plan: replace(
+                plan,
+                context_bindings=(
+                    plan.context_bindings[0],
+                    replace(
+                        plan.context_bindings[1],
+                        binding_id=plan.context_bindings[0].binding_id,
+                    ),
+                ),
+            ),
+            "duplicate_binding_id",
+        ),
+    ],
+)
+def test_context_binding_lineage_reports_stable_codes(
+    tmp_path: Path,
+    case_name: str,
+    mutate: Any,
+    expected_code: str,
+) -> None:
+    del case_name
+    plan = _invalid_rehashed_plan(_base_plan(tmp_path), mutate)
+
+    validation = validate_dag_plan(plan)
+
+    assert expected_code in validation.codes
+
+
 def test_stored_plan_load_uses_same_canonical_validator(tmp_path: Path) -> None:
     plan = _base_plan(tmp_path)
     invalid = _invalid_rehashed_plan(

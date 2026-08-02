@@ -1,0 +1,17 @@
+{
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "issue": 292,
+  "unit": {
+    "command": "uv run pytest -q",
+    "exit_code": 0,
+    "passed": 3485,
+    "duration": "521.26s"
+  },
+  "e2e": {
+    "command": "uv run python docs/proofs/tickets/issue-292-context-lineage-hashes/issue-292-live-readback.py",
+    "exit_code": 0,
+    "mocked": false,
+    "live": true,
+    "artifact": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-292-context-lineage-hashes/live-readback.json"
+  }
+}
