@@ -1,49 +1,53 @@
 {
-  "schema": "tau.ticket_closure_evidence.v1",
+  "schema": "agent_skills.ticket_closure_evidence.v1",
   "issue": 293,
-  "issue_url": "https://github.com/grahama1970/tau/issues/293",
-  "lease": "20260802T164038Z-codex-293",
-  "generated_at": "2026-08-02T17:12:32Z",
+  "ticket": "grahama1970/tau#293",
+  "title": "P1: validate a strict typed DAG attempt result before staging or settlement",
   "mocked": false,
   "live": true,
   "provider_live": false,
+  "unit": {
+    "command": "uv run pytest -q",
+    "exit_code": 0,
+    "passed": 3504,
+    "duration": "534.34s"
+  },
+  "e2e": {
+    "command": "uv run python docs/proofs/tickets/issue-293-attempt-result-admission/issue-293-live-readback.py",
+    "exit_code": 0,
+    "mocked": false,
+    "live": true,
+    "artifact": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-293-attempt-result-admission/live-readback.json"
+  },
   "proof": {
     "markdown": "docs/proofs/tickets/issue-293-attempt-result-admission/issue-293-close-proof.md",
     "live_readback": "docs/proofs/tickets/issue-293-attempt-result-admission/live-readback.json",
     "live_readback_script": "docs/proofs/tickets/issue-293-attempt-result-admission/issue-293-live-readback.py"
   },
-  "commands": [
+  "pr": {
+    "number": 301,
+    "url": "https://github.com/grahama1970/tau/pull/301",
+    "head_commit": "8c284daa4ef4d8a7c80588bbc8d1ab4ee1c2b8e7",
+    "merge_commit": "0696615453cd8e9c8595482f9e53fd541e341feb"
+  },
+  "remote_checks": [
     {
-      "command": "uv run python docs/proofs/tickets/issue-293-attempt-result-admission/issue-293-live-readback.py",
-      "result": "issue-293 live readback PASS: /home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-293-attempt-result-admission/live-readback.json"
+      "name": "tau project-status verify",
+      "result": "pass",
+      "duration": "17s",
+      "url": "https://github.com/grahama1970/tau/actions/runs/30758591046/job/91524992836"
     },
     {
-      "command": "uv run pytest -q tests/test_dag_attempt_result.py tests/test_dag_runtime_scheduler.py tests/test_dag_runtime_run_store.py -x",
-      "result": "64 passed in 4.46s"
+      "name": "canonical-browser-proofs",
+      "result": "pass",
+      "duration": "4m12s",
+      "url": "https://github.com/grahama1970/tau/actions/runs/30758591034/job/91525270278"
     },
     {
-      "command": "uv run pytest -q tests/test_dag_attempt_result.py tests/test_dag_plan.py tests/test_dag_runtime_scheduler.py tests/test_dag_runtime_run_store.py tests/test_dag_plan_validation.py tests/test_node_input_manifest.py -x",
-      "result": "124 passed in 6.71s"
-    },
-    {
-      "command": "uv run pytest -q tests/test_dag_attempt_result.py tests/test_dag_runtime_scheduler.py tests/test_dag_runtime_run_store.py tests/test_dag_runtime_admission_table.py tests/test_storage_redaction_boundaries.py tests/test_durable_repository_qualification_workflow.py -x",
-      "result": "82 passed in 60.97s (0:01:00)"
-    },
-    {
-      "command": "uv run pytest -q",
-      "result": "3504 passed in 534.34s (0:08:54)"
-    },
-    {
-      "command": "uv run ruff check src/tau_coding/dag_runtime/attempt_result.py src/tau_coding/dag_runtime/scheduler.py src/tau_coding/dag_runtime/run_store.py src/tau_coding/dag_runtime/replay.py tests/test_dag_attempt_result.py tests/test_dag_runtime_scheduler.py tests/test_dag_runtime_run_store.py tests/test_dag_runtime_admission_table.py tests/test_storage_redaction_boundaries.py tests/test_durable_repository_qualification_workflow.py docs/proofs/tickets/issue-293-attempt-result-admission/issue-293-live-readback.py",
-      "result": "All checks passed!"
-    },
-    {
-      "command": "uv run mypy src/tau_coding/dag_runtime/attempt_result.py src/tau_coding/dag_runtime/scheduler.py src/tau_coding/dag_runtime/run_store.py src/tau_coding/dag_runtime/replay.py docs/proofs/tickets/issue-293-attempt-result-admission/issue-293-live-readback.py",
-      "result": "Success: no issues found in 5 source files"
-    },
-    {
-      "command": "git diff --check",
-      "result": "exit 0"
+      "name": "uv run pytest -q",
+      "result": "pass",
+      "duration": "10m0s",
+      "url": "https://github.com/grahama1970/tau/actions/runs/30758591065/job/91525016264"
     }
   ],
   "live_readback_summary": {
@@ -67,6 +71,7 @@
   },
   "notes": [
     "The full Tau immutable goal remains NOT_MET by this ticket alone.",
-    "Unrelated untracked .ask_artifacts/ was not staged."
+    "Worktree audit before issue close reported pre-existing retained worktrees outside this ticket: /tmp/tau-immutable-goal-main-20260721T000650Z, /home/graham/workspace/experiments/tau-causal-replay, /home/graham/workspace/experiments/tau-gs001.",
+    "Unrelated local paths were not staged: .ask_artifacts/, src/tau_coding/dag_runtime/compiler.py, tests/test_dag_plan_validation.py, tests/fixtures/concurrent-fanout-dag.json."
   ]
 }
