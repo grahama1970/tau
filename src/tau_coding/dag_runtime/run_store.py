@@ -32,6 +32,7 @@ from tau_coding.dag_runtime.model import (
     canonical_sha256,
     validate_dag_plan,
 )
+from tau_coding.dag_runtime.transition import transition_batch_from_payload
 from tau_coding.dag_viewer.redaction import redact_for_storage
 from tau_coding.runtime_backends.contracts import RuntimeEvent, RuntimeStateProjection
 
@@ -1075,6 +1076,23 @@ class SqliteDagRunStore:
             else None,
         )
 
+    def _load_plan_for_validation(self, run_id: str) -> DagPlan:
+        row = self._connection.execute(
+            "SELECT plan_json, plan_sha256 FROM dag_runs WHERE run_id = ?", (run_id,)
+        ).fetchone()
+        if row is None:
+            raise DagRunStoreError("dag_run_missing", run_id)
+        try:
+            payload = json.loads(row["plan_json"])
+        except (json.JSONDecodeError, TypeError) as exc:
+            raise DagRunStoreError("dag_run_plan_schema_invalid", run_id) from exc
+        if not isinstance(payload, dict):
+            raise DagRunStoreError("dag_run_plan_schema_invalid", run_id)
+        plan = _plan_from_payload(payload)
+        if plan.plan_sha256 != row["plan_sha256"]:
+            raise DagRunStoreError("dag_run_plan_hash_mismatch", run_id)
+        return plan
+
     def reconciliation_required_runs(self) -> tuple[DagRunRecord, ...]:
         """Return runs waiting for an explicit operator reconciliation decision."""
 
@@ -1724,6 +1742,15 @@ class SqliteDagRunStore:
         }
         with self._transaction():
             self._assert_lease(lease)
+            plan = self._load_plan_for_validation(lease.run_id)
+            try:
+                transition_batch_from_payload(
+                    transition,
+                    plan=plan,
+                    verify_receipts=True,
+                )
+            except RuntimeError as exc:
+                raise DagRunStoreError("dag_transition_schema_invalid", str(exc)) from exc
             attempt = self._attempt_row(attempt_id)
             if attempt["state"] == "SETTLED":
                 existing = self._event_by_key(
@@ -2297,6 +2324,15 @@ class SqliteDagRunStore:
     ) -> None:
         with self._transaction():
             self._assert_lease(lease)
+            plan = self._load_plan_for_validation(lease.run_id)
+            try:
+                transition_batch_from_payload(
+                    transition,
+                    plan=plan,
+                    verify_receipts=True,
+                )
+            except RuntimeError as exc:
+                raise DagRunStoreError("dag_transition_schema_invalid", str(exc)) from exc
             self._append_event(
                 lease,
                 event_key=f"transition:{event_key}",

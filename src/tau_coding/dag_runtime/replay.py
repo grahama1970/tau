@@ -369,22 +369,41 @@ def apply_transition_state(
         edge = edges[edge_settlement.edge_id]
         if edge.target_kind == "terminal" or edge.target_id in terminal_ids:
             terminal_states[edge.target_id] = edge_settlement.state
-    for node_settlement in batch.node_settlements:
-        if (
-            node_settlement.node_id in node_ids
-            and node_states.get(node_settlement.node_id) == "pending"
-        ):
-            node_states[node_settlement.node_id] = node_settlement.state
-    for cancellation in batch.node_cancellations:
-        if cancellation.node_id in node_ids and node_states.get(cancellation.node_id) == "pending":
-            node_states[cancellation.node_id] = "cancelled"
+    if node_states:
+        for node_settlement in batch.node_settlements:
+            if (
+                node_settlement.node_id not in node_ids
+                and node_settlement.node_id not in terminal_ids
+            ):
+                raise RuntimeError(f"dag_transition_unknown_node:{node_settlement.node_id}")
+            prior = node_states.get(node_settlement.node_id)
+            if prior is None:
+                terminal_prior = terminal_states.get(node_settlement.node_id)
+                if terminal_prior is not None and terminal_prior != node_settlement.state:
+                    raise RuntimeError(f"dag_transition_node_conflict:{node_settlement.node_id}")
+                terminal_states[node_settlement.node_id] = node_settlement.state
+                continue
+            if prior == "pending":
+                node_states[node_settlement.node_id] = node_settlement.state
+            elif prior != node_settlement.state:
+                raise RuntimeError(f"dag_transition_node_conflict:{node_settlement.node_id}")
+        for cancellation in batch.node_cancellations:
+            if cancellation.node_id not in node_ids:
+                raise RuntimeError(f"dag_transition_unknown_cancellation:{cancellation.node_id}")
+            prior = node_states.get(cancellation.node_id)
+            if prior == "pending":
+                node_states[cancellation.node_id] = "cancelled"
+            elif prior != "cancelled":
+                raise RuntimeError(f"dag_transition_cancellation_conflict:{cancellation.node_id}")
     for arm in batch.deadline_arms:
         deadline_prior = deadlines.get(arm.deadline_id)
         if deadline_prior is not None and deadline_prior != arm.deadline_monotonic:
             raise RuntimeError(f"dag_transition_deadline_conflict:{arm.deadline_id}")
         deadlines[arm.deadline_id] = arm.deadline_monotonic
     for deadline_id in batch.deadline_cancellations:
-        deadlines.pop(deadline_id, None)
+        if deadline_id not in deadlines:
+            raise RuntimeError(f"dag_transition_unknown_deadline:{deadline_id}")
+        deadlines.pop(deadline_id)
 
 
 def replay_dag_run(
@@ -418,8 +437,11 @@ def replay_dag_run(
     replay_events: list[dict[str, Any]] = []
     block: dict[str, Any] | None = None
     last_sequence = 0
+    attempt_by_id = {stored.identity.attempt_id: stored.identity for stored in attempts}
     for event in events:
-        sequence = int(event["seq"])
+        sequence = event["seq"]
+        if not isinstance(sequence, int) or isinstance(sequence, bool):
+            raise RuntimeError("dag_journal_sequence_invalid")
         if sequence <= last_sequence:
             raise RuntimeError("dag_journal_sequence_invalid")
         last_sequence = sequence
@@ -432,7 +454,12 @@ def replay_dag_run(
         transition_payload = event["payload"].get("transition")
         if not isinstance(transition_payload, Mapping):
             raise RuntimeError("dag_transition_replay_mismatch")
-        batch = transition_batch_from_payload(transition_payload)
+        batch = transition_batch_from_payload(
+            transition_payload,
+            plan=plan,
+            verify_receipts=True,
+            active_deadlines=deadlines,
+        )
         replay_events.extend({**dict(item), "durably_replayed": True} for item in batch.events)
         for cancellation in batch.node_cancellations:
             if node_states.get(cancellation.node_id) != "pending":
@@ -479,11 +506,9 @@ def replay_dag_run(
             terminal_states=terminal_states,
             deadlines=deadlines,
         )
-        for receipt in transition_payload.get("receipt_refs", []):
-            if not isinstance(receipt, Mapping):
-                raise RuntimeError("dag_transition_replay_mismatch")
-            path = str(receipt["path"])
-            receipts[path] = DagCommittedReceipt(path, str(receipt["file_sha256"]))
+        for receipt in transition_payload["receipt_refs"]:
+            path = receipt["path"]
+            receipts[path] = DagCommittedReceipt(path, receipt["file_sha256"])
         if batch.block_run is not None and block is None:
             block = {
                 "status": "BLOCKED",
@@ -497,21 +522,39 @@ def replay_dag_run(
         result = event["payload"].get("result")
         if not isinstance(completion, Mapping) or not isinstance(result, dict):
             raise RuntimeError("dag_transition_replay_mismatch")
-        node_id = str(completion["node_id"])
-        terminal_state = str(completion["terminal_state"])
-        replayed = dict(result)
+        attempt_id = event.get("attempt_id")
+        if not isinstance(attempt_id, str) or attempt_id not in attempt_by_id:
+            raise RuntimeError(f"dag_transition_attempt_missing:{attempt_id}")
+        identity = attempt_by_id[attempt_id]
+        node_id = completion.get("node_id")
+        terminal_state = completion.get("terminal_state")
+        attempt = completion.get("attempt")
+        if node_id != identity.node_id or attempt != identity.attempt:
+            raise RuntimeError(f"dag_transition_completion_mismatch:{attempt_id}")
+        if not isinstance(terminal_state, str):
+            raise RuntimeError(f"dag_transition_completion_mismatch:{attempt_id}")
+        try:
+            admission = admit_dag_attempt_result(
+                plan_sha256=plan.plan_sha256,
+                identity=identity,
+                node_id=identity.node_id,
+                result=result,
+            )
+        except DagAttemptResultAdmissionError as exc:
+            raise RuntimeError(f"dag_transition_result_invalid:{exc.code}") from exc
+        replayed = dict(admission.normalized)
         if "resumed" in replayed:
             replayed["resumed"] = True
         replayed["durably_replayed"] = True
         node_states[node_id] = "blocked" if batch.block_run is not None else terminal_state
         results.append(
-            DagReplayResult(node_id, int(completion["attempt"]), terminal_state, replayed)
+            DagReplayResult(node_id, identity.attempt, terminal_state, replayed)
         )
         replay_events.append(
             {
                 "event": "node_replayed",
                 "node_id": node_id,
-                "attempt": int(completion["attempt"]),
+                "attempt": identity.attempt,
                 "terminal_state": node_states[node_id],
             }
         )

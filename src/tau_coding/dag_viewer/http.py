@@ -243,6 +243,10 @@ def error_code(exc: Exception) -> str:
     if isinstance(code, str) and code:
         return code
     text = str(exc).split(":", 1)[0]
+    if text == "dag_transition_receipt_hash_mismatch":
+        return "dag_viewer_receipt_hash_mismatch"
+    if text == "dag_transition_receipt_missing":
+        return "dag_viewer_receipt_not_found"
     return text if text.startswith("dag_") else "dag_viewer_store_invalid"
 
 

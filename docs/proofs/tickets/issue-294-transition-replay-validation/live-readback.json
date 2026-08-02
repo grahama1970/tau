@@ -1,0 +1,59 @@
+{
+  "checks": {
+    "invalid_store_integrity": {
+      "foreign_key_check": [],
+      "integrity_check": [
+        "ok"
+      ],
+      "journal_mode": "wal",
+      "ok": true
+    },
+    "invalid_transition_not_committed": {
+      "event_types": [
+        "run_created",
+        "run_lease_acquired",
+        "scheduler_control_transition_committed",
+        "scheduler_control_transition_committed",
+        "attempt_reserved",
+        "receipt_admitted",
+        "attempt_dispatched",
+        "scheduler_concurrency_observed",
+        "attempt_result_staged",
+        "attempt_result_validated",
+        "attempt_output_committed",
+        "run_lease_released"
+      ],
+      "scheduler_transition_committed_count": 0
+    },
+    "live_invalid_transition_rejected": {
+      "error": "dag_transition_unknown_cancellation"
+    },
+    "receipt_mutation_rejected": {
+      "error": "dag_transition_receipt_hash_mismatch"
+    },
+    "valid_replay": {
+      "journal_sequence": 15,
+      "receipt_hash_matches_file": true,
+      "run_status": "PASS",
+      "transition_receipt_count": 1
+    },
+    "valid_run": {
+      "receipt_paths": [
+        "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-294-transition-replay-validation/live-readback-run/valid/transition-receipt.json"
+      ],
+      "status": "PASS",
+      "store_integrity": {
+        "foreign_key_check": [],
+        "integrity_check": [
+          "ok"
+        ],
+        "journal_mode": "wal",
+        "ok": true
+      },
+      "verdict": "PASS"
+    }
+  },
+  "live": true,
+  "mocked": false,
+  "schema": "tau.issue_294.live_readback.v1"
+}

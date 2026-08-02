@@ -1,0 +1,91 @@
+{
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "issue": 294,
+  "ticket": "grahama1970/tau#294",
+  "title": "P1: fail closed on malformed DAG transition batches and replay effects",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "unit": {
+    "command": "uv run pytest -q",
+    "exit_code": 0,
+    "passed": 3521,
+    "duration": "574.70s"
+  },
+  "e2e": {
+    "command": "uv run python docs/proofs/tickets/issue-294-transition-replay-validation/issue-294-live-readback.py",
+    "exit_code": 0,
+    "mocked": false,
+    "live": true,
+    "artifact": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-294-transition-replay-validation/live-readback.json"
+  },
+  "proof": {
+    "markdown": "docs/proofs/tickets/issue-294-transition-replay-validation/issue-294-close-proof.md",
+    "live_readback": "docs/proofs/tickets/issue-294-transition-replay-validation/live-readback.json",
+    "live_readback_script": "docs/proofs/tickets/issue-294-transition-replay-validation/issue-294-live-readback.py"
+  },
+  "focused_checks": [
+    {
+      "command": "uv run pytest -q tests/test_dag_transition_validation.py tests/test_dag_runtime_replay.py",
+      "exit_code": 0,
+      "passed": 17,
+      "duration": "0.66s"
+    },
+    {
+      "command": "uv run pytest -q tests/test_dag_runtime_admission_table.py tests/test_dag_transition_validation.py",
+      "exit_code": 0,
+      "passed": 24,
+      "duration": "0.82s"
+    },
+    {
+      "command": "uv run pytest -q tests/test_dag_runtime_scheduler.py tests/test_dag_runtime_run_store.py tests/test_dag_viewer_historical.py tests/test_dag_viewer_server.py tests/test_project_dag_join_policies.py tests/test_dag_transition_validation.py tests/test_dag_runtime_replay.py",
+      "exit_code": 0,
+      "passed": 107,
+      "duration": "23.69s"
+    },
+    {
+      "command": "uv run ruff check src/tau_coding/dag_runtime/transition.py src/tau_coding/dag_runtime/replay.py src/tau_coding/dag_runtime/scheduler.py src/tau_coding/dag_runtime/run_store.py src/tau_coding/dag_runtime/project_transition.py src/tau_coding/dag_viewer/http.py tests/test_dag_transition_validation.py docs/proofs/tickets/issue-294-transition-replay-validation/issue-294-live-readback.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "uv run mypy src/tau_coding/dag_runtime/transition.py src/tau_coding/dag_runtime/replay.py src/tau_coding/dag_runtime/scheduler.py src/tau_coding/dag_runtime/run_store.py src/tau_coding/dag_runtime/project_transition.py src/tau_coding/dag_viewer/http.py docs/proofs/tickets/issue-294-transition-replay-validation/issue-294-live-readback.py",
+      "exit_code": 0,
+      "result": "Success: no issues found in 7 source files"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "live_readback_summary": {
+    "schema": "tau.issue_294.live_readback.v1",
+    "mocked": false,
+    "live": true,
+    "valid_run_status": "PASS",
+    "valid_run_verdict": "PASS",
+    "valid_replay_status": "PASS",
+    "transition_receipt_count": 1,
+    "receipt_hash_matches_file": true,
+    "receipt_mutation_error": "dag_transition_receipt_hash_mismatch",
+    "invalid_transition_error": "dag_transition_unknown_cancellation",
+    "invalid_transition_committed_count": 0
+  },
+  "worktree_audit": {
+    "command": "/home/graham/workspace/experiments/agent-skills/skills/best-practices-github-ticket/scripts/audit-worktrees.sh --repo /home/graham/workspace/experiments/tau --json",
+    "exit_code": 1,
+    "ok": false,
+    "tmp_paths": [
+      "/tmp/tau-immutable-goal-main-20260721T000650Z"
+    ],
+    "dirty_secondary_paths": [
+      "/home/graham/workspace/experiments/tau-causal-replay",
+      "/home/graham/workspace/experiments/tau-gs001"
+    ],
+    "note": "Pre-existing retained worktrees outside this ticket; not removed by issue-294 repair."
+  },
+  "notes": [
+    "The full Tau immutable goal remains NOT_MET by this ticket alone.",
+    "Unrelated local path was not staged: .ask_artifacts/."
+  ]
+}

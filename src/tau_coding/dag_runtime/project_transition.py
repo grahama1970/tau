@@ -460,7 +460,7 @@ class ProjectDagTransitionPolicy:
         return DagTransitionBatch(
             edge_settlements=outgoing,
             node_settlements=(DagNodeSettlement(join_id, terminal_state, decision["reason_code"]),),
-            deadline_cancellations=(join_id,),
+            deadline_cancellations=(join_id,) if join_id in view.deadline_monotonic else (),
             receipt_paths=(str(decision_path),),
             events=(
                 {
@@ -526,12 +526,18 @@ class ProjectDagTransitionPolicy:
     def _combine(*batches: DagTransitionBatch) -> DagTransitionBatch:
         block = next((item.block_run for item in batches if item.block_run is not None), None)
         return DagTransitionBatch(
-            edge_settlements=tuple(x for item in batches for x in item.edge_settlements),
-            node_settlements=tuple(x for item in batches for x in item.node_settlements),
-            node_cancellations=tuple(x for item in batches for x in item.node_cancellations),
+            edge_settlements=_dedupe_edge_settlements(
+                tuple(x for item in batches for x in item.edge_settlements)
+            ),
+            node_settlements=_dedupe_node_settlements(
+                tuple(x for item in batches for x in item.node_settlements)
+            ),
+            node_cancellations=_dedupe_node_cancellations(
+                tuple(x for item in batches for x in item.node_cancellations)
+            ),
             deadline_arms=tuple(x for item in batches for x in item.deadline_arms),
-            deadline_cancellations=tuple(
-                x for item in batches for x in item.deadline_cancellations
+            deadline_cancellations=_dedupe_strings(
+                tuple(x for item in batches for x in item.deadline_cancellations)
             ),
             receipt_paths=tuple(x for item in batches for x in item.receipt_paths),
             events=tuple(x for item in batches for x in item.events),
@@ -692,3 +698,49 @@ class ProjectDagTransitionPolicy:
                 },
             ),
         )
+
+
+def _dedupe_edge_settlements(
+    settlements: tuple[DagEdgeSettlement, ...],
+) -> tuple[DagEdgeSettlement, ...]:
+    by_id: dict[str, DagEdgeSettlement] = {}
+    for settlement in settlements:
+        existing = by_id.get(settlement.edge_id)
+        if existing is None:
+            by_id[settlement.edge_id] = settlement
+            continue
+        if existing.state != settlement.state:
+            raise RuntimeError(f"dag_transition_edge_conflict:{settlement.edge_id}")
+    return tuple(by_id.values())
+
+
+def _dedupe_node_settlements(
+    settlements: tuple[DagNodeSettlement, ...],
+) -> tuple[DagNodeSettlement, ...]:
+    by_id: dict[str, DagNodeSettlement] = {}
+    for settlement in settlements:
+        existing = by_id.get(settlement.node_id)
+        if existing is None:
+            by_id[settlement.node_id] = settlement
+            continue
+        if existing.state != settlement.state:
+            raise RuntimeError(f"dag_transition_node_conflict:{settlement.node_id}")
+    return tuple(by_id.values())
+
+
+def _dedupe_node_cancellations(
+    cancellations: tuple[DagNodeCancellation, ...],
+) -> tuple[DagNodeCancellation, ...]:
+    by_id: dict[str, DagNodeCancellation] = {}
+    for cancellation in cancellations:
+        existing = by_id.get(cancellation.node_id)
+        if existing is None:
+            by_id[cancellation.node_id] = cancellation
+            continue
+        if existing.reason_code != cancellation.reason_code:
+            raise RuntimeError(f"dag_transition_cancellation_conflict:{cancellation.node_id}")
+    return tuple(by_id.values())
+
+
+def _dedupe_strings(values: tuple[str, ...]) -> tuple[str, ...]:
+    return tuple(dict.fromkeys(values))

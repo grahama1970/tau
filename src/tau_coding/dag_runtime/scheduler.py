@@ -55,6 +55,7 @@ from tau_coding.dag_runtime.transition import (
     DagTransitionPolicy,
     DagTransitionView,
     transition_batch_to_payload,
+    validate_transition_batch,
 )
 from tau_coding.dag_runtime.worker_assignment import (
     WORKER_ASSIGNMENT_RECEIPT_SCHEMA,
@@ -288,7 +289,7 @@ def run_dag_plan(
                 event_sink=event_sink,
             )
         except RuntimeError as exc:
-            failure_code = str(exc).split(":", 1)[0]
+            failure_code = _restore_failure_code(exc)
             verdict = failure_code.upper()
             if persisted_outcome is None or persisted_outcome[0] == "RUNNING":
                 run_store.mark_run_finished(lease, status="BLOCKED", verdict=verdict)
@@ -457,10 +458,12 @@ def run_dag_plan(
                         attempt,
                     )
                     _persist_control_transition(
+                        plan=plan,
                         run_store=run_store,
                         lease=lease,
                         event_key=f"before-node:{node_id}:{attempt}",
                         batch=start_transition,
+                        deadlines=deadlines,
                     )
                     _apply_transition_batch(
                         plan=plan,
@@ -737,10 +740,12 @@ def run_dag_plan(
                                 deadline_id,
                             )
                             _persist_control_transition(
+                                plan=plan,
                                 run_store=run_store,
                                 lease=lease,
                                 event_key=f"deadline:{deadline_id}",
                                 batch=transition,
+                                deadlines=deadlines,
                             )
                             _apply_transition_batch(
                                 plan=plan,
@@ -809,10 +814,12 @@ def run_dag_plan(
                             deadline_id,
                         )
                         _persist_control_transition(
+                            plan=plan,
                             run_store=run_store,
                             lease=lease,
                             event_key=f"deadline:{deadline_id}",
                             batch=transition,
+                            deadlines=deadlines,
                         )
                         _apply_transition_batch(
                             plan=plan,
@@ -1118,7 +1125,11 @@ def run_dag_plan(
                             identity.attempt_id,
                             completion=_completion_to_payload(completion),
                             result=result,
-                            transition=transition_batch_to_payload(transition),
+                            transition=_transition_payload(
+                                plan=plan,
+                                batch=transition,
+                                deadlines=deadlines,
+                            ),
                         )
                         _inject_fault(fault_injector, "after_transition_committed", identity)
                     results[node_id] = result
@@ -1187,10 +1198,12 @@ def run_dag_plan(
                     )
                 )
                 _persist_control_transition(
+                    plan=plan,
                     run_store=run_store,
                     lease=lease,
                     event_key="completion-batch",
                     batch=completion_transition,
+                    deadlines=deadlines,
                 )
                 _apply_transition_batch(
                     plan=plan,
@@ -1749,7 +1762,7 @@ def _recover_incomplete_attempts(
             identity.attempt_id,
             completion=_completion_to_payload(completion),
             result=result,
-            transition=transition_batch_to_payload(transition),
+            transition=_transition_payload(plan=plan, batch=transition, deadlines=deadlines),
         )
         _inject_fault(fault_injector, "after_transition_committed", identity)
         results[node_id] = result
@@ -1800,10 +1813,12 @@ def _recover_incomplete_attempts(
         )
     )
     _persist_control_transition(
+        plan=plan,
         run_store=run_store,
         lease=lease,
         event_key="replay-completion-batch",
         batch=completion_transition,
+        deadlines=deadlines,
     )
     _apply_transition_batch(
         plan=plan,
@@ -2069,16 +2084,39 @@ def _completion_to_payload(completion: DagNodeCompletion) -> dict[str, Any]:
     }
 
 
+def _restore_failure_code(exc: RuntimeError) -> str:
+    message = str(exc)
+    failure_code = message.split(":", 1)[0]
+    if (
+        failure_code == "dag_transition_receipt_hash_mismatch"
+        and "terminal-contributions" in message
+    ):
+        return "terminal_contribution_conflict"
+    return failure_code
+
+
+def _transition_payload(
+    *,
+    plan: DagPlan,
+    batch: DagTransitionBatch,
+    deadlines: Mapping[str, float],
+) -> dict[str, Any]:
+    validate_transition_batch(plan=plan, batch=batch, active_deadlines=deadlines)
+    return transition_batch_to_payload(batch)
+
+
 def _persist_control_transition(
     *,
+    plan: DagPlan,
     run_store: SqliteDagRunStore | None,
     lease: DagRunLease | None,
     event_key: str,
     batch: DagTransitionBatch,
+    deadlines: Mapping[str, float],
 ) -> None:
     if run_store is None or lease is None:
         return
-    payload = transition_batch_to_payload(batch)
+    payload = _transition_payload(plan=plan, batch=batch, deadlines=deadlines)
     digest = canonical_sha256(payload).removeprefix("sha256:")[:16]
     run_store.commit_control_transition(
         lease,
@@ -2264,7 +2302,11 @@ def _cancel_and_collect_futures(
                     "terminal_state": "cancelled",
                 },
                 result=cancelled_result,
-                transition=transition_batch_to_payload(DagTransitionBatch()),
+                transition=_transition_payload(
+                    plan=plan,
+                    batch=DagTransitionBatch(),
+                    deadlines={},
+                ),
             )
         results[pending_node_id] = cancelled_result
         result_order.append(pending_node_id)
@@ -2811,10 +2853,12 @@ def _settle_unrunnable_nodes(
                 ),
             )
             _persist_control_transition(
+                plan=plan,
                 run_store=run_store,
                 lease=lease,
                 event_key=f"virtual-terminal:{node_id}:{state}",
                 batch=transition,
+                deadlines=deadlines,
             )
             _apply_transition_batch(
                 plan=plan,
@@ -2852,10 +2896,12 @@ def _settle_unrunnable_nodes(
                 )
             )
             _persist_control_transition(
+                plan=plan,
                 run_store=run_store,
                 lease=lease,
                 event_key=f"virtual-completion-batch:{node_id}:{state}",
                 batch=completion_transition,
+                deadlines=deadlines,
             )
             _apply_transition_batch(
                 plan=plan,

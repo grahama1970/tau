@@ -15,6 +15,7 @@ from tau_coding.dag_runtime.run_store import (
     SqliteDagRunReader,
     SqliteDagRunStore,
 )
+from tau_coding.dag_runtime.transition import DagTransitionBatch, transition_batch_to_payload
 
 
 def _plan(tmp_path: Path):
@@ -192,7 +193,13 @@ def test_settlement_without_admission_lands_in_bypass_ledger(tmp_path: Path) -> 
     store.mark_dispatched(lease, attempt_id)
     _stage_and_validate_pass(store, lease, attempt_id)
     store.commit_output(lease, attempt_id)
-    store.commit_transition(lease, attempt_id, completion={}, result={}, transition={})
+    store.commit_transition(
+        lease,
+        attempt_id,
+        completion={},
+        result={},
+        transition=transition_batch_to_payload(DagTransitionBatch()),
+    )
 
     ledger = tmp_path / "admission-bypass-ledger.jsonl"
     entries = [_json.loads(line) for line in ledger.read_text().splitlines()]
@@ -213,7 +220,13 @@ def test_settlement_with_admission_stays_off_the_ledger(tmp_path: Path) -> None:
     store.mark_dispatched(lease, attempt_id)
     _stage_and_validate_pass(store, lease, attempt_id)
     store.commit_output(lease, attempt_id)
-    store.commit_transition(lease, attempt_id, completion={}, result={}, transition={})
+    store.commit_transition(
+        lease,
+        attempt_id,
+        completion={},
+        result={},
+        transition=transition_batch_to_payload(DagTransitionBatch()),
+    )
 
     assert not (tmp_path / "admission-bypass-ledger.jsonl").exists()
 
