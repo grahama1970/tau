@@ -13,7 +13,7 @@
     "passed": 3558
   },
   "e2e": {
-    "command": "uv run python scripts/run_contract_conformance_live.py",
+    "command": "uv run python scripts/run_contract_conformance_live.py --allow-live",
     "exit_code": 0,
     "mocked": false,
     "live": true,
@@ -21,7 +21,7 @@
   },
   "commands": [
     {
-      "cmd": "uv run python scripts/run_contract_conformance_live.py",
+      "cmd": "uv run python scripts/run_contract_conformance_live.py --allow-live",
       "result": "PASS; wrote docs/proofs/tickets/issue-298-adversarial-contract-conformance/conformance-summary.json"
     },
     {

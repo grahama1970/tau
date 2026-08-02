@@ -159,10 +159,10 @@
     ]
   },
   "provider_live": false,
-  "pytest_output_tail": ".............                                                            [100%]\n13 passed in 0.88s\n",
+  "pytest_output_tail": ".............                                                            [100%]\n13 passed in 1.73s\n",
   "pytest_passed": 13,
   "schema": "tau.contract_conformance_summary.v1",
   "seed": 29820260802,
-  "source_commit": "020971e5d95248390edd92a0e9372c5e977dba35",
+  "source_commit": "7c93afa6276b126226cecfca162c548cd6f8451d",
   "status": "PASS"
 }

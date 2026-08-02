@@ -8,7 +8,7 @@ Tau now has a focused offline adversarial contract-conformance lane:
 
 - retained manifest: `tests/contract_conformance/fixtures/mutation_manifest.json`
 - executable lane: `tests/contract_conformance/test_adversarial_contract_conformance.py`
-- focused command: `uv run python scripts/run_contract_conformance_live.py`
+- focused command: `uv run python scripts/run_contract_conformance_live.py --allow-live`
 - machine-readable summary:
   `docs/proofs/tickets/issue-298-adversarial-contract-conformance/conformance-summary.json`
 
@@ -20,7 +20,7 @@ sensitivity.
 
 ## Proof
 
-- `uv run python scripts/run_contract_conformance_live.py`
+- `uv run python scripts/run_contract_conformance_live.py --allow-live`
   - PASS; wrote `conformance-summary.json`
   - categories: 9 executed, 9 passed, 0 failed, 0 not exercised
   - cases: 13 executed, 13 passed

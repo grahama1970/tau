@@ -18,6 +18,11 @@ DEFAULT_SUMMARY = (
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run Tau DAG contract conformance tests.")
     parser.add_argument("--out", type=Path, default=DEFAULT_SUMMARY)
+    parser.add_argument(
+        "--allow-live",
+        action="store_true",
+        help="Acknowledge that this runs live local Tau scheduler/readback checks.",
+    )
     args = parser.parse_args()
 
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
