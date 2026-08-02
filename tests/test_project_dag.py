@@ -3073,9 +3073,9 @@ def test_project_dag_skipped_only_terminal_route_blocks(tmp_path: Path) -> None:
     )
 
     assert receipt["status"] == "BLOCKED"
-    assert receipt["verdict"] == "MISSING_TERMINAL_ROUTE"
-    assert receipt["activated_terminals"] == []
-    assert receipt["selected_agents"] == ["router", "accept"]
+    assert receipt["verdict"] == "node_dead_end"
+    assert receipt["selected_agents"] == []
+    assert receipt["dag_plan_validation"]["codes"][0] == "node_dead_end"
     assert "ready_queue_stalled" not in [alert["code"] for alert in receipt["alerts"]]
 
 
@@ -4502,7 +4502,11 @@ def _handoff(
 ) -> dict[str, object]:
     normalized_evidence: list[object] = []
     for item in evidence:
-        if isinstance(item, dict) and item.get("kind") != "dag_contract" and "goal_hash" not in item:
+        if (
+            isinstance(item, dict)
+            and item.get("kind") != "dag_contract"
+            and "goal_hash" not in item
+        ):
             normalized_evidence.append({**item, "goal_hash": "sha256:active-goal"})
         else:
             normalized_evidence.append(item)

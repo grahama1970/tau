@@ -9,7 +9,7 @@ from typing import Any
 import pytest
 
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
-from tau_coding.dag_runtime.model import DagPlanNode, DagPlanTerminal
+from tau_coding.dag_runtime.model import DagPlanNode, DagPlanTerminal, FrozenJson, canonical_sha256
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
 from tau_coding.dag_runtime.transition import (
     AllSuccessTransitionPolicy,
@@ -308,7 +308,7 @@ def test_dag_plan_scheduler_settles_declared_terminal_without_executing_it(
     plan = replace(
         plan,
         terminal_endpoints=(DagPlanTerminal("human", "declared_node", "declared"),),
-    )
+    ).with_computed_hash()
     called: list[str] = []
 
     def execute(
@@ -333,9 +333,23 @@ def test_dag_plan_scheduler_settles_declared_terminal_without_executing_it(
 
 
 def test_base_scheduler_rejects_route_contract_without_route_adapter(tmp_path: Path) -> None:
-    payload = _generic_spec(tmp_path, [_node(tmp_path, "producer")])
+    payload = _generic_spec(
+        tmp_path,
+        [
+            _node(tmp_path, "producer"),
+            _node(tmp_path, "consumer", depends_on=["producer"]),
+        ],
+    )
     plan = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
-    plan = replace(plan, route_contracts=(plan.goal_binding,))
+    route_contract = {
+        "source_node_id": "producer",
+        "ordered_edge_ids": [plan.control_edges[0].edge_id],
+    }
+    route_contract["contract_sha256"] = canonical_sha256(route_contract)
+    plan = replace(
+        plan,
+        route_contracts=(FrozenJson.from_value(route_contract),),
+    ).with_computed_hash()
 
     with pytest.raises(RuntimeError, match="dag_transition_policy_required"):
         run_dag_plan(plan, execute_node=lambda node, inputs, execution: {})

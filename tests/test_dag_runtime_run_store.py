@@ -991,7 +991,7 @@ def test_reserved_attempt_reuses_stable_identity_after_restart(tmp_path: Path) -
 
 def test_retry_schedule_replays_once_without_duplicate_attempt_history(tmp_path: Path) -> None:
     plan = _plan(tmp_path, ["producer"])
-    plan = replace(plan, nodes=(replace(plan.nodes[0], max_attempts=2),))
+    plan = replace(plan, nodes=(replace(plan.nodes[0], max_attempts=2),)).with_computed_hash()
     calls: list[int] = []
 
     def execute(node, accepted_inputs, attempt):  # type: ignore[no-untyped-def]

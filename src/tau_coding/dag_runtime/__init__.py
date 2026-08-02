@@ -11,6 +11,9 @@ from tau_coding.dag_runtime.model import (
     DagPlan,
     DagPlanEdge,
     DagPlanNode,
+    DagPlanValidation,
+    DagPlanValidationError,
+    validate_dag_plan,
 )
 from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import DagSchedulerResult, run_dag_plan
@@ -20,6 +23,9 @@ __all__ = [
     "DagPlan",
     "DagPlanEdge",
     "DagPlanNode",
+    "DagPlanValidation",
+    "DagPlanValidationError",
+    "validate_dag_plan",
     "compile_dag_plan_file",
     "compile_generic_dag_plan",
     "compile_project_dag_plan",

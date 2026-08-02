@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from tau_coding.dag_runtime.model import DagPlan, canonical_sha256
+from tau_coding.dag_runtime.model import DagPlan, canonical_sha256, require_valid_dag_plan
 from tau_coding.dag_runtime.run_store import (
     RUNTIME_EVENT_JOURNAL_ENTRY_SCHEMA,
     DagAttemptIdentity,
@@ -375,6 +375,7 @@ def replay_dag_run(
 ) -> DagReplayState:
     """Reduce verified journal inputs into the authoritative read model."""
 
+    require_valid_dag_plan(plan)
     if run_record.plan_sha256 != plan.plan_sha256:
         raise RuntimeError("dag_run_plan_mismatch")
     declared_terminal_nodes = {

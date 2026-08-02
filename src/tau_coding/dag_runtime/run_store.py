@@ -21,9 +21,11 @@ from tau_coding.dag_runtime.model import (
     DagPlanEdge,
     DagPlanNode,
     DagPlanTerminal,
+    DagPlanValidation,
     FrozenJson,
     canonical_json,
     canonical_sha256,
+    validate_dag_plan,
 )
 from tau_coding.dag_viewer.redaction import redact_for_storage
 from tau_coding.runtime_backends.contracts import RuntimeEvent, RuntimeStateProjection
@@ -630,7 +632,16 @@ def _plan_from_payload(payload: dict[str, Any]) -> DagPlan:
         raise DagRunStoreError("dag_run_plan_schema_invalid") from exc
     if plan.with_computed_hash().plan_sha256 != plan.plan_sha256:
         raise DagRunStoreError("dag_run_plan_hash_mismatch", plan.plan_id)
+    _require_store_valid_plan(plan)
     return plan
+
+
+def _require_store_valid_plan(plan: DagPlan) -> DagPlanValidation:
+    validation = validate_dag_plan(plan)
+    if not validation.ok:
+        first = validation.issues[0]
+        raise DagRunStoreError(first.code, first.path)
+    return validation
 
 
 def _plan_node_from_payload(item: Mapping[str, Any]) -> DagPlanNode:
@@ -673,6 +684,7 @@ def _plan_edge_from_payload(item: Mapping[str, Any]) -> DagPlanEdge:
 
 def _plan_context_binding_from_payload(item: Mapping[str, Any]) -> DagPlanContextBinding:
     accepted_schemas = item.get("accepted_source_schemas", ("*",))
+    accepted_source_schemas: tuple[str, ...]
     if isinstance(accepted_schemas, str):
         accepted_source_schemas = (accepted_schemas,)
     elif isinstance(accepted_schemas, list | tuple):
@@ -1259,6 +1271,7 @@ class SqliteDagRunStore:
         ttl_seconds: float = 15.0,
         allow_takeover: bool = False,
     ) -> DagRunLease:
+        _require_store_valid_plan(plan)
         now_ms = _now_ms()
         expires_at_ms = now_ms + max(1, int(ttl_seconds * 1000))
         plan_json = canonical_json(plan.to_payload())
