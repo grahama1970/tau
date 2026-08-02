@@ -1,0 +1,55 @@
+{
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "issue": 288,
+  "ticket": "https://github.com/grahama1970/tau/issues/288",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "primary_receipt": "/home/graham/workspace/experiments/chatterbox/docs/proofs/tickets/issue-11-v2-consumer-20260802/live-smoke/receipt.json",
+  "proof_markdown": "docs/proofs/tickets/issue-288-voice-render-v2-final-20260802/README.md",
+  "unit": {
+    "command": "uv run pytest -q tests/test_voice_contract.py tests/test_tui_voice.py",
+    "exit_code": 0,
+    "passed": 33
+  },
+  "e2e": {
+    "command": "cd /home/graham/workspace/experiments/chatterbox && PYTHONPATH=src uv run --no-sync python scripts/smoke_tau_voice_render_v2.py --allow-live",
+    "exit_code": 0,
+    "mocked": false,
+    "live": true,
+    "artifact": "/home/graham/workspace/experiments/chatterbox/docs/proofs/tickets/issue-11-v2-consumer-20260802/live-smoke/receipt.json"
+  },
+  "commands": [
+    {
+      "cmd": "uv run pytest -q tests/test_voice_contract.py tests/test_tui_voice.py",
+      "result": "33 passed in 4.12s"
+    },
+    {
+      "cmd": "uv run ruff check src/tau_coding/voice_contract.py tests/test_voice_contract.py scripts/generate-voice-contract-v2-fixtures.py",
+      "result": "All checks passed!"
+    },
+    {
+      "cmd": "cd /home/graham/workspace/experiments/chatterbox && PYTHONPATH=src uv run --no-sync python scripts/smoke_tau_voice_render_v2.py --allow-live",
+      "result": "PASS; wrote docs/proofs/tickets/issue-11-v2-consumer-20260802/live-smoke/receipt.json with failed_gates=[]"
+    },
+    {
+      "cmd": "gh issue view 11 --repo grahama1970/chatterbox --json number,state,stateReason,closedAt,url",
+      "result": "number=11 state=CLOSED stateReason=COMPLETED closedAt=2026-08-02T20:31:37Z"
+    }
+  ],
+  "live_receipt_invariants": {
+    "http_status": 200,
+    "failed_gates": [],
+    "request_lineage_digest": "10242ccd97287926fbb0692163429ee95427e692dc63daf88f3a63b161b0e95b",
+    "consumer_digest_matches": true,
+    "finished_response_audio_non_empty": true,
+    "stale_response_id_rejected": true,
+    "current_response_cancel_accepted": true,
+    "duplicate_cancel_idempotent": true
+  },
+  "does_not_prove": [
+    "perceptual quality of generated voice",
+    "GPU model-load health on this host",
+    "all future voice schemas"
+  ]
+}
