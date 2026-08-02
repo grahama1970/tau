@@ -1,0 +1,104 @@
+{
+  "schema": "agent_skills.ticket_closure_evidence.v1",
+  "issue": 295,
+  "ticket": "grahama1970/tau#295",
+  "title": "P1: verify full artifact-reference provenance at dereference time",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "unit": {
+    "command": "uv run pytest -q",
+    "exit_code": 0,
+    "passed": 3535,
+    "duration": "527.32s"
+  },
+  "e2e": {
+    "command": "uv run python docs/proofs/tickets/issue-295-artifact-reference-provenance/issue-295-live-readback.py",
+    "exit_code": 0,
+    "mocked": false,
+    "live": true,
+    "artifact": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-295-artifact-reference-provenance/live-readback.json"
+  },
+  "proof": {
+    "markdown": "docs/proofs/tickets/issue-295-artifact-reference-provenance/issue-295-close-proof.md",
+    "live_readback": "docs/proofs/tickets/issue-295-artifact-reference-provenance/live-readback.json",
+    "live_readback_script": "docs/proofs/tickets/issue-295-artifact-reference-provenance/issue-295-live-readback.py"
+  },
+  "focused_checks": [
+    {
+      "command": "uv run pytest -q tests/test_node_input_manifest.py",
+      "exit_code": 0,
+      "passed": 30,
+      "duration": "1.72s"
+    },
+    {
+      "command": "uv run pytest -q tests/test_node_input_manifest.py tests/test_dag_runtime_scheduler.py tests/test_dag_runtime_run_store.py tests/test_dag_runtime_replay.py tests/test_dag_transition_validation.py",
+      "exit_code": 0,
+      "passed": 95,
+      "duration": "6.29s"
+    },
+    {
+      "command": "uv run ruff check src/tau_coding/dag_runtime/artifact_reference.py src/tau_coding/dag_runtime/node_input_manifest.py tests/test_node_input_manifest.py docs/proofs/tickets/issue-295-artifact-reference-provenance/issue-295-live-readback.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "uv run mypy src/tau_coding/dag_runtime/artifact_reference.py src/tau_coding/dag_runtime/node_input_manifest.py docs/proofs/tickets/issue-295-artifact-reference-provenance/issue-295-live-readback.py",
+      "exit_code": 0,
+      "result": "Success: no issues found in 3 source files"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "live_readback_summary": {
+    "schema": "tau.issue_295.live_readback.v1",
+    "mocked": false,
+    "live": true,
+    "dereference_receipt_schema": "tau.artifact_dereference_receipt.v1",
+    "manifest_records_dereference_receipt": true,
+    "mutation_matrix": {
+      "reference_sha256": "ARTIFACT_REFERENCE_ENVELOPE_HASH_MISMATCH",
+      "admitted_artifact_id": "ARTIFACT_REFERENCE_ADMISSION_MISSING",
+      "size_bytes": "ARTIFACT_REFERENCE_SIZE_MISMATCH",
+      "uri": "ARTIFACT_REFERENCE_URI_MISMATCH",
+      "producer": "ARTIFACT_REFERENCE_PRODUCER_MISMATCH",
+      "consumer": "ARTIFACT_REFERENCE_CONSUMER_MISMATCH",
+      "receipt_kind": "ARTIFACT_REFERENCE_RECEIPT_KIND_MISMATCH",
+      "policy_sha256": "ARTIFACT_REFERENCE_POLICY_MISMATCH",
+      "data_boundary_sha256": "ARTIFACT_REFERENCE_DATA_BOUNDARY_MISMATCH",
+      "artifact_schema": "ARTIFACT_REFERENCE_EMBEDDED_SCHEMA_MISMATCH",
+      "selector": "ARTIFACT_REFERENCE_SELECTOR_POLICY_MISMATCH"
+    },
+    "wrong_context_reuse": {
+      "wrong_run": "ARTIFACT_REFERENCE_ADMISSION_MISSING",
+      "wrong_attempt": "ARTIFACT_REFERENCE_PRODUCER_MISMATCH",
+      "wrong_consumer": "ARTIFACT_REFERENCE_CONSUMER_MISMATCH"
+    },
+    "embedded_schema_status": "BLOCKED",
+    "embedded_schema_verdict": "NODE_INPUT_REFERENCE_EMBEDDED_SCHEMA_MISMATCH",
+    "embedded_schema_calls": [
+      "producer"
+    ],
+    "admission_delete_denied": "receipt_admissions is append-only",
+    "admission_ambiguity": "eliminated_by_exact_admitted_artifact_id_lookup"
+  },
+  "worktree_audit": {
+    "command": "/home/graham/workspace/experiments/agent-skills/skills/best-practices-github-ticket/scripts/audit-worktrees.sh --repo /home/graham/workspace/experiments/tau --json",
+    "exit_code": 1,
+    "ok": false,
+    "tmp_paths": [
+      "/tmp/tau-immutable-goal-main-20260721T000650Z"
+    ],
+    "dirty_secondary_paths": [
+      "/home/graham/workspace/experiments/tau-causal-replay",
+      "/home/graham/workspace/experiments/tau-gs001"
+    ],
+    "note": "Pre-existing retained worktrees outside this ticket; not removed by issue-295 repair."
+  },
+  "notes": [
+    "The full Tau immutable goal remains NOT_MET by this ticket alone.",
+    "Unrelated local path was not staged: .ask_artifacts/."
+  ]
+}

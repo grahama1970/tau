@@ -1,0 +1,41 @@
+{
+  "checks": {
+    "admission_ambiguity": "eliminated_by_exact_admitted_artifact_id_lookup",
+    "admission_delete_denied": "receipt_admissions is append-only",
+    "embedded_schema_block": {
+      "calls": [
+        "producer"
+      ],
+      "status": "BLOCKED",
+      "verdict": "NODE_INPUT_REFERENCE_EMBEDDED_SCHEMA_MISMATCH"
+    },
+    "mutation_matrix": {
+      "admitted_artifact_id": "ARTIFACT_REFERENCE_ADMISSION_MISSING",
+      "artifact_schema": "ARTIFACT_REFERENCE_EMBEDDED_SCHEMA_MISMATCH",
+      "consumer": "ARTIFACT_REFERENCE_CONSUMER_MISMATCH",
+      "data_boundary_sha256": "ARTIFACT_REFERENCE_DATA_BOUNDARY_MISMATCH",
+      "policy_sha256": "ARTIFACT_REFERENCE_POLICY_MISMATCH",
+      "producer": "ARTIFACT_REFERENCE_PRODUCER_MISMATCH",
+      "receipt_kind": "ARTIFACT_REFERENCE_RECEIPT_KIND_MISMATCH",
+      "reference_sha256": "ARTIFACT_REFERENCE_ENVELOPE_HASH_MISMATCH",
+      "selector": "ARTIFACT_REFERENCE_SELECTOR_POLICY_MISMATCH",
+      "size_bytes": "ARTIFACT_REFERENCE_SIZE_MISMATCH",
+      "uri": "ARTIFACT_REFERENCE_URI_MISMATCH"
+    },
+    "valid_dereference": {
+      "admitted_artifact_id": "c71a84b7dd4658444fb7b2b6e8e128c2",
+      "dereference_receipt_schema": "tau.artifact_dereference_receipt.v1",
+      "dereference_receipt_sha256": "sha256:54c2d3eb982ceb08fefc6e6638099fce59d53b0185bad824c8ed7556086d70e2",
+      "manifest_records_dereference_receipt": true,
+      "reference_sha256": "sha256:6e27d5eb07ceec0a9b6308253c38f7d022da835ce0f3756dacf0e0b52fbe96e4"
+    },
+    "wrong_context_reuse": {
+      "wrong_attempt": "ARTIFACT_REFERENCE_PRODUCER_MISMATCH",
+      "wrong_consumer": "ARTIFACT_REFERENCE_CONSUMER_MISMATCH",
+      "wrong_run": "ARTIFACT_REFERENCE_ADMISSION_MISSING"
+    }
+  },
+  "live": true,
+  "mocked": false,
+  "schema": "tau.issue_295.live_readback.v1"
+}

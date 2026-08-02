@@ -6,8 +6,12 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from tau_coding.dag_runtime.artifact_reference import (
     ARTIFACT_REFERENCE_SCHEMA,
+    ArtifactDereferenceResult,
+    ArtifactReferenceError,
     dereference_artifact_reference,
 )
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
@@ -16,7 +20,11 @@ from tau_coding.dag_runtime.node_input_manifest import (
     NODE_INPUT_MANIFEST_SCHEMA,
     resolve_node_input_manifest,
 )
-from tau_coding.dag_runtime.run_store import DagAttemptIdentity, SqliteDagRunStore
+from tau_coding.dag_runtime.run_store import (
+    DagAttemptIdentity,
+    SqliteDagRunReader,
+    SqliteDagRunStore,
+)
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
 
 
@@ -352,20 +360,33 @@ def test_by_reference_binding_passes_hash_addressed_artifact_reference(
     )
     observed_inputs: list[dict[str, Any]] = []
     selected_payload: dict[str, Any] | None = None
+    dereference_receipt: dict[str, Any] | None = None
+    binding = plan.context_bindings[0]
 
     def execute(
         node: DagPlanNode,
         accepted_inputs: tuple[dict[str, Any], ...],
         attempt: DagNodeAttempt,
     ) -> dict[str, Any]:
-        nonlocal selected_payload
+        nonlocal dereference_receipt, selected_payload
         if node.node_id == "consumer":
             observed_inputs.extend(accepted_inputs)
-            selected_payload = dereference_artifact_reference(
-                accepted_inputs[0],
-                run_store_root=tmp_path,
-                selector={"kind": "json_key", "key": "section"},
-            )
+            with SqliteDagRunReader(store.path) as reader:
+                result = dereference_artifact_reference(
+                    accepted_inputs[0],
+                    run_store=reader,
+                    expected_run_id=attempt.run_id,
+                    expected_producer_node_id="producer",
+                    expected_producer_attempt_id=str(accepted_inputs[0]["producer"]["attempt_id"]),
+                    expected_consumer_node_id=node.node_id,
+                    binding=binding,
+                    run_store_root=store.path.parent,
+                    selector={"kind": "json_key", "key": "section"},
+                    return_receipt=True,
+                )
+            assert isinstance(result, ArtifactDereferenceResult)
+            selected_payload = result.value  # type: ignore[assignment]
+            dereference_receipt = result.receipt
             return {"node_id": node.node_id, "status": "PASS", "verdict": "PASS"}
         receipt_path = tmp_path / "receipts" / "producer.json"
         receipt_payload = {
@@ -409,6 +430,133 @@ def test_by_reference_binding_passes_hash_addressed_artifact_reference(
         "key": "section",
         "value": {"kept": True},
     }
+    assert dereference_receipt is not None
+    assert dereference_receipt["schema"] == "tau.artifact_dereference_receipt.v1"
+    assert dereference_receipt["disposition"] == "dereferenced"
+    assert dereference_receipt["admitted_artifact_id"] == observed_inputs[0][
+        "admitted_artifact_id"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("mutate", "match"),
+    [
+        (
+            lambda reference: {**reference, "reference_sha256": "sha256:" + "0" * 64},
+            "ARTIFACT_REFERENCE_ENVELOPE_HASH_MISMATCH",
+        ),
+        (
+            lambda reference: _rehash_reference(reference, admitted_artifact_id="missing"),
+            "ARTIFACT_REFERENCE_ADMISSION_MISSING",
+        ),
+        (
+            lambda reference: _rehash_reference(reference, size_bytes=reference["size_bytes"] + 1),
+            "ARTIFACT_REFERENCE_SIZE_MISMATCH",
+        ),
+        (
+            lambda reference: _rehash_reference(
+                reference,
+                uri=Path(str(reference["path"])).with_name("other.json").as_uri(),
+            ),
+            "ARTIFACT_REFERENCE_URI_MISMATCH",
+        ),
+        (
+            lambda reference: _rehash_reference(
+                reference,
+                producer={
+                    **dict(reference["producer"]),
+                    "node_id": "other-producer",
+                },
+            ),
+            "ARTIFACT_REFERENCE_PRODUCER_MISMATCH",
+        ),
+        (
+            lambda reference: _rehash_reference(
+                reference,
+                consumer={"node_id": "other-consumer"},
+            ),
+            "ARTIFACT_REFERENCE_CONSUMER_MISMATCH",
+        ),
+        (
+            lambda reference: _rehash_reference(reference, receipt_kind="other_receipt"),
+            "ARTIFACT_REFERENCE_RECEIPT_KIND_MISMATCH",
+        ),
+        (
+            lambda reference: _rehash_reference(reference, policy_sha256="sha256:" + "1" * 64),
+            "ARTIFACT_REFERENCE_POLICY_MISMATCH",
+        ),
+        (
+            lambda reference: _rehash_reference(
+                reference, data_boundary_sha256="sha256:" + "2" * 64
+            ),
+            "ARTIFACT_REFERENCE_DATA_BOUNDARY_MISMATCH",
+        ),
+        (
+            lambda reference: _rehash_reference(reference, artifact_schema="other.report.v1"),
+            "ARTIFACT_REFERENCE_EMBEDDED_SCHEMA_MISMATCH",
+        ),
+        (
+            lambda reference: _rehash_reference(
+                reference,
+                selector={**dict(reference["selector"]), "projection": "undeclared"},
+            ),
+            "ARTIFACT_REFERENCE_SELECTOR_POLICY_MISMATCH",
+        ),
+    ],
+)
+def test_artifact_reference_dereference_rejects_provenance_mutations(
+    tmp_path: Path,
+    mutate: Any,
+    match: str,
+) -> None:
+    plan, store, reference = _stored_artifact_reference(tmp_path)
+    binding = plan.context_bindings[0]
+    mutated = mutate(reference)
+
+    with store, pytest.raises(ArtifactReferenceError, match=match):
+        dereference_artifact_reference(
+            mutated,
+            run_store=store,
+            expected_run_id=str(reference["producer"]["run_id"]),
+            expected_producer_node_id="producer",
+            expected_producer_attempt_id=str(reference["producer"]["attempt_id"]),
+            expected_consumer_node_id="consumer",
+            binding=binding,
+            run_store_root=store.path.parent,
+        )
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"expected_run_id": "wrong-run"}, "ARTIFACT_REFERENCE_ADMISSION_MISSING"),
+        ({"expected_producer_attempt_id": "wrong-attempt"}, "ARTIFACT_REFERENCE_PRODUCER_MISMATCH"),
+        ({"expected_consumer_node_id": "wrong-consumer"}, "ARTIFACT_REFERENCE_CONSUMER_MISMATCH"),
+    ],
+)
+def test_artifact_reference_dereference_rejects_wrong_context_reuse(
+    tmp_path: Path,
+    kwargs: dict[str, str],
+    match: str,
+) -> None:
+    plan, store, reference = _stored_artifact_reference(tmp_path)
+    binding = plan.context_bindings[0]
+    params = {
+        "expected_run_id": str(reference["producer"]["run_id"]),
+        "expected_producer_node_id": "producer",
+        "expected_producer_attempt_id": str(reference["producer"]["attempt_id"]),
+        "expected_consumer_node_id": "consumer",
+        **kwargs,
+    }
+
+    with store, pytest.raises(ArtifactReferenceError, match=match):
+        dereference_artifact_reference(
+            reference,
+            run_store=store,
+            binding=binding,
+            run_store_root=store.path.parent,
+            **params,
+        )
 
 
 def test_by_reference_hash_mismatch_blocks_before_consumer_dispatch(
@@ -729,6 +877,69 @@ def test_by_reference_wrong_schema_blocks_before_consumer_dispatch(tmp_path: Pat
     assert result.status == "BLOCKED"
     assert result.verdict == "NODE_INPUT_SCHEMA_MISMATCH"
     assert called == ["producer"]
+
+
+def _stored_artifact_reference(
+    tmp_path: Path,
+) -> tuple[DagPlan, SqliteDagRunStore, dict[str, Any]]:
+    plan = _replace_single_binding(
+        _producer_consumer_plan(tmp_path),
+        selector_kind="receipt_by_schema",
+        accepted_source_schemas=("large.report.v1",),
+        materialization_mode="by_reference",
+        on_invalid="block",
+        max_reference_bytes=4096,
+    )
+    captured: list[dict[str, Any]] = []
+    store = SqliteDagRunStore(tmp_path / "dag-run.sqlite3")
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        attempt: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        del attempt
+        if node.node_id == "consumer":
+            captured.extend(accepted_inputs)
+            return {"node_id": node.node_id, "status": "PASS", "verdict": "PASS"}
+        receipt_path = tmp_path / "receipts" / "producer.json"
+        digest, size = _write_json_receipt(
+            receipt_path,
+            {"schema": "large.report.v1", "section": {"kept": True}},
+        )
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "receipt_path": str(receipt_path),
+            "accepted_output": {
+                "receipts": [
+                    {
+                        "schema": "large.report.v1",
+                        "path": str(receipt_path),
+                        "sha256": digest,
+                        "size_bytes": size,
+                        "receipt_kind": "node_receipt",
+                    }
+                ]
+            },
+        }
+
+    result = run_dag_plan(
+        plan,
+        execute_node=execute,
+        run_store=store,
+        lease_owner="test-by-reference-mutation",
+    )
+    assert result.status == "PASS"
+    assert len(captured) == 1
+    return plan, store, captured[0]
+
+
+def _rehash_reference(reference: dict[str, Any], **updates: Any) -> dict[str, Any]:
+    mutated = {**reference, **updates}
+    without_hash = {key: value for key, value in mutated.items() if key != "reference_sha256"}
+    return {**without_hash, "reference_sha256": canonical_sha256(without_hash)}
 
 
 def _producer_consumer_plan(tmp_path: Path) -> DagPlan:

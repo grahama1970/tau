@@ -151,6 +151,7 @@ def resolve_node_input_manifest(
                     "selected_sha256": _optional_str(reference.get("sha256")),
                     "admitted_artifact_id": reference["admitted_artifact_id"],
                     "artifact_reference_sha256": reference["reference_sha256"],
+                    "dereference_receipt": materialized.dereference_receipt,
                 }
             )
             entries.append(entry)
