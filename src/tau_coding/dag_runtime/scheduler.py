@@ -21,8 +21,10 @@ from tau_coding.dag_runtime.model import (
     DagPlan,
     DagPlanContextBinding,
     DagPlanNode,
+    DagPlanValidation,
     FrozenJson,
     canonical_sha256,
+    validate_dag_plan,
 )
 from tau_coding.dag_runtime.node_input_manifest import (
     admit_node_input_manifest,
@@ -162,6 +164,15 @@ def run_dag_plan(
         raise RuntimeError("max_concurrency must be at least 1")
     if worker_registry is not None and (run_store is None or resource_lease_manager is None):
         raise RuntimeError("worker assignment requires run_store and resource_lease_manager")
+    plan_validation = validate_dag_plan(plan)
+    if not plan_validation.ok:
+        return _blocked_plan_validation_result(
+            plan=plan,
+            validation=plan_validation,
+            run_id=run_id or plan.plan_id,
+            durable=run_store is not None,
+            event_sink=event_sink,
+        )
     policy = transition_policy or AllSuccessTransitionPolicy()
     policy.validate_plan(plan)
     effective_run_id = run_id or plan.plan_id
@@ -1265,6 +1276,63 @@ def run_dag_plan(
     return scheduler_result
 
 
+def _blocked_plan_validation_result(
+    *,
+    plan: DagPlan,
+    validation: DagPlanValidation,
+    run_id: str,
+    durable: bool,
+    event_sink: EventSink | None,
+) -> DagSchedulerResult:
+    first_code = validation.codes[0] if validation.codes else "dag_plan_invalid"
+    node_states = tuple(
+        sorted((node.node_id, "blocked") for node in plan.nodes if node.node_id)
+    )
+    node_result = {
+        "node_id": "__dag_plan_admission__",
+        "status": "BLOCKED",
+        "verdict": first_code,
+        "accepted_output": None,
+        "errors": [first_code],
+        "dag_plan_validation": validation.to_payload(),
+    }
+    _emit(
+        event_sink,
+        {
+            "event": "scheduler_plan_blocked",
+            "plan_id": plan.plan_id,
+            "run_id": run_id,
+            "status": "BLOCKED",
+            "verdict": first_code,
+            "dag_plan_validation": validation.to_payload(),
+        },
+    )
+    _emit(
+        event_sink,
+        {
+            "event": "scheduler_finished",
+            "plan_id": plan.plan_id,
+            "status": "BLOCKED",
+            "verdict": first_code,
+        },
+    )
+    return DagSchedulerResult(
+        status="BLOCKED",
+        verdict=first_code,
+        node_results=(node_result,),
+        completed_node_ids=(),
+        max_observed_concurrency=0,
+        edge_states=(),
+        terminal_states=(),
+        node_states=node_states,
+        transition_receipt_paths=(),
+        durable=durable,
+        run_id=None,
+        lease_epoch=None,
+        replayed_event_count=0,
+    )
+
+
 def _finish_interrupted_run(
     *,
     run_store: SqliteDagRunStore | None,
@@ -1527,7 +1595,8 @@ def _with_same_failure_course_correction(
         live=False,
         provider_live=False,
     )
-    errors = list(result.get("errors")) if isinstance(result.get("errors"), list) else []
+    raw_errors = result.get("errors")
+    errors = list(raw_errors) if isinstance(raw_errors, list) else []
     return {
         **result,
         "status": "BLOCKED",
@@ -1846,7 +1915,7 @@ def _enforce_workspace_stale_read_policy(
         verdict=verdict,
         errors=(
             "workspace read set is stale relative to an admitted concurrent change; "
-            "reread or supply deterministic stale-read reconciliation evidence"
+            "reread or supply deterministic stale-read reconciliation evidence",
         ),
         signals=unresolved,
     )

@@ -38,7 +38,12 @@ from tau_coding.dag_runtime.compiler import (
     compile_project_dag_plan,
     compile_project_node_runtime_requirement,
 )
-from tau_coding.dag_runtime.model import DagPlan, DagPlanNode, canonical_sha256
+from tau_coding.dag_runtime.model import (
+    DagPlan,
+    DagPlanNode,
+    DagPlanValidationError,
+    canonical_sha256,
+)
 from tau_coding.dag_runtime.project_transition import ProjectDagTransitionPolicy
 from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
@@ -977,11 +982,41 @@ def _run_bounded_ready_queue_project_dag(
         contract,
         command_spec_root=command_spec_root,
     )
-    plan = compile_project_dag_plan(
-        plan_payload,
-        source_path=contract_path,
-        source_payload_sha256=canonical_sha256(contract.payload),
-    )
+    try:
+        plan = compile_project_dag_plan(
+            plan_payload,
+            source_path=contract_path,
+            source_payload_sha256=canonical_sha256(contract.payload),
+        )
+    except DagPlanValidationError as exc:
+        validation_payload = exc.validation.to_payload()
+        first_code = exc.validation.codes[0] if exc.validation.codes else "dag_plan_invalid"
+        receipt = _ready_queue_receipt(
+            contract=contract,
+            contract_path=contract_path,
+            receipt_dir=receipt_dir,
+            command_spec_root=command_spec_root,
+            status="BLOCKED",
+            verdict=first_code,
+            alerts=[
+                {
+                    "code": first_code,
+                    "message": "Canonical DagPlan failed pre-dispatch validation.",
+                    "dag_plan_validation": validation_payload,
+                }
+            ],
+            dispatches=[],
+            events=[],
+            node_attempts={},
+            reviewer_verdicts=[],
+            observed_edges=[],
+            execution_seconds=0.0,
+            max_observed_concurrency=0,
+            errors=[first_code],
+        )
+        receipt["dag_plan_validation"] = validation_payload
+        _write_json(receipt_dir / "dag-receipt.json", receipt)
+        return receipt
     runtime_alerts = _project_runtime_preflight_alerts(plan)
     runtime_alerts.extend(
         _browser_oracle_pre_dispatch_alerts(

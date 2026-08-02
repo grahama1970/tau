@@ -1,0 +1,182 @@
+{
+  "activated_edges": [],
+  "activated_terminals": [],
+  "active_goal_hash": "sha256:issue-291-live-cli-proof",
+  "active_goal_version": 1,
+  "alerts": [
+    {
+      "code": "node_dead_end",
+      "dag_plan_validation": {
+        "codes": [
+          "node_dead_end"
+        ],
+        "issues": [
+          {
+            "code": "node_dead_end",
+            "detail": "accept",
+            "path": "$.nodes"
+          }
+        ],
+        "ok": false,
+        "schema": "tau.dag_plan_validation.v1"
+      },
+      "message": "Canonical DagPlan failed pre-dispatch validation."
+    }
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-291-canonical-plan-admission/live-run-canonical-with-spec/environment-manifest.json",
+    "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-291-canonical-plan-admission/live-run-canonical-with-spec/security-context-receipt.json",
+    "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-291-canonical-plan-admission/live-run-canonical-with-spec/security-context.json"
+  ],
+  "command_executed": false,
+  "command_spec_root": null,
+  "contract_path": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-291-canonical-plan-admission/dead-end-project-dag.json",
+  "contract_sha256": "sha256:329713ab2669b6c9716d03a4a228161d4b3ca9c34b8d3451b77c718df79299c2",
+  "course_correction_artifacts": [],
+  "dag_error": {
+    "active_goal_hash": "sha256:issue-291-live-cli-proof",
+    "active_goal_version": 1,
+    "dag_id": "issue-291-dead-end-admission",
+    "evidence": {
+      "alert_codes": [
+        "node_dead_end"
+      ],
+      "alert_count": 1,
+      "errors": [
+        "node_dead_end"
+      ],
+      "primary_alert": {
+        "code": "node_dead_end",
+        "dag_plan_validation": {
+          "codes": [
+            "node_dead_end"
+          ],
+          "issues": [
+            {
+              "code": "node_dead_end",
+              "detail": "accept",
+              "path": "$.nodes"
+            }
+          ],
+          "ok": false,
+          "schema": "tau.dag_plan_validation.v1"
+        },
+        "message": "Canonical DagPlan failed pre-dispatch validation."
+      }
+    },
+    "failure_code": "node_dead_end",
+    "goal_identity": {
+      "goal_hash": "sha256:issue-291-live-cli-proof",
+      "goal_id": "issue-291",
+      "goal_version": 1
+    },
+    "message": "Canonical DagPlan failed pre-dispatch validation.",
+    "proof_scope": {
+      "does_not_prove": [
+        "The recommended action has been executed.",
+        "The project agent accepted or applied the course correction.",
+        "Provider/model semantic quality."
+      ],
+      "proves": [
+        "Tau detected a blocked DAG execution.",
+        "Tau packaged the primary failure as a project-agent course-correction payload.",
+        "No DAG route, goal, target, or handoff was mutated by this error contract."
+      ]
+    },
+    "receipt_path": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-291-canonical-plan-admission/live-run-canonical-with-spec/dag-receipt.json",
+    "recommended_action": {
+      "next_agent": "human",
+      "reason": "Unhandled DAG failure requires human or orchestrator review.",
+      "type": "wait_for_human"
+    },
+    "run_dir": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-291-canonical-plan-admission/live-run-canonical-with-spec",
+    "scheduler": "bounded-ready-queue",
+    "schema": "tau.dag_error.v1",
+    "severity": "BLOCK",
+    "status": "BLOCKED",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#291"
+    },
+    "verdict": "node_dead_end"
+  },
+  "dag_id": "issue-291-dead-end-admission",
+  "dag_plan_sha256": null,
+  "dag_plan_validation": {
+    "codes": [
+      "node_dead_end"
+    ],
+    "issues": [
+      {
+        "code": "node_dead_end",
+        "detail": "accept",
+        "path": "$.nodes"
+      }
+    ],
+    "ok": false,
+    "schema": "tau.dag_plan_validation.v1"
+  },
+  "dispatches": [],
+  "edge_count": 3,
+  "edge_terminal_states": {},
+  "entry_node": "router",
+  "errors": [
+    "node_dead_end"
+  ],
+  "execution": "project_agent_dag_bounded_ready_queue",
+  "execution_seconds": 0.0,
+  "goal_identity": {
+    "goal_hash": "sha256:issue-291-live-cli-proof",
+    "goal_id": "issue-291",
+    "goal_version": 1
+  },
+  "join_decision_receipts": [],
+  "live": true,
+  "max_concurrency": 2,
+  "max_observed_concurrency": 0,
+  "max_steps": 2,
+  "mocked": false,
+  "node_artifacts": {},
+  "node_attempts": {},
+  "node_count": 3,
+  "node_semantic_verdicts": [],
+  "node_terminal_states": {},
+  "observed_edges": [],
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider/model semantic quality.",
+      "GitHub mutation or ticket closure.",
+      "Mutating branch safety.",
+      "Unbounded autonomous operation.",
+      "Semantic truth of successful branch results.",
+      "Process termination for cancelled join contributions."
+    ],
+    "live": true,
+    "mocked": false,
+    "proves": [
+      "DAG contract parsed and validated.",
+      "Bounded ready-queue scheduler preflight checked unsupported edge conditions, acyclicity, local-only execution, provider branches, and mutating branches."
+    ]
+  },
+  "provider_live": false,
+  "resolved_sources": [],
+  "reviewer_verdicts": [],
+  "route_decision_receipts": [],
+  "run_dir": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-291-canonical-plan-admission/live-run-canonical-with-spec",
+  "scheduler": "bounded-ready-queue",
+  "scheduler_events": [],
+  "schema": "tau.dag_receipt.v1",
+  "selected_agents": [],
+  "status": "BLOCKED",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue#291"
+  },
+  "terminal_contribution_receipts": [],
+  "terminal_nodes": [
+    "done"
+  ],
+  "timestamp": "2026-08-02T15:36:13Z",
+  "verdict": "node_dead_end"
+}

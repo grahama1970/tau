@@ -1,0 +1,75 @@
+{
+  "schema": "tau.dag_contract.v1",
+  "dag_id": "issue-291-dead-end-admission",
+  "goal": {
+    "goal_id": "issue-291",
+    "goal_version": 1,
+    "goal_hash": "sha256:issue-291-live-cli-proof"
+  },
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue#291"
+  },
+  "entry_node": "router",
+  "terminal_nodes": [
+    "done"
+  ],
+  "limits": {
+    "max_total_attempts": 2,
+    "default_timeout_seconds": 5
+  },
+  "nodes": [
+    {
+      "id": "router",
+      "agent": "router",
+      "executor": "local",
+      "command_spec": "specs/router.json",
+      "route": {
+        "mode": "exclusive"
+      }
+    },
+    {
+      "id": "accept",
+      "agent": "accept",
+      "executor": "local"
+    },
+    {
+      "id": "revise",
+      "agent": "revise",
+      "executor": "local"
+    }
+  ],
+  "edges": [
+    {
+      "from": "router",
+      "to": "accept",
+      "condition": {
+        "schema": "tau.route_condition.v1",
+        "op": "eq",
+        "field": "route",
+        "value": "ACCEPT"
+      }
+    },
+    {
+      "from": "router",
+      "to": "revise",
+      "condition": {
+        "schema": "tau.route_condition.v1",
+        "op": "eq",
+        "field": "route",
+        "value": "REVISE"
+      }
+    },
+    {
+      "from": "revise",
+      "to": "done"
+    }
+  ],
+  "required_evidence": [
+    "tau.issue_291_validation_receipt.v1"
+  ],
+  "fail_closed_on": [
+    "unexpected_node",
+    "unexpected_edge"
+  ]
+}

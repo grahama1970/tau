@@ -24,6 +24,7 @@ from tau_coding.dag_runtime.model import (
     DagPlanTerminal,
     FrozenJson,
     canonical_sha256,
+    require_valid_dag_plan,
 )
 from tau_coding.runtime_backends.contracts import RuntimeRequirement
 
@@ -267,7 +268,7 @@ def compile_project_dag_plan(
             )
         ),
     ).with_computed_hash()
-    _validate_plan(plan)
+    require_valid_dag_plan(plan)
     return plan
 
 
@@ -382,7 +383,10 @@ def compile_generic_dag_plan(payload: dict[str, Any], *, source_path: Path) -> D
         goal_binding = {"kind": "hash_only", "goal_hash": goal_hash}
     else:
         goal_binding = {"kind": "none"}
-    source_limits = payload.get("limits") if isinstance(payload.get("limits"), Mapping) else {}
+    raw_source_limits = payload.get("limits")
+    source_limits: Mapping[str, Any] = (
+        raw_source_limits if isinstance(raw_source_limits, Mapping) else {}
+    )
     profile_resolution = resolve_execution_profile(
         payload=payload,
         source_family="generic_dag",
@@ -430,7 +434,7 @@ def compile_generic_dag_plan(payload: dict[str, Any], *, source_path: Path) -> D
             )
         ),
     ).with_computed_hash()
-    _validate_plan(plan)
+    require_valid_dag_plan(plan)
     return plan
 
 
@@ -896,28 +900,6 @@ def _incoming_edges(edges: tuple[Any, ...], *, node_ids: set[str]) -> dict[str, 
 def _require_unique_edges(edges: list[tuple[str, str]]) -> None:
     if len(edges) != len(set(edges)):
         raise RuntimeError("DAG contains duplicate dependency edges")
-
-
-def _validate_plan(plan: DagPlan) -> None:
-    node_ids = {node.node_id for node in plan.nodes}
-    if not plan.entry_node_ids or not set(plan.entry_node_ids).issubset(node_ids):
-        raise RuntimeError("DagPlan entry nodes must reference declared nodes")
-    if not plan.terminal_endpoints:
-        raise RuntimeError("DagPlan must have at least one terminal endpoint")
-    edge_ids = {edge.edge_id for edge in plan.control_edges}
-    for edge in plan.control_edges:
-        if edge.source_node_id not in node_ids:
-            raise RuntimeError(f"DagPlan edge source is unknown: {edge.source_node_id}")
-        if edge.target_kind == "node" and edge.target_id not in node_ids:
-            raise RuntimeError(f"DagPlan edge target is unknown: {edge.target_id}")
-        if edge.source_node_id == edge.target_id:
-            raise RuntimeError(f"DagPlan self-edge is not allowed: {edge.source_node_id}")
-    for binding in plan.context_bindings:
-        if binding.control_edge_id not in edge_ids:
-            raise RuntimeError(f"DagPlan context binding lacks control edge: {binding.binding_id}")
-    expected_hash = canonical_sha256(plan.to_payload(include_hash=False))
-    if plan.plan_sha256 != expected_hash:
-        raise RuntimeError("DagPlan hash mismatch")
 
 
 def _indexed_nodes(payload: Mapping[str, Any], *, id_key: str) -> dict[str, dict[str, Any]]:
