@@ -10,11 +10,11 @@
     },
     "source": "src/tau_coding/dag_runtime/"
   },
-  "generated_at": "2026-08-02T16:08:32.282107+00:00",
+  "generated_at": "2026-08-02T16:29:22.795603+00:00",
   "generator_version": "1.0.0",
   "git": {
     "clean_tree": false,
-    "commit": "c93e851eff221b7b68cc875beacee418bbf935ed"
+    "commit": "02dff646e7d49789caed2b366af9c97c4bbd2d9c"
   },
   "github": {
     "branch_protection": {
@@ -236,7 +236,7 @@
   },
   "proof_index": {
     "count": 22,
-    "digest": "sha256:681393e338bbc1d7d3a7daae7cd16be6bdec6f8a1423a92d5d84e7544d1e8187",
+    "digest": "sha256:c2dd2bef7a685276cabd105279187956b3e4d66eb4e8dfb0e53f44be17448598",
     "entries": [
       {
         "path": "docs/proofs/tickets/issue-186-canonical-scheduler-conformance-20260727T1652Z/closure-evidence.json",
@@ -304,7 +304,7 @@
       },
       {
         "path": "docs/proofs/tickets/issue-292-context-lineage-hashes/closure-evidence.json",
-        "sha256": "sha256:cec7926f72bccfe66ea8bd97fc099bc3b228d79d3dbdfc1239974cf032a29a2a"
+        "sha256": "sha256:8703f0c01cc5d18869c1cbac86b48398676b4d73e3896b1c80c121f1a17e5f08"
       },
       {
         "path": "docs/proofs/tickets/issue-72-p1-route-join-conformance-20260729T0011Z/closure-evidence.json",
@@ -329,12 +329,12 @@
     ]
   },
   "schema": "tau.project_status.v1",
-  "semantic_content_digest": "sha256:22fa70fb94b7b9f601e0806a83953fde9ae1c3074271e1899b476ae41a6e6567",
+  "semantic_content_digest": "sha256:e98b61ca126b22146c487023c8cd1c045338e89c2f723710ab215a0d2696f4f1",
   "source_digests": {
     "GOAL.md": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
     "acceptance_receipt": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab",
     "github_snapshot": "sha256:ea8408c06533a1111b58ecb56106f8934392dec730fc867a04bff2ac88d3c61a",
-    "proof_index": "sha256:681393e338bbc1d7d3a7daae7cd16be6bdec6f8a1423a92d5d84e7544d1e8187",
+    "proof_index": "sha256:c2dd2bef7a685276cabd105279187956b3e4d66eb4e8dfb0e53f44be17448598",
     "pyproject.toml": "sha256:846cfd5812f312395f363db523bf485487f6d72a651644098b92f34565dccb55"
   },
   "workflows": {

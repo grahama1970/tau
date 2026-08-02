@@ -686,7 +686,6 @@ def create_find_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinit
         args = [fd, "--glob", "--color=never", "--hidden"]
         if not _inside_git_repo(search_path):
             args.append("--no-require-git")
-        args.extend(["--max-results", str(effective_limit)])
         effective_pattern = pattern
         if "/" in pattern:
             args.append("--full-path")
@@ -714,11 +713,12 @@ def create_find_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinit
             )
             raise ToolInputError(message)
 
-        lines = [
+        matching_lines = sorted(
             _find_display_path(raw_line, search_path=search_path)
             for raw_line in output_text.splitlines()
             if raw_line.strip()
-        ]
+        )
+        lines = matching_lines[:effective_limit]
         if not lines:
             return AgentToolResult(
                 tool_call_id="",
@@ -735,7 +735,7 @@ def create_find_tool_definition(*, cwd: str | Path | None = None) -> ToolDefinit
         raw_output = "\n".join(lines)
         truncation = truncate_head(raw_output, max_lines=max(len(lines), 1))
         output = truncation.content
-        result_limit_reached = len(lines) >= effective_limit
+        result_limit_reached = len(matching_lines) > effective_limit
         notices: list[str] = []
         if result_limit_reached:
             notices.append(

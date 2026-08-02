@@ -5,7 +5,7 @@
     "command": "uv run pytest -q",
     "exit_code": 0,
     "passed": 3485,
-    "duration": "502.45s"
+    "duration": "521.26s"
   },
   "e2e": {
     "command": "uv run python docs/proofs/tickets/issue-292-context-lineage-hashes/issue-292-live-readback.py",

@@ -21,6 +21,7 @@ unchanged.
 
 - `src/tau_coding/dag_runtime/model.py`
 - `src/tau_coding/dag_runtime/node_input_manifest.py`
+- `src/tau_coding/tools.py`
 - `tests/test_dag_plan_validation.py`
 - `tests/test_node_input_manifest.py`
 - `docs/proofs/tickets/issue-292-context-lineage-hashes/issue-292-live-readback.py`
@@ -45,7 +46,7 @@ Full repository test suite:
 
 ```text
 uv run pytest -q
-3485 passed in 502.45s (0:08:22)
+3485 passed in 521.26s (0:08:41)
 ```
 
 Formatting/static checks:
@@ -59,6 +60,19 @@ All checks passed!
 uv run mypy src/tau_coding/dag_runtime/model.py src/tau_coding/dag_runtime/node_input_manifest.py docs/proofs/tickets/issue-292-context-lineage-hashes/issue-292-live-readback.py
 Success: no issues found in 3 source files
 ```
+
+GitHub CI initially exposed an unrelated ordering nondeterminism in
+`create_find_tool`: `fd --max-results` selected different first matches on the
+runner than locally. The PR includes the narrow ordering repair in
+`src/tau_coding/tools.py`; focused readback passed:
+
+```text
+uv run pytest -q tests/test_coding_tools.py::test_find_tool_finds_files_with_glob_and_limit tests/test_dag_plan_validation.py tests/test_node_input_manifest.py
+36 passed in 1.02s
+```
+
+`src/tau_coding/tools.py` still has pre-existing mypy debt and is not claimed
+as mypy-clean here.
 
 ```text
 git diff --check
