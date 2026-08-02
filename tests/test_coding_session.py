@@ -1398,7 +1398,11 @@ async def test_tree_can_branch_from_first_user_message_before_assistant_response
 
 
 @pytest.mark.anyio
-async def test_context_usage_recalculates_after_prompt_and_compaction(tmp_path: Path) -> None:
+async def test_context_usage_recalculates_after_prompt_and_compaction(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("TAU_MEMORY_URL", "http://127.0.0.1:9")
     storage = JsonlSessionStorage(tmp_path / "session.jsonl")
     provider = FakeProvider(
         [

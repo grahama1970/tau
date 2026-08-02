@@ -26,6 +26,7 @@ from tau_coding.dag_runtime.model import (
     canonical_sha256,
     require_valid_dag_plan,
 )
+from tau_coding.public_dag_contracts import explicit_extensions
 from tau_coding.runtime_backends.contracts import RuntimeRequirement
 
 PROJECT_ROOT_KEYS = {
@@ -950,7 +951,8 @@ def _indexed_nodes(payload: Mapping[str, Any], *, id_key: str) -> dict[str, dict
 
 
 def _extensions(payload: Mapping[str, Any], known: set[str]) -> dict[str, Any]:
-    return {str(key): value for key, value in sorted(payload.items()) if key not in known}
+    del known
+    return explicit_extensions(payload, promoted_keys=frozenset({"workflow"}))
 
 
 def _source_dir(source_path: Path | None) -> Path:

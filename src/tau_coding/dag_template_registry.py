@@ -719,7 +719,11 @@ def _memory_recalled_workflow(params: Mapping[str, Any]) -> TemplateExpansion:
         default_evidence="memory_recall_receipt",
     )
     handler = _node_from_value(params["handler"], default_evidence="handler_receipt")
-    handler["requires_memory_provenance"] = True
+    handler_extensions = handler.get("extensions")
+    handler["extensions"] = (
+        dict(handler_extensions) if isinstance(handler_extensions, dict) else {}
+    )
+    handler["extensions"]["requires_memory_provenance"] = True
     nodes = [_with_command_spec(memory_recall, params), _with_command_spec(handler, params)]
     edges = [
         {"from": str(memory_recall["id"]), "to": str(handler["id"])},

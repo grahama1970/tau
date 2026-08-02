@@ -48,6 +48,13 @@ from tau_coding.generic_artifact_transaction import (
     write_json,
     write_review_context,
 )
+from tau_coding.public_dag_contracts import (
+    strict_non_empty_string,
+    strict_optional_path,
+    strict_positive_int,
+    strict_positive_number,
+    validate_generic_dag_public_boundary,
+)
 from tau_coding.runtime_backends.local import (
     LocalRuntimeBackend,
     LocalRuntimeExecutionResult,
@@ -58,6 +65,11 @@ from tau_coding.skill_dag_adapter import (
     execute_skill_dag_node,
     parse_skill_dag_spec,
 )
+
+try:
+    import yaml
+except ImportError:  # pragma: no cover - only in stripped runtime environments.
+    yaml = None  # type: ignore[assignment]
 
 GENERIC_DAG_SPEC_SCHEMA = "tau.generic_dag_spec.v1"
 GENERIC_DAG_RUN_RECEIPT_SCHEMA = "tau.generic_dag_run_receipt.v1"
@@ -2503,6 +2515,7 @@ def _write_blocked_node_receipt_if_missing(
 
 
 def _validate_spec(spec: dict[str, Any], *, spec_path: Path) -> dict[str, DagNode]:
+    validate_generic_dag_public_boundary(spec)
     if spec.get("schema") != GENERIC_DAG_SPEC_SCHEMA:
         raise RuntimeError(f"generic DAG spec schema must be {GENERIC_DAG_SPEC_SCHEMA}")
     for key in ("run_id", "run_dir", "nodes"):
@@ -2585,7 +2598,7 @@ def _generic_goal_hash(spec: dict[str, Any]) -> str | None:
 def load_generic_dag_spec(path: Path) -> dict[str, Any]:
     """Load a generic DAG source document without executing it."""
 
-    return _read_json_object(path.expanduser().resolve(), label="generic DAG spec")
+    return _read_source_object(path.expanduser().resolve(), label="generic DAG spec")
 
 
 def validate_generic_dag_spec(payload: dict[str, Any], *, source_path: Path) -> dict[str, DagNode]:
@@ -2596,7 +2609,11 @@ def validate_generic_dag_spec(payload: dict[str, Any], *, source_path: Path) -> 
 
 def _parse_node(raw_node: dict[str, Any], *, base_dir: Path) -> DagNode:
     node_id = _required_string(raw_node, "node_id")
-    role = str(raw_node.get("role") or node_id)
+    role = (
+        strict_non_empty_string(raw_node["role"], f"node {node_id} role")
+        if "role" in raw_node
+        else node_id
+    )
     command = raw_node.get("command")
     skill_raw = raw_node.get("skill")
     skill = (
@@ -2636,18 +2653,21 @@ def _parse_node(raw_node: dict[str, Any], *, base_dir: Path) -> DagNode:
         raise RuntimeError(f"node {node_id} accepted_context_from must be a string list")
     if not set(accepted_context_from).issubset(set(depends_on)):
         raise RuntimeError(f"node {node_id} accepted_context_from must be a subset of depends_on")
-    timeout_seconds = float(raw_node.get("timeout_seconds", 60))
-    if timeout_seconds <= 0:
-        raise RuntimeError(f"node {node_id} timeout_seconds must be positive")
-    max_attempts = int(raw_node.get("max_attempts", 1))
-    if max_attempts < 1:
-        raise RuntimeError(f"node {node_id} max_attempts must be at least 1")
+    timeout_seconds = (
+        strict_positive_number(raw_node["timeout_seconds"], f"node {node_id} timeout_seconds")
+        if "timeout_seconds" in raw_node
+        else 60.0
+    )
+    max_attempts = (
+        strict_positive_int(raw_node["max_attempts"], f"node {node_id} max_attempts")
+        if "max_attempts" in raw_node
+        else 1
+    )
     receipt_path = _resolve_path(_required_string(raw_node, "receipt_path"), base_dir=base_dir)
     work_order_raw = raw_node.get("work_order_path")
+    work_order_text = strict_optional_path(work_order_raw, f"node {node_id} work_order_path")
     work_order_path = (
-        _resolve_path(work_order_raw, base_dir=base_dir)
-        if isinstance(work_order_raw, str) and work_order_raw
-        else None
+        _resolve_path(work_order_text, base_dir=base_dir) if work_order_text is not None else None
     )
     transaction = (
         parse_transaction_spec(transaction_raw, base_dir=base_dir, node_id=node_id)
@@ -3228,12 +3248,31 @@ def _read_json_object(path: Path, *, label: str) -> dict[str, Any]:
     return payload
 
 
+def _read_source_object(path: Path, *, label: str) -> dict[str, Any]:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except FileNotFoundError as exc:
+        raise RuntimeError(f"{label} not found: {path}") from exc
+    if path.suffix.lower() in {".yaml", ".yml"}:
+        if yaml is None:
+            raise RuntimeError(f"{label} YAML requires PyYAML")
+        payload = yaml.safe_load(text)
+    else:
+        try:
+            payload = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f"{label} is not valid JSON: {path}: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"{label} must be a JSON object: {path}")
+    return payload
+
+
 def _optional_json_object(path: Path) -> dict[str, Any]:
     if not str(path) or not path.exists() or not path.is_file():
         return {}
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
+    except (OSError, json.JSONDecodeError):
         return {}
     return payload if isinstance(payload, dict) else {}
 

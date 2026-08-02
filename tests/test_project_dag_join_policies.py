@@ -652,7 +652,7 @@ def _write_join_contract(
         ],
         "required_evidence": [],
         "fail_closed_on": ["unexpected_node", "unexpected_edge"],
-        "fixture_route": route,
+        "extensions": {"fixture_route": route},
     }
     path = tmp_path / "join-contract.json"
     path.write_text(json.dumps(payload), encoding="utf-8")

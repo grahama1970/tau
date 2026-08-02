@@ -259,7 +259,7 @@ def _artifact_schema(selected: Mapping[str, Any], payload: bytes) -> str:
         return embedded
     try:
         parsed = json.loads(payload.decode("utf-8"))
-    except UnicodeDecodeError, ValueError:
+    except (UnicodeDecodeError, ValueError):
         return "application/octet-stream"
     if isinstance(parsed, Mapping) and isinstance(parsed.get("schema"), str):
         return str(parsed["schema"])

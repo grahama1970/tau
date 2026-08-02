@@ -1,0 +1,52 @@
+{
+  "schema": "tau.ticket_closure_evidence.v1",
+  "ticket": "https://github.com/grahama1970/tau/issues/296",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "primary_receipt": "docs/proofs/tickets/issue-296-public-dag-contracts/live-readback.json",
+  "proof_markdown": "docs/proofs/tickets/issue-296-public-dag-contracts/issue-296-close-proof.md",
+  "commands": [
+    {
+      "cmd": "uv run python docs/proofs/tickets/issue-296-public-dag-contracts/issue-296-live-readback.py",
+      "result": "PASS; wrote docs/proofs/tickets/issue-296-public-dag-contracts/live-readback.json"
+    },
+    {
+      "cmd": "uv run python scripts/check_public_dag_contract_schema.py",
+      "result": "PASS /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/schemas/tau.public_dag_contract_keys.v1.json"
+    },
+    {
+      "cmd": "uv run pytest -q tests/test_public_dag_contracts.py tests/test_generic_dag.py tests/test_project_dag.py tests/test_project_dag_join_policies.py tests/test_dag_template_registry.py tests/test_dag_plan.py tests/test_execution_profiles.py tests/test_runtime_backend_contracts.py tests/test_browser_dag_handler.py",
+      "result": "231 passed in 24.83s"
+    },
+    {
+      "cmd": "uv run pytest -q",
+      "result": "3540 passed in 546.52s (0:09:06)"
+    },
+    {
+      "cmd": "uv run ruff check src/tau_coding/public_dag_contracts.py src/tau_coding/project_dag.py src/tau_coding/generic_dag.py src/tau_coding/dag_runtime/compiler.py src/tau_coding/dag_template_registry.py src/tau_coding/dag_runtime/artifact_reference.py tests/test_public_dag_contracts.py tests/test_project_dag_join_policies.py tests/test_dag_plan.py tests/test_coding_session.py scripts/check_public_dag_contract_schema.py docs/proofs/tickets/issue-296-public-dag-contracts/issue-296-live-readback.py",
+      "result": "All checks passed!"
+    },
+    {
+      "cmd": "uv run mypy src/tau_coding/public_dag_contracts.py src/tau_coding/dag_runtime/compiler.py scripts/check_public_dag_contract_schema.py docs/proofs/tickets/issue-296-public-dag-contracts/issue-296-live-readback.py",
+      "result": "Success: no issues found in 4 source files"
+    },
+    {
+      "cmd": "git diff --check",
+      "result": "exit code 0"
+    }
+  ],
+  "live_readback_checks": {
+    "valid_project_dag_passed": true,
+    "valid_project_extensions_hash_bound": true,
+    "valid_generic_dag_passed": true,
+    "valid_generic_json_yaml_plan_parity": true,
+    "invalid_project_rejected_before_dispatch": true,
+    "invalid_generic_rejected_before_dispatch": true,
+    "schema_drift_check_passed": true
+  },
+  "does_not_prove": [
+    "paid provider calls",
+    "historical artifact migration beyond explicit compatibility fields"
+  ]
+}

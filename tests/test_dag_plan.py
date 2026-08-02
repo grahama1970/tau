@@ -185,13 +185,18 @@ def test_generic_full_goal_and_workflow_extension_are_hash_bound(tmp_path: Path)
         "goal_hash": canonical_sha256(goal_without_hash),
     }
     payload["goal_hash"] = payload["goal"]["goal_hash"]
-    payload["workflow"] = {
+    payload["extensions"] = {
+        "workflow": {
         "schema": "tau.workflow_metadata.v1",
         "workflow_id": "repository-readiness",
+        }
     }
 
     first = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
-    payload["workflow"] = {**payload["workflow"], "title": "Changed"}
+    payload["extensions"]["workflow"] = {
+        **payload["extensions"]["workflow"],
+        "title": "Changed",
+    }
     second = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
 
     assert first.goal_binding.to_value() == {"kind": "full", **payload["goal"]}
@@ -373,17 +378,17 @@ def test_generic_spec_rejects_command_and_skill_adapter_mix(tmp_path: Path) -> N
 
 def test_non_finite_source_extension_is_not_canonical_json(tmp_path: Path) -> None:
     payload = _portable_generic_payload()
-    payload["source_score"] = float("nan")
+    payload["extensions"] = {"source_score": float("nan")}
 
-    with pytest.raises(RuntimeError, match="not canonical JSON"):
+    with pytest.raises(RuntimeError, match="extensions.source_score must not be NaN or Infinity"):
         compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
 
 
 def test_source_extensions_are_preserved_and_hash_bound(tmp_path: Path) -> None:
     first_payload = _portable_generic_payload()
-    first_payload["project_extension"] = {"revision": 1}
+    first_payload["extensions"] = {"project_extension": {"revision": 1}}
     second_payload = _portable_generic_payload()
-    second_payload["project_extension"] = {"revision": 2}
+    second_payload["extensions"] = {"project_extension": {"revision": 2}}
 
     first = compile_generic_dag_plan(first_payload, source_path=tmp_path / "dag.json")
     second = compile_generic_dag_plan(second_payload, source_path=tmp_path / "dag.json")

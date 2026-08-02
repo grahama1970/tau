@@ -72,6 +72,7 @@ from tau_coding.provider_config import (
     load_provider_settings,
     provider_model_knowledge_cutoff,
 )
+from tau_coding.public_dag_contracts import validate_project_dag_public_boundary
 from tau_coding.runtime_backends.contracts import RuntimeRequirement
 from tau_coding.security_capability import (
     compile_capability_decision,
@@ -1090,6 +1091,7 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
     """Validate the strict project-agent DAG contract used by `tau dag-run`."""
 
     errors: list[str] = []
+    validate_project_dag_public_boundary(payload, errors)
     if payload.get("schema") != DAG_CONTRACT_SCHEMA:
         errors.append(f"schema must be {DAG_CONTRACT_SCHEMA}")
     dag_id = _required_string(payload, "dag_id", errors)
@@ -1724,7 +1726,7 @@ def _provider_command_timeout_policy(
     )
     try:
         timeout_s = float(raw_timeout)
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
     if timeout_s <= 0:
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
@@ -2167,8 +2169,16 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
                 f"nodes[{index}].skill is not supported by {DAG_CONTRACT_SCHEMA}; "
                 "skill nodes require schema tau.generic_dag_spec.v1"
             )
-        executor = str(item.get("executor") or "local")
-        max_attempts = int(item.get("max_attempts", 1))
+        executor = "local"
+        if "executor" in item:
+            executor = _required_string(item, "executor", errors, prefix=f"nodes[{index}]")
+        max_attempts = 1
+        if "max_attempts" in item:
+            max_attempts = _int_value(
+                item.get("max_attempts"),
+                f"nodes[{index}].max_attempts",
+                errors,
+            )
         if max_attempts < 1:
             errors.append(f"nodes[{index}].max_attempts must be at least 1")
         required_evidence = _string_list(
@@ -2177,6 +2187,11 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
             errors,
         )
         command_spec = item.get("command_spec")
+        if command_spec is not None and (
+            not isinstance(command_spec, str) or not command_spec.strip()
+        ):
+            errors.append(f"nodes[{index}].command_spec must be a non-empty string when provided")
+            command_spec = None
         runtime_backend = item.get("runtime_backend")
         if runtime_backend is not None and (
             not isinstance(runtime_backend, str) or not runtime_backend.strip()
@@ -2227,7 +2242,7 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
             context=context,
             requested_capabilities=tuple(requested_capabilities),
             route_mode=(
-                str(item["route"]["mode"])
+                item["route"]["mode"]
                 if isinstance(item.get("route"), dict)
                 and isinstance(item["route"].get("mode"), str)
                 else None
@@ -5868,7 +5883,7 @@ def _downstream_skill_blocker(response: object) -> dict[str, Any] | None:
             continue
         try:
             receipt = _read_json_object(Path(path_value), label="downstream skill receipt")
-        except OSError, ValueError:
+        except (OSError, ValueError):
             continue
         recovery_packet = receipt.get("recovery_packet")
         recovery_code = (
@@ -6047,7 +6062,7 @@ def _optional_context_mapping(value: object, label: str, errors: list[str]) -> d
 def _json_safe_alert_value(value: object) -> object:
     try:
         json.dumps(value)
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         return {"type": type(value).__name__, "value": str(value)}
     return value
 

@@ -1,0 +1,332 @@
+{
+  "checks": {
+    "invalid_generic_rejected_before_dispatch": true,
+    "invalid_project_rejected_before_dispatch": true,
+    "schema_drift_check_passed": true,
+    "valid_generic_dag_passed": true,
+    "valid_generic_json_yaml_plan_parity": true,
+    "valid_project_dag_passed": true,
+    "valid_project_extensions_hash_bound": true
+  },
+  "generic": {
+    "completed_node_count": 1,
+    "json_yaml_plan_parity": true,
+    "live": false,
+    "mocked": false,
+    "receipt": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-296-public-dag-contracts/live-readback-work/generic/run/run-receipt.json",
+    "source_extensions": {
+      "execution_profile_resolution": {
+        "compatibility_default": true,
+        "defaults_applied": {
+          "adaptive_expansion": {
+            "authorization": "policy_bounded",
+            "max_nodes": 3
+          },
+          "approval_requirements": "exact_human_gate_for_irreversible_effects",
+          "canonical_scheduler_required": true,
+          "durable_run_store_required": true,
+          "input_manifest_enforcement": "when_declared",
+          "max_attempts_per_node": 3,
+          "max_concurrency": 4,
+          "max_depth": 10,
+          "max_nodes": 50,
+          "max_run_seconds": 3600,
+          "max_total_attempts": 150,
+          "required_evidence_schemas": [
+            "tau.generic_dag_node_receipt.v1"
+          ],
+          "review_requirements": "node_declared",
+          "security_defaults": {
+            "filesystem_mutation": "node_declared_only",
+            "network": "deny_by_default"
+          },
+          "side_effect_defaults": {
+            "external_side_effects": "deny_without_exact_human_gate",
+            "irreversible_effects": "deny_without_exact_human_gate"
+          },
+          "stale_read_behavior": "observe"
+        },
+        "historical_profile_omitted": true,
+        "optional_capabilities": {
+          "input_manifest": {
+            "degradation": null,
+            "schema": "tau.node_input_manifest.v1",
+            "status": "AVAILABLE"
+          },
+          "node_completion_boundary": {
+            "degradation": null,
+            "schema": "tau.node_completion_boundary_receipt.v1",
+            "status": "AVAILABLE"
+          },
+          "scoped_review_evidence": {
+            "degradation": null,
+            "schema": "tau.scoped_review_receipt.v1",
+            "status": "AVAILABLE"
+          },
+          "stale_read_reconciliation": {
+            "degradation": null,
+            "schema": "tau.workspace_stale_read_reconciliation.v1",
+            "status": "AVAILABLE"
+          }
+        },
+        "parent_policy": {},
+        "policy_data_boundary_compatibility": {
+          "broadening_allowed": false,
+          "data_boundary_requires_assurance": false,
+          "policy_may_narrow": true,
+          "profile_id": "standard",
+          "source_may_narrow": true,
+          "status": "PASS"
+        },
+        "profile_id": "standard",
+        "profile_schema": "tau.execution_profile.v1",
+        "profile_version": 1,
+        "proof_boundary": {
+          "historical_runs_rewritten": false,
+          "model_confidence_used": false,
+          "profile_alters_scheduler_engine": false,
+          "provider_calls_performed": false
+        },
+        "resolution_sha256": "sha256:9761282a9abe1edbe1c02abcf58d46c0a148c21c69f46ca939772e21301bb7a3",
+        "resolved_controls": {
+          "adaptive_expansion": {
+            "authorization": "policy_bounded",
+            "max_nodes": 3
+          },
+          "approval_requirements": "exact_human_gate_for_irreversible_effects",
+          "canonical_scheduler_required": true,
+          "durable_run_store_required": true,
+          "effective_edge_count": 0,
+          "effective_node_count": 1,
+          "input_manifest_enforcement": "when_declared",
+          "max_attempts_per_node": 3,
+          "max_concurrency": 4,
+          "max_depth": 10,
+          "max_nodes": 50,
+          "max_run_seconds": 3600,
+          "max_total_attempts": 150,
+          "required_evidence_schemas": [
+            "tau.generic_dag_node_receipt.v1"
+          ],
+          "review_requirements": "node_declared",
+          "security_defaults": {
+            "filesystem_mutation": "node_declared_only",
+            "network": "deny_by_default"
+          },
+          "side_effect_defaults": {
+            "external_side_effects": "deny_without_exact_human_gate",
+            "irreversible_effects": "deny_without_exact_human_gate"
+          },
+          "stale_read_behavior": "observe"
+        },
+        "resolved_controls_sha256": "sha256:d55c0d843d9073795ae54e254a2ae8fc8fbb2dd314ad215dc07d5b2b21e7074c",
+        "schema": "tau.execution_profile_resolution.v1",
+        "selection_source": "compatibility_default_profileless_current_contract",
+        "source_family": "generic_dag",
+        "source_overrides_accepted": [],
+        "source_overrides_rejected": [],
+        "source_schema": "tau.generic_dag_spec.v1"
+      },
+      "project_extension": {
+        "name": "json-yaml"
+      }
+    },
+    "status": "PASS"
+  },
+  "invalid": {
+    "generic_error": "node worker timeout_seconds must be a positive finite number",
+    "generic_marker_exists": false,
+    "invalid_generic_rejected_before_dispatch": true,
+    "invalid_project_rejected_before_dispatch": true,
+    "project_error": "nodes[0].max_attempts must be an integer; nodes[0].max_attempts must be at least 1",
+    "project_marker_exists": false,
+    "project_status": "REJECTED",
+    "project_verdict": "REJECTED"
+  },
+  "live": true,
+  "mocked": false,
+  "project": {
+    "first_plan_sha256": "sha256:a40b4fc27b0f77aa8103d9e3228875aabb9f67567eb0e3257e455cf5658b5a57",
+    "live": true,
+    "mocked": false,
+    "plan_hashes_differ": true,
+    "receipt": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-296-public-dag-contracts/live-readback-work/project/run/dag-receipt.json",
+    "second_plan_sha256": "sha256:f769c88f2bda026503aae64b1dd924d4143eecc8c5609d788e50804ff5166592",
+    "source_extensions": {
+      "execution_profile_resolution": {
+        "compatibility_default": true,
+        "defaults_applied": {
+          "adaptive_expansion": {
+            "authorization": "policy_bounded",
+            "max_nodes": 3
+          },
+          "approval_requirements": "exact_human_gate_for_irreversible_effects",
+          "canonical_scheduler_required": true,
+          "durable_run_store_required": true,
+          "input_manifest_enforcement": "when_declared",
+          "max_attempts_per_node": 3,
+          "max_concurrency": 4,
+          "max_depth": 10,
+          "max_nodes": 50,
+          "max_run_seconds": 3600,
+          "max_total_attempts": 150,
+          "required_evidence_schemas": [
+            "tau.generic_dag_node_receipt.v1"
+          ],
+          "review_requirements": "node_declared",
+          "security_defaults": {
+            "filesystem_mutation": "node_declared_only",
+            "network": "deny_by_default"
+          },
+          "side_effect_defaults": {
+            "external_side_effects": "deny_without_exact_human_gate",
+            "irreversible_effects": "deny_without_exact_human_gate"
+          },
+          "stale_read_behavior": "observe"
+        },
+        "historical_profile_omitted": true,
+        "optional_capabilities": {
+          "input_manifest": {
+            "degradation": null,
+            "schema": "tau.node_input_manifest.v1",
+            "status": "AVAILABLE"
+          },
+          "node_completion_boundary": {
+            "degradation": null,
+            "schema": "tau.node_completion_boundary_receipt.v1",
+            "status": "AVAILABLE"
+          },
+          "scoped_review_evidence": {
+            "degradation": null,
+            "schema": "tau.scoped_review_receipt.v1",
+            "status": "AVAILABLE"
+          },
+          "stale_read_reconciliation": {
+            "degradation": null,
+            "schema": "tau.workspace_stale_read_reconciliation.v1",
+            "status": "AVAILABLE"
+          }
+        },
+        "parent_policy": {},
+        "policy_data_boundary_compatibility": {
+          "broadening_allowed": false,
+          "data_boundary_requires_assurance": false,
+          "policy_may_narrow": true,
+          "profile_id": "standard",
+          "source_may_narrow": true,
+          "status": "PASS"
+        },
+        "profile_id": "standard",
+        "profile_schema": "tau.execution_profile.v1",
+        "profile_version": 1,
+        "proof_boundary": {
+          "historical_runs_rewritten": false,
+          "model_confidence_used": false,
+          "profile_alters_scheduler_engine": false,
+          "provider_calls_performed": false
+        },
+        "resolution_sha256": "sha256:888a73d56eb5f843ebcab078139777081a57ae832bf572d6c473d7d4147ddda2",
+        "resolved_controls": {
+          "adaptive_expansion": {
+            "authorization": "policy_bounded",
+            "max_nodes": 3
+          },
+          "approval_requirements": "exact_human_gate_for_irreversible_effects",
+          "canonical_scheduler_required": true,
+          "durable_run_store_required": true,
+          "effective_edge_count": 1,
+          "effective_node_count": 1,
+          "fail_closed_on": [
+            "goal_hash_mismatch",
+            "malformed_handoff",
+            "max_attempts_exceeded",
+            "missing_required_evidence",
+            "target_changed",
+            "unexpected_edge",
+            "unexpected_node"
+          ],
+          "input_manifest_enforcement": "when_declared",
+          "max_attempts_per_node": 3,
+          "max_concurrency": 4,
+          "max_depth": 10,
+          "max_nodes": 50,
+          "max_run_seconds": 5,
+          "max_total_attempts": 1,
+          "required_evidence_schemas": [
+            "creator_artifact",
+            "tau.generic_dag_node_receipt.v1"
+          ],
+          "review_requirements": "node_declared",
+          "security_defaults": {
+            "filesystem_mutation": "node_declared_only",
+            "network": "deny_by_default"
+          },
+          "side_effect_defaults": {
+            "external_side_effects": "deny_without_exact_human_gate",
+            "irreversible_effects": "deny_without_exact_human_gate"
+          },
+          "stale_read_behavior": "observe"
+        },
+        "resolved_controls_sha256": "sha256:52337ef32706392c405e4620a968e73ca30c5803dad05454ca1ec94dc680fcbe",
+        "schema": "tau.execution_profile_resolution.v1",
+        "selection_source": "compatibility_default_profileless_current_contract",
+        "source_family": "project_dag",
+        "source_overrides_accepted": [
+          {
+            "field": "fail_closed_on",
+            "origin": "source_contract",
+            "value": [
+              "goal_hash_mismatch",
+              "malformed_handoff",
+              "max_attempts_exceeded",
+              "missing_required_evidence",
+              "target_changed",
+              "unexpected_edge",
+              "unexpected_node"
+            ]
+          },
+          {
+            "field": "max_run_seconds",
+            "origin": "source_contract",
+            "value": 5
+          },
+          {
+            "field": "max_total_attempts",
+            "origin": "source_contract",
+            "value": 1
+          }
+        ],
+        "source_overrides_rejected": [],
+        "source_schema": "tau.dag_contract.v1"
+      },
+      "project_extension": {
+        "revision": 1
+      }
+    },
+    "status": "PASS"
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "paid provider calls",
+      "historical artifact migration beyond the explicit compatibility fields"
+    ],
+    "proves": [
+      "tau.dag_contract.v1 rejects malformed public input before local dispatch",
+      "tau.generic_dag_spec.v1 rejects malformed public input before local dispatch",
+      "explicit extensions are preserved in compiled DagPlan source_extensions",
+      "explicit extensions alter the canonical DagPlan hash",
+      "generic JSON and YAML source files compile to the same canonical plan",
+      "public DAG contract key snapshot matches runtime strict validator allowlists"
+    ]
+  },
+  "provider_live": false,
+  "schema": "tau.issue_296_live_readback.v1",
+  "schema_drift": {
+    "returncode": 0,
+    "status": "PASS",
+    "stderr": "",
+    "stdout": "PASS /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/schemas/tau.public_dag_contract_keys.v1.json"
+  },
+  "status": "PASS",
+  "work_dir": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-296-public-dag-contracts/live-readback-work"
+}
