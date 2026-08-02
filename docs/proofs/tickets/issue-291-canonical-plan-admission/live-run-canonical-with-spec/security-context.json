@@ -1,0 +1,36 @@
+{
+  "actor": null,
+  "command_policy": null,
+  "created_at": "2026-08-02T15:36:13Z",
+  "dag_id": "issue-291-dead-end-admission",
+  "data_boundary": null,
+  "environment": {
+    "generated": true,
+    "path": "/home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-291-canonical-plan-admission/live-run-canonical-with-spec/environment-manifest.json",
+    "schema": "tau.environment_manifest.v1",
+    "sha256": "sha256:3826dace39e105798a414b6d8aa6115997823df59a0de76dc5f824f99c1c553b",
+    "source_kind": "generated"
+  },
+  "goal": {
+    "goal_hash": "sha256:issue-291-live-cli-proof",
+    "goal_id": "issue-291",
+    "goal_version": 1
+  },
+  "policy_profile": null,
+  "production_authority": false,
+  "regulated_data_authorized": false,
+  "required_gates": [],
+  "resolved_inputs": {
+    "actor_access_manifest": false,
+    "command_policy": false,
+    "data_boundary": false,
+    "environment_manifest": true,
+    "policy_profile": false
+  },
+  "run_id": "issue-291-dead-end-admission",
+  "schema": "tau.security_context.v1",
+  "security_context_sha256": "sha256:6925aed03f0b663e65a0e0b112f7734fb3ed4a3a048961aa4d7d51eef95e5fce",
+  "security_mode": "development",
+  "security_mode_explicit": false,
+  "security_mode_requested": null
+}
