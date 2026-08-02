@@ -1,0 +1,152 @@
+{
+  "context": {},
+  "dag_id": "concurrent-fanout-regression",
+  "edges": [
+    {
+      "from": "handler-webgpt",
+      "to": "join"
+    },
+    {
+      "from": "handler-webclaude",
+      "to": "join"
+    },
+    {
+      "from": "handler-webkimi",
+      "to": "join"
+    },
+    {
+      "from": "handler-webgrok",
+      "to": "join"
+    },
+    {
+      "from": "handler-webgemini",
+      "to": "join"
+    },
+    {
+      "from": "join",
+      "to": "human"
+    }
+  ],
+  "entry_node": "handler-webgpt",
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "unexpected_node",
+    "unexpected_edge",
+    "missing_required_evidence",
+    "max_attempts_exceeded",
+    "malformed_handoff",
+    "missing_required_join",
+    "branch_goal_hash_divergence",
+    "branch_target_divergence",
+    "invalid_provider_receipt",
+    "provider_auth_required",
+    "unresolved_block_alert"
+  ],
+  "goal": {
+    "goal_hash": "sha256:385868cd07fb87aa8ba28746378d1be481184ac08a913a0e53a327a99dcc564d",
+    "goal_id": "ask-ask-tau-roundtable-determine-the-minimal-388cda3960bb",
+    "goal_version": 1,
+    "immutable_goal": "A nightly cron agent runs unattended across three opportunity lanes and produces a morning digest the human trusts enough to act on without correcting it, where every application and message is human-authorized and human-transmitted, no claim is unbound from the canonical ledger, and no action is ever double-executed. Machinery passing its own tests does not satisfy this bar."
+  },
+  "limits": {
+    "default_timeout_seconds": 300,
+    "max_concurrency": 4,
+    "max_total_attempts": 6,
+    "resume": true
+  },
+  "nodes": [
+    {
+      "agent": "handler-webgpt",
+      "command_spec": "command-specs/handler-webgpt/tau-dispatch-command.json",
+      "depends_on": [],
+      "executor": "local",
+      "id": "handler-webgpt",
+      "max_attempts": 1,
+      "required_evidence": [
+        "handler_response_receipt",
+        "normalized_handler_receipt",
+        "transport_metadata"
+      ]
+    },
+    {
+      "agent": "handler-webclaude",
+      "command_spec": "command-specs/handler-webclaude/tau-dispatch-command.json",
+      "depends_on": [],
+      "executor": "local",
+      "id": "handler-webclaude",
+      "max_attempts": 1,
+      "required_evidence": [
+        "handler_response_receipt",
+        "normalized_handler_receipt",
+        "transport_metadata"
+      ]
+    },
+    {
+      "agent": "handler-webkimi",
+      "command_spec": "command-specs/handler-webkimi/tau-dispatch-command.json",
+      "depends_on": [],
+      "executor": "local",
+      "id": "handler-webkimi",
+      "max_attempts": 1,
+      "required_evidence": [
+        "handler_response_receipt",
+        "normalized_handler_receipt",
+        "transport_metadata"
+      ]
+    },
+    {
+      "agent": "handler-webgrok",
+      "command_spec": "command-specs/handler-webgrok/tau-dispatch-command.json",
+      "depends_on": [],
+      "executor": "local",
+      "id": "handler-webgrok",
+      "max_attempts": 1,
+      "required_evidence": [
+        "handler_response_receipt",
+        "normalized_handler_receipt",
+        "transport_metadata"
+      ]
+    },
+    {
+      "agent": "handler-webgemini",
+      "command_spec": "command-specs/handler-webgemini/tau-dispatch-command.json",
+      "depends_on": [],
+      "executor": "local",
+      "id": "handler-webgemini",
+      "max_attempts": 1,
+      "required_evidence": [
+        "handler_response_receipt",
+        "normalized_handler_receipt",
+        "transport_metadata"
+      ]
+    },
+    {
+      "agent": "join",
+      "command_spec": "command-specs/join/tau-dispatch-command.json",
+      "executor": "local",
+      "id": "join",
+      "max_attempts": 1,
+      "required_evidence": [
+        "roundtable_join_receipt",
+        "handler_response_index",
+        "unresolved_gaps"
+      ]
+    }
+  ],
+  "provider_sensitive": false,
+  "required_evidence": [
+    "handler_response_receipt",
+    "normalized_handler_receipt",
+    "roundtable_join_receipt"
+  ],
+  "requires_provider_route": false,
+  "schema": "tau.dag_contract.v1",
+  "target": {
+    "repo": "local/agent-skills",
+    "target": "career-stage1-roundtable"
+  },
+  "terminal_nodes": [
+    "human"
+  ]
+}

@@ -237,7 +237,11 @@ def compile_project_dag_plan(
         source_payload_sha256=source_payload_sha256 or canonical_sha256(payload),
         goal_binding=FrozenJson.from_value({"kind": "full", **contract.goal}),
         target_binding=FrozenJson.from_value(contract.target),
-        entry_node_ids=(contract.entry_node,),
+        entry_node_ids=_project_entry_node_ids(
+            declared_entry=contract.entry_node,
+            node_ids=tuple(sorted(contract.nodes)),
+            incoming_edges=incoming_edges,
+        ),
         terminal_endpoints=tuple(
             DagPlanTerminal(
                 terminal_id=terminal,
@@ -887,6 +891,38 @@ def _portable_config(value: Any, *, source_dir: Path, key: str = "") -> Any:
         resolved = path if path.is_absolute() else source_dir / path
         return os.path.relpath(resolved.resolve(), source_dir)
     return value
+
+
+
+def _project_entry_node_ids(
+    *,
+    declared_entry: str,
+    node_ids: tuple[str, ...],
+    incoming_edges: Mapping[str, tuple[Any, ...]],
+) -> tuple[str, ...]:
+    """Return every root of a project DAG, not only the declared entry node.
+
+    A DAG's entry set is its in-degree-zero set. A concurrent fan-out — the shape
+    a roundtable *is* — has one root per participant, but `tau.dag_contract.v1`
+    can express only a single scalar `entry_node`. Seeding plan reachability from
+    that scalar alone made every other root unreachable, so
+    `validate_dag_plan` rejected the plan pre-dispatch with `node_unreachable`
+    and no participant was ever contacted.
+
+    The generic_dag path already derives entries this way (all nodes with no
+    `depends_on`); this brings the project_dag path into agreement.
+
+    The declared entry is always retained and always first, because
+    `_source_to_plan_diff` asserts `entry_preserved` by checking that
+    `contract.entry_node` appears in `plan.entry_node_ids`.
+    """
+
+    roots = [
+        node_id
+        for node_id in node_ids
+        if not incoming_edges.get(node_id, ()) and node_id != declared_entry
+    ]
+    return (declared_entry, *roots)
 
 
 def _incoming_edges(edges: tuple[Any, ...], *, node_ids: set[str]) -> dict[str, tuple[Any, ...]]:

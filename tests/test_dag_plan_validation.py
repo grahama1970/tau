@@ -345,3 +345,76 @@ def _pass_result(node_id: str) -> dict[str, Any]:
         "verdict": "PASS",
         "accepted_output": {"source_node_id": node_id},
     }
+
+
+CONCURRENT_FANOUT_FIXTURE = (
+    Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "concurrent-fanout-dag.json"
+)
+
+
+def _materialize_fanout_contract(tmp_path: Path, handlers: tuple[str, ...]) -> Path:
+    """Materialize a real concurrent fan-out contract with local command specs.
+
+    The fixture is a captured production ``tau.dag_contract.v1`` roundtable DAG,
+    not a hand-rolled approximation, so the test exercises the shape /ask actually
+    emits.
+    """
+
+    contract = json.loads(CONCURRENT_FANOUT_FIXTURE.read_text())
+    keep = {f"handler-{name}" for name in handlers} | {"join"}
+    contract["nodes"] = [node for node in contract["nodes"] if node["id"] in keep]
+    contract["edges"] = [
+        edge
+        for edge in contract["edges"]
+        if edge["from"] in keep and (edge["to"] in keep or edge["to"] == "human")
+    ]
+    contract["entry_node"] = f"handler-{handlers[0]}"
+
+    for node in contract["nodes"]:
+        spec_dir = tmp_path / "command-specs" / node["id"]
+        spec_dir.mkdir(parents=True, exist_ok=True)
+        spec_path = spec_dir / "tau-dispatch-command.json"
+        spec_path.write_text(json.dumps({"argv": ["/bin/echo", node["id"]]}))
+        node["command_spec"] = str(spec_path)
+
+    path = tmp_path / "dag.json"
+    path.write_text(json.dumps(contract))
+    return path
+
+
+def test_concurrent_fanout_roots_are_all_entry_nodes(tmp_path: Path) -> None:
+    """Regression: a concurrent roundtable must not lose its non-declared roots.
+
+    Before this fix the project_dag compiler set ``entry_node_ids`` to the single
+    scalar ``contract.entry_node``, so plan reachability was seeded from one root
+    and every other participant was reported ``node_unreachable``. The plan was
+    rejected pre-dispatch and no participant was ever contacted, which reads like a
+    provider outage rather than a contract defect.
+    """
+
+    from tau_coding.dag_runtime.compiler import compile_project_dag_plan
+
+    handlers = ("webgpt", "webclaude", "webkimi", "webgrok", "webgemini")
+    source = _materialize_fanout_contract(tmp_path, handlers)
+    plan = compile_project_dag_plan(json.loads(source.read_text()), source_path=source)
+
+    assert set(plan.entry_node_ids) == {f"handler-{name}" for name in handlers}
+    # the declared entry stays first so entry_preserved diffs keep holding
+    assert plan.entry_node_ids[0] == "handler-webgpt"
+
+    result = validate_dag_plan(plan)
+    codes = {issue.code for issue in result.issues}
+    assert "node_unreachable" not in codes, sorted(codes)
+    assert result.ok, sorted(codes)
+
+
+def test_single_root_entry_is_unchanged(tmp_path: Path) -> None:
+    """A single-root pipeline must still report exactly one entry node."""
+
+    from tau_coding.dag_runtime.compiler import compile_project_dag_plan
+
+    source = _materialize_fanout_contract(tmp_path, ("webgpt",))
+    plan = compile_project_dag_plan(json.loads(source.read_text()), source_path=source)
+
+    assert plan.entry_node_ids == ("handler-webgpt",)
+    assert validate_dag_plan(plan).ok
