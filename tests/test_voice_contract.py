@@ -119,6 +119,63 @@ def test_extensions_object_isolates_future_data() -> None:
         parse_voice_render_request_v2(fixture["rejected_envelope"])
     parsed = parse_voice_render_request_v2(fixture["accepted_envelope"])
     assert parsed.extensions == {"future_field": {"anything": True}}
+    with pytest.raises(TypeError):
+        parsed.extensions["future_field"]["anything"] = False  # type: ignore[index]
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "expected"),
+    [
+        (("v2", "identity", "request_id"), "", "request_id"),
+        (("v2", "identity", "turn_revision"), "1", "turn_revision"),
+        (("v2", "identity", "cancel_epoch"), True, "cancel_epoch"),
+        (("v2", "lineage", "scheduler_journal_sequence"), "42", "scheduler_journal_sequence"),
+        (("v2", "delivery_decision", "requested_delivery", "intensity"), "0.5", "intensity"),
+        (("v2", "delivery_decision", "effective_delivery", "valence"), float("nan"), "valence"),
+    ],
+)
+def test_v2_strict_contract_rejects_coercion_and_empty_identity(
+    path: tuple[str, ...],
+    value: object,
+    expected: str,
+) -> None:
+    envelope = build_voice_render_request_v2(SNAPSHOT, **V2_KWARGS)
+    cursor = envelope
+    for key in path[:-1]:
+        cursor = cursor[key]
+    cursor[path[-1]] = value
+
+    with pytest.raises(VoiceContractError) as excinfo:
+        parse_voice_render_request_v2(envelope)
+    assert expected in str(excinfo.value)
+
+
+def test_v2_rejects_duplicate_or_unbound_segment_ids() -> None:
+    duplicate = build_voice_render_request_v2(SNAPSHOT, **V2_KWARGS)
+    duplicate["v2"]["segments"].append(dict(duplicate["v2"]["segments"][0]))
+    with pytest.raises(VoiceContractError) as excinfo:
+        parse_voice_render_request_v2(duplicate)
+    assert "segment_id values must be unique" in str(excinfo.value)
+
+    unbound = build_voice_render_request_v2(SNAPSHOT, **V2_KWARGS)
+    unbound["v2"]["segments"][0]["segment_id"] = "other-response-000"
+    with pytest.raises(VoiceContractError) as excinfo:
+        parse_voice_render_request_v2(unbound)
+    assert "segment_id must be bound to response_id" in str(excinfo.value)
+
+
+def test_v2_delivery_overrides_must_reconcile_with_reasons() -> None:
+    envelope = build_voice_render_request_v2(SNAPSHOT, **V2_KWARGS)
+    decision = envelope["v2"]["delivery_decision"]
+    decision["overridden_fields"] = ["tone"]
+    decision["override_reasons"] = {}
+    with pytest.raises(VoiceContractError) as excinfo:
+        parse_voice_render_request_v2(envelope)
+    assert "overridden_fields must exactly match override_reasons keys" in str(excinfo.value)
+
+    parsed = parse_voice_render_request_v2(build_voice_render_request_v2(SNAPSHOT, **V2_KWARGS))
+    with pytest.raises(TypeError):
+        parsed.delivery_decision.override_reasons["tone"] = "mutated"  # type: ignore[index]
 
 
 def test_control_fixture_cases() -> None:

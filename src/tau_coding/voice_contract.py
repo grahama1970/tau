@@ -14,9 +14,20 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any, Literal
+from collections.abc import Mapping
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    StringConstraints,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
+
+from tau_coding.public_dag_contracts import immutable_json
 
 VOICE_RENDER_REQUEST_SCHEMA_V1 = "tau.voice_render_request.v1"
 VOICE_RENDER_REQUEST_SCHEMA_V2 = "tau.voice_render_request.v2"
@@ -28,65 +39,97 @@ DELIVERY_POLICY_VERSION = "tau.voice_delivery_policy.v1"
 DECLARED_TONE_PROFILES = frozenset(
     {"firm_boundary", "relieved", "careful_concerned"}
 )
+NonEmptyStr = Annotated[str, StringConstraints(min_length=1)]
+
+
+def _tuple_from_json_array(value: Any) -> Any:
+    if isinstance(value, list):
+        return tuple(value)
+    return value
 
 
 class _StrictModel(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
+    model_config = ConfigDict(
+        extra="forbid",
+        frozen=True,
+        strict=True,
+        allow_inf_nan=False,
+        validate_default=True,
+        revalidate_instances="always",
+    )
 
 
 class DeliverySettings(_StrictModel):
     """One tone/intensity/valence/stage tuple (requested or effective)."""
 
-    tone: str | None = None
+    tone: NonEmptyStr | None = None
     intensity: float | None = None
     valence: float | None = None
-    stage: str | None = None
+    stage: NonEmptyStr | None = None
 
 
 class DeliveryDecision(_StrictModel):
     """Requested vs effective delivery with every override visible."""
 
-    policy_version: str
+    policy_version: NonEmptyStr
     requested_delivery: DeliverySettings
     effective_delivery: DeliverySettings
     overridden_fields: tuple[str, ...] = ()
-    override_reasons: dict[str, str] = Field(default_factory=dict)
-    evidence_references: tuple[str, ...] = ()
+    override_reasons: Mapping[str, NonEmptyStr] = Field(default_factory=dict)
+    evidence_references: tuple[NonEmptyStr, ...] = ()
     profile_validation_status: Literal["declared_profile", "undeclared_profile", "no_tone"]
+
+    @field_validator("overridden_fields", "evidence_references", mode="before")
+    @classmethod
+    def _accept_json_arrays(cls, value: Any) -> Any:
+        return _tuple_from_json_array(value)
+
+    @field_validator("override_reasons", mode="after")
+    @classmethod
+    def _freeze_override_reasons(
+        cls, value: Mapping[str, NonEmptyStr]
+    ) -> Mapping[str, NonEmptyStr]:
+        return immutable_json(value)
+
+    @model_validator(mode="after")
+    def _overrides_reconcile(self) -> DeliveryDecision:
+        if set(self.overridden_fields) != set(self.override_reasons):
+            raise ValueError("overridden_fields must exactly match override_reasons keys")
+        return self
 
 
 class SourceLineage(_StrictModel):
     """Where in the authoritative Tau run this audible response came from."""
 
-    workflow: str
-    run_id: str
-    node_id: str
-    attempt_id: str | None = None
+    workflow: NonEmptyStr
+    run_id: NonEmptyStr
+    node_id: NonEmptyStr
+    attempt_id: NonEmptyStr | None = None
     scheduler_journal_sequence: int | None = None
-    state_digest: str | None = None
-    goal_hash: str | None = None
-    event_type: str = "state_change"
-    state_transition: str | None = None
+    state_digest: NonEmptyStr | None = None
+    goal_hash: NonEmptyStr | None = None
+    event_type: NonEmptyStr = "state_change"
+    state_transition: NonEmptyStr | None = None
 
 
 class ResponseIdentity(_StrictModel):
     """Complete identity for one audible response and its cancellation epoch."""
 
-    request_id: str
-    conversation_id: str
-    turn_id: str
+    request_id: NonEmptyStr
+    conversation_id: NonEmptyStr
+    turn_id: NonEmptyStr
     turn_revision: int = Field(ge=0)
-    response_id: str
+    response_id: NonEmptyStr
     cancel_epoch: int = Field(ge=0)
-    supersedes_response_id: str | None = None
+    supersedes_response_id: NonEmptyStr | None = None
 
 
 class Segment(_StrictModel):
     """One speakable segment; hash-bound text, always interruptible."""
 
-    segment_id: str
-    text: str
-    text_sha256: str
+    segment_id: NonEmptyStr
+    text: NonEmptyStr
+    text_sha256: NonEmptyStr
     delivery: DeliverySettings | None = None
     interruptible: Literal[True] = True
 
@@ -102,10 +145,10 @@ class Segment(_StrictModel):
 class ControlTarget(_StrictModel):
     """Full identity a turn control must present to touch audible work."""
 
-    conversation_id: str
-    turn_id: str
+    conversation_id: NonEmptyStr
+    turn_id: NonEmptyStr
     turn_revision: int = Field(ge=0)
-    response_id: str
+    response_id: NonEmptyStr
     expected_cancel_epoch: int = Field(ge=0)
 
 
@@ -116,13 +159,18 @@ class VoiceRenderRequestV2(_StrictModel):
     ``extensions`` is the only place optional future data may live.
     """
 
-    schema_id: str = Field(alias="schema")
+    schema_id: NonEmptyStr = Field(alias="schema")
     identity: ResponseIdentity
     lineage: SourceLineage
     delivery_decision: DeliveryDecision
     segments: tuple[Segment, ...] = Field(min_length=1)
     control_target: ControlTarget
-    extensions: dict[str, Any] = Field(default_factory=dict)
+    extensions: Mapping[str, Any] = Field(default_factory=dict)
+
+    @field_validator("segments", mode="before")
+    @classmethod
+    def _accept_json_segment_array(cls, value: Any) -> Any:
+        return _tuple_from_json_array(value)
 
     @field_validator("schema_id")
     @classmethod
@@ -147,6 +195,22 @@ class VoiceRenderRequestV2(_StrictModel):
         ):
             raise ValueError("control_target must match the response identity")
         return value
+
+    @field_validator("extensions", mode="after")
+    @classmethod
+    def _freeze_extensions(cls, value: Mapping[str, Any]) -> Mapping[str, Any]:
+        return immutable_json(value)
+
+    @model_validator(mode="after")
+    def _segments_match_identity(self) -> VoiceRenderRequestV2:
+        segment_ids = [segment.segment_id for segment in self.segments]
+        if len(segment_ids) != len(set(segment_ids)):
+            raise ValueError("segment_id values must be unique")
+        prefix = f"{self.identity.response_id}-"
+        for segment in self.segments:
+            if not segment.segment_id.startswith(prefix):
+                raise ValueError("segment_id must be bound to response_id")
+        return self
 
 
 class VoiceContractError(ValueError):

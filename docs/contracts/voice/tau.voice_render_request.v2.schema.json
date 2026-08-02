@@ -5,6 +5,7 @@
       "description": "Full identity a turn control must present to touch audible work.",
       "properties": {
         "conversation_id": {
+          "minLength": 1,
           "title": "Conversation Id",
           "type": "string"
         },
@@ -14,10 +15,12 @@
           "type": "integer"
         },
         "response_id": {
+          "minLength": 1,
           "title": "Response Id",
           "type": "string"
         },
         "turn_id": {
+          "minLength": 1,
           "title": "Turn Id",
           "type": "string"
         },
@@ -47,6 +50,7 @@
         "evidence_references": {
           "default": [],
           "items": {
+            "minLength": 1,
             "type": "string"
           },
           "title": "Evidence References",
@@ -62,12 +66,14 @@
         },
         "override_reasons": {
           "additionalProperties": {
+            "minLength": 1,
             "type": "string"
           },
           "title": "Override Reasons",
           "type": "object"
         },
         "policy_version": {
+          "minLength": 1,
           "title": "Policy Version",
           "type": "string"
         },
@@ -112,6 +118,7 @@
         "stage": {
           "anyOf": [
             {
+              "minLength": 1,
               "type": "string"
             },
             {
@@ -124,6 +131,7 @@
         "tone": {
           "anyOf": [
             {
+              "minLength": 1,
               "type": "string"
             },
             {
@@ -159,20 +167,24 @@
           "type": "integer"
         },
         "conversation_id": {
+          "minLength": 1,
           "title": "Conversation Id",
           "type": "string"
         },
         "request_id": {
+          "minLength": 1,
           "title": "Request Id",
           "type": "string"
         },
         "response_id": {
+          "minLength": 1,
           "title": "Response Id",
           "type": "string"
         },
         "supersedes_response_id": {
           "anyOf": [
             {
+              "minLength": 1,
               "type": "string"
             },
             {
@@ -183,6 +195,7 @@
           "title": "Supersedes Response Id"
         },
         "turn_id": {
+          "minLength": 1,
           "title": "Turn Id",
           "type": "string"
         },
@@ -225,14 +238,17 @@
           "type": "boolean"
         },
         "segment_id": {
+          "minLength": 1,
           "title": "Segment Id",
           "type": "string"
         },
         "text": {
+          "minLength": 1,
           "title": "Text",
           "type": "string"
         },
         "text_sha256": {
+          "minLength": 1,
           "title": "Text Sha256",
           "type": "string"
         }
@@ -252,6 +268,7 @@
         "attempt_id": {
           "anyOf": [
             {
+              "minLength": 1,
               "type": "string"
             },
             {
@@ -263,12 +280,14 @@
         },
         "event_type": {
           "default": "state_change",
+          "minLength": 1,
           "title": "Event Type",
           "type": "string"
         },
         "goal_hash": {
           "anyOf": [
             {
+              "minLength": 1,
               "type": "string"
             },
             {
@@ -279,10 +298,12 @@
           "title": "Goal Hash"
         },
         "node_id": {
+          "minLength": 1,
           "title": "Node Id",
           "type": "string"
         },
         "run_id": {
+          "minLength": 1,
           "title": "Run Id",
           "type": "string"
         },
@@ -301,6 +322,7 @@
         "state_digest": {
           "anyOf": [
             {
+              "minLength": 1,
               "type": "string"
             },
             {
@@ -313,6 +335,7 @@
         "state_transition": {
           "anyOf": [
             {
+              "minLength": 1,
               "type": "string"
             },
             {
@@ -323,6 +346,7 @@
           "title": "State Transition"
         },
         "workflow": {
+          "minLength": 1,
           "title": "Workflow",
           "type": "string"
         }
@@ -358,6 +382,7 @@
       "$ref": "#/$defs/SourceLineage"
     },
     "schema": {
+      "minLength": 1,
       "title": "Schema",
       "type": "string"
     },
