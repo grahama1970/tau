@@ -156,7 +156,7 @@ def test_staged_result_crash_resumes_without_rerunning_accepted_branches(
     assert _node(receipt, "qualify-package")["resumed"] is True
     recovered = _node(receipt, "reconcile-qualification")
     assert recovered["resumed"] is False
-    assert recovered["attempt"] is None
+    assert recovered["attempt"] == 1
     with sqlite3.connect(run_dir / "dag-run.sqlite3") as connection:
         events = connection.execute(
             """SELECT e.seq, e.event_type

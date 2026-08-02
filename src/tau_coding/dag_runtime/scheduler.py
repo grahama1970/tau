@@ -16,6 +16,10 @@ from typing import Any
 
 from tau_coding.course_correction import write_course_correction_receipt
 from tau_coding.dag_runtime.admission import write_durable_json
+from tau_coding.dag_runtime.attempt_result import (
+    DagAttemptResultAdmissionError,
+    admit_dag_attempt_result,
+)
 from tau_coding.dag_runtime.correction import CorrectionStateProjection
 from tau_coding.dag_runtime.model import (
     DagPlan,
@@ -364,6 +368,7 @@ def run_dag_plan(
                         "errors": ["DAG run cancelled by operator request"],
                     }
                     lease = _cancel_and_collect_futures(
+                        plan=plan,
                         futures=futures,
                         future_attempts=future_attempts,
                         cancel_events=cancel_events,
@@ -408,6 +413,7 @@ def run_dag_plan(
                         "transition_evidence": settle_block.evidence,
                     }
                     lease = _cancel_and_collect_futures(
+                        plan=plan,
                         futures=futures,
                         future_attempts=future_attempts,
                         cancel_events=cancel_events,
@@ -692,6 +698,7 @@ def run_dag_plan(
 
                 if blocked_result is not None:
                     lease = _cancel_and_collect_futures(
+                        plan=plan,
                         futures=futures,
                         future_attempts=future_attempts,
                         cancel_events=cancel_events,
@@ -838,6 +845,7 @@ def run_dag_plan(
                             }
                     if blocked_result is not None:
                         lease = _cancel_and_collect_futures(
+                            plan=plan,
                             futures=futures,
                             future_attempts=future_attempts,
                             cancel_events=cancel_events,
@@ -937,16 +945,28 @@ def run_dag_plan(
                         run_store=run_store,
                     )
                     try:
-                        validation = _validate_attempt_result(node_id=node_id, result=result)
-                    except RuntimeError as exc:
+                        result, validation = _validate_attempt_result(
+                            plan_sha256=plan.plan_sha256,
+                            identity=identity,
+                            node_id=node_id,
+                            result=result,
+                        )
+                    except DagAttemptResultAdmissionError as exc:
                         result = {
                             "node_id": node_id,
                             "status": "BLOCKED",
                             "verdict": "DAG_ATTEMPT_RESULT_INVALID",
-                            "errors": [str(exc)],
+                            "errors": [exc.code],
+                            "alert_codes": [exc.code],
+                            "dag_attempt_result_error_path": exc.path,
                             "retryable": False,
                         }
-                        validation = _validate_attempt_result(node_id=node_id, result=result)
+                        result, validation = _validate_attempt_result(
+                            plan_sha256=plan.plan_sha256,
+                            identity=identity,
+                            node_id=node_id,
+                            result=result,
+                        )
                     raw_attempt_result = result
                     repeated_signature = _repeated_failure_signature(
                         current=result,
@@ -964,6 +984,12 @@ def run_dag_plan(
                         raw_attempt_result = result
                     if run_store is not None and lease is not None:
                         result = run_store.stage_result(lease, identity.attempt_id, result)
+                        _, validation = _validate_attempt_result(
+                            plan_sha256=plan.plan_sha256,
+                            identity=identity,
+                            node_id=node_id,
+                            result=result,
+                        )
                         _inject_fault(fault_injector, "after_result_staged", identity)
                         run_store.validate_result(lease, identity.attempt_id, validation)
                         _inject_fault(fault_injector, "after_result_validated", identity)
@@ -1200,6 +1226,7 @@ def run_dag_plan(
                     batch_blocked = True
                 if batch_blocked:
                     lease = _cancel_and_collect_futures(
+                        plan=plan,
                         futures=futures,
                         future_attempts=future_attempts,
                         cancel_events=cancel_events,
@@ -1648,7 +1675,12 @@ def _recover_incomplete_attempts(
         if raw_result is None:
             raise RuntimeError("dag_attempt_output_not_committed")
         if stored.state == "STAGED":
-            validation = _validate_attempt_result(node_id=node_id, result=raw_result)
+            raw_result, validation = _validate_attempt_result(
+                plan_sha256=plan.plan_sha256,
+                identity=identity,
+                node_id=node_id,
+                result=raw_result,
+            )
             run_store.validate_result(lease, identity.attempt_id, validation)
             _inject_fault(fault_injector, "after_result_validated", identity)
         result = _with_attempt_history(
@@ -1804,23 +1836,20 @@ def _recover_incomplete_attempts(
     return None
 
 
-def _validate_attempt_result(*, node_id: str, result: Mapping[str, Any]) -> dict[str, Any]:
-    if not isinstance(result, Mapping):
-        raise RuntimeError("dag_attempt_result_invalid")
-    claimed_node = result.get("node_id")
-    if claimed_node is not None and claimed_node != node_id:
-        raise RuntimeError("dag_attempt_result_invalid:node_id")
-    for field in ("status", "verdict"):
-        value = result.get(field)
-        if not isinstance(value, str) or not value.strip():
-            raise RuntimeError(f"dag_attempt_result_invalid:{field}")
-    canonical_sha256(dict(result))
-    return {
-        "schema": "tau.dag_attempt_validation.v1",
-        "status": "PASS",
-        "node_id": node_id,
-        "result_sha256": canonical_sha256(dict(result)),
-    }
+def _validate_attempt_result(
+    *,
+    plan_sha256: str,
+    identity: DagAttemptIdentity,
+    node_id: str,
+    result: Mapping[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    admission = admit_dag_attempt_result(
+        plan_sha256=plan_sha256,
+        identity=identity,
+        node_id=node_id,
+        result=result,
+    )
+    return admission.normalized, admission.validation
 
 
 def _apply_workspace_stale_read_observations(
@@ -2139,6 +2168,7 @@ def _restore_durable_state(
 
 def _cancel_and_collect_futures(
     *,
+    plan: DagPlan,
     futures: dict[Future[dict[str, Any]], str],
     future_attempts: dict[Future[dict[str, Any]], DagAttemptIdentity],
     cancel_events: Mapping[str, Event],
@@ -2187,11 +2217,39 @@ def _cancel_and_collect_futures(
                 "errors": [str(exc)],
             }
         if run_store is not None and lease is not None:
+            try:
+                cancelled_result, validation = _validate_attempt_result(
+                    plan_sha256=plan.plan_sha256,
+                    identity=identity,
+                    node_id=pending_node_id,
+                    result=cancelled_result,
+                )
+            except DagAttemptResultAdmissionError as exc:
+                cancelled_result, validation = _validate_attempt_result(
+                    plan_sha256=plan.plan_sha256,
+                    identity=identity,
+                    node_id=pending_node_id,
+                    result={
+                        "node_id": pending_node_id,
+                        "status": "BLOCKED",
+                        "verdict": "DAG_ATTEMPT_RESULT_INVALID",
+                        "errors": [exc.code],
+                        "alert_codes": [exc.code],
+                        "dag_attempt_result_error_path": exc.path,
+                        "retryable": False,
+                    },
+                )
             cancelled_result = run_store.stage_result(lease, identity.attempt_id, cancelled_result)
+            _, validation = _validate_attempt_result(
+                plan_sha256=plan.plan_sha256,
+                identity=identity,
+                node_id=pending_node_id,
+                result=cancelled_result,
+            )
             run_store.validate_result(
                 lease,
                 identity.attempt_id,
-                _validate_attempt_result(node_id=pending_node_id, result=cancelled_result),
+                validation,
             )
             run_store.commit_output(lease, identity.attempt_id)
             run_store.commit_transition(
@@ -2583,7 +2641,7 @@ def _admit_result_receipt(
     # them via system_settlement.
     try:
         parsed = json.loads(blob.decode("utf-8"))
-    except UnicodeDecodeError, ValueError:
+    except (UnicodeDecodeError, ValueError):
         return False
     if not isinstance(parsed, dict):
         return False

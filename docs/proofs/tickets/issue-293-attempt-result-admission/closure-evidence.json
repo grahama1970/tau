@@ -1,0 +1,72 @@
+{
+  "schema": "tau.ticket_closure_evidence.v1",
+  "issue": 293,
+  "issue_url": "https://github.com/grahama1970/tau/issues/293",
+  "lease": "20260802T164038Z-codex-293",
+  "generated_at": "2026-08-02T17:12:32Z",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "proof": {
+    "markdown": "docs/proofs/tickets/issue-293-attempt-result-admission/issue-293-close-proof.md",
+    "live_readback": "docs/proofs/tickets/issue-293-attempt-result-admission/live-readback.json",
+    "live_readback_script": "docs/proofs/tickets/issue-293-attempt-result-admission/issue-293-live-readback.py"
+  },
+  "commands": [
+    {
+      "command": "uv run python docs/proofs/tickets/issue-293-attempt-result-admission/issue-293-live-readback.py",
+      "result": "issue-293 live readback PASS: /home/graham/workspace/experiments/tau/docs/proofs/tickets/issue-293-attempt-result-admission/live-readback.json"
+    },
+    {
+      "command": "uv run pytest -q tests/test_dag_attempt_result.py tests/test_dag_runtime_scheduler.py tests/test_dag_runtime_run_store.py -x",
+      "result": "64 passed in 4.46s"
+    },
+    {
+      "command": "uv run pytest -q tests/test_dag_attempt_result.py tests/test_dag_plan.py tests/test_dag_runtime_scheduler.py tests/test_dag_runtime_run_store.py tests/test_dag_plan_validation.py tests/test_node_input_manifest.py -x",
+      "result": "124 passed in 6.71s"
+    },
+    {
+      "command": "uv run pytest -q tests/test_dag_attempt_result.py tests/test_dag_runtime_scheduler.py tests/test_dag_runtime_run_store.py tests/test_dag_runtime_admission_table.py tests/test_storage_redaction_boundaries.py tests/test_durable_repository_qualification_workflow.py -x",
+      "result": "82 passed in 60.97s (0:01:00)"
+    },
+    {
+      "command": "uv run pytest -q",
+      "result": "3504 passed in 534.34s (0:08:54)"
+    },
+    {
+      "command": "uv run ruff check src/tau_coding/dag_runtime/attempt_result.py src/tau_coding/dag_runtime/scheduler.py src/tau_coding/dag_runtime/run_store.py src/tau_coding/dag_runtime/replay.py tests/test_dag_attempt_result.py tests/test_dag_runtime_scheduler.py tests/test_dag_runtime_run_store.py tests/test_dag_runtime_admission_table.py tests/test_storage_redaction_boundaries.py tests/test_durable_repository_qualification_workflow.py docs/proofs/tickets/issue-293-attempt-result-admission/issue-293-live-readback.py",
+      "result": "All checks passed!"
+    },
+    {
+      "command": "uv run mypy src/tau_coding/dag_runtime/attempt_result.py src/tau_coding/dag_runtime/scheduler.py src/tau_coding/dag_runtime/run_store.py src/tau_coding/dag_runtime/replay.py docs/proofs/tickets/issue-293-attempt-result-admission/issue-293-live-readback.py",
+      "result": "Success: no issues found in 5 source files"
+    },
+    {
+      "command": "git diff --check",
+      "result": "exit 0"
+    }
+  ],
+  "live_readback_summary": {
+    "status": "PASS",
+    "cases": [
+      {
+        "name": "scheduler_malformed_result_blocks_successor",
+        "status": "BLOCKED",
+        "verdict": "DAG_ATTEMPT_RESULT_INVALID",
+        "calls": [
+          "producer"
+        ],
+        "completed_node_ids": []
+      },
+      {
+        "name": "store_rejects_raw_malformed_without_staging",
+        "error_code": "dag_attempt_result_status_invalid",
+        "staged_rows": []
+      }
+    ]
+  },
+  "notes": [
+    "The full Tau immutable goal remains NOT_MET by this ticket alone.",
+    "Unrelated untracked .ask_artifacts/ was not staged."
+  ]
+}

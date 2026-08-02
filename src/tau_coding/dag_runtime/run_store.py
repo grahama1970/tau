@@ -14,6 +14,11 @@ from pathlib import Path
 from typing import Any, cast
 from urllib.parse import quote
 
+from tau_coding.dag_runtime.attempt_result import (
+    DAG_ATTEMPT_RESULT_VALIDATION_SCHEMA,
+    DagAttemptResultAdmissionError,
+    admit_dag_attempt_result,
+)
 from tau_coding.dag_runtime.model import (
     DAG_PLAN_SCHEMA,
     DagPlan,
@@ -1556,12 +1561,33 @@ class SqliteDagRunStore:
         attempt_id: str,
         result: Mapping[str, Any],
     ) -> dict[str, Any]:
-        redacted_result = cast(dict[str, Any], redact_for_storage(dict(result)).value)
-        canonical = canonical_json(redacted_result)
-        digest = canonical_sha256(redacted_result)
         with self._transaction():
             self._assert_lease(lease)
             attempt = self._attempt_row(attempt_id)
+            run = self._run_row(lease.run_id)
+            identity = DagAttemptIdentity(
+                run_id=str(attempt["run_id"]),
+                node_id=str(attempt["node_id"]),
+                attempt=int(attempt["attempt_no"]),
+                attempt_id=str(attempt["attempt_id"]),
+                idempotency_key=str(attempt["idempotency_key"]),
+                recovered=False,
+            )
+            try:
+                admission = admit_dag_attempt_result(
+                    plan_sha256=str(run["plan_sha256"]),
+                    identity=identity,
+                    node_id=identity.node_id,
+                    result=result,
+                )
+            except DagAttemptResultAdmissionError as exc:
+                raise DagRunStoreError(exc.code, exc.path) from exc
+            redacted_result = cast(
+                dict[str, Any],
+                redact_for_storage(admission.normalized).value,
+            )
+            canonical = canonical_json(redacted_result)
+            digest = canonical_sha256(redacted_result)
             if attempt["state"] not in {"DISPATCHED", "STAGED"}:
                 raise DagRunStoreError("dag_attempt_state_invalid", str(attempt["state"]))
             row = self._connection.execute(
@@ -1600,13 +1626,20 @@ class SqliteDagRunStore:
         attempt_id: str,
         validation: Mapping[str, Any],
     ) -> None:
-        canonical = canonical_json(dict(validation))
-        digest = canonical_sha256(dict(validation))
+        if not isinstance(validation, Mapping):
+            raise DagRunStoreError("dag_attempt_result_validation_not_object", "$")
+        validation_payload = dict(validation)
+        try:
+            canonical = canonical_json(validation_payload)
+            digest = canonical_sha256(validation_payload)
+        except RuntimeError as exc:
+            raise DagRunStoreError("dag_attempt_result_validation_non_canonical_json", "$") from exc
         with self._transaction():
             self._assert_lease(lease)
             attempt = self._attempt_row(attempt_id)
+            row = self._output_row(attempt_id)
+            self._assert_attempt_result_validation(lease, attempt, row, validation_payload)
             if attempt["state"] == "VALIDATED":
-                row = self._output_row(attempt_id)
                 if row["validation_sha256"] != digest:
                     raise DagRunStoreError("dag_attempt_result_conflict", attempt_id)
                 return
@@ -2687,6 +2720,39 @@ class SqliteDagRunStore:
         if row is None:
             raise DagRunStoreError("dag_attempt_identity_conflict", attempt_id)
         return cast(sqlite3.Row, row)
+
+    def _run_row(self, run_id: str) -> sqlite3.Row:
+        row = self._connection.execute(
+            "SELECT * FROM dag_runs WHERE run_id = ?", (run_id,)
+        ).fetchone()
+        if row is None:
+            raise DagRunStoreError("dag_run_missing", run_id)
+        return cast(sqlite3.Row, row)
+
+    def _assert_attempt_result_validation(
+        self,
+        lease: DagRunLease,
+        attempt: sqlite3.Row,
+        output: sqlite3.Row,
+        validation: Mapping[str, Any],
+    ) -> None:
+        run = self._run_row(lease.run_id)
+        expected = {
+            "schema": DAG_ATTEMPT_RESULT_VALIDATION_SCHEMA,
+            "status": "PASS",
+            "run_id": lease.run_id,
+            "plan_sha256": str(run["plan_sha256"]),
+            "node_id": str(attempt["node_id"]),
+            "attempt_id": str(attempt["attempt_id"]),
+            "attempt": int(attempt["attempt_no"]),
+            "result_sha256": str(output["staged_sha256"]),
+        }
+        for field, expected_value in expected.items():
+            if validation.get(field) != expected_value:
+                raise DagRunStoreError(
+                    f"dag_attempt_result_validation_{field}_mismatch",
+                    f"$.{field}",
+                )
 
     def _output_row(self, attempt_id: str) -> sqlite3.Row:
         row = self._connection.execute(

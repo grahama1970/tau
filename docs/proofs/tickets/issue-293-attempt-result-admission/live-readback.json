@@ -1,0 +1,46 @@
+{
+  "cases": [
+    {
+      "calls": [
+        "producer"
+      ],
+      "completed_node_ids": [],
+      "name": "scheduler_malformed_result_blocks_successor",
+      "ok": true,
+      "staged_rows": [
+        {
+          "accepted_output": null,
+          "alert_codes": [
+            "dag_attempt_result_pass_verdict_mismatch"
+          ],
+          "attempt": 1,
+          "attempt_id": "attempt-c322108daf9f78c3eeea9795b1d994ad",
+          "dag_attempt_result_error_path": "$.verdict",
+          "errors": [
+            "dag_attempt_result_pass_verdict_mismatch"
+          ],
+          "node_id": "producer",
+          "plan_sha256": "sha256:f0d6d01683cdb5d4bc512e8ad97ee36e5b1c80843b4bbdd59d226523c0270e44",
+          "retryable": false,
+          "run_id": "issue-293-scheduler-malformed",
+          "schema": "tau.dag_attempt_result.v1",
+          "status": "BLOCKED",
+          "verdict": "DAG_ATTEMPT_RESULT_INVALID"
+        }
+      ],
+      "status": "BLOCKED",
+      "verdict": "DAG_ATTEMPT_RESULT_INVALID"
+    },
+    {
+      "error_code": "dag_attempt_result_status_invalid",
+      "name": "store_rejects_raw_malformed_without_staging",
+      "ok": true,
+      "staged_rows": []
+    }
+  ],
+  "live": true,
+  "mocked": false,
+  "provider_live": false,
+  "schema": "tau.issue_293_live_readback.v1",
+  "status": "PASS"
+}

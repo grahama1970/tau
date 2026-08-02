@@ -66,6 +66,9 @@ def test_sqlite_run_store_redacts_staged_command_result(tmp_path: Path) -> None:
             attempt.attempt_id,
             {
                 "schema": "tau.agent_dispatch_result.v1",
+                "node_id": "worker",
+                "status": "PASS",
+                "verdict": "PASS",
                 "command_results": [
                     {
                         "command": ["curl", f"--token={secret}"],
