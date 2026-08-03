@@ -79,9 +79,16 @@ from tau_agent.messages import AgentMessage
 from tau_agent.tools import AgentTool
 from tau_ai import ProviderErrorEvent, ProviderEvent
 from tau_ai.provider import CancellationToken
+from tau_coding.command_specs import (
+    CommandSpec,
+    execute_command_spec,
+    load_command_specs_with_diagnostics,
+)
 from tau_coding.commands import (
+    CommandContext,
     CommandRegistry,
     CommandResult,
+    SlashCommand,
     create_default_command_registry,
     daxnuts_easter_message,
 )
@@ -7755,6 +7762,7 @@ class TauTuiApp(App[None]):
         self._last_empty_escape_at: float | None = None
         self._pty_proof_enabled = os.environ.get("TAU_TUI_PTY_PROOF") == "1"
         self._pty_proof_run_id = os.environ.get("TAU_TUI_PTY_RUN_ID", "tau-real-tui")
+        self._pty_proof_submit_text = os.environ.get("TAU_TUI_PTY_SUBMIT_TEXT")
         self._anthropic_subscription_warning_shown = False
 
     def _load_session_transcript(self) -> None:
@@ -7915,8 +7923,29 @@ class TauTuiApp(App[None]):
         if self.startup_resume_picker:
             self.call_after_refresh(self.action_open_session_picker)
             return
+        if (
+            self._pty_proof_enabled
+            and self._pty_proof_submit_text
+            and self._pty_proof_submit_text.strip()
+        ):
+            self.call_after_refresh(self._run_pty_proof_submit_text)
+            return
         if self.initial_prompt and self.initial_prompt.strip():
             self._submit_prompt(self.initial_prompt.strip())
+
+    def _run_pty_proof_submit_text(self) -> None:
+        self.run_worker(self._submit_pty_proof_text(), exclusive=False)
+
+    async def _submit_pty_proof_text(self) -> None:
+        with suppress(NoMatches):
+            prompt = self.query_one("#prompt", PromptInput)
+            prompt.text = self._pty_proof_submit_text or ""
+            prompt.move_cursor(_text_end_location(prompt.text))
+            self._set_prompt_completion_state(
+                prompt.text,
+                cursor_position=prompt.cursor_position,
+            )
+        await self.action_submit_prompt()
 
     async def _warn_about_tmux_keyboard_setup(self) -> None:
         """Warn when tmux is likely to swallow Pi-style modified keys."""
@@ -16800,10 +16829,35 @@ class _PtyProofRealAppSession:
         self.session_manager = None
         self.state = _PtyProofRealAppSessionState()
         self.messages: tuple[AgentMessage, ...] = ()
+        self.session_id = "tau-pty-proof"
+        self.resource_paths = TauResourcePaths(cwd=cwd)
+        loaded = load_command_specs_with_diagnostics(self.resource_paths)
+        self.command_specs = loaded.accepted
+        self.resource_diagnostics = loaded.diagnostics
+        self.command_registry = create_default_command_registry()
+        for spec in self.command_specs:
+            if self.command_registry.get(spec.name) is not None:
+                continue
+            self.command_registry.register(_pty_command_spec_slash_command(spec))
 
     def handle_command(self, text: str) -> CommandResult:
-        del text
-        return CommandResult(handled=False)
+        return self.command_registry.execute(self, text)
+
+    async def handle_command_async(
+        self,
+        text: str,
+        *,
+        current_editor_text: str | None = None,
+        show_tool_results: bool = False,
+        current_theme: str | None = None,
+    ) -> CommandResult:
+        return await self.command_registry.execute_async(
+            self,
+            text,
+            current_editor_text=current_editor_text,
+            show_tool_results=show_tool_results,
+            current_theme=current_theme,
+        )
 
     def queue_update_event(self) -> QueueUpdateEvent:
         return QueueUpdateEvent(steering=(), follow_up=())
@@ -16817,6 +16871,22 @@ class _PtyProofRealAppSession:
         del text, streaming_behavior
         if False:
             yield AgentStartEvent()
+
+
+def _pty_command_spec_slash_command(spec: CommandSpec) -> SlashCommand:
+    def handler(context: CommandContext) -> CommandResult:
+        return execute_command_spec(spec, context)
+
+    return SlashCommand(
+        name=spec.name,
+        usage=spec.usage,
+        description=f"{spec.description} (command spec)",
+        handler=handler,
+        search_terms=("custom", "manifest", "command-spec"),
+        argument_hint=spec.argument_hint,
+        argument_completions=spec.argument_completions,
+        source=f"command-spec:{spec.path}",
+    )
 
 
 def run_pty_proof_real_app() -> None:

@@ -620,6 +620,15 @@ def create_default_command_registry() -> CommandRegistry:
     )
     registry.register(
         SlashCommand(
+            name="command-specs",
+            usage="/command-specs",
+            description="Show declarative custom slash command policy diagnostics.",
+            handler=_command_specs_command,
+            search_terms=("custom", "commands", "policy", "manifest"),
+        )
+    )
+    registry.register(
+        SlashCommand(
             name="workflows",
             usage="/workflows",
             description="List packaged canonical Tau workflows and launch commands.",
@@ -1162,6 +1171,34 @@ def _resources_command(context: CommandContext) -> CommandResult:
         lines.extend(_format_diagnostics(session.resource_diagnostics))
     else:
         lines.append("Resource diagnostics: none")
+    return CommandResult(handled=True, message="\n".join(lines))
+
+
+def _command_specs_command(context: CommandContext) -> CommandResult:
+    if context.args:
+        return CommandResult(handled=True, message="Usage: /command-specs")
+    specs = tuple(getattr(context.session, "command_specs", ()))
+    diagnostics = tuple(getattr(context.session, "resource_diagnostics", ()))
+    lines = ["Command specs:", "Accepted:"]
+    if specs:
+        lines.extend(
+            f"- /{spec.name}: {spec.description} ({spec.path})" for spec in specs
+        )
+    else:
+        lines.append("- none")
+    lines.append("Diagnostics:")
+    command_diagnostics = [
+        diagnostic for diagnostic in diagnostics if diagnostic.kind == "command_spec"
+    ]
+    if command_diagnostics:
+        lines.extend(f"- {diagnostic.format()}" for diagnostic in command_diagnostics)
+    else:
+        lines.append("- none")
+    resource_paths = getattr(context.session, "resource_paths", None)
+    command_dirs = tuple(getattr(resource_paths, "command_spec_dirs", ()))
+    if command_dirs:
+        lines.append("Resource directories:")
+        lines.extend(f"- {path}" for path in command_dirs)
     return CommandResult(handled=True, message="\n".join(lines))
 
 

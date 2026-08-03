@@ -55,6 +55,11 @@ from tau_agent.session.tree import SessionTreeError, path_to_entry
 from tau_agent.tools import AgentTool
 from tau_ai import CancellationToken, ModelProvider, ProviderEvent, ProviderHttpHooks
 from tau_coding.branch_summary import summarize_branch_messages_with_model
+from tau_coding.command_specs import (
+    CommandSpec,
+    execute_command_spec,
+    load_command_specs_with_diagnostics,
+)
 from tau_coding.commands import (
     CommandArgumentCompletion,
     CommandContext,
@@ -243,6 +248,7 @@ class SessionResources:
     context_files: tuple[ProjectContextFile, ...]
     custom_themes: Mapping[str, Any]
     extensions: tuple[LoadedExtension, ...]
+    command_specs: tuple[CommandSpec, ...]
     extension_tools: tuple[AgentTool, ...]
     extension_provider_configs: tuple[ProviderConfig, ...]
     diagnostics: tuple[ResourceDiagnostic, ...]
@@ -325,6 +331,7 @@ class CodingSession:
         context_files: tuple[ProjectContextFile, ...] = (),
         custom_themes: Mapping[str, Any] | None = None,
         extensions: tuple[LoadedExtension, ...] = (),
+        command_specs: tuple[CommandSpec, ...] = (),
         resource_diagnostics: tuple[ResourceDiagnostic, ...] = (),
         command_registry: CommandRegistry | None = None,
         base_command_registry: CommandRegistry | None = None,
@@ -340,6 +347,7 @@ class CodingSession:
         self._context_files = context_files
         self._custom_themes = dict(custom_themes or {})
         self._extensions = extensions
+        self._command_specs = command_specs
         self._runtime_extension_tool_sources: dict[str, str] = {}
         self._runtime_extension_tool_renderers: dict[str, ExtensionToolRenderers] = {}
         harness_config = getattr(harness, "config", None)
@@ -486,6 +494,7 @@ class CodingSession:
         command_registry, command_diagnostics = _command_registry_with_extensions(
             base_command_registry,
             resources.extensions,
+            resources.command_specs,
         )
         session = cls(
             config,
@@ -497,6 +506,7 @@ class CodingSession:
             context_files=resources.context_files,
             custom_themes=resources.custom_themes,
             extensions=resources.extensions,
+            command_specs=resources.command_specs,
             resource_diagnostics=(*resources.diagnostics, *command_diagnostics),
             command_registry=command_registry,
             base_command_registry=base_command_registry,
@@ -855,6 +865,11 @@ class CodingSession:
         return self._extensions
 
     @property
+    def command_specs(self) -> tuple[CommandSpec, ...]:
+        """Return policy-accepted declarative custom slash commands."""
+        return self._command_specs
+
+    @property
     def extension_tool_sources(self) -> dict[str, str]:
         """Return a map from extension tool name to loaded extension name."""
         sources = {
@@ -1081,6 +1096,11 @@ class CodingSession:
         """Return non-fatal resource discovery diagnostics."""
         return self._resource_diagnostics
 
+    @property
+    def resource_paths(self) -> TauResourcePaths:
+        """Return the resolved resource path set for diagnostics."""
+        return self._resource_paths
+
     async def emit_extension_event(self, event: Mapping[str, object]) -> tuple[object, ...]:
         """Emit a bounded Pi-style extension lifecycle event to registered handlers."""
         event_type = str(event.get("type") or "").strip()
@@ -1209,6 +1229,7 @@ class CodingSession:
         command_registry, command_diagnostics = _command_registry_with_extensions(
             self._base_command_registry,
             resources.extensions,
+            resources.command_specs,
         )
         self._available_tools = list(tools)
         self._harness.config.tools = tools
@@ -1217,6 +1238,7 @@ class CodingSession:
         self._context_files = resources.context_files
         self._custom_themes = dict(resources.custom_themes)
         self._extensions = resources.extensions
+        self._command_specs = resources.command_specs
         self._resource_diagnostics = (
             *self._resource_diagnostics,
             *resources.diagnostics,
@@ -1725,6 +1747,7 @@ class CodingSession:
         command_registry, command_diagnostics = _command_registry_with_extensions(
             self._base_command_registry,
             resources.extensions,
+            resources.command_specs,
         )
         resource_diagnostics = (*resources.diagnostics, *command_diagnostics)
         after_diagnostics = _diagnostic_signatures(resource_diagnostics)
@@ -1758,6 +1781,7 @@ class CodingSession:
         self._prompt_templates = resources.prompt_templates
         self._context_files = resources.context_files
         self._extensions = resources.extensions
+        self._command_specs = resources.command_specs
         self._resource_diagnostics = resource_diagnostics
         self._command_registry = command_registry
         if rebuilt_system_prompt is not None:
@@ -4663,12 +4687,14 @@ def _load_session_resources(
         disabled_paths,
         kind="extension",
     )
+    command_specs = load_command_specs_with_diagnostics(effective_paths)
     return SessionResources(
         skills=tuple(loaded_skills),
         prompt_templates=tuple(loaded_prompt_templates),
         context_files=_merge_context_files(explicit_context_files, discovered_context),
         custom_themes=custom_themes,
         extensions=tuple(loaded_extensions),
+        command_specs=command_specs.accepted,
         extension_tools=tuple(tool for extension in loaded_extensions for tool in extension.tools),
         extension_provider_configs=tuple(
             provider
@@ -4691,6 +4717,7 @@ def _load_session_resources(
                 *explicit_theme_diagnostics,
                 *extensions.diagnostics,
                 *disabled_extension_diagnostics,
+                *command_specs.diagnostics,
             ]
         ),
     )
@@ -4699,6 +4726,7 @@ def _load_session_resources(
 def _command_registry_with_extensions(
     base_registry: CommandRegistry,
     extensions: tuple[LoadedExtension, ...],
+    command_specs: tuple[CommandSpec, ...] = (),
 ) -> tuple[CommandRegistry, tuple[ResourceDiagnostic, ...]]:
     registry = base_registry.copy()
     diagnostics: list[ResourceDiagnostic] = []
@@ -4747,7 +4775,50 @@ def _command_registry_with_extensions(
                         severity="warning",
                     )
                 )
+    for spec in command_specs:
+        if registry.get(spec.name) is not None:
+            diagnostics.append(
+                ResourceDiagnostic(
+                    kind="command_spec",
+                    name=spec.name,
+                    path=spec.path,
+                    message=(
+                        "built_in_name_collision; "
+                        "custom command cannot replace existing command"
+                    ),
+                    severity="error",
+                )
+            )
+            continue
+        try:
+            registry.register(_command_spec_slash_command(spec))
+        except ValueError as exc:
+            diagnostics.append(
+                ResourceDiagnostic(
+                    kind="command_spec",
+                    name=spec.name,
+                    path=spec.path,
+                    message=f"built_in_name_collision; slash command ignored: {exc}",
+                    severity="error",
+                )
+            )
     return registry, tuple(diagnostics)
+
+
+def _command_spec_slash_command(spec: CommandSpec) -> SlashCommand:
+    def handler(context: CommandContext) -> CommandResult:
+        return execute_command_spec(spec, context)
+
+    return SlashCommand(
+        name=spec.name,
+        usage=spec.usage,
+        description=f"{spec.description} (command spec)",
+        handler=handler,
+        search_terms=("custom", "manifest", "command-spec"),
+        argument_hint=spec.argument_hint,
+        argument_completions=spec.argument_completions,
+        source=f"command-spec:{spec.path}",
+    )
 
 
 def _extension_command_invocation_name(

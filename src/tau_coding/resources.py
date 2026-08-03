@@ -108,6 +108,22 @@ class TauResourcePaths:
             dirs.append(paths.project_tau_dir(self.cwd) / "themes")
         return tuple(_dedupe_paths(dirs))
 
+    @property
+    def command_spec_dirs(self) -> tuple[Path, ...]:
+        """Return declarative custom-command directories in increasing precedence order."""
+        paths = self._paths()
+        dirs = [self.root / "commands"]
+        if self.agents_root is not None:
+            dirs.append(self.agents_root / "commands")
+        if self.cwd is not None:
+            dirs.extend(
+                [
+                    paths.project_agents_dir(self.cwd) / "commands",
+                    paths.project_tau_dir(self.cwd) / "commands",
+                ]
+            )
+        return tuple(_dedupe_paths(dirs))
+
     def _paths(self) -> TauPaths:
         agents_home = self.agents_root or Path.home() / ".agents"
         return self.paths or TauPaths(home=self.root, agents_home=agents_home)
