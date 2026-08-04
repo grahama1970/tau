@@ -570,20 +570,41 @@ def _docker_env_key(container: str) -> tuple[str | None, str, str | None]:
 
 
 def _artifact_messages(team: str, persona: str, handoff: dict[str, Any]) -> list[dict[str, str]]:
+    instructions = str(handoff.get("instructions") or "")
+    if "red_action_selection" in instructions or "blue_action_selection" in instructions:
+        schema_instruction = (
+            f"{team.title()} schema: "
+            f"{{artifact_type:{team}_action_selection, rationale:<brief>, "
+            "strategy_genome:{selected_methods:[], rejected_methods:[], "
+            "parameters:{action_proposals:[{action_id:<string>, rank:<1-or-2>, "
+            "operation:<catalog-operation>, evidence_refs:[], "
+            "expected_observation:<string>, parameters:{}}]}, "
+            "mutation_origin:<string>, expected_observation:<string>}}. "
+            "Do not include exploit_py, app_py, source code, shell commands, URLs, "
+            "headers, filesystem paths, or implementation guesses. In selected_methods "
+            "and rejected_methods, use only exact operation names from the public "
+            "action catalog or exact public evidence refs; do not invent compound "
+            "method names or service-like names such as *-api, *-worker, *-cache, "
+            "*-broker, *-renderer, or *-probe."
+        )
+    else:
+        schema_instruction = (
+            "Red schema: {artifact_type:red_exploit, exploit_py:<complete python "
+            "script containing RED_EXPLOIT_CONFIRMED>, rationale:<brief>, "
+            "strategy_genome:{selected_methods:[], rejected_methods:[], parameters:{}, "
+            "mutation_origin:<string>, expected_observation:<string>}}. "
+            "Blue schema: {artifact_type:blue_patch, app_py:<complete replacement "
+            "app.py>, rationale:<brief>, strategy_genome:{selected_methods:[], "
+            "rejected_methods:[], parameters:{}, mutation_origin:<string>, "
+            "expected_observation:<string>}}."
+        )
     return [
         {
             "role": "system",
             "content": (
                 "Return exactly one JSON object and nothing else. No markdown. "
                 "Use only team-public handoff content. Do not include chain-of-thought. "
-                "Red schema: {artifact_type:red_exploit, exploit_py:<complete python "
-                "script containing RED_EXPLOIT_CONFIRMED>, rationale:<brief>, "
-                "strategy_genome:{selected_methods:[], rejected_methods:[], parameters:{}, "
-                "mutation_origin:<string>, expected_observation:<string>}}. "
-                "Blue schema: {artifact_type:blue_patch, app_py:<complete replacement "
-                "app.py>, rationale:<brief>, strategy_genome:{selected_methods:[], "
-                "rejected_methods:[], parameters:{}, mutation_origin:<string>, "
-                "expected_observation:<string>}}."
+                + schema_instruction
             ),
         },
         {

@@ -28,6 +28,42 @@ def test_battle_handoff_requires_strategy_genome_for_both_teams() -> None:
         assert "selected_methods" in handoff["instructions"]
 
 
+def test_v16_handoff_requests_typed_action_selection_not_code() -> None:
+    context = {
+        "summary": {
+            "mode": "v16_live_topology_qualification",
+            "teams": {"red": {"objective": "choose red action"}},
+        },
+        "team_contexts": {
+            "red": {
+                "action_catalog": [
+                    {
+                        "operation": "transformed-object-workspace-escape",
+                        "parameters": {},
+                    }
+                ]
+            }
+        },
+    }
+    handoff = _handoff(
+        battle_id="battle-v16-relayforge-a",
+        run_id="relayforge-v16-live-topology",
+        scenario_id="relayforge-v16-live-topology-campaign",
+        team="red",
+        persona="battle-red-public-auditor",
+        context=_context_for_team(context, "red"),
+        worker_id="red-0",
+        worker_index=0,
+        lane_id="payload-857-receipt",
+    )
+
+    assert "artifact_type=red_action_selection" in handoff["instructions"]
+    assert "Do not return exploit_py" in handoff["instructions"]
+    assert "app.import_zip" not in handoff["instructions"]
+    assert "use only exact operation names" in handoff["instructions"]
+    assert "*-cache" in handoff["instructions"]
+
+
 def test_team_context_projection_excludes_opposing_memory() -> None:
     context = {
         "summary": {
@@ -83,6 +119,76 @@ def test_red_materialization_declares_artifact_and_genome_hashes(tmp_path: Path)
     assert receipt["artifact_sha256"] == hashlib.sha256(path.read_bytes()).hexdigest()
     assert receipt["artifact_bytes"] == path.stat().st_size
     assert receipt["strategy_genome_sha256"] == _json_sha(genome)
+
+
+def test_red_action_selection_materialization_declares_artifact_and_genome_hashes(
+    tmp_path: Path,
+) -> None:
+    genome = {
+        **_genome("red"),
+        "parameters": {
+            "action_proposals": [
+                {
+                    "action_id": "red-rf-a",
+                    "rank": 1,
+                    "operation": "transformed-object-workspace-escape",
+                    "evidence_refs": ["setup-import", "public-action-catalog"],
+                    "expected_observation": "RF-A path reaches protected objective.",
+                    "parameters": {},
+                }
+            ]
+        },
+    }
+    receipt = _materialize_team_artifact(
+        team_dir=tmp_path,
+        team="red",
+        scillm_call={
+            "parsed_json": {
+                "artifact_type": "red_action_selection",
+                "strategy_genome": genome,
+                "rationale": "select RF-A public workflow",
+            }
+        },
+    )
+
+    path = Path(receipt["path"])
+    assert receipt["status"] == "PASS"
+    assert receipt["artifact_type"] == "red_action_selection"
+    assert path.name == "red_action_selection.json"
+    assert receipt["artifact_sha256"] == hashlib.sha256(path.read_bytes()).hexdigest()
+    assert receipt["strategy_genome_sha256"] == _json_sha(genome)
+
+
+def test_red_action_selection_rejects_code_artifact(tmp_path: Path) -> None:
+    genome = {
+        **_genome("red"),
+        "parameters": {
+            "action_proposals": [
+                {
+                    "action_id": "red-rf-a",
+                    "rank": 1,
+                    "operation": "transformed-object-workspace-escape",
+                    "evidence_refs": ["setup-import", "public-action-catalog"],
+                    "expected_observation": "RF-A path reaches protected objective.",
+                    "parameters": {},
+                }
+            ]
+        },
+    }
+    receipt = _materialize_team_artifact(
+        team_dir=tmp_path,
+        team="red",
+        scillm_call={
+            "parsed_json": {
+                "artifact_type": "red_action_selection",
+                "exploit_py": "print('RED_EXPLOIT_CONFIRMED')",
+                "strategy_genome": genome,
+            }
+        },
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["reason"] == "red_action_selection_contains_code_artifact"
 
 
 def test_red_materialization_accepts_exact_local_importlib_loader(tmp_path: Path) -> None:

@@ -5,6 +5,38 @@ from pathlib import Path
 from tau_coding import battle_live_handoff, battle_scillm
 
 
+def test_battle_scillm_uses_v16_action_selection_schema_when_handoff_requests_it() -> None:
+    messages = battle_scillm._artifact_messages(
+        "red",
+        "battle-red-public-auditor",
+        {
+            "instructions": (
+                "Return a JSON object with artifact_type=red_action_selection, "
+                "rationale, and strategy_genome only. Do not return exploit_py."
+            )
+        },
+    )
+
+    system_prompt = messages[0]["content"]
+    assert "artifact_type:red_action_selection" in system_prompt
+    assert "Do not include exploit_py" in system_prompt
+    assert "use only exact operation names" in system_prompt
+    assert "*-cache" in system_prompt
+    assert "artifact_type:red_exploit" not in system_prompt
+
+
+def test_battle_scillm_preserves_legacy_battle004_red_schema() -> None:
+    messages = battle_scillm._artifact_messages(
+        "red",
+        "battle-red",
+        {"instructions": "Return a Zip Slip red exploit script."},
+    )
+
+    system_prompt = messages[0]["content"]
+    assert "artifact_type:red_exploit" in system_prompt
+    assert "RED_EXPLOIT_CONFIRMED" in system_prompt
+
+
 def test_codex_auth_problem_accepts_configured_status() -> None:
     assert (
         battle_scillm._codex_auth_problem(

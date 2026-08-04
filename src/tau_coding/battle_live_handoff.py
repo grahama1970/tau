@@ -1067,6 +1067,7 @@ def _handoff(
     worker_index: int,
     lane_id: str,
 ) -> dict[str, Any]:
+    v16_action_mode = _is_v16_action_selection_context(context)
     return {
         "schema": "tau.battle_team_handoff.v1",
         "battle_id": battle_id,
@@ -1081,6 +1082,9 @@ def _handoff(
         "public_context": context,
         "instructions": {
             "red": (
+                _v16_action_instruction("red")
+                if v16_action_mode
+                else
                 "Return a JSON object with artifact_type=red_exploit, exploit_py, and "
                 "strategy_genome. "
                 "strategy_genome must be an object with selected_methods, rejected_methods, "
@@ -1091,9 +1095,11 @@ def _handoff(
                 "Use Python standard library only. Do not import requests, httpx, flask, "
                 "fastapi, urllib, socket, or any network/HTTP package. "
                 "Do not assume a web server or localhost:8000. "
-                "The script must load import_zip from the local app.py using a local Python "
-                "import or importlib local-file load, create a temporary zip file with a path "
-                "traversal entry such as ../arena_escape.txt, call that import_zip function, "
+                "The script must include an explicit local app binding that Tau can verify, "
+                "preferably `from app import import_zip` or `import app` followed by "
+                "`app.import_zip(...)`; do not use importlib local-file loading for this "
+                "Battle handoff. Create a temporary zip file with a path traversal entry "
+                "such as ../arena_escape.txt, call that import_zip function, "
                 "and verify that the escape file was written outside the destination. "
                 "When --expect-vulnerable is passed and the vulnerable write succeeds, print "
                 "RED_EXPLOIT_CONFIRMED and exit 0. "
@@ -1101,6 +1107,9 @@ def _handoff(
                 "The script must contain RED_EXPLOIT_CONFIRMED."
             ),
             "blue": (
+                _v16_action_instruction("blue")
+                if v16_action_mode
+                else
                 "Return a JSON object with artifact_type=blue_patch, app_py, and strategy_genome. "
                 "strategy_genome must be an object with selected_methods, rejected_methods, "
                 "parameters, mutation_origin, and expected_observation. "
@@ -1108,6 +1117,34 @@ def _handoff(
             ),
         }[team],
     }
+
+
+def _is_v16_action_selection_context(context: dict[str, Any]) -> bool:
+    summary = context.get("summary")
+    if isinstance(summary, dict) and summary.get("mode") == "v16_live_topology_qualification":
+        return True
+    team_context = context.get("team_context")
+    return isinstance(team_context, dict) and isinstance(team_context.get("action_catalog"), list)
+
+
+def _v16_action_instruction(team: str) -> str:
+    artifact_type = f"{team}_action_selection"
+    return (
+        f"Return a JSON object with artifact_type={artifact_type}, rationale, and "
+        "strategy_genome only. Do not return exploit_py, app_py, source code, shell "
+        "commands, URLs, headers, filesystem paths, or implementation guesses. "
+        "strategy_genome must be an object with selected_methods, rejected_methods, "
+        "parameters, mutation_origin, and expected_observation. "
+        "strategy_genome.parameters.action_proposals must contain one or two ranked "
+        "proposal objects, each with exactly action_id, rank, operation, evidence_refs, "
+        "expected_observation, and parameters. Use only operation names and parameter "
+        "shapes from team_context.action_catalog. In selected_methods and "
+        "rejected_methods, use only exact operation names from team_context.action_catalog "
+        "or exact public evidence refs; do not invent compound method names. "
+        "Do not write service-like names such as *-api, *-worker, *-cache, "
+        "*-broker, *-renderer, or *-probe anywhere in the response. Battle owns execution; Tau only "
+        "materializes this typed action-selection artifact."
+    )
 
 
 def _materialize_team_artifact(
@@ -1139,6 +1176,8 @@ def _materialize_team_artifact(
 
 
 def _materialize_red(*, team_dir: Path, parsed: dict[str, Any]) -> dict[str, Any]:
+    if parsed.get("artifact_type") == "red_action_selection":
+        return _materialize_action_selection(team_dir=team_dir, team="red", parsed=parsed)
     script = parsed.get("exploit_py")
     if not isinstance(script, str) or not script.strip():
         return _blocked_materialization("red_exploit_py_missing", parsed)
@@ -1493,6 +1532,8 @@ def _dotted_name(node: ast.AST) -> str | None:
 
 
 def _materialize_blue(*, team_dir: Path, parsed: dict[str, Any]) -> dict[str, Any]:
+    if parsed.get("artifact_type") == "blue_action_selection":
+        return _materialize_action_selection(team_dir=team_dir, team="blue", parsed=parsed)
     app_py = parsed.get("app_py")
     if not isinstance(app_py, str) or not app_py.strip():
         return _blocked_materialization("blue_app_py_missing", parsed)
@@ -1518,6 +1559,40 @@ def _materialize_blue(*, team_dir: Path, parsed: dict[str, Any]) -> dict[str, An
         "artifact_sha256": _file_sha256(path),
         "artifact_bytes": path.stat().st_size,
         "strategy_genome_sha256": _json_sha256(parsed.get("strategy_genome")),
+        "parsed_keys": sorted(parsed),
+        "rationale": parsed.get("rationale"),
+    }
+
+
+def _materialize_action_selection(
+    *, team_dir: Path, team: str, parsed: dict[str, Any]
+) -> dict[str, Any]:
+    genome = parsed.get("strategy_genome")
+    if not isinstance(genome, dict):
+        return _blocked_materialization(f"{team}_action_selection_missing_strategy_genome", parsed)
+    parameters = genome.get("parameters")
+    proposals = parameters.get("action_proposals") if isinstance(parameters, dict) else None
+    if not isinstance(proposals, list) or not 1 <= len(proposals) <= 2:
+        return _blocked_materialization(f"{team}_action_selection_missing_action_proposals", parsed)
+    if any(not isinstance(item, dict) for item in proposals):
+        return _blocked_materialization(f"{team}_action_selection_proposal_not_object", parsed)
+    forbidden = {
+        "red": ("exploit_py", "app_py"),
+        "blue": ("exploit_py", "app_py"),
+    }[team]
+    if any(key in parsed for key in forbidden):
+        return _blocked_materialization(f"{team}_action_selection_contains_code_artifact", parsed)
+
+    path = team_dir / f"{team}_action_selection.json"
+    _write_json(path, parsed)
+    return {
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "status": "PASS",
+        "artifact_type": f"{team}_action_selection",
+        "path": str(path),
+        "artifact_sha256": _file_sha256(path),
+        "artifact_bytes": path.stat().st_size,
+        "strategy_genome_sha256": _json_sha256(genome),
         "parsed_keys": sorted(parsed),
         "rationale": parsed.get("rationale"),
     }
