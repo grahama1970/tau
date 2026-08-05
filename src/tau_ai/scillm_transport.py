@@ -44,6 +44,11 @@ class ScillmTransportProvider:
         correlation: Mapping[str, Any],
         required_capabilities: Sequence[str] = (),
         timeout_seconds: float = 300.0,
+        source: str | None = None,
+        grounding_threshold: float | None = None,
+        grounding_retries: int | None = None,
+        response_format: Mapping[str, Any] | None = None,
+        metadata: Mapping[str, Any] | None = None,
     ) -> None:
         self._base_url = base_url.rstrip("/")
         self._api_key = api_key
@@ -51,9 +56,15 @@ class ScillmTransportProvider:
         self._correlation = dict(correlation)
         self._required_capabilities = list(required_capabilities)
         self._timeout = timeout_seconds
+        self._source = source
+        self._grounding_threshold = grounding_threshold
+        self._grounding_retries = grounding_retries
+        self._response_format = dict(response_format) if response_format else None
+        self._metadata = dict(metadata) if metadata else {}
         self._transport_id: str | None = None
         self._sent_messages = 0
         self.turn_results: list[dict[str, Any]] = []
+        self.last_grounding: dict[str, Any] | None = None
 
     @property
     def transport_id(self) -> str | None:
@@ -84,6 +95,7 @@ class ScillmTransportProvider:
                 yield ProviderErrorEvent(message=str(error))
                 return
             self.turn_results.append(result)
+            self.last_grounding = result.get("grounding")
             yield ProviderResponseStartEvent(model=str(result.get("model") or self._profile_id))
             state = result.get("state")
             if state == "awaiting_tool_result":
@@ -107,13 +119,10 @@ class ScillmTransportProvider:
             )
         return response.json()
 
-    async def _create(
-        self,
-        client: httpx.AsyncClient,
-        chat_messages: list[dict[str, Any]],
-        tools: Sequence[AgentTool],
-    ) -> None:
-        body = {
+    def _create_body(
+        self, chat_messages: list[dict[str, Any]], tools: Sequence[AgentTool]
+    ) -> dict[str, Any]:
+        body: dict[str, Any] = {
             "schema": TRANSPORT_REQUEST_SCHEMA,
             "profile": self._profile_id,
             "correlation": self._correlation,
@@ -123,6 +132,25 @@ class ScillmTransportProvider:
         }
         if tools:
             body["tools"] = [_to_chat_tool(tool) for tool in tools]
+        if self._source is not None:
+            body["source"] = self._source
+            if self._grounding_threshold is not None:
+                body["grounding_threshold"] = self._grounding_threshold
+            if self._grounding_retries is not None:
+                body["grounding_retries"] = self._grounding_retries
+        if self._response_format is not None:
+            body["response_format"] = self._response_format
+        if self._metadata:
+            body["metadata"] = self._metadata
+        return body
+
+    async def _create(
+        self,
+        client: httpx.AsyncClient,
+        chat_messages: list[dict[str, Any]],
+        tools: Sequence[AgentTool],
+    ) -> None:
+        body = self._create_body(chat_messages, tools)
         response = await client.post(
             f"{self._base_url}/v1/scillm/transports", headers=self._headers(), json=body
         )

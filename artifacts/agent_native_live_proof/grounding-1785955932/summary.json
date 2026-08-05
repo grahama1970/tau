@@ -1,0 +1,22 @@
+{
+  "schema": "tau.grounded_turn_proof_summary.v1",
+  "goal_hash": "sha256:2f74424c6379bbfd90e17edca413a78b5109f2ed83cc6005c806ea1e23c3aef8",
+  "ticket": "tau#311",
+  "grounded_node": {
+    "settlement_state": "completed",
+    "grounding": {
+      "verified": true,
+      "score": 1.0,
+      "attempts": 1
+    },
+    "transport_id": "tr_ddfab164247d442a"
+  },
+  "json_node": {
+    "settlement_state": "completed",
+    "parsed_json": {
+      "harness": "Claude Code (claude-cli)",
+      "journal_hash_chained": false
+    },
+    "transport_id": "tr_83578ec563e54b55"
+  }
+}

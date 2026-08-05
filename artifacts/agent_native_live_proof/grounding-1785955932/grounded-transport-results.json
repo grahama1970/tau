@@ -1,0 +1,40 @@
+[
+  {
+    "schema": "scillm.transport_result.v1",
+    "transport_id": "tr_ddfab164247d442a",
+    "ok": true,
+    "state": "turn_completed",
+    "state_reason": null,
+    "error_type": null,
+    "turn": 0,
+    "profile": "claude-model-turn",
+    "provider": "anthropic-oauth",
+    "model": "claude-sonnet-4-6",
+    "auth_source": "~/.claude/.credentials.json",
+    "upstream": {
+      "id": "chatcmpl-claude-1307a378",
+      "model": "claude-sonnet-4-6",
+      "provider_profile": "claude-model-turn"
+    },
+    "usage": {
+      "completion_tokens": 10,
+      "prompt_tokens": 81,
+      "total_tokens": 91,
+      "completion_tokens_details": null,
+      "prompt_tokens_details": null
+    },
+    "grounding": {
+      "verified": true,
+      "score": 1.0,
+      "attempts": 1
+    },
+    "correlation": {
+      "tau_run_id": "grounding-proof-1785955932",
+      "node_id": "grounded-node",
+      "attempt": 1,
+      "goal_hash": "sha256:2f74424c6379bbfd90e17edca413a78b5109f2ed83cc6005c806ea1e23c3aef8"
+    },
+    "tau_completion": null,
+    "note": "transport result only; Tau owns tools, evidence, and completion"
+  }
+]

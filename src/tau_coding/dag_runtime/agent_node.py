@@ -419,6 +419,7 @@ class AgentNodeRun:
             "journal_head_sha256": (
                 self.journal.entries[-1]["sha256"] if self.journal.entries else ""
             ),
+            "grounding": getattr(self.provider, "last_grounding", None),
             "journal_length": len(self.journal.entries),
             "proof_boundary": {
                 "provider_completion_is_not_settlement": True,
