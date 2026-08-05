@@ -595,6 +595,8 @@ def _project_adapter_config(raw: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _generic_adapter_kind(raw: Mapping[str, Any]) -> str:
+    if raw.get("tau_agent") is not None:
+        return "tau_native_agent_loop"
     if raw.get("skill") is not None:
         return "generic_skill"
     if raw.get("transaction") is not None:
@@ -603,6 +605,11 @@ def _generic_adapter_kind(raw: Mapping[str, Any]) -> str:
 
 
 def _generic_adapter_config(raw: Mapping[str, Any], *, source_dir: Path) -> dict[str, Any]:
+    if raw.get("tau_agent") is not None:
+        config = _portable_config(raw["tau_agent"], source_dir=source_dir)
+        if not isinstance(config, dict):
+            raise RuntimeError("tau_agent adapter config must be an object")
+        return config
     if raw.get("skill") is not None:
         config = _portable_config(raw["skill"], source_dir=source_dir)
         if not isinstance(config, dict):

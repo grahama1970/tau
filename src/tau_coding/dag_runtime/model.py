@@ -32,6 +32,7 @@ DAG_PLAN_ADAPTER_KINDS = frozenset(
         "project_provider",
         "project_provider_handoff_command",
         "project_virtual",
+        "tau_native_agent_loop",
     }
 )
 DAG_PLAN_COMPLETION_POLICIES = frozenset(

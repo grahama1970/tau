@@ -2628,7 +2628,15 @@ def _parse_node(raw_node: dict[str, Any], *, base_dir: Path) -> DagNode:
         else None
     )
     transaction_raw = raw_node.get("transaction")
-    if skill is None and browser is None and (
+    tau_agent_raw = raw_node.get("tau_agent")
+    if tau_agent_raw is not None:
+        if not isinstance(tau_agent_raw, dict):
+            raise RuntimeError(f"node {node_id} tau_agent must be an object")
+        if command is not None or skill is not None or browser is not None:
+            raise RuntimeError(
+                f"node {node_id} must declare exactly one of command, skill, browser, tau_agent"
+            )
+    if skill is None and browser is None and tau_agent_raw is None and (
         not isinstance(command, list)
         or not command
         or not all(isinstance(part, str) and part for part in command)

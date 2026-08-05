@@ -157,6 +157,7 @@ GENERIC_DAG_NODE_KEYS = frozenset(
         "transaction",
         "skill",
         "browser",
+        "tau_agent",
         "extensions",
     }
 )

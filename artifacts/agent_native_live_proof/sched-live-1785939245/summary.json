@@ -1,0 +1,81 @@
+{
+  "schema": "tau.scheduler_live_proof_summary.v1",
+  "run_id": "sched-live-1785939245",
+  "goal_hash": "sha256:1d0bf2f9adda4a3784986ec567f5d003e15857dc1f2da95c4cd56112d02105b7",
+  "scheduler_status": "PASS",
+  "scheduler_verdict": "PASS",
+  "completed_node_ids": [
+    "verifier",
+    "worker"
+  ],
+  "profiles": {
+    "worker": "claude-model-turn",
+    "verifier": "codex-model-turn"
+  },
+  "worker_settlement": {
+    "schema": "tau.agent_node_settlement.v1",
+    "run_id": "generic:sched-live-1785939245",
+    "node_id": "worker",
+    "attempt_id": "generic:sched-live-1785939245:worker:1",
+    "attempt": 1,
+    "goal_hash": "sha256:1d0bf2f9adda4a3784986ec567f5d003e15857dc1f2da95c4cd56112d02105b7",
+    "plan_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "harness": "tau_native_agent_loop",
+    "state": "completed",
+    "blockers": [],
+    "turns": 2,
+    "turn_receipt_sha256s": [
+      "sha256:f55645f26fa318dda4ca3de2f286179b6b3b3bdabe00bc4e338608f7df4e6166",
+      "sha256:8c435e4f9b0bb7cff30c59955e3381731986700c3cfce0795d3208a6146d98c4"
+    ],
+    "tool_effect_receipt_sha256s": [
+      "sha256:a8813dec3e11098c27cb27a2258388ceb8ca12e54cc4aae66eac4af6bfad3666"
+    ],
+    "rejected_tool_requests": 0,
+    "evidence": {
+      "tool_effect_receipt": "sha256:54671a313dd4c5237cd7028290dcf57e71f78365f396ff6109463a061a515a69"
+    },
+    "journal_head_sha256": "sha256:d212a8266f6bf3a2eb1f3c3806343653ac24339b588d050d1dddc61d763e47e7",
+    "journal_length": 7,
+    "proof_boundary": {
+      "provider_completion_is_not_settlement": true,
+      "model_done_claim_is_not_settlement": true,
+      "settlement_requires_required_evidence": true
+    },
+    "sha256": "sha256:a5a31cf1bc64d5fcf3477ab20363b26e79cca12ff83cfba20d1ba94b5329c4b8"
+  },
+  "verifier_settlement": {
+    "schema": "tau.agent_node_settlement.v1",
+    "run_id": "generic:sched-live-1785939245",
+    "node_id": "verifier",
+    "attempt_id": "generic:sched-live-1785939245:verifier:1",
+    "attempt": 1,
+    "goal_hash": "sha256:1d0bf2f9adda4a3784986ec567f5d003e15857dc1f2da95c4cd56112d02105b7",
+    "plan_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "harness": "tau_native_agent_loop",
+    "state": "completed",
+    "blockers": [],
+    "turns": 2,
+    "turn_receipt_sha256s": [
+      "sha256:8544c5f01a78dca3f57e98d1b1a30347c0c9770b52d2bbba4d67b59ce8befd0c",
+      "sha256:60e32d5728081dc7350be81bd741e00f74070887ae66104c432dc536def3b9d0"
+    ],
+    "tool_effect_receipt_sha256s": [
+      "sha256:c9e0b5acddc8cfbd0a9b693cb2ed65d246eb8d69f380947c876ba7e2c4a984b4"
+    ],
+    "rejected_tool_requests": 0,
+    "evidence": {
+      "tool_effect_receipt": "sha256:5a370379b67cc2d170767439e6380e79c31a1980e7dc1f8525a2c6923c8d06f6"
+    },
+    "journal_head_sha256": "sha256:cbbfaa3ab6ea3d5d37d9b589a5356da26d27af1bdac4d3c2b05d10c18fa03b49",
+    "journal_length": 7,
+    "proof_boundary": {
+      "provider_completion_is_not_settlement": true,
+      "model_done_claim_is_not_settlement": true,
+      "settlement_requires_required_evidence": true
+    },
+    "sha256": "sha256:8a8943a192cd8dae855500a33f4b2651c083ffb2e0bd91f1e8db8c6fd2855cd6"
+  },
+  "artifact_readback_ok": true,
+  "review_verdict_pass": true
+}

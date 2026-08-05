@@ -1,0 +1,51 @@
+{
+  "schema": "tau.generic_dag_spec.v1",
+  "run_id": "sched-live-1785939245",
+  "run_dir": "/home/graham/workspace/experiments/tau/artifacts/agent_native_live_proof/sched-live-1785939245/run",
+  "nodes": [
+    {
+      "node_id": "worker",
+      "role": "backend",
+      "tau_agent": {
+        "prompt": "Call write_file exactly once with path='proof.txt' and content='scheduler-native live proof for tau#310'. Then state what you wrote.",
+        "role": "backend",
+        "model": "profile:claude-model-turn",
+        "allowed_paths": [
+          "proof.txt"
+        ],
+        "required_evidence": [
+          "tool_effect_receipt"
+        ]
+      },
+      "depends_on": [],
+      "accepted_context_from": [],
+      "receipt_path": "/home/graham/workspace/experiments/tau/artifacts/agent_native_live_proof/sched-live-1785939245/receipts/worker.json",
+      "timeout_seconds": 300,
+      "max_attempts": 1
+    },
+    {
+      "node_id": "verifier",
+      "role": "review",
+      "tau_agent": {
+        "prompt": "Call read_file with path='proof.txt'. Answer exactly 'VERDICT: PASS' if its content is 'scheduler-native live proof for tau#310', else 'VERDICT: FAIL' plus the reason.",
+        "role": "review",
+        "model": "profile:codex-model-turn",
+        "allowed_paths": [
+          "proof.txt"
+        ],
+        "required_evidence": [
+          "tool_effect_receipt"
+        ]
+      },
+      "depends_on": [
+        "worker"
+      ],
+      "accepted_context_from": [
+        "worker"
+      ],
+      "receipt_path": "/home/graham/workspace/experiments/tau/artifacts/agent_native_live_proof/sched-live-1785939245/receipts/verifier.json",
+      "timeout_seconds": 300,
+      "max_attempts": 1
+    }
+  ]
+}
