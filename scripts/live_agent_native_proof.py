@@ -353,4 +353,7 @@ async def main() -> int:
 
 
 if __name__ == "__main__":
+    if "--live" not in sys.argv:
+        print("refusing to run: this entrypoint performs live provider calls; pass --live")
+        raise SystemExit(2)
     raise SystemExit(asyncio.run(main()))

@@ -1,0 +1,66 @@
+[
+  {
+    "schema": "scillm.transport_result.v1",
+    "transport_id": "tr_7d0b00cb0be04f01",
+    "ok": true,
+    "state": "awaiting_tool_result",
+    "state_reason": null,
+    "turn": 0,
+    "profile": "claude-model-turn",
+    "provider": "anthropic-oauth",
+    "model": "claude-sonnet-4-6",
+    "auth_source": "~/.claude/.credentials.json",
+    "upstream": {
+      "id": "chatcmpl-claude-1fb998a6",
+      "model": "claude-sonnet-4-6",
+      "provider_profile": "claude-model-turn"
+    },
+    "usage": {
+      "completion_tokens": 90,
+      "prompt_tokens": 656,
+      "total_tokens": 746,
+      "completion_tokens_details": null,
+      "prompt_tokens_details": null
+    },
+    "correlation": {
+      "tau_run_id": "live-proof-1785938893",
+      "node_id": "node-backend",
+      "attempt": 1,
+      "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f"
+    },
+    "tau_completion": null,
+    "note": "transport result only; Tau owns tools, evidence, and completion"
+  },
+  {
+    "schema": "scillm.transport_result.v1",
+    "transport_id": "tr_7d0b00cb0be04f01",
+    "ok": true,
+    "state": "turn_completed",
+    "state_reason": null,
+    "turn": 1,
+    "profile": "claude-model-turn",
+    "provider": "anthropic-oauth",
+    "model": "claude-sonnet-4-6",
+    "auth_source": "~/.claude/.credentials.json",
+    "upstream": {
+      "id": "chatcmpl-claude-0735a17d",
+      "model": "claude-sonnet-4-6",
+      "provider_profile": "claude-model-turn"
+    },
+    "usage": {
+      "completion_tokens": 75,
+      "prompt_tokens": 795,
+      "total_tokens": 870,
+      "completion_tokens_details": null,
+      "prompt_tokens_details": null
+    },
+    "correlation": {
+      "tau_run_id": "live-proof-1785938893",
+      "node_id": "node-backend",
+      "attempt": 1,
+      "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f"
+    },
+    "tau_completion": null,
+    "note": "transport result only; Tau owns tools, evidence, and completion"
+  }
+]

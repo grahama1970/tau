@@ -1,0 +1,107 @@
+{
+  "schema": "tau.run_projection.v1",
+  "run_id": "live-proof-1785938893",
+  "dag_id": "agent-native-live-proof",
+  "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+  "nodes": [
+    {
+      "schema": "tau.agent_projection.v1",
+      "run_id": "live-proof-1785938893",
+      "node_id": "node-backend",
+      "attempt_id": "node-backend-attempt-1",
+      "attempt": 1,
+      "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+      "plan_sha256": "sha256:210274fba7b3b3d11cb28bf9657e0f71eb087101c0a981357892adbb16fe974c",
+      "journal_seq": 9,
+      "journal_head_sha256": "sha256:c70bb5cb41a2d3baae17f29a8ec5ba0b0a0dccbd0355c5cd09b74b58b56467ad",
+      "role": "backend",
+      "harness": "tau_native_agent_loop",
+      "transport_profile": {
+        "profile_id": "claude-model-turn",
+        "profile_sha256": "sha256:ae8c5e3250914fdfd3b17e2f87fca65b91eff84f89772cd9e8337db33b0dcb27",
+        "provider": "anthropic-oauth",
+        "model": "claude-sonnet-4-6",
+        "mode": "model_turn",
+        "capabilities": [
+          "cancellation",
+          "streaming",
+          "structured_events",
+          "structured_output",
+          "tool_calling",
+          "vision"
+        ],
+        "readiness": "transport_live_ready"
+      },
+      "lifecycle": "completed",
+      "turns": 2,
+      "turn_receipt_sha256s": [
+        "sha256:0f9cfe0c9fba802f4a1879646d52df2470f1427e827278e6ba1e44d2b063523a",
+        "sha256:bddbadf6d68bfae557ce5aa8f88f34fa3f8d6470f0c88343d8e478af132b285e"
+      ],
+      "tool_effect_receipt_sha256s": [
+        "sha256:85591cc9363c261698e23c3a409dc9f72ad7d5be0fb42547376617244c54749a"
+      ],
+      "evidence_kinds": [
+        "tool_effect_receipt"
+      ],
+      "current_blocker": null,
+      "permitted_operator_actions": [],
+      "proof_boundary": {
+        "derived_from_journal_only": true,
+        "panes_and_transport_status_not_authoritative": true,
+        "projection_is_not_semantic_quality_proof": true
+      },
+      "sha256": "sha256:6b4bac2ffb284198f4789c81c1f08347d84224ce0c901d484b2319e2cd519cad"
+    },
+    {
+      "schema": "tau.agent_projection.v1",
+      "run_id": "live-proof-1785938893",
+      "node_id": "node-review",
+      "attempt_id": "node-review-attempt-1",
+      "attempt": 1,
+      "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+      "plan_sha256": "sha256:210274fba7b3b3d11cb28bf9657e0f71eb087101c0a981357892adbb16fe974c",
+      "journal_seq": 8,
+      "journal_head_sha256": "sha256:a15fbff0ed13e6dad4d6084588d6fbc81a201fd4d7068e344063373bae69b9f3",
+      "role": "review",
+      "harness": "tau_native_agent_loop",
+      "transport_profile": {
+        "profile_id": "codex-model-turn",
+        "profile_sha256": "sha256:b735925a5858501142999e1884f15a05ac2af4f89e8ba7dcf14289483bfc8078",
+        "provider": "codex-oauth",
+        "model": "gpt-5.5",
+        "mode": "model_turn",
+        "capabilities": [
+          "cancellation",
+          "reasoning_effort",
+          "streaming",
+          "structured_events",
+          "tool_calling"
+        ],
+        "readiness": "transport_live_ready"
+      },
+      "lifecycle": "completed",
+      "turns": 2,
+      "turn_receipt_sha256s": [
+        "sha256:bab72d508c5a609dc67f7b8b55ea4354d462ac712d35a98c3853e5fcb0f390e7",
+        "sha256:5a2dad865209d59a3c414c634f35ead7fdd9281d272ac2509b0515a3ae402eb5"
+      ],
+      "tool_effect_receipt_sha256s": [
+        "sha256:62ac3a2ea9911a175b17f8f2fa959034cd6986d98bec06e1d85358ab9d417f41"
+      ],
+      "evidence_kinds": [
+        "tool_effect_receipt"
+      ],
+      "current_blocker": null,
+      "permitted_operator_actions": [],
+      "proof_boundary": {
+        "derived_from_journal_only": true,
+        "panes_and_transport_status_not_authoritative": true,
+        "projection_is_not_semantic_quality_proof": true
+      },
+      "sha256": "sha256:89fedb339d8cfe3358dcc6d7bbb45c8fe28ae69a51098554fd47abca541f02a5"
+    }
+  ],
+  "journal_seq_total": 17,
+  "sha256": "sha256:b9847ad813c211cc28558ae026e55d17fd581d691635a24f15da59d22e028e42"
+}

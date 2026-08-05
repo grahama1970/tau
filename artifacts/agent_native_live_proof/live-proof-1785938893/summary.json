@@ -1,0 +1,57 @@
+{
+  "schema": "tau.live_proof_summary.v1",
+  "run_id": "live-proof-1785938893",
+  "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+  "tickets": [
+    "tau#308",
+    "tau#309",
+    "tau#310"
+  ],
+  "heterogeneous_profiles": [
+    {
+      "profile_id": "claude-model-turn",
+      "profile_sha256": "sha256:ae8c5e3250914fdfd3b17e2f87fca65b91eff84f89772cd9e8337db33b0dcb27",
+      "provider": "anthropic-oauth",
+      "model": "claude-sonnet-4-6",
+      "mode": "model_turn",
+      "capabilities": [
+        "cancellation",
+        "streaming",
+        "structured_events",
+        "structured_output",
+        "tool_calling",
+        "vision"
+      ],
+      "readiness": "transport_live_ready"
+    },
+    {
+      "profile_id": "codex-model-turn",
+      "profile_sha256": "sha256:b735925a5858501142999e1884f15a05ac2af4f89e8ba7dcf14289483bfc8078",
+      "provider": "codex-oauth",
+      "model": "gpt-5.5",
+      "mode": "model_turn",
+      "capabilities": [
+        "cancellation",
+        "reasoning_effort",
+        "streaming",
+        "structured_events",
+        "tool_calling"
+      ],
+      "readiness": "transport_live_ready"
+    }
+  ],
+  "backend_settlement_state": "completed",
+  "review_settlement_state": "completed",
+  "artifact_readback_ok": true,
+  "review_verdict_pass": true,
+  "operator_action": {
+    "outcome": "queued_for_next_turn",
+    "journal_changed": true,
+    "instruction_visible_in_output": true
+  },
+  "transport_ids": {
+    "backend": "tr_7d0b00cb0be04f01",
+    "review": "tr_6c8d93655d38449a"
+  },
+  "projection_sha256": "sha256:b9847ad813c211cc28558ae026e55d17fd581d691635a24f15da59d22e028e42"
+}

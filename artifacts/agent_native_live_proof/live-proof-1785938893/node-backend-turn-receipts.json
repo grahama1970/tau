@@ -1,0 +1,33 @@
+[
+  {
+    "schema": "tau.agent_turn_receipt.v1",
+    "run_id": "live-proof-1785938893",
+    "node_id": "node-backend",
+    "attempt": 1,
+    "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+    "turn": 1,
+    "assistant_text": "",
+    "tool_calls": [
+      {
+        "id": "toolu_015fy5rhiKWeFMe6jfVkofCX",
+        "name": "write_file"
+      }
+    ],
+    "tool_executions": 1,
+    "finish_reason": "tool_calls",
+    "sha256": "sha256:0f9cfe0c9fba802f4a1879646d52df2470f1427e827278e6ba1e44d2b063523a"
+  },
+  {
+    "schema": "tau.agent_turn_receipt.v1",
+    "run_id": "live-proof-1785938893",
+    "node_id": "node-backend",
+    "attempt": 1,
+    "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+    "turn": 2,
+    "assistant_text": "I wrote the following to the file **live-proof/proof.txt**:\n\n> `tau-native live proof artifact for tickets 308/309/310`\n\nThe file was created at the path `live-proof/proof.txt` with exactly the specified content \u2014 no modifications, no additions. **TAU-STEERED**",
+    "tool_calls": [],
+    "tool_executions": 0,
+    "finish_reason": "stop",
+    "sha256": "sha256:bddbadf6d68bfae557ce5aa8f88f34fa3f8d6470f0c88343d8e478af132b285e"
+  }
+]

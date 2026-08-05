@@ -1,0 +1,74 @@
+{
+  "schema": "tau.transport_profile_selection_receipt.v1",
+  "run_id": "live-proof-1785938893",
+  "node_id": "node-backend",
+  "attempt_id": "node-backend-attempt-1",
+  "attempt": 1,
+  "plan_sha256": "sha256:210274fba7b3b3d11cb28bf9657e0f71eb087101c0a981357892adbb16fe974c",
+  "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+  "agent_requirement": {
+    "schema": "tau.agent_requirement.v1",
+    "role": "backend",
+    "harness": "tau_native_agent_loop",
+    "profile_preferences": [
+      "claude-model-turn"
+    ],
+    "required_transport_capabilities": [
+      "cancellation",
+      "streaming",
+      "tool_calling"
+    ],
+    "domain_capabilities": [],
+    "workspace": {
+      "mode": "isolated_worktree",
+      "allowed_paths": [
+        "artifacts/**"
+      ]
+    },
+    "required_evidence": [
+      "tool_effect_receipt"
+    ],
+    "fallback_policy": {
+      "allowed": true,
+      "prohibit_capability_downgrade": true
+    }
+  },
+  "agent_requirement_sha256": "sha256:48ce6301025add0216db7ca9ae59cc67761ad6f636a331dcc3e5e25abfae2c6f",
+  "scillm_discovery_sha256": "sha256:84d24c2e79259c3e97bc9772ff108011c21360738c0ece9d595c3b94880dc7a6",
+  "fallback_order": [
+    "claude-model-turn"
+  ],
+  "eligible_candidates": [
+    {
+      "profile_id": "claude-model-turn",
+      "profile_sha256": "sha256:ae8c5e3250914fdfd3b17e2f87fca65b91eff84f89772cd9e8337db33b0dcb27"
+    }
+  ],
+  "rejected_candidates": [],
+  "selected_profile": {
+    "profile_id": "claude-model-turn",
+    "profile_sha256": "sha256:ae8c5e3250914fdfd3b17e2f87fca65b91eff84f89772cd9e8337db33b0dcb27",
+    "provider": "anthropic-oauth",
+    "model": "claude-sonnet-4-6",
+    "mode": "model_turn",
+    "capabilities": [
+      "cancellation",
+      "streaming",
+      "structured_events",
+      "structured_output",
+      "tool_calling",
+      "vision"
+    ],
+    "readiness": "transport_live_ready"
+  },
+  "policy_hash": "sha256:3650abb0ec5847b7925f704805f653d432b660b70c679919a448c11b92933237",
+  "data_boundary_hash": "sha256:5dca4de18443d1cd6c6624faed6b22781c6e1fe225727fb870d4d91732095034",
+  "proof_boundary_hash": "sha256:6d40d6e2bf931811d87af9cbe71a521ad2b0236cdb639b5f289e854743576fa7",
+  "proof_boundary": {
+    "selection_is_model_free": true,
+    "profiles_are_scillm_owned": true,
+    "selection_is_not_semantic_quality_proof": true,
+    "tau_retains_agent_loop_and_settlement": true,
+    "opaque_compat_reduced_observability": false
+  }
+}

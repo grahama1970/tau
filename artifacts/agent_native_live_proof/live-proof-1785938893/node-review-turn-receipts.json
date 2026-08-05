@@ -1,0 +1,33 @@
+[
+  {
+    "schema": "tau.agent_turn_receipt.v1",
+    "run_id": "live-proof-1785938893",
+    "node_id": "node-review",
+    "attempt": 1,
+    "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+    "turn": 1,
+    "assistant_text": "",
+    "tool_calls": [
+      {
+        "id": "call_nLPUk1UnjpGL9PSaLjOiiLp4",
+        "name": "read_file"
+      }
+    ],
+    "tool_executions": 1,
+    "finish_reason": "tool_calls",
+    "sha256": "sha256:bab72d508c5a609dc67f7b8b55ea4354d462ac712d35a98c3853e5fcb0f390e7"
+  },
+  {
+    "schema": "tau.agent_turn_receipt.v1",
+    "run_id": "live-proof-1785938893",
+    "node_id": "node-review",
+    "attempt": 1,
+    "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+    "turn": 2,
+    "assistant_text": "VERDICT: PASS",
+    "tool_calls": [],
+    "tool_executions": 0,
+    "finish_reason": "stop",
+    "sha256": "sha256:5a2dad865209d59a3c414c634f35ead7fdd9281d272ac2509b0515a3ae402eb5"
+  }
+]
