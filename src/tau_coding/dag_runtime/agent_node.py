@@ -43,7 +43,9 @@ TOOL_EFFECT_RECEIPT_SCHEMA = "tau.tool_effect_receipt.v1"
 AGENT_TURN_RECEIPT_SCHEMA = "tau.agent_turn_receipt.v1"
 AGENT_NODE_SETTLEMENT_SCHEMA = "tau.agent_node_settlement.v1"
 
-HARNESS_MODES = ("tau_native_agent_loop", "opaque_agent_compat")
+TAU_NATIVE_HARNESS_MODE = "tau_native_agent_loop"
+OPAQUE_COMPAT_HARNESS_MODE = "opaque_agent_compat"
+HARNESS_MODES = (TAU_NATIVE_HARNESS_MODE, OPAQUE_COMPAT_HARNESS_MODE)
 
 TERMINAL_STATES = ("completed", "failed", "cancelled", "blocked")
 
