@@ -1,0 +1,26 @@
+{
+  "schema": "tau.operator_action_receipt.v1",
+  "request": {
+    "schema": "tau.operator_action_request.v1",
+    "action": "add_next_turn_instruction",
+    "actor": "human_operator",
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-backend",
+    "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+    "observed_journal_seq": 0,
+    "instruction": "In your final summary, include the token TAU-STEERED so the operator action is visible in the transcript."
+  },
+  "request_sha256": "sha256:0aeb4aa17746a301f9013737b4db9c63df43e26e3ab06ebbe5263122c1b8af21",
+  "run_id": "live-proof-1785938731",
+  "node_id": "node-backend",
+  "attempt": 1,
+  "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+  "outcome": "queued_for_next_turn",
+  "journal_transition": {
+    "observed_seq": 0,
+    "resulting_seq": 1,
+    "resulting_head_sha256": "sha256:edf4029de0a34d306a6a022d7198a5c02b0659a454cc2f1b3f6309dc9d26ecdb",
+    "journal_changed": true
+  },
+  "sha256": "sha256:bf9ea788c7ff96f1e725fd35534fdc6b678f63d5baa56639cef153ff79487bad"
+}

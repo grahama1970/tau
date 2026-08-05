@@ -1,0 +1,32 @@
+{
+  "schema": "tau.agent_node_settlement.v1",
+  "run_id": "live-proof-1785938731",
+  "node_id": "node-review",
+  "attempt_id": "node-review-attempt-1",
+  "attempt": 1,
+  "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+  "plan_sha256": "sha256:210274fba7b3b3d11cb28bf9657e0f71eb087101c0a981357892adbb16fe974c",
+  "harness": "tau_native_agent_loop",
+  "state": "completed",
+  "blockers": [],
+  "turns": 2,
+  "turn_receipt_sha256s": [
+    "sha256:008e2f68a0bf63ace7bc4875b260308eb8f2ae363a3260d028de30fcd55a7468",
+    "sha256:a5ab0aa2aa11b61d70faf4b1110862487e914beffe0d532df7adbb54af93113e"
+  ],
+  "tool_effect_receipt_sha256s": [
+    "sha256:2d3ae267afe105087c2bc5b4483fbb1a34b7df13e83365520c055cc9d55a3ed6"
+  ],
+  "rejected_tool_requests": 0,
+  "evidence": {
+    "tool_effect_receipt": "sha256:105f746492d325eb0276c5ac657f3f3bcef352111a6cfc0c7e59e8b63540cb6d"
+  },
+  "journal_head_sha256": "sha256:d1efa2a0ceb1e5a5c9da43aef663fe61338cee535340fe7d650fba5468ecf7a4",
+  "journal_length": 7,
+  "proof_boundary": {
+    "provider_completion_is_not_settlement": true,
+    "model_done_claim_is_not_settlement": true,
+    "settlement_requires_required_evidence": true
+  },
+  "sha256": "sha256:18bb95314263c6b46a431c8321bd38eee07fdccd459b247e4a90909bdd411c6c"
+}

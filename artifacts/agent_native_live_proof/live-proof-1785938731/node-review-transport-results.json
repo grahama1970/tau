@@ -1,0 +1,66 @@
+[
+  {
+    "schema": "scillm.transport_result.v1",
+    "transport_id": "tr_b0f9eb67046c44cf",
+    "ok": true,
+    "state": "awaiting_tool_result",
+    "state_reason": null,
+    "turn": 0,
+    "profile": "codex-model-turn",
+    "provider": "codex-oauth",
+    "model": "gpt-5.5",
+    "auth_source": "~/.codex/auth.json",
+    "upstream": {
+      "id": "chatcmpl-codex-12f6f04a",
+      "model": "gpt-5.5",
+      "provider_profile": "codex-model-turn"
+    },
+    "usage": {
+      "completion_tokens": 22,
+      "prompt_tokens": 131,
+      "total_tokens": 153,
+      "completion_tokens_details": null,
+      "prompt_tokens_details": null
+    },
+    "correlation": {
+      "tau_run_id": "live-proof-1785938731",
+      "node_id": "node-review",
+      "attempt": 1,
+      "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f"
+    },
+    "tau_completion": null,
+    "note": "transport result only; Tau owns tools, evidence, and completion"
+  },
+  {
+    "schema": "scillm.transport_result.v1",
+    "transport_id": "tr_b0f9eb67046c44cf",
+    "ok": true,
+    "state": "turn_completed",
+    "state_reason": null,
+    "turn": 1,
+    "profile": "codex-model-turn",
+    "provider": "codex-oauth",
+    "model": "gpt-5.5",
+    "auth_source": "~/.codex/auth.json",
+    "upstream": {
+      "id": "chatcmpl-codex-66b8adbe",
+      "model": "gpt-5.5",
+      "provider_profile": "codex-model-turn"
+    },
+    "usage": {
+      "completion_tokens": 8,
+      "prompt_tokens": 177,
+      "total_tokens": 185,
+      "completion_tokens_details": null,
+      "prompt_tokens_details": null
+    },
+    "correlation": {
+      "tau_run_id": "live-proof-1785938731",
+      "node_id": "node-review",
+      "attempt": 1,
+      "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f"
+    },
+    "tau_completion": null,
+    "note": "transport result only; Tau owns tools, evidence, and completion"
+  }
+]

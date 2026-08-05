@@ -1,0 +1,33 @@
+[
+  {
+    "schema": "tau.agent_turn_receipt.v1",
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-backend",
+    "attempt": 1,
+    "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+    "turn": 1,
+    "assistant_text": "",
+    "tool_calls": [
+      {
+        "id": "toolu_01XUGRVFpbsL8CRNtSCTmttn",
+        "name": "write_file"
+      }
+    ],
+    "tool_executions": 1,
+    "finish_reason": "tool_calls",
+    "sha256": "sha256:e67079f4aacfd9a8115b8d09a176fbfa3f045eec43c2a76685f9a42858f31424"
+  },
+  {
+    "schema": "tau.agent_turn_receipt.v1",
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-backend",
+    "attempt": 1,
+    "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+    "turn": 2,
+    "assistant_text": "I wrote the following to the file **live-proof/proof.txt**:\n\n> tau-native live proof artifact for tickets 308/309/310\n\nThe file was created at the path `live-proof/proof.txt` with exactly the specified content. This action was TAU-STEERED, making the operator-directed write visible in the transcript for traceability against tickets 308, 309, and 310.",
+    "tool_calls": [],
+    "tool_executions": 0,
+    "finish_reason": "stop",
+    "sha256": "sha256:b0a140cb251a457d01785083e2b58aaaf46319285509701bab147b912b7673f5"
+  }
+]

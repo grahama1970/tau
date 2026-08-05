@@ -1,0 +1,141 @@
+[
+  {
+    "schema": "tau.agent_event.v1",
+    "seq": 1,
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-review",
+    "attempt": 1,
+    "event_type": "agent_node_started",
+    "payload": {
+      "prompt_sha256": "sha256:2f02b3f1be7d4c2478ee7e6c981206e096d1c1f1e9d72bf0afff42fe262c2068"
+    },
+    "prev_sha256": "",
+    "sha256": "sha256:ab47fa5a4e30f65188ecff334ec78ed20c2e1ac0fdeacc183a54c47e381af799"
+  },
+  {
+    "schema": "tau.agent_event.v1",
+    "seq": 2,
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-review",
+    "attempt": 1,
+    "event_type": "tool_request_admitted",
+    "payload": {
+      "schema": "tau.tool_request.v1",
+      "run_id": "live-proof-1785938731",
+      "node_id": "node-review",
+      "attempt": 1,
+      "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+      "tool_name": "read_file",
+      "request_index": 1,
+      "arguments": {
+        "path": "live-proof/proof.txt"
+      }
+    },
+    "prev_sha256": "sha256:ab47fa5a4e30f65188ecff334ec78ed20c2e1ac0fdeacc183a54c47e381af799",
+    "sha256": "sha256:97a77d186c79837cfb9c9bbc07a2c44ad5453c92ea2f759ce3cd159539f65f5c"
+  },
+  {
+    "schema": "tau.agent_event.v1",
+    "seq": 3,
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-review",
+    "attempt": 1,
+    "event_type": "tool_effect_recorded",
+    "payload": {
+      "schema": "tau.tool_effect_receipt.v1",
+      "tool_request": {
+        "schema": "tau.tool_request.v1",
+        "run_id": "live-proof-1785938731",
+        "node_id": "node-review",
+        "attempt": 1,
+        "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+        "tool_name": "read_file",
+        "request_index": 1,
+        "arguments": {
+          "path": "live-proof/proof.txt"
+        }
+      },
+      "tool_request_sha256": "sha256:c368fcc0a08708fd8a9f00f693dd3d47cdd6d200575656485c8cf682ae0a5059",
+      "ok": true,
+      "effect_sha256": "sha256:fc5391d612266e6ea34ca1b053768b347834a2651ffbd8f5b6602ea9d9ee2b43",
+      "error": null,
+      "sha256": "sha256:2d3ae267afe105087c2bc5b4483fbb1a34b7df13e83365520c055cc9d55a3ed6"
+    },
+    "prev_sha256": "sha256:97a77d186c79837cfb9c9bbc07a2c44ad5453c92ea2f759ce3cd159539f65f5c",
+    "sha256": "sha256:b9f2ca1d5928cff0cad36f2f39c3ad669ba0045ba9282730a860e4e9f7e4cd5f"
+  },
+  {
+    "schema": "tau.agent_event.v1",
+    "seq": 4,
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-review",
+    "attempt": 1,
+    "event_type": "agent_turn_recorded",
+    "payload": {
+      "turn": 1,
+      "sha256": "sha256:008e2f68a0bf63ace7bc4875b260308eb8f2ae363a3260d028de30fcd55a7468"
+    },
+    "prev_sha256": "sha256:b9f2ca1d5928cff0cad36f2f39c3ad669ba0045ba9282730a860e4e9f7e4cd5f",
+    "sha256": "sha256:40a223e91acc988a6aa91e59ada130505b914882b5ca6c43760e0f1b9cb0484f"
+  },
+  {
+    "schema": "tau.agent_event.v1",
+    "seq": 5,
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-review",
+    "attempt": 1,
+    "event_type": "agent_turn_recorded",
+    "payload": {
+      "turn": 2,
+      "sha256": "sha256:a5ab0aa2aa11b61d70faf4b1110862487e914beffe0d532df7adbb54af93113e"
+    },
+    "prev_sha256": "sha256:40a223e91acc988a6aa91e59ada130505b914882b5ca6c43760e0f1b9cb0484f",
+    "sha256": "sha256:786fed227925bef6f0b489d678bd3ed0a1d49051c19ca4e838ce81c155f1b8b4"
+  },
+  {
+    "schema": "tau.agent_event.v1",
+    "seq": 6,
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-review",
+    "attempt": 1,
+    "event_type": "agent_loop_finished",
+    "payload": {
+      "turns": 2
+    },
+    "prev_sha256": "sha256:786fed227925bef6f0b489d678bd3ed0a1d49051c19ca4e838ce81c155f1b8b4",
+    "sha256": "sha256:9f3cf1a8b9090283c5409eea15ea37ccac295f158713629b251b61e51777cfb1"
+  },
+  {
+    "schema": "tau.agent_event.v1",
+    "seq": 7,
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-review",
+    "attempt": 1,
+    "event_type": "evidence_recorded",
+    "payload": {
+      "kind": "tool_effect_receipt",
+      "payload": {
+        "receipts": [
+          "sha256:2d3ae267afe105087c2bc5b4483fbb1a34b7df13e83365520c055cc9d55a3ed6"
+        ]
+      },
+      "sha256": "sha256:105f746492d325eb0276c5ac657f3f3bcef352111a6cfc0c7e59e8b63540cb6d"
+    },
+    "prev_sha256": "sha256:9f3cf1a8b9090283c5409eea15ea37ccac295f158713629b251b61e51777cfb1",
+    "sha256": "sha256:d1efa2a0ceb1e5a5c9da43aef663fe61338cee535340fe7d650fba5468ecf7a4"
+  },
+  {
+    "schema": "tau.agent_event.v1",
+    "seq": 8,
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-review",
+    "attempt": 1,
+    "event_type": "agent_node_settled",
+    "payload": {
+      "state": "completed",
+      "sha256": "sha256:18bb95314263c6b46a431c8321bd38eee07fdccd459b247e4a90909bdd411c6c"
+    },
+    "prev_sha256": "sha256:d1efa2a0ceb1e5a5c9da43aef663fe61338cee535340fe7d650fba5468ecf7a4",
+    "sha256": "sha256:34f57eee42396008c1d1d85d5798e45c28ca6ea6810ca013eb630f4903940da1"
+  }
+]

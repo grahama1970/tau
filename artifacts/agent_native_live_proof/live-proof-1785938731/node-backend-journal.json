@@ -1,0 +1,156 @@
+[
+  {
+    "schema": "tau.agent_event.v1",
+    "seq": 1,
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-backend",
+    "attempt": 1,
+    "event_type": "steering_queued",
+    "payload": {
+      "instruction": "In your final summary, include the token TAU-STEERED so the operator action is visible in the transcript."
+    },
+    "prev_sha256": "",
+    "sha256": "sha256:edf4029de0a34d306a6a022d7198a5c02b0659a454cc2f1b3f6309dc9d26ecdb"
+  },
+  {
+    "schema": "tau.agent_event.v1",
+    "seq": 2,
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-backend",
+    "attempt": 1,
+    "event_type": "agent_node_started",
+    "payload": {
+      "prompt_sha256": "sha256:53d075d015bd18739c981c6521998494f6d5dbe59ed8936324185035a5c2c423"
+    },
+    "prev_sha256": "sha256:edf4029de0a34d306a6a022d7198a5c02b0659a454cc2f1b3f6309dc9d26ecdb",
+    "sha256": "sha256:92487cf8535175e7e09893f84ecd8c6183eb83465ccee1e33587a9f8a954244c"
+  },
+  {
+    "schema": "tau.agent_event.v1",
+    "seq": 3,
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-backend",
+    "attempt": 1,
+    "event_type": "tool_request_admitted",
+    "payload": {
+      "schema": "tau.tool_request.v1",
+      "run_id": "live-proof-1785938731",
+      "node_id": "node-backend",
+      "attempt": 1,
+      "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+      "tool_name": "write_file",
+      "request_index": 1,
+      "arguments": {
+        "path": "live-proof/proof.txt",
+        "content": "tau-native live proof artifact for tickets 308/309/310"
+      }
+    },
+    "prev_sha256": "sha256:92487cf8535175e7e09893f84ecd8c6183eb83465ccee1e33587a9f8a954244c",
+    "sha256": "sha256:596a8285b26dd4c3d67b7f106fc3a494a50ca3c216945ba5b530d168cbe23aed"
+  },
+  {
+    "schema": "tau.agent_event.v1",
+    "seq": 4,
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-backend",
+    "attempt": 1,
+    "event_type": "tool_effect_recorded",
+    "payload": {
+      "schema": "tau.tool_effect_receipt.v1",
+      "tool_request": {
+        "schema": "tau.tool_request.v1",
+        "run_id": "live-proof-1785938731",
+        "node_id": "node-backend",
+        "attempt": 1,
+        "goal_hash": "sha256:faf54e4b55210a1abdb6f65d4f4e13dc02a1a66be65c9354278fffeba6ad5e3f",
+        "tool_name": "write_file",
+        "request_index": 1,
+        "arguments": {
+          "path": "live-proof/proof.txt",
+          "content": "tau-native live proof artifact for tickets 308/309/310"
+        }
+      },
+      "tool_request_sha256": "sha256:28ef3ea877c4510266f8c76f836009a1ba4edebc63668593abd5457b23f093e9",
+      "ok": true,
+      "effect_sha256": "sha256:da1710dd8710f75e69bdc485cc3a703b1806227fbc503eaf39052be56bbdfc7b",
+      "error": null,
+      "sha256": "sha256:e9e79be7e32faa76f89fbb103572fa93c337dab5e93128f736344dea86e5e287"
+    },
+    "prev_sha256": "sha256:596a8285b26dd4c3d67b7f106fc3a494a50ca3c216945ba5b530d168cbe23aed",
+    "sha256": "sha256:20163c2f83d67db57e1cb23ed2167bb41d26a69e9dd7585f8098cf563881bc66"
+  },
+  {
+    "schema": "tau.agent_event.v1",
+    "seq": 5,
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-backend",
+    "attempt": 1,
+    "event_type": "agent_turn_recorded",
+    "payload": {
+      "turn": 1,
+      "sha256": "sha256:e67079f4aacfd9a8115b8d09a176fbfa3f045eec43c2a76685f9a42858f31424"
+    },
+    "prev_sha256": "sha256:20163c2f83d67db57e1cb23ed2167bb41d26a69e9dd7585f8098cf563881bc66",
+    "sha256": "sha256:e2274343de406d2cb57b2005c8aceebffcfa960ba863257d22f5e94e4d9ce21c"
+  },
+  {
+    "schema": "tau.agent_event.v1",
+    "seq": 6,
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-backend",
+    "attempt": 1,
+    "event_type": "agent_turn_recorded",
+    "payload": {
+      "turn": 2,
+      "sha256": "sha256:b0a140cb251a457d01785083e2b58aaaf46319285509701bab147b912b7673f5"
+    },
+    "prev_sha256": "sha256:e2274343de406d2cb57b2005c8aceebffcfa960ba863257d22f5e94e4d9ce21c",
+    "sha256": "sha256:57082ff178000ed48a5794301697353ae3ee687f9949749c47541ade16229da4"
+  },
+  {
+    "schema": "tau.agent_event.v1",
+    "seq": 7,
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-backend",
+    "attempt": 1,
+    "event_type": "agent_loop_finished",
+    "payload": {
+      "turns": 2
+    },
+    "prev_sha256": "sha256:57082ff178000ed48a5794301697353ae3ee687f9949749c47541ade16229da4",
+    "sha256": "sha256:c524828c4fe50a561dba8766af81882ff96511b990e12daa1c8a98e510c64fc6"
+  },
+  {
+    "schema": "tau.agent_event.v1",
+    "seq": 8,
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-backend",
+    "attempt": 1,
+    "event_type": "evidence_recorded",
+    "payload": {
+      "kind": "tool_effect_receipt",
+      "payload": {
+        "receipts": [
+          "sha256:e9e79be7e32faa76f89fbb103572fa93c337dab5e93128f736344dea86e5e287"
+        ]
+      },
+      "sha256": "sha256:f409c57271262284808fb9e97fc6bd4d2bb3b64feec88152f05a966e904e2804"
+    },
+    "prev_sha256": "sha256:c524828c4fe50a561dba8766af81882ff96511b990e12daa1c8a98e510c64fc6",
+    "sha256": "sha256:285a0e6f4bd68e4b8debdf01f90ce16d4b10787662799f07291007e36921666f"
+  },
+  {
+    "schema": "tau.agent_event.v1",
+    "seq": 9,
+    "run_id": "live-proof-1785938731",
+    "node_id": "node-backend",
+    "attempt": 1,
+    "event_type": "agent_node_settled",
+    "payload": {
+      "state": "completed",
+      "sha256": "sha256:77d53e5de455af04f90ad8de1f7ebcca44b079bef565e1ff05e5424cd3190ab4"
+    },
+    "prev_sha256": "sha256:285a0e6f4bd68e4b8debdf01f90ce16d4b10787662799f07291007e36921666f",
+    "sha256": "sha256:a1eeb0b3e9f603c49222633cb7dffc2cb4d8d4a50f945d75e8496467150599d5"
+  }
+]
