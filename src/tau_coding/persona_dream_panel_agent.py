@@ -615,7 +615,12 @@ def _review_panel_image_with_scillm(
     artifact_dir: Path,
 ) -> dict[str, Any]:
     image_path = Path(str(panel["image_path"])).resolve()
-    prompt = (
+    # Callers (persona-dream's visual-review gate) may supply a richer review
+    # contract via visual_review_prompt; the hardcoded eligibility prompt is
+    # only the fallback. Previously the caller prompt was silently discarded,
+    # so per-category check verdicts could never reach the VLM.
+    caller_prompt = str(panel.get("visual_review_prompt") or "").strip()
+    prompt = caller_prompt or (
         "Review this generated persona-dream panel for basic one-scene eligibility. "
         "Return JSON only with keys status, summary, blocking_findings, passed_entities. "
         "Use status PASS if the image is a coherent single cinematic panel suitable "
