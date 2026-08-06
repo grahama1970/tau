@@ -273,6 +273,7 @@ from tau_coding.resources import TauResourcePaths
 from tau_coding.review_code_skill_adapter import write_review_code_skill_adapter_receipt
 from tau_coding.review_findings import write_review_findings_receipt
 from tau_coding.run_report import write_run_report
+from tau_coding.dag_runtime.agent_events import read_agent_events_surface
 from tau_coding.run_status import build_dag_viewer_link, build_run_status
 from tau_coding.runtime_handshake import write_runtime_handshake
 from tau_coding.sandbox_run import run_sandboxed_command
@@ -3777,6 +3778,21 @@ def main(
         try:
             run_dir = _parse_run_status_cli_args(positional_args[1:])
             payload = build_run_status(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if not print_requested and command == "agent-events":
+        try:
+            options = _parse_agent_events_cli_args(positional_args[1:])
+            payload = read_agent_events_surface(
+                run_dir=Path(str(options["run_dir"])),
+                node_id=_optional_str(options.get("node")),
+                after_seq=int(str(options["after_seq"])),
+            )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -8632,6 +8648,25 @@ def _parse_run_status_cli_args(args: list[str]) -> Path:
     if len(args) != 1:
         raise RuntimeError("Usage: tau run-status <run-dir>|--last")
     return Path(args[0])
+
+
+def _parse_agent_events_cli_args(args: list[str]) -> dict[str, object]:
+    usage = "Usage: tau agent-events --run-dir <run> [--node <id>] [--after-seq <n>]"
+    options: dict[str, object] = {"run_dir": None, "node": None, "after_seq": 0}
+    index = 0
+    while index < len(args):
+        flag = args[index]
+        if flag in {"--run-dir", "--node", "--after-seq"}:
+            if index + 1 >= len(args):
+                raise RuntimeError(usage)
+            key = flag.removeprefix("--").replace("-", "_")
+            options[key] = args[index + 1]
+            index += 2
+        else:
+            raise RuntimeError(usage)
+    if options["run_dir"] is None:
+        raise RuntimeError(usage)
+    return options
 
 
 def _parse_dag_viewer_link_cli_args(args: list[str]) -> Path:

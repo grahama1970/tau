@@ -1,0 +1,20 @@
+{
+  "schema": "tau.agent_events_live_proof_summary.v1",
+  "run_id": "agent-events-live-1786021338",
+  "ticket": "tau#313",
+  "scheduler_status": "PASS",
+  "inflight_readback": {
+    "count": 2,
+    "event_types": [
+      "agent_node_started",
+      "tool_request_admitted"
+    ],
+    "tool_request_admitted_visible": true
+  },
+  "persisted_event_count": 8,
+  "rebuilt_projection_lifecycle": "completed",
+  "rebuilt_projection_turns": 2,
+  "cli_cursor_readback_ok": true,
+  "cli_cursor_count": 6,
+  "artifact_written": true
+}

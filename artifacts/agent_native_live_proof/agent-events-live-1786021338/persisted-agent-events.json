@@ -1,0 +1,225 @@
+[
+  {
+    "journal_seq": 9,
+    "agent_event": {
+      "attempt": 1,
+      "event_type": "agent_node_started",
+      "node_id": "worker",
+      "payload": {
+        "prompt_sha256": "sha256:64bd4018dc30dd25b3d3d91257384eeb16907e8ad24ce0c6e450cdd67b3ca4af"
+      },
+      "prev_sha256": "",
+      "run_id": "generic:agent-events-live-1786021338",
+      "schema": "tau.agent_event.v1",
+      "seq": 1,
+      "sha256": "sha256:d3f38f7dc8a70a7c256c245e925d27d5619b9a6f95f9725e312cb648058ec72d"
+    },
+    "binding": {
+      "attempt_id": "attempt-fb1914f868a785f2124890090d094793",
+      "goal_hash": "sha256:3aaa60fd6dcbcdc7ef6ccef9d05be0218796fb894d1033be591bb5dba3a84e2f",
+      "plan_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "transport_correlation": {},
+      "work_order_sha256": "sha256:832f1eecf29dc2f9f11cc458e0757e714f652dd22731e4fb3388dc613b40de35"
+    }
+  },
+  {
+    "journal_seq": 10,
+    "agent_event": {
+      "attempt": 1,
+      "event_type": "tool_request_admitted",
+      "node_id": "worker",
+      "payload": {
+        "arguments": {
+          "content": "durable agent events",
+          "path": "proof.txt"
+        },
+        "attempt": 1,
+        "goal_hash": "sha256:3aaa60fd6dcbcdc7ef6ccef9d05be0218796fb894d1033be591bb5dba3a84e2f",
+        "node_id": "worker",
+        "request_index": 1,
+        "run_id": "generic:agent-events-live-1786021338",
+        "schema": "tau.tool_request.v1",
+        "tool_name": "write_file"
+      },
+      "prev_sha256": "sha256:d3f38f7dc8a70a7c256c245e925d27d5619b9a6f95f9725e312cb648058ec72d",
+      "run_id": "generic:agent-events-live-1786021338",
+      "schema": "tau.agent_event.v1",
+      "seq": 2,
+      "sha256": "sha256:5e67a6615c23903cad018a53998cfac0b565d3ac7f77167936796b2c800ae15e"
+    },
+    "binding": {
+      "attempt_id": "attempt-fb1914f868a785f2124890090d094793",
+      "goal_hash": "sha256:3aaa60fd6dcbcdc7ef6ccef9d05be0218796fb894d1033be591bb5dba3a84e2f",
+      "plan_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "transport_correlation": {},
+      "work_order_sha256": "sha256:832f1eecf29dc2f9f11cc458e0757e714f652dd22731e4fb3388dc613b40de35"
+    }
+  },
+  {
+    "journal_seq": 11,
+    "agent_event": {
+      "attempt": 1,
+      "event_type": "tool_effect_recorded",
+      "node_id": "worker",
+      "payload": {
+        "effect_content": "wrote proof.txt",
+        "effect_sha256": "sha256:438e0d1000149e8fb675fa76b89231713825d505d85a38a0c0511aa41686398e",
+        "error": null,
+        "idempotency_sha256": "sha256:591a1de062241feed5be02d9775bca8c560293447d29340ea93348b79221669f",
+        "ok": true,
+        "schema": "tau.tool_effect_receipt.v1",
+        "sha256": "sha256:c7c91e072d7c4d59523305b946bbb4d4ea5a75d7a5a8b9e4f6501364b4088e59",
+        "tool_request": {
+          "arguments": {
+            "content": "durable agent events",
+            "path": "proof.txt"
+          },
+          "attempt": 1,
+          "goal_hash": "sha256:3aaa60fd6dcbcdc7ef6ccef9d05be0218796fb894d1033be591bb5dba3a84e2f",
+          "node_id": "worker",
+          "request_index": 1,
+          "run_id": "generic:agent-events-live-1786021338",
+          "schema": "tau.tool_request.v1",
+          "tool_name": "write_file"
+        },
+        "tool_request_sha256": "sha256:5754c703646a352a2d495ea536f14619b5daa0249029e1c698f627cc65871841"
+      },
+      "prev_sha256": "sha256:5e67a6615c23903cad018a53998cfac0b565d3ac7f77167936796b2c800ae15e",
+      "run_id": "generic:agent-events-live-1786021338",
+      "schema": "tau.agent_event.v1",
+      "seq": 3,
+      "sha256": "sha256:9fbdc70c4aca2d93f4ab29b06cf583101df45a613f5a4bbb93c3775c129f3c73"
+    },
+    "binding": {
+      "attempt_id": "attempt-fb1914f868a785f2124890090d094793",
+      "goal_hash": "sha256:3aaa60fd6dcbcdc7ef6ccef9d05be0218796fb894d1033be591bb5dba3a84e2f",
+      "plan_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "transport_correlation": {},
+      "work_order_sha256": "sha256:832f1eecf29dc2f9f11cc458e0757e714f652dd22731e4fb3388dc613b40de35"
+    }
+  },
+  {
+    "journal_seq": 12,
+    "agent_event": {
+      "attempt": 1,
+      "event_type": "agent_turn_recorded",
+      "node_id": "worker",
+      "payload": {
+        "sha256": "sha256:bf8d4378ddf5b66051eb2c354e3339e2b78cea53dc68c9a9ec0dda82ae2f1d5f",
+        "turn": 1
+      },
+      "prev_sha256": "sha256:9fbdc70c4aca2d93f4ab29b06cf583101df45a613f5a4bbb93c3775c129f3c73",
+      "run_id": "generic:agent-events-live-1786021338",
+      "schema": "tau.agent_event.v1",
+      "seq": 4,
+      "sha256": "sha256:32545fc28726af2b1afddd7682ed0f6a61161a721e1e14986d05bd6bcd8a9c07"
+    },
+    "binding": {
+      "attempt_id": "attempt-fb1914f868a785f2124890090d094793",
+      "goal_hash": "sha256:3aaa60fd6dcbcdc7ef6ccef9d05be0218796fb894d1033be591bb5dba3a84e2f",
+      "plan_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "transport_correlation": {},
+      "work_order_sha256": "sha256:832f1eecf29dc2f9f11cc458e0757e714f652dd22731e4fb3388dc613b40de35"
+    }
+  },
+  {
+    "journal_seq": 14,
+    "agent_event": {
+      "attempt": 1,
+      "event_type": "agent_turn_recorded",
+      "node_id": "worker",
+      "payload": {
+        "sha256": "sha256:d13ead148a1ea8a51a47638943b55c83f03f10049126267e913855e2005316f1",
+        "turn": 2
+      },
+      "prev_sha256": "sha256:32545fc28726af2b1afddd7682ed0f6a61161a721e1e14986d05bd6bcd8a9c07",
+      "run_id": "generic:agent-events-live-1786021338",
+      "schema": "tau.agent_event.v1",
+      "seq": 5,
+      "sha256": "sha256:511bf602358750d3b671387a1b964504de4daaa7f09841451ca40ffb3ba7e88c"
+    },
+    "binding": {
+      "attempt_id": "attempt-fb1914f868a785f2124890090d094793",
+      "goal_hash": "sha256:3aaa60fd6dcbcdc7ef6ccef9d05be0218796fb894d1033be591bb5dba3a84e2f",
+      "plan_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "transport_correlation": {},
+      "work_order_sha256": "sha256:832f1eecf29dc2f9f11cc458e0757e714f652dd22731e4fb3388dc613b40de35"
+    }
+  },
+  {
+    "journal_seq": 15,
+    "agent_event": {
+      "attempt": 1,
+      "event_type": "agent_loop_finished",
+      "node_id": "worker",
+      "payload": {
+        "turns": 2
+      },
+      "prev_sha256": "sha256:511bf602358750d3b671387a1b964504de4daaa7f09841451ca40ffb3ba7e88c",
+      "run_id": "generic:agent-events-live-1786021338",
+      "schema": "tau.agent_event.v1",
+      "seq": 6,
+      "sha256": "sha256:309820030c0507c17a64c92ee4849a6176b0afe52477ffd3efc533f979b94dfb"
+    },
+    "binding": {
+      "attempt_id": "attempt-fb1914f868a785f2124890090d094793",
+      "goal_hash": "sha256:3aaa60fd6dcbcdc7ef6ccef9d05be0218796fb894d1033be591bb5dba3a84e2f",
+      "plan_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "transport_correlation": {},
+      "work_order_sha256": "sha256:832f1eecf29dc2f9f11cc458e0757e714f652dd22731e4fb3388dc613b40de35"
+    }
+  },
+  {
+    "journal_seq": 16,
+    "agent_event": {
+      "attempt": 1,
+      "event_type": "evidence_recorded",
+      "node_id": "worker",
+      "payload": {
+        "kind": "tool_effect_receipt",
+        "payload": {
+          "receipts": [
+            "sha256:c7c91e072d7c4d59523305b946bbb4d4ea5a75d7a5a8b9e4f6501364b4088e59"
+          ]
+        },
+        "sha256": "sha256:5a9f8de20ced09a2c9f15542aa5f25d4ea546f2703bc4450a0bb7683b28a8285"
+      },
+      "prev_sha256": "sha256:309820030c0507c17a64c92ee4849a6176b0afe52477ffd3efc533f979b94dfb",
+      "run_id": "generic:agent-events-live-1786021338",
+      "schema": "tau.agent_event.v1",
+      "seq": 7,
+      "sha256": "sha256:cdf4d96f10925f3b2895fda9b2a6cb374898c874f0df2382212b95625ace29b4"
+    },
+    "binding": {
+      "attempt_id": "attempt-fb1914f868a785f2124890090d094793",
+      "goal_hash": "sha256:3aaa60fd6dcbcdc7ef6ccef9d05be0218796fb894d1033be591bb5dba3a84e2f",
+      "plan_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "transport_correlation": {},
+      "work_order_sha256": "sha256:832f1eecf29dc2f9f11cc458e0757e714f652dd22731e4fb3388dc613b40de35"
+    }
+  },
+  {
+    "journal_seq": 17,
+    "agent_event": {
+      "attempt": 1,
+      "event_type": "agent_node_settled",
+      "node_id": "worker",
+      "payload": {
+        "sha256": "sha256:fe9d95b1bca756fb70637ae8b88380823bc097cef2d118d0c0124c74588c96d3",
+        "state": "completed"
+      },
+      "prev_sha256": "sha256:cdf4d96f10925f3b2895fda9b2a6cb374898c874f0df2382212b95625ace29b4",
+      "run_id": "generic:agent-events-live-1786021338",
+      "schema": "tau.agent_event.v1",
+      "seq": 8,
+      "sha256": "sha256:db31dd1d988035506a48fa3480acfa654ca18fb836f29a9f1d1da522a5233d69"
+    },
+    "binding": {
+      "attempt_id": "attempt-fb1914f868a785f2124890090d094793",
+      "goal_hash": "sha256:3aaa60fd6dcbcdc7ef6ccef9d05be0218796fb894d1033be591bb5dba3a84e2f",
+      "plan_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "transport_correlation": {},
+      "work_order_sha256": "sha256:832f1eecf29dc2f9f11cc458e0757e714f652dd22731e4fb3388dc613b40de35"
+    }
+  }
+]

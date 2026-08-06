@@ -1,0 +1,11 @@
+{
+  "accepted_input_count": 0,
+  "attempt": 1,
+  "attempt_id": "attempt-fb1914f868a785f2124890090d094793",
+  "bindings": [],
+  "canonical_manifest_hash": "sha256:56c242999b45ee7692d7dae5b34914957c64404c0e9edc307fd3779f2c5fab93",
+  "node_id": "worker",
+  "plan_sha256": "sha256:f719be7fefae72aa6c800e36b4fe22d4bc4ce1be689a89045adbe10869b03ed3",
+  "run_id": "generic:agent-events-live-1786021338",
+  "schema": "tau.node_input_manifest.v1"
+}

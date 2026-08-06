@@ -31,6 +31,8 @@ def execute_tau_agent_node(
     goal_hash: str,
     provider_factory: ProviderFactory,
     tools_factory: ToolsFactory,
+    run_store: Any | None = None,
+    lease: Any | None = None,
 ) -> dict[str, Any]:
     """Execute one Tau-native agent node and map its settlement to the scheduler."""
     config = dict(plan_node.adapter_config.to_value() or {})
@@ -65,6 +67,35 @@ def execute_tau_agent_node(
         allowed_paths=tuple(config.get("allowed_paths", ["**"])),
         max_tool_calls=int(config.get("max_tool_calls", 16)),
     )
+    event_sink = None
+    prior_effects: dict[str, Any] = {}
+    if run_store is not None and lease is not None:
+        from tau_coding.dag_runtime.agent_events import (
+            DurableAgentEventSink,
+            admitted_tool_effects,
+            load_agent_events,
+        )
+        from tau_coding.dag_runtime.model import canonical_sha256
+
+        event_sink = DurableAgentEventSink(
+            store=run_store,
+            lease=lease,
+            plan_sha256=work_order["plan_sha256"],
+            goal_hash=goal_hash,
+            work_order_sha256=canonical_sha256(work_order),
+            attempt_id=execution.attempt_id,
+        )
+        # SQLite connections are thread-affine; this executor runs on a
+        # scheduler worker thread, so read prior effects on a fresh connection.
+        from tau_coding.dag_runtime.run_store import SqliteDagRunStore
+
+        reader = SqliteDagRunStore(run_store.path)
+        try:
+            prior_effects = admitted_tool_effects(
+                load_agent_events(reader, lease.run_id, node_id=plan_node.node_id)
+            )
+        finally:
+            reader.close()
     try:
         run = AgentNodeRun(
             work_order=work_order,
@@ -72,6 +103,8 @@ def execute_tau_agent_node(
             provider=provider_factory(plan_node, config),
             tools=tools,
             max_turns=int(config.get("max_turns", 8)),
+            event_sink=event_sink,
+            prior_tool_effects=prior_effects,
         )
         asyncio.run(run.run(prompt))
         if run.tool_effect_receipts and all(r["ok"] for r in run.tool_effect_receipts):

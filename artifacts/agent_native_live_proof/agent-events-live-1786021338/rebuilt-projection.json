@@ -1,0 +1,35 @@
+{
+  "schema": "tau.agent_projection.v1",
+  "run_id": "generic:agent-events-live-1786021338",
+  "node_id": "worker",
+  "attempt_id": "attempt-fb1914f868a785f2124890090d094793",
+  "attempt": null,
+  "goal_hash": "sha256:3aaa60fd6dcbcdc7ef6ccef9d05be0218796fb894d1033be591bb5dba3a84e2f",
+  "plan_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "journal_seq": 8,
+  "journal_head_sha256": "",
+  "role": null,
+  "harness": "tau_native_agent_loop",
+  "transport_profile": null,
+  "lifecycle": "completed",
+  "turns": 2,
+  "turn_receipt_sha256s": [
+    "sha256:bf8d4378ddf5b66051eb2c354e3339e2b78cea53dc68c9a9ec0dda82ae2f1d5f",
+    "sha256:d13ead148a1ea8a51a47638943b55c83f03f10049126267e913855e2005316f1"
+  ],
+  "tool_effect_receipt_sha256s": [
+    "sha256:c7c91e072d7c4d59523305b946bbb4d4ea5a75d7a5a8b9e4f6501364b4088e59"
+  ],
+  "evidence_kinds": [
+    "tool_effect_receipt"
+  ],
+  "current_blocker": null,
+  "permitted_operator_actions": [],
+  "proof_boundary": {
+    "derived_from_journal_only": true,
+    "rebuilt_from_persisted_events": true,
+    "panes_and_transport_status_not_authoritative": true,
+    "projection_is_not_semantic_quality_proof": true
+  },
+  "sha256": "sha256:7a0e62e05bb030e39fee6cf552427787ccdc425f09c122abc22d27b02dd0414e"
+}

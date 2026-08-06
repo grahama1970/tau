@@ -38,6 +38,7 @@ from tau_coding.runtime_backends.contracts import RuntimeEvent, RuntimeStateProj
 
 EVENT_SCHEMA = "tau.dag_run_event.v1"
 RUNTIME_EVENT_JOURNAL_ENTRY_SCHEMA = "tau.runtime_event_journal_entry.v1"
+AGENT_EVENT_JOURNAL_ENTRY_SCHEMA = "tau.agent_event_journal_entry.v1"
 DIAGNOSTIC_EVENT_SCHEMA = "tau.dag_diagnostic_event.v1"
 CORRECTION_JOURNAL_ENTRY_SCHEMA = "tau.correction_journal_entry.v1"
 MAX_DIAGNOSTIC_EVENT_BYTES = 64 * 1024
@@ -2434,6 +2435,76 @@ class SqliteDagRunStore:
                 }
             )
         return tuple(events)
+
+    def append_agent_event(
+        self,
+        lease: DagRunLease,
+        *,
+        entry: Mapping[str, Any],
+        binding: Mapping[str, Any],
+    ) -> tuple[bool, int]:
+        """Persist one ``tau.agent_event.v1`` journal entry as it occurs.
+
+        Idempotent by ``(node_id, attempt, agent seq)``: a byte-identical
+        duplicate returns the original canonical sequence; a conflicting
+        payload for the same key fails closed. The wrapped payload binds the
+        agent event to the run/plan/goal/work-order lineage so replay can
+        validate identity without a live agent object.
+        """
+        for key in ("seq", "node_id", "attempt", "sha256", "prev_sha256", "event_type"):
+            if key not in entry:
+                raise DagRunStoreError("agent_event_entry_incomplete", key)
+        for key in ("plan_sha256", "goal_hash", "work_order_sha256", "attempt_id"):
+            value = binding.get(key)
+            if not isinstance(value, str) or not value:
+                raise DagRunStoreError("agent_event_binding_missing", key)
+        node_id = str(entry["node_id"])
+        agent_seq = int(entry["seq"])
+        event_key = f"agent:{node_id}:{binding['attempt_id']}:{agent_seq}"
+        payload = {
+            "schema": AGENT_EVENT_JOURNAL_ENTRY_SCHEMA,
+            "agent_event": dict(entry),
+            "agent_event_sha256": str(entry["sha256"]),
+            "binding": dict(binding),
+            "redaction_version": 1,
+        }
+        with self._transaction():
+            existing = self._event_by_key(lease.run_id, event_key)
+            appended = existing is None
+            sequence = self._append_event(
+                lease,
+                event_key=event_key,
+                event_type="agent_event_appended",
+                entity_type="agent_node",
+                entity_id=node_id,
+                attempt_id=str(binding["attempt_id"]),
+                payload=payload,
+            )
+        return appended, sequence
+
+    def load_agent_event_rows(
+        self, run_id: str, *, node_id: str | None = None
+    ) -> tuple[dict[str, Any], ...]:
+        """Ordered raw agent-event journal rows (validation lives in agent_events)."""
+        pattern = f"agent:{node_id}:%" if node_id is not None else "agent:%"
+        rows = self._connection.execute(
+            "SELECT * FROM dag_run_events WHERE run_id = ? AND event_key LIKE ? ORDER BY seq",
+            (run_id, pattern),
+        ).fetchall()
+        results: list[dict[str, Any]] = []
+        for row in rows:
+            payload = json.loads(row["payload_json"])
+            if canonical_sha256(payload) != row["payload_sha256"]:
+                raise DagRunStoreError("dag_run_event_hash_mismatch", str(row["seq"]))
+            results.append(
+                {
+                    "journal_seq": int(row["seq"]),
+                    "event_key": str(row["event_key"]),
+                    "attempt_id": row["attempt_id"],
+                    "payload": payload,
+                }
+            )
+        return tuple(results)
 
     def _append_runtime_event(
         self,

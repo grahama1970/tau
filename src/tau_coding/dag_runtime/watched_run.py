@@ -49,7 +49,8 @@ class WatchedDagRun:
 def run_dag_plan_watched(
     plan: DagPlan,
     *,
-    execute_node: NodeExecutor,
+    execute_node: NodeExecutor | None = None,
+    execute_node_factory: Any | None = None,
     run_dir: Path,
     watch: bool = True,
     keep_viewer: bool = False,
@@ -63,13 +64,21 @@ def run_dag_plan_watched(
     ``on_viewer_url`` is called with the URL string before the first node
     executes, so callers can print or forward the link at run start.
     """
+    if (execute_node is None) == (execute_node_factory is None):
+        raise RuntimeError("pass exactly one of execute_node or execute_node_factory")
     resolved = run_dir.expanduser().resolve()
     resolved.mkdir(parents=True, exist_ok=True)
     store = SqliteDagRunStore(resolved / "dag-run.sqlite3")
+    lease_box: dict[str, Any] = {}
+    if execute_node_factory is not None:
+        # Factory receives the durable store and a getter for the held lease so
+        # node executors can persist agent events into the canonical journal.
+        execute_node = execute_node_factory(store, lambda: lease_box.get("lease"))
     viewer_box: dict[str, Any] = {"viewer": None}
     caller_on_lease = scheduler_kwargs.pop("on_lease_acquired", None)
 
     def _on_lease_acquired(lease: Any) -> None:
+        lease_box["lease"] = lease
         # The run record exists once the lease is held, and no node has
         # executed yet — start the viewer here so the URL is live from t0.
         if watch and viewer_box["viewer"] is None:

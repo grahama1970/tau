@@ -124,14 +124,32 @@ def _schema_violations(
     return codes
 
 
+def tool_request_idempotency_sha256(request: Mapping[str, Any]) -> str:
+    """Semantic identity of a tool effect — stable across attempts/retries."""
+    return canonical_sha256(
+        {
+            "run_id": request.get("run_id"),
+            "node_id": request.get("node_id"),
+            "tool_name": request.get("tool_name"),
+            "arguments": request.get("arguments"),
+        }
+    )
+
+
 @dataclass(slots=True)
 class AgentNodeJournal:
-    """Hash-chained, sequence-numbered agent-event journal for one attempt."""
+    """Hash-chained, sequence-numbered agent-event journal for one attempt.
+
+    ``sink`` (optional) receives every appended entry synchronously — the
+    durability hook for the canonical run store (tau#313). A sink failure
+    fails the append: an event that cannot be persisted must not be acted on.
+    """
 
     run_id: str
     node_id: str
     attempt: int
     entries: list[dict[str, Any]] = field(default_factory=list)
+    sink: Any | None = None
 
     def append(self, event_type: str, payload: Mapping[str, Any]) -> dict[str, Any]:
         prev_sha = self.entries[-1]["sha256"] if self.entries else ""
@@ -146,6 +164,8 @@ class AgentNodeJournal:
             "prev_sha256": prev_sha,
         }
         entry = {**body, "sha256": canonical_sha256(body)}
+        if self.sink is not None:
+            self.sink(entry)
         self.entries.append(entry)
         return entry
 
@@ -193,6 +213,8 @@ class AgentNodeRun:
     tools: list[AgentTool]
     system: str = "You are a Tau agent node."
     max_turns: int = 8
+    event_sink: Any | None = None
+    prior_tool_effects: dict[str, dict[str, Any]] = field(default_factory=dict)
     journal: AgentNodeJournal = field(init=False)
     turn_receipts: list[dict[str, Any]] = field(default_factory=list)
     tool_effect_receipts: list[dict[str, Any]] = field(default_factory=list)
@@ -209,6 +231,7 @@ class AgentNodeRun:
             run_id=self.work_order["run_id"],
             node_id=self.work_order["node_id"],
             attempt=self.work_order["attempt"],
+            sink=self.event_sink,
         )
         if self.policy.goal_hash != self.work_order["goal_hash"]:
             raise AgentNodeError("agent_node_goal_policy_mismatch")
@@ -287,6 +310,26 @@ class AgentNodeRun:
                     content=f"tool request rejected: {','.join(codes)}",
                     error=",".join(codes),
                 )
+            idempotency = tool_request_idempotency_sha256(request)
+            prior = self.prior_tool_effects.get(idempotency)
+            if prior is not None:
+                # Effect already admitted in a prior attempt/process: replay
+                # the receipt, never re-execute the side effect (tau#313).
+                self.journal.append(
+                    "tool_effect_replayed",
+                    {"idempotency_sha256": idempotency, "sha256": prior["sha256"]},
+                )
+                content = str(
+                    prior.get("effect_content")
+                    or f"replayed prior tool effect {prior['sha256']}"
+                )
+                return AgentToolResult(
+                    tool_call_id="",
+                    name=tool.name,
+                    ok=True,
+                    content=content,
+                    data={"receipt_sha256": prior["sha256"], "replayed": True},
+                )
             self._tool_calls_admitted += 1
             self._pending_tool_calls += 1
             self.journal.append("tool_request_admitted", request)
@@ -325,8 +368,12 @@ class AgentNodeRun:
             "schema": TOOL_EFFECT_RECEIPT_SCHEMA,
             "tool_request": dict(request),
             "tool_request_sha256": canonical_sha256(dict(request)),
+            "idempotency_sha256": tool_request_idempotency_sha256(request),
             "ok": error is None,
             "effect_sha256": canonical_sha256({"content": content, "error": error}),
+            # Bounded effect content so a crash-resumed attempt can replay the
+            # admitted effect to the model without re-executing it (tau#313).
+            "effect_content": (content or "")[:20_000] if error is None else None,
             "error": error,
         }
         receipt = {**body, "sha256": canonical_sha256(body)}
