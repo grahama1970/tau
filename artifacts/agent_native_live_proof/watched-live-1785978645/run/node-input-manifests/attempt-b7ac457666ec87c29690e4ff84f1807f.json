@@ -1,0 +1,11 @@
+{
+  "accepted_input_count": 0,
+  "attempt": 1,
+  "attempt_id": "attempt-b7ac457666ec87c29690e4ff84f1807f",
+  "bindings": [],
+  "canonical_manifest_hash": "sha256:c2cc4706fe367865cea1d2747ee53b4ecce091f59e738acfa94aed9463546b5e",
+  "node_id": "worker",
+  "plan_sha256": "sha256:defbccef98c9b53e3ff8aece55acf7bc6fd24ea01d0f64fd81257a02fba53401",
+  "run_id": "generic:watched-live-1785978645",
+  "schema": "tau.node_input_manifest.v1"
+}

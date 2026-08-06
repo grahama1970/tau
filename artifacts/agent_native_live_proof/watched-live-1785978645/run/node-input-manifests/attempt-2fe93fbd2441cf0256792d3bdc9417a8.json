@@ -1,0 +1,34 @@
+{
+  "accepted_input_count": 1,
+  "attempt": 1,
+  "attempt_id": "attempt-2fe93fbd2441cf0256792d3bdc9417a8",
+  "bindings": [
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:worker:verifier",
+      "control_edge_id": "generic-dependency:worker:verifier",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "explicit",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": null,
+      "selected_sha256": "sha256:ed5f9ba797a36b905aedc48c63540ba687204bc76b0fb5f8384edc5a4fbcd5ba",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-b7ac457666ec87c29690e4ff84f1807f",
+      "source_node_id": "worker",
+      "target_node_id": "verifier"
+    }
+  ],
+  "canonical_manifest_hash": "sha256:14bff818e892fa9d1d281d5afd5c363aa162205bd53df973de31f65c808f9251",
+  "node_id": "verifier",
+  "plan_sha256": "sha256:defbccef98c9b53e3ff8aece55acf7bc6fd24ea01d0f64fd81257a02fba53401",
+  "run_id": "generic:watched-live-1785978645",
+  "schema": "tau.node_input_manifest.v1"
+}

@@ -1,0 +1,16 @@
+{
+  "schema": "tau.watched_live_proof_summary.v1",
+  "run_id": "watched-live-1785978645",
+  "ticket": "tau#312",
+  "scheduler_status": "PASS",
+  "viewer_url": "http://127.0.0.1:37181/",
+  "viewer_http_status_during_run": 200,
+  "viewer_serves_dag_app": true,
+  "viewer_healthz": {
+    "read_only": true,
+    "status": "ok"
+  },
+  "run_store_exists": true,
+  "receipt_has_viewer_link": true,
+  "receipt_viewer_url": "http://127.0.0.1:37181/"
+}

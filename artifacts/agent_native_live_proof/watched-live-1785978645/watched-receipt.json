@@ -1,0 +1,115 @@
+{
+  "schema": "tau.watched_dag_run_receipt.v1",
+  "run_id": "generic:watched-live-1785978645",
+  "status": "PASS",
+  "verdict": "PASS",
+  "durable": true,
+  "run_dir": "/home/graham/workspace/experiments/tau/artifacts/agent_native_live_proof/watched-live-1785978645/run",
+  "run_store_path": "/home/graham/workspace/experiments/tau/artifacts/agent_native_live_proof/watched-live-1785978645/run/dag-run.sqlite3",
+  "completed_node_ids": [
+    "verifier",
+    "worker"
+  ],
+  "dag_viewer_link": {
+    "schema": "tau.dag_viewer_link.v1",
+    "ok": true,
+    "status": "PASS",
+    "mocked": false,
+    "live": false,
+    "provider_live": false,
+    "run_dir": "/home/graham/workspace/experiments/tau/artifacts/agent_native_live_proof/watched-live-1785978645/run",
+    "dag_viewer": {
+      "schema": "tau.dag_viewer_link.v1",
+      "available": true,
+      "status": "PASS",
+      "source_authority": "tau_sqlite_journal",
+      "self_contained": true,
+      "read_only": true,
+      "launch_command": [
+        "tau",
+        "dag-view",
+        "--run-dir",
+        "/home/graham/workspace/experiments/tau/artifacts/agent_native_live_proof/watched-live-1785978645/run",
+        "--run-id",
+        "generic:watched-live-1785978645"
+      ],
+      "launch_commands": [
+        [
+          "tau",
+          "dag-view",
+          "--run-dir",
+          "/home/graham/workspace/experiments/tau/artifacts/agent_native_live_proof/watched-live-1785978645/run",
+          "--run-id",
+          "generic:watched-live-1785978645"
+        ]
+      ],
+      "run_id_required": false,
+      "run_ids": [
+        "generic:watched-live-1785978645"
+      ],
+      "external_ux_lab_required": false,
+      "source": "dag-run.sqlite3",
+      "store_path": "/home/graham/workspace/experiments/tau/artifacts/agent_native_live_proof/watched-live-1785978645/run/dag-run.sqlite3",
+      "store_error": null,
+      "store_error_detail": null,
+      "mocked": false,
+      "live": false,
+      "provider_live": false,
+      "contract_path": null,
+      "contract_sha256": null,
+      "receipt_path": null,
+      "receipt_sha256": null,
+      "dag_id": "generic:watched-live-1785978645",
+      "goal_hash": null,
+      "receipt_status": null,
+      "receipt_verdict": null,
+      "does_not_prove": [
+        "browser rendering",
+        "viewer server is currently running",
+        "provider/model semantic quality",
+        "future route correctness",
+        "GitHub mutation"
+      ]
+    },
+    "proof_scope": {
+      "proves": [
+        "Tau can derive a DAG viewer command from the local read-only DAG state",
+        "Tau does not mutate the DAG, route, provider state, Herdr state, or GitHub state to create the viewer link"
+      ],
+      "does_not_prove": [
+        "browser rendering",
+        "provider/model semantic quality",
+        "future route correctness",
+        "live GitHub mutation"
+      ]
+    },
+    "timestamp": "2026-08-06T01:10:50Z"
+  },
+  "viewer": {
+    "url": "http://127.0.0.1:37181/",
+    "served_from_run_start": true,
+    "server_receipt": {
+      "schema": "tau.dag_viewer_server_receipt.v1",
+      "status": "PASS",
+      "mocked": false,
+      "live": true,
+      "provider_live": false,
+      "read_only": true,
+      "host": "127.0.0.1",
+      "port": 37181,
+      "url": "http://127.0.0.1:37181/",
+      "run_id": "generic:watched-live-1785978645",
+      "plan_sha256": "sha256:defbccef98c9b53e3ff8aece55acf7bc6fd24ea01d0f64fd81257a02fba53401",
+      "proof_scope": {
+        "proves": [
+          "Tau bound a loopback-only read-only HTTP server to a validated DAG run."
+        ],
+        "does_not_prove": [
+          "The React viewer is packaged.",
+          "The server authorizes DAG mutation.",
+          "Agent or provider output is semantically correct."
+        ]
+      }
+    }
+  }
+}

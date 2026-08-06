@@ -88,16 +88,21 @@ def execute_tau_agent_node(
         "cancelled": "FAIL",
         "blocked": "BLOCKED",
     }
+    status = status_by_state[settlement["state"]]
     return _result(
         plan_node,
-        status_by_state[settlement["state"]],
+        status,
         settlement["state"].upper() if settlement["state"] != "completed" else "PASS",
-        accepted_output={
-            "settlement": settlement,
-            "final_text": (
-                run.turn_receipts[-1]["assistant_text"] if run.turn_receipts else ""
-            ),
-        },
+        accepted_output=(
+            {
+                "settlement": settlement,
+                "final_text": (
+                    run.turn_receipts[-1]["assistant_text"] if run.turn_receipts else ""
+                ),
+            }
+            if status == "PASS"
+            else None
+        ),
         errors=list(settlement["blockers"]),
     )
 

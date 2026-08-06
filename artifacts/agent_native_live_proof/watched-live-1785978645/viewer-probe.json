@@ -1,0 +1,9 @@
+{
+  "url": "http://127.0.0.1:37181/",
+  "status_during_run": 200,
+  "body_is_dag_app": true,
+  "healthz": {
+    "read_only": true,
+    "status": "ok"
+  }
+}
