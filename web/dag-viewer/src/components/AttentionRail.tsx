@@ -15,6 +15,9 @@ export function AttentionRail({ items, onSelect }: Props) {
         key={item.attention_id}
         type="button"
         className={`attention-item attention-item--${item.severity.toLowerCase()}`}
+        data-qid={`dag:attention:item:${item.attention_id}`}
+        data-qs-action="DAG_SELECT_ATTENTION_ITEM"
+        title={`Inspect attention item ${item.reason_code}`}
         onClick={() => onSelect(item)}
       >
         <AlertTriangle aria-hidden="true" size={13} />

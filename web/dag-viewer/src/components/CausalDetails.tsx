@@ -24,7 +24,13 @@ export function CausalDetails({ explanation, onReceipt }: {
         <Link2 aria-hidden="true" size={12} />
         <span>{String(reference.kind)} · {String(reference.relation)}</span>
         {String(reference.kind) === "RECEIPT"
-          ? <button type="button" onClick={() => onReceipt(String(reference.reference_id))}><code>{String(reference.reference_id)}</code></button>
+          ? <button
+            type="button"
+            data-qid={`dag:causal:receipt:${String(reference.reference_id)}`}
+            data-qs-action="DAG_OPEN_CAUSAL_RECEIPT"
+            title={`Open receipt ${String(reference.reference_id)}`}
+            onClick={() => onReceipt(String(reference.reference_id))}
+          ><code>{String(reference.reference_id)}</code></button>
           : <code>{String(reference.reference_id)}</code>}
       </li>)}
     </ol>

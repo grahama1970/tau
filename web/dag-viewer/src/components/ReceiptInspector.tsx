@@ -9,7 +9,7 @@ export function ReceiptInspector({ entries, selected, onSelect, projection }: {
 }) {
   return <div className="receipt-inspector">
     <label htmlFor="receipt-select">Committed receipt</label>
-    <select id="receipt-select" value={selected ?? ""} onChange={(event) => onSelect(event.target.value)}>
+    <select id="receipt-select" data-qid="dag:receipts:select" data-qs-action="DAG_SELECT_RECEIPT" title="Select receipt to inspect" value={selected ?? ""} onChange={(event) => onSelect(event.target.value)}>
       <option value="">Select receipt</option>
       {entries.map((entry) => <option key={entry.receipt_id} value={entry.receipt_id}>{entry.path_display}</option>)}
     </select>

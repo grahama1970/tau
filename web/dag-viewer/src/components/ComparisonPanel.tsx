@@ -23,7 +23,7 @@ export function ComparisonPanel({ value, result, sequences, transaction, correct
   return <section className="comparison-panel" aria-label="Exactly two comparison" data-qid="dag:comparison">
     <header><GitCompareArrows size={15} /><strong>Compare exactly two</strong><span>journal-derived · read-only</span></header>
     <div className="comparison-panel__controls">
-      <select aria-label="Comparison kind" value={value.kind} onChange={(event) => {
+      <select data-qid="dag:comparison:kind" data-qs-action="DAG_COMPARISON_KIND" title="Comparison kind" aria-label="Comparison kind" value={value.kind} onChange={(event) => {
         const kind = event.target.value as ComparisonInput['kind'];
         const left = kind === "ATTEMPT_PAIR" ? "1" : String(sequences[0] ?? "");
         const right = kind === "ATTEMPT_PAIR" ? String(attempts.at(-1) ?? 2) : String(sequences.at(-1) ?? "");
@@ -34,9 +34,9 @@ export function ComparisonPanel({ value, result, sequences, transaction, correct
         <option value="CORRECTION_BEFORE_AFTER">Correction before/after</option>
       </select>
       {value.kind === "SEQUENCE_PAIR" && <>
-        <select aria-label="Left sequence" value={value.left} onChange={(event) => onChange({ ...value, left: event.target.value })}>{sequences.map((sequence) => <option key={sequence} value={sequence}>#{sequence}</option>)}</select>
+        <select data-qid="dag:comparison:left-sequence" data-qs-action="DAG_COMPARISON_LEFT" title="Left sequence" aria-label="Left sequence" value={value.left} onChange={(event) => onChange({ ...value, left: event.target.value })}>{sequences.map((sequence) => <option key={sequence} value={sequence}>#{sequence}</option>)}</select>
         <ArrowLeftRight size={14} />
-        <select aria-label="Right sequence" value={value.right} onChange={(event) => onChange({ ...value, right: event.target.value })}>{sequences.map((sequence) => <option key={sequence} value={sequence}>#{sequence}</option>)}</select>
+        <select data-qid="dag:comparison:right-sequence" data-qs-action="DAG_COMPARISON_RIGHT" title="Right sequence" aria-label="Right sequence" value={value.right} onChange={(event) => onChange({ ...value, right: event.target.value })}>{sequences.map((sequence) => <option key={sequence} value={sequence}>#{sequence}</option>)}</select>
       </>}
       {value.kind === "ATTEMPT_PAIR" && <>
         <input aria-label="Comparison node" value={value.nodeId} onChange={(event) => onChange({ ...value, nodeId: event.target.value })} />
@@ -44,16 +44,16 @@ export function ComparisonPanel({ value, result, sequences, transaction, correct
         <ArrowLeftRight size={14} />
         <input type="number" min="1" aria-label="Right attempt" value={value.right} onChange={(event) => onChange({ ...value, right: event.target.value })} />
       </>}
-      {value.kind === "CORRECTION_BEFORE_AFTER" && <select aria-label="Correction incident" value={value.incidentId} onChange={(event) => onChange({ ...value, incidentId: event.target.value })}>
+      {value.kind === "CORRECTION_BEFORE_AFTER" && <select data-qid="dag:comparison:incident" data-qs-action="DAG_COMPARISON_INCIDENT" title="Correction incident" aria-label="Correction incident" value={value.incidentId} onChange={(event) => onChange({ ...value, incidentId: event.target.value })}>
         {corrections.map((item) => <option key={item.incident_id}>{item.incident_id}</option>)}
       </select>}
-      <button type="button" onClick={onCompare}>Compare</button>
+      <button type="button" data-qid="dag:comparison:compare" data-qs-action="DAG_RUN_COMPARISON" title="Run comparison" onClick={onCompare}>Compare</button>
     </div>
     <div className="comparison-panel__result" data-qid="dag:comparison:result">
       {!result ? <span>Select two authoritative states.</span> : <>
-        <button type="button" className="comparison-panel__side" aria-label="Inspect left comparison side" onClick={() => onSelectSide(result.left)}><strong>LEFT</strong><code>#{result.left.sequence}</code><small>{JSON.stringify(result.left.reference)}</small></button>
+        <button type="button" className="comparison-panel__side" data-qid="dag:comparison:side:left" data-qs-action="DAG_INSPECT_COMPARISON_SIDE" title="Inspect left comparison side" aria-label="Inspect left comparison side" onClick={() => onSelectSide(result.left)}><strong>LEFT</strong><code>#{result.left.sequence}</code><small>{JSON.stringify(result.left.reference)}</small></button>
         <div className="comparison-panel__changes"><strong>{result.changes.length} changes</strong>{result.changes.slice(0, 5).map((change) => <code key={change.field}>{change.change} {change.field}</code>)}</div>
-        <button type="button" className="comparison-panel__side" aria-label="Inspect right comparison side" onClick={() => onSelectSide(result.right)}><strong>RIGHT</strong><code>#{result.right.sequence}</code><small>{JSON.stringify(result.right.reference)}</small></button>
+        <button type="button" className="comparison-panel__side" data-qid="dag:comparison:side:right" data-qs-action="DAG_INSPECT_COMPARISON_SIDE" title="Inspect right comparison side" aria-label="Inspect right comparison side" onClick={() => onSelectSide(result.right)}><strong>RIGHT</strong><code>#{result.right.sequence}</code><small>{JSON.stringify(result.right.reference)}</small></button>
       </>}
     </div>
   </section>;

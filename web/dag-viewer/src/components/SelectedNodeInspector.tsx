@@ -57,6 +57,8 @@ export function SelectedNodeInspector({ projection }: Props) {
       {stableValues.map(([label, value]) => <button
         key={label}
         type="button"
+        data-qid={`dag:selected-node:copy:${label}`}
+        data-qs-action="DAG_COPY_NODE_IDENTIFIER"
         title={`Copy ${label}`}
         aria-label={`Copy ${label}`}
         onClick={() => copyStable(value)}
