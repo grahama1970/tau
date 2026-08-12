@@ -16,6 +16,7 @@ import { SequenceNavigator } from "./components/SequenceNavigator";
 import { SelectedNodeInspector } from "./components/SelectedNodeInspector";
 import { StatusBanner } from "./components/StatusBanner";
 import { TransactionAttempts } from "./components/TransactionAttempts";
+import type { TimelineSubject } from "./components/runTimelineModel";
 import type { AttentionItem, CausalExplanation, ComparisonSide, DagComparison, DagManifest, DagQueryResult, DagSnapshot, JournalEvent, JsonValue, QueryItem, ReceiptProjection, SelectedNodeInspectorProjection } from "./types";
 import { useRegisterAction } from "./useRegisterAction";
 
@@ -57,6 +58,7 @@ export default function App() {
   const [connected, setConnected] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedTimelineEventId, setSelectedTimelineEventId] = useState<string | null>(null);
   const [tab, setTab] = useState<InspectorTab>("cause");
   const [receiptId, setReceiptId] = useState<string | null>(null);
   const [receiptAtSequence, setReceiptAtSequence] = useState<number | null>(null);
@@ -403,12 +405,14 @@ export default function App() {
       ? "TERMINAL"
       : "NODE";
     setSelectedId(id);
+    setSelectedTimelineEventId(null);
     setSelectedSubject({ kind, id });
     if (kind === "NODE") setTab("node");
   };
 
-  const selectTimelineSubject = (subject: { kind: string; id: string }) => {
+  const selectTimelineSubject = (subject: TimelineSubject) => {
     const normalized = subject.kind.toUpperCase();
+    setSelectedTimelineEventId(subject.eventId ?? null);
     if (normalized === "NODE") {
       setSelectedId(subject.id);
       setSelectedSubject({ kind: "NODE", id: subject.id });
@@ -431,6 +435,7 @@ export default function App() {
   };
 
   const selectAttention = (item: AttentionItem) => {
+    setSelectedTimelineEventId(null);
     setSelectedSubject({ kind: "ATTENTION", id: item.attention_id });
     if (item.subject.kind === "NODE" || item.subject.kind === "TERMINAL") {
       setSelectedId(item.subject.id);
@@ -439,6 +444,7 @@ export default function App() {
   };
 
   const selectDecision = (kind: "ROUTE" | "JOIN", id: string) => {
+    setSelectedTimelineEventId(null);
     setSelectedSubject({ kind, id });
     setTab("cause");
   };
@@ -464,6 +470,7 @@ export default function App() {
   };
 
   const selectQueryItem = (item: QueryItem) => {
+    setSelectedTimelineEventId(null);
     selectSequence(item.sequence);
     if (item.entity_kind === "RECEIPT") selectReceipt(item.entity_id, item.sequence);
     else if (item.entity_kind === "NODE" || item.entity_kind === "TERMINAL") {
@@ -483,6 +490,7 @@ export default function App() {
   };
 
   const selectEvent = (event: JournalEvent) => {
+    setSelectedTimelineEventId(null);
     const candidateKind = event.entity_type.toUpperCase();
     const supportedKinds = new Set(["RUN", "NODE", "EDGE", "TERMINAL", "ROUTE", "JOIN", "ATTEMPT", "CORRECTION", "ATTENTION"]);
     const kind = supportedKinds.has(candidateKind) ? candidateKind : "RUN";
@@ -494,6 +502,7 @@ export default function App() {
   };
 
   const selectComparisonSide = (side: ComparisonSide) => {
+    setSelectedTimelineEventId(null);
     const kind = String(side.reference.kind ?? "");
     selectSequence(side.sequence);
     if (kind === "ATTEMPT" && typeof side.reference.node_id === "string") {
@@ -590,7 +599,7 @@ export default function App() {
         </div>
         <div className="graph-canvas" data-qid="dag:workspace:canvas">
           {workspaceView === "timeline"
-            ? <RunTimeline manifest={manifest} snapshot={snapshot} selectedId={selectedId} onSelect={selectTimelineSubject} />
+            ? <RunTimeline manifest={manifest} snapshot={snapshot} selectedId={selectedId} selectedTimelineEventId={selectedTimelineEventId} onSelect={selectTimelineSubject} />
             : <DagWorkspace manifest={manifest} snapshot={snapshot} selectedId={selectedId} onSelect={selectGraphSubject} />}
         </div>
         {transaction && <TransactionAttempts transaction={transaction} />}
