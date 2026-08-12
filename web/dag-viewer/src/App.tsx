@@ -11,13 +11,16 @@ import { FilterBar, type FilterState } from "./components/FilterBar";
 import { JsonInspector } from "./components/JsonInspector";
 import { ReceiptInspector } from "./components/ReceiptInspector";
 import { RunOverview } from "./components/RunOverview";
+import { RunTimeline } from "./components/RunTimeline";
 import { SequenceNavigator } from "./components/SequenceNavigator";
 import { SelectedNodeInspector } from "./components/SelectedNodeInspector";
 import { StatusBanner } from "./components/StatusBanner";
 import { TransactionAttempts } from "./components/TransactionAttempts";
 import type { AttentionItem, CausalExplanation, ComparisonSide, DagComparison, DagManifest, DagQueryResult, DagSnapshot, JournalEvent, JsonValue, QueryItem, ReceiptProjection, SelectedNodeInspectorProjection } from "./types";
+import { useRegisterAction } from "./useRegisterAction";
 
 type InspectorTab = "node" | "source" | "plan" | "live" | "cause" | "receipt";
+type WorkspaceView = "timeline" | "topology";
 const tabs: Array<{ id: InspectorTab; label: string; icon: typeof Braces }> = [
   { id: "node", label: "Node", icon: SquareDashedMousePointer },
   { id: "source", label: "Source DAG", icon: FileJson2 },
@@ -26,6 +29,10 @@ const tabs: Array<{ id: InspectorTab; label: string; icon: typeof Braces }> = [
   { id: "cause", label: "Why", icon: GitBranch },
   { id: "receipt", label: "Receipt", icon: FileCheck2 },
 ];
+
+function parseWorkspaceView(parameters: URLSearchParams): WorkspaceView {
+  return parameters.get("workspace_view") === "topology" ? "topology" : "timeline";
+}
 
 export default function App() {
   const initialUrl = new URLSearchParams(window.location.search);
@@ -64,6 +71,48 @@ export default function App() {
     kind: "SEQUENCE_PAIR", left: "", right: "", nodeId: "", incidentId: "",
   });
   const [comparison, setComparison] = useState<DagComparison | null>(null);
+  const [workspaceView, setWorkspaceView] = useState<WorkspaceView>(parseWorkspaceView(initialUrl));
+
+  useRegisterAction("dag:workspace-view:timeline", {
+    action: "DAG_WORKSPACE_TIMELINE",
+    label: "Run Timeline",
+    description: "Show the Tau run as a timeline-first operator surface.",
+  });
+  useRegisterAction("dag:workspace-view:topology", {
+    action: "DAG_WORKSPACE_TOPOLOGY",
+    label: "Topology",
+    description: "Show the authoritative React Flow DAG topology.",
+  });
+  useRegisterAction("dag:inspector:node", {
+    action: "DAG_INSPECT_NODE",
+    label: "Node Inspector",
+    description: "Inspect the selected node projection.",
+  });
+  useRegisterAction("dag:inspector:source", {
+    action: "DAG_INSPECT_SOURCE",
+    label: "Source DAG Inspector",
+    description: "Inspect the source DAG JSON.",
+  });
+  useRegisterAction("dag:inspector:plan", {
+    action: "DAG_INSPECT_PLAN",
+    label: "DagPlan Inspector",
+    description: "Inspect the compiled DagPlan JSON.",
+  });
+  useRegisterAction("dag:inspector:live", {
+    action: "DAG_INSPECT_LIVE",
+    label: "Live State Inspector",
+    description: "Inspect the selected live state projection.",
+  });
+  useRegisterAction("dag:inspector:cause", {
+    action: "DAG_INSPECT_CAUSE",
+    label: "Causal Inspector",
+    description: "Inspect why the selected subject is in its projected state.",
+  });
+  useRegisterAction("dag:inspector:receipt", {
+    action: "DAG_INSPECT_RECEIPT",
+    label: "Receipt Inspector",
+    description: "Inspect committed receipt projections.",
+  });
 
   useEffect(() => {
     const onPopState = () => {
@@ -74,6 +123,7 @@ export default function App() {
         entityKind: parameters.get("filter_kind") ?? "",
         state: parameters.get("filter_state") ?? "",
       };
+      setWorkspaceView(parseWorkspaceView(parameters));
       receiptGenerationRef.current += 1;
       receiptAuthorityRef.current = "";
       setReceiptId(null);
@@ -357,6 +407,29 @@ export default function App() {
     if (kind === "NODE") setTab("node");
   };
 
+  const selectTimelineSubject = (subject: { kind: string; id: string }) => {
+    const normalized = subject.kind.toUpperCase();
+    if (normalized === "NODE") {
+      setSelectedId(subject.id);
+      setSelectedSubject({ kind: "NODE", id: subject.id });
+      setTab("node");
+    } else if (normalized === "TERMINAL") {
+      setSelectedId(subject.id);
+      setSelectedSubject({ kind: "TERMINAL", id: subject.id });
+      setTab("cause");
+    } else {
+      setSelectedSubject({ kind: normalized, id: subject.id });
+      setTab("cause");
+    }
+  };
+
+  const selectWorkspaceView = (view: WorkspaceView) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("workspace_view", view);
+    window.history.pushState({}, "", url);
+    setWorkspaceView(view);
+  };
+
   const selectAttention = (item: AttentionItem) => {
     setSelectedSubject({ kind: "ATTENTION", id: item.attention_id });
     if (item.subject.kind === "NODE" || item.subject.kind === "TERMINAL") {
@@ -488,10 +561,37 @@ export default function App() {
     <DecisionRail routes={snapshot.routes} joins={snapshot.joins} onSelect={selectDecision} />
     <FilterBar value={filterDraft} result={queryResult} onChange={setFilterDraft} onApply={applyFilter} onClear={clearFilter} onSelect={selectQueryItem} />
     <section className="dag-app__workspace">
-      <div className={`graph-pane${transaction ? " graph-pane--with-transaction" : ""}`} data-qid="dag:workspace:graph">
-        <div className="pane-heading"><strong>Execution graph</strong><span>read-only · source DAG unchanged</span></div>
+      <div className={`graph-pane${transaction ? " graph-pane--with-transaction" : ""}${workspaceView === "timeline" ? " graph-pane--timeline" : ""}`} data-qid="dag:workspace:graph">
+        <div className="pane-heading pane-heading--workspace">
+          <div>
+            <strong>{workspaceView === "timeline" ? "Run timeline" : "Execution graph"}</strong>
+            <span>{workspaceView === "timeline" ? "timeline primary · topology preserved" : "read-only · source DAG unchanged"}</span>
+          </div>
+          <div className="workspace-tabs" aria-label="Workspace view">
+            <button
+              type="button"
+              className={workspaceView === "timeline" ? "active" : ""}
+              data-qid="dag:workspace-view:timeline"
+              data-qs-action="DAG_WORKSPACE_TIMELINE"
+              title="Show run timeline"
+              aria-pressed={workspaceView === "timeline"}
+              onClick={() => selectWorkspaceView("timeline")}
+            ><RadioTower aria-hidden="true" size={14} />Timeline</button>
+            <button
+              type="button"
+              className={workspaceView === "topology" ? "active" : ""}
+              data-qid="dag:workspace-view:topology"
+              data-qs-action="DAG_WORKSPACE_TOPOLOGY"
+              title="Show topology graph"
+              aria-pressed={workspaceView === "topology"}
+              onClick={() => selectWorkspaceView("topology")}
+            ><GitBranch aria-hidden="true" size={14} />Topology</button>
+          </div>
+        </div>
         <div className="graph-canvas" data-qid="dag:workspace:canvas">
-          <DagWorkspace manifest={manifest} snapshot={snapshot} selectedId={selectedId} onSelect={selectGraphSubject} />
+          {workspaceView === "timeline"
+            ? <RunTimeline manifest={manifest} snapshot={snapshot} selectedId={selectedId} onSelect={selectTimelineSubject} />
+            : <DagWorkspace manifest={manifest} snapshot={snapshot} selectedId={selectedId} onSelect={selectGraphSubject} />}
         </div>
         {transaction && <TransactionAttempts transaction={transaction} />}
       </div>

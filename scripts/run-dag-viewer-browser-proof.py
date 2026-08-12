@@ -12,6 +12,26 @@ import time
 from pathlib import Path
 
 
+def _node_path() -> str:
+    candidates = [
+        os.environ.get("NODE_PATH"),
+        subprocess.run(
+            ["npm", "root", "-g"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip(),
+        "/home/graham/.npm/_npx/0f94ee7615faf582/node_modules",
+    ]
+    for candidate in candidates:
+        if candidate and (
+            (Path(candidate) / "puppeteer").is_dir()
+            or (Path(candidate) / "puppeteer-core").is_dir()
+        ):
+            return candidate
+    raise RuntimeError("dag_viewer_browser_proof_missing_puppeteer")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=Path, required=True)
@@ -40,7 +60,7 @@ def main() -> int:
                 "--viewer-url-out",
                 str(url_path),
                 "--serve-after-seconds",
-                "12",
+                "45",
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -55,10 +75,8 @@ def main() -> int:
             raise RuntimeError(f"dag_viewer_browser_server_unavailable:{stderr}")
         url = url_path.read_text(encoding="utf-8").strip()
         env = dict(os.environ)
-        node_root = subprocess.run(
-            ["npm", "root", "-g"], check=True, capture_output=True, text=True
-        ).stdout.strip()
-        env["NODE_PATH"] = node_root
+        env["NODE_PATH"] = _node_path()
+        env.setdefault("CHROME_BIN", "/snap/bin/chromium")
         browser = subprocess.run(
             [
                 "node",
@@ -74,7 +92,7 @@ def main() -> int:
             timeout=60,
         )
         try:
-            smoke_stdout, smoke_stderr = smoke.communicate(timeout=20)
+            smoke_stdout, smoke_stderr = smoke.communicate(timeout=70)
         except subprocess.TimeoutExpired:
             smoke.terminate()
             smoke_stdout, smoke_stderr = smoke.communicate(timeout=5)

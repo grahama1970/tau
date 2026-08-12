@@ -4,7 +4,12 @@ import { createRequire } from "node:module";
 import process from "node:process";
 
 const require = createRequire(import.meta.url);
-const puppeteer = require(`${process.env.NODE_PATH}/puppeteer`);
+let puppeteer;
+try {
+  puppeteer = require(`${process.env.NODE_PATH}/puppeteer`);
+} catch {
+  puppeteer = require(`${process.env.NODE_PATH}/puppeteer-core`);
+}
 
 const [url, screenshotPath, outputPath] = process.argv.slice(2);
 if (!url || !screenshotPath || !outputPath) throw new Error("browser-proof arguments missing");
@@ -30,6 +35,10 @@ await page.goto(url, { waitUntil: "networkidle0", timeout: 15000 });
 await page.waitForSelector('[data-qid="dag:workspace:graph"]', { timeout: 10000 });
 
 const observed = {
+  timeline_rendered: false,
+  timeline_tracks_visible: false,
+  timeline_clip_selects_node: false,
+  topology_switch_visible: false,
   graph_rendered: false,
   source_dag_visible: false,
   dag_plan_tab_visible: false,
@@ -56,6 +65,27 @@ observed.source_dag_visible = await page.$eval(
   (element) => (element.textContent || "").includes("tau.generic_dag_spec.v1"),
 );
 await page.click('[data-qid="dag:inspector:cause"]');
+await page.waitForSelector('[data-qid="dag:timeline:run"]', { timeout: 10000 });
+observed.timeline_rendered = await page.$eval(
+  '[data-qid="dag:timeline:run"]',
+  (element) => (element.textContent || "").includes("Execution")
+    && (element.textContent || "").includes("Proof")
+    && (element.textContent || "").includes("Control & Effects"),
+);
+observed.timeline_tracks_visible = await page.evaluate(() => [
+  '[data-qid="dag:timeline:execution:creator-reviewer"]',
+  '[data-qid="dag:timeline:proof:creator-reviewer"]',
+].every((selector) => Boolean(document.querySelector(selector))));
+await page.click('[data-qid="dag:timeline:execution:creator-reviewer"]');
+await page.waitForFunction(() => document.querySelector('[data-qid="dag:inspector:node"]')?.getAttribute("aria-pressed") === "true");
+await page.waitForSelector('[data-qid="dag:selected-node-inspector"]', { timeout: 10000 });
+observed.timeline_clip_selects_node = await page.$eval(
+  '[data-qid="dag:selected-node-inspector"]',
+  (element) => (element.textContent || "").includes("creator-reviewer"),
+);
+await page.click('[data-qid="dag:workspace-view:topology"]');
+await page.waitForSelector('[data-qid="dag:node:creator-reviewer"]', { timeout: 10000 });
+observed.topology_switch_visible = page.url().includes("workspace_view=topology");
 
 const deadline = Date.now() + 25000;
 while (Date.now() < deadline) {
@@ -107,7 +137,9 @@ const beforeRefresh = await page.$eval('[data-qid="dag:node:creator-reviewer"]',
   scheduler: element.getAttribute("data-node-state"),
   admission: element.getAttribute("data-admission-state"),
 }));
-await page.reload({ waitUntil: "networkidle0", timeout: 15000 });
+const topologyUrl = new URL(url);
+topologyUrl.searchParams.set("workspace_view", "topology");
+await page.goto(topologyUrl.toString(), { waitUntil: "networkidle0", timeout: 15000 });
 await page.waitForSelector('[data-qid="dag:node:creator-reviewer"]', { timeout: 10000 });
 const afterRefresh = await page.$eval('[data-qid="dag:node:creator-reviewer"]', (element) => ({
   scheduler: element.getAttribute("data-node-state"),
@@ -171,6 +203,8 @@ observed.selected_node_read_only = selectedNodeInspector.text.includes("read-onl
 observed.selected_node_no_mutation_controls =
   selectedNodeInspector.text.includes("mutation controls: 0")
   && selectedNodeInspector.retryButtons === 0;
+await page.click('[data-qid="dag:workspace-view:timeline"]');
+await page.waitForSelector('[data-qid="dag:timeline:run"]', { timeout: 10000 });
 await page.screenshot({ path: screenshotPath, fullPage: viewport.width < 900 });
 await browser.close();
 const screenshotSha256 = `sha256:${createHash("sha256").update(fs.readFileSync(screenshotPath)).digest("hex")}`;

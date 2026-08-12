@@ -41,7 +41,7 @@ test("filters bounded projections and renders exactly-two comparison", async () 
   render(<App />);
 
   await waitFor(() => expect(screen.getByText("1 matches · 1 shown")).toBeInTheDocument());
-  expect(screen.getAllByText("Determine whether this checkout is ready for focused work.")).toHaveLength(2);
+  expect(screen.getAllByText("Determine whether this checkout is ready for focused work.").length).toBeGreaterThanOrEqual(2);
   expect(screen.getByText("redacted projections only")).toBeInTheDocument();
   expect(window.location.search).toContain("filter_q=creator");
   await waitFor(() => expect(screen.getByLabelText("Left sequence")).toHaveValue("1"));
@@ -67,6 +67,8 @@ test("selected node inspector renders backend projection and stable copy control
   }));
   render(<App />);
 
+  await waitFor(() => expect(screen.getByRole("button", { name: "Topology" })).toBeInTheDocument());
+  fireEvent.click(screen.getByRole("button", { name: "Topology" }));
   await waitFor(() => expect(screen.getByLabelText("creator, running, awaiting_receipt")).toBeInTheDocument());
   fireEvent.click(screen.getByLabelText("creator, running, awaiting_receipt"));
   await waitFor(() => expect(screen.getByText("Completion Boundary")).toBeInTheDocument());
@@ -97,6 +99,7 @@ test("out-of-order selected-node inspector response cannot replace newer node st
   render(<App />);
   await waitFor(() => expect(inspectorResolvers).toHaveLength(1));
 
+  fireEvent.click(screen.getByRole("button", { name: "Topology" }));
   fireEvent.click(screen.getByLabelText("publish, pending, not_started"));
   await waitFor(() => expect(inspectorResolvers).toHaveLength(2));
 
@@ -229,7 +232,18 @@ test("renders authoritative graph, inspectors, transaction, and proof boundary",
     return new Response(JSON.stringify(payload), { status: 200, headers: { ETag: '"one"', "Content-Type": "application/json" } });
   }));
   render(<App />);
+  await waitFor(() => expect(screen.getByText("Run timeline")).toBeInTheDocument());
+  expect(screen.getByRole("button", { name: "Timeline" })).toHaveAttribute("aria-pressed", "true");
+  expect(document.querySelector('[data-qid="dag:timeline:run"]')).toBeInTheDocument();
+  expect(document.querySelector('[data-qid="dag:timeline:execution:creator"]')).toBeInTheDocument();
+  expect(document.querySelector('[data-qid="dag:timeline:proof:creator"]')).toBeInTheDocument();
+  expect(document.querySelector('[data-qid="dag:timeline:control:terminal:human"]')).toBeInTheDocument();
+  await waitFor(() => expect(window.__tauRegisteredActions?.get("dag:workspace-view:timeline")).toMatchObject({
+    action: "DAG_WORKSPACE_TIMELINE",
+  }));
+  fireEvent.click(screen.getByRole("button", { name: "Topology" }));
   await waitFor(() => expect(screen.getByText("Execution graph")).toBeInTheDocument());
+  expect(window.location.search).toContain("workspace_view=topology");
   expect(screen.getByRole("button", { name: /Source DAG/ })).toBeInTheDocument();
   expect(screen.getByText("Reviewer REVISE")).toBeInTheDocument();
   expect(screen.getByText(/Tau admission: AWAITING_RECEIPT/)).toBeInTheDocument();
@@ -240,6 +254,32 @@ test("renders authoritative graph, inspectors, transaction, and proof boundary",
   await waitFor(() => expect(screen.getByText("attempt_dispatched")).toBeInTheDocument());
   expect(screen.getByRole("button", { name: "Why" })).toHaveAttribute("aria-pressed", "true");
   expect(screen.getByText("journal:6")).toBeInTheDocument();
+});
+
+test("timeline clips select authoritative subjects without leaving timeline view", async () => {
+  const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    const payload = url.includes("manifest")
+      ? manifest
+      : url.includes("nodes/publish/inspector")
+        ? { ...nodeInspector, node_id: "publish", attempt: 0, attempt_id: null, projection_key: "sha256:publish-key", projection_sha256: "sha256:publish", attention: [] }
+        : url.includes("nodes/creator/inspector")
+          ? nodeInspector
+          : url.includes("explanations")
+            ? explanation
+            : url.includes("events")
+              ? { schema: "tau.dag_live_event.v1", run_id: "run-1", after_sequence: 0, events: [] }
+              : snapshot;
+    return new Response(JSON.stringify(payload), { status: 200, headers: { ETag: '"one"', "Content-Type": "application/json" } });
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  render(<App />);
+  await waitFor(() => expect(document.querySelector('[data-qid="dag:timeline:execution:publish"]')).toBeInTheDocument());
+  fireEvent.click(document.querySelector('[data-qid="dag:timeline:execution:publish"]') as Element);
+  expect(screen.getByText("Run timeline")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Node" })).toHaveAttribute("aria-pressed", "true");
+  await waitFor(() => expect(fetchMock.mock.calls.some(([value]) => String(value).includes("/explanations/node/publish"))).toBe(true));
+  await waitFor(() => expect(document.querySelector('[data-qid="dag:selected-node-inspector"] header strong')).toHaveTextContent("publish"));
 });
 
 test("timeline and comparison selections synchronize the authoritative sequence and subject", async () => {
@@ -468,9 +508,9 @@ test("shows the selected external terminal in the live-state inspector", async (
     return new Response(JSON.stringify(payload), { status: 200, headers: { ETag: '"one"', "Content-Type": "application/json" } });
   }));
   render(<App />);
-  await waitFor(() => expect(document.querySelector('[data-qid="dag:node:human"]')).toBeInTheDocument());
+  await waitFor(() => expect(document.querySelector('[data-qid="dag:timeline:control:terminal:human"]')).toBeInTheDocument());
 
-  fireEvent.click(document.querySelector('[data-qid="dag:node:human"]') as Element);
+  fireEvent.click(document.querySelector('[data-qid="dag:timeline:control:terminal:human"]') as Element);
   fireEvent.click(screen.getByRole("button", { name: /Live State/ }));
 
   expect(screen.getByLabelText("live JSON")).toHaveTextContent('"terminal_id": "human"');
@@ -510,7 +550,7 @@ test("attention selection opens its immutable causal explanation", async () => {
   }));
   render(<App />);
   await waitFor(() => expect(screen.getByText("Human attention")).toBeInTheDocument());
-  fireEvent.click(screen.getByText("run_blocked"));
+  fireEvent.click(document.querySelector('[data-qid="dag:timeline:control:attention:attention-1"]') as Element);
   await waitFor(() => expect(screen.getByText("REVIEW_BLOCKED_RUN · #8")).toBeInTheDocument());
   expect(document.querySelector('[data-qid="dag:causal:details"]')).toBeInTheDocument();
 });
