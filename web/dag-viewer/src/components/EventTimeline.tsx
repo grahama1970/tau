@@ -1,18 +1,40 @@
 import { Activity, ShieldAlert } from "lucide-react";
 import type { JournalEvent } from "../types";
+import { useRegisterAction } from "../useRegisterAction";
 
-export function EventTimeline({ events, onSelect }: { events: JournalEvent[]; onSelect: (event: JournalEvent) => void }) {
+export function EventTimeline({
+  events,
+  collapsed,
+  onToggle,
+  onSelect,
+}: {
+  events: JournalEvent[];
+  collapsed: boolean;
+  onToggle: () => void;
+  onSelect: (event: JournalEvent) => void;
+}) {
+  useRegisterAction("dag:timeline:events:toggle", {
+    action: "DAG_TOGGLE_JOURNAL_DRAWER",
+    label: "Toggle Journal Drawer",
+    description: "Expand or collapse the journal event drawer.",
+  });
   const correctionStates = events
     .filter((event) => event.event_type === "correction_state_committed" && typeof event.payload.state === "string")
     .map((event) => String(event.payload.state));
   return <section className="event-timeline" aria-label="Event timeline" data-qid="dag:timeline:events">
     <header>
-      <Activity aria-hidden="true" size={16} />
-      <strong>Journal timeline</strong>
+      <button
+        type="button"
+        data-qid="dag:timeline:events:toggle"
+        data-qs-action="DAG_TOGGLE_JOURNAL_DRAWER"
+        title={collapsed ? "Expand journal timeline" : "Collapse journal timeline"}
+        aria-expanded={!collapsed}
+        onClick={onToggle}
+      ><Activity aria-hidden="true" size={16} /><strong>Journal timeline</strong></button>
       {correctionStates.length > 0 && <span className="event-timeline__correction" data-qid="dag:timeline:correction-lineage">{correctionStates.join(" > ")}</span>}
       <span className="event-timeline__count">{events.length} recent events</span>
     </header>
-    <div className="event-timeline__scroll">
+    {!collapsed && <div className="event-timeline__scroll">
       {events.map((event) => <button
         key={`${event.seq}-${event.event_type}`}
         type="button"
@@ -28,6 +50,6 @@ export function EventTimeline({ events, onSelect }: { events: JournalEvent[]; on
         {event.event_type === "correction_state_committed" && typeof event.payload.state === "string" && <span className="event-row__state">{event.payload.state}</span>}
         {event.event_type.includes("diagnostic") && <span className="event-row__diagnostic"><ShieldAlert size={12} />diagnostic only</span>}
       </button>)}
-    </div>
+    </div>}
   </section>;
 }

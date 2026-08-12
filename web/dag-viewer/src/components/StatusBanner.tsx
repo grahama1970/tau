@@ -1,4 +1,5 @@
 import { AlertTriangle, CircleCheck, Radio, Unplug } from "lucide-react";
+import type { ReactNode } from "react";
 import type { DagManifest, DagSnapshot, JsonValue } from "../types";
 
 function goalStatement(source: JsonValue): string {
@@ -24,10 +25,12 @@ export function StatusBanner({
   manifest,
   snapshot,
   connected,
+  actions,
 }: {
   manifest: DagManifest;
   snapshot: DagSnapshot;
   connected: boolean;
+  actions?: ReactNode;
 }) {
   const accepted = snapshot.run_status === "PASS";
   const Icon = !connected ? Unplug : accepted ? CircleCheck : snapshot.run_status === "BLOCKED" ? AlertTriangle : Radio;
@@ -42,11 +45,14 @@ export function StatusBanner({
           <span data-qid="dag:status:goal" title={goal}>{goal}</span>
         </div>
       </div>
-      <div className="status-banner__state">
-        <span>{connected ? snapshot.view.mode : "DISCONNECTED"}</span>
-        <span data-qid="dag:status:physical-generation">
-          generation {identity.generation} · journal {snapshot.journal_sequence} · {snapshot.projection_state} · {snapshot.run_status}{snapshot.run_verdict ? ` · ${snapshot.run_verdict}` : ""}
-        </span>
+      <div className="status-banner__right">
+        <div className="status-banner__state">
+          <span>{connected ? snapshot.view.mode : "DISCONNECTED"}</span>
+          <span data-qid="dag:status:physical-generation">
+            generation {identity.generation} · journal {snapshot.journal_sequence} · {snapshot.projection_state} · {snapshot.run_status}{snapshot.run_verdict ? ` · ${snapshot.run_verdict}` : ""}
+          </span>
+        </div>
+        {actions}
       </div>
     </header>
   );

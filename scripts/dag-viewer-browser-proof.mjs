@@ -35,6 +35,13 @@ await page.goto(url, { waitUntil: "networkidle0", timeout: 15000 });
 await page.waitForSelector('[data-qid="dag:workspace:graph"]', { timeout: 10000 });
 
 const observed = {
+  orchestration_pool_visible: false,
+  workspace_toggles_visible: false,
+  live_sync_controls_visible: false,
+  live_sync_pause_resume: false,
+  left_pool_toggle_collapses: false,
+  right_inspector_toggle_collapses: false,
+  journal_drawer_toggle_collapses: false,
   timeline_rendered: false,
   timeline_tracks_visible: false,
   timeline_role_swimlanes_visible: false,
@@ -43,6 +50,8 @@ const observed = {
   timeline_duration_modes_truthful: false,
   timeline_clip_selects_node: false,
   topology_switch_visible: false,
+  graph_viewport_controls_visible: false,
+  graph_zoom_controls_change_viewport: false,
   graph_rendered: false,
   source_dag_visible: false,
   dag_plan_tab_visible: false,
@@ -61,6 +70,37 @@ const observed = {
   selected_node_read_only: false,
   selected_node_no_mutation_controls: false,
 };
+
+observed.workspace_toggles_visible = await page.evaluate(() => [
+  '[data-qid="dag:layout:toggle-left"]',
+  '[data-qid="dag:layout:toggle-bottom"]',
+  '[data-qid="dag:layout:toggle-right"]',
+].every((selector) => Boolean(document.querySelector(selector))));
+observed.orchestration_pool_visible = await page.evaluate(() => {
+  const pool = document.querySelector('[data-qid="dag:pool:browser"]');
+  const card = document.querySelector('[data-qid^="dag:pool:orchestration:"]');
+  return Boolean(pool && card && (pool.textContent || "").includes("Orchestrations") && (card.textContent || "").includes("creator-reviewer"));
+});
+observed.live_sync_controls_visible = await page.evaluate(() => {
+  const controls = document.querySelector('[data-qid="dag:stream:controls"]');
+  const status = document.querySelector('[data-qid="dag:stream:status"]');
+  return Boolean(controls && status && ["CONNECTED", "RECONNECTING", "OFFLINE"].includes(status.getAttribute("data-stream-status") || ""));
+});
+await page.click('[data-qid="dag:stream:toggle-ingestion"]');
+await page.waitForFunction(() => document.querySelector('[data-qid="dag:stream:status"]')?.getAttribute("data-stream-status") === "PAUSED");
+await page.click('[data-qid="dag:stream:toggle-ingestion"]');
+await page.waitForFunction(() => document.querySelector('[data-qid="dag:stream:status"]')?.getAttribute("data-stream-status") !== "PAUSED");
+observed.live_sync_pause_resume = true;
+await page.click('[data-qid="dag:layout:toggle-right"]');
+await page.waitForFunction(() => !document.querySelector('[data-qid="dag:workspace:inspector"]'));
+observed.right_inspector_toggle_collapses = true;
+await page.click('[data-qid="dag:layout:toggle-right"]');
+await page.waitForSelector('[data-qid="dag:workspace:inspector"]', { timeout: 10000 });
+await page.click('[data-qid="dag:layout:toggle-left"]');
+await page.waitForFunction(() => !document.querySelector('[data-qid="dag:pool:browser"]'));
+observed.left_pool_toggle_collapses = true;
+await page.click('[data-qid="dag:layout:toggle-left"]');
+await page.waitForSelector('[data-qid="dag:pool:browser"]', { timeout: 10000 });
 
 await page.click('[data-qid="dag:inspector:source"]');
 await page.waitForFunction(() => document.querySelector('[data-qid="dag:inspector:source"]')?.getAttribute("aria-pressed") === "true");
@@ -115,6 +155,22 @@ observed.timeline_clip_selects_node = await page.$eval(
 await page.click('[data-qid="dag:workspace-view:topology"]');
 await page.waitForSelector('[data-qid="dag:node:creator-reviewer"]', { timeout: 10000 });
 observed.topology_switch_visible = page.url().includes("workspace_view=topology");
+observed.graph_viewport_controls_visible = await page.evaluate(() => [
+  '[data-qid="dag:graph:viewport-controls"]',
+  '[data-qid="dag:graph:zoom-in"]',
+  '[data-qid="dag:graph:zoom-out"]',
+  '[data-qid="dag:graph:reset-view"]',
+  '[data-qid="dag:graph:fit-view"]',
+].every((selector) => Boolean(document.querySelector(selector))));
+const viewportBeforeZoom = await page.$eval(".react-flow__viewport", (element) => element.getAttribute("style") || "");
+await page.click('[data-qid="dag:graph:zoom-in"]');
+await page.waitForFunction((before) => (document.querySelector(".react-flow__viewport")?.getAttribute("style") || "") !== before, {}, viewportBeforeZoom);
+const zoomPercentAfterZoom = await page.$eval('[data-qid="dag:graph:zoom-percent"]', (element) => element.textContent || "");
+const viewportAfterZoom = await page.$eval(".react-flow__viewport", (element) => element.getAttribute("style") || "");
+await page.click('[data-qid="dag:graph:reset-view"]');
+await page.waitForFunction((after) => (document.querySelector(".react-flow__viewport")?.getAttribute("style") || "") !== after, {}, viewportAfterZoom);
+const zoomPercentAfterReset = await page.$eval('[data-qid="dag:graph:zoom-percent"]', (element) => element.textContent || "");
+observed.graph_zoom_controls_change_viewport = zoomPercentAfterZoom !== zoomPercentAfterReset;
 
 const deadline = Date.now() + 25000;
 while (Date.now() < deadline) {
@@ -179,13 +235,14 @@ observed.read_only_requests = methods.length > 0 && methods.every((method) => me
 observed.layout_non_overlapping = await page.evaluate(() => {
   const rect = (qid) => document.querySelector(`[data-qid="${qid}"]`)?.getBoundingClientRect();
   const graph = rect("dag:workspace:graph");
+  const pool = rect("dag:pool:browser");
   const canvas = rect("dag:workspace:canvas");
   const attempts = rect("dag:transaction:attempts");
   const inspector = rect("dag:workspace:inspector");
   const inspectorContent = rect("dag:workspace:inspector-content");
   const proofBoundary = rect("dag:workspace:proof-boundary");
   const timeline = rect("dag:timeline:events");
-  if (!graph || !canvas || !inspector || !inspectorContent || !proofBoundary || !timeline) return false;
+  if (!graph || !pool || !canvas || !inspector || !inspectorContent || !proofBoundary || !timeline) return false;
 
   const contained = (child, parent) =>
     child.left >= parent.left - 1
@@ -202,6 +259,7 @@ observed.layout_non_overlapping = await page.evaluate(() => {
     && inspector.bottom <= timeline.top + 1;
 
   return (sideBySideLayout || stackedLayout)
+    && pool.right <= graph.left + 1
     && timeline.bottom <= pageHeight + 1
     && contained(canvas, graph)
     && (!attempts || (contained(attempts, graph) && canvas.bottom <= attempts.top + 1))
@@ -259,6 +317,11 @@ observed.timeline_role_swimlanes_visible ||= finalRoleTimeline.visible;
 observed.timeline_role_clips_visible ||= finalRoleTimeline.roleClipsVisible;
 observed.timeline_role_clips_unclipped ||= finalRoleTimeline.roleClipsUnclipped;
 observed.timeline_duration_modes_truthful ||= finalRoleTimeline.hasDurationClip;
+await page.click('[data-qid="dag:layout:toggle-bottom"]');
+await page.waitForFunction(() => !document.querySelector(".event-timeline__scroll"));
+observed.journal_drawer_toggle_collapses = true;
+await page.click('[data-qid="dag:layout:toggle-bottom"]');
+await page.waitForSelector(".event-timeline__scroll", { timeout: 10000 });
 await page.screenshot({ path: screenshotPath, fullPage: viewport.width < 900 });
 await browser.close();
 const screenshotSha256 = `sha256:${createHash("sha256").update(fs.readFileSync(screenshotPath)).digest("hex")}`;

@@ -1,39 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Braces, FileCheck2, FileJson2, GitBranch, RadioTower, SquareDashedMousePointer } from "lucide-react";
-import { classifySnapshotTransition, loadComparison, loadExplanation, loadInitialState, loadJournalSequences, loadMatchingManifest, loadQuery, loadReceipt, loadSelectedNodeInspector, pollState } from "./api";
-import { AttentionRail } from "./components/AttentionRail";
-import { CausalDetails } from "./components/CausalDetails";
-import { DecisionRail } from "./components/DecisionRail";
-import { DagWorkspace } from "./components/DagWorkspace";
-import { ComparisonPanel, type ComparisonInput } from "./components/ComparisonPanel";
-import { EventTimeline } from "./components/EventTimeline";
-import { FilterBar, type FilterState } from "./components/FilterBar";
-import { JsonInspector } from "./components/JsonInspector";
-import { ReceiptInspector } from "./components/ReceiptInspector";
-import { RunOverview } from "./components/RunOverview";
-import { RunTimeline } from "./components/RunTimeline";
-import { SequenceNavigator } from "./components/SequenceNavigator";
-import { SelectedNodeInspector } from "./components/SelectedNodeInspector";
-import { StatusBanner } from "./components/StatusBanner";
-import { TransactionAttempts } from "./components/TransactionAttempts";
+import { useMemo, useRef, useState } from "react";
+import { RadioTower } from "lucide-react";
+import { loadComparison } from "./api";
+import { DagViewerShell } from "./components/DagViewerShell";
+import type { ComparisonInput } from "./components/ComparisonPanel";
+import type { FilterState } from "./components/FilterBar";
+import type { LiveSyncStatus } from "./components/LiveSyncControls";
 import type { TimelineSubject } from "./components/runTimelineModel";
+import { parseWorkspaceView, type InspectorTab, type WorkspaceView } from "./dagViewerTypes";
 import type { AttentionItem, CausalExplanation, ComparisonSide, DagComparison, DagManifest, DagQueryResult, DagSnapshot, JournalEvent, JsonValue, QueryItem, ReceiptProjection, SelectedNodeInspectorProjection } from "./types";
+import { useDagViewerEffects } from "./useDagViewerEffects";
 import { useRegisterAction } from "./useRegisterAction";
-
-type InspectorTab = "node" | "source" | "plan" | "live" | "cause" | "receipt";
-type WorkspaceView = "timeline" | "topology";
-const tabs: Array<{ id: InspectorTab; label: string; icon: typeof Braces }> = [
-  { id: "node", label: "Node", icon: SquareDashedMousePointer },
-  { id: "source", label: "Source DAG", icon: FileJson2 },
-  { id: "plan", label: "DagPlan", icon: Braces },
-  { id: "live", label: "Live State", icon: RadioTower },
-  { id: "cause", label: "Why", icon: GitBranch },
-  { id: "receipt", label: "Receipt", icon: FileCheck2 },
-];
-
-function parseWorkspaceView(parameters: URLSearchParams): WorkspaceView {
-  return parameters.get("workspace_view") === "topology" ? "topology" : "timeline";
-}
 
 export default function App() {
   const initialUrl = new URLSearchParams(window.location.search);
@@ -56,6 +32,9 @@ export default function App() {
   const [selectedSequence, setSelectedSequence] = useState<number | null>(initialSequence ? Number(initialSequence) : null);
   const [sequences, setSequences] = useState<number[]>([]);
   const [connected, setConnected] = useState(true);
+  const [livePaused, setLivePaused] = useState(false);
+  const [autoFollowLatest, setAutoFollowLatest] = useState(true);
+  const [pollFailureCount, setPollFailureCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedTimelineEventId, setSelectedTimelineEventId] = useState<string | null>(null);
@@ -69,11 +48,12 @@ export default function App() {
   const [filterDraft, setFilterDraft] = useState<FilterState>(initialFilters);
   const [appliedFilter, setAppliedFilter] = useState<FilterState>(initialFilters);
   const [queryResult, setQueryResult] = useState<DagQueryResult | null>(null);
-  const [comparisonInput, setComparisonInput] = useState<ComparisonInput>({
-    kind: "SEQUENCE_PAIR", left: "", right: "", nodeId: "", incidentId: "",
-  });
+  const [comparisonInput, setComparisonInput] = useState<ComparisonInput>({ kind: "SEQUENCE_PAIR", left: "", right: "", nodeId: "", incidentId: "" });
   const [comparison, setComparison] = useState<DagComparison | null>(null);
   const [workspaceView, setWorkspaceView] = useState<WorkspaceView>(parseWorkspaceView(initialUrl));
+  const [leftPaneOpen, setLeftPaneOpen] = useState(true);
+  const [rightPaneOpen, setRightPaneOpen] = useState(true);
+  const [bottomPaneOpen, setBottomPaneOpen] = useState(true);
 
   useRegisterAction("dag:workspace-view:timeline", {
     action: "DAG_WORKSPACE_TIMELINE",
@@ -116,267 +96,57 @@ export default function App() {
     description: "Inspect committed receipt projections.",
   });
 
-  useEffect(() => {
-    const onPopState = () => {
-      const parameters = new URLSearchParams(window.location.search);
-      const raw = parameters.get("at_sequence");
-      const restored = {
-        q: parameters.get("filter_q") ?? "",
-        entityKind: parameters.get("filter_kind") ?? "",
-        state: parameters.get("filter_state") ?? "",
-      };
-      setWorkspaceView(parseWorkspaceView(parameters));
-      receiptGenerationRef.current += 1;
-      receiptAuthorityRef.current = "";
-      setReceiptId(null);
-      setReceiptAtSequence(null);
-      setReceipt(null);
-      setSelectedSequence(raw ? Number(raw) : null);
-      setFilterDraft(restored);
-      setAppliedFilter(restored);
-      setQueryResult(null);
-    };
-    window.addEventListener("popstate", onPopState);
-    return () => window.removeEventListener("popstate", onPopState);
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    const generation = ++requestGenerationRef.current;
-    loadInitialState(selectedSequence).then((initial) => {
-      if (!active || generation !== requestGenerationRef.current) return;
-      setManifest(initial.manifest);
-      setSnapshot(initial.snapshot);
-      etagsRef.current.set(selectedSequence === null ? "live" : `historical:${selectedSequence}`, initial.etag);
-      if (!initializedRef.current) {
-        setSelectedId(initial.manifest.graph.nodes[0]?.node_id ?? null);
-        setSelectedSubject(
-          initial.manifest.graph.nodes[0]
-            ? { kind: "NODE", id: initial.manifest.graph.nodes[0].node_id }
-            : null,
-        );
-        initializedRef.current = true;
-      }
-      setConnected(true);
-      setError(null);
-      return loadJournalSequences(initial.snapshot.run_id);
-    }).then((loadedSequences) => {
-      if (active && generation === requestGenerationRef.current && loadedSequences) setSequences(loadedSequences);
-    }).catch((reason: unknown) => {
-      if (!active) return;
-      setError(reason instanceof Error ? reason.message : "viewer_initialization_failed");
-      setConnected(false);
-    });
-    return () => { active = false; };
-  }, [selectedSequence]);
-
-  useEffect(() => {
-    if (!manifest || selectedSequence !== null) return;
-    let active = true;
-    let timer: number | null = null;
-    const generation = requestGenerationRef.current;
-
-    const schedule = () => {
-      if (active) timer = window.setTimeout(poll, 750);
-    };
-    const poll = async () => {
-      try {
-        const next = await pollState(etagsRef.current.get("live") ?? null);
-        if (!active || generation !== requestGenerationRef.current) return;
-        if (next.snapshot) {
-          const current = snapshot;
-          if (!current) return;
-          const transition = classifySnapshotTransition(current, next.snapshot, null);
-          if (transition === "SAME_RUN") {
-            const refreshedManifest = await loadMatchingManifest(next.snapshot);
-            if (!active || generation !== requestGenerationRef.current) return;
-            setManifest(refreshedManifest);
-            setSnapshot(next.snapshot);
-            etagsRef.current.set("live", next.etag);
-            loadJournalSequences(next.snapshot.run_id).then((items) => {
-              if (active && generation === requestGenerationRef.current) setSequences(items);
-            }).catch(() => undefined);
-          } else if (transition === "NEWER_GENERATION") {
-            const refreshed = await loadInitialState();
-            if (
-              !active
-              || generation !== requestGenerationRef.current
-              || refreshed.snapshot.run_id !== next.snapshot.run_id
-              || classifySnapshotTransition(current, refreshed.snapshot, null) !== "NEWER_GENERATION"
-            ) return;
-            const nextRequestGeneration = ++requestGenerationRef.current;
-            explanationGenerationRef.current += 1;
-            selectedNodeInspectorGenerationRef.current += 1;
-            comparisonGenerationRef.current += 1;
-            receiptGenerationRef.current += 1;
-            receiptAuthorityRef.current = "";
-            etagsRef.current.clear();
-            etagsRef.current.set("live", refreshed.etag);
-            setManifest(refreshed.manifest);
-            setSnapshot(refreshed.snapshot);
-            setSequences([]);
-            setSelectedId(refreshed.manifest.graph.nodes[0]?.node_id ?? null);
-            setSelectedSubject(
-              refreshed.manifest.graph.nodes[0]
-                ? { kind: "NODE", id: refreshed.manifest.graph.nodes[0].node_id }
-                : null,
-            );
-            setTab("cause");
-            setReceiptId(null);
-            setReceiptAtSequence(null);
-            setReceipt(null);
-            setExplanation(null);
-            setQueryResult(null);
-            setComparison(null);
-            setComparisonInput({ kind: "SEQUENCE_PAIR", left: "", right: "", nodeId: "", incidentId: "" });
-            setError(null);
-            loadJournalSequences(refreshed.snapshot.run_id).then((items) => {
-              if (active && nextRequestGeneration === requestGenerationRef.current) setSequences(items);
-            }).catch(() => undefined);
-          }
-        } else {
-          etagsRef.current.set("live", next.etag);
-        }
-        setConnected(true);
-      } catch {
-        if (active) setConnected(false);
-      } finally {
-        schedule();
-      }
-    };
-
-    schedule();
-    return () => {
-      active = false;
-      if (timer !== null) window.clearTimeout(timer);
-    };
-  }, [manifest?.plan_sha256, selectedSequence, snapshot]);
-
-  useEffect(() => {
-    let active = true;
-    const generation = ++explanationGenerationRef.current;
-    if (!selectedSubject) {
-      setExplanation(null);
-      return () => { active = false; };
-    }
-    const expectedRunId = snapshot?.run_id;
-    loadExplanation(selectedSubject.kind, selectedSubject.id, selectedSequence)
-      .then((value) => {
-        if (
-          active
-          && generation === explanationGenerationRef.current
-          && value.run_id === expectedRunId
-        ) setExplanation(value);
-      })
-      .catch((reason: unknown) => {
-        if (active) setError(reason instanceof Error ? reason.message : "explanation_load_failed");
-      });
-    return () => { active = false; };
-  }, [selectedSequence, selectedSubject, snapshot?.run_id]);
-
   const selectedLive = useMemo(() => snapshot?.nodes.find((node) => node.node_id === selectedId) ?? null, [selectedId, snapshot]);
   const selectedTerminal = useMemo(
     () => snapshot?.terminals.find((terminal) => terminal.terminal_id === selectedId) ?? null,
     [selectedId, snapshot],
   );
-
-  useEffect(() => {
-    const generation = ++selectedNodeInspectorGenerationRef.current;
-    setSelectedNodeInspector(null);
-    if (!selectedLive || !snapshot) return;
-    const expectedRunId = snapshot.run_id;
-    const expectedPlan = snapshot.plan_sha256;
-    const expectedSequence = snapshot.journal_sequence;
-    const expectedNode = selectedLive.node_id;
-    const expectedAttempt = selectedLive.scheduler.attempt || null;
-    let active = true;
-    loadSelectedNodeInspector(expectedNode, expectedAttempt, selectedSequence)
-      .then((value) => {
-        if (
-          active
-          && generation === selectedNodeInspectorGenerationRef.current
-          && value.run_id === expectedRunId
-          && value.plan_sha256 === expectedPlan
-          && value.node_id === expectedNode
-          && value.journal_sequence === expectedSequence
-          && (expectedAttempt === null || value.attempt === expectedAttempt)
-        ) setSelectedNodeInspector(value);
-      })
-      .catch(() => {
-        if (active && generation === selectedNodeInspectorGenerationRef.current) {
-          setSelectedNodeInspector(null);
-        }
-      });
-    return () => { active = false; };
-  }, [selectedLive?.node_id, selectedLive?.scheduler.attempt, selectedSequence, snapshot?.run_id, snapshot?.snapshot_sha256]);
-
-  useEffect(() => {
-    comparisonGenerationRef.current += 1;
-    setComparison(null);
-  }, [selectedSequence, snapshot?.run_id, snapshot?.journal_sequence]);
-
-  useEffect(() => {
-    const generation = ++receiptGenerationRef.current;
-    setReceipt(null);
-    if (!receiptId || !snapshot) return;
-    const expectedRunId = snapshot.run_id;
-    const expectedSequence = receiptAtSequence ?? snapshot.journal_sequence;
-    if (snapshot.journal_sequence !== expectedSequence) return;
-    const authorityKey = `${expectedRunId}:${expectedSequence}:${receiptId}`;
-    receiptAuthorityRef.current = authorityKey;
-    let active = true;
-    loadReceipt(receiptId, receiptAtSequence).then((value) => {
-      if (
-        active
-        && generation === receiptGenerationRef.current
-        && receiptAuthorityRef.current === authorityKey
-        && value.receipt_id === receiptId
-      ) setReceipt(value);
-    }).catch((reason: unknown) => {
-      if (active && generation === receiptGenerationRef.current) {
-        setError(reason instanceof Error ? reason.message : "receipt_load_failed");
-      }
-    });
-    return () => {
-      active = false;
-      if (receiptAuthorityRef.current === authorityKey) receiptAuthorityRef.current = "";
-    };
-  }, [receiptAtSequence, receiptId, snapshot?.run_id, snapshot?.snapshot_sha256]);
-
-  useEffect(() => {
-    if (!snapshot || !Object.values(appliedFilter).some(Boolean)) {
-      setQueryResult(null);
-      return;
-    }
-    let active = true;
-    const parameters = new URLSearchParams();
-    parameters.set("at_sequence", String(snapshot.journal_sequence));
-    if (appliedFilter.q) parameters.set("q", appliedFilter.q);
-    if (appliedFilter.entityKind) parameters.set("entity_kind", appliedFilter.entityKind);
-    if (appliedFilter.state) parameters.set("state", appliedFilter.state);
-    loadQuery(parameters).then((result) => {
-      if (
-        active
-        && result.run_id === snapshot.run_id
-        && result.as_of_sequence === snapshot.journal_sequence
-      ) setQueryResult(result);
-    }).catch((reason: unknown) => {
-      if (active) setError(reason instanceof Error ? reason.message : "query_load_failed");
-    });
-    return () => { active = false; };
-  }, [appliedFilter, selectedSequence, snapshot?.snapshot_sha256]);
-
   const transaction = selectedLive?.transaction ?? snapshot?.nodes.find((node) => node.transaction)?.transaction ?? null;
 
-  useEffect(() => {
-    setComparisonInput((current) => ({
-      ...current,
-      left: current.left || String(sequences[0] ?? transaction?.attempts[0]?.attempt ?? ""),
-      right: current.right || String(sequences.at(-1) ?? transaction?.attempts.at(-1)?.attempt ?? ""),
-      nodeId: current.nodeId || snapshot?.nodes.find((node) => node.transaction)?.node_id || selectedId || "",
-      incidentId: current.incidentId || snapshot?.corrections[0]?.incident_id || "",
-    }));
-  }, [selectedId, sequences, snapshot?.corrections, snapshot?.nodes, transaction]);
+  useDagViewerEffects({
+    selectedSequence,
+    manifest,
+    snapshot,
+    livePaused,
+    selectedSubject,
+    selectedLive,
+    appliedFilter,
+    receiptId,
+    receiptAtSequence,
+    sequences,
+    transaction,
+    selectedId,
+    etagsRef,
+    requestGenerationRef,
+    explanationGenerationRef,
+    selectedNodeInspectorGenerationRef,
+    comparisonGenerationRef,
+    receiptGenerationRef,
+    receiptAuthorityRef,
+    initializedRef,
+    setManifest,
+    setSnapshot,
+    setSequences,
+    setConnected,
+    setPollFailureCount,
+    setError,
+    setSelectedId,
+    setSelectedSubject,
+    setSelectedSequence,
+    setSelectedTimelineEventId,
+    setTab,
+    setReceiptId,
+    setReceiptAtSequence,
+    setReceipt,
+    setExplanation,
+    setSelectedNodeInspector,
+    setFilterDraft,
+    setAppliedFilter,
+    setQueryResult,
+    setComparisonInput,
+    setComparison,
+    setWorkspaceView,
+  });
 
   const selectReceipt = (id: string, atSequence: number | null = selectedSequence) => {
     receiptGenerationRef.current += 1;
@@ -396,7 +166,23 @@ export default function App() {
     setReceiptId(null);
     setReceiptAtSequence(null);
     setReceipt(null);
+    setAutoFollowLatest(sequence === null);
     setSelectedSequence(sequence);
+  };
+
+  const toggleLivePaused = () => {
+    setLivePaused((paused) => !paused);
+    if (selectedSequence !== null) selectSequence(null);
+  };
+
+  const toggleAutoFollowLatest = () => {
+    if (autoFollowLatest && selectedSequence === null) {
+      setAutoFollowLatest(false);
+      return;
+    }
+    if (selectedSequence !== null) selectSequence(null);
+    setLivePaused(false);
+    setAutoFollowLatest(true);
   };
 
   const selectGraphSubject = (id: string) => {
@@ -509,9 +295,7 @@ export default function App() {
       setSelectedId(side.reference.node_id);
       setSelectedSubject({
         kind: "ATTEMPT",
-        id: typeof side.reference.attempt_id === "string"
-          ? side.reference.attempt_id
-          : `${side.reference.node_id}:attempt:${String(side.reference.attempt ?? "")}`,
+        id: typeof side.reference.attempt_id === "string" ? side.reference.attempt_id : `${side.reference.node_id}:attempt:${String(side.reference.attempt ?? "")}`,
       });
       setTab("cause");
     } else if (kind === "CORRECTION" && typeof side.reference.incident_id === "string") {
@@ -561,81 +345,54 @@ export default function App() {
     : tab === "plan"
       ? manifest.dag_plan
       : selectedLive ?? selectedTerminal ?? snapshot;
+  const liveSyncStatus: LiveSyncStatus = connected ? "CONNECTED" : pollFailureCount >= 3 ? "OFFLINE" : "RECONNECTING";
 
-  return <main className="dag-app">
-    <StatusBanner manifest={manifest} snapshot={snapshot} connected={connected} />
-    <RunOverview manifest={manifest} snapshot={snapshot} />
-    <SequenceNavigator sequences={sequences} selectedSequence={selectedSequence} onSelect={selectSequence} />
-    <AttentionRail items={snapshot.attention_items} onSelect={selectAttention} />
-    <DecisionRail routes={snapshot.routes} joins={snapshot.joins} onSelect={selectDecision} />
-    <FilterBar value={filterDraft} result={queryResult} onChange={setFilterDraft} onApply={applyFilter} onClear={clearFilter} onSelect={selectQueryItem} />
-    <section className="dag-app__workspace">
-      <div className={`graph-pane${transaction ? " graph-pane--with-transaction" : ""}${workspaceView === "timeline" ? " graph-pane--timeline" : ""}`} data-qid="dag:workspace:graph">
-        <div className="pane-heading pane-heading--workspace">
-          <div>
-            <strong>{workspaceView === "timeline" ? "Run timeline" : "Execution graph"}</strong>
-            <span>{workspaceView === "timeline" ? "timeline primary · topology preserved" : "read-only · source DAG unchanged"}</span>
-          </div>
-          <div className="workspace-tabs" aria-label="Workspace view">
-            <button
-              type="button"
-              className={workspaceView === "timeline" ? "active" : ""}
-              data-qid="dag:workspace-view:timeline"
-              data-qs-action="DAG_WORKSPACE_TIMELINE"
-              title="Show run timeline"
-              aria-pressed={workspaceView === "timeline"}
-              onClick={() => selectWorkspaceView("timeline")}
-            ><RadioTower aria-hidden="true" size={14} />Timeline</button>
-            <button
-              type="button"
-              className={workspaceView === "topology" ? "active" : ""}
-              data-qid="dag:workspace-view:topology"
-              data-qs-action="DAG_WORKSPACE_TOPOLOGY"
-              title="Show topology graph"
-              aria-pressed={workspaceView === "topology"}
-              onClick={() => selectWorkspaceView("topology")}
-            ><GitBranch aria-hidden="true" size={14} />Topology</button>
-          </div>
-        </div>
-        <div className="graph-canvas" data-qid="dag:workspace:canvas">
-          {workspaceView === "timeline"
-            ? <RunTimeline manifest={manifest} snapshot={snapshot} selectedId={selectedId} selectedTimelineEventId={selectedTimelineEventId} onSelect={selectTimelineSubject} />
-            : <DagWorkspace manifest={manifest} snapshot={snapshot} selectedId={selectedId} onSelect={selectGraphSubject} />}
-        </div>
-        {transaction && <TransactionAttempts transaction={transaction} />}
-      </div>
-      <aside className="inspector-pane" data-qid="dag:workspace:inspector">
-        <nav className="inspector-tabs" aria-label="DAG inspectors">
-          {tabs.map((item) => {
-            const Icon = item.icon;
-            return <button
-              key={item.id}
-              type="button"
-              className={tab === item.id ? "active" : ""}
-              data-qid={`dag:inspector:${item.id}`}
-              data-qs-action={`DAG_INSPECT_${item.id.toUpperCase()}`}
-              title={`Inspect ${item.label}`}
-              aria-pressed={tab === item.id}
-              onClick={() => setTab(item.id)}
-            ><Icon aria-hidden="true" size={14} />{item.label}</button>;
-          })}
-        </nav>
-        <div className="inspector-content" data-qid="dag:workspace:inspector-content">
-          {tab === "receipt"
-            ? <ReceiptInspector entries={manifest.receipt_index} selected={receiptId} onSelect={selectReceipt} projection={receipt} />
-            : tab === "node"
-              ? <SelectedNodeInspector projection={selectedNodeInspector} />
-              : tab === "cause"
-                ? <CausalDetails explanation={explanation} onReceipt={selectReceipt} />
-                : <JsonInspector value={inspectorValue} label={`${tab} JSON`} />}
-        </div>
-        <footer className="proof-boundary" data-qid="dag:workspace:proof-boundary">
-          <div><strong>Proves</strong>{snapshot.proof_scope.proves.map((claim) => <span key={claim}>{claim}</span>)}</div>
-          <div><strong>Does not prove</strong>{snapshot.proof_scope.does_not_prove.map((claim) => <span key={claim}>{claim}</span>)}</div>
-        </footer>
-      </aside>
-    </section>
-    <ComparisonPanel value={comparisonInput} result={comparison} sequences={sequences.filter((sequence) => sequence <= snapshot.journal_sequence)} transaction={transaction} corrections={snapshot.corrections} onChange={(value) => { comparisonGenerationRef.current += 1; setComparisonInput(value); setComparison(null); }} onCompare={runComparison} onSelectSide={selectComparisonSide} />
-    <EventTimeline events={snapshot.recent_events} onSelect={selectEvent} />
-  </main>;
+  return <DagViewerShell
+    manifest={manifest}
+    snapshot={snapshot}
+    connected={connected}
+    liveSyncStatus={liveSyncStatus}
+    livePaused={livePaused}
+    autoFollowLatest={autoFollowLatest}
+    selectedSequence={selectedSequence}
+    sequences={sequences}
+    selectedId={selectedId}
+    selectedTimelineEventId={selectedTimelineEventId}
+    tab={tab}
+    receiptId={receiptId}
+    receipt={receipt}
+    selectedNodeInspector={selectedNodeInspector}
+    explanation={explanation}
+    filterDraft={filterDraft}
+    queryResult={queryResult}
+    comparisonInput={comparisonInput}
+    comparison={comparison}
+    workspaceView={workspaceView}
+    leftPaneOpen={leftPaneOpen}
+    rightPaneOpen={rightPaneOpen}
+    bottomPaneOpen={bottomPaneOpen}
+    transaction={transaction}
+    inspectorValue={inspectorValue}
+    onToggleLivePaused={toggleLivePaused}
+    onToggleAutoFollowLatest={toggleAutoFollowLatest}
+    onToggleLeftPane={() => setLeftPaneOpen((open) => !open)}
+    onToggleRightPane={() => setRightPaneOpen((open) => !open)}
+    onToggleBottomPane={() => setBottomPaneOpen((open) => !open)}
+    onSelectSequence={selectSequence}
+    onSelectAttention={selectAttention}
+    onSelectDecision={selectDecision}
+    onFilterDraftChange={setFilterDraft}
+    onApplyFilter={applyFilter}
+    onClearFilter={clearFilter}
+    onSelectQueryItem={selectQueryItem}
+    onSelectWorkspaceView={selectWorkspaceView}
+    onSelectTimelineSubject={selectTimelineSubject}
+    onSelectGraphSubject={selectGraphSubject}
+    onSetTab={setTab}
+    onSelectReceipt={selectReceipt}
+    onComparisonInputChange={(value) => { comparisonGenerationRef.current += 1; setComparisonInput(value); setComparison(null); }}
+    onRunComparison={runComparison}
+    onSelectComparisonSide={selectComparisonSide}
+    onSelectEvent={selectEvent}
+  />;
 }

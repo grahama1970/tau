@@ -17,7 +17,7 @@ test("renders authoritative graph, inspectors, transaction, and proof boundary",
       : url.includes("explanations")
         ? explanation
         : url.includes("events")
-          ? { schema: "tau.dag_live_event.v1", run_id: "run-1", after_sequence: 0, events: [] }
+          ? { schema: "tau.dag_live_event.v1", run_id: "run-1", after_sequence: 0, events: [snapshot.recent_events[0]] }
           : snapshot;
     return new Response(JSON.stringify(payload), { status: 200, headers: { ETag: '"one"', "Content-Type": "application/json" } });
   }));
@@ -37,6 +37,12 @@ test("renders authoritative graph, inspectors, transaction, and proof boundary",
   fireEvent.click(screen.getByRole("button", { name: "Topology" }));
   await waitFor(() => expect(screen.getByText("Execution graph")).toBeInTheDocument());
   expect(window.location.search).toContain("workspace_view=topology");
+  expect(document.querySelector('[data-qid="dag:graph:viewport-controls"]')).toBeInTheDocument();
+  expect(document.querySelector('[data-qid="dag:graph:zoom-percent"]')).toHaveTextContent("%");
+  fireEvent.click(document.querySelector('[data-qid="dag:graph:zoom-in"]') as Element);
+  await waitFor(() => expect(window.__tauRegisteredActions?.get("dag:graph:zoom-in")).toMatchObject({
+    action: "DAG_GRAPH_ZOOM_IN",
+  }));
   expect(screen.getByRole("button", { name: /Source DAG/ })).toBeInTheDocument();
   expect(screen.getByText("Reviewer REVISE")).toBeInTheDocument();
   expect(screen.getByText(/Tau admission: AWAITING_RECEIPT/)).toBeInTheDocument();
@@ -299,4 +305,43 @@ test("attention selection opens its immutable causal explanation", async () => {
   fireEvent.click(document.querySelector('[data-qid="dag:timeline:decision:attention-1"]') as Element);
   await waitFor(() => expect(screen.getByText("REVIEW_BLOCKED_RUN · #8")).toBeInTheDocument());
   expect(document.querySelector('[data-qid="dag:causal:details"]')).toBeInTheDocument();
+});
+
+test("resolve-style workspace panes are data-backed and independently collapsible", async () => {
+  vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    const payload = url.includes("manifest")
+      ? manifest
+      : url.includes("explanations")
+        ? explanation
+        : url.includes("events")
+          ? { schema: "tau.dag_live_event.v1", run_id: "run-1", after_sequence: 0, events: [] }
+          : snapshot;
+    return new Response(JSON.stringify(payload), { status: 200, headers: { ETag: '"one"', "Content-Type": "application/json" } });
+  }));
+  render(<App />);
+  await waitFor(() => expect(document.querySelector('[data-qid="dag:pool:browser"]')).toBeInTheDocument());
+
+  expect(document.querySelector('[data-qid="dag:pool:orchestration:run-1"]')).toHaveAttribute("data-run-status", "RUNNING");
+  expect(document.querySelector('[data-qid="dag:layout:toggles"]')).toBeInTheDocument();
+  expect(document.querySelector('[data-qid="dag:stream:controls"]')).toBeInTheDocument();
+  expect(document.querySelector('[data-qid="dag:stream:status"]')).toHaveAttribute("data-stream-status", "CONNECTED");
+  fireEvent.click(document.querySelector('[data-qid="dag:stream:toggle-ingestion"]') as Element);
+  expect(document.querySelector('[data-qid="dag:stream:status"]')).toHaveAttribute("data-stream-status", "PAUSED");
+  fireEvent.click(document.querySelector('[data-qid="dag:stream:toggle-ingestion"]') as Element);
+  expect(document.querySelector('[data-qid="dag:stream:status"]')).toHaveAttribute("data-stream-status", "CONNECTED");
+  fireEvent.change(screen.getByLabelText("Search current orchestration"), { target: { value: "producer" } });
+  expect(document.querySelector('[data-qid="dag:pool:count"]')).toHaveTextContent("1");
+  fireEvent.click(document.querySelector('[data-qid="dag:pool:filter:settled"]') as Element);
+  expect(document.querySelector('[data-qid="dag:pool:count"]')).toHaveTextContent("0");
+
+  fireEvent.click(document.querySelector('[data-qid="dag:layout:toggle-right"]') as Element);
+  expect(document.querySelector('[data-qid="dag:workspace:inspector"]')).not.toBeInTheDocument();
+  fireEvent.click(document.querySelector('[data-qid="dag:layout:toggle-right"]') as Element);
+  expect(document.querySelector('[data-qid="dag:workspace:inspector"]')).toBeInTheDocument();
+
+  fireEvent.click(document.querySelector('[data-qid="dag:layout:toggle-left"]') as Element);
+  expect(document.querySelector('[data-qid="dag:pool:browser"]')).not.toBeInTheDocument();
+  fireEvent.click(document.querySelector('[data-qid="dag:timeline:events:toggle"]') as Element);
+  expect(document.querySelector('[data-qid="dag:event:8"]')).not.toBeInTheDocument();
 });

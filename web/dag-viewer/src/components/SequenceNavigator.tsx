@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight, Radio } from "lucide-react";
+import { useRegisterAction } from "../useRegisterAction";
 
 type Props = {
   sequences: number[];
@@ -7,6 +8,27 @@ type Props = {
 };
 
 export function SequenceNavigator({ sequences, selectedSequence, onSelect }: Props) {
+  useRegisterAction("dag:sequence:previous", {
+    action: "DAG_SEQUENCE_PREVIOUS",
+    label: "Previous Sequence",
+    description: "Move to the previous committed journal sequence.",
+  });
+  useRegisterAction("dag:sequence:select", {
+    action: "DAG_SELECT_SEQUENCE",
+    label: "Select Sequence",
+    description: "Select a committed journal sequence or the live head.",
+  });
+  useRegisterAction("dag:sequence:next", {
+    action: "DAG_SEQUENCE_NEXT",
+    label: "Next Sequence",
+    description: "Move to the next committed journal sequence.",
+  });
+  useRegisterAction("dag:sequence:return-live", {
+    action: "DAG_RETURN_LIVE",
+    label: "Return Live",
+    description: "Return the DAG viewer to the live journal head.",
+  });
+
   const selectedIndex = selectedSequence === null ? sequences.length : sequences.indexOf(selectedSequence);
   const previous = selectedIndex > 0 ? sequences[selectedIndex - 1] : null;
   const next = selectedSequence !== null && selectedIndex >= 0 && selectedIndex < sequences.length - 1
