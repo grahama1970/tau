@@ -1,7 +1,8 @@
 import { GitBranch, RadioTower } from "lucide-react";
-import type { Dispatch, SetStateAction } from "react";
+import { useCallback, useState, type CSSProperties, type Dispatch, type KeyboardEvent, type MouseEvent as ReactMouseEvent, type SetStateAction } from "react";
 import type { InspectorTab, WorkspaceView } from "../dagViewerTypes";
 import { inspectorTabs } from "../dagViewerTypes";
+import { useRegisterAction } from "../useRegisterAction";
 import type { LiveSyncStatus } from "./LiveSyncControls";
 import type { TimelineSubject } from "./runTimelineModel";
 import type { AttentionItem, CausalExplanation, ComparisonSide, DagComparison, DagManifest, DagQueryResult, DagSnapshot, JournalEvent, JsonValue, QueryItem, ReceiptProjection, SelectedNodeInspectorProjection, TransactionProjection } from "../types";
@@ -23,6 +24,11 @@ import { SelectedNodeInspector } from "./SelectedNodeInspector";
 import { StatusBanner } from "./StatusBanner";
 import { TransactionAttempts } from "./TransactionAttempts";
 import { WorkspaceToggles } from "./WorkspaceToggles";
+
+const DEFAULT_LEFT_PANE_WIDTH = 286;
+const DEFAULT_RIGHT_PANE_WIDTH = 360;
+const MIN_PANEL_WIDTH = 180;
+const MAX_PANEL_WIDTH = 550;
 
 type Props = {
   manifest: DagManifest;
@@ -73,10 +79,88 @@ type Props = {
   onSelectEvent: (event: JournalEvent) => void;
 };
 
-export function DagViewerShell(props: Props) {
-  const appClass = `dag-app${props.leftPaneOpen ? "" : " dag-app--left-collapsed"}${props.bottomPaneOpen ? "" : " dag-app--journal-collapsed"}`;
+function clampedPanelWidth(value: number): number {
+  return Math.max(MIN_PANEL_WIDTH, Math.min(MAX_PANEL_WIDTH, value));
+}
 
-  return <main className={appClass}>
+export function DagViewerShell(props: Props) {
+  useRegisterAction("dag:layout:resize-left", {
+    action: "DAG_RESIZE_ORCHESTRATION_POOL",
+    label: "Resize Orchestration Pool",
+    description: "Resize the Tau orchestration browser panel.",
+  });
+  useRegisterAction("dag:layout:resize-right", {
+    action: "DAG_RESIZE_INSPECTOR",
+    label: "Resize Inspector",
+    description: "Resize the Tau node inspector panel.",
+  });
+
+  const [leftPaneWidth, setLeftPaneWidth] = useState(DEFAULT_LEFT_PANE_WIDTH);
+  const [rightPaneWidth, setRightPaneWidth] = useState(DEFAULT_RIGHT_PANE_WIDTH);
+  const [resizingPane, setResizingPane] = useState<"left" | "right" | null>(null);
+  const appClass = `dag-app${props.leftPaneOpen ? "" : " dag-app--left-collapsed"}${props.bottomPaneOpen ? "" : " dag-app--journal-collapsed"}${resizingPane ? " dag-app--resizing" : ""}`;
+  const appStyle = {
+    "--dag-left-width": `${leftPaneWidth}px`,
+    "--dag-right-width": `${rightPaneWidth}px`,
+  } as CSSProperties;
+  const startLeftResize = useCallback((event: ReactMouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const appRect = event.currentTarget.closest(".dag-app")?.getBoundingClientRect();
+    const appLeft = appRect?.left ?? 0;
+    setResizingPane("left");
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      setLeftPaneWidth(clampedPanelWidth(moveEvent.clientX - appLeft));
+    };
+    const handleMouseUp = () => {
+      setResizingPane(null);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+  }, []);
+  const startRightResize = useCallback((event: ReactMouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const workspaceRect = event.currentTarget.closest(".dag-app__workspace")?.getBoundingClientRect();
+    const workspaceRight = workspaceRect?.right ?? window.innerWidth;
+    setResizingPane("right");
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      setRightPaneWidth(clampedPanelWidth(workspaceRight - moveEvent.clientX));
+    };
+    const handleMouseUp = () => {
+      setResizingPane(null);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+  }, []);
+  const handleLeftResizeKey = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      event.preventDefault();
+      setLeftPaneWidth((width) => clampedPanelWidth(width + (event.key === "ArrowRight" ? 16 : -16)));
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      setLeftPaneWidth(MIN_PANEL_WIDTH);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      setLeftPaneWidth(MAX_PANEL_WIDTH);
+    }
+  };
+  const handleRightResizeKey = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      event.preventDefault();
+      setRightPaneWidth((width) => clampedPanelWidth(width + (event.key === "ArrowLeft" ? 16 : -16)));
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      setRightPaneWidth(MIN_PANEL_WIDTH);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      setRightPaneWidth(MAX_PANEL_WIDTH);
+    }
+  };
+
+  return <main className={appClass} style={appStyle} data-left-width={leftPaneWidth} data-right-width={rightPaneWidth}>
     <StatusBanner
       manifest={props.manifest}
       snapshot={props.snapshot}
@@ -102,6 +186,22 @@ export function DagViewerShell(props: Props) {
       </>}
     />
     {props.leftPaneOpen && <OrchestrationPool manifest={props.manifest} snapshot={props.snapshot} selectedSequence={props.selectedSequence} onSelectLive={() => props.onSelectSequence(null)} />}
+    {props.leftPaneOpen && <div
+      className={`workspace-resizer workspace-resizer--left${resizingPane === "left" ? " active" : ""}`}
+      data-qid="dag:layout:resize-left"
+      data-qs-action="DAG_RESIZE_ORCHESTRATION_POOL"
+      title="Drag to resize orchestration browser. Double-click to reset."
+      role="separator"
+      aria-label="Resize orchestration browser"
+      aria-orientation="vertical"
+      aria-valuemin={MIN_PANEL_WIDTH}
+      aria-valuemax={MAX_PANEL_WIDTH}
+      aria-valuenow={leftPaneWidth}
+      tabIndex={0}
+      onMouseDown={startLeftResize}
+      onDoubleClick={() => setLeftPaneWidth(DEFAULT_LEFT_PANE_WIDTH)}
+      onKeyDown={handleLeftResizeKey}
+    ><i aria-hidden="true" /></div>}
     <RunOverview manifest={props.manifest} snapshot={props.snapshot} />
     <SequenceNavigator sequences={props.sequences} selectedSequence={props.selectedSequence} onSelect={props.onSelectSequence} />
     <AttentionRail items={props.snapshot.attention_items} onSelect={props.onSelectAttention} />
@@ -121,11 +221,27 @@ export function DagViewerShell(props: Props) {
         </div>
         <div className="graph-canvas" data-qid="dag:workspace:canvas">
           {props.workspaceView === "timeline"
-            ? <RunTimeline manifest={props.manifest} snapshot={props.snapshot} selectedId={props.selectedId} selectedTimelineEventId={props.selectedTimelineEventId} onSelect={props.onSelectTimelineSubject} />
+            ? <RunTimeline manifest={props.manifest} snapshot={props.snapshot} selectedId={props.selectedId} selectedTimelineEventId={props.selectedTimelineEventId} selectedSequence={props.selectedSequence} onSelect={props.onSelectTimelineSubject} onSelectSequence={props.onSelectSequence} />
             : <DagWorkspace manifest={props.manifest} snapshot={props.snapshot} selectedId={props.selectedId} onSelect={props.onSelectGraphSubject} />}
         </div>
         {props.transaction && <TransactionAttempts transaction={props.transaction} />}
       </div>
+      {props.rightPaneOpen && <div
+        className={`workspace-resizer workspace-resizer--right${resizingPane === "right" ? " active" : ""}`}
+        data-qid="dag:layout:resize-right"
+        data-qs-action="DAG_RESIZE_INSPECTOR"
+        title="Drag to resize node inspector. Double-click to reset."
+        role="separator"
+        aria-label="Resize node inspector"
+        aria-orientation="vertical"
+        aria-valuemin={MIN_PANEL_WIDTH}
+        aria-valuemax={MAX_PANEL_WIDTH}
+        aria-valuenow={rightPaneWidth}
+        tabIndex={0}
+        onMouseDown={startRightResize}
+        onDoubleClick={() => setRightPaneWidth(DEFAULT_RIGHT_PANE_WIDTH)}
+        onKeyDown={handleRightResizeKey}
+      ><i aria-hidden="true" /></div>}
       {props.rightPaneOpen && <aside className="inspector-pane" data-qid="dag:workspace:inspector">
         <nav className="inspector-tabs" aria-label="DAG inspectors">
           {inspectorTabs.map((item) => {

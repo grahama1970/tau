@@ -13,6 +13,7 @@ export type TimelineRoleClip = {
   durationWidthPercent: number | null;
   edgeAnchor: "start" | "middle" | "end";
   durationLabel: string;
+  sequence: number | null;
 };
 
 export type TimelineRoleLane = {
@@ -115,6 +116,7 @@ export function buildTimelineRoleLanes(manifest: DagManifest, executionClips: Ti
       durationLabel: canRenderDuration
         ? `${durationFormatter.format(Math.max(0, (end - start) / 1000))}s`
         : clip.positionLabel,
+      sequence: clip.sequence,
     });
     lanes.set(laneId, lane);
   }

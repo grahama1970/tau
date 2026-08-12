@@ -25,15 +25,36 @@ test("renders authoritative graph, inspectors, transaction, and proof boundary",
   await waitFor(() => expect(screen.getByText("Run timeline")).toBeInTheDocument());
   expect(screen.getByRole("button", { name: "Timeline" })).toHaveAttribute("aria-pressed", "true");
   expect(document.querySelector('[data-qid="dag:timeline:run"]')).toBeInTheDocument();
+  expect(document.querySelector('[data-qid="dag:timeline:canvas-scroll"]')).toBeInTheDocument();
+  expect(document.querySelector('[data-qid="dag:timeline:zoom-toolbar"]')).toBeInTheDocument();
+  expect(document.querySelector('[data-qid="dag:timeline:playhead"]')).toHaveAttribute("data-active-sequence", String(snapshot.journal_sequence));
+  expect(document.querySelector('[data-qid="dag:timeline:run"]')).toHaveAttribute("data-step-width", "36");
   expect(document.querySelector('[data-qid="dag:timeline:scale"]')).toHaveAttribute("data-scale-mode", "sequence");
   expect(document.querySelector('[data-qid="dag:timeline:execution:creator"]')).toBeInTheDocument();
+  expect(document.querySelector('[data-qid="dag:timeline:execution:creator"]')).toHaveAttribute("data-step-width", "36");
   expect(document.querySelector('[data-qid="dag:timeline:proof:creator"]')).toBeInTheDocument();
   expect(document.querySelector('[data-qid="dag:timeline:control:terminal:human"]')).toBeInTheDocument();
   expect(document.querySelector('[data-qid="dag:timeline:role-swimlanes"]')).toBeInTheDocument();
   expect(document.querySelector('[data-qid="dag:timeline:role-clip:producer:command:creator"]')).toHaveAttribute("data-duration-mode", "point");
+  fireEvent.change(document.querySelector('[data-qid="dag:timeline:zoom-slider"]') as Element, { target: { value: "80" } });
+  expect(document.querySelector('[data-qid="dag:timeline:run"]')).toHaveAttribute("data-step-width", "80");
+  expect(document.querySelector('[data-qid="dag:timeline:execution:creator"]')).toHaveAttribute("data-step-width", "80");
+  fireEvent.keyDown(document.querySelector('[data-qid="dag:timeline:playhead-scrub"]') as Element, { key: "Home" });
+  expect(document.querySelector('[data-qid="dag:timeline:playhead"]')).toHaveAttribute("data-active-sequence", "1");
+  expect(window.location.search).toContain("at_sequence=1");
+  fireEvent.keyDown(document.querySelector('[data-qid="dag:layout:resize-left"]') as Element, { key: "ArrowRight" });
+  expect(document.querySelector(".dag-app")).toHaveAttribute("data-left-width", "302");
+  fireEvent.keyDown(document.querySelector('[data-qid="dag:layout:resize-right"]') as Element, { key: "ArrowLeft" });
+  expect(document.querySelector(".dag-app")).toHaveAttribute("data-right-width", "376");
   await waitFor(() => expect(window.__tauRegisteredActions?.get("dag:workspace-view:timeline")).toMatchObject({
     action: "DAG_WORKSPACE_TIMELINE",
   }));
+  await waitFor(() => expect(window.__tauRegisteredActions?.get("dag:timeline:zoom-slider")).toMatchObject({
+    action: "TAU_TIMELINE_STEP_ZOOM",
+  }));
+  expect(window.__tauRegisteredActions?.get("dag:layout:resize-left")).toMatchObject({
+    action: "DAG_RESIZE_ORCHESTRATION_POOL",
+  });
   fireEvent.click(screen.getByRole("button", { name: "Topology" }));
   await waitFor(() => expect(screen.getByText("Execution graph")).toBeInTheDocument());
   expect(window.location.search).toContain("workspace_view=topology");

@@ -34,42 +34,21 @@ page.on("request", (request) => methods.push(request.method()));
 await page.goto(url, { waitUntil: "networkidle0", timeout: 15000 });
 await page.waitForSelector('[data-qid="dag:workspace:graph"]', { timeout: 10000 });
 
-const observed = {
-  orchestration_pool_visible: false,
-  workspace_toggles_visible: false,
-  live_sync_controls_visible: false,
-  live_sync_pause_resume: false,
-  left_pool_toggle_collapses: false,
-  right_inspector_toggle_collapses: false,
-  journal_drawer_toggle_collapses: false,
-  timeline_rendered: false,
-  timeline_tracks_visible: false,
-  timeline_role_swimlanes_visible: false,
-  timeline_role_clips_visible: false,
-  timeline_role_clips_unclipped: false,
-  timeline_duration_modes_truthful: false,
-  timeline_clip_selects_node: false,
-  topology_switch_visible: false,
-  graph_viewport_controls_visible: false,
-  graph_zoom_controls_change_viewport: false,
-  graph_rendered: false,
-  source_dag_visible: false,
-  dag_plan_tab_visible: false,
-  creator_attempt_1_visible: false,
-  reviewer_revise_visible: false,
-  revision_overlay_visible: false,
-  creator_attempt_2_visible: false,
-  reviewer_pass_remained_unaccepted: false,
-  receipt_admission_turned_green: false,
-  dependent_released_after_acceptance: false,
-  refresh_reconstructed_state: false,
-  read_only_requests: false,
-  layout_non_overlapping: false,
-  selected_node_inspector_visible: false,
-  selected_node_sections_visible: false,
-  selected_node_read_only: false,
-  selected_node_no_mutation_controls: false,
-};
+const checkNames = [
+  "orchestration_pool_visible", "workspace_toggles_visible", "live_sync_controls_visible", "live_sync_pause_resume",
+  "left_pool_toggle_collapses", "right_inspector_toggle_collapses", "journal_drawer_toggle_collapses",
+  "timeline_rendered", "timeline_tracks_visible", "timeline_role_swimlanes_visible", "timeline_role_clips_visible",
+  "timeline_role_clips_unclipped", "timeline_duration_modes_truthful", "timeline_scroll_canvas_independent",
+  "timeline_step_zoom_controls_visible", "timeline_step_zoom_changes_width", "timeline_playhead_scrubs_sequence",
+  "layout_resize_handles_visible", "layout_resize_handles_keyboard_resize", "timeline_clip_selects_node",
+  "topology_switch_visible", "graph_viewport_controls_visible", "graph_zoom_controls_change_viewport", "graph_rendered",
+  "source_dag_visible", "dag_plan_tab_visible", "creator_attempt_1_visible", "reviewer_revise_visible",
+  "revision_overlay_visible", "creator_attempt_2_visible", "reviewer_pass_remained_unaccepted",
+  "receipt_admission_turned_green", "dependent_released_after_acceptance", "refresh_reconstructed_state",
+  "read_only_requests", "layout_non_overlapping", "selected_node_inspector_visible", "selected_node_sections_visible",
+  "selected_node_read_only", "selected_node_no_mutation_controls",
+];
+const observed = Object.fromEntries(checkNames.map((name) => [name, false]));
 
 observed.workspace_toggles_visible = await page.evaluate(() => [
   '[data-qid="dag:layout:toggle-left"]',
@@ -135,8 +114,9 @@ const roleTimeline = await page.evaluate(() => {
       return Boolean(rect && rect.width > 0 && rect.height > 0 && rect.top < window.innerHeight && rect.bottom > 0);
     }),
     roleClipsUnclipped: roleClips.every((clip) => {
-      const rect = clip?.getBoundingClientRect();
-      return Boolean(panelRect && rect && rect.left >= panelRect.left - 1 && rect.right <= panelRect.right + 1);
+      const parent = clip?.parentElement;
+      if (!clip || !parent) return false;
+      return clip.offsetLeft >= -1 && clip.offsetLeft + clip.offsetWidth <= parent.scrollWidth + 1;
     }),
     hasDurationClip: roleClips.some((clip) => clip?.getAttribute("data-duration-mode") === "duration"),
   };
@@ -145,6 +125,62 @@ observed.timeline_role_swimlanes_visible = roleTimeline.visible;
 observed.timeline_role_clips_visible = roleTimeline.roleClipsVisible;
 observed.timeline_role_clips_unclipped = roleTimeline.roleClipsUnclipped;
 observed.timeline_duration_modes_truthful = roleTimeline.hasDurationClip;
+observed.timeline_scroll_canvas_independent = await page.evaluate(() => {
+  const root = document.querySelector('[data-qid="dag:timeline:run"]');
+  const scroll = document.querySelector('[data-qid="dag:timeline:canvas-scroll"]');
+  const tracks = document.querySelector(".run-timeline__tracks");
+  if (!root || !scroll || !tracks) return false;
+  const minCanvas = Number(root.getAttribute("data-min-canvas-px") || "0");
+  const stepWidth = Number(root.getAttribute("data-step-width") || "0");
+  const visibleWidth = root.getBoundingClientRect().width;
+  return minCanvas >= 390 * 3
+    && stepWidth >= 16
+    && minCanvas > visibleWidth
+    && scroll.scrollWidth >= minCanvas
+    && tracks.scrollWidth >= minCanvas;
+});
+observed.timeline_step_zoom_controls_visible = await page.evaluate(() => [
+  '[data-qid="dag:timeline:zoom-out"]',
+  '[data-qid="dag:timeline:zoom-slider"]',
+  '[data-qid="dag:timeline:zoom-in"]',
+  '[data-qid="dag:timeline:fit-view"]',
+  '[data-qid="dag:timeline:detail-view"]',
+].every((selector) => Boolean(document.querySelector(selector))));
+const timelineBeforeZoom = await page.$eval('[data-qid="dag:timeline:run"]', (element) => element.getAttribute("data-step-width"));
+await page.click('[data-qid="dag:timeline:detail-view"]');
+await page.waitForFunction((before) => document.querySelector('[data-qid="dag:timeline:run"]')?.getAttribute("data-step-width") !== before, {}, timelineBeforeZoom);
+const timelineAfterZoom = await page.$eval('[data-qid="dag:timeline:run"]', (element) => element.getAttribute("data-step-width"));
+observed.timeline_step_zoom_changes_width = timelineBeforeZoom !== timelineAfterZoom && timelineAfterZoom === "80";
+await page.focus('[data-qid="dag:timeline:playhead-scrub"]');
+await page.keyboard.press("Home");
+await page.waitForFunction(() => document.querySelector('[data-qid="dag:timeline:playhead"]')?.getAttribute("data-active-sequence") === "1");
+await page.keyboard.press("End");
+await page.waitForFunction(() => {
+  const root = document.querySelector('[data-qid="dag:timeline:run"]');
+  const playhead = document.querySelector('[data-qid="dag:timeline:playhead"]');
+  return Boolean(root && playhead && playhead.getAttribute("data-active-sequence") === root.getAttribute("data-sequence-count"));
+});
+observed.timeline_playhead_scrubs_sequence = true;
+observed.layout_resize_handles_visible = await page.evaluate(() => [
+  '[data-qid="dag:layout:resize-left"]',
+  '[data-qid="dag:layout:resize-right"]',
+].every((selector) => Boolean(document.querySelector(selector))));
+const paneWidthsBeforeResize = await page.$eval(".dag-app", (element) => ({
+  left: element.getAttribute("data-left-width"),
+  right: element.getAttribute("data-right-width"),
+}));
+await page.focus('[data-qid="dag:layout:resize-left"]');
+await page.keyboard.press("ArrowRight");
+await page.focus('[data-qid="dag:layout:resize-right"]');
+await page.keyboard.press("ArrowLeft");
+const paneWidthsAfterResize = await page.$eval(".dag-app", (element) => ({
+  left: element.getAttribute("data-left-width"),
+  right: element.getAttribute("data-right-width"),
+}));
+observed.layout_resize_handles_keyboard_resize =
+  paneWidthsBeforeResize.left !== paneWidthsAfterResize.left
+  && paneWidthsBeforeResize.right !== paneWidthsAfterResize.right;
+await page.click('[data-qid^="dag:pool:orchestration:"]');
 await page.click('[data-qid="dag:timeline:execution:creator-reviewer"]');
 await page.waitForFunction(() => document.querySelector('[data-qid="dag:inspector:node"]')?.getAttribute("aria-pressed") === "true");
 await page.waitForSelector('[data-qid="dag:selected-node-inspector"]', { timeout: 10000 });
@@ -307,8 +343,9 @@ const finalRoleTimeline = await page.evaluate(() => {
       return Boolean(rect && rect.width > 0 && rect.height > 0 && rect.top < window.innerHeight && rect.bottom > 0);
     }),
     roleClipsUnclipped: roleClips.every((clip) => {
-      const rect = clip?.getBoundingClientRect();
-      return Boolean(panelRect && rect && rect.left >= panelRect.left - 1 && rect.right <= panelRect.right + 1);
+      const parent = clip?.parentElement;
+      if (!clip || !parent) return false;
+      return clip.offsetLeft >= -1 && clip.offsetLeft + clip.offsetWidth <= parent.scrollWidth + 1;
     }),
     hasDurationClip: roleClips.some((clip) => clip?.getAttribute("data-duration-mode") === "duration"),
   };
@@ -317,6 +354,24 @@ observed.timeline_role_swimlanes_visible ||= finalRoleTimeline.visible;
 observed.timeline_role_clips_visible ||= finalRoleTimeline.roleClipsVisible;
 observed.timeline_role_clips_unclipped ||= finalRoleTimeline.roleClipsUnclipped;
 observed.timeline_duration_modes_truthful ||= finalRoleTimeline.hasDurationClip;
+await page.waitForFunction(() => {
+  const timeline = document.querySelector('[data-qid="dag:timeline:run"]');
+  return Number(timeline?.getAttribute("data-sequence-count") || "0") >= 39;
+}, { timeout: 30000 });
+observed.timeline_scroll_canvas_independent ||= await page.evaluate(() => {
+  const root = document.querySelector('[data-qid="dag:timeline:run"]');
+  const scroll = document.querySelector('[data-qid="dag:timeline:canvas-scroll"]');
+  const tracks = document.querySelector(".run-timeline__tracks");
+  if (!root || !scroll || !tracks) return false;
+  const minCanvas = Number(root.getAttribute("data-min-canvas-px") || "0");
+  const stepWidth = Number(root.getAttribute("data-step-width") || "0");
+  const visibleWidth = root.getBoundingClientRect().width;
+  return minCanvas >= 390 * 3
+    && stepWidth >= 16
+    && minCanvas > visibleWidth
+    && scroll.scrollWidth >= minCanvas
+    && tracks.scrollWidth >= minCanvas;
+});
 await page.click('[data-qid="dag:layout:toggle-bottom"]');
 await page.waitForFunction(() => !document.querySelector(".event-timeline__scroll"));
 observed.journal_drawer_toggle_collapses = true;
