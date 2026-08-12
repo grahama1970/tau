@@ -29,6 +29,10 @@ from tau_coding.dag_runtime.model import (
     DagPlanNode,
     canonical_sha256,
 )
+from tau_coding.dag_runtime.reviewer_information_diet import (
+    is_reviewer_role,
+    reviewer_diet_violation,
+)
 from tau_coding.dag_runtime.run_store import DagAttemptIdentity, DagRunLease, SqliteDagRunStore
 from tau_coding.public_dag_contracts import immutable_json
 
@@ -196,6 +200,13 @@ def resolve_node_input_manifest(
         )
         entries.append(entry)
         accepted_inputs.append(dict(selected))
+
+    if blocked_result is None and is_reviewer_role(node.role):
+        # Reviewer information diet: a review node judges the artifact, never
+        # the producer's workspace or transcript. Fails closed pre-dispatch.
+        diet_code = reviewer_diet_violation(tuple(accepted_inputs))
+        if diet_code is not None:
+            blocked_result = _blocked_result(node.node_id, diet_code)
 
     manifest_without_hash = {
         "schema": NODE_INPUT_MANIFEST_SCHEMA,
