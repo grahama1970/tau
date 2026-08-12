@@ -201,6 +201,7 @@ from tau_coding.package_validate import write_compliance_package_validation_rece
 from tau_coding.paths import TauPaths
 from tau_coding.pdf_lab_second_pass_review import write_pdf_lab_second_pass_review_receipt
 from tau_coding.permission_receipts import (
+    evaluate_permission_gate,
     write_permission_reply_receipt,
     write_permission_request_receipt,
 )
@@ -3774,6 +3775,17 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if not print_requested and command == "permission-gate-check":
+        try:
+            options = _parse_permission_gate_check_cli_args(positional_args[1:])
+            payload = evaluate_permission_gate(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if not print_requested and command == "run-status":
         try:
             run_dir = _parse_run_status_cli_args(positional_args[1:])
@@ -5855,11 +5867,11 @@ def _merge_stdin_prompt(prompt: str) -> str:
     try:
         if stdin.isatty():
             return prompt
-    except AttributeError, ValueError:
+    except (AttributeError, ValueError):
         return prompt
     try:
         piped = stdin.read()
-    except OSError, ValueError:
+    except (OSError, ValueError):
         return prompt
     if not piped:
         return prompt
@@ -7206,7 +7218,7 @@ def _parse_zero_trust_doctor_cli_args(args: list[str]) -> dict[str, object]:
 def _dag_run_schema(spec_path: Path) -> str | None:
     try:
         payload = load_dag_contract_payload(spec_path)
-    except OSError, json.JSONDecodeError, RuntimeError:
+    except (OSError, json.JSONDecodeError, RuntimeError):
         return None
     return str(payload.get("schema")) if isinstance(payload.get("schema"), str) else None
 
@@ -8483,6 +8495,13 @@ def _parse_permission_request_cli_args(args: list[str]) -> dict[str, object]:
     proposed_save_rule: str | None = None
     denied = False
     reason: str | None = None
+    goal_hash: str | None = None
+    active_goal: str | None = None
+    requested_scope: str | None = None
+    nonce: str | None = None
+    expires_at: str | None = None
+    turn_id: str | None = None
+    attempt_id: str | None = None
     index = 0
     while index < len(args):
         arg = args[index]
@@ -8558,6 +8577,55 @@ def _parse_permission_request_cli_args(args: list[str]) -> dict[str, object]:
             reason = args[index]
         elif arg.startswith("--reason="):
             reason = arg.partition("=")[2]
+        elif arg == "--goal-hash":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--goal-hash requires a value")
+            goal_hash = args[index]
+        elif arg.startswith("--goal-hash="):
+            goal_hash = arg.partition("=")[2]
+        elif arg == "--active-goal":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--active-goal requires a value")
+            active_goal = args[index]
+        elif arg.startswith("--active-goal="):
+            active_goal = arg.partition("=")[2]
+        elif arg == "--scope":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--scope requires a value")
+            requested_scope = args[index]
+        elif arg.startswith("--scope="):
+            requested_scope = arg.partition("=")[2]
+        elif arg == "--nonce":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--nonce requires a value")
+            nonce = args[index]
+        elif arg.startswith("--nonce="):
+            nonce = arg.partition("=")[2]
+        elif arg == "--expires-at":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--expires-at requires a value")
+            expires_at = args[index]
+        elif arg.startswith("--expires-at="):
+            expires_at = arg.partition("=")[2]
+        elif arg == "--turn":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--turn requires a value")
+            turn_id = args[index]
+        elif arg.startswith("--turn="):
+            turn_id = arg.partition("=")[2]
+        elif arg == "--attempt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--attempt requires a value")
+            attempt_id = args[index]
+        elif arg.startswith("--attempt="):
+            attempt_id = arg.partition("=")[2]
         else:
             raise RuntimeError(f"unknown permission-request option: {arg}")
         index += 1
@@ -8579,6 +8647,13 @@ def _parse_permission_request_cli_args(args: list[str]) -> dict[str, object]:
         "proposed_save_rule": proposed_save_rule,
         "denied": denied,
         "reason": reason,
+        "goal_hash": goal_hash,
+        "active_goal": active_goal,
+        "requested_scope": requested_scope,
+        "nonce": nonce,
+        "expires_at": expires_at,
+        "turn_id": turn_id,
+        "attempt_id": attempt_id,
     }
 
 
@@ -8639,6 +8714,106 @@ def _parse_permission_reply_cli_args(args: list[str]) -> dict[str, object]:
         "output": output,
         "actor_id": actor_id,
         "scope": scope,
+    }
+
+
+def _parse_permission_gate_check_cli_args(args: list[str]) -> dict[str, object]:
+    request_receipt: Path | None = None
+    reply_receipt: Path | None = None
+    requested_action = ""
+    resources: list[str] = []
+    run_dir = Path("experiments/goal-locked-subagents/proofs/permissions")
+    output: Path | None = None
+    session_id: str | None = None
+    goal_hash: str | None = None
+    nonce: str | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--request":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--request requires a value")
+            request_receipt = Path(args[index])
+        elif arg.startswith("--request="):
+            request_receipt = Path(arg.partition("=")[2])
+        elif arg == "--reply":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--reply requires a value")
+            reply_receipt = Path(args[index])
+        elif arg.startswith("--reply="):
+            reply_receipt = Path(arg.partition("=")[2])
+        elif arg == "--requested-action":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--requested-action requires a value")
+            requested_action = args[index]
+        elif arg.startswith("--requested-action="):
+            requested_action = arg.partition("=")[2]
+        elif arg == "--resource":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--resource requires a value")
+            resources.append(args[index])
+        elif arg.startswith("--resource="):
+            resources.append(arg.partition("=")[2])
+        elif arg == "--run-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--run-dir requires a value")
+            run_dir = Path(args[index])
+        elif arg.startswith("--run-dir="):
+            run_dir = Path(arg.partition("=")[2])
+        elif arg == "--output":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--output requires a value")
+            output = Path(args[index])
+        elif arg.startswith("--output="):
+            output = Path(arg.partition("=")[2])
+        elif arg == "--session":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--session requires a value")
+            session_id = args[index]
+        elif arg.startswith("--session="):
+            session_id = arg.partition("=")[2]
+        elif arg == "--goal-hash":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--goal-hash requires a value")
+            goal_hash = args[index]
+        elif arg.startswith("--goal-hash="):
+            goal_hash = arg.partition("=")[2]
+        elif arg == "--nonce":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--nonce requires a value")
+            nonce = args[index]
+        elif arg.startswith("--nonce="):
+            nonce = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown permission-gate-check option: {arg}")
+        index += 1
+    if request_receipt is None:
+        raise RuntimeError("--request is required")
+    if reply_receipt is None:
+        raise RuntimeError("--reply is required")
+    if not requested_action:
+        raise RuntimeError("--requested-action is required")
+    if not resources:
+        raise RuntimeError("--resource is required")
+    return {
+        "request_receipt": request_receipt,
+        "reply_receipt": reply_receipt,
+        "requested_action": requested_action,
+        "resources": resources,
+        "run_dir": run_dir,
+        "output": output,
+        "session_id": session_id,
+        "goal_hash": goal_hash,
+        "nonce": nonce,
     }
 
 
@@ -14115,7 +14290,7 @@ def _index_tau_sanitization_artifact(run_dir: Path, artifact_path: Path) -> None
         return
     try:
         final_receipt = json.loads(final_receipt_path.read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
+    except (OSError, json.JSONDecodeError):
         return
     if not isinstance(final_receipt, dict):
         return
@@ -14138,7 +14313,7 @@ def _redact_delegated_loop2_run_secrets(run_dir: Path) -> dict[str, str]:
         return {}
     try:
         contract = json.loads(contract_path.read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
+    except (OSError, json.JSONDecodeError):
         return {}
     if not isinstance(contract, dict):
         return {}
@@ -14167,7 +14342,7 @@ def _filter_delegated_changed_files(run_dir: Path) -> dict[str, int]:
             continue
         try:
             payload = json.loads(artifact_path.read_text(encoding="utf-8"))
-        except OSError, json.JSONDecodeError:
+        except (OSError, json.JSONDecodeError):
             continue
         if not isinstance(payload, dict):
             continue
@@ -14352,7 +14527,7 @@ def _load_delegated_node_result(
     node_result_path = run_dir / "node-result.json"
     try:
         loaded = json.loads(node_result_path.read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
+    except (OSError, json.JSONDecodeError):
         return fallback
     return loaded if isinstance(loaded, dict) else fallback
 
