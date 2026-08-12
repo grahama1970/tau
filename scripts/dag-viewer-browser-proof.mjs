@@ -37,6 +37,10 @@ await page.waitForSelector('[data-qid="dag:workspace:graph"]', { timeout: 10000 
 const observed = {
   timeline_rendered: false,
   timeline_tracks_visible: false,
+  timeline_role_swimlanes_visible: false,
+  timeline_role_clips_visible: false,
+  timeline_role_clips_unclipped: false,
+  timeline_duration_modes_truthful: false,
   timeline_clip_selects_node: false,
   topology_switch_visible: false,
   graph_rendered: false,
@@ -76,6 +80,31 @@ observed.timeline_tracks_visible = await page.evaluate(() => [
   '[data-qid="dag:timeline:execution:creator-reviewer"]',
   '[data-qid="dag:timeline:proof:creator-reviewer"]',
 ].every((selector) => Boolean(document.querySelector(selector))));
+const roleTimeline = await page.evaluate(() => {
+  const panel = document.querySelector('[data-qid="dag:timeline:role-swimlanes"]');
+  const roleClips = [
+    panel?.querySelector('[data-event-id^="execution:creator-reviewer:"]'),
+    panel?.querySelector('[data-event-id^="execution:continuation:"]'),
+  ];
+  const panelRect = panel?.getBoundingClientRect();
+  const visible = Boolean(panelRect && panelRect.width > 0 && panelRect.height > 0 && panelRect.top < window.innerHeight && panelRect.bottom > 0);
+  return {
+    visible,
+    roleClipsVisible: roleClips.every((clip) => {
+      const rect = clip?.getBoundingClientRect();
+      return Boolean(rect && rect.width > 0 && rect.height > 0 && rect.top < window.innerHeight && rect.bottom > 0);
+    }),
+    roleClipsUnclipped: roleClips.every((clip) => {
+      const rect = clip?.getBoundingClientRect();
+      return Boolean(panelRect && rect && rect.left >= panelRect.left - 1 && rect.right <= panelRect.right + 1);
+    }),
+    hasDurationClip: roleClips.some((clip) => clip?.getAttribute("data-duration-mode") === "duration"),
+  };
+});
+observed.timeline_role_swimlanes_visible = roleTimeline.visible;
+observed.timeline_role_clips_visible = roleTimeline.roleClipsVisible;
+observed.timeline_role_clips_unclipped = roleTimeline.roleClipsUnclipped;
+observed.timeline_duration_modes_truthful = roleTimeline.hasDurationClip;
 await page.click('[data-qid="dag:timeline:execution:creator-reviewer"]');
 await page.waitForFunction(() => document.querySelector('[data-qid="dag:inspector:node"]')?.getAttribute("aria-pressed") === "true");
 await page.waitForSelector('[data-qid="dag:selected-node-inspector"]', { timeout: 10000 });
@@ -205,6 +234,31 @@ observed.selected_node_no_mutation_controls =
   && selectedNodeInspector.retryButtons === 0;
 await page.click('[data-qid="dag:workspace-view:timeline"]');
 await page.waitForSelector('[data-qid="dag:timeline:run"]', { timeout: 10000 });
+const finalRoleTimeline = await page.evaluate(() => {
+  const panel = document.querySelector('[data-qid="dag:timeline:role-swimlanes"]');
+  const roleClips = [
+    panel?.querySelector('[data-event-id^="execution:creator-reviewer:"]'),
+    panel?.querySelector('[data-event-id^="execution:continuation:"]'),
+  ];
+  const panelRect = panel?.getBoundingClientRect();
+  const visible = Boolean(panelRect && panelRect.width > 0 && panelRect.height > 0 && panelRect.top < window.innerHeight && panelRect.bottom > 0);
+  return {
+    visible,
+    roleClipsVisible: roleClips.every((clip) => {
+      const rect = clip?.getBoundingClientRect();
+      return Boolean(rect && rect.width > 0 && rect.height > 0 && rect.top < window.innerHeight && rect.bottom > 0);
+    }),
+    roleClipsUnclipped: roleClips.every((clip) => {
+      const rect = clip?.getBoundingClientRect();
+      return Boolean(panelRect && rect && rect.left >= panelRect.left - 1 && rect.right <= panelRect.right + 1);
+    }),
+    hasDurationClip: roleClips.some((clip) => clip?.getAttribute("data-duration-mode") === "duration"),
+  };
+});
+observed.timeline_role_swimlanes_visible ||= finalRoleTimeline.visible;
+observed.timeline_role_clips_visible ||= finalRoleTimeline.roleClipsVisible;
+observed.timeline_role_clips_unclipped ||= finalRoleTimeline.roleClipsUnclipped;
+observed.timeline_duration_modes_truthful ||= finalRoleTimeline.hasDurationClip;
 await page.screenshot({ path: screenshotPath, fullPage: viewport.width < 900 });
 await browser.close();
 const screenshotSha256 = `sha256:${createHash("sha256").update(fs.readFileSync(screenshotPath)).digest("hex")}`;

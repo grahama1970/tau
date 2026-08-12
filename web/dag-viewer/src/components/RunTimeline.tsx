@@ -3,6 +3,7 @@ import { useMemo, type CSSProperties } from "react";
 import type { DagManifest, DagSnapshot } from "../types";
 import { useRegisterAction } from "../useRegisterAction";
 import { buildTimelineModel, type TimelineClip, type TimelineKind, type TimelineSubject } from "./runTimelineModel";
+import { buildTimelineRoleLanes, type TimelineRoleLane } from "./runTimelineSwimlanes";
 
 const trackDefinitions: Array<{ kind: TimelineKind; label: string; description: string; icon: typeof GitBranch }> = [
   { kind: "execution", label: "Execution", description: "nodes, attempts, terminals", icon: GitBranch },
@@ -56,6 +57,45 @@ function SelectedTimelineEvent({ clip }: { clip: TimelineClip | null }) {
   </aside>;
 }
 
+function RoleSwimlanes({ lanes }: { lanes: TimelineRoleLane[] }) {
+  return <section className="run-timeline__role-swimlanes" aria-label="Role and model swimlanes" data-qid="dag:timeline:role-swimlanes">
+    <header>
+      <div><strong>Role Swimlanes</strong><span>role, adapter, node duration</span></div>
+    </header>
+    <div className="run-timeline__role-stack">
+      {lanes.length > 0
+        ? lanes.map((lane) => <article className="run-timeline__role-lane" key={lane.id} data-qid={lane.qid}>
+          <header><strong>{lane.label}</strong><span>{lane.sublabel}</span></header>
+          <div>
+            {lane.clips.map((clip) => {
+              const style = {
+                "--timeline-offset": `${clip.offsetPercent ?? 0}%`,
+                "--timeline-duration-offset": `${clip.durationOffsetPercent ?? clip.offsetPercent ?? 0}%`,
+                "--timeline-duration-width": `${clip.durationWidthPercent ?? 1.5}%`,
+              } as CSSProperties;
+              return <span
+                className={`run-timeline__role-clip run-timeline__role-clip--${clip.state}`}
+                key={clip.id}
+                data-qid={clip.qid}
+                data-event-id={clip.eventId}
+                data-duration-mode={clip.durationMode}
+                data-edge-anchor={clip.edgeAnchor}
+                data-timeline-state={clip.state}
+                title={`${clip.label} - ${clip.durationLabel}`}
+                style={style}
+              >
+                <i aria-hidden="true" />
+                <b>{clip.label}</b>
+                <code>{clip.durationLabel}</code>
+              </span>;
+            })}
+          </div>
+        </article>)
+        : <span className="run-timeline__empty">No role/model lane data in this manifest.</span>}
+    </div>
+  </section>;
+}
+
 export function RunTimeline({
   manifest,
   snapshot,
@@ -91,6 +131,7 @@ export function RunTimeline({
   });
 
   const model = useMemo(() => buildTimelineModel(manifest, snapshot), [manifest, snapshot]);
+  const roleLanes = useMemo(() => buildTimelineRoleLanes(manifest, model.tracks.execution), [manifest, model.tracks.execution]);
   const selectedClip = model.clips.find((clip) => clip.eventId === selectedTimelineEventId)
     ?? model.clips.find((clip) => clip.subject.id === selectedId)
     ?? null;
@@ -120,6 +161,7 @@ export function RunTimeline({
       </div>
     </div>
     <div className="run-timeline__tracks">
+      <RoleSwimlanes lanes={roleLanes} />
       {trackDefinitions.filter(({ kind }) => kind !== "decision" || model.tracks.decision.length > 0).map(({ kind, label, description, icon: Icon }) => (
         <section className="run-timeline__track" key={kind} aria-label={`${label} track`}>
           <header>

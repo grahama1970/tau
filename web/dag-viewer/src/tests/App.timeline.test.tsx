@@ -29,6 +29,8 @@ test("renders authoritative graph, inspectors, transaction, and proof boundary",
   expect(document.querySelector('[data-qid="dag:timeline:execution:creator"]')).toBeInTheDocument();
   expect(document.querySelector('[data-qid="dag:timeline:proof:creator"]')).toBeInTheDocument();
   expect(document.querySelector('[data-qid="dag:timeline:control:terminal:human"]')).toBeInTheDocument();
+  expect(document.querySelector('[data-qid="dag:timeline:role-swimlanes"]')).toBeInTheDocument();
+  expect(document.querySelector('[data-qid="dag:timeline:role-clip:producer:command:creator"]')).toHaveAttribute("data-duration-mode", "point");
   await waitFor(() => expect(window.__tauRegisteredActions?.get("dag:workspace-view:timeline")).toMatchObject({
     action: "DAG_WORKSPACE_TIMELINE",
   }));

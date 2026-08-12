@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { buildTimelineModel, buildTimelineScale, type TimelineClip } from "../components/runTimelineModel";
+import { buildTimelineRoleLanes } from "../components/runTimelineSwimlanes";
 import { manifest, snapshot } from "./fixtures";
 
 function clip(overrides: Partial<TimelineClip>): TimelineClip {
@@ -18,6 +19,9 @@ function clip(overrides: Partial<TimelineClip>): TimelineClip {
     sequence: 1,
     attempt: 1,
     timestamp: null,
+    startedAt: null,
+    finishedAt: null,
+    durationSeconds: null,
     receiptRefs: [],
     blockerCodes: [],
     offsetPercent: null,
@@ -64,4 +68,35 @@ test("timeline model spreads equal-sequence clips for inspection without changin
   const positioned = model.clips.filter((clip) => clip.offsetPercent !== null);
   expect(new Set(positioned.map((clip) => clip.offsetPercent))).toContain(0);
   expect(new Set(positioned.map((clip) => clip.offsetPercent))).toContain(100);
+});
+
+test("role swimlanes render proportional durations only from authoritative node timing", () => {
+  const timed = {
+    ...snapshot,
+    nodes: snapshot.nodes.map((node) => node.node_id === "creator"
+      ? {
+        ...node,
+        result: {
+          ...node.result,
+          started_at: "2026-01-01T00:00:00Z",
+          finished_at: "2026-01-01T00:00:04Z",
+          duration_seconds: 4,
+        },
+      }
+      : node),
+  };
+  const model = buildTimelineModel(manifest, timed);
+  const lanes = buildTimelineRoleLanes(manifest, model.tracks.execution);
+
+  const producerClip = lanes.find((lane) => lane.label === "producer")?.clips[0];
+  const consumerClip = lanes.find((lane) => lane.label === "consumer")?.clips[0];
+  expect(producerClip).toMatchObject({
+    eventId: "execution:creator:attempt:1",
+    durationMode: "duration",
+    durationOffsetPercent: 0,
+    durationWidthPercent: 100,
+    edgeAnchor: "end",
+    durationLabel: "4s",
+  });
+  expect(consumerClip).toMatchObject({ durationMode: "point" });
 });

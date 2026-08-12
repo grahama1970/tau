@@ -19,6 +19,9 @@ export type TimelineClip = {
   sequence: number | null;
   attempt: number | null;
   timestamp: string | null;
+  startedAt: string | null;
+  finishedAt: string | null;
+  durationSeconds: number | null;
   receiptRefs: string[];
   blockerCodes: string[];
   offsetPercent: number | null;
@@ -194,10 +197,20 @@ function applyScale(clips: TimelineClip[], scale: TimelineScale): TimelineClip[]
   });
 }
 
-function withSubject(clip: Omit<TimelineClip, "offsetPercent" | "positionLabel">): TimelineClip {
+function durationSeconds(value: number | null | undefined): number | null {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : null;
+}
+
+function withSubject(
+  clip: Omit<TimelineClip, "offsetPercent" | "positionLabel" | "startedAt" | "finishedAt" | "durationSeconds">
+    & Partial<Pick<TimelineClip, "startedAt" | "finishedAt" | "durationSeconds">>,
+): TimelineClip {
   return {
     ...clip,
     subject: { ...clip.subject, eventId: clip.eventId, timelineKind: clip.kind },
+    startedAt: clip.startedAt ?? null,
+    finishedAt: clip.finishedAt ?? null,
+    durationSeconds: clip.durationSeconds ?? null,
     offsetPercent: null,
     positionLabel: clip.sequence !== null ? `seq #${clip.sequence}` : "sequence unknown",
   };
@@ -219,6 +232,8 @@ export function buildTimelineModel(manifest: DagManifest, snapshot: DagSnapshot)
         meta: executionMeta(live, node.role, node.retry_policy.max_attempts), state: stateForExecutionNode(live),
         subject: { kind: "NODE", id: node.node_id }, sequence: live?.updated_sequence ?? null,
         attempt: live?.scheduler.attempt ?? null, timestamp: live?.result.started_at ?? live?.result.finished_at ?? null,
+        startedAt: live?.result.started_at ?? null, finishedAt: live?.result.finished_at ?? null,
+        durationSeconds: durationSeconds(live?.result.duration_seconds),
         receiptRefs: [], blockerCodes: live?.result.blocker_codes ?? [],
       });
     }),
