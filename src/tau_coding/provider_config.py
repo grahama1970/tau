@@ -416,6 +416,24 @@ def save_default_provider_model(
     return updated
 
 
+def save_existing_default_provider_model(
+    *,
+    provider_name: str,
+    model: str,
+    paths: TauPaths | None = None,
+    fallback_settings: ProviderSettings | None = None,
+) -> ProviderSettings:
+    """Reload settings and persist one default provider/model already in config."""
+    settings = _load_provider_settings_for_write(paths, fallback_settings=fallback_settings)
+    updated = set_existing_default_provider_model(
+        settings,
+        provider_name=provider_name,
+        model=model,
+    )
+    save_provider_settings(updated, paths)
+    return updated
+
+
 def toggle_saved_scoped_model(
     *,
     provider_name: str,
@@ -516,6 +534,27 @@ def set_default_provider_model(
     provider = settings.get_provider(provider_name)
     models = provider.models if model in provider.models else (*provider.models, model)
     updated_provider = replace(provider, models=models, default_model=model)
+    providers = tuple(
+        updated_provider if item.name == provider_name else item for item in settings.providers
+    )
+    return ProviderSettings(
+        default_provider=provider_name,
+        providers=providers,
+        scoped_models=settings.scoped_models,
+    )
+
+
+def set_existing_default_provider_model(
+    settings: ProviderSettings,
+    *,
+    provider_name: str,
+    model: str,
+) -> ProviderSettings:
+    """Return settings with default selection changed without expanding models."""
+    provider = settings.get_provider(provider_name)
+    if model not in provider.models:
+        raise ProviderConfigError(f"Model is not configured: {provider_name}:{model}")
+    updated_provider = replace(provider, default_model=model)
     providers = tuple(
         updated_provider if item.name == provider_name else item for item in settings.providers
     )
