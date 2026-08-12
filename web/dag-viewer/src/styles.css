@@ -97,7 +97,9 @@ button:focus-visible, select:focus-visible { outline: 2px solid #65a9ff; outline
 .run-timeline__summary dl div { min-width: 68px; display: grid; justify-items: center; gap: 1px; padding: 4px 9px; background: #131c27; }
 .run-timeline__summary dt { color: #8f9daf; font-size: 9px; text-transform: uppercase; }
 .run-timeline__summary dd { margin: 0; color: #e7edf5; font: 12px ui-monospace, monospace; }
-.run-timeline__tracks { min-width: 0; min-height: 0; display: grid; grid-template-rows: repeat(3, minmax(74px, 1fr)); gap: 1px; overflow: hidden; background: #263140; }
+.run-timeline__decision-alert dt { color: #f6c866; }
+.run-timeline__decision-alert dd { color: #ffd98a; }
+.run-timeline__tracks { min-width: 0; min-height: 0; display: grid; grid-auto-rows: minmax(74px, 1fr); gap: 1px; overflow: hidden; background: #263140; }
 .run-timeline__track { min-width: 0; min-height: 0; display: grid; grid-template-columns: 142px minmax(0, 1fr); background: #0e141d; }
 .run-timeline__track > header { min-width: 0; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-right: 1px solid #263140; background: #121a24; }
 .run-timeline__track > header div { min-width: 0; display: grid; gap: 3px; }

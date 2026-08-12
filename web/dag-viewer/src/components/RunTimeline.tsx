@@ -3,12 +3,14 @@ import { useMemo } from "react";
 import type { AttentionItem, DagManifest, DagSnapshot, JsonValue, LiveNode } from "../types";
 import { useRegisterAction } from "../useRegisterAction";
 
-type TimelineKind = "execution" | "proof" | "control";
+type TimelineKind = "execution" | "proof" | "decision" | "control";
 type TimelineState = "active" | "accepted" | "blocked" | "pending" | "warning" | "neutral";
 
 type TimelineClip = {
   id: string;
   qid: string;
+  eventId: string;
+  kind: TimelineKind;
   action: string;
   title: string;
   label: string;
@@ -25,18 +27,47 @@ function qidPart(value: string): string {
   return value.replace(/[^a-zA-Z0-9:_-]+/g, "-").replace(/^-+|-+$/g, "") || "unknown";
 }
 
-function stateForNode(node: LiveNode | null): TimelineState {
+function stableSuffix(value: string): string {
+  let hash = 0;
+  for (const character of value) hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+  return hash.toString(36).slice(0, 6) || "0";
+}
+
+function qidTokenFactory(values: string[]): (value: string) => string {
+  const collisions = new Set<string>();
+  const seen = new Map<string, string>();
+  for (const value of values) {
+    const token = qidPart(value);
+    const prior = seen.get(token);
+    if (prior !== undefined && prior !== value) collisions.add(token);
+    seen.set(token, value);
+  }
+  return (value) => {
+    const token = qidPart(value);
+    return collisions.has(token) ? `${token}:${stableSuffix(value)}` : token;
+  };
+}
+
+function stateForExecutionNode(node: LiveNode | null): TimelineState {
   if (!node) return "pending";
   const states = [
     node.scheduler.state,
     node.runtime.state,
-    node.admission.state,
     ...node.result.blocker_codes,
   ].map((value) => value.toLowerCase());
-  if (node.admission.accepted || states.includes("accepted") || states.includes("settled")) return "accepted";
   if (states.some((state) => ["blocked", "failed", "timed_out", "rejected"].includes(state))) return "blocked";
+  if (states.includes("accepted") || states.includes("settled")) return "accepted";
   if (states.some((state) => ["running", "alive", "validating", "committing", "awaiting_receipt"].includes(state))) return "active";
   if (states.some((state) => ["retry_pending", "scheduled", "warning"].includes(state))) return "warning";
+  return "pending";
+}
+
+function stateForProofNode(node: LiveNode | null): TimelineState {
+  if (!node) return "pending";
+  const admissionState = node.admission.state.toLowerCase();
+  if (node.admission.accepted || ["accepted", "settled"].includes(admissionState)) return "accepted";
+  if (["blocked", "failed", "rejected", "quarantined"].includes(admissionState)) return "blocked";
+  if (node.admission.receipt_refs.length > 0 || ["awaiting_receipt", "validating", "reviewing"].includes(admissionState)) return "warning";
   return "pending";
 }
 
@@ -65,9 +96,6 @@ function executionMeta(node: LiveNode | null, role: string, maxAttempts: number)
 function proofMeta(node: LiveNode | null): string {
   if (!node) return "no live projection yet";
   const receiptCount = node.admission.receipt_refs.length;
-  const blockers = node.result.blocker_codes.join(", ");
-  if (blockers) return `blockers: ${blockers}`;
-  if (node.result.summary) return node.result.summary;
   return `${receiptCount} receipt${receiptCount === 1 ? "" : "s"} - ${node.admission.state}`;
 }
 
@@ -75,6 +103,10 @@ function stateForAttentionSeverity(severity: AttentionItem["severity"]): Timelin
   if (severity === "BLOCKER") return "blocked";
   if (severity === "ACTION_REQUIRED") return "active";
   return "warning";
+}
+
+function openHumanDecision(item: AttentionItem): boolean {
+  return item.state === "OPEN" && ["ACTION_REQUIRED", "BLOCKER"].includes(item.severity);
 }
 
 function clipButton(clip: TimelineClip, selected: boolean, onSelect: (subject: { kind: string; id: string }) => void) {
@@ -91,6 +123,9 @@ function clipButton(clip: TimelineClip, selected: boolean, onSelect: (subject: {
     className={`run-timeline__clip run-timeline__clip--${clip.state}${selected ? " is-selected" : ""}`}
     data-qid={clip.qid}
     data-qs-action={clip.action}
+    data-event-id={clip.eventId}
+    data-timeline-kind={clip.kind}
+    data-timeline-state={clip.state}
     title={clip.title}
     aria-label={clip.title}
     aria-pressed={selected}
@@ -99,7 +134,7 @@ function clipButton(clip: TimelineClip, selected: boolean, onSelect: (subject: {
     <span className="run-timeline__clip-status"><Icon aria-hidden="true" size={14} />{clip.eyebrow}</span>
     <strong>{clip.label}</strong>
     <small>{clip.meta}</small>
-    {clip.sequence !== null && <code>#{clip.sequence}</code>}
+    <code>{clip.sequence !== null ? `seq #${clip.sequence}` : "sequence unknown"}</code>
   </button>;
 }
 
@@ -129,22 +164,31 @@ export function RunTimeline({
     label: "Select Control Clip",
     description: "Select route, join, attention, correction, terminal, or result state from the timeline.",
   });
+  useRegisterAction("dag:timeline:action:select-decision", {
+    action: "TAU_TIMELINE_SELECT_DECISION",
+    label: "Select Human Decision Clip",
+    description: "Select an open human decision required by the Tau run.",
+  });
 
   const tracks = useMemo(() => {
     const liveNodes = new Map(snapshot.nodes.map((node) => [node.node_id, node]));
     const terminalStates = new Map(snapshot.terminals.map((terminal) => [terminal.terminal_id, terminal]));
+    const nodeQid = qidTokenFactory(manifest.graph.nodes.map((node) => node.node_id));
+    const terminalQid = qidTokenFactory(manifest.graph.terminals.map((terminal) => terminal.terminal_id));
     const execution: TimelineClip[] = [
       ...manifest.graph.nodes.map((node) => {
         const live = liveNodes.get(node.node_id) ?? null;
         return {
           id: `execution:${node.node_id}`,
-          qid: `dag:timeline:execution:${qidPart(node.node_id)}`,
+          qid: `dag:timeline:execution:${nodeQid(node.node_id)}`,
+          eventId: `execution:${node.node_id}:attempt:${live?.scheduler.attempt ?? 0}`,
+          kind: "execution" as const,
           action: "TAU_TIMELINE_SELECT_EXECUTION",
           title: `Select execution node ${node.node_id}`,
           label: node.node_id,
           eyebrow: live?.scheduler.state ?? "planned",
           meta: executionMeta(live, node.role, node.retry_policy.max_attempts),
-          state: stateForNode(live),
+          state: stateForExecutionNode(live),
           subject: { kind: "NODE", id: node.node_id },
           sequence: live?.updated_sequence ?? null,
         };
@@ -153,7 +197,9 @@ export function RunTimeline({
         const live = terminalStates.get(terminal.terminal_id);
         return {
           id: `execution-terminal:${terminal.terminal_id}`,
-          qid: `dag:timeline:execution:${qidPart(terminal.terminal_id)}`,
+          qid: `dag:timeline:execution:${terminalQid(terminal.terminal_id)}`,
+          eventId: `execution-terminal:${terminal.terminal_id}`,
+          kind: "execution" as const,
           action: "TAU_TIMELINE_SELECT_EXECUTION",
           title: `Select terminal ${terminal.terminal_id}`,
           label: terminal.terminal_id,
@@ -170,22 +216,41 @@ export function RunTimeline({
       const live = liveNodes.get(node.node_id) ?? null;
       return {
         id: `proof:${node.node_id}`,
-        qid: `dag:timeline:proof:${qidPart(node.node_id)}`,
+        qid: `dag:timeline:proof:${nodeQid(node.node_id)}`,
+        eventId: `proof_admission:${node.node_id}:attempt:${live?.scheduler.attempt ?? 0}`,
+        kind: "proof" as const,
         action: "TAU_TIMELINE_SELECT_PROOF",
         title: `Inspect proof state for ${node.node_id}`,
         label: node.node_id,
         eyebrow: live?.admission.state ?? "not projected",
         meta: proofMeta(live),
-        state: stateForNode(live),
+        state: stateForProofNode(live),
         subject: { kind: "NODE", id: node.node_id },
         sequence: live?.updated_sequence ?? null,
       };
     });
 
+    const decision: TimelineClip[] = snapshot.attention_items.filter(openHumanDecision).map((item) => ({
+      id: `human-decision:${item.attention_id}`,
+      qid: `dag:timeline:decision:${qidPart(item.attention_id)}`,
+      eventId: `human_decision:${item.attention_id}`,
+      kind: "decision",
+      action: "TAU_TIMELINE_SELECT_DECISION",
+      title: `Inspect required human decision ${item.attention_id}`,
+      label: item.required_action_code,
+      eyebrow: "HUMAN DECISION",
+      meta: `${item.reason_code} - ${item.subject.kind.toLowerCase()} ${item.subject.id}`,
+      state: stateForAttentionSeverity(item.severity),
+      subject: { kind: "ATTENTION", id: item.attention_id },
+      sequence: item.opened_sequence,
+    }));
+
     const control: TimelineClip[] = [
       ...snapshot.attention_items.map((item: AttentionItem) => ({
         id: `attention:${item.attention_id}`,
         qid: `dag:timeline:control:attention:${qidPart(item.attention_id)}`,
+        eventId: `control-attention:${item.attention_id}`,
+        kind: "control" as const,
         action: "TAU_TIMELINE_SELECT_CONTROL",
         title: `Inspect attention item ${item.attention_id}`,
         label: item.reason_code,
@@ -198,6 +263,8 @@ export function RunTimeline({
       ...snapshot.routes.map((route) => ({
         id: `route:${route.route_id}`,
         qid: `dag:timeline:control:route:${qidPart(route.route_id)}`,
+        eventId: `control-route:${route.route_id}`,
+        kind: "control" as const,
         action: "TAU_TIMELINE_SELECT_CONTROL",
         title: `Inspect route ${route.route_id}`,
         label: route.route_id,
@@ -210,6 +277,8 @@ export function RunTimeline({
       ...snapshot.joins.map((join) => ({
         id: `join:${join.join_node_id}`,
         qid: `dag:timeline:control:join:${qidPart(join.join_node_id)}`,
+        eventId: `control-join:${join.join_node_id}`,
+        kind: "control" as const,
         action: "TAU_TIMELINE_SELECT_CONTROL",
         title: `Inspect join ${join.join_node_id}`,
         label: join.join_node_id,
@@ -222,6 +291,8 @@ export function RunTimeline({
       ...snapshot.corrections.map((correction) => ({
         id: `correction:${correction.incident_id}`,
         qid: `dag:timeline:control:correction:${qidPart(correction.incident_id)}`,
+        eventId: `control-correction:${correction.incident_id}`,
+        kind: "control" as const,
         action: "TAU_TIMELINE_SELECT_CONTROL",
         title: `Inspect correction ${correction.incident_id}`,
         label: correction.incident_id,
@@ -234,6 +305,8 @@ export function RunTimeline({
       ...snapshot.terminals.map((terminal) => ({
         id: `terminal:${terminal.terminal_id}`,
         qid: `dag:timeline:control:terminal:${qidPart(terminal.terminal_id)}`,
+        eventId: `control-terminal:${terminal.terminal_id}`,
+        kind: "control" as const,
         action: "TAU_TIMELINE_SELECT_CONTROL",
         title: `Inspect terminal ${terminal.terminal_id}`,
         label: terminal.terminal_id,
@@ -249,6 +322,8 @@ export function RunTimeline({
       control.push({
         id: "final-result",
         qid: "dag:timeline:control:final-result",
+        eventId: `control-final-result:${snapshot.run_id}`,
+        kind: "control",
         action: "TAU_TIMELINE_SELECT_CONTROL",
         title: "Inspect final result",
         label: "final result",
@@ -260,11 +335,12 @@ export function RunTimeline({
       });
     }
 
-    return { execution, proof, control } satisfies Record<TimelineKind, TimelineClip[]>;
+    return { execution, proof, decision, control } satisfies Record<TimelineKind, TimelineClip[]>;
   }, [manifest, snapshot]);
 
   const activeCount = tracks.execution.filter((clip) => clip.state === "active").length;
   const acceptedCount = tracks.proof.filter((clip) => clip.state === "accepted").length;
+  const decisionCount = tracks.decision.length;
   const controlCount = tracks.control.length;
 
   return <section className="run-timeline" aria-label="Run timeline" data-qid="dag:timeline:run">
@@ -276,6 +352,7 @@ export function RunTimeline({
       <dl>
         <div><dt>Active</dt><dd>{activeCount}</dd></div>
         <div><dt>Accepted</dt><dd>{acceptedCount}</dd></div>
+        {decisionCount > 0 && <div className="run-timeline__decision-alert" data-qid="dag:timeline:decision-required"><dt>Human decision required</dt><dd>{decisionCount}</dd></div>}
         <div><dt>Control</dt><dd>{controlCount}</dd></div>
       </dl>
     </header>
@@ -283,6 +360,7 @@ export function RunTimeline({
       {([
         ["execution", "Execution", "nodes, attempts, terminals", GitBranch],
         ["proof", "Proof", "admission, receipts, blockers", ShieldCheck],
+        ...(tracks.decision.length > 0 ? [["decision", "Human Decisions", "approvals, blockers, choices", AlertTriangle] as const] : []),
         ["control", "Control & Effects", "attention, routes, joins, results", Route],
       ] as const).map(([kind, label, description, Icon]) => (
         <section className="run-timeline__track" key={kind} aria-label={`${label} track`}>

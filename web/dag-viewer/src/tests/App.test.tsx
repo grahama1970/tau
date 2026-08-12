@@ -275,11 +275,150 @@ test("timeline clips select authoritative subjects without leaving timeline view
   vi.stubGlobal("fetch", fetchMock);
   render(<App />);
   await waitFor(() => expect(document.querySelector('[data-qid="dag:timeline:execution:publish"]')).toBeInTheDocument());
+  expect(document.querySelector('[data-qid="dag:timeline:decision-required"]')).not.toBeInTheDocument();
   fireEvent.click(document.querySelector('[data-qid="dag:timeline:execution:publish"]') as Element);
   expect(screen.getByText("Run timeline")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Node" })).toHaveAttribute("aria-pressed", "true");
   await waitFor(() => expect(fetchMock.mock.calls.some(([value]) => String(value).includes("/explanations/node/publish"))).toBe(true));
   await waitFor(() => expect(document.querySelector('[data-qid="dag:selected-node-inspector"] header strong')).toHaveTextContent("publish"));
+});
+
+test("timeline proof clips do not turn accepted from execution state alone", async () => {
+  const executionSettledAwaitingProof = {
+    ...snapshot,
+    nodes: snapshot.nodes.map((node) => node.node_id === "creator"
+      ? {
+        ...node,
+        scheduler: { ...node.scheduler, state: "settled" },
+        runtime: { ...node.runtime, state: "EXITED", liveness: "EXITED" },
+        admission: { state: "awaiting_receipt", accepted: false, receipt_refs: ["receipt-pending"] },
+        result: { ...node.result, summary: "handler returned output awaiting receipt admission" },
+      }
+      : node),
+  };
+  vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    const payload = url.includes("manifest")
+      ? manifest
+      : url.includes("explanations")
+        ? explanation
+        : url.includes("events")
+          ? { schema: "tau.dag_live_event.v1", run_id: "run-1", after_sequence: 0, events: [] }
+          : executionSettledAwaitingProof;
+    return new Response(JSON.stringify(payload), { status: 200, headers: { ETag: '"one"', "Content-Type": "application/json" } });
+  }));
+  render(<App />);
+  await waitFor(() => expect(document.querySelector('[data-qid="dag:timeline:proof:creator"]')).toBeInTheDocument());
+  expect(document.querySelector('[data-qid="dag:timeline:execution:creator"]')).toHaveClass("run-timeline__clip--accepted");
+  expect(document.querySelector('[data-qid="dag:timeline:proof:creator"]')).toHaveClass("run-timeline__clip--warning");
+  expect(document.querySelector('[data-qid="dag:timeline:proof:creator"]')).not.toHaveClass("run-timeline__clip--accepted");
+  expect(screen.queryByText("handler returned output awaiting receipt admission")).not.toBeInTheDocument();
+});
+
+test("timeline execution ignores proof admission and failure takes precedence", async () => {
+  const conflictingProjection = {
+    ...snapshot,
+    nodes: snapshot.nodes.map((node) => node.node_id === "creator"
+      ? {
+        ...node,
+        scheduler: { ...node.scheduler, state: "settled" },
+        runtime: { ...node.runtime, state: "FAILED", liveness: "EXITED" },
+        admission: { state: "accepted", accepted: true, receipt_refs: ["receipt-accepted"] },
+        result: { ...node.result, blocker_codes: [], summary: "result summary belongs to execution" },
+      }
+      : node),
+  };
+  vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    const payload = url.includes("manifest")
+      ? manifest
+      : url.includes("explanations")
+        ? explanation
+        : url.includes("events")
+          ? { schema: "tau.dag_live_event.v1", run_id: "run-1", after_sequence: 0, events: [] }
+          : conflictingProjection;
+    return new Response(JSON.stringify(payload), { status: 200, headers: { ETag: '"one"', "Content-Type": "application/json" } });
+  }));
+  render(<App />);
+  await waitFor(() => expect(document.querySelector('[data-qid="dag:timeline:execution:creator"]')).toBeInTheDocument());
+  expect(document.querySelector('[data-qid="dag:timeline:execution:creator"]')).toHaveClass("run-timeline__clip--blocked");
+  expect(document.querySelector('[data-qid="dag:timeline:proof:creator"]')).toHaveClass("run-timeline__clip--accepted");
+  expect(screen.queryByText("result summary belongs to execution")).not.toBeInTheDocument();
+});
+
+test("timeline execution cannot be accepted by admission alone", async () => {
+  const admissionAcceptedOnly = {
+    ...snapshot,
+    nodes: snapshot.nodes.map((node) => node.node_id === "creator"
+      ? {
+        ...node,
+        scheduler: { ...node.scheduler, state: "scheduled" },
+        runtime: { ...node.runtime, state: "NOT_STARTED", liveness: "NOT_STARTED" },
+        admission: { state: "accepted", accepted: true, receipt_refs: ["receipt-accepted"] },
+        result: { ...node.result, blocker_codes: [], summary: null },
+      }
+      : node),
+  };
+  vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    const payload = url.includes("manifest")
+      ? manifest
+      : url.includes("explanations")
+        ? explanation
+        : url.includes("events")
+          ? { schema: "tau.dag_live_event.v1", run_id: "run-1", after_sequence: 0, events: [] }
+          : admissionAcceptedOnly;
+    return new Response(JSON.stringify(payload), { status: 200, headers: { ETag: '"one"', "Content-Type": "application/json" } });
+  }));
+  render(<App />);
+  await waitFor(() => expect(document.querySelector('[data-qid="dag:timeline:execution:creator"]')).toBeInTheDocument());
+  expect(document.querySelector('[data-qid="dag:timeline:execution:creator"]')).not.toHaveClass("run-timeline__clip--accepted");
+  expect(document.querySelector('[data-qid="dag:timeline:proof:creator"]')).toHaveClass("run-timeline__clip--accepted");
+});
+
+test("timeline selectors remain unique when node ids sanitize to the same qid token", async () => {
+  const collidingManifest = {
+    ...manifest,
+    graph: {
+      ...manifest.graph,
+      nodes: [
+        { ...manifest.graph.nodes[0], node_id: "node a" },
+        { ...manifest.graph.nodes[1], node_id: "node-a" },
+        { ...manifest.graph.nodes[0], node_id: "node/a" },
+      ],
+    },
+  };
+  const collidingSnapshot = {
+    ...snapshot,
+    nodes: [
+      { ...snapshot.nodes[0], node_id: "node a" },
+      { ...snapshot.nodes[1], node_id: "node-a" },
+      { ...snapshot.nodes[0], node_id: "node/a" },
+    ],
+  };
+  vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    const payload = url.includes("manifest")
+      ? collidingManifest
+      : url.includes("explanations")
+        ? explanation
+        : url.includes("events")
+          ? { schema: "tau.dag_live_event.v1", run_id: "run-1", after_sequence: 0, events: [] }
+          : collidingSnapshot;
+    return new Response(JSON.stringify(payload), { status: 200, headers: { ETag: '"one"', "Content-Type": "application/json" } });
+  }));
+  render(<App />);
+  await waitFor(() => expect(document.querySelectorAll('[data-qid^="dag:timeline:execution:node-a"]').length).toBe(3));
+  const qids = [...document.querySelectorAll('[data-qid^="dag:timeline:execution:node-a"]')]
+    .map((element) => element.getAttribute("data-qid"));
+  expect(new Set(qids).size).toBe(3);
+  const eventIds = [...document.querySelectorAll('[data-qid^="dag:timeline:execution:node-a"]')]
+    .map((element) => element.getAttribute("data-event-id"));
+  expect(eventIds).toEqual(expect.arrayContaining([
+    "execution:node a:attempt:1",
+    "execution:node-a:attempt:0",
+    "execution:node/a:attempt:1",
+  ]));
 });
 
 test("timeline and comparison selections synchronize the authoritative sequence and subject", async () => {
@@ -550,7 +689,10 @@ test("attention selection opens its immutable causal explanation", async () => {
   }));
   render(<App />);
   await waitFor(() => expect(screen.getByText("Human attention")).toBeInTheDocument());
-  fireEvent.click(document.querySelector('[data-qid="dag:timeline:control:attention:attention-1"]') as Element);
+  await waitFor(() => expect(document.querySelector('[data-qid="dag:timeline:decision-required"]')).toBeInTheDocument());
+  expect(document.querySelector('[data-qid="dag:timeline:decision:attention-1"]')).toHaveAttribute("data-qs-action", "TAU_TIMELINE_SELECT_DECISION");
+  expect(document.querySelector('[data-qid="dag:timeline:decision:attention-1"]')).toHaveAttribute("data-event-id", "human_decision:attention-1");
+  fireEvent.click(document.querySelector('[data-qid="dag:timeline:decision:attention-1"]') as Element);
   await waitFor(() => expect(screen.getByText("REVIEW_BLOCKED_RUN · #8")).toBeInTheDocument());
   expect(document.querySelector('[data-qid="dag:causal:details"]')).toBeInTheDocument();
 });
