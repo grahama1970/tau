@@ -23,6 +23,7 @@ test("renders authoritative graph, inspectors, transaction, and proof boundary",
   }));
   render(<App />);
   await waitFor(() => expect(screen.getByText("Run timeline")).toBeInTheDocument());
+  const creatorTimelineClip = document.querySelector('[data-qid="dag:timeline:execution:creator"]') as HTMLElement;
   expect(screen.getByRole("button", { name: "Timeline" })).toHaveAttribute("aria-pressed", "true");
   expect(document.querySelector('[data-qid="dag:timeline:run"]')).toBeInTheDocument();
   expect(document.querySelector('[data-qid="dag:timeline:canvas-scroll"]')).toBeInTheDocument();
@@ -30,15 +31,20 @@ test("renders authoritative graph, inspectors, transaction, and proof boundary",
   expect(document.querySelector('[data-qid="dag:timeline:playhead"]')).toHaveAttribute("data-active-sequence", String(snapshot.journal_sequence));
   expect(document.querySelector('[data-qid="dag:timeline:run"]')).toHaveAttribute("data-step-width", "36");
   expect(document.querySelector('[data-qid="dag:timeline:scale"]')).toHaveAttribute("data-scale-mode", "sequence");
-  expect(document.querySelector('[data-qid="dag:timeline:execution:creator"]')).toBeInTheDocument();
-  expect(document.querySelector('[data-qid="dag:timeline:execution:creator"]')).toHaveAttribute("data-step-width", "36");
+  expect(creatorTimelineClip).toBeInTheDocument();
+  expect(creatorTimelineClip).toHaveAttribute("data-step-width", "36");
+  expect(creatorTimelineClip.style.getPropertyValue("--timeline-left")).toBe(`${creatorTimelineClip.getAttribute("data-step-left")}px`);
   expect(document.querySelector('[data-qid="dag:timeline:proof:creator"]')).toBeInTheDocument();
   expect(document.querySelector('[data-qid="dag:timeline:control:terminal:human"]')).toBeInTheDocument();
   expect(document.querySelector('[data-qid="dag:timeline:role-swimlanes"]')).toBeInTheDocument();
   expect(document.querySelector('[data-qid="dag:timeline:role-clip:producer:command:creator"]')).toHaveAttribute("data-duration-mode", "point");
   fireEvent.change(document.querySelector('[data-qid="dag:timeline:zoom-slider"]') as Element, { target: { value: "80" } });
   expect(document.querySelector('[data-qid="dag:timeline:run"]')).toHaveAttribute("data-step-width", "80");
-  expect(document.querySelector('[data-qid="dag:timeline:execution:creator"]')).toHaveAttribute("data-step-width", "80");
+  expect(creatorTimelineClip).toHaveAttribute("data-step-width", "80");
+  const timelineScroll = document.querySelector('[data-qid="dag:timeline:canvas-scroll"]') as HTMLElement;
+  timelineScroll.scrollLeft = 610;
+  fireEvent.scroll(timelineScroll);
+  expect(Number(document.querySelector('[data-qid="dag:timeline:execution:creator"]')?.getAttribute("data-visible-label-offset"))).toBeGreaterThan(0);
   fireEvent.keyDown(document.querySelector('[data-qid="dag:timeline:playhead-scrub"]') as Element, { key: "Home" });
   expect(document.querySelector('[data-qid="dag:timeline:playhead"]')).toHaveAttribute("data-active-sequence", "1");
   expect(window.location.search).toContain("at_sequence=1");
@@ -345,6 +351,9 @@ test("resolve-style workspace panes are data-backed and independently collapsibl
 
   expect(document.querySelector('[data-qid="dag:pool:orchestration:run-1"]')).toHaveAttribute("data-run-status", "RUNNING");
   expect(document.querySelector('[data-qid="dag:layout:toggles"]')).toBeInTheDocument();
+  expect(document.querySelector('[data-qid="dag:layout:toggle-left"]')).toHaveTextContent("Hide Orchestrations");
+  expect(document.querySelector('[data-qid="dag:layout:toggle-right"]')).toHaveTextContent("Hide Inspector");
+  expect(document.querySelector('[data-qid="dag:layout:toggle-bottom"]')).toHaveTextContent("Hide Journal");
   expect(document.querySelector('[data-qid="dag:stream:controls"]')).toBeInTheDocument();
   expect(document.querySelector('[data-qid="dag:stream:status"]')).toHaveAttribute("data-stream-status", "CONNECTED");
   fireEvent.click(document.querySelector('[data-qid="dag:stream:toggle-ingestion"]') as Element);
@@ -358,11 +367,13 @@ test("resolve-style workspace panes are data-backed and independently collapsibl
 
   fireEvent.click(document.querySelector('[data-qid="dag:layout:toggle-right"]') as Element);
   expect(document.querySelector('[data-qid="dag:workspace:inspector"]')).not.toBeInTheDocument();
+  expect(document.querySelector('[data-qid="dag:layout:toggle-right"]')).toHaveTextContent("Show Inspector");
   fireEvent.click(document.querySelector('[data-qid="dag:layout:toggle-right"]') as Element);
   expect(document.querySelector('[data-qid="dag:workspace:inspector"]')).toBeInTheDocument();
 
   fireEvent.click(document.querySelector('[data-qid="dag:layout:toggle-left"]') as Element);
   expect(document.querySelector('[data-qid="dag:pool:browser"]')).not.toBeInTheDocument();
+  expect(document.querySelector('[data-qid="dag:layout:toggle-left"]')).toHaveTextContent("Show Orchestrations");
   fireEvent.click(document.querySelector('[data-qid="dag:timeline:events:toggle"]') as Element);
   expect(document.querySelector('[data-qid="dag:event:8"]')).not.toBeInTheDocument();
 });

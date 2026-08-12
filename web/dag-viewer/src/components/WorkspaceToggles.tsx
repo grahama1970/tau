@@ -36,7 +36,7 @@ export function WorkspaceToggles({ leftOpen, rightOpen, bottomOpen, onToggleLeft
       title="Toggle orchestration browser"
       aria-pressed={leftOpen}
       onClick={onToggleLeft}
-    ><PanelLeft aria-hidden="true" size={14} />Orchestrations</button>
+    ><PanelLeft aria-hidden="true" size={14} />{leftOpen ? "Hide" : "Show"} Orchestrations</button>
     <button
       type="button"
       className={bottomOpen ? "active" : ""}
@@ -45,7 +45,7 @@ export function WorkspaceToggles({ leftOpen, rightOpen, bottomOpen, onToggleLeft
       title="Toggle journal drawer"
       aria-pressed={bottomOpen}
       onClick={onToggleBottom}
-    ><PanelBottom aria-hidden="true" size={14} />Journal</button>
+    ><PanelBottom aria-hidden="true" size={14} />{bottomOpen ? "Hide" : "Show"} Journal</button>
     <button
       type="button"
       className={rightOpen ? "active" : ""}
@@ -54,6 +54,6 @@ export function WorkspaceToggles({ leftOpen, rightOpen, bottomOpen, onToggleLeft
       title="Toggle inspector"
       aria-pressed={rightOpen}
       onClick={onToggleRight}
-    ><PanelRight aria-hidden="true" size={14} />Inspector</button>
+    ><PanelRight aria-hidden="true" size={14} />{rightOpen ? "Hide" : "Show"} Inspector</button>
   </nav>;
 }

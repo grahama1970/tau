@@ -27,14 +27,17 @@ function sequenceLeft(sequence: number | null, stepWidth: number): number | null
   return sequence === null ? null : Math.max(0, sequence - 1) * stepWidth;
 }
 
-function clipButton(clip: TimelineClip, selected: boolean, stepWidth: number, onSelect: (subject: TimelineSubject) => void) {
+function clipButton(clip: TimelineClip, selected: boolean, stepWidth: number, scrollLeft: number, onSelect: (subject: TimelineSubject) => void) {
   const Icon = clip.state === "accepted" ? CheckCircle2 : clip.state === "blocked" ? AlertTriangle : clip.state === "active" ? CircleDot : ShieldCheck;
   const left = sequenceLeft(clip.sequence, stepWidth);
+  const clipWidth = clamp(stepWidth * 4, 148, 260);
+  const labelOffset = left === null ? 0 : clamp(scrollLeft - left, 0, Math.max(0, clipWidth - 108));
   const style = left === null
     ? undefined
     : {
       "--timeline-left": `${left}px`,
-      "--timeline-clip-width": `${clamp(stepWidth * 4, 148, 260)}px`,
+      "--timeline-clip-width": `${clipWidth}px`,
+      "--timeline-label-offset": `${labelOffset}px`,
     } as CSSProperties;
   return <button
     key={clip.id}
@@ -46,18 +49,22 @@ function clipButton(clip: TimelineClip, selected: boolean, stepWidth: number, on
     data-scale-offset={clip.offsetPercent === null ? "unpositioned" : clip.offsetPercent.toFixed(2)}
     data-step-left={left === null ? "unpositioned" : String(left)}
     data-step-width={stepWidth}
+    data-visible-label-offset={labelOffset}
     data-timeline-kind={clip.kind}
     data-timeline-state={clip.state}
     title={clip.title}
     aria-label={clip.title}
     aria-pressed={selected}
+    style={style}
     onClick={() => onSelect(clip.subject)}
   >
-    <span className="run-timeline__clip-status"><Icon aria-hidden="true" size={14} />{clip.eyebrow}</span>
-    <strong>{clip.label}</strong>
-    <small>{clip.meta}</small>
-    <span className="run-timeline__clip-scale" aria-hidden="true" style={style}><i /></span>
-    <code>{clip.positionLabel}</code>
+    <span className="run-timeline__clip-content">
+      <span className="run-timeline__clip-status"><Icon aria-hidden="true" size={14} />{clip.eyebrow}</span>
+      <strong>{clip.label}</strong>
+      <small>{clip.meta}</small>
+      <span className="run-timeline__clip-scale" aria-hidden="true"><i /></span>
+      <code>{clip.positionLabel}</code>
+    </span>
   </button>;
 }
 
@@ -195,6 +202,7 @@ export function RunTimeline({
   const model = useMemo(() => buildTimelineModel(manifest, snapshot), [manifest, snapshot]);
   const roleLanes = useMemo(() => buildTimelineRoleLanes(manifest, model.tracks.execution), [manifest, model.tracks.execution]);
   const [stepWidth, setStepWidth] = useState(DEFAULT_STEP_WIDTH);
+  const [timelineScrollLeft, setTimelineScrollLeft] = useState(0);
   const [isScrubbing, setIsScrubbing] = useState(false);
   const rulerRef = useRef<HTMLDivElement | null>(null);
   const selectedClip = model.clips.find((clip) => clip.eventId === selectedTimelineEventId)
@@ -306,7 +314,11 @@ export function RunTimeline({
       <button type="button" data-qid="dag:timeline:detail-view" data-qs-action="TAU_TIMELINE_DETAIL_VIEW" title="Use detailed timeline zoom" onClick={() => setClampedStepWidth(DETAIL_STEP_WIDTH)}>Detail</button>
       <code data-qid="dag:timeline:zoom-value">{stepWidth}px / seq</code>
     </div>
-    <div className="run-timeline__canvas-scroll" data-qid="dag:timeline:canvas-scroll">
+    <div
+      className="run-timeline__canvas-scroll"
+      data-qid="dag:timeline:canvas-scroll"
+      onScroll={(event) => setTimelineScrollLeft(event.currentTarget.scrollLeft)}
+    >
       <div className="run-timeline__scale" data-qid="dag:timeline:scale" data-scale-mode={model.scale.mode}>
         <strong>Sequence Step</strong>
         <span>{model.scale.domainLabel}</span>
@@ -351,7 +363,7 @@ export function RunTimeline({
             </header>
             <div className="run-timeline__lane">
               {model.tracks[kind].length > 0
-                ? model.tracks[kind].map((clip) => clipButton(clip, selectedClip?.eventId === clip.eventId, stepWidth, onSelect))
+                ? model.tracks[kind].map((clip) => clipButton(clip, selectedClip?.eventId === clip.eventId, stepWidth, timelineScrollLeft, onSelect))
                 : <span className="run-timeline__empty">No {label.toLowerCase()} projection in this prefix.</span>}
             </div>
           </section>

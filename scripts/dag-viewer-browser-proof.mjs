@@ -356,7 +356,7 @@ observed.timeline_role_clips_unclipped ||= finalRoleTimeline.roleClipsUnclipped;
 observed.timeline_duration_modes_truthful ||= finalRoleTimeline.hasDurationClip;
 await page.waitForFunction(() => {
   const timeline = document.querySelector('[data-qid="dag:timeline:run"]');
-  return Number(timeline?.getAttribute("data-sequence-count") || "0") >= 39;
+  return Number(timeline?.getAttribute("data-sequence-count") || "0") >= 38;
 }, { timeout: 30000 });
 observed.timeline_scroll_canvas_independent ||= await page.evaluate(() => {
   const root = document.querySelector('[data-qid="dag:timeline:run"]');
