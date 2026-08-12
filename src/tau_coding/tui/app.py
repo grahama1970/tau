@@ -75,9 +75,15 @@ from tau_agent import (
     ToolExecutionStartEvent,
     ToolExecutionUpdateEvent,
 )
-from tau_agent.messages import AgentMessage
+from tau_agent.messages import AgentMessage, AssistantMessage
 from tau_agent.tools import AgentTool
-from tau_ai import ProviderErrorEvent, ProviderEvent
+from tau_ai import (
+    ProviderErrorEvent,
+    ProviderEvent,
+    ProviderResponseEndEvent,
+    ProviderResponseStartEvent,
+    ProviderTextDeltaEvent,
+)
 from tau_ai.provider import CancellationToken
 from tau_coding.commands import (
     CommandRegistry,
@@ -106,6 +112,7 @@ from tau_coding.provider_catalog import (
 from tau_coding.provider_config import (
     ANTHROPIC_AUTH_TOKEN_ENV,
     RUNTIME_API_KEY_ENV,
+    OpenAICompatibleProviderConfig,
     ProviderConfig,
     ProviderSelection,
     ProviderSettings,
@@ -257,6 +264,95 @@ class LoginRequiredProvider:
             yield ProviderErrorEvent(message=self.message)
 
         return iterator()
+
+
+class _SessionControlProofProvider:
+    """Opt-in provider used only by the #237 installed-TUI PTY proof."""
+
+    def __init__(self) -> None:
+        log_path = os.environ.get("TAU_TUI_SESSION_CONTROL_PROVIDER_LOG")
+        self._log_path = Path(log_path).expanduser() if log_path else None
+        self._call_count = _session_control_proof_prior_call_count(self._log_path)
+
+    async def aclose(self) -> None:
+        """Close provider resources."""
+
+    def stream_response(
+        self,
+        *,
+        model: str,
+        system: str,
+        messages: list[AgentMessage],
+        tools: list[AgentTool],
+        signal: CancellationToken | None = None,
+    ) -> AsyncIterator[ProviderEvent]:
+        """Emit a cancellable stream and deliberate late chunks for proof mode."""
+        del system, tools
+        self._call_count += 1
+        call_index = self._call_count
+        self._log_provider_event(
+            {
+                "event": "call_start",
+                "call_index": call_index,
+                "model": model,
+                "message_count": len(messages),
+            }
+        )
+
+        async def iterator() -> AsyncIterator[ProviderEvent]:
+            yield ProviderResponseStartEvent(model=model)
+            if call_index == 1:
+                yield ProviderTextDeltaEvent(delta="first cancellable chunk\n")
+                deadline = monotonic() + 20.0
+                while signal is not None and not signal.is_cancelled() and monotonic() < deadline:
+                    await asyncio.sleep(0.05)
+                cancelled = signal is not None and signal.is_cancelled()
+                self._log_provider_event(
+                    {"event": "cancel_observed", "call_index": call_index, "cancelled": cancelled}
+                )
+                if cancelled:
+                    yield ProviderTextDeltaEvent(delta="LATE_PROVIDER_CHUNK_SHOULD_NOT_RENDER")
+                    yield ProviderResponseEndEvent(
+                        message=AssistantMessage(content="LATE_ASSISTANT_SHOULD_NOT_PERSIST"),
+                        finish_reason="stop",
+                    )
+                    return
+            text = (
+                "resumed provider answer for released follow-up"
+                if call_index > 1
+                else "uncancelled provider answer"
+            )
+            yield ProviderTextDeltaEvent(delta=text)
+            yield ProviderResponseEndEvent(
+                message=AssistantMessage(content=text),
+                finish_reason="stop",
+            )
+
+        return iterator()
+
+    def _log_provider_event(self, payload: Mapping[str, object]) -> None:
+        if not self._log_path:
+            return
+        path = self._log_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps({"recorded_at": datetime.now().isoformat(), **payload}) + "\n")
+
+
+def _session_control_proof_prior_call_count(path: Path | None) -> int:
+    if path is None or not path.exists():
+        return 0
+    count = 0
+    try:
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            payload = json.loads(line)
+            if payload.get("event") == "call_start":
+                count += 1
+    except (OSError, json.JSONDecodeError):
+        return 0
+    return count
 
 
 class CompletionActionTarget(Protocol):
@@ -7917,6 +8013,21 @@ class TauTuiApp(App[None]):
             return
         if self.initial_prompt and self.initial_prompt.strip():
             self._submit_prompt(self.initial_prompt.strip())
+            return
+        if self.session.queued_follow_up_messages:
+            self.run_worker(
+                self._submit_restored_follow_up(),
+                name="submit-restored-follow-up",
+                exclusive=False,
+            )
+
+    async def _submit_restored_follow_up(self) -> None:
+        release_follow_up = getattr(self.session, "release_next_follow_up_message", None)
+        if not callable(release_follow_up):
+            return
+        prompt = await release_follow_up()
+        if prompt:
+            self._submit_prompt(prompt)
 
     async def _warn_about_tmux_keyboard_setup(self) -> None:
         """Warn when tmux is likely to swallow Pi-style modified keys."""
@@ -9786,7 +9897,7 @@ class TauTuiApp(App[None]):
         return True
 
     def _cancel_active_prompt(self, *, notify: bool, interrupt: bool = False) -> bool:
-        """Cancel the active prompt worker and ignore any late events from it."""
+        """Request prompt cancellation and let the session persist the terminal state."""
         del interrupt
         worker = self._prompt_worker
         is_worker_active = worker is not None and not worker.is_cancelled
@@ -9794,19 +9905,14 @@ class TauTuiApp(App[None]):
         if not (self.state.running or is_session_running or is_worker_active):
             return False
 
-        self._prompt_run_id += 1
         cancel = getattr(self.session, "cancel", None)
         if callable(cancel):
             cancel()
-        if worker is not None and not worker.is_cancelled:
-            worker.cancel()
-        self._prompt_worker = None
-        self.state.running = False
-        self.state.assistant_buffer = ""
+        self.state.add_item("status", "Cancellation requested; waiting for terminal state.")
         self._clear_retry_countdown(refresh=False)
         self._refresh()
         if notify:
-            self._notify("Interrupted current operation.")
+            self._notify("Cancellation requested.")
         return True
 
     def _handle_empty_prompt_escape(self) -> bool:
@@ -16269,6 +16375,27 @@ async def run_tui_app(
         raise RuntimeError("--no-session and --name cannot be used together")
 
     provider_settings = provider_settings or load_provider_settings()
+    session_control_proof_mode = _truthy_env("TAU_TUI_SESSION_CONTROL_PROOF")
+    if session_control_proof_mode:
+        proof_config = OpenAICompatibleProviderConfig(
+            name="session-control-proof",
+            models=("session-control-proof",),
+            default_model="session-control-proof",
+        )
+        provider_settings = replace(
+            provider_settings,
+            default_provider=proof_config.name,
+            providers=(
+                *(
+                    provider
+                    for provider in provider_settings.providers
+                    if provider.name != proof_config.name
+                ),
+                proof_config,
+            ),
+        )
+        provider_name = provider_name or proof_config.name
+        model = model or proof_config.default_model
     first_time_setup = _should_show_first_time_setup()
     tui_settings = load_tui_settings()
     if _truthy_env("TAU_VERBOSE_STARTUP"):
@@ -16297,12 +16424,18 @@ async def run_tui_app(
         explicit_resume=session_id is not None or continue_session or record is not None,
     )
     startup_message: str | None = None
-    runtime_provider_config: ProviderConfig | None = selection.provider
+    runtime_provider_config: ProviderConfig | None = (
+        None if session_control_proof_mode else selection.provider
+    )
     try:
-        provider = create_model_provider(
-            selection.provider,
-            model=selection.model,
-            thinking_level=startup_thinking_level,
+        provider = (
+            _SessionControlProofProvider()
+            if session_control_proof_mode
+            else create_model_provider(
+                selection.provider,
+                model=selection.model,
+                thinking_level=startup_thinking_level,
+            )
         )
     except RuntimeError:
         startup_message = (
