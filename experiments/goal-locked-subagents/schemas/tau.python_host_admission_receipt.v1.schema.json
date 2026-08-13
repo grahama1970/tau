@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.python_host_admission_receipt.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "request_id", "request_sha256", "status", "admitted", "errors"],
+  "properties": {
+    "schema": {"const": "tau.python_host_admission_receipt.v1"},
+    "request_id": {"type": "string", "minLength": 1},
+    "request_sha256": {"oneOf": [{"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, {"type": "null"}]},
+    "status": {"enum": ["OK", "BLOCKED", "DEGRADED"]},
+    "admitted": {"type": "boolean"},
+    "errors": {"type": "array", "items": {"type": "string"}}
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.python_host_request.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "request_id", "kind", "run_id", "dag_id", "plan_revision", "node_id", "attempt_id", "work_order_sha256", "endpoint_lease_sha256", "execution_token", "generation_id", "execution_id", "goal_hash", "policy_sha256", "data_boundary_sha256", "worktree_sha256", "budget", "params"],
+  "properties": {
+    "schema": {"const": "tau.python_host_request.v1"},
+    "request_id": {"type": "string", "minLength": 1},
+    "kind": {"enum": ["source.read", "code.search", "graph.query", "artifact.put", "evidence.emit", "progress.emit"]},
+    "run_id": {"type": "string", "minLength": 1},
+    "dag_id": {"type": "string", "minLength": 1},
+    "plan_revision": {"type": "string", "minLength": 1},
+    "node_id": {"type": "string", "minLength": 1},
+    "attempt_id": {"type": "string", "minLength": 1},
+    "work_order_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "endpoint_lease_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "execution_token": {"type": "string", "minLength": 1},
+    "generation_id": {"type": "string", "minLength": 1},
+    "execution_id": {"type": "string", "minLength": 1},
+    "goal_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "policy_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "data_boundary_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "worktree_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "budget": {"type": "object"},
+    "params": {"type": "object"}
+  }
+}

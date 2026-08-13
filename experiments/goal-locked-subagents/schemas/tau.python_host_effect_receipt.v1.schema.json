@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.python_host_effect_receipt.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "request_id", "request_sha256", "kind", "handler_executed", "status", "artifacts", "errors"],
+  "properties": {
+    "schema": {"const": "tau.python_host_effect_receipt.v1"},
+    "request_id": {"type": "string", "minLength": 1},
+    "request_sha256": {"oneOf": [{"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, {"type": "null"}]},
+    "kind": {"type": "string", "minLength": 1},
+    "handler_executed": {"type": "boolean"},
+    "status": {"enum": ["OK", "BLOCKED", "DEGRADED"]},
+    "artifacts": {"type": "array", "items": {"type": "object"}},
+    "errors": {"type": "array", "items": {"type": "string"}}
+  }
+}

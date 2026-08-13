@@ -1,0 +1,46 @@
+{
+  "version": 2,
+  "skill": "tau-python-host-bridge",
+  "trials": 2,
+  "proof_scope": "Tau Python workspace host-call bridge receipt and capability-boundary coverage",
+  "claims": {
+    "proves": "the declared Tau Python host bridge positive and adversarial checks pass across repeated trials using the real project test runner and optional Jupyter kernel profile",
+    "does_not_prove": "full production sandboxing, #324 host bridge rollout in every scheduler backend, provider/model quality, Memory write/promotion, or arbitrary graph query authority"
+  },
+  "cases": [
+    {
+      "name": "python-host-bridge-live-kernel-regression",
+      "type": "positive",
+      "real_world": true,
+      "timeout_seconds": 120,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run --extra python-workspace pytest tests/test_kernel_host_bridge.py -q"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "18 passed"
+        ]
+      }
+    },
+    {
+      "name": "adversarial-host-bridge-authority-boundaries",
+      "type": "adversarial",
+      "real_world": true,
+      "timeout_seconds": 120,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run --extra python-workspace pytest tests/test_kernel_host_bridge.py -q -k 'stale_generation or binding_mutations or absolute_and_parent or symlink or graph_query or evidence_emit or undeclared or late_request'"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "14 passed"
+        ]
+      }
+    }
+  ]
+}

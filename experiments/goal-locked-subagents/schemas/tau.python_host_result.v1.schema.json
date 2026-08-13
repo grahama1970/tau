@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.python_host_result.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "request_id", "request_sha256", "status", "value", "artifacts", "tau_admission_status", "errors"],
+  "properties": {
+    "schema": {"const": "tau.python_host_result.v1"},
+    "request_id": {"type": "string", "minLength": 1},
+    "request_sha256": {"oneOf": [{"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, {"type": "null"}]},
+    "status": {"enum": ["OK", "BLOCKED", "DEGRADED"]},
+    "value": {"type": "object"},
+    "artifacts": {"type": "array", "items": {"type": "object"}},
+    "tau_admission_status": {"const": "not_admitted"},
+    "errors": {"type": "array", "items": {"type": "string"}}
+  }
+}

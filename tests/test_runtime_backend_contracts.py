@@ -48,6 +48,10 @@ RUNTIME_SCHEMAS = (
     "tau.python_execution_receipt.v1",
     "tau.python_kernel_control_receipt.v1",
     "tau.python_package_manifest.v1",
+    "tau.python_host_request.v1",
+    "tau.python_host_admission_receipt.v1",
+    "tau.python_host_effect_receipt.v1",
+    "tau.python_host_result.v1",
 )
 DIGEST = "sha256:" + "a" * 64
 
