@@ -84,8 +84,10 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
 .sequence-navigator__mode, .sequence-navigator__controls { display: flex; align-items: center; gap: 8px; }
 .sequence-navigator__mode strong { color: #72d6cc; font-size: 11px; }
 .sequence-navigator__mode span { color: #8f9daf; font-size: 11px; }
-.sequence-navigator__controls button { height: 28px; min-width: 30px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 0 8px; border: 1px solid #354356; border-radius: 4px; color: #dce5ef; background: #17202b; cursor: pointer; font-size: 11px; }
-.sequence-navigator__controls button:disabled { opacity: .35; cursor: default; }
+.sequence-navigator__controls button,
+.sequence-navigator__disabled { height: 28px; min-width: 30px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 0 8px; border: 1px solid #354356; border-radius: 4px; color: #dce5ef; background: #17202b; font-size: 11px; box-sizing: border-box; }
+.sequence-navigator__controls button { cursor: pointer; }
+.sequence-navigator__disabled { opacity: .35; cursor: default; }
 .sequence-navigator__controls select { height: 28px; min-width: 142px; padding: 0 8px; border: 1px solid #354356; border-radius: 4px; color: #dce5ef; background: #17202b; font-size: 11px; }
 .sequence-navigator__controls .sequence-navigator__live { color: #72d6cc; }
 

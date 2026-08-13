@@ -24,6 +24,10 @@ test("renders authoritative graph, inspectors, transaction, and proof boundary",
   render(<App />);
   await waitFor(() => expect(screen.getByText("Run timeline")).toBeInTheDocument());
   const creatorTimelineClip = document.querySelector('[data-qid="dag:timeline:execution:creator"]') as HTMLElement;
+  expect(document.querySelector('[data-qid="dag:filters:query"]')).toHaveAttribute("data-qs-action", "DAG_FILTER_QUERY");
+  expect(document.querySelector('[data-qid="dag:filters:query"]')).toHaveAttribute("title", "Filter DAG entities");
+  expect(document.querySelector('[data-qid="dag:filters:state"]')).toHaveAttribute("data-qs-action", "DAG_FILTER_STATE");
+  expect(document.querySelector('[data-qid="dag:filters:state"]')).toHaveAttribute("title", "Filter projected state");
   expect(screen.getByRole("button", { name: "Timeline" })).toHaveAttribute("aria-pressed", "true");
   expect(document.querySelector('[data-qid="dag:timeline:run"]')).toBeInTheDocument();
   expect(document.querySelector('[data-qid="dag:timeline:canvas-scroll"]')).toBeInTheDocument();
@@ -58,6 +62,12 @@ test("renders authoritative graph, inspectors, transaction, and proof boundary",
   await waitFor(() => expect(window.__tauRegisteredActions?.get("dag:timeline:zoom-slider")).toMatchObject({
     action: "TAU_TIMELINE_STEP_ZOOM",
   }));
+  expect(window.__tauRegisteredActions?.get("dag:filters:query")).toMatchObject({
+    action: "DAG_FILTER_QUERY",
+  });
+  expect(window.__tauRegisteredActions?.get("dag:filters:state")).toMatchObject({
+    action: "DAG_FILTER_STATE",
+  });
   expect(window.__tauRegisteredActions?.get("dag:layout:resize-left")).toMatchObject({
     action: "DAG_RESIZE_ORCHESTRATION_POOL",
   });

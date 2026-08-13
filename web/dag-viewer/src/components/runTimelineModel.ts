@@ -240,7 +240,7 @@ export function buildTimelineModel(manifest: DagManifest, snapshot: DagSnapshot)
     ...manifest.graph.terminals.map((terminal) => {
       const live = terminalStates.get(terminal.terminal_id);
       return withSubject({
-        id: `execution-terminal:${terminal.terminal_id}`, qid: `dag:timeline:execution:${terminalQid(terminal.terminal_id)}`,
+        id: `execution-terminal:${terminal.terminal_id}`, qid: `dag:timeline:execution-terminal:${terminalQid(terminal.terminal_id)}`,
         eventId: `execution-terminal:${terminal.terminal_id}`, kind: "execution",
         action: "TAU_TIMELINE_SELECT_EXECUTION", title: `Select terminal ${terminal.terminal_id}`,
         label: terminal.terminal_id, eyebrow: live?.state ?? "terminal", meta: `${terminal.kind} - ${terminal.origin}`,
