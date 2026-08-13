@@ -8,7 +8,7 @@ import subprocess
 import time
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import httpx
 
@@ -37,6 +37,9 @@ def write_codebase_ingest_receipt(
     projection_authorized: bool = False,
     memory_socket_path: str = "/run/user/1000/embry/memory.sock",
     projection_timeout_seconds: float = 30.0,
+    cancel_requested: bool = False,
+    restart_worker: dict[str, Any] | None = None,
+    restart_liveness: Literal["ALIVE", "DEAD", "UNKNOWN"] | None = None,
 ) -> dict[str, Any]:
     """Write a Tau-owned ingest receipt, optionally running an emit-mode scan."""
 
@@ -96,7 +99,33 @@ def write_codebase_ingest_receipt(
     worker: dict[str, Any] | None = None
     scan_result: dict[str, Any] | None = None
     admission = _empty_admission()
-    if start and changed_files:
+    recovery = _recovery_state(
+        restart_worker=restart_worker,
+        restart_liveness=restart_liveness,
+        attempt_id=attempt_id,
+        endpoint_lease=endpoint_lease,
+    )
+    if changed_files and cancel_requested:
+        status = "CANCELLED"
+        admission["first_failed_gate"] = "cancel_requested"
+        admission["errors"].append("cancelled before ingest-code worker execution")
+    elif changed_files and restart_liveness == "ALIVE":
+        status = "RECONCILED_LIVE_WORKER"
+        worker = restart_worker
+    elif changed_files and restart_liveness == "UNKNOWN":
+        status = "BLOCKED_UNKNOWN_LIVENESS"
+        admission["first_failed_gate"] = "unknown_liveness"
+        admission["errors"].append("existing worker liveness is unknown; replacement refused")
+    if (
+        start
+        and changed_files
+        and status
+        not in {
+            "CANCELLED",
+            "RECONCILED_LIVE_WORKER",
+            "BLOCKED_UNKNOWN_LIVENESS",
+        }
+    ):
         worker = {
             "schema": "tau.codebase_ingest_worker.v1",
             "ownership": "tau_synchronous_skill_worker",
@@ -147,6 +176,8 @@ def write_codebase_ingest_receipt(
         in {
             "SKIPPED_UNCHANGED",
             "READY_FOR_SCAN",
+            "CANCELLED",
+            "RECONCILED_LIVE_WORKER",
             "SCAN_ADMITTED",
             "PROJECTION_ACCEPTED",
             "SCAN_ADMITTED_PROJECTION_DEGRADED",
@@ -175,6 +206,7 @@ def write_codebase_ingest_receipt(
         "worker": worker,
         "process": None,
         "scan_result": scan_result,
+        "recovery": recovery,
         "admission": admission,
         "projection": _projection_state(admission),
         "accepted_effect_count": _projection_state(admission)["accepted_effect_count"],
@@ -198,6 +230,8 @@ def write_codebase_ingest_receipt(
                 "lease identities before running the skill.",
                 "Tau advances the local change marker only after a typed skip or admitted "
                 "terminal scan result.",
+                "Cancellation, live-worker restart, dead-worker retry, and unknown-liveness "
+                "replacement are represented as typed states without detached ownership.",
             ],
             "does_not_prove": [
                 "Memory/GMO generation activation.",
@@ -205,7 +239,7 @@ def write_codebase_ingest_receipt(
                 "Memory/GMO returns generation readback.",
                 "Tree-sitter extraction correctness.",
                 "Point-in-time Memory recall.",
-                "Scheduler crash recovery across process loss.",
+                "Operating-system process truth beyond the supplied liveness observation.",
             ],
         },
         "timestamp": _utc_stamp(),
@@ -260,6 +294,46 @@ def _runtime_endpoint_lease(
             {"entrypoint": work_order["command"][0], "cwd": str(repo)}
         ),
     )
+
+
+def _recovery_state(
+    *,
+    restart_worker: dict[str, Any] | None,
+    restart_liveness: str | None,
+    attempt_id: str,
+    endpoint_lease: RuntimeEndpointLease,
+) -> dict[str, Any]:
+    prior_lease = (
+        restart_worker.get("runtime_endpoint_lease") if isinstance(restart_worker, dict) else None
+    )
+    prior_attempt_id = prior_lease.get("attempt_id") if isinstance(prior_lease, dict) else None
+    prior_endpoint_id = prior_lease.get("endpoint_id") if isinstance(prior_lease, dict) else None
+    if restart_liveness == "ALIVE":
+        action = "reconcile_existing_worker"
+        replacement_allowed = False
+    elif restart_liveness == "DEAD":
+        action = "launch_new_attempt"
+        replacement_allowed = True
+    elif restart_liveness == "UNKNOWN":
+        action = "block_replacement"
+        replacement_allowed = False
+    else:
+        action = "normal_start"
+        replacement_allowed = True
+    return {
+        "schema": "tau.codebase_ingest_recovery.v1",
+        "restart_liveness": restart_liveness,
+        "action": action,
+        "replacement_allowed": replacement_allowed,
+        "prior_attempt_id": prior_attempt_id,
+        "prior_endpoint_id": prior_endpoint_id,
+        "new_attempt_id": attempt_id,
+        "new_endpoint_id": endpoint_lease.endpoint_id,
+        "new_attempt_differs": prior_attempt_id is None or prior_attempt_id != attempt_id,
+        "new_endpoint_differs": (
+            prior_endpoint_id is None or prior_endpoint_id != endpoint_lease.endpoint_id
+        ),
+    }
 
 
 def _empty_admission() -> dict[str, Any]:
@@ -401,6 +475,12 @@ def _apply_projection_request(
         projection_state["errors"].append("projection_request_schema_mismatch")
         admission["projection_state"] = projection_state
         return {"terminal_status": "SCAN_ADMITTED_PROJECTION_DEGRADED"}
+    mutation_errors = _admitted_artifact_mutation_errors(admission)
+    if mutation_errors:
+        projection_state["state"] = "blocked_stale_artifact"
+        projection_state["errors"].extend(mutation_errors)
+        admission["projection_state"] = projection_state
+        return {"terminal_status": "SCAN_ADMITTED_PROJECTION_DEGRADED"}
     try:
         transport = httpx.HTTPTransport(uds=memory_socket_path)
         with httpx.Client(
@@ -460,7 +540,54 @@ def projection_timeout(timeout_seconds: float) -> httpx.Timeout:
     return httpx.Timeout(timeout_seconds)
 
 
+def _admitted_artifact_mutation_errors(admission: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    artifacts = admission.get("artifacts")
+    if not isinstance(artifacts, dict):
+        return ["admitted_artifacts_missing"]
+    for key in (
+        "code_graph_manifest",
+        "code_graph_checksums",
+        "code_graph_coverage",
+        "projection_request",
+        "environment_manifest",
+    ):
+        ref = artifacts.get(key)
+        if not isinstance(ref, dict):
+            errors.append(f"{key}_ref_missing")
+            continue
+        path = Path(str(ref.get("path", "")))
+        expected = ref.get("sha256")
+        if not path.is_file():
+            errors.append(f"{key}_missing")
+        elif expected != _sha256(path):
+            errors.append(f"{key}_sha256_mismatch")
+    return errors
+
+
 def _nodes(*, status: str, changed: bool, admission: dict[str, Any]) -> list[dict[str, Any]]:
+    scan_status = (
+        "SKIPPED"
+        if not changed
+        else "PASS"
+        if status in {"SCAN_ADMITTED", "PROJECTION_ACCEPTED", "SCAN_ADMITTED_PROJECTION_DEGRADED"}
+        else "CANCELLED"
+        if status == "CANCELLED"
+        else "RECONCILED"
+        if status == "RECONCILED_LIVE_WORKER"
+        else "BLOCKED"
+        if status in {"BLOCKED", "BLOCKED_UNKNOWN_LIVENESS"}
+        else "READY"
+    )
+    projection_status = (
+        "ACCEPTED"
+        if status == "PROJECTION_ACCEPTED"
+        else "DEGRADED"
+        if status == "SCAN_ADMITTED_PROJECTION_DEGRADED"
+        else "NOT_AUTHORIZED"
+        if admission.get("ok")
+        else "BLOCKED"
+    )
     return [
         {
             "id": "preflight",
@@ -469,22 +596,19 @@ def _nodes(*, status: str, changed: bool, admission: dict[str, Any]) -> list[dic
         },
         {
             "id": "ingest-code-scan",
-            "status": (
-                "SKIPPED"
-                if not changed
-                else "PASS"
-                if status == "SCAN_ADMITTED"
-                else "BLOCKED"
-                if status == "BLOCKED"
-                else "READY"
-            ),
-            "accepted": status == "SCAN_ADMITTED",
+            "status": scan_status,
+            "accepted": status
+            in {
+                "SCAN_ADMITTED",
+                "PROJECTION_ACCEPTED",
+                "SCAN_ADMITTED_PROJECTION_DEGRADED",
+            },
             "first_failed_gate": admission.get("first_failed_gate"),
         },
         {
             "id": "projection-effect",
-            "status": "NOT_AUTHORIZED" if admission.get("ok") else "BLOCKED",
-            "accepted": False,
+            "status": projection_status,
+            "accepted": status == "PROJECTION_ACCEPTED",
         },
     ]
 

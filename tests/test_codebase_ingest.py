@@ -3,6 +3,8 @@ from typing import Any
 
 from tau_coding.codebase_ingest import (
     CODEBASE_INGEST_RECEIPT_SCHEMA,
+    _admit_emit_scan,
+    _apply_projection_request,
     write_codebase_ingest_receipt,
 )
 
@@ -164,6 +166,142 @@ def test_codebase_ingest_start_uses_owned_worker_and_admits_emit_artifacts(
     assert (tmp_path / "state.json").exists()
 
 
+def test_codebase_ingest_cancellation_produces_no_worker_effect_or_marker(
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    repo = _repo(tmp_path)
+
+    def run(command: list[str], **_: Any) -> Any:
+        if command[0] == "git":
+            return _Completed(stdout="unknown\n")
+        raise AssertionError("cancelled ingest must not launch scan worker")
+
+    monkeypatch.setattr("tau_coding.codebase_ingest.subprocess.run", run)
+    receipt = write_codebase_ingest_receipt(
+        repo_path=repo,
+        receipt_path=tmp_path / "receipt.json",
+        state_path=tmp_path / "state.json",
+        ingest_runner="/skills/ingest-code/run.sh",
+        start=True,
+        run_id="run-cancel",
+        goal_hash="sha256:" + "1" * 64,
+        cancel_requested=True,
+    )
+
+    assert receipt["status"] == "CANCELLED"
+    assert receipt["started"] is False
+    assert receipt["worker"] is None
+    assert receipt["accepted_effect_count"] == 0
+    assert receipt["admission"]["first_failed_gate"] == "cancel_requested"
+    assert receipt["change_marker_advanced"] is False
+    assert not (tmp_path / "state.json").exists()
+
+
+def test_codebase_ingest_restart_live_worker_reconciles_without_duplicate_launch(
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    repo = _repo(tmp_path)
+    prior = _worker("prior-run", "attempt-001", "endpoint-001")
+
+    def run(command: list[str], **_: Any) -> Any:
+        if command[0] == "git":
+            return _Completed(stdout="unknown\n")
+        raise AssertionError("live worker reconciliation must not launch replacement")
+
+    monkeypatch.setattr("tau_coding.codebase_ingest.subprocess.run", run)
+    receipt = write_codebase_ingest_receipt(
+        repo_path=repo,
+        receipt_path=tmp_path / "receipt.json",
+        state_path=tmp_path / "state.json",
+        ingest_runner="/skills/ingest-code/run.sh",
+        start=True,
+        run_id="run-live",
+        goal_hash="sha256:" + "1" * 64,
+        restart_worker=prior,
+        restart_liveness="ALIVE",
+    )
+
+    assert receipt["status"] == "RECONCILED_LIVE_WORKER"
+    assert receipt["worker"] == prior
+    assert receipt["recovery"]["action"] == "reconcile_existing_worker"
+    assert receipt["recovery"]["replacement_allowed"] is False
+    assert receipt["started"] is True
+    assert receipt["accepted_effect_count"] == 0
+
+
+def test_codebase_ingest_dead_retry_gets_new_attempt_and_endpoint_lineage(
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    repo = _repo(tmp_path)
+    prior = _worker("prior-run", "attempt-001", "endpoint-001")
+
+    def run(command: list[str], **_: Any) -> Any:
+        if command[0] == "git":
+            return _Completed(stdout="unknown\n")
+        _write_ingest_marker(repo)
+        return _Completed()
+
+    monkeypatch.setattr("tau_coding.codebase_ingest.subprocess.run", run)
+    receipt = write_codebase_ingest_receipt(
+        repo_path=repo,
+        receipt_path=tmp_path / "receipt.json",
+        state_path=tmp_path / "state.json",
+        ingest_runner="/skills/ingest-code/run.sh",
+        start=True,
+        run_id="run-dead",
+        attempt_number=2,
+        goal_hash="sha256:" + "1" * 64,
+        restart_worker=prior,
+        restart_liveness="DEAD",
+    )
+
+    assert receipt["status"] == "SCAN_ADMITTED"
+    assert receipt["attempt_id"].endswith("attempt-002")
+    assert receipt["recovery"]["action"] == "launch_new_attempt"
+    assert receipt["recovery"]["prior_attempt_id"] == "attempt-001"
+    assert receipt["recovery"]["prior_endpoint_id"] == "endpoint-001"
+    assert receipt["recovery"]["new_attempt_differs"] is True
+    assert receipt["recovery"]["new_endpoint_differs"] is True
+    assert receipt["worker"]["runtime_endpoint_lease"]["endpoint_id"] != "endpoint-001"
+
+
+def test_codebase_ingest_unknown_liveness_blocks_replacement(
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    repo = _repo(tmp_path)
+    prior = _worker("prior-run", "attempt-001", "endpoint-001")
+
+    def run(command: list[str], **_: Any) -> Any:
+        if command[0] == "git":
+            return _Completed(stdout="unknown\n")
+        raise AssertionError("unknown liveness must block before replacement")
+
+    monkeypatch.setattr("tau_coding.codebase_ingest.subprocess.run", run)
+    receipt = write_codebase_ingest_receipt(
+        repo_path=repo,
+        receipt_path=tmp_path / "receipt.json",
+        state_path=tmp_path / "state.json",
+        ingest_runner="/skills/ingest-code/run.sh",
+        start=True,
+        run_id="run-unknown",
+        goal_hash="sha256:" + "1" * 64,
+        restart_worker=prior,
+        restart_liveness="UNKNOWN",
+    )
+
+    assert receipt["status"] == "BLOCKED_UNKNOWN_LIVENESS"
+    assert receipt["started"] is False
+    assert receipt["worker"] is None
+    assert receipt["recovery"]["action"] == "block_replacement"
+    assert receipt["admission"]["first_failed_gate"] == "unknown_liveness"
+    assert receipt["accepted_effect_count"] == 0
+    assert not (tmp_path / "state.json").exists()
+
+
 def test_codebase_ingest_authorized_projection_records_one_accepted_effect(
     tmp_path: Path,
     monkeypatch: Any,
@@ -251,6 +389,78 @@ def test_codebase_ingest_memory_outage_keeps_admitted_scan_degraded(
     assert receipt["change_marker_advanced"] is True
 
 
+def test_codebase_ingest_projection_request_mutation_blocks_before_memory_call(
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    repo = _repo(tmp_path)
+    _write_ingest_marker(repo)
+    admission = _admit_emit_scan(repo)
+    request_path = Path(admission["artifacts"]["projection_request"]["path"])
+    request_path.write_text(
+        '{"schema":"ingest-code.code_projection_request.v1","environment_manifest_digest":"sha256:'
+        + "2" * 64
+        + '","mutated":true}\n',
+        encoding="utf-8",
+    )
+
+    def fail_client(*_: Any, **__: Any) -> Any:
+        raise AssertionError("stale projection request must not call Memory")
+
+    monkeypatch.setattr("tau_coding.codebase_ingest.httpx.Client", fail_client)
+    result = _apply_projection_request(
+        admission,
+        memory_socket_path="/missing/memory.sock",
+        timeout_seconds=1,
+    )
+
+    assert result["terminal_status"] == "SCAN_ADMITTED_PROJECTION_DEGRADED"
+    assert admission["projection_state"]["state"] == "blocked_stale_artifact"
+    assert "projection_request_sha256_mismatch" in admission["projection_state"]["errors"]
+    assert admission["projection_state"]["accepted_effect_count"] == 0
+
+
+def test_codebase_ingest_projection_receipt_mismatch_blocks_effect_admission(
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    repo = _repo(tmp_path)
+    _write_ingest_marker(repo)
+    admission = _admit_emit_scan(repo)
+
+    class Client:
+        def __init__(self, *_: Any, **__: Any) -> None:
+            pass
+
+        def __enter__(self) -> Client:
+            return self
+
+        def __exit__(self, *_: Any) -> None:
+            return None
+
+        def post(self, *_: Any, **__: Any) -> Any:
+            return _Response(
+                {
+                    "status": "applied",
+                    "submitted_bundle_digest": "sha256:" + "9" * 64,
+                    "checksums_digest": admission["checksums_digest"],
+                    "generation": {"generation_id": "cg_bad"},
+                }
+            )
+
+    monkeypatch.setattr("tau_coding.codebase_ingest.httpx.Client", Client)
+    result = _apply_projection_request(
+        admission,
+        memory_socket_path="/run/user/1000/embry/memory.sock",
+        timeout_seconds=1,
+    )
+
+    assert result["terminal_status"] == "SCAN_ADMITTED_PROJECTION_DEGRADED"
+    assert admission["projection_state"]["state"] == "degraded_unapplied"
+    assert "projection_bundle_digest_mismatch" in admission["projection_state"]["errors"]
+    assert admission["projection_state"]["accepted_effect_count"] == 0
+
+
 def test_codebase_ingest_blocks_before_projection_on_bad_emit_artifact(
     tmp_path: Path,
     monkeypatch: Any,
@@ -298,6 +508,31 @@ class _Completed:
         self.returncode = returncode
         self.stdout = stdout
         self.stderr = stderr
+
+
+class _Response:
+    status_code = 200
+    text = ""
+
+    def __init__(self, payload: dict[str, Any]) -> None:
+        self._payload = payload
+
+    def json(self) -> dict[str, Any]:
+        return self._payload
+
+
+def _worker(run_id: str, attempt_id: str, endpoint_id: str) -> dict[str, Any]:
+    return {
+        "schema": "tau.codebase_ingest_worker.v1",
+        "runtime_endpoint_lease": {
+            "schema": "tau.runtime_endpoint_lease.v1",
+            "run_id": run_id,
+            "attempt_id": attempt_id,
+            "endpoint_id": endpoint_id,
+        },
+        "runtime_endpoint_lease_sha256": "sha256:" + "0" * 64,
+        "detached_child": False,
+    }
 
 
 def _write_state(path: Path, repo: Path) -> None:

@@ -21,24 +21,24 @@
       "expected": {
         "exit_code": 0,
         "stdout_contains": [
-          "9 passed"
+          "15 passed"
         ]
       }
     },
     {
-      "name": "adversarial-projection-and-marker-boundaries",
+      "name": "adversarial-lifecycle-and-effect-boundaries",
       "type": "adversarial",
       "real_world": true,
       "timeout_seconds": 90,
       "command": [
         "bash",
         "-lc",
-        "cd .. && uv run pytest tests/test_codebase_ingest.py -q -k 'blocks_before_projection or memory_outage_keeps_admitted_scan_degraded or does_not_advance_marker_from_queued_work or ignores_generated_ingest_artifacts_after_admission'"
+        "cd .. && uv run pytest tests/test_codebase_ingest.py -q -k 'cancellation or restart_live_worker or dead_retry or unknown_liveness or projection_request_mutation or projection_receipt_mismatch'"
       ],
       "expected": {
         "exit_code": 0,
         "stdout_contains": [
-          "4 passed"
+          "6 passed"
         ]
       }
     }
