@@ -16,7 +16,7 @@
       "command": [
         "bash",
         "-lc",
-        "cd .. && rm -rf /tmp/tau-agentic-evals-dag-viewer && mkdir -p /tmp/tau-agentic-evals-dag-viewer && python3 scripts/run-dag-viewer-browser-proof.py --out /tmp/tau-agentic-evals-dag-viewer/browser-proof.json --screenshot /tmp/tau-agentic-evals-dag-viewer/browser-proof.png --run-root /tmp/tau-agentic-evals-dag-viewer/run --step-delay-seconds 0.15 && jq -e '.status == \"PASS\" and .mocked == false and .live == true and .provider_live == false and ([.checks[]] | all(. == true))' /tmp/tau-agentic-evals-dag-viewer/browser-proof.json"
+        "cd .. && out_dir=\"/tmp/tau-agentic-evals-dag-viewer-${RANDOM}-$(date +%s%N)\" && mkdir -p \"$out_dir\" && PYTHONPATH=src python3 scripts/run-dag-viewer-browser-proof.py --out \"$out_dir/browser-proof.json\" --screenshot \"$out_dir/browser-proof.png\" --run-root \"$out_dir/run\" && jq -e '.status == \"PASS\" and .mocked == false and .live == true and .provider_live == false and ([.checks[]] | all(. == true))' \"$out_dir/browser-proof.json\""
       ],
       "expected": {
         "exit_code": 0,

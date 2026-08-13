@@ -98,7 +98,21 @@
       "path": "evals/tau_timeline_viewer_agentic_eval.json",
       "schema": "agentic-evals fixture version 2",
       "cases": 4,
-      "trials": 2
+      "trials": 2,
+      "sha256": "c3ed87006379240a335db9e741344c9b073220f379ccd33a756c688a5f13d470",
+      "bytes": 2570
+    },
+    {
+      "role": "agentic_eval_report",
+      "path": "docs/review-bundles/tau-timeline-proof-bundle-20260813/agentic-evals-report.json",
+      "schema": "agentic_evals.report.v1",
+      "readiness": "READY",
+      "cases": 4,
+      "trials": 8,
+      "passed_trials": 8,
+      "sha256": "1fdc532806149438ffb85594bf3f9aff91be53a6fdb5a6bdcf929b1336c23391",
+      "bytes": 10239,
+      "boundary": "This reports declared fixture command readiness only; it does not prove full Tau immutable-goal completion, provider/model quality, all viewport sizes, all ledger shapes, or release readiness."
     }
   ],
   "known_transport_issue": {
@@ -140,7 +154,8 @@
   "claims": {
     "proves": [
       "The local review packet has named artifacts with hashes, sizes, and MIME types.",
-      "The first ask/WebGPT attempt reached Surf and recovered an advisory response from the controlled tab."
+      "The first ask/WebGPT attempt reached Surf and recovered an advisory response from the controlled tab.",
+      "The first Tau timeline agentic-evals manifest executed 4 cases across 8 trials with readiness READY."
     ],
     "does_not_prove": [
       "Timeline viewer closure.",

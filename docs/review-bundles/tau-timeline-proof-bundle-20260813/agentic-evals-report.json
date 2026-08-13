@@ -1,0 +1,115 @@
+{
+  "schema": "agentic_evals.report.v1",
+  "source": "/home/graham/workspace/experiments/tau/evals/tau_timeline_viewer_agentic_eval.json",
+  "mocked": false,
+  "fixture_backed": true,
+  "live": false,
+  "proof_scope": "fixture wiring smoke",
+  "claims": {
+    "proves": "declared local commands met explicit fixture expectations across repeated trials",
+    "does_not_prove": "semantic correctness, live services, LLM judge behavior, or release readiness"
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_count": 4,
+  "trial_count": 8,
+  "cases": [
+    {
+      "name": "live-browser-timeline-layout-proof",
+      "type": "positive",
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 59125.967,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"schema\": \"tau.dag_viewer_browser_proof.v1\",\n  \"status\": \"PASS\",\n  \"mocked\": false,\n  \"live\": true,\n  \"provider_live\": false,\n  \"url\": \"http://127.0.0.1:42829/\",\n  \"viewport\": {\n    \"width\": 1440,\n    \"height\": 1000,\n    \"deviceScaleFactor\": 1\n  },\n  \"screenshot\": \"/tmp/tau-agentic-evals-dag-viewer-24943-1786635275781211263/browser-proof.png\",\n  \"screenshot_sha256\": \"sha256:be871b0ead4be2f61e824b9b0c0302042787228901a860402323d07a691cb11d\",\n  \"request_methods\": [\n    \"GET\"\n  ],\n  \"checks\": {\n    \"orchestration_pool_visible\": true,\n    \"workspace_toggles_visible\": true,\n    \"live_sync_controls_visible\": true,\n    \"live_sync_pause_resume\": true,\n    \"left_pool_toggle_collapses\": true,\n    \"right_inspector_toggle_collapses\": true,\n    \"journal_drawer_toggle_collapses\": true,\n    \"timeline_rendered\": true,\n    \"timeline_tracks_visible\": true,\n    \"timeline_role_swimlanes_visible\": true,\n    \"timeline_role_clips_visible\": true,\n    \"timeline_role_clips_unclipped\": true,\n    \"timeline_duration_modes_truthful\": true,\n    \"timeline_scroll_canvas_independent\": true,\n    \"timeline_step_zoom_controls_visible\": true,\n    \"timeline_step_zoom_changes_width\": true,\n    \"timeline_playhead_scrubs_sequence\": true,\n    \"layout_resize_handles_visible\": true,\n    \"layout_resize_handles_keyboard_resize\": true,\n    \"timeline_clip_selects_node\": true,\n    \"topology_switch_visible\": true,\n    \"graph_viewport_controls_visible\": true,\n    \"graph_zoom_controls_change_viewport\": true,\n    \"graph_rendered\": true,\n    \"source_dag_visible\": true,\n    \"dag_plan_tab_visible\": true,\n    \"creator_attempt_1_visible\": true,\n    \"reviewer_revise_visible\": true,\n    \"revision_overlay_visible\": true,\n    \"creator_attempt_2_visible\": true,\n    \"reviewer_pass_remained_unaccepted\": true,\n    \"receipt_admission_turned_green\": true,\n    \"dependent_released_after_acceptance\": true,\n    \"refresh_reconstructed_state\": true,\n    \"read_only_requests\": true,\n    \"layout_non_overlapping\": true,\n    \"selected_node_inspector_visible\": true,\n    \"selected_node_sections_visible\": true,\n    \"selected_node_read_only\": true,\n    \"selected_node_no_mutation_controls\": true\n  }\n}\n\ntrue\n",
+          "stderr": "",
+          "duration_ms": 59497.316,
+          "timed_out": false
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"schema\": \"tau.dag_viewer_browser_proof.v1\",\n  \"status\": \"PASS\",\n  \"mocked\": false,\n  \"live\": true,\n  \"provider_live\": false,\n  \"url\": \"http://127.0.0.1:37275/\",\n  \"viewport\": {\n    \"width\": 1440,\n    \"height\": 1000,\n    \"deviceScaleFactor\": 1\n  },\n  \"screenshot\": \"/tmp/tau-agentic-evals-dag-viewer-2427-1786635335277088385/browser-proof.png\",\n  \"screenshot_sha256\": \"sha256:161daec747e7759aaf9169ca98641578552c67f98d98a1cb990be469743133f9\",\n  \"request_methods\": [\n    \"GET\"\n  ],\n  \"checks\": {\n    \"orchestration_pool_visible\": true,\n    \"workspace_toggles_visible\": true,\n    \"live_sync_controls_visible\": true,\n    \"live_sync_pause_resume\": true,\n    \"left_pool_toggle_collapses\": true,\n    \"right_inspector_toggle_collapses\": true,\n    \"journal_drawer_toggle_collapses\": true,\n    \"timeline_rendered\": true,\n    \"timeline_tracks_visible\": true,\n    \"timeline_role_swimlanes_visible\": true,\n    \"timeline_role_clips_visible\": true,\n    \"timeline_role_clips_unclipped\": true,\n    \"timeline_duration_modes_truthful\": true,\n    \"timeline_scroll_canvas_independent\": true,\n    \"timeline_step_zoom_controls_visible\": true,\n    \"timeline_step_zoom_changes_width\": true,\n    \"timeline_playhead_scrubs_sequence\": true,\n    \"layout_resize_handles_visible\": true,\n    \"layout_resize_handles_keyboard_resize\": true,\n    \"timeline_clip_selects_node\": true,\n    \"topology_switch_visible\": true,\n    \"graph_viewport_controls_visible\": true,\n    \"graph_zoom_controls_change_viewport\": true,\n    \"graph_rendered\": true,\n    \"source_dag_visible\": true,\n    \"dag_plan_tab_visible\": true,\n    \"creator_attempt_1_visible\": true,\n    \"reviewer_revise_visible\": true,\n    \"revision_overlay_visible\": true,\n    \"creator_attempt_2_visible\": true,\n    \"reviewer_pass_remained_unaccepted\": true,\n    \"receipt_admission_turned_green\": true,\n    \"dependent_released_after_acceptance\": true,\n    \"refresh_reconstructed_state\": true,\n    \"read_only_requests\": true,\n    \"layout_non_overlapping\": true,\n    \"selected_node_inspector_visible\": true,\n    \"selected_node_sections_visible\": true,\n    \"selected_node_read_only\": true,\n    \"selected_node_no_mutation_controls\": true\n  }\n}\n\ntrue\n",
+          "stderr": "",
+          "duration_ms": 58754.619,
+          "timed_out": false
+        }
+      ]
+    },
+    {
+      "name": "timeline-layout-and-interactions-unit-regression",
+      "type": "positive",
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 3698.841,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "\n> tau-dag-viewer@1.0.0 test\n> vitest --run src/tests/App.timeline.test.tsx\n\n\n RUN  v4.1.10 /home/graham/workspace/experiments/tau/web/dag-viewer\n\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  11:36:34\n   Duration  2.90s (transform 541ms, setup 75ms, import 769ms, tests 1.53s, environment 403ms)\n\n",
+          "stderr": "",
+          "duration_ms": 3429.181,
+          "timed_out": false
+        },
+        {
+          "exit_code": 0,
+          "stdout": "\n> tau-dag-viewer@1.0.0 test\n> vitest --run src/tests/App.timeline.test.tsx\n\n\n RUN  v4.1.10 /home/graham/workspace/experiments/tau/web/dag-viewer\n\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  11:36:37\n   Duration  3.31s (transform 693ms, setup 83ms, import 974ms, tests 1.62s, environment 461ms)\n\n",
+          "stderr": "",
+          "duration_ms": 3968.501,
+          "timed_out": false
+        }
+      ]
+    },
+    {
+      "name": "adversarial-admission-execution-separation",
+      "type": "adversarial",
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 2122.305,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "\n> tau-dag-viewer@1.0.0 test\n> vitest --run src/tests/App.timeline.test.tsx -t timeline proof clips do not turn accepted from execution state alone|timeline execution ignores proof admission and failure takes precedence|timeline execution cannot be accepted by admission alone\n\n\n RUN  v4.1.10 /home/graham/workspace/experiments/tau/web/dag-viewer\n\n\n Test Files  1 passed (1)\n      Tests  3 passed | 7 skipped (10)\n   Start at  11:36:41\n   Duration  1.55s (transform 480ms, setup 66ms, import 715ms, tests 252ms, environment 382ms)\n\n",
+          "stderr": "",
+          "duration_ms": 2172.122,
+          "timed_out": false
+        },
+        {
+          "exit_code": 0,
+          "stdout": "\n> tau-dag-viewer@1.0.0 test\n> vitest --run src/tests/App.timeline.test.tsx -t timeline proof clips do not turn accepted from execution state alone|timeline execution ignores proof admission and failure takes precedence|timeline execution cannot be accepted by admission alone\n\n\n RUN  v4.1.10 /home/graham/workspace/experiments/tau/web/dag-viewer\n\n\n Test Files  1 passed (1)\n      Tests  3 passed | 7 skipped (10)\n   Start at  11:36:43\n   Duration  1.57s (transform 495ms, setup 62ms, import 750ms, tests 258ms, environment 380ms)\n\n",
+          "stderr": "",
+          "duration_ms": 2072.487,
+          "timed_out": false
+        }
+      ]
+    },
+    {
+      "name": "adversarial-colliding-node-selector-uniqueness",
+      "type": "negative",
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 2140.166,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "\n> tau-dag-viewer@1.0.0 test\n> vitest --run src/tests/App.timeline.test.tsx -t timeline selectors remain unique when node ids sanitize to the same qid token\n\n\n RUN  v4.1.10 /home/graham/workspace/experiments/tau/web/dag-viewer\n\n\n Test Files  1 passed (1)\n      Tests  1 passed | 9 skipped (10)\n   Start at  11:36:46\n   Duration  1.52s (transform 515ms, setup 74ms, import 787ms, tests 150ms, environment 377ms)\n\n",
+          "stderr": "",
+          "duration_ms": 2026.164,
+          "timed_out": false
+        },
+        {
+          "exit_code": 0,
+          "stdout": "\n> tau-dag-viewer@1.0.0 test\n> vitest --run src/tests/App.timeline.test.tsx -t timeline selectors remain unique when node ids sanitize to the same qid token\n\n\n RUN  v4.1.10 /home/graham/workspace/experiments/tau/web/dag-viewer\n\n\n Test Files  1 passed (1)\n      Tests  1 passed | 9 skipped (10)\n   Start at  11:36:48\n   Duration  1.65s (transform 546ms, setup 78ms, import 819ms, tests 144ms, environment 449ms)\n\n",
+          "stderr": "",
+          "duration_ms": 2254.167,
+          "timed_out": false
+        }
+      ]
+    }
+  ]
+}
