@@ -43,9 +43,14 @@ async function inspectViewport(browser, viewport, screenshotPath) {
     }
   });
   await page.setViewport(viewport);
-  await page.goto(url, { waitUntil: "networkidle0", timeout: 20000 });
+  // dag:node:* elements exist only in the topology workspace view, and the
+// viewer defaults to timeline. Request topology in the initial URL so the
+// proof needs exactly one main-frame navigation (no_manual_reload).
+const topologyUrl = new URL(url);
+topologyUrl.searchParams.set("workspace_view", "topology");
+await page.goto(topologyUrl.toString(), { waitUntil: "networkidle0", timeout: 20000 });
   await page.waitForSelector('[data-qid="dag:workspace:graph"]', { timeout: 10000 });
-  await page.waitForSelector(".react-flow__viewport", { timeout: 10000 });
+    await page.waitForSelector(".react-flow__viewport", { timeout: 10000 });
 
   const state = await page.evaluate(async () => {
     const manifestResponse = await fetch("/api/v1/manifest");

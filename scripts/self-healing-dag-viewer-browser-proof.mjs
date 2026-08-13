@@ -18,7 +18,12 @@ const page = await browser.newPage();
 await page.setViewport({ width: 1660, height: 1000, deviceScaleFactor: 1 });
 const methods = [];
 page.on("request", (request) => methods.push(request.method()));
-await page.goto(url, { waitUntil: "networkidle0", timeout: 15000 });
+// dag:node:* elements exist only in the topology workspace view, and the
+// viewer defaults to timeline. Request topology in the initial URL so the
+// proof needs exactly one main-frame navigation (no_manual_reload).
+const topologyUrl = new URL(url);
+topologyUrl.searchParams.set("workspace_view", "topology");
+await page.goto(topologyUrl.toString(), { waitUntil: "networkidle0", timeout: 15000 });
 await page.waitForSelector('[data-qid="dag:node:provider-review"]', { timeout: 10000 });
 await page.waitForFunction(() => document.querySelectorAll('[aria-label="Committed journal sequence"] option').length > 1);
 

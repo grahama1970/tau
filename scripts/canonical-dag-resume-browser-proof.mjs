@@ -24,7 +24,12 @@ page.on("request", (request) => methods.push(request.method()));
 page.on("framenavigated", (frame) => {
   if (frame === page.mainFrame()) navigations.push({ at: new Date().toISOString(), url: frame.url() });
 });
-await page.goto(url, { waitUntil: "networkidle0", timeout: 15000 });
+// dag:node:* elements exist only in the topology workspace view, and the
+// viewer defaults to timeline. Request topology in the initial URL so the
+// proof needs exactly one main-frame navigation (no_manual_reload).
+const topologyUrl = new URL(url);
+topologyUrl.searchParams.set("workspace_view", "topology");
+await page.goto(topologyUrl.toString(), { waitUntil: "networkidle0", timeout: 15000 });
 await page.waitForSelector('[data-qid="dag:node:discover"]', { timeout: 10000 });
 
 const runIdentity = (runId) => {
