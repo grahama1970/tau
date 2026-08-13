@@ -1,0 +1,46 @@
+{
+  "version": 2,
+  "skill": "tau-codebase-ingest",
+  "trials": 2,
+  "proof_scope": "Tau codebase-ingest scan/projection receipt trajectory coverage",
+  "claims": {
+    "proves": "the declared Tau codebase-ingest positive and adversarial receipt checks pass across repeated trials using the real project test runner",
+    "does_not_prove": "full Tau issue #325 closure, process-loss restart reconciliation, provider/model quality, or every Memory/GMO outage mode"
+  },
+  "cases": [
+    {
+      "name": "codebase-ingest-v2-receipt-regression",
+      "type": "positive",
+      "real_world": true,
+      "timeout_seconds": 90,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run pytest tests/test_codebase_ingest.py -q"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "9 passed"
+        ]
+      }
+    },
+    {
+      "name": "adversarial-projection-and-marker-boundaries",
+      "type": "adversarial",
+      "real_world": true,
+      "timeout_seconds": 90,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run pytest tests/test_codebase_ingest.py -q -k 'blocks_before_projection or memory_outage_keeps_admitted_scan_degraded or does_not_advance_marker_from_queued_work or ignores_generated_ingest_artifacts_after_admission'"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "4 passed"
+        ]
+      }
+    }
+  ]
+}
