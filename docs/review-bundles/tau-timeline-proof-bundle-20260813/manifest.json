@@ -1,0 +1,152 @@
+{
+  "schema": "tau.viewer.proof_bundle.v1",
+  "bundle_id": "tau-timeline-proof-bundle-20260813",
+  "created_at": "2026-08-13T13:35:00Z",
+  "project": "tau",
+  "project_root": "/home/graham/workspace/experiments/tau",
+  "immutable_goal": "Harden the Tau DAG timeline viewer with honest proof boundaries, WebGPT review, and agentic-evals recommendations before any closure claim.",
+  "status": "INCOMPLETE",
+  "status_reason": "WebGPT/Tau review transport reported browser_attachment_argument_contract_failed on the first attempt; this bundle records the local artifacts for a single-attachment retry and is not closure proof.",
+  "repository": {
+    "commit": "fda703f9deb94c8f0361208008368a0154cacf8e",
+    "short_commit": "fda703f9d",
+    "branch": "main",
+    "remote_ref_checked_before_bundle": "origin/main at fda703f9d from previous implementation slice",
+    "dirty_tree_scope": "PROJECT_KNOWLEDGE.md, docs/reviews/tau-timeline-webgpt-review-20260813.md, evals/tau_timeline_viewer_agentic_eval.json, docs/review-bundles/tau-timeline-proof-bundle-20260813/manifest.json"
+  },
+  "viewer": {
+    "source_root": "web/dag-viewer",
+    "primary_components": [
+      "web/dag-viewer/src/components/RunTimeline.tsx",
+      "web/dag-viewer/src/components/WorkspaceToggles.tsx",
+      "web/dag-viewer/src/components/runTimelineModel.ts",
+      "web/dag-viewer/src/components/runTimelineSwimlanes.ts"
+    ],
+    "browser_proof_runner": "scripts/run-dag-viewer-browser-proof.py",
+    "browser_proof_script": "scripts/dag-viewer-browser-proof.mjs"
+  },
+  "local_checks_reported_by_prior_slice": [
+    {
+      "command": "npm --prefix web/dag-viewer test -- --run src/tests/App.timeline.test.tsx",
+      "reported_result": "10 tests passed",
+      "boundary": "reported prior execution, not rerun by this manifest"
+    },
+    {
+      "command": "npm --prefix web/dag-viewer run typecheck",
+      "reported_result": "passed",
+      "boundary": "reported prior execution, not rerun by this manifest"
+    },
+    {
+      "command": "npm --prefix web/dag-viewer run build",
+      "reported_result": "passed",
+      "boundary": "reported prior execution, not rerun by this manifest"
+    }
+  ],
+  "artifacts": [
+    {
+      "role": "review_request",
+      "path": "docs/reviews/tau-timeline-webgpt-review-20260813.md",
+      "sha256": "d1a8f579e8c908947334d8b1baa45e44f267cc0a83ad00f1b1b6c5df014d6c47",
+      "bytes": 4624,
+      "mime_type": "text/plain"
+    },
+    {
+      "role": "project_state",
+      "path": "/tmp/tau-project-state-20260813.json",
+      "sha256": "bfc59070a2b4815ecac34527dc1de97fe3a56e89430cfbd63b3503b138ba7d77",
+      "bytes": 17992,
+      "mime_type": "application/json"
+    },
+    {
+      "role": "browser_proof_json",
+      "path": "/tmp/tau-timeline-pane-label-r5/browser-proof.json",
+      "sha256": "93f6e226c2f20054fa6eb63300d053057a065e9305a5b450f19610f0eab1f97b",
+      "bytes": 2131,
+      "mime_type": "application/json",
+      "summary": {
+        "status": "PASS",
+        "mocked": false,
+        "live": true,
+        "provider_live": false,
+        "check_count": 40,
+        "false_checks": []
+      }
+    },
+    {
+      "role": "browser_proof_png",
+      "path": "/tmp/tau-timeline-pane-label-r5/browser-proof.png",
+      "sha256": "2c0d88ea7b044406c69eabc7bb71b2231a570f29afa7e9a6f622f34f96e8db0a",
+      "bytes": 209318,
+      "mime_type": "image/png"
+    },
+    {
+      "role": "cdp_marker",
+      "path": ".codex/ui-verification/latest.json",
+      "sha256": "62595fb75cac7ede223bbf98b9e0d687be737107fe237e612ccea710a7695e6a",
+      "bytes": 536,
+      "mime_type": "application/json"
+    },
+    {
+      "role": "cdp_screenshot",
+      "path": "/tmp/codex-ui-verification/tau/tau-timeline-pane-label-r5/20260812T172521Z.png",
+      "sha256": "8a5c4bc0f13e05b12c5623e9d0317bda610525a2116d46daeecbc5649de1d1e6",
+      "bytes": 181388,
+      "mime_type": "image/png"
+    },
+    {
+      "role": "agentic_eval_manifest",
+      "path": "evals/tau_timeline_viewer_agentic_eval.json",
+      "schema": "agentic-evals fixture version 2",
+      "cases": 4,
+      "trials": 2
+    }
+  ],
+  "known_transport_issue": {
+    "ask_run_dir": ".ask_artifacts/tau-dag-runs/ask-tau-review-the-attached-tau-timeline-cfb5d61b4980",
+    "ask_status": "BLOCKED",
+    "ask_verdict": "BROWSER_ATTACHMENT_ARGUMENT_CONTRACT_FAILED",
+    "surf_recovered_response": ".ask_artifacts/tau-dag-runs/ask-tau-review-the-attached-tau-timeline-cfb5d61b4980/node-artifacts/handler-webgpt/response.recovered.md",
+    "surf_recovered_meta": ".ask_artifacts/tau-dag-runs/ask-tau-review-the-attached-tau-timeline-cfb5d61b4980/node-artifacts/handler-webgpt/response.recovered.meta.json"
+  },
+  "webgpt_retry": {
+    "transport": "surf.webgpt.submit",
+    "attachment": "/tmp/tau-timeline-proof-bundle-20260813-r3.zip",
+    "attachment_sha256": "73285e3c3e1139606e1f80ba45c82728a21896b137c7ad7f3ff0360081b85271",
+    "output": ".ask_artifacts/tau-timeline-proof-bundle-surf-r3/response.md",
+    "meta": ".ask_artifacts/tau-timeline-proof-bundle-surf-r3/response.meta.json",
+    "status": "recovered_focus_changed",
+    "proof_status": "response_proven",
+    "submitted_to_chatgpt": true,
+    "controlled_tab_id": "837389304",
+    "raw_contains_sentinel": true,
+    "clean_contains_sentinel": false,
+    "focus_changed": true,
+    "transport_degraded": true,
+    "advisory_verdict": "READY_FOR_EVAL_HARDENING",
+    "advisory_boundary": "WebGPT review is advisory and does not upgrade local deterministic proof.",
+    "tracked_response_copy": {
+      "response": {
+        "path": "docs/review-bundles/tau-timeline-proof-bundle-20260813/webgpt-response.md",
+        "sha256": "b87a6bef0fffac04e3117893a8bd2347ef89df30e8b0bd1f6c9e940689af2475",
+        "bytes": 15973
+      },
+      "meta": {
+        "path": "docs/review-bundles/tau-timeline-proof-bundle-20260813/webgpt-response.meta.json",
+        "sha256": "9fe01ed6d46bdcc4514a007a851ae8a320226d3680dde5f109aaf2c053494704",
+        "bytes": 4521
+      }
+    }
+  },
+  "claims": {
+    "proves": [
+      "The local review packet has named artifacts with hashes, sizes, and MIME types.",
+      "The first ask/WebGPT attempt reached Surf and recovered an advisory response from the controlled tab."
+    ],
+    "does_not_prove": [
+      "Timeline viewer closure.",
+      "Provider/model semantic quality.",
+      "That WebGPT reviewed every intended artifact on the first attempt.",
+      "That the agentic-evals manifest has been executed."
+    ]
+  }
+}

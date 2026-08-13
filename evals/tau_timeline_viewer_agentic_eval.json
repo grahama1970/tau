@@ -1,0 +1,68 @@
+{
+  "version": 2,
+  "skill": "tau-timeline-viewer",
+  "trials": 2,
+  "proof_scope": "Tau DAG timeline viewer hardening smoke and adversarial regression coverage",
+  "claims": {
+    "proves": "the declared Tau timeline viewer commands meet explicit local expectations across repeated trials, including one live browser proof path",
+    "does_not_prove": "full Tau immutable-goal completion, provider/model quality, all viewport sizes, all ledger shapes, or production release readiness"
+  },
+  "cases": [
+    {
+      "name": "live-browser-timeline-layout-proof",
+      "type": "positive",
+      "real_world": true,
+      "timeout_seconds": 150,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && rm -rf /tmp/tau-agentic-evals-dag-viewer && mkdir -p /tmp/tau-agentic-evals-dag-viewer && python3 scripts/run-dag-viewer-browser-proof.py --out /tmp/tau-agentic-evals-dag-viewer/browser-proof.json --screenshot /tmp/tau-agentic-evals-dag-viewer/browser-proof.png --run-root /tmp/tau-agentic-evals-dag-viewer/run --step-delay-seconds 0.15 && jq -e '.status == \"PASS\" and .mocked == false and .live == true and .provider_live == false and ([.checks[]] | all(. == true))' /tmp/tau-agentic-evals-dag-viewer/browser-proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "true"
+        ]
+      }
+    },
+    {
+      "name": "timeline-layout-and-interactions-unit-regression",
+      "type": "positive",
+      "timeout_seconds": 90,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && npm --prefix web/dag-viewer test -- --run src/tests/App.timeline.test.tsx"
+      ],
+      "expected": {
+        "exit_code": 0
+      }
+    },
+    {
+      "name": "adversarial-admission-execution-separation",
+      "type": "adversarial",
+      "timeout_seconds": 90,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && npm --prefix web/dag-viewer test -- --run src/tests/App.timeline.test.tsx -t 'timeline proof clips do not turn accepted from execution state alone|timeline execution ignores proof admission and failure takes precedence|timeline execution cannot be accepted by admission alone'"
+      ],
+      "expected": {
+        "exit_code": 0
+      }
+    },
+    {
+      "name": "adversarial-colliding-node-selector-uniqueness",
+      "type": "negative",
+      "timeout_seconds": 90,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && npm --prefix web/dag-viewer test -- --run src/tests/App.timeline.test.tsx -t 'timeline selectors remain unique when node ids sanitize to the same qid token'"
+      ],
+      "expected": {
+        "exit_code": 0
+      }
+    }
+  ]
+}
