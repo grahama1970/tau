@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.python_kernel_control_receipt.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "endpoint_lease_sha256", "generation_id", "action", "status", "process_identity_before", "process_identity_after", "errors"],
+  "properties": {
+    "schema": {"const": "tau.python_kernel_control_receipt.v1"},
+    "endpoint_lease_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "generation_id": {"type": "string", "minLength": 1},
+    "action": {"type": "string", "minLength": 1},
+    "status": {"type": "string", "minLength": 1},
+    "process_identity_before": {"type": "object"},
+    "process_identity_after": {"type": "object"},
+    "errors": {"type": "array", "items": {"type": "string"}}
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.python_execution_receipt.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "execution_request_sha256", "workspace_request_sha256", "endpoint_lease_sha256", "generation_id", "execution_id", "jupyter_msg_id", "status", "started_at", "finished_at", "duration_ms", "code_sha256", "output_artifact", "output_projection", "late_async_outputs", "tau_admission_status", "errors"],
+  "properties": {
+    "schema": {"const": "tau.python_execution_receipt.v1"},
+    "execution_request_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "workspace_request_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "endpoint_lease_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "generation_id": {"type": "string", "minLength": 1},
+    "execution_id": {"type": "string", "minLength": 1},
+    "jupyter_msg_id": {"type": "string", "minLength": 1},
+    "status": {"enum": ["OK", "ERROR", "INTERRUPTED", "BLOCKED"]},
+    "started_at": {"type": "string", "minLength": 1},
+    "finished_at": {"type": "string", "minLength": 1},
+    "duration_ms": {"type": "integer", "minimum": 0},
+    "code_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "output_artifact": {"type": "object"},
+    "output_projection": {"type": "object"},
+    "late_async_outputs": {"type": "array", "items": {"type": "object"}},
+    "tau_admission_status": {"type": "string", "minLength": 1},
+    "errors": {"type": "array", "items": {"type": "string"}}
+  }
+}

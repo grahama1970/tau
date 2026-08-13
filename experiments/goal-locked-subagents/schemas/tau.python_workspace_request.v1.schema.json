@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.python_workspace_request.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "run_id", "plan_revision", "dag_id", "node_id", "attempt_id", "attempt_number", "worktree", "goal_hash", "policy_sha256", "data_boundary_sha256", "required_features", "startup_timeout_seconds"],
+  "properties": {
+    "schema": {"const": "tau.python_workspace_request.v1"},
+    "run_id": {"type": "string", "minLength": 1},
+    "plan_revision": {"type": "string", "minLength": 1},
+    "dag_id": {"type": "string", "minLength": 1},
+    "node_id": {"type": "string", "minLength": 1},
+    "attempt_id": {"type": "string", "minLength": 1},
+    "attempt_number": {"type": "integer", "minimum": 1},
+    "worktree": {"type": "string", "minLength": 1},
+    "goal_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "policy_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "data_boundary_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "required_features": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "startup_timeout_seconds": {"type": "number", "exclusiveMinimum": 0}
+  }
+}

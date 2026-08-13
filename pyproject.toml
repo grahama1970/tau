@@ -19,8 +19,15 @@ dependencies = [
     "typer>=0.12",
 ]
 
+[project.optional-dependencies]
+python-workspace = [
+    "ipykernel>=6.29",
+    "jupyter-client>=8.6",
+]
+
 [project.scripts]
 tau = "tau_coding.cli:app"
+tau-python-kernel-worker = "tau_coding.runtime_backends.python_kernel_worker:main"
 
 [dependency-groups]
 dev = [

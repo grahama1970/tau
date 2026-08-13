@@ -1,0 +1,63 @@
+{
+  "version": 2,
+  "skill": "tau-python-workspace-kernel",
+  "trials": 2,
+  "proof_scope": "Tau Python workspace kernel receipt and lifecycle coverage",
+  "claims": {
+    "proves": "the declared Tau Python workspace positive and adversarial kernel receipt checks pass across repeated trials using the real project test runner and optional Jupyter kernel profile",
+    "does_not_prove": "full Tau issue #323 production rollout, kernel sandboxing, host-call bridge behavior, provider/model quality, or every operating-system process-loss mode"
+  },
+  "cases": [
+    {
+      "name": "python-workspace-live-kernel-regression",
+      "type": "positive",
+      "real_world": true,
+      "timeout_seconds": 120,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run --extra python-workspace pytest tests/test_python_kernel_backend.py -q"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "12 passed"
+        ]
+      }
+    },
+    {
+      "name": "python-kernel-worker-entrypoint-canary",
+      "type": "positive",
+      "real_world": true,
+      "timeout_seconds": 120,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && out=$(mktemp -d /tmp/tau-kernel-worker-eval-XXXXXX) && uv run --extra python-workspace tau-python-kernel-worker --canary-output-dir \"$out\""
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"status\": \"PASS\""
+        ]
+      }
+    },
+    {
+      "name": "adversarial-kernel-contract-and-lifecycle-boundaries",
+      "type": "adversarial",
+      "real_world": true,
+      "timeout_seconds": 120,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run --extra python-workspace pytest tests/test_python_kernel_backend.py -q -k 'unknown_capability or binding_mutation or import_failure or interrupt or unrelated_reused_pid'"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "5 passed"
+        ]
+      }
+    }
+  ]
+}

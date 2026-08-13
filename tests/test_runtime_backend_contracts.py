@@ -42,6 +42,12 @@ RUNTIME_SCHEMAS = (
     "tau.runtime_reconciliation_receipt.v1",
     "tau.git_worktree_lease.v2",
     "tau.runtime_capability_decision.v1",
+    "tau.python_workspace_request.v1",
+    "tau.python_workspace_receipt.v1",
+    "tau.python_execution_request.v1",
+    "tau.python_execution_receipt.v1",
+    "tau.python_kernel_control_receipt.v1",
+    "tau.python_package_manifest.v1",
 )
 DIGEST = "sha256:" + "a" * 64
 
@@ -212,9 +218,7 @@ def test_runtime_contracts_reject_unknown_observation_values() -> None:
             session_scope="node_attempt",
             observation_requirements=("BAD",),  # type: ignore[arg-type]
         )
-    with pytest.raises(
-        ValueError, match="observation_confidence_levels contains invalid values"
-    ):
+    with pytest.raises(ValueError, match="observation_confidence_levels contains invalid values"):
         replace(
             _local_capabilities(),
             observation_confidence_levels=("BAD",),  # type: ignore[arg-type]
@@ -224,13 +228,18 @@ def test_runtime_contracts_reject_unknown_observation_values() -> None:
 def test_runtime_requirement_rejects_noncanonical_no_runtime_combinations() -> None:
     with pytest.raises(ValueError, match="non-runtime requirement must use backend none"):
         RuntimeRequirement(
-            backend="local", interaction_mode="none", required_capabilities=(),
-            session_scope="dag_control", observation_requirements=(),
+            backend="local",
+            interaction_mode="none",
+            required_capabilities=(),
+            session_scope="dag_control",
+            observation_requirements=(),
         )
     with pytest.raises(ValueError, match="backend none cannot request runtime interaction"):
         RuntimeRequirement(
-            backend="none", interaction_mode="one_shot",
-            required_capabilities=("one_shot",), session_scope="node_attempt",
+            backend="none",
+            interaction_mode="one_shot",
+            required_capabilities=("one_shot",),
+            session_scope="node_attempt",
             observation_requirements=("PROCESS",),
         )
 
@@ -238,15 +247,29 @@ def test_runtime_requirement_rejects_noncanonical_no_runtime_combinations() -> N
 def test_runtime_models_reject_non_object_frozen_fields() -> None:
     with pytest.raises(ValueError, match="heartbeat_policy must be an object"):
         RuntimeEndpointLease(
-            run_id="run", plan_revision="rev", dag_id="dag", node_id="node",
-            attempt_id="attempt", attempt_number=1, execution_token="token",
-            backend="local", backend_session_id=None, scope_id="scope",
-            endpoint_id="endpoint", work_order_sha256=DIGEST, goal_hash=DIGEST,
-            owner="tau", created_at="now", expires_at="later",
+            run_id="run",
+            plan_revision="rev",
+            dag_id="dag",
+            node_id="node",
+            attempt_id="attempt",
+            attempt_number=1,
+            execution_token="token",
+            backend="local",
+            backend_session_id=None,
+            scope_id="scope",
+            endpoint_id="endpoint",
+            work_order_sha256=DIGEST,
+            goal_hash=DIGEST,
+            owner="tau",
+            created_at="now",
+            expires_at="later",
             heartbeat_policy=FrozenJson.from_value([]),
-            cleanup_policy=FrozenJson.from_value({}), capabilities_sha256=DIGEST,
+            cleanup_policy=FrozenJson.from_value({}),
+            capabilities_sha256=DIGEST,
             backend_ids=FrozenJson.from_value({}),
         )
+
+
 def test_runtime_contract_models_reject_incomplete_hashes() -> None:
     with pytest.raises(ValueError, match="complete lowercase SHA-256"):
         RuntimeCapabilityDecision(
@@ -271,42 +294,83 @@ def test_runtime_contract_models_reject_incomplete_hashes() -> None:
 
 def test_persisted_runtime_contract_family_round_trips() -> None:
     lease = RuntimeEndpointLease(
-        run_id="run", plan_revision="rev", dag_id="dag", node_id="node",
-        attempt_id="attempt", attempt_number=1, execution_token="token",
-        backend="local", backend_session_id=None, scope_id="scope",
-        endpoint_id="endpoint", work_order_sha256=DIGEST, goal_hash=DIGEST,
-        owner="tau", created_at="now", expires_at="later",
+        run_id="run",
+        plan_revision="rev",
+        dag_id="dag",
+        node_id="node",
+        attempt_id="attempt",
+        attempt_number=1,
+        execution_token="token",
+        backend="local",
+        backend_session_id=None,
+        scope_id="scope",
+        endpoint_id="endpoint",
+        work_order_sha256=DIGEST,
+        goal_hash=DIGEST,
+        owner="tau",
+        created_at="now",
+        expires_at="later",
         heartbeat_policy=FrozenJson.from_value({}),
-        cleanup_policy=FrozenJson.from_value({}), capabilities_sha256=DIGEST,
+        cleanup_policy=FrozenJson.from_value({}),
+        capabilities_sha256=DIGEST,
         backend_ids=FrozenJson.from_value({}),
     )
     submit = RuntimeSubmitReceipt(
-        endpoint_lease_sha256=DIGEST, work_order_sha256=DIGEST,
-        composer_state_before="READY", text_delivery_count=1,
-        submit_attempt_count=1, composer_state_after="SUBMITTED",
+        endpoint_lease_sha256=DIGEST,
+        work_order_sha256=DIGEST,
+        composer_state_before="READY",
+        text_delivery_count=1,
+        submit_attempt_count=1,
+        composer_state_after="SUBMITTED",
         delivery_status="CONFIRMED",
         backend_acknowledgement=FrozenJson.from_value({}),
-        provider_execution_status="NOT_CLAIMED", errors=(),
+        provider_execution_status="NOT_CLAIMED",
+        errors=(),
     )
     event = RuntimeEvent(
-        event_id="event", run_id="run", endpoint_lease_sha256=DIGEST,
-        event_type="RUNTIME_ENDPOINT_CREATED", observed_at="now", state="READY",
-        liveness="ALIVE", confidence="PROCESS", source="local",
+        event_id="event",
+        run_id="run",
+        endpoint_lease_sha256=DIGEST,
+        event_type="RUNTIME_ENDPOINT_CREATED",
+        observed_at="now",
+        state="READY",
+        liveness="ALIVE",
+        confidence="PROCESS",
+        source="local",
         observation=FrozenJson.from_value({}),
     )
     projection = RuntimeStateProjection(
-        run_id="run", endpoint_lease_sha256=DIGEST, state="READY",
-        liveness="ALIVE", confidence="PROCESS", last_event_id="event", event_count=1,
+        run_id="run",
+        endpoint_lease_sha256=DIGEST,
+        state="READY",
+        liveness="ALIVE",
+        confidence="PROCESS",
+        last_event_id="event",
+        event_count=1,
     )
     reconciliation = RuntimeReconciliationReceipt(
-        run_id="run", endpoint_lease_sha256=DIGEST, status="PASS",
-        action="ADOPT_AND_CONTINUE_WAITING", evidence=FrozenJson.from_value({}), errors=(),
+        run_id="run",
+        endpoint_lease_sha256=DIGEST,
+        status="PASS",
+        action="ADOPT_AND_CONTINUE_WAITING",
+        evidence=FrozenJson.from_value({}),
+        errors=(),
     )
     worktree = GitWorktreeLease(
-        run_id="run", plan_revision="rev", node_id="node", attempt_id="attempt",
-        repository="repo", worktree_path="/tmp/worktree", base_commit="abc",
-        head_commit="abc", branch=None, detached=True, allowed_paths=("src/",),
-        owner="tau", created_at="now", expires_at="later",
+        run_id="run",
+        plan_revision="rev",
+        node_id="node",
+        attempt_id="attempt",
+        repository="repo",
+        worktree_path="/tmp/worktree",
+        base_commit="abc",
+        head_commit="abc",
+        branch=None,
+        detached=True,
+        allowed_paths=("src/",),
+        owner="tau",
+        created_at="now",
+        expires_at="later",
         pre_status_sha256=DIGEST,
         cleanup_policy=FrozenJson.from_value({}),
     )
@@ -376,40 +440,74 @@ def test_runtime_contract_parsers_report_future_schema_version_skew_before_extra
 def test_runtime_models_reject_schema_invalid_counts() -> None:
     with pytest.raises(ValueError, match="attempt_number must be at least 1"):
         RuntimeEndpointLease(
-            run_id="run", plan_revision="rev", dag_id="dag", node_id="node",
-            attempt_id="attempt", attempt_number=0, execution_token="token",
-            backend="local", backend_session_id=None, scope_id="scope",
-            endpoint_id="endpoint", work_order_sha256=DIGEST, goal_hash=DIGEST,
-            owner="tau", created_at="now", expires_at="later",
+            run_id="run",
+            plan_revision="rev",
+            dag_id="dag",
+            node_id="node",
+            attempt_id="attempt",
+            attempt_number=0,
+            execution_token="token",
+            backend="local",
+            backend_session_id=None,
+            scope_id="scope",
+            endpoint_id="endpoint",
+            work_order_sha256=DIGEST,
+            goal_hash=DIGEST,
+            owner="tau",
+            created_at="now",
+            expires_at="later",
             heartbeat_policy=FrozenJson.from_value({}),
-            cleanup_policy=FrozenJson.from_value({}), capabilities_sha256=DIGEST,
+            cleanup_policy=FrozenJson.from_value({}),
+            capabilities_sha256=DIGEST,
             backend_ids=FrozenJson.from_value({}),
         )
     with pytest.raises(ValueError, match="runtime submit counts must be non-negative"):
         RuntimeSubmitReceipt(
-            endpoint_lease_sha256=DIGEST, work_order_sha256=DIGEST,
-            composer_state_before="READY", text_delivery_count=-1,
-            submit_attempt_count=0, composer_state_after="READY",
-            delivery_status="BLOCKED", backend_acknowledgement=FrozenJson.from_value({}),
-            provider_execution_status="NOT_STARTED", errors=(),
+            endpoint_lease_sha256=DIGEST,
+            work_order_sha256=DIGEST,
+            composer_state_before="READY",
+            text_delivery_count=-1,
+            submit_attempt_count=0,
+            composer_state_after="READY",
+            delivery_status="BLOCKED",
+            backend_acknowledgement=FrozenJson.from_value({}),
+            provider_execution_status="NOT_STARTED",
+            errors=(),
         )
     with pytest.raises(ValueError, match="event_count must be non-negative"):
         RuntimeStateProjection(
-            run_id="run", endpoint_lease_sha256=DIGEST, state="UNKNOWN",
-            liveness="UNKNOWN", confidence="UNKNOWN", last_event_id="none", event_count=-1,
+            run_id="run",
+            endpoint_lease_sha256=DIGEST,
+            state="UNKNOWN",
+            liveness="UNKNOWN",
+            confidence="UNKNOWN",
+            last_event_id="none",
+            event_count=-1,
         )
 
 
 def test_runtime_endpoint_lease_rejects_empty_stable_identity() -> None:
     with pytest.raises(ValueError, match="required runtime identity fields"):
         RuntimeEndpointLease(
-            run_id="", plan_revision="rev", dag_id="dag", node_id="node",
-            attempt_id="attempt", attempt_number=1, execution_token="token",
-            backend="local", backend_session_id=None, scope_id="scope",
-            endpoint_id="endpoint", work_order_sha256=DIGEST, goal_hash=DIGEST,
-            owner="tau", created_at="now", expires_at="later",
+            run_id="",
+            plan_revision="rev",
+            dag_id="dag",
+            node_id="node",
+            attempt_id="attempt",
+            attempt_number=1,
+            execution_token="token",
+            backend="local",
+            backend_session_id=None,
+            scope_id="scope",
+            endpoint_id="endpoint",
+            work_order_sha256=DIGEST,
+            goal_hash=DIGEST,
+            owner="tau",
+            created_at="now",
+            expires_at="later",
             heartbeat_policy=FrozenJson.from_value({}),
-            cleanup_policy=FrozenJson.from_value({}), capabilities_sha256=DIGEST,
+            cleanup_policy=FrozenJson.from_value({}),
+            capabilities_sha256=DIGEST,
             backend_ids=FrozenJson.from_value({}),
         )
 
@@ -433,31 +531,51 @@ def test_runtime_capability_hash_normalizes_set_like_fields() -> None:
 def test_runtime_reconciliation_rejects_contradictory_outcomes() -> None:
     with pytest.raises(ValueError, match="passing reconciliation receipt"):
         RuntimeReconciliationReceipt(
-            run_id="run", endpoint_lease_sha256=DIGEST, status="PASS",
-            action="ADOPT", evidence=FrozenJson.from_value({}), errors=("failure",),
+            run_id="run",
+            endpoint_lease_sha256=DIGEST,
+            status="PASS",
+            action="ADOPT",
+            evidence=FrozenJson.from_value({}),
+            errors=("failure",),
         )
     with pytest.raises(ValueError, match="blocked reconciliation receipt requires errors"):
         RuntimeReconciliationReceipt(
-            run_id="run", endpoint_lease_sha256=DIGEST, status="BLOCKED",
-            action="BLOCK", evidence=FrozenJson.from_value({}), errors=(),
+            run_id="run",
+            endpoint_lease_sha256=DIGEST,
+            status="BLOCKED",
+            action="BLOCK",
+            evidence=FrozenJson.from_value({}),
+            errors=(),
         )
 
 
 def test_runtime_capability_decision_rejects_inconsistent_outcomes() -> None:
     with pytest.raises(ValueError, match="passing capability decision must not contain"):
         RuntimeCapabilityDecision(
-            status="PASS", backend="local", requirement_sha256=DIGEST,
-            capabilities_sha256=DIGEST, missing_capabilities=("interactive",), errors=(),
+            status="PASS",
+            backend="local",
+            requirement_sha256=DIGEST,
+            capabilities_sha256=DIGEST,
+            missing_capabilities=("interactive",),
+            errors=(),
         )
     with pytest.raises(ValueError, match="requires capabilities_sha256"):
         RuntimeCapabilityDecision(
-            status="PASS", backend="local", requirement_sha256=DIGEST,
-            capabilities_sha256=None, missing_capabilities=(), errors=(),
+            status="PASS",
+            backend="local",
+            requirement_sha256=DIGEST,
+            capabilities_sha256=None,
+            missing_capabilities=(),
+            errors=(),
         )
     with pytest.raises(ValueError, match="blocked capability decision requires errors"):
         RuntimeCapabilityDecision(
-            status="BLOCKED", backend="local", requirement_sha256=DIGEST,
-            capabilities_sha256=DIGEST, missing_capabilities=(), errors=(),
+            status="BLOCKED",
+            backend="local",
+            requirement_sha256=DIGEST,
+            capabilities_sha256=DIGEST,
+            missing_capabilities=(),
+            errors=(),
         )
 
 
@@ -493,8 +611,11 @@ def test_registry_blocks_unknown_backend_before_dispatch() -> None:
 def test_registry_accepts_canonical_no_runtime_requirement() -> None:
     decision = RuntimeBackendRegistry().decide(
         RuntimeRequirement(
-            backend="none", interaction_mode="none", required_capabilities=(),
-            session_scope="dag_control", observation_requirements=(),
+            backend="none",
+            interaction_mode="none",
+            required_capabilities=(),
+            session_scope="dag_control",
+            observation_requirements=(),
         )
     )
 
@@ -562,9 +683,7 @@ def test_registry_blocks_explicitly_unsupported_session_scope() -> None:
     decision = registry.decide(requirement)
 
     assert decision.status == "BLOCKED"
-    assert decision.errors == (
-        "runtime_requirement_declared_unsupported:persistent_subagent",
-    )
+    assert decision.errors == ("runtime_requirement_declared_unsupported:persistent_subagent",)
 
 
 def test_registry_blocks_undeclared_session_scope() -> None:
@@ -582,9 +701,7 @@ def test_registry_blocks_undeclared_session_scope() -> None:
     )
 
     assert decision.status == "BLOCKED"
-    assert decision.errors == (
-        "runtime_session_scope_unsupported:persistent_subagnt",
-    )
+    assert decision.errors == ("runtime_session_scope_unsupported:persistent_subagnt",)
 
 
 def test_runtime_capabilities_reject_non_string_requirement_entries() -> None:
@@ -694,29 +811,49 @@ def test_project_legacy_goal_label_has_complete_runtime_goal_hash(tmp_path: Path
     command_spec = tmp_path / "command.json"
     command_spec.write_text('{"command":["true"]}', encoding="utf-8")
     payload = {
-        "schema": "tau.dag_contract.v1", "dag_id": "legacy-goal",
+        "schema": "tau.dag_contract.v1",
+        "dag_id": "legacy-goal",
         "goal": {"goal_id": "g", "goal_version": 1, "goal_hash": "sha256:g"},
         "target": {"repo": "grahama1970/tau", "target": "runtime-goal"},
-        "entry_node": "worker", "terminal_nodes": ["done"],
+        "entry_node": "worker",
+        "terminal_nodes": ["done"],
         "limits": {"max_steps": 1, "max_total_attempts": 1},
-        "nodes": [{
-            "id": "worker", "agent": "worker", "executor": "local",
-            "max_attempts": 1, "command_spec": str(command_spec),
-            "required_evidence": [],
-        }],
+        "nodes": [
+            {
+                "id": "worker",
+                "agent": "worker",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(command_spec),
+                "required_evidence": [],
+            }
+        ],
         "edges": [{"from": "worker", "to": "done"}],
-        "required_evidence": [], "fail_closed_on": [],
+        "required_evidence": [],
+        "fail_closed_on": [],
     }
 
     plan = compile_project_dag_plan(payload, source_path=tmp_path / "dag.json")
     lease = RuntimeEndpointLease(
-        run_id="run", plan_revision=plan.plan_sha256, dag_id="legacy-goal",
-        node_id="worker", attempt_id="attempt", attempt_number=1,
-        execution_token="token", backend="local", backend_session_id=None,
-        scope_id="scope", endpoint_id="endpoint", work_order_sha256=DIGEST,
-        goal_hash=plan.runtime_goal_hash, owner="tau", created_at="now",
-        expires_at="later", heartbeat_policy=FrozenJson.from_value({}),
-        cleanup_policy=FrozenJson.from_value({}), capabilities_sha256=DIGEST,
+        run_id="run",
+        plan_revision=plan.plan_sha256,
+        dag_id="legacy-goal",
+        node_id="worker",
+        attempt_id="attempt",
+        attempt_number=1,
+        execution_token="token",
+        backend="local",
+        backend_session_id=None,
+        scope_id="scope",
+        endpoint_id="endpoint",
+        work_order_sha256=DIGEST,
+        goal_hash=plan.runtime_goal_hash,
+        owner="tau",
+        created_at="now",
+        expires_at="later",
+        heartbeat_policy=FrozenJson.from_value({}),
+        cleanup_policy=FrozenJson.from_value({}),
+        capabilities_sha256=DIGEST,
         backend_ids=FrozenJson.from_value({}),
     )
 
@@ -820,24 +957,35 @@ def test_compiler_classifies_commandless_persistent_subagent_as_declaration(
     tmp_path: Path,
 ) -> None:
     payload = {
-        "schema": "tau.dag_contract.v1", "dag_id": "virtual-persistent",
+        "schema": "tau.dag_contract.v1",
+        "dag_id": "virtual-persistent",
         "goal": {"goal_id": "g", "goal_version": 1, "goal_hash": "sha256:g"},
         "target": {"repo": "grahama1970/tau", "target": "invalid"},
-        "entry_node": "worker", "terminal_nodes": ["done"],
+        "entry_node": "worker",
+        "terminal_nodes": ["done"],
         "limits": {"max_steps": 1, "max_total_attempts": 1},
-        "nodes": [{
-            "id": "worker", "agent": "worker", "executor": "local",
-            "max_attempts": 1, "required_evidence": ["persistent_subagent_receipt"],
-            "persistent_subagent": {
-                "schema": "tau.persistent_subagent.v1", "surface_id": "surface",
-                "surface_url": "http://localhost:3002/#surface",
-                "session_mode": "persistent", "tau_control": "bounded_receipt_gated_ticks",
-                "dag_parameter": "surface", "required_receipts": ["surface.receipt.v1"],
-                "unbounded_autonomy_allowed": False,
-            },
-        }],
+        "nodes": [
+            {
+                "id": "worker",
+                "agent": "worker",
+                "executor": "local",
+                "max_attempts": 1,
+                "required_evidence": ["persistent_subagent_receipt"],
+                "persistent_subagent": {
+                    "schema": "tau.persistent_subagent.v1",
+                    "surface_id": "surface",
+                    "surface_url": "http://localhost:3002/#surface",
+                    "session_mode": "persistent",
+                    "tau_control": "bounded_receipt_gated_ticks",
+                    "dag_parameter": "surface",
+                    "required_receipts": ["surface.receipt.v1"],
+                    "unbounded_autonomy_allowed": False,
+                },
+            }
+        ],
         "edges": [{"from": "worker", "to": "done"}],
-        "required_evidence": [], "fail_closed_on": [],
+        "required_evidence": [],
+        "fail_closed_on": [],
     }
 
     plan = compile_project_dag_plan(payload, source_path=tmp_path / "dag.json")
@@ -1181,24 +1329,35 @@ def test_human_node_ignores_matching_fallback_command_spec(tmp_path: Path) -> No
 
 def test_compiler_rejects_persistent_human_node(tmp_path: Path) -> None:
     payload = {
-        "schema": "tau.dag_contract.v1", "dag_id": "human-persistent",
+        "schema": "tau.dag_contract.v1",
+        "dag_id": "human-persistent",
         "goal": {"goal_id": "g", "goal_version": 1, "goal_hash": "sha256:g"},
         "target": {"repo": "grahama1970/tau", "target": "invalid"},
-        "entry_node": "human", "terminal_nodes": ["done"],
+        "entry_node": "human",
+        "terminal_nodes": ["done"],
         "limits": {"max_steps": 1, "max_total_attempts": 1},
-        "nodes": [{
-            "id": "human", "agent": "human", "executor": "human",
-            "max_attempts": 1, "required_evidence": ["persistent_subagent_receipt"],
-            "persistent_subagent": {
-                "schema": "tau.persistent_subagent.v1", "surface_id": "surface",
-                "surface_url": "http://localhost:3002/#surface",
-                "session_mode": "persistent", "tau_control": "bounded_receipt_gated_ticks",
-                "dag_parameter": "surface", "required_receipts": ["surface.receipt.v1"],
-                "unbounded_autonomy_allowed": False,
-            },
-        }],
+        "nodes": [
+            {
+                "id": "human",
+                "agent": "human",
+                "executor": "human",
+                "max_attempts": 1,
+                "required_evidence": ["persistent_subagent_receipt"],
+                "persistent_subagent": {
+                    "schema": "tau.persistent_subagent.v1",
+                    "surface_id": "surface",
+                    "surface_url": "http://localhost:3002/#surface",
+                    "session_mode": "persistent",
+                    "tau_control": "bounded_receipt_gated_ticks",
+                    "dag_parameter": "surface",
+                    "required_receipts": ["surface.receipt.v1"],
+                    "unbounded_autonomy_allowed": False,
+                },
+            }
+        ],
         "edges": [{"from": "human", "to": "done"}],
-        "required_evidence": [], "fail_closed_on": [],
+        "required_evidence": [],
+        "fail_closed_on": [],
     }
 
     with pytest.raises(RuntimeError, match="persistent_subagent_requires_executable_node"):
@@ -1207,13 +1366,26 @@ def test_compiler_rejects_persistent_human_node(tmp_path: Path) -> None:
 
 def test_runtime_endpoint_lease_parser_rejects_empty_backend_session_id() -> None:
     lease = RuntimeEndpointLease(
-        run_id="run", plan_revision="rev", dag_id="dag", node_id="node",
-        attempt_id="attempt", attempt_number=1, execution_token="token",
-        backend="local", backend_session_id=None, scope_id="scope",
-        endpoint_id="endpoint", work_order_sha256=DIGEST, goal_hash=DIGEST,
-        owner="tau", created_at="now", expires_at="later",
-        heartbeat_policy=FrozenJson.from_value({}), cleanup_policy=FrozenJson.from_value({}),
-        capabilities_sha256=DIGEST, backend_ids=FrozenJson.from_value({}),
+        run_id="run",
+        plan_revision="rev",
+        dag_id="dag",
+        node_id="node",
+        attempt_id="attempt",
+        attempt_number=1,
+        execution_token="token",
+        backend="local",
+        backend_session_id=None,
+        scope_id="scope",
+        endpoint_id="endpoint",
+        work_order_sha256=DIGEST,
+        goal_hash=DIGEST,
+        owner="tau",
+        created_at="now",
+        expires_at="later",
+        heartbeat_policy=FrozenJson.from_value({}),
+        cleanup_policy=FrozenJson.from_value({}),
+        capabilities_sha256=DIGEST,
+        backend_ids=FrozenJson.from_value({}),
     )
     payload = lease.to_payload()
     payload["backend_session_id"] = ""
@@ -1226,24 +1398,47 @@ def test_runtime_endpoint_lease_parser_rejects_empty_backend_session_id() -> Non
 
 def test_runtime_direct_construction_rejects_boolean_counts() -> None:
     submit = RuntimeSubmitReceipt(
-        endpoint_lease_sha256=DIGEST, work_order_sha256=DIGEST,
-        composer_state_before="READY", text_delivery_count=1,
-        submit_attempt_count=1, composer_state_after="SUBMITTED",
-        delivery_status="CONFIRMED", backend_acknowledgement=FrozenJson.from_value({}),
-        provider_execution_status="NOT_CLAIMED", errors=(),
+        endpoint_lease_sha256=DIGEST,
+        work_order_sha256=DIGEST,
+        composer_state_before="READY",
+        text_delivery_count=1,
+        submit_attempt_count=1,
+        composer_state_after="SUBMITTED",
+        delivery_status="CONFIRMED",
+        backend_acknowledgement=FrozenJson.from_value({}),
+        provider_execution_status="NOT_CLAIMED",
+        errors=(),
     )
     projection = RuntimeStateProjection(
-        run_id="run", endpoint_lease_sha256=DIGEST, state="READY",
-        liveness="ALIVE", confidence="PROCESS", last_event_id="event", event_count=1,
+        run_id="run",
+        endpoint_lease_sha256=DIGEST,
+        state="READY",
+        liveness="ALIVE",
+        confidence="PROCESS",
+        last_event_id="event",
+        event_count=1,
     )
     lease = RuntimeEndpointLease(
-        run_id="run", plan_revision="rev", dag_id="dag", node_id="node",
-        attempt_id="attempt", attempt_number=1, execution_token="token",
-        backend="local", backend_session_id=None, scope_id="scope",
-        endpoint_id="endpoint", work_order_sha256=DIGEST, goal_hash=DIGEST,
-        owner="tau", created_at="now", expires_at="later",
-        heartbeat_policy=FrozenJson.from_value({}), cleanup_policy=FrozenJson.from_value({}),
-        capabilities_sha256=DIGEST, backend_ids=FrozenJson.from_value({}),
+        run_id="run",
+        plan_revision="rev",
+        dag_id="dag",
+        node_id="node",
+        attempt_id="attempt",
+        attempt_number=1,
+        execution_token="token",
+        backend="local",
+        backend_session_id=None,
+        scope_id="scope",
+        endpoint_id="endpoint",
+        work_order_sha256=DIGEST,
+        goal_hash=DIGEST,
+        owner="tau",
+        created_at="now",
+        expires_at="later",
+        heartbeat_policy=FrozenJson.from_value({}),
+        cleanup_policy=FrozenJson.from_value({}),
+        capabilities_sha256=DIGEST,
+        backend_ids=FrozenJson.from_value({}),
     )
 
     with pytest.raises(ValueError, match="runtime submit counts"):
@@ -1256,20 +1451,41 @@ def test_runtime_direct_construction_rejects_boolean_counts() -> None:
 
 def test_runtime_direct_construction_rejects_empty_schema_bound_strings() -> None:
     event = RuntimeEvent(
-        event_id="event", run_id="run", endpoint_lease_sha256=DIGEST,
-        event_type="RUNTIME_ENDPOINT_CREATED", observed_at="now", state="READY",
-        liveness="ALIVE", confidence="PROCESS", source="local",
+        event_id="event",
+        run_id="run",
+        endpoint_lease_sha256=DIGEST,
+        event_type="RUNTIME_ENDPOINT_CREATED",
+        observed_at="now",
+        state="READY",
+        liveness="ALIVE",
+        confidence="PROCESS",
+        source="local",
         observation=FrozenJson.from_value({}),
     )
     reconciliation = RuntimeReconciliationReceipt(
-        run_id="run", endpoint_lease_sha256=DIGEST, status="PASS",
-        action="ADOPT", evidence=FrozenJson.from_value({}), errors=(),
+        run_id="run",
+        endpoint_lease_sha256=DIGEST,
+        status="PASS",
+        action="ADOPT",
+        evidence=FrozenJson.from_value({}),
+        errors=(),
     )
     worktree = GitWorktreeLease(
-        run_id="run", plan_revision="rev", node_id="node", attempt_id="attempt",
-        repository="repo", worktree_path="/tmp/worktree", base_commit="abc",
-        head_commit="abc", branch=None, detached=True, allowed_paths=("src/",),
-        owner="tau", created_at="now", expires_at="later", pre_status_sha256=DIGEST,
+        run_id="run",
+        plan_revision="rev",
+        node_id="node",
+        attempt_id="attempt",
+        repository="repo",
+        worktree_path="/tmp/worktree",
+        base_commit="abc",
+        head_commit="abc",
+        branch=None,
+        detached=True,
+        allowed_paths=("src/",),
+        owner="tau",
+        created_at="now",
+        expires_at="later",
+        pre_status_sha256=DIGEST,
         cleanup_policy=FrozenJson.from_value({}),
     )
 
@@ -1282,8 +1498,12 @@ def test_runtime_direct_construction_rejects_empty_schema_bound_strings() -> Non
     with pytest.raises(ValueError, match="required runtime identity fields"):
         replace(
             RuntimeCapabilityDecision(
-                status="BLOCKED", backend="local", requirement_sha256=DIGEST,
-                capabilities_sha256=DIGEST, missing_capabilities=(), errors=("blocked",),
+                status="BLOCKED",
+                backend="local",
+                requirement_sha256=DIGEST,
+                capabilities_sha256=DIGEST,
+                missing_capabilities=(),
+                errors=("blocked",),
             ),
             backend="",
         )

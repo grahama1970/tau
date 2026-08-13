@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.python_execution_request.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "workspace_request_sha256", "endpoint_lease_sha256", "generation_id", "execution_id", "goal_hash", "policy_sha256", "data_boundary_sha256", "code"],
+  "properties": {
+    "schema": {"const": "tau.python_execution_request.v1"},
+    "workspace_request_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "endpoint_lease_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "generation_id": {"type": "string", "minLength": 1},
+    "execution_id": {"type": "string", "minLength": 1},
+    "goal_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "policy_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "data_boundary_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "code": {"type": "string"}
+  }
+}

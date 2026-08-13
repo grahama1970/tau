@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.python_workspace_receipt.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "workspace_request_sha256", "status", "endpoint_lease", "package_manifest", "generation_id", "process_identity", "state_path", "errors"],
+  "properties": {
+    "schema": {"const": "tau.python_workspace_receipt.v1"},
+    "workspace_request_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "status": {"enum": ["READY", "UNAVAILABLE", "QUARANTINED"]},
+    "endpoint_lease": {"oneOf": [{"type": "object"}, {"type": "null"}]},
+    "package_manifest": {"type": "object"},
+    "generation_id": {"type": "string", "minLength": 1},
+    "process_identity": {"type": "object"},
+    "state_path": {"type": "string", "minLength": 1},
+    "errors": {"type": "array", "items": {"type": "string"}}
+  }
+}
