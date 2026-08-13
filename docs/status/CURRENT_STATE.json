@@ -10,11 +10,11 @@
     },
     "source": "src/tau_coding/dag_runtime/"
   },
-  "generated_at": "2026-08-13T19:50:51.417134+00:00",
+  "generated_at": "2026-08-13T19:53:53.288544+00:00",
   "generator_version": "1.0.0",
   "git": {
     "clean_tree": false,
-    "commit": "7e79f144360965a338a8caa728933219db99b944"
+    "commit": "c7846e63e18bc592c2316e598a288812561e1160"
   },
   "github": {
     "branch_protection": {
@@ -221,7 +221,7 @@
       }
     ],
     "required_checks": [],
-    "snapshot_sha256": "sha256:67215c5a6d24da1059cc2239ee3c095eaea73cd793744d232619e461b96a2304"
+    "snapshot_sha256": "sha256:34db1d1728f9bea9a879b648568effb6a0b4121c1d96c1eb2ea677b1ef0191d0"
   },
   "human_acceptance": {
     "baseline_present": true,
@@ -382,11 +382,11 @@
     ]
   },
   "schema": "tau.project_status.v1",
-  "semantic_content_digest": "sha256:6f27f5dd3f16d49e9bcd6d589693e2f1c6bb97fae20ec489bdffc130d832ef8d",
+  "semantic_content_digest": "sha256:a5bee647f12b4e01b739ed73008f9a66d9f412d81602d81e5308acd89f266a74",
   "source_digests": {
     "GOAL.md": "sha256:f9a460956a7cc87bba4f9cc09525e895e4b153e1ae5b7e1974675a3a8f192a8e",
     "acceptance_receipt": "sha256:cd2fed760cf725345b08151107b9f06b9eaa23693dd850e271e862e74c9543ab",
-    "github_snapshot": "sha256:67215c5a6d24da1059cc2239ee3c095eaea73cd793744d232619e461b96a2304",
+    "github_snapshot": "sha256:34db1d1728f9bea9a879b648568effb6a0b4121c1d96c1eb2ea677b1ef0191d0",
     "proof_index": "sha256:c50d57b02e7bbd72678a8dfeca2bccc0b45ffc17d8bc400bcac1c8877ad31c54",
     "pyproject.toml": "sha256:0129dd918978c3760bd29ca736f5f6e01e5402d2dfa840a7df5538fd11fe854f"
   },

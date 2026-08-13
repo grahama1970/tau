@@ -1,182 +1,207 @@
 {
   "branch_protection": {
-    "enforce_admins": true,
-    "required_status_checks": true
+    "enforce_admins": false,
+    "required_status_checks": false
   },
-  "required_checks": [
-    "uv run pytest -q",
-    "canonical-browser-proofs"
-  ],
+  "generated_for": "c7846e63e18bc592c2316e598a288812561e1160",
   "open_critical_issues": [
     {
-      "number": 223,
-      "title": "Bind Tau TUI voice events to Chatterbox `/tau/voice-render` and real turn controls"
+      "number": 321,
+      "title": "Extend the Memory outbox to project accepted Tau turn/tool/orchestration episodes"
     },
     {
-      "number": 221,
-      "title": "#180 child: execute the five-rung human acceptance walkthrough and sign the acceptance record"
+      "number": 320,
+      "title": "Package a project-memory-dream DAG with bounded OpenCode synthesis"
     },
     {
-      "number": 180,
-      "title": "Epic/fleet: productize Tau DAG templates and authoritative viewer UX from proven agentic patterns"
+      "number": 319,
+      "title": "Add preview-first continual-harness refinement proposals with verification and rollback"
     },
     {
-      "number": 72,
-      "title": "Epic: Harden Tau DAG runtime for durable, secure, adaptive complex workflows"
+      "number": 318,
+      "title": "Add tau.project_dream_receipt.v1 and project-memory promotion policy gates"
+    },
+    {
+      "number": 317,
+      "title": "Add an optional sandboxed persistent Python workspace for Tau-native agent nodes"
+    },
+    {
+      "number": 316,
+      "title": "Add model-facing child-agent requests compiled into bounded Tau child DAGs"
+    },
+    {
+      "number": 315,
+      "title": "Run Tau-native agent nodes through the adoptable Herdr runtime backend"
+    },
+    {
+      "number": 314,
+      "title": "Make Tau operator actions durable, idempotent, and applicable across process boundaries"
+    },
+    {
+      "number": 305,
+      "title": "Bind human acceptance attestation to the exact tested baseline digest"
+    },
+    {
+      "number": 304,
+      "title": "Add one-command provider-live acceptance proof for all five packaged workflows"
+    },
+    {
+      "number": 303,
+      "title": "Project status snapshot drifts from checked-in proof evidence"
     }
   ],
   "recently_completed": [
     {
-      "closedAt": "2026-07-28T23:52:00Z",
-      "number": 225,
-      "title": "#72 child: current-head hardening conformance and parent closure audit"
+      "closedAt": "2026-08-13T14:52:59Z",
+      "number": 325,
+      "title": "Run ingest-code through Tau endpoint leases and accepted-effect reconciliation"
     },
     {
-      "closedAt": "2026-07-28T23:56:24Z",
-      "number": 224,
-      "title": "Generate authoritative project-status artifacts and fail CI on stale README/PROJECT_KNOWLEDGE claims"
+      "closedAt": "2026-08-13T15:20:43Z",
+      "number": 324,
+      "title": "Python workspace: add generation-bound typed host calls with Tau receipts"
     },
     {
-      "closedAt": "2026-07-28T23:47:43Z",
-      "number": 222,
-      "title": "#72 child: governed generic execution adapter for agent-skills capabilities"
+      "closedAt": "2026-08-13T15:10:50Z",
+      "number": 323,
+      "title": "Python workspace: add an attempt-scoped serialized kernel worker and execution receipts"
     },
     {
-      "closedAt": "2026-07-28T23:17:10Z",
-      "number": 220,
-      "title": "#180 child: idempotent accepted-outcome projection to graph-memory-operator"
+      "closedAt": "2026-08-06T13:03:55Z",
+      "number": 313,
+      "title": "Persist Tau-native agent turn/tool events in the canonical DAG journal with resumable cursors"
     },
     {
-      "closedAt": "2026-07-28T14:12:20Z",
-      "number": 219,
-      "title": "#72 child: repair-time join reevaluation and single downstream release conformance"
+      "closedAt": "2026-08-06T01:11:32Z",
+      "number": 312,
+      "title": "Expose the live React Flow DAG viewer for programmatic scheduler runs from run start"
     },
     {
-      "closedAt": "2026-07-28T14:00:40Z",
-      "number": 218,
-      "title": "#72 child: accepted-effect identity, ownership, and reconciliation"
+      "closedAt": "2026-08-05T18:52:59Z",
+      "number": 311,
+      "title": "Expose source-grounding and response_format options on the model-turn transport"
     },
     {
-      "closedAt": "2026-07-28T14:22:05Z",
-      "number": 217,
-      "title": "#180 child: acceptance bundle generator"
+      "closedAt": "2026-08-05T14:16:45Z",
+      "number": 310,
+      "title": "Make Tau the default provider-neutral agent harness for /ask model and subagent calls"
     },
     {
-      "closedAt": "2026-07-28T13:36:49Z",
-      "number": 216,
-      "title": "#72 child: route TUI proof receipt and screenshot as one admitted manifest"
+      "closedAt": "2026-08-05T14:09:41Z",
+      "number": 309,
+      "title": "Expose Tau-agent run projections and operator-action contracts for Herdr"
     },
     {
-      "closedAt": "2026-07-28T14:26:46Z",
-      "number": 215,
-      "title": "#72 child: classify the three load-only receipt-absence intermittents"
+      "closedAt": "2026-08-05T14:09:36Z",
+      "number": 308,
+      "title": "Add role/capability requirements and deterministic SciLLM transport-profile selection receipts"
     },
     {
-      "closedAt": "2026-07-28T12:47:42Z",
-      "number": 214,
-      "title": "#72 child: enable branch protection with required checks on main"
+      "closedAt": "2026-08-06T12:51:43Z",
+      "number": 307,
+      "title": "Emit a stable read-only worker lifecycle projection for Herdr and other supervisors"
     },
     {
-      "closedAt": "2026-07-28T21:56:25Z",
-      "number": 213,
-      "title": "#180 child: remove remaining machine-specific paths from src and README"
+      "closedAt": "2026-08-06T12:51:24Z",
+      "number": 306,
+      "title": "Add role/capability worker requirements and deterministic SciLLM profile-selection receipts to Tau DAGs"
     },
     {
-      "closedAt": "2026-07-28T13:33:53Z",
-      "number": 212,
-      "title": "#180 child: remove remaining machine-specific paths from src and README"
+      "closedAt": "2026-08-02T20:13:29Z",
+      "number": 298,
+      "title": "P2: add an adversarial contract-mutation conformance gate for Tau DAG authority"
     },
     {
-      "closedAt": "2026-07-28T23:12:29Z",
-      "number": 211,
-      "title": "#180 child: repeat rungs 3–5 from one clean wheel and retain beta evidence"
+      "closedAt": "2026-08-02T19:53:59Z",
+      "number": 297,
+      "title": "P1: make validated Tau contract and DAG domain objects deeply immutable"
     },
     {
-      "closedAt": "2026-07-28T13:34:01Z",
-      "number": 210,
-      "title": "#72 child: git 2.54 prunes unrelated worktree registration during failed allocation"
+      "closedAt": "2026-08-02T19:31:35Z",
+      "number": 296,
+      "title": "P1: remove coercive parsing from public project and generic DAG contracts"
     },
     {
-      "closedAt": "2026-07-28T13:54:12Z",
-      "number": 209,
-      "title": "#72 child: delete legacy write_json copies and add CI architectural guard"
+      "closedAt": "2026-08-02T18:46:43Z",
+      "number": 295,
+      "title": "P1: verify full artifact-reference provenance at dereference time"
     },
     {
-      "closedAt": "2026-07-28T23:20:57Z",
-      "number": 208,
-      "title": "#72 child: flip admission invariant from observation to enforcement"
+      "closedAt": "2026-08-02T18:24:25Z",
+      "number": 294,
+      "title": "P1: fail closed on malformed DAG transition batches and replay effects"
     },
     {
-      "closedAt": "2026-07-28T13:43:48Z",
-      "number": 207,
-      "title": "#72 child: flip admission invariant from observation to enforcement"
+      "closedAt": "2026-08-02T17:42:15Z",
+      "number": 293,
+      "title": "P1: validate a strict typed DAG attempt result before staging or settlement"
     },
     {
-      "closedAt": "2026-07-28T23:28:29Z",
-      "number": 206,
-      "title": "#72 child: route subprocess workflow receipts via staging and promotion"
+      "closedAt": "2026-08-02T16:40:03Z",
+      "number": 292,
+      "title": "P0: bind each DAG context input to its exact controlling edge and computed hash"
     },
     {
-      "closedAt": "2026-07-28T23:31:01Z",
-      "number": 205,
-      "title": "#72 child: route subprocess workflow receipts via staging and promotion"
+      "closedAt": "2026-08-02T15:52:50Z",
+      "number": 291,
+      "title": "P0: validate canonical DagPlan before scheduler, store, or replay admission"
     },
     {
-      "closedAt": "2026-07-28T11:50:20Z",
-      "number": 204,
-      "title": "#72 child: route in-process skill receipts through admission"
+      "closedAt": "2026-08-02T20:33:10Z",
+      "number": 288,
+      "title": "Define `tau.voice_render_request.v2` with response lineage and delivery-decision receipts"
     },
     {
-      "closedAt": "2026-07-28T13:19:16Z",
-      "number": 203,
-      "title": "#72 child: route in-process skill receipts through admission"
+      "closedAt": "2026-07-31T05:17:37Z",
+      "number": 277,
+      "title": "Add a read-only selected-node evidence inspector for inputs, boundaries, reviews, workers, and stale-read state"
     },
     {
-      "closedAt": "2026-07-28T12:46:31Z",
-      "number": 202,
-      "title": "#72 child: shadow-mode terminal-without-admission observer"
+      "closedAt": "2026-07-31T04:45:57Z",
+      "number": 276,
+      "title": "Convert admitted evidence gaps into bounded DAG expansion proposals without broadening the immutable goal"
     },
     {
-      "closedAt": "2026-07-28T12:43:55Z",
-      "number": 201,
-      "title": "#72 child: scheduler-authored system_settlement receipts"
+      "closedAt": "2026-07-31T04:00:15Z",
+      "number": 275,
+      "title": "Add explicit interactive, standard, and assurance execution profiles over the canonical scheduler"
     },
     {
-      "closedAt": "2026-07-28T12:41:07Z",
-      "number": 200,
-      "title": "#72 child: startup reconciliation with the strict orphan rule"
+      "closedAt": "2026-07-31T03:01:13Z",
+      "number": 274,
+      "title": "Reuse capability-compatible SciLLM worker sessions with reset, health, and cleanup proof"
     },
     {
-      "closedAt": "2026-07-28T12:37:51Z",
-      "number": 199,
-      "title": "#72 child: admission table and single-transaction settle (S7)"
+      "closedAt": "2026-07-31T02:10:43Z",
+      "number": 273,
+      "title": "Add deterministic worker capability matching and assignment receipts on top of resource leases"
     },
     {
-      "closedAt": "2026-07-28T12:23:42Z",
-      "number": 198,
-      "title": "#72 child: CRC-framed attempt-scoped write-intent sidecar"
+      "closedAt": "2026-07-31T01:32:59Z",
+      "number": 272,
+      "title": "Detect and reconcile stale file reads across concurrent coding DAG nodes"
     },
     {
-      "closedAt": "2026-07-28T12:15:52Z",
-      "number": 197,
-      "title": "#72 child: atomic durable receipt write primitive"
+      "closedAt": "2026-07-31T00:49:01Z",
+      "number": 271,
+      "title": "Add hash-addressed by-reference artifact inputs for DAG context bindings"
     },
     {
-      "closedAt": "2026-07-28T12:12:55Z",
-      "number": 196,
-      "title": "#72 child: durable attempt allocator with never-reused attempt ids"
+      "closedAt": "2026-07-31T00:11:42Z",
+      "number": 270,
+      "title": "Enforce typed DAG context projections and persist a replayable node input manifest"
     },
     {
-      "closedAt": "2026-07-27T16:41:42Z",
-      "number": 195,
-      "title": "#72 child: $tau runtime handshake exposes the proven Tau runtime"
+      "closedAt": "2026-07-30T23:23:21Z",
+      "number": 269,
+      "title": "Add a typed node completion boundary for checked scope, omissions, assumptions, and evidence gaps"
     },
     {
-      "closedAt": "2026-07-27T16:25:46Z",
-      "number": 194,
-      "title": "#72 child: signatures, action-bound approvals, audit ledger, API auth, and RBAC"
+      "closedAt": "2026-07-30T22:45:16Z",
+      "number": 268,
+      "title": "Bind reviewer findings to the exact DAG plan, attempts, and artifact hashes reviewed"
     }
   ],
-  "source": "gh api repos/grahama1970/tau (branch protection + issues)",
-  "generated_for": "issue-72-r5-branch-protection-enforce-admins"
+  "required_checks": [],
+  "source": "gh api repos/grahama1970/tau/branches/main/protection; gh issue list --state open/closed"
 }
