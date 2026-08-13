@@ -1,20 +1,23 @@
-"""Non-blocking codebase-ingest coordination for Tau."""
+"""Codebase-ingest coordination for Tau."""
 
 from __future__ import annotations
 
 import hashlib
 import json
 import subprocess
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from tau_coding.external_workspace import agent_skills_root
+import httpx
 
-CODEBASE_INGEST_RECEIPT_SCHEMA = "tau.codebase_ingest_receipt.v1"
-DEFAULT_INGEST_CODE_RUNNER = (
-    str(agent_skills_root() / "skills/ingest-code/run.sh")
-)
+from tau_coding.dag_runtime.model import FrozenJson, canonical_sha256
+from tau_coding.external_workspace import agent_skills_root
+from tau_coding.runtime_backends.contracts import RuntimeEndpointLease
+
+CODEBASE_INGEST_RECEIPT_SCHEMA = "tau.codebase_ingest_receipt.v2"
+DEFAULT_INGEST_CODE_RUNNER = str(agent_skills_root() / "skills/ingest-code/run.sh")
 
 
 def write_codebase_ingest_receipt(
@@ -25,8 +28,17 @@ def write_codebase_ingest_receipt(
     ingest_runner: str = DEFAULT_INGEST_CODE_RUNNER,
     scope: str = "monitor-tau",
     start: bool = False,
+    run_id: str | None = None,
+    plan_id: str = "codebase-ingest",
+    node_id: str = "ingest-code-scan",
+    attempt_number: int = 1,
+    goal_hash: str | None = None,
+    timeout_seconds: float = 300.0,
+    projection_authorized: bool = False,
+    memory_socket_path: str = "/run/user/1000/embry/memory.sock",
+    projection_timeout_seconds: float = 30.0,
 ) -> dict[str, Any]:
-    """Write a resumable non-blocking ingest receipt, optionally launching a worker."""
+    """Write a Tau-owned ingest receipt, optionally running an emit-mode scan."""
 
     repo = repo_path.expanduser().resolve()
     if not repo.is_dir():
@@ -37,43 +49,108 @@ def write_codebase_ingest_receipt(
     current_commit = _git_value(repo, ["rev-parse", "HEAD"], default="unknown")
     current_files = _file_manifest(repo)
     changed_files = _changed_files(current_files, prior_state.get("files"))
+    effective_run_id = run_id or f"codebase-ingest-{_short_hash(str(repo))}-{int(time.time())}"
+    attempt_id = f"{effective_run_id}:{node_id}:attempt-{attempt_number:03d}"
     command = [
         ingest_runner,
-        "rescan",
-        "-c",
+        "scan",
         str(repo),
         "--treesitter",
-        "--code-index",
+        "--projection-mode",
+        "emit",
         "--scope",
         scope,
     ]
-    if changed_files:
-        command.extend(["--since", "0h"])
-    status = "SKIPPED" if not changed_files else "QUEUED"
-    process: dict[str, Any] | None = None
-    if start and changed_files:
-        log_path = resolved_receipt.with_suffix(".log")
-        log_path.parent.mkdir(parents=True, exist_ok=True)
-        log = log_path.open("ab")
-        child = subprocess.Popen(  # noqa: S603
-            command,
-            cwd=str(repo),
-            stdout=log,
-            stderr=subprocess.STDOUT,
-            start_new_session=True,
-        )
-        process = {"pid": child.pid, "log_path": str(log_path)}
-        status = "STARTED"
-    state = {
-        "schema": "tau.codebase_ingest_state.v1",
+    work_order = {
+        "schema": "tau.codebase_ingest_work_order.v1",
+        "run_id": effective_run_id,
+        "plan_id": plan_id,
+        "node_id": node_id,
+        "attempt_id": attempt_id,
         "repo_path": str(repo),
         "commit": current_commit,
-        "files": current_files,
-        "updated_at": _utc_stamp(),
+        "scope": scope,
+        "command": command,
+        "projection_mode": "emit",
+        "changed_files_sha256": canonical_sha256(changed_files),
     }
+    effective_goal_hash = goal_hash or canonical_sha256(
+        {
+            "repo_path": str(repo),
+            "commit": current_commit,
+            "scope": scope,
+            "purpose": "tau-codebase-ingest",
+        }
+    )
+    endpoint_lease = _runtime_endpoint_lease(
+        run_id=effective_run_id,
+        plan_id=plan_id,
+        node_id=node_id,
+        attempt_id=attempt_id,
+        attempt_number=attempt_number,
+        work_order=work_order,
+        goal_hash=effective_goal_hash,
+        repo=repo,
+    )
+    status = "SKIPPED_UNCHANGED" if not changed_files else "READY_FOR_SCAN"
+    worker: dict[str, Any] | None = None
+    scan_result: dict[str, Any] | None = None
+    admission = _empty_admission()
+    if start and changed_files:
+        worker = {
+            "schema": "tau.codebase_ingest_worker.v1",
+            "ownership": "tau_synchronous_skill_worker",
+            "detached_child": False,
+            "runtime_endpoint_lease": endpoint_lease.to_payload(),
+            "runtime_endpoint_lease_sha256": endpoint_lease.sha256,
+        }
+        started = time.monotonic()
+        completed = subprocess.run(  # noqa: S603
+            command,
+            cwd=str(repo),
+            check=False,
+            text=True,
+            capture_output=True,
+            timeout=timeout_seconds,
+        )
+        scan_result = {
+            "schema": "tau.codebase_ingest_scan_process.v1",
+            "exit_code": completed.returncode,
+            "stdout_sha256": _sha256_text(completed.stdout),
+            "stderr_sha256": _sha256_text(completed.stderr),
+            "duration_seconds": round(time.monotonic() - started, 6),
+        }
+        if completed.returncode == 0:
+            admission = _admit_emit_scan(repo)
+            status = "SCAN_ADMITTED" if admission["ok"] else "BLOCKED"
+            if status == "SCAN_ADMITTED" and projection_authorized:
+                projection = _apply_projection_request(
+                    admission,
+                    memory_socket_path=memory_socket_path,
+                    timeout_seconds=projection_timeout_seconds,
+                )
+                status = projection["terminal_status"]
+        else:
+            admission["first_failed_gate"] = "scan_exit"
+            admission["errors"].append(f"scan exited non-zero: {completed.returncode}")
+            status = "BLOCKED"
+    if status in {
+        "SKIPPED_UNCHANGED",
+        "SCAN_ADMITTED",
+        "PROJECTION_ACCEPTED",
+        "SCAN_ADMITTED_PROJECTION_DEGRADED",
+    }:
+        _write_json(resolved_state, _state_payload(repo, current_commit, current_files))
     receipt = {
         "schema": CODEBASE_INGEST_RECEIPT_SCHEMA,
-        "ok": True,
+        "ok": status
+        in {
+            "SKIPPED_UNCHANGED",
+            "READY_FOR_SCAN",
+            "SCAN_ADMITTED",
+            "PROJECTION_ACCEPTED",
+            "SCAN_ADMITTED_PROJECTION_DEGRADED",
+        },
         "status": status,
         "mocked": False,
         "live": True,
@@ -85,31 +162,331 @@ def write_codebase_ingest_receipt(
         "changed_files": changed_files,
         "changed_file_count": len(changed_files),
         "command": command,
-        "started": bool(process),
-        "process": process,
+        "work_order": work_order,
+        "work_order_sha256": canonical_sha256(work_order),
+        "run_id": effective_run_id,
+        "plan_id": plan_id,
+        "node_id": node_id,
+        "attempt_id": attempt_id,
+        "attempt_number": attempt_number,
+        "goal_hash": effective_goal_hash,
+        "nodes": _nodes(status=status, changed=bool(changed_files), admission=admission),
+        "started": bool(worker),
+        "worker": worker,
+        "process": None,
+        "scan_result": scan_result,
+        "admission": admission,
+        "projection": _projection_state(admission),
+        "accepted_effect_count": _projection_state(admission)["accepted_effect_count"],
         "interactive_blocking": False,
         "resumable": True,
         "memory_writes_performed_by_tau": False,
+        "change_marker_advanced": status
+        in {
+            "SKIPPED_UNCHANGED",
+            "SCAN_ADMITTED",
+            "PROJECTION_ACCEPTED",
+            "SCAN_ADMITTED_PROJECTION_DEGRADED",
+        },
         "proof_scope": {
             "proves": [
-                "Tau detected changed repository files without scanning unchanged files.",
-                "Tau produced a resumable ingest state marker.",
-                "Tau prepared the existing ingest-code rescan command behind the skill boundary.",
-                "Tau does not block the interactive path unless start=true is explicitly "
-                "requested.",
+                "Tau detects changed repository files before scheduling ingest-code.",
+                "Unchanged repositories produce a typed skip with no worker or effect.",
+                "The scan command uses ingest-code projection-mode emit and carries no "
+                "Memory/GMO effect authority.",
+                "Tau records run, plan, node, attempt, work-order, goal, and endpoint "
+                "lease identities before running the skill.",
+                "Tau advances the local change marker only after a typed skip or admitted "
+                "terminal scan result.",
             ],
             "does_not_prove": [
-                "Memory graph write completeness.",
+                "Memory/GMO generation activation.",
+                "Projection effect reconciliation when projection_authorized=true and "
+                "Memory/GMO returns generation readback.",
                 "Tree-sitter extraction correctness.",
                 "Point-in-time Memory recall.",
-                "TUI scheduler integration.",
+                "Scheduler crash recovery across process loss.",
             ],
         },
         "timestamp": _utc_stamp(),
     }
-    _write_json(resolved_state, state)
     _write_json(resolved_receipt, receipt)
     return receipt
+
+
+def _state_payload(repo: Path, commit: str, files: dict[str, str]) -> dict[str, Any]:
+    return {
+        "schema": "tau.codebase_ingest_state.v2",
+        "repo_path": str(repo),
+        "commit": commit,
+        "files": files,
+        "updated_at": _utc_stamp(),
+    }
+
+
+def _runtime_endpoint_lease(
+    *,
+    run_id: str,
+    plan_id: str,
+    node_id: str,
+    attempt_id: str,
+    attempt_number: int,
+    work_order: dict[str, Any],
+    goal_hash: str,
+    repo: Path,
+) -> RuntimeEndpointLease:
+    now = _utc_stamp()
+    return RuntimeEndpointLease(
+        run_id=run_id,
+        plan_revision=plan_id,
+        dag_id="codebase-ingest",
+        node_id=node_id,
+        attempt_id=attempt_id,
+        attempt_number=attempt_number,
+        execution_token=_short_hash(canonical_sha256(work_order)),
+        backend="local-skill-runner",
+        backend_session_id=None,
+        scope_id=str(repo),
+        endpoint_id=f"local-skill:{_short_hash(attempt_id)}",
+        work_order_sha256=canonical_sha256(work_order),
+        goal_hash=goal_hash,
+        owner="tau-codebase-ingest",
+        created_at=now,
+        expires_at=now,
+        heartbeat_policy=FrozenJson.from_value({"mode": "one_shot"}),
+        cleanup_policy=FrozenJson.from_value({"mode": "no_detached_child"}),
+        capabilities_sha256=canonical_sha256({"backend": "local-skill-runner", "one_shot": True}),
+        backend_ids=FrozenJson.from_value(
+            {"entrypoint": work_order["command"][0], "cwd": str(repo)}
+        ),
+    )
+
+
+def _empty_admission() -> dict[str, Any]:
+    return {
+        "schema": "tau.codebase_ingest_admission.v1",
+        "ok": False,
+        "first_failed_gate": None,
+        "errors": [],
+        "artifacts": {},
+        "environment_manifest_digest": None,
+        "bundle_digest": None,
+        "checksums_digest": None,
+        "projection_request_digest": None,
+        "projection_request_idempotency_key": None,
+        "projection_mode": None,
+        "projection_applied": False,
+    }
+
+
+def _admit_emit_scan(repo: Path) -> dict[str, Any]:
+    admission = _empty_admission()
+    marker_path = repo / ".ingest-code.json"
+    marker = _read_json_object(marker_path)
+    if not marker:
+        return _blocked(admission, "missing_marker", f"missing ingest-code marker: {marker_path}")
+    code_index = marker.get("code_index")
+    local_artifacts = marker.get("local_artifacts")
+    if not isinstance(code_index, dict):
+        return _blocked(admission, "marker_shape", "marker code_index must be an object")
+    if not isinstance(local_artifacts, dict):
+        return _blocked(admission, "marker_shape", "marker local_artifacts must be an object")
+    if code_index.get("projection_mode") != "emit":
+        return _blocked(admission, "projection_mode", "scan did not run in emit mode")
+    if code_index.get("projection_applied") is not False:
+        return _blocked(admission, "scan_effect_authority", "scan stage applied projection")
+    graph = local_artifacts.get("code_graph")
+    request = local_artifacts.get("code_projection_request")
+    environment = local_artifacts.get("environment_manifest")
+    if not isinstance(graph, dict) or graph.get("complete") is not True:
+        return _blocked(admission, "code_graph", "code graph bundle is missing or incomplete")
+    if not isinstance(request, dict) or request.get("status") != "emitted_not_applied":
+        return _blocked(admission, "projection_request", "projection request was not emitted")
+    if not isinstance(environment, dict) or environment.get("admissible") is not True:
+        return _blocked(admission, "environment", "environment manifest was not admissible")
+    request_path = Path(str(request.get("path", "")))
+    request_payload = _read_json_object(request_path)
+    if request_payload.get("schema") != "ingest-code.code_projection_request.v1":
+        return _blocked(
+            admission, "projection_request_schema", "projection request schema mismatch"
+        )
+    if request_payload.get("environment_manifest_digest") != environment.get(
+        "environment_manifest_digest"
+    ):
+        return _blocked(
+            admission,
+            "environment_digest",
+            "projection request is not bound to the environment manifest digest",
+        )
+    admission.update(
+        {
+            "ok": True,
+            "artifacts": {
+                "marker": _artifact_ref(marker_path),
+                "code_graph_manifest": _artifact_ref(Path(str(graph.get("manifest")))),
+                "code_graph_checksums": _artifact_ref(Path(str(graph.get("checksums")))),
+                "code_graph_coverage": _artifact_ref(Path(str(graph.get("coverage")))),
+                "projection_request": _artifact_ref(request_path),
+                "environment_manifest": _artifact_ref(Path(str(environment.get("path")))),
+            },
+            "environment_manifest_digest": environment.get("environment_manifest_digest"),
+            "bundle_digest": request.get("submitted_bundle_digest"),
+            "checksums_digest": request.get("checksums_digest"),
+            "projection_request_digest": request.get("sha256"),
+            "projection_request_idempotency_key": request.get("idempotency_key"),
+            "projection_mode": "emit",
+            "projection_applied": False,
+        }
+    )
+    return admission
+
+
+def _blocked(admission: dict[str, Any], gate: str, error: str) -> dict[str, Any]:
+    admission["first_failed_gate"] = gate
+    admission["errors"].append(error)
+    return admission
+
+
+def _artifact_ref(path: Path) -> dict[str, Any]:
+    resolved = path.expanduser().resolve()
+    return {
+        "path": str(resolved),
+        "exists": resolved.is_file(),
+        "sha256": _sha256(resolved) if resolved.is_file() else None,
+        "bytes": resolved.stat().st_size if resolved.is_file() else None,
+    }
+
+
+def _projection_state(admission: dict[str, Any]) -> dict[str, Any]:
+    if isinstance(admission.get("projection_state"), dict):
+        return admission["projection_state"]
+    if not admission.get("ok"):
+        state = "blocked_before_projection"
+    elif admission.get("projection_applied") is False:
+        state = "request_emitted_unapplied"
+    else:
+        state = "unknown"
+    return {
+        "schema": "tau.codebase_ingest_projection_state.v1",
+        "state": state,
+        "policy_authorized": False,
+        "accepted_effect_count": 0,
+        "generation_id": None,
+        "readback": None,
+    }
+
+
+def _apply_projection_request(
+    admission: dict[str, Any],
+    *,
+    memory_socket_path: str,
+    timeout_seconds: float,
+) -> dict[str, Any]:
+    request_ref = admission.get("artifacts", {}).get("projection_request")
+    request_path = (
+        Path(str(request_ref.get("path", ""))) if isinstance(request_ref, dict) else Path()
+    )
+    request = _read_json_object(request_path)
+    projection_state = {
+        "schema": "tau.codebase_ingest_projection_state.v1",
+        "state": "degraded_unapplied",
+        "policy_authorized": True,
+        "accepted_effect_count": 0,
+        "generation_id": None,
+        "readback": None,
+        "errors": [],
+        "request_sha256": _sha256(request_path) if request_path.is_file() else None,
+    }
+    if request.get("schema") != "ingest-code.code_projection_request.v1":
+        projection_state["errors"].append("projection_request_schema_mismatch")
+        admission["projection_state"] = projection_state
+        return {"terminal_status": "SCAN_ADMITTED_PROJECTION_DEGRADED"}
+    try:
+        transport = httpx.HTTPTransport(uds=memory_socket_path)
+        with httpx.Client(
+            transport=transport,
+            base_url="http://localhost",
+            timeout=projection_timeout(timeout_seconds),
+        ) as client:
+            response = client.post("/code/projection/apply", json=request)
+    except Exception as exc:
+        projection_state["errors"].append(str(exc))
+        admission["projection_state"] = projection_state
+        return {"terminal_status": "SCAN_ADMITTED_PROJECTION_DEGRADED"}
+    if not 200 <= response.status_code < 300:
+        projection_state["errors"].append(f"HTTP {response.status_code}: {response.text}")
+        admission["projection_state"] = projection_state
+        return {"terminal_status": "SCAN_ADMITTED_PROJECTION_DEGRADED"}
+    try:
+        receipt = response.json()
+    except ValueError as exc:
+        projection_state["errors"].append(f"invalid_projection_receipt_json: {exc}")
+        admission["projection_state"] = projection_state
+        return {"terminal_status": "SCAN_ADMITTED_PROJECTION_DEGRADED"}
+    generation = receipt.get("generation") if isinstance(receipt, dict) else None
+    errors: list[str] = []
+    if receipt.get("status") != "applied":
+        errors.append("projection_receipt_status_not_applied")
+    if receipt.get("submitted_bundle_digest") != admission.get("bundle_digest"):
+        errors.append("projection_bundle_digest_mismatch")
+    if receipt.get("checksums_digest") != admission.get("checksums_digest"):
+        errors.append("projection_checksums_digest_mismatch")
+    if not isinstance(generation, dict) or not generation.get("generation_id"):
+        errors.append("projection_generation_missing")
+    if errors:
+        projection_state["errors"].extend(errors)
+        projection_state["receipt"] = receipt
+        admission["projection_state"] = projection_state
+        return {"terminal_status": "SCAN_ADMITTED_PROJECTION_DEGRADED"}
+    projection_state.update(
+        {
+            "state": "accepted_effect_applied",
+            "accepted_effect_count": 1,
+            "generation_id": generation["generation_id"],
+            "readback": {
+                "generation": generation,
+                "counts": receipt.get("counts"),
+                "status": receipt.get("status"),
+            },
+            "receipt": receipt,
+            "receipt_sha256": canonical_sha256(receipt),
+        }
+    )
+    admission["projection_state"] = projection_state
+    return {"terminal_status": "PROJECTION_ACCEPTED"}
+
+
+def projection_timeout(timeout_seconds: float) -> httpx.Timeout:
+    return httpx.Timeout(timeout_seconds)
+
+
+def _nodes(*, status: str, changed: bool, admission: dict[str, Any]) -> list[dict[str, Any]]:
+    return [
+        {
+            "id": "preflight",
+            "status": "PASS",
+            "accepted": True,
+        },
+        {
+            "id": "ingest-code-scan",
+            "status": (
+                "SKIPPED"
+                if not changed
+                else "PASS"
+                if status == "SCAN_ADMITTED"
+                else "BLOCKED"
+                if status == "BLOCKED"
+                else "READY"
+            ),
+            "accepted": status == "SCAN_ADMITTED",
+            "first_failed_gate": admission.get("first_failed_gate"),
+        },
+        {
+            "id": "projection-effect",
+            "status": "NOT_AUTHORIZED" if admission.get("ok") else "BLOCKED",
+            "accepted": False,
+        },
+    ]
 
 
 def _file_manifest(repo: Path) -> dict[str, str]:
@@ -120,6 +497,10 @@ def _file_manifest(repo: Path) -> dict[str, str]:
         if path.name.endswith((".pyc", ".pyo")):
             continue
         rel = path.relative_to(repo).as_posix()
+        if rel in {".batch_state.json", ".ingest-code.json"} or rel.startswith(
+            "artifacts/ingest-code/"
+        ):
+            continue
         files[rel] = _sha256(path)
     return files
 
@@ -141,7 +522,7 @@ def _git_value(repo: Path, args: list[str], *, default: str) -> str:
             capture_output=True,
             text=True,
         )
-    except (OSError, subprocess.CalledProcessError):
+    except OSError, subprocess.CalledProcessError:
         return default
     return result.stdout.strip() or default
 
@@ -149,7 +530,7 @@ def _git_value(repo: Path, args: list[str], *, default: str) -> str:
 def _read_json_object(path: Path) -> dict[str, Any]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return {}
     return payload if isinstance(payload, dict) else {}
 
@@ -165,6 +546,14 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return f"sha256:{digest.hexdigest()}"
+
+
+def _sha256_text(value: str) -> str:
+    return f"sha256:{hashlib.sha256(value.encode('utf-8')).hexdigest()}"
+
+
+def _short_hash(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()[:16]
 
 
 def _utc_stamp() -> str:
