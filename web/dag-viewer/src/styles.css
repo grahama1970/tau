@@ -130,7 +130,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
 .dag-app__workspace--inspector-collapsed { grid-template-columns: minmax(0, 1fr); }
 .graph-pane { position: relative; display: grid; grid-template-rows: 38px minmax(0, 1fr); min-width: 0; min-height: 0; overflow: hidden; border-right: 1px solid #263140; }
 .graph-pane--with-transaction { grid-template-rows: 38px minmax(0, 1fr) clamp(124px, 20vh, 184px); }
-.graph-pane--timeline.graph-pane--with-transaction { grid-template-rows: 38px minmax(258px, 1fr) clamp(104px, 14vh, 132px); }
+.graph-pane--timeline.graph-pane--with-transaction { grid-template-rows: 38px minmax(236px, 1fr) clamp(132px, 17vh, 168px); }
 .pane-heading { display: flex; align-items: center; justify-content: space-between; padding: 0 14px; border-bottom: 1px solid #202a37; background: #111720; }
 .pane-heading--workspace { gap: 12px; }
 .pane-heading--workspace > div:first-child { min-width: 0; display: grid; gap: 2px; }
@@ -268,7 +268,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
 .transaction-acceptance { min-width: 190px; display: flex; align-items: center; gap: 7px; padding: 9px; border-left: 2px solid #d6a74e; background: #241f15; font-size: 11px; }
 .transaction-acceptance--accepted { border-color: #5ecb8b; background: #14271e; }
 
-.inspector-pane { display: grid; grid-template-rows: 42px minmax(0, 1fr) clamp(96px, 14vh, 132px); min-width: 0; min-height: 0; overflow: hidden; background: #121821; }
+.inspector-pane { display: grid; grid-template-rows: 42px minmax(0, 1fr) clamp(128px, 18vh, 184px); min-width: 0; min-height: 0; overflow: hidden; background: #121821; }
 .inspector-pane > * { min-width: 0; width: 100%; }
 .inspector-tabs { min-width: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); overflow: hidden; border-bottom: 1px solid #263140; }
 .inspector-tabs button { min-width: 0; min-height: 42px; display: inline-flex; justify-content: center; align-items: center; gap: 5px; overflow: hidden; border: 0; border-right: 1px solid #263140; color: #9aa8ba; background: #151c26; cursor: pointer; font-size: 11px; text-overflow: ellipsis; }
