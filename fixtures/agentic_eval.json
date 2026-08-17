@@ -1,0 +1,56 @@
+{
+  "version": 2,
+  "skill": "tau",
+  "trials": 2,
+  "proof_scope": "non-mocked local subprocess execution, live streaming observation through the real LocalRuntimeBackend, and receipt-completeness invariants",
+  "claims": {
+    "proves": "Tau observes node output while a command is still running, exposes it through the backend capture contract, never marks a partial capture complete, and still assembles an intact final receipt",
+    "does_not_prove": "provider or model semantic quality, browser handler transport, GitHub mutation, Herdr pane behavior, DAG resume across processes, or that any specific downstream worker streams its own output"
+  },
+  "cases": [
+    {
+      "name": "node-output-streams-before-process-exit",
+      "type": "positive",
+      "real_world": true,
+      "command": ["uv", "run", "--project", "..", "python", "../scripts/eval_streaming.py"],
+      "timeout_seconds": 180,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "streaming observable before exit: PASS",
+          "chunks arrive progressively: PASS",
+          "capture answers mid run: PASS",
+          "capture grows while running: PASS",
+          "tau streaming eval: PASS"
+        ]
+      }
+    },
+    {
+      "name": "partial-capture-never-reads-as-complete-receipt",
+      "type": "adversarial",
+      "real_world": true,
+      "command": ["uv", "run", "--project", "..", "python", "../scripts/eval_streaming.py"],
+      "timeout_seconds": 180,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "partial never marked complete: PASS",
+          "final capture marked complete and intact: PASS"
+        ]
+      }
+    },
+    {
+      "name": "streaming-assertion-rejects-non-streaming-baseline",
+      "type": "adversarial",
+      "real_world": true,
+      "command": ["uv", "run", "--project", "..", "python", "../scripts/eval_streaming.py"],
+      "timeout_seconds": 180,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "negative control rejects non-streaming baseline: PASS"
+        ]
+      }
+    }
+  ]
+}
