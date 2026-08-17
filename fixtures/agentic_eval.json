@@ -51,6 +51,53 @@
           "negative control rejects non-streaming baseline: PASS"
         ]
       }
+    },
+    {
+      "name": "local-runtime-cancellation-and-timeout-terminate",
+      "type": "positive",
+      "real_world": true,
+      "command": ["uv", "run", "--project", "..", "python", "../scripts/eval_local_runtime_contract.py"],
+      "timeout_seconds": 240,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "cancellation returns 130 and stops early: PASS",
+          "cancellation records reason in stderr: PASS",
+          "timeout returns 124 and stops early: PASS",
+          "timeout records reason in stderr: PASS",
+          "tau local runtime contract: PASS"
+        ]
+      }
+    },
+    {
+      "name": "local-runtime-kills-orphaned-grandchildren",
+      "type": "adversarial",
+      "real_world": true,
+      "command": ["uv", "run", "--project", "..", "python", "../scripts/eval_local_runtime_contract.py"],
+      "timeout_seconds": 240,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "process group cleanup kills grandchildren: PASS",
+          "large output does not deadlock: PASS"
+        ]
+      }
+    },
+    {
+      "name": "local-runtime-capture-fails-closed-on-bad-input",
+      "type": "adversarial",
+      "real_world": true,
+      "command": ["uv", "run", "--project", "..", "python", "../scripts/eval_local_runtime_contract.py"],
+      "timeout_seconds": 240,
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "capture on unstarted endpoint fails closed: PASS",
+          "capture rejects negative line bound: PASS",
+          "capture honours zero line bound: PASS",
+          "stdin delivered and confirmed: PASS"
+        ]
+      }
     }
   ]
 }
