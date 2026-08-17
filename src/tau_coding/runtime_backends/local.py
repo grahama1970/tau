@@ -60,6 +60,14 @@ class LocalRuntimeExecutionResult:
     artifact_paths: tuple[str, ...]
 
 
+def _tail(value: str, lines: int) -> str:
+    """Bound captured output to the last N lines, shared by both capture paths."""
+
+    if lines == 0:
+        return ""
+    return "\n".join(value.splitlines()[-lines:])
+
+
 @dataclass(slots=True)
 class _LocalExecutionState:
     request: LocalRuntimeExecutionRequest
@@ -70,6 +78,12 @@ class _LocalExecutionState:
     execution_error: Exception | None = None
     termination_requested: bool = False
     failure_event: RuntimeEvent | None = None
+    # Output observed while the command is still running. Appended by the
+    # subprocess reader threads so capture() can answer before completion.
+    # Never used to build the final receipt: that is assembled from the
+    # authoritative CancellableSubprocessResult once the process exits.
+    partial_stdout: list[str] = field(default_factory=list)
+    partial_stderr: list[str] = field(default_factory=list)
 
 
 class LocalRuntimeBackend:
@@ -128,17 +142,46 @@ class LocalRuntimeBackend:
         return self._submit_request(endpoint).submit_receipt
 
     def capture(self, endpoint: RuntimeEndpointLease, lines: int) -> FrozenJson:
-        result = self._completed_result(endpoint)
+        """Return node output, including while the command is still running.
+
+        Before this, capture() required a completed result and raised
+        local_runtime_endpoint_not_completed otherwise, so a running node was
+        unobservable and nothing could stream. A partial capture is always
+        marked complete=false so it can never be read as a finished receipt;
+        the authoritative record is still assembled only from the completed
+        CancellableSubprocessResult.
+        """
+
         if lines < 0:
             raise ValueError("capture lines must be non-negative")
+
+        with self._lock:
+            state = self._states.get(endpoint.sha256)
+            result = state.result if state is not None else None
+            if result is None:
+                if state is None:
+                    raise RuntimeError("local_runtime_endpoint_unknown")
+                if not state.execution_started:
+                    raise RuntimeError("local_runtime_endpoint_not_started")
+                partial_stdout = "".join(state.partial_stdout)
+                partial_stderr = "".join(state.partial_stderr)
+                bounded_partial = {
+                    "schema": "tau.local_runtime_capture.v1",
+                    "complete": False,
+                    "stdout": _tail(partial_stdout, lines),
+                    "stderr": _tail(partial_stderr, lines),
+                }
+                return FrozenJson.from_value(bounded_partial)
+
         payload = result.capture.to_value()
         if not isinstance(payload, dict):
             raise RuntimeError("local runtime capture is invalid")
         bounded = dict(payload)
+        bounded["complete"] = True
         for key in ("stdout", "stderr"):
             value = bounded.get(key)
             if isinstance(value, str):
-                bounded[key] = "" if lines == 0 else "\n".join(value.splitlines()[-lines:])
+                bounded[key] = _tail(value, lines)
         return FrozenJson.from_value(bounded)
 
     def observe(self, endpoint: RuntimeEndpointLease) -> RuntimeEvent:
@@ -298,6 +341,13 @@ class LocalRuntimeBackend:
             raise RuntimeError("local_runtime_execution_failed") from error
         request = state.request
         try:
+            def record_chunk(stream_name: str, text: str) -> None:
+                with self._lock:
+                    if stream_name == "stdout":
+                        state.partial_stdout.append(text)
+                    else:
+                        state.partial_stderr.append(text)
+
             completed = run_cancellable_subprocess(
                 request.command,
                 cwd=request.cwd,
@@ -305,6 +355,7 @@ class LocalRuntimeBackend:
                 input_text=request.stdin_text,
                 timeout_seconds=request.timeout_seconds,
                 cancel_event=request.cancel_event,
+                on_chunk=record_chunk,
             )
         except Exception as exc:
             try:
