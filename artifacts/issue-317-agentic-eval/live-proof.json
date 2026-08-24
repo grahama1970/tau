@@ -1,0 +1,576 @@
+{
+  "admission_receipt": {
+    "accepted_output": {
+      "artifact": {
+        "bytes": 696,
+        "media_type": "application/json",
+        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-317/artifacts/issue-317-agentic-eval/workspace/artifacts/75d098462461a806186d99d2f3d2e3874efa91c82c64721faead9396d0e7b5eb-execution-turn-5-export.json",
+        "schema": "tau.host_artifact_ref.v1",
+        "sha256": "sha256:75d098462461a806186d99d2f3d2e3874efa91c82c64721faead9396d0e7b5eb"
+      },
+      "exports": {
+        "answer": 42,
+        "items": [
+          1,
+          2,
+          3
+        ]
+      },
+      "source_execution_id": "turn-5-export"
+    },
+    "artifact": {
+      "bytes": 696,
+      "media_type": "application/json",
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-317/artifacts/issue-317-agentic-eval/workspace/artifacts/75d098462461a806186d99d2f3d2e3874efa91c82c64721faead9396d0e7b5eb-execution-turn-5-export.json",
+      "schema": "tau.host_artifact_ref.v1",
+      "sha256": "sha256:75d098462461a806186d99d2f3d2e3874efa91c82c64721faead9396d0e7b5eb"
+    },
+    "errors": [],
+    "execution_receipt_sha256": "sha256:0d5fb7cd63ebed395c72459c4ca251a56632d5e61d8452919570ba74c10d30b3",
+    "schema": "tau.python_workspace_artifact_admission_receipt.v1",
+    "status": "PASS"
+  },
+  "checks": {
+    "backend_neutral_receipts": true,
+    "compaction_handle_valid_without_hidden_state": true,
+    "duplicate_execution_id_guarded": true,
+    "export_requires_artifact_admission": true,
+    "ordinary_tau_no_startup_cost": true,
+    "pass_stdout_cannot_settle": true,
+    "sandbox_denials_recorded": true,
+    "snapshot_restore_reports_non_restorable": true,
+    "stale_snapshot_rejection": true,
+    "three_turn_persistence": true,
+    "workspace_ready": true
+  },
+  "compacted_context": {
+    "hidden_state_embedded": false,
+    "inlined_python_namespace": null,
+    "schema": "tau.provider_context_after_compaction.v1",
+    "workspace_handle": {
+      "endpoint_id": "docker-python-workspace:generation-918da087d9ce4e899952fae3",
+      "generation_id": "generation-918da087d9ce4e899952fae3",
+      "schema": "tau.python_workspace_handle.v1",
+      "state_dir": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-317/artifacts/issue-317-agentic-eval/workspace",
+      "workspace_request_sha256": "sha256:7890279d1068ff809cd491ece382f43ee2d447864e0a43b31143223cbf18cf11"
+    }
+  },
+  "duplicate_conflict_receipt": {
+    "code_sha256": "sha256:43a34a4357f2d65a0b48c2a7b11279c4f8a1b2c0f429b392aefaf9cace0007bc",
+    "effects_admitted": false,
+    "errors": [
+      "duplicate_execution_id_conflict"
+    ],
+    "execution_id": "turn-5-export",
+    "execution_request_sha256": "sha256:44480e2b1909ae8714206ad39bf0f730765224463b7c34f49d55038cbe8335b3",
+    "exports": null,
+    "finished_at": "2026-08-24T20:45:13.669Z",
+    "generation_id": "generation-918da087d9ce4e899952fae3",
+    "idempotent_replay": false,
+    "limits": {
+      "max_artifact_bytes": 1000000,
+      "max_stderr_bytes": 16000,
+      "max_stdout_bytes": 16000,
+      "memory_limit": "256m",
+      "process_limit": 64,
+      "timeout_seconds": 5
+    },
+    "output_artifact": {
+      "bytes": 523,
+      "media_type": "application/json",
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-317/artifacts/issue-317-agentic-eval/workspace/artifacts/e3d6cfaa8239898d64c21d0ec7e9783b374bfb9aaa52df9d32410f1c6801622b-execution-turn-5-export.json",
+      "schema": "tau.host_artifact_ref.v1",
+      "sha256": "sha256:e3d6cfaa8239898d64c21d0ec7e9783b374bfb9aaa52df9d32410f1c6801622b"
+    },
+    "schema": "tau.python_execution_receipt.v1",
+    "started_at": "2026-08-24T20:45:13.669Z",
+    "status": "BLOCKED",
+    "stderr": "",
+    "stderr_truncated": false,
+    "stdout": "",
+    "stdout_truncated": false,
+    "tau_admission_status": "not_admitted",
+    "workspace_request_sha256": "sha256:7890279d1068ff809cd491ece382f43ee2d447864e0a43b31143223cbf18cf11"
+  },
+  "duplicate_same_receipt": {
+    "code_sha256": "sha256:72ca6c987ad469bc571e1c36eb573569f7bb8eac662fb57c5130088b91978b15",
+    "effects_admitted": false,
+    "errors": [],
+    "execution_id": "turn-5-export",
+    "execution_request_sha256": "sha256:43aa2c615e78ba77c59da1c17155ecebb34c5020eaa1266552784b1a23a31900",
+    "exports": {
+      "answer": 42,
+      "items": [
+        1,
+        2,
+        3
+      ]
+    },
+    "finished_at": "2026-08-24T20:45:13.668Z",
+    "generation_id": "generation-918da087d9ce4e899952fae3",
+    "idempotent_replay": true,
+    "limits": {
+      "max_artifact_bytes": 1000000,
+      "max_stderr_bytes": 16000,
+      "max_stdout_bytes": 16000,
+      "memory_limit": "256m",
+      "process_limit": 64,
+      "timeout_seconds": 5
+    },
+    "output_artifact": {
+      "bytes": 695,
+      "media_type": "application/json",
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-317/artifacts/issue-317-agentic-eval/workspace/artifacts/2fb43cfc2d91dcad0cb3c6346c68d94536d2e49f06286f828cac59864198ea78-execution-turn-5-export.json",
+      "schema": "tau.host_artifact_ref.v1",
+      "sha256": "sha256:2fb43cfc2d91dcad0cb3c6346c68d94536d2e49f06286f828cac59864198ea78"
+    },
+    "schema": "tau.python_execution_receipt.v1",
+    "started_at": "2026-08-24T20:45:13.668Z",
+    "status": "OK",
+    "stderr": "",
+    "stderr_truncated": false,
+    "stdout": "structured export ready\n",
+    "stdout_truncated": false,
+    "tau_admission_status": "not_admitted",
+    "workspace_request_sha256": "sha256:7890279d1068ff809cd491ece382f43ee2d447864e0a43b31143223cbf18cf11"
+  },
+  "execution_receipts": {
+    "after_compaction": {
+      "code_sha256": "sha256:1a80d17a453da6bc8f78293af7681d0613a83ec704bf14d5ced57b35990a1be3",
+      "effects_admitted": false,
+      "errors": [],
+      "execution_id": "turn-4-after-compaction",
+      "execution_request_sha256": "sha256:6a93b46edeb233d54ff52db9adba2a7141da465b85c09cb598bb2c04542f3757",
+      "exports": {
+        "after_compaction": 44.0
+      },
+      "finished_at": "2026-08-24T20:45:13.667Z",
+      "generation_id": "generation-918da087d9ce4e899952fae3",
+      "idempotent_replay": false,
+      "limits": {
+        "max_artifact_bytes": 1000000,
+        "max_stderr_bytes": 16000,
+        "max_stdout_bytes": 16000,
+        "memory_limit": "256m",
+        "process_limit": 64,
+        "timeout_seconds": 5
+      },
+      "output_artifact": {
+        "bytes": 647,
+        "media_type": "application/json",
+        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-317/artifacts/issue-317-agentic-eval/workspace/artifacts/13540a060a71cee0df1bd19660a481465b8c08b1c175852f497ca3ed346d434b-execution-turn-4-after-compaction.json",
+        "schema": "tau.host_artifact_ref.v1",
+        "sha256": "sha256:13540a060a71cee0df1bd19660a481465b8c08b1c175852f497ca3ed346d434b"
+      },
+      "schema": "tau.python_execution_receipt.v1",
+      "started_at": "2026-08-24T20:45:13.666Z",
+      "status": "OK",
+      "stderr": "",
+      "stderr_truncated": false,
+      "stdout": "turn4 44.0\n",
+      "stdout_truncated": false,
+      "tau_admission_status": "not_admitted",
+      "workspace_request_sha256": "sha256:7890279d1068ff809cd491ece382f43ee2d447864e0a43b31143223cbf18cf11"
+    },
+    "export": {
+      "code_sha256": "sha256:72ca6c987ad469bc571e1c36eb573569f7bb8eac662fb57c5130088b91978b15",
+      "effects_admitted": false,
+      "errors": [],
+      "execution_id": "turn-5-export",
+      "execution_request_sha256": "sha256:43aa2c615e78ba77c59da1c17155ecebb34c5020eaa1266552784b1a23a31900",
+      "exports": {
+        "answer": 42,
+        "items": [
+          1,
+          2,
+          3
+        ]
+      },
+      "finished_at": "2026-08-24T20:45:13.667Z",
+      "generation_id": "generation-918da087d9ce4e899952fae3",
+      "idempotent_replay": false,
+      "limits": {
+        "max_artifact_bytes": 1000000,
+        "max_stderr_bytes": 16000,
+        "max_stdout_bytes": 16000,
+        "memory_limit": "256m",
+        "process_limit": 64,
+        "timeout_seconds": 5
+      },
+      "output_artifact": {
+        "bytes": 696,
+        "media_type": "application/json",
+        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-317/artifacts/issue-317-agentic-eval/workspace/artifacts/75d098462461a806186d99d2f3d2e3874efa91c82c64721faead9396d0e7b5eb-execution-turn-5-export.json",
+        "schema": "tau.host_artifact_ref.v1",
+        "sha256": "sha256:75d098462461a806186d99d2f3d2e3874efa91c82c64721faead9396d0e7b5eb"
+      },
+      "schema": "tau.python_execution_receipt.v1",
+      "started_at": "2026-08-24T20:45:13.667Z",
+      "status": "OK",
+      "stderr": "",
+      "stderr_truncated": false,
+      "stdout": "structured export ready\n",
+      "stdout_truncated": false,
+      "tau_admission_status": "not_admitted",
+      "workspace_request_sha256": "sha256:7890279d1068ff809cd491ece382f43ee2d447864e0a43b31143223cbf18cf11"
+    },
+    "turn1": {
+      "code_sha256": "sha256:6cc042807a517b7000bcfa34f53aa8f482d3ccd7257891a5cd0ee2560ab574f4",
+      "effects_admitted": false,
+      "errors": [],
+      "execution_id": "turn-1",
+      "execution_request_sha256": "sha256:b9e748707f9ab60342324af20041138af592eb03a1380bd7385de6bdb6abe4b4",
+      "exports": null,
+      "finished_at": "2026-08-24T20:45:13.664Z",
+      "generation_id": "generation-918da087d9ce4e899952fae3",
+      "idempotent_replay": false,
+      "limits": {
+        "max_artifact_bytes": 1000000,
+        "max_stderr_bytes": 16000,
+        "max_stdout_bytes": 16000,
+        "memory_limit": "256m",
+        "process_limit": 64,
+        "timeout_seconds": 5
+      },
+      "output_artifact": {
+        "bytes": 596,
+        "media_type": "application/json",
+        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-317/artifacts/issue-317-agentic-eval/workspace/artifacts/04e75487a95e3a27ed47ec57929683e6eea46310773ae00e6f067249b1bdeed1-execution-turn-1.json",
+        "schema": "tau.host_artifact_ref.v1",
+        "sha256": "sha256:04e75487a95e3a27ed47ec57929683e6eea46310773ae00e6f067249b1bdeed1"
+      },
+      "schema": "tau.python_execution_receipt.v1",
+      "started_at": "2026-08-24T20:45:13.663Z",
+      "status": "OK",
+      "stderr": "",
+      "stderr_truncated": false,
+      "stdout": "turn1 42.0\n",
+      "stdout_truncated": false,
+      "tau_admission_status": "not_admitted",
+      "workspace_request_sha256": "sha256:7890279d1068ff809cd491ece382f43ee2d447864e0a43b31143223cbf18cf11"
+    },
+    "turn2": {
+      "code_sha256": "sha256:87b73ad0df95b953720e9a33f7e26a92bc2be6d346577d348cb0dcc274b8fe20",
+      "effects_admitted": false,
+      "errors": [],
+      "execution_id": "turn-2",
+      "execution_request_sha256": "sha256:749cef421ab997add1952c922e809d084f3986b17c1214b14806c3f218137d36",
+      "exports": {
+        "helper_result": 43.0,
+        "turn": 2,
+        "value": 40
+      },
+      "finished_at": "2026-08-24T20:45:13.665Z",
+      "generation_id": "generation-918da087d9ce4e899952fae3",
+      "idempotent_replay": false,
+      "limits": {
+        "max_artifact_bytes": 1000000,
+        "max_stderr_bytes": 16000,
+        "max_stdout_bytes": 16000,
+        "memory_limit": "256m",
+        "process_limit": 64,
+        "timeout_seconds": 5
+      },
+      "output_artifact": {
+        "bytes": 663,
+        "media_type": "application/json",
+        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-317/artifacts/issue-317-agentic-eval/workspace/artifacts/4d0f107455b434b292cecbd28a90f5342a0a28e46e10c42d81010c6a45207cda-execution-turn-2.json",
+        "schema": "tau.host_artifact_ref.v1",
+        "sha256": "sha256:4d0f107455b434b292cecbd28a90f5342a0a28e46e10c42d81010c6a45207cda"
+      },
+      "schema": "tau.python_execution_receipt.v1",
+      "started_at": "2026-08-24T20:45:13.665Z",
+      "status": "OK",
+      "stderr": "",
+      "stderr_truncated": false,
+      "stdout": "turn2 43.0\n",
+      "stdout_truncated": false,
+      "tau_admission_status": "not_admitted",
+      "workspace_request_sha256": "sha256:7890279d1068ff809cd491ece382f43ee2d447864e0a43b31143223cbf18cf11"
+    },
+    "turn3": {
+      "code_sha256": "sha256:d1e89abfaf4347570aaad7ebd44c17ae89c89cfc69dbacf08a7a318f0ada149d",
+      "effects_admitted": false,
+      "errors": [],
+      "execution_id": "turn-3",
+      "execution_request_sha256": "sha256:5b717cefaca67e36a76ce811f715e820650566fc9ccc73f35bfae9100d817e20",
+      "exports": {
+        "printed_pass": true,
+        "settlement_claim": "candidate-only"
+      },
+      "finished_at": "2026-08-24T20:45:13.666Z",
+      "generation_id": "generation-918da087d9ce4e899952fae3",
+      "idempotent_replay": false,
+      "limits": {
+        "max_artifact_bytes": 1000000,
+        "max_stderr_bytes": 16000,
+        "max_stdout_bytes": 16000,
+        "memory_limit": "256m",
+        "process_limit": 64,
+        "timeout_seconds": 5
+      },
+      "output_artifact": {
+        "bytes": 664,
+        "media_type": "application/json",
+        "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-317/artifacts/issue-317-agentic-eval/workspace/artifacts/66b3c44d0429f393a1bc6887cd573b360cb8597308b86640673463de420b6c4b-execution-turn-3.json",
+        "schema": "tau.host_artifact_ref.v1",
+        "sha256": "sha256:66b3c44d0429f393a1bc6887cd573b360cb8597308b86640673463de420b6c4b"
+      },
+      "schema": "tau.python_execution_receipt.v1",
+      "started_at": "2026-08-24T20:45:13.665Z",
+      "status": "OK",
+      "stderr": "",
+      "stderr_truncated": false,
+      "stdout": "PASS\n",
+      "stdout_truncated": false,
+      "tau_admission_status": "not_admitted",
+      "workspace_request_sha256": "sha256:7890279d1068ff809cd491ece382f43ee2d447864e0a43b31143223cbf18cf11"
+    }
+  },
+  "herdr_comparison": {
+    "reason": "issue_315_herdr_hosted_workspace_not_available_in_this_checkout",
+    "status": "NOT_RUN"
+  },
+  "image_available": true,
+  "kill_receipt": {
+    "action": "shutdown",
+    "errors": [],
+    "generation_id": "generation-918da087d9ce4e899952fae3",
+    "schema": "tau.python_workspace_control_receipt.v1",
+    "status": "STOPPED",
+    "workspace_request_sha256": "sha256:7890279d1068ff809cd491ece382f43ee2d447864e0a43b31143223cbf18cf11"
+  },
+  "live": true,
+  "mocked": false,
+  "pre_admission": {
+    "accepted": false,
+    "reason": "not_admitted"
+  },
+  "proof_boundary": {
+    "exercised": "real Docker worker endpoint with network none and no provider env allowlist",
+    "live": true,
+    "mocked": false,
+    "unverified": [
+      "Herdr-hosted comparison for issue #315"
+    ]
+  },
+  "provider_live": false,
+  "restore_receipt": {
+    "errors": [],
+    "generation_id": "generation-9553d60b7ab89460ce1f0c7b",
+    "non_restorable_values": {
+      "Path": "type",
+      "helper": "function:helper",
+      "math": "module:math",
+      "os": "module:os",
+      "socket": "module:socket"
+    },
+    "restored_names": [
+      "workspace_value"
+    ],
+    "schema": "tau.python_workspace_snapshot_restore_receipt.v1",
+    "snapshot_sha256": "sha256:64b1be653368be421929d871e6166b9148ff4ebd49e926ef7dad419089b9b1e4",
+    "status": "OK",
+    "workspace_request_sha256": "sha256:7890279d1068ff809cd491ece382f43ee2d447864e0a43b31143223cbf18cf11"
+  },
+  "restored_readback": {
+    "code_sha256": "sha256:598d41d0757a1f67f3a26e185c3672b4c061513e066776b1db26d1cb38e6fba3",
+    "effects_admitted": false,
+    "errors": [],
+    "execution_id": "restore-readback",
+    "execution_request_sha256": "sha256:3bcc2ee1e4f94d3c600194f0d4966ed59bbd6e1609669410b6f44042124f7bf0",
+    "exports": {
+      "helper_restored": false,
+      "workspace_value": 40
+    },
+    "finished_at": "2026-08-24T20:45:19.209Z",
+    "generation_id": "generation-9553d60b7ab89460ce1f0c7b",
+    "idempotent_replay": false,
+    "limits": {
+      "max_artifact_bytes": 1000000,
+      "max_stderr_bytes": 16000,
+      "max_stdout_bytes": 16000,
+      "memory_limit": "256m",
+      "process_limit": 64,
+      "timeout_seconds": 5
+    },
+    "output_artifact": {
+      "bytes": 670,
+      "media_type": "application/json",
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-317/artifacts/issue-317-agentic-eval/restored/artifacts/4a8d329af640929376cc066b4642fa56bb8535007eb89ef5d9d0d89924f87bb7-execution-restore-readback.json",
+      "schema": "tau.host_artifact_ref.v1",
+      "sha256": "sha256:4a8d329af640929376cc066b4642fa56bb8535007eb89ef5d9d0d89924f87bb7"
+    },
+    "schema": "tau.python_execution_receipt.v1",
+    "started_at": "2026-08-24T20:45:19.208Z",
+    "status": "OK",
+    "stderr": "",
+    "stderr_truncated": false,
+    "stdout": "restored 40\n",
+    "stdout_truncated": false,
+    "tau_admission_status": "not_admitted",
+    "workspace_request_sha256": "sha256:7890279d1068ff809cd491ece382f43ee2d447864e0a43b31143223cbf18cf11"
+  },
+  "restored_start_receipt": {
+    "backend": "docker",
+    "endpoint": {
+      "endpoint_id": "docker-python-workspace:generation-9553d60b7ab89460ce1f0c7b",
+      "generation_id": "generation-9553d60b7ab89460ce1f0c7b",
+      "schema": "tau.python_workspace_handle.v1",
+      "state_dir": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-317/artifacts/issue-317-agentic-eval/restored",
+      "workspace_request_sha256": "sha256:7890279d1068ff809cd491ece382f43ee2d447864e0a43b31143223cbf18cf11"
+    },
+    "errors": [],
+    "generation_id": "generation-9553d60b7ab89460ce1f0c7b",
+    "ordinary_tau_startup_cost": "none_until_workspace_requested",
+    "package_manifest": {
+      "backend": "docker",
+      "environment_allowlist": [],
+      "home_access": "denied",
+      "image": "python:3.12-slim@sha256:6c4dd321d176d61ea848dc8c73a4f7dbae8f70e0ee48bb411ea2f045b599fa8e",
+      "network": "none",
+      "packages": [],
+      "provider_credentials": "denied",
+      "sandbox": {
+        "cap_drop": [
+          "ALL"
+        ],
+        "host_home_mounted": false,
+        "no_new_privileges": true,
+        "read_only_rootfs": true,
+        "user": "65532:65532"
+      },
+      "schema": "tau.python_package_manifest.v1",
+      "sha256": "sha256:8e95a8da0fae2415c2dd0e9bf27d1eb13dacb9ded2a0eb57ebe4245e02301bd5"
+    },
+    "process_identity": {
+      "container_cwd": "/",
+      "docker_command_sha256": "sha256:4f8390cd713e0fd3376d19bb6d6e0f3059ac56061d25e094ed27471bde647c91",
+      "host_pid": 436154,
+      "worker_env_keys": [
+        "LC_CTYPE",
+        "PATH",
+        "PYTHONUNBUFFERED"
+      ],
+      "worker_pid": 1
+    },
+    "sandbox_attestation": {
+      "environment_allowlist": [],
+      "home_access": "denied",
+      "host_process_namespace": "denied",
+      "network": "none",
+      "provider_credentials": "denied",
+      "sha256": "sha256:27d4b6966dd44f4bc7ed4d3b025d21a44b3810e65168c77f0efaacc9e9c28157"
+    },
+    "schema": "tau.python_workspace_receipt.v1",
+    "status": "READY",
+    "workspace_request_sha256": "sha256:7890279d1068ff809cd491ece382f43ee2d447864e0a43b31143223cbf18cf11"
+  },
+  "restored_stop_receipt": {
+    "action": "shutdown",
+    "errors": [],
+    "generation_id": "generation-9553d60b7ab89460ce1f0c7b",
+    "schema": "tau.python_workspace_control_receipt.v1",
+    "status": "STOPPED",
+    "workspace_request_sha256": "sha256:7890279d1068ff809cd491ece382f43ee2d447864e0a43b31143223cbf18cf11"
+  },
+  "schema": "tau.python_workspace_issue317_live_proof.v1",
+  "snapshot": {
+    "attempt_id": "attempt-1",
+    "created_at": "2026-08-24T20:45:13.668Z",
+    "data_boundary_sha256": "sha256:85d5ac9f7ce7629e09850ad239c3a4d6c6e5bfbb0844de18a50003780ba294c4",
+    "generation_id": "generation-918da087d9ce4e899952fae3",
+    "goal_hash": "sha256:29026e5cbcf3c1ee8f89e56481515ebe7d646044e4cca4d633ad741a17cd601f",
+    "package_manifest_sha256": "sha256:8e95a8da0fae2415c2dd0e9bf27d1eb13dacb9ded2a0eb57ebe4245e02301bd5",
+    "plan_hash": "sha256:ae72e9b1c195aa5620d3ff72ff0f213a720caf5786f9569f8577fa6873254601",
+    "policy_sha256": "sha256:56af741e3573bed75753e831dcb85a053131d8e21efa19336031b9e7098975af",
+    "restore_policy": "exact_identity_and_manifest_required",
+    "schema": "tau.python_workspace_snapshot.v1",
+    "serializable_state": {
+      "workspace_value": 40
+    },
+    "sha256": "sha256:64b1be653368be421929d871e6166b9148ff4ebd49e926ef7dad419089b9b1e4",
+    "snapshot_id": "issue-317",
+    "unsupported_state": {
+      "Path": "type",
+      "helper": "function:helper",
+      "math": "module:math",
+      "os": "module:os",
+      "socket": "module:socket"
+    },
+    "workspace_request_sha256": "sha256:7890279d1068ff809cd491ece382f43ee2d447864e0a43b31143223cbf18cf11"
+  },
+  "stale_snapshot_controls": {
+    "attempt_id": [
+      "stale_snapshot:attempt_id"
+    ],
+    "data_boundary_sha256": [
+      "stale_snapshot:data_boundary_sha256"
+    ],
+    "goal_hash": [
+      "stale_snapshot:goal_hash"
+    ],
+    "package_manifest_sha256": [
+      "stale_snapshot:package_manifest_sha256"
+    ],
+    "policy_sha256": [
+      "stale_snapshot:policy_sha256"
+    ]
+  },
+  "status": "PASS",
+  "workspace_receipt": {
+    "backend": "docker",
+    "endpoint": {
+      "endpoint_id": "docker-python-workspace:generation-918da087d9ce4e899952fae3",
+      "generation_id": "generation-918da087d9ce4e899952fae3",
+      "schema": "tau.python_workspace_handle.v1",
+      "state_dir": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-317/artifacts/issue-317-agentic-eval/workspace",
+      "workspace_request_sha256": "sha256:7890279d1068ff809cd491ece382f43ee2d447864e0a43b31143223cbf18cf11"
+    },
+    "errors": [],
+    "generation_id": "generation-918da087d9ce4e899952fae3",
+    "ordinary_tau_startup_cost": "none_until_workspace_requested",
+    "package_manifest": {
+      "backend": "docker",
+      "environment_allowlist": [],
+      "home_access": "denied",
+      "image": "python:3.12-slim@sha256:6c4dd321d176d61ea848dc8c73a4f7dbae8f70e0ee48bb411ea2f045b599fa8e",
+      "network": "none",
+      "packages": [],
+      "provider_credentials": "denied",
+      "sandbox": {
+        "cap_drop": [
+          "ALL"
+        ],
+        "host_home_mounted": false,
+        "no_new_privileges": true,
+        "read_only_rootfs": true,
+        "user": "65532:65532"
+      },
+      "schema": "tau.python_package_manifest.v1",
+      "sha256": "sha256:8e95a8da0fae2415c2dd0e9bf27d1eb13dacb9ded2a0eb57ebe4245e02301bd5"
+    },
+    "process_identity": {
+      "container_cwd": "/",
+      "docker_command_sha256": "sha256:44715b7af76c46d48e47594da0cf4ba59c9a176564b8d0fedad364e8ccaf51e4",
+      "host_pid": 430828,
+      "worker_env_keys": [
+        "LC_CTYPE",
+        "PATH",
+        "PYTHONUNBUFFERED"
+      ],
+      "worker_pid": 1
+    },
+    "sandbox_attestation": {
+      "environment_allowlist": [],
+      "home_access": "denied",
+      "host_process_namespace": "denied",
+      "network": "none",
+      "provider_credentials": "denied",
+      "sha256": "sha256:27d4b6966dd44f4bc7ed4d3b025d21a44b3810e65168c77f0efaacc9e9c28157"
+    },
+    "schema": "tau.python_workspace_receipt.v1",
+    "status": "READY",
+    "workspace_request_sha256": "sha256:7890279d1068ff809cd491ece382f43ee2d447864e0a43b31143223cbf18cf11"
+  }
+}

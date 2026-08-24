@@ -1,0 +1,15 @@
+{
+  "execution_request_sha256": "sha256:44480e2b1909ae8714206ad39bf0f730765224463b7c34f49d55038cbe8335b3",
+  "schema": "tau.python_execution_output_artifact.v1",
+  "worker_result": {
+    "code_sha256": "sha256:43a34a4357f2d65a0b48c2a7b11279c4f8a1b2c0f429b392aefaf9cace0007bc",
+    "effects_applied": false,
+    "errors": [
+      "duplicate_execution_id_conflict"
+    ],
+    "execution_id": "turn-5-export",
+    "idempotent_replay": false,
+    "schema": "tau.python_execution_worker_result.v1",
+    "status": "BLOCKED"
+  }
+}

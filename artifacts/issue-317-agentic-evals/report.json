@@ -1,0 +1,143 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/python_workspace_sandbox_agentic_eval.json",
+  "run_id": "ec634ecbc0a2",
+  "fixture_sha256": "sha256:65cc17f7122486b6ab02b7f84a4c8dfb87253feea3ebba87b38174d39b4d7919",
+  "repo": {
+    "sha": "859ae0a6fdcc43535c9f6552edea0ad6c7a714b6",
+    "ref": "watchdog/issue-317"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "sandboxed persistent Python workspace receipts, snapshot restore, admission gating, and replay negatives",
+  "claims": {
+    "proves": "Tau can start a Docker-sandboxed persistent Python workspace endpoint, retain namespace state across multiple turns and context compaction, reject stale snapshots and duplicate execution conflicts, deny ambient host/network authority, and read back a completed live proof artifact.",
+    "does_not_prove": "Herdr-hosted execution parity for issue #315, legal compliance, kernel escape resistance, provider/model quality, or arbitrary package installation."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": null,
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-24T20:45:37.285263+00:00",
+  "case_count": 2,
+  "required_case_count": 2,
+  "outcome_counts": {
+    "PASS": 2,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 4,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "live-docker-python-workspace-issue-317-proof",
+      "type": "positive",
+      "case_id": "ec634ecbc0a2-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && mkdir -p artifacts/issue-317-agentic-eval && uv run --project . python scripts/python-workspace-live-proof.py --out artifacts/issue-317-agentic-eval/live-proof.json"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 11537.415,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "python workspace live proof: PASS artifacts/issue-317-agentic-eval/live-proof.json\n",
+          "stderr": "",
+          "duration_ms": 11445.344,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "ec634ecbc0a2-c000-t00",
+          "artifact_hashes": {
+            "../artifacts/issue-317-agentic-eval/live-proof.json": "sha256:90d4ef8ae2e04479afed1afa80a80a543b207b0e9a0d3c7917bbc770863c3599"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "python workspace live proof: PASS artifacts/issue-317-agentic-eval/live-proof.json\n",
+          "stderr": "",
+          "duration_ms": 11629.486,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "ec634ecbc0a2-c000-t01",
+          "artifact_hashes": {
+            "../artifacts/issue-317-agentic-eval/live-proof.json": "sha256:a4b928e897dc58da6bd667b755036e81434e037f116e578fa2c45df4afce1926"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "workspace-contract-negative-regressions",
+      "type": "adversarial",
+      "case_id": "ec634ecbc0a2-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run --project . pytest tests/test_sandboxed_python_workspace.py -q -k 'stale_snapshot or duplicate or admission or pinned'"
+      ],
+      "declared_evidence_class": "adversarial_live_e2e",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [
+        "no independent readback oracle (exit code / self-reported success only)"
+      ],
+      "supports_claims": [],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 6459.393,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "....                                                                     [100%]\n4 passed in 5.88s\n",
+          "stderr": "",
+          "duration_ms": 6433.263,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "ec634ecbc0a2-c001-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "....                                                                     [100%]\n4 passed in 5.89s\n",
+          "stderr": "",
+          "duration_ms": 6485.523,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "ec634ecbc0a2-c001-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

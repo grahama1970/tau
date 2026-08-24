@@ -1,0 +1,65 @@
+{
+  "version": 2,
+  "skill": "tau-python-workspace-sandbox",
+  "trials": 2,
+  "proof_scope": "sandboxed persistent Python workspace receipts, snapshot restore, admission gating, and replay negatives",
+  "claims": {
+    "proves": "Tau can start a Docker-sandboxed persistent Python workspace endpoint, retain namespace state across multiple turns and context compaction, reject stale snapshots and duplicate execution conflicts, deny ambient host/network authority, and read back a completed live proof artifact.",
+    "does_not_prove": "Herdr-hosted execution parity for issue #315, legal compliance, kernel escape resistance, provider/model quality, or arbitrary package installation."
+  },
+  "cases": [
+    {
+      "name": "live-docker-python-workspace-issue-317-proof",
+      "type": "positive",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "timeout_seconds": 240,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && mkdir -p artifacts/issue-317-agentic-eval && uv run --project . python scripts/python-workspace-live-proof.py --out artifacts/issue-317-agentic-eval/live-proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "python workspace live proof: PASS"
+        ],
+        "artifacts": [
+          {
+            "path": "../artifacts/issue-317-agentic-eval/live-proof.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "../artifacts/issue-317-agentic-eval/live-proof.json",
+            "json_pointer": "/checks/sandbox_denials_recorded",
+            "equals": true
+          },
+          {
+            "path": "../artifacts/issue-317-agentic-eval/live-proof.json",
+            "json_pointer": "/checks/pass_stdout_cannot_settle",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "workspace-contract-negative-regressions",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "adversarial_live_e2e",
+      "timeout_seconds": 240,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run --project . pytest tests/test_sandboxed_python_workspace.py -q -k 'stale_snapshot or duplicate or admission or pinned'"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "passed"
+        ]
+      }
+    }
+  ]
+}

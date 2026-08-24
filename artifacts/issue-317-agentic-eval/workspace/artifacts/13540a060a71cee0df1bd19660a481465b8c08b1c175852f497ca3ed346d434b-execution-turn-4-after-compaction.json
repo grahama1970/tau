@@ -1,0 +1,20 @@
+{
+  "execution_request_sha256": "sha256:6a93b46edeb233d54ff52db9adba2a7141da465b85c09cb598bb2c04542f3757",
+  "schema": "tau.python_execution_output_artifact.v1",
+  "worker_result": {
+    "code_sha256": "sha256:1a80d17a453da6bc8f78293af7681d0613a83ec704bf14d5ced57b35990a1be3",
+    "effects_applied": true,
+    "errors": [],
+    "execution_id": "turn-4-after-compaction",
+    "exports": {
+      "after_compaction": 44.0
+    },
+    "idempotent_replay": false,
+    "schema": "tau.python_execution_worker_result.v1",
+    "status": "OK",
+    "stderr": "",
+    "stderr_truncated": false,
+    "stdout": "turn4 44.0\n",
+    "stdout_truncated": false
+  }
+}

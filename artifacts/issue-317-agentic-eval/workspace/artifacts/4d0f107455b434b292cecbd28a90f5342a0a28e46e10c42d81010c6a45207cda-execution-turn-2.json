@@ -1,0 +1,22 @@
+{
+  "execution_request_sha256": "sha256:749cef421ab997add1952c922e809d084f3986b17c1214b14806c3f218137d36",
+  "schema": "tau.python_execution_output_artifact.v1",
+  "worker_result": {
+    "code_sha256": "sha256:87b73ad0df95b953720e9a33f7e26a92bc2be6d346577d348cb0dcc274b8fe20",
+    "effects_applied": true,
+    "errors": [],
+    "execution_id": "turn-2",
+    "exports": {
+      "helper_result": 43.0,
+      "turn": 2,
+      "value": 40
+    },
+    "idempotent_replay": false,
+    "schema": "tau.python_execution_worker_result.v1",
+    "status": "OK",
+    "stderr": "",
+    "stderr_truncated": false,
+    "stdout": "turn2 43.0\n",
+    "stdout_truncated": false
+  }
+}

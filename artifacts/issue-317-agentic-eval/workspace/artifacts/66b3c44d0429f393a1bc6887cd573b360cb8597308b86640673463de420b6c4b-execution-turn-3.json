@@ -1,0 +1,21 @@
+{
+  "execution_request_sha256": "sha256:5b717cefaca67e36a76ce811f715e820650566fc9ccc73f35bfae9100d817e20",
+  "schema": "tau.python_execution_output_artifact.v1",
+  "worker_result": {
+    "code_sha256": "sha256:d1e89abfaf4347570aaad7ebd44c17ae89c89cfc69dbacf08a7a318f0ada149d",
+    "effects_applied": true,
+    "errors": [],
+    "execution_id": "turn-3",
+    "exports": {
+      "printed_pass": true,
+      "settlement_claim": "candidate-only"
+    },
+    "idempotent_replay": false,
+    "schema": "tau.python_execution_worker_result.v1",
+    "status": "OK",
+    "stderr": "",
+    "stderr_truncated": false,
+    "stdout": "PASS\n",
+    "stdout_truncated": false
+  }
+}

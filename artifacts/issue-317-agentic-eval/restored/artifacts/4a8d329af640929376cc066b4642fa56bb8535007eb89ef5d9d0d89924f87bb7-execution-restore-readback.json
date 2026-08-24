@@ -1,0 +1,21 @@
+{
+  "execution_request_sha256": "sha256:3bcc2ee1e4f94d3c600194f0d4966ed59bbd6e1609669410b6f44042124f7bf0",
+  "schema": "tau.python_execution_output_artifact.v1",
+  "worker_result": {
+    "code_sha256": "sha256:598d41d0757a1f67f3a26e185c3672b4c061513e066776b1db26d1cb38e6fba3",
+    "effects_applied": true,
+    "errors": [],
+    "execution_id": "restore-readback",
+    "exports": {
+      "helper_restored": false,
+      "workspace_value": 40
+    },
+    "idempotent_replay": false,
+    "schema": "tau.python_execution_worker_result.v1",
+    "status": "OK",
+    "stderr": "",
+    "stderr_truncated": false,
+    "stdout": "restored 40\n",
+    "stdout_truncated": false
+  }
+}
