@@ -558,6 +558,8 @@ def _project_join_contracts(
 
 
 def _project_adapter_kind(raw: Mapping[str, Any], *, executor: str) -> str:
+    if raw.get("agent") == "releaser" or raw.get("id") == "releaser":
+        return "project_releaser"
     if raw.get("join") is not None:
         return "project_virtual"
     if (
@@ -671,6 +673,14 @@ def _project_runtime_requirement(
             required_capabilities=(),
             session_scope="dag_control",
             observation_requirements=(),
+        )
+    if adapter_kind == "project_releaser":
+        return RuntimeRequirement(
+            backend=backend or "local",
+            interaction_mode="one_shot",
+            required_capabilities=("one_shot", "supports_working_directory"),
+            session_scope="ticket_repair_release",
+            observation_requirements=("PROCESS",),
         )
     if not backend:
         raise RuntimeError(f"runtime_backend_required_for_executor:{executor}")

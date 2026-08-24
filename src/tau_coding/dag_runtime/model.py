@@ -31,6 +31,7 @@ DAG_PLAN_ADAPTER_KINDS = frozenset(
         "project_persistent_declaration",
         "project_provider",
         "project_provider_handoff_command",
+        "project_releaser",
         "project_virtual",
         "tau_native_agent_loop",
     }

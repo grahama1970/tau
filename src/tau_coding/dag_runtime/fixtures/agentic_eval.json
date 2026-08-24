@@ -1,0 +1,84 @@
+{
+  "version": 2,
+  "skill": "tau-dag-runtime-ticket-repair-release",
+  "trials": 2,
+  "proof_scope": "Tau ticket repair releaser and handoff context contract against a disposable real Git repository",
+  "claims": {
+    "proves": "The runtime entrypoint compiles a tau.agent_handoff.v1 ticket context, launches without human terminal selection, pushes a repair branch to a disposable origin/main, reads back the remote ref, and removes the repair worktree.",
+    "does_not_prove": "Public GitHub mutation, provider/model semantic quality, branch protection, or human acceptance."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.ticket_repair.release_handoff",
+      "description": "Tau can carry ticket-derived handoff context to launched agents and perform a guarded releaser phase after reviewer/proof PASS.",
+      "criticality": "critical",
+      "evidence_required": {
+        "deterministic": true,
+        "live_e2e": true
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "ticket-repair-release-disposable-git",
+      "type": "positive",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": ["tau.ticket_repair.release_handoff"],
+      "timeout_seconds": 60,
+      "command": [
+        "bash",
+        "-lc",
+        "cd ../../../.. && out_dir=\"$HOME/.local/state/tau-agentic-evals/tau-326-release-positive\" && rm -rf \"$out_dir\" && PYTHONPATH=src uv run python src/tau_coding/dag_runtime/ticket_repair_release.py --self-test --out-dir \"$out_dir\" && jq -e '.status == \"PASS\" and .mocked == false and .live == true and .handoff_context_readback.context.repo_path and .handoff_context_readback.context.cwd and .handoff_context_readback.context.worktree_path and .handoff_context_readback.context.tau_location and .handoff_context_readback.context.issue_id == \"326\" and (.handoff_context_readback.context.target_paths | index(\"src/tau_coding/dag_runtime/release-sentinel.txt\")) and (.handoff_context_readback.context.required_skills | index(\"tau\")) and (.handoff_context_readback.context.context_files | index(\"GOAL.md\")) and (.handoff_context_readback.context.proof_command | length > 0) and (.handoff_context_readback.context.depends_on[0].state == \"closed\") and .handoff_context_readback.context.goal_hash and .handoff_context_readback.context.launch.automatic == true and .handoff_context_readback.context.launch.human_terminal_selection_required == false and .release_receipt_readback.status == \"PASS\" and .release_receipt_readback.cleanup_result.action == \"removed\" and .release_receipt_readback.cleanup_result.post_verified_absent == true and .release_receipt_readback.remote_main_sha == .release_receipt_readback.integrated_commit' \"$out_dir/self-test-receipt.json\""
+      ],
+      "expected": {
+        "exit_code": 0,
+        "artifacts": [
+          {
+            "path": "/home/graham/.local/state/tau-agentic-evals/tau-326-release-positive/handoff.json",
+            "json_pointer": "/schema",
+            "equals": "tau.agent_handoff.v1"
+          },
+          {
+            "path": "/home/graham/.local/state/tau-agentic-evals/tau-326-release-positive/release-receipt.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "/home/graham/.local/state/tau-agentic-evals/tau-326-release-positive/release-receipt.json",
+            "json_pointer": "/cleanup_result/action",
+            "equals": "removed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "release-refuses-unsatisfied-dependency",
+      "type": "negative",
+      "real_world": true,
+      "evidence_class": "deterministic",
+      "supports_claims": ["tau.ticket_repair.release_handoff"],
+      "timeout_seconds": 60,
+      "command": [
+        "bash",
+        "-lc",
+        "cd ../../../.. && out_dir=\"$HOME/.local/state/tau-agentic-evals/tau-326-release-negative\" && rm -rf \"$out_dir\" && PYTHONPATH=src uv run python src/tau_coding/dag_runtime/ticket_repair_release.py --self-test-negative --out-dir \"$out_dir\" && jq -e '.status == \"PASS\" and .release_receipt_readback.status == \"BLOCKED\" and (.release_receipt_readback.blockers | index(\"unsatisfied_depends_on\"))' \"$out_dir/self-test-receipt.json\""
+      ],
+      "expected": {
+        "exit_code": 0,
+        "artifacts": [
+          {
+            "path": "/home/graham/.local/state/tau-agentic-evals/tau-326-release-negative/release-receipt.json",
+            "json_pointer": "/status",
+            "equals": "BLOCKED"
+          },
+          {
+            "path": "/home/graham/.local/state/tau-agentic-evals/tau-326-release-negative/release-receipt.json",
+            "json_pointer": "/blockers/0",
+            "equals": "unsatisfied_depends_on"
+          }
+        ]
+      }
+    }
+  ]
+}
