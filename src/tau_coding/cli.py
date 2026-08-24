@@ -360,6 +360,10 @@ from tau_coding.visible_dag_poc import inspect_visible_dag_run, run_visible_dag_
 from tau_coding.worker_controlled_data_conformance import (
     write_worker_controlled_data_conformance,
 )
+from tau_coding.workflows.acceptance import (
+    run_provider_live_acceptance,
+    verify_provider_live_acceptance,
+)
 from tau_coding.workflows.catalog import (
     get_workflow,
     workflow_catalog_payload,
@@ -897,6 +901,59 @@ def workflows_repair_command(
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
     _record_workflow_run(payload)
+    typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    if payload.get("ok") is not True:
+        raise typer.Exit(1)
+
+
+@workflows_app.command("acceptance-proof")
+def workflows_acceptance_proof_command(
+    repo: Annotated[Path, typer.Option("--repo")],
+    output: Annotated[Path, typer.Option("--output")],
+    provider_url: Annotated[
+        str,
+        typer.Option("--provider-url"),
+    ] = "http://127.0.0.1:4001",
+    model: Annotated[str, typer.Option("--model")] = "scillm-provider-boundary",
+    wheel: Annotated[Path | None, typer.Option("--wheel")] = None,
+    work_dir: Annotated[Path | None, typer.Option("--work-dir")] = None,
+    timeout_s: Annotated[float, typer.Option("--timeout-s")] = 5.0,
+) -> None:
+    """Run the provider-live acceptance proof for all five packaged workflows."""
+
+    try:
+        payload = run_provider_live_acceptance(
+            repo=repo,
+            output=output,
+            provider_url=provider_url,
+            model=model,
+            wheel=wheel,
+            work_dir=work_dir,
+            timeout_s=timeout_s,
+        )
+    except RuntimeError as exc:
+        raise typer.BadParameter(str(exc)) from exc
+    typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    if payload.get("ok") is not True:
+        raise typer.Exit(1)
+
+
+@workflows_app.command("verify-acceptance-proof")
+def workflows_verify_acceptance_proof_command(
+    receipt: Annotated[Path, typer.Argument()],
+    repo: Annotated[Path | None, typer.Option("--repo")] = None,
+    wheel: Annotated[Path | None, typer.Option("--wheel")] = None,
+) -> None:
+    """Verify a generated provider-live packaged-workflow acceptance receipt."""
+
+    try:
+        payload = verify_provider_live_acceptance(
+            receipt_path=receipt,
+            repo=repo,
+            wheel=wheel,
+        )
+    except RuntimeError as exc:
+        raise typer.BadParameter(str(exc)) from exc
     typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     if payload.get("ok") is not True:
         raise typer.Exit(1)
@@ -6355,6 +6412,99 @@ def _parse_provider_readiness_inspect_cli_args(args: list[str]) -> Path:
     return Path(args[0])
 
 
+def _parse_workflows_acceptance_proof_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "repo": None,
+        "output": None,
+        "provider_url": "http://127.0.0.1:4001",
+        "model": "scillm-provider-boundary",
+        "wheel": None,
+        "work_dir": None,
+        "timeout_s": 5.0,
+    }
+    value_options = {
+        "--repo",
+        "--output",
+        "--provider-url",
+        "--model",
+        "--wheel",
+        "--work-dir",
+        "--timeout-s",
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in value_options:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            value = args[index]
+        elif any(arg.startswith(f"{option}=") for option in value_options):
+            option, _, value = arg.partition("=")
+            arg = option
+        else:
+            raise RuntimeError(f"unknown workflows acceptance-proof option: {arg}")
+        if arg in {"--repo", "--output", "--wheel", "--work-dir"}:
+            key = arg.removeprefix("--").replace("-", "_")
+            options[key] = Path(value)
+        elif arg == "--provider-url":
+            options["provider_url"] = value
+        elif arg == "--model":
+            options["model"] = value
+        elif arg == "--timeout-s":
+            try:
+                options["timeout_s"] = float(value)
+            except ValueError as exc:
+                raise RuntimeError("--timeout-s must be a number") from exc
+        index += 1
+    if options["repo"] is None or options["output"] is None:
+        raise RuntimeError(
+            "Usage: tau workflows acceptance-proof --repo <repo> --output <receipt.json> "
+            "[--provider-url <url>] [--model <id>] [--wheel <wheel>] [--work-dir <dir>]"
+        )
+    if float(options["timeout_s"]) <= 0:
+        raise RuntimeError("--timeout-s must be positive")
+    return options
+
+
+def _parse_workflows_verify_acceptance_proof_cli_args(args: list[str]) -> dict[str, object]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau workflows verify-acceptance-proof <receipt.json> "
+            "[--repo <repo>] [--wheel <wheel>]"
+        )
+    options: dict[str, object] = {
+        "receipt_path": None,
+        "repo": None,
+        "wheel": None,
+    }
+    positional: list[str] = []
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--repo", "--wheel"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--")] = Path(args[index])
+        elif arg.startswith("--repo="):
+            options["repo"] = Path(arg.partition("=")[2])
+        elif arg.startswith("--wheel="):
+            options["wheel"] = Path(arg.partition("=")[2])
+        elif arg.startswith("-"):
+            raise RuntimeError(f"unknown workflows verify-acceptance-proof option: {arg}")
+        else:
+            positional.append(arg)
+        index += 1
+    if len(positional) != 1:
+        raise RuntimeError(
+            "Usage: tau workflows verify-acceptance-proof <receipt.json> "
+            "[--repo <repo>] [--wheel <wheel>]"
+        )
+    options["receipt_path"] = Path(positional[0])
+    return options
+
+
 def _parse_local_provider_readiness_cli_args(args: list[str]) -> dict[str, object]:
     options: dict[str, object] = {
         "provider_url": None,
@@ -6737,7 +6887,9 @@ def _run_dag_cli_command(args: list[str], *, command_name: str) -> dict[str, obj
 
 def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
     if not args:
-        raise RuntimeError("Usage: tau workflows <list|describe|run>")
+        raise RuntimeError(
+            "Usage: tau workflows <list|describe|run|acceptance-proof|verify-acceptance-proof>"
+        )
     subcommand = args[0]
     remaining = args[1:]
     if subcommand == "list":
@@ -6750,6 +6902,14 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
         if len(positional) != 1:
             raise RuntimeError("Usage: tau workflows describe <workflow-id> [--json]")
         return get_workflow(positional[0]).public_payload(), json_output
+    if subcommand == "acceptance-proof":
+        options = _parse_workflows_acceptance_proof_cli_args(remaining)
+        payload = run_provider_live_acceptance(**options)
+        return dict(payload), True
+    if subcommand == "verify-acceptance-proof":
+        options = _parse_workflows_verify_acceptance_proof_cli_args(remaining)
+        payload = verify_provider_live_acceptance(**options)
+        return dict(payload), True
     if subcommand == "approve":
         approval_packet: Path | None = None
         positional: list[str] = []
