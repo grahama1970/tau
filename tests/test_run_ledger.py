@@ -1,6 +1,10 @@
 """tau.run_ledger.v1: tamper-evident build/verify + agentic-eval admission (#327)."""
+
 from __future__ import annotations
+
 import copy
+import json
+
 from tau_coding import run_ledger as rl
 
 
@@ -17,7 +21,9 @@ def _sample_entries():
 
 
 def test_intact_ledger_verifies():
-    led = rl.build_ledger(_sample_entries(), goal_hash="sha256:goalA", run_id="run-1", dag_id="dag-1")
+    led = rl.build_ledger(
+        _sample_entries(), goal_hash="sha256:goalA", run_id="run-1", dag_id="dag-1"
+    )
     v = rl.verify_ledger(led)
     assert v["ok"] is True and v["first_bad_index"] is None
     assert led["entry_count"] == 3 and led["head_hash"].startswith("sha256:")
@@ -57,3 +63,56 @@ def test_agentic_eval_admitted_with_boundary():
     assert e["schema"] == rl.AGENTIC_EVAL_RECEIPT_SCHEMA
     assert e["readiness"] == "READY" and e["live"] is True and e["mocked"] is False
     assert e["cases"][0]["passed"] is True
+
+
+def test_trace_tamper_fails_when_trace_present():
+    led = rl.build_ledger(_sample_entries(), goal_hash="sha256:goalA", run_id="run-1")
+    tampered = copy.deepcopy(led)
+    tampered["trace"]["entry_count"] = 999
+    v = rl.verify_ledger(tampered)
+    assert v["ok"] is False
+    assert v["reason"] == "trace_mismatch"
+
+
+def test_run_dir_ledger_includes_artifact_digests_and_trace(tmp_path):
+    progress_path = tmp_path / "dag-progress.json"
+    progress_path.write_text(
+        json.dumps({"schema": "tau.dag_progress.v1", "ok": True}), encoding="utf-8"
+    )
+    source_path = tmp_path / "source-dag.json"
+    source_path.write_text(
+        json.dumps({"schema": "tau.dag_contract.v1", "dag_id": "dag-1"}), encoding="utf-8"
+    )
+    receipt_path = tmp_path / "dag-receipt.json"
+    receipt_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.dag_receipt.v1",
+                "dag_id": "dag-1",
+                "active_goal_hash": "sha256:goalA",
+                "scheduler_events": [
+                    {"event": "node_started", "node_id": "coder", "attempt": 1},
+                    {"event": "node_completed", "node_id": "coder", "attempt": 1},
+                ],
+                "dispatches": [
+                    {
+                        "schema": "tau.agent_handoff_dispatch_receipt.v1",
+                        "selected_agent": "coder",
+                        "status": "COMPLETED",
+                        "mocked": False,
+                        "live": True,
+                    }
+                ],
+                "progress_path": str(progress_path),
+                "artifacts": [str(source_path)],
+            }
+        ),
+        encoding="utf-8",
+    )
+    ledger = rl.build_run_ledger_from_run_dir(tmp_path)
+    assert rl.verify_ledger(ledger)["ok"] is True
+    assert ledger["trace"]["schema"] == rl.RUN_LEDGER_TRACE_SCHEMA
+    assert ledger["trace"]["entry_kind_counts"]["artifact_digest"] == 2
+    assert ledger["trace"]["artifact_count"] == 2
+    paths = {row["path"] for row in ledger["trace"]["artifact_digests"]}
+    assert paths == {"dag-progress.json", "source-dag.json"}

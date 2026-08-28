@@ -62,3 +62,30 @@ test("uses the retained source goal when the plan has only a hash binding", () =
   expect(screen.getByText("Keep the human-owned goal immutable.")).toBeInTheDocument();
   expect(screen.queryByText("Goal summary unavailable")).not.toBeInTheDocument();
 });
+
+test("surfaces the replay ledger summary for compliance traceability", () => {
+  render(<RunOverview
+    manifest={manifest}
+    snapshot={{
+      ...snapshot,
+      run_summary: {
+        ...snapshot.run_summary,
+        ledger: {
+          schema: "tau.dag_ledger_summary.v1",
+          available: true,
+          path: "/tmp/run-ledger.json",
+          verify_ok: true,
+          verify_reason: null,
+          entry_count: 8,
+          artifact_count: 3,
+          head_hash: "sha256:ledger-head",
+        },
+      },
+    }}
+  />);
+
+  expect(screen.getByText("Replay ledger")).toBeInTheDocument();
+  expect(screen.getByText("Verified hash chain")).toBeInTheDocument();
+  expect(screen.getByText(/8 entries · 3 artifacts · head sha256:ledger-head/)).toBeInTheDocument();
+  expect(document.querySelector('[data-qid="dag:overview:ledger"]')).toBeInTheDocument();
+});

@@ -20,13 +20,16 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections import Counter
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 RUN_LEDGER_SCHEMA = "tau.run_ledger.v1"
+RUN_LEDGER_TRACE_SCHEMA = "tau.run_ledger_trace.v1"
 AGENTIC_EVAL_RECEIPT_SCHEMA = "tau.agentic_eval_receipt.v1"
+ARTIFACT_DIGEST_SCHEMA = "tau.run_ledger_artifact_digest.v1"
 GENESIS = "GENESIS"
 
 
@@ -92,7 +95,7 @@ def build_ledger(
         wrapped["entry_hash"] = h
         chained.append(wrapped)
         prev = h
-    return {
+    ledger = {
         "schema": RUN_LEDGER_SCHEMA,
         "run_id": run_id,
         "dag_id": dag_id,
@@ -102,6 +105,8 @@ def build_ledger(
         "head_hash": prev,
         "entries": chained,
     }
+    ledger["trace"] = _trace_from_chained_entries(chained)
+    return ledger
 
 
 def build_run_ledger_from_run_dir(
@@ -134,6 +139,7 @@ def build_run_ledger_from_run_dir(
                     "live": dispatch.get("live"),
                 }
             )
+    entries.extend(_artifact_digest_entries(receipt, resolved_run_dir))
     for path in agentic_eval_reports:
         entries.append(admit_agentic_eval(_read_json_object(path.expanduser().resolve())))
     ledger = build_ledger(
@@ -147,6 +153,155 @@ def build_run_ledger_from_run_dir(
     if output_path is not None:
         write_ledger(output_path, ledger)
     return ledger
+
+
+def _artifact_digest_entries(receipt: dict[str, Any], run_dir: Path) -> list[dict[str, Any]]:
+    """Project receipt artifacts into digest rows a security engineer can trace.
+
+    The ledger is built before its final `run_ledger` pointer is written back to
+    `dag-receipt.json`, so the receipt itself is deliberately excluded: hashing
+    it would make every default ledger stale the moment the pointer is attached.
+    """
+    candidates: list[str] = []
+    progress_path = receipt.get("progress_path")
+    if isinstance(progress_path, str):
+        candidates.append(progress_path)
+    artifacts = receipt.get("artifacts")
+    if isinstance(artifacts, list):
+        candidates.extend(str(path) for path in artifacts if isinstance(path, str))
+    seen: set[Path] = set()
+    entries: list[dict[str, Any]] = []
+    for raw_path in candidates:
+        path = Path(raw_path).expanduser()
+        if not path.is_absolute():
+            path = run_dir / path
+        try:
+            resolved = path.resolve()
+        except OSError:
+            resolved = path.absolute()
+        if (
+            resolved in seen
+            or resolved.name.startswith("run-ledger")
+            or resolved.name == "dag-receipt.json"
+        ):
+            continue
+        seen.add(resolved)
+        relative_path: str | None
+        try:
+            relative_path = str(resolved.relative_to(run_dir))
+        except ValueError:
+            relative_path = None
+        if not resolved.is_file():
+            entries.append(
+                {
+                    "schema": ARTIFACT_DIGEST_SCHEMA,
+                    "kind": "artifact_missing",
+                    "path": str(resolved),
+                    "relative_path": relative_path,
+                }
+            )
+            continue
+        data = resolved.read_bytes()
+        entries.append(
+            {
+                "schema": ARTIFACT_DIGEST_SCHEMA,
+                "kind": "artifact_digest",
+                "path": str(resolved),
+                "relative_path": relative_path,
+                "bytes": len(data),
+                "sha256": "sha256:" + hashlib.sha256(data).hexdigest(),
+                "json_schema": _json_schema(resolved),
+            }
+        )
+    return entries
+
+
+def _json_schema(path: Path) -> str | None:
+    if path.suffix.lower() != ".json":
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+        return None
+    if isinstance(payload, dict) and isinstance(payload.get("schema"), str):
+        return payload["schema"]
+    return None
+
+
+def _trace_from_chained_entries(entries: list[dict[str, Any]]) -> dict[str, Any]:
+    payloads = [
+        entry.get("payload") for entry in entries if isinstance(entry.get("payload"), dict)
+    ]
+    kinds = Counter(
+        str(payload.get("kind") or payload.get("schema") or "unknown") for payload in payloads
+    )
+    node_attempts: dict[tuple[str, str], dict[str, Any]] = {}
+    artifact_rows: list[dict[str, Any]] = []
+    agentic_eval_rows: list[dict[str, Any]] = []
+    timeline: list[dict[str, Any]] = []
+    for entry in entries:
+        payload = entry.get("payload") if isinstance(entry.get("payload"), dict) else {}
+        seq = entry.get("seq")
+        kind = str(payload.get("kind") or payload.get("schema") or "unknown")
+        event = payload.get("event") or payload.get("event_type")
+        node_id = payload.get("node_id") or payload.get("selected_agent") or payload.get("node")
+        attempt = payload.get("attempt") or payload.get("attempt_number")
+        status = payload.get("status") or payload.get("verdict") or payload.get("readiness")
+        timeline.append(
+            {
+                "seq": seq,
+                "kind": kind,
+                "event": event if isinstance(event, str) else None,
+                "node_id": node_id if isinstance(node_id, str) else None,
+                "attempt": attempt,
+                "status": status if isinstance(status, str) else None,
+            }
+        )
+        if isinstance(node_id, str) and node_id:
+            key = (node_id, str(attempt or "unknown"))
+            row = node_attempts.setdefault(
+                key,
+                {"node_id": node_id, "attempt": attempt, "events": [], "latest_status": None},
+            )
+            if isinstance(event, str):
+                row["events"].append(event)
+            if isinstance(status, str):
+                row["latest_status"] = status
+        if payload.get("schema") == ARTIFACT_DIGEST_SCHEMA:
+            artifact_rows.append(
+                {
+                    "seq": seq,
+                    "kind": kind,
+                    "path": payload.get("relative_path") or payload.get("path"),
+                    "sha256": payload.get("sha256"),
+                    "bytes": payload.get("bytes"),
+                    "json_schema": payload.get("json_schema"),
+                }
+            )
+        if payload.get("schema") == AGENTIC_EVAL_RECEIPT_SCHEMA:
+            agentic_eval_rows.append(
+                {
+                    "seq": seq,
+                    "skill": payload.get("skill"),
+                    "readiness": payload.get("readiness"),
+                    "live": payload.get("live"),
+                    "mocked": payload.get("mocked"),
+                    "trial_count": payload.get("trial_count"),
+                }
+            )
+    return {
+        "schema": RUN_LEDGER_TRACE_SCHEMA,
+        "entry_count": len(entries),
+        "entry_kind_counts": {key: kinds[key] for key in sorted(kinds)},
+        "timeline": timeline,
+        "node_attempts": sorted(
+            node_attempts.values(), key=lambda item: (str(item["node_id"]), str(item["attempt"]))
+        ),
+        "artifact_count": len(artifact_rows),
+        "artifact_digests": artifact_rows,
+        "agentic_eval_count": len(agentic_eval_rows),
+        "agentic_evals": agentic_eval_rows,
+    }
 
 
 def write_ledger(path: Path, ledger: dict[str, Any]) -> None:
@@ -198,5 +353,14 @@ def verify_ledger(ledger: dict[str, Any]) -> dict[str, Any]:
             "ok": False,
             "first_bad_index": len(ledger.get("entries", [])),
             "reason": "head_hash_mismatch",
+        }
+    if "trace" in ledger and ledger.get("trace") != _trace_from_chained_entries(
+        list(ledger.get("entries", []))
+    ):
+        return {
+            "ok": False,
+            "first_bad_index": None,
+            "reason": "trace_mismatch",
+            "head_hash": prev,
         }
     return {"ok": True, "first_bad_index": None, "reason": None, "head_hash": prev}

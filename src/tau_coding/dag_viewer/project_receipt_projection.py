@@ -11,6 +11,7 @@ from typing import Any
 from tau_coding.dag_runtime.model import canonical_sha256
 from tau_coding.dag_viewer.receipt_index import IndexedReceipt, ReceiptIndex
 from tau_coding.dag_viewer.redaction import redact_for_viewer
+from tau_coding.run_ledger import read_ledger, verify_ledger
 
 PROJECT_RECEIPT_PROOF_SCOPE = {
     "proves": [
@@ -99,6 +100,7 @@ class ProjectReceiptProjection:
             "workflow": None,
             "graph": graph,
             "receipt_index": self.receipt_index.public_entries(),
+            "ledger_summary": _ledger_summary(self.run_dir),
             "proof_scope": PROJECT_RECEIPT_PROOF_SCOPE,
         }
         return _redacted(payload)
@@ -153,6 +155,7 @@ class ProjectReceiptProjection:
                 ],
                 "highest_priority_blocker": _highest_priority_blocker(nodes),
                 "final_result": _final_result(self.receipt),
+                "ledger": _ledger_summary(self.run_dir),
             },
             "recent_events": list(selected_events[-100:]),
             "proof_scope": PROJECT_RECEIPT_PROOF_SCOPE,
@@ -597,6 +600,36 @@ def _empty_cost_accounting() -> dict[str, Any]:
         "output_tokens": 0,
         "total_tokens": 0,
         "estimated_cost_usd": 0.0,
+    }
+
+
+def _ledger_summary(root: Path) -> dict[str, Any] | None:
+    ledger_path = root / "run-ledger.json"
+    if not ledger_path.is_file():
+        return None
+    try:
+        ledger = read_ledger(ledger_path)
+        verification = verify_ledger(ledger)
+    except (OSError, ValueError, json.JSONDecodeError):
+        return {
+            "schema": "tau.dag_ledger_summary.v1",
+            "available": False,
+            "path": str(ledger_path),
+            "verify_ok": False,
+            "verify_reason": "ledger_unreadable",
+        }
+    trace = ledger.get("trace") if isinstance(ledger.get("trace"), dict) else {}
+    return {
+        "schema": "tau.dag_ledger_summary.v1",
+        "available": True,
+        "path": str(ledger_path),
+        "verify_ok": verification.get("ok") is True,
+        "verify_reason": verification.get("reason"),
+        "entry_count": ledger.get("entry_count"),
+        "head_hash": ledger.get("head_hash"),
+        "artifact_count": trace.get("artifact_count"),
+        "agentic_eval_count": trace.get("agentic_eval_count"),
+        "entry_kind_counts": trace.get("entry_kind_counts"),
     }
 
 

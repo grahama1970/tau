@@ -56,6 +56,19 @@ export type NodeResultProjection = {
   duration_seconds: number | null;
 };
 
+export type LedgerSummary = {
+  schema: "tau.dag_ledger_summary.v1";
+  available: boolean;
+  path: string;
+  verify_ok: boolean;
+  verify_reason: string | null;
+  entry_count?: number;
+  head_hash?: string;
+  artifact_count?: number;
+  agentic_eval_count?: number;
+  entry_kind_counts?: Record<string, JsonValue>;
+};
+
 export type DagManifest = {
   schema: "tau.dag_view_manifest.v1";
   run_id: string;
@@ -67,6 +80,7 @@ export type DagManifest = {
   dag_plan: JsonValue;
   goal: GoalProjection;
   workflow: WorkflowMetadata | null;
+  ledger_summary?: LedgerSummary | null;
   graph: {
     nodes: PlanNode[];
     edges: PlanEdge[];
@@ -207,6 +221,7 @@ export type DagSnapshot = {
     accepted_node_ids: string[];
     highest_priority_blocker: { node_id: string; codes: string[] } | null;
     final_result: Record<string, JsonValue> | null;
+    ledger?: LedgerSummary | null;
   };
   recent_events: JournalEvent[];
   proof_scope: { proves: string[]; does_not_prove: string[] };

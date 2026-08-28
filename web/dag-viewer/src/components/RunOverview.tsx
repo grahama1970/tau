@@ -28,6 +28,7 @@ export function RunOverview({ manifest, snapshot }: Props) {
   const workflow = manifest.workflow;
   const blocker = snapshot.run_summary.highest_priority_blocker;
   const result = snapshot.run_summary.final_result;
+  const ledger = snapshot.run_summary.ledger ?? manifest.ledger_summary ?? null;
   const activeNodes = snapshot.run_summary.active_node_ids;
   const current = activeNodes.length > 0
     ? activeNodes.join(", ")
@@ -64,6 +65,13 @@ export function RunOverview({ manifest, snapshot }: Props) {
           </>
         ) : <strong>No accepted final result</strong>}
       </div>
+      {ledger && (
+        <div className="run-overview__ledger" data-qid="dag:overview:ledger">
+          <span>Replay ledger</span>
+          <strong>{ledger.verify_ok ? "Verified hash chain" : "Ledger needs attention"}</strong>
+          <small>{ledger.entry_count ?? 0} entries · {ledger.artifact_count ?? 0} artifacts · head {ledger.head_hash ?? "unavailable"}</small>
+        </div>
+      )}
       {blocker && (
         <div className="run-overview__blocker" data-qid="dag:overview:blocker">
           <span>Exact blocker</span>
