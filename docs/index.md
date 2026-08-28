@@ -64,6 +64,7 @@ Tau currently has:
   [Context Compaction](context-compaction.md).
 - Want to understand the execution engine? Read [Agent Loop](agent-loop.md).
 - Want to understand what proves Tau works? Read [Testing Policy](testing-policy.md).
+- Want the current visual proof boundary for repairable DAGs? Read [Repairable DAG Status Board](repairable-dag-status.md).
 - Want the reusable stateful brain? Read [Agent Harness](harness.md).
 - Want to build another frontend? Read [Building a Custom TUI](custom-tui.md).
 - Want a summary of the completed pre-extension hardening work? Read
