@@ -1,0 +1,43 @@
+{
+  "version": 2,
+  "skill": "tau-pipeline-self-repair",
+  "trials": 2,
+  "proof_scope": "Tau required-node failure to pipeline-self-repair repair overlay",
+  "claims": {
+    "proves": "Tau records a failed required node through pipeline-self-repair, blocks downstream advancement, writes a repair ledger, and projects the repair category into the viewer.",
+    "does_not_prove": "ticket publication, watchdog repair success, provider semantic quality, or repair-category closure."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.repair.required_node_failure_overlay",
+      "description": "A required-node failure becomes a blocking pipeline-self-repair category instead of a blind retry or skipped downstream edge.",
+      "criticality": "critical",
+      "evidence_required": {"live_e2e": true}
+    }
+  ],
+  "cases": [
+    {
+      "name": "live-required-node-failure-records-repair-overlay",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": ["tau.repair.required_node_failure_overlay"],
+      "timeout_seconds": 180,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-pipeline-self-repair.py --out local/agentic-evals/tau-pipeline-self-repair-proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\"", "\"repair_state\": \"NEEDS_TRIAGE\""],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-pipeline-self-repair-proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-pipeline-self-repair-proof.json", "json_pointer": "/mocked", "equals": false},
+          {"path": "../local/agentic-evals/tau-pipeline-self-repair-proof.json", "json_pointer": "/live", "equals": true},
+          {"path": "../local/agentic-evals/tau-pipeline-self-repair-proof.json", "json_pointer": "/viewer_repair_summary/open_category_count", "equals": 1}
+        ]
+      }
+    }
+  ]
+}

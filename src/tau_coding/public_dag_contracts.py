@@ -51,6 +51,7 @@ PROJECT_DAG_ROOT_KEYS = frozenset(
         "execution_profile",
         "execution_profile_policy",
         "extensions",
+        "repair_policy",
     }
 )
 

@@ -29,6 +29,7 @@ export function RunOverview({ manifest, snapshot }: Props) {
   const blocker = snapshot.run_summary.highest_priority_blocker;
   const result = snapshot.run_summary.final_result;
   const ledger = snapshot.run_summary.ledger ?? manifest.ledger_summary ?? null;
+  const repair = snapshot.run_summary.repair ?? null;
   const activeNodes = snapshot.run_summary.active_node_ids;
   const current = activeNodes.length > 0
     ? activeNodes.join(", ")
@@ -70,6 +71,13 @@ export function RunOverview({ manifest, snapshot }: Props) {
           <span>Replay ledger</span>
           <strong>{ledger.verify_ok ? "Verified hash chain" : "Ledger needs attention"}</strong>
           <small>{ledger.entry_count ?? 0} entries · {ledger.artifact_count ?? 0} artifacts · head {ledger.head_hash ?? "unavailable"}</small>
+        </div>
+      )}
+      {repair && (
+        <div className="run-overview__repair" data-qid="dag:overview:repair">
+          <span>Repair overlay</span>
+          <strong>{repair.open_category_count > 0 ? `${repair.open_category_count} blocking repair category` : "Repair categories closed"}</strong>
+          <small>{repair.category_count} categories · {repair.states.join(" → ")}</small>
         </div>
       )}
       {blocker && (

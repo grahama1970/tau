@@ -80,6 +80,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
 .run-overview__artifact { font-family: ui-monospace, monospace; }
 .run-overview .run-overview__ledger { border-top: 1px solid #2d4637; background: #122019; }
 .run-overview .run-overview__ledger strong { color: #b8f0cb; }
+.run-overview .run-overview__repair { border-top: 1px solid #5e4a24; background: #211a10; }
+.run-overview .run-overview__repair strong { color: #f2c66d; }
 .run-overview .run-overview__blocker { grid-column: 1 / -1; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; gap: 10px; padding-block: 7px; border-top: 1px solid #6b3438; border-right: 0; background: #2b181b; }
 
 .sequence-navigator { grid-row: 3; grid-column: 2; display: flex; align-items: center; justify-content: space-between; min-width: 0; padding: 0 14px; border-bottom: 1px solid #263140; background: #10161e; }
@@ -364,6 +366,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
   .run-overview { grid-row: 2; grid-template-columns: 1fr 1fr; }
   .run-overview .run-overview__blocker { grid-column: 1 / -1; }
   .run-overview .run-overview__ledger { grid-column: 1 / -1; }
+  .run-overview .run-overview__repair { grid-column: 1 / -1; }
   .sequence-navigator { grid-row: 3; }
   .filter-bar { grid-row: 4; }
   .dag-app__workspace { display: contents; }

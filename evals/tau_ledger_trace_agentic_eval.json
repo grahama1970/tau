@@ -1,0 +1,43 @@
+{
+  "version": 2,
+  "skill": "tau-ledger-trace",
+  "trials": 2,
+  "proof_scope": "Tau default run ledger traceability",
+  "claims": {
+    "proves": "Tau can execute a live local DAG, write the default run ledger, verify its hash chain, and expose trace fields with artifact digests and entry-kind counts.",
+    "does_not_prove": "provider semantic quality, browser rendering quality, GitHub mutation, or full product readiness."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.ledger_trace.default",
+      "description": "Default Tau DAG runs emit a verifiable traceable run ledger.",
+      "criticality": "critical",
+      "evidence_required": {"live_e2e": true}
+    }
+  ],
+  "cases": [
+    {
+      "name": "live-ledger-trace-readback",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": ["tau.ledger_trace.default"],
+      "timeout_seconds": 150,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-ledger-trace.py --out local/agentic-evals/tau-ledger-trace-proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\"", "\"trace_schema\": \"tau.run_ledger_trace.v1\""],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-ledger-trace-proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-ledger-trace-proof.json", "json_pointer": "/mocked", "equals": false},
+          {"path": "../local/agentic-evals/tau-ledger-trace-proof.json", "json_pointer": "/live", "equals": true},
+          {"path": "../local/agentic-evals/tau-ledger-trace-proof.json", "json_pointer": "/ledger_verify_ok", "equals": true}
+        ]
+      }
+    }
+  ]
+}

@@ -56,6 +56,15 @@ export type NodeResultProjection = {
   duration_seconds: number | null;
 };
 
+export type RepairSummary = {
+  schema: "tau.pipeline_self_repair_summary.v1";
+  available: boolean;
+  category_count: number;
+  open_category_count: number;
+  states: string[];
+  incident_ids: string[];
+};
+
 export type LedgerSummary = {
   schema: "tau.dag_ledger_summary.v1";
   available: boolean;
@@ -222,6 +231,7 @@ export type DagSnapshot = {
     highest_priority_blocker: { node_id: string; codes: string[] } | null;
     final_result: Record<string, JsonValue> | null;
     ledger?: LedgerSummary | null;
+    repair?: RepairSummary | null;
   };
   recent_events: JournalEvent[];
   proof_scope: { proves: string[]; does_not_prove: string[] };

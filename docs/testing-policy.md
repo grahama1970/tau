@@ -31,6 +31,14 @@ For Tau work, report proof in this order:
 
 If layer 1 is missing, the work is not proven. If layer 2 is missing, the eval is not enough. If only layer 3 exists, report it as unproven regression coverage.
 
+## Current agentic eval gates
+
+The repairable-DAG direction has three separate live fixtures:
+
+- `evals/tau_ledger_trace_agentic_eval.json` proves default run-ledger trace readback.
+- `evals/tau_pipeline_self_repair_agentic_eval.json` proves required-node failure creates a blocking `$pipeline-self-repair` overlay.
+- `evals/tau_discord_unblock_agentic_eval.json` proves Discord status receipts do not unblock decisions and matching typed answer receipts can.
+
 ## Pytest diet
 
 `uv run pytest` runs the curated contract suite by default. It is intentionally small and deterministic. Use it to catch regressions in contracts and local mechanics, not to prove product readiness.

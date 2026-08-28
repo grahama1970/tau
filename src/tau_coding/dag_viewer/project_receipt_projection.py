@@ -42,7 +42,7 @@ class ProjectReceiptProjection:
     plan_sha256: str
 
     @classmethod
-    def load(cls, run_dir: Path) -> "ProjectReceiptProjection":
+    def load(cls, run_dir: Path) -> ProjectReceiptProjection:
         root = run_dir.expanduser().resolve()
         receipt_path = root / "dag-receipt.json"
         progress_path = root / "dag-progress.json"
@@ -76,7 +76,9 @@ class ProjectReceiptProjection:
     def manifest(self) -> dict[str, Any]:
         graph = {
             "nodes": [_plan_node(node) for node in _contract_nodes(self.contract)],
-            "edges": [_plan_edge(edge, index) for index, edge in enumerate(_contract_edges(self.contract))],
+            "edges": [
+                _plan_edge(edge, index) for index, edge in enumerate(_contract_edges(self.contract))
+            ],
             "terminals": [
                 {"terminal_id": terminal, "kind": "human", "origin": "project_dag_contract"}
                 for terminal in _terminal_ids(self.contract)
@@ -116,6 +118,7 @@ class ProjectReceiptProjection:
         nodes = self._live_nodes()
         edges = self._live_edges()
         terminals = self._live_terminals(edges)
+        corrections = self._corrections(sequence)
         attention_items = self._attention_items(sequence)
         payload: dict[str, Any] = {
             "schema": "tau.dag_view_snapshot.v2",
@@ -139,7 +142,7 @@ class ProjectReceiptProjection:
             "terminals": terminals,
             "routes": self._routes(edges),
             "joins": [],
-            "corrections": [],
+            "corrections": corrections,
             "attention_items": attention_items,
             "highest_priority_attention_id": (
                 attention_items[0]["attention_id"] if attention_items else None
@@ -156,6 +159,7 @@ class ProjectReceiptProjection:
                 "highest_priority_blocker": _highest_priority_blocker(nodes),
                 "final_result": _final_result(self.receipt),
                 "ledger": _ledger_summary(self.run_dir),
+                "repair": _repair_summary(corrections),
             },
             "recent_events": list(selected_events[-100:]),
             "proof_scope": PROJECT_RECEIPT_PROOF_SCOPE,
@@ -165,7 +169,9 @@ class ProjectReceiptProjection:
 
     def events(self) -> tuple[dict[str, Any], ...]:
         raw_events = self.progress.get("events")
-        source = raw_events if isinstance(raw_events, list) else self.receipt.get("scheduler_events")
+        source = (
+            raw_events if isinstance(raw_events, list) else self.receipt.get("scheduler_events")
+        )
         events: list[dict[str, Any]] = []
         for index, raw in enumerate(source if isinstance(source, list) else [], start=1):
             if not isinstance(raw, dict):
@@ -174,7 +180,9 @@ class ProjectReceiptProjection:
             events.append(
                 {
                     "seq": index,
-                    "event_type": str(raw.get("event") or raw.get("event_type") or "project_dag_event"),
+                    "event_type": str(
+                        raw.get("event") or raw.get("event_type") or "project_dag_event"
+                    ),
                     "entity_type": "node" if isinstance(node_id, str) and node_id else "run",
                     "entity_id": str(node_id or self.run_id),
                     "attempt_id": None,
@@ -254,6 +262,7 @@ class ProjectReceiptProjection:
             for item in alert_items
             if isinstance(item, dict) and item.get("code")
         ]
+        repair_by_node = _repair_by_node(self.receipt)
         nodes: list[dict[str, Any]] = []
         for node in _contract_nodes(self.contract):
             node_id = str(node["id"])
@@ -270,7 +279,9 @@ class ProjectReceiptProjection:
                         "max_attempts": int(node.get("max_attempts") or 1),
                     },
                     "runtime": {
-                        "state": "COMPLETED" if scheduler_state == "settled" else scheduler_state.upper(),
+                        "state": (
+                            "COMPLETED" if scheduler_state == "settled" else scheduler_state.upper()
+                        ),
                         "liveness": "COMPLETE" if scheduler_state == "settled" else "UNKNOWN",
                         "confidence": "SOURCE_BACKED",
                         "last_event_id": str(progress.get("last_event_at"))
@@ -278,7 +289,9 @@ class ProjectReceiptProjection:
                         else None,
                     },
                     "admission": {
-                        "state": "accepted" if accepted else "blocked" if alert_codes else "pending",
+                        "state": (
+                            "accepted" if accepted else "blocked" if alert_codes else "pending"
+                        ),
                         "accepted": accepted,
                         "receipt_refs": _node_receipt_refs(self.receipt_index, node_id),
                     },
@@ -297,7 +310,7 @@ class ProjectReceiptProjection:
                         "budget_blocker": None,
                     },
                     "transaction": _transaction(self.receipt, node_id, attempts),
-                    "correction": None,
+                    "correction": repair_by_node.get(node_id),
                     "causal_explanation_id": f"project-receipt:node:{node_id}",
                     "updated_sequence": len(self.events()),
                 }
@@ -306,7 +319,10 @@ class ProjectReceiptProjection:
 
     def _live_edges(self) -> list[dict[str, Any]]:
         observed = {
-            (str(item.get("from_node") or item.get("from_agent")), str(item.get("to_node") or item.get("to_agent")))
+            (
+                str(item.get("from_node") or item.get("from_agent")),
+                str(item.get("to_node") or item.get("to_agent")),
+            )
             for item in self.receipt.get("observed_edges", [])
             if isinstance(item, dict)
         }
@@ -361,6 +377,9 @@ class ProjectReceiptProjection:
             }
             for edge in edges
         ]
+
+    def _corrections(self, sequence: int) -> list[dict[str, Any]]:
+        return list(_pipeline_self_repair_corrections(self.receipt, sequence=sequence))
 
     def _attention_items(self, sequence: int) -> list[dict[str, Any]]:
         alerts = self.receipt.get("alerts")
@@ -472,7 +491,11 @@ def _edge_id(edge: dict[str, Any], index: int) -> str:
     return f"{base}:{condition}" if condition else base if index == 0 else f"{base}:{index}"
 
 
-def _dag_plan_payload(contract: dict[str, Any], graph: dict[str, Any], plan_sha256: str) -> dict[str, Any]:
+def _dag_plan_payload(
+    contract: dict[str, Any],
+    graph: dict[str, Any],
+    plan_sha256: str,
+) -> dict[str, Any]:
     return {
         "schema": "tau.dag_plan.v1",
         "plan_id": str(contract.get("dag_id") or ""),
@@ -543,7 +566,101 @@ def _node_output(receipt: dict[str, Any], node_id: str) -> dict[str, Any]:
     }
 
 
-def _transaction(receipt: dict[str, Any], node_id: str, attempts: dict[str, Any]) -> dict[str, Any] | None:
+def _pipeline_self_repair_corrections(
+    receipt: dict[str, Any],
+    *,
+    sequence: int,
+) -> tuple[dict[str, Any], ...]:
+    repairs = receipt.get("pipeline_self_repair")
+    items = repairs if isinstance(repairs, list) else []
+    corrections: list[dict[str, Any]] = []
+    for index, repair in enumerate(items, start=1):
+        if not isinstance(repair, dict):
+            continue
+        node_id = str(repair.get("node_id") or "unknown-node")
+        incident_id = str(
+            repair.get("failure_category_id")
+            or repair.get("category_key")
+            or f"pipeline-self-repair:{node_id}:{index}"
+        )
+        state = str(repair.get("repair_state") or repair.get("status") or "UNKNOWN")
+        incident = {
+            "schema": "tau.pipeline_self_repair_incident.v1",
+            "incident_id": incident_id,
+            "node_id": node_id,
+            "attempt": repair.get("attempt"),
+            "attempt_id": repair.get("attempt_id"),
+            "category_key": repair.get("category_key"),
+            "failure_category_id": repair.get("failure_category_id"),
+            "triage": repair.get("triage"),
+            "ticket": repair.get("ticket"),
+            "watchdog": repair.get("watchdog"),
+            "agentic_eval": repair.get("agentic_eval"),
+            "ledger": repair.get("ledger"),
+            "record_failure_receipt": repair.get("record_failure_receipt"),
+            "discord": repair.get("discord"),
+            "blocking": repair.get("blocking", True),
+        }
+        corrections.append(
+            {
+                "incident_id": incident_id,
+                "state": state,
+                "journal_sequence": sequence,
+                "incident": incident,
+                "intent": {
+                    "handler": "$pipeline-self-repair",
+                    "same_semantic_node_id": node_id,
+                    "rerun_policy": "rerun_same_semantic_node_after_repair_passes",
+                    "ticket": repair.get("ticket"),
+                    "watchdog": repair.get("watchdog"),
+                    "agentic_eval": repair.get("agentic_eval"),
+                    "discord": repair.get("discord"),
+                },
+                "action_receipt": None,
+                "verification": {
+                    "ledger": repair.get("ledger"),
+                    "record_failure_receipt": repair.get("record_failure_receipt"),
+                    "projection_path": repair.get("projection_path"),
+                    "goal_alignment": repair.get("goal_alignment"),
+                },
+                "causal_explanation_id": f"project-receipt:correction:{incident_id}",
+            }
+        )
+    return tuple(corrections)
+
+
+def _repair_by_node(receipt: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {
+        str(correction["incident"].get("node_id")): correction
+        for correction in _pipeline_self_repair_corrections(receipt, sequence=0)
+        if isinstance(correction.get("incident"), dict)
+        and isinstance(correction["incident"].get("node_id"), str)
+    }
+
+
+def _repair_summary(corrections: list[dict[str, Any]]) -> dict[str, Any] | None:
+    if not corrections:
+        return None
+    open_items = [
+        item
+        for item in corrections
+        if str(item.get("state") or "").upper() not in {"CATEGORY_GREEN", "CLOSED", "VERIFIED"}
+    ]
+    return {
+        "schema": "tau.pipeline_self_repair_summary.v1",
+        "available": True,
+        "category_count": len(corrections),
+        "open_category_count": len(open_items),
+        "states": [str(item.get("state") or "UNKNOWN") for item in corrections],
+        "incident_ids": [str(item.get("incident_id")) for item in corrections],
+    }
+
+
+def _transaction(
+    receipt: dict[str, Any],
+    node_id: str,
+    attempts: dict[str, Any],
+) -> dict[str, Any] | None:
     attempt_count = int(attempts.get(node_id, 0) or 0)
     if attempt_count <= 1:
         return None
@@ -610,7 +727,7 @@ def _ledger_summary(root: Path) -> dict[str, Any] | None:
     try:
         ledger = read_ledger(ledger_path)
         verification = verify_ledger(ledger)
-    except (OSError, ValueError, json.JSONDecodeError):
+    except OSError, ValueError, json.JSONDecodeError:
         return {
             "schema": "tau.dag_ledger_summary.v1",
             "available": False,
@@ -649,7 +766,7 @@ def _build_project_receipt_index(*, root: Path, receipt: dict[str, Any]) -> Rece
         data = resolved.read_bytes()
         try:
             payload = json.loads(data)
-        except (UnicodeError, json.JSONDecodeError):
+        except UnicodeError, json.JSONDecodeError:
             continue
         if not isinstance(payload, dict):
             continue

@@ -101,6 +101,10 @@ PERSISTENT_SUBAGENT_SCHEMA = "tau.persistent_subagent.v1"
 PROVIDER_COMMAND_TIMEOUT_SECONDS = 900.0
 PROJECT_DAG_PROGRESS_EVENT_WINDOW = 200
 BROWSER_ORACLE_TAB_STALE_CODE = "BLOCKED_BROWSER_ORACLE_TAB_STALE"
+PIPELINE_SELF_REPAIR_PROJECTION_SCHEMA = "tau.pipeline_self_repair_projection.v1"
+DISCORD_HUMAN_QUESTION_SCHEMA = "tau.discord_human_question.v1"
+DISCORD_HUMAN_ANSWER_SCHEMA = "tau.discord_human_answer.v1"
+DISCORD_STATUS_RESPONSE_SCHEMA = "tau.discord_status_response_receipt.v1"
 
 FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
     "branch_goal_hash_divergence": {
@@ -186,6 +190,10 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
     "brave_search_required_after_two_attempts": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.retry_policy.brave_search_course_correction",
+    },
+    "pipeline_self_repair_required": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.pipeline_self_repair_required_node_failure",
     },
     "evidence_case_boundary_mismatch": {
         "severity": "BLOCK",
@@ -341,6 +349,7 @@ class ProjectDagContract:
     policy_profile: str | Mapping[str, Any] | None
     data_boundary: str | Mapping[str, Any] | None
     security_mode: str | None
+    repair_policy: Mapping[str, Any] | None
     actor_access_manifest: str | Mapping[str, Any] | None
     environment_manifest: str | Mapping[str, Any] | None
     memory_intent: str | Mapping[str, Any] | None
@@ -1147,6 +1156,10 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
     if security_mode is not None and security_mode not in {"development", "secure"}:
         errors.append("security_mode must be development or secure when provided")
         security_mode = None
+    repair_policy = payload.get("repair_policy")
+    if repair_policy is not None and not isinstance(repair_policy, dict):
+        errors.append("repair_policy must be an object when provided")
+        repair_policy = None
     actor_access_manifest = payload.get("actor_access_manifest")
     if actor_access_manifest is not None and not isinstance(actor_access_manifest, (str, dict)):
         errors.append("actor_access_manifest must be a string path or object when provided")
@@ -1221,6 +1234,7 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
             immutable_json(data_boundary) if isinstance(data_boundary, dict) else data_boundary
         ),
         security_mode=security_mode,
+        repair_policy=immutable_json(repair_policy) if isinstance(repair_policy, dict) else None,
         actor_access_manifest=(
             immutable_json(actor_access_manifest)
             if isinstance(actor_access_manifest, dict)
@@ -3586,6 +3600,8 @@ def _run_shared_project_dag_plan(
     errors: list[str] = []
     alerts: list[dict[str, Any]] = []
     course_correction_artifacts: list[str] = []
+    pipeline_self_repair_records: list[dict[str, Any]] = []
+    pipeline_self_repair_artifacts: list[str] = []
     lock = threading.Lock()
     started_at = time.monotonic()
     prior_receipt_path = receipt_dir / "dag-receipt.json"
@@ -3597,6 +3613,71 @@ def _run_shared_project_dag_plan(
             # The SQLite journal is authoritative during recovery. A derived
             # receipt may be truncated if the prior process died while writing it.
             prior_receipt = {}
+
+    def attach_pipeline_self_repair(
+        blocked: dict[str, Any],
+        *,
+        node: ProjectDagNode,
+        attempt: int,
+        execution: DagNodeAttempt,
+        artifact_dir: Path,
+    ) -> dict[str, Any]:
+        if not _pipeline_self_repair_enabled(contract):
+            return blocked
+        projection = _record_pipeline_self_repair_failure(
+            contract=contract,
+            receipt_dir=receipt_dir,
+            node=node,
+            attempt=attempt,
+            attempt_id=execution.attempt_id,
+            result=blocked,
+            artifact_dir=artifact_dir,
+        )
+        alert = _alert(
+            "BLOCK",
+            "pipeline_self_repair_required",
+            "Required node failure was recorded through $pipeline-self-repair; "
+            "downstream nodes remain blocked until the same semantic node passes after repair.",
+            {
+                "node_id": node.node_id,
+                "attempt": attempt,
+                "repair_state": projection.get("repair_state"),
+                "category_key": projection.get("category_key"),
+                "failure_category_id": projection.get("failure_category_id"),
+                "ledger": projection.get("ledger"),
+                "record_failure_receipt": projection.get("record_failure_receipt"),
+                "projection_path": projection.get("projection_path"),
+            },
+        )
+        blocked_alerts = blocked.get("alerts") if isinstance(blocked.get("alerts"), list) else []
+        blocked["alerts"] = [*blocked_alerts, alert]
+        blocked["pipeline_self_repair"] = projection
+        blocked["correction_required"] = True
+        blocked["retryable"] = False
+        with lock:
+            pipeline_self_repair_records.append(projection)
+            for key in (
+                "failed_step_receipt",
+                "record_failure_receipt",
+                "projection_path",
+                "ledger",
+            ):
+                value = projection.get(key)
+                if isinstance(value, str):
+                    pipeline_self_repair_artifacts.append(value)
+            events.append(
+                {
+                    "event": "pipeline_self_repair_recorded",
+                    "node_id": node.node_id,
+                    "attempt": attempt,
+                    "repair_state": projection.get("repair_state"),
+                    "category_key": projection.get("category_key"),
+                    "failure_category_id": projection.get("failure_category_id"),
+                    "ledger": projection.get("ledger"),
+                    "ts": _utc_stamp(),
+                }
+            )
+        return blocked
 
     def execute_node(
         plan_node: DagPlanNode,
@@ -3762,7 +3843,13 @@ def _run_shared_project_dag_plan(
                         ],
                     }
                 )
-                return blocked
+                return attach_pipeline_self_repair(
+                    blocked,
+                    node=node,
+                    attempt=attempt,
+                    execution=execution,
+                    artifact_dir=artifact_dir,
+                )
             drift_alert = _pointless_unit_test_drift_alert(
                 node_id=node.node_id,
                 node=node,
@@ -3830,9 +3917,15 @@ def _run_shared_project_dag_plan(
                         "course_correction_artifacts": [str(correction_path)],
                     }
                 )
-            return blocked
+            return attach_pipeline_self_repair(
+                blocked,
+                node=node,
+                attempt=attempt,
+                execution=execution,
+                artifact_dir=artifact_dir,
+            )
         if not isinstance(response, dict):
-            return {
+            blocked = {
                 "node_id": node.node_id,
                 "status": "BLOCKED",
                 "verdict": "MISSING_NODE_RESPONSE",
@@ -3848,6 +3941,13 @@ def _run_shared_project_dag_plan(
                 else None,
                 "errors": ["ready-queue node did not return a JSON handoff response"],
             }
+            return attach_pipeline_self_repair(
+                blocked,
+                node=node,
+                attempt=attempt,
+                execution=execution,
+                artifact_dir=artifact_dir,
+            )
         node_alerts = _node_response_alerts(contract, node, response)
         if node_alerts:
             auth_alert = next(
@@ -3914,7 +4014,7 @@ def _run_shared_project_dag_plan(
                     auth_evidence["course_correction_receipt"] = str(correction_path)
                     with lock:
                         course_correction_artifacts.append(str(correction_path))
-            return {
+            blocked = {
                 "node_id": node.node_id,
                 "status": "BLOCKED",
                 "verdict": _node_alert_verdict(node_alerts[0]),
@@ -3937,6 +4037,13 @@ def _run_shared_project_dag_plan(
                 "stop_reason": str(node_alerts[0]["code"]),
                 "errors": [str(item["message"]) for item in node_alerts],
             }
+            return attach_pipeline_self_repair(
+                blocked,
+                node=node,
+                attempt=attempt,
+                execution=execution,
+                artifact_dir=artifact_dir,
+            )
         with lock:
             responses[node.node_id] = response
         return {
@@ -4014,6 +4121,18 @@ def _run_shared_project_dag_plan(
             for item in node_result.get("course_correction_artifacts", [])
             if isinstance(item, str)
         )
+        repair_projection = node_result.get("pipeline_self_repair")
+        if isinstance(repair_projection, dict):
+            pipeline_self_repair_records.append(repair_projection)
+            for key in (
+                "failed_step_receipt",
+                "record_failure_receipt",
+                "projection_path",
+                "ledger",
+            ):
+                value = repair_projection.get(key)
+                if isinstance(value, str):
+                    pipeline_self_repair_artifacts.append(value)
         for alert in node_result.get("alerts", []):
             evidence = alert.get("evidence") if isinstance(alert, dict) else None
             correction = (
@@ -4117,6 +4236,13 @@ def _run_shared_project_dag_plan(
             if isinstance(item, str)
         )
     course_correction_artifacts = list(dict.fromkeys(course_correction_artifacts))
+    pipeline_self_repair_artifacts = list(dict.fromkeys(pipeline_self_repair_artifacts))
+    pipeline_self_repair_records = list(
+        {
+            str(item.get("projection_path") or item.get("record_failure_receipt") or index): item
+            for index, item in enumerate(pipeline_self_repair_records)
+        }.values()
+    )
     receipt = _ready_queue_receipt(
         contract=contract,
         contract_path=contract_path,
@@ -4157,6 +4283,8 @@ def _run_shared_project_dag_plan(
         activated_terminals=activated_terminals,
         dag_plan_sha256=plan.plan_sha256,
         provider_live=any(item.get("provider_live") is True for item in result.node_results),
+        pipeline_self_repair_records=pipeline_self_repair_records,
+        pipeline_self_repair_artifacts=pipeline_self_repair_artifacts,
     )
     receipt["knowledge_freshness_receipts"] = [
         str(item["knowledge_freshness_receipt"])
@@ -4188,6 +4316,276 @@ def _run_shared_project_dag_plan(
     _write_json_atomic(receipt_dir / "dag-receipt.json", receipt)
     _attach_run_ledger(receipt, receipt_dir)
     return receipt
+
+
+def _pipeline_self_repair_enabled(contract: ProjectDagContract) -> bool:
+    policy = contract.repair_policy
+    if not isinstance(policy, Mapping):
+        return False
+    return policy.get("enabled") is True and policy.get("handler") in {
+        None,
+        "pipeline-self-repair",
+        "$pipeline-self-repair",
+    }
+
+
+def _pipeline_repair_policy_value(
+    contract: ProjectDagContract,
+    key: str,
+    default: str | bool | None = None,
+) -> str | bool | None:
+    policy = contract.repair_policy
+    if not isinstance(policy, Mapping):
+        return default
+    value = policy.get(key, default)
+    if isinstance(default, bool):
+        return value is True
+    if value is None:
+        return default
+    return str(value)
+
+
+def _record_pipeline_self_repair_failure(
+    *,
+    contract: ProjectDagContract,
+    receipt_dir: Path,
+    node: ProjectDagNode,
+    attempt: int,
+    attempt_id: str,
+    result: Mapping[str, Any],
+    artifact_dir: Path,
+) -> dict[str, Any]:
+    """Record a failed required node through the pipeline-self-repair runtime branch."""
+
+    repair_root = receipt_dir / "pipeline-self-repair"
+    repair_root.mkdir(parents=True, exist_ok=True)
+    failed_receipt_path = artifact_dir / "failed-step-receipt.json"
+    failed_receipt = {
+        "schema": "tau.node_attempt_failure_receipt.v1",
+        "ok": False,
+        "status": str(result.get("status") or "BLOCKED"),
+        "verdict": str(result.get("verdict") or "NODE_BLOCKED"),
+        "dag_id": contract.dag_id,
+        "run_id": contract.dag_id,
+        "node_id": node.node_id,
+        "agent": node.agent,
+        "attempt": attempt,
+        "attempt_id": attempt_id,
+        "required": True,
+        "active_goal_hash": contract.goal.get("goal_hash"),
+        "stop_reason": result.get("stop_reason"),
+        "errors": list(result.get("errors", [])) if isinstance(result.get("errors"), list) else [],
+        "alerts": list(result.get("alerts", [])) if isinstance(result.get("alerts"), list) else [],
+        "proof_scope": {
+            "proves": [
+                "A required Tau DAG node attempt failed before downstream advancement.",
+                "The failed attempt payload was written for pipeline-self-repair classification.",
+            ],
+            "does_not_prove": [
+                "The repair category has been fixed.",
+                "A ticket, watchdog dispatch, or agentic eval has completed.",
+            ],
+        },
+        "timestamp": _utc_stamp(),
+    }
+    _write_json(failed_receipt_path, failed_receipt)
+
+    raw_signal_parts = [
+        str(result.get("verdict") or "NODE_BLOCKED"),
+        str(result.get("stop_reason") or ""),
+        " ".join(str(item) for item in result.get("errors", []) if isinstance(item, str))
+        if isinstance(result.get("errors"), list)
+        else "",
+    ]
+    raw_signal = " | ".join(part for part in raw_signal_parts if part).strip()
+    if not raw_signal:
+        raw_signal = f"Tau node {node.node_id} failed attempt {attempt}"
+
+    command = _pipeline_self_repair_record_command(
+        contract=contract,
+        receipt_dir=receipt_dir,
+        node=node,
+        attempt=attempt,
+        failed_receipt_path=failed_receipt_path,
+        raw_signal=raw_signal,
+    )
+    output_path = repair_root / f"{node.node_id}-attempt-{attempt:03d}-record-failure.json"
+    projection: dict[str, Any] = {
+        "schema": PIPELINE_SELF_REPAIR_PROJECTION_SCHEMA,
+        "status": "NOT_RUN",
+        "ok": False,
+        "blocking": True,
+        "node_id": node.node_id,
+        "attempt": attempt,
+        "attempt_id": attempt_id,
+        "failed_step_receipt": str(failed_receipt_path),
+        "ledger": str(repair_root / "replay_ledger.jsonl"),
+        "record_failure_receipt": str(output_path),
+        "command": command,
+        "category_key": None,
+        "failure_category_id": None,
+        "repair_state": "REPAIR_HANDLER_NOT_RUN",
+        "triage": None,
+        "ticket": None,
+        "watchdog": None,
+        "agentic_eval": None,
+        "discord": _discord_state_from_repair_policy(contract, node=node, attempt=attempt),
+    }
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=str(receipt_dir),
+            capture_output=True,
+            text=True,
+            timeout=float(_pipeline_repair_policy_value(contract, "timeout_seconds", "60") or 60),
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError, ValueError) as exc:
+        projection.update(
+            {
+                "status": "REPAIR_HANDLER_FAILED",
+                "repair_state": "REPAIR_HANDLER_FAILED",
+                "errors": [str(exc)],
+            }
+        )
+        _write_json(output_path, projection)
+        return projection
+
+    parsed: dict[str, Any] | None = None
+    if completed.stdout.strip():
+        try:
+            candidate = json.loads(completed.stdout)
+            if isinstance(candidate, dict):
+                parsed = candidate
+        except json.JSONDecodeError:
+            parsed = None
+    if parsed is not None:
+        _write_json(output_path, parsed)
+        event = parsed.get("event") if isinstance(parsed.get("event"), dict) else {}
+        projection.update(
+            {
+                "status": str(parsed.get("status") or "RECORDED"),
+                "ok": completed.returncode == 0,
+                "category_key": event.get("category_key"),
+                "failure_category_id": event.get("failure_category_id"),
+                "repair_state": event.get("repair_state") or parsed.get("status"),
+                "triage": event.get("triage"),
+                "ticket": event.get("ticket"),
+                "watchdog": event.get("watchdog"),
+                "agentic_eval": event.get("agentic_eval"),
+                "goal_alignment": event.get("goal_alignment"),
+            }
+        )
+    else:
+        projection.update(
+            {
+                "status": "REPAIR_HANDLER_OUTPUT_INVALID",
+                "ok": False,
+                "repair_state": "REPAIR_HANDLER_OUTPUT_INVALID",
+                "stdout_excerpt": completed.stdout[-2000:],
+                "stderr_excerpt": completed.stderr[-2000:],
+                "returncode": completed.returncode,
+            }
+        )
+        _write_json(output_path, projection)
+    projection_path = repair_root / f"{node.node_id}-attempt-{attempt:03d}-projection.json"
+    projection["projection_path"] = str(projection_path)
+    _write_json(projection_path, projection)
+    return projection
+
+
+def _pipeline_self_repair_record_command(
+    *,
+    contract: ProjectDagContract,
+    receipt_dir: Path,
+    node: ProjectDagNode,
+    attempt: int,
+    failed_receipt_path: Path,
+    raw_signal: str,
+) -> list[str]:
+    script = str(
+        _pipeline_repair_policy_value(contract, "run_sh")
+        or Path.home() / ".pi" / "agent" / "skills" / "pipeline-self-repair" / "run.sh"
+    )
+    goal_project = str(_pipeline_repair_policy_value(contract, "goal_project") or "tau")
+    repo = str(_pipeline_repair_policy_value(contract, "repo") or contract.target.get("repo") or "")
+    repair_root = receipt_dir / "pipeline-self-repair"
+    command = [
+        script,
+        "record-failure",
+        "--pipeline",
+        str(_pipeline_repair_policy_value(contract, "pipeline") or "tau"),
+        "--step-id",
+        node.node_id,
+        "--run-id",
+        contract.dag_id,
+        "--target",
+        str(contract.target.get("target") or contract.target.get("repo") or node.node_id),
+        "--run-root",
+        str(repair_root),
+        "--ledger",
+        str(repair_root / "replay_ledger.jsonl"),
+        "--receipt",
+        str(failed_receipt_path),
+        "--raw-signal",
+        raw_signal,
+        "--attempt",
+        str(attempt),
+        "--goal-project",
+        goal_project,
+        "--goal-context",
+        (
+            f"Tau DAG {contract.dag_id} required node {node.node_id} failed and must "
+            "not unblock downstream work until the same semantic node passes."
+        ),
+        "--json",
+    ]
+    if repo:
+        command.extend(["--repo", repo])
+    if _pipeline_repair_policy_value(contract, "skip_memory", False) is True:
+        command.append("--skip-memory")
+    if _pipeline_repair_policy_value(contract, "skip_github", False) is True:
+        command.append("--skip-github")
+    if _pipeline_repair_policy_value(contract, "no_ticket", False) is True:
+        command.append("--no-ticket")
+    if _pipeline_repair_policy_value(contract, "apply_ticket", False) is True:
+        command.append("--apply-ticket")
+    if _pipeline_repair_policy_value(contract, "dispatch_watchdog", False) is True:
+        command.append("--dispatch-watchdog")
+    watchdog_project = _pipeline_repair_policy_value(contract, "watchdog_project")
+    if isinstance(watchdog_project, str) and watchdog_project:
+        command.extend(["--watchdog-project", watchdog_project])
+    agentic_eval_report = _pipeline_repair_policy_value(contract, "agentic_eval_report")
+    if isinstance(agentic_eval_report, str) and agentic_eval_report:
+        command.extend(["--agentic-eval-report", agentic_eval_report])
+    return command
+
+
+def _discord_state_from_repair_policy(
+    contract: ProjectDagContract,
+    *,
+    node: ProjectDagNode,
+    attempt: int,
+) -> dict[str, Any] | None:
+    policy = contract.repair_policy
+    if not isinstance(policy, Mapping):
+        return None
+    discord = policy.get("discord")
+    if not isinstance(discord, Mapping) or discord.get("enabled") is not True:
+        return None
+    question_id = str(discord.get("question_id") or f"{contract.dag_id}:{node.node_id}:{attempt}")
+    return {
+        "schema": DISCORD_HUMAN_QUESTION_SCHEMA,
+        "state": "QUESTION_PREPARED",
+        "question_id": question_id,
+        "run_id": contract.dag_id,
+        "node_id": node.node_id,
+        "attempt": attempt,
+        "goal_hash": contract.goal.get("goal_hash"),
+        "status_receipt_schema": DISCORD_STATUS_RESPONSE_SCHEMA,
+        "answer_receipt_schema": DISCORD_HUMAN_ANSWER_SCHEMA,
+        "proof_boundary": "Discord may unblock a typed human decision; it is not repair proof.",
+    }
 
 
 def _legacy_runtime_requirement_error(plan_node: DagPlanNode) -> str | None:
@@ -4816,6 +5214,8 @@ def _ready_queue_receipt(
     activated_terminals: set[str] | None = None,
     dag_plan_sha256: str | None = None,
     provider_live: bool = False,
+    pipeline_self_repair_records: list[dict[str, Any]] | None = None,
+    pipeline_self_repair_artifacts: list[str] | None = None,
 ) -> dict[str, Any]:
     proves = [
         "DAG contract parsed and validated.",
@@ -4887,6 +5287,8 @@ def _ready_queue_receipt(
         ],
         "node_artifacts": node_artifacts or {},
         "course_correction_artifacts": course_correction_artifacts or [],
+        "pipeline_self_repair": pipeline_self_repair_records or [],
+        "pipeline_self_repair_artifacts": pipeline_self_repair_artifacts or [],
         "route_decision_receipts": route_decision_artifacts or [],
         "terminal_contribution_receipts": terminal_contribution_artifacts or [],
         "join_decision_receipts": join_decision_artifacts or [],

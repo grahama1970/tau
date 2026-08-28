@@ -112,6 +112,12 @@ from tau_coding.debug_session_receipt import write_debug_session_receipt
 from tau_coding.debugger_skill_adapter import write_debugger_skill_adapter_receipt
 from tau_coding.demo_airgap_itar import run_demo_airgap_itar_basic
 from tau_coding.diagnostics import configure_tau_logging
+from tau_coding.discord_receipts import (
+    validate_human_answer_receipts,
+    write_human_answer_receipt,
+    write_human_question_receipt,
+    write_status_response_receipt,
+)
 from tau_coding.docker_sandbox import write_docker_sandbox_receipt
 from tau_coding.embry_sparta_demo import run_demo_embry_sparta_airgap
 from tau_coding.evidence_case_skill_adapter import write_evidence_case_skill_adapter_receipt
@@ -3200,6 +3206,16 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if not print_requested and command == "discord-receipt":
+        try:
+            payload = _discord_receipt_cli_command(positional_args[1:])
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if not print_requested and command in {"dag-run", "run"}:
         try:
             payload = _run_dag_cli_command(positional_args[1:], command_name=str(command))
@@ -5484,6 +5500,9 @@ def _manual_command_help(command: str) -> str | None:
         ),
         "dag-run": "Usage: tau dag-run <dag-spec> [--no-resume]",
         "run": "Usage: tau run <dag-spec> [--no-resume]",
+        "discord-receipt": (
+            "Usage: tau discord-receipt <question|status|answer|validate-answer> [options]"
+        ),
         "sandbox-run": (
             "Usage: tau sandbox-run --policy-profile <policy.json> "
             "--data-boundary <boundary.json> [--out <receipt.json>] -- <command...>"
@@ -6427,6 +6446,75 @@ def _parse_orchestration_evidence_cli_args(args: list[str]) -> Path:
     if len(args) != 1:
         raise RuntimeError("Usage: tau orchestration-evidence <provider-dag-run-dir>")
     return Path(args[0])
+
+
+def _discord_receipt_cli_command(args: list[str]) -> dict[str, Any]:
+    if not args or args[0] in {"--help", "-h", "help"}:
+        raise RuntimeError(
+            "Usage: tau discord-receipt <question|status|answer|validate-answer> [options]"
+        )
+    mode = args[0]
+    options = _parse_key_value_options(args[1:])
+    if mode == "question":
+        return write_human_question_receipt(
+            output_path=Path(_required_cli_option(options, "output")),
+            question_id=_required_cli_option(options, "question-id"),
+            run_id=_required_cli_option(options, "run-id"),
+            node_id=_required_cli_option(options, "node-id"),
+            goal_hash=_required_cli_option(options, "goal-hash"),
+            question=_required_cli_option(options, "question"),
+            allowed_answers=[
+                item.strip() for item in _required_cli_option(options, "allowed-answers").split(",")
+            ],
+        )
+    if mode == "status":
+        return write_status_response_receipt(
+            output_path=Path(_required_cli_option(options, "output")),
+            question_id=_required_cli_option(options, "question-id"),
+            run_id=_required_cli_option(options, "run-id"),
+            node_id=_required_cli_option(options, "node-id"),
+            goal_hash=_required_cli_option(options, "goal-hash"),
+            message=_required_cli_option(options, "message"),
+        )
+    if mode == "answer":
+        return write_human_answer_receipt(
+            output_path=Path(_required_cli_option(options, "output")),
+            question_id=_required_cli_option(options, "question-id"),
+            run_id=_required_cli_option(options, "run-id"),
+            node_id=_required_cli_option(options, "node-id"),
+            goal_hash=_required_cli_option(options, "goal-hash"),
+            answer=_required_cli_option(options, "answer"),
+            answered_by=_required_cli_option(options, "answered-by"),
+        )
+    if mode == "validate-answer":
+        return validate_human_answer_receipts(
+            question_receipt_path=Path(_required_cli_option(options, "question")),
+            answer_receipt_path=Path(_required_cli_option(options, "answer")),
+            output_path=Path(options["output"]) if "output" in options else None,
+        )
+    raise RuntimeError(f"unknown discord-receipt mode: {mode}")
+
+
+def _required_cli_option(options: Mapping[str, str], key: str) -> str:
+    value = options.get(key)
+    if not value:
+        raise RuntimeError(f"missing required --{key}")
+    return value
+
+
+def _parse_key_value_options(args: list[str]) -> dict[str, str]:
+    options: dict[str, str] = {}
+    index = 0
+    while index < len(args):
+        key = args[index]
+        index += 1
+        if not key.startswith("--"):
+            raise RuntimeError(f"unexpected positional argument: {key}")
+        if index >= len(args):
+            raise RuntimeError(f"missing value for {key}")
+        options[key[2:]] = args[index]
+        index += 1
+    return options
 
 
 def _run_dag_cli_command(args: list[str], *, command_name: str) -> dict[str, object]:
