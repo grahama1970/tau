@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -45,6 +46,10 @@ def main() -> int:
     _write_command_spec(command_spec, cwd=run_root, payload=_failing_handoff())
     dag = run_root / "dag.json"
     _write_dag(dag, command_spec)
+    os.environ.setdefault(
+        "OPS_DISCORD_WEBHOOK_TAU_REPAIR_EVAL_URL",
+        "https://discord.com/api/webhooks/1234567890/redacted-eval-token",
+    )
 
     tau = [shutil.which(args.uv_bin) or args.uv_bin, "run", "--project", str(repo), "tau"]
     dag_run = _run(
@@ -173,6 +178,9 @@ def main() -> int:
     )
     status_receipt = _read_json(status_path)
     validation_receipt = _read_json(validation_path)
+    ops_discord_receipt = _read_json(
+        Path(str(discord.get("ops_discord_notification_receipt") or ""))
+    )
     errors: list[str] = []
     if (
         dag_run["exit_code"] == 0
@@ -187,6 +195,14 @@ def main() -> int:
         errors.append("viewer_discord_question_missing")
     if status_receipt.get("unblocks_decision") is not False:
         errors.append("status_receipt_unblocked_decision")
+    if discord.get("state") != "QUESTION_SENT":
+        errors.append("ops_discord_question_not_sent")
+    if ops_discord_receipt.get("schema") != "ops_discord.notification_receipt.v1":
+        errors.append("ops_discord_notification_receipt_missing")
+    if ops_discord_receipt.get("status") != "DRY_RUN":
+        errors.append("ops_discord_notification_not_dispatched")
+    if ops_discord_receipt.get("human_adjudication_required") is not True:
+        errors.append("ops_discord_human_adjudication_flag_missing")
     if validation["exit_code"] != 0 or validation_receipt.get("unblocks_decision") is not True:
         errors.append("answer_validation_failed")
     if (
@@ -206,12 +222,13 @@ def main() -> int:
         "run_root": str(run_root),
         "dag_status": dag_payload.get("status") if isinstance(dag_payload, dict) else None,
         "discord_question_state": discord,
+        "ops_discord_notification_receipt": ops_discord_receipt,
         "status_unblocks_decision": status_receipt.get("unblocks_decision"),
         "answer_unblocks_decision": validation_receipt.get("unblocks_decision"),
         "errors": errors,
         "proof_boundary": (
-            "Live Tau CLI receipt validation only; no Discord network delivery and "
-            "no repair completion proof."
+            "Live Tau CLI plus ops-discord dry-run notification receipt validation; "
+            "no Discord network delivery and no repair completion proof."
         ),
     }
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -245,7 +262,13 @@ def _write_dag(path: Path, command_spec: Path) -> None:
                     "skip_github": True,
                     "no_ticket": True,
                     "timeout_seconds": 60,
-                    "discord": {"enabled": True, "question_id": QUESTION_ID},
+                    "discord": {
+                        "enabled": True,
+                        "question_id": QUESTION_ID,
+                        "webhook": "tau-repair-eval",
+                        "dry_run": True,
+                        "require_human_adjudication": True,
+                    },
                 },
                 "nodes": [
                     {

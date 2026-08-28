@@ -646,6 +646,21 @@ def _repair_summary(corrections: list[dict[str, Any]]) -> dict[str, Any] | None:
         for item in corrections
         if str(item.get("state") or "").upper() not in {"CATEGORY_GREEN", "CLOSED", "VERIFIED"}
     ]
+    discord_states: list[str] = []
+    ops_discord_statuses: list[str] = []
+    for item in corrections:
+        incident = item.get("incident")
+        if not isinstance(incident, dict):
+            continue
+        discord = incident.get("discord")
+        if not isinstance(discord, dict):
+            continue
+        state = discord.get("state")
+        if isinstance(state, str) and state:
+            discord_states.append(state)
+        status = discord.get("ops_discord_notification_status")
+        if isinstance(status, str) and status:
+            ops_discord_statuses.append(status)
     return {
         "schema": "tau.pipeline_self_repair_summary.v1",
         "available": True,
@@ -653,6 +668,8 @@ def _repair_summary(corrections: list[dict[str, Any]]) -> dict[str, Any] | None:
         "open_category_count": len(open_items),
         "states": [str(item.get("state") or "UNKNOWN") for item in corrections],
         "incident_ids": [str(item.get("incident_id")) for item in corrections],
+        "discord_states": discord_states,
+        "ops_discord_notification_statuses": ops_discord_statuses,
     }
 
 

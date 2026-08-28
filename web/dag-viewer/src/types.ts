@@ -63,6 +63,8 @@ export type RepairSummary = {
   open_category_count: number;
   states: string[];
   incident_ids: string[];
+  discord_states?: string[];
+  ops_discord_notification_statuses?: string[];
 };
 
 export type LedgerSummary = {

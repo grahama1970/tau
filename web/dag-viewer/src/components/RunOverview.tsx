@@ -78,6 +78,12 @@ export function RunOverview({ manifest, snapshot }: Props) {
           <span>Repair overlay</span>
           <strong>{repair.open_category_count > 0 ? `${repair.open_category_count} blocking repair category` : "Repair categories closed"}</strong>
           <small>{repair.category_count} categories · {repair.states.join(" → ")}</small>
+          {repair.ops_discord_notification_statuses && repair.ops_discord_notification_statuses.length > 0 && (
+            <small>ops-discord · {repair.ops_discord_notification_statuses.join(" → ")}</small>
+          )}
+          {repair.discord_states && repair.discord_states.length > 0 && (
+            <small>human question · {repair.discord_states.join(" → ")}</small>
+          )}
         </div>
       )}
       {blocker && (

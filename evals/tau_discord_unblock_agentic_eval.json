@@ -36,7 +36,10 @@
           {"path": "../local/agentic-evals/tau-discord-unblock-proof.json", "json_pointer": "/mocked", "equals": false},
           {"path": "../local/agentic-evals/tau-discord-unblock-proof.json", "json_pointer": "/live", "equals": true},
           {"path": "../local/agentic-evals/tau-discord-unblock-proof.json", "json_pointer": "/status_unblocks_decision", "equals": false},
-          {"path": "../local/agentic-evals/tau-discord-unblock-proof.json", "json_pointer": "/answer_unblocks_decision", "equals": true}
+          {"path": "../local/agentic-evals/tau-discord-unblock-proof.json", "json_pointer": "/answer_unblocks_decision", "equals": true},
+          {"path": "../local/agentic-evals/tau-discord-unblock-proof.json", "json_pointer": "/discord_question_state/state", "equals": "QUESTION_SENT"},
+          {"path": "../local/agentic-evals/tau-discord-unblock-proof.json", "json_pointer": "/ops_discord_notification_receipt/schema", "equals": "ops_discord.notification_receipt.v1"},
+          {"path": "../local/agentic-evals/tau-discord-unblock-proof.json", "json_pointer": "/ops_discord_notification_receipt/status", "equals": "DRY_RUN"}
         ]
       }
     }

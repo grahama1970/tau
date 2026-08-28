@@ -105,6 +105,7 @@ PIPELINE_SELF_REPAIR_PROJECTION_SCHEMA = "tau.pipeline_self_repair_projection.v1
 DISCORD_HUMAN_QUESTION_SCHEMA = "tau.discord_human_question.v1"
 DISCORD_HUMAN_ANSWER_SCHEMA = "tau.discord_human_answer.v1"
 DISCORD_STATUS_RESPONSE_SCHEMA = "tau.discord_status_response_receipt.v1"
+OPS_DISCORD_NOTIFICATION_SCHEMA = "ops_discord.notification_receipt.v1"
 
 FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
     "branch_goal_hash_divergence": {
@@ -3661,6 +3662,8 @@ def _run_shared_project_dag_plan(
                 "record_failure_receipt",
                 "projection_path",
                 "ledger",
+                "discord_question_receipt",
+                "ops_discord_notification_receipt",
             ):
                 value = projection.get(key)
                 if isinstance(value, str):
@@ -4129,6 +4132,8 @@ def _run_shared_project_dag_plan(
                 "record_failure_receipt",
                 "projection_path",
                 "ledger",
+                "discord_question_receipt",
+                "ops_discord_notification_receipt",
             ):
                 value = repair_projection.get(key)
                 if isinstance(value, str):
@@ -4488,10 +4493,285 @@ def _record_pipeline_self_repair_failure(
             }
         )
         _write_json(output_path, projection)
+    discord_state = _notify_ops_discord_for_human_adjudication(
+        contract=contract,
+        receipt_dir=receipt_dir,
+        node=node,
+        attempt=attempt,
+        result=result,
+        projection=projection,
+    )
+    if discord_state is not None:
+        projection["discord"] = discord_state
+        question_receipt = discord_state.get("question_receipt")
+        if isinstance(question_receipt, str):
+            projection["discord_question_receipt"] = question_receipt
+        notification_receipt = discord_state.get("ops_discord_notification_receipt")
+        if isinstance(notification_receipt, str):
+            projection["ops_discord_notification_receipt"] = notification_receipt
+
     projection_path = repair_root / f"{node.node_id}-attempt-{attempt:03d}-projection.json"
     projection["projection_path"] = str(projection_path)
     _write_json(projection_path, projection)
     return projection
+
+
+def _notify_ops_discord_for_human_adjudication(
+    *,
+    contract: ProjectDagContract,
+    receipt_dir: Path,
+    node: ProjectDagNode,
+    attempt: int,
+    result: Mapping[str, Any],
+    projection: Mapping[str, Any],
+) -> dict[str, Any] | None:
+    discord_state = projection.get("discord")
+    if not isinstance(discord_state, dict):
+        return None
+    if not _pipeline_repair_needs_human_adjudication(
+        contract=contract,
+        result=result,
+        projection=projection,
+    ):
+        return discord_state
+
+    repair_root = receipt_dir / "pipeline-self-repair"
+    repair_root.mkdir(parents=True, exist_ok=True)
+    question_id = str(
+        discord_state.get("question_id") or f"{contract.dag_id}:{node.node_id}:{attempt}"
+    )
+    question_path = repair_root / f"{node.node_id}-attempt-{attempt:03d}-discord-question.json"
+    notification_path = (
+        repair_root / f"{node.node_id}-attempt-{attempt:03d}-ops-discord-notification.json"
+    )
+    policy = _pipeline_repair_discord_policy(contract)
+    question = str(
+        policy.get("question")
+        or (
+            f"Tau DAG {contract.dag_id} repair category for node {node.node_id} "
+            "needs human adjudication before downstream work can continue."
+        )
+    )
+    raw_answers = policy.get("allowed_answers")
+    if isinstance(raw_answers, list):
+        allowed_answers = [str(item).strip() for item in raw_answers if str(item).strip()]
+    else:
+        allowed_answers = ["approve_rerun", "keep_blocked", "needs_context"]
+    question_receipt = {
+        "schema": DISCORD_HUMAN_QUESTION_SCHEMA,
+        "ok": True,
+        "status": "QUESTION_PREPARED",
+        "mocked": False,
+        "live": False,
+        "question_id": question_id,
+        "run_id": contract.dag_id,
+        "node_id": node.node_id,
+        "attempt": attempt,
+        "goal_hash": contract.goal.get("goal_hash"),
+        "question": question,
+        "allowed_answers": allowed_answers,
+        "answer_receipt_schema": DISCORD_HUMAN_ANSWER_SCHEMA,
+        "status_receipt_schema": DISCORD_STATUS_RESPONSE_SCHEMA,
+        "proof_boundary": (
+            "Prepared typed human adjudication request; repair still needs normal "
+            "pipeline-self-repair evidence gates."
+        ),
+        "timestamp": _utc_stamp(),
+    }
+    _write_json(question_path, question_receipt)
+
+    command = _ops_discord_notify_command(
+        contract=contract,
+        node=node,
+        attempt=attempt,
+        question_id=question_id,
+        question=question,
+        allowed_answers=allowed_answers,
+        projection=projection,
+    )
+    notification_payload: dict[str, Any]
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=str(receipt_dir),
+            capture_output=True,
+            text=True,
+            timeout=float(policy.get("timeout_seconds") or 30),
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError, ValueError) as exc:
+        notification_payload = {
+            "schema": OPS_DISCORD_NOTIFICATION_SCHEMA,
+            "status": "NOTIFICATION_FAILED",
+            "ok": False,
+            "webhook": str(policy.get("webhook") or "alerts"),
+            "dry_run": policy.get("dry_run") is True,
+            "external_effects": policy.get("dry_run") is not True,
+            "errors": [str(exc)],
+            "command": command,
+        }
+    else:
+        notification_payload = _parse_ops_discord_notification_output(completed.stdout)
+        if not notification_payload:
+            notification_payload = {
+                "schema": OPS_DISCORD_NOTIFICATION_SCHEMA,
+                "status": "NOTIFICATION_OUTPUT_INVALID",
+                "ok": False,
+                "webhook": str(policy.get("webhook") or "alerts"),
+                "dry_run": policy.get("dry_run") is True,
+                "external_effects": policy.get("dry_run") is not True,
+                "returncode": completed.returncode,
+                "stdout_excerpt": completed.stdout[-2000:],
+                "stderr_excerpt": completed.stderr[-2000:],
+                "command": command,
+            }
+        else:
+            notification_payload = dict(notification_payload)
+            notification_payload["ok"] = completed.returncode == 0 and notification_payload.get(
+                "status"
+            ) in {"SENT", "DRY_RUN"}
+            notification_payload["returncode"] = completed.returncode
+            notification_payload["command"] = command
+    notification_payload.update(
+        {
+            "question_id": question_id,
+            "run_id": contract.dag_id,
+            "node_id": node.node_id,
+            "attempt": attempt,
+            "goal_hash": contract.goal.get("goal_hash"),
+            "category_key": projection.get("category_key"),
+            "failure_category_id": projection.get("failure_category_id"),
+            "human_adjudication_required": True,
+            "unblocks_decision": False,
+            "proof_boundary": (
+                "$ops-discord notifies or records notification failure only; a typed "
+                "matching answer receipt is required before human adjudication can unblock."
+            ),
+        }
+    )
+    _write_json(notification_path, notification_payload)
+    status = str(notification_payload.get("status") or "UNKNOWN")
+    delivered = status in {"SENT", "DRY_RUN"} and notification_payload.get("ok") is True
+    state = "QUESTION_SENT" if delivered else "OPS_DISCORD_NOTIFICATION_FAILED"
+    updated = dict(discord_state)
+    updated.update(
+        {
+            "state": state,
+            "human_adjudication_required": True,
+            "question_receipt": str(question_path),
+            "ops_discord_notification_receipt": str(notification_path),
+            "ops_discord_notification_status": status,
+            "ops_discord_notification_ok": delivered,
+            "webhook": str(policy.get("webhook") or "alerts"),
+            "dry_run": policy.get("dry_run") is True,
+            "allowed_answers": allowed_answers,
+        }
+    )
+    return updated
+
+
+def _pipeline_repair_discord_policy(contract: ProjectDagContract) -> Mapping[str, Any]:
+    policy = contract.repair_policy
+    if not isinstance(policy, Mapping):
+        return MappingProxyType({})
+    discord = policy.get("discord")
+    if not isinstance(discord, Mapping):
+        return MappingProxyType({})
+    return discord
+
+
+def _pipeline_repair_needs_human_adjudication(
+    *,
+    contract: ProjectDagContract,
+    result: Mapping[str, Any],
+    projection: Mapping[str, Any],
+) -> bool:
+    policy = _pipeline_repair_discord_policy(contract)
+    if policy.get("require_human_adjudication") is True:
+        return True
+    state = str(projection.get("repair_state") or projection.get("status") or "").upper()
+    if state in {
+        "NEEDS_HUMAN",
+        "HUMAN_REQUIRED",
+        "WAITING_FOR_HUMAN",
+        "AWAITING_HUMAN",
+        "AWAITING_ADJUDICATION",
+        "HUMAN_ADJUDICATION_REQUIRED",
+    }:
+        return True
+    signals = [
+        str(result.get("verdict") or ""),
+        str(result.get("stop_reason") or ""),
+        " ".join(str(item) for item in result.get("errors", []) if isinstance(item, str))
+        if isinstance(result.get("errors"), list)
+        else "",
+    ]
+    return any("HUMAN" in signal.upper() or "ADJUDICATION" in signal.upper() for signal in signals)
+
+
+def _ops_discord_notify_command(
+    *,
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+    attempt: int,
+    question_id: str,
+    question: str,
+    allowed_answers: list[str],
+    projection: Mapping[str, Any],
+) -> list[str]:
+    policy = _pipeline_repair_discord_policy(contract)
+    script = str(
+        policy.get("run_sh")
+        or Path.home() / ".pi" / "agent" / "skills" / "ops-discord" / "run.sh"
+    )
+    title = str(
+        policy.get("title")
+        or f"Tau repair needs human adjudication: {node.node_id}"
+    )
+    content = "\n".join(
+        [
+            question,
+            "",
+            f"run_id: {contract.dag_id}",
+            f"node_id: {node.node_id}",
+            f"attempt: {attempt}",
+            f"question_id: {question_id}",
+            f"goal_hash: {contract.goal.get('goal_hash')}",
+            f"repair_state: {projection.get('repair_state')}",
+            f"category_key: {projection.get('category_key')}",
+            f"failure_category_id: {projection.get('failure_category_id')}",
+            f"allowed_answers: {', '.join(allowed_answers)}",
+            "",
+            "Status replies are read-only. Only a typed tau.discord_human_answer.v1 "
+            "receipt matching question_id/run_id/node_id/goal_hash can unblock.",
+        ]
+    )
+    command = [
+        script,
+        "notify",
+        "--webhook",
+        str(policy.get("webhook") or "alerts"),
+        "--title",
+        title,
+        "--content",
+        content,
+        "--json",
+    ]
+    if policy.get("dry_run") is True:
+        command.append("--dry-run")
+    return command
+
+
+def _parse_ops_discord_notification_output(stdout: str) -> dict[str, Any] | None:
+    if not stdout.strip():
+        return None
+    try:
+        payload = json.loads(stdout)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    return payload
 
 
 def _pipeline_self_repair_record_command(
