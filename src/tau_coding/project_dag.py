@@ -4631,6 +4631,17 @@ def _notify_ops_discord_for_human_adjudication(
                 "status"
             ) in {"SENT", "DRY_RUN"}
             notification_payload["returncode"] = completed.returncode
+            notification_payload["exit_code"] = completed.returncode
+            if completed.stderr.strip():
+                notification_payload["stderr_excerpt"] = completed.stderr[-2000:]
+            if completed.stdout.strip() and notification_payload.get("ok") is not True:
+                notification_payload["stdout_excerpt"] = completed.stdout[-2000:]
+            status_codes = _ops_discord_status_codes_from_text(
+                f"{completed.stderr}\n{completed.stdout}"
+            )
+            if status_codes:
+                notification_payload["http_status_codes"] = status_codes
+                notification_payload["last_http_status"] = status_codes[-1]
             notification_payload["command"] = command
     notification_payload.update(
         {
@@ -4662,6 +4673,8 @@ def _notify_ops_discord_for_human_adjudication(
             "ops_discord_notification_receipt": str(notification_path),
             "ops_discord_notification_status": status,
             "ops_discord_notification_ok": delivered,
+            "ops_discord_last_http_status": notification_payload.get("last_http_status"),
+            "ops_discord_http_status_codes": notification_payload.get("http_status_codes"),
             "webhook": str(policy.get("webhook") or "alerts"),
             "dry_run": policy.get("dry_run") is True,
             "allowed_answers": allowed_answers,
@@ -4760,6 +4773,13 @@ def _ops_discord_notify_command(
     if policy.get("dry_run") is True:
         command.append("--dry-run")
     return command
+
+
+def _ops_discord_status_codes_from_text(text: str) -> list[int]:
+    codes: list[int] = []
+    for match in re.finditer(r"Webhook returned (\d{3})", text):
+        codes.append(int(match.group(1)))
+    return codes
 
 
 def _parse_ops_discord_notification_output(stdout: str) -> dict[str, Any] | None:

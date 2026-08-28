@@ -38,6 +38,7 @@ flowchart LR
 | Default ledger trace | `evals/tau_ledger_trace_agentic_eval.json` | `local/agentic-evals/tau-ledger-trace-agentic-evals-report.json` | `READY`, `mocked=false`, `live=true`, `trials=2` | Live local Tau CLI and ledger verification; not provider quality or full browser UX. |
 | Required-node failure repair overlay | `evals/tau_pipeline_self_repair_agentic_eval.json` | `local/agentic-evals/tau-pipeline-self-repair-agentic-evals-report.json` | `READY`, `mocked=false`, `live=true`, `trials=2` | Live local Tau CLI plus `$pipeline-self-repair` safe-mode record/inspect; no GitHub ticket publication or watchdog dispatch. |
 | Discord typed unblock receipts and ops-discord handoff | `evals/tau_discord_unblock_agentic_eval.json` | `local/agentic-evals/tau-discord-unblock-agentic-evals-report.json` | `READY`, `mocked=false`, `live=true`, `trials=2` | Live local Tau CLI plus `$ops-discord notify --dry-run` receipt validation; no real Discord network delivery. |
+| Discord delivery failure visibility | `scripts/agentic-eval-tau-discord-unblock.py --webhook slack --live-notify` | `local/agentic-evals/tau-discord-live-failure-proof.json` | `PASS`, `mocked=false`, `live=true`, `status=SEND_FAILED`, `last_http_status=404` | Live Tau path invoked configured `$ops-discord` alias `slack` from `~/.zshrc`; it proves visible fail-closed capture of the current webhook failure, not successful delivery. |
 
 Readback command used for the table:
 
@@ -67,7 +68,7 @@ PY
 
 ## What is not yet proven
 
-- Real Discord webhook delivery is not proven; the committed eval currently proves `$ops-discord notify --dry-run` routing and receipt preservation only.
+- Real Discord webhook delivery is not proven; the configured `slack` alias from `~/.zshrc` currently returns `SEND_FAILED` with HTTP `404` when routed through `$ops-discord notify`, and Tau now captures that failure in the repair overlay receipt path.
 - Real `$ticket` GitHub issue creation/update/reopen binding is not proven in this slice.
 - Real `$project-watchdog` dispatch from a repair category is not proven in this slice.
 - Full repair closure is not proven: the current repair eval stops at a blocking `NEEDS_TRIAGE` category and validates that downstream nodes did not run.

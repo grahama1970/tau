@@ -65,6 +65,7 @@ export type RepairSummary = {
   incident_ids: string[];
   discord_states?: string[];
   ops_discord_notification_statuses?: string[];
+  ops_discord_http_statuses?: string[];
 };
 
 export type LedgerSummary = {

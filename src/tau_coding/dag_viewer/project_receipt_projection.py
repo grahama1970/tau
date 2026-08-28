@@ -648,6 +648,7 @@ def _repair_summary(corrections: list[dict[str, Any]]) -> dict[str, Any] | None:
     ]
     discord_states: list[str] = []
     ops_discord_statuses: list[str] = []
+    ops_discord_http_statuses: list[str] = []
     for item in corrections:
         incident = item.get("incident")
         if not isinstance(incident, dict):
@@ -661,6 +662,9 @@ def _repair_summary(corrections: list[dict[str, Any]]) -> dict[str, Any] | None:
         status = discord.get("ops_discord_notification_status")
         if isinstance(status, str) and status:
             ops_discord_statuses.append(status)
+        http_status = discord.get("ops_discord_last_http_status")
+        if isinstance(http_status, (str, int)):
+            ops_discord_http_statuses.append(str(http_status))
     return {
         "schema": "tau.pipeline_self_repair_summary.v1",
         "available": True,
@@ -670,6 +674,7 @@ def _repair_summary(corrections: list[dict[str, Any]]) -> dict[str, Any] | None:
         "incident_ids": [str(item.get("incident_id")) for item in corrections],
         "discord_states": discord_states,
         "ops_discord_notification_statuses": ops_discord_statuses,
+        "ops_discord_http_statuses": ops_discord_http_statuses,
     }
 
 
