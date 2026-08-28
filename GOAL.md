@@ -54,6 +54,12 @@ Every canonical DAG must:
 - distinguish model claims from independently accepted evidence;
 - make retries, route decisions, joins, approvals, side effects, and recovery
   inspectable;
+- treat every required DAG step as repairable: a failed step must become a
+  classified repair category, remain blocked while open, and rerun the same
+  semantic node from its checkpoint before downstream work advances;
+- write a final replayable run ledger that lets a compliance or security
+  engineer trace every node attempt, accepted evidence item, repair category,
+  ticket/watchdog handoff, human decision, and reason for resuming or stopping;
 - fail closed with a precise blocker and next required human decision;
 - preserve accepted work across retries and restart;
 - state what each proof demonstrates and what remains unverified.
@@ -122,13 +128,18 @@ This goal is complete only when:
 - the same viewer renders fresh authoritative progress for all five DAGs;
 - the React Flow graph visibly updates during execution without manual reload,
   including sequential node transitions, simultaneous concurrent branches,
-  joins, retries, blocked states, human approval waits, resume, and completion;
+  joins, retries, repair overlays, repair-category state, ledger trace links,
+  Discord-backed human questions or status responses, blocked states, human
+  approval waits, resume, and completion;
 - viewer verification includes inspected desktop and mobile screenshots plus
   a browser workflow trace showing the same run advance through running,
   concurrent, blocked or approval-waiting, resumed, and completed states;
 - a clean checkout can launch the DAGs and viewer using documented commands;
 - final proof reports `mocked: no`, `live: yes`, what was exercised, and what
   remains unverified;
+- dedicated `$agentic-evals` prove the default ledger trace, the
+  `$pipeline-self-repair` repair branch, and Discord human unblock/status
+  behavior separately;
 - the human accepts that the workflows and viewer make Tau's value and state
   understandable without repository archaeology.
 
