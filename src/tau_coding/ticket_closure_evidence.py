@@ -68,6 +68,8 @@ def validate_code_ticket_closure_evidence(payload: dict[str, Any]) -> TicketClos
         errors.append("e2e must be an object")
         return _blocked(errors)
 
+    agentic_eval_payload = _validate_agentic_evals_block(payload.get("agentic_evals"), errors)
+
     command = str(e2e.get("command") or "")
     if not command.strip():
         errors.append("e2e.command must be a non-empty string")
@@ -102,6 +104,18 @@ def validate_code_ticket_closure_evidence(payload: dict[str, Any]) -> TicketClos
                         errors.append("e2e.artifact.mocked must be false")
                     if loaded.get("live") is not True:
                         errors.append("e2e.artifact.live must be true")
+
+    if agentic_eval_payload is not None:
+        if agentic_eval_payload.get("readiness") != "READY":
+            errors.append("agentic_evals.report.readiness must be READY")
+        if agentic_eval_payload.get("mocked") is not False:
+            errors.append("agentic_evals.report.mocked must be false")
+        if agentic_eval_payload.get("live") is not True:
+            errors.append("agentic_evals.report.live must be true")
+        if int(agentic_eval_payload.get("case_count") or 0) < 1:
+            errors.append("agentic_evals.report.case_count must be >= 1")
+        if int(agentic_eval_payload.get("trial_count") or 0) < 2:
+            errors.append("agentic_evals.report.trial_count must be >= 2")
 
     if errors:
         return _blocked(errors, artifact_payload=artifact_payload)
@@ -146,7 +160,9 @@ def validate_subagent_code_ticket_closure(payload: Mapping[str, Any]) -> list[st
     ]
 
 
-def write_ticket_subagent_closure_proof(output: Path, *, allow_live_filesystem: bool) -> dict[str, Any]:
+def write_ticket_subagent_closure_proof(
+    output: Path, *, allow_live_filesystem: bool
+) -> dict[str, Any]:
     """Write a live local proof for the code-ticket closure-evidence gate."""
 
     if not allow_live_filesystem:
@@ -167,6 +183,28 @@ def write_ticket_subagent_closure_proof(output: Path, *, allow_live_filesystem: 
                 "run_id": run_id,
                 "observed_at_unix_ns": time.time_ns(),
                 "filesystem_readback_required": True,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    agentic_eval_report = proof_dir / "agentic-evals-report.json"
+    agentic_eval_report.write_text(
+        json.dumps(
+            {
+                "schema": "agentic_evals.report.v2",
+                "mocked": False,
+                "live": True,
+                "readiness": "READY",
+                "proof_scope": "ticket-subagent closure proof gate self-check",
+                "claims": {
+                    "proves": "the closure validator requires an agentic-evals report",
+                    "does_not_prove": "Tau product readiness or provider quality",
+                },
+                "case_count": 1,
+                "trial_count": 2,
             },
             indent=2,
             sort_keys=True,
@@ -199,6 +237,11 @@ def write_ticket_subagent_closure_proof(output: Path, *, allow_live_filesystem: 
             "live": True,
             "artifact": str(live_artifact),
         },
+        "agentic_evals": {
+            "command": "agentic-evals run evals/tau_core_agentic_eval.json",
+            "exit_code": 0,
+            "report": str(agentic_eval_report),
+        },
     }
 
     rejected = validate_code_ticket_closure_evidence(unit_only)
@@ -225,8 +268,7 @@ def write_ticket_subagent_closure_proof(output: Path, *, allow_live_filesystem: 
         }
     )
     rejected_code_subagent_without_e2e = any(
-        error.startswith(BLOCKED_E2E_REQUIRED)
-        for error in code_receipt_without_e2e_errors
+        error.startswith(BLOCKED_E2E_REQUIRED) for error in code_receipt_without_e2e_errors
     )
     accepted_code_subagent_live_e2e = not code_receipt_with_e2e_errors
     accepted_non_code_without_e2e = not non_code_receipt_without_e2e_errors
@@ -258,21 +300,64 @@ def write_ticket_subagent_closure_proof(output: Path, *, allow_live_filesystem: 
         "code_receipt_with_e2e_errors": code_receipt_with_e2e_errors,
         "non_code_receipt_without_e2e_errors": non_code_receipt_without_e2e_errors,
         "live_artifact": str(live_artifact),
+        "agentic_eval_report": str(agentic_eval_report),
         "proof_boundary": {
             "proves": [
                 "Code-ticket closure evidence without an e2e section is rejected.",
-                "Code-ticket closure evidence with a live non-mocked artifact read-back is accepted.",
+                (
+                    "Code-ticket closure evidence with a live non-mocked artifact read-back "
+                    "and agentic-evals report is accepted."
+                ),
                 "Passing code-related subagent receipts are blocked without the closure evidence.",
                 "Passing non-code subagent receipts are not forced through the code-ticket gate.",
             ],
             "does_not_prove": [
                 "Provider semantic correctness.",
-                "That historical receipts written before this gate carry code-ticket closure evidence.",
+                (
+                    "That historical receipts written before this gate carry code-ticket "
+                    "closure evidence."
+                ),
             ],
         },
     }
     resolved.write_text(json.dumps(proof, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return proof
+
+
+def _validate_agentic_evals_block(
+    value: Any,
+    errors: list[str],
+) -> dict[str, Any] | None:
+    """Validate the mandatory agentic-evals proof block for Tau code closure."""
+
+    if not isinstance(value, dict):
+        errors.append("agentic_evals must be an object")
+        return None
+    if not isinstance(value.get("command"), str) or "agentic-evals" not in value.get("command", ""):
+        errors.append("agentic_evals.command must name an agentic-evals run")
+    if value.get("exit_code") != 0:
+        errors.append("agentic_evals.exit_code must be 0")
+
+    report_value = value.get("report")
+    if not isinstance(report_value, str) or not report_value.strip():
+        errors.append("agentic_evals.report must be a non-empty path")
+        return None
+
+    report_path = Path(report_value).expanduser()
+    if not report_path.exists() or report_path.stat().st_size == 0:
+        errors.append(f"agentic_evals.report must exist and be non-empty: {report_path}")
+        return None
+    try:
+        loaded = json.loads(report_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        errors.append(f"agentic_evals.report must be readable JSON: {report_path}: {exc}")
+        return None
+    if not isinstance(loaded, dict):
+        errors.append(f"agentic_evals.report must contain a JSON object: {report_path}")
+        return None
+    if loaded.get("schema") != "agentic_evals.report.v2":
+        errors.append("agentic_evals.report.schema must be agentic_evals.report.v2")
+    return loaded
 
 
 def _blocked(

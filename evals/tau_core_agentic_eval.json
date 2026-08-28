@@ -1,0 +1,43 @@
+{
+  "version": 2,
+  "skill": "tau-core",
+  "trials": 2,
+  "proof_scope": "Tau core local DAG execution and tamper-evident ledger proof",
+  "claims": {
+    "proves": "Tau can execute a live local creator/reviewer DAG through its CLI and verify the resulting tamper-evident run ledger with independent readbacks.",
+    "does_not_prove": "provider semantic quality, browser rendering quality, GitHub mutation behavior, or full product readiness."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.core.local_dag_with_tamper_evident_ledger",
+      "description": "Tau executes a local goal-bound DAG through the CLI, writes a ledger, verifies it intact, and rejects tampering.",
+      "criticality": "critical",
+      "evidence_required": {"live_e2e": true}
+    }
+  ],
+  "cases": [
+    {
+      "name": "live-local-dag-ledger-tamper-proof",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": ["tau.core.local_dag_with_tamper_evident_ledger"],
+      "timeout_seconds": 150,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-core-proof.py --out local/agentic-evals/tau-core-proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\""],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-core-proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-core-proof.json", "json_pointer": "/mocked", "equals": false},
+          {"path": "../local/agentic-evals/tau-core-proof.json", "json_pointer": "/live", "equals": true},
+          {"path": "../local/agentic-evals/tau-core-proof.json", "json_pointer": "/tamper_reason", "equals": "entry_hash_mismatch"}
+        ]
+      }
+    }
+  ]
+}

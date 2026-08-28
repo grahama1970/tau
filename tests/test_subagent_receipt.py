@@ -16,10 +16,7 @@ from tau_coding.ticket_closure_evidence import (
 )
 
 FIXTURES = (
-    Path(__file__).resolve().parents[1]
-    / "experiments"
-    / "goal-locked-subagents"
-    / "fixtures"
+    Path(__file__).resolve().parents[1] / "experiments" / "goal-locked-subagents" / "fixtures"
 )
 SCHEMA_PATH = (
     Path(__file__).resolve().parents[1]
@@ -150,6 +147,21 @@ def test_code_related_pass_receipt_requires_live_e2e_closure_evidence() -> None:
 def test_code_related_pass_receipt_accepts_live_e2e_closure_evidence(tmp_path: Path) -> None:
     artifact = tmp_path / "live-e2e-artifact.json"
     artifact.write_text(json.dumps({"mocked": False, "live": True}) + "\n", encoding="utf-8")
+    agentic_report = tmp_path / "agentic-evals-report.json"
+    agentic_report.write_text(
+        json.dumps(
+            {
+                "schema": "agentic_evals.report.v2",
+                "readiness": "READY",
+                "mocked": False,
+                "live": True,
+                "case_count": 1,
+                "trial_count": 2,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     receipt = json.loads((FIXTURES / "valid-subagent-receipt.json").read_text(encoding="utf-8"))
     receipt["context"]["task_type"] = "code"
     receipt["evidence"].append(
@@ -162,6 +174,11 @@ def test_code_related_pass_receipt_accepts_live_e2e_closure_evidence(tmp_path: P
                 "mocked": False,
                 "live": True,
                 "artifact": str(artifact),
+            },
+            "agentic_evals": {
+                "command": "agentic-evals run evals/tau_core_agentic_eval.json",
+                "exit_code": 0,
+                "report": str(agentic_report),
             },
         }
     )

@@ -47,7 +47,8 @@ Do not let Textual become a dependency of the reusable agent harness.
 - Work in small, documented phases.
 - Keep changes aligned with the roadmap issue.
 - Add or update docs when introducing architectural concepts.
-- Add tests for behavior before expanding features.
+- Add tests for behavior before expanding features, but treat unit tests as regression guards only.
+- `$agentic-evals` is required for any claim that Tau works as expected; a passing `pytest` suite alone is not closure proof.
 - Run tests and Python commands through `uv` (for example, `uv run pytest` or `uv run python ...`) so they use the project environment.
 - Prefer simple, explicit abstractions over framework-heavy designs.
 - Keep commits atomic: one coherent feature, fix, docs update, refactor, or cleanup per commit.
