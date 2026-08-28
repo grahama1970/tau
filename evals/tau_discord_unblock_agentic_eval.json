@@ -26,7 +26,7 @@
       "command": [
         "bash",
         "-lc",
-        "cd .. && uv run python scripts/agentic-eval-tau-discord-unblock.py --out local/agentic-evals/tau-discord-unblock-proof.json"
+        "cd .. && uv run python scripts/agentic-eval-tau-discord-unblock.py --out local/agentic-evals/tau-discord-unblock-proof.json --discord-bot --channel-name horus"
       ],
       "expected": {
         "exit_code": 0,

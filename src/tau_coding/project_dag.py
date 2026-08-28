@@ -4675,7 +4675,14 @@ def _notify_ops_discord_for_human_adjudication(
             "ops_discord_notification_ok": delivered,
             "ops_discord_last_http_status": notification_payload.get("last_http_status"),
             "ops_discord_http_status_codes": notification_payload.get("http_status_codes"),
+            "ops_discord_transport": notification_payload.get("transport")
+            or _ops_discord_transport(policy),
+            "discord_message_id": notification_payload.get("discord_message_id"),
+            "discord_channel_id": notification_payload.get("discord_channel_id"),
+            "message_url": notification_payload.get("message_url"),
             "webhook": str(policy.get("webhook") or "alerts"),
+            "channel_id": notification_payload.get("channel_id") or policy.get("channel_id"),
+            "channel_name": notification_payload.get("channel_name") or policy.get("channel_name"),
             "dry_run": policy.get("dry_run") is True,
             "allowed_answers": allowed_answers,
         }
@@ -4759,20 +4766,36 @@ def _ops_discord_notify_command(
             "receipt matching question_id/run_id/node_id/goal_hash can unblock.",
         ]
     )
-    command = [
-        script,
-        "notify",
-        "--webhook",
-        str(policy.get("webhook") or "alerts"),
-        "--title",
-        title,
-        "--content",
-        content,
-        "--json",
-    ]
+    command = [script, "notify"]
+    if _ops_discord_transport(policy) == "discord_bot":
+        command.append("--discord-bot")
+        channel_id = policy.get("channel_id")
+        channel_name = policy.get("channel_name") or "horus"
+        if isinstance(channel_id, str) and channel_id:
+            command.extend(["--channel-id", channel_id])
+        else:
+            command.extend(["--channel-name", str(channel_name)])
+    else:
+        command.extend(["--webhook", str(policy.get("webhook") or "alerts")])
+    command.extend(
+        [
+            "--title",
+            title,
+            "--content",
+            content,
+            "--json",
+        ]
+    )
     if policy.get("dry_run") is True:
         command.append("--dry-run")
     return command
+
+
+def _ops_discord_transport(policy: Mapping[str, Any]) -> str:
+    transport = str(policy.get("transport") or "").strip().lower()
+    if transport in {"discord_bot", "bot", "discord"} or policy.get("discord_bot") is True:
+        return "discord_bot"
+    return "webhook"
 
 
 def _ops_discord_status_codes_from_text(text: str) -> list[int]:

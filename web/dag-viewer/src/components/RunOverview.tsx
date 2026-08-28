@@ -89,6 +89,9 @@ export function RunOverview({ manifest, snapshot }: Props) {
           {repair.discord_states && repair.discord_states.length > 0 && (
             <small>human question · {repair.discord_states.join(" → ")}</small>
           )}
+          {repair.ops_discord_message_urls && repair.ops_discord_message_urls.length > 0 && (
+            <small>message · {repair.ops_discord_message_urls[0]}</small>
+          )}
         </div>
       )}
       {blocker && (

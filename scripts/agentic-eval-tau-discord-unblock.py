@@ -27,6 +27,8 @@ def main() -> int:
     parser.add_argument("--uv-bin", default="uv")
     parser.add_argument("--timeout-seconds", type=int, default=120)
     parser.add_argument("--webhook", default="tau-repair-eval")
+    parser.add_argument("--discord-bot", action="store_true")
+    parser.add_argument("--channel-name", default="horus")
     parser.add_argument("--live-notify", action="store_true")
     args = parser.parse_args()
 
@@ -51,6 +53,8 @@ def main() -> int:
         dag,
         command_spec,
         webhook=args.webhook,
+        discord_bot=args.discord_bot,
+        channel_name=args.channel_name,
         dry_run=not args.live_notify,
     )
     if not args.live_notify:
@@ -247,7 +251,15 @@ def main() -> int:
     return 0 if not errors else 1
 
 
-def _write_dag(path: Path, command_spec: Path, *, webhook: str, dry_run: bool) -> None:
+def _write_dag(
+    path: Path,
+    command_spec: Path,
+    *,
+    webhook: str,
+    discord_bot: bool,
+    channel_name: str,
+    dry_run: bool,
+) -> None:
     path.write_text(
         json.dumps(
             {
@@ -276,6 +288,9 @@ def _write_dag(path: Path, command_spec: Path, *, webhook: str, dry_run: bool) -
                         "enabled": True,
                         "question_id": QUESTION_ID,
                         "webhook": webhook,
+                        "transport": "discord_bot" if discord_bot else "webhook",
+                        "discord_bot": discord_bot,
+                        "channel_name": channel_name,
                         "dry_run": dry_run,
                         "require_human_adjudication": True,
                     },
