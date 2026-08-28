@@ -203,18 +203,14 @@ def main() -> int:
         errors.append("viewer_discord_question_missing")
     if status_receipt.get("unblocks_decision") is not False:
         errors.append("status_receipt_unblocked_decision")
-    expected_discord_state = (
-        "QUESTION_SENT" if not args.live_notify else "OPS_DISCORD_NOTIFICATION_FAILED"
-    )
+    expected_discord_state = "QUESTION_SENT"
     if discord.get("state") != expected_discord_state:
         errors.append("ops_discord_question_not_sent")
     if ops_discord_receipt.get("schema") != "ops_discord.notification_receipt.v1":
         errors.append("ops_discord_notification_receipt_missing")
-    expected_notification_status = "DRY_RUN" if not args.live_notify else "SEND_FAILED"
+    expected_notification_status = "DRY_RUN" if not args.live_notify else "SENT"
     if ops_discord_receipt.get("status") != expected_notification_status:
         errors.append("ops_discord_notification_not_dispatched")
-    if args.live_notify and str(ops_discord_receipt.get("last_http_status")) != "404":
-        errors.append("ops_discord_http_404_not_captured")
     if ops_discord_receipt.get("human_adjudication_required") is not True:
         errors.append("ops_discord_human_adjudication_flag_missing")
     if validation["exit_code"] != 0 or validation_receipt.get("unblocks_decision") is not True:
