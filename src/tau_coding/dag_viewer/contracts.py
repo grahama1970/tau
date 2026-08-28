@@ -36,6 +36,7 @@ def viewer_capabilities() -> dict[str, Any]:
         "supports_diagnostic_activity": True,
         "supports_artifact_workspace": True,
         "supports_accepted_evidence": True,
+        "supports_ledger": True,
         "supports_retry_revision_overlays": True,
         "supports_memory_provenance": "DEGRADED_WHEN_MEMORY_CHAIN_UNAVAILABLE",
         "supports_bounded_query": True,

@@ -1497,12 +1497,15 @@ def _render_tool_chat_body(
         syntax_theme=syntax_theme,
         theme=theme,
     )
-    if _render_patch_body(
-        item.tool_result_text,
-        body_style=body_style,
-        syntax_theme=syntax_theme,
-        code_block_background=theme.markdown_code_block_background,
-    ) is None:
+    if (
+        _render_patch_body(
+            item.tool_result_text,
+            body_style=body_style,
+            syntax_theme=syntax_theme,
+            code_block_background=theme.markdown_code_block_background,
+        )
+        is None
+    ):
         result_body = VisualPreviewText(
             item.tool_result_text,
             max_visual_lines=TOOL_RESULT_VISUAL_PREVIEW_LINES,
@@ -1838,9 +1841,7 @@ def _looks_like_unified_diff_start(lines: Sequence[str], index: int) -> bool:
     if line.startswith("diff --git "):
         return True
     return (
-        line.startswith("--- ")
-        and index + 1 < len(lines)
-        and lines[index + 1].startswith("+++ ")
+        line.startswith("--- ") and index + 1 < len(lines) and lines[index + 1].startswith("+++ ")
     )
 
 
@@ -2207,9 +2208,8 @@ def _session_stats_summary(session: SessionSummarySource) -> str | None:
     if stats.cache_write_tokens:
         parts.append(f"W{_compact_usage_count(stats.cache_write_tokens)}")
     if (
-        (stats.cache_read_tokens or stats.cache_write_tokens)
-        and stats.latest_cache_hit_rate is not None
-    ):
+        stats.cache_read_tokens or stats.cache_write_tokens
+    ) and stats.latest_cache_hit_rate is not None:
         parts.append(f"CH{stats.latest_cache_hit_rate:.1f}%")
     if stats.estimated_cost is not None:
         parts.append(f"${stats.estimated_cost:.3f}")
@@ -2416,14 +2416,25 @@ def _context_file_label(path: Path, *, cwd: Path) -> str:
     expanded_path = path.expanduser()
     if not expanded_path.is_absolute():
         expanded_path = cwd / expanded_path
+    cwd_path = cwd.expanduser().absolute()
+    absolute_path = expanded_path.absolute()
     try:
-        return str(expanded_path.resolve().relative_to(cwd.expanduser().resolve()))
-    except (OSError, ValueError):
-        try:
-            absolute_path = expanded_path.resolve()
-        except OSError:
-            absolute_path = expanded_path.absolute()
+        return str(absolute_path.relative_to(cwd_path))
+    except ValueError:
+        pass
+    try:
         return _short_path(absolute_path)
+    except ValueError:
+        pass
+    try:
+        resolved_path = expanded_path.resolve()
+        resolved_cwd = cwd.expanduser().resolve()
+        return str(resolved_path.relative_to(resolved_cwd))
+    except OSError, ValueError:
+        try:
+            return _short_path(resolved_path)
+        except UnboundLocalError, ValueError:
+            return str(absolute_path)
 
 
 def _thinking_level(session: SessionSummarySource) -> str:

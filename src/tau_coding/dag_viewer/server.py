@@ -44,6 +44,7 @@ from tau_coding.dag_viewer.projection import (
 from tau_coding.dag_viewer.query import query_dag_view
 from tau_coding.dag_viewer.receipt_index import ReceiptIndex, build_receipt_index
 from tau_coding.dag_viewer.static_files import read_static_viewer_file
+from tau_coding.run_ledger import read_ledger, verify_ledger
 
 LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
 GENERATION_MARKER = ":generation:"
@@ -199,6 +200,19 @@ class DagViewerApplication:
                     {**response_headers, "Cache-Control": "no-store"},
                 )
             return with_headers(json_response(snapshot), response_headers)
+        if path == "/api/v1/ledger":
+            ledger_path = self.run_dir / "run-ledger.json"
+            ledger = read_ledger(ledger_path)
+            return json_response(
+                {
+                    "schema": "tau.dag_viewer_ledger_projection.v1",
+                    "run_id": self.run_id,
+                    "read_only": True,
+                    "ledger_path": str(ledger_path),
+                    "verification": verify_ledger(ledger),
+                    "ledger": ledger,
+                }
+            )
         if path == "/api/v1/events":
             after, before, limit = parse_event_query(parsed.query)
             if self._project_receipt is not None:

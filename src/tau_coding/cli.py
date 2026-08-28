@@ -81,6 +81,7 @@ from tau_coding.dag_route_memory import (
     write_dag_route_memory_sync_receipt,
 )
 from tau_coding.dag_runtime import write_dag_plan
+from tau_coding.dag_runtime.agent_events import read_agent_events_surface
 from tau_coding.dag_runtime.retention import expire_dag_run_directories
 from tau_coding.dag_runtime.run_store import DagRunStoreError, SqliteDagRunStore
 from tau_coding.dag_signals import write_dag_signal_receipt
@@ -272,8 +273,12 @@ from tau_coding.resource_lease_conformance import write_resource_lease_conforman
 from tau_coding.resources import TauResourcePaths
 from tau_coding.review_code_skill_adapter import write_review_code_skill_adapter_receipt
 from tau_coding.review_findings import write_review_findings_receipt
+from tau_coding.run_ledger import (
+    build_run_ledger_from_run_dir,
+    read_ledger,
+    verify_ledger_file,
+)
 from tau_coding.run_report import write_run_report
-from tau_coding.dag_runtime.agent_events import read_agent_events_surface
 from tau_coding.run_status import build_dag_viewer_link, build_run_status
 from tau_coding.runtime_handshake import write_runtime_handshake
 from tau_coding.sandbox_run import run_sandboxed_command
@@ -2705,6 +2710,16 @@ def main(
         if positional_args[1:] not in ([], ["--json"]):
             raise typer.BadParameter("Usage: tau dag-view-capabilities [--json]")
         typer.echo(json.dumps(viewer_capabilities(), indent=2, sort_keys=True))
+        raise typer.Exit()
+
+    if not print_requested and command == "ledger":
+        try:
+            payload = _run_ledger_cli(positional_args[1:])
+        except (OSError, RuntimeError, ValueError) as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is False:
+            raise typer.Exit(1)
         raise typer.Exit()
 
     if not print_requested and command in {"dag-view-snapshot", "dag-view-events"}:
@@ -8667,6 +8682,84 @@ def _parse_agent_events_cli_args(args: list[str]) -> dict[str, object]:
     if options["run_dir"] is None:
         raise RuntimeError(usage)
     return options
+
+
+def _run_ledger_cli(args: list[str]) -> dict[str, object]:
+    if not args or args[0] not in {"build", "verify", "view"}:
+        raise RuntimeError(
+            "Usage: tau ledger build --run-dir DIR [--output FILE] "
+            "[--agentic-eval-report FILE...] | tau ledger verify --ledger FILE | "
+            "tau ledger view --run-dir DIR"
+        )
+    subcommand = args[0]
+    if subcommand == "build":
+        options = _parse_ledger_build_args(args[1:])
+        output = options["output"] or (options["run_dir"] / "run-ledger.json")
+        ledger = build_run_ledger_from_run_dir(
+            options["run_dir"],
+            agentic_eval_reports=tuple(options["agentic_eval_reports"]),
+            output_path=output,
+        )
+        verification = verify_ledger_file(output)
+        return {
+            "schema": "tau.ledger_cli_receipt.v1",
+            "ok": verification["ok"] is True,
+            "command": "build",
+            "ledger_path": str(output.expanduser().resolve()),
+            "entry_count": ledger.get("entry_count"),
+            "head_hash": ledger.get("head_hash"),
+            "verification": verification,
+        }
+    if subcommand == "verify":
+        ledger_path = _parse_single_path_option(args[1:], "--ledger")
+        verification = verify_ledger_file(ledger_path)
+        return {"schema": "tau.ledger_cli_receipt.v1", "command": "verify", **verification}
+    run_dir = _parse_single_path_option(args[1:], "--run-dir")
+    ledger_path = run_dir / "run-ledger.json"
+    ledger = read_ledger(ledger_path)
+    return {
+        "schema": "tau.ledger_cli_receipt.v1",
+        "ok": True,
+        "command": "view",
+        "ledger_path": str(ledger_path.expanduser().resolve()),
+        "ledger": ledger,
+    }
+
+
+def _parse_ledger_build_args(args: list[str]) -> dict[str, object]:
+    run_dir: Path | None = None
+    output: Path | None = None
+    reports: list[Path] = []
+    index = 0
+    while index < len(args):
+        item = args[index]
+        if item == "--run-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--run-dir requires a path")
+            run_dir = Path(args[index])
+        elif item == "--output":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--output requires a path")
+            output = Path(args[index])
+        elif item == "--agentic-eval-report":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--agentic-eval-report requires a path")
+            reports.append(Path(args[index]))
+        else:
+            raise RuntimeError(f"unknown ledger build option: {item}")
+        index += 1
+    if run_dir is None:
+        raise RuntimeError("ledger build requires --run-dir DIR")
+    return {"run_dir": run_dir, "output": output, "agentic_eval_reports": reports}
+
+
+def _parse_single_path_option(args: list[str], option: str) -> Path:
+    if len(args) != 2 or args[0] != option:
+        raise RuntimeError(f"required option: {option} PATH")
+    return Path(args[1])
 
 
 def _parse_dag_viewer_link_cli_args(args: list[str]) -> Path:

@@ -34,15 +34,11 @@ def test_transition_receipt_classification_accepts_windows_paths() -> None:
         r"C:\\run\\join-decisions\\join.json",
     )
 
-    assert project_dag._transition_receipts_in_directory(paths, "route-decisions") == [
-        paths[0]
+    assert project_dag._transition_receipts_in_directory(paths, "route-decisions") == [paths[0]]
+    assert project_dag._transition_receipts_in_directory(paths, "terminal-contributions") == [
+        paths[1]
     ]
-    assert project_dag._transition_receipts_in_directory(
-        paths, "terminal-contributions"
-    ) == [paths[1]]
-    assert project_dag._transition_receipts_in_directory(paths, "join-decisions") == [
-        paths[2]
-    ]
+    assert project_dag._transition_receipts_in_directory(paths, "join-decisions") == [paths[2]]
 
 
 def test_provider_live_requires_accepted_live_provider_route_receipt() -> None:
@@ -261,9 +257,7 @@ def test_ready_queue_allows_live_browser_oracle_preflight_then_dispatch(tmp_path
     assert receipt["verdict"] == "PASS"
     assert receipt["node_attempts"] == {"handler-webgpt": 1}
     assert marker_path.read_text(encoding="utf-8") == "executed"
-    preflight_receipt = (
-        tmp_path / "run" / "browser-oracle-preflight" / "handler-webgpt.json"
-    )
+    preflight_receipt = tmp_path / "run" / "browser-oracle-preflight" / "handler-webgpt.json"
     assert preflight_receipt.is_file()
     preflight = json.loads(preflight_receipt.read_text(encoding="utf-8"))
     assert preflight["status"] == "PASS"
@@ -300,9 +294,7 @@ def test_ready_queue_derives_final_verdict_from_terminal_handler_receipt(
                 "agent": "handler-webgpt",
                 "executor": "local",
                 "max_attempts": 1,
-                "command_spec": str(
-                    spec_root / "handler-webgpt" / "tau-dispatch-command.json"
-                ),
+                "command_spec": str(spec_root / "handler-webgpt" / "tau-dispatch-command.json"),
                 "required_evidence": ["normalized_handler_receipt"],
             },
             {
@@ -310,9 +302,7 @@ def test_ready_queue_derives_final_verdict_from_terminal_handler_receipt(
                 "agent": "handler-webclaude",
                 "executor": "local",
                 "max_attempts": 1,
-                "command_spec": str(
-                    spec_root / "handler-webclaude" / "tau-dispatch-command.json"
-                ),
+                "command_spec": str(spec_root / "handler-webclaude" / "tau-dispatch-command.json"),
                 "required_evidence": ["normalized_handler_receipt"],
             },
             {
@@ -450,11 +440,7 @@ def test_project_dag_durable_replay_preserves_receipt_evidence(
     assert second["max_observed_concurrency"] == first["max_observed_concurrency"]
     assert len(third["scheduler_events"]) == len(second["scheduler_events"])
     normalized_events = [
-        {
-            key: value
-            for key, value in event.items()
-            if key not in {"durably_replayed", "ts"}
-        }
+        {key: value for key, value in event.items() if key not in {"durably_replayed", "ts"}}
         for event in third["scheduler_events"]
     ]
     assert len({json.dumps(event, sort_keys=True) for event in normalized_events}) == len(
@@ -1024,7 +1010,8 @@ def test_project_dag_bounded_ready_queue_recovers_after_timeout_retry(
         "coder",
         _handoff("coder", "human", _creator_evidence()),
         first_failure="timeout",
-        timeout_s=0.05,
+        timeout_s=0.5,
+        first_timeout_sleep_s=1.0,
     )
     _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
 
@@ -1680,11 +1667,7 @@ def test_project_dag_propagates_persistent_subagent_surface_to_node(
     assert receipt["ok"] is True
     compiled_coder_spec = json.loads(
         (
-            tmp_path
-            / "run"
-            / "compiled-command-specs"
-            / "coder"
-            / "tau-dispatch-command.json"
+            tmp_path / "run" / "compiled-command-specs" / "coder" / "tau-dispatch-command.json"
         ).read_text(encoding="utf-8")
     )
     request = json.loads(
@@ -2051,9 +2034,7 @@ def test_project_dag_secure_mode_blocks_missing_node_capability_before_compilati
     assert receipt["command_executed"] is False
     assert receipt["provider_invoked"] is False
     assert receipt["filesystem_mutation_performed"] is False
-    assert receipt["capability_decision_receipt"].endswith(
-        "capability-decision-receipt.json"
-    )
+    assert receipt["capability_decision_receipt"].endswith("capability-decision-receipt.json")
     decision = json.loads(
         (run_dir / "capability-decision-receipt.json").read_text(encoding="utf-8")
     )
@@ -2129,10 +2110,11 @@ def test_project_dag_routes_secure_containment_run_through_bwrap(
     )
     payload = json.loads(contract_path.read_text(encoding="utf-8"))
     actor_manifest = _write_actor_access_manifest(tmp_path)
-    process_capability = _process_execute_capability(tmp_path)
+    sandbox_python = "/usr/bin/python3"
+    process_capability = _process_execute_capability(tmp_path, target=Path(sandbox_python).name)
     command_policy = _write_command_policy(
         tmp_path,
-        allowed_roots=[Path(sys.executable).name],
+        allowed_roots=[Path(sandbox_python).name],
         capability_rules=[
             {
                 "capability": process_capability["capability"],
@@ -2170,8 +2152,18 @@ def test_project_dag_routes_secure_containment_run_through_bwrap(
     payload["sandbox_run_receipt"] = str(sandbox_receipt)
     payload["compliance_package_validation_receipt"] = str(package_receipt)
     contract_path.write_text(json.dumps(payload), encoding="utf-8")
-    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
-    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+    _write_response_spec(
+        tmp_path,
+        "coder",
+        _handoff("coder", "reviewer", _creator_evidence()),
+        executable=sandbox_python,
+    )
+    _write_response_spec(
+        tmp_path,
+        "reviewer",
+        _reviewer_handoff(goal_hash="sha256:active-goal"),
+        executable=sandbox_python,
+    )
 
     receipt = run_project_dag_contract(
         contract_path=contract_path,
@@ -2998,9 +2990,7 @@ def test_project_dag_ambiguous_exclusive_route_blocks_without_branch_dispatch(
     assert receipt["selected_agents"] == ["router"]
     assert not (tmp_path / "run" / "ready-queue" / "accept").exists()
     assert not (tmp_path / "run" / "ready-queue" / "revise").exists()
-    decision = json.loads(
-        Path(receipt["route_decision_receipts"][0]).read_text(encoding="utf-8")
-    )
+    decision = json.loads(Path(receipt["route_decision_receipts"][0]).read_text(encoding="utf-8"))
     assert decision["status"] == "BLOCKED"
     assert decision["failure_code"] == "route_ambiguous_exclusive"
     assert decision["selected_targets"] == []
@@ -3201,10 +3191,10 @@ def test_project_dag_bounded_ready_queue_blocks_unsupported_condition_before_dis
         {
             "severity": "BLOCK",
             "code": "unsupported_ready_queue_condition",
-        "message": (
-            "Bounded ready-queue accepts only tau.route_condition.v1 objects. Replace the "
-            "legacy or untyped condition with a closed typed route condition before dispatch."
-        ),
+            "message": (
+                "Bounded ready-queue accepts only tau.route_condition.v1 objects. Replace the "
+                "legacy or untyped condition with a closed typed route condition before dispatch."
+            ),
             "evidence": {
                 "edges": [
                     {
@@ -3520,8 +3510,7 @@ def _write_fake_browser_oracle_run(path: Path, *, status: str) -> None:
             "conversation_url": "https://chatgpt.com/c/stale",
             "issues": ["tab_stale_manual_binding"],
             "resume_hint": (
-                "browser-oracle bind webgpt --backend webgpt --tab-id <id> "
-                "--url <url> --manual"
+                "browser-oracle bind webgpt --backend webgpt --tab-id <id> --url <url> --manual"
             ),
         }
         exit_code = 2
@@ -3993,6 +3982,7 @@ def _write_routed_contract(
             "field": "route",
             "value": value,
         }
+
     payload = {
         "schema": "tau.dag_contract.v1",
         "dag_id": f"typed-route-{mode}",
@@ -4036,9 +4026,7 @@ def _write_routed_contract(
                     "agent": node_id,
                     "executor": "local",
                     "max_attempts": 1,
-                    "command_spec": str(
-                        spec_root / node_id / "tau-dispatch-command.json"
-                    ),
+                    "command_spec": str(spec_root / node_id / "tau-dispatch-command.json"),
                     "required_evidence": ["creator_artifact"],
                 }
                 for node_id in ("accept", "revise")
@@ -4231,10 +4219,14 @@ def _write_command_policy(
     return policy_path
 
 
-def _process_execute_capability(tmp_path: Path) -> dict[str, object]:
+def _process_execute_capability(
+    tmp_path: Path,
+    *,
+    target: str | None = None,
+) -> dict[str, object]:
     return {
         "capability": "process.execute",
-        "target": Path(sys.executable).name,
+        "target": target or Path(sys.executable).name,
         "resource_scope": [str(tmp_path)],
         "maximum_effect": {"max_processes": 1},
     }
@@ -4249,6 +4241,7 @@ def _write_response_spec(
     timeout_s: float = 5,
     include_cwd: bool = True,
     exit_code: int = 0,
+    executable: str | None = None,
 ) -> None:
     spec_path = tmp_path / "specs" / agent / "tau-dispatch-command.json"
     spec_path.parent.mkdir(parents=True, exist_ok=True)
@@ -4258,7 +4251,7 @@ def _write_response_spec(
     code += f"print({json.dumps(json.dumps(response))}); raise SystemExit({exit_code})"
     payload: dict[str, object] = {
         "command": [
-            sys.executable,
+            executable or sys.executable,
             "-c",
             code,
         ],
@@ -4424,12 +4417,14 @@ def _write_flaky_response_spec(
     *,
     first_failure: str,
     timeout_s: float = 5,
+    first_timeout_sleep_s: float | None = None,
 ) -> None:
     spec_path = tmp_path / "specs" / agent / "tau-dispatch-command.json"
     spec_path.parent.mkdir(parents=True, exist_ok=True)
     state_path = spec_path.parent / "attempt-count.txt"
     if first_failure == "timeout":
-        failure_code = "import time; time.sleep(0.2)"
+        failure_sleep = first_timeout_sleep_s if first_timeout_sleep_s is not None else 0.2
+        failure_code = f"import time; time.sleep({failure_sleep!r})"
     elif first_failure == "non-json":
         failure_code = "print('not json')"
     else:  # pragma: no cover - helper contract guard.

@@ -49,30 +49,31 @@ class TauResourcePaths:
     @property
     def skills_dir(self) -> Path:
         """Return the primary Tau skills directory."""
-        return self.root / "skills"
+        return self._root() / "skills"
 
     @property
     def prompts_dir(self) -> Path:
         """Return the primary Tau prompt templates directory."""
-        return self.root / "prompts"
+        return self._root() / "prompts"
 
     @property
     def themes_dir(self) -> Path:
         """Return the primary Tau TUI themes directory."""
-        return self.root / "themes"
+        return self._root() / "themes"
 
     @property
     def extensions_dir(self) -> Path:
         """Return the primary Tau extension directory."""
-        return self.root / "extensions"
+        return self._root() / "extensions"
 
     @property
     def skills_dirs(self) -> tuple[Path, ...]:
         """Return skill directories in increasing precedence order."""
         paths = self._paths()
         dirs = [self.skills_dir]
-        if self.agents_root is not None:
-            dirs.extend([self.agents_root / "skills", self.agents_root])
+        agents_root = self._agents_root()
+        if agents_root is not None:
+            dirs.extend([agents_root / "skills", agents_root])
         if self.cwd is not None:
             dirs.extend(
                 [
@@ -88,8 +89,9 @@ class TauResourcePaths:
         """Return prompt template directories in increasing precedence order."""
         paths = self._paths()
         dirs = [self.prompts_dir]
-        if self.agents_root is not None:
-            dirs.append(self.agents_root / "prompts")
+        agents_root = self._agents_root()
+        if agents_root is not None:
+            dirs.append(agents_root / "prompts")
         if self.cwd is not None:
             dirs.extend(
                 [
@@ -108,9 +110,22 @@ class TauResourcePaths:
             dirs.append(paths.project_tau_dir(self.cwd) / "themes")
         return tuple(_dedupe_paths(dirs))
 
+    def _root(self) -> Path:
+        if self.paths is not None and self.root == Path.home() / ".tau":
+            return self.paths.home
+        return self.root
+
+    def _agents_root(self) -> Path | None:
+        if self.agents_root is None:
+            return None
+        default_agents_root = Path.home() / ".agents"
+        if self.paths is not None and self.agents_root == default_agents_root:
+            return self.paths.agents_home
+        return self.agents_root
+
     def _paths(self) -> TauPaths:
-        agents_home = self.agents_root or Path.home() / ".agents"
-        return self.paths or TauPaths(home=self.root, agents_home=agents_home)
+        agents_home = self._agents_root() or Path.home() / ".agents"
+        return self.paths or TauPaths(home=self._root(), agents_home=agents_home)
 
 
 def _dedupe_paths(paths: list[Path]) -> list[Path]:

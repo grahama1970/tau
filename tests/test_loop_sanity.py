@@ -5,12 +5,11 @@ import pytest
 
 from tau_coding.loop_sanity import run_loop2_sanity
 
-LOOP2_SRC = (
-    Path(__file__).resolve().parents[2] / "agent-skills" / "skills" / "loop2" / "src"
-)
+LOOP2_SRC = Path(__file__).resolve().parents[2] / "agent-skills" / "skills" / "loop2" / "src"
+LOOP2_CONTRACTS = LOOP2_SRC / "loop2" / "contracts.py"
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_run_loop2_sanity_creates_valid_fixture_receipt_run(tmp_path: Path) -> None:
     result = run_loop2_sanity(
         root_dir=tmp_path / "sanity",

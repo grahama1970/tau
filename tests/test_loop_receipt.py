@@ -31,9 +31,8 @@ from tau_coding.loop_validation import (
     validate_native_loop2_run_with_contracts,
 )
 
-LOOP2_SRC = (
-    Path(__file__).resolve().parents[2] / "agent-skills" / "skills" / "loop2" / "src"
-)
+LOOP2_SRC = Path(__file__).resolve().parents[2] / "agent-skills" / "skills" / "loop2" / "src"
+LOOP2_CONTRACTS = LOOP2_SRC / "loop2" / "contracts.py"
 
 
 def test_loop_receipt_recorder_creates_run_dir_and_events_jsonl(tmp_path: Path) -> None:
@@ -219,9 +218,7 @@ def test_loop_receipt_recorder_writes_final_receipt_with_proof_scope(
     assert written_receipt["artifacts"]["transport_dag_evidence"] == str(
         recorder.run.transport_dag_evidence_path
     )
-    assert written_receipt["artifacts"]["final_receipt"] == str(
-        recorder.run.final_receipt_path
-    )
+    assert written_receipt["artifacts"]["final_receipt"] == str(recorder.run.final_receipt_path)
     assert written_receipt["artifacts"]["node_result"] == str(recorder.run.node_result_path)
     assert written_receipt["scillm"] == {"provider": "fake", "model": "fake-model"}
     assert written_receipt["error"] == ""
@@ -292,9 +289,7 @@ def test_loop_receipt_recorder_writes_loop2_node_result(tmp_path: Path) -> None:
     assert written_result["status"] == "PASS"
     assert written_result["run_id"] == "run-5"
     assert written_result["final_receipt"] == str(recorder.run.final_receipt_path)
-    assert written_result["transport_dag_evidence"] == str(
-        recorder.run.transport_dag_evidence_path
-    )
+    assert written_result["transport_dag_evidence"] == str(recorder.run.transport_dag_evidence_path)
     assert written_result["events"] == str(recorder.run.events_path)
     assert written_result["changed_files"] == ["src/tau_coding/loop_receipt.py"]
     assert written_result["mocked"] is True
@@ -505,15 +500,15 @@ def test_loop_receipt_recorder_writes_harness_peer_message(tmp_path: Path) -> No
     assert peer["switchboard"]["metadata"]["endpoints"]["transport_dag_evidence"] == (
         "http://127.0.0.1:4321/api/loop2/runs/run-peer/transport-dag-evidence"
     )
-    assert peer["switchboard"]["metadata"]["claims"]["does_not_prove"] == peer["claims"][
-        "does_not_prove"
-    ]
-    assert "claims.does_not_prove is preserved by the consuming harness" in peer[
-        "consumer_checks"
-    ]
-    assert "switchboard.metadata.claims.does_not_prove is preserved when relayed" in peer[
-        "consumer_checks"
-    ]
+    assert (
+        peer["switchboard"]["metadata"]["claims"]["does_not_prove"]
+        == peer["claims"]["does_not_prove"]
+    )
+    assert "claims.does_not_prove is preserved by the consuming harness" in peer["consumer_checks"]
+    assert (
+        "switchboard.metadata.claims.does_not_prove is preserved when relayed"
+        in peer["consumer_checks"]
+    )
 
 
 def test_loop_peer_switchboard_emit_request_matches_pi_mono_contract(tmp_path: Path) -> None:
@@ -661,7 +656,7 @@ def test_loop_receipt_emits_native_loop2_event_rows(tmp_path: Path) -> None:
     assert current_state["last_event_type"] == "checks_finished"
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_projected_events_validate_against_loop2_event_contract(
     tmp_path: Path,
 ) -> None:
@@ -678,7 +673,7 @@ def test_loop_receipt_projected_events_validate_against_loop2_event_contract(
         sys.path.remove(str(LOOP2_SRC))
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_artifacts_validate_against_loop2_contracts(tmp_path: Path) -> None:
     recorder = _complete_loop_receipt_run(tmp_path, run_id="run-loop2-contract-valid")
 
@@ -705,7 +700,7 @@ def test_loop_receipt_artifacts_validate_against_loop2_contracts(tmp_path: Path)
     assert result.errors == ()
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_contract_file_validates_against_loop2_contract(
     tmp_path: Path,
 ) -> None:
@@ -718,7 +713,7 @@ def test_loop_receipt_contract_file_validates_against_loop2_contract(
     assert result.errors == ()
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_contract_file_validation_rejects_contract_mismatch(
     tmp_path: Path,
 ) -> None:
@@ -744,7 +739,7 @@ def test_loop_receipt_contract_file_validation_rejects_contract_mismatch(
     assert result.errors[0].startswith("contract:")
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_native_loop2_run_validates_against_loop2_contracts(tmp_path: Path) -> None:
     run_dir = _write_native_loop2_run(tmp_path / "native-run")
 
@@ -769,7 +764,7 @@ def test_native_loop2_run_validates_against_loop2_contracts(tmp_path: Path) -> N
     assert result.errors == ()
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_native_loop2_run_validation_accepts_tau_sanitization_sidecar(
     tmp_path: Path,
 ) -> None:
@@ -792,7 +787,7 @@ def test_native_loop2_run_validation_accepts_tau_sanitization_sidecar(
     assert result.errors == ()
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_native_loop2_run_validation_rejects_bad_tau_sanitization_sidecar(
     tmp_path: Path,
 ) -> None:
@@ -819,7 +814,7 @@ def test_native_loop2_run_validation_rejects_bad_tau_sanitization_sidecar(
     assert result.errors == ("tau_sanitization: artifact must point to tau-sanitization.json",)
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_native_loop2_run_validation_rejects_missing_indexed_tau_sanitization(
     tmp_path: Path,
 ) -> None:
@@ -837,7 +832,7 @@ def test_native_loop2_run_validation_rejects_missing_indexed_tau_sanitization(
     )
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_native_loop2_run_validation_rejects_unredacted_scillm_api_key(
     tmp_path: Path,
 ) -> None:
@@ -855,7 +850,7 @@ def test_native_loop2_run_validation_rejects_unredacted_scillm_api_key(
     )
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_native_loop2_run_validation_rejects_missing_referenced_artifact(
     tmp_path: Path,
 ) -> None:
@@ -882,7 +877,7 @@ def test_native_loop2_run_validation_rejects_missing_referenced_artifact(
     )
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_validation_rejects_loop2_contract_mismatch(
     tmp_path: Path,
 ) -> None:
@@ -916,7 +911,7 @@ def test_loop_receipt_validation_rejects_loop2_contract_mismatch(
     assert "GREEN" in result.errors[1]
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_validation_requires_events_artifact(tmp_path: Path) -> None:
     recorder = _complete_loop_receipt_run(tmp_path, run_id="run-loop2-events-missing")
     recorder.run.events_path.unlink()
@@ -931,7 +926,7 @@ def test_loop_receipt_validation_requires_events_artifact(tmp_path: Path) -> Non
     assert result.errors == ("missing artifact: events",)
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_validation_requires_current_state_artifact(tmp_path: Path) -> None:
     recorder = _complete_loop_receipt_run(tmp_path, run_id="run-loop2-current-state-missing")
     recorder.run.current_state_path.unlink()
@@ -946,7 +941,7 @@ def test_loop_receipt_validation_requires_current_state_artifact(tmp_path: Path)
     assert result.errors == ("missing artifact: current_state",)
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_validation_rejects_current_state_payload_mismatch(
     tmp_path: Path,
 ) -> None:
@@ -979,7 +974,7 @@ def test_loop_receipt_validation_rejects_current_state_payload_mismatch(
     assert "does not match events 2" in result.errors[0]
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_validation_requires_transport_dag_evidence_artifact(
     tmp_path: Path,
 ) -> None:
@@ -996,7 +991,7 @@ def test_loop_receipt_validation_requires_transport_dag_evidence_artifact(
     assert result.errors == ("missing artifact: transport_dag_evidence",)
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_validation_rejects_transport_dag_evidence_payload_mismatch(
     tmp_path: Path,
 ) -> None:
@@ -1029,7 +1024,7 @@ def test_loop_receipt_validation_rejects_transport_dag_evidence_payload_mismatch
     assert "does not match events 2" in result.errors[0]
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_validation_rejects_missing_referenced_check_artifact(
     tmp_path: Path,
 ) -> None:
@@ -1060,7 +1055,7 @@ def test_loop_receipt_validation_rejects_missing_referenced_check_artifact(
     assert "final_receipt.checks[1].stdout_path=checks/stdout.txt" in result.errors[0]
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_validation_rejects_missing_receipt_artifact_contract_path(
     tmp_path: Path,
 ) -> None:
@@ -1093,7 +1088,7 @@ def test_loop_receipt_validation_rejects_missing_receipt_artifact_contract_path(
     )
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_validation_rejects_pass_status_with_failing_check(
     tmp_path: Path,
 ) -> None:
@@ -1124,12 +1119,10 @@ def test_loop_receipt_validation_rejects_pass_status_with_failing_check(
         "contract_parity",
         "state_status",
     )
-    assert result.errors == (
-        "check_status: final_receipt.status PASS has failing checks: [1]",
-    )
+    assert result.errors == ("check_status: final_receipt.status PASS has failing checks: [1]",)
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_validation_rejects_mocked_live_mismatch(
     tmp_path: Path,
 ) -> None:
@@ -1162,7 +1155,7 @@ def test_loop_receipt_validation_rejects_mocked_live_mismatch(
     )
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_validation_rejects_mocked_and_live_both_true(
     tmp_path: Path,
 ) -> None:
@@ -1196,7 +1189,7 @@ def test_loop_receipt_validation_rejects_mocked_and_live_both_true(
     assert result.errors == ("mocked_live: mocked and live cannot both be true",)
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_validation_rejects_node_result_node_id_drift(
     tmp_path: Path,
 ) -> None:
@@ -1230,7 +1223,7 @@ def test_loop_receipt_validation_rejects_node_result_node_id_drift(
     )
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_validation_rejects_node_result_check_drift(
     tmp_path: Path,
 ) -> None:
@@ -1264,7 +1257,7 @@ def test_loop_receipt_validation_rejects_node_result_check_drift(
     assert "node_result.checks []" in result.errors[0]
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_validation_rejects_contract_node_id_drift(
     tmp_path: Path,
 ) -> None:
@@ -1298,7 +1291,7 @@ def test_loop_receipt_validation_rejects_contract_node_id_drift(
     )
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_validation_rejects_contract_check_command_drift(
     tmp_path: Path,
 ) -> None:
@@ -1332,7 +1325,7 @@ def test_loop_receipt_validation_rejects_contract_check_command_drift(
     assert "final_receipt check commands" in result.errors[0]
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_validation_rejects_current_state_run_id_drift(
     tmp_path: Path,
 ) -> None:
@@ -1365,7 +1358,7 @@ def test_loop_receipt_validation_rejects_current_state_run_id_drift(
     assert "different-run" in result.errors[0]
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_loop_receipt_validation_rejects_current_state_last_event_drift(
     tmp_path: Path,
 ) -> None:
@@ -1399,7 +1392,7 @@ def test_loop_receipt_validation_rejects_current_state_last_event_drift(
     )
 
 
-@pytest.mark.skipif(not LOOP2_SRC.exists(), reason="Loop2 source tree is not available")
+@pytest.mark.skipif(not LOOP2_CONTRACTS.exists(), reason="Loop2 contracts are not available")
 def test_backfill_loop_receipt_artifact_index_repairs_legacy_receipt(
     tmp_path: Path,
 ) -> None:

@@ -77,6 +77,7 @@ from tau_coding.public_dag_contracts import (
     immutable_json,
     validate_project_dag_public_boundary,
 )
+from tau_coding.run_ledger import build_run_ledger_from_run_dir, verify_ledger
 from tau_coding.runtime_backends.contracts import RuntimeRequirement
 from tau_coding.security_capability import (
     compile_capability_decision,
@@ -832,6 +833,7 @@ def run_project_dag_contract(
     )
     receipt["progress_path"] = str(resolved_receipt_dir / "dag-progress.json")
     _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+    _attach_run_ledger(receipt, resolved_receipt_dir)
     return receipt
 
 
@@ -1746,7 +1748,7 @@ def _provider_command_timeout_policy(
     )
     try:
         timeout_s = float(raw_timeout)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
     if timeout_s <= 0:
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
@@ -3372,9 +3374,7 @@ def _node_knowledge_freshness_receipt(
     settings = _knowledge_freshness_settings(contract, node_payload)
     project_root = _knowledge_project_root(contract_path, settings)
     receipt_path = (
-        receipt_dir
-        / "knowledge-freshness"
-        / f"{node.node_id}-attempt-{attempt:03d}.json"
+        receipt_dir / "knowledge-freshness" / f"{node.node_id}-attempt-{attempt:03d}.json"
     )
     receipt = write_knowledge_freshness_receipt(
         receipt_path=receipt_path,
@@ -3470,7 +3470,7 @@ def _knowledge_cutoff_from_policy(model_policy: object) -> date | None:
 def _knowledge_cutoff_from_provider_settings(provider_name: str, model: str) -> date | None:
     try:
         provider = load_provider_settings().get_provider(provider_name)
-    except (ProviderConfigError, OSError, json.JSONDecodeError):
+    except ProviderConfigError, OSError, json.JSONDecodeError:
         return None
     return provider_model_knowledge_cutoff(provider, model=model)
 
@@ -4186,6 +4186,7 @@ def _run_shared_project_dag_plan(
     )
     receipt["progress_path"] = str(receipt_dir / "dag-progress.json")
     _write_json_atomic(receipt_dir / "dag-receipt.json", receipt)
+    _attach_run_ledger(receipt, receipt_dir)
     return receipt
 
 
@@ -4925,6 +4926,21 @@ def _ready_queue_receipt(
     if dag_error is not None:
         receipt["dag_error"] = dag_error
     return receipt
+
+
+def _attach_run_ledger(receipt: dict[str, Any], receipt_dir: Path) -> None:
+    ledger_path = receipt_dir / "run-ledger.json"
+    ledger = build_run_ledger_from_run_dir(receipt_dir, output_path=ledger_path)
+    verification = verify_ledger(ledger)
+    receipt["run_ledger"] = {
+        "schema": ledger.get("schema"),
+        "path": str(ledger_path),
+        "entry_count": ledger.get("entry_count"),
+        "head_hash": ledger.get("head_hash"),
+        "verify_ok": verification.get("ok") is True,
+        "verify_reason": verification.get("reason"),
+    }
+    _write_json_atomic(receipt_dir / "dag-receipt.json", receipt)
 
 
 def _command_loop_progress_attempts(events: list[dict[str, Any]]) -> dict[str, int]:
@@ -5903,7 +5919,7 @@ def _downstream_skill_blocker(response: object) -> dict[str, Any] | None:
             continue
         try:
             receipt = _read_json_object(Path(path_value), label="downstream skill receipt")
-        except (OSError, ValueError):
+        except OSError, RuntimeError, ValueError:
             continue
         recovery_packet = receipt.get("recovery_packet")
         recovery_code = (
@@ -6082,7 +6098,7 @@ def _optional_context_mapping(value: object, label: str, errors: list[str]) -> d
 def _json_safe_alert_value(value: object) -> object:
     try:
         json.dumps(value)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return {"type": type(value).__name__, "value": str(value)}
     return value
 
