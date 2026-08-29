@@ -1,0 +1,706 @@
+{
+  "checkpoint_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/checkpoint.json",
+  "completed_node_count": 3,
+  "cost_accounting": {
+    "budget": {
+      "state": "NOT_CONFIGURED"
+    },
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "estimated_cost_is_billing_truth": false,
+    "estimated_cost_usd": null,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "schema": "tau.generic_dag_cost_accounting.v1",
+    "source": "not_reported",
+    "total_tokens": 0
+  },
+  "current_state_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/current-state.json",
+  "dag_plan_sha256": "sha256:740a374ab643666f852d5bacd56a635a64bf1b74bdf8df0c7cf5298c0ae7aec3",
+  "diagnostics_log_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/tau-diagnostics.jsonl",
+  "durable": true,
+  "events_jsonl": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/events.jsonl",
+  "execution": "local_subprocess_receipt_gated_dag",
+  "execution_profile": {
+    "compatibility_default": true,
+    "profile_id": "standard",
+    "resolution_sha256": "sha256:dd9770493d325448bcc33d3ba195db7db5e7ce8ba6894469ceabbfe60c78cf25",
+    "resolved_controls_sha256": "sha256:f2431688becaa3564547be5663e5fa8877d581c23a0a560f4e5b43e7f18a7ba0"
+  },
+  "lease_epoch": 1,
+  "live": true,
+  "max_observed_concurrency": 1,
+  "mocked": false,
+  "node_count": 3,
+  "nodes": [
+    {
+      "accepted_output": {
+        "artifacts": [
+          {
+            "kind": "repository_inspection",
+            "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-inspection.json",
+            "sha256": "sha256:dd61c8c2381ee4cd9df273514d18b8f5d1a8629b0dc64ea2a2db9e0250a75fcf"
+          }
+        ],
+        "branch": "",
+        "diff_check_passed": true,
+        "dirty": false,
+        "head_sha": "1f6a51a25da18409e1c2a53b34e12742a4146bb9",
+        "repo_path": "/tmp/tau-rung1-clean-oefxw8by/checkout",
+        "schema": "tau.repository_inspection.v1",
+        "summary": "Repository inspection completed."
+      },
+      "alert_codes": [],
+      "artifacts": [
+        {
+          "kind": "repository_inspection",
+          "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-inspection.json",
+          "sha256": "sha256:dd61c8c2381ee4cd9df273514d18b8f5d1a8629b0dc64ea2a2db9e0250a75fcf"
+        }
+      ],
+      "attempt": 1,
+      "attempt_count": 1,
+      "attempt_id": "attempt-cfdca3c4989a4192b6ed111e95bd64b2",
+      "command_results": [
+        {
+          "argv": [
+            "/tmp/tau-rung1-clean-oefxw8by/checkout/.venv/bin/python",
+            "-m",
+            "tau_coding.workflows.nodes.repository_readiness",
+            "inspect",
+            "--request",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/input/repository-readiness-request.json",
+            "--output",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-inspection.json",
+            "--receipt",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/inspect-repository.json",
+            "--step-delay-seconds",
+            "0.0"
+          ],
+          "elapsed_seconds": 0.704,
+          "returncode": 0,
+          "runtime_artifacts": [
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-endpoint-lease.json",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-submit-receipt.json",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-event.json",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/inspect-repository/attempt-001/runtime-capture.json"
+          ],
+          "runtime_backend": "local",
+          "runtime_capture": {
+            "cancelled": false,
+            "command": [
+              "/tmp/tau-rung1-clean-oefxw8by/checkout/.venv/bin/python",
+              "-m",
+              "tau_coding.workflows.nodes.repository_readiness",
+              "inspect",
+              "--request",
+              "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/input/repository-readiness-request.json",
+              "--output",
+              "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-inspection.json",
+              "--receipt",
+              "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/inspect-repository.json",
+              "--step-delay-seconds",
+              "0.0"
+            ],
+            "returncode": 0,
+            "schema": "tau.local_runtime_capture.v1",
+            "stderr": "",
+            "stdout": "",
+            "timed_out": false
+          },
+          "runtime_endpoint_lease": {
+            "attempt_id": "attempt-cfdca3c4989a4192b6ed111e95bd64b2",
+            "attempt_number": 1,
+            "backend": "local",
+            "backend_ids": {
+              "pid": null
+            },
+            "backend_session_id": null,
+            "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+            "cleanup_policy": {
+              "kind": "process_group_termination"
+            },
+            "created_at": "2026-08-29T18:51:14.831523+00:00",
+            "dag_id": "generic:repository-readiness-271d3456fab7",
+            "endpoint_id": "local:12923bda79efe2001dc251a9",
+            "execution_token": "[REDACTED]",
+            "expires_at": "2026-08-29T18:52:44.831523+00:00",
+            "goal_hash": "sha256:483c01be5eb6a1dfb70e9711045a1cae4f1b2b061efcc14948db04c2b496e9d6",
+            "heartbeat_policy": {
+              "kind": "process_poll"
+            },
+            "node_id": "inspect-repository",
+            "owner": "tau",
+            "plan_revision": "sha256:740a374ab643666f852d5bacd56a635a64bf1b74bdf8df0c7cf5298c0ae7aec3",
+            "run_id": "repository-readiness-271d3456fab7",
+            "schema": "tau.runtime_endpoint_lease.v1",
+            "scope_id": "repository-readiness-271d3456fab7",
+            "work_order_sha256": "sha256:bfeab6ba103a81991b9a08713a5c24538b749df4eb793b19dfc505765d66dfbe"
+          },
+          "runtime_event": {
+            "confidence": "PROCESS",
+            "endpoint_lease_sha256": "sha256:e380a7f5b5a16d7a098f5a24fdb40c63e5eee44299e8a3aeb4be0507cef078cc",
+            "event_id": "local-event:12923bda79efe2001dc251a9",
+            "event_type": "RUNTIME_ENDPOINT_EXITED",
+            "liveness": "DEAD",
+            "observation": {
+              "cancelled": false,
+              "returncode": 0,
+              "timed_out": false
+            },
+            "observed_at": "2026-08-29T18:51:15.534222+00:00",
+            "run_id": "repository-readiness-271d3456fab7",
+            "schema": "tau.runtime_event.v1",
+            "source": "local",
+            "state": "EXITED"
+          },
+          "runtime_submit_receipt": {
+            "backend_acknowledgement": {
+              "process_started": true,
+              "stdin_delivery": "not_requested"
+            },
+            "composer_state_after": "NOT_APPLICABLE",
+            "composer_state_before": "NOT_APPLICABLE",
+            "delivery_status": "CONFIRMED",
+            "endpoint_lease_sha256": "sha256:e380a7f5b5a16d7a098f5a24fdb40c63e5eee44299e8a3aeb4be0507cef078cc",
+            "errors": [],
+            "provider_execution_status": "NOT_APPLICABLE",
+            "schema": "tau.runtime_submit_receipt.v1",
+            "submit_attempt_count": 1,
+            "text_delivery_count": 0,
+            "work_order_sha256": "sha256:bfeab6ba103a81991b9a08713a5c24538b749df4eb793b19dfc505765d66dfbe"
+          },
+          "stderr": "",
+          "stdout": "",
+          "termination_cause": "exited"
+        }
+      ],
+      "cost_accounting": {
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "cost_estimate": null,
+      "duration_seconds": 0.706,
+      "errors": [],
+      "execution_evidence": {
+        "command_result_sha256": "sha256:7700fc387c86d9da8af2c7f80a1e83109579a6d9b4a3e8a7798a8020c80e1741",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "finished_at": "2026-08-29T18:51:15Z",
+      "goal_hash": "sha256:483c01be5eb6a1dfb70e9711045a1cae4f1b2b061efcc14948db04c2b496e9d6",
+      "live": true,
+      "mocked": false,
+      "node_id": "inspect-repository",
+      "pane_id": null,
+      "plan_sha256": "sha256:740a374ab643666f852d5bacd56a635a64bf1b74bdf8df0c7cf5298c0ae7aec3",
+      "provider_live": false,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/inspect-repository.json",
+      "resumed": false,
+      "retryable": false,
+      "role": "Inspect repository",
+      "run_id": "repository-readiness-271d3456fab7",
+      "scheduler_attempt": 1,
+      "scheduler_attempt_id": "attempt-cfdca3c4989a4192b6ed111e95bd64b2",
+      "scheduler_attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "status": "PASS",
+          "verdict": "PASS"
+        }
+      ],
+      "schema": "tau.dag_attempt_result.v1",
+      "started_at": "2026-08-29T18:51:14Z",
+      "status": "PASS",
+      "terminal_id": null,
+      "usage": null,
+      "verdict": "PASS",
+      "visible_log_path": null,
+      "visible_log_sha256": null,
+      "work_order_path": null,
+      "work_order_sha256": null,
+      "workspace_id": null,
+      "workspace_stale_read_state": {
+        "policy": "observe",
+        "schema": "tau.workspace_stale_read_state.v1",
+        "unresolved_signal_count": 0,
+        "unresolved_signal_ids": []
+      }
+    },
+    {
+      "accepted_output": {
+        "artifacts": [
+          {
+            "kind": "repository_readiness_validation",
+            "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
+            "sha256": "sha256:34eb155f250fdfb297f96b06ec89dda1c31ec007ec1fdc8d808fd6dd37dfc005"
+          }
+        ],
+        "dirty": false,
+        "goal_hash": "sha256:483c01be5eb6a1dfb70e9711045a1cae4f1b2b061efcc14948db04c2b496e9d6",
+        "require_clean": true,
+        "schema": "tau.repository_readiness_validation.v1",
+        "status": "PASS",
+        "summary": "Repository readiness policy passed."
+      },
+      "alert_codes": [],
+      "artifacts": [
+        {
+          "kind": "repository_readiness_validation",
+          "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
+          "sha256": "sha256:34eb155f250fdfb297f96b06ec89dda1c31ec007ec1fdc8d808fd6dd37dfc005"
+        }
+      ],
+      "attempt": 1,
+      "attempt_count": 1,
+      "attempt_id": "attempt-e0a2833c1d1080697a47f6aa32164abb",
+      "command_results": [
+        {
+          "argv": [
+            "/tmp/tau-rung1-clean-oefxw8by/checkout/.venv/bin/python",
+            "-m",
+            "tau_coding.workflows.nodes.repository_readiness",
+            "validate",
+            "--request",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/input/repository-readiness-request.json",
+            "--output",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
+            "--receipt",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/validate-readiness.json",
+            "--step-delay-seconds",
+            "0.0"
+          ],
+          "elapsed_seconds": 0.553,
+          "returncode": 0,
+          "runtime_artifacts": [
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-endpoint-lease.json",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-submit-receipt.json",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-event.json",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/validate-readiness/attempt-001/runtime-capture.json"
+          ],
+          "runtime_backend": "local",
+          "runtime_capture": {
+            "cancelled": false,
+            "command": [
+              "/tmp/tau-rung1-clean-oefxw8by/checkout/.venv/bin/python",
+              "-m",
+              "tau_coding.workflows.nodes.repository_readiness",
+              "validate",
+              "--request",
+              "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/input/repository-readiness-request.json",
+              "--output",
+              "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
+              "--receipt",
+              "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/validate-readiness.json",
+              "--step-delay-seconds",
+              "0.0"
+            ],
+            "returncode": 0,
+            "schema": "tau.local_runtime_capture.v1",
+            "stderr": "",
+            "stdout": "",
+            "timed_out": false
+          },
+          "runtime_endpoint_lease": {
+            "attempt_id": "attempt-e0a2833c1d1080697a47f6aa32164abb",
+            "attempt_number": 1,
+            "backend": "local",
+            "backend_ids": {
+              "pid": null
+            },
+            "backend_session_id": null,
+            "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+            "cleanup_policy": {
+              "kind": "process_group_termination"
+            },
+            "created_at": "2026-08-29T18:51:15.556488+00:00",
+            "dag_id": "generic:repository-readiness-271d3456fab7",
+            "endpoint_id": "local:2898b88a19ab2c2546e24743",
+            "execution_token": "[REDACTED]",
+            "expires_at": "2026-08-29T18:52:45.556488+00:00",
+            "goal_hash": "sha256:483c01be5eb6a1dfb70e9711045a1cae4f1b2b061efcc14948db04c2b496e9d6",
+            "heartbeat_policy": {
+              "kind": "process_poll"
+            },
+            "node_id": "validate-readiness",
+            "owner": "tau",
+            "plan_revision": "sha256:740a374ab643666f852d5bacd56a635a64bf1b74bdf8df0c7cf5298c0ae7aec3",
+            "run_id": "repository-readiness-271d3456fab7",
+            "schema": "tau.runtime_endpoint_lease.v1",
+            "scope_id": "repository-readiness-271d3456fab7",
+            "work_order_sha256": "sha256:fc8f0b5f257abc5911079a60e2ce08edbe91cb8bdff7d58d04809955c61dc3f7"
+          },
+          "runtime_event": {
+            "confidence": "PROCESS",
+            "endpoint_lease_sha256": "sha256:8d5ec0487cc3b6f8e9eeb9fec48b2e7391c5cdc1734601e3d02a7ea28a8e96c5",
+            "event_id": "local-event:2898b88a19ab2c2546e24743",
+            "event_type": "RUNTIME_ENDPOINT_EXITED",
+            "liveness": "DEAD",
+            "observation": {
+              "cancelled": false,
+              "returncode": 0,
+              "timed_out": false
+            },
+            "observed_at": "2026-08-29T18:51:16.108553+00:00",
+            "run_id": "repository-readiness-271d3456fab7",
+            "schema": "tau.runtime_event.v1",
+            "source": "local",
+            "state": "EXITED"
+          },
+          "runtime_submit_receipt": {
+            "backend_acknowledgement": {
+              "process_started": true,
+              "stdin_delivery": "not_requested"
+            },
+            "composer_state_after": "NOT_APPLICABLE",
+            "composer_state_before": "NOT_APPLICABLE",
+            "delivery_status": "CONFIRMED",
+            "endpoint_lease_sha256": "sha256:8d5ec0487cc3b6f8e9eeb9fec48b2e7391c5cdc1734601e3d02a7ea28a8e96c5",
+            "errors": [],
+            "provider_execution_status": "NOT_APPLICABLE",
+            "schema": "tau.runtime_submit_receipt.v1",
+            "submit_attempt_count": 1,
+            "text_delivery_count": 0,
+            "work_order_sha256": "sha256:fc8f0b5f257abc5911079a60e2ce08edbe91cb8bdff7d58d04809955c61dc3f7"
+          },
+          "stderr": "",
+          "stdout": "",
+          "termination_cause": "exited"
+        }
+      ],
+      "cost_accounting": {
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "cost_estimate": null,
+      "duration_seconds": 0.555,
+      "errors": [],
+      "execution_evidence": {
+        "command_result_sha256": "sha256:936d98b8c05c55ff996c4843b84f13411b74f6353434c4fbde85422088bd612e",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "finished_at": "2026-08-29T18:51:16Z",
+      "goal_hash": "sha256:483c01be5eb6a1dfb70e9711045a1cae4f1b2b061efcc14948db04c2b496e9d6",
+      "live": true,
+      "mocked": false,
+      "node_id": "validate-readiness",
+      "pane_id": null,
+      "plan_sha256": "sha256:740a374ab643666f852d5bacd56a635a64bf1b74bdf8df0c7cf5298c0ae7aec3",
+      "provider_live": false,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/validate-readiness.json",
+      "resumed": false,
+      "retryable": false,
+      "role": "Validate readiness policy",
+      "run_id": "repository-readiness-271d3456fab7",
+      "scheduler_attempt": 1,
+      "scheduler_attempt_id": "attempt-e0a2833c1d1080697a47f6aa32164abb",
+      "scheduler_attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "status": "PASS",
+          "verdict": "PASS"
+        }
+      ],
+      "schema": "tau.dag_attempt_result.v1",
+      "started_at": "2026-08-29T18:51:15Z",
+      "status": "PASS",
+      "terminal_id": null,
+      "usage": null,
+      "verdict": "PASS",
+      "visible_log_path": null,
+      "visible_log_sha256": null,
+      "work_order_path": null,
+      "work_order_sha256": null,
+      "workspace_id": null,
+      "workspace_stale_read_state": {
+        "policy": "observe",
+        "schema": "tau.workspace_stale_read_state.v1",
+        "unresolved_signal_count": 0,
+        "unresolved_signal_ids": []
+      }
+    },
+    {
+      "accepted_output": {
+        "artifacts": [
+          {
+            "kind": "repository_readiness_json",
+            "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.json",
+            "sha256": "sha256:f8f71f3b4d15247d1d9c2acd875b49e41d87251f1ed1e9be0fadeb5e6b0fcc4c"
+          },
+          {
+            "kind": "repository_readiness_markdown",
+            "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.md",
+            "sha256": "sha256:8628c591a68256138c9ca2179f397348810f6f68f00d580a6d6f912a1e4070f0"
+          }
+        ],
+        "schema": "tau.repository_readiness_report.v1",
+        "status": "READY",
+        "summary": "Repository is ready for focused work."
+      },
+      "alert_codes": [],
+      "artifacts": [
+        {
+          "kind": "repository_readiness_json",
+          "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.json",
+          "sha256": "sha256:f8f71f3b4d15247d1d9c2acd875b49e41d87251f1ed1e9be0fadeb5e6b0fcc4c"
+        },
+        {
+          "kind": "repository_readiness_markdown",
+          "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.md",
+          "sha256": "sha256:8628c591a68256138c9ca2179f397348810f6f68f00d580a6d6f912a1e4070f0"
+        }
+      ],
+      "attempt": 1,
+      "attempt_count": 1,
+      "attempt_id": "attempt-81ff3772998ee2764fef67233e7aa910",
+      "command_results": [
+        {
+          "argv": [
+            "/tmp/tau-rung1-clean-oefxw8by/checkout/.venv/bin/python",
+            "-m",
+            "tau_coding.workflows.nodes.repository_readiness",
+            "publish",
+            "--request",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/input/repository-readiness-request.json",
+            "--json-output",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.json",
+            "--markdown-output",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.md",
+            "--receipt",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/publish-readiness.json",
+            "--step-delay-seconds",
+            "0.0"
+          ],
+          "elapsed_seconds": 0.604,
+          "returncode": 0,
+          "runtime_artifacts": [
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-endpoint-lease.json",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-submit-receipt.json",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-event.json",
+            "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/.tau-runtime/publish-readiness/attempt-001/runtime-capture.json"
+          ],
+          "runtime_backend": "local",
+          "runtime_capture": {
+            "cancelled": false,
+            "command": [
+              "/tmp/tau-rung1-clean-oefxw8by/checkout/.venv/bin/python",
+              "-m",
+              "tau_coding.workflows.nodes.repository_readiness",
+              "publish",
+              "--request",
+              "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/input/repository-readiness-request.json",
+              "--json-output",
+              "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.json",
+              "--markdown-output",
+              "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.md",
+              "--receipt",
+              "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/publish-readiness.json",
+              "--step-delay-seconds",
+              "0.0"
+            ],
+            "returncode": 0,
+            "schema": "tau.local_runtime_capture.v1",
+            "stderr": "",
+            "stdout": "",
+            "timed_out": false
+          },
+          "runtime_endpoint_lease": {
+            "attempt_id": "attempt-81ff3772998ee2764fef67233e7aa910",
+            "attempt_number": 1,
+            "backend": "local",
+            "backend_ids": {
+              "pid": null
+            },
+            "backend_session_id": null,
+            "capabilities_sha256": "sha256:3b6c03b8b255451f806acc948011f2436dea93ca7f161046d477254b54bdb567",
+            "cleanup_policy": {
+              "kind": "process_group_termination"
+            },
+            "created_at": "2026-08-29T18:51:16.135138+00:00",
+            "dag_id": "generic:repository-readiness-271d3456fab7",
+            "endpoint_id": "local:14992f2df111f8813394adf3",
+            "execution_token": "[REDACTED]",
+            "expires_at": "2026-08-29T18:52:46.135138+00:00",
+            "goal_hash": "sha256:483c01be5eb6a1dfb70e9711045a1cae4f1b2b061efcc14948db04c2b496e9d6",
+            "heartbeat_policy": {
+              "kind": "process_poll"
+            },
+            "node_id": "publish-readiness",
+            "owner": "tau",
+            "plan_revision": "sha256:740a374ab643666f852d5bacd56a635a64bf1b74bdf8df0c7cf5298c0ae7aec3",
+            "run_id": "repository-readiness-271d3456fab7",
+            "schema": "tau.runtime_endpoint_lease.v1",
+            "scope_id": "repository-readiness-271d3456fab7",
+            "work_order_sha256": "sha256:08ead9a800f4b96f14ef4aa7f6e9386f5de12516eb9df47205b82c326a15fb16"
+          },
+          "runtime_event": {
+            "confidence": "PROCESS",
+            "endpoint_lease_sha256": "sha256:b7b738df6fbbeab39b6327e9b8bbdc5e27fddb12c9219ce04c904f7da97dc05c",
+            "event_id": "local-event:14992f2df111f8813394adf3",
+            "event_type": "RUNTIME_ENDPOINT_EXITED",
+            "liveness": "DEAD",
+            "observation": {
+              "cancelled": false,
+              "returncode": 0,
+              "timed_out": false
+            },
+            "observed_at": "2026-08-29T18:51:16.737595+00:00",
+            "run_id": "repository-readiness-271d3456fab7",
+            "schema": "tau.runtime_event.v1",
+            "source": "local",
+            "state": "EXITED"
+          },
+          "runtime_submit_receipt": {
+            "backend_acknowledgement": {
+              "process_started": true,
+              "stdin_delivery": "not_requested"
+            },
+            "composer_state_after": "NOT_APPLICABLE",
+            "composer_state_before": "NOT_APPLICABLE",
+            "delivery_status": "CONFIRMED",
+            "endpoint_lease_sha256": "sha256:b7b738df6fbbeab39b6327e9b8bbdc5e27fddb12c9219ce04c904f7da97dc05c",
+            "errors": [],
+            "provider_execution_status": "NOT_APPLICABLE",
+            "schema": "tau.runtime_submit_receipt.v1",
+            "submit_attempt_count": 1,
+            "text_delivery_count": 0,
+            "work_order_sha256": "sha256:08ead9a800f4b96f14ef4aa7f6e9386f5de12516eb9df47205b82c326a15fb16"
+          },
+          "stderr": "",
+          "stdout": "",
+          "termination_cause": "exited"
+        }
+      ],
+      "cost_accounting": {
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "estimated_cost_is_billing_truth": false,
+        "estimated_cost_usd": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "schema": "tau.generic_dag_cost_accounting.v1",
+        "source": "not_reported",
+        "total_tokens": 0
+      },
+      "cost_estimate": null,
+      "duration_seconds": 0.606,
+      "errors": [],
+      "execution_evidence": {
+        "command_result_sha256": "sha256:1cdcb67e6ea93a2623bb00e9fa3eb95f1d75e5cb499727ef7d92112c92bc9e49",
+        "kind": "local_subprocess",
+        "returncode": 0,
+        "runtime_artifact_count": 4,
+        "runtime_backend": "local",
+        "runtime_event_state": "EXITED",
+        "runtime_submit_delivery_status": "CONFIRMED"
+      },
+      "finished_at": "2026-08-29T18:51:16Z",
+      "goal_hash": "sha256:483c01be5eb6a1dfb70e9711045a1cae4f1b2b061efcc14948db04c2b496e9d6",
+      "live": true,
+      "mocked": false,
+      "node_id": "publish-readiness",
+      "pane_id": null,
+      "plan_sha256": "sha256:740a374ab643666f852d5bacd56a635a64bf1b74bdf8df0c7cf5298c0ae7aec3",
+      "provider_live": false,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/publish-readiness.json",
+      "resumed": false,
+      "retryable": false,
+      "role": "Publish readiness result",
+      "run_id": "repository-readiness-271d3456fab7",
+      "scheduler_attempt": 1,
+      "scheduler_attempt_id": "attempt-81ff3772998ee2764fef67233e7aa910",
+      "scheduler_attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "status": "PASS",
+          "verdict": "PASS"
+        }
+      ],
+      "schema": "tau.dag_attempt_result.v1",
+      "started_at": "2026-08-29T18:51:16Z",
+      "status": "PASS",
+      "terminal_id": null,
+      "usage": null,
+      "verdict": "PASS",
+      "visible_log_path": null,
+      "visible_log_sha256": null,
+      "work_order_path": null,
+      "work_order_sha256": null,
+      "workspace_id": null,
+      "workspace_stale_read_state": {
+        "policy": "observe",
+        "schema": "tau.workspace_stale_read_state.v1",
+        "unresolved_signal_count": 0,
+        "unresolved_signal_ids": []
+      }
+    }
+  ],
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "remote Tailscale monitoring",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "live provider CLI execution",
+      "Herdr pane visibility"
+    ],
+    "proves": [
+      "Tau can validate a generic DAG spec",
+      "Tau can execute local subprocess workers in dependency order",
+      "Tau can gate downstream nodes on schema-valid node receipts",
+      "Tau can resume from existing valid node receipts",
+      "Tau can reject stale work-order receipts when work_order_sha256 no longer matches",
+      "Tau can write durable checkpoint and current-state artifacts",
+      "Tau can fail closed on timeout, non-zero exit, invalid receipt, or blocked verdict"
+    ]
+  },
+  "provider_live": false,
+  "replayed_event_count": 2,
+  "resume_requested": true,
+  "resume_source": {
+    "mode": "spec_path",
+    "spec_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/workflow/dag.json"
+  },
+  "run_dir": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run",
+  "run_id": "repository-readiness-271d3456fab7",
+  "run_store_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/dag-run.sqlite3",
+  "scheduler": "dag_plan_ready_queue",
+  "scheduler_run_id": "repository-readiness-271d3456fab7",
+  "schema": "tau.generic_dag_run_receipt.v1",
+  "spec_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/workflow/dag.json",
+  "status": "PASS",
+  "timestamp": "2026-08-29T18:51:16Z",
+  "verdict": "PASS"
+}

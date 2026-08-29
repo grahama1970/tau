@@ -1,0 +1,241 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "docs/proofs/acceptance/issue-331-rung-1-agentic-eval.json",
+  "run_id": "8d5600a3e007",
+  "fixture_sha256": "sha256:0fd7cc6a1666916f7907dbe66be5201a8fbee340690f2903a96ba8e4614832d5",
+  "repo": {
+    "sha": "1f6a51a25da18409e1c2a53b34e12742a4146bb9",
+    "ref": "watchdog/issue-331"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Tau issue 331 first-rung clean-checkout proof",
+  "claims": {
+    "proves": "The public Tau workflow command can prove rung 1 from a temporary clean checkout and retain verifier/negative receipts.",
+    "does_not_prove": "Rungs 2 through 5, provider semantic quality, or human acceptance of the full GOAL.md outcome."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.dag_ladder.rung1.clean_checkout",
+        "description": "Rung 1 of the canonical Tau DAG ladder runs from a clean checkout and fails closed under proof mutation.",
+        "criticality": "critical",
+        "required_evidence": [
+          "deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "ladder-manifest-contract-tests"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "rung1-clean-checkout-live-proof"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "ladder-manifest-contract-tests",
+          "rung1-clean-checkout-live-proof"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-29T18:51:18.035997+00:00",
+  "case_count": 3,
+  "required_case_count": 3,
+  "outcome_counts": {
+    "PASS": 3,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 6,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "ladder-manifest-contract-tests",
+      "type": "positive",
+      "case_id": "8d5600a3e007-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd \"$(git rev-parse --show-toplevel)\" && uv run pytest --tau-suite=all -q tests/test_workflow_catalog.py tests/test_workflow_cli.py"
+      ],
+      "declared_evidence_class": "deterministic",
+      "effective_evidence_class": "deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.dag_ladder.rung1.clean_checkout"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 26720.796,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "..........                                                               [100%]\n10 passed in 26.05s\n",
+          "stderr": "",
+          "duration_ms": 26566.972,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "8d5600a3e007-c000-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "..........                                                               [100%]\n10 passed in 26.32s\n",
+          "stderr": "",
+          "duration_ms": 26874.62,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "8d5600a3e007-c000-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "rung1-clean-checkout-live-proof",
+      "type": "positive",
+      "case_id": "8d5600a3e007-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "set -euo pipefail\n# e2e clean-checkout proof through the public Tau workflow entrypoint.\nROOT=\"$(git rev-parse --show-toplevel)\"\nTMP=\"${TMPDIR:-/tmp}/tau-issue-331-agentic-source\"\nrm -rf \"$TMP\"\ngit clone --no-local \"$ROOT\" \"$TMP\" >/dev/null\ncd \"$TMP\"\nuv run tau workflows prove-rung1-clean-checkout --source-repo \"$TMP\" --output-dir \"$ROOT/docs/proofs/acceptance/issue-331-rung-1-clean-checkout\"\n"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.dag_ladder.rung1.clean_checkout"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 18305.324,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"bootstrap_log\": {\n    \"bytes\": 2922,\n    \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/clean-checkout-bootstrap.log\",\n    \"sha256\": \"sha256:ce07dd9f58495ec3228ca7bb67b89c2e6cc87eb7b01300c223692047a96f62bc\"\n  },\n  \"ladder_manifest\": {\n    \"bytes\": 6488,\n    \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/ladder-manifest.json\",\n    \"sha256\": \"sha256:9cea30fd6ba5df4c39195e3f9489e4300917b318ce6591cc69b026670045a309\"\n  },\n  \"live\": true,\n  \"mocked\": false,\n  \"negative_mutation_receipt\": {\n    \"bytes\": 536,\n    \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/negative-mutation-receipt.json\",\n    \"sha256\": \"sha256:bd2802b680d7807c275faf88b55116eb7f7ec0eaea008678ee21e51f7060e5bb\"\n  },\n  \"ok\": true,\n  \"output_dir\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout\",\n  \"proof_boundary\": {\n    \"does_not_prove\": [\n      \"Rungs 2 through 5 have fresh retained clean-checkout proof.\",\n      \"Provider or model semantic quality.\",\n      \"Human acceptance of the full GOAL.md product outcome.\"\n    ],\n    \"proves\": [\n      \"The canonical ladder manifest is discoverable from the public Tau CLI.\",\n      \"Rung 1 runs from a temporary clean checkout through the public Tau CLI.\",\n      \"Rung 1 writes useful readiness JSON and Markdown output.\",\n      \"The DAG journal replays to PASS from the retained SQLite ledger.\",\n      \"The verifier rejects a missing required event artifact.\"\n    ]\n  },\n  \"provider_live\": false,\n  \"rung_1_artifacts\": {\n    \"dag_progress\": {\n      \"bytes\": 2552,\n      \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-dag-progress.json\",\n      \"sha256\": \"sha256:972173cb413f3976f68c4def565728d97d82f0421038b55abe356b66f5003bcf\"\n    },\n    \"events\": {\n      \"bytes\": 2921,\n      \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-events.jsonl\",\n      \"sha256\": \"sha256:4e1e0288c09ee1c0a1da9784d515741a34d7e14ccad4288bf41379d649531a53\"\n    },\n    \"ledger\": {\n      \"bytes\": 34153,\n      \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger.json\",\n      \"sha256\": \"sha256:376a8055933958a650ca7da0655254991650059c7cf67cd3ac804c20d9f1c2b6\"\n    },\n    \"ledger_replay\": {\n      \"bytes\": 341,\n      \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger-replay.json\",\n      \"sha256\": \"sha256:6fc3d66b648c3213421b124414da9f1af9eb1c2ae408c0361536e7b636c37abb\"\n    },\n    \"result\": {\n      \"bytes\": 1022,\n      \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-result.json\",\n      \"sha256\": \"sha256:342cb5836f6e78fc719adad2363d6add50a6bd2dbc17d6b1c82e4ab9f672127c\"\n    }\n  },\n  \"schema\": \"tau.dag_ladder_rung1_clean_checkout_proof.v1\",\n  \"source_branch\": \"watchdog/issue-331\",\n  \"source_commit\": \"1f6a51a25da18409e1c2a53b34e12742a4146bb9\",\n  \"source_repo\": \"/tmp/tau-issue-331-agentic-source\",\n  \"status\": \"PASS\",\n  \"verified_at\": \"2026-08-29T18:50:59.336197Z\",\n  \"verifier_receipt\": {\n    \"bytes\": 2007,\n    \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/verifier-pass-receipt.json\",\n    \"sha256\": \"sha256:9971dcd05381ee3eced153341665ecbe2898e58ee8c91ba8ad643fa16664e146\"\n  }\n}\n",
+          "stderr": "Cloning into '/tmp/tau-issue-331-agentic-source'...\nUsing CPython 3.14.3\nCreating virtual environment at: .venv\n   Building tau @ file:///tmp/tau-issue-331-agentic-source\n      Built tau @ file:///tmp/tau-issue-331-agentic-source\nInstalled 36 packages in 103ms\n",
+          "duration_ms": 18224.689,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "8d5600a3e007-c001-t00",
+          "artifact_hashes": {
+            "issue-331-rung-1-clean-checkout/proof-receipt.json": "sha256:5687f54d8122e1f387334bb92a85285d5b38a56cf61807fa016d421776fa4643",
+            "issue-331-rung-1-clean-checkout/verifier-pass-receipt.json": "sha256:9971dcd05381ee3eced153341665ecbe2898e58ee8c91ba8ad643fa16664e146",
+            "issue-331-rung-1-clean-checkout/negative-mutation-receipt.json": "sha256:bd2802b680d7807c275faf88b55116eb7f7ec0eaea008678ee21e51f7060e5bb",
+            "issue-331-rung-1-clean-checkout/rung-1-result.json": "sha256:342cb5836f6e78fc719adad2363d6add50a6bd2dbc17d6b1c82e4ab9f672127c",
+            "issue-331-rung-1-clean-checkout/rung-1-ledger-replay.json": "sha256:6fc3d66b648c3213421b124414da9f1af9eb1c2ae408c0361536e7b636c37abb"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"bootstrap_log\": {\n    \"bytes\": 2922,\n    \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/clean-checkout-bootstrap.log\",\n    \"sha256\": \"sha256:a8bc6231ff1ed9db531f5eb5f72172a7af18ff46887b317fb4bda3c55c0a5f42\"\n  },\n  \"ladder_manifest\": {\n    \"bytes\": 6488,\n    \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/ladder-manifest.json\",\n    \"sha256\": \"sha256:9cea30fd6ba5df4c39195e3f9489e4300917b318ce6591cc69b026670045a309\"\n  },\n  \"live\": true,\n  \"mocked\": false,\n  \"negative_mutation_receipt\": {\n    \"bytes\": 536,\n    \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/negative-mutation-receipt.json\",\n    \"sha256\": \"sha256:7e65cdcb34bc77e515d4b91d4b6ccd9b5a52b3451627caa121c4e358c656d332\"\n  },\n  \"ok\": true,\n  \"output_dir\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout\",\n  \"proof_boundary\": {\n    \"does_not_prove\": [\n      \"Rungs 2 through 5 have fresh retained clean-checkout proof.\",\n      \"Provider or model semantic quality.\",\n      \"Human acceptance of the full GOAL.md product outcome.\"\n    ],\n    \"proves\": [\n      \"The canonical ladder manifest is discoverable from the public Tau CLI.\",\n      \"Rung 1 runs from a temporary clean checkout through the public Tau CLI.\",\n      \"Rung 1 writes useful readiness JSON and Markdown output.\",\n      \"The DAG journal replays to PASS from the retained SQLite ledger.\",\n      \"The verifier rejects a missing required event artifact.\"\n    ]\n  },\n  \"provider_live\": false,\n  \"rung_1_artifacts\": {\n    \"dag_progress\": {\n      \"bytes\": 2552,\n      \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-dag-progress.json\",\n      \"sha256\": \"sha256:4e6a358fd7102736fa21dc11073cc09dbb24c533515f81a60737a9908f70f258\"\n    },\n    \"events\": {\n      \"bytes\": 2921,\n      \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-events.jsonl\",\n      \"sha256\": \"sha256:a5e777dc0b87695ae2c70976108606aa1972968b13493107277d53799bc6c9b7\"\n    },\n    \"ledger\": {\n      \"bytes\": 34153,\n      \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger.json\",\n      \"sha256\": \"sha256:f2ef53bb3d283c6e82f76bbaec159985b64f0cb4f5d4fcb904e029ebd83cfef3\"\n    },\n    \"ledger_replay\": {\n      \"bytes\": 341,\n      \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger-replay.json\",\n      \"sha256\": \"sha256:e7f5162b96bf48b3a60d093faca537fbdab6e1fc401fab2b610c406e26c9ef74\"\n    },\n    \"result\": {\n      \"bytes\": 1022,\n      \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-result.json\",\n      \"sha256\": \"sha256:f8f71f3b4d15247d1d9c2acd875b49e41d87251f1ed1e9be0fadeb5e6b0fcc4c\"\n    }\n  },\n  \"schema\": \"tau.dag_ladder_rung1_clean_checkout_proof.v1\",\n  \"source_branch\": \"watchdog/issue-331\",\n  \"source_commit\": \"1f6a51a25da18409e1c2a53b34e12742a4146bb9\",\n  \"source_repo\": \"/tmp/tau-issue-331-agentic-source\",\n  \"status\": \"PASS\",\n  \"verified_at\": \"2026-08-29T18:51:17.718087Z\",\n  \"verifier_receipt\": {\n    \"bytes\": 2007,\n    \"path\": \"/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/verifier-pass-receipt.json\",\n    \"sha256\": \"sha256:470681b665841e5c43c56a431c5a798afcb2d773d01d3e68b5970b0b01cbe94f\"\n  }\n}\n",
+          "stderr": "Cloning into '/tmp/tau-issue-331-agentic-source'...\nUsing CPython 3.14.3\nCreating virtual environment at: .venv\n   Building tau @ file:///tmp/tau-issue-331-agentic-source\n      Built tau @ file:///tmp/tau-issue-331-agentic-source\nInstalled 36 packages in 120ms\n",
+          "duration_ms": 18385.959,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "8d5600a3e007-c001-t01",
+          "artifact_hashes": {
+            "issue-331-rung-1-clean-checkout/proof-receipt.json": "sha256:0af4adaf2bcef8fdac2d77b23ca701f37fb21698465095221ae55d4f128140d7",
+            "issue-331-rung-1-clean-checkout/verifier-pass-receipt.json": "sha256:470681b665841e5c43c56a431c5a798afcb2d773d01d3e68b5970b0b01cbe94f",
+            "issue-331-rung-1-clean-checkout/negative-mutation-receipt.json": "sha256:7e65cdcb34bc77e515d4b91d4b6ccd9b5a52b3451627caa121c4e358c656d332",
+            "issue-331-rung-1-clean-checkout/rung-1-result.json": "sha256:f8f71f3b4d15247d1d9c2acd875b49e41d87251f1ed1e9be0fadeb5e6b0fcc4c",
+            "issue-331-rung-1-clean-checkout/rung-1-ledger-replay.json": "sha256:e7f5162b96bf48b3a60d093faca537fbdab6e1fc401fab2b610c406e26c9ef74"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "rung1-proof-negative-receipt-is-retained",
+      "type": "negative",
+      "case_id": "8d5600a3e007-c002",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd \"$(git rev-parse --show-toplevel)\" && python - <<'PY'\nimport json\nfrom pathlib import Path\nroot = Path('docs/proofs/acceptance/issue-331-rung-1-clean-checkout')\nverifier = json.loads((root / 'verifier-pass-receipt.json').read_text())\nnegative = json.loads((root / 'negative-mutation-receipt.json').read_text())\nassert verifier['status'] == 'PASS'\nassert negative['status'] == 'PASS'\nassert 'missing_required_artifact:rung-1-run/events.jsonl' in negative['verifier_errors']\nprint('{\"status\": \"PASS\", \"checked\": \"negative-mutation-receipt\"}')\nPY\n"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 55.442,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"status\": \"PASS\", \"checked\": \"negative-mutation-receipt\"}\n",
+          "stderr": "",
+          "duration_ms": 56.569,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "8d5600a3e007-c002-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"status\": \"PASS\", \"checked\": \"negative-mutation-receipt\"}\n",
+          "stderr": "",
+          "duration_ms": 54.314,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "8d5600a3e007-c002-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

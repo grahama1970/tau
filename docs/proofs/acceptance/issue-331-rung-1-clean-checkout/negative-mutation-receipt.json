@@ -1,0 +1,17 @@
+{
+  "live": true,
+  "mocked": false,
+  "mutation": "removed rung-1-run/events.jsonl from a copied proof bundle",
+  "ok": true,
+  "provider_live": false,
+  "schema": "tau.dag_ladder_rung1_negative_mutation_receipt.v1",
+  "status": "PASS",
+  "verified_at": "2026-08-29T18:51:17.717468Z",
+  "verifier_errors": [
+    "missing_required_artifact:rung-1-run/events.jsonl",
+    "missing_required_artifact:events.jsonl",
+    "events_do_not_start_with_dag_started",
+    "events_do_not_finish_with_dag_finished"
+  ],
+  "verifier_status": "FAIL"
+}

@@ -1,0 +1,38 @@
+{
+  "accepted_inputs": [
+    {
+      "artifacts": [
+        {
+          "kind": "repository_inspection",
+          "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-inspection.json",
+          "sha256": "sha256:dd61c8c2381ee4cd9df273514d18b8f5d1a8629b0dc64ea2a2db9e0250a75fcf"
+        }
+      ],
+      "branch": "",
+      "diff_check_passed": true,
+      "dirty": false,
+      "head_sha": "1f6a51a25da18409e1c2a53b34e12742a4146bb9",
+      "repo_path": "/tmp/tau-rung1-clean-oefxw8by/checkout",
+      "schema": "tau.repository_inspection.v1",
+      "summary": "Repository inspection completed."
+    },
+    {
+      "artifacts": [
+        {
+          "kind": "repository_readiness_validation",
+          "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
+          "sha256": "sha256:34eb155f250fdfb297f96b06ec89dda1c31ec007ec1fdc8d808fd6dd37dfc005"
+        }
+      ],
+      "dirty": false,
+      "goal_hash": "sha256:483c01be5eb6a1dfb70e9711045a1cae4f1b2b061efcc14948db04c2b496e9d6",
+      "require_clean": true,
+      "schema": "tau.repository_readiness_validation.v1",
+      "status": "PASS",
+      "summary": "Repository readiness policy passed."
+    }
+  ],
+  "node_id": "publish-readiness",
+  "run_id": "repository-readiness-271d3456fab7",
+  "schema": "tau.generic_dag_node_context.v1"
+}

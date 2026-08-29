@@ -1,0 +1,40 @@
+{
+  "details": {
+    "goal_hashes": [
+      "sha256:483c01be5eb6a1dfb70e9711045a1cae4f1b2b061efcc14948db04c2b496e9d6"
+    ],
+    "ledger_replay": {
+      "admission_count": 6,
+      "event_count": 34,
+      "head_sequence": 34,
+      "journal_sequence": 34,
+      "result_nodes": [
+        "inspect-repository",
+        "validate-readiness",
+        "publish-readiness"
+      ],
+      "run_id": "repository-readiness-271d3456fab7",
+      "schema": "tau.dag_ladder_rung1_ledger_replay.v1",
+      "status": "PASS",
+      "verdict": "PASS"
+    },
+    "output_dir": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout"
+  },
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "provider_live": false,
+  "schema": "tau.dag_ladder_rung1_verifier_receipt.v1",
+  "status": "PASS",
+  "verified_artifacts": [
+    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/ladder-manifest.json",
+    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/clean-checkout-bootstrap.log",
+    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-dag-progress.json",
+    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-events.jsonl",
+    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger.json",
+    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger-replay.json",
+    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-result.json"
+  ],
+  "verified_at": "2026-08-29T18:51:17.701964Z"
+}

@@ -1,0 +1,22 @@
+{
+  "cancelled": false,
+  "command": [
+    "/tmp/tau-rung1-clean-oefxw8by/checkout/.venv/bin/python",
+    "-m",
+    "tau_coding.workflows.nodes.repository_readiness",
+    "inspect",
+    "--request",
+    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/input/repository-readiness-request.json",
+    "--output",
+    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-inspection.json",
+    "--receipt",
+    "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/inspect-repository.json",
+    "--step-delay-seconds",
+    "0.0"
+  ],
+  "returncode": 0,
+  "schema": "tau.local_runtime_capture.v1",
+  "stderr": "",
+  "stdout": "",
+  "timed_out": false
+}

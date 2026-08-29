@@ -1,0 +1,15 @@
+{
+  "admission_count": 6,
+  "event_count": 34,
+  "head_sequence": 34,
+  "journal_sequence": 34,
+  "result_nodes": [
+    "inspect-repository",
+    "validate-readiness",
+    "publish-readiness"
+  ],
+  "run_id": "repository-readiness-271d3456fab7",
+  "schema": "tau.dag_ladder_rung1_ledger_replay.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}

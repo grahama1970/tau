@@ -1,0 +1,56 @@
+{
+  "accepted_input_count": 2,
+  "attempt": 1,
+  "attempt_id": "attempt-81ff3772998ee2764fef67233e7aa910",
+  "bindings": [
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:inspect-repository:publish-readiness",
+      "control_edge_id": "generic-dependency:inspect-repository:publish-readiness",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "explicit",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": "tau.repository_inspection.v1",
+      "selected_sha256": "sha256:0a5bf66aacf3165c8e7338aa44d8e189dcfc675598562b0a066e92dc80387dad",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-cfdca3c4989a4192b6ed111e95bd64b2",
+      "source_node_id": "inspect-repository",
+      "target_node_id": "publish-readiness"
+    },
+    {
+      "accepted_source_schemas": [
+        "*"
+      ],
+      "activation": "after_source_pass",
+      "binding_id": "generic-context:validate-readiness:publish-readiness",
+      "control_edge_id": "generic-dependency:validate-readiness:publish-readiness",
+      "disposition": "included",
+      "materialization_mode": "by_value",
+      "on_invalid": "omit",
+      "on_missing": "omit",
+      "origin": "explicit",
+      "projection": "accepted_output_if_present",
+      "reason": "selected",
+      "selected_path": null,
+      "selected_schema": "tau.repository_readiness_validation.v1",
+      "selected_sha256": "sha256:745eeb65efc55e403d42d85ee6c53221611b8c9e3a8120e20c2b6118b6296572",
+      "selector_kind": "accepted_output",
+      "source_attempt_id": "attempt-e0a2833c1d1080697a47f6aa32164abb",
+      "source_node_id": "validate-readiness",
+      "target_node_id": "publish-readiness"
+    }
+  ],
+  "canonical_manifest_hash": "sha256:4033053b9f3061ab06507ad0669e671210ffac2e1f2fc08236ca3b990fd99ab3",
+  "node_id": "publish-readiness",
+  "plan_sha256": "sha256:740a374ab643666f852d5bacd56a635a64bf1b74bdf8df0c7cf5298c0ae7aec3",
+  "run_id": "repository-readiness-271d3456fab7",
+  "schema": "tau.node_input_manifest.v1"
+}

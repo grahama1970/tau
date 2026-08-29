@@ -1,0 +1,39 @@
+Tau DAG ladder rung 1 clean-checkout bootstrap
+source_repo: /tmp/tau-issue-331-agentic-source
+source_branch: watchdog/issue-331
+source_commit: 1f6a51a25da18409e1c2a53b34e12742a4146bb9
+
+[git-clone-clean-checkout]
+cwd: /tmp/tau-rung1-clean-oefxw8by
+argv: git clone --no-local /tmp/tau-issue-331-agentic-source /tmp/tau-rung1-clean-oefxw8by/checkout
+returncode: 0
+stdout: /home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/bootstrap/git-clone-clean-checkout.stdout
+stderr: /home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/bootstrap/git-clone-clean-checkout.stderr
+
+[git-checkout-source-commit]
+cwd: /tmp/tau-rung1-clean-oefxw8by/checkout
+argv: git checkout --quiet 1f6a51a25da18409e1c2a53b34e12742a4146bb9
+returncode: 0
+stdout: /home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/bootstrap/git-checkout-source-commit.stdout
+stderr: /home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/bootstrap/git-checkout-source-commit.stderr
+
+[git-status-clean-checkout]
+cwd: /tmp/tau-rung1-clean-oefxw8by/checkout
+argv: git status --porcelain=v1 --untracked-files=all
+returncode: 0
+stdout: /home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/bootstrap/git-status-clean-checkout.stdout
+stderr: /home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/bootstrap/git-status-clean-checkout.stderr
+
+[tau-workflows-ladder]
+cwd: /tmp/tau-rung1-clean-oefxw8by/checkout
+argv: uv run tau workflows ladder --json
+returncode: 0
+stdout: /home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/bootstrap/tau-workflows-ladder.stdout
+stderr: /home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/bootstrap/tau-workflows-ladder.stderr
+
+[tau-workflows-run-rung-1]
+cwd: /tmp/tau-rung1-clean-oefxw8by/checkout
+argv: uv run tau workflows run repository-readiness --repo /tmp/tau-rung1-clean-oefxw8by/checkout --goal Prove the first canonical Tau DAG rung from a clean checkout. --require-clean --run-dir /home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run
+returncode: 0
+stdout: /home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/bootstrap/tau-workflows-run-rung-1.stdout
+stderr: /home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/bootstrap/tau-workflows-run-rung-1.stderr

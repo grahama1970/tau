@@ -1,0 +1,12 @@
+{
+  "branch": "",
+  "diff_check_passed": true,
+  "dirty": false,
+  "git_root": "/tmp/tau-rung1-clean-oefxw8by/checkout",
+  "head_sha": "1f6a51a25da18409e1c2a53b34e12742a4146bb9",
+  "repo_path": "/tmp/tau-rung1-clean-oefxw8by/checkout",
+  "schema": "tau.repository_inspection.v1",
+  "status_entries": [],
+  "status_entries_truncated": false,
+  "status_entry_count": 0
+}

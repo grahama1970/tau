@@ -1,0 +1,111 @@
+{
+  "goal": {
+    "completion_criteria": [
+      "Inspect the exact requested Git repository without mutation.",
+      "Apply the requested clean-worktree policy.",
+      "Publish a repository-readiness report only after validation passes."
+    ],
+    "goal_hash": "sha256:483c01be5eb6a1dfb70e9711045a1cae4f1b2b061efcc14948db04c2b496e9d6",
+    "goal_id": "repository-readiness:271d3456fab7",
+    "goal_version": 1,
+    "summary": "Prove the first canonical Tau DAG rung from a clean checkout."
+  },
+  "goal_hash": "sha256:483c01be5eb6a1dfb70e9711045a1cae4f1b2b061efcc14948db04c2b496e9d6",
+  "max_concurrency": 1,
+  "nodes": [
+    {
+      "accepted_context_from": [],
+      "command": [
+        "/tmp/tau-rung1-clean-oefxw8by/checkout/.venv/bin/python",
+        "-m",
+        "tau_coding.workflows.nodes.repository_readiness",
+        "inspect",
+        "--request",
+        "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/input/repository-readiness-request.json",
+        "--output",
+        "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-inspection.json",
+        "--receipt",
+        "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/inspect-repository.json",
+        "--step-delay-seconds",
+        "0.0"
+      ],
+      "depends_on": [],
+      "max_attempts": 1,
+      "node_id": "inspect-repository",
+      "receipt_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/inspect-repository.json",
+      "role": "Inspect repository",
+      "timeout_seconds": 30
+    },
+    {
+      "accepted_context_from": [
+        "inspect-repository"
+      ],
+      "command": [
+        "/tmp/tau-rung1-clean-oefxw8by/checkout/.venv/bin/python",
+        "-m",
+        "tau_coding.workflows.nodes.repository_readiness",
+        "validate",
+        "--request",
+        "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/input/repository-readiness-request.json",
+        "--output",
+        "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/intermediate/repository-readiness-validation.json",
+        "--receipt",
+        "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/validate-readiness.json",
+        "--step-delay-seconds",
+        "0.0"
+      ],
+      "depends_on": [
+        "inspect-repository"
+      ],
+      "max_attempts": 1,
+      "node_id": "validate-readiness",
+      "receipt_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/validate-readiness.json",
+      "role": "Validate readiness policy",
+      "timeout_seconds": 30
+    },
+    {
+      "accepted_context_from": [
+        "inspect-repository",
+        "validate-readiness"
+      ],
+      "command": [
+        "/tmp/tau-rung1-clean-oefxw8by/checkout/.venv/bin/python",
+        "-m",
+        "tau_coding.workflows.nodes.repository_readiness",
+        "publish",
+        "--request",
+        "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/input/repository-readiness-request.json",
+        "--json-output",
+        "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.json",
+        "--markdown-output",
+        "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/results/repository-readiness.md",
+        "--receipt",
+        "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/publish-readiness.json",
+        "--step-delay-seconds",
+        "0.0"
+      ],
+      "depends_on": [
+        "inspect-repository",
+        "validate-readiness"
+      ],
+      "max_attempts": 1,
+      "node_id": "publish-readiness",
+      "receipt_path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run/receipts/publish-readiness.json",
+      "role": "Publish readiness result",
+      "timeout_seconds": 30
+    }
+  ],
+  "run_dir": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-run",
+  "run_id": "repository-readiness-271d3456fab7",
+  "schema": "tau.generic_dag_spec.v1",
+  "workflow": {
+    "result_node_id": "publish-readiness",
+    "result_schema": "tau.repository_readiness_report.v1",
+    "schema": "tau.workflow_metadata.v1",
+    "summary": "Inspect, validate, and publish repository readiness.",
+    "title": "Repository Readiness",
+    "topology": "LINEAR",
+    "workflow_id": "repository-readiness",
+    "workflow_version": 1
+  }
+}

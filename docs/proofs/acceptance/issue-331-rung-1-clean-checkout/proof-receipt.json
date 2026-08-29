@@ -1,0 +1,74 @@
+{
+  "bootstrap_log": {
+    "bytes": 2922,
+    "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/clean-checkout-bootstrap.log",
+    "sha256": "sha256:a8bc6231ff1ed9db531f5eb5f72172a7af18ff46887b317fb4bda3c55c0a5f42"
+  },
+  "ladder_manifest": {
+    "bytes": 6488,
+    "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/ladder-manifest.json",
+    "sha256": "sha256:9cea30fd6ba5df4c39195e3f9489e4300917b318ce6591cc69b026670045a309"
+  },
+  "live": true,
+  "mocked": false,
+  "negative_mutation_receipt": {
+    "bytes": 536,
+    "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/negative-mutation-receipt.json",
+    "sha256": "sha256:7e65cdcb34bc77e515d4b91d4b6ccd9b5a52b3451627caa121c4e358c656d332"
+  },
+  "ok": true,
+  "output_dir": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout",
+  "proof_boundary": {
+    "does_not_prove": [
+      "Rungs 2 through 5 have fresh retained clean-checkout proof.",
+      "Provider or model semantic quality.",
+      "Human acceptance of the full GOAL.md product outcome."
+    ],
+    "proves": [
+      "The canonical ladder manifest is discoverable from the public Tau CLI.",
+      "Rung 1 runs from a temporary clean checkout through the public Tau CLI.",
+      "Rung 1 writes useful readiness JSON and Markdown output.",
+      "The DAG journal replays to PASS from the retained SQLite ledger.",
+      "The verifier rejects a missing required event artifact."
+    ]
+  },
+  "provider_live": false,
+  "rung_1_artifacts": {
+    "dag_progress": {
+      "bytes": 2552,
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-dag-progress.json",
+      "sha256": "sha256:4e6a358fd7102736fa21dc11073cc09dbb24c533515f81a60737a9908f70f258"
+    },
+    "events": {
+      "bytes": 2921,
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-events.jsonl",
+      "sha256": "sha256:a5e777dc0b87695ae2c70976108606aa1972968b13493107277d53799bc6c9b7"
+    },
+    "ledger": {
+      "bytes": 34153,
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger.json",
+      "sha256": "sha256:f2ef53bb3d283c6e82f76bbaec159985b64f0cb4f5d4fcb904e029ebd83cfef3"
+    },
+    "ledger_replay": {
+      "bytes": 341,
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-ledger-replay.json",
+      "sha256": "sha256:e7f5162b96bf48b3a60d093faca537fbdab6e1fc401fab2b610c406e26c9ef74"
+    },
+    "result": {
+      "bytes": 1022,
+      "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/rung-1-result.json",
+      "sha256": "sha256:f8f71f3b4d15247d1d9c2acd875b49e41d87251f1ed1e9be0fadeb5e6b0fcc4c"
+    }
+  },
+  "schema": "tau.dag_ladder_rung1_clean_checkout_proof.v1",
+  "source_branch": "watchdog/issue-331",
+  "source_commit": "1f6a51a25da18409e1c2a53b34e12742a4146bb9",
+  "source_repo": "/tmp/tau-issue-331-agentic-source",
+  "status": "PASS",
+  "verified_at": "2026-08-29T18:51:17.718087Z",
+  "verifier_receipt": {
+    "bytes": 2007,
+    "path": "/home/graham/.local/state/project-watchdog/repair-worktrees/tau-331/docs/proofs/acceptance/issue-331-rung-1-clean-checkout/verifier-pass-receipt.json",
+    "sha256": "sha256:470681b665841e5c43c56a431c5a798afcb2d773d01d3e68b5970b0b01cbe94f"
+  }
+}

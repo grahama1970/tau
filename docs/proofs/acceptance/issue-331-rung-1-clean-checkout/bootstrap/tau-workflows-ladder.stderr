@@ -1,0 +1,15 @@
+Using CPython 3.14.3 interpreter at: /home/graham/.local/bin/python3.14
+Creating virtual environment at: .venv
+   Building tau @ file:///tmp/tau-rung1-clean-oefxw8by/checkout
+Downloading pydantic-core (2.0MiB)
+Downloading pygments (1.2MiB)
+Downloading mypy (14.3MiB)
+Downloading ast-serialize (1.2MiB)
+Downloading ruff (11.0MiB)
+ Downloaded ast-serialize
+ Downloaded pygments
+ Downloaded pydantic-core
+ Downloaded ruff
+      Built tau @ file:///tmp/tau-rung1-clean-oefxw8by/checkout
+ Downloaded mypy
+Installed 36 packages in 281ms
