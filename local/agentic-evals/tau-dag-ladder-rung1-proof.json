@@ -1,0 +1,179 @@
+{
+  "catalog_command": {
+    "argv": [
+      "uv",
+      "run",
+      "--project",
+      "/tmp/tau-dag-ladder-rung1-tcprkdq8/clean-checkout",
+      "tau",
+      "workflows",
+      "list",
+      "--json"
+    ],
+    "cwd": "/tmp/tau-dag-ladder-rung1-tcprkdq8/clean-checkout",
+    "exit_code": 0,
+    "stderr_path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/logs/workflows-list.stderr.txt",
+    "stderr_sha256": "sha256:7238c987c201d34f2e9a3b875d12d75ee29765f05d436f591d9f940a53939fb2",
+    "stdout_path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/logs/workflows-list.stdout.json",
+    "stdout_sha256": "sha256:7d0a01ecf03c6de13a6014cfd753a3db5e28e111202e6268fa026b918a691111"
+  },
+  "clean_checkout": {
+    "bootstrap_commands": [
+      {
+        "argv": [
+          "git",
+          "clone",
+          "--quiet",
+          "--no-hardlinks",
+          "/home/graham/workspace/experiments/tau",
+          "/tmp/tau-dag-ladder-rung1-tcprkdq8/clean-checkout"
+        ],
+        "cwd": "/tmp/tau-dag-ladder-rung1-tcprkdq8",
+        "exit_code": 0,
+        "stderr_path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/logs/git-clone.stderr.txt",
+        "stderr_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/logs/git-clone.stdout.txt",
+        "stdout_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "argv": [
+          "git",
+          "checkout",
+          "--quiet",
+          "fb1f7b420d87bc05e4ca1eec28084873a350e0f4"
+        ],
+        "cwd": "/tmp/tau-dag-ladder-rung1-tcprkdq8/clean-checkout",
+        "exit_code": 0,
+        "stderr_path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/logs/git-checkout.stderr.txt",
+        "stderr_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/logs/git-checkout.stdout.txt",
+        "stdout_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "head": "fb1f7b420d87bc05e4ca1eec28084873a350e0f4",
+    "path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/clean-checkout",
+    "status_porcelain": ""
+  },
+  "created_at": "2026-08-29T19:31:24Z",
+  "errors": [],
+  "ladder_manifest": {
+    "errors": [],
+    "path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/clean-checkout/docs/proofs/acceptance/canonical-dag-ladder-manifest.json",
+    "rung_count": 5,
+    "schema": "tau.canonical_dag_ladder_manifest.v1",
+    "sha256": "sha256:eb11c159c908a52971435b2c9f568f84adaf6c972e497d203baab6728845bc38"
+  },
+  "live": true,
+  "mocked": false,
+  "negative_controls": {
+    "controls": [
+      {
+        "detected": true,
+        "errors": [
+          "artifact_digest_mismatch:/tmp/tau-dag-ladder-rung1-tcprkdq8/rung1-run/intermediate/repository-inspection.json"
+        ],
+        "name": "mutated_artifact_digest",
+        "receipt_path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/negative-controls/mutated-artifact-digest-run-receipt.json"
+      },
+      {
+        "detected": true,
+        "errors": [
+          "artifact_missing:/tmp/tau-dag-ladder-rung1-tcprkdq8/negative-controls/missing-artifact.json"
+        ],
+        "name": "missing_artifact",
+        "receipt_path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/negative-controls/missing-artifact-run-receipt.json"
+      }
+    ],
+    "errors": []
+  },
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Rungs 2-5 execute from clean checkout.",
+      "Provider-live execution.",
+      "Dynamic React Flow transition rendering.",
+      "Human acceptance of the full GOAL.md outcome."
+    ],
+    "proves": [
+      "The committed ladder manifest names the five packaged Tau workflow rungs in order.",
+      "Rung 1 runs from a separate clean clone of the current Git HEAD.",
+      "The rung-1 run writes a useful repository-readiness result and generic DAG run receipt.",
+      "The proof independently reads back artifact digests and catches mutated or missing artifact references."
+    ]
+  },
+  "provider_live": false,
+  "rung1": {
+    "artifact_readback": [
+      {
+        "actual_sha256": "sha256:5db50571bd308fe88304008a2d0bdc473ca9d17034e73494b5004e6943bb289f",
+        "expected_sha256": "sha256:5db50571bd308fe88304008a2d0bdc473ca9d17034e73494b5004e6943bb289f",
+        "node_id": "inspect-repository",
+        "path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/rung1-run/intermediate/repository-inspection.json",
+        "status": "PASS"
+      },
+      {
+        "actual_sha256": "sha256:d274e83afb714bc36c11acfb85ae6a26114f4ab6dc14cb3c49b73d4c9568c4fc",
+        "expected_sha256": "sha256:d274e83afb714bc36c11acfb85ae6a26114f4ab6dc14cb3c49b73d4c9568c4fc",
+        "node_id": "validate-readiness",
+        "path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/rung1-run/intermediate/repository-readiness-validation.json",
+        "status": "PASS"
+      },
+      {
+        "actual_sha256": "sha256:4b1ffece05981ca00d55b9f996afd3145c410e442804e66a37aadcdccd90407e",
+        "expected_sha256": "sha256:4b1ffece05981ca00d55b9f996afd3145c410e442804e66a37aadcdccd90407e",
+        "node_id": "publish-readiness",
+        "path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/rung1-run/results/repository-readiness.json",
+        "status": "PASS"
+      },
+      {
+        "actual_sha256": "sha256:b882c225dd921b188b66fb35edc08970085b81eadd5a756c2cee4b5625806072",
+        "expected_sha256": "sha256:b882c225dd921b188b66fb35edc08970085b81eadd5a756c2cee4b5625806072",
+        "node_id": "publish-readiness",
+        "path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/rung1-run/results/repository-readiness.md",
+        "status": "PASS"
+      }
+    ],
+    "errors": [],
+    "goal_hash": "sha256:ebbbe6e3bfd53bf5398edf90ace24922bf75b31e4f2678ea91fa0c22735f227e",
+    "repository_dirty": false,
+    "repository_head": "fb1f7b420d87bc05e4ca1eec28084873a350e0f4",
+    "result_schema": "tau.repository_readiness_report.v1",
+    "result_status": "READY",
+    "run_dir": "/tmp/tau-dag-ladder-rung1-tcprkdq8/rung1-run",
+    "run_receipt_path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/rung1-run/run-receipt.json",
+    "run_receipt_sha256": "sha256:b1e0dd102698599ab6f3cfdecf42478b002a51efb9cbc85a86a629aacc40bfeb",
+    "source_dag_path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/rung1-run/workflow/dag.json",
+    "status": "PASS",
+    "workflow_id": "repository-readiness"
+  },
+  "schema": "tau.dag_ladder_rung1_clean_checkout_proof.v1",
+  "source_head": "fb1f7b420d87bc05e4ca1eec28084873a350e0f4",
+  "source_repo": "/home/graham/workspace/experiments/tau",
+  "status": "PASS",
+  "workflow_command": {
+    "argv": [
+      "uv",
+      "run",
+      "--project",
+      "/tmp/tau-dag-ladder-rung1-tcprkdq8/clean-checkout",
+      "tau",
+      "workflows",
+      "run",
+      "repository-readiness",
+      "--repo",
+      "/tmp/tau-dag-ladder-rung1-tcprkdq8/clean-checkout",
+      "--goal",
+      "Prove Tau packaged DAG ladder rung 1 from a clean checkout.",
+      "--run-dir",
+      "/tmp/tau-dag-ladder-rung1-tcprkdq8/rung1-run",
+      "--require-clean",
+      "--no-browser-open"
+    ],
+    "cwd": "/tmp/tau-dag-ladder-rung1-tcprkdq8/clean-checkout",
+    "exit_code": 0,
+    "stderr_path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/logs/rung1-workflow.stderr.txt",
+    "stderr_sha256": "sha256:85aa17588411d71e7fd0b7857ff449c511974249a7595b3dc5ffa6b16841adbf",
+    "stdout_path": "/tmp/tau-dag-ladder-rung1-tcprkdq8/logs/rung1-workflow.stdout.json",
+    "stdout_sha256": "sha256:6e34c97a3117d2e11528bba1c3e49ec2d66909749d39175022c1165d353faf66"
+  }
+}

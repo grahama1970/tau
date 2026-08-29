@@ -1,8 +1,8 @@
 {
   "schema": "agentic_evals.report.v2",
-  "source": "evals/tau_feature_coverage_agentic_eval.json",
-  "run_id": "4342c1712324",
-  "fixture_sha256": "sha256:a43d88bf98013e53352f13f8856bb033b3d96153e193fc7fce7462572e143cb6",
+  "source": "evals/tau_dag_ladder_rung1_agentic_eval.json",
+  "run_id": "3641ed4f5fcc",
+  "fixture_sha256": "sha256:1127c52004476559c0f98adeab8ab36db7828c07f7ec4439bb34d0228709f45b",
   "repo": {
     "sha": "fb1f7b420d87bc05e4ca1eec28084873a350e0f4",
     "ref": "main"
@@ -10,10 +10,10 @@
   "mocked": false,
   "fixture_backed": true,
   "live": true,
-  "proof_scope": "Tau feature-to-agentic-eval coverage posture across committed Tau eval manifests and retained reports",
+  "proof_scope": "Tau canonical packaged DAG ladder manifest and rung-1 clean-checkout proof",
   "claims": {
-    "proves": "Every committed Tau feature eval manifest declares capability_claims, each critical claim has supporting evidence-class cases, retained reports are READY/live/non-mocked, and deleting a capability claim is caught by the coverage guard.",
-    "does_not_prove": "That the current Tau feature inventory is exhaustive against GOAL.md, provider semantic quality, or human acceptance of the full five-DAG product outcome."
+    "proves": "Tau has a committed five-rung packaged DAG ladder manifest, and rung 1 runs from a separate clean checkout with a useful repository-readiness result, goal-hash preservation, artifact digest readback, and negative artifact mutation detection.",
+    "does_not_prove": "Rungs 2-5 execute from clean checkout, provider-live execution, dynamic React Flow progress, or human acceptance of the full GOAL.md outcome."
   },
   "what_was_exercised": "local commands declared in the fixture manifest",
   "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
@@ -25,8 +25,8 @@
     "critical_claims_proven": 1,
     "claims": [
       {
-        "id": "tau.feature_agentic_eval_coverage",
-        "description": "Tau keeps a machine-checkable map from each committed feature eval manifest to capability claims and retained READY reports.",
+        "id": "tau.dag_ladder.rung1_clean_checkout",
+        "description": "Tau names the five packaged DAG rungs and proves rung 1 from a separate clean checkout with independent artifact readback and negative controls.",
         "criticality": "critical",
         "required_evidence": [
           "fault_injected_deterministic",
@@ -37,13 +37,13 @@
           "fault_injected_deterministic": {
             "status": "PROVEN",
             "cases": [
-              "missing-capability-claim-is-rejected"
+              "rung1-artifact-mutation-and-missing-artifact-detected"
             ]
           },
           "live_e2e": {
             "status": "PROVEN",
             "cases": [
-              "all-feature-eval-manifests-have-ready-claim-coverage"
+              "rung1-clean-checkout-workflow-proof"
             ]
           }
         },
@@ -53,15 +53,15 @@
         "exemptions": [],
         "unqualified_live_cases": [],
         "supporting_cases": [
-          "all-feature-eval-manifests-have-ready-claim-coverage",
-          "missing-capability-claim-is-rejected"
+          "rung1-clean-checkout-workflow-proof",
+          "rung1-artifact-mutation-and-missing-artifact-detected"
         ]
       }
     ]
   },
   "claims_coverage": "manifest-spanning",
   "focused_cases": [],
-  "generated_at": "2026-08-29T19:31:49.949749+00:00",
+  "generated_at": "2026-08-29T19:31:43.201768+00:00",
   "case_count": 2,
   "required_case_count": 2,
   "outcome_counts": {
@@ -75,54 +75,54 @@
     {
       "infra_blocked_trials": 0,
       "flaky": false,
-      "name": "all-feature-eval-manifests-have-ready-claim-coverage",
+      "name": "rung1-clean-checkout-workflow-proof",
       "type": "positive",
-      "case_id": "4342c1712324-c000",
+      "case_id": "3641ed4f5fcc-c000",
       "required": true,
       "outcome": "PASS",
       "problems": [],
       "argv": [
         "bash",
         "-lc",
-        "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode positive --out local/agentic-evals/tau-feature-coverage-proof.json"
+        "cd .. && uv run python scripts/agentic-eval-tau-dag-ladder-rung1.py --out local/agentic-evals/tau-dag-ladder-rung1-proof.json --timeout-seconds 180"
       ],
       "declared_evidence_class": "live_e2e",
       "effective_evidence_class": "live_e2e",
       "live_qualified": true,
       "evidence_disqualifiers": [],
       "supports_claims": [
-        "tau.feature_agentic_eval_coverage"
+        "tau.dag_ladder.rung1_clean_checkout"
       ],
       "seams": [],
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 96.917,
+      "avg_latency_ms": 8686.974,
       "trials": [
         {
           "exit_code": 0,
-          "stdout": "{\"proof\": \"local/agentic-evals/tau-feature-coverage-proof.json\", \"status\": \"PASS\"}\n",
+          "stdout": "{\"errors\": [], \"proof\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 99.233,
+          "duration_ms": 8656.72,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "4342c1712324-c000-t00",
+          "trial_id": "3641ed4f5fcc-c000-t00",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-proof.json": "sha256:f473e726e89c2c10160878d1f85e6a0c5184433184633733ab12b60b6fc85692"
+            "../local/agentic-evals/tau-dag-ladder-rung1-proof.json": "sha256:0d28f4eaa6c23a834e736f6205c3fc5e0627718319c385987fae330461caffb9"
           },
           "outcome": "PASS",
           "problems": []
         },
         {
           "exit_code": 0,
-          "stdout": "{\"proof\": \"local/agentic-evals/tau-feature-coverage-proof.json\", \"status\": \"PASS\"}\n",
+          "stdout": "{\"errors\": [], \"proof\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 94.601,
+          "duration_ms": 8717.228,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "4342c1712324-c000-t01",
+          "trial_id": "3641ed4f5fcc-c000-t01",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-proof.json": "sha256:f473e726e89c2c10160878d1f85e6a0c5184433184633733ab12b60b6fc85692"
+            "../local/agentic-evals/tau-dag-ladder-rung1-proof.json": "sha256:e5c09f5e043e252578b7a3623589e3edfaef56c24dd178b0fdf36145ee615019"
           },
           "outcome": "PASS",
           "problems": []
@@ -132,54 +132,54 @@
     {
       "infra_blocked_trials": 0,
       "flaky": false,
-      "name": "missing-capability-claim-is-rejected",
+      "name": "rung1-artifact-mutation-and-missing-artifact-detected",
       "type": "adversarial",
-      "case_id": "4342c1712324-c001",
+      "case_id": "3641ed4f5fcc-c001",
       "required": true,
       "outcome": "PASS",
       "problems": [],
       "argv": [
         "bash",
         "-lc",
-        "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode adversarial --out local/agentic-evals/tau-feature-coverage-adversarial-proof.json"
+        "cd .. && uv run python scripts/agentic-eval-tau-dag-ladder-rung1.py --out local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json --timeout-seconds 180"
       ],
       "declared_evidence_class": "fault_injected_deterministic",
       "effective_evidence_class": "fault_injected_deterministic",
       "live_qualified": false,
       "evidence_disqualifiers": [],
       "supports_claims": [
-        "tau.feature_agentic_eval_coverage"
+        "tau.dag_ladder.rung1_clean_checkout"
       ],
       "seams": [],
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 100.55,
+      "avg_latency_ms": 9082.084,
       "trials": [
         {
           "exit_code": 0,
-          "stdout": "{\"detected\": true, \"proof\": \"local/agentic-evals/tau-feature-coverage-adversarial-proof.json\", \"status\": \"PASS\"}\n",
+          "stdout": "{\"errors\": [], \"proof\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 100.391,
+          "duration_ms": 9087.891,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "4342c1712324-c001-t00",
+          "trial_id": "3641ed4f5fcc-c001-t00",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-adversarial-proof.json": "sha256:43a6bddbc03c2a8bfafccb0c388507accccca24f494fc24a724046b0c098df7b"
+            "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json": "sha256:d6799ae8467045c5360f507cc43d552483bd9b5b2f864d77ffb67592a4fd0164"
           },
           "outcome": "PASS",
           "problems": []
         },
         {
           "exit_code": 0,
-          "stdout": "{\"detected\": true, \"proof\": \"local/agentic-evals/tau-feature-coverage-adversarial-proof.json\", \"status\": \"PASS\"}\n",
+          "stdout": "{\"errors\": [], \"proof\": \"/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json\", \"status\": \"PASS\"}\n",
           "stderr": "",
-          "duration_ms": 100.71,
+          "duration_ms": 9076.277,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "4342c1712324-c001-t01",
+          "trial_id": "3641ed4f5fcc-c001-t01",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-feature-coverage-adversarial-proof.json": "sha256:43a6bddbc03c2a8bfafccb0c388507accccca24f494fc24a724046b0c098df7b"
+            "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json": "sha256:b72ae385293b8fd7e4e92a607bf623b29a3b5f1e82b58d19c015d971383fce1d"
           },
           "outcome": "PASS",
           "problems": []

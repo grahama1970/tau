@@ -1,9 +1,9 @@
 {
   "adversarial_detection": true,
-  "claim_count": 12,
+  "claim_count": 13,
   "findings": [],
   "live": true,
-  "manifest_count": 13,
+  "manifest_count": 14,
   "manifests": [
     {
       "case_count": 2,
@@ -40,6 +40,15 @@
       "path": "evals/tau_core_agentic_eval.json",
       "report": null,
       "skill": "tau-core"
+    },
+    {
+      "case_count": 2,
+      "claim_ids": [
+        "tau.dag_ladder.rung1_clean_checkout"
+      ],
+      "path": "evals/tau_dag_ladder_rung1_agentic_eval.json",
+      "report": null,
+      "skill": "tau-dag-ladder-rung1"
     },
     {
       "case_count": 1,

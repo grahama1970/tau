@@ -1,8 +1,8 @@
 {
-  "claim_count": 13,
+  "claim_count": 14,
   "findings": [],
   "live": true,
-  "manifest_count": 13,
+  "manifest_count": 14,
   "manifests": [
     {
       "case_count": 2,
@@ -39,6 +39,15 @@
       "path": "evals/tau_core_agentic_eval.json",
       "report": "local/agentic-evals/tau-core-agentic-evals-report.json",
       "skill": "tau-core"
+    },
+    {
+      "case_count": 2,
+      "claim_ids": [
+        "tau.dag_ladder.rung1_clean_checkout"
+      ],
+      "path": "evals/tau_dag_ladder_rung1_agentic_eval.json",
+      "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
+      "skill": "tau-dag-ladder-rung1"
     },
     {
       "case_count": 1,
