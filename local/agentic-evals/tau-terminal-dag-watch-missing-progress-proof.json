@@ -1,0 +1,24 @@
+{
+  "command": [
+    "/home/graham/workspace/experiments/agent-skills/skills/phart-dag-chart/run.sh",
+    "watch",
+    "/home/graham/workspace/experiments/tau/local/issue-327-ledger-proof/issue-327-dag.json",
+    "--progress",
+    "/tmp/tau-terminal-watch-yv4wrha2/missing-dag-progress.json",
+    "--max-seconds",
+    "2",
+    "--interval",
+    "0.1",
+    "--no-clear",
+    "--no-chart"
+  ],
+  "exit_code": 1,
+  "expected_failure_code": "progress_not_found",
+  "live": true,
+  "mocked": false,
+  "mode": "missing-progress",
+  "ok": true,
+  "schema": "tau.terminal_dag_watch.agentic_eval_receipt.v1",
+  "stderr": "error [progress_not_found]: progress file not found: /tmp/tau-terminal-watch-yv4wrha2/missing-dag-progress.json\nhint: Pass --progress /path/dag-progress.json or --run-dir /path/to/tau-run.\n",
+  "stdout": ""
+}

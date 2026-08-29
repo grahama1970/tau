@@ -1,0 +1,190 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/tau_terminal_dag_watch_agentic_eval.json",
+  "run_id": "1676b780b658",
+  "fixture_sha256": "sha256:976f6fc6c64bfea37f4fe7ead73aa832827cad24d3d4a2e6383bc330ec518f3b",
+  "repo": {
+    "sha": "9b3c65266d20ce8fac1876813fe2f30edd34f697",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Tau terminal DAG progress watch through phart-dag-chart over Tau-authored progress artifacts",
+  "claims": {
+    "proves": "The terminal DAG watch path renders Tau dag-progress.json with DAG structure, exits successfully on PASS, preserves read-only progress state, and fails with a stable actionable error when the Tau progress artifact is missing.",
+    "does_not_prove": "Pi ctx.ui.setWidget integration, React Flow viewer behavior, provider semantic quality, or long-running live transition timing."
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.terminal_dag_progress_watch",
+        "description": "A terminal operator can watch Tau DAG progress from authoritative Tau dag-progress.json using the PHART DAG chart skill without mutating run state.",
+        "criticality": "critical",
+        "required_evidence": [
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "watch-missing-progress-fails-closed"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "watch-existing-live-pass-progress"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "watch-existing-live-pass-progress",
+          "watch-missing-progress-fails-closed"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-29T16:26:28.842512+00:00",
+  "case_count": 2,
+  "required_case_count": 2,
+  "outcome_counts": {
+    "PASS": 2,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 4,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "watch-existing-live-pass-progress",
+      "type": "positive",
+      "case_id": "1676b780b658-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-terminal-dag-watch.py --mode positive --out local/agentic-evals/tau-terminal-dag-watch-proof.json"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.terminal_dag_progress_watch"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 362.305,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"mode\": \"positive\", \"proof\": \"local/agentic-evals/tau-terminal-dag-watch-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 365.474,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "1676b780b658-c000-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-terminal-dag-watch-proof.json": "sha256:53389e1675639272c82a63ed7a4b0504803eadb281b45886e50928d104ddfdfa"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"mode\": \"positive\", \"proof\": \"local/agentic-evals/tau-terminal-dag-watch-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 359.136,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "1676b780b658-c000-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-terminal-dag-watch-proof.json": "sha256:53389e1675639272c82a63ed7a4b0504803eadb281b45886e50928d104ddfdfa"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "watch-missing-progress-fails-closed",
+      "type": "adversarial",
+      "case_id": "1676b780b658-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-terminal-dag-watch.py --mode missing-progress --out local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.terminal_dag_progress_watch"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 328.074,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"mode\": \"missing-progress\", \"proof\": \"local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 321.744,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "1676b780b658-c001-t00",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json": "sha256:3d02e6bf56ffae18ec52b39f900a5b5cdb1337bd0058941fe36326130dffaf34"
+          },
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"mode\": \"missing-progress\", \"proof\": \"local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json\", \"status\": \"PASS\"}\n",
+          "stderr": "",
+          "duration_ms": 334.404,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "1676b780b658-c001-t01",
+          "artifact_hashes": {
+            "../local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json": "sha256:396dcb30c366577f935571db79c10db415dad58012da47682be4a33faadef00d"
+          },
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

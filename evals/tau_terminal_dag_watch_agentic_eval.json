@@ -1,0 +1,70 @@
+{
+  "version": 2,
+  "skill": "tau-terminal-dag-watch",
+  "trials": 2,
+  "proof_scope": "Tau terminal DAG progress watch through phart-dag-chart over Tau-authored progress artifacts",
+  "claims": {
+    "proves": "The terminal DAG watch path renders Tau dag-progress.json with DAG structure, exits successfully on PASS, preserves read-only progress state, and fails with a stable actionable error when the Tau progress artifact is missing.",
+    "does_not_prove": "Pi ctx.ui.setWidget integration, React Flow viewer behavior, provider semantic quality, or long-running live transition timing."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.terminal_dag_progress_watch",
+      "description": "A terminal operator can watch Tau DAG progress from authoritative Tau dag-progress.json using the PHART DAG chart skill without mutating run state.",
+      "criticality": "critical",
+      "evidence_required": {"live_e2e": true, "fault_injected_deterministic": true}
+    }
+  ],
+  "cases": [
+    {
+      "name": "watch-existing-live-pass-progress",
+      "type": "positive",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": ["tau.terminal_dag_progress_watch"],
+      "timeout_seconds": 60,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-terminal-dag-watch.py --mode positive --out local/agentic-evals/tau-terminal-dag-watch-proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\"", "\"mode\": \"positive\""],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-terminal-dag-watch-proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-terminal-dag-watch-proof.json", "json_pointer": "/mocked", "equals": false},
+          {"path": "../local/agentic-evals/tau-terminal-dag-watch-proof.json", "json_pointer": "/live", "equals": true},
+          {"path": "../local/agentic-evals/tau-terminal-dag-watch-proof.json", "json_pointer": "/progress_readback/status", "equals": "PASS"},
+          {"path": "../local/agentic-evals/tau-terminal-dag-watch-proof.json", "json_pointer": "/progress_mtime_unchanged", "equals": true},
+          {"path": "../local/agentic-evals/tau-terminal-dag-watch-proof.json", "json_pointer": "/observed_tokens/State: PASS", "equals": true},
+          {"path": "../local/agentic-evals/tau-terminal-dag-watch-proof.json", "json_pointer": "/observed_tokens/✓ coder", "equals": true},
+          {"path": "../local/agentic-evals/tau-terminal-dag-watch-proof.json", "json_pointer": "/observed_tokens/✓ reviewer", "equals": true}
+        ]
+      }
+    },
+    {
+      "name": "watch-missing-progress-fails-closed",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": ["tau.terminal_dag_progress_watch"],
+      "timeout_seconds": 60,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-terminal-dag-watch.py --mode missing-progress --out local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\"", "\"mode\": \"missing-progress\""],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json", "json_pointer": "/mocked", "equals": false},
+          {"path": "../local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json", "json_pointer": "/live", "equals": true},
+          {"path": "../local/agentic-evals/tau-terminal-dag-watch-missing-progress-proof.json", "json_pointer": "/expected_failure_code", "equals": "progress_not_found"}
+        ]
+      }
+    }
+  ]
+}

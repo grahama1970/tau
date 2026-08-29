@@ -1,0 +1,45 @@
+{
+  "command": [
+    "/home/graham/workspace/experiments/agent-skills/skills/phart-dag-chart/run.sh",
+    "watch",
+    "/home/graham/workspace/experiments/tau/local/issue-327-ledger-proof/issue-327-dag.json",
+    "--progress",
+    "/home/graham/workspace/experiments/tau/local/issue-327-ledger-proof/run/dag-progress.json",
+    "--max-seconds",
+    "2",
+    "--interval",
+    "0.1",
+    "--no-clear",
+    "--no-chart"
+  ],
+  "dag_file": "/home/graham/workspace/experiments/tau/local/issue-327-ledger-proof/issue-327-dag.json",
+  "exit_code": 0,
+  "live": true,
+  "mocked": false,
+  "mode": "positive",
+  "observed_tokens": {
+    "State: PASS": true,
+    "Tau DAG terminal monitor \u00b7 issue-327-ledger-live": true,
+    "\u2713 coder": true,
+    "\u2713 human": true,
+    "\u2713 reviewer": true
+  },
+  "ok": true,
+  "progress_file": "/home/graham/workspace/experiments/tau/local/issue-327-ledger-proof/run/dag-progress.json",
+  "progress_mtime_unchanged": true,
+  "progress_readback": {
+    "dag_id": "issue-327-ledger-live",
+    "event_count": 6,
+    "last_event": {
+      "event": "scheduler_finished",
+      "plan_id": "project:issue-327-ledger-live",
+      "status": "PASS",
+      "ts": "2026-08-28T14:00:25Z",
+      "verdict": "PASS"
+    },
+    "status": "PASS"
+  },
+  "schema": "tau.terminal_dag_watch.agentic_eval_receipt.v1",
+  "stderr": "",
+  "stdout": "Tau DAG terminal monitor \u00b7 issue-327-ledger-live\nState: PASS  events: 6  progress: /home/graham/workspace/experiments/tau/local/issue-327-ledger-proof/run/dag-progress.json\nLast: scheduler_finished \u00b7 project:issue-327-ledger-live \u00b7 2026-08-28T14:00:25Z\n\n\u2713 coder                    COMPLETED attempt 1\n\u2713 reviewer                 COMPLETED attempt 1\n\u2713 human                    TERMINAL\n"
+}
