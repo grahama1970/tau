@@ -13,7 +13,7 @@
   "ok": true,
   "proof_boundary": "Live local CLI path; no provider/browser/GitHub mutation.",
   "provider_live": false,
-  "run_root": "/tmp/tau-ledger-trace-eval-z7xq789r",
+  "run_root": "/tmp/tau-ledger-trace-eval-6shg5in_",
   "schema": "tau.ledger_trace_agentic_eval_proof.v1",
   "status": "PASS",
   "trace_schema": "tau.run_ledger_trace.v1"

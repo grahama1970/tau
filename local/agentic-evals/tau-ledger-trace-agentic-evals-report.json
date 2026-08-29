@@ -1,10 +1,10 @@
 {
   "schema": "agentic_evals.report.v2",
   "source": "evals/tau_ledger_trace_agentic_eval.json",
-  "run_id": "e83f4ff6294e",
+  "run_id": "f0c9fcfb2f2f",
   "fixture_sha256": "sha256:5f87dab7eb3baae54550531853463b9a7d40f31a2761af5208f8c82af7de927f",
   "repo": {
-    "sha": "f0fe54d825f8600afd3197fa9318620681399dee",
+    "sha": "6af149c659d262a8398f53fbe85f7a4b7711e6f1",
     "ref": "main"
   },
   "mocked": false,
@@ -53,7 +53,7 @@
   },
   "claims_coverage": "manifest-spanning",
   "focused_cases": [],
-  "generated_at": "2026-08-28T18:20:30.107779+00:00",
+  "generated_at": "2026-08-29T16:54:26.756138+00:00",
   "case_count": 1,
   "required_case_count": 1,
   "outcome_counts": {
@@ -69,7 +69,7 @@
       "flaky": false,
       "name": "live-ledger-trace-readback",
       "type": "adversarial",
-      "case_id": "e83f4ff6294e-c000",
+      "case_id": "f0c9fcfb2f2f-c000",
       "required": true,
       "outcome": "PASS",
       "problems": [],
@@ -89,32 +89,32 @@
       "passed_trials": 2,
       "total_trials": 2,
       "pass_rate": 1.0,
-      "avg_latency_ms": 1966.912,
+      "avg_latency_ms": 1799.738,
       "trials": [
         {
           "exit_code": 0,
-          "stdout": "{\n  \"artifact_count\": 15,\n  \"dag_status\": \"PASS\",\n  \"entry_kind_counts\": {\n    \"artifact_digest\": 15,\n    \"dispatch_receipt\": 1,\n    \"scheduler_event\": 4\n  },\n  \"errors\": [],\n  \"ledger_verify_ok\": true,\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"proof_boundary\": \"Live local CLI path; no provider/browser/GitHub mutation.\",\n  \"provider_live\": false,\n  \"run_root\": \"/tmp/tau-ledger-trace-eval-na8oa7od\",\n  \"schema\": \"tau.ledger_trace_agentic_eval_proof.v1\",\n  \"status\": \"PASS\",\n  \"trace_schema\": \"tau.run_ledger_trace.v1\"\n}\n",
+          "stdout": "{\n  \"artifact_count\": 15,\n  \"dag_status\": \"PASS\",\n  \"entry_kind_counts\": {\n    \"artifact_digest\": 15,\n    \"dispatch_receipt\": 1,\n    \"scheduler_event\": 4\n  },\n  \"errors\": [],\n  \"ledger_verify_ok\": true,\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"proof_boundary\": \"Live local CLI path; no provider/browser/GitHub mutation.\",\n  \"provider_live\": false,\n  \"run_root\": \"/tmp/tau-ledger-trace-eval-s_5xacyq\",\n  \"schema\": \"tau.ledger_trace_agentic_eval_proof.v1\",\n  \"status\": \"PASS\",\n  \"trace_schema\": \"tau.run_ledger_trace.v1\"\n}\n",
           "stderr": "",
-          "duration_ms": 1986.476,
+          "duration_ms": 1791.199,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "e83f4ff6294e-c000-t00",
+          "trial_id": "f0c9fcfb2f2f-c000-t00",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-ledger-trace-proof.json": "sha256:73c501ce6f59be66af6fca1812f4d165bf7844f28c80aa1a22a0565b50489417"
+            "../local/agentic-evals/tau-ledger-trace-proof.json": "sha256:25598edd8f7ea08abebf93a9b3ee006feb69cb5e5219109636b2722766688586"
           },
           "outcome": "PASS",
           "problems": []
         },
         {
           "exit_code": 0,
-          "stdout": "{\n  \"artifact_count\": 15,\n  \"dag_status\": \"PASS\",\n  \"entry_kind_counts\": {\n    \"artifact_digest\": 15,\n    \"dispatch_receipt\": 1,\n    \"scheduler_event\": 4\n  },\n  \"errors\": [],\n  \"ledger_verify_ok\": true,\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"proof_boundary\": \"Live local CLI path; no provider/browser/GitHub mutation.\",\n  \"provider_live\": false,\n  \"run_root\": \"/tmp/tau-ledger-trace-eval-z7xq789r\",\n  \"schema\": \"tau.ledger_trace_agentic_eval_proof.v1\",\n  \"status\": \"PASS\",\n  \"trace_schema\": \"tau.run_ledger_trace.v1\"\n}\n",
+          "stdout": "{\n  \"artifact_count\": 15,\n  \"dag_status\": \"PASS\",\n  \"entry_kind_counts\": {\n    \"artifact_digest\": 15,\n    \"dispatch_receipt\": 1,\n    \"scheduler_event\": 4\n  },\n  \"errors\": [],\n  \"ledger_verify_ok\": true,\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"proof_boundary\": \"Live local CLI path; no provider/browser/GitHub mutation.\",\n  \"provider_live\": false,\n  \"run_root\": \"/tmp/tau-ledger-trace-eval-6shg5in_\",\n  \"schema\": \"tau.ledger_trace_agentic_eval_proof.v1\",\n  \"status\": \"PASS\",\n  \"trace_schema\": \"tau.run_ledger_trace.v1\"\n}\n",
           "stderr": "",
-          "duration_ms": 1947.347,
+          "duration_ms": 1808.277,
           "timed_out": false,
           "orphan_pids_after_teardown": [],
-          "trial_id": "e83f4ff6294e-c000-t01",
+          "trial_id": "f0c9fcfb2f2f-c000-t01",
           "artifact_hashes": {
-            "../local/agentic-evals/tau-ledger-trace-proof.json": "sha256:afb0d3c8534a0c303cb88ef7dbc61b08d809abe4a064879b2f9122abe06f9373"
+            "../local/agentic-evals/tau-ledger-trace-proof.json": "sha256:ad8bf16e96f2d3f8b055e295407c6706eafbadfcd965845aa0d6195b7ae81846"
           },
           "outcome": "PASS",
           "problems": []
