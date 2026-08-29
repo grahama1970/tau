@@ -1,0 +1,106 @@
+{
+  "version": 2,
+  "skill": "tau-dag-ladder-rung1-clean-checkout",
+  "trials": 2,
+  "proof_scope": "Tau issue 331 first-rung clean-checkout proof",
+  "claims": {
+    "proves": "The public Tau workflow command can prove rung 1 from a temporary clean checkout and retain verifier/negative receipts.",
+    "does_not_prove": "Rungs 2 through 5, provider semantic quality, or human acceptance of the full GOAL.md outcome."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.dag_ladder.rung1.clean_checkout",
+      "description": "Rung 1 of the canonical Tau DAG ladder runs from a clean checkout and fails closed under proof mutation.",
+      "criticality": "critical",
+      "evidence_required": {
+        "deterministic": true,
+        "live_e2e": true
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "ladder-manifest-contract-tests",
+      "type": "positive",
+      "evidence_class": "deterministic",
+      "supports_claims": [
+        "tau.dag_ladder.rung1.clean_checkout"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "cd \"$(git rev-parse --show-toplevel)\" && uv run pytest --tau-suite=all -q tests/test_workflow_catalog.py tests/test_workflow_cli.py"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "passed"
+        ]
+      }
+    },
+    {
+      "name": "rung1-clean-checkout-live-proof",
+      "type": "positive",
+      "evidence_class": "live_e2e",
+      "real_world": true,
+      "supports_claims": [
+        "tau.dag_ladder.rung1.clean_checkout"
+      ],
+      "command": [
+        "bash",
+        "-lc",
+        "set -euo pipefail\n# e2e clean-checkout proof through the public Tau workflow entrypoint.\nROOT=\"$(git rev-parse --show-toplevel)\"\nTMP=\"${TMPDIR:-/tmp}/tau-issue-331-agentic-source\"\nrm -rf \"$TMP\"\ngit clone --no-local \"$ROOT\" \"$TMP\" >/dev/null\ncd \"$TMP\"\nuv run tau workflows prove-rung1-clean-checkout --source-repo \"$TMP\" --output-dir \"$ROOT/docs/proofs/acceptance/issue-331-rung-1-clean-checkout\"\n"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"status\": \"PASS\"",
+          "\"negative_mutation_receipt\""
+        ],
+        "artifacts": [
+          {
+            "path": "issue-331-rung-1-clean-checkout/proof-receipt.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "issue-331-rung-1-clean-checkout/verifier-pass-receipt.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "issue-331-rung-1-clean-checkout/negative-mutation-receipt.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          },
+          {
+            "path": "issue-331-rung-1-clean-checkout/rung-1-result.json",
+            "json_pointer": "/status",
+            "equals": "READY"
+          },
+          {
+            "path": "issue-331-rung-1-clean-checkout/rung-1-ledger-replay.json",
+            "json_pointer": "/status",
+            "equals": "PASS"
+          }
+        ]
+      }
+    },
+    {
+      "name": "rung1-proof-negative-receipt-is-retained",
+      "type": "negative",
+      "evidence_class": "fault_injected_deterministic",
+      "command": [
+        "bash",
+        "-lc",
+        "cd \"$(git rev-parse --show-toplevel)\" && python - <<'PY'\nimport json\nfrom pathlib import Path\nroot = Path('docs/proofs/acceptance/issue-331-rung-1-clean-checkout')\nverifier = json.loads((root / 'verifier-pass-receipt.json').read_text())\nnegative = json.loads((root / 'negative-mutation-receipt.json').read_text())\nassert verifier['status'] == 'PASS'\nassert negative['status'] == 'PASS'\nassert 'missing_required_artifact:rung-1-run/events.jsonl' in negative['verifier_errors']\nprint('{\"status\": \"PASS\", \"checked\": \"negative-mutation-receipt\"}')\nPY\n"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": [
+          "\"status\": \"PASS\""
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,158 @@
+{
+  "schema": "tau.dag_ladder_manifest.v1",
+  "manifest_version": 1,
+  "status": "RUNG_1_READY_OTHERS_NAMED",
+  "goal_source": "GOAL.md",
+  "summary": "Canonical Tau DAG ladder from the active immutable goal.",
+  "topology_progression": [
+    "LINEAR",
+    "MULTI_STEP_SEQUENTIAL",
+    "FAN_OUT_FAN_IN",
+    "MIXED_RETRY_APPROVAL",
+    "DURABLE_MIXED_REPAIR_APPROVAL"
+  ],
+  "rungs": [
+    {
+      "rung": 1,
+      "workflow_id": "repository-readiness",
+      "title": "Repository Readiness",
+      "topology_class": "LINEAR",
+      "workflow_definition": "repository-readiness.json",
+      "acceptance_boundary": {
+        "useful_output": [
+          "results/repository-readiness.json",
+          "results/repository-readiness.md"
+        ],
+        "required_runtime_artifacts": [
+          "workflow/dag.json",
+          "events.jsonl",
+          "current-state.json",
+          "dag-run.sqlite3",
+          "run-receipt.json",
+          "workflow-receipt.json"
+        ],
+        "goal_hash_boundary": "The materialized request, DAG, node receipts, ledger, workflow receipt, and result must carry one unchanged human-owned goal hash.",
+        "negative_boundary": "Verifier must fail closed when a required event, ledger entry, or result artifact is removed or mutated."
+      },
+      "proof_status": "READY",
+      "retained_proof": "docs/proofs/acceptance/issue-331-rung-1-clean-checkout/proof-receipt.json",
+      "next_proof_required": null
+    },
+    {
+      "rung": 2,
+      "workflow_id": "tau-operator-reference",
+      "title": "Tau Operator Reference",
+      "topology_class": "MULTI_STEP_SEQUENTIAL",
+      "workflow_definition": "tau-operator-reference.json",
+      "acceptance_boundary": {
+        "useful_output": [
+          "results/tau-operator-reference.json",
+          "results/tau-operator-reference.md"
+        ],
+        "required_runtime_artifacts": [
+          "workflow/dag.json",
+          "events.jsonl",
+          "current-state.json",
+          "dag-run.sqlite3",
+          "run-receipt.json",
+          "workflow-receipt.json"
+        ],
+        "goal_hash_boundary": "Every operator-reference node must preserve the slice-02 goal hash.",
+        "negative_boundary": "Required workflow absence must block validation with no published result."
+      },
+      "proof_status": "NOT_ESTABLISHED",
+      "retained_proof": null,
+      "next_proof_required": "Run and retain the clean-checkout proof for rung 2 with source/probe/result artifacts and a fail-closed required-workflow mutation."
+    },
+    {
+      "rung": 3,
+      "workflow_id": "repository-evidence-map",
+      "title": "Repository Evidence Map",
+      "topology_class": "FAN_OUT_FAN_IN",
+      "workflow_definition": "repository-evidence-map.json",
+      "acceptance_boundary": {
+        "useful_output": [
+          "results/repository-evidence-map.json",
+          "results/repository-evidence-map.md"
+        ],
+        "required_runtime_artifacts": [
+          "workflow/dag.json",
+          "events.jsonl",
+          "current-state.json",
+          "dag-run.sqlite3",
+          "run-receipt.json",
+          "workflow-receipt.json"
+        ],
+        "goal_hash_boundary": "Inventory and all concurrent analysis branches must preserve one goal hash through the join.",
+        "negative_boundary": "A missing required branch artifact must block the join and prevent publication."
+      },
+      "proof_status": "NOT_ESTABLISHED",
+      "retained_proof": null,
+      "next_proof_required": "Run and retain a clean-checkout fan-out/fan-in proof with observed concurrent branches, join readback, and missing-branch fail-close mutation."
+    },
+    {
+      "rung": 4,
+      "workflow_id": "approved-release-bundle",
+      "title": "Approved Release Bundle",
+      "topology_class": "MIXED_RETRY_APPROVAL",
+      "workflow_definition": "approved-release-bundle.json",
+      "acceptance_boundary": {
+        "useful_output": [
+          "results/approved-release-bundle.json",
+          "results/approved-release-bundle.md"
+        ],
+        "required_runtime_artifacts": [
+          "workflow/dag.json",
+          "events.jsonl",
+          "current-state.json",
+          "dag-run.sqlite3",
+          "run-receipt.json",
+          "workflow-receipt.json",
+          "publication rollback receipt when publication verification fails"
+        ],
+        "goal_hash_boundary": "Retryable branches, approval gate, publication, and rollback must preserve one goal hash.",
+        "negative_boundary": "No release bundle may be published before exact human approval; failed publication verification must roll back."
+      },
+      "proof_status": "NOT_ESTABLISHED",
+      "retained_proof": null,
+      "next_proof_required": "Run and retain a clean-checkout mixed retry/approval proof with blocked pre-approval publication and rollback mutation evidence."
+    },
+    {
+      "rung": 5,
+      "workflow_id": "durable-repository-qualification",
+      "title": "Durable Repository Qualification",
+      "topology_class": "DURABLE_MIXED_REPAIR_APPROVAL",
+      "workflow_definition": "durable-repository-qualification.json",
+      "acceptance_boundary": {
+        "useful_output": [
+          "results/durable-repository-qualification.json",
+          "results/durable-repository-qualification.md"
+        ],
+        "required_runtime_artifacts": [
+          "workflow/dag.json",
+          "events.jsonl",
+          "current-state.json",
+          "dag-run.sqlite3",
+          "run-receipt.json",
+          "workflow-receipt.json",
+          "qualification publication ledger"
+        ],
+        "goal_hash_boundary": "Interrupted work, accepted branches, targeted repair, approval, and resumed publication must preserve one goal hash.",
+        "negative_boundary": "Injected branch failure must block downstream work until targeted repair is approved; resume must not duplicate accepted effects."
+      },
+      "proof_status": "NOT_ESTABLISHED",
+      "retained_proof": null,
+      "next_proof_required": "Run and retain a clean-checkout durable proof with interruption, replay, targeted repair, approval, no duplicate effects, and fail-closed mutation evidence."
+    }
+  ],
+  "proof_boundary": {
+    "mocked": false,
+    "live": true,
+    "provider_live": false,
+    "does_not_prove": [
+      "Rungs 2 through 5 have fresh retained clean-checkout proof for this manifest.",
+      "Provider or model semantic quality.",
+      "Human acceptance of the full GOAL.md product outcome."
+    ]
+  }
+}

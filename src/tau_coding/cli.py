@@ -365,8 +365,13 @@ from tau_coding.workflows.acceptance import (
     verify_provider_live_acceptance,
 )
 from tau_coding.workflows.catalog import (
+    dag_ladder_manifest_payload,
     get_workflow,
     workflow_catalog_payload,
+)
+from tau_coding.workflows.proofs import (
+    verify_dag_ladder_rung1_clean_checkout_proof,
+    write_dag_ladder_rung1_clean_checkout_proof,
 )
 from tau_coding.workflows.runner import (
     approve_packaged_workflow,
@@ -507,6 +512,49 @@ def workflows_list_command(
                 f"rung {workflow['rung']}\t{workflow['workflow_id']}\t"
                 f"{workflow['topology']}\t{workflow['title']}"
             )
+
+
+@workflows_app.command("ladder")
+def workflows_ladder_command(
+    json_output: Annotated[bool, typer.Option("--json")] = False,
+) -> None:
+    payload = dag_ladder_manifest_payload()
+    if json_output:
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        return
+    for rung in payload["rungs"]:
+        if isinstance(rung, dict):
+            typer.echo(
+                f"rung {rung['rung']}\t{rung['workflow_id']}\t"
+                f"{rung['topology_class']}\t{rung['proof_status']}"
+            )
+
+
+@workflows_app.command("prove-rung1-clean-checkout")
+def workflows_prove_rung1_clean_checkout_command(
+    output_dir: Annotated[Path, typer.Option("--output-dir")],
+    source_repo: Annotated[Path | None, typer.Option("--source-repo")] = None,
+) -> None:
+    try:
+        payload = write_dag_ladder_rung1_clean_checkout_proof(
+            source_repo=source_repo or Path.cwd(),
+            output_dir=output_dir,
+        )
+    except RuntimeError as exc:
+        raise typer.BadParameter(str(exc)) from exc
+    typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    if payload.get("status") != "PASS":
+        raise typer.Exit(1)
+
+
+@workflows_app.command("verify-rung1-clean-checkout")
+def workflows_verify_rung1_clean_checkout_command(
+    output_dir: Annotated[Path, typer.Option("--output-dir")],
+) -> None:
+    payload = verify_dag_ladder_rung1_clean_checkout_proof(output_dir=output_dir)
+    typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    if payload.get("status") != "PASS":
+        raise typer.Exit(1)
 
 
 def _run_registry_path() -> Path:
@@ -6888,7 +6936,8 @@ def _run_dag_cli_command(args: list[str], *, command_name: str) -> dict[str, obj
 def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
     if not args:
         raise RuntimeError(
-            "Usage: tau workflows <list|describe|run|acceptance-proof|verify-acceptance-proof>"
+            "Usage: tau workflows <list|ladder|describe|run|acceptance-proof|"
+            "verify-acceptance-proof|prove-rung1-clean-checkout|verify-rung1-clean-checkout>"
         )
     subcommand = args[0]
     remaining = args[1:]
@@ -6896,6 +6945,10 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
         if remaining not in ([], ["--json"]):
             raise RuntimeError("Usage: tau workflows list [--json]")
         return workflow_catalog_payload(), remaining == ["--json"]
+    if subcommand == "ladder":
+        if remaining not in ([], ["--json"]):
+            raise RuntimeError("Usage: tau workflows ladder [--json]")
+        return dag_ladder_manifest_payload(), remaining == ["--json"]
     if subcommand == "describe":
         json_output = "--json" in remaining
         positional = [item for item in remaining if item != "--json"]
@@ -6909,6 +6962,32 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
     if subcommand == "verify-acceptance-proof":
         options = _parse_workflows_verify_acceptance_proof_cli_args(remaining)
         payload = verify_provider_live_acceptance(**options)
+        return dict(payload), True
+    if subcommand == "prove-rung1-clean-checkout":
+        values = _parse_workflows_keyed_options(
+            remaining,
+            required=("--output-dir",),
+            optional=("--source-repo",),
+            usage=(
+                "Usage: tau workflows prove-rung1-clean-checkout "
+                "--output-dir <dir> [--source-repo <repo>]"
+            ),
+        )
+        payload = write_dag_ladder_rung1_clean_checkout_proof(
+            source_repo=Path(values.get("--source-repo") or Path.cwd()),
+            output_dir=Path(values["--output-dir"]),
+        )
+        return dict(payload), True
+    if subcommand == "verify-rung1-clean-checkout":
+        values = _parse_workflows_keyed_options(
+            remaining,
+            required=("--output-dir",),
+            optional=(),
+            usage="Usage: tau workflows verify-rung1-clean-checkout --output-dir <dir>",
+        )
+        payload = verify_dag_ladder_rung1_clean_checkout_proof(
+            output_dir=Path(values["--output-dir"]),
+        )
         return dict(payload), True
     if subcommand == "approve":
         approval_packet: Path | None = None
@@ -7123,6 +7202,35 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
         )
     _record_workflow_run(payload)
     return dict(payload), True
+
+
+def _parse_workflows_keyed_options(
+    args: list[str],
+    *,
+    required: tuple[str, ...],
+    optional: tuple[str, ...],
+    usage: str,
+) -> dict[str, str]:
+    allowed = set(required) | set(optional)
+    values: dict[str, str] = {}
+    index = 0
+    while index < len(args):
+        argument = args[index]
+        if argument.startswith("--") and "=" in argument:
+            key, _, value = argument.partition("=")
+            if key not in allowed or not value:
+                raise RuntimeError(usage)
+            values[key] = value
+            index += 1
+            continue
+        if argument not in allowed or index + 1 >= len(args):
+            raise RuntimeError(usage)
+        values[argument] = args[index + 1]
+        index += 2
+    missing = [item for item in required if item not in values]
+    if missing:
+        raise RuntimeError(usage)
+    return values
 
 
 def _parse_dag_plan_cli_args(args: list[str]) -> tuple[Path, Path]:

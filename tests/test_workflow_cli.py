@@ -13,6 +13,7 @@ def test_workflows_list_and_describe() -> None:
 
     listed = runner.invoke(app, ["workflows", "list", "--json"])
     described = runner.invoke(app, ["workflows", "describe", "repository-readiness", "--json"])
+    ladder = runner.invoke(app, ["workflows", "ladder", "--json"])
 
     assert listed.exit_code == 0, listed.output
     assert [workflow["workflow_id"] for workflow in json.loads(listed.stdout)["workflows"]] == [
@@ -31,6 +32,11 @@ def test_workflows_list_and_describe() -> None:
     ]
     assert described.exit_code == 0, described.output
     assert json.loads(described.stdout)["topology"] == "LINEAR"
+    assert ladder.exit_code == 0, ladder.output
+    ladder_payload = json.loads(ladder.stdout)
+    assert ladder_payload["schema"] == "tau.dag_ladder_manifest.v1"
+    assert [rung["rung"] for rung in ladder_payload["rungs"]] == [1, 2, 3, 4, 5]
+    assert ladder_payload["rungs"][0]["proof_status"] == "READY"
 
 
 def test_workflows_operator_reference_description_and_run_help() -> None:

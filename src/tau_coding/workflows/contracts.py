@@ -11,6 +11,7 @@ WORKFLOW_DEFINITION_SCHEMA = "tau.workflow_definition.v1"
 WORKFLOW_CATALOG_SCHEMA = "tau.workflow_catalog.v1"
 WORKFLOW_RUN_RECEIPT_SCHEMA = "tau.workflow_run_receipt.v1"
 WORKFLOW_METADATA_SCHEMA = "tau.workflow_metadata.v1"
+DAG_LADDER_MANIFEST_SCHEMA = "tau.dag_ladder_manifest.v1"
 
 _WORKFLOW_ID = re.compile(r"^[a-z][a-z0-9-]{0,63}$")
 

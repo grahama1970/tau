@@ -1,4 +1,5 @@
 from tau_coding.workflows.catalog import (
+    dag_ladder_manifest_payload,
     get_workflow,
     list_workflows,
     workflow_catalog_payload,
@@ -60,3 +61,29 @@ def test_catalog_public_payload_is_stable() -> None:
         }
         for workflow in payload["workflows"]
     )
+
+
+def test_dag_ladder_manifest_names_five_rungs_and_boundaries() -> None:
+    manifest = dag_ladder_manifest_payload()
+
+    assert manifest["schema"] == "tau.dag_ladder_manifest.v1"
+    assert manifest["status"] == "RUNG_1_READY_OTHERS_NAMED"
+    assert manifest["topology_progression"] == [
+        "LINEAR",
+        "MULTI_STEP_SEQUENTIAL",
+        "FAN_OUT_FAN_IN",
+        "MIXED_RETRY_APPROVAL",
+        "DURABLE_MIXED_REPAIR_APPROVAL",
+    ]
+    rungs = manifest["rungs"]
+    assert [rung["workflow_id"] for rung in rungs] == [
+        "repository-readiness",
+        "tau-operator-reference",
+        "repository-evidence-map",
+        "approved-release-bundle",
+        "durable-repository-qualification",
+    ]
+    assert rungs[0]["proof_status"] == "READY"
+    assert rungs[0]["retained_proof"].endswith("proof-receipt.json")
+    assert all(rung["acceptance_boundary"] for rung in rungs)
+    assert all(rung["next_proof_required"] for rung in rungs[1:])
