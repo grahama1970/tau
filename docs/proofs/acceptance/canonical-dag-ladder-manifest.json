@@ -1,0 +1,94 @@
+{
+  "schema": "tau.canonical_dag_ladder_manifest.v1",
+  "version": 1,
+  "source_goal": "GOAL.md",
+  "status": "PARTIAL_PROOF_BOUNDARY",
+  "does_not_claim_goal_complete": true,
+  "rungs": [
+    {
+      "rung": 1,
+      "workflow_id": "repository-readiness",
+      "title": "Repository Readiness",
+      "topology": "LINEAR",
+      "acceptance_boundary": "A clean checkout is inspected through the packaged workflow command, the clean-worktree policy passes, the workflow writes a tau.repository_readiness_report.v1 useful result, and the run receipt plus artifact digests are independently read back.",
+      "proof_required": [
+        "clean checkout bootstrap log",
+        "workflow receipt with mocked=false and live=true",
+        "tau.repository_readiness_report.v1 result",
+        "tau.generic_dag_run_receipt.v1 run receipt",
+        "artifact digest readback",
+        "negative mutation and missing-artifact controls"
+      ],
+      "current_state": "PROOF_TARGET_FOR_ISSUE_331"
+    },
+    {
+      "rung": 2,
+      "workflow_id": "tau-operator-reference",
+      "title": "Tau Operator Reference",
+      "topology": "MULTI_STEP_SEQUENTIAL",
+      "acceptance_boundary": "Several dependent local stages build and validate an operator reference for one required Tau workflow without provider or network reliance.",
+      "proof_required": [
+        "clean checkout workflow run",
+        "accepted operator reference artifact",
+        "run receipt showing dependent stages completed",
+        "negative validation receipt"
+      ],
+      "current_state": "NAMED_NOT_PROVEN_BY_ISSUE_331"
+    },
+    {
+      "rung": 3,
+      "workflow_id": "repository-evidence-map",
+      "title": "Repository Evidence Map",
+      "topology": "FAN_OUT_FAN_IN",
+      "acceptance_boundary": "A setup stage releases independent documentation, test, and package evidence branches concurrently, then a join publishes a validated repository evidence map.",
+      "proof_required": [
+        "clean checkout workflow run",
+        "concurrent branch evidence in events/checkpoint state",
+        "joined tau.repository_evidence_map.v1 result",
+        "negative branch-failure receipt"
+      ],
+      "current_state": "NAMED_NOT_PROVEN_BY_ISSUE_331"
+    },
+    {
+      "rung": 4,
+      "workflow_id": "approved-release-bundle",
+      "title": "Approved Release Bundle",
+      "topology": "MIXED_RETRY_APPROVAL",
+      "acceptance_boundary": "Sequential preparation and concurrent release evidence feed a reviewer/revision path, then an exact human approval boundary guards one rollback-protected side effect.",
+      "proof_required": [
+        "clean checkout workflow run",
+        "revision or retry evidence",
+        "approval-gate BLOCKED receipt without human approval",
+        "approval-bound publish receipt with rollback protection"
+      ],
+      "current_state": "NAMED_NOT_PROVEN_BY_ISSUE_331"
+    },
+    {
+      "rung": 5,
+      "workflow_id": "durable-repository-qualification",
+      "title": "Durable Repository Qualification",
+      "topology": "DURABLE_MIXED_REPAIR_APPROVAL",
+      "acceptance_boundary": "Multiple sequential and concurrent phases survive interruption, resume accepted work without duplicate effects, rerun only repaired affected work, and stop at a final human release boundary.",
+      "proof_required": [
+        "clean checkout workflow run",
+        "crash or interruption receipt",
+        "resume receipt preserving accepted work",
+        "targeted repair receipt",
+        "final human release boundary receipt"
+      ],
+      "current_state": "NAMED_NOT_PROVEN_BY_ISSUE_331"
+    }
+  ],
+  "proof_boundary": {
+    "proves": [
+      "The five canonical packaged Tau workflow rungs are named in immutable-goal order.",
+      "Each rung declares a topology class and acceptance boundary."
+    ],
+    "does_not_prove": [
+      "All five workflows execute end-to-end from clean checkout.",
+      "Provider-live execution.",
+      "Dynamic React Flow progress.",
+      "Human acceptance of GOAL.md completion."
+    ]
+  }
+}

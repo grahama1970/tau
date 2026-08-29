@@ -1,0 +1,68 @@
+{
+  "version": 2,
+  "skill": "tau-dag-ladder-rung1",
+  "trials": 2,
+  "proof_scope": "Tau canonical packaged DAG ladder manifest and rung-1 clean-checkout proof",
+  "claims": {
+    "proves": "Tau has a committed five-rung packaged DAG ladder manifest, and rung 1 runs from a separate clean checkout with a useful repository-readiness result, goal-hash preservation, artifact digest readback, and negative artifact mutation detection.",
+    "does_not_prove": "Rungs 2-5 execute from clean checkout, provider-live execution, dynamic React Flow progress, or human acceptance of the full GOAL.md outcome."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.dag_ladder.rung1_clean_checkout",
+      "description": "Tau names the five packaged DAG rungs and proves rung 1 from a separate clean checkout with independent artifact readback and negative controls.",
+      "criticality": "critical",
+      "evidence_required": {"live_e2e": true, "fault_injected_deterministic": true}
+    }
+  ],
+  "cases": [
+    {
+      "name": "rung1-clean-checkout-workflow-proof",
+      "type": "positive",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": ["tau.dag_ladder.rung1_clean_checkout"],
+      "timeout_seconds": 240,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-dag-ladder-rung1.py --out local/agentic-evals/tau-dag-ladder-rung1-proof.json --timeout-seconds 180"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\""],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json", "json_pointer": "/mocked", "equals": false},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json", "json_pointer": "/live", "equals": true},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json", "json_pointer": "/ladder_manifest/rung_count", "equals": 5},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json", "json_pointer": "/rung1/status", "equals": "PASS"},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json", "json_pointer": "/rung1/result_schema", "equals": "tau.repository_readiness_report.v1"},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-proof.json", "json_pointer": "/rung1/repository_dirty", "equals": false}
+        ]
+      }
+    },
+    {
+      "name": "rung1-artifact-mutation-and-missing-artifact-detected",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": ["tau.dag_ladder.rung1_clean_checkout"],
+      "timeout_seconds": 240,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-dag-ladder-rung1.py --out local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json --timeout-seconds 180"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\""],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json", "json_pointer": "/negative_controls/controls/0/detected", "equals": true},
+          {"path": "../local/agentic-evals/tau-dag-ladder-rung1-negative-proof.json", "json_pointer": "/negative_controls/controls/1/detected", "equals": true}
+        ]
+      }
+    }
+  ]
+}

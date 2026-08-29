@@ -35,8 +35,8 @@
           {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/ok", "equals": true},
           {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/mocked", "equals": false},
           {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/live", "equals": true},
-          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/manifest_count", "equals": 13},
-          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/claim_count", "equals": 13}
+          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/manifest_count", "equals": 14},
+          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/claim_count", "equals": 14}
         ]
       }
     },
