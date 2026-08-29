@@ -2,11 +2,11 @@
   "agentic_evals": {
     "command": "skills/agentic-evals/run.sh run evals/tau_dag_ladder_rung1_agentic_eval.json --output local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json",
     "exit_code": 0,
-    "report": "local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json"
+    "report": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-agentic-evals-report.json"
   },
   "e2e": {
-    "artifact": "local/agentic-evals/tau-dag-ladder-rung1-proof.json",
-    "command": "uv run python scripts/agentic-eval-tau-dag-ladder-rung1.py --out local/agentic-evals/tau-dag-ladder-rung1-proof.json --timeout-seconds 180",
+    "artifact": "/home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof.json",
+    "command": "uv run python scripts/agentic-eval-tau-dag-ladder-rung1.py --out /home/graham/workspace/experiments/tau/local/agentic-evals/tau-dag-ladder-rung1-proof.json --timeout-seconds 180 # receipt readback",
     "exit_code": 0,
     "live": true,
     "mocked": false
