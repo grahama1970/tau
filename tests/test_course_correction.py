@@ -49,6 +49,39 @@ def test_course_correction_receipt_maps_receipt_timeout_to_bounded_retry() -> No
     ]
 
 
+def test_structured_output_invalid_routes_to_creator_retry_without_reviewer() -> None:
+    payload = build_course_correction_receipt(
+        trigger="structured_output_invalid",
+        run_id="run-json-1",
+        dag_id="dag-json-1",
+        goal_hash="sha256:goal",
+        target={"artifact": "agent_plausibility_review.v1"},
+        node_id="creator",
+        agent="qra-auditor",
+        attempt=1,
+        observed_state={
+            "validator": "jsonschema.Draft202012Validator",
+            "errors": ["schema:step_reviews.1:'agreement' is a required property"],
+            "reviewer_invoked": False,
+        },
+        errors=["schema:step_reviews.1:'agreement' is a required property"],
+        live=True,
+    )
+
+    assert payload["schema"] == COURSE_CORRECTION_SCHEMA
+    assert payload["trigger"] == "structured_output_invalid"
+    assert payload["required_next_action"] == "retry_node"
+    assert payload["allowed_next_routes"] == ["retry_node"]
+    assert "route_reviewer" in payload["forbidden_next_routes"]
+    assert "continue_without_valid_json" in payload["forbidden_next_routes"]
+    assert payload["required_evidence_before_retry"] == [
+        "structured_output_validation_errors",
+        "corrected_structured_output",
+    ]
+    assert payload["observed_state"]["reviewer_invoked"] is False
+
+
+
 def test_course_correction_receipt_preserves_legacy_required_action_fields(
     tmp_path: Path,
 ) -> None:

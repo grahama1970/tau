@@ -44,6 +44,7 @@ KNOWN_COURSE_CORRECTION_TRIGGERS = frozenset(
         "research_required_before_retry",
         "reviewer_revise",
         "stale_lineage",
+        "structured_output_invalid",
         "test_churn_without_progress",
         "two_failed_attempts",
         "unexpected_edge",
@@ -435,6 +436,16 @@ def _policy_for_trigger(trigger: str) -> dict[str, Any]:
             ["retry_node", "goal-guardian", "human"],
             ["parse_worker_prose", "continue_without_worker_receipt"],
             ["worker_stdout_stderr", "fresh_worker_work_order"],
+        )
+    if trigger == "structured_output_invalid":
+        return _policy(
+            "retry_node",
+            "Deterministic structured-output validation failed before reviewer routing; "
+            "send the exact validator errors back to the producing node instead of "
+            "spending reviewer work on malformed JSON.",
+            ["retry_node"],
+            ["route_reviewer", "parse_worker_prose", "continue_without_valid_json"],
+            ["structured_output_validation_errors", "corrected_structured_output"],
         )
     if trigger == "test_failed_twice":
         return _policy(
