@@ -1,0 +1,16 @@
+{
+  "schema": "tau.node_attempt_failure_receipt.v1",
+  "ok": false,
+  "status": "BLOCKED",
+  "verdict": "MISSING_REQUIRED_EVIDENCE",
+  "dag_id": "tau-ticket-watchdog-category-green-proof",
+  "run_id": "tau-ticket-watchdog-category-green-proof",
+  "node_id": "coder",
+  "agent": "coder",
+  "attempt": 1,
+  "required": true,
+  "active_goal_hash": "sha256:tau-ticket-watchdog-category-green-proof",
+  "stop_reason": "missing_required_evidence",
+  "errors": ["Node response did not include required evidence."],
+  "alerts": [{"code":"missing_required_evidence","message":"Node response did not include required evidence."}]
+}

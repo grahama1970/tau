@@ -25,9 +25,14 @@ flowchart LR
     H --> I[Blocking repair category + replay ledger]
     I --> J[Viewer repair overlay]
     I --> K[Optional Discord question/status/answer receipts]
+    I --> N[$ticket GitHub repair issue]
+    N --> O[$project-watchdog targeted receipt]
+    O --> P[Retained $agentic-evals proof]
+    P --> Q[CATEGORY_GREEN ledger mark]
     K --> L{Typed answer validates?}
     L -->|No / status only| I
     L -->|Yes| M[Same semantic node rerun]
+    Q --> M
     M --> E
 ```
 
@@ -43,6 +48,7 @@ flowchart LR
 | Same semantic node rerun after repair | `evals/tau_same_node_rerun_agentic_eval.json` | `local/agentic-evals/tau-same-node-rerun-agentic-evals-report.json` | `READY`, `mocked=false`, `live=true`, `trials=2`, `coder` attempt count `2` | Live local Tau CLI with safe command-spec fixtures; proves scheduler/ledger semantics, not provider semantic quality or real ticket closure. |
 | ops-discord notification idempotency | `evals/tau_discord_idempotency_agentic_eval.json` | `local/agentic-evals/tau-discord-idempotency-agentic-evals-report.json` | `READY`, `mocked=false`, `live=true`, `trials=2`, notification `status=DEDUPED` | Direct Tau repair notification path with `/bin/false` as a no-send sentinel; proves duplicate category detection before external notification execution. |
 | ops-discord failure visibility | `evals/tau_discord_failure_path_agentic_eval.json` | `local/agentic-evals/tau-discord-failure-path-agentic-evals-report.json` | `READY`, `mocked=false`, `live=true`, `trials=2`, notification `status=CHANNEL_NOT_FOUND` | Live Discord bot failure path with an intentionally missing channel; proves failure details are preserved, not that delivery succeeded. |
+| Ticket/watchdog category-green lifecycle | `evals/tau_same_node_rerun_agentic_eval.json` plus live issue receipts | `local/agentic-evals/tau-ticket-watchdog-run/ticket-watchdog-category-green-artifact.json` | GitHub `grahama1970/tau#328` closed `COMPLETED`; ledger validation `PASS`; watchdog receipt `COMPLETED` / handled issue `328`; retained eval `READY`, `mocked=false`, `live=true`, `trials=2` | Live `$ticket` issue create/lease/close, live `$project-watchdog` targeted dry-run pickup, and live `$pipeline-self-repair` category closure. The watchdog proof did not run `--apply` because that path creates a repair worktree; the project rule forbids new worktrees in this session. |
 
 Readback command used for the table:
 
@@ -76,20 +82,19 @@ PY
 - Tau writes an adjudication routing manifest for human-adjudication repair states and treats unknown adjudication categories as fail-closed.
 - Same-receipt-dir reruns of a blocked project DAG are authorized only after `$pipeline-self-repair validate-ledger --require-agentic-eval --json` returns `PASS`; Tau archives the prior SQLite run store and offsets node attempt counts so the repaired semantic node resumes at attempt 2.
 - The static viewer bundle renders `run_summary.repair` in the run overview; the browser proof reads `data-qid="dag:overview:repair"` and checks the blocking category, `ops-discord · SENT`, human-question state, Discord message URL, and read-only HTTP methods.
+- `$pipeline-self-repair record-failure --apply-ticket` created GitHub issue `grahama1970/tau#328` for `tau/coder/tau-project-dag-missing-required-evidence/src-tau-coding-project-dag-py/v1`.
+- `$project-watchdog tick --project tau --issue 328` produced a live targeted receipt that selected issue `328` as `ticket_repair` and showed the Tau `$ask tau-dag` dispatch plan.
+- `$pipeline-self-repair mark-repaired` moved the category to `CATEGORY_GREEN` using the retained same-node rerun `$agentic-evals` report, and `$ticket close` closed `grahama1970/tau#328` with machine-checkable closure evidence.
 
 ## What is not yet proven
 
-- Real `$ticket` GitHub issue creation/update/reopen binding is not proven in this slice.
-- Real `$project-watchdog` dispatch from a repair category is not proven in this slice.
-- The same-node rerun proof closes the category with a retained eval fixture and `--no-ticket`; it does not prove a real GitHub issue lifecycle.
 - The browser overlay proof uses a live local browser/server and live Discord bot delivery, but it does not prove provider semantic quality or human acceptance of the repair.
-- Tau now attaches `tau_triage.code=tau_project_dag_missing_required_evidence` with a concrete `next_command` to missing-evidence repair projections, but the upstream `$pipeline-self-repair` category key still reflects `$triage-error`'s generic `unknown_unclassified_*` catalog output.
+- `$project-watchdog` pickup is proven by targeted live dry-run receipt, not `--apply`, because apply would create a per-dispatch repair worktree and this project session is under a no-new-worktree rule.
 
 ## Next visual/collaborative acceptance gates
 
-1. Add a safe `$ticket` boundary proof that binds a stable `category_key` to a GitHub issue without duplicating tickets.
-2. Add a `$project-watchdog` dry-run/receipt proof showing it can pick up the repair category.
-3. Move Tau-specific failure codes upstream into `$triage-error` so `$pipeline-self-repair` category keys no longer contain `unknown_unclassified_*` for common project-DAG failures.
+1. If the no-new-worktree rule is lifted for watchdog specifically, run one bounded `$project-watchdog --apply` repair dispatch and attach the retained Tau receipt.
+2. Keep Tau-specific failure codes in `$triage-error` so `$pipeline-self-repair` category keys stay stable for common project-DAG failures.
 
 ## Non-claim
 

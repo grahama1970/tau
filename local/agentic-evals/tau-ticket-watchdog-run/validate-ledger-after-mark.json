@@ -1,0 +1,7 @@
+{
+  "failure_count": 0,
+  "failures": [],
+  "ledger": "local/agentic-evals/tau-ticket-watchdog-run/pipeline-self-repair/replay_ledger.jsonl",
+  "schema": "pipeline_self_repair.validation.v1",
+  "status": "PASS"
+}

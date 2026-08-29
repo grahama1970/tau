@@ -1,0 +1,65 @@
+{
+  "agentic_eval_report": {
+    "case_count": 1,
+    "live": true,
+    "mocked": false,
+    "path": "local/agentic-evals/tau-same-node-rerun-agentic-evals-report.json",
+    "readiness": "READY",
+    "sha256": "sha256:5fb6e9bdd59c588a08553dff734c1fe1c8596f252baf6f5eec6036e434eaad1b",
+    "trial_count": 2
+  },
+  "close_readback_command": "gh issue view 328 --repo grahama1970/tau --json number,state,stateReason,labels,comments,url",
+  "failure_category_id": "agentic-evals:tau:tau-coder-tau-project-dag-missing-required-evidence",
+  "inspect_after_mark": {
+    "open_failure_count": 0,
+    "path": "local/agentic-evals/tau-ticket-watchdog-run/inspect-after-mark.json",
+    "sha256": "sha256:521f4c836e96c72ac71d7e774b9c010cfea1b073e4006e27a163bdca15775e1f"
+  },
+  "issue_comments_after_close": 2,
+  "issue_comments_before_close": 1,
+  "issue_labels": [
+    "agent-work",
+    "type:bug",
+    "maintainer-active",
+    "route:backend_python_or_skill_runtime",
+    "agent:agent-skill-maintainer",
+    "lane:be"
+  ],
+  "issue_labels_after_close": [
+    "agent-work",
+    "type:bug",
+    "route:backend_python_or_skill_runtime",
+    "agent:agent-skill-maintainer",
+    "lane:be"
+  ],
+  "issue_ref": "grahama1970/tau#328",
+  "issue_state_after_close": "CLOSED",
+  "issue_state_before_close": "OPEN",
+  "issue_state_reason_after_close": "COMPLETED",
+  "issue_url": "https://github.com/grahama1970/tau/issues/328",
+  "live": true,
+  "mark_repaired": {
+    "path": "local/agentic-evals/tau-ticket-watchdog-run/mark-repaired.json",
+    "sha256": "sha256:9f787a9bd6999b28d5b76b043bd32cc255dac629ce65c40520ad20e9bd4a74c5"
+  },
+  "mocked": false,
+  "observed_at_unix_ns": 1788017158276965544,
+  "record_failure": {
+    "path": "local/agentic-evals/tau-ticket-watchdog-run/record-failure.json",
+    "sha256": "sha256:46eb670e0bf1e04d3f3f9be0a59aab58660bf021514d2065424c543e44c86aef"
+  },
+  "repair_category_key": "tau/coder/tau-project-dag-missing-required-evidence/src-tau-coding-project-dag-py/v1",
+  "schema": "tau.ticket_watchdog_category_green_artifact.v1",
+  "updated_at_unix_ns": 1788017403749817651,
+  "validate_ledger": {
+    "path": "local/agentic-evals/tau-ticket-watchdog-run/validate-ledger-after-mark.json",
+    "sha256": "sha256:5cb4c7debd8bf1844214a9f5d359ae7a0f7bf3931588a5c593b96cae85c84210",
+    "status": "PASS"
+  },
+  "watchdog_receipt": {
+    "handled_count": 1,
+    "path": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260829T151748Z/receipt.json",
+    "sha256": "sha256:1e6151be7fbfb0d5c919911b36f512d39a9958c0581ae0aa50461d3d86b13c03",
+    "status": "COMPLETED"
+  }
+}

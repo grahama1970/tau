@@ -1,0 +1,14 @@
+{
+  "categories": {
+    "tau/coder/tau-project-dag-missing-required-evidence/src-tau-coding-project-dag-py/v1": {
+      "events": 2,
+      "latest_state": "CATEGORY_GREEN",
+      "ticket": "grahama1970/tau#328",
+      "triage_code": "tau_project_dag_missing_required_evidence"
+    }
+  },
+  "event_count": 2,
+  "ledger": "local/agentic-evals/tau-ticket-watchdog-run/pipeline-self-repair/replay_ledger.jsonl",
+  "open_failure_count": 0,
+  "schema": "pipeline_self_repair.summary.v1"
+}

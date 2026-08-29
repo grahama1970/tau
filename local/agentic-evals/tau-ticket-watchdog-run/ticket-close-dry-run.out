@@ -1,0 +1,5 @@
+closure evidence accepted: unit exit 0, live e2e exit 0, artifact read back from /home/graham/workspace/experiments/tau/local/agentic-evals/tau-ticket-watchdog-run/ticket-watchdog-category-green-artifact.json
+gh issue comment 328 --repo grahama1970/tau --body-file /tmp/ticket-proof-5hceor3k.md 
+gh issue edit 328 --repo grahama1970/tau --remove-label maintainer-active 
+gh issue close 328 --repo grahama1970/tau --reason completed 
+{"ok":true,"action":"close","issue":"328","reason":"completed","proof":"/tmp/ticket-proof-5hceor3k.md"}

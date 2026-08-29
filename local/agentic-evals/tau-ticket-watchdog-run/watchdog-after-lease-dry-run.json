@@ -1,0 +1,18 @@
+{
+  "apply": false,
+  "cron_log_file": "/home/graham/.local/state/project-watchdog/logs/cron.log",
+  "errors": [],
+  "handled_issues": [],
+  "live": true,
+  "log_file": "/home/graham/.local/state/project-watchdog/logs/project-watchdog.log",
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260829T152502Z",
+  "receipt_path": null,
+  "receipt_persisted": false,
+  "run_id": "project-watchdog-20260829T152502Z",
+  "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+  "status": "SKIPPED",
+  "stop_reason": "tick_already_running",
+  "summary": "another tick holds the lock and is still working"
+}
