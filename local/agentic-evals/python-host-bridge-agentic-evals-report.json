@@ -1,0 +1,178 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/python_host_bridge_agentic_eval.json",
+  "run_id": "ae4318f6974a",
+  "fixture_sha256": "sha256:0bf39ed45f1a5ffc2e146dda833563fe12a4b89139ccf69f47c2e74b0c2fbf91",
+  "repo": {
+    "sha": "8b728506a6289eabab7e639bfd21fb721b2f1584",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Tau Python workspace host-call bridge receipt and capability-boundary coverage",
+  "claims": {
+    "proves": "the declared Tau Python host bridge positive and adversarial checks pass across repeated trials using the real project test runner and optional Jupyter kernel profile",
+    "does_not_prove": "full production sandboxing, #324 host bridge rollout in every scheduler backend, provider/model quality, Memory write/promotion, or arbitrary graph query authority"
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.python_host_bridge.capability_boundaries",
+        "description": "Tau Python host-call bridge executes through the real kernel profile while enforcing generation, binding, path, graph-query, evidence-emission, undeclared-call, and late-request authority boundaries.",
+        "criticality": "critical",
+        "required_evidence": [
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "adversarial-host-bridge-authority-boundaries"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "python-host-bridge-live-kernel-regression"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "python-host-bridge-live-kernel-regression",
+          "adversarial-host-bridge-authority-boundaries"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-29T16:42:52.008017+00:00",
+  "case_count": 2,
+  "required_case_count": 2,
+  "outcome_counts": {
+    "PASS": 2,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 4,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "python-host-bridge-live-kernel-regression",
+      "type": "positive",
+      "case_id": "ae4318f6974a-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run --extra python-workspace pytest --tau-suite=all tests/test_kernel_host_bridge.py -q"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.python_host_bridge.capability_boundaries"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 2646.224,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "..................                                                       [100%]\n18 passed in 2.13s\n",
+          "stderr": "",
+          "duration_ms": 2686.636,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "ae4318f6974a-c000-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "..................                                                       [100%]\n18 passed in 2.03s\n",
+          "stderr": "",
+          "duration_ms": 2605.812,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "ae4318f6974a-c000-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "adversarial-host-bridge-authority-boundaries",
+      "type": "adversarial",
+      "case_id": "ae4318f6974a-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run --extra python-workspace pytest --tau-suite=all tests/test_kernel_host_bridge.py -q -k 'stale_generation or binding_mutations or absolute_and_parent or symlink or graph_query or evidence_emit or undeclared or late_request'"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.python_host_bridge.capability_boundaries"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 973.755,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "..............                                                           [100%]\n14 passed, 4 deselected in 0.53s\n",
+          "stderr": "",
+          "duration_ms": 986.424,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "ae4318f6974a-c001-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "..............                                                           [100%]\n14 passed, 4 deselected in 0.52s\n",
+          "stderr": "",
+          "duration_ms": 961.085,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "ae4318f6974a-c001-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

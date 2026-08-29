@@ -1,0 +1,67 @@
+{
+  "version": 2,
+  "skill": "tau-feature-agentic-eval-coverage",
+  "trials": 2,
+  "proof_scope": "Tau feature-to-agentic-eval coverage posture across committed Tau eval manifests and retained reports",
+  "claims": {
+    "proves": "Every committed Tau feature eval manifest declares capability_claims, each critical claim has supporting evidence-class cases, retained reports are READY/live/non-mocked, and deleting a capability claim is caught by the coverage guard.",
+    "does_not_prove": "That the current Tau feature inventory is exhaustive against GOAL.md, provider semantic quality, or human acceptance of the full five-DAG product outcome."
+  },
+  "capability_claims": [
+    {
+      "id": "tau.feature_agentic_eval_coverage",
+      "description": "Tau keeps a machine-checkable map from each committed feature eval manifest to capability claims and retained READY reports.",
+      "criticality": "critical",
+      "evidence_required": {"live_e2e": true, "fault_injected_deterministic": true}
+    }
+  ],
+  "cases": [
+    {
+      "name": "all-feature-eval-manifests-have-ready-claim-coverage",
+      "type": "positive",
+      "real_world": true,
+      "evidence_class": "live_e2e",
+      "supports_claims": ["tau.feature_agentic_eval_coverage"],
+      "timeout_seconds": 60,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode positive --out local/agentic-evals/tau-feature-coverage-proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\""],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/mocked", "equals": false},
+          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/live", "equals": true},
+          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/manifest_count", "equals": 13},
+          {"path": "../local/agentic-evals/tau-feature-coverage-proof.json", "json_pointer": "/claim_count", "equals": 13}
+        ]
+      }
+    },
+    {
+      "name": "missing-capability-claim-is-rejected",
+      "type": "adversarial",
+      "real_world": true,
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": ["tau.feature_agentic_eval_coverage"],
+      "timeout_seconds": 60,
+      "command": [
+        "bash",
+        "-lc",
+        "cd .. && uv run python scripts/agentic-eval-tau-feature-coverage.py --mode adversarial --out local/agentic-evals/tau-feature-coverage-adversarial-proof.json"
+      ],
+      "expected": {
+        "exit_code": 0,
+        "stdout_contains": ["\"status\": \"PASS\"", "\"detected\": true"],
+        "artifacts": [
+          {"path": "../local/agentic-evals/tau-feature-coverage-adversarial-proof.json", "json_pointer": "/ok", "equals": true},
+          {"path": "../local/agentic-evals/tau-feature-coverage-adversarial-proof.json", "json_pointer": "/mocked", "equals": false},
+          {"path": "../local/agentic-evals/tau-feature-coverage-adversarial-proof.json", "json_pointer": "/live", "equals": true},
+          {"path": "../local/agentic-evals/tau-feature-coverage-adversarial-proof.json", "json_pointer": "/adversarial_detection", "equals": true}
+        ]
+      }
+    }
+  ]
+}

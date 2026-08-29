@@ -16,14 +16,19 @@
       "command": [
         "bash",
         "-lc",
-        "cd .. && uv run pytest tests/test_codebase_ingest.py -q"
+        "cd .. && uv run pytest --tau-suite=all tests/test_codebase_ingest.py -q"
       ],
       "expected": {
         "exit_code": 0,
         "stdout_contains": [
           "15 passed"
         ]
-      }
+      },
+      "evidence_class": "live_e2e",
+      "supports_claims": [
+        "tau.codebase_ingest.scan_projection_receipts"
+      ],
+      "readback": true
     },
     {
       "name": "adversarial-lifecycle-and-effect-boundaries",
@@ -33,13 +38,28 @@
       "command": [
         "bash",
         "-lc",
-        "cd .. && uv run pytest tests/test_codebase_ingest.py -q -k 'cancellation or restart_live_worker or dead_retry or unknown_liveness or projection_request_mutation or projection_receipt_mismatch'"
+        "cd .. && uv run pytest --tau-suite=all tests/test_codebase_ingest.py -q -k 'cancellation or restart_live_worker or dead_retry or unknown_liveness or projection_request_mutation or projection_receipt_mismatch'"
       ],
       "expected": {
         "exit_code": 0,
         "stdout_contains": [
           "6 passed"
         ]
+      },
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.codebase_ingest.scan_projection_receipts"
+      ]
+    }
+  ],
+  "capability_claims": [
+    {
+      "id": "tau.codebase_ingest.scan_projection_receipts",
+      "description": "Tau codebase-ingest records scan/projection lifecycle receipts and blocks/adapts across cancellation, restart, dead-worker, liveness, mutation, and receipt-mismatch boundaries.",
+      "criticality": "critical",
+      "evidence_required": {
+        "live_e2e": true,
+        "fault_injected_deterministic": true
       }
     }
   ]

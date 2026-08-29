@@ -16,14 +16,19 @@
       "command": [
         "bash",
         "-lc",
-        "cd .. && out_dir=\"/tmp/tau-agentic-evals-dag-viewer-${RANDOM}-$(date +%s%N)\" && mkdir -p \"$out_dir\" && PYTHONPATH=src python3 scripts/run-dag-viewer-browser-proof.py --out \"$out_dir/browser-proof.json\" --screenshot \"$out_dir/browser-proof.png\" --run-root \"$out_dir/run\" && jq -e '.status == \"PASS\" and .mocked == false and .live == true and .provider_live == false and ([.checks[]] | all(. == true))' \"$out_dir/browser-proof.json\""
+        "cd .. && out_dir=\"/tmp/tau-agentic-evals-dag-viewer-${RANDOM}-$(date +%s%N)\" && mkdir -p \"$out_dir\" && CHROME_BIN=/usr/bin/google-chrome uv run python scripts/run-dag-viewer-browser-proof.py --out \"$out_dir/browser-proof.json\" --screenshot \"$out_dir/browser-proof.png\" --run-root \"$out_dir/run\" && jq -e '.status == \"PASS\" and .mocked == false and .live == true and .provider_live == false and ([.checks[]] | all(. == true))' \"$out_dir/browser-proof.json\""
       ],
       "expected": {
         "exit_code": 0,
         "stdout_contains": [
           "true"
         ]
-      }
+      },
+      "evidence_class": "live_e2e",
+      "supports_claims": [
+        "tau.viewer.timeline_proof_clips"
+      ],
+      "readback": true
     },
     {
       "name": "timeline-layout-and-interactions-unit-regression",
@@ -36,7 +41,12 @@
       ],
       "expected": {
         "exit_code": 0
-      }
+      },
+      "evidence_class": "deterministic",
+      "supports_claims": [
+        "tau.viewer.timeline_proof_clips"
+      ],
+      "real_world": true
     },
     {
       "name": "adversarial-admission-execution-separation",
@@ -49,7 +59,12 @@
       ],
       "expected": {
         "exit_code": 0
-      }
+      },
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.viewer.timeline_proof_clips"
+      ],
+      "real_world": true
     },
     {
       "name": "adversarial-colliding-node-selector-uniqueness",
@@ -62,6 +77,23 @@
       ],
       "expected": {
         "exit_code": 0
+      },
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.viewer.timeline_proof_clips"
+      ],
+      "real_world": true
+    }
+  ],
+  "capability_claims": [
+    {
+      "id": "tau.viewer.timeline_proof_clips",
+      "description": "Tau DAG viewer timeline renders a live browser proof path and preserves admission/execution separation plus selector uniqueness under adversarial cases.",
+      "criticality": "critical",
+      "evidence_required": {
+        "live_e2e": true,
+        "deterministic": true,
+        "fault_injected_deterministic": true
       }
     }
   ]

@@ -1,0 +1,290 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/tau_timeline_viewer_agentic_eval.json",
+  "run_id": "af5158381e33",
+  "fixture_sha256": "sha256:0d9a31f322d40f372b157335f3b50ff12292ef9abb1ad63d7ffa1da002579ec2",
+  "repo": {
+    "sha": "8b728506a6289eabab7e639bfd21fb721b2f1584",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Tau DAG timeline viewer hardening smoke and adversarial regression coverage",
+  "claims": {
+    "proves": "the declared Tau timeline viewer commands meet explicit local expectations across repeated trials, including one live browser proof path",
+    "does_not_prove": "full Tau immutable-goal completion, provider/model quality, all viewport sizes, all ledger shapes, or production release readiness"
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.viewer.timeline_proof_clips",
+        "description": "Tau DAG viewer timeline renders a live browser proof path and preserves admission/execution separation plus selector uniqueness under adversarial cases.",
+        "criticality": "critical",
+        "required_evidence": [
+          "deterministic",
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "timeline-layout-and-interactions-unit-regression"
+            ]
+          },
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "adversarial-admission-execution-separation",
+              "adversarial-colliding-node-selector-uniqueness"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "live-browser-timeline-layout-proof"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [],
+        "supporting_cases": [
+          "live-browser-timeline-layout-proof",
+          "timeline-layout-and-interactions-unit-regression",
+          "adversarial-admission-execution-separation",
+          "adversarial-colliding-node-selector-uniqueness"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-29T16:48:42.414041+00:00",
+  "case_count": 4,
+  "required_case_count": 4,
+  "outcome_counts": {
+    "PASS": 4,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 8,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "live-browser-timeline-layout-proof",
+      "type": "positive",
+      "case_id": "af5158381e33-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && out_dir=\"/tmp/tau-agentic-evals-dag-viewer-${RANDOM}-$(date +%s%N)\" && mkdir -p \"$out_dir\" && CHROME_BIN=/usr/bin/google-chrome uv run python scripts/run-dag-viewer-browser-proof.py --out \"$out_dir/browser-proof.json\" --screenshot \"$out_dir/browser-proof.png\" --run-root \"$out_dir/run\" && jq -e '.status == \"PASS\" and .mocked == false and .live == true and .provider_live == false and ([.checks[]] | all(. == true))' \"$out_dir/browser-proof.json\""
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.viewer.timeline_proof_clips"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 59051.947,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"schema\": \"tau.dag_viewer_browser_proof.v1\",\n  \"status\": \"PASS\",\n  \"mocked\": false,\n  \"live\": true,\n  \"provider_live\": false,\n  \"url\": \"http://127.0.0.1:44053/\",\n  \"viewport\": {\n    \"width\": 1440,\n    \"height\": 1000,\n    \"deviceScaleFactor\": 1\n  },\n  \"screenshot\": \"/tmp/tau-agentic-evals-dag-viewer-9994-1788021987106754854/browser-proof.png\",\n  \"screenshot_sha256\": \"sha256:514e00bd40b8daf0ec3839c3e6019141cb959854593464a4266a8ac89e6a2f7a\",\n  \"request_methods\": [\n    \"GET\"\n  ],\n  \"checks\": {\n    \"orchestration_pool_visible\": true,\n    \"workspace_toggles_visible\": true,\n    \"live_sync_controls_visible\": true,\n    \"live_sync_pause_resume\": true,\n    \"left_pool_toggle_collapses\": true,\n    \"right_inspector_toggle_collapses\": true,\n    \"journal_drawer_toggle_collapses\": true,\n    \"timeline_rendered\": true,\n    \"timeline_tracks_visible\": true,\n    \"timeline_role_swimlanes_visible\": true,\n    \"timeline_role_clips_visible\": true,\n    \"timeline_role_clips_unclipped\": true,\n    \"timeline_duration_modes_truthful\": true,\n    \"timeline_scroll_canvas_independent\": true,\n    \"timeline_step_zoom_controls_visible\": true,\n    \"timeline_step_zoom_changes_width\": true,\n    \"timeline_playhead_scrubs_sequence\": true,\n    \"layout_resize_handles_visible\": true,\n    \"layout_resize_handles_keyboard_resize\": true,\n    \"timeline_clip_selects_node\": true,\n    \"topology_switch_visible\": true,\n    \"graph_viewport_controls_visible\": true,\n    \"graph_zoom_controls_change_viewport\": true,\n    \"graph_rendered\": true,\n    \"source_dag_visible\": true,\n    \"dag_plan_tab_visible\": true,\n    \"creator_attempt_1_visible\": true,\n    \"reviewer_revise_visible\": true,\n    \"revision_overlay_visible\": true,\n    \"creator_attempt_2_visible\": true,\n    \"reviewer_pass_remained_unaccepted\": true,\n    \"receipt_admission_turned_green\": true,\n    \"dependent_released_after_acceptance\": true,\n    \"refresh_reconstructed_state\": true,\n    \"read_only_requests\": true,\n    \"layout_non_overlapping\": true,\n    \"selected_node_inspector_visible\": true,\n    \"selected_node_sections_visible\": true,\n    \"selected_node_read_only\": true,\n    \"selected_node_no_mutation_controls\": true\n  }\n}\n\ntrue\n",
+          "stderr": "",
+          "duration_ms": 58943.422,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "af5158381e33-c000-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\n  \"schema\": \"tau.dag_viewer_browser_proof.v1\",\n  \"status\": \"PASS\",\n  \"mocked\": false,\n  \"live\": true,\n  \"provider_live\": false,\n  \"url\": \"http://127.0.0.1:33491/\",\n  \"viewport\": {\n    \"width\": 1440,\n    \"height\": 1000,\n    \"deviceScaleFactor\": 1\n  },\n  \"screenshot\": \"/tmp/tau-agentic-evals-dag-viewer-29690-1788022046049416303/browser-proof.png\",\n  \"screenshot_sha256\": \"sha256:660eb5500788ffb3d6a0476b42e06303d0f67e449fd69d8afc8b95e843dafce2\",\n  \"request_methods\": [\n    \"GET\"\n  ],\n  \"checks\": {\n    \"orchestration_pool_visible\": true,\n    \"workspace_toggles_visible\": true,\n    \"live_sync_controls_visible\": true,\n    \"live_sync_pause_resume\": true,\n    \"left_pool_toggle_collapses\": true,\n    \"right_inspector_toggle_collapses\": true,\n    \"journal_drawer_toggle_collapses\": true,\n    \"timeline_rendered\": true,\n    \"timeline_tracks_visible\": true,\n    \"timeline_role_swimlanes_visible\": true,\n    \"timeline_role_clips_visible\": true,\n    \"timeline_role_clips_unclipped\": true,\n    \"timeline_duration_modes_truthful\": true,\n    \"timeline_scroll_canvas_independent\": true,\n    \"timeline_step_zoom_controls_visible\": true,\n    \"timeline_step_zoom_changes_width\": true,\n    \"timeline_playhead_scrubs_sequence\": true,\n    \"layout_resize_handles_visible\": true,\n    \"layout_resize_handles_keyboard_resize\": true,\n    \"timeline_clip_selects_node\": true,\n    \"topology_switch_visible\": true,\n    \"graph_viewport_controls_visible\": true,\n    \"graph_zoom_controls_change_viewport\": true,\n    \"graph_rendered\": true,\n    \"source_dag_visible\": true,\n    \"dag_plan_tab_visible\": true,\n    \"creator_attempt_1_visible\": true,\n    \"reviewer_revise_visible\": true,\n    \"revision_overlay_visible\": true,\n    \"creator_attempt_2_visible\": true,\n    \"reviewer_pass_remained_unaccepted\": true,\n    \"receipt_admission_turned_green\": true,\n    \"dependent_released_after_acceptance\": true,\n    \"refresh_reconstructed_state\": true,\n    \"read_only_requests\": true,\n    \"layout_non_overlapping\": true,\n    \"selected_node_inspector_visible\": true,\n    \"selected_node_sections_visible\": true,\n    \"selected_node_read_only\": true,\n    \"selected_node_no_mutation_controls\": true\n  }\n}\n\ntrue\n",
+          "stderr": "",
+          "duration_ms": 59160.473,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "af5158381e33-c000-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "timeline-layout-and-interactions-unit-regression",
+      "type": "positive",
+      "case_id": "af5158381e33-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && npm --prefix web/dag-viewer test -- --run src/tests/App.timeline.test.tsx"
+      ],
+      "declared_evidence_class": "deterministic",
+      "effective_evidence_class": "deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.viewer.timeline_proof_clips"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 3768.631,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "\n> tau-dag-viewer@1.0.0 test\n> vitest --run src/tests/App.timeline.test.tsx\n\n\n RUN  v4.1.10 /home/graham/workspace/experiments/tau/web/dag-viewer\n\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  12:48:25\n   Duration  2.89s (transform 645ms, setup 79ms, import 881ms, tests 1.39s, environment 375ms)\n\n",
+          "stderr": "",
+          "duration_ms": 3468.148,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "af5158381e33-c001-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "\n> tau-dag-viewer@1.0.0 test\n> vitest --run src/tests/App.timeline.test.tsx\n\n\n RUN  v4.1.10 /home/graham/workspace/experiments/tau/web/dag-viewer\n\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  12:48:29\n   Duration  3.39s (transform 934ms, setup 85ms, import 1.20s, tests 1.52s, environment 433ms)\n\n",
+          "stderr": "",
+          "duration_ms": 4069.115,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "af5158381e33-c001-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "adversarial-admission-execution-separation",
+      "type": "adversarial",
+      "case_id": "af5158381e33-c002",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && npm --prefix web/dag-viewer test -- --run src/tests/App.timeline.test.tsx -t 'timeline proof clips do not turn accepted from execution state alone|timeline execution ignores proof admission and failure takes precedence|timeline execution cannot be accepted by admission alone'"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.viewer.timeline_proof_clips"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 2745.448,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "\n> tau-dag-viewer@1.0.0 test\n> vitest --run src/tests/App.timeline.test.tsx -t timeline proof clips do not turn accepted from execution state alone|timeline execution ignores proof admission and failure takes precedence|timeline execution cannot be accepted by admission alone\n\n\n RUN  v4.1.10 /home/graham/workspace/experiments/tau/web/dag-viewer\n\n\n Test Files  1 passed (1)\n      Tests  3 passed | 7 skipped (10)\n   Start at  12:48:33\n   Duration  1.88s (transform 734ms, setup 80ms, import 984ms, tests 246ms, environment 406ms)\n\n",
+          "stderr": "",
+          "duration_ms": 2511.761,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "af5158381e33-c002-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "\n> tau-dag-viewer@1.0.0 test\n> vitest --run src/tests/App.timeline.test.tsx -t timeline proof clips do not turn accepted from execution state alone|timeline execution ignores proof admission and failure takes precedence|timeline execution cannot be accepted by admission alone\n\n\n RUN  v4.1.10 /home/graham/workspace/experiments/tau/web/dag-viewer\n\n\n Test Files  1 passed (1)\n      Tests  3 passed | 7 skipped (10)\n   Start at  12:48:35\n   Duration  2.43s (transform 1.24s, setup 71ms, import 1.53s, tests 250ms, environment 423ms)\n\n",
+          "stderr": "",
+          "duration_ms": 2979.134,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "af5158381e33-c002-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "adversarial-colliding-node-selector-uniqueness",
+      "type": "negative",
+      "case_id": "af5158381e33-c003",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && npm --prefix web/dag-viewer test -- --run src/tests/App.timeline.test.tsx -t 'timeline selectors remain unique when node ids sanitize to the same qid token'"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.viewer.timeline_proof_clips"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 2102.793,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "\n> tau-dag-viewer@1.0.0 test\n> vitest --run src/tests/App.timeline.test.tsx -t timeline selectors remain unique when node ids sanitize to the same qid token\n\n\n [REDACTED]  v4.1.10 /home/graham/workspace/experiments/tau/web/dag-viewer\n\n\n Test Files  1 passed (1)\n      Tests  1 passed | 9 skipped (10)\n   Start at  12:48:38\n   Duration  1.82s (transform 857ms, setup 80ms, import 1.07s, tests 119ms, environment 404ms)\n\n",
+          "stderr": "",
+          "duration_ms": 2403.167,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "af5158381e33-c003-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "\n> tau-dag-viewer@1.0.0 test\n> vitest --run src/tests/App.timeline.test.tsx -t timeline selectors remain unique when node ids sanitize to the same qid token\n\n\n [REDACTED]  v4.1.10 /home/graham/workspace/experiments/tau/web/dag-viewer\n\n\n Test Files  1 passed (1)\n      Tests  1 passed | 9 skipped (10)\n   Start at  12:48:41\n   Duration  1.30s (transform 363ms, setup 75ms, import 588ms, tests 129ms, environment 366ms)\n\n",
+          "stderr": "",
+          "duration_ms": 1802.418,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "af5158381e33-c003-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

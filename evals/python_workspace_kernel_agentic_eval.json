@@ -16,14 +16,19 @@
       "command": [
         "bash",
         "-lc",
-        "cd .. && uv run --extra python-workspace pytest tests/test_python_kernel_backend.py -q"
+        "cd .. && uv run --extra python-workspace pytest --tau-suite=all tests/test_python_kernel_backend.py -q"
       ],
       "expected": {
         "exit_code": 0,
         "stdout_contains": [
           "12 passed"
         ]
-      }
+      },
+      "evidence_class": "live_e2e",
+      "supports_claims": [
+        "tau.python_workspace_kernel.lifecycle_receipts"
+      ],
+      "readback": true
     },
     {
       "name": "python-kernel-worker-entrypoint-canary",
@@ -40,7 +45,12 @@
         "stdout_contains": [
           "\"status\": \"PASS\""
         ]
-      }
+      },
+      "evidence_class": "live_e2e",
+      "supports_claims": [
+        "tau.python_workspace_kernel.lifecycle_receipts"
+      ],
+      "readback": true
     },
     {
       "name": "adversarial-kernel-contract-and-lifecycle-boundaries",
@@ -50,13 +60,28 @@
       "command": [
         "bash",
         "-lc",
-        "cd .. && uv run --extra python-workspace pytest tests/test_python_kernel_backend.py -q -k 'unknown_capability or binding_mutation or import_failure or interrupt or unrelated_reused_pid'"
+        "cd .. && uv run --extra python-workspace pytest --tau-suite=all tests/test_python_kernel_backend.py -q -k 'unknown_capability or binding_mutation or import_failure or interrupt or unrelated_reused_pid'"
       ],
       "expected": {
         "exit_code": 0,
         "stdout_contains": [
           "5 passed"
         ]
+      },
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.python_workspace_kernel.lifecycle_receipts"
+      ]
+    }
+  ],
+  "capability_claims": [
+    {
+      "id": "tau.python_workspace_kernel.lifecycle_receipts",
+      "description": "Tau Python workspace kernel runs the worker and backend lifecycle through the real optional Jupyter profile while enforcing capability, binding, import failure, interrupt, and PID reuse boundaries.",
+      "criticality": "critical",
+      "evidence_required": {
+        "live_e2e": true,
+        "fault_injected_deterministic": true
       }
     }
   ]

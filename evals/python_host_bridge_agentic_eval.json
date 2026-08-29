@@ -16,14 +16,19 @@
       "command": [
         "bash",
         "-lc",
-        "cd .. && uv run --extra python-workspace pytest tests/test_kernel_host_bridge.py -q"
+        "cd .. && uv run --extra python-workspace pytest --tau-suite=all tests/test_kernel_host_bridge.py -q"
       ],
       "expected": {
         "exit_code": 0,
         "stdout_contains": [
           "18 passed"
         ]
-      }
+      },
+      "evidence_class": "live_e2e",
+      "supports_claims": [
+        "tau.python_host_bridge.capability_boundaries"
+      ],
+      "readback": true
     },
     {
       "name": "adversarial-host-bridge-authority-boundaries",
@@ -33,13 +38,28 @@
       "command": [
         "bash",
         "-lc",
-        "cd .. && uv run --extra python-workspace pytest tests/test_kernel_host_bridge.py -q -k 'stale_generation or binding_mutations or absolute_and_parent or symlink or graph_query or evidence_emit or undeclared or late_request'"
+        "cd .. && uv run --extra python-workspace pytest --tau-suite=all tests/test_kernel_host_bridge.py -q -k 'stale_generation or binding_mutations or absolute_and_parent or symlink or graph_query or evidence_emit or undeclared or late_request'"
       ],
       "expected": {
         "exit_code": 0,
         "stdout_contains": [
           "14 passed"
         ]
+      },
+      "evidence_class": "fault_injected_deterministic",
+      "supports_claims": [
+        "tau.python_host_bridge.capability_boundaries"
+      ]
+    }
+  ],
+  "capability_claims": [
+    {
+      "id": "tau.python_host_bridge.capability_boundaries",
+      "description": "Tau Python host-call bridge executes through the real kernel profile while enforcing generation, binding, path, graph-query, evidence-emission, undeclared-call, and late-request authority boundaries.",
+      "criticality": "critical",
+      "evidence_required": {
+        "live_e2e": true,
+        "fault_injected_deterministic": true
       }
     }
   ]

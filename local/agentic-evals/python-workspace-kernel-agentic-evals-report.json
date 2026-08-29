@@ -1,0 +1,240 @@
+{
+  "schema": "agentic_evals.report.v2",
+  "source": "evals/python_workspace_kernel_agentic_eval.json",
+  "run_id": "7ab887f6bf77",
+  "fixture_sha256": "sha256:df48592d014568d3234755fe547a526e8d1e1dc202f2fd7bc9eb25555641c90b",
+  "repo": {
+    "sha": "8b728506a6289eabab7e639bfd21fb721b2f1584",
+    "ref": "main"
+  },
+  "mocked": false,
+  "fixture_backed": true,
+  "live": true,
+  "proof_scope": "Tau Python workspace kernel receipt and lifecycle coverage",
+  "claims": {
+    "proves": "the declared Tau Python workspace positive and adversarial kernel receipt checks pass across repeated trials using the real project test runner and optional Jupyter kernel profile",
+    "does_not_prove": "full Tau issue #323 production rollout, kernel sandboxing, host-call bridge behavior, provider/model quality, or every operating-system process-loss mode"
+  },
+  "what_was_exercised": "local commands declared in the fixture manifest",
+  "what_remains_unverified": "semantic correctness, live services, LLM judge behavior, and release readiness",
+  "readiness": "READY",
+  "case_readiness": "READY",
+  "capability_readiness": {
+    "aggregate_readiness": "READY",
+    "critical_claim_count": 1,
+    "critical_claims_proven": 1,
+    "claims": [
+      {
+        "id": "tau.python_workspace_kernel.lifecycle_receipts",
+        "description": "Tau Python workspace kernel runs the worker and backend lifecycle through the real optional Jupyter profile while enforcing capability, binding, import failure, interrupt, and PID reuse boundaries.",
+        "criticality": "critical",
+        "required_evidence": [
+          "fault_injected_deterministic",
+          "live_e2e"
+        ],
+        "verdict": "PROVEN",
+        "per_class": {
+          "fault_injected_deterministic": {
+            "status": "PROVEN",
+            "cases": [
+              "adversarial-kernel-contract-and-lifecycle-boundaries"
+            ]
+          },
+          "live_e2e": {
+            "status": "PROVEN",
+            "cases": [
+              "python-workspace-live-kernel-regression"
+            ]
+          }
+        },
+        "missing_evidence": [],
+        "blocked_evidence": [],
+        "exempt_evidence": [],
+        "exemptions": [],
+        "unqualified_live_cases": [
+          {
+            "name": "python-kernel-worker-entrypoint-canary",
+            "declared": "live_e2e",
+            "reasons": [
+              "command does not reach a substantive production entrypoint"
+            ]
+          }
+        ],
+        "supporting_cases": [
+          "python-workspace-live-kernel-regression",
+          "python-kernel-worker-entrypoint-canary",
+          "adversarial-kernel-contract-and-lifecycle-boundaries"
+        ]
+      }
+    ]
+  },
+  "claims_coverage": "manifest-spanning",
+  "focused_cases": [],
+  "generated_at": "2026-08-29T16:43:24.455821+00:00",
+  "case_count": 3,
+  "required_case_count": 3,
+  "outcome_counts": {
+    "PASS": 3,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_TESTED": 0
+  },
+  "trial_count": 6,
+  "cases": [
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "python-workspace-live-kernel-regression",
+      "type": "positive",
+      "case_id": "7ab887f6bf77-c000",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run --extra python-workspace pytest --tau-suite=all tests/test_python_kernel_backend.py -q"
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "live_e2e",
+      "live_qualified": true,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.python_workspace_kernel.lifecycle_receipts"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 10146.655,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "............                                                             [100%]\n12 passed in 9.45s\n",
+          "stderr": "",
+          "duration_ms": 10022.71,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "7ab887f6bf77-c000-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "............                                                             [100%]\n12 passed in 9.70s\n",
+          "stderr": "",
+          "duration_ms": 10270.599,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "7ab887f6bf77-c000-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "python-kernel-worker-entrypoint-canary",
+      "type": "positive",
+      "case_id": "7ab887f6bf77-c001",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && out=$(mktemp -d /tmp/tau-kernel-worker-eval-XXXXXX) && uv run --extra python-workspace tau-python-kernel-worker --canary-output-dir \"$out\""
+      ],
+      "declared_evidence_class": "live_e2e",
+      "effective_evidence_class": "deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [
+        "command does not reach a substantive production entrypoint"
+      ],
+      "supports_claims": [
+        "tau.python_workspace_kernel.lifecycle_receipts"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 2130.137,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": "{\"checks\": {\"endpoint_lease_present\": true, \"interrupt_returned_terminal_control_receipt\": true, \"kernel_success_not_tau_acceptance\": true, \"namespace_persisted\": true, \"package_manifest_available\": true, \"restart_reconciliation_positive\": true}, \"execution_receipts\": [{\"code_sha256\": \"sha256:6e094d5e6df9914b197da84271a55a66b10596fa6fa040990417b081e66f36eb\", \"duration_ms\": 4, \"endpoint_lease_sha256\": \"sha256:da4a0fd3209dcb532671305365411d2902b87ab66bbda26e7bb1f8ec0e349b5c\", \"errors\": [], \"execution_id\": \"exec-0fcd5f479808e2ea\", \"execution_request_sha256\": \"sha256:6296a3d2296168508b0d10b7733bf44d49c296ae8538328f2be19cc564d3015b\", \"finished_at\": \"2026-08-29T16:43:13.713Z\", \"generation_id\": \"generation-04c6274062e51f57c12d65c0\", \"jupyter_msg_id\": \"720474e9-af98045952f0a433b61a69c1_3677469_1\", \"late_async_outputs\": [], \"output_artifact\": {\"full_output_schema\": \"tau.python_execution_output_artifact.v1\", \"late_async_output_count\": 0, \"message_count\": 4, \"path\": \"/tmp/tau-kernel-worker-eval-9W3iAi/artifacts/exec-0fcd5f479808e2ea-76f90025ffc54ddd23b0fedaf4dd6f697bdf0b5bf522648e5e295b17dc36a83e.json\", \"sha256\": \"sha256:76f90025ffc54ddd23b0fedaf4dd6f697bdf0b5bf522648e5e295b17dc36a83e\"}, \"output_projection\": {\"artifact\": {\"full_output_schema\": \"tau.python_execution_output_artifact.v1\", \"late_async_output_count\": 0, \"message_count\": 4, \"path\": \"/tmp/tau-kernel-worker-eval-9W3iAi/artifacts/exec-0fcd5f479808e2ea-76f90025ffc54ddd23b0fedaf4dd6f697bdf0b5bf522648e5e295b17dc36a83e.json\", \"sha256\": \"sha256:76f90025ffc54ddd23b0fedaf4dd6f697bdf0b5bf522648e5e295b17dc36a83e\"}, \"full_output_sha256\": \"sha256:76f90025ffc54ddd23b0fedaf4dd6f697bdf0b5bf522648e5e295b17dc36a83e\", \"preview\": \"{\\n  \\\"endpoint_lease_sha256\\\": \\\"sha256:da4a0fd3209dcb532671305365411d2902b87ab66bbda26e7bb1f8ec0e349b5c\\\",\\n  \\\"errors\\\": [],\\n  \\\"execution_id\\\": \\\"exec-0fcd5f479808e2ea\\\",\\n  \\\"execution_request_sha256\\\": \\\"sha256:6296a3d2296168508b0d10b7733bf44d49c296ae8538328f2be19cc564d3015b\\\",\\n  \\\"generation_id\\\": \\\"generation-04c6274062e51f57c12d65c0\\\",\\n  \\\"late_async_outputs\\\": [],\\n  \\\"messages\\\": [\\n    {\\n      \\\"classification\\\": \\\"during_execution\\\",\\n      \\\"content\\\": {\\n        \\\"execution_state\\\": \\\"busy\\\"\\n      },\\n      \\\"msg_type\\\": \", \"schema\": \"tau.python_execution_output_projection.v1\", \"truncated\": true}, \"schema\": \"tau.python_execution_receipt.v1\", \"started_at\": \"2026-08-29T16:43:13.709Z\", \"status\": \"OK\", \"tau_admission_status\": \"not_admitted\", \"workspace_request_sha256\": \"sha256:2a617835d1bc6abdbe2f3cb8b6c50c632bcf5e0e712c40d86e5d1e9f74dacf66\"}, {\"code_sha256\": \"sha256:228eb25bf8c5ca1a8882b61eaaae2d7091590496a716c15c9a4f806fceea23a8\", \"duration_ms\": 3, \"endpoint_lease_sha256\": \"sha256:da4a0fd3209dcb532671305365411d2902b87ab66bbda26e7bb1f8ec0e349b5c\", \"errors\": [], \"execution_id\": \"exec-f861996ed1717b53\", \"execution_request_sha256\": \"sha256:8ad8ea4106129cc29582ea57e4be5655bf575e0db4139e94ab92e02011e97124\", \"finished_at\": \"2026-08-29T16:43:13.717Z\", \"generation_id\": \"generation-04c6274062e51f57c12d65c0\", \"jupyter_msg_id\": \"720474e9-af98045952f0a433b61a69c1_3677469_2\", \"late_async_outputs\": [], \"output_artifact\": {\"full_output_schema\": \"tau.python_execution_output_artifact.v1\", \"late_async_output_count\": 0, \"message_count\": 4, \"path\": \"/tmp/tau-kernel-worker-eval-9W3iAi/artifacts/exec-f861996ed1717b53-7b20970e9d8e8e2482e8aaa30e94088d6e66ef937fc9d3ec4933c14620322217.json\", \"sha256\": \"sha256:7b20970e9d8e8e2482e8aaa30e94088d6e66ef937fc9d3ec4933c14620322217\"}, \"output_projection\": {\"artifact\": {\"full_output_schema\": \"tau.python_execution_output_artifact.v1\", \"late_async_output_count\": 0, \"message_count\": 4, \"path\": \"/tmp/tau-kernel-worker-eval-9W3iAi/artifacts/exec-f861996ed1717b53-7b20970e9d8e8e2482e8aaa30e94088d6e66ef937fc9d3ec4933c14620322217.json\", \"sha256\": \"sha256:7b20970e9d8e8e2482e8aaa30e94088d6e66ef937fc9d3ec4933c14620322217\"}, \"full_output_sha256\": \"sha256:7b20970e9d8e8e2482e8aaa30e94088d6e66ef937fc9d3ec4933c14620322217\", \"preview\": \"{\\n  \\\"endpoint_lease_sha256\\\": \\\"sha256:da4a0fd3209dcb532671305365411d2902b87ab66bbda26e7bb1f8ec0e349b5c\\\",\\n  \\\"errors\\\": [],\\n  \\\"execution_id\\\": \\\"exec-f861996ed1717b53\\\",\\n  \\\"execution_request_sha256\\\": \\\"sha256:8ad8ea4106129cc29582ea57e4be5655bf575e0db4139e94ab92e02011e97124\\\",\\n  \\\"generation_id\\\": \\\"generation-04c6274062e51f57c12d65c0\\\",\\n  \\\"late_async_outputs\\\": [],\\n  \\\"messages\\\": [\\n    {\\n      \\\"classification\\\": \\\"during_execution\\\",\\n      \\\"content\\\": {\\n        \\\"execution_state\\\": \\\"busy\\\"\\n      },\\n      \\\"msg_type\\\": \", \"schema\": \"tau.python_execution_output_projection.v1\", \"truncated\": true}, \"schema\": \"tau.python_execution_receipt.v1\", \"started_at\": \"2026-08-29T16:43:13.714Z\", \"status\": \"OK\", \"tau_admission_status\": \"not_admitted\", \"workspace_request_sha256\": \"sha256:2a617835d1bc6abdbe2f3cb8b6c50c632bcf5e0e712c40d86e5d1e9f74dacf66\"}, {\"code_sha256\": \"sha256:9e8dabb86cbd6616cad34c0bf82fa5e125165dc2968eae8434ec81a19803e09a\", \"duration_ms\": 3, \"endpoint_lease_sha256\": \"sha256:da4a0fd3209dcb532671305365411d2902b87ab66bbda26e7bb1f8ec0e349b5c\", \"errors\": [], \"execution_id\": \"exec-9721371a09c72ea3\", \"execution_request_sha256\": \"sha256:a9647741b43f455bfd4a93c587ead2eb5fafc5a694febf21d7cec61d22b30b60\", \"finished_at\": \"2026-08-29T16:43:13.720Z\", \"generation_id\": \"generation-04c6274062e51f57c12d65c0\", \"jupyter_msg_id\": \"720474e9-af98045952f0a433b61a69c1_3677469_3\", \"late_async_outputs\": [], \"output_artifact\": {\"full_output_schema\": \"tau.python_execution_output_artifact.v1\", \"late_async_output_count\": 0, \"message_count\": 4, \"path\": \"/tmp/tau-kernel-worker-eval-9W3iAi/artifacts/exec-9721371a09c72ea3-cfd76f37e1a09bffe09da4d638d452e2800608b65018346eaa5a2c4a987f9885.json\", \"sha256\": \"sha256:cfd76f37e1a09bffe09da4d638d452e2800608b65018346eaa5a2c4a987f9885\"}, \"output_projection\": {\"artifact\": {\"full_output_schema\": \"tau.python_execution_output_artifact.v1\", \"late_async_output_count\": 0, \"message_count\": 4, \"path\": \"/tmp/tau-kernel-worker-eval-9W3iAi/artifacts/exec-9721371a09c72ea3-cfd76f37e1a09bffe09da4d638d452e2800608b65018346eaa5a2c4a987f9885.json\", \"sha256\": \"sha256:cfd76f37e1a09bffe09da4d638d452e2800608b65018346eaa5a2c4a987f9885\"}, \"full_output_sha256\": \"sha256:cfd76f37e1a09bffe09da4d638d452e2800608b65018346eaa5a2c4a987f9885\", \"preview\": \"{\\n  \\\"endpoint_lease_sha256\\\": \\\"sha256:da4a0fd3209dcb532671305365411d2902b87ab66bbda26e7bb1f8ec0e349b5c\\\",\\n  \\\"errors\\\": [],\\n  \\\"execution_id\\\": \\\"exec-9721371a09c72ea3\\\",\\n  \\\"execution_request_sha256\\\": \\\"sha256:a9647741b43f455bfd4a93c587ead2eb5fafc5a694febf21d7cec61d22b30b60\\\",\\n  \\\"generation_id\\\": \\\"generation-04c6274062e51f57c12d65c0\\\",\\n  \\\"late_async_outputs\\\": [],\\n  \\\"messages\\\": [\\n    {\\n      \\\"classification\\\": \\\"during_execution\\\",\\n      \\\"content\\\": {\\n        \\\"execution_state\\\": \\\"busy\\\"\\n      },\\n      \\\"msg_type\\\": \", \"schema\": \"tau.python_execution_output_projection.v1\", \"truncated\": true}, \"schema\": \"tau.python_execution_receipt.v1\", \"started_at\": \"2026-08-29T16:43:13.717Z\", \"status\": \"OK\", \"tau_admission_status\": \"not_admitted\", \"workspace_request_sha256\": \"sha256:2a617835d1bc6abdbe2f3cb8b6c50c632bcf5e0e712c40d86e5d1e9f74dacf66\"}], \"interrupt_receipt\": {\"action\": \"interrupt\", \"endpoint_lease_sha256\": \"sha256:da4a0fd3209dcb532671305365411d2902b87ab66bbda26e7bb1f8ec0e349b5c\", \"errors\": [], \"generation_id\": \"generation-04c6274062e51f57c12d65c0\", \"process_identity_after\": {\"alive\": true, \"pid\": 3677523, \"start_time_ticks\": \"68761120\"}, \"process_identity_before\": {\"alive\": true, \"pid\": 3677523, \"start_time_ticks\": \"68761120\"}, \"schema\": \"tau.python_kernel_control_receipt.v1\", \"status\": \"READY\"}, \"live\": true, \"mocked\": false, \"reconciliation_receipt\": {\"action\": \"reconcile_existing_owned_kernel\", \"endpoint_lease_sha256\": \"sha256:da4a0fd3209dcb532671305365411d2902b87ab66bbda26e7bb1f8ec0e349b5c\", \"errors\": [], \"evidence\": {\"process_identity\": {\"alive\": true, \"pid\": 3677523, \"start_time_ticks\": \"68761120\"}}, \"run_id\": \"python-workspace\", \"schema\": \"tau.runtime_reconciliation_receipt.v1\", \"status\": \"PASS\"}, \"schema\": \"tau.python_workspace_canary_receipt.v1\", \"status\": \"PASS\", \"workspace_receipt\": {\"endpoint_lease\": {\"attempt_id\": \"attempt-1\", \"attempt_number\": 1, \"backend\": \"python-kernel\", \"backend_ids\": {\"kernel_generation_id\": \"generation-04c6274062e51f57c12d65c0\", \"process_identity\": {\"alive\": true, \"pid\": 3677523, \"start_time_ticks\": \"68761120\"}, \"worktree\": \"/home/graham/workspace/experiments/tau\"}, \"backend_session_id\": \"37b1c28c-0d51-4446-8796-9312acca73df\", \"capabilities_sha256\": \"sha256:df3af1ebad127a58b60d4c4d3a538bbcf3df609400953c33292efcb72485ddb6\", \"cleanup_policy\": {\"mode\": \"process-identity-match\"}, \"created_at\": \"2026-08-29T16:43:13.708Z\", \"dag_id\": \"python-workspace-canary\", \"endpoint_id\": \"python-kernel:generation-04c6274062e51f57c12d65c0\", \"execution_token\": \"2a617835d1bc6abd\", \"expires_at\": \"2026-08-29T17:43:13Z\", \"goal_hash\": \"sha256:c4c9a1f50a673b1e7ed4255a7b06d7d4228a6ac42e9857dd11e906cad5b4c32b\", \"heartbeat_policy\": {\"mode\": \"kernel-client-poll\", \"seconds\": 5}, \"node_id\": \"kernel\", \"owner\": \"tau-python-workspace\", \"plan_revision\": \"sha256:ba720b627fdbcae0bcc2b15ad4bc316ac5419296afcfe1b40507bbb8c188f5dc\", \"run_id\": \"python-workspace-canary\", \"schema\": \"tau.runtime_endpoint_lease.v1\", \"scope_id\": \"/home/graham/workspace/experiments/tau:attempt-1\", \"work_order_sha256\": \"sha256:2a617835d1bc6abdbe2f3cb8b6c50c632bcf5e0e712c40d86e5d1e9f74dacf66\"}, \"errors\": [], \"generation_id\": \"generation-04c6274062e51f57c12d65c0\", \"package_manifest\": {\"available\": true, \"errors\": [], \"packages\": {\"ipykernel\": {\"available\": true, \"version\": \"7.3.0\"}, \"jupyter_client\": {\"available\": true, \"version\": \"8.9.1\"}}, \"platform\": \"Linux-6.8.0-57-generic-x86_64-with-glibc2.39\", \"python_executable\": \"/home/graham/workspace/experiments/tau/.venv/bin/python3\", \"python_version\": \"3.14.3 (main, Feb 12 2026, 00:42:54) [Clang 21.1.4 ]\", \"schema\": \"tau.python_package_manifest.v1\", \"security_profile\": {\"note\": \"Jupyter kernel executes local code and is not Tau acceptance.\", \"process_user\": \"current-user\", \"sandbox\": \"none\"}, \"sha256\": \"sha256:2e83e85f223417c1214980282b9d0d1e0ea737efec343de5e831ae63b4630b53\"}, \"process_identity\": {\"alive\": true, \"pid\": 3677523, \"start_time_ticks\": \"68761120\"}, \"schema\": \"tau.python_workspace_receipt.v1\", \"state_path\": \"/tmp/tau-kernel-worker-eval-9W3iAi/python-kernel-state.json\", \"status\": \"READY\", \"workspace_request_sha256\": \"sha256:2a617835d1bc6abdbe2f3cb8b6c50c632bcf5e0e712c40d86e5d1e9f74dacf66\"}}\n",
+          "stderr": "[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.\n",
+          "duration_ms": 2125.663,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "7ab887f6bf77-c001-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": "{\"checks\": {\"endpoint_lease_present\": true, \"interrupt_returned_terminal_control_receipt\": true, \"kernel_success_not_tau_acceptance\": true, \"namespace_persisted\": true, \"package_manifest_available\": true, \"restart_reconciliation_positive\": true}, \"execution_receipts\": [{\"code_sha256\": \"sha256:6e094d5e6df9914b197da84271a55a66b10596fa6fa040990417b081e66f36eb\", \"duration_ms\": 4, \"endpoint_lease_sha256\": \"sha256:af2af06bc5938c9c87ee09d1709d515609dcf3c0a8792207511d6d87894ad082\", \"errors\": [], \"execution_id\": \"exec-a411bc8f98b02254\", \"execution_request_sha256\": \"sha256:d27f317e9512bf1a812c9b95876a0825a26591abfc912476c31cee10a307cea3\", \"finished_at\": \"2026-08-29T16:43:15.826Z\", \"generation_id\": \"generation-3bc0de1155e2b07dc99f1e10\", \"jupyter_msg_id\": \"ebd49867-4cc47f451a5bb6c0dc26d0d8_3677728_1\", \"late_async_outputs\": [], \"output_artifact\": {\"full_output_schema\": \"tau.python_execution_output_artifact.v1\", \"late_async_output_count\": 0, \"message_count\": 4, \"path\": \"/tmp/tau-kernel-worker-eval-5YYPMh/artifacts/exec-a411bc8f98b02254-a170705b3358e2800abe266712e774c0667d180b8e52661be46e2e31a8793e55.json\", \"sha256\": \"sha256:a170705b3358e2800abe266712e774c0667d180b8e52661be46e2e31a8793e55\"}, \"output_projection\": {\"artifact\": {\"full_output_schema\": \"tau.python_execution_output_artifact.v1\", \"late_async_output_count\": 0, \"message_count\": 4, \"path\": \"/tmp/tau-kernel-worker-eval-5YYPMh/artifacts/exec-a411bc8f98b02254-a170705b3358e2800abe266712e774c0667d180b8e52661be46e2e31a8793e55.json\", \"sha256\": \"sha256:a170705b3358e2800abe266712e774c0667d180b8e52661be46e2e31a8793e55\"}, \"full_output_sha256\": \"sha256:a170705b3358e2800abe266712e774c0667d180b8e52661be46e2e31a8793e55\", \"preview\": \"{\\n  \\\"endpoint_lease_sha256\\\": \\\"sha256:af2af06bc5938c9c87ee09d1709d515609dcf3c0a8792207511d6d87894ad082\\\",\\n  \\\"errors\\\": [],\\n  \\\"execution_id\\\": \\\"exec-a411bc8f98b02254\\\",\\n  \\\"execution_request_sha256\\\": \\\"sha256:d27f317e9512bf1a812c9b95876a0825a26591abfc912476c31cee10a307cea3\\\",\\n  \\\"generation_id\\\": \\\"generation-3bc0de1155e2b07dc99f1e10\\\",\\n  \\\"late_async_outputs\\\": [],\\n  \\\"messages\\\": [\\n    {\\n      \\\"classification\\\": \\\"during_execution\\\",\\n      \\\"content\\\": {\\n        \\\"execution_state\\\": \\\"busy\\\"\\n      },\\n      \\\"msg_type\\\": \", \"schema\": \"tau.python_execution_output_projection.v1\", \"truncated\": true}, \"schema\": \"tau.python_execution_receipt.v1\", \"started_at\": \"2026-08-29T16:43:15.821Z\", \"status\": \"OK\", \"tau_admission_status\": \"not_admitted\", \"workspace_request_sha256\": \"sha256:2a617835d1bc6abdbe2f3cb8b6c50c632bcf5e0e712c40d86e5d1e9f74dacf66\"}, {\"code_sha256\": \"sha256:228eb25bf8c5ca1a8882b61eaaae2d7091590496a716c15c9a4f806fceea23a8\", \"duration_ms\": 3, \"endpoint_lease_sha256\": \"sha256:af2af06bc5938c9c87ee09d1709d515609dcf3c0a8792207511d6d87894ad082\", \"errors\": [], \"execution_id\": \"exec-08796e6ddffe448a\", \"execution_request_sha256\": \"sha256:16df720e6154527189502c9be2db11121d4685cb5c4008e4603416de8e7bc607\", \"finished_at\": \"2026-08-29T16:43:15.830Z\", \"generation_id\": \"generation-3bc0de1155e2b07dc99f1e10\", \"jupyter_msg_id\": \"ebd49867-4cc47f451a5bb6c0dc26d0d8_3677728_2\", \"late_async_outputs\": [], \"output_artifact\": {\"full_output_schema\": \"tau.python_execution_output_artifact.v1\", \"late_async_output_count\": 0, \"message_count\": 4, \"path\": \"/tmp/tau-kernel-worker-eval-5YYPMh/artifacts/exec-08796e6ddffe448a-06270476f98be29bff5d0b6abdeefecb8d2ef9721541215eb8afcac5ea52409b.json\", \"sha256\": \"sha256:06270476f98be29bff5d0b6abdeefecb8d2ef9721541215eb8afcac5ea52409b\"}, \"output_projection\": {\"artifact\": {\"full_output_schema\": \"tau.python_execution_output_artifact.v1\", \"late_async_output_count\": 0, \"message_count\": 4, \"path\": \"/tmp/tau-kernel-worker-eval-5YYPMh/artifacts/exec-08796e6ddffe448a-06270476f98be29bff5d0b6abdeefecb8d2ef9721541215eb8afcac5ea52409b.json\", \"sha256\": \"sha256:06270476f98be29bff5d0b6abdeefecb8d2ef9721541215eb8afcac5ea52409b\"}, \"full_output_sha256\": \"sha256:06270476f98be29bff5d0b6abdeefecb8d2ef9721541215eb8afcac5ea52409b\", \"preview\": \"{\\n  \\\"endpoint_lease_sha256\\\": \\\"sha256:af2af06bc5938c9c87ee09d1709d515609dcf3c0a8792207511d6d87894ad082\\\",\\n  \\\"errors\\\": [],\\n  \\\"execution_id\\\": \\\"exec-08796e6ddffe448a\\\",\\n  \\\"execution_request_sha256\\\": \\\"sha256:16df720e6154527189502c9be2db11121d4685cb5c4008e4603416de8e7bc607\\\",\\n  \\\"generation_id\\\": \\\"generation-3bc0de1155e2b07dc99f1e10\\\",\\n  \\\"late_async_outputs\\\": [],\\n  \\\"messages\\\": [\\n    {\\n      \\\"classification\\\": \\\"during_execution\\\",\\n      \\\"content\\\": {\\n        \\\"execution_state\\\": \\\"busy\\\"\\n      },\\n      \\\"msg_type\\\": \", \"schema\": \"tau.python_execution_output_projection.v1\", \"truncated\": true}, \"schema\": \"tau.python_execution_receipt.v1\", \"started_at\": \"2026-08-29T16:43:15.826Z\", \"status\": \"OK\", \"tau_admission_status\": \"not_admitted\", \"workspace_request_sha256\": \"sha256:2a617835d1bc6abdbe2f3cb8b6c50c632bcf5e0e712c40d86e5d1e9f74dacf66\"}, {\"code_sha256\": \"sha256:9e8dabb86cbd6616cad34c0bf82fa5e125165dc2968eae8434ec81a19803e09a\", \"duration_ms\": 3, \"endpoint_lease_sha256\": \"sha256:af2af06bc5938c9c87ee09d1709d515609dcf3c0a8792207511d6d87894ad082\", \"errors\": [], \"execution_id\": \"exec-738498a68fe2c61b\", \"execution_request_sha256\": \"sha256:7eb22349aac988baec8f24103cc685c66d3e7f16516b4aee59656cc9c5a18a26\", \"finished_at\": \"2026-08-29T16:43:15.834Z\", \"generation_id\": \"generation-3bc0de1155e2b07dc99f1e10\", \"jupyter_msg_id\": \"ebd49867-4cc47f451a5bb6c0dc26d0d8_3677728_3\", \"late_async_outputs\": [], \"output_artifact\": {\"full_output_schema\": \"tau.python_execution_output_artifact.v1\", \"late_async_output_count\": 0, \"message_count\": 4, \"path\": \"/tmp/tau-kernel-worker-eval-5YYPMh/artifacts/exec-738498a68fe2c61b-f5e97aa59a50011d858a42abd4f0e610de55187f55a71cd47bd09af75b78817e.json\", \"sha256\": \"sha256:f5e97aa59a50011d858a42abd4f0e610de55187f55a71cd47bd09af75b78817e\"}, \"output_projection\": {\"artifact\": {\"full_output_schema\": \"tau.python_execution_output_artifact.v1\", \"late_async_output_count\": 0, \"message_count\": 4, \"path\": \"/tmp/tau-kernel-worker-eval-5YYPMh/artifacts/exec-738498a68fe2c61b-f5e97aa59a50011d858a42abd4f0e610de55187f55a71cd47bd09af75b78817e.json\", \"sha256\": \"sha256:f5e97aa59a50011d858a42abd4f0e610de55187f55a71cd47bd09af75b78817e\"}, \"full_output_sha256\": \"sha256:f5e97aa59a50011d858a42abd4f0e610de55187f55a71cd47bd09af75b78817e\", \"preview\": \"{\\n  \\\"endpoint_lease_sha256\\\": \\\"sha256:af2af06bc5938c9c87ee09d1709d515609dcf3c0a8792207511d6d87894ad082\\\",\\n  \\\"errors\\\": [],\\n  \\\"execution_id\\\": \\\"exec-738498a68fe2c61b\\\",\\n  \\\"execution_request_sha256\\\": \\\"sha256:7eb22349aac988baec8f24103cc685c66d3e7f16516b4aee59656cc9c5a18a26\\\",\\n  \\\"generation_id\\\": \\\"generation-3bc0de1155e2b07dc99f1e10\\\",\\n  \\\"late_async_outputs\\\": [],\\n  \\\"messages\\\": [\\n    {\\n      \\\"classification\\\": \\\"during_execution\\\",\\n      \\\"content\\\": {\\n        \\\"execution_state\\\": \\\"busy\\\"\\n      },\\n      \\\"msg_type\\\": \", \"schema\": \"tau.python_execution_output_projection.v1\", \"truncated\": true}, \"schema\": \"tau.python_execution_receipt.v1\", \"started_at\": \"2026-08-29T16:43:15.830Z\", \"status\": \"OK\", \"tau_admission_status\": \"not_admitted\", \"workspace_request_sha256\": \"sha256:2a617835d1bc6abdbe2f3cb8b6c50c632bcf5e0e712c40d86e5d1e9f74dacf66\"}], \"interrupt_receipt\": {\"action\": \"interrupt\", \"endpoint_lease_sha256\": \"sha256:af2af06bc5938c9c87ee09d1709d515609dcf3c0a8792207511d6d87894ad082\", \"errors\": [], \"generation_id\": \"generation-3bc0de1155e2b07dc99f1e10\", \"process_identity_after\": {\"alive\": true, \"pid\": 3677908, \"start_time_ticks\": \"68761333\"}, \"process_identity_before\": {\"alive\": true, \"pid\": 3677908, \"start_time_ticks\": \"68761333\"}, \"schema\": \"tau.python_kernel_control_receipt.v1\", \"status\": \"READY\"}, \"live\": true, \"mocked\": false, \"reconciliation_receipt\": {\"action\": \"reconcile_existing_owned_kernel\", \"endpoint_lease_sha256\": \"sha256:af2af06bc5938c9c87ee09d1709d515609dcf3c0a8792207511d6d87894ad082\", \"errors\": [], \"evidence\": {\"process_identity\": {\"alive\": true, \"pid\": 3677908, \"start_time_ticks\": \"68761333\"}}, \"run_id\": \"python-workspace\", \"schema\": \"tau.runtime_reconciliation_receipt.v1\", \"status\": \"PASS\"}, \"schema\": \"tau.python_workspace_canary_receipt.v1\", \"status\": \"PASS\", \"workspace_receipt\": {\"endpoint_lease\": {\"attempt_id\": \"attempt-1\", \"attempt_number\": 1, \"backend\": \"python-kernel\", \"backend_ids\": {\"kernel_generation_id\": \"generation-3bc0de1155e2b07dc99f1e10\", \"process_identity\": {\"alive\": true, \"pid\": 3677908, \"start_time_ticks\": \"68761333\"}, \"worktree\": \"/home/graham/workspace/experiments/tau\"}, \"backend_session_id\": \"68e134c2-a3d6-41ff-ab81-fdba34acbcaa\", \"capabilities_sha256\": \"sha256:df3af1ebad127a58b60d4c4d3a538bbcf3df609400953c33292efcb72485ddb6\", \"cleanup_policy\": {\"mode\": \"process-identity-match\"}, \"created_at\": \"2026-08-29T16:43:15.820Z\", \"dag_id\": \"python-workspace-canary\", \"endpoint_id\": \"python-kernel:generation-3bc0de1155e2b07dc99f1e10\", \"execution_token\": \"2a617835d1bc6abd\", \"expires_at\": \"2026-08-29T17:43:15Z\", \"goal_hash\": \"sha256:c4c9a1f50a673b1e7ed4255a7b06d7d4228a6ac42e9857dd11e906cad5b4c32b\", \"heartbeat_policy\": {\"mode\": \"kernel-client-poll\", \"seconds\": 5}, \"node_id\": \"kernel\", \"owner\": \"tau-python-workspace\", \"plan_revision\": \"sha256:ba720b627fdbcae0bcc2b15ad4bc316ac5419296afcfe1b40507bbb8c188f5dc\", \"run_id\": \"python-workspace-canary\", \"schema\": \"tau.runtime_endpoint_lease.v1\", \"scope_id\": \"/home/graham/workspace/experiments/tau:attempt-1\", \"work_order_sha256\": \"sha256:2a617835d1bc6abdbe2f3cb8b6c50c632bcf5e0e712c40d86e5d1e9f74dacf66\"}, \"errors\": [], \"generation_id\": \"generation-3bc0de1155e2b07dc99f1e10\", \"package_manifest\": {\"available\": true, \"errors\": [], \"packages\": {\"ipykernel\": {\"available\": true, \"version\": \"7.3.0\"}, \"jupyter_client\": {\"available\": true, \"version\": \"8.9.1\"}}, \"platform\": \"Linux-6.8.0-57-generic-x86_64-with-glibc2.39\", \"python_executable\": \"/home/graham/workspace/experiments/tau/.venv/bin/python3\", \"python_version\": \"3.14.3 (main, Feb 12 2026, 00:42:54) [Clang 21.1.4 ]\", \"schema\": \"tau.python_package_manifest.v1\", \"security_profile\": {\"note\": \"Jupyter kernel executes local code and is not Tau acceptance.\", \"process_user\": \"current-user\", \"sandbox\": \"none\"}, \"sha256\": \"sha256:2e83e85f223417c1214980282b9d0d1e0ea737efec343de5e831ae63b4630b53\"}, \"process_identity\": {\"alive\": true, \"pid\": 3677908, \"start_time_ticks\": \"68761333\"}, \"schema\": \"tau.python_workspace_receipt.v1\", \"state_path\": \"/tmp/tau-kernel-worker-eval-5YYPMh/python-kernel-state.json\", \"status\": \"READY\", \"workspace_request_sha256\": \"sha256:2a617835d1bc6abdbe2f3cb8b6c50c632bcf5e0e712c40d86e5d1e9f74dacf66\"}}\n",
+          "stderr": "[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.\n",
+          "duration_ms": 2134.61,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "7ab887f6bf77-c001-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "infra_blocked_trials": 0,
+      "flaky": false,
+      "name": "adversarial-kernel-contract-and-lifecycle-boundaries",
+      "type": "adversarial",
+      "case_id": "7ab887f6bf77-c002",
+      "required": true,
+      "outcome": "PASS",
+      "problems": [],
+      "argv": [
+        "bash",
+        "-lc",
+        "cd .. && uv run --extra python-workspace pytest --tau-suite=all tests/test_python_kernel_backend.py -q -k 'unknown_capability or binding_mutation or import_failure or interrupt or unrelated_reused_pid'"
+      ],
+      "declared_evidence_class": "fault_injected_deterministic",
+      "effective_evidence_class": "fault_injected_deterministic",
+      "live_qualified": false,
+      "evidence_disqualifiers": [],
+      "supports_claims": [
+        "tau.python_workspace_kernel.lifecycle_receipts"
+      ],
+      "seams": [],
+      "passed_trials": 2,
+      "total_trials": 2,
+      "pass_rate": 1.0,
+      "avg_latency_ms": 3873.629,
+      "trials": [
+        {
+          "exit_code": 0,
+          "stdout": ".....                                                                    [100%]\n5 passed, 7 deselected in 3.24s\n",
+          "stderr": "",
+          "duration_ms": 3801.89,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "7ab887f6bf77-c002-t00",
+          "outcome": "PASS",
+          "problems": []
+        },
+        {
+          "exit_code": 0,
+          "stdout": ".....                                                                    [100%]\n5 passed, 7 deselected in 3.30s\n",
+          "stderr": "",
+          "duration_ms": 3945.368,
+          "timed_out": false,
+          "orphan_pids_after_teardown": [],
+          "trial_id": "7ab887f6bf77-c002-t01",
+          "outcome": "PASS",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}
